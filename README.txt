@@ -32,6 +32,7 @@ You should begin with the overview in::
   doc/design.txt
 
 Duktape is licensed under the MIT license (see ``LICENSE.txt``).
+MurmurHash2 is used internally; it is also under the MIT license.
 
 Have fun!
 
