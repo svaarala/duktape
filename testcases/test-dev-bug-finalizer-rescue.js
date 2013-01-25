@@ -9,7 +9,7 @@ object
 a={};
 
 // The finalizer rescues the reference (= makes it reachable again)
-__duk__.setFinalizer(a, function(x) { print('finalizer'); a=x });
+__duk__.setFinalizer(a, function(x) { print('finalizer'); a=x });
 
 a = null;
 print(typeof a);

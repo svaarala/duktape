@@ -339,7 +339,7 @@ try {
     print(r.lastIndex);
 
     a = {};
-    a.valueOf = function() { return 2; };
+    a.valueOf = function() { return 2; };
     r.lastIndex = a;
     print(typeof r.lastIndex);
     print(r.lastIndex.valueOf());

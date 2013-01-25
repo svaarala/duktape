@@ -13,7 +13,7 @@
 function sameValue(x,y) {
     var obj = {};
 
-    try {
+    try {
         Object.defineProperty(obj, 'test', {
             writable: false,
             enumerable: false,
@@ -35,7 +35,7 @@ function sameValue(x,y) {
     return true;
 }
 
-function test(x,y) {
+function test(x,y) {
     print(sameValue(x,y));
 }
 

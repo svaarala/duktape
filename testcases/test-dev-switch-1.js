@@ -115,7 +115,7 @@ third case matches
  * 'foo' case would throw a ReferenceError, but is not reached.
  */
 
-switch (3) {
+switch (3) {
    case 1:
        print("first case matches");
        break;

@@ -13,7 +13,7 @@ SyntaxError
  * behavior follows e.g. V8.
  */
 
-try {
+try {
     // FutureReservedWord only recognized in strict mode,
     // function declared in non-strict mode but function
     // itself is strict

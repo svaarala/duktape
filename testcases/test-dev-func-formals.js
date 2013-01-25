@@ -14,7 +14,7 @@ success
 SyntaxError
 ===*/
 
-try {
+try {
     // Keyword
     eval("function foo(for) {};");
     print('never here');
@@ -22,7 +22,7 @@ try {
     print(e.name);
 }
 
-try {
+try {
     // FutureReservedWord
     eval("function foo(class) {};");
     print('never here');
@@ -30,7 +30,7 @@ try {
     print(e.name);
 }
 
-try {
+try {
     // FutureReservedWord only recognized in strict mode
     // -> should work
     eval("function foo(implements) { print(implements) }; foo('success');");
@@ -38,7 +38,7 @@ try {
     print(e.name);
 }
 
-try {
+try {
     // FutureReservedWord only recognized in strict mode,
     // function declared in non-strict mode but function
     // itself is strict
@@ -57,27 +57,27 @@ SyntaxError
 
 /* Function expressions */
 
-try {
+try {
     eval("(function foo(for) {})();");
     print('never here');
 } catch (e) {
     print(e.name);
 }
 
-try {
+try {
     eval("(function foo(class) {})();");
     print('never here');
 } catch (e) {
     print(e.name);
 }
 
-try {
+try {
     eval("(function foo(implements) { print(implements) })('success');");
 } catch (e) {
     print(e.name);
 }
 
-try {
+try {
     eval("(function foo(implements) { 'use strict'; })();");
     print('never here');
 } catch (e) {

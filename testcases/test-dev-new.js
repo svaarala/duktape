@@ -228,25 +228,25 @@ Bal1C.prototype = { 'name': 'Bal1C' };  // has no effect
 
 try {
     eval("var t = new Bal1A; print(t.name);");
-} catch (e) {
+} catch (e) {
     print(e.name);
 }
 
 try {
     eval("var t = new Bal1A (); print(t.name);");
-} catch (e) {
+} catch (e) {
     print(e.name);
 }
 
 try {
     eval("var t = new Bal1B () (); print(t);");     // here 't' is return value from Bal1B/f
-} catch (e) {
+} catch (e) {
     print(e.name);
 }
 
 try {
     eval("var t = new Bal1C () () (); print(t);");
-} catch (e) {
+} catch (e) {
     print(e.name);
 }
 
@@ -494,7 +494,7 @@ function Misc1() {
     // and used as the next constructor
     return { get foo() { print ('foo getter called'); return f } };
 }
-Misc1.prototype = { 'name': 'Misc1' };
+Misc1.prototype = { 'name': 'Misc1' };
 
 function Misc2() {
     print('Misc2 called, this.name=' + this.name);
@@ -509,7 +509,7 @@ function Misc2() {
     // and used as the next constructor
     return { get foo() { print ('foo getter called'); return f } };
 }
-Misc2.prototype = { 'name': 'Misc2' };
+Misc2.prototype = { 'name': 'Misc2' };
 
 try {
     eval("t = new new Misc1 () . foo; print(t.name);");
