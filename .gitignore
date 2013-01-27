@@ -1,6 +1,7 @@
 *~
 *.swp
 *.o
+*.strip
 build/
 doc/*.pdf
 
