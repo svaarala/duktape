@@ -36,12 +36,17 @@ def main():
 
 	tmp = []
 	for i in sys.argv[1:]:
-		base, ext = os.path.splitext(i)
 		objfile = i
+		if i.endswith('.strip'):
+			objname = i[:-6]
+		else:
+			objname = i
+		base, ext = os.path.splitext(objname)
 		srcfile = base + '.c'
-		objsize, objbpl, srcsize, srclines, srcbpl = process(srcfile, i)
+
+		objsize, objbpl, srcsize, srclines, srcbpl = process(srcfile, objfile)
 		srcbase = os.path.basename(srcfile)
-		objbase = os.path.basename(objfile)
+		objbase = os.path.basename(objname)  # foo.o.strip -> present as foo.o
 		tot_srcsize += srcsize
 		tot_srclines += srclines
 		tot_objsize += objsize
