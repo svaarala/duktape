@@ -1,0 +1,6 @@
+*~
+*.swp
+*.o
+build/
+doc/*.pdf
+
