@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 #  Python utilities shared by the build scripts.
 #
