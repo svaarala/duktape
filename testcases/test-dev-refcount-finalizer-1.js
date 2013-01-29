@@ -3,11 +3,20 @@
 finalizer, foo -> 123
 ===*/
 
-a = { foo: 123 };
+var a;
 
-__duk__.setFinalizer(a, function (x) {
-    print('finalizer, foo ->', x.foo);
-});
+/* Note: inside function to ensure that no reference to the value can
+ * be active in temporary registers.
+ */
+function init() {
+    a = { foo: 123 };
+
+    __duk__.setFinalizer(a, function (x) {
+        print('finalizer, foo ->', x.foo);
+    });
+}
+
+init();
 
 // refcount finalizing happens here
 a = null;
