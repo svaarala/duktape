@@ -593,7 +593,7 @@ class TestCaseTool:
 
 				thread.join(5)
 
-	def print_summary(self, json_doc):
+	def print_summary(self, json_doc, report_notes):
 		print '\n----------------------------------------------------------------------------\n'
 
 		num_skipped = 0
@@ -620,7 +620,8 @@ class TestCaseTool:
 				num_other += 1
 
 			if res['result'] == 'success' and res.has_key('notes'):
-				print '%50s: success; %s' % (res['name'], res['notes'])
+				if report_notes:
+					print '%50s: success; %s' % (res['name'], res['notes'])
 			elif res['result'] == 'failure':
 				if res.has_key('res_duk') and res['res_duk'].has_key('diff_lines'):
 					print '%50s: failed; diff %d lines' % (res['name'], res['res_duk']['diff_lines'])
@@ -645,6 +646,7 @@ class TestCaseTool:
 		parser.add_argument('--test-log', dest='test_log', type=str, action='store', default=None, help='test log file (- == stdout)')
 		parser.add_argument('--test-all', dest='test_all', action='store_true', default=False, help='run all testcases in cwd')
 		parser.add_argument('--num-threads', dest='num_threads', action='store', default="4", help='number of testcase threads')
+		parser.add_argument('--report-notes', dest='report_notes', action='store_true', default=False, help='report notes (e.g. diff from other engines) for successful tests')
 
 		args = parser.parse_args()
 		self.args = args
@@ -691,7 +693,7 @@ class TestCaseTool:
 			self.log(json.dumps(doc) + '\n')
 		#self.log(json.dumps(json_doc))
 
-		self.print_summary(json_doc)
+		self.print_summary(json_doc, args.report_notes)
 
 		if test_log_file is not None and not test_log_stdout:
 			test_log_file.close()
