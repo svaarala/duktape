@@ -352,42 +352,54 @@ print (t, typeof t);
 /* rounding to zero and infinity */
 
 /*===
-0 number Infinity
 Infinity number
+Infinity number
+Infinity number
+0 number Infinity
 ===*/
-
-t = 1e200 * 1e-200 * 1e-200 * 1e-200;
-print (t, typeof t, 1 / t);
 
 t = 1e200 * 1e200;
 print (t, typeof t);
 
+t = 1e200;
+t *= 1e200;
+t *= 1e-200;
+t *= 1e-200;
+print (t, typeof t);
+
+// same thing as above, '*' is left associative
+t = 1e200 * 1e200 * 1e-200 * 1e-200;
+print (t, typeof t);
+
+// (1e200 * 1e-200) == 1, then goes to zero
+t = 1e200 * 1e-200 * 1e-200 * 1e-200;
+print (t, typeof t, 1 / t);
 
 /*** DIVISION ***/
 
 /*===
-FIXME
 ===*/
 
+/*FIXME*/
 
 /*** MODULO ***/
 
 /*===
-FIXME
 ===*/
 
+/*FIXME*/
 
 /*** ADDITION ***/
 
 /*===
-FIXME
 ===*/
 
+/*FIXME*/
 
 /*** SUBTRACTION ***/
 
 /*===
-FIXME
 ===*/
 
+/*FIXME*/
 
