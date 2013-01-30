@@ -73,10 +73,12 @@ void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback,
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
 }
 
-void duk_substring(duk_context *ctx, unsigned int start_offset, unsigned int end_offset) {
+void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_hstring *res;
+	size_t start_byte_offset;
+	size_t end_byte_offset;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -93,12 +95,14 @@ void duk_substring(duk_context *ctx, unsigned int start_offset, unsigned int end
 	DUK_ASSERT(start_offset >= 0 && start_offset <= end_offset && start_offset <= DUK_HSTRING_GET_CHARLEN(h));
 	DUK_ASSERT(end_offset >= 0 && end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
 
-	if (DUK_HSTRING_IS_ASCII(h)) {
-		res = duk_heap_string_intern_checked(thr, DUK_HSTRING_GET_DATA(h) + start_offset, end_offset - start_offset);
-	} else {
-		res = NULL;  /* FIXME */
-		DUK_ERROR(thr, DUK_ERR_UNIMPLEMENTED_ERROR, "char substring not implemented for unicode strings");
-	}
+	start_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, start_offset);
+	end_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, end_offset);
+
+	DUK_ASSERT(end_byte_offset >= start_byte_offset);
+
+	res = duk_heap_string_intern_checked(thr,
+	                                     DUK_HSTRING_GET_DATA(h) + start_byte_offset,
+	                                     end_byte_offset - start_byte_offset);
 
 	duk_push_hstring(ctx, res);
 	duk_remove(ctx, -2);
