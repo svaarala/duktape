@@ -6,7 +6,7 @@
 
 /* dst length must be exactly ceil(len/3)*4 */
 void duk_util_base64_encode(const unsigned char *src, unsigned char *dst, size_t len) {
-	unsigned int i, t, snip;
+	unsigned int i, snip;
 	unsigned int x, y, t;
 	unsigned const char *src_end = src + len;
 
