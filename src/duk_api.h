@@ -115,22 +115,22 @@ struct duk_memory_functions {
 #define  DUK_ENUM_OWN_PROPERTIES_ONLY      (1 << 2)    /* don't walk prototype chain, only check own properties */
 
 /* Internal error codes */
-#define  DUK_ERR_UNIMPLEMENTED_ERROR  1000  /* UnimplementedError */
-#define  DUK_ERR_UNSUPPORTED_ERROR    1001  /* UnsupportedError */
-#define  DUK_ERR_INTERNAL_ERROR       1002  /* InternalError */
-#define  DUK_ERR_ALLOC_ERROR          1003  /* AllocError */
-#define  DUK_ERR_ASSERTION_ERROR      1004  /* AssertionError */
-#define  DUK_ERR_API_ERROR            1005  /* APIError */
-#define  DUK_ERR_UNCAUGHT_ERROR       1006  /* UncaughtError */
+#define  DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */
+#define  DUK_ERR_UNSUPPORTED_ERROR    51   /* UnsupportedError */
+#define  DUK_ERR_INTERNAL_ERROR       52   /* InternalError */
+#define  DUK_ERR_ALLOC_ERROR          53   /* AllocError */
+#define  DUK_ERR_ASSERTION_ERROR      54   /* AssertionError */
+#define  DUK_ERR_API_ERROR            55   /* APIError */
+#define  DUK_ERR_UNCAUGHT_ERROR       56   /* UncaughtError */
 
 /* Ecmascript E5 specification error codes */
-#define  DUK_ERR_ERROR                2000  /* Error */
-#define  DUK_ERR_EVAL_ERROR           2001  /* EvalError */
-#define  DUK_ERR_RANGE_ERROR          2002  /* RangeError */
-#define  DUK_ERR_REFERENCE_ERROR      2003  /* ReferenceError */
-#define  DUK_ERR_SYNTAX_ERROR         2004  /* SyntaxError */
-#define  DUK_ERR_TYPE_ERROR           2005  /* TypeError */
-#define  DUK_ERR_URI_ERROR            2006  /* URIError */
+#define  DUK_ERR_ERROR                100  /* Error */
+#define  DUK_ERR_EVAL_ERROR           101  /* EvalError */
+#define  DUK_ERR_RANGE_ERROR          102  /* RangeError */
+#define  DUK_ERR_REFERENCE_ERROR      103  /* ReferenceError */
+#define  DUK_ERR_SYNTAX_ERROR         104  /* SyntaxError */
+#define  DUK_ERR_TYPE_ERROR           105  /* TypeError */
+#define  DUK_ERR_URI_ERROR            106  /* URIError */
 
 /* Return codes for C functions */
 #define  DUK_RET_UNIMPLEMENTED_ERROR  (-DUK_ERR_UNIMPLEMENTED_ERROR)
@@ -188,6 +188,7 @@ void duk_require_valid_index(duk_context *ctx, int index);              /* valid
 
 int duk_get_top(duk_context *ctx);                                      /* get stack top (>= 0) */
 void duk_set_top(duk_context *ctx, int index);                          /* set stack top (negative values are normalized); pad with undefined or chop */
+int duk_get_top_index(duk_context *ctx);                                /* get top index or DUK_INVALID_INDEX if stack is empty */
 int duk_require_top_index(duk_context *ctx);                            /* same as duk_get_top_index() but throw error if
                                                                          * index is invalid.
                                                                          */
