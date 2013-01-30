@@ -258,7 +258,6 @@ const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 }
 
 static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	double d;
 	int c;
 
@@ -292,7 +291,6 @@ static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
 }
 
 const char *duk_to_string(duk_context *ctx, int index) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
