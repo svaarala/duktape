@@ -995,6 +995,8 @@ bi_duk = {
 		{ 'name': 'resume',			'native': 'duk_builtin_duk_object_resume',		'length': 3 },
 		{ 'name': 'curr',			'native': 'duk_builtin_duk_object_curr',		'length': 0 },
 		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
+		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
+		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
 	],
 }
 

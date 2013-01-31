@@ -501,6 +501,10 @@ duk_string_list = [
 	mkstr("time", custom=True),
 	mkstr("setFinalizer", custom=True),
 	mkstr("getFinalizer", custom=True),
+	mkstr("enc", custom=True),
+	mkstr("dec", custom=True),
+	mkstr("hex", custom=True),      # enc/dec alg
+	mkstr("base64", custom=True),   # enc/dec alg
 ]
 
 # Standard reserved words (non-strict mode + strict mode)
