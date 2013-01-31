@@ -48,6 +48,7 @@ int duk_unicode_get_xutf8_length(duk_u32 x);
 size_t duk_unicode_encode_xutf8(duk_u32 x, duk_u8 *out);
 size_t duk_unicode_encode_cesu8(duk_u32 x, duk_u8 *out);
 duk_u32 duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end);
+duk_u32 duk_unicode_unvalidated_utf8_length(duk_u8 *data, duk_u32 blen);
 int duk_unicode_is_whitespace(int x);
 int duk_unicode_is_line_terminator(int x);
 int duk_unicode_is_identifier_start(int x);

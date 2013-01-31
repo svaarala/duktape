@@ -215,6 +215,29 @@ duk_u32 duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_st
 	return 0;  /* never here */
 }
 
+/* (extended) utf-8 length without codepoint encoding validation, used
+ * for string interning (should probably be inlined).
+ */
+duk_u32 duk_unicode_unvalidated_utf8_length(duk_u8 *data, duk_u32 blen) {
+        duk_u8 *p = data;
+        duk_u8 *p_end = data + blen;
+        duk_u32 clen = 0;
+
+        while (p < p_end) {
+                duk_u8 x = *p++;
+                if (x < 0x80) {
+                        clen++;
+                } else if (x >= 0xc0 ) {
+                        /* 10xxxxxx = continuation chars (0x80...0xbf), above that
+                         * initial bytes.
+                         */
+                        clen++;
+                }
+        }
+
+        return clen;
+}
+
 /*
  *  Unicode range matcher
  *
