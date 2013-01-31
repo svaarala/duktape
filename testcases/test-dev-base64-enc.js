@@ -50,3 +50,69 @@ print(__duk__.enc('base64', 'foo\u1234'));
 t = '' + __duk__.dec('base64', 'Zm9v4Yi0');
 print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3));
 
+/*===
+Zg==b28=
+foo
+Zm8=bw==
+foo
+===*/
+
+/* The current decoder is lenient in that it allows concatenated base64
+ * documents to be decoded (even when there is intervening padding).
+ */
+
+t = __duk__.enc('base64', 'f') + __duk__.enc('base64', 'oo');
+print(t);
+print(__duk__.dec('base64', t));
+
+t = __duk__.enc('base64', 'fo') + __duk__.enc('base64', 'o');
+print(t);
+print(__duk__.dec('base64', t));
+
+/*===
+xy
+TypeError
+===*/
+
+/* Base64 strings without end padding are not accepted now, although
+ * they could be decoded unambiguously.  For instance 'xy' encodes
+ * into 'eHk=' which is unambiguously decodable from 'eHk'.
+ */
+
+try {
+    print(__duk__.dec('base64', 'eHk='));
+} catch(e) {
+    print(e.name);
+}
+
+try {
+    print(__duk__.dec('base64', 'eHk'));
+} catch(e) {
+    print(e.name);
+}
+
+/*===
+Zg==
+b28=
+
+foo
+===*/
+
+/* The current decoder also allows ASCII whitespace characters */
+
+t = __duk__.enc('base64', 'f') + '\n' + __duk__.enc('base64', 'oo') + '\n';
+print(t);
+print(__duk__.dec('base64', t));
+
+/*===
+TypeError
+===*/
+
+/* Non-base64 characters will not be accepted */
+
+try {
+    print(__duk__.dec('b28?'));
+} catch (e) {
+    print(e.name);
+}
+
