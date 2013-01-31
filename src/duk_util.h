@@ -24,8 +24,10 @@ struct duk_bitdecoder_ctx {
 };
 
 /*
- *  Prototypes
+ *  Externs and prototypes
  */
+
+extern char duk_nybbles[16];
 
 /* Note: assumes that duk_util_probe_steps size is 32 */
 extern duk_u8 duk_util_probe_steps[32];

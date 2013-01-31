@@ -363,9 +363,29 @@ duk_hstring *duk_to_hstring(duk_context *ctx, int index) {
 	return ret;
 }
 
-void *duk_to_buffer(duk_context *ctx, int index) {
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
-	return NULL;
+void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
+	duk_hbuffer *h_buf;
+
+	if (!duk_is_buffer(ctx, index)) {
+		duk_hstring *h_str;
+		void *buf;
+
+		duk_to_string(ctx, index);
+		h_str = duk_get_hstring(ctx, index);
+		DUK_ASSERT(h_str != NULL);
+
+		buf = duk_push_new_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
+		memcpy(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
+		duk_replace(ctx, index);
+	}
+
+	h_buf = duk_get_hbuffer(ctx, index);
+	DUK_ASSERT(h_buf != NULL);
+
+	if (out_size) {
+		*out_size = DUK_HBUFFER_GET_SIZE(h_buf);
+	}
+	return DUK_HBUFFER_GET_DATA_PTR(h_buf);
 }
 
 void *duk_to_pointer(duk_context *ctx, int index) {
@@ -458,32 +478,4 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	}
 }
-
-/* FIXME: not really a conversion, move to another file */
-
-const char *duk_to_base64(duk_context *ctx, int index) {
-	const char *src;
-	size_t srclen;
-	size_t dstlen;
-	const char *res;
-	unsigned char *dst;
-
-	index = duk_require_normalize_index(ctx, index);
-	src = duk_require_lstring(ctx, index, &srclen);
-	dstlen = (srclen + 2) / 3 * 4;
-	dst = duk_push_new_fixed_buffer(ctx, dstlen);
-
-	/* FIXME: zero size input? */
-
-	duk_util_base64_encode((const unsigned char *) src, (unsigned char *) dst, srclen);
-
-	/* FIXME: duk_to_string() to change buffer into string? */
-	duk_push_lstring(ctx, (const char *) dst, dstlen);  /* -> [ ... buf res ] */
-	duk_remove(ctx, -2);                 /* -> [ ... res ] */
-	res = duk_require_string(ctx, -1);
-	duk_replace(ctx, index);  /* -> [ ... ] */
-	return res;
-}
-
-
 

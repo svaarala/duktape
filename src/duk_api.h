@@ -361,7 +361,7 @@ unsigned int duk_to_uint32(duk_context *ctx, int index);                 /* Ecma
 unsigned int duk_to_uint16(duk_context *ctx, int index);                 /* Ecmascript ToUint16 coercion, E5 Section 9.7 */
 const char *duk_to_string(duk_context *ctx, int index);                  /* Ecmascript ToString coercion, E5 Section 9.8 */
 const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len);  /* out_len may be NULL */
-void *duk_to_buffer(duk_context *ctx, int index);                        /* coerces: buffer to itself, string to buffer, others: use ToString, then to buffer */
+void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size);      /* coerces: buffer to itself, string to buffer, others: use ToString, then to buffer */
 void *duk_to_pointer(duk_context *ctx, int index);                       /* coerces: pointer to itself, heap object to heap pointer (debug only), others to NULL */
 void duk_to_object(duk_context *ctx, int index);                         /* Ecmascript ToObject coercion, E5 Section 9.9 (returns nothing) */
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint);         /* Ecmascript E5 Section 8.12.18, with optional hint */
@@ -371,8 +371,10 @@ void duk_to_primitive(duk_context *ctx, int index, int hint);            /* Ecma
  *  Misc conversion
  */
 
-/* XXX: stack convention? */
-const char *duk_to_base64(duk_context *ctx, int index);
+void duk_base64_encode(duk_context *ctx, int index);
+void duk_base64_decode(duk_context *ctx, int index);
+void duk_hex_decode(duk_context *ctx, int index);
+void duk_hex_encode(duk_context *ctx, int index);
 
 /* XXX: duk_to_json */
 
