@@ -10,8 +10,9 @@
 #define  DUK_UNICODE_MAX_XUTF8_LENGTH   7   /* up to 36 bit codepoints */
 #define  DUK_UNICODE_MAX_CESU8_LENGTH   6   /* all codepoints up to U+10FFFF */
 
-#define  DUK_UNICODE_CP_ZWNJ            0x200c  /* zero-width non-joiner */
-#define  DUK_UNICODE_CP_ZWJ             0x200d  /* zero-width joiner */
+#define  DUK_UNICODE_CP_ZWNJ                   0x200c  /* zero-width non-joiner */
+#define  DUK_UNICODE_CP_ZWJ                    0x200d  /* zero-width joiner */
+#define  DUK_UNICODE_CP_REPLACEMENT_CHARACTER  0xfffd  /* http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
 
 #ifdef DUK_USE_SOURCE_NONBMP
 #include "duk_unicode_ids_noa.h"
