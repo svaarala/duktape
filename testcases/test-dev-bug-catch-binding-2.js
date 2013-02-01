@@ -1,6 +1,8 @@
 /*===
 closure throw
+123
 closure throw
+123
 closure throw
 ===*/
 
@@ -21,7 +23,9 @@ function f() {
         func();
     }
 
+    print(e);
     func();
+    print(e);
 
     return func;
 }
