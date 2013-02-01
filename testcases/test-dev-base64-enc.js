@@ -70,6 +70,32 @@ print(t);
 print(__duk__.dec('base64', t));
 
 /*===
+f
+f
+fo
+fo
+===*/
+
+/* The current decoder will not check that unused bits of a partial
+ * group are actually zero.  This matches e.g. Python behavior.
+ */
+
+try {
+    print(__duk__.dec('base64', 'Zg=='));  // standard
+    print(__duk__.dec('base64', 'Zh=='));  // non-zero unused bits
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    print(__duk__.dec('base64', 'Zm8='));  // standard
+    print(__duk__.dec('base64', 'Zm9='));  // non-zero unused bits
+} catch (e) {
+    print(e.name);
+}
+
+
+/*===
 xy
 TypeError
 ===*/
