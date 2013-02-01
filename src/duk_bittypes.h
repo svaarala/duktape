@@ -13,7 +13,7 @@
  * and how to allow user override?
  */
 
-#if __STDC_VERSION__ >= 199901L
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 /* C99 */
 #include <inttypes.h>
 typedef uint8_t duk_u8;
