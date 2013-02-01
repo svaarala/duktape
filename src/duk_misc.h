@@ -1,5 +1,16 @@
+/*
+ *  Miscellaneous defines that don't fit elsewhere.
+ */
+
 #ifndef __DUK_MISC_H
 #define __DUK_MISC_H 1
+
+/*
+ *  Misc constants
+ */
+
+#define  DUK_DOUBLE_2TO32  4294967296.0
+#define  DUK_DOUBLE_2TO31  2147483648.0
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,

@@ -55,6 +55,9 @@
 #define  DUK_LJ_TYPE_RESUME       6    /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
 #define  DUK_LJ_TYPE_NORMAL       7    /* pseudo-type to indicate a normal continuation (for 'finally' rethrowing) */
 
+/* dummy non-zero value to be used as an argument for longjmp(), see man longjmp */
+#define  DUK_LONGJMP_DUMMY_VALUE  1
+
 /*
  *  Mark-and-sweep flags
  *
@@ -388,6 +391,8 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr);
 #ifdef DUK_USE_MARK_AND_SWEEP
 int duk_heap_mark_and_sweep(duk_heap *heap, int flags);
 #endif
+
+duk_u32 duk_heap_hashstring(duk_heap *heap, duk_u8 *str, duk_u32 len);
 
 #endif  /* __DUK_HEAP_H */
 
