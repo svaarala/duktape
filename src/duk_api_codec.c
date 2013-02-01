@@ -84,6 +84,10 @@ static int base64_decode_helper(const unsigned char *src, const unsigned char *s
 		} else if (x == '/') {
 			y = 63;
 		} else if (x == '=') {
+			/* We don't check the zero padding bytes here right now.
+			 * This seems to be common behavior for base-64 decoders.
+			 */
+
 			if (group_idx == 2) {
 				/* xx== -> 1 byte, t contains 12 bits, 4 on right are zero */
 				t = t >> 4;
