@@ -117,14 +117,17 @@ try {
 }
 
 /*===
-ReferenceError
-ReferenceError
+undefined
+undefined
 object
 ===*/
 
 /* Arguments binding should exist for functions, not for global/eval code.
  *
- * Note: 'node' has arguments bound in global code.  Rhino also does.
+ * Note: 'typeof foo' where 'foo' is an undefined variable is NOT a
+ * ReferenceError but returns undefined.  See E5 Section 11.4.3, step 2.a.
+ *
+ * Note: Rhino has 'arguments' bound in global code.
  */
 
 try {
