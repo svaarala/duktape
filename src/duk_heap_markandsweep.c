@@ -710,6 +710,8 @@ static void run_object_finalizers(duk_heap *heap) {
  */
 
 static int _protected_compact_object(duk_context *ctx) {
+	/* FIXME: for threads, compact value stack, call stack, catch stack? */
+
 	duk_hobject *obj = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(obj != NULL);
 	duk_hobject_compact_props((duk_hthread *) ctx, obj);
