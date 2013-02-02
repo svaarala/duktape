@@ -693,9 +693,6 @@ def gen_strings_data_bitpacked(strlist):
 		invlookup[x] = i
 
 	uniq = len(lookup)
-	print '%d unique bytes in strings' % uniq
-	print '%d maximum string length ' % maxlen
-	print '%d maximum code point value' % maxval
 
 	if uniq > 63:
 		raise Exception('too many unique characters for current assumptions')
@@ -721,9 +718,10 @@ def gen_strings_data_bitpacked(strlist):
 
 	res = be.getByteString()
 
-	print '%d bytes of string init data' % len(res)
+	print '%d bytes of string init data, %d unique bytes in strings, %d maximum string length, %d maximum code point value' % \
+		(len(res), uniq, maxlen, maxval)
 
-	return res, uniq, maxlen
+	return res, uniq, maxlen, maxval
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser()
@@ -794,7 +792,7 @@ if __name__ == '__main__':
 	idx_start_reserved = len(strlist) - num_all_reserved
 	idx_start_strict_reserved = len(strlist) - num_strict_reserved
 
-	strdata, lookuplen, maxlen = gen_strings_data_bitpacked(strlist)
+	strdata, lookuplen, maxlen, maxval = gen_strings_data_bitpacked(strlist)
 
 	# write raw data file
 	f = open(opts.out_bin, 'wb')
