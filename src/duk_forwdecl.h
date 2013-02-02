@@ -48,7 +48,6 @@ struct duk_lexer_ctx;
 struct duk_compiler_instr;
 struct duk_compiler_func;
 struct duk_compiler_ctx;
-struct duk_compiler_point;
 
 struct duk_re_matcher_ctx;
 struct duk_re_compiler_ctx;
@@ -92,7 +91,6 @@ typedef struct duk_lexer_ctx duk_lexer_ctx;
 typedef struct duk_compiler_instr duk_compiler_instr;
 typedef struct duk_compiler_func duk_compiler_func;
 typedef struct duk_compiler_ctx duk_compiler_ctx;
-typedef struct duk_compiler_point duk_compiler_point;
 
 typedef struct duk_re_matcher_ctx duk_re_matcher_ctx;
 typedef struct duk_re_compiler_ctx duk_re_compiler_ctx;

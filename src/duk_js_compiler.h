@@ -70,9 +70,6 @@ struct duk_compiler_instr {
  *  Compiler state
  */
 
-#define  DUK_COMPILER_SETPOINT(ctx,pt)    duk_compiler_setpoint((ctx), (pt))
-#define  DUK_COMPILER_GETPOINT(ctx,pt)    duk_compiler_getpoint((ctx), (pt))
-
 #define  MAX_MAPPED_REGS                  128  /* max regs mapped to arguments and variables */
 #define  MAX_ACTIVE_LABELS                64
 
@@ -194,32 +191,6 @@ struct duk_compiler_ctx {
 
 	/* current function being compiled (embedded instead of pointer for more compact access) */
 	duk_compiler_func curr_func;
-};
-
-/* A structure for 'snapshotting' a point for rewinding */
-struct duk_compiler_point {
-	duk_lexer_point lex_point;
-
-	duk_token curr_token;  /* note: tokens refer to value stack entries implicitly through lexer state */
-	duk_token prev_token;
-
-	/* these are restored on a rollback */
-	int code_length;
-	int consts_length;
-	int funcs_length;
-	int regs_count;
-	int labels_count;
-	int temp_reg;
-	int temp_max;
-	int catch_depth;
-	int nud_count;
-	int led_count;
-
-	/* Note: label rollbacks works because labels are only pushed during
-	 * parsing of a function (never popped).  If only active labels were
-	 * tracked, rollback across a label boundary would need an actual
-	 * copy of label state.
-	 */
 };
 
 /*
