@@ -414,6 +414,7 @@ standard_other_string_list = [
 	mkstr("+0"),
 	mkstr("-0"),
 	mkstr(""),
+	mkstr(","),		# for array joining
 
 	# arguments object (E5 Section 10.6)
 	mkstr("arguments"),
@@ -635,6 +636,7 @@ special_define_names = {
 	'URIError': 'URI_ERROR',
 	'__duk__': 'DUK',
 	'': 'EMPTY_STRING',
+	',': 'COMMA',
 
 	'(?:)': 'ESCAPED_EMPTY_REGEXP',
 }
