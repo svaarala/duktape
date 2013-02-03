@@ -415,6 +415,7 @@ standard_other_string_list = [
 	mkstr("-0"),
 	mkstr(""),
 	mkstr(","),		# for array joining
+	mkstr(" "),		# for print()
 
 	# arguments object (E5 Section 10.6)
 	mkstr("arguments"),
@@ -637,6 +638,7 @@ special_define_names = {
 	'__duk__': 'DUK',
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
+	' ': 'SPACE',
 
 	'(?:)': 'ESCAPED_EMPTY_REGEXP',
 }
@@ -696,7 +698,7 @@ def gen_strings_data_bitpacked(strlist):
 
 	uniq = len(lookup)
 
-	if uniq > 63:
+	if uniq > 64:
 		raise Exception('too many unique characters for current assumptions')
 	if maxlen > 31:
 		raise Exception('string too long for current assumptions')
@@ -706,7 +708,7 @@ def gen_strings_data_bitpacked(strlist):
         databits = []
 
 	# lookup table for chars (6 bits -> 7 bit value)
-	# XXX: 55 bytes, can halve by encoding first value and then 3-bit skips,
+	# XXX: can halve by encoding first value and then 3-bit skips,
 	# but net benefit maybe 20 bytes.
 	for i in xrange(uniq):
 		be.bits(lookup[i], 7)
