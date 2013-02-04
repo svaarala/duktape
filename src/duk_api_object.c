@@ -345,18 +345,13 @@ void duk_enum(duk_context *ctx, int obj_index, int enum_flags) {
 
 	duk_require_hobject(ctx, obj_index);
 	duk_dup(ctx, obj_index);
-	duk_hobject_enumerator_create(ctx, enum_flags);   /* [target] -> [target enum] */
-	duk_remove(ctx, -2);                              /* [target enum] -> [enum] */
+	duk_hobject_enumerator_create(ctx, enum_flags);   /* [target] -> [enum] */
 }
 
 int duk_next(duk_context *ctx, int enum_index, int get_value) {
 	duk_require_hobject(ctx, enum_index);
 	duk_dup(ctx, enum_index);
-	duk_hobject_enumerator_next(ctx);     /* [enum] -> [key] */
-
-	/* FIXME: also get the value */
-
-	return !duk_is_undefined(ctx, -1);
+	return duk_hobject_enumerator_next(ctx, get_value);     /* [enum] -> [key] */
 }
 
 
