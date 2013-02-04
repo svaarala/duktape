@@ -486,9 +486,9 @@ duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *
 void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
 /* enumeration */
-int duk_hobject_enumerator_create(duk_context *ctx, int enum_flags);
-int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
-int duk_hobject_enumerator_next(duk_context *ctx);
+void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags);
+void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
+int duk_hobject_enumerator_next(duk_context *ctx, int get_value);
 
 /* macros */
 void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
