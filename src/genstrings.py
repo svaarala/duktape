@@ -44,7 +44,8 @@ def mkstr(x,
           reserved_word=False,
           future_reserved_word=False,
           future_reserved_word_strict=False,
-          special_literal=False):
+          special_literal=False,
+          class_name=False):
 
 	"Create a string object."
 
@@ -60,18 +61,18 @@ def mkstr(x,
 # Standard built-in object related strings
 standard_builtin_string_list = [
 	# internal class values
-	mkstr("Object"),
-	mkstr("Function"),
-	mkstr("Array"),
-	mkstr("String"),
-	mkstr("Boolean"),
-	mkstr("Number"),
-	mkstr("Date"),
-	mkstr("RegExp"),
-	mkstr("Error"),
-	mkstr("Math"),
-	mkstr("JSON"),
-	mkstr("Arguments"),
+	mkstr("Object", class_name=True),
+	mkstr("Function", class_name=True),
+	mkstr("Array", class_name=True),
+	mkstr("String", class_name=True),
+	mkstr("Boolean", class_name=True),
+	mkstr("Number", class_name=True),
+	mkstr("Date", class_name=True),
+	mkstr("RegExp", class_name=True),
+	mkstr("Error", class_name=True),
+	mkstr("Math", class_name=True),
+	mkstr("JSON", class_name=True),
+	mkstr("Arguments", class_name=True),
 
 	# built-in object names
 	mkstr("Object"),
@@ -413,7 +414,7 @@ standard_other_string_list = [
 	mkstr("0"),
 	mkstr("+0"),
 	mkstr("-0"),
-	mkstr(""),
+	mkstr("", class_name=True),	# used as a class name for unused/invalid class
 	mkstr(","),		# for array joining
 	mkstr(" "),		# for print()
 
@@ -426,16 +427,17 @@ standard_other_string_list = [
 # Duktape specific strings
 duk_string_list = [
 	# non-standard class values
-	mkstr("global", custom=True),	# implementation specific but shared by e.g. smjs and V8
+	mkstr("global", custom=True, class_name=True),	# implementation specific but shared by e.g. smjs and V8
 
 	# non-standard error object properties
+	mkstr("pc", custom=True),
 	mkstr("fileName", custom=True),
 	mkstr("lineNumber", custom=True),
 	mkstr("isNative", custom=True),
 	mkstr("code", custom=True),
 	mkstr("cause", custom=True),
 	mkstr("traceback", custom=True),
-	mkstr("trunc", custom=True),
+	mkstr("trunc", custom=True),	# FIXME: unused
 
 	# non-standard function instance properties
 	mkstr("name", custom=True),	# function declaration/expression name (or empty)
@@ -460,7 +462,6 @@ duk_string_list = [
 	mkstr("lexenv", internal=True, custom=True),
 	mkstr("varenv", internal=True, custom=True),
 	mkstr("source", internal=True, custom=True),
-	mkstr("name", internal=True, custom=True),		# FIXME: remove?
 	mkstr("pc2line", internal=True, custom=True),
 	mkstr("filename", internal=True, custom=True),
 
