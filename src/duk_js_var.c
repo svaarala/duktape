@@ -982,9 +982,9 @@ static int get_identifier_reference(duk_hthread *thr,
 			/*
 			 *  Object environment record.
 			 *
-			 *  Binding (target) object is an external,
-			 *  uncontrolled object.  Identifier may be bound
-			 *  in an ancestor property, and may be an accessor.
+			 *  Binding (target) object is an external, uncontrolled object.
+			 *  Identifier may be bound in an ancestor property, and may be
+			 *  an accessor.
 			 */
 
 			/* FIXME: we could save space by using _target OR _this.  If _target, assume
@@ -1005,6 +1005,9 @@ static int get_identifier_reference(duk_hthread *thr,
 			/* Note: we must traverse the prototype chain, so use an actual
 			 * hasprop call here.  The property may also be an accessor, so
 			 * we can't get an duk_tval pointer here.
+			 *
+			 * out->holder is NOT set to the actual duk_hobject where the
+			 * property is found, but rather the target object.
 			 */
 
 			if (duk_hobject_hasprop_raw(thr, target, name)) {
@@ -1456,7 +1459,7 @@ static int declvar_helper(duk_hthread *thr,
 	duk_tval *tv;
 
 	DUK_DDDPRINT("declvar: thr=%p, env=%p, name=%!O, val=%!T, prop_flags=0x%08x, is_func_decl=%d "
-	             "(env -> %!O)",
+	             "(env -> %!iO)",
 	             (void *) thr, (void *) env, (duk_heaphdr *) name,
 	             tv_val, prop_flags, is_func_decl, (duk_heaphdr *) env);
 
@@ -1493,13 +1496,9 @@ static int declvar_helper(duk_hthread *thr,
 
 		/*
 		 *  Variable already declared, ignore re-declaration.
-		 *
 		 *  The only exception is the updated behavior of E5.1 for
 		 *  global function declarations, E5.1 Section 10.5, step 5.e.
 		 *  This behavior does not apply to global variable declarations.
-		 *
-		 *  The implementation for this special case short circuits
-		 *  normal property handling and accesses the property 
 		 */
 
 		if (!(is_func_decl && env == thr->builtins[DUK_BIDX_GLOBAL_ENV])) {
@@ -1507,25 +1506,51 @@ static int declvar_helper(duk_hthread *thr,
 			return 1;  /* 1 -> needs a PUTVAR */
 		}
 
+		/*
+		 *  Special behavior in E5.1.
+		 *
+		 *  Note that even though parents == 0, the conflicting property
+		 *  may be an inherited property (currently our global object's
+		 *  prototype is Object.prototype).  Step 5.e first operates on
+		 *  the existing property (which is potentially in an ancestor)
+		 *  and then defines a new property in the global object (and
+		 *  never modifies the ancestor).
+		 *
+		 *  Also note that this logic would become even more complicated
+		 *  if the conflicting property might be a virtual one.  Object
+		 *  prototype has no virtual properties, though.
+		 *
+		 *  FIXME: this is now very awkward, rework.
+		 */
+
 		DUK_DDDPRINT("re-declare a function binding in global object, "
 		             "updated E5.1 processing");
 
 		DUK_ASSERT(ref.holder != NULL);
 		holder = ref.holder;
 
-		/* global object doesn't have array part */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARRAY(holder));
-
-		/* global object has no internal prototype, so we must be
-		 * dealing with an own property; this is why direct property
-		 * storage manipulation makes sense.
+		/* holder will be set to the target object, not the actual object
+		 * where the property was found (see get_identifier_reference()).
 		 */
-		DUK_ASSERT(holder->prototype == NULL);
+		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(holder) == DUK_HOBJECT_CLASS_GLOBAL);
+		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARRAY(holder));  /* global object doesn't have array part */
 
-		duk_hobject_find_existing_entry(holder, name, &e_idx, &h_idx);
-
+		/* FIXME: use a helper for prototype traversal; no loop check here */
 		/* must be found: was found earlier, and cannot be inherited */
+		for (;;) {
+			DUK_ASSERT(holder != NULL);
+			duk_hobject_find_existing_entry(holder, name, &e_idx, &h_idx);
+			if (e_idx >= 0) {
+				break;
+			}
+			holder = holder->prototype;
+		}
+		DUK_ASSERT(holder != NULL);
 		DUK_ASSERT(e_idx >= 0);
+
+		/* ref.holder is global object, holder is the object with the
+		 * conflicting property.
+		 */
 
 		flags = DUK_HOBJECT_E_GET_FLAGS(holder, e_idx);
 		if (!(flags & DUK_PROPDESC_FLAG_CONFIGURABLE)) {
@@ -1544,48 +1569,57 @@ static int declvar_helper(duk_hthread *thr,
 
 			DUK_DDDPRINT("existing property is not configurable but "
 			             "is plain, enumerable, and writable -> "
-			             "update value but don't touch flags");
-
-			prop_flags = flags;  /* don't touch attributes */
+			             "allow redeclaration");
 		}
 
-		/* FIXME: might be more efficient to delete and re-add property,
-		 * as long as we ignore the holder configurability when doing so.
-		 */
+		if (holder == ref.holder) {
+			/* FIXME: if duk_hobject_define_property_internal() was updated
+			 * to handle a pre-existing accessor property, this would be
+			 * a simple call (like for the ancestor case).
+			 */
+			DUK_DDDPRINT("redefine, offending property in global object itself");
 
-		if (flags & DUK_PROPDESC_FLAG_ACCESSOR) {
-			duk_hobject *tmp;
+			if (flags & DUK_PROPDESC_FLAG_ACCESSOR) {
+				duk_hobject *tmp;
 
-			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(holder, e_idx);
-			DUK_HOBJECT_E_SET_VALUE_GETTER(holder, e_idx, NULL);
-			DUK_HOBJECT_DECREF(thr, tmp);
-			tmp = tmp;  /* suppress warning */
-			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(holder, e_idx);
-			DUK_HOBJECT_E_SET_VALUE_SETTER(holder, e_idx, NULL);
-			DUK_HOBJECT_DECREF(thr, tmp);
-			tmp = tmp;  /* suppress warning */
-		} else {
-			duk_tval tv_tmp;
+				tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(holder, e_idx);
+				DUK_HOBJECT_E_SET_VALUE_GETTER(holder, e_idx, NULL);
+				DUK_HOBJECT_DECREF(thr, tmp);
+				tmp = tmp;  /* suppress warning */
+				tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(holder, e_idx);
+				DUK_HOBJECT_E_SET_VALUE_SETTER(holder, e_idx, NULL);
+				DUK_HOBJECT_DECREF(thr, tmp);
+				tmp = tmp;  /* suppress warning */
+			} else {
+				duk_tval tv_tmp;
+
+				tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx);
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+				DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
+				DUK_TVAL_DECREF(thr, &tv_tmp);
+			}
+
+			/* Here tv_val would be potentially invalid if we didn't make
+			 * a value copy at the caller.
+			 */
 
 			tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx);
-			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-			DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
-			DUK_TVAL_DECREF(thr, &tv_tmp);
+			DUK_TVAL_SET_TVAL(tv, tv_val);
+			DUK_TVAL_INCREF(thr, tv);
+			DUK_HOBJECT_E_SET_FLAGS(holder, e_idx, prop_flags);
+
+			DUK_DDDPRINT("updated global binding, final result: "
+			             "value -> %!T, prop_flags=0x%08x",
+			             DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx),
+			             prop_flags);
+		} else {
+			DUK_DDDPRINT("redefine, offending property in ancestor");
+
+			DUK_ASSERT(ref.holder == thr->builtins[DUK_BIDX_GLOBAL]);
+			duk_push_tval(ctx, tv_val);
+			duk_hobject_define_property_internal(thr, ref.holder, name, prop_flags);
 		}
 
-		/* Here tv_val would be potentially invalid if we didn't make
-		 * a value copy at the caller.
-		 */
-
-		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx);
-		DUK_TVAL_SET_TVAL(tv, tv_val);
-		DUK_TVAL_INCREF(thr, tv);
-		DUK_HOBJECT_E_SET_FLAGS(holder, e_idx, prop_flags);
-
-		DUK_DDDPRINT("updated global binding, final result: "
-		             "value -> %!T, prop_flags=0x%08x",
-		             DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx),
-		             prop_flags);
 		return 0;
 	}
 

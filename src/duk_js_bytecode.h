@@ -170,6 +170,7 @@ typedef duk_u32 duk_instr;
 
 /* DUK_OP_DECLVAR flags in A; bottom bits are reserved for propdesc flags (DUK_PROPDESC_FLAG_XXX) */
 #define  DUK_BC_DECLVAR_FLAG_UNDEF_VALUE     (1 << 4)  /* use 'undefined' for value automatically */
+#define  DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1 << 5)  /* function declaration */
 
 /* misc constants and helper macros */
 #define  DUK_BC_REGLIMIT             256  /* if B/C is >= this value, refers to a const */
