@@ -52,6 +52,7 @@ function printProps(name) {
     var global = indirectEval('this;');  // indirect eval -> this = global object
     var desc = Object.getOwnPropertyDescriptor(global, name);
     if (desc.get || desc.set) {
+        // Note: typeof will invoke getter here
         print(name + ': ' +
               'typeof=' + typeof global[name] + ', ' +
               'enumerable=' + desc.enumerable + ', ' +
@@ -97,7 +98,7 @@ printProps('RegExp');
 /*===
 NaN: typeof=number, writable=false, enumerable=false, configurable=false
 TypeError
-NaN: typeof=function, writable=true, enumerable=true, configurable=true
+NaN: typeof=number, writable=false, enumerable=false, configurable=false
 ===*/
 
 /* Existing non-configurable data property. */
@@ -115,6 +116,7 @@ try {
 printProps('NaN');
 
 /*===
+getter
 configurableAccessor: typeof=undefined, enumerable=false, configurable=true
 345
 configurableAccessor: typeof=function, writable=true, enumerable=true, configurable=true
@@ -132,6 +134,8 @@ defineProp('configurableAccessor', {
     configurable: true
 })
 
+// Note: printProps() will invoke getter here (but not below)
+
 printProps('configurableAccessor');
 
 try {
@@ -144,8 +148,10 @@ try {
 printProps('configurableAccessor');
 
 /*===
+getter
 nonconfigurableAccessor: typeof=undefined, enumerable=false, configurable=false
 TypeError
+getter
 nonconfigurableAccessor: typeof=undefined, enumerable=false, configurable=false
 ===*/
 
@@ -157,6 +163,8 @@ defineProp('nonconfigurableAccessor', {
     enumerable: false,
     configurable: false,
 })
+
+// Note: printProps() will invoke getter here and again below
 
 printProps('nonconfigurableAccessor');
 
