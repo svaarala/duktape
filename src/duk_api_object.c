@@ -283,7 +283,8 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int s
  * other API calls for creating such properties (except calling Object.defineProperty()
  * properly).
  *
- * This is needed by the 'arguments' object creation code.
+ * This is needed by the 'arguments' object creation code and by function instance
+ * creation code.
  */
 
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags) {
