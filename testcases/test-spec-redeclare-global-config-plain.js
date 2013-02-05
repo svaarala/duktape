@@ -23,7 +23,8 @@ var indirectEval = eval;
 var global = indirectEval("this");  // for Node
 
 // Note: since declarations are hoisted, the RegExp declaration below
-// will already have taken effect here.
+// will already have taken effect here.  The original RegExp binding
+// is writable and configurable, but not enumerable.
 
 print(typeof RegExp);
 desc = Object.getOwnPropertyDescriptor(global, 'RegExp');
