@@ -5,7 +5,9 @@
 /*===
 function
 true true false
+function
 true true false
+123
 ===*/
 
 /* RegExp is configurable.
@@ -35,4 +37,6 @@ function RegExp() {
 print(typeof RegExp);
 desc = Object.getOwnPropertyDescriptor(global, 'RegExp');
 print(desc.writable, desc.enumerable, desc.configurable);
+
+print(RegExp());
 
