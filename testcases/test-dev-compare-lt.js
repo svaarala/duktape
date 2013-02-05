@@ -7,11 +7,44 @@ function f(x,y) {
 }
 
 /*===
+false
+false
+true
+false
+false
+true
+false
+false
+true
 ===*/
 
-/* String cases. */
+f('aax', 'aaw');
+f('aax', 'aax');
+f('aax', 'aay');
 
-/* FIXME */
+f('aa' + String.fromCharCode(200), 'aa' + String.fromCharCode(199));
+f('aa' + String.fromCharCode(200), 'aa' + String.fromCharCode(200));
+f('aa' + String.fromCharCode(200), 'aa' + String.fromCharCode(201));
+
+f('aa' + String.fromCharCode(200, 3000), 'aa' + String.fromCharCode(200, 2999));
+f('aa' + String.fromCharCode(200, 3000), 'aa' + String.fromCharCode(200, 3000));
+f('aa' + String.fromCharCode(200, 3000), 'aa' + String.fromCharCode(200, 3001));
+
+/*===
+false
+false
+true
+false
+===*/
+
+/* String cases, prefix matches -> length matters. */
+
+f('', '');
+f('xx', 'xx');
+f('xx', 'xxx');
+f('xx', 'x');
+
+/* FIXME: more string cases */
 
 /*===
 false
