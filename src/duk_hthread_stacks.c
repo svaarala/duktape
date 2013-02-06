@@ -128,11 +128,19 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		 *
 		 *  Only variable environments are closed.  If lex_env != var_env, it
 		 *  cannot currently contain any register bound declarations.
+		 *
+		 *  Only environments created for a NEWENV function are closed.  If an
+		 *  environment is created for e.g. an eval call, it must not be closed.
 		 */
 
+		if (!DUK_HOBJECT_HAS_NEWENV(p->func)) {
+			DUK_DDDPRINT("skip closing environments, envs not owned by this activation");
+			goto skip_env_close;
+		}
+
 		if (p->var_env != NULL) {
-			DUK_DDPRINT("closing var_env record %p -> %!O",
-			            (void *) p->var_env, (duk_heaphdr *) p->var_env);
+			DUK_DDDPRINT("closing var_env record %p -> %!O",
+			             (void *) p->var_env, (duk_heaphdr *) p->var_env);
 			duk_js_close_environment_record(thr, p->var_env, p->func, p->idx_bottom);
 			p = &thr->callstack[idx];  /* avoid side effect issues */
 		}
@@ -164,6 +172,8 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_VARMAP(thr)) == NULL) &&
 		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_THREAD(thr)) == NULL) &&
 		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_REGBASE(thr)) == NULL)));
+
+	 skip_env_close:
 
 		/*
 		 *  Update preventcount
