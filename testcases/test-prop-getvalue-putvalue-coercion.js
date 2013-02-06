@@ -9,6 +9,9 @@
  *  from an implementation perspective, because the coerced object is never
  *  exposed to user code (even through a getter/setter).
  *
+ *  Note that the getter/setter must be strict to avoid a this binding
+ *  object coercion which happens during call setup: E5 Section 10.4.3.
+ *
  *  Implementation behavior differs:
  *
  *    - Some implementations provide the coerced (object) value to the
@@ -31,8 +34,8 @@ object
 
 // add test getter
 Object.defineProperty(String.prototype, 'test', { 
-  get: function() { print(typeof this); },
-  set: function(x) { print(typeof this); },
+  get: function() { 'use strict'; print(typeof this); },
+  set: function(x) { 'use strict'; print(typeof this); },
 });
 
 var s = new String("foo");
