@@ -5583,6 +5583,19 @@ static void handle_pass2_varmap_and_prologue(duk_compiler_ctx *comp_ctx, int *ou
 			/* shadowed, ignore */
 		} else {
 			duk_get_prop_index(ctx, comp_ctx->curr_func.decls_idx, i);  /* decl name */
+			h_name = duk_get_hstring(ctx, -1);
+			DUK_ASSERT(h_name != NULL);
+
+			if (h_name == DUK_HTHREAD_STRING_LC_ARGUMENTS(thr) &&
+			    !comp_ctx->curr_func.is_arguments_shadowed) {
+				/* E5 Section steps 7-8 */
+				DUK_DDDPRINT("'arguments' not shadowed by a function declaration, "
+				             "but appears as a variable declaration -> treat as "
+				             "a no-op for variable declaration purposes");
+				duk_pop(ctx);
+				continue;
+			}
+
 			if (comp_ctx->curr_func.is_function) {
 				int reg_bind = ALLOCTEMP(comp_ctx);
 				/* no need to init reg, it will be undefined on entry */
