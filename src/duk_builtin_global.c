@@ -29,7 +29,6 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 	DUK_ASSERT(thr->callstack_top >= 1);
 	act = thr->callstack + thr->callstack_top - 1;
 	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
-		is_direct_eval = 1;
 		if (DUK_HOBJECT_HAS_STRICT((duk_hobject *) func)) {
 			DUK_DDDPRINT("direct eval call to a strict function");
 		} else {
