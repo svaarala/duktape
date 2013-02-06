@@ -106,6 +106,11 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			h = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(h != NULL);
 
+			/* Currently all built-in native functions are strict. */
+			DUK_HOBJECT_SET_STRICT(h);
+
+			/* FIXME: function name */
+
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
 			 * callable Function.
@@ -354,6 +359,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_new_c_function(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
 			h_func = h_func;  /* suppress warning (not referenced now) */
+
+			/* FIXME: function name */
 
 			/* Currently all built-in native functions are strict.
 			 * This doesn't matter for many functions, but e.g.
