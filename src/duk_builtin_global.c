@@ -7,8 +7,13 @@
 int duk_builtin_global_object_eval(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
+	duk_activation *act;
+	duk_hcompiledfunction *func;
+	duk_hobject *outer_lex_env;
+	duk_hobject *outer_var_env;
 
 	DUK_ASSERT(duk_get_top(ctx) == 1);
+	DUK_ASSERT(thr->callstack_top >= 1);
 
 	h = duk_get_hstring(ctx, 0);
 	if (!h) {
@@ -17,14 +22,36 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 
 	/* FIXME: uses internal API */
 	duk_js_compile_program(thr, 1 /*is_eval*/);
+	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
+	DUK_ASSERT(func != NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
 
-	/* FIXME: env handling is incorrect, depends on whether eval
-	 * call is direct.
-	 */
-        duk_js_push_closure(thr,
-                           (duk_hcompiledfunction *) duk_get_hobject(ctx, -1),
-                           thr->builtins[DUK_BIDX_GLOBAL_ENV],
-                           thr->builtins[DUK_BIDX_GLOBAL_ENV]);
+	DUK_ASSERT(thr->callstack_top >= 1);
+	act = thr->callstack + thr->callstack_top - 1;
+	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
+		is_direct_eval = 1;
+		if (DUK_HOBJECT_HAS_STRICT((duk_hobject *) func)) {
+			DUK_DDDPRINT("direct eval call to a strict function");
+		} else {
+			DUK_DDDPRINT("direct eval call to a non-strict function");
+		}
+
+		/* FIXME: env handling is incorrect, fix */
+
+		DUK_DDDPRINT("FIXME: no direct eval call handling now - behave like indirect eval");
+		outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+		outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+	} else {
+		DUK_DDDPRINT("indirect eval call");
+		outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+		outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+	}
+	act = NULL;
+
+	duk_js_push_closure(thr,
+	                   (duk_hcompiledfunction *) duk_get_hobject(ctx, -1),
+	                   outer_var_env,
+	                   outer_lex_env);
 
 	duk_call(ctx, 0);
 

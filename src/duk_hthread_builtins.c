@@ -174,7 +174,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		/* DUK_HOBJECT_FLAG_NATIVEFUNCTION varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h));       /* currently, even for Array.prototype */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(h));
+		/* DUK_HOBJECT_FLAG_STRICT varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(h) ||  /* all native functions have NEWENV */
 		           DUK_HOBJECT_HAS_NEWENV(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(h));

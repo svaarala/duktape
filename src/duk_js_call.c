@@ -918,6 +918,9 @@ int duk_handle_call(duk_hthread *thr,
 	if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
 		act->flags |= DUK_ACT_FLAG_PREVENT_YIELD;
 	}
+	if (call_flags & DUK_CALL_FLAG_DIRECT_EVAL) {
+		act->flags |= DUK_ACT_FLAG_DIRECT_EVAL;
+	}
 
 	act->func = func;
 	act->var_env = NULL;
