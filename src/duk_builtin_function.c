@@ -27,15 +27,25 @@ int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv);
+		const char *func_name = "";
+
+		/* FIXME: rework, it would be nice to avoid C formatting functions to
+		 * ensure there are no Unicode issues.
+		 */
+
+		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_NAME);
+		if (!duk_is_undefined(ctx, -1)) {
+			func_name = duk_to_string(ctx, -1);
+			DUK_ASSERT(func_name != NULL);
+		}
+
 		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj)) {
 			/* FIXME: actual source, if available */
-			/* FIXME: function name */
-			duk_push_string(ctx, "function name() {/* source code */}");
+			duk_push_sprintf(ctx, "function %s() {/* source code */}", func_name);
 		} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
-			/* FIXME: function name */
-			duk_push_string(ctx, "function name() {/* native code */}");
+			duk_push_sprintf(ctx, "function %s() {/* native code */}", func_name);
 		} else if (DUK_HOBJECT_HAS_BOUND(obj)) {
-			duk_push_string(ctx, "function name() {/* bound */}");
+			duk_push_sprintf(ctx, "function %s() {/* bound */}", func_name);
 		} else {
 			goto type_error;
 		}
