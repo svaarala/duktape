@@ -247,4 +247,59 @@ try {
     print(e.name);
 }
 
+/*===
+NaN
+NaN
+bar
+bar
+===*/
+
+/* The "this binding" for a direct eval is always the caller's current this
+ * binding; this is the case for both strict and non-strict eval code.
+ *
+ * For an indirect eval, "this binding" is set to the global object.
+ */
+
+function thisBinding_indirect_nonstrict() {
+    var my_eval = eval;
+    my_eval('print(this.NaN)');
+}
+
+function thisBinding_indirect_strict() {
+    var my_eval = eval;
+    my_eval('"use strict"; print(this.NaN)');
+}
+
+function thisBinding_direct_nonstrict() {
+    eval('print(this.foo)');
+}
+
+function thisBinding_direct_strict() {
+    eval('"use strict"; print(this.foo)');
+}
+
+try {
+    thisBinding_indirect_nonstrict.call({foo:'bar'});
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    thisBinding_indirect_strict.call({foo:'bar'});
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    thisBinding_direct_nonstrict.call({foo:'bar'});
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    thisBinding_direct_strict.call({foo:'bar'});
+} catch (e) {
+    print(e.name);
+}
+
 
