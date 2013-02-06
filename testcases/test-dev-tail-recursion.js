@@ -54,7 +54,7 @@ try {
 print(count);
 
 /*===
-50
+25
 Error
 ===*/
 
@@ -77,10 +77,13 @@ function tail_eval(a,b) {
 }
 
 try {
-    // this should fit in callstack even without tailcalls
-    print(tail_eval(0, 50));
+    // This should fit in callstack even without tailcalls.
+    // C recursion limit is now 60, and each tail_eval()
+    // level requires two C calls (one for eval, one for
+    // bytecode executor)
+    print(tail_eval(0, 25));
 } catch (e) {
-    print(e.name, e.message);
+    print(e.name);
 }
 
 try {
