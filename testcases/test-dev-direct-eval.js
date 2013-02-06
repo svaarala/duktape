@@ -159,8 +159,8 @@ function wrapper() {
     var ret;
     with (binding_obj) {
         ret = function() {
-            // direct eval   --> prints false
-            // indirect eval --> prints true
+            // direct eval   --> this_binding is caller's "this binding" --> prints false
+            // indirect eval --> this_binding is global object --> prints true
             print(eval('this === global'));
         }
     }
@@ -169,17 +169,18 @@ function wrapper() {
 
 try {
     var func = wrapper();
+    var my_obj = { func: func };  // call through this to get a this binding != global object
 
     // initially, binding_obj has no 'eval' binding, hence direct eval
-    func();
+    my_obj.func();
 
     // add 'intercepting' eval binding, hence indirect eval
     binding_obj.eval = function(x) { print('fake eval'); return orig_eval(x); };
-    func();
+    my_obj.func();
 
     // remove intercepting binding, again a direct eval
     delete binding_obj.eval;
-    func();
+    my_obj.func();
 } catch (e) {
     print(e.name);
 }
