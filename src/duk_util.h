@@ -24,6 +24,19 @@ struct duk_bitdecoder_ctx {
 };
 
 /*
+ *  Bitstream encoder
+ */
+
+struct duk_bitencoder_ctx {
+	duk_u8 *data;
+	duk_u32 offset;
+	duk_u32 length;
+	duk_u32 currval;
+	duk_u32 currbits;
+	int truncated;
+};
+
+/*
  *  Externs and prototypes
  */
 
@@ -38,6 +51,9 @@ duk_u32 duk_util_get_hash_prime(duk_u32 size);
 
 duk_u32 duk_bd_decode(duk_bitdecoder_ctx *ctx, int bits);
 int duk_bd_decode_flag(duk_bitdecoder_ctx *ctx);
+
+void duk_be_encode(duk_bitencoder_ctx *ctx, duk_u32 data, int bits);
+void duk_be_finish(duk_bitencoder_ctx *ctx);
 
 void duk_util_base64_encode(const unsigned char *src, unsigned char *dst, size_t len);
 
