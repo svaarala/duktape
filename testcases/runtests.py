@@ -529,7 +529,9 @@ class TestCaseTool:
 				for eng in enginenames:
 					if eng == 'duk':
 						continue
-
+					if testcase.metadata.has_key('custom') and testcase.metadata['custom']:
+						# no point in comparing (test should be outside but would increase indent)
+						continue
 					diff_key = 'diff_' + eng
 					if ret['res_duk'].has_key(diff_key):
 						diff_strs.append('%s diff %d lines' % (eng, ret['res_duk'][diff_key]['lines']))
