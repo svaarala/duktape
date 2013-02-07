@@ -1,0 +1,81 @@
+/*
+ *  Test error object lineNumber properties.
+ *
+ *  Edit this file carefully, line numbers and expected values must match.
+ */
+
+/* 10 tests */
+
+/*===
+23
+29
+35
+41
+47
+53
+59
+65
+71
+77
+===*/
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
+try {
+    foo;
+} catch (e) {
+    print(e.lineNumber);
+}
+
