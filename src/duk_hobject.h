@@ -370,6 +370,15 @@
 #define  DUK_HOBJECT_A_MIN_GROW_DIVISOR   8  /* 2^3 -> 1/8 = 12.5% min growth */
 
 /*
+ *  PC-to-line constants
+ */
+
+#define  DUK_PC2LINE_SKIP    64
+
+/* maximum length for a SKIP-1 diffstream: 35 bits per entry, rounded up to bytes */
+#define  DUK_PC2LINE_MAX_DIFF_LENGTH    (((DUK_PC2LINE_SKIP - 1) * 35 + 7) / 8)
+
+/*
  *  Struct defs
  */
 
@@ -495,6 +504,10 @@ void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p)
 
 /* finalization */
 void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
+
+/* pc2line */
+void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size_t length);
+duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc);
 
 /* misc */	
 int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);

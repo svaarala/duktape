@@ -769,13 +769,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 *  Size-optimized pc->line mapping.
 		 */
 
-		for (i = 0; i < code_count; i++) {
-			/* assume 'q_instr' is still set */
-			DUK_DDDPRINT("PC %d -> LINE %d", i, q_instr[i].line);
-		}
-
-		/* FIXME: bit pack pc2line data here; it could even be tacked on to 'data' */
-		duk_push_string(ctx, "FIXME");
+		duk_hobject_pc2line_pack(thr, q_instr, code_count);  /* -> pushes fixed buffer */
 		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 	}
 

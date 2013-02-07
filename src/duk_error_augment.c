@@ -139,12 +139,16 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 	if (thr_callstack->callstack_top > 0) {
 		duk_activation *act;
 		duk_hobject *func;
+		duk_hbuffer *pc2line;
 
 		act = thr_callstack->callstack + thr_callstack->callstack_top - 1;
 		func = act->func;
 		if (func) {
 			int pc = act->pc;
+			duk_u32 line;
 			act = NULL;  /* invalidated by pushes */
+
+			pc--;  /* PC points to next instruction, find offending PC */
 
 			duk_push_hobject(ctx, func);
 
@@ -161,8 +165,15 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 				duk_push_number(ctx, pc);
 				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_PC);
 
-				duk_push_number(ctx, 0);  /* FIXME: PC->LINE */
-				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_LINE_NUMBER);
+				duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_PC2LINE);
+				if (duk_is_buffer(ctx, -1)) {
+					pc2line = duk_get_hbuffer(ctx, -1);
+					DUK_ASSERT(!DUK_HBUFFER_HAS_GROWABLE(pc2line));
+					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, pc);
+					duk_push_number(ctx, (double) line);  /* FIXME: u32 */
+					duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_LINE_NUMBER);
+				}
+				duk_pop(ctx);
 			} else {
 				duk_push_true(ctx);
 				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_IS_NATIVE);
