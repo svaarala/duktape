@@ -383,6 +383,7 @@ void duk_hex_encode(duk_context *ctx, int index);
  */
 
 void *duk_resize_buffer(duk_context *ctx, int index, size_t new_size);              /* may fail (throw error) */
+void duk_to_fixed_buffer(duk_context *ctx, int index);
 
 /*
  *  Property access
