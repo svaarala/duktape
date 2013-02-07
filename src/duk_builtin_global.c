@@ -12,6 +12,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
 	int this_to_global = 1;
+	int comp_flags;
 
 	DUK_ASSERT(duk_get_top(ctx) == 1);
 
@@ -32,7 +33,14 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 	}
 
 	/* FIXME: uses internal API */
-	duk_js_compile_program(thr, 1 /*is_eval*/);
+
+	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
+	act = thr->callstack + thr->callstack_top - 2;  /* caller */
+	if (act->flags & DUK_ACT_FLAG_STRICT) {
+		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
+	}
+
+	duk_js_compile(thr, comp_flags);
 	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));

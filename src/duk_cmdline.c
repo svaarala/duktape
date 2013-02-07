@@ -65,9 +65,11 @@ static void set_sigint_handler(void) {
 
 int wrapped_compile_execute(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	int comp_flags;
 
 	/* FIXME: uses internal API */
-	duk_js_compile_program(thr, 0);
+	comp_flags = 0;
+	duk_js_compile(thr, comp_flags);
 
         duk_js_push_closure(thr,
 	                   (duk_hcompiledfunction *) duk_get_hobject(ctx, -1),

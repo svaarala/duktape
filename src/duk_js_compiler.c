@@ -6069,7 +6069,7 @@ static int parse_function_like(duk_compiler_ctx *comp_ctx, int is_decl, int is_s
 
 /* FIXME: source code property */
 
-void duk_js_compile_program(duk_hthread *thr, int is_eval) {
+void duk_js_compile(duk_hthread *thr, int flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_sourcecode;
 	duk_compiler_ctx comp_ctx_alloc;
@@ -6079,8 +6079,12 @@ void duk_js_compile_program(duk_hthread *thr, int is_eval) {
 	duk_compiler_func *func = &comp_ctx_alloc.curr_func;
 	int entry_top;
 	int is_strict;
+	int is_eval;
 
 	DUK_ASSERT(thr != NULL);
+
+	is_eval = (flags & DUK_JS_COMPILE_FLAG_EVAL ? 1 : 0);
+	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
 
 	/*
 	 *  Arguments check
@@ -6150,10 +6154,8 @@ void duk_js_compile_program(duk_hthread *thr, int is_eval) {
 	 *  Parse a function body
 	 */
 
-	is_strict = 0;  /* FIXME: initial strictness, caller provides? */
 	func->is_strict = is_strict;
-
-	func->is_function = 0;  /* FIXME: handle eval */
+	func->is_function = 0;
 	func->is_eval = is_eval;
 	func->is_global = !is_eval;
 	func->is_setget = 0;
