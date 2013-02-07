@@ -4,6 +4,12 @@
  *  Since we do, test that it works.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 1000000
 ===*/

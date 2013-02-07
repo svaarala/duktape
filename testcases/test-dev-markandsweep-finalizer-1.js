@@ -1,3 +1,8 @@
+/*---
+{
+    "custom": true
+}
+---*/
 
 /*===
 nulling

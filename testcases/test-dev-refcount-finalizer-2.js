@@ -1,3 +1,10 @@
+
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 object
 Finalizer

@@ -4,6 +4,12 @@
  *  Edit this file carefully, line numbers and expected values must match.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /* 10 tests */
 
 /*===

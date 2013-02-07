@@ -1,4 +1,10 @@
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 finalizer, foo -> 123
 ===*/

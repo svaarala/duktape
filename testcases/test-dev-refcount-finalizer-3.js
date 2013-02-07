@@ -4,6 +4,12 @@
  *  multiple times works correctly.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 rescued
 object

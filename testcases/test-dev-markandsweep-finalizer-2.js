@@ -12,6 +12,12 @@
  *  while a function is running.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 object
 object

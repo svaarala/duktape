@@ -10,6 +10,12 @@
  *    - If sparse, maintain key insertion order only
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 function enumArray(arr) {
     print('array keys');
     for (var i in arr) {
