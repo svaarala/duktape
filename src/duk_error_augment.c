@@ -162,6 +162,7 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 				duk_push_false(ctx);
 				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_IS_NATIVE);
 
+				/* FIXME: add PC only if pc2line fails? */
 				duk_push_number(ctx, pc);
 				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_PC);
 
