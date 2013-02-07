@@ -771,6 +771,10 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 
 		duk_hobject_pc2line_pack(thr, q_instr, code_count);  /* -> pushes fixed buffer */
 		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
+
+		/* FIXME: if assertions enabled, walk through all valid PCs
+		 * and check line mapping.
+		 */
 	}
 
 	/* _filename */
