@@ -187,16 +187,11 @@ int duk_builtin_duk_object_resume(duk_context *ctx) {
 	}
 
 	/*
-	 *  The error object could conceivably contain either the resumer
-	 *  or the resumee callstack.  Here we use the resumee's callstack
-	 *  which is more logical for code catching the error in the resumee.
+	 *  The error object has been augmented with a traceback and other
+	 *  info from its creation point -- usually another thread.  It might
+	 *  be nice to get a traceback from the resumee but this is not the
+	 *  case now.
 	 */
-#ifdef DUK_USE_AUGMENT_ERRORS
-	if (is_error) {
-		/* Note: may throw an error */
-		duk_err_augment_error(thr, thr_resume, 1);
-	}
-#endif
 
 #ifdef DUK_USE_DEBUG  /* debug logging */
 	if (is_error) {
@@ -306,16 +301,9 @@ int duk_builtin_duk_object_yield(duk_context *ctx) {
 	}
 
 	/*
-	 *  The error object could conceivably contain either the yielder
-	 *  or the resumer callstack.  Here we use the resumer's callstack.
+	 *  The error object has been augmented with a traceback and other
+	 *  info from its creation point -- usually the current thread.
 	 */
-#ifdef DUK_USE_AUGMENT_ERRORS
-	if (is_error) {
-		/* Note: may throw an error */
-		DUK_ASSERT(thr->resumer != NULL);
-		duk_err_augment_error(thr, thr->resumer, 0);
-	}
-#endif
 
 #ifdef DUK_USE_DEBUG
 	if (is_error) {

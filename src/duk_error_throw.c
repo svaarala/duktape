@@ -134,7 +134,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 			duk_push_int(ctx, code);
 		}
 	} else {
-		/* FIXME: who sets which properties? */
+		/* Error object is augmented at its creation here. */
 #ifdef DUK_USE_VERBOSE_ERRORS
 		duk_push_new_error_object(ctx, code, msg);
 #else
@@ -154,23 +154,6 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 	} else {
 		call_errhandler(thr);
 	}
-
-	/*
-	 *  Augment the error (potentially), e.g. with a traceback
-	 *
-	 *  Errors should be augmented when they are created, not when they
-	 *  are thrown.  However, because we create and throw the error, we
-	 *  augment it here, unless it is a "double error".
-	 */
-
-#ifdef DUK_USE_AUGMENT_ERRORS
-	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
-		DUK_DPRINT("alloc or double error: skip adding traceback");
-	} else {
-		/* may throw an error */
-		duk_err_augment_error(thr, thr, -1);
-	}
-#endif
 
 	/*
 	 *  Finally, longjmp
