@@ -369,6 +369,10 @@
 #define  DUK_HOBJECT_A_MIN_GROW_ADD       16
 #define  DUK_HOBJECT_A_MIN_GROW_DIVISOR   8  /* 2^3 -> 1/8 = 12.5% min growth */
 
+/* probe sequence */
+#define  DUK_HOBJECT_HASH_INITIAL(hash,h_size)  ((hash) % (h_size))
+#define  DUK_HOBJECT_HASH_PROBE_STEP(hash)      DUK_UTIL_GET_HASH_PROBE_STEP((hash))
+
 /*
  *  PC-to-line constants
  */

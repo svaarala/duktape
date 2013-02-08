@@ -48,8 +48,8 @@
 #define  NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
 
 /* hash probe sequence */
-#define  HASH_INITIAL(hash,h_size)  ((hash) % (h_size))
-#define  HASH_PROBE_STEP(hash)      DUK_UTIL_GET_HASH_PROBE_STEP((hash))
+#define  HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
+#define  HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
 
 /* marker values for hash part */
 #define  HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
