@@ -41,7 +41,7 @@ static void advance(duk_compiler_ctx *ctx);
 /* function helpers */
 static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx);
 static void reset_function_for_pass2(duk_compiler_ctx *comp_ctx);
-static void handle_pass2_varmap_and_prologue(duk_compiler_ctx *comp_ctx, int *out_stmt_value_reg);
+static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *out_stmt_value_reg);
 static void convert_to_function_template(duk_compiler_ctx *comp_ctx);
 
 /* code emission */
@@ -5388,7 +5388,7 @@ static void parse_statements(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
  * handle cases with a very large number of variables?
  */
 
-static void handle_pass2_varmap_and_prologue(duk_compiler_ctx *comp_ctx, int *out_stmt_value_reg) {
+static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *out_stmt_value_reg) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_name;
@@ -5738,10 +5738,18 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 
 	/*
 	 *  Rewind lexer.
+	 *
+	 *  parse_statements() expects curr_tok to be set; parse in "allow regexp
+	 *  literal" mode with current strictness.
+	 *
+	 *  curr_token line number info should be initialized for pass 2 before
+	 *  generating prologue, to ensure prologue bytecode gets nice line numbers.
 	 */
 
 	DUK_DDDPRINT("rewind lexer");
 	DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
+	comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
+	advance(comp_ctx);
 
 	/*
 	 *  Reset function state and perform register allocation, which creates
@@ -5758,7 +5766,8 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 	func->in_scanning = 0;
 
 	/* must be able to emit code, alloc consts, etc. */
-	handle_pass2_varmap_and_prologue(comp_ctx,
+
+	init_varmap_and_prologue_for_pass2(comp_ctx,
 	                                 (implicit_return_value ? &reg_stmt_value : NULL));
 	func->reg_stmt_value = reg_stmt_value;
 
@@ -5807,9 +5816,6 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 	if (implicit_return_value) {
 		emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDUNDEF, 0, 0);
 	}
-
-	comp_ctx->curr_token.t = 0;
-	advance(comp_ctx);  /* parse_statements() expects curr_tok to be set; parse in "allow regexp literal" mode with current strictness */
 
 	DUK_DDDPRINT("begin 2nd pass");
 	parse_statements(comp_ctx,
