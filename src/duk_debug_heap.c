@@ -111,7 +111,7 @@ static void dump_stringtable(duk_heap *heap) {
 
 		if (!e) {
 			DUK_DPRINT("  [%d]: NULL", i);
-		} else if (e == DUK_HEAP_STRINGTABLE_DELETED_MARKER(heap)) {
+		} else if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
 			DUK_DPRINT("  [%d]: DELETED", i);
 		} else {
 			sanitize_snippet(buf, sizeof(buf), e);

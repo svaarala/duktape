@@ -134,7 +134,7 @@ static void free_stringtable(duk_heap *heap) {
 	if (heap->st) {
 		for (i = 0; i < heap->st_size; i++) {
 			duk_hstring *e = heap->st[i];
-			if (e == DUK_HEAP_STRINGTABLE_DELETED_MARKER(heap)) {
+			if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
 				continue;
 			}
 
@@ -357,15 +357,15 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_TVAL_SET_UNDEFINED_UNUSED(&res->lj.value1);
 	DUK_TVAL_SET_UNDEFINED_UNUSED(&res->lj.value2);
 
-#if (DUK_HEAP_INITIAL_STRINGTABLE_SIZE < DUK_UTIL_MIN_HASH_PRIME)
+#if (DUK_STRTAB_INITIAL_SIZE < DUK_UTIL_MIN_HASH_PRIME)
 #error initial heap stringtable size is defined incorrectly
 #endif
 
-	res->st = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_HEAP_INITIAL_STRINGTABLE_SIZE);
+	res->st = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 	if (!res->st) {
 		goto error;
 	}
-	res->st_size = DUK_HEAP_INITIAL_STRINGTABLE_SIZE;
+	res->st_size = DUK_STRTAB_INITIAL_SIZE;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
 		int i;
@@ -374,7 +374,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	        }
 	}
 #else
-	memset(res->st, 0, sizeof(duk_hstring *) * DUK_HEAP_INITIAL_STRINGTABLE_SIZE);
+	memset(res->st, 0, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 #endif
 
 	/* strcache init */

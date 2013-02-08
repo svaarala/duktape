@@ -451,7 +451,7 @@ static void sweep_stringtable(duk_heap *heap) {
 
 	for (i = 0; i < heap->st_size; i++) {
 		h = heap->st[i];
-		if (h == NULL || h == DUK_HEAP_STRINGTABLE_DELETED_MARKER(heap)) {
+		if (h == NULL || h == DUK_STRTAB_DELETED_MARKER(heap)) {
 			continue;
 		} else if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
 #ifdef DUK_USE_DEBUG
@@ -482,7 +482,7 @@ static void sweep_stringtable(duk_heap *heap) {
 		 * duk_heap_string_remove() but that would be slow and
 		 * pointless because we already know the slot.
 		 */
-		heap->st[i] = DUK_HEAP_STRINGTABLE_DELETED_MARKER(heap);
+		heap->st[i] = DUK_STRTAB_DELETED_MARKER(heap);
 
 		/* then free */
 #if 1

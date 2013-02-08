@@ -117,10 +117,22 @@
  */
 
 /* initial stringtable size, must be prime and higher than DUK_UTIL_MIN_HASH_PRIME */
-#define  DUK_HEAP_INITIAL_STRINGTABLE_SIZE  17
+#define  DUK_STRTAB_INITIAL_SIZE            17
 
 /* indicates a deleted string; any fixed non-NULL, non-hstring pointer works */
-#define  DUK_HEAP_STRINGTABLE_DELETED_MARKER(heap)   ((duk_hstring *) heap)
+#define  DUK_STRTAB_DELETED_MARKER(heap)    ((duk_hstring *) heap)
+
+/* resizing parameters */
+#define  DUK_STRTAB_MIN_FREE_DIVISOR        4                /* load factor max 75% */
+#define  DUK_STRTAB_MIN_USED_DIVISOR        4                /* load factor min 25% */
+#define  DUK_STRTAB_GROW_ST_SIZE(n)         ((n) + (n))      /* used entries + approx 100% -> reset load to 50% */
+
+#define  DUK_STRTAB_U32_MAX_STRLEN          10               /* 4'294'967'295 */
+#define  DUK_STRTAB_HIGHEST_32BIT_PRIME     0xfffffffbU
+
+/* probe sequence */
+#define  DUK_STRTAB_HASH_INITIAL(hash,h_size)    ((hash) % (h_size))
+#define  DUK_STRTAB_HASH_PROBE_STEP(hash)        DUK_UTIL_GET_HASH_PROBE_STEP((hash))
 
 /*
  *  Built-in strings

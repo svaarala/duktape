@@ -4,23 +4,9 @@
 
 #include "duk_internal.h"
 
-/* FIXME: most of these constants should be in duk_heap.h;
- * similar constants for objects are in duk_hobject.h.
- */
-
-#define  MIN_FREE_DIVISOR           4                /* load factor max 75% */
-#define  MIN_USED_DIVISOR           4                /* load factor min 25% */
-
-#define  GROW_ST_SIZE(n)            ((n) + (n))      /* used entries + approx 100% -> reset load to 50% */
-
-#define  U32_MAX_STRLEN             10               /* 4'294'967'295 */
-
-#define  HASH_INITIAL(hash,h_size)  ((hash) % (h_size))
-#define  HASH_PROBE_STEP(hash)      DUK_UTIL_GET_HASH_PROBE_STEP((hash))
-
-#define  HIGHEST_32BIT_PRIME        0xfffffffbU
-
-#define  DELETED_MARKER(heap)       DUK_HEAP_STRINGTABLE_DELETED_MARKER((heap))
+#define  HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
+#define  HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
+#define  DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
 
 /*
  *  Create a hstring and insert into the heap.  The created object
@@ -290,9 +276,9 @@ static int resize_hash(duk_heap *heap) {
 
 	new_size = count_used(heap);
 	if (new_size >= 0x80000000U) {
-		new_size = HIGHEST_32BIT_PRIME;
+		new_size = DUK_STRTAB_HIGHEST_32BIT_PRIME;
 	} else {
-		new_size = duk_util_get_hash_prime(GROW_ST_SIZE(new_size));
+		new_size = duk_util_get_hash_prime(DUK_STRTAB_GROW_ST_SIZE(new_size));
 		new_size = duk_util_get_hash_prime(new_size);
 	}
 	DUK_ASSERT(new_size > 0);
@@ -317,8 +303,8 @@ static int recheck_hash_size(duk_heap *heap, duk_u32 new_used) {
 	/* new_free / size <= 1 / DIV  <=>  new_free <= size / DIV */
 	/* new_used / size <= 1 / DIV  <=>  new_used <= size / DIV */
 
-	tmp1 = heap->st_size / MIN_FREE_DIVISOR;
-	tmp2 = heap->st_size / MIN_USED_DIVISOR;
+	tmp1 = heap->st_size / DUK_STRTAB_MIN_FREE_DIVISOR;
+	tmp2 = heap->st_size / DUK_STRTAB_MIN_USED_DIVISOR;
 
 	if (new_free <= tmp1 || new_used <= tmp2) {
 		/* load factor too low or high, count actually used entries and resize */
@@ -395,13 +381,13 @@ duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_u8 *str, duk_u
 }
 
 duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_u32 val) {
-	char buf[U32_MAX_STRLEN+1];
+	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	sprintf(buf, "%u", (unsigned int) val);
 	return duk_heap_string_lookup(heap, (duk_u8 *) buf, strlen(buf));
 }
 
 duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_u32 val) {
-	char buf[U32_MAX_STRLEN+1];
+	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	sprintf(buf, "%u", (unsigned int) val);
 	return duk_heap_string_intern(heap, (duk_u8 *) buf, strlen(buf));
 }
