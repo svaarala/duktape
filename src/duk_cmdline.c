@@ -18,7 +18,8 @@
 #include "duk_api.h"
 #include "duk_internal.h"
 
-#define  MEM_LIMIT   (128*1024*1024)  /* 128 MB */
+#define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
+#define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
 
 extern void duk_ncurses_register(duk_context *ctx);
 extern void duk_socket_register(duk_context *ctx);
@@ -26,7 +27,7 @@ extern void duk_fileio_register(duk_context *ctx);
 
 int interactive_mode = 0;
 
-static void set_resource_limits(void) {
+static void set_resource_limits(rlim_t mem_limit_value) {
 	int rc;
 	struct rlimit lim;
 
@@ -36,13 +37,13 @@ static void set_resource_limits(void) {
 		return;
 	}
 
-	if (lim.rlim_max < MEM_LIMIT) {
-		fprintf(stderr, "Warning: rlim_max < MEM_LIMIT (%d < %d)\n", (int) lim.rlim_max, (int) MEM_LIMIT);
+	if (lim.rlim_max < mem_limit_value) {
+		fprintf(stderr, "Warning: rlim_max < mem_limit_value (%d < %d)\n", (int) lim.rlim_max, (int) mem_limit_value);
 		return;
 	}
 
-	lim.rlim_cur = MEM_LIMIT;
-	lim.rlim_max = MEM_LIMIT;
+	lim.rlim_cur = mem_limit_value;
+	lim.rlim_max = mem_limit_value;
 
 	rc = setrlimit(RLIMIT_AS, &lim);
 	if (rc != 0) {
@@ -51,7 +52,7 @@ static void set_resource_limits(void) {
 	}
 
 #if 0
-	fprintf(stderr, "Set RLIMIT_AS to %d\n", MEM_LIMIT);
+	fprintf(stderr, "Set RLIMIT_AS to %d\n", (int) mem_limit_value);
 #endif
 }
 
@@ -248,9 +249,9 @@ int main(int argc, char *argv[]) {
 	const char *filename = NULL;
 	int bytecode = 0;
 	int interactive = 0;
+	int memlimit_high = 0;
 	int i;
 
-	set_resource_limits();
 	set_sigint_handler();
 
 	for (i = 1; i < argc; i++) {
@@ -260,6 +261,8 @@ int main(int argc, char *argv[]) {
 		}
 		if (strcmp(arg, "-b") == 0) {
 			bytecode = 1;
+		} else if (strcmp(arg, "-m") == 0) {
+			memlimit_high = 1;
 		} else if (strlen(arg) > 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -277,6 +280,8 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 		exit(1);
 	}
+
+	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
 
 	heap = duk_heap_alloc_default();
 	ctx = (duk_context *) heap->heap_thread;
@@ -320,6 +325,7 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "Usage: duk [-b] <filename>\n");
 	fprintf(stderr, "where\n");
 	fprintf(stderr, "   -b      load bytecode instead of Ecmascript code\n");
+	fprintf(stderr, "   -m      use high memory limit (useful for valgrind use)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
 	fprintf(stderr, "If <filename> is omitted, interactive mode is started.\n");
