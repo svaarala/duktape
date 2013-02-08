@@ -723,8 +723,8 @@ def gen_strings_data_bitpacked(strlist):
 
 	res = be.getByteString()
 
-	print '%d bytes of string init data, %d unique bytes in strings, %d maximum string length, %d maximum code point value' % \
-		(len(res), uniq, maxlen, maxval)
+	print '%d strings, %d bytes of string init data, %d unique bytes in strings, %d maximum string length, %d maximum code point value' % \
+		(len(strlist), len(res), uniq, maxlen, maxval)
 
 	return res, uniq, maxlen, maxval
 
