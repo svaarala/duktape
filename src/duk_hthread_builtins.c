@@ -84,6 +84,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		if (class_num == DUK_HOBJECT_CLASS_FUNCTION) {
 			int natidx;
+			int stridx;
 			int c_nargs;
 			duk_c_function c_func;
 
@@ -91,6 +92,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_ASSERT(len >= 0);
 
 			natidx = duk_bd_decode(bd, NATIDX_BITS);
+			stridx = duk_bd_decode(bd, STRIDX_BITS);
 			c_func = duk_builtin_native_functions[natidx];
 
 			c_nargs = len;
@@ -109,7 +111,10 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* Currently all built-in native functions are strict. */
 			DUK_HOBJECT_SET_STRICT(h);
 
-			/* FIXME: function name */
+			/* FIXME: function properties */
+
+			duk_push_hstring_stridx(ctx, stridx);
+			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
@@ -353,14 +358,11 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_DDDPRINT("built-in %d, function-valued property %d, stridx %d, natidx %d, length %d, nargs %d",
 			             i, j, stridx, natidx, c_length, (c_nargs == DUK_VARARGS ? -1 : c_nargs));
 
-
 			/* [ (builtin objects) ] */
 
 			duk_push_new_c_function(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
 			h_func = h_func;  /* suppress warning (not referenced now) */
-
-			/* FIXME: function name */
 
 			/* Currently all built-in native functions are strict.
 			 * This doesn't matter for many functions, but e.g.
@@ -375,7 +377,10 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_int(ctx, c_length);
 			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
-			/* FIXME: other properties of function instances; 'name', 'arguments', 'caller'. */
+			duk_push_hstring_stridx(ctx, stridx);
+			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+
+			/* FIXME: other properties of function instances; 'arguments', 'caller'. */
 
 			DUK_DDPRINT("built-in object %d, function property %d -> %!T", i, j, duk_get_tval(ctx, -1));
 
