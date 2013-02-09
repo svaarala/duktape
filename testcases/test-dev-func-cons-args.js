@@ -53,16 +53,14 @@ try {
      * say that this should be done; rather, the argument list, joined by commas, should
      * be parsed as a FormalParameterList_opt and the body should be parsed as a
      * FunctionBody, separately.  So we interpret this to mean that this should actually
-     * work correctly.  The formal argument list to be parsed is:
+     * work correctly, as comments are allowed anywhere in source code.  The formal
+     * argument list to be parsed is:
      *
      *    a,b, c // last
      *
      * This fails in V8 and Rhino, though.  For example, Rhino will complain:
      *
      *    SyntaxError: missing ) after formal parameters
-     *
-     * which seems incorrect because FormalParameterList_opt does NOT include parentheses
-     * at all (just the identifiers and commas).
      *
      * V8 (Node) will complain:
      *
