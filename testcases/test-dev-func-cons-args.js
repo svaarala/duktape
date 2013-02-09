@@ -98,3 +98,31 @@ try {
 }
 
 
+/*===
+OBJ1
+OBJ2
+OBJ3
+7
+===*/
+
+/* The coercion order of arguments is specified to match function argument
+ * order, i.e. ToString() coerce first the formal arguments and finally
+ * the body.
+ */
+
+var obj1 = {
+	toString: function() { print('OBJ1'); return 'x'; }
+};
+var obj2 = {
+	toString: function() { print('OBJ2'); return 'y'; }
+};
+var obj3 = {
+	toString: function() { print('OBJ3'); return 'print(x+y)'; }
+};
+
+try {
+    new Function(obj1, obj2, obj3)(3,4);
+} catch (e) {
+    print(e.name);
+}
+
