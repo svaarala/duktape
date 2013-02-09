@@ -5,11 +5,66 @@
 #include "duk_internal.h"
 
 int duk_builtin_function_constructor(duk_context *ctx) {
-	if (duk_is_constructor_call(ctx)) {
-		return DUK_RET_UNIMPLEMENTED_ERROR;
-	} else {
-		return DUK_RET_UNIMPLEMENTED_ERROR;
+	duk_hthread *thr = (duk_hthread *) ctx;
+	int num_args;
+	int i;
+	int comp_flags;
+	duk_hcompiledfunction *func;
+	duk_hobject *outer_lex_env;
+	duk_hobject *outer_var_env;
+
+	/* normal and constructor calls have identical semantics */
+
+	num_args = duk_get_top(ctx);
+
+	for (i = 0; i < num_args; i++) {
+		duk_to_string(ctx, i);
 	}
+
+	if (num_args == 0) {
+		duk_push_string(ctx, "");
+		duk_push_string(ctx, "");
+	} else if (num_args == 1) {
+		duk_push_string(ctx, "");
+	} else {
+		duk_insert(ctx, 0);   /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
+		duk_push_string(ctx, ",");
+		duk_insert(ctx, 1);
+		duk_join(ctx, num_args - 1);
+	}
+
+	/* [ body formals ], formals is comma separated list that needs to be parsed */
+
+	DUK_ASSERT(duk_get_top(ctx) == 2);
+
+	/* FIXME: this placeholder is not always correct, but use for now.
+	 * It will fail in corner cases; see test-dev-func-cons-args.js.
+	 */
+	duk_push_string(ctx, "function(");
+	duk_dup(ctx, 1);
+	duk_push_string(ctx, "){");
+	duk_dup(ctx, 0);
+	duk_push_string(ctx, "}");
+	duk_concat(ctx, 5);
+
+	DUK_ASSERT(duk_get_top(ctx) == 3);
+
+	/* FIXME: uses internal API */
+
+	/* strictness is not inherited, intentional */
+	comp_flags = DUK_JS_COMPILE_FLAG_FUNCEXPR;
+
+	duk_js_compile(thr, comp_flags);
+	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
+	DUK_ASSERT(func != NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
+
+	outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+	outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+
+	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
+
+	return 1;
 }
 
 int duk_builtin_function_prototype(duk_context *ctx) {
