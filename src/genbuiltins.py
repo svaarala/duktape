@@ -248,6 +248,7 @@ bi_object_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_object_prototype',
 	'class': 'Function',
+	'name': 'Object',
 
 	'length': 1,
 	'native': 'duk_builtin_object_constructor',
@@ -292,6 +293,7 @@ bi_function_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_function_prototype',
 	'class': 'Function',
+	'name': 'Function',
 
 	'length': 1,
 	'varargs': True,
@@ -311,6 +313,7 @@ bi_function_prototype = {
 	'internal_prototype': 'bi_object_prototype',
 	'external_constructor': 'bi_function_constructor',
 	'class': 'Function',
+	'name': '',  # FIXME: what does the spec say?
 
 	'length': 0,
 	'native': 'duk_builtin_function_prototype',
@@ -330,6 +333,7 @@ bi_array_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_array_prototype',
 	'class': 'Function',
+	'name': 'Array',
 
 	'length': 1,
 	'varargs': True,
@@ -386,6 +390,7 @@ bi_string_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_string_prototype',
 	'class': 'Function',
+	'name': 'String',
 
 	'length': 1,
 	'varargs': True,
@@ -452,6 +457,7 @@ bi_boolean_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_boolean_prototype',
 	'class': 'Function',
+	'name': 'Boolean',
 
 	'length': 1,
 	'native': 'duk_builtin_boolean_constructor',
@@ -484,6 +490,7 @@ bi_number_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_number_prototype',
 	'class': 'Function',
+	'name': 'Number',
 
 	'length': 1,
 	'native': 'duk_builtin_number_constructor',
@@ -526,6 +533,7 @@ bi_date_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_date_prototype',
 	'class': 'Function',
+	'name': 'Date',
 
 	'length': 7,
 	'native': 'duk_builtin_date_constructor',
@@ -629,6 +637,7 @@ bi_regexp_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_regexp_prototype',
 	'class': 'Function',
+	'name': 'RegExp',
 
 	'length': 2,
 	'native': 'duk_builtin_regexp_constructor',
@@ -705,6 +714,7 @@ bi_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_error_prototype',
 	'class': 'Function',
+	'name': 'Error',
 
 	'length': 1,
 	'native': 'duk_builtin_error_constructor',
@@ -757,6 +767,7 @@ bi_eval_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_eval_error_prototype',
 	'class': 'Function',
+	'name': 'EvalError',
 
 	'length': 1,
 	'native': 'duk_builtin_eval_error_constructor',
@@ -783,6 +794,7 @@ bi_range_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_range_error_prototype',
 	'class': 'Function',
+	'name': 'RangeError',
 
 	'length': 1,
 	'native': 'duk_builtin_range_error_constructor',
@@ -809,6 +821,7 @@ bi_reference_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_reference_error_prototype',
 	'class': 'Function',
+	'name': 'ReferenceError',
 
 	'length': 1,
 	'native': 'duk_builtin_reference_error_constructor',
@@ -835,6 +848,7 @@ bi_syntax_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_syntax_error_prototype',
 	'class': 'Function',
+	'name': 'SyntaxError',
 
 	'length': 1,
 	'native': 'duk_builtin_syntax_error_constructor',
@@ -861,6 +875,7 @@ bi_type_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_type_error_prototype',
 	'class': 'Function',
+	'name': 'TypeError',
 
 	'length': 1,
 	'native': 'duk_builtin_type_error_constructor',
@@ -887,6 +902,7 @@ bi_uri_error_constructor = {
 	'internal_prototype': 'bi_function_prototype',
 	'external_prototype': 'bi_uri_error_prototype',
 	'class': 'Function',
+	'name': 'URIError',
 
 	'length': 1,
 	'native': 'duk_builtin_uri_error_constructor',
@@ -964,6 +980,7 @@ bi_json = {
 bi_type_error_thrower = {
 	'internal_prototype': 'bi_function_prototype',
 	'class': 'Function',
+	'name': 'ThrowTypeError',  # FIXME: matches V8
 
 	'length': 0,
 	'native': 'duk_builtin_type_error_thrower',
@@ -1326,6 +1343,9 @@ def generate_creation_data_for_builtin(opts, be, bi):
 
 		natidx = native_func_hash[bi['native']]
 		be.bits(natidx, NATIDX_BITS)
+
+		stridx = duk_strings.real_name_to_index[bi['name']]
+		be.bits(stridx, STRIDX_BITS)
 
 		if bi.has_key('varargs'):
 			be.bits(1, 1)  # flag: non-default nargs

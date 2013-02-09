@@ -429,6 +429,9 @@ duk_string_list = [
 	# non-standard class values
 	mkstr("global", custom=True, class_name=True),	# implementation specific but shared by e.g. smjs and V8
 
+	# non-standard built-in object names
+	mkstr("ThrowTypeError", custom=True),  # implementation specific, matches V8
+
 	# non-standard error object properties
 	mkstr("pc", custom=True),
 	mkstr("fileName", custom=True),
