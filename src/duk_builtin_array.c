@@ -90,19 +90,12 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 
 	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len);
 
-	if (len == 0) {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
-		return 1;
-	}
+	duk_require_stack(ctx, len + 1);
+	duk_dup(ctx, 0);
 
-	duk_require_stack(ctx, 2*len - 1);
+	/* [ sep ToObject(this) sep ] */
 
 	for (i = 0; i < len; i++) {
-		/* FIXME: primitive C API call for join */
-		if (i > 0) {
-			duk_dup(ctx, 0);
-		}
-
 		duk_get_prop_index(ctx, 1, i);
 		if (duk_is_null_or_undefined(ctx, -1)) {
 			duk_pop(ctx);
@@ -112,9 +105,9 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 		}
 	}
 
-	/* [ sep ToObject(this) str0 sep str1 sep ... sep str(len-1) ] */
+	/* [ sep ToObject(this) sep str0 ... str(len-1) ] */
 
-	duk_concat(ctx, 2*len - 1);
+	duk_join(ctx, len);
 	return 1;
 }
 

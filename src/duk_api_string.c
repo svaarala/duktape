@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_concat(duk_context *ctx, unsigned int count) {
+static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	unsigned int i;
 	unsigned int len;
 	unsigned int idx;
@@ -13,23 +13,40 @@ void duk_concat(duk_context *ctx, unsigned int count) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	len = 0;
+	if (count <= 0) {
+		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
+		return;
+	}
+
+	if (is_join) {
+		h = duk_to_hstring(ctx, -count-1);
+		DUK_ASSERT(h != NULL);
+		len = DUK_HSTRING_GET_BYTELEN(h) * (count - 1);
+	} else {
+		len = 0;
+	}
+
 	for (i = count; i >= 1; i--) {
 		duk_to_string(ctx, -i);
 		h = duk_require_hstring(ctx, -i);
 		len += DUK_HSTRING_GET_BYTELEN(h);
 	}
 
-	DUK_DDDPRINT("concat %d strings, total length %d bytes", count, len);
+	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", count, len);
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
-	buf = duk_push_new_buffer(ctx, len, 0);
+	buf = duk_push_new_fixed_buffer(ctx, len);
 	DUK_ASSERT(buf != NULL);
 
-	/* [... str1 str2 ... strN buf] */
+	/* [... (sep) str1 str2 ... strN buf] */
 
 	idx = 0;
 	for (i = count; i >= 1; i--) {
+		if (is_join && i != count) {
+			h = duk_require_hstring(ctx, -count-2);  /* extra -1 for buffer */
+			memcpy(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+			idx += DUK_HSTRING_GET_BYTELEN(h);
+		}
 		h = duk_require_hstring(ctx, -i-1);  /* extra -1 for buffer */
 		memcpy(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 		idx += DUK_HSTRING_GET_BYTELEN(h);
@@ -37,12 +54,17 @@ void duk_concat(duk_context *ctx, unsigned int count) {
 
 	DUK_ASSERT(idx == len);
 
-	/* [... str1 str2 ... strN buf] */
+	/* [... (sep) str1 str2 ... strN buf] */
 
 	/* get rid of the strings early to minimize memory use before intern */
 
-	duk_replace(ctx, -count-1);  /* overwrite str1 */
-	duk_pop_n(ctx, count-1);
+	if (is_join) {
+		duk_replace(ctx, -count-2);  /* overwrite sep */
+		duk_pop_n(ctx, count);
+	} else {
+		duk_replace(ctx, -count-1);  /* overwrite str1 */
+		duk_pop_n(ctx, count-1);
+	}
 
 	/* [... buf] */
 
@@ -61,8 +83,12 @@ void duk_concat(duk_context *ctx, unsigned int count) {
 	/* [... res] */
 }
 
+void duk_concat(duk_context *ctx, unsigned int count) {
+	concat_and_join_helper(ctx, count, 0 /*is_join*/);
+}
+
 void duk_join(duk_context *ctx, unsigned int count) {
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
+	concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata) {
