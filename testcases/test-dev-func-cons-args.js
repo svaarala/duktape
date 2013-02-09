@@ -170,3 +170,32 @@ try {
     print(e.name);
 }
 
+/*===
+foo
+foo 1
+foo 1 2
+===*/
+
+/* Misc additional tests for implementation-dependent reasons. */
+
+try {
+    // empty args
+    new Function("print('foo')")();
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    // 1 arg
+    new Function("x", "print('foo', x)")(1);
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    // 2 args
+    new Function("x", "y", "print('foo', x, y)")(1, 2);
+} catch (e) {
+    print(e.name);
+}
+
