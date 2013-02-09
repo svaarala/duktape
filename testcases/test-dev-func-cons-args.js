@@ -97,6 +97,50 @@ try {
     print(e.name);
 }
 
+/*===
+function () {if (1) {print('foo')}}
+foo
+SyntaxError
+===*/
+
+/* It would be tempting to implement the Function constuctor as follows:
+ *
+ *   1. Coerce the argument names and join with commas -> formals
+ *   2. Coerce the function body -> body
+ *   3. Let T = 'function(' + formals + ') { + body + '}'
+ *
+ * However, this would not be correct.  E5 Section 15.3.2.1 step 7
+ * requires that 'formals' must parse as a FormalParameterList_opt
+ * by itself.
+ *
+ * The test case below ensures that this is indeed the case.  The
+ * following function:
+ *
+ *   function () {if (1) {print('foo')}}
+ *   ==========--------===-------------=
+ *
+ * is split into parts in a sneaky way.
+ */
+
+var fake_arg = ") {if (1";
+var fake_body = "print('foo')}";
+var fake_val;
+
+try {
+    // this should work (parens used to ensure function expression parses)
+    fake_val = 'function (' + fake_arg + ') {' + fake_body + '}';
+    print(fake_val);
+    eval('(' + fake_val + ') ()');
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    // this should not (but does, e.g. on Rhino)
+    new Function(fake_arg, fake_body)();
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 OBJ1
