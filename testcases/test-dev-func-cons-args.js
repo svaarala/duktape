@@ -171,12 +171,21 @@ try {
 }
 
 /*===
+undefined
 foo
 foo 1
 foo 1 2
 ===*/
 
 /* Misc additional tests for implementation-dependent reasons. */
+
+try {
+    // no arguments or body -> body evaluates to an empty string, so
+    // should behave like "function() {}", i.e. return undefined
+    print(new Function()());
+} catch (e) {
+    print(e.name);
+}
 
 try {
     // empty args
