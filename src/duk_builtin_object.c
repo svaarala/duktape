@@ -51,7 +51,28 @@ int duk_builtin_object_constructor_get_own_property_descriptor(duk_context *ctx)
 }
 
 int duk_builtin_object_constructor_get_own_property_names(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_u32 i;
+
+	(void) duk_require_hobject(ctx, 0);
+
+	duk_push_new_array(ctx);
+
+	duk_enum(ctx, 0, DUK_ENUM_INCLUDE_NONENUMERABLE |
+	                 DUK_ENUM_OWN_PROPERTIES_ONLY);
+
+	DUK_ASSERT(duk_get_top(ctx) == 3);
+
+	/* [ obj arr enum ] */
+
+	/* FIXME: direct and fast array init */
+	i = 0;
+	while (duk_next(ctx, 2, 0 /*get_value*/)) {
+		duk_put_prop_index(ctx, 1, (unsigned int) i);
+		i++;
+	}
+	duk_pop_2(ctx);  /* pop enum key and enum object -- FIXME: enum API is awkward */
+
+	return 1;
 }
 
 int duk_builtin_object_constructor_create(duk_context *ctx) {
