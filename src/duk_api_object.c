@@ -303,6 +303,8 @@ void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int s
 	 *  the storage slot and update in-place to an accessor.
 	 */
 
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+
 	duk_push_undefined(ctx);
 	duk_def_prop_stridx(ctx, obj_index, stridx, desc_flags);
 
