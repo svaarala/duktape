@@ -736,7 +736,15 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/* _source */
-	if (1) {  /* FIXME: condition */
+	if (0) {
+		/* FIXME: Currently function source code is not stored, as it is not
+		 * required by the standard.  Source code should not be stored by
+		 * default (user should enable it explicitly), and the source should
+		 * probably be compressed with a trivial text compressor; average
+		 * compression of 20-30% is quite easy to achieve even with a trivial
+		 * compressor (RLE + backwards lookup).
+		 */
+
 		/*
 		 *  For global or eval code this is straightforward.  For functions
 		 *  created with the Function constructor we only get the source for
@@ -759,8 +767,11 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 
 		/* FIXME: need tokenizer indices for start and end to substring */
 		/* FIXME: always normalize function declaration part? */
+		/* FIXME: if we keep _formals, only need to store body */
+#if 0
 		duk_push_string(ctx, "FIXME");
 		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
+#endif
 	}
 
 	/* _pc2line */
