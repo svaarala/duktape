@@ -42,6 +42,12 @@
  *  Does this apply?  The FunctionExpression itself is *not* in strict mode.
  *  FormalParameterList is presumably evaluated in non-strict mode.
  *
+ *  When building functions with the Function constructor, the specification
+ *  clearly states that strict mode restrictions are checked and applied
+ *  after function parsing: E5 Section 15.3.2.1, step 10.  Thus it would
+ *  seem reasonable to have the same semantics for other function parsing
+ *  cases, too.
+ *
  *  In any case, V8 will throw SyntaxError in this case, and we follows that
  *  behavior.  Test cases below check for this expected behavior.
  *
