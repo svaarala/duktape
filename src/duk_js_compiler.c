@@ -165,7 +165,8 @@ static void parse_statements(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
 
 static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int implicit_return_value);
 static void parse_function_formals(duk_compiler_ctx *comp_ctx);
-static int parse_function_like(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget);
+static void parse_function_like_raw(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget);
+static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget);
 
 /*
  *  Parser control values for tokens.  The token table is ordered by the
@@ -2234,7 +2235,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				}
 
 				/* curr_token = get/set name */
-				fnum = parse_function_like(comp_ctx, 0 /*is_decl*/, 1 /*is_setget*/);
+				fnum = parse_function_like_fnum(comp_ctx, 0 /*is_decl*/, 1 /*is_setget*/);
 
 				DUK_ASSERT(GETTEMP(comp_ctx) == temp_start);
 				reg_temp = ALLOCTEMP(comp_ctx);
@@ -2559,7 +2560,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		reg_temp = ALLOCTEMP(comp_ctx);
 
 		/* curr_token follows 'function' */
-		fnum = parse_function_like(comp_ctx, 0 /*is_decl*/, 0 /*is_setget*/);
+		fnum = parse_function_like_fnum(comp_ctx, 0 /*is_decl*/, 0 /*is_setget*/);
 		DUK_DDDPRINT("parsed inner function -> fnum %d", fnum);
 
 		emit_a_bc(comp_ctx, DUK_OP_CLOSURE, reg_temp /*a*/, fnum /*bc*/);
@@ -4923,7 +4924,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 			DUK_DDDPRINT("function declaration statement");
 
 			advance(comp_ctx);  /* eat 'function' */
-			fnum = parse_function_like(comp_ctx, 1 /*is_decl*/, 0 /*is_setget*/);
+			fnum = parse_function_like_fnum(comp_ctx, 1 /*is_decl*/, 0 /*is_setget*/);
 
 			if (comp_ctx->curr_func.in_scanning) {
 				int n;
@@ -5896,6 +5897,7 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
  *    - the token after 'set' or 'get' for setter/getter
  */
 
+/* Parse formals. */
 static void parse_function_formals(duk_compiler_ctx *comp_ctx) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -5939,33 +5941,20 @@ static void parse_function_formals(duk_compiler_ctx *comp_ctx) {
 	}
 }
 
-static int parse_function_like(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget) {
+/* Parse a function-like expression, assuming that 'comp_ctx->curr_func' is
+ * correctly set up.  Assumes that curr_token is just after 'function' (or
+ * 'set'/'get' etc).
+ */
+static void parse_function_like_raw(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_compiler_func old_func;
-	int entry_top;
-	int n_funcs;
 
-	/*
-	 *  Preliminaries: remember valstack top on entry (to restore it later);
-	 *  switch to using a new function.
-	 */
-
-	entry_top = duk_get_top(ctx);
-	memcpy(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
-
-	memset(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
-	init_function_valstack_slots(comp_ctx);
 	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
-
-	/* inherit initial strictness from parent */
-	comp_ctx->curr_func.is_strict = old_func.is_strict;
-
-	comp_ctx->curr_func.is_function = 1;
-	comp_ctx->curr_func.is_eval = 0;
-	comp_ctx->curr_func.is_global = 0;
-	comp_ctx->curr_func.is_setget = is_setget;
-	comp_ctx->curr_func.is_decl = is_decl;
+	DUK_ASSERT(comp_ctx->curr_func.is_function == 1);
+	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
+	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
+	DUK_ASSERT(comp_ctx->curr_func.is_setget == is_setget);
+	DUK_ASSERT(comp_ctx->curr_func.is_decl == is_decl);
 
 	/*
 	 *  Function name (if any)
@@ -6045,6 +6034,40 @@ static int parse_function_like(duk_compiler_ctx *comp_ctx, int is_decl, int is_s
 
 	duk_require_stack(ctx, 100);  /* FIXME: clean up when fixing stack handling */
 	convert_to_function_template(comp_ctx);  /* -> [ ... func ] */
+}
+
+/* Parse an inner function, adding the function template to the current function's
+ * function table.  Return a function number to be used by the outer function.
+ */
+static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget) {
+	duk_hthread *thr = comp_ctx->thr;
+	duk_context *ctx = (duk_context *) thr;
+	duk_compiler_func old_func;
+	int entry_top;
+	int n_funcs;
+
+	/*
+	 *  Preliminaries: remember valstack top on entry (to restore it later);
+	 *  switch to using a new function.
+	 */
+
+	entry_top = duk_get_top(ctx);
+	memcpy(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
+
+	memset(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
+	init_function_valstack_slots(comp_ctx);
+	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
+
+	/* inherit initial strictness from parent */
+	comp_ctx->curr_func.is_strict = old_func.is_strict;
+
+	comp_ctx->curr_func.is_function = 1;
+	comp_ctx->curr_func.is_eval = 0;
+	comp_ctx->curr_func.is_global = 0;
+	comp_ctx->curr_func.is_setget = is_setget;
+	comp_ctx->curr_func.is_decl = is_decl;
+
+	parse_function_like_raw(comp_ctx, is_decl, is_setget);  /* pushes function template */
 
 	/* FIXME: append primitive */
 	n_funcs = duk_get_length(ctx, old_func.funcs_idx);
@@ -6097,11 +6120,13 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	int entry_top;
 	int is_strict;
 	int is_eval;
+	int is_funcexpr;
 
 	DUK_ASSERT(thr != NULL);
 
 	is_eval = (flags & DUK_JS_COMPILE_FLAG_EVAL ? 1 : 0);
 	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
+	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
 
 	/*
 	 *  Arguments check
@@ -6163,25 +6188,43 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	init_function_valstack_slots(comp_ctx);
 	DUK_ASSERT(func->num_formals == 0);
 
-	duk_push_hstring_stridx(ctx, (is_eval ? DUK_HEAP_STRIDX_EVAL :
-	                                        DUK_HEAP_STRIDX_GLOBAL));
-	func->h_name = duk_get_hstring(ctx, -1);
+	if (is_funcexpr) {
+		/* funcexpr is now used for Function constructor, anonymous */
+	} else {
+		duk_push_hstring_stridx(ctx, (is_eval ? DUK_HEAP_STRIDX_EVAL :
+		                                        DUK_HEAP_STRIDX_GLOBAL));
+		func->h_name = duk_get_hstring(ctx, -1);
+	}
 
 	/*
-	 *  Parse a function body
+	 *  Parse a function body or a function-like expression, depending
+	 *  on flags.
 	 */
 
 	func->is_strict = is_strict;
-	func->is_function = 0;
-	func->is_eval = is_eval;
-	func->is_global = !is_eval;
 	func->is_setget = 0;
 	func->is_decl = 0;
 
-	parse_function_body(comp_ctx,
-	                    1,             /* expect_eof */
-	                    1);            /* implicit_return_value */
-	                    
+	if (is_funcexpr) {
+		func->is_function = 1;
+		func->is_eval = 0;
+		func->is_global = 0;
+
+		advance(comp_ctx);  /* init 'curr_token' */
+		advance_expect(comp_ctx, DUK_TOK_FUNCTION);
+		(void) parse_function_like_raw(comp_ctx,
+		                               0,      /* is_decl */
+		                               0);     /* is_setget */
+	} else {
+		func->is_function = 0;
+		func->is_eval = is_eval;
+		func->is_global = !is_eval;
+
+		parse_function_body(comp_ctx,
+		                    1,             /* expect_eof */
+		                    1);            /* implicit_return_value */
+	}
+
 	/*
 	 *  Convert duk_compiler_func to a function template
 	 */

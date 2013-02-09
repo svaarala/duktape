@@ -197,8 +197,9 @@ struct duk_compiler_ctx {
  *  Prototypes
  */
 
-#define  DUK_JS_COMPILE_FLAG_EVAL     (1 << 0)  /* source is eval code (not program) */
-#define  DUK_JS_COMPILE_FLAG_STRICT   (1 << 1)  /* strict outer context */
+#define  DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not program) */
+#define  DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
+#define  DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
 
 void duk_js_compile(duk_hthread *thr, int flags);
 
