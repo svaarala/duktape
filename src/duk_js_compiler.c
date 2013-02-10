@@ -5445,7 +5445,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 			}
 			duk_dup_top(ctx);
 			if (duk_has_prop(ctx, comp_ctx->curr_func.varmap_idx)) {
-				DUK_DDDPRINT("duplicate arg name in strict mdoe -> SyntaxError");
+				DUK_DDDPRINT("duplicate arg name in strict mode -> SyntaxError");
 				goto error_argname;
 			}
 
@@ -5521,9 +5521,9 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 				duk_push_int(ctx, reg_bind);
 			}
 		} else {
-			/* Note: function declaration for global/eval code is emitted
-			 * even for duplicates, because of E5 Section 10.5, step 5.e
-			 * of E5.1 (special behavior for variable bound to global object).
+			/* Function declaration for global/eval code is emitted even
+			 * for duplicates, because of E5 Section 10.5, step 5.e of
+			 * E5.1 (special behavior for variable bound to global object).
 			 *
 			 * DECLVAR will not re-declare a variable as such, but will
 			 * update the binding value.
