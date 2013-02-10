@@ -75,6 +75,23 @@ int duk_builtin_function_prototype(duk_context *ctx) {
 int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
+	/*
+	 *  E5 Section 15.3.4.2 places few requirements on the output of
+	 *  this function:
+	 *
+	 *    - The result is an implementation dependent representation
+	 *      of the function; in particular
+	 *
+	 *    - The result must follow the syntax of a FunctionDeclaration.
+	 *      In particular, the function must have a name (even in the
+	 *      case of an anonymous function or a function with an empty
+	 *      name).
+	 *
+	 *    - Note in particular that the output does NOT need to compile
+	 *      into anything useful.
+	 */
+
+
 	/* FIXME: faster internal way to get this */
 	duk_push_this(ctx);
 	tv = duk_get_tval(ctx, -1);
@@ -82,7 +99,7 @@ int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv);
-		const char *func_name = "";
+		const char *func_name = "anonymous";
 
 		/* FIXME: rework, it would be nice to avoid C formatting functions to
 		 * ensure there are no Unicode issues.
@@ -92,6 +109,10 @@ int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 		if (!duk_is_undefined(ctx, -1)) {
 			func_name = duk_to_string(ctx, -1);
 			DUK_ASSERT(func_name != NULL);
+
+			if (func_name[0] == (char) 0) {
+				func_name = "empty";
+			}
 		}
 
 		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj)) {
