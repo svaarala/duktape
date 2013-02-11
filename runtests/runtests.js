@@ -164,6 +164,9 @@ function executeTest(options, callback) {
         }
     }
 
+    /* FIXME: use child_process.spawn(); we don't currently escape command
+     * line parameters which is risky.
+     */
     cmd = [];
     if (options.valgrind) {
         tempVgxml = mkTempName();
