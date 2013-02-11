@@ -13,8 +13,11 @@ clean:
 	scons -c -s
 
 test:
-	cd testcases; python runtests.py --run-duk --run-nodejs --run-rhino --num-threads 8 --test-log=/tmp/duk-test.log --test-all --cmd-duk=$(shell pwd)/build/400/duk.400
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log testcases/
 
+vgtest:
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind testcases/
+	
 install:
 	scons -j 8 install
 
