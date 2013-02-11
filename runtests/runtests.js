@@ -248,6 +248,16 @@ function prettyJson(x) {
     return JSON.stringify(x, null, 2);
 }
 
+function prettySnippet(x, label) {
+    x = (x != null ? x : '');
+    if (x.length > 0 && x[x.length - 1] != '\n') {
+        x += '\n';
+    }
+    return '=== begin: ' + label + ' ===\n' +
+           x +
+           '=== end: ' + label + ' ===';
+}
+
 function getValgrindErrorSummary(root) {
     var res;
     var errors;
@@ -364,11 +374,14 @@ function testRunnerMain() {
                 if (results[tn][other.name].stdout === res.stdout) {
                     return;
                 }
+                if (!res.diff_other) {
+                    res.diff_other = {}
+                }
                 queue2.push({
                     src: res.stdout,
                     dst: results[tn][other.name].stdout,
-                    resultObject: res,
-                    resultKey: 'diff_' + other.name
+                    resultObject: res.diff_other,
+                    resultKey: other.name
                 });
             });
         }, null);
@@ -417,10 +430,10 @@ function testRunnerMain() {
 
                 engines.forEach(function checkDiffToOther(other) {
                     if (other.name === 'duk' ||
-                        !res['diff_' + other.name]) {
+                        !res.diff_other || !res.diff_other[other.name]) {
                         return;
                     }
-                    parts.push(other.name + ' diff ' + res['diff_' + other.name].split('\n').length + ' lines');
+                    parts.push(other.name + ' diff ' + res.diff_other[other.name].split('\n').length + ' lines');
                     if (argv['report-diff-to-other']) {
                         need = true;
                     }
@@ -450,10 +463,27 @@ function testRunnerMain() {
         var lines = [];
 
         iterateResults(function logResult(tn, en, res) {
+            var desc = tn + '/' + en;
             lines.push(adornString(tn + ' ' + en));
             lines.push('');
             lines.push(prettyJson(res));
             lines.push('');
+            lines.push(prettySnippet(res.stdout, 'stdout of ' + desc));
+            lines.push('');
+            lines.push(prettySnippet(res.stderr, 'stderr of ' + desc));
+            lines.push('');
+            lines.push(prettySnippet(res.testcase.expect, 'expect of ' + desc));
+            lines.push('');
+            if (res.diff_expect) {
+                lines.push(prettySnippet(res.diff_expect, 'diff_expect of ' + desc));
+                lines.push('');
+            }
+            if (res.diff_other) {
+                for (other_name in res.diff_other) {
+                    lines.push(prettySnippet(res.diff_other[other_name], 'diff_other ' + other_name + ' of ' + desc));
+                    lines.push('');
+                }
+            }
         });
 
         fs.writeFileSync(logFile, lines.join('\n') + '\n');
@@ -510,6 +540,7 @@ function testRunnerMain() {
         analyzeResults();
         printSummary();
         if (argv['log-file']) {
+            console.log('Writing test output to: ' + argv['log-file']);
             createLogFile(argv['log-file']);
         }
         console.log('All done.');
