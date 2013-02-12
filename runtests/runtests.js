@@ -541,7 +541,9 @@ function testRunnerMain() {
     queue2.drain = function() {
         // summary and exit
         analyzeResults();
+        console.log('\n----------------------------------------------------------------------------\n');
         printSummary();
+        console.log('\n----------------------------------------------------------------------------\n');
         if (argv['log-file']) {
             console.log('Writing test output to: ' + argv['log-file']);
             createLogFile(argv['log-file']);
