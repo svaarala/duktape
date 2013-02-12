@@ -29,7 +29,7 @@ function buildParenExpr(count) {
 
 try {
     /* a reasonable nest count should of course compile */
-    print(eval(buildParenExpr(50)));
+    print(eval(buildParenExpr(25)));
 } catch (e) {
     print(e.name);
 }
@@ -61,7 +61,7 @@ function buildBlockExpr(count) {
 
 try {
     // reasonable count
-    print(eval(buildBlockExpr(50)));
+    print(eval(buildBlockExpr(15)));
 } catch (e) {
     print(e.name);
 }
@@ -94,7 +94,7 @@ function buildFuncExpr(count) {
 
 try {
     // reasonable
-    eval(buildFuncExpr(50));
+    eval(buildFuncExpr(10));
 } catch (e) {
     print(e.name);
 }
