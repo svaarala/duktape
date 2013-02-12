@@ -254,6 +254,9 @@ int main(int argc, char *argv[]) {
 
 	set_sigint_handler();
 
+	/* This is useful at the global level; libraries should avoid SIGPIPE though */
+	/*signal(SIGPIPE, SIG_IGN);*/
+
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (!arg) {

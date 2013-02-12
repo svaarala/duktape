@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/types.h>
@@ -136,7 +137,8 @@ int duk_socket_write(duk_context *ctx) {
 
 	data = duk_to_buffer(ctx, 1, &len);
 
-	rc = sendto(sock, (void *) data, len, 0, NULL, 0);
+	/* MSG_NOSIGNAL: avoid SIGPIPE */
+	rc = sendto(sock, (void *) data, len, MSG_NOSIGNAL, NULL, 0);
 	if (rc < 0) {
 		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
 	}
