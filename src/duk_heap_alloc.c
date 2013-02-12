@@ -93,6 +93,7 @@ static void free_allocated(duk_heap *heap) {
 		 * because they may happen with finalizer processing.
 		 */
 
+		DUK_DDDPRINT("FINALFREE (allocated): %!iO", curr);
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -106,6 +107,7 @@ static void free_refzero_list(duk_heap *heap) {
 
 	curr = heap->refzero_list;
 	while (curr) {
+		DUK_DDDPRINT("FINALFREE (refzero_list): %!iO", curr);
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -120,6 +122,7 @@ static void free_markandsweep_finalize_list(duk_heap *heap) {
 
 	curr = heap->finalize_list;
 	while (curr) {
+		DUK_DDDPRINT("FINALFREE (finalize_list): %!iO", curr);
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -139,6 +142,7 @@ static void free_stringtable(duk_heap *heap) {
 			}
 
 			/* strings have no inner allocations so free directly */
+			DUK_DDDPRINT("FINALFREE (string): %!iO", e);
 			DUK_FREE(heap, e);
 #if 0  /* not strictly necessary */
 			heap->st[i] = NULL;
