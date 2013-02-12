@@ -5,12 +5,11 @@
 #ifndef __DUK_JS_COMPILER_H
 #define __DUK_JS_COMPILER_H 1
 
-/*
- *  Peephole optimizer
- */
+/* regexp compilation limits */
+#define  DUK_COMPILER_RECURSION_LIMIT       50
 
 /* maximum loopcount for peephole optimization */
-#define  DUK_COMPILER_PEEPHOLE_MAXITER  3
+#define  DUK_COMPILER_PEEPHOLE_MAXITER      3
 
 /*
  *  Compiler intermediate values
@@ -188,6 +187,10 @@ struct duk_compiler_ctx {
 	int tok12_idx;                      /* curr_token slot2 (matches 'lex' slot2_idx) */
 	int tok21_idx;                      /* prev_token slot1 */
 	int tok22_idx;                      /* prev_token slot2 */
+
+	/* recursion limit */
+	int recursion;
+	int recursion_limit;
 
 	/* current function being compiled (embedded instead of pointer for more compact access) */
 	duk_compiler_func curr_func;

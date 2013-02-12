@@ -14,6 +14,9 @@
  *
  *  The top-down recursive parser functions are named "parse_XXX".
  *
+ *  Recursion limits are in key functions to prevent arbitrary C recursion:
+ *  function body parsing, statement parsing, and expression parsing.
+ *
  *  See doc/compiler.txt for discussion on the design.
  */
 
@@ -28,6 +31,9 @@
 
 /* FIXME: hack, remove when const lookup is not O(n) */
 #define  GETCONST_MAX_CONSTS_CHECK    256
+
+#define  RECURSION_INCREASE(comp_ctx,thr)  recursion_increase((comp_ctx))
+#define  RECURSION_DECREASE(comp_ctx,thr)  recursion_decrease((comp_ctx))
 
 /*
  *  Prototypes
@@ -322,6 +328,21 @@ static duk_i8 token_lbp[] = {
 /*
  *  Misc helpers
  */
+
+static void recursion_increase(duk_compiler_ctx *comp_ctx) {
+	DUK_ASSERT(comp_ctx != NULL);
+	DUK_ASSERT(comp_ctx->recursion >= 0);
+	if (comp_ctx->recursion >= comp_ctx->recursion_limit) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "compiler recursion limit reached");
+	}
+	comp_ctx->recursion++;
+}
+
+static void recursion_decrease(duk_compiler_ctx *comp_ctx) {
+	DUK_ASSERT(comp_ctx != NULL);
+	DUK_ASSERT(comp_ctx->recursion > 0);
+	comp_ctx->recursion--;
+}
 
 static int hstring_is_eval_or_arguments(duk_compiler_ctx *comp_ctx, duk_hstring *h) {
 	DUK_ASSERT(h != NULL);
@@ -3570,9 +3591,12 @@ static int expr_lbp(duk_compiler_ctx *comp_ctx) {
 
 /* main expression parser function */
 static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	duk_context *ctx = (duk_context *) comp_ctx->thr;
+	duk_hthread *thr = comp_ctx->thr;
+	duk_context *ctx = (duk_context *) thr;
 	duk_ivalue tmp_alloc;   /* 'res' is used for "left", and 'tmp' for "right" */
 	duk_ivalue *tmp = &tmp_alloc;
+
+	RECURSION_INCREASE(comp_ctx, thr);
 
 	/* filter out flags from exprtop rbp_flags here to save space */
 	rbp = rbp & EXPR_RBP_MASK;
@@ -3616,6 +3640,8 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
 	/* final result is already in 'res' */
 
 	duk_pop_2(ctx);
+
+	RECURSION_DECREASE(comp_ctx, thr);
 }
 
 static void exprtop(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
@@ -4858,6 +4884,8 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 	int label_id = -1;
 	int tok;
 
+	RECURSION_INCREASE(comp_ctx, thr);
+
 	temp_at_entry = GETTEMP(comp_ctx);
 	pc_at_entry = get_current_pc(comp_ctx);
 	labels_len_at_entry = duk_get_length(ctx, comp_ctx->curr_func.labelnames_idx);
@@ -5303,6 +5331,8 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 	reset_labels_to_length(comp_ctx, labels_len_at_entry);
 
 	/* FIXME: return indication of "terminalness" (e.g. a 'throw' is terminal) */
+
+	RECURSION_DECREASE(comp_ctx, thr);
 }
 
 #undef HAS_VAL
@@ -5689,6 +5719,8 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(func != NULL);
 
+	RECURSION_INCREASE(comp_ctx, thr);
+
 	duk_require_stack(ctx, 100);  /* FIXME: what would be a proper value?
 	                               * must re-check in critical recursion
 	                               * points.
@@ -5874,6 +5906,7 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 	 *  function template.
 	 */
 
+	RECURSION_DECREASE(comp_ctx, thr);
 	return;
 
  error_funcname:
@@ -6162,6 +6195,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	comp_ctx->tok12_idx = entry_top + 2;
 	comp_ctx->tok21_idx = entry_top + 3;
 	comp_ctx->tok22_idx = entry_top + 4;
+	comp_ctx->recursion_limit = DUK_COMPILER_RECURSION_LIMIT;
 
 	DUK_LEXER_INITCTX(&comp_ctx->lex);   /* just zeroes/NULLs */
 	comp_ctx->lex.thr = thr;
