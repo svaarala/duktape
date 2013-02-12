@@ -755,7 +755,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 
 	idx = env_regbase + reg_rel;
 	tv = &env_thr->valstack[idx];
-	DUK_ASSERT(tv >= thr->valstack && tv < thr->valstack_end);  /* FIXME: more accurate? */
+	DUK_ASSERT(tv >= env_thr->valstack && tv < env_thr->valstack_end);  /* FIXME: more accurate? */
 
 	out->value = tv;
 	out->this_binding = NULL;  /* implicit this value always undefined for
