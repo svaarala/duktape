@@ -1473,7 +1473,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	/* [ ... | ] or [ ... | errobj (M * undefined)] where M = num_stack_rets - 1 */
 
-#if 1
+#ifdef DUK_USE_DDDEBUG
 	DUK_DDPRINT("protected safe_call error handling finished, thread dump:");
 	DUK_DEBUG_DUMP_HTHREAD(thr);
 #endif

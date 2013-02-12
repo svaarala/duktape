@@ -668,10 +668,6 @@ static int handle_longjmp(duk_hthread *thr,
 	 * except us, and we switch 'thr' in that case.
 	 */
 
-#if 0
-	DUK_DEBUG_DUMP_HTHREAD(thr);
-#endif
-
 	/*
 	 *  (Re)try handling the longjmp.
 	 *

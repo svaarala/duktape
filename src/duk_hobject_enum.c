@@ -49,13 +49,11 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	duk_push_new_object_internal(ctx);
 
 	DUK_DPRINT("created internal object");
-	DUK_DEBUG_DUMP_HTHREAD(thr);
 
 	/* [target res] */
 
 	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INT_TARGET);
 	duk_push_hobject(ctx, target);
-	DUK_DEBUG_DUMP_HTHREAD(thr);
 	duk_put_prop(ctx, -3);
 
 	/* initialize index so that we skip internal control keys */
