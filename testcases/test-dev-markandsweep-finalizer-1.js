@@ -4,6 +4,10 @@
 }
 ---*/
 
+/* XXX: the ordering of print statements is not deterministic, it changes
+ * when using the torture build: finalizer runs before 'nulled'.
+ */
+
 /*===
 nulling
 nulled
