@@ -235,7 +235,7 @@ static duk_i32 parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof) {
 
 	if (re_ctx->recursion >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
-		          "regexp compilation recursion limit reached");
+		          "regexp compiler recursion limit reached");
 	}
 	re_ctx->recursion++;
 
