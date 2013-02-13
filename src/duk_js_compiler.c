@@ -32,8 +32,15 @@
 /* FIXME: hack, remove when const lookup is not O(n) */
 #define  GETCONST_MAX_CONSTS_CHECK    256
 
-#define  RECURSION_INCREASE(comp_ctx,thr)  recursion_increase((comp_ctx))
-#define  RECURSION_DECREASE(comp_ctx,thr)  recursion_decrease((comp_ctx))
+#define  RECURSION_INCREASE(comp_ctx,thr)  do { \
+		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", __FILE__, __LINE__); \
+		recursion_increase((comp_ctx)); \
+	} while(0)
+
+#define  RECURSION_DECREASE(comp_ctx,thr)  do { \
+		DUK_DDDPRINT("RECURSION DECREASE: %s:%d", __FILE__, __LINE__); \
+		recursion_decrease((comp_ctx)); \
+	} while(0)
 
 /* Note: slots limits below are quite approximate right now, and because they
  * overlap (in control flow), some can be eliminated.
@@ -3639,7 +3646,7 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
 		res->x1.t = DUK_ISPEC_VALUE;
 		duk_push_undefined(ctx);
 		duk_replace(ctx, res->x1.valstack_idx);
-		return;
+		goto cleanup;
 	}
 
 	advance(comp_ctx);
@@ -3650,6 +3657,7 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
 		copy_ivalue(comp_ctx, tmp, res);  /* tmp -> res */
 	}
 
+ cleanup:
 	/* final result is already in 'res' */
 
 	duk_pop_2(ctx);
