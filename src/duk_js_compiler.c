@@ -35,6 +35,15 @@
 #define  RECURSION_INCREASE(comp_ctx,thr)  recursion_increase((comp_ctx))
 #define  RECURSION_DECREASE(comp_ctx,thr)  recursion_decrease((comp_ctx))
 
+/* Note: slots limits below are quite approximate right now, and because they
+ * overlap (in control flow), some can be eliminated.
+ */
+
+#define  COMPILE_ENTRY_SLOTS          8
+#define  FUNCTION_INIT_REQUIRE_SLOTS  16
+#define  FUNCTION_BODY_REQUIRE_SLOTS  16
+#define  PARSE_STATEMENTS_SLOTS       16
+
 /*
  *  Prototypes
  */
@@ -460,6 +469,8 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->h_varmap = NULL;
 #endif
 
+	duk_require_stack(ctx, FUNCTION_INIT_REQUIRE_SLOTS);
+
 	/* FIXME: getter for growable buffer */
 
 	duk_push_new_growable_buffer(ctx, 0);
@@ -598,6 +609,8 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	/*
 	 *  Push result object and init its flags
 	 */
+
+	/* Valstack should suffice here, required on function valstack init */
 
 	(void) duk_push_new_compiledfunction(ctx);
 	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* FIXME: specific getter */
@@ -5358,6 +5371,8 @@ static void parse_statements(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
 
 	/* Setup state.  Initial ivalue is 'undefined'. */
 
+	duk_require_stack(ctx, PARSE_STATEMENTS_SLOTS);
+
 	/* FIXME: 'res' setup can be moved to function body level; in fact, two 'res'
 	 * intermediate values suffice for parsing of each function.  Nesting is needed
 	 * for nested functions (which may occur inside expressions).
@@ -5721,10 +5736,7 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 
 	RECURSION_INCREASE(comp_ctx, thr);
 
-	duk_require_stack(ctx, 100);  /* FIXME: what would be a proper value?
-	                               * must re-check in critical recursion
-	                               * points.
-	                               */
+	duk_require_stack(ctx, FUNCTION_BODY_REQUIRE_SLOTS);
 
 	/*
 	 *  Store lexer position for a later rewind
@@ -6065,7 +6077,6 @@ static void parse_function_like_raw(duk_compiler_ctx *comp_ctx, int is_decl, int
 	 *  to the parent function table.
 	 */
 
-	duk_require_stack(ctx, 100);  /* FIXME: clean up when fixing stack handling */
 	convert_to_function_template(comp_ctx);  /* -> [ ... func ] */
 }
 
@@ -6182,6 +6193,8 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	comp_ctx->curr_token.str1 = NULL;
 	comp_ctx->curr_token.str2 = NULL;
 #endif
+
+	duk_require_stack(ctx, COMPILE_ENTRY_SLOTS);
 
 	duk_push_new_growable_buffer(ctx, 0);  /* entry_top + 0 */
 	duk_push_undefined(ctx);               /* entry_top + 1 */
