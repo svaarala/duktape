@@ -4,6 +4,21 @@
 
 .PHONY: default all clean test install
 
+DIST_FILES =	\
+	README.txt \
+	LICENSE.txt \
+	SConstruct \
+	runtests/runtests.js \
+	runtests/package.json \
+	testcases/*.js \
+	src/SConscript \
+	src/*.py \
+	src/*.c \
+	src/*.h \
+	src/UnicodeData.txt \
+	src/SpecialCasing.txt \
+	doc/SConscript
+
 default:	all
 
 all:
@@ -20,5 +35,14 @@ vgtest:
 	
 install:
 	scons -j 8 install
+
+VERSION=0.1.0
+
+dist-src:
+	-rm -rf duktape-$(VERSION)/
+	-rm -rf dist.tar.lzma
+	mkdir duktape-$(VERSION) duktape-$(VERSION)/testcases duktape-$(VERSION)/src duktape-$(VERSION)/doc
+	cp -r --parents $(DIST_FILES) duktape-$(VERSION)/
+	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)
 
 

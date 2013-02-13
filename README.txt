@@ -7,32 +7,56 @@ It is intended to be easily embeddable into C programs, with a C API
 similar in spirit to Lua's.
 
 The goal is to support the full E5 feature set like Unicode strings
-and Perl 5 -like regular expressions.  Other feature highlights:
+and regular expressions.  Other feature highlights include:
 
-  * Custom types (like pointers and buffers) for better C integration
+  * Custom types (like pointers and buffers) for good C integration
 
-  * Reference counting and mark-and-sweep garbage collection, with
-    finalizer support
+  * Reference counting and mark-and-sweep garbage collection
+    (with finalizer support)
 
   * Co-operative threads, a.k.a. coroutines
 
   * Tail call support
 
-For building, see::
+This is a very early development version which is not intended for actual
+use.  Most basic things work:
 
-  doc/building.txt
+  * Ecmascript compiler and bytecode executor
 
-For an API description for calling code, see::
+  * Regexp compiler and regexp bytecode executor
 
-  doc/api.txt
+  * Garbage collection (reference counting and mark-and-sweep)
 
-The internal design is described in a bunch of separate documents.
-You should begin with the overview in::
+  * Object, array, function, identifier access etc basic semantics
 
-  doc/design.txt
+However, almost all built-ins are missing and there are (known and unknown)
+bugs here and there (for instance, number parsing is incomplete).  There is
+also no documentation in this release as no documentation is finished yet.
+API and internal documentation will be included in future releases.
 
-Duktape is licensed under the MIT license (see ``LICENSE.txt``).
-MurmurHash2 is used internally; it is also under the MIT license.
+To build::
+
+  $ scons -s -j 8
+
+To test the command line version::
+
+  $ build/100/duk.100
+  duk> print('Hello world!');
+  [bytecode length 6 opcodes, registers 4, constants 2, inner functions 0]
+  Hello world!
+  = undefined
+
+To run the current test suite, install node.js and then::
+
+  $ cd runtests/
+  $ npm install   # installs dependencies
+  $ cd ..  
+  $ node runtests/runtests.js --run-duk --cmd-duk=build/100/duk.100 \
+        --num-threads 8 --log-file=/tmp/log.txt testcases/
 
 Have fun!
+
+-- 
+Sami Vaarala
+sami.vaarala@iki.fi
 
