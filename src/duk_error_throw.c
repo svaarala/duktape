@@ -121,7 +121,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 	 */
 
 	/* FIXME: if attempt to push beyond allocated valstack, this double fault
-	 * handling fails miserably.
+	 * handling fails miserably.  We should really write the double error
+	 * directly to thr->heap->lj.value1 and avoid valstack use entirely.
 	 */
 
 	if (double_error) {
@@ -135,6 +136,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 		}
 	} else {
 		/* Error object is augmented at its creation here. */
+		duk_require_stack(ctx, 1);
 #ifdef DUK_USE_VERBOSE_ERRORS
 		duk_push_new_error_object(ctx, code, msg);
 #else
