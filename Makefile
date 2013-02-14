@@ -43,6 +43,6 @@ dist-src:
 	-rm -rf dist.tar.lzma
 	mkdir duktape-$(VERSION) duktape-$(VERSION)/testcases duktape-$(VERSION)/src duktape-$(VERSION)/doc
 	cp -r --parents $(DIST_FILES) duktape-$(VERSION)/
-	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)
-
+	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)/
+	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
 
