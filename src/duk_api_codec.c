@@ -180,7 +180,7 @@ void duk_base64_encode(duk_context *ctx, int index) {
 	 * >>> '%x' % ((srclen + 2) / 3 * 4)
 	 * 'fffffffc'
 	 */
-	if (srclen > 3221225469) {
+	if (srclen > 3221225469U) {
 		goto type_error;
 	}
 	dstlen = (srclen + 2) / 3 * 4;
@@ -218,7 +218,7 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	 * This limit works for 32-bit size_t:
 	 * 0x100000000 - 3 - 1 = 4294967292
 	 */
-	if (srclen > 4294967292) {
+	if (srclen > 4294967292U) {
 		goto type_error;
 	}
 	dstlen = (srclen + 3) / 4 * 3;  /* upper limit */
