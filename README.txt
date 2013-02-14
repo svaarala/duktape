@@ -9,7 +9,7 @@ similar in spirit to Lua's.
 The goal is to support the full E5 feature set like Unicode strings
 and regular expressions.  Other feature highlights include:
 
-  * Custom types (like pointers and buffers) for good C integration
+  * Custom types (like pointers and buffers) for C integration
 
   * Reference counting and mark-and-sweep garbage collection
     (with finalizer support)
