@@ -34,7 +34,7 @@ bugs here and there (for instance, number parsing is incomplete).  There is
 also no documentation in this release as no documentation is finished yet.
 API and internal documentation will be included in future releases.
 
-To build::
+To build (only Linux at the moment)::
 
   $ scons -s -j 8
 
@@ -53,6 +53,12 @@ To run the current test suite, install node.js and then::
   $ cd ..  
   $ node runtests/runtests.js --run-duk --cmd-duk=build/100/duk.100 \
         --num-threads 8 --log-file=/tmp/log.txt testcases/
+
+The source code compiles on Darwin (and maybe OSX), but you need to
+change the following in src/SConscript::
+
+  -                   LIBS=['m', 'rt', 'readline', 'ncursesw'])
+  +                   LIBS=['m', 'rt', 'readline', 'ncurses'])
 
 Have fun!
 
