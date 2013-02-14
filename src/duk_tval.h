@@ -63,7 +63,12 @@
  */
 
 #include <limits.h>
+/* FIXME: OSX/Darwin temporary workaround */
+#ifdef __APPLE__
+#include <architecture/byte_order.h>
+#else
 #include <endian.h>
+#endif
 
 /* best effort viability checks, not particularly accurate */
 #if (defined(__WORDSIZE) && (__WORDSIZE != 32)) || \

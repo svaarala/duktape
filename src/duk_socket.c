@@ -138,7 +138,12 @@ int duk_socket_write(duk_context *ctx) {
 	data = duk_to_buffer(ctx, 1, &len);
 
 	/* MSG_NOSIGNAL: avoid SIGPIPE */
+#ifdef __APPLE__
+	/* FIXME: must use socket options to get same behavior */
+	rc = sendto(sock, (void *) data, len, 0, NULL, 0);
+#else
 	rc = sendto(sock, (void *) data, len, MSG_NOSIGNAL, NULL, 0);
+#endif
 	if (rc < 0) {
 		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
 	}
