@@ -201,9 +201,9 @@ var NODEJS_HEADER =
     "function print() {\n" +
     "    // Note: Array.prototype.map() is required to support 'this' binding\n" +
     "    // other than an array (arguments object here).\n" +
-    "    var tmp = Array.prototype.map.call(arguments, function (x) { return '' + x; });\n" +
-    "    var msg = tmp.join(' ');\n" +
-    "    console.log(msg);\n" +
+    "    var tmp = Array.prototype.map.call(arguments, function (x) { return String(x); });\n" +
+    "    var msg = tmp.join(' ') + '\\n';\n" +
+    "    process.stdout.write(msg);\n" +
     "}\n" +
     "/* nodejs header end */\n" +
     "\n";
@@ -359,8 +359,8 @@ function testRunnerMain() {
         iterateResults(function queueDiff(tn, en, res) {
             if (res.stdout !== res.testcase.expect) {
                 queue2.push({
-                    src: res.stdout,
-                    dst: res.testcase.expect,
+                    src: res.testcase.expect,
+                    dst: res.stdout,
                     resultObject: res,
                     resultKey: 'diff_expect'
                 });
