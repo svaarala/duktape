@@ -415,9 +415,9 @@ standard_other_string_list = [
 	mkstr("+0"),
 	mkstr("-0"),
 	mkstr("", class_name=True),	# used as a class name for unused/invalid class
-	mkstr(","),		# for array joining
-	mkstr(" "),		# for print()
-
+	mkstr(","),			# for array joining
+	mkstr(" "),			# for print()
+	mkstr("Invalid Date"),		# for invalid Date instances
 	# arguments object (E5 Section 10.6)
 	mkstr("arguments"),
 	mkstr("callee"),
@@ -615,6 +615,9 @@ special_define_names = {
 	'MAX_VALUE': 'MAX_VALUE',
 	'NEGATIVE_INFINITY': 'NEGATIVE_INFINITY',
 	'POSITIVE_INFINITY': 'POSITIVE_INFINITY',
+	'(?:)': 'ESCAPED_EMPTY_REGEXP',
+	'Invalid Date': 'INVALID_DATE',
+
 	'decodeURIComponent': 'DECODE_URI_COMPONENT',
 	'encodeURIComponent': 'ENCODE_URI_COMPONENT',
 	'getUTCDate': 'GET_UTC_DATE',
@@ -643,8 +646,6 @@ special_define_names = {
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
 	' ': 'SPACE',
-
-	'(?:)': 'ESCAPED_EMPTY_REGEXP',
 }
 
 #

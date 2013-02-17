@@ -536,6 +536,7 @@ bi_date_constructor = {
 	'name': 'Date',
 
 	'length': 7,
+	'varargs': True,
 	'native': 'duk_builtin_date_constructor',
 	'callable': True,
 	'constructable': True,
@@ -544,7 +545,7 @@ bi_date_constructor = {
 	],
 	'functions': [
 		{ 'name': 'parse',			'native': 'duk_builtin_date_constructor_parse',			'length': 1 },
-		{ 'name': 'UTC',			'native': 'duk_builtin_date_constructor_utc',			'length': 7 },
+		{ 'name': 'UTC',			'native': 'duk_builtin_date_constructor_utc',			'length': 7,	'varargs': True },
 		{ 'name': 'now',			'native': 'duk_builtin_date_constructor_now',			'length': 0 },
 	],
 }
@@ -555,6 +556,10 @@ bi_date_prototype = {
 	'class': 'Date',
 
 	# The Date prototype is an instance of Date with [[PrimitiveValue]] NaN.
+
+	# Setters with optional arguments must be varargs functions because
+	# they must detect the number of parameters actually given (cannot
+	# assume parameters not given are undefined).
 
 	'values': [
 		# Internal date value (E5 Section 15.9.5).
@@ -598,18 +603,18 @@ bi_date_prototype = {
 		{ 'name': 'setTime',			'native': 'duk_builtin_date_prototype_set_time',		'length': 1 },
 		{ 'name': 'setMilliseconds',		'native': 'duk_builtin_date_prototype_set_milliseconds',	'length': 1 },
 		{ 'name': 'setUTCMilliseconds',		'native': 'duk_builtin_date_prototype_set_utc_milliseconds',	'length': 1 },
-		{ 'name': 'setSeconds',			'native': 'duk_builtin_date_prototype_set_seconds',		'length': 2 },
-		{ 'name': 'setUTCSeconds',		'native': 'duk_builtin_date_prototype_set_utc_seconds',		'length': 2 },
-		{ 'name': 'setMinutes',			'native': 'duk_builtin_date_prototype_set_minutes',		'length': 3 },
-		{ 'name': 'setUTCMinutes',		'native': 'duk_builtin_date_prototype_set_utc_minutes',		'length': 3 },
-		{ 'name': 'setHours',			'native': 'duk_builtin_date_prototype_set_hours',		'length': 4 },
-		{ 'name': 'setUTCHours',		'native': 'duk_builtin_date_prototype_set_utc_hours',		'length': 4 },
+		{ 'name': 'setSeconds',			'native': 'duk_builtin_date_prototype_set_seconds',		'length': 2,	'varargs': True },
+		{ 'name': 'setUTCSeconds',		'native': 'duk_builtin_date_prototype_set_utc_seconds',		'length': 2,	'varargs': True },
+		{ 'name': 'setMinutes',			'native': 'duk_builtin_date_prototype_set_minutes',		'length': 3,	'varargs': True },
+		{ 'name': 'setUTCMinutes',		'native': 'duk_builtin_date_prototype_set_utc_minutes',		'length': 3,	'varargs': True },
+		{ 'name': 'setHours',			'native': 'duk_builtin_date_prototype_set_hours',		'length': 4,	'varargs': True },
+		{ 'name': 'setUTCHours',		'native': 'duk_builtin_date_prototype_set_utc_hours',		'length': 4,	'varargs': True },
 		{ 'name': 'setDate',			'native': 'duk_builtin_date_prototype_set_date',		'length': 1 },
 		{ 'name': 'setUTCDate',			'native': 'duk_builtin_date_prototype_set_utc_date',		'length': 1 },
-		{ 'name': 'setMonth',			'native': 'duk_builtin_date_prototype_set_month',		'length': 2 },
-		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_utc_month',		'length': 2 },
-		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_full_year',		'length': 3 },
-		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_utc_full_year',	'length': 3 },
+		{ 'name': 'setMonth',			'native': 'duk_builtin_date_prototype_set_month',		'length': 2,	'varargs': True },
+		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_utc_month',		'length': 2,	'varargs': True },
+		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_full_year',		'length': 3,	'varargs': True },
+		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_utc_full_year',	'length': 3,	'varargs': True },
 		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_to_utc_string',		'length': 0 },
 		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_to_iso_string',		'length': 0 },
 		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
