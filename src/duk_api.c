@@ -1564,6 +1564,10 @@ void duk_push_int(duk_context *ctx, int val) {
 	duk_push_number(ctx, (double) val);
 }
 
+void duk_push_nan(duk_context *ctx) {
+	duk_push_number(ctx, NAN);
+}
+
 const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
