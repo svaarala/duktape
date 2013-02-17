@@ -561,6 +561,10 @@ bi_date_prototype = {
 	# they must detect the number of parameters actually given (cannot
 	# assume parameters not given are undefined).
 
+	# Date.prototype.valueOf() and Date.prototype.getTime() have identical
+	# behavior so they share the same C function, but have different
+	# function instances.
+
 	'values': [
 		# Internal date value (E5 Section 15.9.5).
 		#
@@ -582,7 +586,7 @@ bi_date_prototype = {
 		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_to_locale_date_string',	'length': 0 },
 		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_to_locale_time_string',	'length': 0 },
 		{ 'name': 'valueOf',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },
-		{ 'name': 'getTime',			'native': 'duk_builtin_date_prototype_get_time',		'length': 0 },
+		{ 'name': 'getTime',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
 		{ 'name': 'getFullYear',		'native': 'duk_builtin_date_prototype_get_full_year',		'length': 0 },
 		{ 'name': 'getUTCFullYear',		'native': 'duk_builtin_date_prototype_get_utc_full_year',	'length': 0 },
 		{ 'name': 'getMonth',			'native': 'duk_builtin_date_prototype_get_month',		'length': 0 },
