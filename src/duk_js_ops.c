@@ -243,7 +243,8 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
  *  ToInteger()  (E5 Section 9.4)
  */
 
-static double tointeger_number(double x) {
+/* exposed, used by e.g. duk_builtin_date.c */
+double duk_js_tointeger_number(double x) {
 	int c = fpclassify(x);
 
 	if (c == FP_NAN) {
@@ -265,7 +266,7 @@ static double tointeger_number(double x) {
 
 double duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
-	return tointeger_number(d);
+	return duk_js_tointeger_number(d);
 }
 
 /*
