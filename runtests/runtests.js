@@ -12,6 +12,9 @@ var fs = require('fs'),
     xml2js = require('xml2js'),
     md5 = require('MD5');
 
+var TIMEOUT_SLOW = 300 * 1000
+var TIMEOUT_NORMAL = 120 * 1000;
+
 /*
  *  Utils.
  */
@@ -185,7 +188,7 @@ function executeTest(options, callback) {
 
     execopts = {
         maxBuffer: 128 * 1024 * 1024,
-        timeout: 120 * 1000,  // FIXME: dependent on valgrind, slow test case, etc
+        timeout: options.testcase.meta.slow || options.valgrind ? TIMEOUT_SLOW : TIMEOUT_NORMAL,
         stdio: 'pipe'
     };
 
