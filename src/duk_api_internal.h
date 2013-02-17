@@ -46,7 +46,6 @@ duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, int index
 duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, int index);
 
 void duk_push_unused(duk_context *ctx);
-void duk_push_nan(duk_context *ctx);
 void duk_push_hstring(duk_context *ctx, duk_hstring *h);
 void duk_push_hstring_stridx(duk_context *ctx, int stridx);
 void duk_push_hobject(duk_context *ctx, duk_hobject *h);

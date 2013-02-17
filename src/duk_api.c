@@ -1388,6 +1388,15 @@ int duk_is_number(duk_context *ctx, int index) {
 	return DUK_TVAL_IS_NUMBER(tv);
 }
 
+int duk_is_nan(duk_context *ctx, int index) {
+	/* FIXME: make more compact */
+	/* FIXME: this will now return false for non-numbers, even though they would
+	 * coerce to NaN.  In particular, duk_get_number() returns a NaN for
+	 * non-numbers, so should this also return true for non-numbers?
+	 */
+	return duk_is_number(ctx, index) && isnan(duk_get_number(ctx, index));
+}
+
 int duk_is_string(duk_context *ctx, int index) {
 	DUK_ASSERT(ctx != NULL);
 	return _tag_check(ctx, index, DUK_TAG_STRING);

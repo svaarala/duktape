@@ -240,6 +240,7 @@ void duk_push_boolean(duk_context *ctx, int val);
 void duk_push_true(duk_context *ctx);
 void duk_push_false(duk_context *ctx);
 void duk_push_number(duk_context *ctx, double val);
+void duk_push_nan(duk_context *ctx);
 void duk_push_int(duk_context *ctx, int val);
 const char *duk_push_string(duk_context *ctx, const char *str);                     /* may fail; returns interned string ptr */
 const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len);        /* may fail; returns interned string ptr */
@@ -286,6 +287,7 @@ int duk_is_null(duk_context *ctx, int index);
 int duk_is_null_or_undefined(duk_context *ctx, int index);       /* useful in Ecmascript, similar to 'x == null' which also matches undefined */
 int duk_is_boolean(duk_context *ctx, int index);
 int duk_is_number(duk_context *ctx, int index);
+int duk_is_nan(duk_context *ctx, int index);
 int duk_is_string(duk_context *ctx, int index);
 int duk_is_object(duk_context *ctx, int index);
 int duk_is_buffer(duk_context *ctx, int index);
