@@ -280,12 +280,14 @@ static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
 		/* NaN */
 		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_NAN);
 	} else {
-		if (DUK_TVAL_GET_NUMBER(tv) == (int) DUK_TVAL_GET_NUMBER(tv)) {
-			duk_push_sprintf(ctx, "%d", (int) DUK_TVAL_GET_NUMBER(tv));
-		} else if (DUK_TVAL_GET_NUMBER(tv) == (unsigned int) DUK_TVAL_GET_NUMBER(tv)) {
-			duk_push_sprintf(ctx, "%u", (unsigned int) DUK_TVAL_GET_NUMBER(tv));
+		if (DUK_TVAL_GET_NUMBER(tv) == (int) d) {
+			duk_push_sprintf(ctx, "%d", (int) d);
+		} else if (DUK_TVAL_GET_NUMBER(tv) == (unsigned int) d) {
+			duk_push_sprintf(ctx, "%u", (unsigned int) d);
+		} else if (isfinite(d) && floor(d) == d) {
+			duk_push_sprintf(ctx, "%.0lf", (double) d);
 		} else {
-			duk_push_sprintf(ctx, "%f", DUK_TVAL_GET_NUMBER(tv));
+			duk_push_sprintf(ctx, "%lf", (double) d);
 		}
 	}
 }
