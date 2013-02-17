@@ -205,6 +205,7 @@ int duk_builtin_global_object_print(duk_context *ctx) {
 	}
 
 	fwrite(&nl, 1, 1, stdout);
+	fflush(stdout);
 	return 0;
 }
 
