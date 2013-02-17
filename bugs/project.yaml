@@ -4,5 +4,35 @@ version: "0.5"
 components: 
 - !ditz.rubyforge.org,2008-03-06/component 
   name: duk
-releases: []
-
+releases: 
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.1
+  status: :released
+  release_time: 2013-02-14 00:00:00 Z
+  log_events: 
+  - - 2013-02-14 00:00:00 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - created
+    - ""
+  - - 2013-02-14 00:00:00 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - released
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.2
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2013-02-17 01:38:12.567901 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - created
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.3
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2013-02-17 01:38:22.089104 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - created
+    - ""
