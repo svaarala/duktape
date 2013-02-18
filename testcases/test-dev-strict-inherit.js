@@ -15,8 +15,6 @@ true
  * code but returns false in non-strict code.
  */
 
-//print=console.log;
-
 function outer_strict() {
     'use strict';
     var foo = 1;
