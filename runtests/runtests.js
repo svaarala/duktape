@@ -12,7 +12,9 @@ var fs = require('fs'),
     xml2js = require('xml2js'),
     md5 = require('MD5');
 
-var TIMEOUT_SLOW = 300 * 1000
+var TIMEOUT_SLOW_VALGRIND = 3600 * 1000;
+var TIMEOUT_SLOW = 600 * 1000
+var TIMEOUT_NORMAL_VALGRIND = 720 * 1000;
 var TIMEOUT_NORMAL = 120 * 1000;
 
 /*
@@ -107,6 +109,7 @@ function executeTest(options, callback) {
     var cmd, cmdline;
     var execopts;
     var tempInput, tempVgxml, tempVgout;
+    var timeout;
 
     function execDone(error, stdout, stderr) {
         var res;
@@ -117,7 +120,8 @@ function executeTest(options, callback) {
             error: error,
             stdout: stdout,
             stderr: stderr,
-            cmdline: cmdline
+            cmdline: cmdline,
+            execopts: execopts
         };
 
         res.valgrind_xml = safeReadFileSync(tempVgxml, 'utf-8');
@@ -186,9 +190,14 @@ function executeTest(options, callback) {
     cmd.push(tempInput || options.testPath);
     cmdline = cmd.join(' ');
 
+    if (options.testcase.meta.slow) {
+        timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
+    } else {
+        timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
+    }
     execopts = {
         maxBuffer: 128 * 1024 * 1024,
-        timeout: options.testcase.meta.slow || options.valgrind ? TIMEOUT_SLOW : TIMEOUT_NORMAL,
+        timeout: timeout,
         stdio: 'pipe'
     };
 
