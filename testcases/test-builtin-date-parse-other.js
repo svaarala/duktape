@@ -36,6 +36,7 @@ RangeError
 2011-12-26T03:25:05.006Z
 2012-01-02T01:03:05.006Z
 2012-01-02T05:05:05.006Z
+2012-01-02T03:04:05.006Z
 ===*/
 
 /* The ISO 8601 subset parser is very lenient, so check for that
@@ -102,6 +103,8 @@ try {
     test('2012-01-02T03:04:05.006+02:01');
     test('2012-01-02T03:04:05.006-02:01');
 
+    // date/time separator can be a space
+    test('2012-01-02 03:04:05.006');
 } catch (e) {
     print(e.name);
 }
