@@ -2,6 +2,27 @@
 var ms_day = 24 * 60 * 60 * 1000;
 
 /*===
+time value basic tests
+1970-01-01T00:00:00.000Z
+1970-01-01T00:00:01.000Z
+1970-01-01T00:00:01.123Z
+1970-01-01T01:00:00.000Z
+1970-01-02T00:00:00.000Z
+===*/
+
+print('time value basic tests');
+
+try {
+    print(new Date(0).toISOString());
+    print(new Date(1000).toISOString());
+    print(new Date(1123).toISOString());
+    print(new Date(3600e3).toISOString());
+    print(new Date(86400e3).toISOString());
+} catch (e) {
+    print(e.name);
+}
+
+/*===
 leap year tests
 1903 1 28
 1903 2 1
@@ -17,7 +38,7 @@ leap year tests
 
 print('leap year tests');
 
-try {
+function leapYearTests() {
     var d;
 
     // 1903 is not a leap year
@@ -47,6 +68,10 @@ try {
     print(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
     d = new Date(Date.UTC(2000, 1, 30));  // wraps to Mar 1, 2000
     print(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+try {
+    leapYearTests();
 } catch (e) {
     print(e.name);
 }
