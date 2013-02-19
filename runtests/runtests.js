@@ -393,8 +393,8 @@ function testRunnerMain() {
                     res.diff_other = {}
                 }
                 queue2.push({
-                    src: res.stdout,
-                    dst: results[tn][other.name].stdout,
+                    src: results[tn][other.name].stdout,
+                    dst: res.stdout,
                     resultObject: res.diff_other,
                     resultKey: other.name
                 });
