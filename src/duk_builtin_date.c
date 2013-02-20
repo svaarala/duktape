@@ -14,7 +14,7 @@ static void timeval_to_parts(double d, int *parts, double *dparts, int flags);
 static double get_timeval_from_dparts(double *dparts, int flags);
 
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
- * to avoid valgrind errors.
+ * to avoid Valgrind errors.
  */
 #define  STRPTIME_BUF_SIZE  64
 #define  STRFTIME_BUF_SIZE  64
@@ -165,7 +165,7 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 	time_t t;
 	char buf[STRPTIME_BUF_SIZE];
 
-	/* copy to buffer with spare to avoid valgrind gripes from strptime */
+	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf) - 1, "%s", str);
 
@@ -489,8 +489,14 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	parts[PI_MONTH] -= 1;  /* zero-based month */
 	parts[PI_DAY] -= 1;  /* zero-based day */
 
-	/* Use double parts, they tolerate unnormalized time */
-	for (i = 0; i <= IDX_MILLISECOND; i++) {
+	/* Use double parts, they tolerate unnormalized time.
+	 *
+	 * Note: IDX_WEEKDAY is initialized with a bogus value (PI_TZHOUR)
+	 * on purpose.  It won't be actually used by get_timeval_from_dparts(),
+	 * but will make the value initialized just in case, and avoid any
+	 * potential for Valgrind issues.
+	 */
+	for (i = 0; i < NUM_PARTS; i++) {
 		DUK_DPRINT("part[%d] = %d", i, parts[i]);
 		dparts[i] = parts[i];
 	}
@@ -781,8 +787,11 @@ static double get_timeval_from_dparts(double *dparts, int flags) {
 	 * be called for NaN/Infinity because it will convert e.g. NaN to
 	 * zero.  If ToInteger() has already been called, this has no side
 	 * effects and is idempotent.
+	 *
+	 * Don't read dparts[IDX_WEEKDAY]; it will cause Valgrind issues
+	 * if the value is uninitialized.
 	 */
-	for (i = 0; i < NUM_PARTS; i++) {
+	for (i = 0; i <= IDX_MILLISECOND; i++) {
 		d = dparts[i];
 		if (isfinite(d)) {
 			dparts[i] = duk_js_tointeger_number(d);
@@ -1115,8 +1124,8 @@ static void set_parts_from_args(duk_context *ctx, double *dparts, int nargs) {
 	twodigit_year_fixup(ctx, 0);  /* applies additional ToNumber(), no harm */
 
 	/* There are at most 7 args, but we use 8 here so that also
-	 * IDX_WEEKDAY gets initialized (to zero) to avoid any Valgrind
-	 * gripes later.
+	 * IDX_WEEKDAY gets initialized (to zero) to avoid the potential
+	 * for any Valgrind gripes later.
 	 */
 	for (i = 0; i < 8; i++) {
 		/* Note: rely on index ordering */
