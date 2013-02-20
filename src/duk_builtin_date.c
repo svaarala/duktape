@@ -1,23 +1,54 @@
 /*
  *  Date built-ins
+ *
+ *  Unlike most built-ins, Date has a lot of platform dependencies for
+ *  getting UTC time, converting between UTC and local time, and parsing
+ *  and formatting time values.
  */
 
 #include "duk_internal.h"
 
-#include <sys/time.h>
-#include <time.h>
+/*
+ *  Platform specific includes and defines
+ */
 
-/* Forward declarations. */
-static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, int *out_tzoffset);
-static double push_this_and_get_timeval(duk_context *ctx, int flags);
-static void timeval_to_parts(double d, int *parts, double *dparts, int flags);
-static double get_timeval_from_dparts(double *dparts, int flags);
+#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
+#include <sys/time.h>
+#endif
+
+#if defined(DUK_USE_DATE_TZO_GMTIME) || \
+    defined(DUK_USE_DATE_PRS_STRPTIME) || \
+    defined(DUK_USE_DATE_FMT_STRFTIME)
+#include <time.h>
+#endif
+
+#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
+#define  GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
+#else
+#error no function to get current time
+#endif
+
+#if defined(DUK_USE_DATE_TZO_GMTIME)
+#define  GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
+#else
+#error no function to get local tzoffset
+#endif
 
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
  * to avoid Valgrind errors.
  */
 #define  STRPTIME_BUF_SIZE  64
 #define  STRFTIME_BUF_SIZE  64
+
+/*
+ *  Other file level defines
+ */
+
+/* Forward declarations. */
+static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, int *out_tzoffset);
+static double push_this_and_get_timeval(duk_context *ctx, int flags);
+static void timeval_to_parts(double d, int *parts, double *dparts, int flags);
+static double get_timeval_from_dparts(double *dparts, int flags);
 
 /* Millisecond count constants. */
 #define  MS_SECOND          1000
@@ -55,14 +86,16 @@ static double get_timeval_from_dparts(double *dparts, int flags);
 #define  FLAG_SUB1900              (1 << 4)  /* getter: subtract 1900 from year when getting year part */
 #define  FLAG_TOSTRING_DATE        (1 << 5)  /* include date part in string conversion result */
 #define  FLAG_TOSTRING_TIME        (1 << 6)  /* include time part in string conversion result */
-#define  FLAG_TIMESETTER           (1 << 7)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
+#define  FLAG_TOSTRING_LOCALE      (1 << 7)  /* use locale specific formatting if available */
+#define  FLAG_TIMESETTER           (1 << 8)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
 
 /*
  *  Platform specific helpers
  */
 
+#ifdef DUK_USE_DATE_NOW_GETTIMEOFDAY
 /* Current Ecmascript (= UNIX) time */
-static double get_now_timeval(duk_context *ctx) {
+static double get_now_timeval_gettimeofday(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
 	double d;
@@ -77,9 +110,11 @@ static double get_now_timeval(duk_context *ctx) {
 
 	return d;
 }
+#endif  /* DUK_USE_DATE_NOW_GETTIMEOFDAY */
 
+#ifdef DUK_USE_DATE_TZO_GMTIME
 /* Get local time offset (in seconds) for a certain instant 'd'. */
-static int get_local_tzoffset(double d) {
+static int get_local_tzoffset_gmtime(double d) {
 	time_t t, t1, t2;
 	int parts[NUM_PARTS];
 	double dparts[NUM_PARTS];
@@ -159,7 +194,9 @@ static int get_local_tzoffset(double d) {
 	DUK_DPRINT("mktime() failed");
 	return 0;
 }
+#endif  /* DUK_USE_DATE_TZO_GMTIME */
 
+#ifdef DUK_USE_DATE_PRS_STRPTIME
 static int parse_string_strptime(duk_context *ctx, const char *str) {
 	struct tm tm;
 	time_t t;
@@ -178,7 +215,7 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 		           (int) tm.tm_sec, (int) tm.tm_min, (int) tm.tm_hour,
 		           (int) tm.tm_mday, (int) tm.tm_mon, (int) tm.tm_year,
 		           (int) tm.tm_wday, (int) tm.tm_yday, (int) tm.tm_isdst);
-		tm.tm_isdst = -1;  /*FIXME*/
+		tm.tm_isdst = -1;  /* negative: dst info not available */
 
 		t = mktime(&tm);
 		DUK_DPRINT("mktime() -> %d", (int) t);
@@ -190,8 +227,38 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 
 	return 0;
 }
+#endif  /* DUK_USE_DATE_PRS_STRPTIME */
 
-static int format_parts_strftime(duk_context *ctx, int *parts, int flags) {
+#ifdef DUK_USE_DATE_PRS_GETDATE
+static int parse_string_getdate(duk_context *ctx, const char *str) {
+	struct tm tm;
+	int rc;
+	time_t t;
+
+	/* For this to work, DATEMSK must be set, to this is not very
+	 * convenient for an embeddable interpreter.
+	 */
+
+	memset(&tm, 0, sizeof(struct tm));
+	rc = getdate_r(str, &tm);
+	DUK_DPRINT("getdate_r() -> %d", rc);
+
+	if (rc == 0) {
+		t = mktime(&tm);
+		DUK_DPRINT("mktime() -> %d", (int) t);
+		if (t >= 0) {
+			duk_push_number(ctx, (double) t);
+			return 1;
+		}
+	}
+
+	duk_push_nan(ctx);
+	return 1;
+}
+#endif  /* DUK_USE_DATE_PRS_GETDATE */
+
+#ifdef DUK_USE_DATE_FMT_STRFTIME
+static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int flags) {
 	char buf[STRFTIME_BUF_SIZE];
 	struct tm tm;
 	const char *fmt;
@@ -201,8 +268,8 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int flags) {
 	tm.tm_sec = parts[IDX_SECOND];
 	tm.tm_min = parts[IDX_MINUTE];
 	tm.tm_hour = parts[IDX_HOUR];
-	tm.tm_mday = parts[IDX_DAY] + 1;
-	tm.tm_mon = parts[IDX_MONTH];
+	tm.tm_mday = parts[IDX_DAY];       /* already one-based */
+	tm.tm_mon = parts[IDX_MONTH] - 1;  /* one-based -> zero-based */
 	tm.tm_year = parts[IDX_YEAR] - 1900;
 	tm.tm_wday = parts[IDX_WEEKDAY];
 	tm.tm_isdst = 0;
@@ -222,24 +289,7 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int flags) {
 	duk_push_string(ctx, buf);
 	return 1;
 }
-
-
-#if 0
-	int rc;
-	memset(&tm, 0, sizeof(struct tm));
-	rc = getdate_r(str, &tm);
-	DUK_DPRINT("getdate_r() -> %d", rc);
-
-	duk_push_nan(ctx);
-	if (rc == 0) {
-		t = mktime(&tm);
-		DUK_DPRINT("mktime() -> %d", (int) t);
-		if (t >= 0) {
-			duk_push_number(ctx, (double) t);
-		}
-	}
-	/* Note: unbalanced stack on purpose */
-#endif
+#endif  /* DUK_USE_DATE_FMT_STRFTIME */
 
 /*
  *  ISO 8601 subset parser.
@@ -520,9 +570,9 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
  */
 
 /*
- * FIXME: check standard behavior and also usual behavior in other
- * implementations.  For instance, V8 parses '2012-01-01' as UTC and
- * '2012/01/01' as local time.
+ *  FIXME: check standard behavior and also usual behavior in other
+ *  implementations.  For instance, V8 parses '2012-01-01' as UTC and
+ *  '2012/01/01' as local time.
  */
 
 static int parse_string(duk_context *ctx, const char *str) {
@@ -531,15 +581,23 @@ static int parse_string(duk_context *ctx, const char *str) {
 	 * would be better parsed with a platform specific parser.
 	 */
 
+	DUK_DPRINT("parse datetime from string '%s'", str);
+
 	if (parse_string_iso8601_subset(ctx, str) > 0) {
 		return 1;
 	}
 
-	/* FIXME: platform conditional */
-
+#if defined(DUK_USE_DATE_PRS_STRPTIME)
 	if (parse_string_strptime(ctx, str) > 0) {
 		return 1;
 	}
+#elif defined(DUK_USE_DATE_PRS_GETDATE)
+	if (parse_string_getdate(ctx, str) > 0) {
+		return 1;
+	}
+#else
+	/* No platform-specific parsing, this is not an error. */
+#endif
 
 	duk_push_nan(ctx);
 	return 1;
@@ -827,7 +885,7 @@ static double get_timeval_from_dparts(double *dparts, int flags) {
 		/* Note: DST adjustment is determined using local time. */
 
 		/* FIXME: this is incorrect, should use UTC time? */
-		d -= get_local_tzoffset(d) * 1000;
+		d -= GET_LOCAL_TZOFFSET(d) * 1000;
 	}
 	d = timeclip(d);
 
@@ -866,11 +924,12 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "Invalid Date");
 		}
 	}
-	DUK_ASSERT(isfinite(d));  /* NaN or finite */
+	/* if no NaN handling flag, may still be NaN here, but not Inf */
+	DUK_ASSERT(!isinf(d));
 
 	if (flags & FLAG_LOCALTIME) {
 		/* Note: DST adjustment is determined using UTC time. */
-		tzoffset = get_local_tzoffset(d);  /* seconds */
+		tzoffset = GET_LOCAL_TZOFFSET(d);  /* seconds */
 		d += tzoffset * 1000;
 	}
 	if (out_tzoffset) {
@@ -903,25 +962,11 @@ static int set_this_timeval_from_dparts(duk_context *ctx, double *dparts, int fl
 	return 1;
 }
 
-/* Helper for string conversion calls: check 'this' binding, get the
- * internal time value, and format date and/or time in a few formats.
- */
-static int to_string_helper(duk_context *ctx, int flags_and_sep) {
-	double d;
-	int tzoffset;  /* seconds */
+static int format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset, int flags_and_sep) {
 	char yearstr[8];   /* "-123456\0" */
 	char tzstr[8];     /* "+11:22\0" */
-	int parts[NUM_PARTS];
 	char sep = (char) (flags_and_sep >> 16);
 
-	d = push_this_and_get_timeval_tzoffset(ctx, flags_and_sep, &tzoffset);
-	if (isnan(d)) {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INVALID_DATE);
-		return 1;
-	}
-	DUK_ASSERT(isfinite(d));
-
-	timeval_to_parts(d, parts, NULL, FLAG_ONEBASED);
 	DUK_ASSERT(parts[IDX_MONTH] >= 1 && parts[IDX_MONTH] <= 12);
 	DUK_ASSERT(parts[IDX_DAY] >= 1 && parts[IDX_DAY] <= 31);
 
@@ -963,24 +1008,37 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 	return 1;
 }
 
-static int to_locale_string_helper(duk_context *ctx, int flags) {
+/* Helper for string conversion calls: check 'this' binding, get the
+ * internal time value, and format date and/or time in a few formats.
+ */
+static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 	double d;
 	int parts[NUM_PARTS];
+	int tzoffset;  /* seconds */
 
-	d = push_this_and_get_timeval(ctx, FLAG_LOCALTIME);
+	d = push_this_and_get_timeval_tzoffset(ctx, flags_and_sep, &tzoffset);
 	if (isnan(d)) {
-		/* FIXME: duplication with string helper, join into a single
-		 * helper entrypoint?
-		 */
 		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INVALID_DATE);
 		return 1;
 	}
+	DUK_ASSERT(isfinite(d));
 
-	timeval_to_parts(d, parts, NULL, FLAG_LOCALTIME);
+	/* formatters always get one-based month/day-of-month */
+	timeval_to_parts(d, parts, NULL, FLAG_ONEBASED);
+	DUK_ASSERT(parts[IDX_MONTH] >= 1 && parts[IDX_MONTH] <= 12);
+	DUK_ASSERT(parts[IDX_DAY] >= 1 && parts[IDX_DAY] <= 31);
 
-	/* FIXME: platform conditional */
+	if (flags_and_sep & FLAG_TOSTRING_LOCALE) {
+#ifdef DUK_USE_DATE_FMT_STRFTIME
+		return format_parts_strftime(ctx, parts, tzoffset, flags_and_sep);
+#else
+		/* No locale specific formatter; this is OK, we fall back
+		 * to ISO 8601.
+		 */
+#endif
+	}
 
-	return format_parts_strftime(ctx, parts, flags);
+	return format_parts_iso8601(ctx, parts, tzoffset, flags_and_sep);
 }
 
 /* Helper for component getter calls: check 'this' binding, get the
@@ -1003,8 +1061,6 @@ static int get_part_helper(duk_context *ctx, int flags_and_idx) {
 	DUK_ASSERT(isfinite(d));
 
 	timeval_to_parts(d, parts, NULL, flags_and_idx);
-	DUK_ASSERT(parts[IDX_MONTH] >= 1 && parts[IDX_MONTH] <= 12);
-	DUK_ASSERT(parts[IDX_DAY] >= 1 && parts[IDX_DAY] <= 31);
 
 	/* Setter APIs detect special year numbers (0...99) and apply a +1900
 	 * only in certain cases.  The legacy getYear() getter applies -1900
@@ -1171,7 +1227,7 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 	                           DUK_BIDX_DATE_PROTOTYPE);
 
 	if (nargs == 0 || !is_cons) {
-		d = timeclip(get_now_timeval(ctx));
+		d = timeclip(GET_NOW_TIMEVAL(ctx));
 		duk_push_number(ctx, d);
 		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		if (!is_cons) {
@@ -1226,7 +1282,7 @@ int duk_builtin_date_constructor_utc(duk_context *ctx) {
 int duk_builtin_date_constructor_now(duk_context *ctx) {
 	double d;
 
-	d = get_now_timeval(ctx);
+	d = GET_NOW_TIMEVAL(ctx);
 	DUK_ASSERT(timeclip(d) == d);  /* TimeClip() should never be necessary */
 	duk_push_number(ctx, d);
 	return 1;
@@ -1238,15 +1294,10 @@ int duk_builtin_date_constructor_now(duk_context *ctx) {
  *  Human readable conversions are now basically ISO 8601 with a space
  *  (instead of 'T') as the date/time separator.  This is a good baseline
  *  and is platform independent.
- *
- *  FIXME: allow better string conversion on most common platforms.
  */
 
 #define  TOSTRING(ctx,flags,sep)  \
 	to_string_helper((ctx),(flags) | (((int) (sep)) << 16))
-
-#define  TOLOCALESTRING(ctx,flags)  \
-	to_locale_string_helper((ctx),(flags))
 
 int duk_builtin_date_prototype_to_string(duk_context *ctx) {
 	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
@@ -1265,25 +1316,22 @@ int duk_builtin_date_prototype_to_time_string(duk_context *ctx) {
 }
 
 int duk_builtin_date_prototype_to_locale_string(duk_context *ctx) {
-	return TOLOCALESTRING(ctx, FLAG_TOSTRING_DATE |
-	                           FLAG_TOSTRING_TIME);
-#if 0
-	return duk_builtin_date_prototype_to_string(ctx);
-#endif
+	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
+	                     FLAG_TOSTRING_TIME |
+	                     FLAG_TOSTRING_LOCALE |
+	                     FLAG_LOCALTIME, ' ');
 }
 
 int duk_builtin_date_prototype_to_locale_date_string(duk_context *ctx) {
-	return TOLOCALESTRING(ctx, FLAG_TOSTRING_DATE);
-#if 0
-	return duk_builtin_date_prototype_to_date_string(ctx);
-#endif
+	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
+	                     FLAG_TOSTRING_LOCALE |
+	                     FLAG_LOCALTIME, ' ');
 }
 
 int duk_builtin_date_prototype_to_locale_time_string(duk_context *ctx) {
-	return TOLOCALESTRING(ctx, FLAG_TOSTRING_TIME);
-#if 0
-	return duk_builtin_date_prototype_to_time_string(ctx);
-#endif
+	return TOSTRING(ctx, FLAG_TOSTRING_TIME |
+	                     FLAG_TOSTRING_LOCALE |
+	                     FLAG_LOCALTIME, ' ');
 }
 
 int duk_builtin_date_prototype_value_of(duk_context *ctx) {
@@ -1363,7 +1411,7 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
 	int tzoffset;
 
 	d = push_this_and_get_timeval(ctx, 0 /*flags*/);
-	tzoffset = get_local_tzoffset(d);
+	tzoffset = GET_LOCAL_TZOFFSET(d);
 	duk_push_int(ctx, -tzoffset / 60);
 	return 1;
 }

@@ -151,7 +151,9 @@
 #define  DUK_OPT_TRACEBACK_DEPTH  10
 #endif
 
-/* dynamically detected features */
+/*
+ *  Dynamically detected features
+ */
 
 #if defined(DUK_RDTSC_AVAILABLE) && defined(DUK_OPT_DPRINT_RDTSC)
 #define  DUK_USE_DPRINT_RDTSC
@@ -182,6 +184,38 @@
 #undef  DUK_USE_GCC_PRAGMAS
 #endif
 
+/*
+ *  Platform specific defines
+ */
+
+/* NOW = getting current time (required)
+ * TZO = getting local time offset (required)
+ * PRS = parse datetime (optional)
+ * FMT = format datetime (optional)
+ */
+#if defined(__linux)
+/* Linux (__unix also defined) */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#elif defined(__unix)
+/* Other Unix */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#elif defined(__APPLE__)
+/* Mac OSX, iPhone, Darwin */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#else
+/* FIXME */
+#error platform not supported
+#endif
+
 #else  /* DUK_PROFILE > 0 */
 
 /*
@@ -190,6 +224,14 @@
  */
 
 #endif  /* DUK_PROFILE > 0 */
+
+/* FIXME: An alternative approach to customization would be to include
+ * some user define file at this point.  The user file could then modify
+ * the base settings.  Something like:
+#ifdef DUK_CUSTOM_HEADER
+#include "duk_custom.h"
+#endif
+ */
 
 /*
  *  Sanity checks on defines
