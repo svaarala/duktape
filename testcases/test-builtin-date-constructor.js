@@ -95,6 +95,7 @@ try {
 date constructor tests
 true
 1970 0 1 0 1 0 0
+NaN NaN NaN NaN NaN NaN NaN
 Invalid Date
 2013 3 1 0 0 0 0
 2013 1 2 3 4 5 6
@@ -151,6 +152,10 @@ function dateConstructorTest() {
 
     // One argument
     d = new Date(60*1000);  // 1970-01-01 00:01:00
+    print(dateToComponentString(d));
+
+    // One argument which doesn't parse
+    d = new Date('foo');
     print(dateToComponentString(d));
 
     // One argument + an undefined argument counts as two arguments

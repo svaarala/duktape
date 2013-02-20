@@ -27,11 +27,15 @@ function toStringParseTest() {
 
     for (i = 0; i < values.length; i++) {
         x = new Date(values[i]);
+
+        // E5.1 Section 15.9.4.2, 15.9.5.2
         print(x.valueOf(),
               Date.parse(x.toString()),
               Date.parse(x.toUTCString()),
               Date.parse(x.toISOString()));
     }
+
+    // FIXME: add more comprehensive cases
 }
 
 try {
