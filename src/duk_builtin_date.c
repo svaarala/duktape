@@ -265,10 +265,18 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
 	struct tm tm;
 	const char *fmt;
 
-	/* FIXME: if won't work for entire Ecmascript range, need to detect that
-	 * and allow caller to fall back to default formatter.  How to detect this?
-	 * Perhaps sizeof(time_t) >= 8 -> assume entire range works?
+	/* If platform doesn't support the entire Ecmascript range, we need to
+	 * return 0 so that the caller can fall back to the default formatter.
+	 *
+	 * FIXME: how to detect this more correctly?  add a feature define?
+	 * The size of time_t is probably not an accurate guarantee of strftime
+	 * supporting or not supporting a large time range.
 	 */
+	if (sizeof(time_t) < 8 &&
+	   (parts[IDX_YEAR] < 1970 || parts[IDX_YEAR] > 2037)) {
+		/* be paranoid for 32-bit time values (even avoiding negative ones) */
+		return 0;
+	}
 
 	memset(&tm, 0, sizeof(tm));
 	tm.tm_sec = parts[IDX_SECOND];
@@ -980,8 +988,8 @@ static int format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset, int 
 	 * 6 digits.
 	 */
 	sprintf(yearstr,
-	        parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999 ? "%04d" :
-		        (parts[IDX_YEAR] >= 0 ? "+%06d" : "%07d"),
+	        (parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999) ? "%04d" :
+		        ((parts[IDX_YEAR] >= 0) ? "+%06d" : "%07d"),
 	        parts[IDX_YEAR]);
 
 	if (flags_and_sep & FLAG_LOCALTIME) {
@@ -1021,6 +1029,7 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 	double d;
 	int parts[NUM_PARTS];
 	int tzoffset;  /* seconds */
+	int rc;
 
 	d = push_this_and_get_timeval_tzoffset(ctx, flags_and_sep, &tzoffset);
 	if (isnan(d)) {
@@ -1035,8 +1044,15 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 	DUK_ASSERT(parts[IDX_DAY] >= 1 && parts[IDX_DAY] <= 31);
 
 	if (flags_and_sep & FLAG_TOSTRING_LOCALE) {
+		/* try locale specific formatter; if it refuses to format the
+		 * string, fall back to an ISO 8601 formatted value in local
+		 * time.
+		 */
 #ifdef DUK_USE_DATE_FMT_STRFTIME
-		return format_parts_strftime(ctx, parts, tzoffset, flags_and_sep);
+		rc = format_parts_strftime(ctx, parts, tzoffset, flags_and_sep);
+		if (rc == 1) {
+			return rc;
+		}
 #else
 		/* No locale specific formatter; this is OK, we fall back
 		 * to ISO 8601.
@@ -1044,7 +1060,8 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 #endif
 	}
 
-	return format_parts_iso8601(ctx, parts, tzoffset, flags_and_sep);
+	rc = format_parts_iso8601(ctx, parts, tzoffset, flags_and_sep);
+	return rc;
 }
 
 /* Helper for component getter calls: check 'this' binding, get the
