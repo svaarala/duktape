@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement first complete version of Object built-in
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-02-20 02:23:21.123603 Z
+references: []
+
+id: 69d1354721d5d9c856c93188ac562b8dac883e7a
+log_events: 
+- - 2013-02-20 02:23:21.296571 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

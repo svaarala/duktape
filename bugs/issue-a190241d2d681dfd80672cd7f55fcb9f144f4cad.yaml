@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement first complete version of global object built-in
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-02-20 02:22:47.610602 Z
+references: []
+
+id: a190241d2d681dfd80672cd7f55fcb9f144f4cad
+log_events: 
+- - 2013-02-20 02:22:47.967405 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

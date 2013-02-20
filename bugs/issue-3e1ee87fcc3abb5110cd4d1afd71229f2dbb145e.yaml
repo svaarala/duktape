@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement first version of Number built-in
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-02-20 02:26:25.665248 Z
+references: []
+
+id: 3e1ee87fcc3abb5110cd4d1afd71229f2dbb145e
+log_events: 
+- - 2013-02-20 02:26:25.878167 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
