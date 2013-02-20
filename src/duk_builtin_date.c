@@ -49,6 +49,7 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 static double push_this_and_get_timeval(duk_context *ctx, int flags);
 static void timeval_to_parts(double d, int *parts, double *dparts, int flags);
 static double get_timeval_from_dparts(double *dparts, int flags);
+static void twodigit_year_fixup(duk_context *ctx, int idx_val);
 
 /* Millisecond count constants. */
 #define  MS_SECOND          1000
@@ -88,13 +89,14 @@ static double get_timeval_from_dparts(double *dparts, int flags);
 #define  FLAG_TOSTRING_TIME        (1 << 6)  /* include time part in string conversion result */
 #define  FLAG_TOSTRING_LOCALE      (1 << 7)  /* use locale specific formatting if available */
 #define  FLAG_TIMESETTER           (1 << 8)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
+#define  FLAG_YEAR_FIXUP           (1 << 9)  /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
 
 /*
  *  Platform specific helpers
  */
 
 #ifdef DUK_USE_DATE_NOW_GETTIMEOFDAY
-/* Current Ecmascript (= UNIX) time */
+/* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
 static double get_now_timeval_gettimeofday(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
@@ -263,7 +265,11 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
 	struct tm tm;
 	const char *fmt;
 
-	/* FIXME: won't work for large/small years */
+	/* FIXME: if won't work for entire Ecmascript range, need to detect that
+	 * and allow caller to fall back to default formatter.  How to detect this?
+	 * Perhaps sizeof(time_t) >= 8 -> assume entire range works?
+	 */
+
 	memset(&tm, 0, sizeof(tm));
 	tm.tm_sec = parts[IDX_SECOND];
 	tm.tm_min = parts[IDX_MINUTE];
@@ -1129,6 +1135,10 @@ static int set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 		idx = idx_first + i;
 		DUK_ASSERT(idx >= 0 && idx < NUM_PARTS);
 
+		if (idx == IDX_YEAR && (flags_and_maxnargs & FLAG_YEAR_FIXUP)) {
+			twodigit_year_fixup(ctx, i);
+		}
+
 		dparts[idx] = duk_to_number(ctx, i);
 
 		if (idx == IDX_DAY) {
@@ -1176,8 +1186,10 @@ static void set_parts_from_args(duk_context *ctx, double *dparts, int nargs) {
 	int i;
 	int idx;
 
-	/* FIXME: coercion order is wrong */
-	twodigit_year_fixup(ctx, 0);  /* applies additional ToNumber(), no harm */
+	/* Causes a ToNumber() coercion, but doesn't break coercion order since
+	 * year is coerced first anyway.
+	 */
+	twodigit_year_fixup(ctx, 0);
 
 	/* There are at most 7 args, but we use 8 here so that also
 	 * IDX_WEEKDAY gets initialized (to zero) to avoid the potential
@@ -1599,13 +1611,9 @@ int duk_builtin_date_prototype_set_utc_full_year(duk_context *ctx) {
 
 /* Section B */
 int duk_builtin_date_prototype_set_year(duk_context *ctx) {
-	/* Special year check.  NaN / Infinity will just flow through and
-	 * ultimately result in a NaN internal time value.
+	/* Special year check is omitted.  NaN / Infinity will just flow
+	 * through and ultimately result in a NaN internal time value.
 	 */
-
-	/* FIXME: coercion order */
-
-	twodigit_year_fixup(ctx, 0);
 
 	/* setYear() does not have optional arguments for setting month and
 	 * day-in-month, but we indicate 'maxnargs' to be 3 to get the year
@@ -1615,7 +1623,7 @@ int duk_builtin_date_prototype_set_year(duk_context *ctx) {
 	 */
 	 
 	DUK_ASSERT(duk_get_top(ctx) == 1);
-	return SET_PART(ctx, FLAG_NAN_TO_ZERO, 3);
+	return SET_PART(ctx, FLAG_NAN_TO_ZERO | FLAG_YEAR_FIXUP, 3);
 }
 
 /* Date.prototype.toGMTString() and Date.prototype.toUTCString() are
