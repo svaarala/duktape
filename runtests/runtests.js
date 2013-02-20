@@ -23,8 +23,10 @@ var TIMEOUT_NORMAL = 120 * 1000;
 
 // FIXME: placeholder; for some reason 'temp' didn't work
 var tmpCount = 0;
+var tmpUniq = process.pid || Math.floor(Math.random() * 1e6);
+
 function mkTempName() {
-    return '/tmp/runtests-' + (++tmpCount);
+    return '/tmp/runtests-' + tmpUniq + '-' + (++tmpCount);
 }
 
 function safeUnlinkSync(filePath) {
