@@ -4569,7 +4569,7 @@ static void parse_return_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON ||  /* explicit semi follows */
 	    comp_ctx->curr_token.lineterm ||                /* automatic semi will be inserted */
 	    comp_ctx->curr_token.allow_auto_semi) {         /* automatic semi will be inserted */
-		DUK_DDDPRINT("empty return value -> undefined")
+		DUK_DDDPRINT("empty return value -> undefined");
 		reg_val = 0;
 	} else {
 		int pc_before_expr;

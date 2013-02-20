@@ -2523,8 +2523,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_catcher *cat;
 #if defined(DUK_USE_DDDEBUG) || defined(DUK_USE_ASSERTIONS)
 			int abc = DUK_DEC_ABC(ins);
-#endif
 			DUK_DDDPRINT("ENDLABEL %d", abc);
+#endif
 
 			DUK_ASSERT(thr->catchstack_top >= 1);
 
