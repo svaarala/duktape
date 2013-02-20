@@ -1,3 +1,9 @@
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 Invalid Date
 ===*/
