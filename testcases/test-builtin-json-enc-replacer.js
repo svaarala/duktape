@@ -1,4 +1,6 @@
-print=console.log
+/*
+ *  Test the replacer (2nd argument) of JSON.stringify().
+ */
 
 /*===
 identity replacer
