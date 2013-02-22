@@ -4,6 +4,8 @@
  *  Unlike most built-ins, Date has a lot of platform dependencies for
  *  getting UTC time, converting between UTC and local time, and parsing
  *  and formatting time values.
+ *
+ *  See doc/datetime.txt.
  */
 
 #include "duk_internal.h"
