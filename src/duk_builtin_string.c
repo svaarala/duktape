@@ -149,7 +149,9 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 
 	/* FIXME: this may throw an error, though not for valid E5 strings - is this OK here? */
 	cp = duk_unicode_xutf8_get_u32(thr, &p, p_start, p_end);
-	duk_push_int(ctx, (int) cp);
+
+	/* FIXME: push_uint or push_u32 */
+	duk_push_number(ctx, (double) cp);
 	return 1;
 }
 

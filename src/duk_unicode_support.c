@@ -136,7 +136,7 @@ size_t duk_unicode_encode_cesu8(duk_u32 x, duk_u8 *out) {
 /* used by e.g. duk_regexp_executor.c, string built-ins */
 duk_u32 duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end) {
 	duk_u8 *p;
-	int res;
+	duk_u32 res;
 	int ch;
 	int n;
 
