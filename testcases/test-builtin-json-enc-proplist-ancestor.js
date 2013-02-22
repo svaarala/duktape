@@ -6,7 +6,7 @@
 {"quux":3,"foo":1,"baz":4}
 ===*/
 
-/* Should ancestor properties be enumerated when processing the PropertyList?
+/* Should ancestor properties be enumerated when creating PropertyList?
  * Specification is a bit unclear on this point.  See E5.1 Section 15.12.3,
  * main algorithm, step 4.b.ii.
  *
