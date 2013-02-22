@@ -29,6 +29,7 @@ function arrayLengthTest1() {
     // length must be obeyed even if no elements have been added
     arr = [ 1, 2, undefined, 4 ];
     arr.length = 8;
+    print(JSON.stringify(arr));
 
     arr = [ 1, 2 ];
     arr[100] = 'foo';

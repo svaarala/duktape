@@ -21,6 +21,13 @@ ignored replacers
 {"foo":1,"bar":"bar"}
 {"foo":1,"bar":"bar"}
 {"foo":1,"bar":"bar"}
+array replacer
+repl: k=foo, typeof k=string, v=1, typeof v=number
+repl: k=bar, typeof k=string, v=arr1,arr2,arr3, typeof v=object
+repl: k=0, typeof k=string, v=arr1, typeof v=string
+repl: k=1, typeof k=string, v=arr2, typeof v=string
+repl: k=2, typeof k=string, v=arr3, typeof v=string
+{"foo":1,"bar":["arr1","arr2","arr3"]}
 ===*/
 
 function replacerTest1() {
@@ -104,6 +111,28 @@ function replacerTest4() {
     print(JSON.stringify(obj, { foo: 1, length: 2 }));
 }
 
+function replacerTest5() {
+    var obj = {
+        foo: 1,
+        bar: [
+            'arr1', 'arr2', 'arr3'
+        ]
+    };
+
+    function repl(k, v) {
+        if (k !== '') {
+            print('repl: k=' + k + ', typeof k=' + typeof k +
+                  ', v=' + v + ', typeof v=' + typeof v);
+        }
+        return v;
+    }
+
+    // Replacer key argument is always a string, even for arrays:
+    // E5.1 Section 15.12.3, JA() algorithm, 8.a; key for Str()
+    // call is ToString(index).
+    print(JSON.stringify(obj, repl));
+}
+
 try {
     print('identity replacer');
     replacerTest1();
@@ -116,6 +145,9 @@ try {
 
     print('ignored replacers');
     replacerTest4();
+
+    print('array replacer');
+    replacerTest5();
 } catch (e) {
     print(e.name);
 }

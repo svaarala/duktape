@@ -2,7 +2,7 @@
 var obj = { foo:1, bar:2, quux: [ 1, 2 ], emptyObj: {}, emptyArr: [] };
 
 /*===
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
 ===*/
 
 /* Baseline */
@@ -10,7 +10,7 @@ var obj = { foo:1, bar:2, quux: [ 1, 2 ], emptyObj: {}, emptyArr: [] };
 print(JSON.stringify(obj));
 
 /*===
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
 {
   "foo": 1,
   "bar": 2,
@@ -61,7 +61,7 @@ foo"foo": 1,
 foo"bar": 2,
 foo"quux": [
 foofoo1,
-foofoo2,
+foofoo2
 foo],
 foo"emptyObj": {},
 foo"emptyArr": []
@@ -73,15 +73,15 @@ foo"emptyArr": []
 print(JSON.stringify(obj, null, 'foo'));
 
 /*===
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
 {
  "foo": 1,
  "bar": 2,
  "quux": [
-   1,
-   2
+  1,
+  2
  ],
  "emptyObj": {},
  "emptyArr": []
@@ -90,8 +90,8 @@ print(JSON.stringify(obj, null, 'foo'));
   "foo": 1,
   "bar": 2,
   "quux": [
-     1,
-     2
+    1,
+    2
   ],
   "emptyObj": {},
   "emptyArr": []
@@ -146,7 +146,7 @@ print(JSON.stringify(obj, null, 'foo'));
           "emptyObj": {},
           "emptyArr": []
 }
-{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{}, "emptyArr":[]}
+{"foo":1,"bar":2,"quux":[1,2],"emptyObj":{},"emptyArr":[]}
 ===*/
 
 /* Space argument can also be a number */
