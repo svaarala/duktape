@@ -347,17 +347,17 @@ static duk_i8 token_lbp[] = {
 
 static void recursion_increase(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
-	DUK_ASSERT(comp_ctx->recursion >= 0);
-	if (comp_ctx->recursion >= comp_ctx->recursion_limit) {
+	DUK_ASSERT(comp_ctx->recursion_depth >= 0);
+	if (comp_ctx->recursion_depth >= comp_ctx->recursion_limit) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "compiler recursion limit reached");
 	}
-	comp_ctx->recursion++;
+	comp_ctx->recursion_depth++;
 }
 
 static void recursion_decrease(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
-	DUK_ASSERT(comp_ctx->recursion > 0);
-	comp_ctx->recursion--;
+	DUK_ASSERT(comp_ctx->recursion_depth > 0);
+	comp_ctx->recursion_depth--;
 }
 
 static int hstring_is_eval_or_arguments(duk_compiler_ctx *comp_ctx, duk_hstring *h) {

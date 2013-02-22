@@ -189,7 +189,7 @@ struct duk_compiler_ctx {
 	int tok22_idx;                      /* prev_token slot2 */
 
 	/* recursion limit */
-	int recursion;
+	int recursion_depth;
 	int recursion_limit;
 
 	/* current function being compiled (embedded instead of pointer for more compact access) */
