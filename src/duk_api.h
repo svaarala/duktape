@@ -113,6 +113,7 @@ struct duk_memory_functions {
 #define  DUK_ENUM_INCLUDE_NONENUMERABLE    (1 << 0)    /* enumerate non-numerable properties in addition to enumerable */
 #define  DUK_ENUM_INCLUDE_INTERNAL         (1 << 1)    /* enumerate internal properties (regardless of enumerability) */
 #define  DUK_ENUM_OWN_PROPERTIES_ONLY      (1 << 2)    /* don't walk prototype chain, only check own properties */
+#define  DUK_ENUM_ARRAY_INDICES_ONLY       (1 << 3)    /* only enumerate array indices */
 
 /* Internal error codes */
 #define  DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */

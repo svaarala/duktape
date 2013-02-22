@@ -140,10 +140,11 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 			    !(enum_flags & DUK_ENUM_INCLUDE_INTERNAL)) {
 				continue;
 			}
+			if ((enum_flags & DUK_ENUM_ARRAY_INDICES_ONLY) &&
+			    (DUK_HSTRING_GET_ARRIDX_SLOW(k) == DUK_HSTRING_NO_ARRAY_INDEX)) {
+				continue;
+			}
 
-			/* internal properties are assumed to never be enumerable */
-			DUK_ASSERT(!DUK_HSTRING_HAS_INTERNAL(k));
-	
 			DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(curr, i) ||
 			           !DUK_TVAL_IS_UNDEFINED_UNUSED(&DUK_HOBJECT_E_GET_VALUE_PTR(curr, i)->v));
 
@@ -281,7 +282,7 @@ void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	 */
 
 	duk_hobject_enumerator_create(ctx, enum_flags);
-	duk_push_new_object_internal(ctx);
+	duk_push_new_array(ctx);
 
 	/* [target enum res] */
 
@@ -289,16 +290,16 @@ void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	DUK_ASSERT(e != NULL);
 
 	idx = 0;
-	for (i = 0; i < e->e_used; i++) {
+	for (i = ENUM_START_INDEX; i < e->e_used; i++) {
 		duk_hstring *k;
 
 		k = DUK_HOBJECT_E_GET_KEY(e, i);
 		DUK_ASSERT(k);  /* enumerator must have no keys deleted */
 
 		/* [target enum res] */
-		duk_push_int(ctx, idx++);
 		duk_push_hstring(ctx, k);
-		duk_put_prop(ctx, -3);
+		duk_put_prop_index(ctx, -2, idx);
+		idx++;
 	}
 
 	/* [target enum res] */

@@ -1583,7 +1583,7 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 	duk_tval *tv_slot;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(str != NULL || len == 0);  /* if len == 0, str may be NULL */
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
@@ -2137,6 +2137,15 @@ void duk_push_hobject(duk_context *ctx, duk_hobject *h) {
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(h != NULL);
 	DUK_TVAL_SET_OBJECT(&tv, h);
+	duk_push_tval(ctx, &tv);
+}
+
+/* internal */
+void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h) {
+	duk_tval tv;
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(h != NULL);
+	DUK_TVAL_SET_BUFFER(&tv, h);
 	duk_push_tval(ctx, &tv);
 }
 
