@@ -531,4 +531,35 @@ try {
     print(e.name);
 }
 
+/*===
+1 2 3 4
+1 2 undefined undefined
+true
+===*/
+
+/* If a constructor returns a replacement value, the internal prototype
+ * of that object will not be set by the 'new' call.
+ */
+function Cons1() {
+    this.foo = 1;
+    this.bar = 2;
+}
+Cons1.prototype = { quux: 3, baz: 4 };
+
+function Cons2() {
+    return { foo: 1, bar: 2 };
+}
+Cons2.prototype = { quux: 3, baz: 4 };
+
+try {
+    t = new Cons1();
+    print(t.foo, t.bar, t.quux, t.baz);
+
+    // the internal prototype of 't' will be Object.prototype here
+    t = new Cons2();
+    print(t.foo, t.bar, t.quux, t.baz);
+    print(Object.getPrototypeOf(t) === Object.prototype);
+} catch (e) {
+    print(e.name);
+}
 
