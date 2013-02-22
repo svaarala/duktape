@@ -60,7 +60,6 @@ function toJsonPropertyTest4() {
     print(JSON.stringify(obj));
 }
 
-
 try {
     toJsonPropertyTest1();
     toJsonPropertyTest2();

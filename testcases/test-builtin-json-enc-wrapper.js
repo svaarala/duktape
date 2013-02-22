@@ -12,6 +12,7 @@ var t;
 
 /*===
 replacer
+desc: true true true foo
 object
 foo
 
@@ -28,8 +29,12 @@ try {
         // v: value
 
         print("replacer");
+
+	var pd = Object.getOwnPropertyDescriptor(this, '');
+	print('desc:', pd.writable, pd.enumerable, pd.configurable, pd.value);
+
         print(typeof this);
-        print(this['']);  // access the empty string key of the wrapper!
+        print(this['']);  // access the empty string key of the wrapper
         print(k);         // empty string
         print(v);         // 'foo'
     });
