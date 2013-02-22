@@ -10064,6 +10064,7 @@ function generateRandomTests(n) {
                  ',');
     }
 
+    // This is intended, don't remove/convert to print.
     console.log(res.join('\n'));
 }
 
