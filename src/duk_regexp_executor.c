@@ -133,18 +133,18 @@ static int inp_getprev(duk_re_matcher_ctx *re_ctx, duk_u8 *sp) {
  */
 
 static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) {
-	if (re_ctx->recursion >= re_ctx->recursion_limit) {
+	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp executor recursion limit reached");
 	}
-	re_ctx->recursion++;
+	re_ctx->recursion_depth++;
 
 	for (;;) {
 		int op;
 
-		if (re_ctx->steps >= re_ctx->steps_limit) {
+		if (re_ctx->steps_count >= re_ctx->steps_limit) {
 			DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp step limit reached");
 		}
-		re_ctx->steps++;
+		re_ctx->steps_count++;
 
 		op = bc_get_u32(re_ctx, &pc);
 
@@ -557,11 +557,11 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 	}
 
  match:
-	re_ctx->recursion--;
+	re_ctx->recursion_depth--;
 	return sp;
 
  fail:
-	re_ctx->recursion--;
+	re_ctx->recursion_depth--;
 	return NULL;
 
  internal_error:

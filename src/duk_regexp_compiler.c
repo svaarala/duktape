@@ -233,11 +233,11 @@ static duk_i32 parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof) {
 	duk_u32 entry_offset = BUFLEN(re_ctx);
 	duk_i32 res = 0;	/* -1 if disjunction is complex, char length if simple */
 
-	if (re_ctx->recursion >= re_ctx->recursion_limit) {
+	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
 		          "regexp compiler recursion limit reached");
 	}
-	re_ctx->recursion++;
+	re_ctx->recursion_depth++;
 
 	for (;;) {
 		duk_i32 new_atom_char_length;   /* char length of the atom parsed in this loop */
@@ -660,6 +660,8 @@ static duk_i32 parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof) {
 		                   unpatched_disjunction_split,
 		                   offset - unpatched_disjunction_split);
 	}
+
+	re_ctx->recursion_depth--;
 
 	return res;
 }

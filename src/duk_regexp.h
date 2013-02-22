@@ -52,8 +52,8 @@ struct duk_re_matcher_ctx {
 	duk_u8 *bytecode_end;
 	duk_u8 **saved;		/* allocated from valstack (fixed buffer) */
 	duk_u32 nsaved;
-	duk_u32 recursion;
-	duk_u32 steps;
+	duk_u32 recursion_depth;
+	duk_u32 steps_count;
 	duk_u32 recursion_limit;
 	duk_u32 steps_limit;
 };
@@ -67,7 +67,7 @@ struct duk_re_compiler_ctx {
 	duk_hbuffer_growable *buf;
 	duk_u32 captures;
 	duk_u32 highest_backref;
-	duk_u32 recursion;
+	duk_u32 recursion_depth;
 	duk_u32 recursion_limit;
 	duk_u32 nranges;	/* internal temporary value, used for char classes */
 };
