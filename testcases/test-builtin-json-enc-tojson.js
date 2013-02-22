@@ -1,8 +1,9 @@
 /*===
 {"foo":1,"bar":"bar/toJSON"}
-{"foo":1,"bar":"bar/toJSON","quux":{"toJSON":123}}
+{"foo":1,"bar":"bar/toJSON","quux":{"toJSON":123},"quuux":{"toJSON":{"foo":"not callable"}},"quuuux":{"toJSON":["not callable"]}}
 Error quuux/toJSON error
 {"foo":1,"bar":"bar/toJSON","quux":{"toJSON":123},"quuux":"2012-01-02T03:04:05.006Z"}
+{"foo":1,"bar":"bar/toJSON","quux":{"toJSON":123},"quuux":"inherited toJSON"}
 ===*/
 
 /* Any Object values with a callable toJSON() property will get called,
@@ -18,6 +19,7 @@ function toJsonPropertyTest1() {
         bar: { toJSON: function() { return 'bar/toJSON'; } }
     };
 
+    // toJSON is called
     print(JSON.stringify(obj));
 }
 
@@ -25,9 +27,12 @@ function toJsonPropertyTest2() {
     var obj = {
         foo: 1,
         bar: { toJSON: function() { return 'bar/toJSON'; } },
-        quux: { toJSON: 123 }
+        quux: { toJSON: 123 },
+        quuux: { toJSON: { foo: 'not callable' } },
+        quuuux: { toJSON: [ 'not callable' ] },
     };
 
+    // toJSON properties are not callable, and are ignored silently
     print(JSON.stringify(obj));
 }
 
@@ -60,11 +65,28 @@ function toJsonPropertyTest4() {
     print(JSON.stringify(obj));
 }
 
+function toJsonPropertyTest5() {
+    function F() {
+    }
+    F.prototype = { toJSON: function() { return 'inherited toJSON'; } };
+
+    var obj = {
+        foo: 1,
+        bar: { toJSON: function() { return 'bar/toJSON'; } },
+        quux: { toJSON: 123 },
+        quuux: new F()
+    };
+
+    // toJSON() can be inherited
+    print(JSON.stringify(obj));
+}
+
 try {
     toJsonPropertyTest1();
     toJsonPropertyTest2();
     toJsonPropertyTest3();
     toJsonPropertyTest4();
+    toJsonPropertyTest5();
 } catch (e) {
     print(e.name);
 }

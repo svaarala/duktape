@@ -1,8 +1,5 @@
 
 var t;
-var i;
-var x;
-var numbers;
 
 /*===
 undefined undefined
@@ -11,16 +8,20 @@ undefined undefined
 [1,2,null,4]
 ===*/
 
-// result is undefined
-t = JSON.stringify(undefined);
-print(typeof t, t);
+try {
+    // result is undefined
+    t = JSON.stringify(undefined);
+    print(typeof t, t);
 
-// undefined values are not serialized in objects
-print(JSON.stringify({bar:undefined}));  // empty case perhaps worth extra test
-print(JSON.stringify({foo:1,bar:undefined}));
+    // undefined values are not serialized in objects
+    print(JSON.stringify({bar:undefined}));  // empty case perhaps worth extra test
+    print(JSON.stringify({foo:1,bar:undefined}));
 
-// undefined values are serialized as 'null' in arrays
-print(JSON.stringify([1,2,undefined,4]));
+    // undefined values are serialized as 'null' in arrays
+    print(JSON.stringify([1,2,undefined,4]));
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 string null
@@ -28,38 +29,37 @@ string null
 [1,2,null,4]
 ===*/
 
-t = JSON.stringify(null);
-print(typeof t, t);
-
-print(JSON.stringify({foo:1,bar:null}));
-
-print(JSON.stringify([1,2,null,4]));
+try {
+    t = JSON.stringify(null);
+    print(typeof t, t);
+    print(JSON.stringify({foo:1,bar:null}));
+    print(JSON.stringify([1,2,null,4]));
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 string true
 {"foo":1,"bar":true}
 [1,2,true,4]
-===*/
-
-t = JSON.stringify(true);
-print(typeof t, t);
-
-print(JSON.stringify({foo:1,bar:true}));
-
-print(JSON.stringify([1,2,true,4]));
-
-/*===
 string false
 {"foo":1,"bar":false}
 [1,2,false,4]
 ===*/
 
-t = JSON.stringify(false);
-print(typeof t, t);
+try {
+    t = JSON.stringify(true);
+    print(typeof t, t);
+    print(JSON.stringify({foo:1,bar:true}));
+    print(JSON.stringify([1,2,true,4]));
 
-print(JSON.stringify({foo:1,bar:false}));
-
-print(JSON.stringify([1,2,false,4]));
+    t = JSON.stringify(false);
+    print(typeof t, t);
+    print(JSON.stringify({foo:1,bar:false}));
+    print(JSON.stringify([1,2,false,4]));
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 string -123
@@ -93,18 +93,25 @@ string null
  *   NaN         - "" -
  */
 
-numbers = [ -123, -0, +0, 123,
-            Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, Number.NaN ];
+function numbersTest() {
+    var numbers = [ -123, -0, +0, 123,
+                    Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, Number.NaN ];
+    var i;
 
-for (i = 0; i < numbers.length; i++) {
-    x = numbers[i];
+    for (i = 0; i < numbers.length; i++) {
+        x = numbers[i];
  
-    t = JSON.stringify(x);
-    print(typeof t, t);
+        t = JSON.stringify(x);
+        print(typeof t, t);
+        print(JSON.stringify({foo:1,bar:x}));
+        print(JSON.stringify([1,2,x,4]));
+    }
+}
 
-    print(JSON.stringify({foo:1,bar:x}));
-
-    print(JSON.stringify([1,2,x,4]));
+try {
+    numbersTest();
+} catch (e) {
+    print(e.name);
 }
 
 /*===
@@ -125,17 +132,24 @@ string "foo \n\"bar"
 
 /* Basic cases for strings. */
 
-strings = [ "foo", "foo \n\"bar" ];
+function stringsTest() {
+    var strings = [ "foo", "foo \n\"bar" ];
+    var i;
 
-for (i = 0; i < strings.length; i++) {
-    x = strings[i];
+    for (i = 0; i < strings.length; i++) {
+        x = strings[i];
 
-    t = JSON.stringify(x);
-    print(typeof t, t);
+        t = JSON.stringify(x);
+        print(typeof t, t);
+        print(JSON.stringify({foo:1,bar:x}));
+        print(JSON.stringify([1,2,x,4]));
+    }
+}
 
-    print(JSON.stringify({foo:1,bar:x}));
-
-    print(JSON.stringify([1,2,x,4]));
+try {
+    stringsTest();
+} catch (e) {
+    print(e.name);
 }
 
 /*===
@@ -220,21 +234,30 @@ for (i = 0; i < strings.length; i++) {
  * be escaped by JSON.stringify().
  */
 
-// special chars
-strings = [ '"', '\\', '/' ];
-for (i = 0; i < strings.length; i++) {
-    t = JSON.stringify(strings[i]);
-    print(t);
+function escapeTest() {
+    var strings = [ '"', '\\', '/' ];
+    var i;
+
+    for (i = 0; i < strings.length; i++) {
+        t = JSON.stringify(strings[i]);
+        print(t);
+    }
+
+    for (i = 0; i <= 32; i++) {
+        t = JSON.stringify(String.fromCharCode(i));
+        print(t);
+    }
+
+    for (i = 0x80; i < 0xa0; i++) {
+        t = JSON.stringify(String.fromCharCode(i));
+        print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2));
+    }
 }
 
-for (i = 0; i <= 32; i++) {
-    t = JSON.stringify(String.fromCharCode(i));
-    print(t);
-}
-
-for (i = 0x80; i < 0xa0; i++) {
-    t = JSON.stringify(String.fromCharCode(i));
-    print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2));
+try {
+    escapeTest();
+} catch (e) {
+    print(e.name);
 }
 
 /*===
@@ -242,8 +265,12 @@ for (i = 0x80; i < 0xa0; i++) {
 ===*/
 
 /* Very basic object/array serialization test. */
-t = JSON.stringify({foo:1,bar:'text',object:{baz:2},array:[1,2,3]});
-print(t);
+try {
+    t = JSON.stringify({foo:1,bar:'text',object:{baz:2},array:[1,2,3]});
+    print(t);
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 [1,2,null,4]
@@ -253,15 +280,19 @@ print(t);
 
 /* Functions (anything callable) serialize as 'null' */
 
-// anonymous Ecmascript function
-t = JSON.stringify([1,2,function(){},4]);
-print(t);
+try {
+    // anonymous Ecmascript function
+    t = JSON.stringify([1,2,function(){},4]);
+    print(t);
 
-// native function
-t = JSON.stringify([1,2,Object.prototype.toString,4]);
-print(t);
+    // native function
+    t = JSON.stringify([1,2,Object.prototype.toString,4]);
+    print(t);
 
-// bound function
-t = JSON.stringify([1,2,print.bind('foo'),4]);
-print(t);
+    // bound function
+    t = JSON.stringify([1,2,print.bind('foo'),4]);
+    print(t);
+} catch (e) {
+    print(e.name);
+}
 
