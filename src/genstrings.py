@@ -511,6 +511,12 @@ duk_string_list = [
 	mkstr("dec", custom=True),
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
+
+	# special literals for custom compatible json encoding
+	mkstr('{"_undefined":true}'),
+	mkstr('{"_nan":true}'),
+	mkstr('{"_inf":true}'),
+	mkstr('{"_ninf":true}'),
 ]
 
 # Standard reserved words (non-strict mode + strict mode)
@@ -646,6 +652,11 @@ special_define_names = {
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
 	' ': 'SPACE',
+
+	'{"_undefined":true}': 'JSON_EXT_UNDEFINED',
+	'{"_nan":true}': 'JSON_EXT_NAN',
+	'{"_inf":true}': 'JSON_EXT_POSINF',
+	'{"_ninf":true}': 'JSON_EXT_NEGINF',
 }
 
 #
@@ -680,57 +691,105 @@ def get_define_name(x):
 def gen_strings_data_bitpacked(strlist):
 	be = dukutil.BitEncoder()
 
-	freq = [0] * 256
+	# Strings are encoded as follows: a string begins in lowercase
+	# mode and recognizes the following 5-bit symbols:
+	#
+	#    0-25    'a' ... 'z'
+	#    26	     '_'
+	#    27      0x00 (actually decoded to 0xff, internal marker)
+	#    28	     reserved
+	#    29      switch to uppercase for one character
+	#            (next 5-bit symbol must be in range 0-25)
+	#    30      switch to uppercase
+	#    31      read a 7-bit character verbatim
+	#
+	# Uppercase mode is the same except codes 29 and 30 switch to
+	# lowercase.
+
+	UNDERSCORE = 26
+	ZERO = 27
+	SWITCH1 = 29
+	SWITCH = 30
+	SEVENBIT = 31
+
 	maxlen = 0
-	maxval = 0
-	for s, d in strlist:
-		for c in s:
-			freq[ord(c)] += 1
-		if len(s) > maxlen:
-			maxlen = len(s)
-		for c in s:
-			if ord(c) > maxval:
-				maxval = ord(c)
+	n_optimal = 0
+	n_switch1 = 0
+	n_switch = 0
+	n_sevenbit = 0
 
-	lookup = []
-	invlookup = [0] * 256
-	for i in xrange(256):
-		if freq[i] != 0:
-			lookup.append(i)
-	for i in xrange(len(lookup)):
-		x = lookup[i]
-		invlookup[x] = i
-
-	uniq = len(lookup)
-
-	if uniq > 64:
-		raise Exception('too many unique characters for current assumptions')
-	if maxlen > 31:
-		raise Exception('string too long for current assumptions')
-	if maxval > 127:
-		raise Exception('string maxval too high for current assumptions')
-
-        databits = []
-
-	# lookup table for chars (6 bits -> 7 bit value)
-	# XXX: can halve by encoding first value and then 3-bit skips,
-	# but net benefit maybe 20 bytes.
-	for i in xrange(uniq):
-		be.bits(lookup[i], 7)
-
-	# strings: 5-bit length, N*6-bit characters
 	for s, d in strlist:
 		be.bits(len(s), 5)
-		for c in s:
-			be.bits(invlookup[ord(c)], 6)
+
+		if len(s) > maxlen:
+			maxlen = len(s)
+
+		# 5-bit character, mode specific
+		mode = 'lowercase'
+
+		for idx, c in enumerate(s):
+			# FIXME: this is not an optimal encoder but good enough
+
+			islower = (ord(c) >= ord('a') and ord(c) <= ord('z'))
+			isupper = (ord(c) >= ord('A') and ord(c) <= ord('Z'))
+			islast = (idx == len(s) - 1)
+			isnextlower = False
+			isnextupper = False
+			if not islast:
+				c2 = s[idx+1]
+				isnextlower = (ord(c2) >= ord('a') and ord(c2) <= ord('z'))
+				isnextupper = (ord(c2) >= ord('A') and ord(c2) <= ord('Z'))
+
+			if c == '_':
+				be.bits(UNDERSCORE, 5)
+				n_optimal += 1
+			elif c == '\x00':
+				be.bits(ZERO, 5)
+				n_optimal += 1
+			elif islower and mode == 'lowercase':
+				be.bits(ord(c) - ord('a'), 5)
+				n_optimal += 1
+			elif isupper and mode == 'uppercase':
+				be.bits(ord(c) - ord('A'), 5)
+				n_optimal += 1
+			elif islower and mode == 'uppercase':
+				if isnextlower:
+					be.bits(SWITCH, 5)
+					be.bits(ord(c) - ord('a'), 5)
+					mode = 'lowercase'
+					n_switch += 1
+				else:
+					be.bits(SWITCH1, 5)
+					be.bits(ord(c) - ord('a'), 5)
+					n_switch1 += 1
+			elif isupper and mode == 'lowercase':
+				if isnextupper:
+					be.bits(SWITCH, 5)
+					be.bits(ord(c) - ord('A'), 5)
+					mode = 'uppercase'
+					n_switch += 1
+				else:
+					be.bits(SWITCH1, 5)
+					be.bits(ord(c) - ord('A'), 5)
+					n_switch1 += 1
+			else:
+				assert(ord(c) >= 0 and ord(c) <= 127)
+				be.bits(SEVENBIT, 5)
+				be.bits(ord(c), 7)
+				n_sevenbit += 1
+				#print 'sevenbit for: %r' % c
+
 	# end marker not necessary, C code knows length from define
 
 	res = be.getByteString()
 
-	print '%d strings, %d bytes of string init data, %d unique bytes in strings, %d maximum string length, %d maximum code point value' % \
-		(len(strlist), len(res), uniq, maxlen, maxval)
+	print ('%d strings, %d bytes of string init data, %d maximum string length, ' + \
+	       'encoding: optimal=%d,switch1=%d,switch=%d,sevenbit=%d') % \
+		(len(strlist), len(res), maxlen, \
+	         n_optimal, n_switch1, n_switch, n_sevenbit)
 
-	return res, uniq, maxlen, maxval
+	return res, maxlen
+
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser()
@@ -801,7 +860,7 @@ if __name__ == '__main__':
 	idx_start_reserved = len(strlist) - num_all_reserved
 	idx_start_strict_reserved = len(strlist) - num_strict_reserved
 
-	strdata, lookuplen, maxlen, maxval = gen_strings_data_bitpacked(strlist)
+	strdata, maxlen = gen_strings_data_bitpacked(strlist)
 
 	# write raw data file
 	f = open(opts.out_bin, 'wb')
@@ -829,7 +888,6 @@ if __name__ == '__main__':
 	genc.emitLine('extern char duk_strings_data[];')  # FIXME: unsigned char?
 	genc.emitLine('')
 	genc.emitDefine('DUK_STRDATA_DATA_LENGTH', len(strdata))
-	genc.emitDefine('DUK_STRDATA_LOOKUP_LENGTH', lookuplen)
 	genc.emitDefine('DUK_STRDATA_MAX_STRLEN', maxlen)
 	genc.emitLine('')
 	idx = 0

@@ -4,6 +4,14 @@
 
 #include "duk_internal.h"
 
+/* constants for built-in string data depacking */
+#define  BITPACK_LETTER_LIMIT  26
+#define  BITPACK_UNDERSCORE    26
+#define  BITPACK_FF            27
+#define  BITPACK_SWITCH1       29
+#define  BITPACK_SWITCH        30
+#define  BITPACK_SEVENBIT      31
+
 /*
  *  Free a heap object.
  *
@@ -192,36 +200,45 @@ void duk_heap_free(duk_heap *heap) {
 static int init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
-	duk_u8 lookup[DUK_STRDATA_LOOKUP_LENGTH];
 	int i, j;
 
 	memset(&bd_ctx, 0, sizeof(bd_ctx));
 	bd->data = (duk_u8 *) duk_strings_data;
 	bd->length = DUK_STRDATA_DATA_LENGTH;
 
-	for (i = 0; i < DUK_STRDATA_LOOKUP_LENGTH; i++) {
-		lookup[i] = duk_bd_decode(bd, 7);
-	}
-
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
-		int len;
 		duk_u8 tmp[DUK_STRDATA_MAX_STRLEN];
 		duk_hstring *h;
+		int len;
+		int mode;
+		int t;
 
 		len = duk_bd_decode(bd, 5);
+		mode = 32;		/* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
 		for (j = 0; j < len; j++) {
-			duk_u8 ch = lookup[duk_bd_decode(bd, 6)];
-
-			/*
-			 *  Internal keys are prefixed with 0xFF in the stringtable
-			 *  (which makes them invalid UTF-8 on purpose).  The internal
-			 *  marker in init data is 0x00 for technical reasons.
-			 */
-			if (ch == 0x00) {
-				/* 0xFF can never occur in valid UTF-8 */
-				ch = 0xff;
+			t = duk_bd_decode(bd, 5);
+			if (t < BITPACK_LETTER_LIMIT) {
+				t = t + 'A' + mode;
+			} else if (t == BITPACK_UNDERSCORE) {
+				t = (int) '_';
+			} else if (t == BITPACK_FF) {
+				/* Internal keys are prefixed with 0xFF in the stringtable
+				 * (which makes them invalid UTF-8 on purpose).
+				 */
+				t = (int) 0xff;
+			} else if (t == BITPACK_SWITCH1) {
+				t = duk_bd_decode(bd, 5);
+				DUK_ASSERT(t >= 0 && t <= 25);
+				t = t + 'A' + (mode ^ 32);
+			} else if (t == BITPACK_SWITCH) {
+				mode = mode ^ 32;
+				t = duk_bd_decode(bd, 5);
+				DUK_ASSERT(t >= 0 && t <= 25);
+				t = t + 'A' + mode;
+			} else if (t == BITPACK_SEVENBIT) {
+				t = duk_bd_decode(bd, 7);
 			}
-			tmp[j] = ch;
+			tmp[j] = (duk_u8) t;
 		}
 
 		DUK_DDDPRINT("intern built-in string %d", i);
