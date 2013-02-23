@@ -725,7 +725,7 @@ void duk_regexp_match(duk_hthread *thr) {
 		DUK_ASSERT(char_offset >= 0 && char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
 
 		/* Note: ctx.steps is intentionally not reset, it applies to the entire unanchored match */
-		DUK_ASSERT(re_ctx.recursion == 0);
+		DUK_ASSERT(re_ctx.recursion_depth == 0);
 
 		DUK_DDDPRINT("attempt match at char offset %d; %p [%p,%p]",
 		             char_offset, sp, re_ctx.input, re_ctx.input_end);
