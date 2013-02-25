@@ -317,6 +317,35 @@ try {
 }
 
 /*===
+unicode escape
+1 4660
+2 43981 61185
+2 43981 61185
+===*/
+
+print('unicode escape');
+
+function testUnicodeEscape() {
+    var t;
+
+    t = JSON.parse('"\\u1234"');
+    print(t.length, t.charCodeAt(0));
+
+    t = JSON.parse('"\\uabcd\\uef01"');
+    print(t.length, t.charCodeAt(0), t.charCodeAt(1));
+
+    // both lowercase and uppercase hex digits are required
+    t = JSON.parse('"\\uABCD\\uEF01"');
+    print(t.length, t.charCodeAt(0), t.charCodeAt(1));
+}
+
+try {
+    testUnicodeEscape();
+} catch (e) {
+    print(e);
+}
+
+/*===
 character escapes
 cp 97 a
 eval 1 97
@@ -530,6 +559,37 @@ try {
 
 try {
     print(JSON.parse('false'));
+} catch (e) {
+    print(e.name);
+}
+
+/*===
+tostring coercion of true/false/null
+true
+false
+null
+===*/
+
+/* parse() argument is ToString() coerced, so these will parse back;
+ * e.g. true -> "true" -> true.
+ */
+
+print('tostring coercion of true/false/null');
+
+try {
+    print(JSON.parse(true));
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    print(JSON.parse(false));
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    print(JSON.parse(null));
 } catch (e) {
     print(e.name);
 }
