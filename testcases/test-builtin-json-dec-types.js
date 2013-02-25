@@ -1,3 +1,72 @@
+/*===
+typeof, class, etc
+typeof: object
+class: Null
+typeof: boolean
+class: Boolean
+typeof: boolean
+class: Boolean
+typeof: number
+class: Number
+typeof: object
+class: Array
+typeof: object
+class: Object
+array prototype expected: true
+object prototype expected: true
+===*/
+
+/* Test typeof, class etc of parsed values. */
+
+print('typeof, class, etc');
+
+function getClass(v) {
+    var txt;
+
+    txt = Object.prototype.toString.call(v);  /* -> "[object <class>]" */
+    m = /^\[object\u0020(.*)\]$/.exec(txt);
+    if (m) {
+        return m[1];
+    } else {
+        return;
+    }
+}
+
+function testTypeofEtc(x) {
+    var v = JSON.parse(x);
+    print('typeof: ' + typeof v);
+    print('class: ' + getClass(v));
+}
+
+function testObjectAndArrayPrototypes() {
+    var v;
+
+    /* Both Object.prototype and Array.prototype are non-writable,
+     * non-configurable properties, so we can't test (and don't need
+     * to test) what happens if Object.prototype or Array.prototype
+     * is replaced with a custom value.
+     */
+
+    v = JSON.parse("[1,2]");
+    print('array prototype expected: ' + (Object.getPrototypeOf(v) === Array.prototype));
+
+    v = JSON.parse('{"foo":1,"bar":2}');
+    print('object prototype expected: ' + (Object.getPrototypeOf(v) === Object.prototype));
+}
+
+try {
+    testTypeofEtc("null");
+    testTypeofEtc("true");
+    testTypeofEtc("false");
+    testTypeofEtc("1.23");
+    testTypeofEtc("[1,2]");
+    testTypeofEtc('{"foo":1,"bar":2}');
+
+    // test Object and Array prototypes
+    testObjectAndArrayPrototypes();
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 nan/inf
