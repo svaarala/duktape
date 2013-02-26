@@ -1296,6 +1296,11 @@ static int getconst(duk_compiler_ctx *comp_ctx) {
 		}
 	}
 
+	/* FIXME: placeholder, catches most cases */
+	if (n > 255) { /* 255 is OK */
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of consts");
+	}
+
 	DUK_DDDPRINT("allocating new constant for %!T -> const index %d", tv1, n);
 	(void) duk_put_prop_index(ctx, f->consts_idx, n);  /* invalidates tv1, tv2 */
 	return n | CONST_MARKER;
@@ -6133,6 +6138,14 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 
 	/* FIXME: append primitive */
 	n_funcs = duk_get_length(ctx, old_func.funcs_idx);
+
+	/* FIXME: placeholder, catches most cases; this limit is actually too tight
+	 * because CLOSURE can handle much more.
+	 */
+	if (n_funcs > 255) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of funcs");
+	}
+
 	(void) duk_put_prop_index(ctx, old_func.funcs_idx, n_funcs);  /* autoincrements length */
 
 	/*
