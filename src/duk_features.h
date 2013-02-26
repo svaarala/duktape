@@ -186,6 +186,8 @@
 
 /*
  *  Platform specific defines
+ *
+ *  http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
  */
 
 /* NOW = getting current time (required)
@@ -193,26 +195,38 @@
  * PRS = parse datetime (optional)
  * FMT = format datetime (optional)
  */
-#if defined(__linux)
-/* Linux (__unix also defined) */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(__unix)
-/* Other Unix */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
+
+#if defined(_WIN64)
+/* Windows 64-bit */
+#error WIN64 not supported
+#elif defined(_WIN32) || defined(WIN32)
+/* Windows 32-bit */
+#error WIN32 not supported
 #elif defined(__APPLE__)
 /* Mac OSX, iPhone, Darwin */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
+#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_PRS_STRPTIME
+#define  DUK_USE_DATE_FMT_STRFTIME
+#elif defined(__linux)
+/* Linux (__unix also defined) */
+#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_PRS_STRPTIME
+#define  DUK_USE_DATE_FMT_STRFTIME
+#elif defined(__unix)
+/* Other Unix */
+#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_PRS_STRPTIME
+#define  DUK_USE_DATE_FMT_STRFTIME
+#elif defined(__posix)
+/* POSIX */
+#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_PRS_STRPTIME
+#define  DUK_USE_DATE_FMT_STRFTIME
 #else
-/* FIXME */
 #error platform not supported
 #endif
 
