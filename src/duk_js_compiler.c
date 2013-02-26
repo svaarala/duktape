@@ -102,6 +102,7 @@ static int is_whole_get_i32(double x, duk_i32 *ival);
 /* ivalue/ispec helpers */
 static int alloctemps(duk_compiler_ctx *comp_ctx, int num);
 static int alloctemp(duk_compiler_ctx *comp_ctx);
+static void settemp_checkmax(duk_compiler_ctx *comp_ctx, int temp_next);
 static int getconst(duk_compiler_ctx *comp_ctx);
 static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                 duk_ispec *x,
@@ -853,6 +854,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(func->temp_max >= 0);
 	h_res->nregs = func->temp_max;
 	h_res->nargs = duk_hobject_get_length(thr, func->h_argnames);
+	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
 
 	DUK_DDPRINT("converted function: %!ixT", duk_get_tval(ctx, -1));
 
@@ -1181,12 +1183,13 @@ static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  *  Intermediate value helpers
  */
 
-#define  ISREG(comp_ctx,x)           (((x) & CONST_MARKER) == 0)
-#define  ISTEMP(comp_ctx,x)          (ISREG((comp_ctx), (x)) && (x) >= ((comp_ctx)->curr_func.temp_first))
-#define  GETTEMP(comp_ctx)           ((comp_ctx)->curr_func.temp_next)
-#define  SETTEMP(comp_ctx,x)         ((comp_ctx)->curr_func.temp_next = (x))
-#define  ALLOCTEMP(comp_ctx)         alloctemp((comp_ctx))
-#define  ALLOCTEMPS(comp_ctx,count)  alloctemps((comp_ctx),(count))
+#define  ISREG(comp_ctx,x)              (((x) & CONST_MARKER) == 0)
+#define  ISTEMP(comp_ctx,x)             (ISREG((comp_ctx), (x)) && (x) >= ((comp_ctx)->curr_func.temp_first))
+#define  GETTEMP(comp_ctx)              ((comp_ctx)->curr_func.temp_next)
+#define  SETTEMP(comp_ctx,x)            ((comp_ctx)->curr_func.temp_next = (x))  /* dangerous: must only lower (temp_max not updated) */
+#define  SETTEMP_CHECKMAX(comp_ctx,x)   settemp_checkmax((comp_ctx),(x))
+#define  ALLOCTEMP(comp_ctx)            alloctemp((comp_ctx))
+#define  ALLOCTEMPS(comp_ctx,count)     alloctemps((comp_ctx),(count))
 
 /* FIXME: some code might benefit from SETTEMP_IFTEMP(ctx,x) */
 
@@ -1254,6 +1257,13 @@ static int alloctemps(duk_compiler_ctx *comp_ctx, int num) {
 
 static int alloctemp(duk_compiler_ctx *comp_ctx) {
 	return alloctemps(comp_ctx, 1);
+}
+
+static void settemp_checkmax(duk_compiler_ctx *comp_ctx, int temp_next) {
+	comp_ctx->curr_func.temp_next = temp_next;
+	if (temp_next > comp_ctx->curr_func.temp_max) {
+		comp_ctx->curr_func.temp_max = temp_next;
+	}
 }
 
 /* get const for value at valstack top */
@@ -5530,7 +5540,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 	}
 
 	/* use temp_next for tracking register allocations */
-	SETTEMP(comp_ctx, num_args);
+	SETTEMP_CHECKMAX(comp_ctx, num_args);
 
 	if (out_stmt_value_reg) {
 		*out_stmt_value_reg = ALLOCTEMP(comp_ctx);
