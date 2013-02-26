@@ -727,7 +727,7 @@ static int case_transform_helper(duk_hthread *thr,
 		}
 
 		/* FIXME: lithuanian */
-		if (1 /* language == 'lt' */ &&
+		if (0 /* language == 'lt' */ &&
 		    x == 0x0307) {               /* U+0307 = COMBINING DOT ABOVE */
 			goto nochar;
 		}
