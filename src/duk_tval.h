@@ -63,6 +63,7 @@
  */
 
 #include <limits.h>
+
 /* FIXME: OSX/Darwin temporary workaround */
 #ifdef __APPLE__
 #include <architecture/byte_order.h>
