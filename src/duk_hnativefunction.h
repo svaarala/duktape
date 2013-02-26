@@ -14,7 +14,20 @@ struct duk_hnativefunction {
 
 	duk_c_function func;
 	duk_i16 nargs;
-	/* XXX: 16-bit space here */
+
+	/* XXX: there is a nice 16-bit space here.  What to put here?
+	 *
+	 * One alternative: put a 16-bit 'magic' (or 'salt') here, and allow
+	 * C code to get the 'magic' value of their wrapping duk_hnativefunction.
+	 * This would allow the same C functions to be used internally, while
+	 * flags and small parameter fields could be given through the 'magic'
+	 * value.  For instance, there are a bunch of setter/getter functions
+	 * in the Date built-in which only differ in a few flags.
+	 */
+
+	/* Note: cannot place nargs/magic into the heaphdr flags, because
+	 * duk_hobject takes almost all flags already (and needs the spare).
+	 */
 };
 
 #endif  /* __DUK_HNATIVEFUNCTION_H */
