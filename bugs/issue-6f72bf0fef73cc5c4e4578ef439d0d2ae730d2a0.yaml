@@ -12,8 +12,8 @@ type: :task
 component: duk
 release: v0.2
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-26 12:47:20.878984 Z
 references: []
 
@@ -27,3 +27,7 @@ log_events:
     a (justified) valgrind whine, when constant numbers went over 8 bits and
     caused invalid opcodes to be emitted (constant accesses are then confused
     with register accesses).
+- - 2013-02-26 14:03:39.192399 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
+  - ""

@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: finish Unicode case conversion support
+desc: |-
+  There is currently no way to set the current locale/language, which affects
+  e.g. case conversion.  For instance, the lowercase conversion of U+0307 is
+  language specific, while the lowercase conversion of U+03A3 is context (but
+  not language) specific.  Add a mechanism for setting these, and add test cases
+  to cover the different cases.
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-02-26 14:23:14.610402 Z
+references: []
+
+id: 0bfc892356da41337a6bc98098f1c9546084e840
+log_events: 
+- - 2013-02-26 14:23:14.802338 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
