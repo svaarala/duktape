@@ -114,7 +114,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* FIXME: function properties */
 
 			duk_push_hstring_stridx(ctx, stridx);
-			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
@@ -156,7 +156,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_int(ctx, len);
 			duk_def_prop_stridx(ctx,
 			                    -2,
-			                    DUK_HEAP_STRIDX_LENGTH,
+			                    DUK_STRIDX_LENGTH,
 			                    (class_num == DUK_HOBJECT_CLASS_ARRAY ?  /* only Array.prototype matches */
 			                     DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE));
 		}
@@ -219,7 +219,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Configurable]] = false
 			 */
 			DUK_DDDPRINT("set external prototype: built-in %d", (int) t);
-			duk_def_prop_stridx_builtin(ctx, i, DUK_HEAP_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
+			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
 		}
 
 		t = duk_bd_decode(bd, BIDX_BITS);
@@ -230,7 +230,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Configurable]] = true
 			 */
 			DUK_DDDPRINT("set external constructor: built-in %d", (int) t);
-			duk_def_prop_stridx_builtin(ctx, i, DUK_HEAP_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
+			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
 		}
 
 		/* normal valued properties */
@@ -252,7 +252,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			if (duk_bd_decode_flag(bd)) {
 				prop_flags = duk_bd_decode(bd, PROP_FLAGS_BITS);
 			} else {
-				if (stridx == DUK_HEAP_STRIDX_LENGTH) {
+				if (stridx == DUK_STRIDX_LENGTH) {
 					prop_flags = DUK_PROPDESC_FLAGS_NONE;
 				} else {
 					prop_flags = DUK_PROPDESC_FLAGS_WC;
@@ -375,10 +375,10 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) func ] */
 
 			duk_push_int(ctx, c_length);
-			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 			duk_push_hstring_stridx(ctx, stridx);
-			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* FIXME: other properties of function instances; 'arguments', 'caller'. */
 
@@ -408,8 +408,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  - Make DoubleError non-extensible.
 	 */
 
-	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_HEAP_STRIDX_TO_UTC_STRING);
-	duk_def_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_HEAP_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
+	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
+	duk_def_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
 
 	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_ASSERT(h != NULL);

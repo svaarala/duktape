@@ -966,7 +966,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 
 		/* [ ... lval rval ] */
 
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_TARGET);    /* -> [ ... lval rval new_rval ] */
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);         /* -> [ ... lval rval new_rval ] */
 		duk_replace(ctx, -1);                                        /* -> [ ... lval new_rval ] */
 		func = duk_require_hobject(ctx, -1);
 
@@ -993,7 +993,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		goto pop_and_false;
 	}
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
 	proto = duk_require_hobject(ctx, -1);
 	duk_pop(ctx);  /* -> [ ... lval rval ] */
 
@@ -1094,45 +1094,45 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 
 	switch (DUK_TVAL_GET_TAG(tv_x)) {
 	case DUK_TAG_UNDEFINED: {
-		idx = DUK_HEAP_STRIDX_UNDEFINED;
+		idx = DUK_STRIDX_UNDEFINED;
 		break;
 	}
 	case DUK_TAG_NULL: {
 		/* Note: not a typo, "object" is returned for a null value */
-		idx = DUK_HEAP_STRIDX_LC_OBJECT;
+		idx = DUK_STRIDX_LC_OBJECT;
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
-		idx = DUK_HEAP_STRIDX_LC_BOOLEAN;
+		idx = DUK_STRIDX_LC_BOOLEAN;
 		break;
 	}
 	case DUK_TAG_POINTER: {
 		/* implementation specific */
-		idx = DUK_HEAP_STRIDX_POINTER;
+		idx = DUK_STRIDX_POINTER;
 		break;
 	}
 	case DUK_TAG_STRING: {
-		idx = DUK_HEAP_STRIDX_LC_STRING;
+		idx = DUK_STRIDX_LC_STRING;
 		break;
 	}
 	case DUK_TAG_OBJECT: {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_x);
 		DUK_ASSERT(obj != NULL);
 		if (DUK_HOBJECT_IS_CALLABLE(obj)) {
-			idx = DUK_HEAP_STRIDX_LC_FUNCTION;
+			idx = DUK_STRIDX_LC_FUNCTION;
 		} else {
-			idx = DUK_HEAP_STRIDX_LC_OBJECT;
+			idx = DUK_STRIDX_LC_OBJECT;
 		}
 		break;
 	}
 	case DUK_TAG_BUFFER: {
 		/* implementation specific */
-		idx = DUK_HEAP_STRIDX_BUFFER;
+		idx = DUK_STRIDX_BUFFER;
 		break;
 	}
 	default: {
 		/* number */
-		idx = DUK_HEAP_STRIDX_LC_NUMBER;
+		idx = DUK_STRIDX_LC_NUMBER;
 		break;
 	}
 	}

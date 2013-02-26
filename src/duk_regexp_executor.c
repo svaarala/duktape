@@ -615,7 +615,7 @@ void duk_regexp_match(duk_hthread *thr) {
 	h_input = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	duk_get_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
+	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
 	h_bytecode = duk_require_hstring(ctx, -1);  /* no regexp instance should exist without a non-configurable bytecode property */
 	DUK_ASSERT(h_bytecode != NULL);
 
@@ -686,7 +686,7 @@ void duk_regexp_match(duk_hthread *thr) {
 
 	/* [ ... re_obj input bc saved_buf ] */
 
-	duk_get_prop_stridx(ctx, -4, DUK_HEAP_STRIDX_LAST_INDEX);  /* -> [ ... re_obj input bc saved_buf lastIndex ] */
+	duk_get_prop_stridx(ctx, -4, DUK_STRIDX_LAST_INDEX);  /* -> [ ... re_obj input bc saved_buf lastIndex ] */
 	(void) duk_to_int(ctx, -1);  /* ToInteger(lastIndex) */
 	d = duk_get_number(ctx, -1);  /* integer, but may be +/- Infinite, +/- zero (not NaN, though) */
 	duk_pop(ctx);
@@ -820,10 +820,10 @@ void duk_regexp_match(duk_hthread *thr) {
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_number(ctx, (double) char_offset);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INDEX, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INDEX, DUK_PROPDESC_FLAGS_WEC);
 
 		duk_dup(ctx, -4);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INPUT, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INPUT, DUK_PROPDESC_FLAGS_WEC);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {
 			/* If saved[] pointers are insane, we just ignore them instead of
@@ -862,7 +862,7 @@ void duk_regexp_match(duk_hthread *thr) {
 		if (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL) {
 			/* global regexp: lastIndex updated on match */
 			duk_push_number(ctx, (double) char_end_offset);
-			duk_put_prop_stridx(ctx, -6, DUK_HEAP_STRIDX_LAST_INDEX);
+			duk_put_prop_stridx(ctx, -6, DUK_STRIDX_LAST_INDEX);
 		} else {
 			/* non-global regexp: lastIndex never updated on match */
 			;
@@ -881,7 +881,7 @@ void duk_regexp_match(duk_hthread *thr) {
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_int(ctx, 0);
-		duk_put_prop_stridx(ctx, -6, DUK_HEAP_STRIDX_LAST_INDEX);
+		duk_put_prop_stridx(ctx, -6, DUK_STRIDX_LAST_INDEX);
 	}
 
 	/* [ ... re_obj input bc saved_buf res_obj ] */

@@ -79,7 +79,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	}
 
 	/* [... arr] */
-	duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_TRACEBACK);  /* -> [...] */
+	duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_TRACEBACK);  /* -> [...] */
 }
 #endif  /* DUK_USE_TRACEBACKS */
 
@@ -155,29 +155,29 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 			/* FIXME: now set function name as filename; record function and file name
 			 * separately?  Function object is already in traceback though.
 			 */
-			duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_NAME);
-			duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_FILE_NAME);
+			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);
+			duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_FILE_NAME);
 
 			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 				duk_push_false(ctx);
-				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_IS_NATIVE);
+				duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_IS_NATIVE);
 
 				/* FIXME: add PC only if pc2line fails? */
 				duk_push_number(ctx, pc);
-				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_PC);
+				duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_PC);
 
-				duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_PC2LINE);
+				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_PC2LINE);
 				if (duk_is_buffer(ctx, -1)) {
 					pc2line = duk_get_hbuffer(ctx, -1);
 					DUK_ASSERT(!DUK_HBUFFER_HAS_GROWABLE(pc2line));
 					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, pc);
 					duk_push_number(ctx, (double) line);  /* FIXME: u32 */
-					duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_LINE_NUMBER);
+					duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_LINE_NUMBER);
 				}
 				duk_pop(ctx);
 			} else {
 				duk_push_true(ctx);
-				duk_put_prop_stridx(ctx, err_index, DUK_HEAP_STRIDX_IS_NATIVE);
+				duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_IS_NATIVE);
 			}
 
 			duk_pop(ctx);

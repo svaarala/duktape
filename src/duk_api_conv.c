@@ -30,7 +30,7 @@ static int defaultvalue_coerce_attempt(duk_context *ctx, int index, int func_str
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
-	int coercers[] = { DUK_HEAP_STRIDX_VALUE_OF, DUK_HEAP_STRIDX_TO_STRING };
+	int coercers[] = { DUK_STRIDX_VALUE_OF, DUK_STRIDX_TO_STRING };
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -52,8 +52,8 @@ void duk_to_defaultvalue(duk_context *ctx, int index, int hint) {
 	}
 
 	if (hint == DUK_HINT_STRING) {
-		coercers[0] = DUK_HEAP_STRIDX_TO_STRING;
-		coercers[1] = DUK_HEAP_STRIDX_VALUE_OF;
+		coercers[0] = DUK_STRIDX_TO_STRING;
+		coercers[1] = DUK_STRIDX_VALUE_OF;
 	}
 
 	if (defaultvalue_coerce_attempt(ctx, index, coercers[0])) {
@@ -271,14 +271,14 @@ static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
 	if (c == FP_INFINITE) {
 		if (d < 0) {
 			/* -Infinity */
-			duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_MINUS_INFINITY);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_MINUS_INFINITY);
 		} else {
 			/* Infinity */
-			duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INFINITY);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_INFINITY);
 		}
 	} else if (c == FP_NAN) {
 		/* NaN */
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_NAN);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_NAN);
 	} else {
 		if (DUK_TVAL_GET_NUMBER(tv) == (int) d) {
 			duk_push_sprintf(ctx, "%d", (int) d);
@@ -304,18 +304,18 @@ const char *duk_to_string(duk_context *ctx, int index) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_UNDEFINED);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_UNDEFINED);
 		break;
 	}
 	case DUK_TAG_NULL: {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_NULL);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_NULL);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
 		if (DUK_TVAL_GET_BOOLEAN(tv)) {
-			duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_TRUE);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_TRUE);
 		} else {
-			duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_FALSE);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_FALSE);
 		}
 		break;
 	}
@@ -429,7 +429,7 @@ void duk_to_object(duk_context *ctx, int index) {
 		 * but duk_def_prop_stridx() disregards the write protection.
 		 */
 		duk_push_boolean(ctx, val);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
 		duk_replace(ctx, index);
 		break;
@@ -446,7 +446,7 @@ void duk_to_object(duk_context *ctx, int index) {
 		 * but duk_def_prop_stridx() disregards the write protection.
 		 */
 		duk_dup(ctx, index);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
 		/* Enable special string behavior only after internal value has been set */
 		DUK_HOBJECT_SET_SPECIAL_STRINGOBJ(res);
@@ -473,7 +473,7 @@ void duk_to_object(duk_context *ctx, int index) {
 		 * but duk_def_prop_stridx() disregards the write protection.
 		 */
 		duk_push_number(ctx, val);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
 		duk_replace(ctx, index);
 		break;

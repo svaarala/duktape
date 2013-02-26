@@ -483,13 +483,13 @@ static void json_dec_value(duk_json_dec_ctx *js_ctx) {
 		/* We already ate 'x', so json_dec_number() will back up one byte. */
 		json_dec_number(js_ctx);
 	} else if (x == 't') {
-		json_dec_req_stridx(js_ctx, DUK_HEAP_STRIDX_TRUE);
+		json_dec_req_stridx(js_ctx, DUK_STRIDX_TRUE);
 		duk_push_true(ctx);
 	} else if (x == 'f') {
-		json_dec_req_stridx(js_ctx, DUK_HEAP_STRIDX_FALSE);
+		json_dec_req_stridx(js_ctx, DUK_STRIDX_FALSE);
 		duk_push_false(ctx);
 	} else if (x == 'n') {
-		json_dec_req_stridx(js_ctx, DUK_HEAP_STRIDX_NULL);
+		json_dec_req_stridx(js_ctx, DUK_STRIDX_NULL);
 		duk_push_null(ctx);
 #if 0  /* FIXME: custom format */
 	} else if (XXX && x == 'u') {
@@ -1019,7 +1019,7 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 		undef = json_enc_value1(js_ctx, idx_arr);
 
 		if (undef) {
-			EMIT_STRIDX(js_ctx, DUK_HEAP_STRIDX_NULL);
+			EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
 		} else {
 			/* [ ... key val ] */
 			json_enc_value2(js_ctx);
@@ -1066,7 +1066,7 @@ static int json_enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 
 	h = duk_get_hobject(ctx, -1);
 	if (h != NULL) {
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_TO_JSON);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
 		h = duk_get_hobject(ctx, -1);  /* FIXME: duk_get_hobject_callable */
 		if (h != NULL && DUK_HOBJECT_IS_CALLABLE(h)) {
 			DUK_DDDPRINT("value is object, has callable toJSON() -> call it");
@@ -1113,7 +1113,7 @@ static int json_enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 			duk_to_string(ctx, -1);
 		} else if (c == DUK_HOBJECT_CLASS_BOOLEAN) {
 			DUK_DDDPRINT("value is a Boolean object -> get internal value");
-			duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_VALUE);
+			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 			DUK_ASSERT(DUK_TVAL_IS_BOOLEAN(duk_get_tval(ctx, -1)));
 			duk_remove(ctx, -2);
 		}
@@ -1180,12 +1180,12 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		break;
 	}
 	case DUK_TAG_NULL: {
-		EMIT_STRIDX(js_ctx, DUK_HEAP_STRIDX_NULL);
+		EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
 		EMIT_STRIDX(js_ctx, DUK_TVAL_GET_BOOLEAN(tv) ?
-		            DUK_HEAP_STRIDX_TRUE : DUK_HEAP_STRIDX_FALSE);
+		            DUK_STRIDX_TRUE : DUK_STRIDX_FALSE);
 		break;
 	}
 	case DUK_TAG_POINTER: {
@@ -1288,7 +1288,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 
 		if (!(js_ctx->flags & (DUK_JSON_ENC_FLAG_EXT_CUSTOM |
 		                       DUK_JSON_ENC_FLAG_EXT_COMPATIBLE))) {
-			stridx = DUK_HEAP_STRIDX_NULL;
+			stridx = DUK_STRIDX_NULL;
 		} else if (c == FP_NAN) {
 			stridx = js_ctx->stridx_custom_nan;
 		} else if (s == 0) {
@@ -1373,8 +1373,8 @@ int duk_builtin_json_object_parse(duk_context *ctx) {
 
 		duk_push_new_object(ctx);
 		duk_dup(ctx, -2);  /* -> [ ... val root val ] */
-		duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_EMPTY_STRING);  /* default attrs ok */
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
 
 		DUK_DDDPRINT("start reviver walk, root=%!T, name=%!T",
 		             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
@@ -1438,15 +1438,15 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	js_ctx->flag_ext_compatible = flags & DUK_JSON_ENC_FLAG_EXT_COMPATIBLE;
 
 	if (flags & DUK_JSON_ENC_FLAG_EXT_CUSTOM) {
-		js_ctx->stridx_custom_undefined = DUK_HEAP_STRIDX_UNDEFINED;
-		js_ctx->stridx_custom_nan = DUK_HEAP_STRIDX_NAN;
-		js_ctx->stridx_custom_neginf = DUK_HEAP_STRIDX_MINUS_INFINITY;
-		js_ctx->stridx_custom_posinf = DUK_HEAP_STRIDX_INFINITY;
+		js_ctx->stridx_custom_undefined = DUK_STRIDX_UNDEFINED;
+		js_ctx->stridx_custom_nan = DUK_STRIDX_NAN;
+		js_ctx->stridx_custom_neginf = DUK_STRIDX_MINUS_INFINITY;
+		js_ctx->stridx_custom_posinf = DUK_STRIDX_INFINITY;
 	} else if (js_ctx->flags & DUK_JSON_ENC_FLAG_EXT_COMPATIBLE) {
-		js_ctx->stridx_custom_undefined = DUK_HEAP_STRIDX_JSON_EXT_UNDEFINED;
-		js_ctx->stridx_custom_nan = DUK_HEAP_STRIDX_JSON_EXT_NAN;
-		js_ctx->stridx_custom_neginf = DUK_HEAP_STRIDX_JSON_EXT_NEGINF;
-		js_ctx->stridx_custom_posinf = DUK_HEAP_STRIDX_JSON_EXT_POSINF;
+		js_ctx->stridx_custom_undefined = DUK_STRIDX_JSON_EXT_UNDEFINED;
+		js_ctx->stridx_custom_nan = DUK_STRIDX_JSON_EXT_NAN;
+		js_ctx->stridx_custom_neginf = DUK_STRIDX_JSON_EXT_NEGINF;
+		js_ctx->stridx_custom_posinf = DUK_STRIDX_JSON_EXT_POSINF;
 	}
 
 	if (js_ctx->flags & (DUK_JSON_ENC_FLAG_EXT_CUSTOM |
@@ -1572,7 +1572,7 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 
 	idx_holder = duk_push_new_object(ctx);
 	duk_dup(ctx, 0);
-	duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_EMPTY_STRING);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 
 	DUK_DDDPRINT("before: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
 	             js_ctx->flags,
@@ -1586,7 +1586,7 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	
 	/* serialize the wrapper with empty string key */
 
-	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	undef = json_enc_value1(js_ctx, idx_holder);  /* [ ... key ] -> [ ... key val ] */
 	if (undef) {
 		return 0;

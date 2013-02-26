@@ -56,13 +56,13 @@ int duk_builtin_duk_object_gc(duk_context *ctx) {
 
 int duk_builtin_duk_object_get_finalizer(duk_context *ctx) {
 	(void) duk_require_hobject(ctx, 0);
-	duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_INT_FINALIZER);
+	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 	return 1;
 }
 
 int duk_builtin_duk_object_set_finalizer(duk_context *ctx) {
 	DUK_ASSERT(duk_get_top(ctx) == 2);
-	(void) duk_put_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_INT_FINALIZER);  /* XXX: check value? */
+	(void) duk_put_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);  /* XXX: check value? */
 	return 0;
 }
 

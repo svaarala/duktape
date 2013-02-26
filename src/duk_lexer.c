@@ -945,14 +945,14 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  see test-dec-escaped-char-in-keyword.js.
 		 */
 
-		i_end = (strict_mode ? DUK_HEAP_STRIDX_END_RESERVED : DUK_HEAP_STRIDX_START_STRICT_RESERVED);
+		i_end = (strict_mode ? DUK_STRIDX_END_RESERVED : DUK_STRIDX_START_STRICT_RESERVED);
 
 		advtok = ADVTOK(0, DUK_TOK_IDENTIFIER);
 		if (out_token->num_escapes == 0) {
-			for (i = DUK_HEAP_STRIDX_START_RESERVED; i < i_end; i++) {
+			for (i = DUK_STRIDX_START_RESERVED; i < i_end; i++) {
 				DUK_ASSERT(i >= 0 && i < DUK_HEAP_NUM_STRINGS);
 				if (lex_ctx->thr->strs[i] == str) {
-					advtok = ADVTOK(0, DUK_HEAP_STRIDX_TO_TOK(i));
+					advtok = ADVTOK(0, DUK_STRIDX_TO_TOK(i));
 					break;
 				}
 			}

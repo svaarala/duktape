@@ -3236,7 +3236,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_u32 length) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_push_hobject(ctx, obj);
-	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_LENGTH);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 	duk_push_number(ctx, (double) length);  /* FIXME: push_u32 */
 	(void) duk_hobject_putprop(thr, duk_get_tval(ctx, -3), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0);
 	duk_pop_n(ctx, 3);
@@ -3250,7 +3250,7 @@ duk_u32 duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	double val;
 	duk_push_hobject(ctx, obj);
-	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_LENGTH);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 	(void) duk_hobject_getprop(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 	val = duk_to_number(ctx, -1);
 	duk_pop_n(ctx, 3);
@@ -3301,24 +3301,24 @@ int duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 	if (DUK_PROPDESC_IS_ACCESSOR(&pd)) {
 		if (pd.get) {
 			duk_push_hobject(ctx, pd.get);
-			duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_GET);
+			duk_put_prop_stridx(ctx, -2, DUK_STRIDX_GET);
 		}
 		if (pd.set) {
 			duk_push_hobject(ctx, pd.set);
-			duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_SET);
+			duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
 		}
 	} else {
 		duk_dup(ctx, -2);  /* [obj key value desc value] */
-		duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_VALUE);
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_VALUE);
 		duk_push_boolean(ctx, DUK_PROPDESC_IS_WRITABLE(&pd));
-		duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_WRITABLE);
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_WRITABLE);
 
 		/* [obj key value desc] */
 	}
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_ENUMERABLE(&pd));
-	duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_ENUMERABLE);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_CONFIGURABLE(&pd));
-	duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_CONFIGURABLE);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
 
 	/* [obj key value desc] */
 	return 1;
@@ -3354,49 +3354,49 @@ static void normalize_property_descriptor(duk_context *ctx) {
 	 */
 	target_top = duk_get_top(ctx);
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_VALUE)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_VALUE)) {
 		is_data_desc = 1;
-		duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_VALUE);
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_VALUE);
 	}
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_WRITABLE)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_WRITABLE)) {
 		is_data_desc = 1;
 		duk_to_boolean(ctx, -1);
-		duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_WRITABLE);
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_WRITABLE);
 	}
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_GET)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_GET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
 		is_acc_desc = 1;
 		if (DUK_TVAL_IS_UNDEFINED(tv) ||
 		    (DUK_TVAL_IS_OBJECT(tv) &&
 		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
-			duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_GET);
+			duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_GET);
 		} else {
 			goto type_error;
 		}
 	}
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_SET)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_SET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
 		is_acc_desc = 1;
 		if (DUK_TVAL_IS_UNDEFINED(tv) ||
 		    (DUK_TVAL_IS_OBJECT(tv) &&
 		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
-			duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_SET);
+			duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_SET);
 		} else {
 			goto type_error;
 		}
 	}
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_ENUMERABLE)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_ENUMERABLE)) {
 		duk_to_boolean(ctx, -1);
-		duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_ENUMERABLE);
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_ENUMERABLE);
 	}
 
-	if (duk_get_prop_stridx(ctx, idx_in, DUK_HEAP_STRIDX_CONFIGURABLE)) {
+	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_CONFIGURABLE)) {
 		duk_to_boolean(ctx, -1);
-		duk_put_prop_stridx(ctx, idx_out, DUK_HEAP_STRIDX_CONFIGURABLE);
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_CONFIGURABLE);
 	}
 
 	/* pop any crud */
@@ -3515,15 +3515,15 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	 *  all coercions must be done first.  Boolean conversion of 'undefined' is false.
 	 */
 
-	has_enumerable = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_ENUMERABLE);
+	has_enumerable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_ENUMERABLE);
 	is_enumerable = duk_to_boolean(ctx, -1);
 	duk_pop(ctx);
 
-	has_configurable = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_CONFIGURABLE);
+	has_configurable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_CONFIGURABLE);
 	is_configurable = duk_to_boolean(ctx, -1);
 	duk_pop(ctx);
 
-	has_value = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_VALUE);
+	has_value = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_VALUE);
 	if (has_value) {
 		/* Note: we don't want to store a pointer to an duk_tval in the
 		 * valstack here, because a valstack resize (which may occur
@@ -3535,11 +3535,11 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	}
 	/* leave value on stack intentionally to ensure we can refer to it later */
 
-	has_writable = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_WRITABLE);
+	has_writable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_WRITABLE);
 	is_writable = duk_to_boolean(ctx, -1);
 	duk_pop(ctx);
 
-	has_get = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_GET);
+	has_get = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_GET);
 	get = NULL;
 	if (has_get && !duk_is_undefined(ctx, -1)) {
 		/* FIXME: get = duk_require_callable_hobject(ctx, -1)? */
@@ -3551,7 +3551,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	}
 	/* leave get on stack */
 
-	has_set = duk_get_prop_stridx(ctx, idx_desc, DUK_HEAP_STRIDX_SET);
+	has_set = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_SET);
 	set = NULL;
 	if (has_set && !duk_is_undefined(ctx, -1)) {
 		set = duk_require_hobject(ctx, -1);

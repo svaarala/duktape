@@ -24,7 +24,7 @@ static int _finalize_helper(duk_context *ctx) {
 
 	/* [... obj] */
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
 	if (!duk_is_callable(ctx, -1)) {
 		DUK_DDDPRINT("-> no finalizer or finalizer not callable");
 		return 0;

@@ -30,7 +30,7 @@ static duk_hobject *find_nonbound_function(duk_hthread *thr, duk_hobject *func) 
 		}
 
 		duk_push_hobject(ctx, func);
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_TARGET);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
 		func = duk_require_hobject(ctx, -1);
 		duk_pop_2(ctx);
 	} while (--sanity > 0);
@@ -2647,8 +2647,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				/* [ ... env target ] */
 				/* [ ... env target target ] */
 
-				duk_def_prop_stridx(thr, -3, DUK_HEAP_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-				duk_def_prop_stridx(thr, -2, DUK_HEAP_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+				duk_def_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+				duk_def_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
 
 				/* [ ... env ] */
 
@@ -2954,18 +2954,18 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 
 				duk_push_hobject(ctx, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR]);
-				duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_DEFINE_PROPERTY);
+				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_DEFINE_PROPERTY);
 				duk_push_undefined(ctx);
 				duk_dup(ctx, b);
 				duk_dup(ctx, c + 0);
 				duk_push_new_object(ctx);  /* -> [ Object defineProperty undefined obj key desc ] */
 
 				duk_push_true(ctx);
-				duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_ENUMERABLE);
+				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
 				duk_push_true(ctx);
-				duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_CONFIGURABLE);
+				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
 				duk_dup(ctx, c+1);
-				duk_put_prop_stridx(ctx, -2, (a == DUK_EXTRAOP_INITSET ? DUK_HEAP_STRIDX_SET : DUK_HEAP_STRIDX_GET));
+				duk_put_prop_stridx(ctx, -2, (a == DUK_EXTRAOP_INITSET ? DUK_STRIDX_SET : DUK_STRIDX_GET));
 
 				DUK_DDDPRINT("INITGET/INITSET: obj=%!T, key=%!T, desc=%!T",
 				             duk_get_tval(ctx, -3), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));

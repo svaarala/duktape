@@ -14,7 +14,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	DUK_ASSERT(ctx != NULL);
 
 	if (count <= 0) {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 		return;
 	}
 

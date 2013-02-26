@@ -173,7 +173,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_u32 r1, duk_u32 r2, int di
 #define  DUK_TOK_MAXVAL				101  /* inclusive */
 
 /* Convert heap string index to a token (reserved words) */
-#define  DUK_HEAP_STRIDX_TO_TOK(x)		((x) - DUK_HEAP_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)
+#define  DUK_STRIDX_TO_TOK(x)			((x) - DUK_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)
 
 /* Sanity check */
 #if (DUK_TOK_MAXVAL > 255)
@@ -181,145 +181,145 @@ typedef void (*duk_re_range_callback)(void *user, duk_u32 r1, duk_u32 r2, int di
 #endif
 
 /* Sanity checks for string and token defines */
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_BREAK) != DUK_TOK_BREAK)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_BREAK) != DUK_TOK_BREAK)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_CASE) != DUK_TOK_CASE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_CASE) != DUK_TOK_CASE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_CATCH) != DUK_TOK_CATCH)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_CATCH) != DUK_TOK_CATCH)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_CONTINUE) != DUK_TOK_CONTINUE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_CONTINUE) != DUK_TOK_CONTINUE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_DEBUGGER) != DUK_TOK_DEBUGGER)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_DEBUGGER) != DUK_TOK_DEBUGGER)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_DEFAULT) != DUK_TOK_DEFAULT)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_DEFAULT) != DUK_TOK_DEFAULT)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_DELETE) != DUK_TOK_DELETE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_DELETE) != DUK_TOK_DELETE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_DO) != DUK_TOK_DO)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_DO) != DUK_TOK_DO)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_ELSE) != DUK_TOK_ELSE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_ELSE) != DUK_TOK_ELSE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_FINALLY) != DUK_TOK_FINALLY)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_FINALLY) != DUK_TOK_FINALLY)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_FOR) != DUK_TOK_FOR)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_FOR) != DUK_TOK_FOR)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_LC_FUNCTION) != DUK_TOK_FUNCTION)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_LC_FUNCTION) != DUK_TOK_FUNCTION)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_IF) != DUK_TOK_IF)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_IF) != DUK_TOK_IF)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_IN) != DUK_TOK_IN)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_IN) != DUK_TOK_IN)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_INSTANCEOF) != DUK_TOK_INSTANCEOF)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_INSTANCEOF) != DUK_TOK_INSTANCEOF)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_NEW) != DUK_TOK_NEW)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_NEW) != DUK_TOK_NEW)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_RETURN) != DUK_TOK_RETURN)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_RETURN) != DUK_TOK_RETURN)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_SWITCH) != DUK_TOK_SWITCH)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_SWITCH) != DUK_TOK_SWITCH)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_THIS) != DUK_TOK_THIS)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_THIS) != DUK_TOK_THIS)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_THROW) != DUK_TOK_THROW)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_THROW) != DUK_TOK_THROW)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_TRY) != DUK_TOK_TRY)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_TRY) != DUK_TOK_TRY)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_TYPEOF) != DUK_TOK_TYPEOF)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_TYPEOF) != DUK_TOK_TYPEOF)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_VAR) != DUK_TOK_VAR)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_VAR) != DUK_TOK_VAR)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_VOID) != DUK_TOK_VOID)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_VOID) != DUK_TOK_VOID)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_WHILE) != DUK_TOK_WHILE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_WHILE) != DUK_TOK_WHILE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_WITH) != DUK_TOK_WITH)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_WITH) != DUK_TOK_WITH)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_CLASS) != DUK_TOK_CLASS)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_CLASS) != DUK_TOK_CLASS)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_CONST) != DUK_TOK_CONST)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_CONST) != DUK_TOK_CONST)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_ENUM) != DUK_TOK_ENUM)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_ENUM) != DUK_TOK_ENUM)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_EXPORT) != DUK_TOK_EXPORT)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_EXPORT) != DUK_TOK_EXPORT)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_EXTENDS) != DUK_TOK_EXTENDS)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_EXTENDS) != DUK_TOK_EXTENDS)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_IMPORT) != DUK_TOK_IMPORT)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_IMPORT) != DUK_TOK_IMPORT)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_SUPER) != DUK_TOK_SUPER)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_SUPER) != DUK_TOK_SUPER)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_NULL) != DUK_TOK_NULL)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_NULL) != DUK_TOK_NULL)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_TRUE) != DUK_TOK_TRUE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_TRUE) != DUK_TOK_TRUE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_FALSE) != DUK_TOK_FALSE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_FALSE) != DUK_TOK_FALSE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_GET) != DUK_TOK_GET)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_GET) != DUK_TOK_GET)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_SET) != DUK_TOK_SET)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_SET) != DUK_TOK_SET)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_IMPLEMENTS) != DUK_TOK_IMPLEMENTS)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_IMPLEMENTS) != DUK_TOK_IMPLEMENTS)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_INTERFACE) != DUK_TOK_INTERFACE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_INTERFACE) != DUK_TOK_INTERFACE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_LET) != DUK_TOK_LET)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_LET) != DUK_TOK_LET)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_PACKAGE) != DUK_TOK_PACKAGE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_PACKAGE) != DUK_TOK_PACKAGE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_PRIVATE) != DUK_TOK_PRIVATE)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_PRIVATE) != DUK_TOK_PRIVATE)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_PROTECTED) != DUK_TOK_PROTECTED)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_PROTECTED) != DUK_TOK_PROTECTED)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_PUBLIC) != DUK_TOK_PUBLIC)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_PUBLIC) != DUK_TOK_PUBLIC)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_STATIC) != DUK_TOK_STATIC)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_STATIC) != DUK_TOK_STATIC)
 #error mismatch in token defines
 #endif
-#if (DUK_HEAP_STRIDX_TO_TOK(DUK_HEAP_STRIDX_YIELD) != DUK_TOK_YIELD)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_YIELD) != DUK_TOK_YIELD)
 #error mismatch in token defines
 #endif
 

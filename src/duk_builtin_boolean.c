@@ -19,7 +19,7 @@ int duk_builtin_boolean_constructor(duk_context *ctx) {
 		DUK_HOBJECT_SET_CLASS_NUMBER(this, DUK_HOBJECT_CLASS_BOOLEAN);
 
 		duk_dup(ctx, 0);  /* -> [ val obj val ] */
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
 	}  /* unbalanced stack */
 
 	return 1;

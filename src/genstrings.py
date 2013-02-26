@@ -25,7 +25,7 @@ import dukutil
 
 # Prefix for defines
 
-define_prefix = 'DUK_HEAP_STRIDX_'
+define_prefix = 'DUK_STRIDX_'
 
 #
 #  String lists
@@ -873,7 +873,7 @@ if __name__ == '__main__':
 	genc.emitArray(strdata, 'duk_strings_data')  # FIXME: unsigned char?
 	genc.emitLine('')
 	genc.emitLine('/* to convert a heap stridx to a token number, subtract')
-	genc.emitLine(' * DUK_HEAP_STRIDX_START_RESERVED and add DUK_TOK_START_RESERVED.')
+	genc.emitLine(' * DUK_STRIDX_START_RESERVED and add DUK_TOK_START_RESERVED.')
 	genc.emitLine(' */')
 	f = open(opts.out_source, 'wb')
 	f.write(genc.getString())
@@ -897,17 +897,17 @@ if __name__ == '__main__':
 	genc.emitLine('')
 	idx = 0
 	for s, d in strlist:
-		defname = d.replace('_HEAP_STRIDX','_HEAP_STRING')  # FIXME
+		defname = d.replace('_STRIDX','_HEAP_STRING')  # FIXME
 		genc.emitDefine(defname + '(heap)', 'DUK_HEAP_GET_STRING((heap),%s)' % d)
-		defname = d.replace('_HEAP_STRIDX', '_HTHREAD_STRING')
+		defname = d.replace('_STRIDX', '_HTHREAD_STRING')
 		genc.emitDefine(defname + '(thr)', 'DUK_HTHREAD_GET_STRING((thr),%s)' % d)
 		idx += 1
 	genc.emitLine('')
 	genc.emitDefine('DUK_HEAP_NUM_STRINGS', idx)
 	genc.emitLine('')
-	genc.emitDefine('DUK_HEAP_STRIDX_START_RESERVED', idx_start_reserved)
-	genc.emitDefine('DUK_HEAP_STRIDX_START_STRICT_RESERVED', idx_start_strict_reserved)
-	genc.emitDefine('DUK_HEAP_STRIDX_END_RESERVED', len(strlist), comment='exclusive endpoint')
+	genc.emitDefine('DUK_STRIDX_START_RESERVED', idx_start_reserved)
+	genc.emitDefine('DUK_STRIDX_START_STRICT_RESERVED', idx_start_strict_reserved)
+	genc.emitDefine('DUK_STRIDX_END_RESERVED', len(strlist), comment='exclusive endpoint')
 	genc.emitLine('')
 	genc.emitLine('#endif  /* __DUK_STRINGS_H */')
 	f = open(opts.out_header, 'wb')

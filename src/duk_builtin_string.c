@@ -10,7 +10,7 @@ int duk_builtin_string_constructor(duk_context *ctx) {
 	 */
 
 	if (duk_get_top(ctx) == 0) {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	} else {
 		duk_to_string(ctx, 0);
 	}
@@ -25,7 +25,7 @@ int duk_builtin_string_constructor(duk_context *ctx) {
                            DUK_BIDX_STRING_PROTOTYPE);
 
 		duk_dup(ctx, 0);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: flags */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: flags */
 	}
 	/* Note: unbalanced stack on purpose */
 
@@ -75,7 +75,7 @@ int duk_builtin_string_prototype_to_string(duk_context *ctx) {
 			goto type_error;
 		}
 
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_VALUE);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 		DUK_ASSERT(duk_is_string(ctx, -1));
 
 		return 1;

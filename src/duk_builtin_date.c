@@ -942,7 +942,7 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected Date");
 	}
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_VALUE);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 	d = duk_to_number(ctx, -1);
 	duk_pop(ctx);
 
@@ -986,7 +986,7 @@ static int set_this_timeval_from_dparts(duk_context *ctx, double *dparts, int fl
 	d = get_timeval_from_dparts(dparts, flags);
 	duk_push_number(ctx, d);  /* -> [ ... this timeval_new ] */
 	duk_dup_top(ctx);         /* -> [ ... this timeval_new timeval_new ] */
-	duk_put_prop_stridx(ctx, -3, DUK_HEAP_STRIDX_INT_VALUE);
+	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE);
 
 	/* stack top: new time value */
 	return 1;
@@ -1049,7 +1049,7 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 
 	d = push_this_and_get_timeval_tzoffset(ctx, flags_and_sep, &tzoffset);
 	if (isnan(d)) {
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INVALID_DATE);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_INVALID_DATE);
 		return 1;
 	}
 	DUK_ASSERT(isfinite(d));
@@ -1274,7 +1274,7 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 	if (nargs == 0 || !is_cons) {
 		d = timeclip(GET_NOW_TIMEVAL(ctx));
 		duk_push_number(ctx, d);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		if (!is_cons) {
 			/* called as a normal function: return new Date().toString() */
 			duk_to_string(ctx, -1);
@@ -1288,7 +1288,7 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 		}
 		d = timeclip(duk_to_number(ctx, 0));
 		duk_push_number(ctx, d);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		return 1;
 	}
 
@@ -1427,7 +1427,7 @@ int duk_builtin_date_prototype_to_json(duk_context *ctx) {
 	}
 	duk_pop(ctx);
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_TO_ISO_STRING);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_ISO_STRING);
 	duk_dup(ctx, -2);  /* -> [ O toIsoString O ] */
 	duk_call_method(ctx, 0);
 	return 1;
@@ -1582,7 +1582,7 @@ int duk_builtin_date_prototype_set_time(duk_context *ctx) {
 	d = timeclip(duk_to_number(ctx, 0));
 	duk_push_number(ctx, d);
 	duk_dup_top(ctx);
-	duk_put_prop_stridx(ctx, -3, DUK_HEAP_STRIDX_INT_VALUE); /* -> [ timeval this timeval ] */
+	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE); /* -> [ timeval this timeval ] */
 
 	return 1;
 }

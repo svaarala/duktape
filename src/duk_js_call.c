@@ -52,11 +52,11 @@ static void create_arguments_object(duk_hthread *thr,
 	DUK_ASSERT(i_argbase >= 0);
 
 	duk_push_hobject(ctx, func);
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_FORMALS);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FORMALS);
 	formals = duk_get_hobject(ctx, -1);
 	n_formals = 0;
 	if (formals) {
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_LENGTH);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 		n_formals = duk_require_int(ctx, -1);
 		duk_pop(ctx);
 	}
@@ -113,7 +113,7 @@ static void create_arguments_object(duk_hthread *thr,
 	 */
 
 	duk_push_int(ctx, num_stack_args);
-	duk_def_prop_stridx(ctx, i_arg, DUK_HEAP_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Init argument related properties
@@ -182,7 +182,7 @@ static void create_arguments_object(duk_hthread *thr,
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
 
 		duk_dup(ctx, i_map);
-		duk_def_prop_stridx(ctx, i_arg, DUK_HEAP_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 
 		/* The variable environment for magic variable bindings needs to be
 		 * given by the caller and recorded in the arguments object.
@@ -194,7 +194,7 @@ static void create_arguments_object(duk_hthread *thr,
 		 */
 
 		duk_push_hobject(ctx, varenv);
-		duk_def_prop_stridx(ctx, i_arg, DUK_HEAP_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 	}
 
 	/* steps 13-14 */
@@ -215,12 +215,12 @@ static void create_arguments_object(duk_hthread *thr,
 
 		DUK_DDDPRINT("strict function, setting caller/callee to throwers");
 
-		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_HEAP_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_HEAP_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
 	} else {
 		DUK_DDDPRINT("non-strict function, setting callee to actual value");
 		duk_push_hobject(ctx, func);
-		duk_def_prop_stridx(ctx, i_arg, DUK_HEAP_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
+		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* set special behavior only after we're done */
@@ -289,7 +289,7 @@ static void handle_createargs_for_call(duk_hthread *thr,
 
 	duk_def_prop_stridx(ctx,
 	                    -2,
-	                    DUK_HEAP_STRIDX_LC_ARGUMENTS,
+	                    DUK_STRIDX_LC_ARGUMENTS,
 	                    DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
 	                                                   DUK_PROPDESC_FLAGS_WE);  /* non-strict: non-deletable, writable */
 	/* [... arg1 ... argN envobj] */
@@ -346,14 +346,14 @@ static void handle_bound_chain_for_call(duk_hthread *thr,
 
 		/* [ ... func this arg1 ... argN ] */
 
-		duk_get_prop_stridx(ctx, idx_func, DUK_HEAP_STRIDX_INT_THIS);
+		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);
 		duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
 
 		/* [ ... func this arg1 ... argN ] */
 
 		/* XXX: duk_get_length? */
-		duk_get_prop_stridx(ctx, idx_func, DUK_HEAP_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _args ] */
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _args length ] */
+		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _args ] */
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _args length ] */
 		len = duk_require_int(ctx, -1);
 		duk_pop(ctx);
 		for (i = 0; i < len; i++) {
@@ -371,7 +371,7 @@ static void handle_bound_chain_for_call(duk_hthread *thr,
 
 		/* [ ... func this <bound args> arg1 ... argN ] */
 
-		duk_get_prop_stridx(ctx, idx_func, DUK_HEAP_STRIDX_INT_TARGET);
+		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_TARGET);
 		duk_replace(ctx, idx_func);  /* replace also in stack; not strictly necessary */
 		func = duk_require_hobject(ctx, idx_func);
 

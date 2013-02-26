@@ -1873,7 +1873,7 @@ int duk_push_new_array(duk_context *ctx) {
 	duk_push_number(ctx, 0.0);
 	duk_hobject_define_property_internal(thr,
 	                                     obj,
-	                                     thr->strs[DUK_HEAP_STRIDX_LENGTH],
+	                                     DUK_HTHREAD_STRING_LENGTH(thr),
 	                                     DUK_PROPDESC_FLAGS_W);
 	DUK_HOBJECT_SET_SPECIAL_ARRAY(obj);
 
@@ -2054,12 +2054,12 @@ int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, .
 	/* ... and its 'message' from an instance property */
 	if (fmt) {
 		duk_push_vsprintf(ctx, fmt, ap);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* 'code' property is custom */
 	duk_push_int(ctx, err_code);
-	duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
 
 	va_end(ap);
 

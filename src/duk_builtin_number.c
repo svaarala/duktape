@@ -35,7 +35,7 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 		DUK_DDDPRINT("coercing argument: %!T", duk_get_tval(ctx, 0));
 		duk_to_number(ctx, 0);
 		duk_dup(ctx, 0);  /* -> [ val obj val ] */
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
 
 		return 0;
 	} else {
@@ -63,7 +63,7 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER) {
 			goto type_error;
 		}
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_VALUE);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 		DUK_ASSERT(duk_is_number(ctx, -1));
 	}  /* uneven stack on purpose */
 
@@ -95,7 +95,7 @@ int duk_builtin_number_prototype_value_of(duk_context *ctx) {
 		goto type_error;
 	}
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_VALUE);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 	return 1;
 
  type_error:

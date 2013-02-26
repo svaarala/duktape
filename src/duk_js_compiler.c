@@ -756,7 +756,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		DUK_DDDPRINT("cleaned up varmap: %!T (num_used=%d)", duk_get_tval(ctx, -1), num_used);
 
 		if (num_used > 0) {
-			duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
+			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 		} else {
 			DUK_DDDPRINT("varmap is empty after cleanup -> no need to add");
 			duk_pop(ctx);
@@ -769,13 +769,13 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 * it currently relies on _formals being set.
 		 */
 		duk_dup(ctx, func->argnames_idx);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/* _name */
 	if (func->h_name) {
 		duk_push_hstring(ctx, func->h_name);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/* _source */
@@ -813,7 +813,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		/* FIXME: if we keep _formals, only need to store body */
 #if 0
 		duk_push_string(ctx, "FIXME");
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 #endif
 	}
 
@@ -824,7 +824,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 */
 
 		duk_hobject_pc2line_pack(thr, q_instr, code_count);  /* -> pushes fixed buffer */
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 
 		/* FIXME: if assertions enabled, walk through all valid PCs
 		 * and check line mapping.
@@ -838,7 +838,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 */
 
 		duk_push_hstring(ctx, comp_ctx->h_filename);
-		duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_FILENAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_FILENAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/*
@@ -1982,7 +1982,7 @@ static void reset_labels_to_length(duk_compiler_ctx *comp_ctx, int len) {
 	/* FIXME: duk_set_length */
 	new_size = sizeof(duk_labelinfo) * len;
 	duk_push_int(ctx, len);
-	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_HEAP_STRIDX_LENGTH);
+	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_STRIDX_LENGTH);
 	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);  /* FIXME: spare handling */
 }
 
@@ -4995,7 +4995,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				duk_hstring *h_funcname;
 
 				duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum);
-				duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_NAME);  /* -> [ ... func name ] */
+				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);  /* -> [ ... func name ] */
 				h_funcname = duk_get_hstring(ctx, -1);
 				DUK_ASSERT(h_funcname != NULL);
 
@@ -5629,7 +5629,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 	 *  'arguments' is referenced inside the function body.
 	 */
 
-	if (duk_has_prop_stridx(ctx, comp_ctx->curr_func.varmap_idx, DUK_HEAP_STRIDX_LC_ARGUMENTS)) {
+	if (duk_has_prop_stridx(ctx, comp_ctx->curr_func.varmap_idx, DUK_STRIDX_LC_ARGUMENTS)) {
 		DUK_DDDPRINT("'arguments' is shadowed by argument or function declaration "
 		             "-> arguments object creation can be skipped");
 		comp_ctx->curr_func.is_arguments_shadowed = 1;
@@ -6269,8 +6269,8 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	if (is_funcexpr) {
 		/* funcexpr is now used for Function constructor, anonymous */
 	} else {
-		duk_push_hstring_stridx(ctx, (is_eval ? DUK_HEAP_STRIDX_EVAL :
-		                                        DUK_HEAP_STRIDX_GLOBAL));
+		duk_push_hstring_stridx(ctx, (is_eval ? DUK_STRIDX_EVAL :
+		                                        DUK_STRIDX_GLOBAL));
 		func->h_name = duk_get_hstring(ctx, -1);
 	}
 

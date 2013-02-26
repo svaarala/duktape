@@ -334,8 +334,8 @@ void duk_new(duk_context *ctx, int nargs) {
 		if (!DUK_HOBJECT_HAS_BOUND(cons)) {
 			break;
 		}
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_TARGET);  /* -> [... cons target] */
-		duk_remove(ctx, -2);                                       /* -> [... target] */
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
+		duk_remove(ctx, -2);                                  /* -> [... target] */
 	}
 	DUK_ASSERT(cons != NULL && !DUK_HOBJECT_HAS_BOUND(cons));
 
@@ -352,7 +352,7 @@ void duk_new(duk_context *ctx, int nargs) {
 
 	/* [... constructor arg1 ... argN final_cons fallback] */
 
-	duk_get_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_PROTOTYPE);
+	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE);
 	proto = duk_get_hobject(ctx, -1);
 	if (!proto) {
 		DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "

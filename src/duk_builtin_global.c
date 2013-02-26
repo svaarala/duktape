@@ -194,7 +194,7 @@ int duk_builtin_global_object_print(duk_context *ctx) {
 	if (nargs > 0) {
 		for (i = 0; i < nargs; i++) {
 			if (i != 0) {
-				duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_SPACE);
+				duk_push_hstring_stridx(ctx, DUK_STRIDX_SPACE);
 			}
 			duk_dup(ctx, i);
 			duk_to_string(ctx, -1);

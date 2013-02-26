@@ -105,7 +105,7 @@ int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 		 * ensure there are no Unicode issues.
 		 */
 
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_NAME);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);
 		if (!duk_is_undefined(ctx, -1)) {
 			func_name = duk_to_string(ctx, -1);
 			DUK_ASSERT(func_name != NULL);
@@ -165,7 +165,7 @@ int duk_builtin_function_prototype_apply(duk_context *ctx) {
 		DUK_DDDPRINT("argArray is an object");
 
 		/* FIXME: make this an internal helper */
-		duk_get_prop_stridx(ctx, 2, DUK_HEAP_STRIDX_LENGTH);
+		duk_get_prop_stridx(ctx, 2, DUK_STRIDX_LENGTH);
 		len = duk_to_uint32(ctx, -1);
 		duk_pop(ctx);
 
@@ -259,10 +259,10 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 	duk_dup(ctx, -2);  /* func */
-	duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_dup(ctx, 0);   /* thisArg */
-	duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_push_new_array(ctx);
 
@@ -272,7 +272,7 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 		duk_dup(ctx, 1 + i);
 		duk_put_prop_index(ctx, -2, i);
 	}
-	duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
@@ -281,14 +281,14 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	DUK_ASSERT(h_target != NULL);
 	if (DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
 		int tmp;
-		duk_get_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_LENGTH);
+		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH);
 		tmp = duk_to_int(ctx, -1) - (nargs - 1);  /* step 15.a */
 		duk_pop(ctx);
 		duk_push_int(ctx, (tmp < 0 ? 0 : tmp));
 	} else {
 		duk_push_int(ctx, 0);
 	}
-	duk_def_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
 	DUK_DDDPRINT("created bound function: %!iT", duk_get_tval(ctx, -1));
 

@@ -28,7 +28,7 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 	DUK_DDDPRINT("this: %!T", duk_get_tval(ctx, -1));
 
 	duk_to_object(ctx, -1);
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_JOIN);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_JOIN);
 
 	/* FIXME: uneven stack would reduce code size */
 
@@ -37,7 +37,7 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 		DUK_DDDPRINT("this.join is not callable, fall back to Object.toString");
 		duk_pop(ctx);
 		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE]);
-		duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_TO_STRING);
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_STRING);
 		duk_remove(ctx, -2);
 	}
 
@@ -75,7 +75,7 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 	DUK_ASSERT(duk_get_top(ctx) == 1);  /* nargs is 1 */
 	if (duk_is_undefined(ctx, 0)) {
 		duk_pop(ctx);
-		duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_COMMA);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);
 	} else {
 		duk_to_string(ctx, 0);
 	}
@@ -85,7 +85,7 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 
 	/* [ sep ToObject(this) ] */
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_LENGTH);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(ctx, -1);
 
 	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len);
@@ -99,7 +99,7 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 		duk_get_prop_index(ctx, 1, i);
 		if (duk_is_null_or_undefined(ctx, -1)) {
 			duk_pop(ctx);
-			duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_EMPTY_STRING);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 		} else {
 			duk_to_string(ctx, -1);
 		}
@@ -128,7 +128,7 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 
 	duk_push_this(ctx);
 	duk_to_object(ctx, -1);
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_LENGTH);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(ctx, -1);
 
 	/* [ arg1 ... argN obj length ] */
@@ -141,7 +141,7 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 
 	duk_push_number(ctx, (double) len);  /* FIXME: duk_push_u32 */
 	duk_dup_top(ctx);
-	duk_put_prop_stridx(ctx, -3, DUK_HEAP_STRIDX_LENGTH);
+	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH);
 
 	/* [ arg1 ... argN obj length new_length ] */
 	return 1;

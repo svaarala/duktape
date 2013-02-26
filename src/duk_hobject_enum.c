@@ -52,12 +52,12 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	/* [target res] */
 
-	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INT_TARGET);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_INT_TARGET);
 	duk_push_hobject(ctx, target);
 	duk_put_prop(ctx, -3);
 
 	/* initialize index so that we skip internal control keys */
-	duk_push_hstring_stridx(ctx, DUK_HEAP_STRIDX_INT_NEXT);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_INT_NEXT);
 	duk_push_int(ctx, ENUM_START_INDEX);
 	duk_put_prop(ctx, -3);
 
@@ -196,12 +196,12 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	e = duk_require_hobject(ctx, -1);
 
 	/* FIXME: use get tval ptr, more efficient */
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_NEXT);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
 	idx = (duk_u32) duk_require_number(ctx, -1);
 	duk_pop(ctx);
 	DUK_DPRINT("enumeration: index is: %d", idx);
 
-	duk_get_prop_stridx(ctx, -1, DUK_HEAP_STRIDX_INT_TARGET);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
 	target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(target != NULL);
 	duk_pop(ctx);  /* still reachable */
@@ -240,7 +240,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	DUK_DDDPRINT("enumeration: updating next index to %d", idx);
 
 	duk_push_number(ctx, (double) idx);
-	duk_put_prop_stridx(ctx, -2, DUK_HEAP_STRIDX_INT_NEXT);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
 
 	if (res) {
 		duk_push_hstring(ctx, res);

@@ -43,14 +43,14 @@ int duk_builtin_regexp_constructor(duk_context *ctx) {
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
 		if (duk_is_undefined(ctx, 1)) {
 			int flag_g, flag_i, flag_m;
-			duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_SOURCE);
+			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
 
 			/* FIXME: very awkward handling of flags */
-			duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_GLOBAL);
+			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_GLOBAL);
 			flag_g = duk_to_boolean(ctx, -1);
-			duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_IGNORE_CASE);
+			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_IGNORE_CASE);
 			flag_i = duk_to_boolean(ctx, -1);
-			duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_MULTILINE);
+			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_MULTILINE);
 			flag_m = duk_to_boolean(ctx, -1);
 			duk_pop_n(ctx, 3);
 
@@ -131,8 +131,8 @@ int duk_builtin_regexp_prototype_to_string(duk_context *ctx) {
 
 	/* [ regexp ] */
 
-	duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_SOURCE);
-	duk_get_prop_stridx(ctx, 0, DUK_HEAP_STRIDX_INT_BYTECODE);
+	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
+	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_BYTECODE);
 	h_bc = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_bc != NULL);
 	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h_bc) >= 1);
