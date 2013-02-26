@@ -7,6 +7,7 @@
 
 /* Object/array recursion limit (to protect C stack) */
 #define  DUK_JSON_ENC_RECURSION_LIMIT          100
+#define  DUK_JSON_DEC_RECURSION_LIMIT          100
 
 /* Encoding flags */
 #define  DUK_JSON_ENC_FLAG_ASCII_ONLY          (1 << 0)  /* escape any non-ASCII characters */
@@ -16,6 +17,9 @@
 
 /* How much stack to require on entry to object/array encode */
 #define  DUK_JSON_ENC_REQSTACK                 32
+
+/* How much stack to require on entry to object/array decode */
+#define  DUK_JSON_DEC_REQSTACK                 32
 
 /* Encoding state.  Heap object references are all borrowed. */
 typedef struct {
@@ -41,7 +45,13 @@ typedef struct {
 } duk_json_enc_ctx;
 
 typedef struct {
-	int dummy;
+	duk_hthread *thr;
+	duk_u8 *p;
+	duk_u8 *p_end;
+	int idx_reviver;
+	int flags;
+	int recursion_depth;
+	int recursion_limit;
 } duk_json_dec_ctx;
 
 #endif  /* __DUK_JSON_H */
