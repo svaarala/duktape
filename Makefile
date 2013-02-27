@@ -31,12 +31,12 @@ test:
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log testcases/
 
 vgtest:
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind testcases/
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind --verbose testcases/
 	
 install:
 	scons -j 8 install
 
-VERSION=0.1.0
+VERSION=0.2.0
 
 dist-src:
 	-rm -rf duktape-$(VERSION)/
