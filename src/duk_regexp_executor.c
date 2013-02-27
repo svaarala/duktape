@@ -149,8 +149,8 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 		op = bc_get_u32(re_ctx, &pc);
 
 		DUK_DDDPRINT("match: rec=%d, steps=%d, pc (after op)=%d, sp=%d, op=%d",
-		             re_ctx->recursion,
-		             re_ctx->steps,
+		             re_ctx->recursion_depth,
+		             re_ctx->steps_count,
 		             (int) (pc - re_ctx->bytecode),
 		             (int) (sp - re_ctx->input),
 		             op);
