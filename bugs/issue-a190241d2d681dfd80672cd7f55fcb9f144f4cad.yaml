@@ -3,7 +3,7 @@ title: implement first complete version of global object built-in
 desc: ""
 type: :task
 component: duk
-release: 
+release: v0.3
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -16,3 +16,7 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-02-27 09:44:16.699490 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.3 from unassigned
+  - Number parsing can be left as a placeholder for now.
