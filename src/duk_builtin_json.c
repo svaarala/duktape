@@ -518,6 +518,10 @@ static void json_dec_value(duk_json_dec_ctx *js_ctx) {
 	DUK_NEVER_HERE();
 }
 
+/* Recursive value reviver, implements the Walk() algorithm.  No C recursion
+ * check is done here because the initial parsing step will already ensure
+ * there is a reasonable limit on C recursion depth and hence object depth.
+ */
 static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h;
