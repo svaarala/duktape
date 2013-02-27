@@ -1,0 +1,389 @@
+=============
+JSON built-in
+=============
+
+This document describes the Duktape ``JSON`` built-in implementation.
+
+Overview of JSON
+================
+
+JSON_ (JavaScript Object Notation) is a format originally based on a subset of
+Ecmascript E3, but which is now used by multiple languages and implementations
+and defined in `RFC 4627`_.  The E5/E5.1 specification has its own more or
+less compatible definition of JSON.  The syntax and processing requirements in
+Section 15.12 form the basis for implementing the JSON built-in.  Note that
+unlike the RFC 4627 interpretation, E5/E5.1 JSON interpretation is very strict;
+E5.1 Section 15.12 states:
+
+  Conforming implementations of JSON.parse and JSON.stringify must support
+  the exact interchange format described in this specification without any
+  deletions or extensions to the format. This differs from RFC 4627 which
+  permits a JSON parser to accept non-JSON forms and extensions.
+
+.. _JSON: http://en.wikipedia.org/wiki/JSON
+.. _`RFC 4627`: http://www.ietf.org/rfc/rfc4627.txt
+
+JSON only supports nulls, booleans, numbers, strings, objects, and arrays.
+Non-finite numbers (i.e. NaN and +/- Infinity) are encoded as "null" values
+while "undefined" values and function objects are skipped entirely.
+
+Ecmascript JSON only supports 16-bit Unicode codepoints because it operates
+on Ecmascript strings (which are sequences of 16-bit codepoints).  Full
+transparency for all 16-bit codepoints is required; in particular, even
+invalid surrogate pairs must be supported.  Because Duktape supports codepoints
+above the 16-bit BMP, support for these will necessarily be non-standard.
+Such codepoints are now encoded and decoded "as is", so they pass through
+encoding and decoding without problems.  There is currently no escape syntax
+for expressing them in escaped form.
+
+Duktape also has custom types not supported by Ecmascript: buffers and
+pointers.  These are now skipped when encoding (just like function objects).
+There is currently no syntax for expressing them for parsing.
+
+Custom formatting will be added later and exposed through separate API
+entrypoints.  Separate entrypoints will be used because JSON.parse() and
+JSON.stringify() are intended to be strict interfaces.  Duktape 0.2.0 only
+has standard JSON API and syntax support.
+
+See also:
+
+* http://json.org/
+* http://bolinfest.com/essays/json.html
+
+Notes on stringify()
+====================
+
+Basic approach
+--------------
+
+Stringify uses a single context structure (``duk_json_enc_ctx``) whose pointer
+is passed around the helpers to minimize C call argument counts and also to
+minimize C stack frame sizes.  The encoding context contains a ``thr`` pointer,
+flags, and various (borrowed) value stack references and indices.
+
+Encoded JSON output is appended to a growing buffer which is converted to the
+final string at the end.  This differs from the specification algorithm which
+basically concatenates strings in pieces.  Unfortunately this concatenation
+process is out of order for encoding object key/value pairs: JO() will first
+call Str() and only then decide whether to serialize the property at all (so
+that key and colon are only emitted if the Str(value) call does not return
+undefined).  Side effects prevent a two-pass "dry run" approach.
+
+This problem is now avoided by splitting Str() into two separate algorithms.
+The first algorithm performs all the conversions and coercions, and causes
+all side effects to take place, and then indicates whether the final result
+would be undefined or not.  The caller can then take appropriate action before
+anything needs to be written to the buffer.  The second algorithm performs
+the final output generation, assuming that all the coercions etc have already
+been done.
+
+In addition to standard requirements, a C recursion limit is imposed to
+safeguard against overrunning the stack in stack limited environments.
+
+Loop detection
+--------------
+
+The specification uses a stack for loop detection in the beginning of the
+JO() and JA() algorithms.  If the value is already present, an error is thrown;
+else the value is added to the stack.  At the end of JO() and JA() the stack
+is popped.  Note that:
+
+* The stack order does not matter; it is simply used to check whether a
+  value is present anywhere in the stack.
+
+* Only objects and arrays (i.e., heap objects) are ever present in the stack.
+  A single object/array can only be present at most once.
+
+* The maximum stack depth matches object recursion depth.  Even for very
+  large JSON documents the maximum stack depth is not necessarily very high.
+
+The current implementation uses a tracking object instead of a stack.  The
+keys of the tracking object are heap pointers formatted with sprintf()
+``%p`` formatter.  Because heap objects have stable pointers in Duktape,
+this approach is reliable.  The upside of this approach is that we don't
+need to maintain yet another growing data structure for the stack, and don't
+need to do linear stack scans to detect loops.  The downside is relatively
+large memory footprint and lots of additional string table operations.
+
+Another approach would be to accept a performance penalty for highly nested
+objects and user a linear C array for the heap object stack.
+
+This should be improved in the future if possible.  Except for really
+heavily nested cases, a linear array scan of heap pointers would probably
+be a better approach.
+
+PropertyList
+------------
+
+When a PropertyList is used, the serialization becomes quite awkward, and
+requires a linear scan of the PropertyList over and over again. PropertyList
+is used in the JO() algorithm:
+
+* If PropertyList is defined, K is set to PropertyList.
+
+* If PropertyList is undefined, K is set to a list of property names of
+  the object's own enumerable properties, in the normal enumeration order.
+
+* The list K is iterated, and non-undefined values are serialized.
+
+When PropertyList is undefined, the algorithm is clear: simply enumerate
+the object in the normal way.  When PropertyList is not undefined, even
+non-enumerable properties can be serialized, and serialization order is
+dictated by PropertyList.
+
+It might be tempting to serialize the object by going through its properties
+and then checking against the PropertyList (which would be converted into a
+hash map for better performance).  However, this would be incorrect, as the
+specification requires that the key serialization order be dictated by
+PropertyList, not the object's enumeration order.
+
+Note that even if serialization could be done by iterating the object keys,
+it's not obvious which of the following would be faster:
+
+* Iterate over object properties and compare them against PropertyList
+  (assuming this would be allowed)
+
+* Iterate over the PropertyList, and checking the object for properties
+
+If the object has only a few properties but PropertyList is long, the
+former would be faster (if it were allowed); if the object has a lot of
+properties but PropertyList is short, the latter would be faster.
+
+Further complications
+
+* PropertyList may contain the same property name multiple times.  The
+  specification requires that this be detected and duplicate occurrences
+  ignores.  The current implementation doesn't do this::
+
+    JSON.stringify({ foo:1, bar:2 }, [ 'foo', 'bar', 'foo', 'foo' ]);
+    --> {"foo":1,"bar":2,"foo":1,"foo":1}
+
+* PropertyList may be sparse which may also cause its natural enumeration
+  order to differ from an increasing array index order, mandated by the
+  E5.1 specification for PropertyList.  Currently we just use the natural
+  enumeration order which is correct for non-sparse arrays.
+
+Miscellaneous
+-------------
+
+* It would be nice to change the standard algorithm to be based around
+  a "serializeValue()" primitive.  However, the standard algorithm provides
+  access to the "holder" of the value, especially in E5 Section 15.12.3,
+  Str() algorithm, step 3.a: the holder is passed to the ReplacerFunction.
+  This exposes the holder to user code.
+
+* Similarly, serialization of a value 'val' begins from a dummy wrapper
+  object: ``{ "": val }``.  This seems to be quite awkward and unnecessary.
+  However, the wrapper object is accessible to the ReplacerFunction, so
+  it cannot be omitted, at least when a replacer function has been given.
+
+* String serialization should be fast for pure ASCII strings as they
+  are very common.  Unfortunately we may still need to escape characters
+  in them, so there is no explicit fast path now.  We could use ordinary
+  character lookups during serialization (note that ASCII string lookups
+  would not affect the stringcache).  This would be quite slow, so we
+  decode the extended UTF-8 directly instead, with a fast path for ASCII.
+
+* The implementation uses an "unbalanced value stack" here and there.  In
+  other words, the value stack at a certain point in code may contain a
+  varying amount and type of elements, depending on which code path was
+  taken to arrive there.  This is useful in many cases, but care must be
+  taken to use proper indices to manipulate the value stack, and to restore
+  the value stack state when unwinding.
+
+Notes on parse()
+================
+
+Basic approach
+--------------
+
+Like stringify(), parse() uses a single context structure (``duk_json_dec_ctx``).
+
+An important question in JSON parsing is how to implement the lexer component.
+One could reuse the Ecmascript lexer (with behavior flags); however, this is
+not trivial because the JSON productions, though close, contain many variances
+to similar Ecmascript productions (see below for discussion).  The current
+approach is to use a custom JSON lexer.  It would be nice if some shared code
+could be used in future versions.
+
+Parsing is otherwise quite straightforward: parsed values are pushed to the
+value stack and added piece by piece into container objects (arrays and
+objects).  String data is x-UTF-8-decoded on-the-fly, with ASCII codepoints
+avoiding an actual decode call (note that all JSON punctuators are ASCII
+characters).  Non-ASCII characters will be decoded and re-encoded.
+Currently no byte/character lookahead is necessary.
+
+Once basic parsing is complete, a possible recursive "reviver" walk is
+performed.
+
+A C recursion limit is imposed for parse(), just like stringify().
+
+Comparison of JSON and Ecmascript syntax
+----------------------------------------
+
+JSONWhiteSpace
+::::::::::::::
+
+JSONWhiteSpace does not have a direct Ecmascript syntax equivalent.
+
+JSONWhiteSpace is defined as::
+
+  JSONWhiteSpace::
+      <TAB>
+      <CR>
+      <LF>
+      <SP>
+
+whereas Ecmascript WhiteSpace and LineTerminator are::
+
+  WhiteSpace::
+      <TAB>
+      <VT>
+      <FF>
+      <SP>
+      <NBSP>
+      <BOM>
+      <USP>
+
+  LineTerminator::
+      <LF>
+      <CR>
+      <LS>
+      <PS>
+
+Because JSONWhiteSpace includes line terminators, the closest Ecmascript
+equivalent is WhiteSpace + LineTerminator.  However, that includes several
+additional characters.
+
+JSONString
+::::::::::
+
+JSONString is defined as::
+
+  JSONString::
+      " JSONStringCharacters_opt "
+
+  JSONStringCharacters::
+      JSONStringCharacter JSONStringCharacters_opt
+
+  JSONStringCharacter::
+      SourceCharacter but not one of " or \ or U+0000 through U+001F
+      \ JSONEscapeSequence
+
+  JSONEscapeSequence ::
+      JSONEscapeCharacter
+      UnicodeEscapeSequence
+
+  JSONEscapeCharacter :: one of
+      " / \ b f n r t
+
+The closest equivalent is Ecmascript StringLiteral with only the double
+quote version accepted::
+
+  StringLiteral::
+      " DoubleStringCharacters_opt "
+      ' SingleStringCharacters_opt '
+
+  DoubleStringCharacters::
+      DoubleStringCharacter DoubleStringCharacters_opt
+
+  DoubleStringCharacter::
+      SourceCharacter but not one of " or \ or LineTerminator
+      \ EscapeSequence
+      LineContinuation
+
+  SourceCharacter: any Unicode code unit
+
+Other differences include:
+
+* Ecmascript DoubleStringCharacter accepts source characters between
+  U+0000 and U+001F (except U+000A and U+000D, which are part of
+  LineTerminator).  JSONStringCharacter does not.
+
+* Ecmascript DoubleStringCharacter accepts LineContinuation,
+  JSONStringCharacter does not.
+
+* Ecmascript DoubleStringCharacter accepts and parses broken escapes
+  as single-character identity escapes, e.g. the string "\\u123" is
+  parsed as "u123".  This happens because EscapeSequence contains a
+  NonEscapeCharacter production which acts as an "escape hatch" for
+  such cases.  JSONStringCharacter is strict and will cause a SyntaxError
+  for such escapes.
+
+* Ecmascript EscapeSequence accepts single quote escape ("\\'"),
+  JSONEscapeSequence does not.
+
+* Ecmascript EscapeSequence accepts zero escape ("\\0"), JSONEscapeSequence
+  does not.
+
+* Ecmascript EscapeSequence accepts hex escapes ("\\xf7"),
+  JSONEscapeSequence does not.
+
+* JSONEscapeSquence accepts forward slash escape ("\\/").  Ecmascript
+  EscapeSequence has no explicit support for it, but it is accepted through
+  the NonEscapeCharacter production.
+
+Note that JSONEscapeSequence is a proper subset of EscapeSequence.
+
+JSONNumber
+::::::::::
+
+JSONNumber is defined as::
+
+  JSONNumber::
+      -_opt DecimalIntegerLiteral JSONFraction_opt ExponentPart_opt
+
+Ecmascript NumericLiteral and DecimalLiteral::
+
+  NumericLiteral::
+      DecimalLiteral | HexIntegerLiteral
+
+  DecimalLiteral::
+      DecimalIntegerLiteral . DecimalDigits_opt ExponentPart_opt
+      . DecimalDigits ExponentPart_opt
+      DecimalIntegerLiteral ExponentPart_opt
+
+  ...
+
+Some differences:
+
+* NumericLiteral allows either DecimalLiteral (which is closest to JSONNumber)
+  and HexIntegerLiteral.  JSON does not allow hex literals.
+
+* JSONNumber is a *almost* proper subset of DecimalLiteral:
+
+  - DecimalLiteral allows period without fractions (e.g. "1." === "1"),
+    JSONNumber does not.
+
+  - DecimalLiteral allows a number to begin with a period without a leading
+    zero (e.g. ".123"), JSONNumber does not.
+
+  - DecimalLiteral does not allow leading zeros (although many implementations
+    allow them and may parse them as octal; e.g. V8 will parse "077" as octal
+    and "099" as decimal).  JSONNumber does not allow octals, and given that
+    JSON is a strict syntax in nature, parsing octals or leading zeroes should
+    not be allowed.
+
+  - However, JSONNumber allows a leading minus sign, DecimalLiteral does not.
+    For Ecmascript code, the leading minus sign is an unary minus operator,
+    and it not part of the literal.
+
+* There are no NaN or infinity literals.  There are no such literals for
+  Ecmascript either but they become identifier references and *usually*
+  evaluate to useful constants.
+
+JSONNullLiteral
+:::::::::::::::
+
+Trivially the same as NullLiteral.
+
+JSONBooleanLiteral
+::::::::::::::::::
+
+Trivially the same as BooleanLiteral.
+
+Custom features
+===============
+
+**FIXME**
+
