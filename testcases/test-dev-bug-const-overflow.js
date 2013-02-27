@@ -7,7 +7,7 @@
 
 /*===
 Error
-==*/
+===*/
 
 /* Actual desired output would be:
  *
