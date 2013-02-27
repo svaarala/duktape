@@ -7,7 +7,7 @@ desc: |-
   through the API.
 type: :task
 component: duk
-release: 
+release: v0.4
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-02-20 02:25:23.037685 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-02-27 14:51:50.288530 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.4 from unassigned
   - ""

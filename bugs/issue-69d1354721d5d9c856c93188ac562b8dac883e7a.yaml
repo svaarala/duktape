@@ -3,7 +3,7 @@ title: implement first complete version of Object built-in
 desc: ""
 type: :task
 component: duk
-release: 
+release: v0.3
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-02-20 02:23:21.296571 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-02-27 14:51:40.208721 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.3 from unassigned
   - ""
