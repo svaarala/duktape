@@ -46,11 +46,23 @@ duk_buildinfo = '%s; %s; %s' % (buildinfo_date, buildinfo_uname, buildinfo_githa
 duk_version = 1
 
 # profile selection, may depend on target capabilities
-duk_profiles = [ '100', '101', '200', '201', '300', '301', '400', '401', '500', '501' ]
+duk_profiles = [
+	{ 'number': 100, 'packed': True, 'debug': False },
+	{ 'number': 101, 'packed': True, 'debug': True },
+	{ 'number': 200, 'packed': True, 'debug': False },
+	{ 'number': 201, 'packed': True, 'debug': True },
+	{ 'number': 300, 'packed': True, 'debug': False },
+	{ 'number': 301, 'packed': True, 'debug': True },
+	{ 'number': 400, 'packed': False, 'debug': False },
+	{ 'number': 401, 'packed': False, 'debug': True },
+	{ 'number': 500, 'packed': False, 'debug': False },
+	{ 'number': 501, 'packed': False, 'debug': True },
+]
 
 # Preferred compiler and options.  Note: GCC version has significant impact
 # on -Os code size, e.g. gcc-4.6 is way worse than gcc-4.5.
 
+# FIXME: not used now
 PREF_CC = 'gcc'
 #PREF_CC = '/usr/bin/gcc-4.3'
 #PREF_CC = '/usr/bin/gcc-4.4'
@@ -60,8 +72,9 @@ PREF_CC = 'gcc'
 
 # FIXME: this is a hack for x86-64, where we want to build both 32-bit and 64-bit
 # files for better testing; needs a separate variant
-if machine_type == 'x86_64':
-	FORCE_32BIT = True
+FORCE_32BIT = False
+#if machine_type == 'x86_64':
+#	FORCE_32BIT = True
 
 ccopts_shared = [
 	'-pedantic',
@@ -70,6 +83,8 @@ ccopts_shared = [
 	'-Wall',
 	'-fstrict-aliasing',
 	'-D_POSIX_C_SOURCE=200809L',
+#	'-D_GNU_SOURCE',		# FIXME: needed for e.g. getdate_r
+	'-D_XOPEN_SOURCE',		# strptime
 	'-DDUK_OPT_DPRINT_RDTSC=1',
 ]
 if FORCE_32BIT:
@@ -99,22 +114,25 @@ env_release = env_base.Clone(CCFLAGS=ccopts_release, LINKFLAGS=ldflags_release)
 env_debug = env_base.Clone(CCFLAGS=ccopts_debug, LINKFLAGS=ldflags_debug)
 
 for prof in duk_profiles:
-	is_debug = (prof[-1] != '0')
-	if is_debug:
+	if prof['debug']:
 		env_build = env_debug.Clone()
 	else:
 		env_build = env_release.Clone()
 
+	if prof['packed'] and not machine['supports_packed'] and not FORCE_32BIT:
+		print('skip packed profile (target does not support packed): %r' % prof)
+		continue
+
 	SConscript('src/SConscript',
-	           variant_dir='build/' + prof,
-	           exports={ 'duk_profile': prof,
+	           variant_dir='build/' + str(prof['number']),
+	           exports={ 'duk_profile': str(prof['number']),
 	                     'duk_version': duk_version,
 	                     'duk_buildinfo': duk_buildinfo,
-	                     'is_debug': is_debug,
+	                     'is_debug': prof['debug'],
 	                     'byte_order': machine['byte_order'],
 	                     'env': env_build })
 
-	Clean('.', ['build/' + prof])
+	Clean('.', ['build/' + str(prof['number'])])
 
 Clean('.', ['build'])
 
