@@ -17,7 +17,10 @@ DIST_FILES =	\
 	src/*.h \
 	src/UnicodeData.txt \
 	src/SpecialCasing.txt \
-	doc/SConscript
+	doc/SConscript \
+	doc/datetime.txt \
+	doc/regexp.txt \
+	doc/json.txt
 
 default:	all
 
