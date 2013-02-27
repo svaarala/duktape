@@ -16,3 +16,11 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-02-27 12:29:57.667100 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    Harmony generators are close to Duktape coroutines, check whether more
+    alignment would be possible:
+    
+    http://wiki.ecmascript.org/doku.php?id=harmony:generators
