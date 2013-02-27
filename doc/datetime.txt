@@ -2,6 +2,8 @@
 Date and time handling
 ======================
 
+This document describes the Duktape ``Date`` built-in implementation.
+
 Overview
 ========
 

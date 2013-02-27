@@ -2,6 +2,8 @@
 Regular expressions
 ===================
 
+This document describes the Duktape ``RegExp`` built-in implementation.
+
 Overview
 ========
 
