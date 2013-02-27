@@ -513,6 +513,7 @@ duk_string_list = [
 	mkstr("base64", custom=True),   # enc/dec alg
 
 	# special literals for custom compatible json encoding
+	# FIXME: placeholders, change later
 	mkstr('{"_undefined":true}'),
 	mkstr('{"_nan":true}'),
 	mkstr('{"_inf":true}'),
