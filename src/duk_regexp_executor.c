@@ -171,8 +171,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			 *
 			 *  There is no opcode for matching multiple characters.  The
 			 *  regexp compiler has trouble joining strings efficiently
-			 *  during compilation.  See doc/regular-expressions.txt for
-			 *  more discussion.
+			 *  during compilation.  See doc/regexp.txt for more discussion.
 			 */
 			unsigned int c1, c2;
 

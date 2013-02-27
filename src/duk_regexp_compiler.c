@@ -1,8 +1,8 @@
 /*
  *  Regexp compilation.
  *
- *  See doc/regular_expressions.txt for a discussion of the compilation
- *  approach and current limitations.
+ *  See doc/regexp.txt for a discussion of the compilation approach and
+ *  current limitations.
  */
 
 #include "duk_internal.h"
@@ -89,8 +89,10 @@ static duk_u32 insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_u32 offset, d
 	 *  to the first byte of the next instruction, is a bit tricky
 	 *  because of the variable length UTF-8 encoding.
 	 *
-	 *  See doc/regular_expressions.txt for discussion.
+	 *  See doc/regexp.txt for discussion.
 	 */
+
+	/* FIXME: solve into closed form (smaller code) */
 
 	if (skip < 0) {
 		/* two encoding attempts suffices */
@@ -118,7 +120,7 @@ static duk_u32 append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_i32 skip) {
  *  continuous range is not necessarily continuous (e.g. [x-{] is
  *  continuous but [X-{] is not).  The current algorithm creates the
  *  canonicalized range(s) space efficiently at the cost of compile
- *  time execution time (see doc/regular-expressions.txt for discussion).
+ *  time execution time (see doc/regexp.txt for discussion).
  *
  *  Note that the ctx->nranges is a context-wide temporary value
  *  (this is OK because there cannot be multiple character classes
@@ -183,10 +185,10 @@ static void generate_ranges(void *userdata, duk_u32 r1, duk_u32 r2, int direct) 
  *  lookaheads, capturing parentheses, and non-capturing parentheses.
  *
  *  The function determines whether the entire disjunction is a 'simple atom'
- *  (see doc/regular-expressions.txt discussion on 'simple quantifiers') and
- *  if so, returns the atom character length which is needed by the caller to
- *  keep track of its own atom character length.  A disjunction with more than
- *  one alternative is never considered a simple atom (although in some cases
+ *  (see doc/regexp.txt discussion on 'simple quantifiers') and if so,
+ *  returns the atom character length which is needed by the caller to keep
+ *  track of its own atom character length.  A disjunction with more than one
+ *  alternative is never considered a simple atom (although in some cases
  *  that might be the case).
  *
  *  Return value: simple atom character length or < 0 if not a simple atom.
