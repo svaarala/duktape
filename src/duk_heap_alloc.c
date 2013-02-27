@@ -366,9 +366,13 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->call_recursion_limit = DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT;
 
 	/* FIXME: use the pointer as a seed for now: mix in time at least */
-	/* FIXME: generates a gcc warning on 64-bit (integer type different size) */
-	res->hash_seed = (duk_u32) res;
-	res->rnd_state = (duk_u32) res;
+
+	/* cast through C99 intptr_t to avoid GCC warning:
+	 *
+	 *   warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+	 */
+	res->hash_seed = (duk_u32) (intptr_t) res;
+	res->rnd_state = (duk_u32) (intptr_t) res;
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->lj.jmpbuf_ptr = NULL;
