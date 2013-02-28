@@ -40,7 +40,7 @@ To build (only Linux at the moment)::
 
 To test the command line version::
 
-  $ build/100/duk.100
+  $ build/400/duk.400
   duk> print('Hello world!');
   [bytecode length 6 opcodes, registers 4, constants 2, inner functions 0]
   Hello world!
@@ -51,7 +51,7 @@ To run the current test suite, install node.js and then::
   $ cd runtests/
   $ npm install   # installs dependencies
   $ cd ..  
-  $ node runtests/runtests.js --run-duk --cmd-duk=build/100/duk.100 \
+  $ node runtests/runtests.js --run-duk --cmd-duk=build/400/duk.400 \
         --num-threads 8 --log-file=/tmp/log.txt testcases/
 
 The source code compiles on Darwin (and maybe OSX), but you need to
