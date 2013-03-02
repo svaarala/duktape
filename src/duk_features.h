@@ -75,6 +75,7 @@
 #define  DUK_USE_OCTAL_SUPPORT
 #define  DUK_USE_SOURCE_NONBMP
 #define  DUK_USE_DPRINT_COLORS
+#define  DUK_USE_BROWSER_LIKE
 
 /* profile specific modifications */
 

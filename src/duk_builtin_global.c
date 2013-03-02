@@ -177,20 +177,33 @@ int duk_builtin_global_object_unescape(duk_context *ctx) {
 }
 #endif
 
-#if 1  /* FIXME: browser-like */
-int duk_builtin_global_object_print(duk_context *ctx) {
+#ifdef DUK_USE_BROWSER_LIKE
+static int print_alert_helper(duk_context *ctx, FILE *f_out) {
 	int nargs;
 	int i;
 	const char *str;
 	size_t len;
 	char nl = '\n';
 
-	DUK_DDDPRINT("print arg 1: %!T", duk_get_tval(ctx, -1));
+	/* If argument count is 1 and first argument is a buffer, write the buffer
+	 * as raw data into the file without a newline; this allows exact control
+	 * over stdout/stderr without an additional entrypoint (useful for now).
+	 */
+
+	nargs = duk_get_top(ctx);
+	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
+		const char *buf = NULL;
+		size_t sz = 0;
+		buf = duk_get_buffer(ctx, 0, &sz);
+		if (buf && sz > 0) {
+			fwrite(buf, 1, sz, f_out);
+		}
+		goto flush;
+	}
 
 	/* FIXME: best semantics link?  Now apply ToString to args, join with ' ' */
 	/* FIXME: ToString() coerce inplace instead? */
 
-	nargs = duk_get_top(ctx);
 	if (nargs > 0) {
 		for (i = 0; i < nargs; i++) {
 			if (i != 0) {
@@ -204,17 +217,24 @@ int duk_builtin_global_object_print(duk_context *ctx) {
 
 		str = duk_get_lstring(ctx, -1, &len);
 		if (str) {
-			fwrite(str, 1, len, stdout);
+			fwrite(str, 1, len, f_out);
 		}
 	}
 
-	fwrite(&nl, 1, 1, stdout);
-	fflush(stdout);
+	fwrite(&nl, 1, 1, f_out);
+
+ flush:
+	fflush(f_out);
 	return 0;
+
+}
+int duk_builtin_global_object_print(duk_context *ctx) {
+	return print_alert_helper(ctx, stdout);
 }
 
 int duk_builtin_global_object_alert(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return print_alert_helper(ctx, stderr);
 }
-#endif
+#endif  /* DUK_USE_BROWSER_LIKE */
+
 
