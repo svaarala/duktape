@@ -21,3 +21,19 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-03-05 13:10:07.477603 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - "Apparently String case conversions (toLowerCase() and toUpperCase()) should\n\
+    normally NOT use locale/language information.  Locale-specific case conversions\n\
+    (toLocaleLowerCase() and toLocaleUpperCase()) should use locale information;\n\
+    see for instance E5.1 Section 15.5.4.17:\n\n  \"This function works exactly the same as toLowerCase except that its result\n  is intended to yield the correct result for the host environment\xE2\x80\x98s current\n  locale, rather than a locale-independent result. There will only be a\n  difference in the few cases (such as Turkish) where the rules for that\n  language conflict with the regular Unicode case mappings.\"\n\n\
+    The current implementation has a single case conversion helper with no support\n\
+    for locale/language or indicating whether locale/language specific rules\n\
+    should be obeyed.  This must be changed so that caller can indicate what to\n\
+    do with respect to locales.  String functions like toLowerCase() and\n\
+    toLocaleLowerCase() must use the appropriate flags."
+- - 2013-03-05 13:30:33.268995 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - Update test-builtin-string-proto-tolowercase.js and other case conversion tests.

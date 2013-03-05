@@ -20,12 +20,16 @@ releases:
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v0.2
-  status: :unreleased
-  release_time: 
+  status: :released
+  release_time: 2013-02-27 16:25:31.310841 Z
   log_events: 
   - - 2013-02-17 01:38:12.567901 Z
     - sva <sami.vaarala@poplatek.fi>
     - created
+    - ""
+  - - 2013-02-27 16:25:31.310863 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v0.3
@@ -42,6 +46,15 @@ releases:
   release_time: 
   log_events: 
   - - 2013-02-27 14:50:50.048912 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - created
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.5
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2013-03-02 12:10:01.617306 Z
     - sva <sami.vaarala@poplatek.fi>
     - created
     - ""

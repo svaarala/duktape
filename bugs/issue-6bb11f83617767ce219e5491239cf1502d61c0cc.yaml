@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an include mechanism to test cases
+desc: |-
+  Also go through test cases to find common helpers and make utils out of
+  them.  Naming could be something like 'util-checksum-string.js'.
+type: :task
+component: duk
+release: v0.4
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-04 21:37:35.146280 Z
+references: []
+
+id: 6bb11f83617767ce219e5491239cf1502d61c0cc
+log_events: 
+- - 2013-03-04 21:37:35.319304 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
