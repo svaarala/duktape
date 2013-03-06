@@ -13,6 +13,7 @@ prop8 1 false false false undefined undefined
 acc1 undefined undefined true true function function
 acc2 undefined undefined false true function function
 acc3 undefined undefined true false function function
+acc4 undefined undefined false false function function
 proto_foo undefined
 proto_bar undefined
 nonexistent undefined
@@ -22,9 +23,9 @@ print('basic');
 
 function basicTest() {
     var proto = { proto_foo: 1, proto_bar: 2 };
-    var obj = { foo: 3, bar: 4 };
+    var obj;
     var names = [ 'foo', 'bar', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'prop6',
-                  'prop7', 'prop8', 'acc1', 'acc2', 'acc3',
+                  'prop7', 'prop8', 'acc1', 'acc2', 'acc3', 'acc4',
                   'proto_foo', 'proto_bar',  // prototype properties NOT given out
                   'nonexistent' ];
     var i;
@@ -37,6 +38,10 @@ function basicTest() {
             print(n, pd.value, pd.writable, pd.enumerable, pd.configurable, typeof pd.get, typeof pd.set);
         }
     }
+
+    obj = Object.create(proto);
+    obj.foo = 3;
+    obj.bar = 4;
 
     Object.defineProperties(obj, {
         prop1: { value: 1, writable: true, enumerable: true, configurable: true },
