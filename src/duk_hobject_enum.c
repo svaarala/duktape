@@ -19,6 +19,137 @@
 
 #include "duk_internal.h"
 
+/* FIXME: identify enumeration target with an object index (not top of stack) */
+
+/* must match exactly the number of internal properties inserted to enumerator */
+#define  ENUM_START_INDEX  2
+
+/*
+ *  Helper to sort array index keys.  The keys are in the enumeration object
+ *  entry part, starting from ENUM_START_INDEX, and the entry part is dense.
+ *
+ *  We use insertion sort because it is simple (leading to compact code,)
+ *  works nicely in-place, and minimizes operations if data is already sorted
+ *  or nearly sorted (which is a very common case here).  It also minimizes
+ *  the use of element comparisons in general.  This is nice because element
+ *  comparisons here involve re-parsing the string keys into numbers each
+ *  time, which is naturally very expensive.
+ *
+ *  Note that the entry part values are all "true", e.g.
+ *
+ *    "1" -> true, "3" -> true, "2" -> true
+ *
+ *  so it suffices to only work in the key part without exchanging any keys,
+ *  simplifying the sort.
+ *
+ *  http://en.wikipedia.org/wiki/Insertion_sort
+ *
+ *  (Compiles to about 160 bytes now as a stand-alone function.)
+ */
+
+static void sort_array_indices(duk_hobject *h_obj) {
+	duk_hstring **keys;
+	duk_hstring **p_curr, **p_insert, **p_end;
+	duk_hstring *h_curr;
+	duk_u32 val_highest, val_curr, val_insert;
+
+	DUK_ASSERT(h_obj != NULL);
+	DUK_ASSERT(h_obj->e_used >= 2);  /* control props */
+
+	if (h_obj->e_used <= 1 + ENUM_START_INDEX) {
+		return;
+	}
+
+	keys = DUK_HOBJECT_E_GET_KEY_BASE(h_obj);
+	p_end = keys + h_obj->e_used;
+	keys += ENUM_START_INDEX;
+
+	DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
+	             (void *) keys, (void *) p_end);
+
+#ifdef DUK_USE_DDDEBUG
+	{
+		int i;
+		for (i = 0; i < h_obj->e_used; i++) {
+			DUK_DDDPRINT("initial: %d %p -> %!O",
+			             i,
+			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
+			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
+		}
+	}
+#endif
+
+	val_highest = DUK_HSTRING_GET_ARRIDX_SLOW(keys[0]);
+	for (p_curr = keys + 1; p_curr < p_end; p_curr++) {
+		DUK_ASSERT(*p_curr != NULL);
+		val_curr = DUK_HSTRING_GET_ARRIDX_SLOW(*p_curr);
+
+		if (val_curr >= val_highest) {
+			DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
+			             "already in correct order, next",
+			             (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr);
+			val_highest = val_curr;
+			continue;
+		}
+
+		DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
+		             "needs to be inserted",
+		             (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr);
+	
+		/* Needs to be inserted; scan backwards, since we optimize
+		 * for the case where elements are nearly in order.
+		 */
+
+		p_insert = p_curr - 1;
+		for (;;) {
+			val_insert = DUK_HSTRING_GET_ARRIDX_SLOW(*p_insert);
+			if (val_insert < val_curr) {
+				DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> insert after this",
+				             (void *) p_insert, (int) val_insert, (int) val_curr);
+				p_insert++;
+				break;
+			}
+			if (p_insert == keys) {
+				DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning");
+				break;
+			}
+			DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> search backwards",
+			             (void *) p_insert, (int) val_insert, (int) val_curr);
+			p_insert--;
+		}
+
+		DUK_DDDPRINT("final p_insert=%p", (void *) p_insert);
+
+		/*        .-- p_insert   .-- p_curr
+		 *        v              v
+		 *  | ... | insert | ... | curr
+		 */
+
+		h_curr = *p_curr;
+		DUK_DDDPRINT("memmove: dest=%p, src=%p, size=%d, h_curr=%p",
+		             (void *) (p_insert + 1), (void *) p_insert,
+		             (int) (p_curr - p_insert), (void *) h_curr);
+
+		memmove((void *) (p_insert + 1),
+		        (void *) p_insert,
+		        (size_t) ((p_curr - p_insert) * sizeof(duk_hstring *)));
+		*p_insert = h_curr;
+		/* keep val_highest */
+	}
+
+#ifdef DUK_USE_DDDEBUG
+	{
+		int i;
+		for (i = 0; i < h_obj->e_used; i++) {
+			DUK_DDDPRINT("final: %d %p -> %!O",
+			             i,
+			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
+			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
+		}
+	}
+#endif
+}
+
 /*
  *  Create an internal enumerator object E, which has its keys ordered
  *  to match desired enumeration ordering.  Also initialize internal control
@@ -28,11 +159,6 @@
  *  scan would be needed to eliminate duplicates found in the prototype chain.
  */
 
-/* FIXME: identify enumeration target with an object index (not top of stack) */
-
-/* must match exactly the number of internal properties inserted to enumerator */
-#define  ENUM_START_INDEX  2
-
 void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *target;
@@ -41,14 +167,14 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	DUK_DPRINT("create enumerator, stack top: %d", duk_get_top(ctx));
+	DUK_DDDPRINT("create enumerator, stack top: %d", duk_get_top(ctx));
 
 	target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(target != NULL);
 
 	duk_push_new_object_internal(ctx);
 
-	DUK_DPRINT("created internal object");
+	DUK_DDDPRINT("created internal object");
 
 	/* [target res] */
 
@@ -167,11 +293,36 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	/* [target res] */
 
 	duk_remove(ctx, -2);
+	res = duk_require_hobject(ctx, -1);
 
 	/* [res] */
 
+	if ((enum_flags & (DUK_ENUM_ARRAY_INDICES_ONLY | DUK_ENUM_SORT_ARRAY_INDICES)) ==
+	                  (DUK_ENUM_ARRAY_INDICES_ONLY | DUK_ENUM_SORT_ARRAY_INDICES)) {
+		/*
+		 *  Some E5/E5.1 algorithms require that array indices are iterated
+		 *  in a strictly ascending order.  This is the case for e.g.
+		 *  Array.prototype.forEach() and JSON.stringify() PropertyList
+		 *  handling.
+		 *
+		 *  To ensure this property for arrays with an array part (and
+		 *  arbitrary objects too, since e.g. forEach() can be applied
+		 *  to an array), the caller can request that we sort the keys
+		 *  here.
+		 */
+
+		/* FIXME: avoid this at least when target is an Array, it has an
+		 * array part, and no ancestor properties were included?  Not worth
+		 * it for JSON, but maybe worth it for forEach().
+		 */
+
+		/* FIXME: may need a 'length' filter for forEach()
+		 */
+		DUK_DDDPRINT("sort array indices by caller request");
+		sort_array_indices(res);
+	}
+
 	/* compact; no need to seal because object is internal */
-	res = duk_require_hobject(ctx, -1);
 	duk_hobject_compact_props(thr, res);
 
 	DUK_DDDPRINT("created enumerator object: %!iT", duk_get_tval(ctx, -1));
@@ -199,7 +350,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
 	idx = (duk_u32) duk_require_number(ctx, -1);
 	duk_pop(ctx);
-	DUK_DPRINT("enumeration: index is: %d", idx);
+	DUK_DDDPRINT("enumeration: index is: %d", idx);
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
 	target = duk_require_hobject(ctx, -1);

@@ -1487,10 +1487,13 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 			 */
 
 			int plist_idx = 0;
+			int enum_flags;
 
 			js_ctx->idx_proplist = duk_push_new_array(ctx);  /* FIXME: array internal? */
 
-			duk_enum(ctx, 1, DUK_ENUM_ARRAY_INDICES_ONLY /*flags*/);
+			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
+			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
+			duk_enum(ctx, 1, enum_flags);
 			while (duk_next(ctx, -1 /*enum_index*/, 1 /*get_value*/)) {
 				/* [ ... proplist enum_obj key val ] */
 				if (json_enc_allow_into_proplist(duk_get_tval(ctx, -1))) {
