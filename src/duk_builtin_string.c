@@ -295,9 +295,9 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
-#if 1  /* FIXME: section B */
+#ifdef DUK_USE_SECTION_B
 int duk_builtin_string_prototype_substr(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;
 }
-#endif
+#endif  /* DUK_USE_SECTION_B */
 

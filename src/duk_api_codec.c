@@ -258,8 +258,8 @@ void duk_hex_encode(duk_context *ctx, int index) {
 
 	for (i = 0; i < len; i++) {
 		t = data[i];
-		buf[i*2 + 0] = duk_nybbles[t >> 4];
-		buf[i*2 + 1] = duk_nybbles[t & 0x0f];
+		buf[i*2 + 0] = duk_lc_nybbles[t >> 4];
+		buf[i*2 + 1] = duk_lc_nybbles[t & 0x0f];
 	}
 
 	duk_to_string(ctx, -1);

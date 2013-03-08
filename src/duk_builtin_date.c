@@ -1550,10 +1550,11 @@ int duk_builtin_date_prototype_get_utc_milliseconds(duk_context *ctx) {
 	return GET_PART(ctx, 0, IDX_MILLISECOND);
 }
 
-/* Section B */
+#ifdef DUK_USE_SECTION_B
 int duk_builtin_date_prototype_get_year(duk_context *ctx) {
 	return GET_PART(ctx, FLAG_LOCALTIME | FLAG_SUB1900, IDX_YEAR);
 }
+#endif  /* DUK_USE_SECTION_B */
 
 /*
  *  Setters.
@@ -1643,7 +1644,7 @@ int duk_builtin_date_prototype_set_utc_full_year(duk_context *ctx) {
 	return SET_PART(ctx, FLAG_NAN_TO_ZERO, 3);
 }
 
-/* Section B */
+#ifdef DUK_USE_SECTION_B
 int duk_builtin_date_prototype_set_year(duk_context *ctx) {
 	/* Special year check is omitted.  NaN / Infinity will just flow
 	 * through and ultimately result in a NaN internal time value.
@@ -1659,6 +1660,7 @@ int duk_builtin_date_prototype_set_year(duk_context *ctx) {
 	DUK_ASSERT(duk_get_top(ctx) == 1);
 	return SET_PART(ctx, FLAG_NAN_TO_ZERO | FLAG_YEAR_FIXUP, 3);
 }
+#endif  /* DUK_USE_SECTION_B */
 
 /* Date.prototype.toGMTString() and Date.prototype.toUTCString() are
  * required to be the same Ecmascript function object (!), so it is omitted

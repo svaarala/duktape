@@ -76,6 +76,7 @@
 #define  DUK_USE_SOURCE_NONBMP
 #define  DUK_USE_DPRINT_COLORS
 #define  DUK_USE_BROWSER_LIKE
+#define  DUK_USE_SECTION_B
 
 /* profile specific modifications */
 
