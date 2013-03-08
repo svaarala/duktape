@@ -167,9 +167,78 @@ int duk_builtin_global_object_encode_uri_component(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
-#if 1  /* FIXME: Section B */
+#ifdef DUK_USE_SECTION_B
+
+/* E5.1 Section B.2.2, step 7. */
+#define  _MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
+	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
+	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
+	))
+unsigned char duk_escape_as_is_table[16] = {
+	_MKBITS(0, 0, 0, 0, 0, 0, 0, 0), _MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	_MKBITS(0, 0, 0, 0, 0, 0, 0, 0), _MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	_MKBITS(0, 0, 0, 0, 0, 0, 0, 0), _MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
+	_MKBITS(1, 1, 1, 1, 1, 1, 1, 1), _MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
+	_MKBITS(1, 1, 1, 1, 1, 1, 1, 1), _MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
+	_MKBITS(1, 1, 1, 1, 1, 1, 1, 1), _MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
+	_MKBITS(0, 1, 1, 1, 1, 1, 1, 1), _MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
+	_MKBITS(1, 1, 1, 1, 1, 1, 1, 1), _MKBITS(1, 1, 1, 0, 0, 0, 0, 0)   /* 0x70-0x7f */
+};
+
+/* bit number in the byte is a bit counterintuitive, but minimizes ops */
+#define  ESCAPE_AS_IS(cp)  (duk_escape_as_is_table[(cp) >> 3] & (1 << ((cp) & 0x07)))
+
+/* FIXME: could this be implemented as a generic "transform" utility with
+ * a changing callback?  What other functions could share the same helper?
+ */
 int duk_builtin_global_object_escape(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_str;
+	duk_hbuffer_growable *h_buf;
+	duk_u8 *p_start, *p_end, *p;
+	duk_u32 cp;
+
+	h_str = duk_to_hstring(ctx, 0);
+	DUK_ASSERT(h_str != NULL);
+
+	(void) duk_push_new_growable_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	DUK_ASSERT(h_buf != NULL);
+	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buf));
+
+	p_start = DUK_HSTRING_GET_DATA(h_str);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
+	p = p_start;
+
+	/* Since escape() is a legacy function, no fast path here to save space. */
+	while (p < p_end) {
+		duk_u8 buf[6];
+		size_t len;
+
+		cp = duk_unicode_xutf8_get_u32(thr, &p, p_start, p_end);
+		if ((cp < 128) && ESCAPE_AS_IS(cp)) {
+			buf[0] = (duk_u8) cp;
+			len = 1;
+		} else if (cp < 256) {
+			buf[0] = (duk_u8) '%';
+			buf[1] = (duk_u8) duk_uc_nybbles[cp >> 4];
+			buf[2] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
+			len = 3;
+		} else {
+			/* FIXME: non-BMP chars will now be clipped */
+			buf[0] = (duk_u8) '%';
+			buf[1] = (duk_u8) 'u';
+			buf[2] = (duk_u8) duk_uc_nybbles[cp >> 12];
+			buf[3] = (duk_u8) duk_uc_nybbles[(cp >> 8) & 0x0f];
+			buf[4] = (duk_u8) duk_uc_nybbles[(cp >> 4) & 0x0f];
+			buf[5] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
+			len = 6;
+		}
+		duk_hbuffer_append_bytes(thr, h_buf, buf, len);
+	}
+
+	duk_to_string(ctx, -1);
+	return 1;
 }
 
 int duk_builtin_global_object_unescape(duk_context *ctx) {
