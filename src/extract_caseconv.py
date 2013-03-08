@@ -7,9 +7,15 @@
 #
 #  There is no support for context or locale sensitive rules, as they
 #  are handled directly in C code before consulting tables generated
-#  here.  Case conversion rules for ASCII are also excluded as they are
+#  here.  Ecmascript requires case conversion both with and without
+#  locale/language specific rules (e.g. String.prototype.toLowerCase()
+#  and String.prototype.toLocaleLowerCase()), so they are best handled
+#  in C anyway.
+#
+#  Case conversion rules for ASCII are also excluded as they are
 #  handled by C fast path.  Rules for non-BMP characters (codepoints
-#  above U+FFFF) are omitted as they're not required for standard Ecmascript.
+#  above U+FFFF) are omitted as they're not required for standard
+#  Ecmascript.
 #
 
 import os, sys, math

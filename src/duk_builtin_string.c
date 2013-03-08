@@ -212,6 +212,9 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	/* FIXME: this coercion works incorrectly for number values outside
 	 * integer range; e.g. Number.POSITIVE_INFINITY as an endpoint must
 	 * clamp to 'len'.
+	 *
+	 * FIXME: add a helper for getting a clamped ToInteger() coercion,
+	 * it is also needed for e.g. radix handling.
 	 */
 
 	start_pos = duk_to_int(ctx, 0);
