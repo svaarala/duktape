@@ -111,7 +111,7 @@ function coercionTest() {
         var t;
 
         try {
-            if (arg_count === undefined || arg_count == 0) {
+            if (arg_count === 0) {
                 t = Object.getOwnPropertyDescriptor();
             } else if (arg_count === 1) {
                 t = Object.getOwnPropertyDescriptor(obj);

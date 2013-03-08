@@ -6,6 +6,7 @@
  *  There is a separate brute force combination test.
  */
 
+// FIXME: util
 function formatValue(v) {
     if (typeof v === 'function') {
         // avoid implementation dependent string formatting
@@ -1159,4 +1160,6 @@ try {
 } catch (e) {
     print(e);
 }
+
+// FIXME: test special behavior (like arrays, arguments object, etc)
 
