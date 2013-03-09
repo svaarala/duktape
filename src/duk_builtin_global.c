@@ -188,9 +188,32 @@ unsigned char duk_escape_as_is_table[16] = {
 /* bit number in the byte is a bit counterintuitive, but minimizes ops */
 #define  ESCAPE_AS_IS(cp)  (duk_escape_as_is_table[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
+/* FIXME: refactor and share with other code */
+static int decode_hex_escape(duk_u8 *p, int n) {
+	int ch;
+	int t = 0;
+
+	while (n > 0) {
+		t = t * 16;
+		ch = (int) (*p++);
+		if (ch >= (int) '0' && ch <= (int) '9') {
+			t += ch - ((int) '0');
+		} else if (ch >= (int) 'a' && ch <= (int) 'f') {
+			t += ch - ((int) 'a') + 0x0a;
+		} else if (ch >= (int) 'A' && ch <= (int) 'F') {
+			t += ch - ((int) 'A') + 0x0a;
+		} else {
+			return -1;
+		}
+		n--;
+	}
+	return t;
+}
+
 /* FIXME: could this be implemented as a generic "transform" utility with
  * a changing callback?  What other functions could share the same helper?
  */
+
 int duk_builtin_global_object_escape(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
@@ -242,7 +265,48 @@ int duk_builtin_global_object_escape(duk_context *ctx) {
 }
 
 int duk_builtin_global_object_unescape(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_str;
+	duk_hbuffer_growable *h_buf;
+	duk_u8 *p_start, *p_end, *p;
+	duk_u32 cp;
+	int t;
+
+	h_str = duk_to_hstring(ctx, 0);
+	DUK_ASSERT(h_str != NULL);
+
+	(void) duk_push_new_growable_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	DUK_ASSERT(h_buf != NULL);
+	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buf));
+
+	p_start = DUK_HSTRING_GET_DATA(h_str);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
+	p = p_start;
+
+	/* Since unescape() is a legacy function, no fast path here to save space. */
+	while (p < p_end) {
+		cp = duk_unicode_xutf8_get_u32(thr, &p, p_start, p_end);
+
+		if (cp == (duk_u32) '%') {
+			size_t left = (size_t) (p_end - p);  /* bytes left */
+
+			if (left >= 5 && p[0] == 'u' &&
+			    ((t = decode_hex_escape(p + 1, 4)) >= 0)) {
+				cp = (duk_u32) t;
+				p += 5;
+			} else if (left >= 2 &&
+			    ((t = decode_hex_escape(p, 2)) >= 0)) {
+				cp = (duk_u32) t;
+				p += 2;
+			}
+		}
+
+		duk_hbuffer_append_xutf8(thr, h_buf, cp);
+	}
+
+	duk_to_string(ctx, -1);
+	return 1;
 }
 #endif
 
