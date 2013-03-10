@@ -1253,6 +1253,7 @@ size_t duk_get_length(duk_context *ctx, int index) {
 	}
 	default:
 		/* number */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return 0;
 	}
 
@@ -1309,6 +1310,7 @@ int duk_get_type(duk_context *ctx, int index) {
 		return DUK_TYPE_POINTER;
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_NUMBER;
 	}
 	DUK_NEVER_HERE();
@@ -1338,6 +1340,7 @@ int duk_get_type_mask(duk_context *ctx, int index) {
 		return DUK_TYPE_MASK_POINTER;
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_MASK_NUMBER;
 	}
 	DUK_NEVER_HERE();

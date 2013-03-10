@@ -89,7 +89,9 @@ int duk_js_toboolean(duk_tval *tv) {
 	}
 	default: {
 		/* number */
-		int c = fpclassify(DUK_TVAL_GET_NUMBER(tv));  /* FIXME: portability */
+		int c;
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+		c = fpclassify(DUK_TVAL_GET_NUMBER(tv));  /* FIXME: portability */
 		if (c == FP_ZERO || c == FP_NAN) {
 			return 0;
 		} else {
@@ -232,6 +234,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 	default: {
 		/* number */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TVAL_GET_NUMBER(tv);
 	}
 	}
@@ -480,6 +483,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		default: {
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_NEVER_HERE();
 			return 0;
 		}
@@ -604,6 +608,7 @@ int duk_js_strict_equals(duk_tval *tv_x, duk_tval *tv_y) {
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		default: {
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_NEVER_HERE();
 			return 0;
 		}
@@ -681,6 +686,7 @@ int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y) {
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		default: {
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_NEVER_HERE();
 			return 0;
 		}
@@ -1132,6 +1138,7 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	}
 	default: {
 		/* number */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 		idx = DUK_STRIDX_LC_NUMBER;
 		break;
 	}

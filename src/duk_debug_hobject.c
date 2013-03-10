@@ -78,6 +78,7 @@ static char get_tval_summary_char(duk_tval *tv) {
 		return 'P';
 	}
 	default:
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return 'd';
 	}
 	return '?';

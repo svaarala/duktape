@@ -344,6 +344,7 @@ const char *duk_to_string(duk_context *ctx, int index) {
 	}
 	default: {
 		/* number */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		handle_to_string_number(ctx, index, tv);
 		break;
 	}
@@ -460,7 +461,10 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	default: {
 		/* number */
-		double val = DUK_TVAL_GET_NUMBER(tv);
+		double val;
+
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+		val = DUK_TVAL_GET_NUMBER(tv);
 
 		(void) duk_push_new_object_helper(ctx,
 		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |

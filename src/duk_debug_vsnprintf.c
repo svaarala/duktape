@@ -713,6 +713,7 @@ static void print_tval(duk_dprint_state *st, duk_tval *tv) {
 	}
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		duk_fb_sprintf(fb, "%.18g", DUK_TVAL_GET_NUMBER(tv));
 		break;
 	}

@@ -1409,6 +1409,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			double dval;
 			duk_i32 ival;
 
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 			dval = DUK_TVAL_GET_NUMBER(tv);
 
 			if (!allow_const) {
