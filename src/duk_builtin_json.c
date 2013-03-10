@@ -754,7 +754,7 @@ static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) 
 			/* slow path decode */
 
 			/* FIXME: this may currently fail, we'd prefer it never do that */
-			cp = duk_unicode_xutf8_get_u32(thr, &p, p_start, p_end);
+			cp = duk_unicode_xutf8_get_u32_checked(thr, &p, p_start, p_end);
 
 			if (js_ctx->flag_ascii_only) {
 				if (cp > 0xffff) {

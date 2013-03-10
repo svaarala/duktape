@@ -133,8 +133,8 @@ size_t duk_unicode_encode_cesu8(duk_u32 x, duk_u8 *out) {
 	return len;
 }
 
-/* used by e.g. duk_regexp_executor.c, string built-ins */
-duk_u32 duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end) {
+/* Decode helper.  Return zero on error. */
+int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end, duk_u32 *out_cp) {
 	duk_u8 *p;
 	duk_u32 res;
 	int ch;
@@ -208,9 +208,20 @@ duk_u32 duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_st
 	}
 
 	*ptr = p;
-	return res;
+	*out_cp = res;
+	return 1;
 
  fail:
+	return 0;
+}
+
+/* used by e.g. duk_regexp_executor.c, string built-ins */
+duk_u32 duk_unicode_xutf8_get_u32_checked(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end) {
+	duk_u32 cp;
+
+	if (duk_unicode_xutf8_get_u32(thr, ptr, ptr_start, ptr_end, &cp)) {
+		return cp;
+	}
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "utf-8 decode failed");
 	return 0;  /* never here */
 }
@@ -791,7 +802,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 		curr = next;
 		next = -1;
 		if (p < p_end) {
-			next = (int) duk_unicode_xutf8_get_u32(thr, &p, p_start, p_end);
+			next = (int) duk_unicode_xutf8_get_u32_checked(thr, &p, p_start, p_end);
 		} else {
 			/* end of input and last char has been processed */
 			if (curr < 0) {

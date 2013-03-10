@@ -134,7 +134,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	tfm_ctx->p = tfm_ctx->p_start;
 
 	while (tfm_ctx->p < tfm_ctx->p_end) {
-		cp = duk_unicode_xutf8_get_u32(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
+		cp = duk_unicode_xutf8_get_u32_checked(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
 		callback(tfm_ctx, udata, cp);
 	}
 
@@ -157,15 +157,26 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 		goto uri_error;
 	} else if (cp >= 0xd800 && cp <= 0xdbff) {
 		/* Needs lookahead */
-		/* FIXME: if fails, must be URIError */
-		cp2 = duk_unicode_xutf8_get_u32(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
+		if (duk_unicode_xutf8_get_u32(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, &cp2) == 0) {
+			goto uri_error;
+		}
 		if (!(cp2 >= 0xdc00 && cp2 <= 0xdfff)) {
 			goto uri_error;
 		}
 		cp1 = cp;
 		cp = ((cp1 - 0xd800) << 10) + (cp2 - 0xdc00) + 0x10000;
+	} else if (cp > 0x10ffff) {
+		/* Although we can allow non-BMP characters (they'll decode
+		 * back into surrogate pairs), we don't allow extended UTF-8
+		 * characters; they would encode to URIs which won't decode
+		 * back because of strict UTF-8 checks in URI decoding.
+		 * (However, we could just as well allow them here.)
+		 */
+		goto uri_error;
 	} else {
-		/* FIXME: non-BMP? */
+		/* Non-BMP characters within valid UTF-8 range: encode as is.
+		 * They'll decode back into surrogate pairs.
+		 */
 		;
 	}
 
@@ -320,8 +331,7 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 		buf[1] = (duk_u8) duk_uc_nybbles[cp >> 4];
 		buf[2] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
 		len = 3;
-	} else {
-		/* FIXME: non-BMP chars will now be clipped */
+	} else if (cp < 65536) {
 		buf[0] = (duk_u8) '%';
 		buf[1] = (duk_u8) 'u';
 		buf[2] = (duk_u8) duk_uc_nybbles[cp >> 12];
@@ -329,9 +339,20 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 		buf[4] = (duk_u8) duk_uc_nybbles[(cp >> 4) & 0x0f];
 		buf[5] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
 		len = 6;
+	} else {
+		/* Characters outside BMP cannot be escape()'d.  We could
+		 * encode them as surrogate pairs (for codepoints inside
+		 * valid UTF-8 range, but not extended UTF-8).  Because
+		 * escape() and unescape() are legacy functions, we don't.
+		 */
+		goto esc_error;
 	}
 
 	duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, buf, len);
+	return;
+
+ esc_error:
+	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
 }
 
 static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp) {
