@@ -514,13 +514,96 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
  */
 
 int duk_builtin_global_object_parse_int(duk_context *ctx) {
+	duk_hstring *h_str;
+	duk_u8 *p_start, *p_end, *p, *p_start_dig;
+	int neg = 0;
+	int strip_prefix;
+	duk_i32 radix;
+	int t;
+	double val;
+
 	duk_to_string(ctx, 0);
 	duk_trim(ctx, 0);
+	h_str = duk_get_hstring(ctx, 0);
+	DUK_ASSERT(h_str != NULL);
+	p_start = DUK_HSTRING_GET_DATA(h_str);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
+	p = p_start;
 
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	if (p_end > p) {
+		t = *p;
+		if (t == '-') {
+			neg = 1;
+			p++;
+		} else if (t == '+') {
+			p++;
+		}
+	}
+
+	strip_prefix = 1;
+	radix = duk_to_int32(ctx, 1);
+	if (radix != 0) {
+		if (radix < 2 || radix > 36) {
+			goto ret_nan;
+		}
+		if (radix != 16) {
+			strip_prefix = 0;
+		}
+	} else {
+		radix = 10;
+	}
+	if (strip_prefix) {
+		if ((p_end - p >= 2) &&
+		    (p[0] == (duk_u8) '0') &&
+		    ((p[1] == (duk_u8) 'x') || (p[1] == (duk_u8) 'X'))) {
+			p += 2;
+			radix = 16;
+		}
+	}
+
+	/* FIXME: this is correct for radix 2, 4, 8, 16, and 32, but incorrect
+	 * for radix 10 which is also required to be "exact".  Other radixes are
+	 * not required to be exact, so this would be OK for them.
+	 */
+
+	p_start_dig = p;
+	val = 0.0;
+	while (p < p_end) {
+		t = *p;
+		if (t >= (int) '0' && t <= (int) '9') {
+			t = t - (int) '0';
+		} else if (t >= (int) 'a' && t <= (int) 'z') {
+			t = t - (int) 'a' + 0x0a;
+		} else if (t >= (int) 'A' && t <= (int) 'Z') {
+			t = t - (int) 'A' + 0x0a;
+		} else {
+			break;
+		}
+		if (t >= radix) {
+			break;
+		}
+
+		val = val * ((double) radix) + ((double) t);
+		p++;
+	}
+	if (p == p_start_dig) {
+		goto ret_nan;
+	}
+	if (neg) {
+		val = -val;
+	}
+
+	duk_push_number(ctx, val);
+	return 1;
+
+ ret_nan:
+	duk_push_nan(ctx);
+	return 1;
 }
 
 int duk_builtin_global_object_parse_float(duk_context *ctx) {
+	duk_to_string(ctx, 0);
+	duk_trim(ctx, 0);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
