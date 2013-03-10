@@ -134,16 +134,33 @@ int duk_builtin_object_constructor_define_properties(duk_context *ctx) {
 	return duk_hobject_object_define_properties(ctx);
 }
 
+static int seal_freeze_helper(duk_context *ctx, int is_freeze) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h;
+
+	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+
+	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze /*freeze*/);
+	return 1;
+}
+
 int duk_builtin_object_constructor_seal(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return seal_freeze_helper(ctx, 0);
 }
 
 int duk_builtin_object_constructor_freeze(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return seal_freeze_helper(ctx, 1);
 }
 
 int duk_builtin_object_constructor_prevent_extensions(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hobject *h;
+
+	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+
+	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
+	return 1;
 }
 
 int duk_builtin_object_constructor_is_sealed(duk_context *ctx) {
@@ -151,6 +168,8 @@ int duk_builtin_object_constructor_is_sealed(duk_context *ctx) {
 	int rc;
 
 	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+
 	rc = duk_hobject_object_is_sealed_frozen_helper(h, 0 /*is_frozen*/);
 	duk_push_boolean(ctx ,rc);
 	return 1;
@@ -161,6 +180,8 @@ int duk_builtin_object_constructor_is_frozen(duk_context *ctx) {
 	int rc;
 
 	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+
 	rc = duk_hobject_object_is_sealed_frozen_helper(h, 1 /*is_frozen*/);
 	duk_push_boolean(ctx, rc);
 	return 1;
@@ -170,6 +191,8 @@ int duk_builtin_object_constructor_is_extensible(duk_context *ctx) {
 	duk_hobject *h;
 
 	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+
 	duk_push_boolean(ctx, DUK_HOBJECT_HAS_EXTENSIBLE(h));
 	return 1;
 }

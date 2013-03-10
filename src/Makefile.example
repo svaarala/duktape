@@ -1,0 +1,137 @@
+#
+#  Example Makefile for building Duktape in the simplest possible way
+#
+
+SOURCES =	\
+	duk_util_hashbytes.c		\
+	duk_util_hashprime.c		\
+	duk_util_bitdecoder.c		\
+	duk_util_bitencoder.c		\
+	duk_util_tinyrandom.c		\
+	duk_util_misc.c			\
+	duk_alloc_default.c		\
+	duk_debug_macros.c		\
+	duk_debug_vsnprintf.c		\
+	duk_debug_heap.c		\
+	duk_debug_hobject.c		\
+	duk_debug_fixedbuffer.c		\
+	duk_error_macros.c		\
+	duk_error_longjmp.c		\
+	duk_error_throw.c		\
+	duk_error_fatal.c		\
+	duk_error_augment.c		\
+	duk_error_misc.c		\
+	duk_heap_misc.c			\
+	duk_heap_memory.c		\
+	duk_heap_alloc.c		\
+	duk_heap_refcount.c		\
+	duk_heap_markandsweep.c		\
+	duk_heap_hashstring.c		\
+	duk_heap_stringtable.c		\
+	duk_heap_stringcache.c		\
+	duk_hthread_misc.c		\
+	duk_hthread_alloc.c		\
+	duk_hthread_builtins.c		\
+	duk_hthread_stacks.c		\
+	duk_hobject_alloc.c		\
+	duk_hobject_class.c		\
+	duk_hobject_enum.c		\
+	duk_hobject_props.c		\
+	duk_hobject_finalizer.c		\
+	duk_hobject_pc2line.c		\
+	duk_hobject_misc.c		\
+	duk_hbuffer_alloc.c		\
+	duk_hbuffer_ops.c		\
+	duk_unicode_tables.c		\
+	duk_unicode_support.c		\
+	duk_js_ops.c			\
+	duk_js_var.c			\
+	duk_api_call.c			\
+	duk_api_conv.c			\
+	duk_api_codec.c			\
+	duk_api_memory.c		\
+	duk_api_string.c		\
+	duk_api_object.c		\
+	duk_api_thread.c		\
+	duk_api_buffer.c		\
+	duk_api_var.c			\
+	duk_api.c			\
+	duk_lexer.c			\
+	duk_js_call.c			\
+	duk_js_executor.c		\
+	duk_js_compiler.c		\
+	duk_regexp_compiler.c		\
+	duk_regexp_executor.c		\
+	duk_builtin_duk.c		\
+	duk_builtin_thread.c		\
+	duk_builtin_thrower.c		\
+	duk_builtin_array.c		\
+	duk_builtin_boolean.c		\
+	duk_builtin_date.c		\
+	duk_builtin_error.c		\
+	duk_builtin_function.c		\
+	duk_builtin_global.c		\
+	duk_builtin_json.c		\
+	duk_builtin_math.c		\
+	duk_builtin_number.c		\
+	duk_builtin_object.c		\
+	duk_builtin_regexp.c		\
+	duk_builtin_string.c		\
+	duk_cmdline.c			\
+	duk_ncurses.c			\
+	duk_socket.c			\
+	duk_fileio.c			\
+	duk_strings.c			\
+	duk_builtins.c
+
+HEADERS =	\
+	duk_api.h			\
+	duk_api_internal.h		\
+	duk_bittypes.h			\
+	duk_builtin_protos.h		\
+	duk_debug.h			\
+	duk_error.h			\
+	duk_features.h			\
+	duk_forwdecl.h			\
+	duk_hbuffer.h			\
+	duk_hcompiledfunction.h		\
+	duk_heap.h			\
+	duk_heaphdr.h			\
+	duk_hnativefunction.h		\
+	duk_hobject.h			\
+	duk_hstring.h			\
+	duk_hthread.h			\
+	duk_internal.h			\
+	duk_jmpbuf.h			\
+	duk_js_bytecode.h		\
+	duk_js_compiler.h		\
+	duk_js.h			\
+	duk_lexer.h			\
+	duk_misc.h			\
+	duk_rdtsc.h			\
+	duk_regexp.h			\
+	duk_tval.h			\
+	duk_unicode.h			\
+	duk_util.h			\
+	duk_buildparams.h		\
+	duk_builtins.h			\
+	duk_strings.h			\
+	duk_unicode_caseconv.h		\
+	duk_unicode_idp_m_ids_noa_bmpo.h  \
+	duk_unicode_idp_m_ids_noa.h	\
+	duk_unicode_ids_noa_bmpo.h	\
+	duk_unicode_ids_noa.h		\
+	duk_unicode_ws_m_z.h
+
+CC	= gcc
+CCOPTS	= -Os -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CCLIBS	= -lm -lreadline -lncursesw
+
+# These are only needed by the example modules (duk_socket, duk_curses.c)
+CCOPTS += -I/usr/include/ncursesw -D_POSIX_C_SOURCE=200809L
+
+# Example target for one profile
+
+duk.400:	$(SOURCES) $(HEADERS)
+	$(CC) -o $@ -DDUK_PROFILE=400 $(CCOPTS) $(SOURCES) $(CCLIBS)
+
