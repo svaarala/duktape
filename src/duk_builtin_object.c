@@ -47,6 +47,7 @@ int duk_builtin_object_constructor_get_prototype_of(duk_context *ctx) {
 
 int duk_builtin_object_constructor_get_own_property_descriptor(duk_context *ctx) {
 	/* FIXME: no need for indirect call */
+	/* FIXME: descriptor is an object, prototype is incorrect */
 	return duk_hobject_object_get_own_property_descriptor(ctx);
 }
 
@@ -76,7 +77,51 @@ int duk_builtin_object_constructor_get_own_property_names(duk_context *ctx) {
 }
 
 int duk_builtin_object_constructor_create(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	duk_hobject *proto = NULL;
+	duk_hobject *h;
+
+	DUK_ASSERT(duk_get_top(ctx) == 2);
+
+	tv = duk_get_tval(ctx, 0);
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_NULL(tv)) {
+		;
+	} else if (DUK_TVAL_IS_OBJECT(tv)) {
+		proto = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(proto != NULL);
+	} else {
+		return DUK_RET_TYPE_ERROR;
+	}
+
+	/* FIXME: direct helper to create with specific prototype */
+	(void) duk_push_new_object_helper(ctx,
+	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                                  -1);
+	h = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(h->prototype == NULL);
+	DUK_HOBJECT_SET_PROTOTYPE(thr, h, proto);
+
+	if (!duk_is_undefined(ctx, 1)) {
+		/* [ O Properties obj ] */
+
+		/* Use original function.  No need to get it explicitly,
+		 * just call the helper.
+		 */
+
+		duk_replace(ctx, 0);
+
+		/* [ obj Properties ] */
+
+		return duk_hobject_object_define_properties(ctx);
+	}
+
+	/* [ O Properties obj ] */
+
+	return 1;
 }
 
 int duk_builtin_object_constructor_define_property(duk_context *ctx) {
