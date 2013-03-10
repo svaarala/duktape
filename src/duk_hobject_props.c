@@ -4300,7 +4300,7 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 	DUK_DDDPRINT("target=%!iT, properties=%!iT", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1));
 
 	duk_push_new_object(ctx);
-	duk_enum(ctx, 1, 0 /*enum_flags*/);
+	duk_enum(ctx, 1, DUK_ENUM_OWN_PROPERTIES_ONLY /*enum_flags*/);
 
 	/* [hobject props descriptors enum(props)] */
 
