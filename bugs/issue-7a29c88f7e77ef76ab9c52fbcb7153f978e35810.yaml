@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_push_this() refactoring with helpers
+desc: |-
+  Many built-in functions do some form of CheckObjectCoercible() check,
+  followed by coercion to object or string (or something else).  These
+  are currently implemented explicitly, wasting code space.
+  
+  Implement helper(s) for the common combinations and refactor calling
+  code to use the helpers.
+type: :task
+component: duk
+release: v0.5
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-10 20:50:53.876488 Z
+references: []
+
+id: 7a29c88f7e77ef76ab9c52fbcb7153f978e35810
+log_events: 
+- - 2013-03-10 20:50:54.161335 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
