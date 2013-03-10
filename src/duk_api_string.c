@@ -134,4 +134,74 @@ void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset) {
 	duk_remove(ctx, -2);
 }
 
+/* FIXME: this is quite clunky.  Add Unicode helpers to scan backwards and
+ * forwards with a callback to process codepoints?
+ */
+void duk_trim(duk_context *ctx, int index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h;
+	duk_u8 *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
+	duk_u8 *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
+	duk_u32 cp;
+
+	index = duk_require_normalize_index(ctx, index);
+	h = duk_require_hstring(ctx, index);
+	DUK_ASSERT(h != NULL);
+
+	p_start = DUK_HSTRING_GET_DATA(h);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h);
+
+	p = p_start;
+	while (p < p_end) {
+		p_tmp1 = p;
+		cp = duk_unicode_xutf8_get_u32_checked(thr, &p_tmp1, p_start, p_end);
+		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
+			break;
+		}
+		p = p_tmp1;
+	}
+	q_start = p;
+	if (p == p_end) {
+		/* entire string is whitespace */
+		q_end = p;
+		goto scan_done;
+	}
+
+	p = p_end;
+	while (p > p_start) {
+		p_tmp1 = p;
+		while (p > p_start) {
+			p--;
+			if (((*p) & 0xc0) != 0x80) {
+				break;
+			}
+		}
+		p_tmp2 = p;
+
+		cp = duk_unicode_xutf8_get_u32_checked(thr, &p_tmp2, p_start, p_end);
+		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
+			p = p_tmp1;
+			break;
+		}
+	}
+	q_end = p;
+
+ scan_done:
+	/* This may happen when forward and backward scanning disagree.
+	 * This may happen for non-extended-UTF-8 strings.
+	 */
+	if (q_end < q_start) {
+		q_end = q_start;
+	}
+
+	DUK_ASSERT(q_start >= p_start && q_start <= p_end);
+	DUK_ASSERT(q_end >= p_start && q_end <= p_end);
+	DUK_ASSERT(q_end >= q_start);
+
+	DUK_DDDPRINT("trim: p_start=%p, p_end=%p, q_start=%p, q_end=%p",
+	             (void *) p_start, (void *) p_end, (void *) q_start, (void *) q_end);
+
+	duk_push_lstring(ctx, (const char *) q_start, (size_t) (q_end - q_start));
+	duk_replace(ctx, index);
+}
 

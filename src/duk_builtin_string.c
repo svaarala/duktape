@@ -101,12 +101,7 @@ int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 	/* FIXME: refactor shared parts, like "push_this + objectcoercible + to_string" */
 	/* FIXME: CheckObjectCoercible check; call a helper */
 
-	duk_push_this(ctx);
-	DUK_DDDPRINT("CHARAT: this=%!T", duk_get_tval(ctx, -1));
-	if (duk_is_null_or_undefined(ctx, -1)) {
-		return DUK_RET_TYPE_ERROR;
-	}
-
+	duk_push_this_check_object_coercible(ctx);
 	duk_to_string(ctx, -1);
 	pos = duk_to_int(ctx, 0);
 	duk_substring(ctx, pos, pos + 1);
@@ -128,7 +123,7 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 
 	DUK_DDDPRINT("arg=%!T", duk_get_tval(ctx, 0));
 
-	duk_push_this(ctx);
+	duk_push_this_check_object_coercible(ctx);
 	duk_to_string(ctx, -1);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
@@ -201,7 +196,7 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	/* FIXME: refactor shared parts, like "push_this + objectcoercible + to_string" */
 	/* FIXME: probably want in the API too */
 
-	duk_push_this(ctx);
+	duk_push_this_check_object_coercible(ctx);
 	duk_to_string(ctx, -1);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
@@ -249,14 +244,7 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 int duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	duk_push_this(ctx);
-
-#if 0
-	/* FIXME: a combined "check coercible + to object" helper? */
-	if (!duk_is_object_coercible(ctx, -1)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid arg");
-	}
-#endif
+	duk_push_this_check_object_coercible(ctx);
 	duk_to_string(ctx, -1);
 
 	duk_unicode_case_convert_string(thr, 0 /*uppercase*/);
@@ -271,15 +259,7 @@ int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
 int duk_builtin_string_prototype_to_upper_case(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	duk_push_this(ctx);
-
-#if 0
-	/* FIXME: a combined "check coercible + to object" helper? */
-	if (!duk_is_object_coercible(ctx, -1)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid arg");
-	}
-#endif
-
+	duk_push_this_check_object_coercible(ctx);
 	duk_to_string(ctx, -1);
 
 	duk_unicode_case_convert_string(thr, 1 /*uppercase*/);
@@ -292,7 +272,12 @@ int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
 }
 
 int duk_builtin_string_prototype_trim(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	DUK_ASSERT(duk_get_top(ctx) == 0);
+	duk_push_this_check_object_coercible(ctx);
+	duk_to_string(ctx, 0);
+	duk_trim(ctx, 0);
+	DUK_ASSERT(duk_get_top(ctx) == 1);
+	return 1;
 }
 
 #ifdef DUK_USE_SECTION_B

@@ -514,6 +514,9 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
  */
 
 int duk_builtin_global_object_parse_int(duk_context *ctx) {
+	duk_to_string(ctx, 0);
+	duk_trim(ctx, 0);
+
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 

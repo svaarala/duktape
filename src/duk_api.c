@@ -1684,7 +1684,7 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 	va_end(ap);
 }
 
-void duk_push_this(duk_context *ctx) {
+static void push_this_helper(duk_context *ctx, int check_coerc) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(thr != NULL);
@@ -1692,16 +1692,38 @@ void duk_push_this(duk_context *ctx) {
 	DUK_ASSERT(thr->callstack_top >= 0 && thr->callstack_top <= thr->callstack_size);
 
 	if (thr->callstack_top == 0) {
+		if (check_coerc) {
+			goto type_error;
+		}
 		duk_push_undefined(ctx);
 	} else {
 		duk_tval tv_tmp;
+		duk_tval *tv;
 
 		/* 'this' binding is just before current activation's bottom */
 		DUK_ASSERT(thr->valstack_bottom > thr->valstack);
+		tv = thr->valstack_bottom - 1;
+		if (check_coerc) {
+			if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
+				goto type_error;
+			}
+		}
 
-		DUK_TVAL_SET_TVAL(&tv_tmp, thr->valstack_bottom - 1);
+		DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 		duk_push_tval(ctx, &tv_tmp);
 	}
+	return;
+
+ type_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not object coercible");
+}
+
+void duk_push_this(duk_context *ctx) {
+	push_this_helper(ctx, 0);
+}
+
+void duk_push_this_check_object_coercible(duk_context *ctx) {
+	push_this_helper(ctx, 1);
 }
 
 void duk_push_current_function(duk_context *ctx) {

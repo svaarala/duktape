@@ -442,6 +442,10 @@ void duk_join(duk_context *ctx, unsigned int count);                /* [sep val1
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
 void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset);
+void duk_trim(duk_context *ctx, int index);                         /* trim using StrWhiteSpaceChar: WhiteSpace + LineTerminator,
+                                                                     * matches String.prototype.trim(), global object parseInt()
+                                                                     * and parseFloat().
+                                                                     */
 
 /*
  *  Ecmascript operators

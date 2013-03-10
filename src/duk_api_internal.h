@@ -23,6 +23,10 @@ duk_tval duk_require_tval_value(duk_context *ctx, int index);  /* FIXME: not imp
 void duk_push_tval(duk_context *ctx, duk_tval *tv);
 void duk_push_tval_value(duk_context *ctx, duk_tval tv);       /* FIXME: not implemented now */
 
+void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the current 'this' binding; throw TypeError
+                                                                * if binding is not object coercible (CheckObjectCoercible).
+                                                                */
+
 duk_hstring *duk_get_hstring(duk_context *ctx, int index);
 duk_hobject *duk_get_hobject(duk_context *ctx, int index);
 duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int class);
