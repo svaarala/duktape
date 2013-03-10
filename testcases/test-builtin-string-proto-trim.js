@@ -42,11 +42,14 @@ var WHITESPACE_CODEPOINTS = [
 ];
 
 /*===
+basic
 string 3 foo
 string 3 foo
 string 3 foo
 string 3 foo
 ===*/
+
+print('basic');
 
 function basicTest() {
     var all_ws;
@@ -61,7 +64,7 @@ function basicTest() {
 
     all_ws = [];
     for (i = 0; i < WHITESPACE_CODEPOINTS; i++) {
-        all_ws.push(String.fromCharCode(i));
+        all_ws.push(String.fromCharCode(WHITESPACE_CODEPOINTS[i]));
     }
     all_ws = all_ws.join('');
 
@@ -73,6 +76,54 @@ function basicTest() {
 
 try {
     basicTest();
+} catch (e) {
+    print(e);
+}
+
+/*===
+coercion
+TypeError
+TypeError
+TypeError
+string 4 true
+string 5 false
+string 3 123
+string 3 foo
+string 3 1,2
+string 15 [object Object]
+===*/
+
+print('coercion');
+
+function coercionTest() {
+    function test(this_val, arg_count) {
+        var t;
+
+        try {
+            if (arg_count == 0) {
+                t = String.prototype.trim.call();
+            } else {
+                t = String.prototype.trim.call(this_val);
+            }
+            print(typeof t, t.length, t);
+        } catch (e) {
+            print(e.name);
+        }
+    }
+
+    test(undefined, 0);
+    test(undefined);
+    test(null);
+    test(true);
+    test(false);
+    test(123);
+    test('foo');
+    test([1,2]);
+    test({ foo: 1, bar: 2 });
+}
+
+try {
+    coercionTest();
 } catch (e) {
     print(e);
 }
