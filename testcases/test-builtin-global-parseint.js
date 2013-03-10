@@ -333,19 +333,26 @@ radix 16
 
 print('radix 16');
 
-function testRadix16(x) {
+function testRadix16(x, r, arg_count) {
+    var t;
+
     try {
-        print(g.parseInt(x));
+        if (arg_count == 1) {
+            t = g.parseInt(x);
+        } else {
+            t = g.parseInt(x, r);
+        }
+        print(t);
     } catch (e) {
         print(e);
     }
 }
 
 function radix16Test() {
-    testRadix16('0xcafe');
-    testRadix16('-0Xcafe');
-    testRadix16('   0xCAfe');  // whitespace + case variation
-    testRadix16('   -0XCAfe');
+    testRadix16('0xcafe', undefined, 1);
+    testRadix16('-0Xcafe', undefined, 1);
+    testRadix16('   0xCAfe', undefined, 1);  // whitespace + case variation
+    testRadix16('   -0XCAfe', undefined, 1);
 
     testRadix16('-0xcafe', 16);
     testRadix16('0Xcafe', 16);
