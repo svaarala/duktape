@@ -4264,6 +4264,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 
  success_no_specials:
 	/* no need to unwind stack (rewound automatically) */
+	duk_set_top(ctx, 1);  /* -> [ obj ] */
 	return 1;
 
  fail_invalid_desc:
