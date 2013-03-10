@@ -602,9 +602,11 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 }
 
 int duk_builtin_global_object_parse_float(duk_context *ctx) {
+	/* FIXME: incorrect placeholder */
 	duk_to_string(ctx, 0);
 	duk_trim(ctx, 0);
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_to_number(ctx, 0);
+	return 1;
 }
 
 /*
