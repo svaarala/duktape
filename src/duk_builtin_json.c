@@ -901,7 +901,7 @@ static void json_enc_object(duk_json_enc_ctx *js_ctx) {
 	} else {
 		/* FIXME: would be nice to enumerate an object at specified index */
 		duk_dup(ctx, idx_obj);
-		duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);  /* [ ... target ] -> [ ... target keys ] */
+		(void) duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);  /* [ ... target ] -> [ ... target keys ] */
 		idx_keys = duk_require_normalize_index(ctx, -1);
 		/* leave stack unbalanced on purpose */
 	}

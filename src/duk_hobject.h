@@ -500,7 +500,7 @@ void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
 /* enumeration */
 void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags);
-void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
+int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
 int duk_hobject_enumerator_next(duk_context *ctx, int get_value);
 
 /* macros */

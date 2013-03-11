@@ -431,7 +431,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
  *  described in E5 Section 15.2.3.14.
  */
 
-void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
+int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	duk_hobject *e;
 	int i;
 	int idx;
@@ -469,5 +469,7 @@ void duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	duk_remove(ctx, -2);
 
 	/* [target res] */
+
+	return 1;  /* return 1 to allow callers to tail call */
 }
 
