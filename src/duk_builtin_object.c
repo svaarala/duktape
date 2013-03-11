@@ -215,12 +215,19 @@ int duk_builtin_object_prototype_to_string(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_to_locale_string(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	DUK_ASSERT(duk_get_top(ctx) == 0);
+	duk_push_this_to_object(ctx);
+	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_STRING);
+	if (!duk_is_callable(ctx, 1)) {
+		return DUK_RET_TYPE_ERROR;
+	}
+	duk_dup(ctx, 0);  /* -> [ O toString O ] */
+	duk_call_method(ctx, 0);  /* FIXME: call method tailcall? */
+	return 1;
 }
 
 int duk_builtin_object_prototype_value_of(duk_context *ctx) {
-	duk_push_this(ctx);
-	duk_to_object(ctx, -1);
+	duk_push_this_to_object(ctx);
 	return 1;
 }
 
