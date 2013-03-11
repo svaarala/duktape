@@ -1687,7 +1687,10 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 	va_end(ap);
 }
 
-static void push_this_helper(duk_context *ctx, int check_coerc) {
+#define  PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
+#define  PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
+
+static void push_this_helper(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(thr != NULL);
@@ -1695,7 +1698,7 @@ static void push_this_helper(duk_context *ctx, int check_coerc) {
 	DUK_ASSERT(thr->callstack_top >= 0 && thr->callstack_top <= thr->callstack_size);
 
 	if (thr->callstack_top == 0) {
-		if (check_coerc) {
+		if (flags & PUSH_THIS_FLAG_CHECK_COERC) {
 			goto type_error;
 		}
 		duk_push_undefined(ctx);
@@ -1706,7 +1709,7 @@ static void push_this_helper(duk_context *ctx, int check_coerc) {
 		/* 'this' binding is just before current activation's bottom */
 		DUK_ASSERT(thr->valstack_bottom > thr->valstack);
 		tv = thr->valstack_bottom - 1;
-		if (check_coerc) {
+		if (flags & PUSH_THIS_FLAG_CHECK_COERC) {
 			if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
 				goto type_error;
 			}
@@ -1715,6 +1718,11 @@ static void push_this_helper(duk_context *ctx, int check_coerc) {
 		DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 		duk_push_tval(ctx, &tv_tmp);
 	}
+
+	if (flags & PUSH_THIS_FLAG_TO_OBJECT) {
+		duk_to_object(ctx, -1);
+	}
+
 	return;
 
  type_error:
@@ -1722,11 +1730,15 @@ static void push_this_helper(duk_context *ctx, int check_coerc) {
 }
 
 void duk_push_this(duk_context *ctx) {
-	push_this_helper(ctx, 0);
+	push_this_helper(ctx, 0 /*flags*/);
 }
 
 void duk_push_this_check_object_coercible(duk_context *ctx) {
-	push_this_helper(ctx, 1);
+	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
+}
+
+void duk_push_this_to_object(duk_context *ctx) {
+	push_this_helper(ctx, PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
 }
 
 void duk_push_current_function(duk_context *ctx) {

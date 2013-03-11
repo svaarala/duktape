@@ -26,6 +26,7 @@ void duk_push_tval_value(duk_context *ctx, duk_tval tv);       /* FIXME: not imp
 void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the current 'this' binding; throw TypeError
                                                                 * if binding is not object coercible (CheckObjectCoercible).
                                                                 */
+void duk_push_this_to_object(duk_context *ctx);                /* duk_push_this() + duk_to_object() */
 
 duk_hstring *duk_get_hstring(duk_context *ctx, int index);
 duk_hobject *duk_get_hobject(duk_context *ctx, int index);
