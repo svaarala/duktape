@@ -1,8 +1,8 @@
 /*===
 basic
 object 3 [object Array]
-0 bar
-1 foo
+0 foo
+1 bar
 2 quux
 object 7 [object Array]
 0 0
