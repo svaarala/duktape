@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: go through FIXMEs in defineProperty() implementation
+desc: Fix and add corner case test cases.
+type: :task
+component: duk
+release: v0.3
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-11 16:01:42.774179 Z
+references: []
+
+id: 8bc154a816f45a8ddc10779c5e8d6dbd0debe6df
+log_events: 
+- - 2013-03-11 16:01:42.979101 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

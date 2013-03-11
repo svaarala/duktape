@@ -22,10 +22,10 @@ desc: |-
   for PropertyList but does not currently do so.
 type: :task
 component: duk
-release: v0.4
+release: v0.3
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-03-02 19:30:26.519339 Z
 references: []
 
@@ -34,4 +34,12 @@ log_events:
 - - 2013-03-02 19:30:26.706507 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-03-11 12:35:51.031749 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.3 from v0.4
+  - ""
+- - 2013-03-11 12:35:55.607784 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
   - ""

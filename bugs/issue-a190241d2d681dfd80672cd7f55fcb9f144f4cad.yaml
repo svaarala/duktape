@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.3
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-20 02:22:47.610602 Z
 references: []
 
@@ -20,3 +20,9 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - assigned to release v0.3 from unassigned
   - Number parsing can be left as a placeholder for now.
+- - 2013-03-11 15:10:16.822314 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
+  - |-
+    Everything more or less works except parseFloat() and parseInt(), which
+    have reasonable placeholders.

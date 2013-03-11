@@ -24,3 +24,9 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-03-11 15:08:24.376731 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    There is a beginning of such a helper in duk_builtin_global.c,
+    transform_helper().

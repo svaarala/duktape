@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add testcases for defineProperty(), covering special (exotic) objects
+desc: ""
+type: :task
+component: duk
+release: v0.3
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-11 16:02:07.596430 Z
+references: []
+
+id: 089433cb936be534e32748b6fe89167e27b09381
+log_events: 
+- - 2013-03-11 16:02:07.761438 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
