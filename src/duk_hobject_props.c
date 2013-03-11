@@ -3294,7 +3294,7 @@ int duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 		return 1;
 	}
 
-	duk_push_new_object_internal(ctx);
+	duk_push_new_object(ctx);
 
 	/* [obj key value desc] */
 
@@ -3810,13 +3810,26 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		}
 	}
 	if (has_value) {
-		duk_tval *tmp1 = duk_require_tval(ctx, -1);         /* curr value */
-		duk_tval *tmp2 = duk_require_tval(ctx, idx_value);  /* new value */
+		duk_tval *tmp1;
+		duk_tval *tmp2;
+	
+		/* attempt to change from accessor to data property */
+		if (curr.flags & DUK_PROPDESC_FLAG_ACCESSOR) {
+			goto need_check;
+		}
+
+		tmp1 = duk_require_tval(ctx, -1);         /* curr value */
+		tmp2 = duk_require_tval(ctx, idx_value);  /* new value */
 		if (!duk_js_samevalue(tmp1, tmp2)) {
 			goto need_check;
 		}
 	}
 	if (has_writable) {
+		/* attempt to change from accessor to data property */
+		if (curr.flags & DUK_PROPDESC_FLAG_ACCESSOR) {
+			goto need_check;
+		}
+
 		if (is_writable) {
 			if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
 				goto need_check;
