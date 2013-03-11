@@ -31,15 +31,19 @@ function getDesc(obj, prop) {
     var pd;
 
     if (typeof obj !== 'object' || obj === null) {
+        // valueOf()
         return prop + ': non-object (' + Object.prototype.toString.call(obj) + ')';
     }
 
+    // ToString(prop) coercion
     pd = Object.getOwnPropertyDescriptor(obj, prop);
 
     if (pd === undefined) {
+        // valueOf()
         return prop + ': undefined';
     }
 
+    // ToPrimitive(prop) coercion without hint -> valueOf()
     return prop + ': ' +
            'value=' + formatValue(pd.value) +
            ', writable=' + formatValue(pd.writable) +
@@ -56,6 +60,7 @@ function printDesc(obj, prop) {
 function testDef(obj, prop, attrs, arg_count) {
     var t;
 
+    // coercion side effects
     print('pre:  ' + getDesc(obj, prop));
 
     try {
@@ -73,6 +78,7 @@ function testDef(obj, prop, attrs, arg_count) {
         print(e.name);
     }
 
+    // coercion side effects
     print('post: ' + getDesc(obj, prop));
 }
 
@@ -107,12 +113,10 @@ pre:  foo: value=1, writable=true, enumerable=true, configurable=true, typeof(ge
 object [object Object]
 post: foo: value=1, writable=true, enumerable=true, configurable=true, typeof(get)=undefined, typeof(set)=undefined
 toString() prop
-toString() prop
 valueOf() prop
 pre:  bar: undefined
 toString() prop
 object [object Object]
-toString() prop
 toString() prop
 valueOf() prop
 post: bar: value=1, writable=false, enumerable=false, configurable=false, typeof(get)=undefined, typeof(set)=undefined
@@ -157,6 +161,8 @@ function coercionTest() {
     }, { value: 1 }, 3);
     printDesc(obj, 'foo');
     printDesc(obj, 'bar');
+
+    // ToString(123) -> '123'
 
     obj = {};
     test(obj, 123, { value: 2 });
