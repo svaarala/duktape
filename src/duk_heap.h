@@ -5,8 +5,8 @@
  *  strings for one or more threads.
  */
 
-#ifndef __DUK_HEAP_H
-#define __DUK_HEAP_H 1
+#ifndef DUK_HEAP_H_INCLUDED
+#define DUK_HEAP_H_INCLUDED
 
 #include "duk_bittypes.h"
 #include "duk_forwdecl.h"
@@ -406,5 +406,5 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags);
 
 duk_u32 duk_heap_hashstring(duk_heap *heap, duk_u8 *str, duk_u32 len);
 
-#endif  /* __DUK_HEAP_H */
+#endif  /* DUK_HEAP_H_INCLUDED */
 

@@ -2,8 +2,8 @@
  *  Ecmascript compiler.
  */
 
-#ifndef __DUK_JS_COMPILER_H
-#define __DUK_JS_COMPILER_H 1
+#ifndef DUK_JS_COMPILER_H_INCLUDED
+#define DUK_JS_COMPILER_H_INCLUDED
 
 /* regexp compilation limits */
 #define  DUK_COMPILER_RECURSION_LIMIT       50
@@ -206,5 +206,5 @@ struct duk_compiler_ctx {
 
 void duk_js_compile(duk_hthread *thr, int flags);
 
-#endif  /* __DUK_JS_COMPILER_H */
+#endif  /* DUK_JS_COMPILER_H_INCLUDED */
 

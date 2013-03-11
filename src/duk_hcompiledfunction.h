@@ -5,8 +5,8 @@
  *  bytecode, constants, and inner functions.
  */
 
-#ifndef __DUK_HCOMPILEDFUNCTION_H
-#define __DUK_HCOMPILEDFUNCTION_H 1
+#ifndef DUK_HCOMPILEDFUNCTION_H_INCLUDED
+#define DUK_HCOMPILEDFUNCTION_H_INCLUDED
 
 /*
  *  Accessor macros for function specific data areas
@@ -171,5 +171,5 @@ struct duk_hcompiledfunction {
 	 */
 };
 
-#endif  /* __DUK_HCOMPILEDFUNCTION_H */
+#endif  /* DUK_HCOMPILEDFUNCTION_H_INCLUDED */
 

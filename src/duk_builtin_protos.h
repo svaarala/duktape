@@ -2,8 +2,8 @@
  *  Prototypes for all built-in functions.
  */
 
-#ifndef __DUK_BUILTIN_PROTOS_H
-#define __DUK_BUILTIN_PROTOS_H 1
+#ifndef DUK_BUILTIN_PROTOS_H_INCLUDED
+#define DUK_BUILTIN_PROTOS_H_INCLUDED
 
 int duk_builtin_array_constructor(duk_context *ctx);
 int duk_builtin_array_constructor_is_array(duk_context *ctx);
@@ -217,5 +217,5 @@ int duk_builtin_thread_prototype_to_string(duk_context *ctx);
 
 int duk_builtin_type_error_thrower(duk_context *ctx);
 
-#endif  /* __DUK_BUILTIN_PROTOS_H */
+#endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */
 

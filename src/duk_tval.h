@@ -43,8 +43,8 @@
  *  value E F G H A B C D.  This requires some special handling below.
  */
 
-#ifndef __TVAL_H
-#define __TVAL_H 1
+#ifndef DUK_TVAL_H_INCLUDED
+#define DUK_TVAL_H_INCLUDED
 
 #include <math.h>  /* provides NAN with -std=c99 */
 
@@ -569,5 +569,5 @@ struct duk_tval_struct {
 #define  DUK_TVAL_SET_BOOLEAN_TRUE(v)        DUK_TVAL_SET_BOOLEAN(v, 1)
 #define  DUK_TVAL_SET_BOOLEAN_FALSE(v)       DUK_TVAL_SET_BOOLEAN(v, 0)
 
-#endif  /* __TVAL_H */
+#endif  /* DUK_TVAL_H_INCLUDED */
 

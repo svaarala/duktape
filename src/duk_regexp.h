@@ -2,8 +2,8 @@
  *  Regular expression structs, constants, and bytecode defines.
  */
 
-#ifndef __DUK_REGEXP_H
-#define __DUK_REGEXP_H 1
+#ifndef DUK_REGEXP_H_INCLUDED
+#define DUK_REGEXP_H_INCLUDED
 
 #include "duk_bittypes.h"
 
@@ -80,5 +80,5 @@ void duk_regexp_compile(duk_hthread *thr);
 void duk_regexp_create_instance(duk_hthread *thr);
 void duk_regexp_match(duk_hthread *thr);
 
-#endif  /* __DUK_REGEXP_H */
+#endif  /* DUK_REGEXP_H_INCLUDED */
 

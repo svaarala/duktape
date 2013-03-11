@@ -29,8 +29,8 @@
  *  parts are resized together, and makes property access a bit complicated.
  */
 
-#ifndef __DUK_HOBJECT_H
-#define __DUK_HOBJECT_H 1
+#ifndef DUK_HOBJECT_H_INCLUDED
+#define DUK_HOBJECT_H_INCLUDED
 
 #include "duk_strings.h"
 
@@ -516,5 +516,5 @@ duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc);
 /* misc */	
 int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
 
-#endif  /* __DUK_HOBJECT_H */
+#endif  /* DUK_HOBJECT_H_INCLUDED */
 

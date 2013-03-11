@@ -2,8 +2,8 @@
  *  Ecmascript bytecode
  */
 
-#ifndef __DUK_JS_BYTECODE_H
-#define __DUK_JS_BYTECODE_H 1
+#ifndef DUK_JS_BYTECODE_H_INCLUDED
+#define DUK_JS_BYTECODE_H_INCLUDED
 
 #include "duk_bittypes.h"
 
@@ -180,5 +180,5 @@ typedef duk_u32 duk_instr;
 #define  DUK_BC_LDINTX_SHIFT         18
 #define  DUK_BC_JUMP_BIAS            (1 << 25)
 
-#endif  /* __DUK_JS_BYTECODE_H */
+#endif  /* DUK_JS_BYTECODE_H_INCLUDED */
 

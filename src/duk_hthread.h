@@ -5,8 +5,8 @@
  *  which mostly operate on the topmost frame of the value stack.
  */
 
-#ifndef __DUK_HTHREAD_H
-#define __DUK_HTHREAD_H 1
+#ifndef DUK_HTHREAD_H_INCLUDED
+#define DUK_HTHREAD_H_INCLUDED
 
 #include "duk_bittypes.h"
 #include "duk_forwdecl.h"
@@ -237,5 +237,5 @@ void duk_hthread_catchstack_grow(duk_hthread *thr);
 void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top);
 
-#endif  /* __DUK_HTHREAD_H */
+#endif  /* DUK_HTHREAD_H_INCLUDED */
 

@@ -4,8 +4,8 @@
  *  See: http://www.mcs.anl.gov/~kazutomo/rdtsc.html
  */
 
-#ifndef __DUK_RDTSC_H
-#define __DUK_RDTSC_H 1
+#ifndef DUK_RDTSC_H_INCLUDED
+#define DUK_RDTSC_H_INCLUDED
 
 #if defined(__i386__)
 static __inline__ unsigned long long duk_rdtsc(void) {
@@ -26,5 +26,5 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #undef  DUK_RDTSC_AVAILABLE
 #endif
 
-#endif  /* __DUK_RDTSC */
+#endif  /* DUK_RDTSC_H_INCLUDED */
 

@@ -3,8 +3,8 @@
  *  Access all fields through the accessor macros.
  */
 
-#ifndef __DUK_HEAPHDR_H
-#define __DUK_HEAPHDR_H 1
+#ifndef DUK_HEAPHDR_H_INCLUDED
+#define DUK_HEAPHDR_H_INCLUDED
 
 #include "duk_forwdecl.h"
 #include "duk_tval.h"
@@ -220,5 +220,5 @@ struct duk_heaphdr_string {
 
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
-#endif  /* __DUK_HEAPHDR_H */
+#endif  /* DUK_HEAPHDR_H_INCLUDED */
 

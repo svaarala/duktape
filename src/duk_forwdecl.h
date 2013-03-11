@@ -2,8 +2,8 @@
  *  Forward declarations for all Duktape structures.
  */
 
-#ifndef __DUK_FORWDECL_H
-#define __DUK_FORWDECL_H 1
+#ifndef DUK_FORWDECL_H_INCLUDED
+#define DUK_FORWDECL_H_INCLUDED
 
 /*
  *  Forward declarations
@@ -97,5 +97,5 @@ typedef struct duk_compiler_ctx duk_compiler_ctx;
 typedef struct duk_re_matcher_ctx duk_re_matcher_ctx;
 typedef struct duk_re_compiler_ctx duk_re_compiler_ctx;
 	
-#endif  /* __DUK_FORWDECL_H */
+#endif  /* DUK_FORWDECL_H_INCLUDED */
 

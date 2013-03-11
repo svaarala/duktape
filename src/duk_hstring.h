@@ -14,8 +14,8 @@
  *  really a practical issue.
  */
 
-#ifndef __DUK_HSTRING_H
-#define __DUK_HSTRING_H 1
+#ifndef DUK_HSTRING_H_INCLUDED
+#define DUK_HSTRING_H_INCLUDED
 
 #include "duk_heaphdr.h"
 #include "duk_misc.h"
@@ -92,5 +92,5 @@ struct duk_hstring {
 	 */
 };
 
-#endif  /* __DUK_HSTRING_H */
+#endif  /* DUK_HSTRING_H_INCLUDED */
 

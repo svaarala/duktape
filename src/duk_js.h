@@ -2,8 +2,8 @@
  *  Ecmascript execution, support primitives.
  */
 
-#ifndef __DUK_JS_H
-#define __DUK_JS_H 1
+#ifndef DUK_JS_H_INCLUDED
+#define DUK_JS_H_INCLUDED
 
 /* call flags */
 #define  DUK_CALL_FLAG_PROTECTED              (1 << 0)  /* duk_handle_call: call is protected */
@@ -74,5 +74,5 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 /* bytecode execution */
 void duk_js_execute_bytecode(duk_hthread *entry_thread);
 
-#endif  /* __DUK_JS_H */
+#endif  /* DUK_JS_H_INCLUDED */
 

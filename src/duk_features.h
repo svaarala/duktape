@@ -10,8 +10,8 @@
  *  or overriding individual settings.
  */
 
-#ifndef __DUK_FEATURES_H
-#define __DUK_FEATURES_H 1
+#ifndef DUK_FEATURES_H_INCLUDED
+#define DUK_FEATURES_H_INCLUDED
 
 #include "duk_rdtsc.h"  /* DUK_RDTSC_AVAILABLE */
 
@@ -277,5 +277,5 @@
 #error DUK_USE_GC_TORTURE defined without DUK_USE_MARK_AND_SWEEP
 #endif
 
-#endif  /* __DUK_FEATURES_H */
+#endif  /* DUK_FEATURES_H_INCLUDED */
 

@@ -5,8 +5,8 @@
  *  and Duktape specific formatters.  See duk_debug_vsnprintf.c for details.
  */
 
-#ifndef __DUK_DEBUG_H
-#define __DUK_DEBUG_H
+#ifndef DUK_DEBUG_H_INCLUDED
+#define DUK_DEBUG_H_INCLUDED
 
 #include "duk_features.h"  /* rely on DUK_USE_VARIADIC_MACROS */
 #include "duk_bittypes.h"
@@ -196,5 +196,5 @@ extern int duk_debug_summary_idx;
 
 #endif  /* DUK_USE_DEBUG */
 
-#endif  /* __DUK_DEBUG_H */
+#endif  /* DUK_DEBUG_H_INCLUDED */
 

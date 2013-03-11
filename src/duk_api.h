@@ -21,8 +21,8 @@
  *  never assume otherwise, e.g. by using API calls as function pointers.
  */
 
-#ifndef __DUK_API_H
-#define __DUK_API_H 1
+#ifndef DUK_API_H_INCLUDED
+#define DUK_API_H_INCLUDED
 
 #include <limits.h>  /* MIN_INT */
 #include <stdarg.h>  /* va_list etc */
@@ -546,5 +546,5 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 int duk_eval(duk_context *ctx);                           /* [code] -> [retval] (may throw error) */
 int duk_compile(duk_context *ctx);                        /* [code] -> [func] (may throw error) */
 
-#endif  /* __DUK_API_H */
+#endif  /* DUK_API_H_INCLUDED */
 

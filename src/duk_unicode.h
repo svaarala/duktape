@@ -2,8 +2,8 @@
  *  Unicode helpers
  */
 
-#ifndef __DUK_UNICODE_H
-#define __DUK_UNICODE_H 1
+#ifndef DUK_UNICODE_H_INCLUDED
+#define DUK_UNICODE_H_INCLUDED
 
 #include "duk_features.h"
 
@@ -59,5 +59,5 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase);
 int duk_unicode_re_canonicalize_char(duk_hthread *thr, int x);
 int duk_unicode_re_is_wordchar(int x);
 
-#endif  /* __DUK_UNICODE_H */
+#endif  /* DUK_UNICODE_H_INCLUDED */
 

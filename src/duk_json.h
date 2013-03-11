@@ -2,8 +2,8 @@
  *  Defines for JSON, especially duk_builtin_json.c.
  */
 
-#ifndef __DUK_JSON_H
-#define __DUK_JSON_H 1
+#ifndef DUK_JSON_H_INCLUDED
+#define DUK_JSON_H_INCLUDED
 
 /* Object/array recursion limit (to protect C stack) */
 #define  DUK_JSON_ENC_RECURSION_LIMIT          100
@@ -54,5 +54,5 @@ typedef struct {
 	int recursion_limit;
 } duk_json_dec_ctx;
 
-#endif  /* __DUK_JSON_H */
+#endif  /* DUK_JSON_H_INCLUDED */
 

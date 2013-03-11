@@ -8,8 +8,8 @@
  *  http://en.wikipedia.org/wiki/Setjmp.h#Member_types
  */
 
-#ifndef __DUK_JMPBUF_H
-#define __DUK_JMPBUF_H 1
+#ifndef DUK_JMPBUF_H_INCLUDED
+#define DUK_JMPBUF_H_INCLUDED
 
 #include <setjmp.h>
 
@@ -17,5 +17,5 @@ struct duk_jmpbuf {
 	jmp_buf jb;
 };
 
-#endif  /* __DUK_JMPBUF_H */
+#endif  /* DUK_JMPBUF_H_INCLUDED */
 

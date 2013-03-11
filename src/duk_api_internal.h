@@ -3,8 +3,8 @@
  *  similar to the public API.
  */
 
-#ifndef __DUK_API_INTERNAL_H
-#define __DUK_API_INTERNAL_H 1
+#ifndef DUK_API_INTERNAL_H_INCLUDED
+#define DUK_API_INTERNAL_H_INCLUDED
 
 /* duk_push_sprintf constants */
 #define  DUK_PUSH_SPRINTF_INITIAL_SIZE  256
@@ -70,5 +70,5 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int s
 
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [] -> [] */
 
-#endif  /* __DUK_API_INTERNAL_H */
+#endif  /* DUK_API_INTERNAL_H_INCLUDED */
 

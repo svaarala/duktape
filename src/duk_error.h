@@ -2,8 +2,8 @@
  *  Error handling macros, assertion macro, error codes.
  */
 
-#ifndef __DUK_ERROR_H
-#define __DUK_ERROR_H 1
+#ifndef DUK_ERROR_H_INCLUDED
+#define DUK_ERROR_H_INCLUDED
 
 #include "duk_misc.h"
 
@@ -254,5 +254,5 @@ void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type);
 
 duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, int err_code);
 
-#endif  /* __DUK_ERROR */
+#endif  /* DUK_ERROR_H_INCLUDED */
 

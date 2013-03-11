@@ -2,8 +2,8 @@
  *  Lexer defines.
  */
 
-#ifndef __DUK_LEXER_H
-#define __DUK_LEXER_H 1
+#ifndef DUK_LEXER_H_INCLUDED
+#define DUK_LEXER_H_INCLUDED
 
 #include "duk_strings.h"
 
@@ -418,5 +418,5 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token);
 void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata);
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
-#endif  /* __DUK_LEXER_H */
+#endif  /* DUK_LEXER_H_INCLUDED */
 

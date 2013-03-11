@@ -9,8 +9,8 @@
  *  The data pointer for a variable size buffer of zero size may be NULL.
  */
 
-#ifndef __DUK_HBUFFER_H
-#define __DUK_HBUFFER_H 1
+#ifndef DUK_HBUFFER_H_INCLUDED
+#define DUK_HBUFFER_H_INCLUDED
 
 #include "duk_bittypes.h"
 #include "duk_forwdecl.h"
@@ -123,5 +123,5 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_growable *buf, size_
 void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_growable *buf, size_t dst_offset, size_t src_offset, size_t length);
 void duk_hbuffer_append_slice(duk_hthread *thr, duk_hbuffer_growable *buf, size_t src_offset, size_t length);
 
-#endif  /* __DUK_HBUFFER_H */
+#endif  /* DUK_HBUFFER_H_INCLUDED */
 

@@ -2,8 +2,8 @@
  *  Heap native function representation.
  */
 
-#ifndef __DUK_HNATIVEFUNCTION_H
-#define __DUK_HNATIVEFUNCTION_H 1
+#ifndef DUK_HNATIVEFUNCTION_H_INCLUDED
+#define DUK_HNATIVEFUNCTION_H_INCLUDED
 
 #define  DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_i16) -1)
 #define  DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_i16) 0x7fff)
@@ -30,5 +30,5 @@ struct duk_hnativefunction {
 	 */
 };
 
-#endif  /* __DUK_HNATIVEFUNCTION_H */
+#endif  /* DUK_HNATIVEFUNCTION_H_INCLUDED */
 

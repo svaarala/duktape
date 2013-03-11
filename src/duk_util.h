@@ -2,8 +2,8 @@
  *  Utilities
  */
 
-#ifndef __DUK_UTIL_H
-#define __DUK_UTIL_H 1
+#ifndef DUK_UTIL_H_INCLUDED
+#define DUK_UTIL_H_INCLUDED
 
 #include "duk_bittypes.h"
 
@@ -61,5 +61,5 @@ void duk_util_base64_encode(const unsigned char *src, unsigned char *dst, size_t
 duk_u32 duk_util_tinyrandom_get_bits(duk_hthread *thr, int n);
 double duk_util_tinyrandom_get_double(duk_hthread *thr);
 
-#endif  /* __DUK_UTIL_H */
+#endif  /* DUK_UTIL_H_INCLUDED */
 

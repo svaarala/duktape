@@ -2,8 +2,8 @@
  *  Miscellaneous defines that don't fit elsewhere.
  */
 
-#ifndef __DUK_MISC_H
-#define __DUK_MISC_H 1
+#ifndef DUK_MISC_H_INCLUDED
+#define DUK_MISC_H_INCLUDED
 
 /*
  *  Misc constants
@@ -46,5 +46,5 @@
 
 #endif  /* __GNUC__ */
 
-#endif  /* _DUK_MISC_H */
+#endif  /* DUK_MISC_H_INCLUDED */
 
