@@ -194,7 +194,9 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		/*
 		 *  Virtual properties.
 		 *
-		 *  String indices are always enumerable.
+		 *  String indices are virtual and always enumerable.  String 'length'
+		 *  is virtual and non-enumerable.  Array and arguments object props
+		 *  have special behavior but are concrete.
 		 */
 
 		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr)) {
@@ -216,6 +218,16 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 				duk_put_prop(ctx, -3);
 
 				/* [target res] */	
+			}
+
+			/* 'length' property is not enumerable, but is included if
+			 * non-enumerable properties are requested.
+			 */
+
+			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
+				duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
+				duk_push_true(ctx);
+				duk_put_prop(ctx, -3);
 			}
 		}
 
