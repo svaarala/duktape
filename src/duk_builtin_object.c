@@ -36,7 +36,10 @@ int duk_builtin_object_constructor_get_prototype_of(duk_context *ctx) {
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
-	/* FIXME: should the API call handle this correctly? */
+	/* FIXME: should the API call handle this directly, i.e. attempt
+	 * to duk_push_hobject(ctx, null) would push a null instead?
+	 */
+
 	if (h->prototype) {
 		duk_push_hobject(ctx, h->prototype);
 	} else {
@@ -47,7 +50,6 @@ int duk_builtin_object_constructor_get_prototype_of(duk_context *ctx) {
 
 int duk_builtin_object_constructor_get_own_property_descriptor(duk_context *ctx) {
 	/* FIXME: no need for indirect call */
-	/* FIXME: descriptor is an object, prototype is incorrect */
 	return duk_hobject_object_get_own_property_descriptor(ctx);
 }
 
@@ -232,7 +234,7 @@ int duk_builtin_object_prototype_value_of(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_has_own_property(duk_context *ctx) {
-	/* FIXME: unnecessary intermediate func */
+	/* FIXME: no need for indirect call */
 	return duk_hobject_object_has_own_property(ctx);
 }
 
@@ -259,7 +261,7 @@ int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx) {
-	/* FIXME: unnecessary intermediate func */
+	/* FIXME: no need for indirect call */
 	return duk_hobject_object_property_is_enumerable(ctx);
 }
 
