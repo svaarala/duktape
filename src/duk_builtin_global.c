@@ -1,5 +1,5 @@
 /*
- *  Global built-ins
+ *  Global object built-in.
  */
 
 #include "duk_internal.h"
@@ -9,8 +9,7 @@
  */
 
 /* Macros for creating and checking bitmasks for character encoding.
- * Bit number in the byte is a bit counterintuitive, but minimizes
- * code size.
+ * Bit number is a bit counterintuitive, but minimizes code size.
  */
 #define  MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
 	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
@@ -705,6 +704,7 @@ static int print_alert_helper(duk_context *ctx, FILE *f_out) {
 	return 0;
 
 }
+
 int duk_builtin_global_object_print(duk_context *ctx) {
 	return print_alert_helper(ctx, stdout);
 }
