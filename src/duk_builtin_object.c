@@ -52,7 +52,7 @@ int duk_builtin_object_constructor_get_own_property_descriptor(duk_context *ctx)
 }
 
 int duk_builtin_object_constructor_get_own_property_names(duk_context *ctx) {
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_require_hobject(ctx, 0);
 	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_INCLUDE_NONENUMERABLE |
 	                                            DUK_ENUM_OWN_PROPERTIES_ONLY);
@@ -64,7 +64,7 @@ int duk_builtin_object_constructor_create(duk_context *ctx) {
 	duk_hobject *proto = NULL;
 	duk_hobject *h;
 
-	DUK_ASSERT(duk_get_top(ctx) == 2);
+	DUK_ASSERT_TOP(ctx, 2);
 
 	tv = duk_get_tval(ctx, 0);
 	DUK_ASSERT(tv != NULL);
@@ -180,7 +180,7 @@ int duk_builtin_object_constructor_is_extensible(duk_context *ctx) {
 }
 
 int duk_builtin_object_constructor_keys(duk_context *ctx) {
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_require_hobject(ctx, 0);
 	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY);
 }
@@ -215,7 +215,7 @@ int duk_builtin_object_prototype_to_string(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_to_locale_string(duk_context *ctx) {
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 	duk_push_this_to_object(ctx);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_STRING);
 	if (!duk_is_callable(ctx, 1)) {
@@ -232,11 +232,33 @@ int duk_builtin_object_prototype_value_of(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_has_own_property(duk_context *ctx) {
+	duk_to_string(ctx, 0);
+	duk_push_this_to_object(ctx);
+
+	/* FIXME: no primitive for getting own property without prototypes... */
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h_v;
+	duk_hobject *h_obj;
+
+	DUK_ASSERT_TOP(ctx, 1);
+
+	h_v = duk_get_hobject(ctx, 0);
+	if (!h_v) {
+		duk_push_false(ctx);  /* FIXME: tail call: return duk_push_false(ctx) */
+		return 1;
+	}
+
+	duk_push_this_to_object(ctx);
+	h_obj = duk_get_hobject(ctx, 1);
+	DUK_ASSERT(h_obj != NULL);
+
+	/* E5.1 Section 15.2.4.6, step 3.a, lookup proto once before compare */
+	duk_push_boolean(ctx, duk_hobject_prototype_chain_contains(thr, h_v->prototype, h_obj));
+	return 1;
 }
 
 int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx) {
