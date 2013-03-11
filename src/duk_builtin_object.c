@@ -233,11 +233,6 @@ int duk_builtin_object_prototype_value_of(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_object_prototype_has_own_property(duk_context *ctx) {
-	/* FIXME: no need for indirect call */
-	return duk_hobject_object_has_own_property(ctx);
-}
-
 int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_v;
@@ -260,8 +255,11 @@ int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
 	return 1;
 }
 
+int duk_builtin_object_prototype_has_own_property(duk_context *ctx) {
+	return duk_hobject_object_ownprop_helper(ctx, 0 /*required_desc_flags*/);
+}
+
 int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx) {
-	/* FIXME: no need for indirect call */
-	return duk_hobject_object_property_is_enumerable(ctx);
+	return duk_hobject_object_ownprop_helper(ctx, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
 }
 
