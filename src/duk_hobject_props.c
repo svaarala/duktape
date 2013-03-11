@@ -4380,7 +4380,40 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 
 	return 1;
 }
-	
+
+/*
+ *  Object.prototype.hasOwnProperty() and Object.prototype.propertyIsEnumerable().
+ */
+
+static int ownprop_helper(duk_context *ctx, int required_desc_flags) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_v;
+	duk_hobject *h_obj;
+	duk_propdesc desc;
+	int ret;
+
+	/* coercion order matters */
+	h_v = duk_to_hstring(ctx, 0);
+	DUK_ASSERT(h_v != NULL);
+
+	duk_push_this_to_object(ctx);
+	h_obj = duk_get_hobject(ctx, 1);
+	DUK_ASSERT(h_obj != NULL);
+
+	ret = get_own_property_desc(thr, h_obj, h_v, &desc, 0 /*push_value*/);
+
+	duk_push_boolean(ctx, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
+	return 1;
+}
+
+int duk_hobject_object_has_own_property(duk_context *ctx) {
+	return ownprop_helper(ctx, 0);
+}
+
+int duk_hobject_object_property_is_enumerable(duk_context *ctx) {
+	return ownprop_helper(ctx, DUK_PROPDESC_FLAG_ENUMERABLE);
+}
+
 /* FIXME change these into actual function calls? */
 
 /*

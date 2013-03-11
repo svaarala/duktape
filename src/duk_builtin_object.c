@@ -232,11 +232,8 @@ int duk_builtin_object_prototype_value_of(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_has_own_property(duk_context *ctx) {
-	duk_to_string(ctx, 0);
-	duk_push_this_to_object(ctx);
-
-	/* FIXME: no primitive for getting own property without prototypes... */
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* FIXME: unnecessary intermediate func */
+	return duk_hobject_object_has_own_property(ctx);
 }
 
 int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
@@ -262,6 +259,7 @@ int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx) {
 }
 
 int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* FIXME: unnecessary intermediate func */
+	return duk_hobject_object_property_is_enumerable(ctx);
 }
 

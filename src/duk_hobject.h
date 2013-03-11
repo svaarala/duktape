@@ -490,6 +490,8 @@ int duk_hobject_object_define_properties(duk_context *ctx);
 int duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
 void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, int freeze);
 int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen);
+int duk_hobject_object_has_own_property(duk_context *ctx);
+int duk_hobject_object_property_is_enumerable(duk_context *ctx);
 
 /* internal properties */
 int duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
