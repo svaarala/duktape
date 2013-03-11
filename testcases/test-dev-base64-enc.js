@@ -1,3 +1,11 @@
+/*
+ *  Some base-64 tests.
+ *
+ *  Note: __duk__.dec() results are coerced from buffer to string
+ *  with "'' + __duk__.dec(...)" because print() won't add an
+ *  automatic newline if print() has only one argument which is
+ *  a buffer.
+ */
 
 /*---
 {
@@ -35,13 +43,13 @@ fooba
 foobar
 ===*/
 
-print(__duk__.dec('base64', ''));
-print(__duk__.dec('base64', 'Zg=='));
-print(__duk__.dec('base64', 'Zm8='));
-print(__duk__.dec('base64', 'Zm9v'));
-print(__duk__.dec('base64', 'Zm9vYg=='));
-print(__duk__.dec('base64', 'Zm9vYmE='));
-print(__duk__.dec('base64', 'Zm9vYmFy'));
+print('' + __duk__.dec('base64', ''));
+print('' + __duk__.dec('base64', 'Zg=='));
+print('' + __duk__.dec('base64', 'Zm8='));
+print('' + __duk__.dec('base64', 'Zm9v'));
+print('' + __duk__.dec('base64', 'Zm9vYg=='));
+print('' + __duk__.dec('base64', 'Zm9vYmE='));
+print('' + __duk__.dec('base64', 'Zm9vYmFy'));
 
 /*===
 Zm9v4Yi0
@@ -69,11 +77,11 @@ foo
 
 t = __duk__.enc('base64', 'f') + __duk__.enc('base64', 'oo');
 print(t);
-print(__duk__.dec('base64', t));
+print('' + __duk__.dec('base64', t));
 
 t = __duk__.enc('base64', 'fo') + __duk__.enc('base64', 'o');
 print(t);
-print(__duk__.dec('base64', t));
+print('' + __duk__.dec('base64', t));
 
 /*===
 f
@@ -87,15 +95,15 @@ fo
  */
 
 try {
-    print(__duk__.dec('base64', 'Zg=='));  // standard
-    print(__duk__.dec('base64', 'Zh=='));  // non-zero unused bits
+    print('' + __duk__.dec('base64', 'Zg=='));  // standard
+    print('' + __duk__.dec('base64', 'Zh=='));  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print(__duk__.dec('base64', 'Zm8='));  // standard
-    print(__duk__.dec('base64', 'Zm9='));  // non-zero unused bits
+    print('' + __duk__.dec('base64', 'Zm8='));  // standard
+    print('' + __duk__.dec('base64', 'Zm9='));  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
@@ -112,13 +120,13 @@ TypeError
  */
 
 try {
-    print(__duk__.dec('base64', 'eHk='));
+    print('' + __duk__.dec('base64', 'eHk='));
 } catch(e) {
     print(e.name);
 }
 
 try {
-    print(__duk__.dec('base64', 'eHk'));
+    print('' + __duk__.dec('base64', 'eHk'));
 } catch(e) {
     print(e.name);
 }
@@ -134,7 +142,7 @@ foo
 
 t = __duk__.enc('base64', 'f') + '\n' + __duk__.enc('base64', 'oo') + '\n';
 print(t);
-print(__duk__.dec('base64', t));
+print('' + __duk__.dec('base64', t));
 
 /*===
 TypeError
@@ -143,7 +151,7 @@ TypeError
 /* Non-base64 characters will not be accepted */
 
 try {
-    print(__duk__.dec('b28?'));
+    print('' + __duk__.dec('b28?'));
 } catch (e) {
     print(e.name);
 }
