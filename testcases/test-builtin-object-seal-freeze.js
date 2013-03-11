@@ -8,6 +8,10 @@ sealed: false, frozen: false, extensible: true
 sealed: true, frozen: false, extensible: false
 sealed: false, frozen: false, extensible: true
 sealed: true, frozen: true, extensible: false
+sealed: false, frozen: false, extensible: true
+sealed: true, frozen: false, extensible: false
+sealed: false, frozen: false, extensible: true
+sealed: true, frozen: true, extensible: false
 ===*/
 
 function basicTest() {
@@ -27,6 +31,26 @@ function basicTest() {
     obj = { foo: 1, bar: 2 };
     p(obj);
     Object.freeze(obj);
+    p(obj);
+
+    // create objects which are already sealed/frozen(), without a
+    // seal() or freeze() call.
+
+    obj = Object.create(Object.prototype, {
+        prop1: { value: 123, writable: true, enumerable: true, configurable: false },
+        prop2: { get: function(){}, set: function(){}, enumerable: true, configurable: false }
+    });
+    p(obj);  // extensible -> not sealed or frozen
+    Object.preventExtensions(obj);  // now sealed, but not frozen (writable property exists)
+    p(obj);
+
+    // sealed and frozen
+    obj = Object.create(Object.prototype, {
+        prop1: { value: 123, writable: false, enumerable: true, configurable: false },
+        prop2: { get: function(){}, set: function(){}, enumerable: true, configurable: false }
+    });
+    p(obj);  // extensible -> not sealed or frozen
+    Object.preventExtensions(obj);  // now sealed and frozen: no writable properties, accessors are OK
     p(obj);
 }
 
