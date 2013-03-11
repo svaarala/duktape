@@ -157,20 +157,22 @@ static double tonumber_string_raw(duk_hthread *thr, duk_hstring *h) {
 	 *  Parse as an actual number (decimal or hex, not infinity)
 	 */
 
-	/* placeholder */
+	/* FIXME: placeholder */
 	{
-		char buf[256];
-		memset(buf, 0, sizeof(buf));
-		memcpy(buf, (char *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
-		buf[sizeof(buf)-1] = 0;
+		char *p, *p_end;
 		double d;
 
-		if (sscanf(buf, "%20lg", &d) == 1) {
-			return d;
-		} else if (sscanf(buf, "%20lf", &d) == 1) {
-			return d;
+		p = (char *) DUK_HSTRING_GET_DATA(h);
+
+		/* would actually need to tolerate whitespace */
+		if (strlen(p) == 0) {
+			return 0.0;
 		}
-		return NAN;
+		d = strtod(p, &p_end);
+		if (p_end == p || p_end != p + strlen(p)) {
+			return NAN;
+		}
+		return d;
 	}
 }
 
