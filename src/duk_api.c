@@ -993,7 +993,7 @@ duk_hobject *duk_get_hobject(duk_context *ctx, int index) {
 
 /* internal */
 duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int class) {
-	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 1);
 	if (h != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h) != class) {
 		h = NULL;
 	}
