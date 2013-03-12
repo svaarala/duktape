@@ -345,7 +345,7 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_string_prototype_index_of(duk_context *ctx) {
+static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_this;
 	duk_hstring *h_search;
@@ -367,9 +367,21 @@ int duk_builtin_string_prototype_index_of(duk_context *ctx) {
 	h_search = duk_to_hstring(ctx, 0);
 	DUK_ASSERT(h_search != NULL);
 	blen_search = DUK_HSTRING_GET_BYTELEN(h_search);
+	q_start = DUK_HSTRING_GET_DATA(h_search);
+	q_blen = (size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 
-	cpos = duk_to_int_clamped(ctx, 1, 0, clen_this);
+	duk_to_number(ctx, 1);
+	if (duk_is_nan(ctx, 1) && is_lastindexof) {
+		/* indexOf: NaN should cause pos to be zero.
+		 * lastIndexOf: NaN should cause pos to be +Infinity
+	 	 * (and later be clamped to len).
+		 */
+		cpos = clen_this;
+	} else {
+		cpos = duk_to_int_clamped(ctx, 1, 0, clen_this);
+	}
 
+	/* Empty searchstring always matches; cpos must be clamped here. */
 	if (blen_search == 0) {
 		duk_push_int(ctx, cpos);
 		return 1;
@@ -377,20 +389,26 @@ int duk_builtin_string_prototype_index_of(duk_context *ctx) {
 
 	bpos = (int) duk_heap_strcache_offset_char2byte(thr, h_this, (duk_u32) cpos);
 
-	q_start = DUK_HSTRING_GET_DATA(h_search);
-	q_blen = (size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 	p_start = DUK_HSTRING_GET_DATA(h_this);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_this) - q_blen;
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_this);
 	p = p_start + bpos;
 
+	/* This loop is optimized for size.  For speed, there should be
+	 * two separate loops, and we should ensure that memcmp() can be
+	 * used without an extra "will searchstring fit" check.  Doing
+	 * the preconditioning for 'p' and 'p_end' is easy but cpos
+	 * must be updated if 'p' is wound back.
+	 */
+
 	firstbyte = q_start[0];
-	while (p <= p_end) {
+	while (p <= p_end && p >= p_start) {
 		t = *p;
 
-		/* p_end is chosen so that q_blen fits into remaining bytes */
-		DUK_ASSERT((size_t) (p_end - p) >= q_blen);
+		/* For Ecmascript strings, this check can only match for
+		 * initial UTF-8 bytes (not continuation bytes).
+		 */
 
-		if (t == firstbyte) {
+		if ((t == firstbyte) && ((p_end - p) >= q_blen)) {
 			if (memcmp(p, q_start, q_blen) == 0) {
 				duk_push_int(ctx, cpos);
 				return 1;
@@ -398,10 +416,22 @@ int duk_builtin_string_prototype_index_of(duk_context *ctx) {
 		}
 
 		/* track cpos while scanning */
-		if ((t & 0xc0) != 0x80) {
-			cpos++;
+		if (is_lastindexof) {
+			/* when going backwards, we decrement cpos 'early';
+			 * 'p' may point to a continuation byte of the char
+			 * at offset 'cpos', but that's OK because we'll
+			 * backtrack all the way to the initial byte.
+			 */
+			if ((t & 0xc0) != 0x80) {
+				cpos--;
+			}
+			p--;
+		} else {
+			if ((t & 0xc0) != 0x80) {
+				cpos++;
+			}
+			p++;
 		}
-		p++;
 	}
 
 	/* Not found.  Empty string case is handled specially above. */
@@ -409,8 +439,13 @@ int duk_builtin_string_prototype_index_of(duk_context *ctx) {
 	return 1;
 }
 
+int duk_builtin_string_prototype_index_of(duk_context *ctx) {
+	return indexof_helper(ctx, 0 /*is_lastindexof*/);
+}
+
 int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* -1 is used because the generated x86 load is shorter than for 1 */
+	return indexof_helper(ctx, -1 /*is_lastindexof*/);
 }
 
 int duk_builtin_string_prototype_match(duk_context *ctx) {
