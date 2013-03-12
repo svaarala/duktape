@@ -217,6 +217,8 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 		end_pos = tmp;
 	}
 
+	DUK_ASSERT(end_pos >= start_pos);
+
 	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
 	return 1;
 }
@@ -258,9 +260,55 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 }
 
 #ifdef DUK_USE_SECTION_B
+/* FIXME: any chance of combining substring() and substr()?  The index handling is different.
+ * The initial part and final duk_substring() call are shared.
+ */
 int duk_builtin_string_prototype_substr(duk_context *ctx) {
-	/* FIXME: use shared helper */
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	duk_hstring *h;
+	int start_pos;
+	int end_pos;
+	int len;
+
+	/* Unlike non-obsolete String calls, substr() will happily coerce
+	 * undefined and null to strings.
+	 */
+	duk_push_this(ctx);
+	duk_to_string(ctx, -1);
+	h = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	len = DUK_HSTRING_GET_CHARLEN(h);
+
+	/* [ start length str ] */
+
+	/* FIXME: int clamping does not support full string range,
+	 * needs type fixing.
+	 */
+
+	/* The implementation for computing of start_pos and end_pos differs
+	 * from the standard algorithm, but is intended to result in the exactly
+	 * same behavior.  This is always obvious.
+	 */
+
+	/* combines steps 2 and 5; -len ensures max() not needed for step 5 */
+	start_pos = duk_to_int_clamped(ctx, 0, -len, len);
+	if (start_pos < 0) {
+		start_pos = len + start_pos;
+	}
+	DUK_ASSERT(start_pos >= 0 && start_pos <= len);
+
+	/* combines steps 3, 6; step 7 is not needed */
+	if (duk_is_undefined(ctx, 1)) {
+		end_pos = len;
+	} else {
+		DUK_ASSERT(start_pos <= len);
+		end_pos = start_pos + duk_to_int_clamped(ctx, 1, 0, len - start_pos);
+	}
+	DUK_ASSERT(start_pos >= 0 && start_pos <= len);
+	DUK_ASSERT(end_pos >= 0 && end_pos <= len);
+	DUK_ASSERT(end_pos >= start_pos);
+
+	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
+	return 1;
 }
 #endif  /* DUK_USE_SECTION_B */
 
