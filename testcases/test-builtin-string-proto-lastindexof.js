@@ -8,6 +8,14 @@ number 0
 number 3
 number -1
 number -1
+number 0
+number 0
+number 0
+number 0
+number -1
+number -1
+number -1
+number -1
 ===*/
 
 print('basic');
@@ -28,6 +36,19 @@ function basicTest() {
     p(str.lastIndexOf('bar', 2));  // not found
 
     p(str.lastIndexOf('quux'));
+
+    // empty string; empty search matches with any initial position,
+    // non-empty search never matches
+
+    str = new String('');
+    p(str.indexOf(''));
+    p(str.indexOf('', -1));
+    p(str.indexOf('', 0));
+    p(str.indexOf('', 1));
+    p(str.indexOf('foo'));
+    p(str.indexOf('foo', -1));
+    p(str.indexOf('foo', 0));
+    p(str.indexOf('foo', 1));
 }
 
 try {
