@@ -144,7 +144,11 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 }
 
 int duk_builtin_string_prototype_concat(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* duk_concat() coerces arguments with ToString() in correct order */
+	duk_push_this_coercible_to_string(ctx);
+	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
+	duk_concat(ctx, duk_get_top(ctx));
+	return 1;
 }
 
 int duk_builtin_string_prototype_index_of(duk_context *ctx) {
