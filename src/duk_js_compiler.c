@@ -5706,7 +5706,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 	             duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx),
 	             comp_ctx->curr_func.is_arguments_shadowed);
 
-	DUK_ASSERT(entry_top == duk_get_top(ctx));
+	DUK_ASSERT_TOP(ctx, entry_top);
 	return;
 
  error_argname:
@@ -6156,7 +6156,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 	memcpy(&comp_ctx->curr_func, &old_func, sizeof(duk_compiler_func));
 	duk_set_top(ctx, entry_top);
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+	DUK_ASSERT_TOP(ctx, entry_top);
 
 	return n_funcs;
 }
@@ -6322,6 +6322,6 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 
 	/* [ ... func ] */
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+	DUK_ASSERT_TOP(ctx, entry_top);
 }
 

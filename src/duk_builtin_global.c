@@ -391,7 +391,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 	int this_to_global = 1;
 	int comp_flags;
 
-	DUK_ASSERT(duk_get_top(ctx) == 1);
+	DUK_ASSERT_TOP(ctx, 1);
 
 	if (thr->callstack_top < 2) {
 		/* callstack_top - 1 --> this function

@@ -7,7 +7,7 @@
 int duk_builtin_number_constructor(duk_context *ctx) {
 	duk_hobject *this;
 
-	DUK_ASSERT(duk_get_top(ctx) == 1);
+	DUK_ASSERT_TOP(ctx, 1);
 
 	if (duk_is_constructor_call(ctx)) {
 		/*

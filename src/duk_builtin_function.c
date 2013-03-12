@@ -35,7 +35,7 @@ int duk_builtin_function_constructor(duk_context *ctx) {
 
 	/* [ body formals ], formals is comma separated list that needs to be parsed */
 
-	DUK_ASSERT(duk_get_top(ctx) == 2);
+	DUK_ASSERT_TOP(ctx, 2);
 
 	/* FIXME: this placeholder is not always correct, but use for now.
 	 * It will fail in corner cases; see test-dev-func-cons-args.js.
@@ -47,7 +47,7 @@ int duk_builtin_function_constructor(duk_context *ctx) {
 	duk_push_string(ctx, "}");
 	duk_concat(ctx, 5);
 
-	DUK_ASSERT(duk_get_top(ctx) == 3);
+	DUK_ASSERT_TOP(ctx, 3);
 
 	/* FIXME: uses internal API */
 
@@ -141,7 +141,7 @@ int duk_builtin_function_prototype_apply(duk_context *ctx) {
 
 	/* FIXME: stack checks */
 
-	DUK_ASSERT(duk_get_top(ctx) == 2);  /* not a vararg function */
+	DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
 
 	duk_push_this(ctx);
 	if (!duk_is_callable(ctx, -1)) {
@@ -149,7 +149,7 @@ int duk_builtin_function_prototype_apply(duk_context *ctx) {
 		goto type_error;
 	}
 	duk_insert(ctx, 0);
-	DUK_ASSERT(duk_get_top(ctx) == 3);
+	DUK_ASSERT_TOP(ctx, 3);
 
 	DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
 	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_tval(ctx, 2));
@@ -177,7 +177,7 @@ int duk_builtin_function_prototype_apply(duk_context *ctx) {
 		}
 	}
 	duk_remove(ctx, 2);
-	DUK_ASSERT(duk_get_top(ctx) == 2 + len);
+	DUK_ASSERT_TOP(ctx, 2 + len);
 
 	/* [ func thisArg arg1 ... argN ] */
 	
@@ -246,7 +246,7 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	}
 
 	/* [ thisArg arg1 ... argN func ]  (thisArg+args == nargs total) */
-	DUK_ASSERT(duk_get_top(ctx) == nargs + 1);
+	DUK_ASSERT_TOP(ctx, nargs + 1);
 
 	/* create bound function object */
 	duk_push_new_object_helper(ctx,

@@ -72,7 +72,7 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 	duk_u32 len;
 	duk_u32 i;
 
-	DUK_ASSERT(duk_get_top(ctx) == 1);  /* nargs is 1 */
+	DUK_ASSERT_TOP(ctx, 1);  /* nargs is 1 */
 	if (duk_is_undefined(ctx, 0)) {
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);

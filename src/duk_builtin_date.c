@@ -1657,7 +1657,7 @@ int duk_builtin_date_prototype_set_year(duk_context *ctx) {
 	 * varargs function) only the year will be set.
 	 */
 	 
-	DUK_ASSERT(duk_get_top(ctx) == 1);
+	DUK_ASSERT_TOP(ctx, 1);
 	return SET_PART(ctx, FLAG_NAN_TO_ZERO | FLAG_YEAR_FIXUP, 3);
 }
 #endif  /* DUK_USE_SECTION_B */

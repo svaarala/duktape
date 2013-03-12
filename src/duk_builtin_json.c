@@ -977,7 +977,7 @@ static void json_enc_object(duk_json_enc_ctx *js_ctx) {
 
 	json_enc_objarr_shared_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+	DUK_ASSERT_TOP(ctx, entry_top);
 }
 
 /* The JA(value) operation: encode array.
@@ -1041,7 +1041,7 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 
 	json_enc_objarr_shared_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+	DUK_ASSERT_TOP(ctx, entry_top);
 }
 
 /* The Str(key, holder) operation: encode value, steps 1-4.
@@ -1373,7 +1373,7 @@ int duk_builtin_json_object_parse(duk_context *ctx) {
 		/* FIXME: could be made constant */
 		js_ctx->idx_reviver = 1;
 
-		DUK_ASSERT(duk_get_top(ctx) == 3);
+		DUK_ASSERT_TOP(ctx, 3);
 
 		duk_push_new_object(ctx);
 		duk_dup(ctx, -2);  /* -> [ ... val root val ] */

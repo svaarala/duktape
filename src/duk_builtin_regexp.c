@@ -21,7 +21,7 @@ int duk_builtin_regexp_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_pattern;
 
-	DUK_ASSERT(duk_get_top(ctx) == 2);
+	DUK_ASSERT_TOP(ctx, 2);
 	h_pattern = duk_get_hobject(ctx, 0);
 
 	if (!duk_is_constructor_call(ctx) &&

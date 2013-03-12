@@ -252,10 +252,10 @@ int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
 }
 
 int duk_builtin_string_prototype_trim(duk_context *ctx) {
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 	duk_push_this_coercible_to_string(ctx);
 	duk_trim(ctx, 0);
-	DUK_ASSERT(duk_get_top(ctx) == 1);
+	DUK_ASSERT_TOP(ctx, 1);
 	return 1;
 }
 

@@ -71,7 +71,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 	DUK_DDPRINT("create empty built-ins");
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		int class_num;
 		int len = -1;
@@ -445,7 +445,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 	duk_pop_n(ctx, DUK_NUM_BUILTINS);
-	DUK_ASSERT(duk_get_top(ctx) == 0);
+	DUK_ASSERT_TOP(ctx, 0);
 }
 
 void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to) {

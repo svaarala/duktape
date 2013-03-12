@@ -61,7 +61,7 @@ int duk_builtin_duk_object_get_finalizer(duk_context *ctx) {
 }
 
 int duk_builtin_duk_object_set_finalizer(duk_context *ctx) {
-	DUK_ASSERT(duk_get_top(ctx) == 2);
+	DUK_ASSERT_TOP(ctx, 2);
 	(void) duk_put_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);  /* XXX: check value? */
 	return 0;
 }
