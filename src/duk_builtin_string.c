@@ -4,6 +4,10 @@
 
 #include "duk_internal.h"
 
+/*
+ *  Constructor
+ */
+
 int duk_builtin_string_constructor(duk_context *ctx) {
 	/* String constructor needs to distinguish between an argument not given at all
 	 * vs. given as 'undefined'.  We're a vararg function to handle this properly.
@@ -56,6 +60,10 @@ int duk_builtin_string_constructor_from_char_code(duk_context *ctx) {
 	return 1;
 }
 
+/*
+ *  toString(), valueOf()
+ */
+
 int duk_builtin_string_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
@@ -93,6 +101,10 @@ int duk_builtin_string_prototype_value_of(duk_context *ctx) {
 	/* FIXME: can use same function */
 	return duk_builtin_string_prototype_to_string(ctx);
 }
+
+/*
+ *  Character and charcode access
+ */
 
 int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 	int pos;
@@ -145,45 +157,11 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_string_prototype_concat(duk_context *ctx) {
-	/* duk_concat() coerces arguments with ToString() in correct order */
-	duk_push_this_coercible_to_string(ctx);
-	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
-	duk_concat(ctx, duk_get_top(ctx));
-	return 1;
-}
+/*
+ *  substring(), substr(), slice()
+ */
 
-int duk_builtin_string_prototype_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_match(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_replace(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_search(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_slice(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_split(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
+/* FIXME: any chance of merging these three similar algorithms? */
 
 int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	duk_hstring *h;
@@ -223,46 +201,7 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	return 1;
 }
 
-static int caseconv_helper(duk_context *ctx, int uppercase) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-
-	duk_push_this_coercible_to_string(ctx);
-	duk_unicode_case_convert_string(thr, uppercase);
-	return 1;
-}
-
-int duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
-	return caseconv_helper(ctx, 0 /*uppercase*/);
-}
-
-int duk_builtin_string_prototype_to_upper_case(duk_context *ctx) {
-	return caseconv_helper(ctx, 1 /*uppercase*/);
-}
-
-int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
-	/* Currently no locale specific case conversion */
-	/* FIXME: use same native function */
-	return duk_builtin_string_prototype_to_lower_case(ctx);
-}
-
-int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
-	/* Currently no locale specific case conversion */
-	/* FIXME: use same native function */
-	return duk_builtin_string_prototype_to_upper_case(ctx);
-}
-
-int duk_builtin_string_prototype_trim(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);
-	duk_push_this_coercible_to_string(ctx);
-	duk_trim(ctx, 0);
-	DUK_ASSERT_TOP(ctx, 1);
-	return 1;
-}
-
 #ifdef DUK_USE_SECTION_B
-/* FIXME: any chance of combining substring() and substr()?  The index handling is different.
- * The initial part and final duk_substring() call are shared.
- */
 int duk_builtin_string_prototype_substr(duk_context *ctx) {
 	duk_hstring *h;
 	int start_pos;
@@ -311,4 +250,126 @@ int duk_builtin_string_prototype_substr(duk_context *ctx) {
 	return 1;
 }
 #endif  /* DUK_USE_SECTION_B */
+
+int duk_builtin_string_prototype_slice(duk_context *ctx) {
+	duk_hstring *h;
+	int start_pos;
+	int end_pos;
+	int len;
+
+	duk_push_this_coercible_to_string(ctx);
+	h = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	len = DUK_HSTRING_GET_CHARLEN(h);
+
+	/* [ start end str ] */
+
+	/* FIXME: int clamping does not support full string range,
+	 * needs type fixing.
+	 */
+
+	start_pos = duk_to_int_clamped(ctx, 0, -len, len);
+	if (start_pos < 0) {
+		start_pos = len + start_pos;
+	}
+	if (duk_is_undefined(ctx, 1)) {
+		end_pos = len;
+	} else {
+		end_pos = duk_to_int_clamped(ctx, 1, -len, len);
+		if (end_pos < 0) {
+			end_pos = len + end_pos;
+		}
+	}
+	DUK_ASSERT(start_pos >= 0 && start_pos <= len);
+	DUK_ASSERT(end_pos >= 0 && end_pos <= len);
+
+	if (end_pos < start_pos) {
+		end_pos = start_pos;
+	}
+
+	DUK_ASSERT(end_pos >= start_pos);
+
+	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
+	return 1;
+}
+
+/*
+ *  Case conversion
+ */
+
+static int caseconv_helper(duk_context *ctx, int uppercase) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+
+	duk_push_this_coercible_to_string(ctx);
+	duk_unicode_case_convert_string(thr, uppercase);
+	return 1;
+}
+
+int duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
+	return caseconv_helper(ctx, 0 /*uppercase*/);
+}
+
+int duk_builtin_string_prototype_to_upper_case(duk_context *ctx) {
+	return caseconv_helper(ctx, 1 /*uppercase*/);
+}
+
+int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
+	/* Currently no locale specific case conversion */
+	/* FIXME: use same native function */
+	return duk_builtin_string_prototype_to_lower_case(ctx);
+}
+
+int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
+	/* Currently no locale specific case conversion */
+	/* FIXME: use same native function */
+	return duk_builtin_string_prototype_to_upper_case(ctx);
+}
+
+/*
+ *  Various
+ */
+
+int duk_builtin_string_prototype_concat(duk_context *ctx) {
+	/* duk_concat() coerces arguments with ToString() in correct order */
+	duk_push_this_coercible_to_string(ctx);
+	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
+	duk_concat(ctx, duk_get_top(ctx));
+	return 1;
+}
+
+int duk_builtin_string_prototype_index_of(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_match(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_replace(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_search(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_split(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+}
+
+int duk_builtin_string_prototype_trim(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 0);
+	duk_push_this_coercible_to_string(ctx);
+	duk_trim(ctx, 0);
+	DUK_ASSERT_TOP(ctx, 1);
+	return 1;
+}
 
