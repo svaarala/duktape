@@ -98,6 +98,7 @@ int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 	int pos;
 
 	/* FIXME: faster implementation */
+	/* FIXME: handling int values outside C int range */
 
 	duk_push_this_coercible_to_string(ctx);
 	pos = duk_to_int(ctx, 0);
@@ -121,6 +122,7 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 
+	/* FIXME: need clamped check or clamp limits [-1, len+1] */
 	pos = duk_to_int(ctx, 0);
 	if (pos < 0 || pos >= DUK_HSTRING_GET_CHARLEN(h)) {
 		duk_push_number(ctx, NAN);  /* FIXME: best constant for NAN? */
@@ -196,32 +198,18 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 
 	/* [ start end str ] */
 
-	/* FIXME: this coercion works incorrectly for number values outside
-	 * integer range; e.g. Number.POSITIVE_INFINITY as an endpoint must
-	 * clamp to 'len'.
-	 *
-	 * FIXME: add a helper for getting a clamped ToInteger() coercion,
-	 * it is also needed for e.g. radix handling.
+	/* FIXME: int clamping does not support full string range,
+	 * needs type fixing.
 	 */
 
-	start_pos = duk_to_int(ctx, 0);
+	start_pos = duk_to_int_clamped(ctx, 0, 0, len);
 	if (duk_is_undefined(ctx, 1)) {
 		end_pos = len;
 	} else {
-		end_pos = duk_to_int(ctx, 1);
+		end_pos = duk_to_int_clamped(ctx, 1, 0, len);
 	}
-
-	if (start_pos < 0) {
-		start_pos = 0;
-	} else if (start_pos >= len) {
-		start_pos = len;
-	}
-
-	if (end_pos < 0) {
-		end_pos = 0;
-	} else if (end_pos >= len) {
-		end_pos = len;
-	}
+	DUK_ASSERT(start_pos >= 0 && start_pos <= len);
+	DUK_ASSERT(end_pos >= 0 && end_pos <= len);
 
 	if (start_pos > end_pos) {
 		int tmp = start_pos;

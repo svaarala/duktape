@@ -42,6 +42,7 @@ duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, int index);
  */
 
 duk_hstring *duk_to_hstring(duk_context *ctx, int index);
+int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval);
 
 duk_hstring *duk_require_hstring(duk_context *ctx, int index);
 duk_hobject *duk_require_hobject(duk_context *ctx, int index);

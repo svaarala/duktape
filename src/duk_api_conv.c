@@ -257,6 +257,34 @@ const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 	return duk_require_lstring(ctx, index, out_len);
 }
 
+/* FIXME: other variants like uint, u32 etc */
+int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	duk_tval tv_temp;
+	double d;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_require_tval(ctx, index);
+	DUK_ASSERT(tv != NULL);
+	d = duk_js_tointeger(thr, tv);  /* E5 Section 9.4, ToInteger() */
+
+	if (d <= (double) minval) {
+		d = (double) minval;
+	} else if (d >= (double) maxval) {
+		d = (double) maxval;
+	}
+
+	/* relookup in case duk_js_tointeger() ends up e.g. coercing an object */
+	tv = duk_require_tval(ctx, index);
+	DUK_TVAL_SET_TVAL(&tv_temp, tv);
+	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_temp);
+
+	return (int) d;
+}
+
 static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
 	double d;
 	int c;
