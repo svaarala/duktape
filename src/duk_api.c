@@ -1689,6 +1689,7 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 
 #define  PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
 #define  PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
+#define  PUSH_THIS_FLAG_TO_STRING    (1 << 2)
 
 static void push_this_helper(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -1721,6 +1722,8 @@ static void push_this_helper(duk_context *ctx, int flags) {
 
 	if (flags & PUSH_THIS_FLAG_TO_OBJECT) {
 		duk_to_object(ctx, -1);
+	} else if (flags & PUSH_THIS_FLAG_TO_STRING) {
+		duk_to_string(ctx, -1);
 	}
 
 	return;
@@ -1737,8 +1740,14 @@ void duk_push_this_check_object_coercible(duk_context *ctx) {
 	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
 }
 
-void duk_push_this_to_object(duk_context *ctx) {
-	push_this_helper(ctx, PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
+void duk_push_this_coercible_to_object(duk_context *ctx) {
+	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
+	                      PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
+}
+
+void duk_push_this_coercible_to_string(duk_context *ctx) {
+	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
+	                      PUSH_THIS_FLAG_TO_STRING /*flags*/);
 }
 
 void duk_push_current_function(duk_context *ctx) {

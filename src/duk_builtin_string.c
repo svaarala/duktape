@@ -98,11 +98,8 @@ int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 	int pos;
 
 	/* FIXME: faster implementation */
-	/* FIXME: refactor shared parts, like "push_this + objectcoercible + to_string" */
-	/* FIXME: CheckObjectCoercible check; call a helper */
 
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, -1);
+	duk_push_this_coercible_to_string(ctx);
 	pos = duk_to_int(ctx, 0);
 	duk_substring(ctx, pos, pos + 1);
 	return 1;
@@ -117,14 +114,10 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	duk_u32 cp;
 
 	/* FIXME: faster implementation */
-	/* FIXME: refactor shared parts, like "push_this + objectcoercible + to_string" */
-	/* FIXME: CheckObjectCoercible check missing */
-	/* FIXME: probably want in the API too */
 
 	DUK_DDDPRINT("arg=%!T", duk_get_tval(ctx, 0));
 
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, -1);
+	duk_push_this_coercible_to_string(ctx);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 
@@ -192,12 +185,7 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	int end_pos;
 	int len;
 
-	/* FIXME: CheckObjectCoercible check missing */
-	/* FIXME: refactor shared parts, like "push_this + objectcoercible + to_string" */
-	/* FIXME: probably want in the API too */
-
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, -1);
+	duk_push_this_coercible_to_string(ctx);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	len = DUK_HSTRING_GET_CHARLEN(h);
@@ -241,40 +229,37 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
+static int caseconv_helper(duk_context *ctx, int uppercase) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, -1);
-
-	duk_unicode_case_convert_string(thr, 0 /*uppercase*/);
+	duk_push_this_coercible_to_string(ctx);
+	duk_unicode_case_convert_string(thr, uppercase);
 	return 1;
 }
 
-int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
-	/* FIXME */
-	return duk_builtin_string_prototype_to_lower_case(ctx);
+int duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
+	return caseconv_helper(ctx, 0 /*uppercase*/);
 }
 
 int duk_builtin_string_prototype_to_upper_case(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+	return caseconv_helper(ctx, 1 /*uppercase*/);
+}
 
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, -1);
-
-	duk_unicode_case_convert_string(thr, 1 /*uppercase*/);
-	return 1;
+int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
+	/* Currently no locale specific case conversion */
+	/* FIXME: use same native function */
+	return duk_builtin_string_prototype_to_lower_case(ctx);
 }
 
 int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
-	/* FIXME */
+	/* Currently no locale specific case conversion */
+	/* FIXME: use same native function */
 	return duk_builtin_string_prototype_to_upper_case(ctx);
 }
 
 int duk_builtin_string_prototype_trim(duk_context *ctx) {
 	DUK_ASSERT(duk_get_top(ctx) == 0);
-	duk_push_this_check_object_coercible(ctx);
-	duk_to_string(ctx, 0);
+	duk_push_this_coercible_to_string(ctx);
 	duk_trim(ctx, 0);
 	DUK_ASSERT(duk_get_top(ctx) == 1);
 	return 1;
@@ -282,6 +267,7 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 
 #ifdef DUK_USE_SECTION_B
 int duk_builtin_string_prototype_substr(duk_context *ctx) {
+	/* FIXME: use shared helper */
 	return DUK_RET_UNIMPLEMENTED_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */

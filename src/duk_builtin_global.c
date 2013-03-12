@@ -1,5 +1,5 @@
 /*
- *  Global object built-in.
+ *  Global object built-ins
  */
 
 #include "duk_internal.h"
