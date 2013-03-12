@@ -16,15 +16,18 @@ basic
 number 1
 number 0
 number -1
-number -1
-number -1
-number 0
-number 1
-number -1
 number 1
 number 1
 number 0
 number -1
+number -1
+number 1
+number 1
+number 0
+number -1
+number -1
+number 1
+number 0
 number -1
 ===*/
 
@@ -61,6 +64,11 @@ function basicTest() {
     test('foo\u1234bar\u0900', 'foo\u1234bar\u0900');
     test('foo\u1234bar\u0900', 'foo\u1234bar\u0901');
     test('foo\u1234bar\u0900', 'foo\u1234bar\u3456');
+
+    // length cases
+    test('xx', 'x');
+    test('xx', 'xx');
+    test('xx', 'xxx');
 }
 
 try {
@@ -94,8 +102,8 @@ number 0
 number 1
 number -1
 number 0
-number -1
 number 1
+number -1
 argument
 number 0
 number -1
@@ -119,8 +127,8 @@ number 0
 number -1
 number 1
 number 0
-number 1
 number -1
+number 1
 ===*/
 
 /* Argument and this coercion */
