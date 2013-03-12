@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check the implementation of Function built-in
+desc: |-
+  The current implementation should cover all the properties; ensure
+  testcases are good enough and check the implementation.
+type: :task
+component: duk
+release: v0.5
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-12 21:59:00.524166 Z
+references: []
+
+id: 285740d8ebb4c545123b555089fe08e4ded2b2e0
+log_events: 
+- - 2013-03-12 21:59:00.727172 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
+- - 2013-03-12 22:02:39.412925 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.5 from v0.4
+  - ""

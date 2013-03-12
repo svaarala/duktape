@@ -58,3 +58,12 @@ releases:
     - sva <sami.vaarala@poplatek.fi>
     - created
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.6
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2013-03-12 22:06:52.926144 Z
+    - sva <sami.vaarala@poplatek.fi>
+    - created
+    - ""
