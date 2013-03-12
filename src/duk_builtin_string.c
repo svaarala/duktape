@@ -399,9 +399,19 @@ int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
 	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
 	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
 
-	rc = strncmp((const char *) DUK_HSTRING_GET_DATA(h1),
-	             (const char *) DUK_HSTRING_GET_DATA(h2),
-	             prefix_len);
+	/* memcmp() should return zero (equal) for zero length, but avoid
+	 * it because there are some platform specific bugs.  Don't use
+	 * strncmp() because it stops comparing at a NUL.
+	 */
+
+	if (prefix_len == 0) {
+		rc = 0;
+		goto skip_memcmp;
+	}
+	rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
+	            (const char *) DUK_HSTRING_GET_DATA(h2),
+	            prefix_len);
+ skip_memcmp:
 
 	if (rc < 0) {
 		ret = -1;
