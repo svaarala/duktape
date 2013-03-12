@@ -337,15 +337,19 @@ int duk_builtin_string_prototype_concat(duk_context *ctx) {
 	return 1;
 }
 
+int duk_builtin_string_prototype_trim(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 0);
+	duk_push_this_coercible_to_string(ctx);
+	duk_trim(ctx, 0);
+	DUK_ASSERT_TOP(ctx, 1);
+	return 1;
+}
+
 int duk_builtin_string_prototype_index_of(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
-int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
@@ -365,11 +369,61 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
-int duk_builtin_string_prototype_trim(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);
+int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
+	duk_hstring *h1;
+	duk_hstring *h2;
+	size_t h1_len, h2_len, prefix_len;
+	int rc;
+	int ret = 0;
+
+	/* The current implementation of localeCompare() is simply a codepoint
+	 * by codepoint comparison, implemented with a simple string compare
+	 * because UTF-8 should preserve codepoint ordering (assuming valid
+	 * shortest UTF-8 encoding).
+	 *
+	 * The specification requires that the return value must be related
+	 * to the sort order: e.g. negative means that 'this' comes before
+	 * 'that' in sort order.  We assume an ascending sort order.
+	 */
+
+	/* FIXME: could share code with duk_js_ops.c, duk_js_compare_helper */
+
 	duk_push_this_coercible_to_string(ctx);
-	duk_trim(ctx, 0);
-	DUK_ASSERT_TOP(ctx, 1);
+	h1 = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h1 != NULL);
+
+	h2 = duk_to_hstring(ctx, 0);
+	DUK_ASSERT(h2 != NULL);
+
+	h1_len = DUK_HSTRING_GET_BYTELEN(h1);
+	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
+	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
+
+	rc = strncmp((const char *) DUK_HSTRING_GET_DATA(h1),
+	             (const char *) DUK_HSTRING_GET_DATA(h2),
+	             prefix_len);
+
+	if (rc < 0) {
+		ret = -1;
+		goto done;
+	} else if (rc > 0) {
+		ret = 1;
+		goto done;
+	}
+
+	/* prefix matches, lengths matter now */
+	if (h1_len > h2_len) {
+		ret = 1;
+		goto done;
+	} else if (h1_len == h2_len) {
+		DUK_ASSERT(ret == 0);
+		goto done;
+	}
+	ret = -1;
+	goto done;
+
+ done:
+	duk_push_int(ctx, ret);
 	return 1;
 }
 
