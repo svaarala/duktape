@@ -38,6 +38,9 @@ number -1
 number 1
 number 0
 number -1
+number 0
+number -1
+number 1
 ===*/
 
 print('basic');
@@ -77,6 +80,11 @@ function basicTest() {
     test('foo\u0000f', 'foo\u0000e');
     test('foo\u0000f', 'foo\u0000f');
     test('foo\u0000f', 'foo\u0000g');
+
+    // empty strings
+    test('', '');
+    test('', 'foo');
+    test('foo', '');
 }
 
 try {

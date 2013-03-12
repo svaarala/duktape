@@ -11,6 +11,14 @@ true
 false
 true
 false
+true
+true
+false
+false
+false
+true
+false
+true
 ===*/
 
 try {
@@ -22,6 +30,15 @@ try {
     print('' != '');
     print('' === '');
     print('' !== '');
+
+    print('' < 'foo');
+    print('' <= 'foo');
+    print('' > 'foo');
+    print('' >= 'foo');
+    print('' == 'foo');
+    print('' != 'foo');
+    print('' === 'foo');
+    print('' !== 'foo');
 } catch (e) {
     print(e);
 }
