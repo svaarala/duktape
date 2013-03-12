@@ -11,6 +11,12 @@
  *  while V8 apparently returns a different of codepoints (e.g. -11094).
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 basic
 number 1
@@ -29,13 +35,10 @@ number -1
 number 1
 number 0
 number -1
+number 1
+number 0
+number -1
 ===*/
-
-/*---
-{
-    "custom": true
-}
----*/
 
 print('basic');
 
@@ -69,6 +72,11 @@ function basicTest() {
     test('xx', 'x');
     test('xx', 'xx');
     test('xx', 'xxx');
+
+    // embedded NUL characters
+    test('foo\u0000f', 'foo\u0000e');
+    test('foo\u0000f', 'foo\u0000g');
+    test('foo\u0000f', 'foo\u0000h');
 }
 
 try {
