@@ -326,24 +326,8 @@ int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
 }
 
 /*
- *  Various
+ *  indexOf() and lastIndexOf()
  */
-
-int duk_builtin_string_prototype_concat(duk_context *ctx) {
-	/* duk_concat() coerces arguments with ToString() in correct order */
-	duk_push_this_coercible_to_string(ctx);
-	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
-	duk_concat(ctx, duk_get_top(ctx));
-	return 1;
-}
-
-int duk_builtin_string_prototype_trim(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);
-	duk_push_this_coercible_to_string(ctx);
-	duk_trim(ctx, 0);
-	DUK_ASSERT_TOP(ctx, 1);
-	return 1;
-}
 
 static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -448,19 +432,170 @@ int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
 	return indexof_helper(ctx, -1 /*is_lastindexof*/);
 }
 
-int duk_builtin_string_prototype_match(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
+/*
+ *  Various
+ */
 
-int duk_builtin_string_prototype_replace(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+static void to_regexp_helper(duk_context *ctx, int index, int force_new) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h;
+
+	/* Shared helper for match() steps 3-4, search() steps 3-4. */
+
+	DUK_ASSERT(index >= 0);
+
+	if (force_new) {
+		goto do_new;
+	}
+
+	h = duk_get_hobject_with_class(ctx, index, DUK_HOBJECT_CLASS_REGEXP);
+	if (!h) {
+		goto do_new;
+	}
+	return;
+
+ do_new:
+	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_REGEXP_CONSTRUCTOR]);
+	duk_dup(ctx, index);
+	duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
+	duk_replace(ctx, index);
 }
 
 int duk_builtin_string_prototype_search(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+
+	/* Easiest way to implement the search required by the specification
+	 * is to do a RegExp test() with lastIndex forced to zero.  To avoid
+	 * side effects on the argument, "clone" the RegExp if a RegExp was
+	 * given as input.
+	 *
+	 * The global flag of the RegExp should be ignored; setting lastIndex
+	 * to zero (which happens when "cloning" the RegExp) should have an
+	 * equivalent effect.
+	 */
+
+	DUK_ASSERT_TOP(ctx, 1);
+	duk_push_this_coercible_to_string(ctx);  /* at index 1 */
+	to_regexp_helper(ctx, 0 /*index*/, 1 /*force_new*/);
+
+	/* stack[0] = regexp
+	 * stack[1] = string
+	 */
+
+	/* Avoid using RegExp.prototype methods, as they're writable and
+	 * configurable.
+	 */
+
+	duk_dup(ctx, 0);
+	duk_dup(ctx, 1);  /* [ ... re_obj input ] */
+	duk_regexp_match(thr);  /* -> [ ... res_obj ] */
+
+	if (!duk_is_object(ctx, -1)) {
+		duk_push_int(ctx, -1);
+		return 1;
+	}
+
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INDEX);
+	DUK_ASSERT(duk_is_number(ctx, -1));
+	return 1;
+}
+
+int duk_builtin_string_prototype_match(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	int global;
+	int prev_last_index;
+	int this_index;
+	int arr_idx;
+
+	DUK_ASSERT_TOP(ctx, 1);
+	duk_push_this_coercible_to_string(ctx);
+	to_regexp_helper(ctx, 0 /*index*/, 0 /*force_new*/);
+	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_GLOBAL);
+	DUK_ASSERT(duk_is_boolean(ctx, -1));  /* 'global' is non-configurable and non-writable */
+	global = duk_get_boolean(ctx, -1);
+	duk_pop(ctx);
+	DUK_ASSERT_TOP(ctx, 2);
+
+	/* stack[0] = regexp
+	 * stack[1] = string
+	 */
+
+	if (!global) {
+		duk_regexp_match(thr);  /* -> [ res_obj ] */
+		return 1;  /* return 'res_obj' */
+	}
+
+	/* Global case is more complex. */
+
+	/* [ regexp string ] */
+
+	duk_push_int(ctx, 0);
+	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+	duk_push_new_array(ctx);
+
+	/* [ regexp string res_arr ] */
+
+	prev_last_index = 0;
+	arr_idx = 0;
+
+	for (;;) {
+		duk_dup(ctx, 0);
+		duk_dup(ctx, 1);
+		duk_regexp_match(thr);  /* -> [ ... regexp string ] -> [ ... res_obj ] */
+
+		if (!duk_is_object(ctx, -1)) {
+			duk_pop(ctx);
+			break;
+		}
+
+		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+		DUK_ASSERT(duk_is_number(ctx, -1));
+		this_index = duk_get_int(ctx, -1);
+		duk_pop(ctx);
+
+		if (this_index == prev_last_index) {
+			this_index++;
+			duk_push_int(ctx, this_index);
+			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+		}
+		prev_last_index = this_index;
+
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ZERO);  /* match string */
+		duk_put_prop_index(ctx, 2, arr_idx);
+		arr_idx++;
+		duk_pop(ctx);  /* res_obj */
+	}
+
+	if (arr_idx == 0) {
+		duk_push_null(ctx);
+	}
+
+	return 1;  /* return 'res_arr' or 'null' */
+}
+
+int duk_builtin_string_prototype_concat(duk_context *ctx) {
+	/* duk_concat() coerces arguments with ToString() in correct order */
+	duk_push_this_coercible_to_string(ctx);
+	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
+	duk_concat(ctx, duk_get_top(ctx));
+	return 1;
+}
+
+int duk_builtin_string_prototype_trim(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 0);
+	duk_push_this_coercible_to_string(ctx);
+	duk_trim(ctx, 0);
+	DUK_ASSERT_TOP(ctx, 1);
+	return 1;
+}
+
+int duk_builtin_string_prototype_replace(duk_context *ctx) {
+	duk_push_this_coercible_to_string(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_string_prototype_split(duk_context *ctx) {
+	duk_push_this_coercible_to_string(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
