@@ -75,8 +75,8 @@ function basicTest() {
 
     // embedded NUL characters
     test('foo\u0000f', 'foo\u0000e');
+    test('foo\u0000f', 'foo\u0000f');
     test('foo\u0000f', 'foo\u0000g');
-    test('foo\u0000f', 'foo\u0000h');
 }
 
 try {
