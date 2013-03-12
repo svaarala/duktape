@@ -346,7 +346,67 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 }
 
 int duk_builtin_string_prototype_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_this;
+	duk_hstring *h_search;
+	int clen_this;
+	int blen_search;
+	int cpos;
+	int bpos;
+	duk_u8 *p_start, *p_end, *p;
+	duk_u8 *q_start;
+	size_t q_blen;
+	duk_u8 firstbyte;
+	duk_u8 t;
+
+	duk_push_this_coercible_to_string(ctx);
+	h_this = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h_this != NULL);
+	clen_this = DUK_HSTRING_GET_CHARLEN(h_this);
+
+	h_search = duk_to_hstring(ctx, 0);
+	DUK_ASSERT(h_search != NULL);
+	blen_search = DUK_HSTRING_GET_BYTELEN(h_search);
+
+	cpos = duk_to_int_clamped(ctx, 1, 0, clen_this);
+
+	if (blen_search == 0) {
+		duk_push_int(ctx, cpos);
+		return 1;
+	}
+
+	bpos = (int) duk_heap_strcache_offset_char2byte(thr, h_this, (duk_u32) cpos);
+
+	q_start = DUK_HSTRING_GET_DATA(h_search);
+	q_blen = (size_t) DUK_HSTRING_GET_BYTELEN(h_search);
+	p_start = DUK_HSTRING_GET_DATA(h_this);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_this) - q_blen;
+	p = p_start + bpos;
+
+	firstbyte = q_start[0];
+	while (p <= p_end) {
+		t = *p;
+
+		/* p_end is chosen so that q_blen fits into remaining bytes */
+		DUK_ASSERT((size_t) (p_end - p) >= q_blen);
+
+		if (t == firstbyte) {
+			if (memcmp(p, q_start, q_blen) == 0) {
+				duk_push_int(ctx, cpos);
+				return 1;
+			}
+		}
+
+		/* track cpos while scanning */
+		if ((t & 0xc0) != 0x80) {
+			cpos++;
+		}
+		p++;
+	}
+
+	/* Not found.  Empty string case is handled specially above. */
+	duk_push_int(ctx, -1);
+	return 1;
 }
 
 int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
