@@ -223,37 +223,69 @@ try {
 
 /*===
 regexp details
-non-global
-re: source foo global false ignoreCase false multiline false lastIndex 0
+non-global, match
+re: source foo global false ignoreCase false multiline false lastIndex number 0
+re: source foo global false ignoreCase false multiline false lastIndex string 123
 replace func
-re: source foo global false ignoreCase false multiline false lastIndex 0
+re: source foo global false ignoreCase false multiline false lastIndex string 123
 bar[repl]barfoo
-re: source foo global false ignoreCase false multiline false lastIndex 0
-global
-re: source foo global true ignoreCase false multiline false lastIndex 0
+re: source foo global false ignoreCase false multiline false lastIndex string 123
+non-global, no match
+re: source goo global false ignoreCase false multiline false lastIndex number 0
+re: source goo global false ignoreCase false multiline false lastIndex string 123
+barfoobarfoo
+re: source goo global false ignoreCase false multiline false lastIndex number 0
+global, match
+re: source foo global true ignoreCase false multiline false lastIndex number 0
+re: source foo global true ignoreCase false multiline false lastIndex string 123
 replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
+re: source foo global true ignoreCase false multiline false lastIndex number 6
 replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
+re: source foo global true ignoreCase false multiline false lastIndex number 12
 replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
+re: source foo global true ignoreCase false multiline false lastIndex number 18
 bar[repl]bar[repl]bar[repl]bar
-re: source foo global true ignoreCase false multiline false lastIndex 0
-global, init lastIndex
-re: source foo global true ignoreCase false multiline false lastIndex 0
-re: source foo global true ignoreCase false multiline false lastIndex 6
-replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
-replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
-replace func
-re: source foo global true ignoreCase false multiline false lastIndex 0
-bar[repl]bar[repl]bar[repl]bar
-re: source foo global true ignoreCase false multiline false lastIndex 0
+re: source foo global true ignoreCase false multiline false lastIndex number 0
+global, no match
+re: source goo global true ignoreCase false multiline false lastIndex number 0
+re: source goo global true ignoreCase false multiline false lastIndex string 123
+barfoobarfoobarfoobar
+re: source goo global true ignoreCase false multiline false lastIndex number 0
 ===*/
 
 /* RegExp details, especially how the RegExp instance properties are
  * changed during non-global or global matching.
+ *
+ * lastIndex handling:
+ *
+ *   - If RegExp is not global, E5.1 Section 15.5.4.11 is quite vague
+ *     on how lastIndex should behave.  If the normal RegExp exec()
+ *     algorithm is used, lastIndex is not updated on a match, but is
+ *     written to zero if no match is found (E5.1 Section 15.10.6.2,
+ *     step 9.a.i).
+ *
+ *   - If RegExp is global, E5.1 Section 15.5.4.11 indicates that matching
+ *     should proceed similar to what match() does.  Match calls RegExp
+ *     exec() which, for global RegExps, updates lastIndex on every call.
+ *     On successful matches, lastIndex points to the next character after
+ *     the matching part.  On unsuccessful matches, lastIndex is written
+ *     to zero (E5.1 Section 15.10.6.2).  When matching starts, lastIndex
+ *     is written to zero and any previous value is ignored (and is thus
+ *     never coerced).
+ *
+ * The current implementation will call the replacer while doing the
+ * RegExp matching.  This matters for the global case because the replacer
+ * will see the intermediate lastIndex values and will even be able to
+ * interfere with the matching process.  E5.1 Section 15.5.4.11 can also
+ * be read to imply that all matches are first made into some internal
+ * value before making any replacer calls.  In this interpretation the
+ * replacer would see a lastIndex of zero (since the final non-match will
+ * set lastIndex to zero) and although it could tamper with lastIndex, it
+ * couldn't affect the replacement process any more.
+ *
+ * The current test case tests for the former interpretation, i.e. that
+ * replacer is called during matching.  Note that at least V8 deviates
+ * from this interpretation.
  */
 
 print('regexp details');
@@ -263,12 +295,14 @@ function regexpDetailsTest() {
 
     function dumpRe(r) {
         print('re:', 'source', r.source, 'global', r.global, 'ignoreCase', r.ignoreCase,
-              'multiline', r.multiline, 'lastIndex', r.lastIndex);
+              'multiline', r.multiline, 'lastIndex', typeof r.lastIndex, r.lastIndex);
     }
 
-    // non-global case
-    print('non-global');
+    // non-global case with a match: lastIndex is not touched
+    print('non-global, match');
     re = /foo/;
+    dumpRe(re);
+    re.lastIndex = '123';
     dumpRe(re);
     print('barfoobarfoo'.replace(re, function() {
         print('replace func');
@@ -277,9 +311,25 @@ function regexpDetailsTest() {
     }));
     dumpRe(re);
 
-    // global case
-    print('global');
+    // non-global case with no match: lastIndex is written to zero
+    print('non-global, no match');
+    re = /goo/;
+    dumpRe(re);
+    re.lastIndex = '123';
+    dumpRe(re);
+    print('barfoobarfoo'.replace(re, function() {
+        print('replace func');
+        dumpRe(re);
+        return '[repl]';
+    }));
+    dumpRe(re);
+
+    // global case with a matches: lastIndex is updated before every
+    // replacer call, and written to zero at the end
+    print('global, match');
     re = /foo/g;
+    dumpRe(re);
+    re.lastIndex = '123';
     dumpRe(re);
     print('barfoobarfoobarfoobar'.replace(re, function() {
         print('replace func');
@@ -288,11 +338,11 @@ function regexpDetailsTest() {
     }));
     dumpRe(re);
 
-    // global case, init lastIndex to non-zero
-    print('global, init lastIndex');
-    re = /foo/g;
+    // global case with no match: lastIndex is written to zero
+    print('global, no match');
+    re = /goo/g;
     dumpRe(re);
-    re.lastIndex = 6;
+    re.lastIndex = '123';
     dumpRe(re);
     print('barfoobarfoobarfoobar'.replace(re, function() {
         print('replace func');
@@ -300,8 +350,6 @@ function regexpDetailsTest() {
         return '[repl]';
     }));
     dumpRe(re);
-
-    // FIXME: explain behavior a bit
 }
 
 try {
