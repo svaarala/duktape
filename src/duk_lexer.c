@@ -1467,6 +1467,14 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 		break;
 	}
 	case '\\': {
+		/* The E5.1 specification does not seem to allow IdentifierPart characters
+		 * to be used as identity escapes.  Unfortunately this includes '$', which
+		 * cannot be escaped as '\$'; it needs to be escaped e.g. as '\u0024'.
+		 * Many other implementations (including V8 and Rhino, for instance) do
+		 * accept '\$' as a valid identity escape, which is quite pragmatic.
+		 * See: test-regexp-identity-escape-dollar.js.
+		 */
+
 		advtok = ADVTOK(2, DUK_RETOK_ATOM_CHAR);	/* default: char escape (two chars) */
 		if (y == 'b') {
 			advtok = ADVTOK(2, DUK_RETOK_ASSERT_WORD_BOUNDARY);
