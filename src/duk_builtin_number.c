@@ -39,7 +39,9 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 
 		return 0;
 	} else {
-		return DUK_RET_UNIMPLEMENTED_ERROR;
+		/* FIXME: approximate */
+		duk_to_number(ctx, 0);
+		return 1;
 	}
 }
 
