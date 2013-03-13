@@ -88,8 +88,17 @@ function dollarTest() {
          '$70$71$72$73$74$75$76$77$78$79$80$81$82$83$84$85$86$87$88$89' +
          '$90$91$92$93$94$95$96$97$98$99$100');
 
-    // specific test from E5.1 Section 15.5.4.11
-    test("$1,$2", /(\$(\d))/g, "$$1-$1$2");
+    // Specific test form E5.1 Section 15.5.4.11:
+    //
+    // test("$1,$2", /(\$(\d))/g, "$$1-$1$2");
+    //
+    // This test cannot be used as is, because "\$" is not a valid RegExp
+    // identity escape: identity escape characters cannot come from
+    // IdentifierPart; since IdentifierPart includes '$' it must cause a
+    // SyntaxError.  On the other hand, a plain '$' has a special meaning,
+    // so a dollar sign must be encoded as a hex/unicode escape!
+
+    test("$1,$2", /(\u0024(\d))/g, "$$1-$1$2");
 }
 
 try {
