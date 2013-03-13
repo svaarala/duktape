@@ -165,6 +165,19 @@ size_t duk_hbuffer_insert_cstring(duk_hthread *thr, duk_hbuffer_growable *buf, s
 	return len;
 }
 
+size_t duk_hbuffer_insert_hstring(duk_hthread *thr, duk_hbuffer_growable *buf, size_t offset, duk_hstring *str) {
+	size_t len;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(buf != NULL);
+	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(buf));
+
+	len = DUK_HSTRING_GET_BYTELEN(str);
+	duk_hbuffer_insert_bytes(thr, buf, offset, (duk_u8 *) DUK_HSTRING_GET_DATA(str), len);
+	return len;
+}
+
 size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_growable *buf, size_t offset, duk_u32 codepoint) {
 	duk_u8 tmp[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	size_t len;
@@ -238,6 +251,19 @@ size_t duk_hbuffer_append_cstring(duk_hthread *thr, duk_hbuffer_growable *buf, c
 
 	len = strlen(str);
 	duk_hbuffer_insert_bytes(thr, buf, DUK_HBUFFER_GET_SIZE(buf), (duk_u8 *) str, len);
+	return len;
+}
+
+size_t duk_hbuffer_append_hstring(duk_hthread *thr, duk_hbuffer_growable *buf, duk_hstring *str) {
+	size_t len;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(buf != NULL);
+	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(buf));
+
+	len = DUK_HSTRING_GET_BYTELEN(str);
+	duk_hbuffer_insert_bytes(thr, buf, DUK_HBUFFER_GET_SIZE(buf), (duk_u8 *) DUK_HSTRING_GET_DATA(str), len);
 	return len;
 }
 
