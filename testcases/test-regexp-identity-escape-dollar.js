@@ -1,5 +1,7 @@
 /*===
 SyntaxError
+object
+object $
 ===*/
 
 /* E5.1 Section 15.5.4.11 (String.prototype.replace) contains the following
@@ -19,13 +21,34 @@ SyntaxError
  * Because '$' is in IdentifierPart, it cannot be used as a valid identity
  * escape.  The E5.1 replace() example is thus incorrect (the backslash needs
  * to be omitted.
+ *
+ * This is a bit problematic for practical regular expressions: since a '$'
+ * has a special meaning, a literal dollar sign needs to be expressed as a
+ * numeric character escape which is quite awkward.
  */
 
-try {
+function invalidDollarEscape() {
     var re = eval("/\\$/");
     print(typeof re);
     var m = re.exec('foo$bar');
     print(typeof m, m[0]);
+}
+
+function validDollarEscape() {
+    var re = eval("/\\u0024/");
+    print(typeof re);
+    var m = re.exec('foo$bar');
+    print(typeof m, m[0]);
+}
+
+try {
+    invalidDollarEscape();
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    validDollarEscape();
 } catch (e) {
     print(e.name);
 }
