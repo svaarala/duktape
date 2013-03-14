@@ -1,8 +1,30 @@
+
+// FIXME: util
+
+function printCodepoints(x) {
+    var i;
+    var tmp = [];
+    for (i = 0; i < x.length; i++) {
+        tmp.push(x.charCodeAt(i));
+    }
+    print(tmp.join(' '));
+}
+
 /*===
 basic
 fOo
 fOO
 bar-1123 bar-1234 bar-1345
+xfoo
+xfoo
+xfxoxox
+17185 291 50 4660 65244
+17185 291 50 4660 65244
+17185 291 50 17185 65244
+120 9285 120 13654 120 18023
+17185 4660 291 65244
+17185 4660 291 65244
+17185 4660 17185 291 17185 65244 17185
 ===*/
 
 print('basic');
@@ -17,6 +39,37 @@ function basicTest() {
             return 'bar-' + String(Number(cap) + 1000);
         })
     );
+
+    // empty search string; matches once at the beginning
+
+    print('foo'.replace('', 'x'));
+
+    // empty non-global regexp match; matches once at the beginning
+
+    print('foo'.replace(/(?:)/, 'x'));
+
+    // empty global regexp match; matches at the beginning (before first
+    // char), between every char, and after the last char.  Progress
+    // check in the matching process (replace() should perform regexp
+    // matching like match() does, according to E5.1) ensures this
+    // process terminates and matches only once at each point.
+
+    print('foo'.replace(/(?:)/g, 'x'));
+
+    // non-BMP variants of above tests: these are important because
+    // the implementation works with both byte and char offsets
+
+    printCodepoints('\u1234\u0123\u0032\u1234\ufedc'.replace('\u1234', '\u4321'));
+    printCodepoints('\u1234\u0123\u0032\u1234\ufedc'.replace(/\u1234/, '\u4321'));
+    printCodepoints('\u1234\u0123\u0032\u1234\ufedc'.replace(/\u1234/g, '\u4321'));
+    printCodepoints('\u1234\u2345\u1234\u3456\u1234\u4567'.replace(/\u1234(.)/g,
+        function replacer(matchSub, cap, matchOffset, str) {
+            return 'x' + String.fromCharCode(cap.charCodeAt(0) + 0x100);
+        })
+    );
+    printCodepoints('\u1234\u0123\ufedc'.replace('', '\u4321'));
+    printCodepoints('\u1234\u0123\ufedc'.replace(/(?:)/, '\u4321'));
+    printCodepoints('\u1234\u0123\ufedc'.replace(/(?:)/g, '\u4321'));
 }
 
 try {
