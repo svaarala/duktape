@@ -556,7 +556,21 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 			DUK_ASSERT(duk_is_string(ctx, -1));
 			h_match = duk_get_hstring(ctx, -1);
 			DUK_ASSERT(h_match != NULL);
-			duk_pop(ctx);
+			duk_pop(ctx);  /* h_match is borrowed, remains reachable through match_obj */
+
+			if (DUK_HSTRING_GET_BYTELEN(h_match) == 0) {
+				/* This should be equivalent to match() algorithm step 8.f.iii.2:
+				 * detect an empty match and allow it, but don't allow it twice.
+				 */
+				duk_u32 last_index;
+
+				duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+				last_index = duk_get_int(ctx, -1);  /* FIXME: duk_get_uint32() */
+				DUK_DPRINT("empty match, bump lastIndex: %d -> %d", last_index, last_index + 1);
+				duk_pop(ctx);
+				duk_push_int(ctx, last_index + 1);
+				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+			}
 
 			match_caps = duk_get_length(ctx, -1);
 		} else {
@@ -615,7 +629,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 		                         DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff,
 		                         (size_t) (match_start_boff - prev_match_end_boff));
 
-		prev_match_end_boff = match_start_boff + DUK_HSTRING_GET_CHARLEN(h_match);
+		prev_match_end_boff = match_start_boff + DUK_HSTRING_GET_BYTELEN(h_match);
 
 		if (is_repl_func) {
 			int idx_args;
