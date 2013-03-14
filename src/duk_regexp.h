@@ -79,6 +79,7 @@ struct duk_re_compiler_ctx {
 void duk_regexp_compile(duk_hthread *thr);
 void duk_regexp_create_instance(duk_hthread *thr);
 void duk_regexp_match(duk_hthread *thr);
+void duk_regexp_match_force_global(duk_hthread *thr);  /* hacky helper for String.prototype.split() */
 
 #endif  /* DUK_REGEXP_H_INCLUDED */
 

@@ -580,7 +580,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
  *  Output stack: [ ... result ]
  */
 
-void duk_regexp_match(duk_hthread *thr) {
+static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_re_matcher_ctx re_ctx;
 	duk_hobject *h_regexp;
@@ -589,6 +589,7 @@ void duk_regexp_match(duk_hthread *thr) {
 	duk_u8 *pc;
 	duk_u8 *sp;
 	int match = 0;
+	int global;
 	int i;
 	double d;
 	duk_u32 char_offset;
@@ -647,6 +648,8 @@ void duk_regexp_match(duk_hthread *thr) {
 	re_ctx.nsaved = bc_get_u32(&re_ctx, &pc);
 	re_ctx.bytecode = pc;
 
+	global = (force_global || (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL));
+
 	DUK_ASSERT(re_ctx.nsaved >= 2);
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
@@ -690,7 +693,7 @@ void duk_regexp_match(duk_hthread *thr) {
 	d = duk_get_number(ctx, -1);  /* integer, but may be +/- Infinite, +/- zero (not NaN, though) */
 	duk_pop(ctx);
 
-	if (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL) {
+	if (global) {
 		if (d < 0.0 || d > (double) DUK_HSTRING_GET_CHARLEN(h_input)) {
 			/* match fail */
 			char_offset = 0;   /* not really necessary */
@@ -858,7 +861,7 @@ void duk_regexp_match(duk_hthread *thr) {
 
 		/* NB: 'length' property is automatically updated by the array setup loop */
 
-		if (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL) {
+		if (global) {
 			/* global regexp: lastIndex updated on match */
 			duk_push_number(ctx, (double) char_end_offset);
 			duk_put_prop_stridx(ctx, -6, DUK_STRIDX_LAST_INDEX);
@@ -897,6 +900,18 @@ void duk_regexp_match(duk_hthread *thr) {
 	 * a genuine native function.
 	 */
 }
+
+void duk_regexp_match(duk_hthread *thr) {
+	regexp_match_helper(thr, 0 /*force_global*/);
+}
+
+/* This variant is needed by String.prototype.split(); it needs to perform
+ * global-style matching on a cloned RegExp which is potentially non-global.
+ */
+void duk_regexp_match_force_global(duk_hthread *thr) {
+	regexp_match_helper(thr, 1 /*force_global*/);
+}
+
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
