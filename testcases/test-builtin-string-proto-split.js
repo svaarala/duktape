@@ -5,8 +5,9 @@
 basic
 object 3 ["foo"," bar"," quux"]
 object 1 ["foo - undefined - bar"]
-object 2 ["foo - "," - bar"]
+object 1 ["foo - undefined - bar"]
 object 6 ["f","o","o","b","a","r"]
+object 4 97 837 4660 65244
 object 6 ["f","o","o","b","a","r"]
 object 6 ["f","o","o","b","a","r"]
 object 7 ["","","","","","",""]
@@ -20,11 +21,16 @@ object 7 ["foo",";",null," bar",null,","," baz"]
 object 2 ["a","b"]
 object 2 ["","b"]
 object 13 ["A",null,"B","bold","/","B","and",null,"CODE","coded","/","CODE",""]
+object 2 ["foo",""]
+object 1 ["foo"]
+object 2 ["foo",""]
 ===*/
 
 print('basic');
 
 function basicTest() {
+    var t;
+
     // FIXME: JSON dependency
     function p(x) {
         print(typeof x, x.length, JSON.stringify(x));
@@ -44,6 +50,11 @@ function basicTest() {
     // Empty separator splits a string into individual characters
 
     p('foobar'.split(''));
+
+    // Unicode characters cause different processing internally
+
+    t = 'a\u0345\u1234\ufedc'.split('');
+    print(typeof t, t.length, t[0].charCodeAt(0), t[1].charCodeAt(0), t[2].charCodeAt(0), t[3].charCodeAt(0));
 
     // Empty RegExp, also splits into individual characters
 
@@ -83,6 +94,16 @@ function basicTest() {
     // Specific example from spec: note that 'undefined' values join as empty
 
     p('A<B>bold</B>and<CODE>coded</CODE>'.split(/<(\/)?([^<>]+)>/));
+
+    // Trailer is added as an empty string if last match coincides with
+    // the end of the string.
+
+    p('foobar'.split('bar'));
+
+    // Trailer may hit the limit
+
+    p('foobar'.split('bar', 1));  // trailer dropped
+    p('foobar'.split('bar', 2));  // trailer fits
 }
 
 try {
@@ -140,8 +161,8 @@ function limitTest() {
 
     // zero limit
 
-    p('foo'.split(undefined));  // normally returns array with string as is, limit 0 -> return []
-    p('foo'.split(undefined, 0));
+    p('foo'.split(undefined));     // undefined limit -> 2**32-1
+    p('foo'.split(undefined, 0));  // normally returns array with string as is, limit 0 -> return []
 
     // limit, normal case
 
@@ -268,7 +289,7 @@ object 1 ["quux"]
 object 3 ["1","2","3"]
 object 2 ["[object","Object]"]
 object 3 ["foo","bar","quux"]
-object 3 ["foo","bar","quux"]
+object 1 ["fooundefinedbarundefinedquux"]
 object 3 ["foo","bar","quux"]
 object 3 ["foo","bar","quux"]
 object 3 ["foo","bar","quux"]
@@ -321,7 +342,7 @@ function coercionTest() {
     test('foo,bar,quux,baz', ',', '3.9000e0');
 
     // separator coercion
-    test('fooundefinedbarundefinedquux', undefined);
+    test('fooundefinedbarundefinedquux', undefined);   // undefined separator -> return input as only array elem (E5.1 Section 15.4.14, step 10)
     test('foonullbarnullquux', null);
     test('footruebartruequux', true);
     test('foofalsebarfalsequux', false);
