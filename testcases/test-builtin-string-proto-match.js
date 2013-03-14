@@ -7,6 +7,12 @@ object 1 foo 0 foobarfoo
 object true
 object 2 foo foo
 object true
+object 1  0 foobarfoo
+object 1  0 foobarfoo
+object 10 0 0 0 0 0 0 0 0 0 0
+object 1 49 64974 1
+object 1 49 64974 1
+object 7 0 0 0 0 0 0 0
 ===*/
 
 print('basic');
@@ -48,6 +54,37 @@ function basicTest() {
 
     m = s.match(/quux/g);
     print(typeof m, m === null);
+
+    // empty string or empty regexp match (internally the same, because a
+    // string is used to create a regexp matching an empty string) -> match
+    // once at the beginning
+
+    m = s.match('');
+    print(typeof m, m.length, m[0], m.index, m.input);
+    m = s.match(/(?:)/);
+    print(typeof m, m.length, m[0], m.index, m.input);
+
+    // global regexp matching an empty string -> match once between each
+    // character, once before the first char, and once after the last char
+
+    m = s.match(/(?:)/g);
+    print(typeof m, m.length, m[0].length, m[1].length, m[2].length, m[3].length,
+          m[4].length, m[5].length, m[6].length, m[7].length, m[8].length, m[9].length);
+
+    // Some non-BMP tests; important because implementation uses both char
+    // and byte offsets.  These tests are similar to the ones above.
+
+    s = new String('\u1234\u0031\ufdce\u1234\u0031\ufdce');
+
+    m = s.match('\u0031\ufdce');
+    print(typeof m, m.length, m[0].charCodeAt(0), m[0].charCodeAt(1), m.index);
+
+    m = s.match('\u0031.');
+    print(typeof m, m.length, m[0].charCodeAt(0), m[0].charCodeAt(1), m.index);
+
+    m = s.match(/(?:)/g);
+    print(typeof m, m.length, m[0].length, m[1].length, m[2].length, m[3].length,
+          m[4].length, m[5].length, m[6].length);
 }
 
 try {

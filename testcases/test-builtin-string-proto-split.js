@@ -24,6 +24,8 @@ object 13 ["A",null,"B","bold","/","B","and",null,"CODE","coded","/","CODE",""]
 object 2 ["foo",""]
 object 1 ["foo"]
 object 2 ["foo",""]
+object 3 1 291 1 4660 1 65244
+object 3 1 291 1 4660 1 65244
 ===*/
 
 print('basic');
@@ -104,6 +106,23 @@ function basicTest() {
 
     p('foobar'.split('bar', 1));  // trailer dropped
     p('foobar'.split('bar', 2));  // trailer fits
+
+    // Some non-BMP tests; important because both byte and char offsets
+    // are used internally.
+
+    t = '\u0123\u1234\ufedc'.split('');
+    print(typeof t, t.length,
+          t[0].length, t[0].charCodeAt(0),
+          t[1].length, t[1].charCodeAt(0),
+          t[2].length, t[2].charCodeAt(0));
+
+    t = '\u0123\u1234\ufedc'.split(/(?:)/);
+    print(typeof t, t.length,
+          t[0].length, t[0].charCodeAt(0),
+          t[1].length, t[1].charCodeAt(0),
+          t[2].length, t[2].charCodeAt(0));
+
+    // FIXME: add more non-BMP tests
 }
 
 try {
