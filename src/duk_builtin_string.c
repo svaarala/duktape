@@ -441,6 +441,13 @@ int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
  * shared helpers, etc).
  */
 
+/* FIXME: some ideas for refactoring:
+ * - a primitive to convert a string into a regexp matcher (reduces matching
+ *   code at the cost of making matching much slower)
+ * - use replace() as a basic helper for match() and split(), which are both
+ *   much simpler
+ */
+
 int duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
@@ -529,6 +536,8 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 		 *  are made?  See: test-builtin-string-proto-replace.js for discussion.
 		 */
 
+		DUK_ASSERT_TOP(ctx, 4);
+
 		if (is_regexp) {
 			duk_dup(ctx, 0);
 			duk_dup(ctx, 2);
@@ -554,6 +563,8 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 			duk_u8 *p_start, *p_end, *p;   /* input string scan */
 			duk_u8 *q_start;               /* match string */
 			size_t q_blen;
+
+			DUK_ASSERT(!is_global);  /* single match always */
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
@@ -776,6 +787,273 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 }
 
 /*
+ *  split()
+ */
+
+/* FIXME: very messy now, but works */
+/* FIXME: remove unused variables (they are nominally used so compiled doesn't complain) */
+/* FIXME: general cleanup */
+
+int duk_builtin_string_prototype_split(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_input;
+	duk_hstring *h_sep;
+	duk_u32 limit;
+	duk_u32 arr_idx;
+	int is_regexp;
+	int matched;  /* set to 1 if any match exists (needed for empty input special case) */
+	duk_u32 prev_match_end_coff, prev_match_end_boff;
+	duk_u32 match_start_boff, match_start_coff;
+	duk_u32 match_end_boff, match_end_coff;
+
+	duk_push_this_coercible_to_string(ctx);
+	h_input = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h_input != NULL);
+
+	duk_push_new_array(ctx);
+
+	if (duk_is_undefined(ctx, 1)) {
+		limit = 0xffffffffU;
+	} else {
+		limit = duk_to_uint32(ctx, 1);
+	}
+
+	if (limit == 0) {
+		return 1;
+	}
+
+	/* If the separator is a RegExp, make a "clone" of it.  The specification
+	 * algorithm calls [[Match]] directly for specific indices; we emulate this
+	 * by tweaking lastIndex and using a "force global" variant of duk_regexp_match()
+	 * which will use global-style matching even when the RegExp itself is non-global.
+	 */
+
+	if (duk_is_undefined(ctx, 0)) {
+		/* The spec algorithm first does "R = ToString(separator)" before checking
+		 * whether separator is undefined.  Since this is side effect free, we can
+		 * skip the ToString() here.
+		 */
+		duk_dup(ctx, 2);
+		duk_put_prop_index(ctx, 3, 0);
+		return 1;
+	} else if (duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
+		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_REGEXP_CONSTRUCTOR]);
+		duk_dup(ctx, 0);
+		duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
+		duk_replace(ctx, 0);
+		/* lastIndex is initialized to zero by new RegExp() */
+		is_regexp = 1;
+	} else {
+		duk_to_string(ctx, 0);
+		is_regexp = 0;
+	}
+
+	/* stack[0] = separator (string or regexp)
+	 * stack[1] = limit
+	 * stack[2] = input string
+	 * stack[3] = result array
+	 */
+
+	prev_match_end_boff = 0;
+	prev_match_end_coff = 0;
+	arr_idx = 0;
+	matched = 0;
+
+	for (;;) {
+		/*
+		 *  The specification uses RegExp [[Match]] to attempt match at specific
+		 *  offsets.  We don't have such a primitive, so we use an actual RegExp
+		 *  and tweak lastIndex.  Since the RegExp may be non-global, we use a
+		 *  special variant which forces global-like behavior for matching.
+		 */
+
+		DUK_ASSERT_TOP(ctx, 4);
+
+		if (is_regexp) {
+			duk_dup(ctx, 0);
+			duk_dup(ctx, 2);
+			duk_regexp_match_force_global(ctx);  /* [ ... regexp input ] -> [ res_obj ] */
+			if (!duk_is_object(ctx, -1)) {
+				duk_pop(ctx);
+				break;
+			}
+			matched = 1;
+
+			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INDEX);
+			DUK_ASSERT(duk_is_number(ctx, -1));
+			match_start_coff = duk_get_int(ctx, -1);
+			match_start_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
+			duk_pop(ctx);
+
+			if (match_start_coff == DUK_HSTRING_GET_CHARLEN(h_input)) {
+				/* don't allow an empty match at the end of the string */
+				duk_pop(ctx);
+				break;
+			}
+
+			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+			DUK_ASSERT(duk_is_number(ctx, -1));
+			match_end_coff = duk_get_int(ctx, -1);
+			match_end_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
+			duk_pop(ctx);
+
+			/* empty match -> bump and continue */
+			if (prev_match_end_boff == match_end_boff) {
+				duk_push_int(ctx, match_end_boff + 1);
+				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+				duk_pop(ctx);
+				continue;
+			}
+		} else {
+			duk_u8 *p_start, *p_end, *p;   /* input string scan */
+			duk_u8 *q_start;               /* match string */
+			size_t q_blen, q_clen;
+
+			p_start = DUK_HSTRING_GET_DATA(h_input);
+			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+			p = p_start + prev_match_end_boff;
+
+			h_sep = duk_get_hstring(ctx, 0);
+			DUK_ASSERT(h_sep != NULL);
+			q_start = DUK_HSTRING_GET_DATA(h_sep);
+			q_blen = DUK_HSTRING_GET_BYTELEN(h_sep);
+			q_clen = DUK_HSTRING_GET_CHARLEN(h_sep);
+
+			p_end -= q_blen;  /* ensure full memcmp() fits in while */
+
+			match_start_coff = prev_match_end_coff;
+
+			if (q_blen == 0) {
+				/* Handle empty separator case: it will always match, and always
+				 * triggers the check in step 13.c.iii initially.  Note that we
+				 * must skip to either end of string or start of first codepoint,
+				 * skipping over any continuation bytes!
+				 *
+				 * Don't allow an empty string to match at the end of the input.
+				 */
+
+				matched = 1;  /* empty separator can always match */
+
+				match_start_coff++;
+				p++;
+				while (p < p_end) {
+					if ((p[0] & 0xc0) != 0x80) {
+						goto found;
+					}
+					p++;
+				}
+				goto not_found;
+			}
+
+			DUK_ASSERT(q_blen > 0 && q_clen > 0);
+			while (p <= p_end) {
+				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
+				if (memcmp((void *) p, (void *) q_start, (size_t) q_blen) == 0) {
+					/* never an empty match, so step 13.c.iii can't be triggered */
+					goto found;
+				}
+
+				/* track utf-8 non-continuation bytes */
+				if ((p[0] & 0xc0) != 0x80) {
+					match_start_coff++;
+				}
+				p++;
+			}
+
+		 not_found:
+			/* not found */
+			break;
+
+		 found:
+			matched = 1;
+			match_start_boff = (duk_u32) (p - p_start);
+			match_end_coff = match_start_coff + q_clen;
+			match_end_boff = match_start_boff + q_blen;
+
+			/* empty match (may happen with empty separator) -> bump and continue */
+			if (prev_match_end_boff == match_end_boff) {
+				prev_match_end_boff++;
+				prev_match_end_coff++;
+				continue;
+			}
+		}
+
+		/* stack[0] = separator (string or regexp)
+		 * stack[1] = limit
+		 * stack[2] = input string
+		 * stack[3] = result array
+		 * stack[4] = regexp res_obj (if is_regexp)
+		 */
+
+		DUK_DDDPRINT("split; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
+		             (int) match_start_boff, (int) match_start_coff,
+		             (int) match_end_boff, (int) match_end_coff,
+		             (int) prev_match_end_boff, (int) prev_match_end_coff);
+
+		duk_push_lstring(ctx,
+		                 (const char *) (DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff),
+		                 (size_t) (match_start_boff - prev_match_end_boff));
+		duk_put_prop_index(ctx, 3, arr_idx);
+		arr_idx++;
+		if (arr_idx >= limit) {
+			goto hit_limit;
+		}
+
+		if (is_regexp) {
+			size_t i, len;
+
+			len = duk_get_length(ctx, 4);
+			for (i = 1; i < len; i++) {
+				duk_get_prop_index(ctx, 4, i);
+				duk_put_prop_index(ctx, 3, arr_idx);
+				arr_idx++;
+				if (arr_idx >= limit) {
+					goto hit_limit;
+				}
+			}
+
+			duk_pop(ctx);
+			/* lastIndex already set up for next match */
+		} else {
+			/* no action */
+		}
+
+		prev_match_end_boff = match_end_boff;
+		prev_match_end_coff = match_end_coff;
+		continue;
+	}
+
+	/* Combined step 11 (empty string special case) and 14-15. */
+
+	DUK_DDDPRINT("split trailer; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
+	             (int) match_start_boff, (int) match_start_coff,
+	             (int) match_end_boff, (int) match_end_coff,
+	             (int) prev_match_end_boff, (int) prev_match_end_coff);
+
+	if (DUK_HSTRING_GET_CHARLEN(h_input) > 0 || !matched) {
+		/* Add trailer if:
+		 *   a) non-empty input
+		 *   b) empty input and no (zero size) match found (step 11)
+		 */
+
+		duk_push_lstring(ctx,
+		                 (const char *) DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff,
+		                 (size_t) (DUK_HSTRING_GET_BYTELEN(h_input) - prev_match_end_boff));
+		duk_put_prop_index(ctx, 3, arr_idx);
+		/* No arr_idx update or limit check */
+	}
+
+	return 1;
+
+ hit_limit:
+	if (is_regexp) {
+		duk_pop(ctx);
+	}
+
+	return 1;
+}
+
+/*
  *  Various
  */
 
@@ -882,6 +1160,8 @@ int duk_builtin_string_prototype_match(duk_context *ctx) {
 	arr_idx = 0;
 
 	for (;;) {
+		DUK_ASSERT_TOP(ctx, 3);
+
 		duk_dup(ctx, 0);
 		duk_dup(ctx, 1);
 		duk_regexp_match(thr);  /* -> [ ... regexp string ] -> [ ... res_obj ] */
@@ -930,11 +1210,6 @@ int duk_builtin_string_prototype_trim(duk_context *ctx) {
 	duk_trim(ctx, 0);
 	DUK_ASSERT_TOP(ctx, 1);
 	return 1;
-}
-
-int duk_builtin_string_prototype_split(duk_context *ctx) {
-	duk_push_this_coercible_to_string(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_string_prototype_locale_compare(duk_context *ctx) {
