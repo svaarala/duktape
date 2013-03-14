@@ -1,0 +1,38 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add some common test case helpers
+desc: |-
+  For example:
+  
+  * Many test cases use a wrapper which does try-catch and then prints
+    out either error 'name' or full error message (if error is unexpected).
+    This can be shortened by a helper with a function argument.
+  
+  * Many string test cases would benefit from safe printing of strings,
+    either as a plain codepoint list, or using ASCII only escaping for
+    non-printable characters.
+  
+  * Getting and printing property descriptors.
+  
+  * Printing values with explicit type information, implementation independent
+    printing of functions (e.g. print "function name=X"), etc.
+  
+  Some of these helpers could be added to some shared helper object.
+  Others could naturally go into prototypes; for instance:
+  
+    print("foo\u1234bar".toCodePointString());
+    "foo\u1234bar".printCodePoints();
+type: :task
+component: duk
+release: v0.4
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-14 21:30:40.519732 Z
+references: []
+
+id: 18f1769f0eff355381c7f90fb59ba5097e64e5af
+log_events: 
+- - 2013-03-14 21:30:40.692697 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

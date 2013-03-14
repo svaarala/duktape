@@ -20,3 +20,10 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - assigned to release v0.3 from unassigned
   - ""
+- - 2013-03-14 13:23:35.604120 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    Basic implementations exist for all builtins now.  There are a few bugs, and the
+    implementations for match(), replace(), and split() are quite large and messy.
+    A separate issue has been opened for cleaning them up.
