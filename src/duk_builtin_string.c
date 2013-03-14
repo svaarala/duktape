@@ -913,7 +913,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 
 			/* empty match -> bump and continue */
 			if (prev_match_end_boff == match_end_boff) {
-				duk_push_int(ctx, match_end_boff + 1);
+				duk_push_int(ctx, match_end_coff + 1);
 				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 				duk_pop(ctx);
 				continue;
