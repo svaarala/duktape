@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.3
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-20 02:25:44.798510 Z
 references: []
 
@@ -27,3 +27,7 @@ log_events:
     Basic implementations exist for all builtins now.  There are a few bugs, and the
     implementations for match(), replace(), and split() are quite large and messy.
     A separate issue has been opened for cleaning them up.
+- - 2013-03-15 09:21:26.946099 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
+  - ""

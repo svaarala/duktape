@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: wrapped memcmp() to ensure zero size works
+desc: |-
+  There are apparently some old compilers whose memcmp() has broken handling
+  for zero compare size.
+  
+  Replace memcmp() calls with DUK_MEMCMP() macro calls, and allow a replacement
+  function (guarding against zero compare) to be used.
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-15 09:17:11.928156 Z
+references: []
+
+id: 2705d0275ecd6fecabdc83b7dc9bb68936e4c61c
+log_events: 
+- - 2013-03-15 09:17:12.093175 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
