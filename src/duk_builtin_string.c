@@ -28,8 +28,9 @@ int duk_builtin_string_constructor(duk_context *ctx) {
                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
                            DUK_BIDX_STRING_PROTOTYPE);
 
+		/* String object internal value is immutable */
 		duk_dup(ctx, 0);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: flags */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	}
 	/* Note: unbalanced stack on purpose */
 
@@ -55,7 +56,6 @@ int duk_builtin_string_constructor_from_char_code(duk_context *ctx) {
 		duk_hbuffer_append_cesu8(thr, h, cp);
 	}
 
-	/* FIXME: rely here on arbitary buffer->string conversion */
 	duk_to_string(ctx, -1);
 	return 1;
 }
@@ -98,7 +98,7 @@ int duk_builtin_string_prototype_to_string(duk_context *ctx) {
 }
 
 int duk_builtin_string_prototype_value_of(duk_context *ctx) {
-	/* FIXME: can use same function */
+	/* FIXME: can use same native function */
 	return duk_builtin_string_prototype_to_string(ctx);
 }
 
@@ -106,11 +106,15 @@ int duk_builtin_string_prototype_value_of(duk_context *ctx) {
  *  Character and charcode access
  */
 
+/* FIXME: charAt() and charCodeAt() could probably use a shared helper. */
+
 int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 	int pos;
 
 	/* FIXME: faster implementation */
-	/* FIXME: handling int values outside C int range */
+	/* FIXME: handling int values outside C int range, currently
+	 * duk_to_int() coerces to min/max int, so this works passably.
+	 */
 
 	duk_push_this_coercible_to_string(ctx);
 	pos = duk_to_int(ctx, 0);
@@ -208,8 +212,9 @@ int duk_builtin_string_prototype_substr(duk_context *ctx) {
 	int end_pos;
 	int len;
 
-	/* Unlike non-obsolete String calls, substr() will happily coerce
-	 * undefined and null to strings.
+	/* Unlike non-obsolete String calls, substr() algorithm in E5.1
+	 * specification will happily coerce undefined and null to strings
+	 * ("undefined" and "null").
 	 */
 	duk_push_this(ctx);
 	duk_to_string(ctx, -1);
@@ -225,7 +230,7 @@ int duk_builtin_string_prototype_substr(duk_context *ctx) {
 
 	/* The implementation for computing of start_pos and end_pos differs
 	 * from the standard algorithm, but is intended to result in the exactly
-	 * same behavior.  This is always obvious.
+	 * same behavior.  This is not always obvious.
 	 */
 
 	/* combines steps 2 and 5; -len ensures max() not needed for step 5 */
@@ -334,7 +339,6 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 	duk_hstring *h_this;
 	duk_hstring *h_search;
 	int clen_this;
-	int blen_search;
 	int cpos;
 	int bpos;
 	duk_u8 *p_start, *p_end, *p;
@@ -350,7 +354,6 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 
 	h_search = duk_to_hstring(ctx, 0);
 	DUK_ASSERT(h_search != NULL);
-	blen_search = DUK_HSTRING_GET_BYTELEN(h_search);
 	q_start = DUK_HSTRING_GET_DATA(h_search);
 	q_blen = (size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 
@@ -366,7 +369,7 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 	}
 
 	/* Empty searchstring always matches; cpos must be clamped here. */
-	if (blen_search == 0) {
+	if (q_blen == 0) {
 		duk_push_int(ctx, cpos);
 		return 1;
 	}
@@ -381,7 +384,7 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 	 * two separate loops, and we should ensure that memcmp() can be
 	 * used without an extra "will searchstring fit" check.  Doing
 	 * the preconditioning for 'p' and 'p_end' is easy but cpos
-	 * must be updated if 'p' is wound back.
+	 * must be updated if 'p' is wound back (backward scanning).
 	 */
 
 	firstbyte = q_start[0];
@@ -393,6 +396,7 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 		 */
 
 		if ((t == firstbyte) && ((p_end - p) >= q_blen)) {
+			DUK_ASSERT(q_blen > 0);  /* no issues with memcmp() zero size, even if broken */
 			if (memcmp(p, q_start, q_blen) == 0) {
 				duk_push_int(ctx, cpos);
 				return 1;
@@ -566,7 +570,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 
 				duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 				last_index = duk_get_int(ctx, -1);  /* FIXME: duk_get_uint32() */
-				DUK_DPRINT("empty match, bump lastIndex: %d -> %d", last_index, last_index + 1);
+				DUK_DDDPRINT("empty match, bump lastIndex: %d -> %d", last_index, last_index + 1);
 				duk_pop(ctx);
 				duk_push_int(ctx, last_index + 1);
 				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
@@ -594,6 +598,9 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 			match_start_coff = 0;
 
 			while (p <= p_end) {
+				/* FIXME: wrapped utility memcmp() which is guaranteed to work
+				 * even if byte count is zero?
+				 */
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
 				if (memcmp((void *) p, (void *) q_start, (size_t) q_blen) == 0) {
 					duk_dup(ctx, 0);
@@ -667,7 +674,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 
 			while (r < r_end) {
 				int ch1, ch2, ch3;
-				int n1, n2;
+				int capnum, captmp, capadv;
 				size_t left;
 
 				ch1 = *r++;
@@ -727,47 +734,33 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 					if (!(ch2 >= '0' && ch2 <= '9')) {
 						goto repl_write;
 					}
-					n1 = ch2 - (int) '0';
+					capnum = ch2 - (int) '0';
+					capadv = 1;
 
-					n2 = -1;
 					if (left >= 2) {
 						ch3 = r[1];
 						if (ch3 >= '0' && ch3 <= '9') {
-							n2 = n1 * 10 + (ch3 - (int) '0');
+							captmp = capnum * 10 + (ch3 - (int) '0');
+							if (captmp < match_caps) {
+								capnum = captmp;
+								capadv = 2;
+							}
 						}
 					}
 
-					/* FIXME: join these two similar if-clauses */
-
-					if (n2 >= 0 && n2 > 0 && n2 < match_caps) {
+					if (capnum > 0 && capnum < match_caps) {
 						DUK_ASSERT(is_regexp != 0);  /* match_caps == 0 without regexps */
 
 						/* regexp res_obj is at offset 4 */
-						duk_get_prop_index(ctx, 4, n2);
-						if (!duk_is_string(ctx, -1)) {
+						duk_get_prop_index(ctx, 4, capnum);
+						if (duk_is_string(ctx, -1)) {
+							DUK_ASSERT(duk_get_hstring(ctx, -1) != NULL);
+							duk_hbuffer_append_hstring(thr, h_buf, duk_get_hstring(ctx, -1));
+						} else {
 							/* undefined -> skip (replaced with empty) */
-							duk_pop(ctx);
-							continue;
 						}
-						DUK_ASSERT(duk_get_hstring(ctx, -1) != NULL);
-						duk_hbuffer_append_hstring(thr, h_buf, duk_get_hstring(ctx, -1));
 						duk_pop(ctx);
-						r += 2;
-						continue;
-					} else if (n1 > 0 && n1 < match_caps) {
-						DUK_ASSERT(is_regexp != 0);  /* match_caps == 0 without regexps */
-
-						/* regexp res_obj is at offset 4 */
-						duk_get_prop_index(ctx, 4, n1);
-						if (!duk_is_string(ctx, -1)) {
-							/* undefined -> skip (replaced with empty) */
-							duk_pop(ctx);
-							continue;
-						}
-						DUK_ASSERT(duk_get_hstring(ctx, -1) != NULL);
-						duk_hbuffer_append_hstring(thr, h_buf, duk_get_hstring(ctx, -1));
-						duk_pop(ctx);
-						r++;
+						r += capadv;
 						continue;
 					} else {
 						goto repl_write;
@@ -962,6 +955,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 			DUK_ASSERT(q_blen > 0 && q_clen > 0);
 			while (p <= p_end) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
+				DUK_ASSERT(q_blen > 0);  /* no issues with empty memcmp() */
 				if (memcmp((void *) p, (void *) q_start, (size_t) q_blen) == 0) {
 					/* never an empty match, so step 13.c.iii can't be triggered */
 					goto found;
@@ -1213,7 +1207,7 @@ int duk_builtin_string_prototype_match(duk_context *ctx) {
 int duk_builtin_string_prototype_concat(duk_context *ctx) {
 	/* duk_concat() coerces arguments with ToString() in correct order */
 	duk_push_this_coercible_to_string(ctx);
-	duk_insert(ctx, 0);  /* XXX: this is relatively expensive */
+	duk_insert(ctx, 0);  /* FIXME: this is relatively expensive */
 	duk_concat(ctx, duk_get_top(ctx));
 	return 1;
 }
