@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement proper number parsing
+desc: |-
+  There are a few parsing placeholders now: ToNumber() coercion, parseInt(),
+  parseFloat(), etc.  These need to be fixed so that the exactness requirements
+  of the specification are fulfilled.
+  
+  If it's possible to do a compliant parser using ANSI C / C99, it is preferable
+  to do that by default.  A fallback manually implemented parser still needs to
+  exist for environments with poor ANSI C compatibility.
+type: :task
+component: duk
+release: v0.5
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-15 21:30:22.339406 Z
+references: []
+
+id: 184833accdc39c80240f29befa55ae8d70c08adc
+log_events: 
+- - 2013-03-15 21:30:22.600354 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
