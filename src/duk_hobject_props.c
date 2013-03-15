@@ -4321,8 +4321,7 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 	DUK_DDDPRINT("enum(properties)=%!iT", duk_get_tval(ctx, 3));
 
 	for (;;) {
-		if (!duk_next(ctx, 3, 1)) {
-			duk_pop_2(ctx);
+		if (!duk_next(ctx, 3, 1 /*get_value*/)) {
 			break;
 		}
 
@@ -4353,8 +4352,7 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 	DUK_DDDPRINT("enum(descriptors)=%!iT", duk_get_tval(ctx, 3));
 
 	for (;;) {
-		if (!duk_next(ctx, 3, 1)) {
-			duk_pop_2(ctx);
+		if (!duk_next(ctx, 3, 1 /*get_value*/)) {
 			break;
 		}
 

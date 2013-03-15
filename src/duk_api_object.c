@@ -354,7 +354,7 @@ void duk_enum(duk_context *ctx, int obj_index, int enum_flags) {
 int duk_next(duk_context *ctx, int enum_index, int get_value) {
 	duk_require_hobject(ctx, enum_index);
 	duk_dup(ctx, enum_index);
-	return duk_hobject_enumerator_next(ctx, get_value);     /* [enum] -> [key] */
+	return duk_hobject_enumerator_next(ctx, get_value);
 }
 
 

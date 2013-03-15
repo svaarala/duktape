@@ -425,9 +425,12 @@ int duk_has_var(duk_context *ctx);                                 /* [varname] 
 
 void duk_compact(duk_context *ctx, int obj_index);                 /* [] -> [] */
 void duk_enum(duk_context *ctx, int obj_index, int enum_flags);    /* [] -> [enum] */
-int duk_next(duk_context *ctx, int enum_index, int get_value);     /* [] -> [key] or [] -> [key val] (if get_value != 0);
-                                                                    * return zero if enum finished (in which case undefined is pushed).
-                                                                    * Note that getting the value may cause an error (e.g. in case of a getter).
+int duk_next(duk_context *ctx, int enum_index, int get_value);     /* if enum empty, [] -> [] and return 0.
+                                                                    * else return non-zero and:
+                                                                    *       [] -> [key]     (if get_value == 0)
+                                                                    *       [] -> [key val] (if get_value != 0);
+                                                                    * Note that getting the value may cause an error
+                                                                    * (e.g. in case of a getter).
                                                                     */
 
 /*

@@ -582,7 +582,7 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					duk_put_prop(ctx, -4);
 				}
 			}
-			duk_pop_2(ctx);  /* FIXME: enum API awkwardness */
+			duk_pop(ctx);  /* pop enum */
 		}
 	}
 
@@ -1508,8 +1508,7 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 					duk_pop_2(ctx);
 				}
                         }
-			/* FIXME: enum API is awkward now */
-                        duk_pop_3(ctx);  /* pop enum, key, value */
+                        duk_pop(ctx);  /* pop enum */
 
 			/* [ ... proplist ] */
 		}

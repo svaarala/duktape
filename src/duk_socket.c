@@ -184,7 +184,7 @@ int duk_socket_poll(duk_context *ctx) {
 
 		n++;
 	}
-	duk_pop(ctx);
+	/* leave enum on stack */
 
 	memset(&ts, 0, sizeof(ts));
 	ts.tv_nsec = (timeout % 1000) * 1000000;

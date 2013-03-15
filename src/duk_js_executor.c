@@ -2913,13 +2913,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				if (duk_is_object(ctx, c)) {
 					/* XXX: assert 'c' is an enumerator */
 					duk_dup(ctx, c);
-					(void) duk_hobject_enumerator_next(ctx, 0 /*get_value*/); /* [ ... enum ] -> [ ... next_key ] */
-					if (duk_is_string(ctx, -1)) {
+					if (duk_hobject_enumerator_next(ctx, 0 /*get_value*/)) {
+						/* [ ... enum ] -> [ ... next_key ] */
 						DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ", duk_get_tval(ctx, -1));
 						act->pc++;;
 					} else {
-						DUK_ASSERT(duk_is_undefined(ctx, -1));
+						/* [ ... enum ] -> [ ... ] */
 						DUK_DDDPRINT("enum finished, execute jump slot");
+						duk_push_undefined(ctx);
 					}
 					duk_replace(ctx, b);
 				} else {

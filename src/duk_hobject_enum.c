@@ -340,10 +340,13 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	DUK_DDDPRINT("created enumerator object: %!iT", duk_get_tval(ctx, -1));
 }
 
-/* [enum] -> [key]  (get_value == 0)
- * [enum] -> [key value]  (get_value == 1)
+/*
+ *  Returns non-zero if a key and/or value was enumerated, and:
  *
- * Returns non-zero if a key was enumerated.
+ *   [enum] -> [key]        (get_value == 0)
+ *   [enum] -> [key value]  (get_value == 1)
+ *
+ *  Returns zero without pushing anything on the stack otherwise.
  */
 int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -354,7 +357,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* [enum] */
+	/* [... enum] */
 
 	e = duk_require_hobject(ctx, -1);
 
@@ -405,25 +408,24 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_push_number(ctx, (double) idx);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
 
+	/* [... enum] */
+
 	if (res) {
 		duk_push_hstring(ctx, res);
+		if (get_value) {
+			duk_push_hobject(ctx, target);
+			duk_dup(ctx, -2);      /* -> [... enum key target key] */
+			duk_get_prop(ctx, -2); /* -> [... enum key target val] */
+			duk_remove(ctx, -2);   /* -> [... enum key val] */
+			duk_remove(ctx, -3);   /* -> [... key val] */
+		} else {
+			duk_remove(ctx, -2);   /* -> [... key] */
+		}
+		return 1;
 	} else {
-		duk_push_undefined(ctx);
+		duk_pop(ctx);  /* -> [...] */
+		return 0;
 	}
-
-	/* [enum key] */
-	duk_remove(ctx, -2);
-
-	/* [key] */
-
-	if (get_value) {
-		duk_push_hobject(ctx, target);
-		duk_dup(ctx, -2);      /* -> [key target key] */
-		duk_get_prop(ctx, -2); /* -> [key target val] */
-		duk_remove(ctx, -2);   /* -> [key val] */
-	}
-
-	return (res ? 1 : 0);
 }
 
 /*
