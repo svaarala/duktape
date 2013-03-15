@@ -186,6 +186,9 @@ int duk_to_int(duk_context *ctx, int index) {
 	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
+	/* FIXME: this will clamp to integer range in practice; is this behavior
+	 * guaranteed anywhere, and should we rely on it?
+	 */
 	return (int) d;
 }
 
@@ -455,7 +458,8 @@ void duk_to_object(duk_context *ctx, int index) {
 		DUK_ASSERT(res != NULL);
 
 		/* Note: Boolean prototype's internal value property is not writable,
-		 * but duk_def_prop_stridx() disregards the write protection.
+		 * but duk_def_prop_stridx() disregards the write protection.  Boolean
+		 * instances are immutable.
 		 */
 		duk_push_boolean(ctx, val);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
@@ -472,7 +476,8 @@ void duk_to_object(duk_context *ctx, int index) {
 		DUK_ASSERT(res != NULL);
 
 		/* Note: String prototype's internal value property is not writable,
-		 * but duk_def_prop_stridx() disregards the write protection.
+		 * but duk_def_prop_stridx() disregards the write protection.  String
+		 * instances are immutable.
 		 */
 		duk_dup(ctx, index);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
@@ -502,7 +507,8 @@ void duk_to_object(duk_context *ctx, int index) {
 		DUK_ASSERT(res != NULL);
 
 		/* Note: Number prototype's internal value property is not writable,
-		 * but duk_def_prop_stridx() disregards the write protection.
+		 * but duk_def_prop_stridx() disregards the write protection.  Number
+		 * instances are immutable.
 		 */
 		duk_push_number(ctx, val);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);

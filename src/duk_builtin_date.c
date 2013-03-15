@@ -1271,6 +1271,10 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATE),
 	                           DUK_BIDX_DATE_PROTOTYPE);
 
+	/* Unlike most built-ins, the internal [[PrimitiveValue]] of a Date
+	 * is mutable.
+	 */
+
 	if (nargs == 0 || !is_cons) {
 		d = timeclip(GET_NOW_TIMEVAL(ctx));
 		duk_push_number(ctx, d);

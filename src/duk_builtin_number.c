@@ -29,13 +29,15 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 
 		/* [ val obj ] */
 
-		/* internal value set to ToNumber(arg) or +0; if no arg given,
+		/* Internal value set to ToNumber(arg) or +0; if no arg given,
 		 * ToNumber(undefined) = +0 so no special check needed.
+		 *
+		 * String internal value is immutable.
 		 */
 		DUK_DDDPRINT("coercing argument: %!T", duk_get_tval(ctx, 0));
 		duk_to_number(ctx, 0);
 		duk_dup(ctx, 0);  /* -> [ val obj val ] */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
 		return 0;
 	} else {
