@@ -18,8 +18,8 @@ and regular expressions.  Other feature highlights include:
 
   * Tail call support
 
-This is a very early development version which is not intended for actual
-use.  Most basic things work:
+This is an early development version which is not intended for actual use.
+Most basic things work:
 
   * Ecmascript compiler and bytecode executor
 
@@ -29,10 +29,10 @@ use.  Most basic things work:
 
   * Object, array, function, identifier access etc basic semantics
 
-However, almost all built-ins are missing and there are (known and unknown)
-bugs here and there (for instance, number parsing is incomplete).  There is
-also no documentation in this release as no documentation is finished yet.
-API and internal documentation will be included in future releases.
+However, some built-ins are missing and there are (known and unknown) bugs
+here and there (for instance, number parsing is incomplete).  There is also
+minimal documentation in this release.  API and internal documentation will
+be included in future releases.
 
 To build (only Linux at the moment)::
 
