@@ -1,0 +1,16 @@
+# FIXME: placeholder
+
+import os
+
+#import sconstools.rst2html
+
+docs = [
+	'datetime.txt',
+	'json.txt',
+	'regexp.txt'
+]
+
+for doc in docs:
+	target = os.path.splitext(doc)[0] + '.html'
+	Command(target, doc, 'rst2html $SOURCE $TARGET')
+
