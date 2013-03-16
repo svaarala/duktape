@@ -345,7 +345,19 @@ Ecmascript NumericLiteral and DecimalLiteral::
 
   ...
 
-Some differences:
+Another close match would be StrDecimalLiteral::
+
+  StrDecimalLiteral::
+      StrUnsignedDecimalLiteral
+      + StrUnsignedDecimalLiteral
+      - StrUnsignedDecimalLiteral
+
+  StrUnsignedDecimalLiteral::
+      Infinity
+      DecimalDigits . DecimalDigits_opt ExponentPart_opt
+      . DecimalDigits ExponentPart_opt
+
+Some differences between JSONNumber and DecimalLiteral:
 
 * NumericLiteral allows either DecimalLiteral (which is closest to JSONNumber)
   and HexIntegerLiteral.  JSON does not allow hex literals.
