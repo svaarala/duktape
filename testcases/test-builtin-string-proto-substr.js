@@ -375,7 +375,7 @@ function basicTest() {
     }
 
     for (i = 0; i < numbers.length; i++) {
-        for (j = 0; j < numbers.length; j++) {
+        for (j = 0; j < numbers.length; j++) {
             test('foobar', numbers[i], numbers[j]);
         }
     }

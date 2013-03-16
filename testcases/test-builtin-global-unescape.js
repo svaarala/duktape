@@ -88,13 +88,13 @@ function basicTest() {
     for (i = 0; i < 256; i++) {
         tmp = '%' + ucnybbles[i >> 4] + ucnybbles[i & 0x0f];
         res = g.unescape(tmp);
-        if (res.length !== 1 || res.charCodeAt(0) !== i) {
+        if (res.length !== 1 || res.charCodeAt(0) !== i) {
             print('unescape error for %xx at index i:', i);
         }
 
         tmp = '%' + lcnybbles[i >> 4] + lcnybbles[i & 0x0f];
         res = g.unescape(tmp);
-        if (res.length !== 1 || res.charCodeAt(0) !== i) {
+        if (res.length !== 1 || res.charCodeAt(0) !== i) {
             print('unescape error for %xx at index i:', i);
         }
     }
@@ -105,14 +105,14 @@ function basicTest() {
         tmp = '%u' + ucnybbles[(i >> 12) & 0x0f] + ucnybbles[(i >> 8) & 0x0f] +
                      ucnybbles[(i >> 4) & 0x0f] + ucnybbles[i & 0x0f];
         res = g.unescape(tmp);
-        if (res.length !== 1 || res.charCodeAt(0) !== i) {
+        if (res.length !== 1 || res.charCodeAt(0) !== i) {
             print('unescape error for %uxxxx at index i:', i);
         }
 
         tmp = '%u' + lcnybbles[(i >> 12) & 0x0f] + lcnybbles[(i >> 8) & 0x0f] +
                      lcnybbles[(i >> 4) & 0x0f] + lcnybbles[i & 0x0f];
         res = g.unescape(tmp);
-        if (res.length !== 1 || res.charCodeAt(0) !== i) {
+        if (res.length !== 1 || res.charCodeAt(0) !== i) {
             print('unescape error for %uxxxx at index i:', i);
         }
     }

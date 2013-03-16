@@ -28,7 +28,7 @@ function encCodePoint(x, forced_len) {
     else if (x < 0x10000) { len = 3; }
     else if (x < 0x200000) { len = 4; }
     else if (x < 0x4000000) { len = 5; }
-    else if (x < 0x80000000) { len = 6; }
+    else if (x < 0x80000000) { len = 6; }
     else { len = 7; }
 
     if (typeof forced_len === 'number') {
@@ -58,7 +58,7 @@ function encCodePoint(x, forced_len) {
 /* Dump a string as decimal codepoints, ensures that tests produce ASCII only
  * outputs.
  */
-function dumpCodePoints(x) {
+function dumpCodePoints(x) {
     var i;
     var res = [];
 

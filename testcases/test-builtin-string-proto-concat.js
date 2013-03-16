@@ -101,7 +101,7 @@ function coercionTest() {
         try {
             t = String.prototype.concat.call(x, 'bar');
             print(typeof t, t.length, t);
-        } catch (e) {
+        } catch (e) {
             print(e.name);
         }
     }

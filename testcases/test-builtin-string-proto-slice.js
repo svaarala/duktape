@@ -962,7 +962,7 @@ function nonBmpTest() {
         var tmp = [];
         var i;
 
-        for (i = 0; i < x.length; i++) {
+        for (i = 0; i < x.length; i++) {
             tmp.push(x.charCodeAt(i));
         }
 

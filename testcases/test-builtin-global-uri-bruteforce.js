@@ -19,7 +19,7 @@ var g = (function () { var e = eval; return e('this'); } )();
 /* Dump a string as decimal codepoints, ensures that tests produce ASCII only
  * outputs.
  */
-function dumpCodePoints(x) {
+function dumpCodePoints(x) {
     var i;
     var res = [];
 

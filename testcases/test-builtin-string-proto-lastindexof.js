@@ -23,7 +23,7 @@ print('basic');
 function basicTest() {
     var str = new String('foobarfoobar');
 
-    function p(x) {
+    function p(x) {
         print(typeof x, x);
     }
 
