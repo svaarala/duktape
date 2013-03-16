@@ -18,7 +18,11 @@ int duk_builtin_array_constructor(duk_context *ctx) {
 }
 
 int duk_builtin_array_constructor_is_array(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	duk_hobject *h;
+
+	h = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_ARRAY);
+	duk_push_boolean(ctx, (h != NULL));
+	return 1;
 }
 
 int duk_builtin_array_prototype_to_string(duk_context *ctx) {
