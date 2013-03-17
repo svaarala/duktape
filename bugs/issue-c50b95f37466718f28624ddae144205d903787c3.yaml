@@ -3,7 +3,7 @@ title: review E5.1 technical changes
 desc: ""
 type: :task
 component: duk
-release: v0.4
+release: v0.5
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2013-03-10 21:36:58.255531 Z
   - sva <sami.vaarala@poplatek.fi>
   - assigned to release v0.4 from v0.3
+  - ""
+- - 2013-03-16 21:38:14.047260 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.5 from v0.4
   - ""
