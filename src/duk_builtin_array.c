@@ -38,6 +38,7 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 
 	/* [ ... this func ] */
 	if (!duk_is_callable(ctx, -1)) {
+		/* FIXME: this is incorrect, must use the built-in toString() */
 		DUK_DDDPRINT("this.join is not callable, fall back to Object.toString");
 		duk_pop(ctx);
 		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE]);
