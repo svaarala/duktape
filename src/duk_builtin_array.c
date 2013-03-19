@@ -204,11 +204,90 @@ int duk_builtin_array_prototype_filter(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
+static int reduce_helper(duk_context *ctx, int idx_step) {
+	int nargs;
+	int have_acc;
+	int i, len;
+
+	/* idx_step is +1 for reduce, -1 for reduceRight */
+
+	/* We're a varargs function because we need to detect whether
+	 * initialValue was given or not.
+	 */
+	nargs = duk_get_top(ctx);
+	DUK_DPRINT("nargs=%d", nargs);
+
+	duk_set_top(ctx, 2);
+	duk_push_this_coercible_to_object(ctx);
+	len = duk_get_length(ctx, -1);
+	if (!duk_is_callable(ctx, 0)) {
+		goto type_error;
+	}
+
+	/* stack[0] = callback fn
+	 * stack[1] = initialValue
+	 * stack[2] = object (coerced this)
+	 * stack[3] = accumulator
+	 */
+
+	have_acc = 0;
+	if (nargs >= 2) {
+		duk_dup(ctx, 1);
+		have_acc = 1;
+	}
+	DUK_DPRINT("have_acc=%d, acc=%!T", have_acc, duk_get_tval(ctx, 3));
+
+	for (i = (idx_step >= 0 ? 0 : len - 1);
+	     i >= 0 && i < len;
+	     i += idx_step) {
+		DUK_DPRINT("i=%d, len=%d, have_acc=%d, top=%d, acc=%!T",
+		           i, len, have_acc, duk_get_top(ctx), duk_get_tval(ctx, 3));
+
+		DUK_ASSERT((have_acc && duk_get_top(ctx) == 4) ||
+		           (!have_acc && duk_get_top(ctx) == 3));
+
+		if (!duk_has_prop_index(ctx, 2, i)) {
+			continue;
+		}
+
+		if (!have_acc) {
+			DUK_ASSERT_TOP(ctx, 3);
+			duk_get_prop_index(ctx, 2, i);
+			have_acc = 1;
+			DUK_ASSERT_TOP(ctx, 4);
+		} else {
+			DUK_ASSERT_TOP(ctx, 4);
+			duk_dup(ctx, 0);
+			duk_dup(ctx, 3);
+			duk_get_prop_index(ctx, 2, i);
+			duk_push_int(ctx, i);  /* FIXME: type */
+			duk_dup(ctx, 2);
+			DUK_DPRINT("calling reduce function: func=%!T, prev=%!T, curr=%!T, idx=%!T, obj=%!T",
+			           duk_get_tval(ctx, -5), duk_get_tval(ctx, -4), duk_get_tval(ctx, -3),
+			           duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+			duk_call(ctx, 4);
+			DUK_DPRINT("-> result: %!T", duk_get_tval(ctx, -1));
+			duk_replace(ctx, 3);
+			DUK_ASSERT_TOP(ctx, 4);
+		}
+	}
+
+	if (!have_acc) {
+		goto type_error;
+	}
+
+	DUK_ASSERT_TOP(ctx, 4);
+	return 1;
+
+ type_error:
+	return DUK_RET_TYPE_ERROR;
+}
+
 int duk_builtin_array_prototype_reduce(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return reduce_helper(ctx, 1 /*idx_step*/);
 }
 
 int duk_builtin_array_prototype_reduce_right(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return reduce_helper(ctx, -1 /*idx_step*/);
 }
 

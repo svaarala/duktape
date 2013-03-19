@@ -10,11 +10,15 @@ string [object Object]
 string [object Object]
 string JOIN
 string BOOLJOIN
+proto.join
+string foo;bar;quux
 string [object Object]
 MyJoinError
 ===*/
 
 function basicTest() {
+    var proto, obj;
+
     function test(this_value) {
         var t;
 
@@ -48,6 +52,25 @@ function basicTest() {
 
     Boolean.prototype.join = function() { return 'BOOLJOIN'; };
     test(true);
+
+    // join() inherited, with joinable members
+
+    proto = Object.create(Object.prototype);
+    proto.join = function() {
+        var i;
+        var tmp = [];
+        print('proto.join');
+        for (i = 0; i < this.length; i++) {
+            tmp.push(String(this[i]));
+        }
+        return tmp.join(';');
+    };
+    obj = Object.create(proto);
+    obj.length = 3;
+    obj['0'] = 'foo';
+    obj['1'] = 'bar';
+    obj['2'] = 'quux';
+    test(obj);
 
     // the join() fallback is the standard Object.prototype.toString() function,
     // i.e. override should have no effect

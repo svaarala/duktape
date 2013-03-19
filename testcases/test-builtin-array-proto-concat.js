@@ -30,6 +30,12 @@ object 5 string:foo,number:1,number:2,string:foo,string:bar
 object 6 number:1,number:2,number:1,number:2,string:foo,string:bar
 object 5 object:[object Object],number:1,number:2,string:foo,string:bar
 object 4 number:1,number:2,number:3,number:4
+object 101 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,3
+object 101 4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,5,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,6
+object 202 number:1,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,number:2,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,number:3,number:4,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,number:5,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,number:6
+object 101 [object Object]
+object 101 [object Object]
+object 2 object:[object Object],object:[object Object]
 object 4 boolean:true,number:1,number:2,number:3
 object 4 object:[object Object],number:1,number:2,number:3
 object 4 object:[object Object],number:1,number:2,number:3
@@ -87,11 +93,32 @@ function basicTest() {
     test([1,2], [ 1, 2, [ 'foo', 'bar' ] ]);
     test({ foo: 1, bar: 2 }, [ 1, 2, [ 'foo', 'bar' ] ]);
 
-    // concatenating two arrays
+    // concatenating two dense arrays
 
     t1 = [ 1, 2 ];
     t2 = [ 3, 4 ];
-    test(t1, t2);
+    test(t1, [ t2 ]);
+
+    // concatenating two sparse arrays
+
+    t1 = [ 1 ];
+    t1[100] = 3;
+    t1[50] = 2;
+    t2 = [ 4 ];
+    t2[100] = 6;
+    t2[50] = 5;
+    print(typeof t1, t1.length, t1);
+    print(typeof t2, t2.length, t2);
+    test(t1, [ t2 ]);
+
+    // concatenating two non-arrays; here the objects don't fall into the
+    // special handling in step 5.b and are put into the result array as is
+
+    t1 = { '0': 1, '100': 2, length: 101 };
+    t2 = { '0': 3, '100': 4, length: 101 };
+    print(typeof t1, t1.length, t1);
+    print(typeof t2, t2.length, t2);
+    test(t1, [ t2 ]);
 
     // 'this' is ToObject() coerced and becomes the first element to be
     // processed in the loop of E5.1 Section 15.4.4.4, step 5.  If 'this'
@@ -152,14 +179,20 @@ print('implant');
 function implantTest() {
     'use strict';
     var t;
-
-    Boolean.prototype.concat = Array.prototype.concat;
+    var proto;
 
     // when concat() is invoked, this binding will the primitive 'true'
     // value, which is then coerced to an object in concat() step 1.
 
+    Boolean.prototype.concat = Array.prototype.concat;
     t = true.concat('foo');
     printArray(t);
+
+    // It would be nice to test a case where an implanted concat was used
+    // with a "sub-class" of Array.  However, because of E5.1 Section
+    // 15.4.4.4 step 5.b, the 'this' binding would not be treated as an
+    // Array anyway, and the 'this' binding would thus go as is into the
+    // result array, as happens above for the Boolean test.
 }
 
 try {

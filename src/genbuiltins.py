@@ -381,8 +381,8 @@ bi_array_prototype = {
 		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_for_each',		'length': 1,	'nargs': 2 },
 		{ 'name': 'map',			'native': 'duk_builtin_array_prototype_map',			'length': 1,	'nargs': 2 },
 		{ 'name': 'filter',			'native': 'duk_builtin_array_prototype_filter',			'length': 1,	'nargs': 2 },
-		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce',			'length': 1,	'nargs': 2 },
-		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_right',		'length': 1,	'nargs': 2 },
+		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce',			'length': 1,	'varargs': True },
+		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_right',		'length': 1,	'varargs': True },
 	],
 }
 

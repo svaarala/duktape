@@ -21,6 +21,7 @@ string
 string 1,2,3
 string ,,true,false,123,foo,foo,bar,quux,FOO,BAR,[object Object]
 string 1,2,,,,,,,,,,,,,,,,,,
+string 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,3
 string ,,,
 string foo,,bar,
 string foo,,bar,
@@ -33,12 +34,20 @@ function basicTest() {
     var t;
 
     // very basic tests
+
     test([]);
     test([1,2,3]);
     test([ undefined, null, true, false, 123, 'foo', [ 'foo', 'bar', 'quux', [ 'FOO', 'BAR' ] ], { foo: 1, bar: 2 } ]);
 
     t = [1,2];
     t.length = 20;
+    test(t);
+
+    // sparse array
+
+    t = [1];
+    t[100] = 3;
+    t[50] = 2;
     test(t);
 
     // must also work on non-arrays
