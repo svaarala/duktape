@@ -257,7 +257,7 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 				return 1;
 			}
 			break;
-		case ITER_SOME: {
+		case ITER_SOME:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				return 1;
