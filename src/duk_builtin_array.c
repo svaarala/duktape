@@ -184,25 +184,158 @@ int duk_builtin_array_prototype_last_index_of(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
+/*
+ *  every(), some(), forEach(), map(), filter()
+ */
+
+#define  ITER_EVERY    0
+#define  ITER_SOME     1
+#define  ITER_FOREACH  2
+#define  ITER_MAP      3
+#define  ITER_FILTER   4
+
+/* FIXME: This helper is a bit awkward because the handling for the different iteration
+ * callers is quite different.  This now compiles to a bit less than 500 bytes, so with
+ * 5 callers the net result is about 100 bytes / caller.
+ */
+
+static int iter_helper(duk_context *ctx, int iter_type) {
+	int len;
+	int i;
+	int k;
+	int bval;
+
+	/* each call this helper serves has nargs==2 */
+	DUK_ASSERT_TOP(ctx, 2);
+
+	duk_push_this_coercible_to_object(ctx);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
+	len = duk_to_uint32(ctx, -1);
+	if (!duk_is_callable(ctx, 0)) {
+		goto type_error;
+	}
+	/* if thisArg not supplied, behave as if undefined was supplied */
+
+	if (iter_type == ITER_MAP || iter_type == ITER_FILTER) {
+		duk_push_new_array(ctx);
+	} else {
+		duk_push_undefined(ctx);
+	}
+
+	/* stack[0] = callback
+	 * stack[1] = thisArg
+	 * stack[2] = object
+	 * stack[3] = ToUint32(length)  (unused, but avoid unnecessary pop)
+	 * stack[4] = result array (or undefined)
+	 */
+
+	k = 0;  /* result index for filter() */
+	for (i = 0; i < len; i++) {
+		DUK_ASSERT_TOP(ctx, 5);
+
+		if (!duk_has_prop_index(ctx, 2, i)) {
+			continue;
+		}
+
+		/* The original value needs to be preserved for filter(), hence
+		 * this funny order.  We can't re-get the value because of side
+		 * effects.
+		 */
+		duk_get_prop_index(ctx, 2, i);
+
+		duk_dup(ctx, 0);
+		duk_dup(ctx, 1);
+		duk_dup(ctx, -3);
+		duk_push_int(ctx, i);
+		duk_dup(ctx, 2);  /* [ ... val callback thisArg val i obj ] */
+		duk_call_method(ctx, 3); /* -> [ ... val retval ] */
+
+		switch (iter_type) {
+		case ITER_EVERY:
+			bval = duk_to_boolean(ctx, -1);
+			if (!bval) {
+				return 1;
+			}
+			break;
+		case ITER_SOME: {
+			bval = duk_to_boolean(ctx, -1);
+			if (bval) {
+				return 1;
+			}
+			break;
+		case ITER_FOREACH:
+			/* nop */
+			break;
+		case ITER_MAP:
+			duk_dup(ctx, -1);
+			duk_put_prop_index(ctx, 4, i);  /* retval to result[i] */
+			break;
+		case ITER_FILTER:
+			bval = duk_to_boolean(ctx, -1);
+			if (bval) {
+				duk_dup(ctx, -2);  /* orig value */
+				duk_put_prop_index(ctx, 4, k);
+				k++;
+			}
+			break;
+		default:
+			DUK_NEVER_HERE();
+			break;
+		}
+		duk_pop_2(ctx);
+
+		DUK_ASSERT_TOP(ctx, 5);
+	}
+
+	switch (iter_type) {
+	case ITER_EVERY:
+		duk_push_true(ctx);
+		break;
+	case ITER_SOME:
+		duk_push_false(ctx);
+		break;
+	case ITER_FOREACH:
+		duk_push_undefined(ctx);
+		break;
+	case ITER_MAP:
+	case ITER_FILTER:
+		DUK_ASSERT_TOP(ctx, 5);
+		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
+		break;
+	default:
+		DUK_NEVER_HERE();
+		break;
+	}
+
+	return 1;
+
+ type_error:
+	return DUK_RET_TYPE_ERROR;
+}
+
 int duk_builtin_array_prototype_every(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return iter_helper(ctx, ITER_EVERY);
 }
 
 int duk_builtin_array_prototype_some(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return iter_helper(ctx, ITER_SOME);
 }
 
 int duk_builtin_array_prototype_for_each(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return iter_helper(ctx, ITER_FOREACH);
 }
 
 int duk_builtin_array_prototype_map(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return iter_helper(ctx, ITER_MAP);
 }
 
 int duk_builtin_array_prototype_filter(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return iter_helper(ctx, ITER_FILTER);
 }
+
+/*
+ *  reduce(), reduceRight()
+ */
 
 static int reduce_helper(duk_context *ctx, int idx_step) {
 	int nargs;
