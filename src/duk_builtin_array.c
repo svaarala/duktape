@@ -176,12 +176,102 @@ int duk_builtin_array_prototype_unshift(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
+/*
+ *  indexOf(), lastIndexOf()
+ */
+
+static int array_indexof_helper(duk_context *ctx, int idx_step) {
+	/* FIXME: types, ensure loop below works when fixed (i must be able to go negative right now) */
+	int nargs;
+	int i, len;
+	int fromIndex;
+
+	/* lastIndexOf() needs to be a vararg function because we must distinguish
+	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
+	 * made vararg for symmetry although it doesn't strictly need to be.
+	 */
+
+	nargs = duk_get_top(ctx);
+	duk_set_top(ctx, 2);
+
+	duk_push_this_coercible_to_object(ctx);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
+	len = duk_to_uint32(ctx, -1);
+	duk_pop(ctx);
+	if (len == 0) {
+		goto not_found;
+	}
+
+	/* Index clamping is a bit tricky, we must ensure that we'll only iterate
+	 * through elements that exist and that the specific requirements from E5.1
+	 * Sections 15.4.4.14 and 15.4.4.15 are fulfilled; especially:
+	 *
+	 *   - indexOf: clamp to [-len,len], negative handling -> [0,len],
+	 *     if clamped result is len, for-loop bails out immediately
+	 *
+	 *   - lastIndexOf: clamp to [-len-1, len-1], negative handling -> [-1, len-1],
+	 *     if clamped result is -1, for-loop bails out immediately
+	 *
+	 * If fromIndex is not given, ToInteger(undefined) = 0, which is correct
+	 * for indexOf() but incorrect for lastIndexOf().  Hence special handling,
+	 * and why lastIndexOf() needs to be a vararg function.
+	 */
+
+	if (nargs >= 2) {
+		fromIndex = duk_to_int_clamped(ctx,
+		                               1,
+		                               (idx_step > 0 ? -len : -len - 1),
+		                               (idx_step > 0 ? len : len - 1));
+		if (fromIndex < 0) {
+			fromIndex = len + fromIndex;
+		}
+	} else {
+		/* for indexOf, ToInteger(undefined) would be 0, i.e. correct, but
+		 * handle both indexOf and lastIndexOf specially here.
+		 */
+		if (idx_step > 0) {
+			fromIndex = 0;
+		} else {
+			fromIndex = len - 1;
+		}
+	}
+
+	/* stack[0] = searchElement
+	 * stack[1] = fromIndex
+	 * stack[2] = object
+	 */
+
+	for (i = fromIndex;
+	     i >= 0 && i < len;
+	     i += idx_step) {
+		/* FIXME: just use duk_get_prop_index and check its rc */
+		if (!duk_has_prop_index(ctx, 2, i)) {
+			continue;
+		}
+
+		duk_get_prop_index(ctx, 2, i);
+
+		DUK_ASSERT_TOP(ctx, 4);
+		if (duk_strict_equals(ctx, 0, 3)) {
+			duk_push_int(ctx, i);
+			return 1;
+		}
+
+		duk_pop(ctx);
+	}
+
+ not_found:
+	duk_push_int(ctx, -1);
+	return 1;
+}
+
+
 int duk_builtin_array_prototype_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return array_indexof_helper(ctx, 1 /*idx_step*/);
 }
 
 int duk_builtin_array_prototype_last_index_of(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	return array_indexof_helper(ctx, -1 /*idx_step*/);
 }
 
 /*
@@ -233,6 +323,7 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 	for (i = 0; i < len; i++) {
 		DUK_ASSERT_TOP(ctx, 5);
 
+		/* FIXME: just use duk_get_prop_index and check its rc */
 		if (!duk_has_prop_index(ctx, 2, i)) {
 			continue;
 		}
@@ -379,6 +470,7 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 		DUK_ASSERT((have_acc && duk_get_top(ctx) == 4) ||
 		           (!have_acc && duk_get_top(ctx) == 3));
 
+		/* FIXME: just use duk_get_prop_index and check its rc */
 		if (!duk_has_prop_index(ctx, 2, i)) {
 			continue;
 		}
