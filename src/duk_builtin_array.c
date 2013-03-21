@@ -9,6 +9,20 @@
 
 #include "duk_internal.h"
 
+/* Shared entry code for many Array built-ins.  Note that length is left
+ * on stack (it could be popped, but that's not necessary).
+ */
+static unsigned int push_this_obj_len_u32(duk_context *ctx) {
+	unsigned int len;
+
+	duk_push_this_coercible_to_object(ctx);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
+	len = duk_to_uint32(ctx, -1);
+
+	/* -> [ ... ToObject(this) ToUint32(length) ] */
+	return len;
+}
+
 int duk_builtin_array_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
@@ -85,20 +99,16 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 		duk_to_string(ctx, 0);
 	}
 
-	duk_push_this(ctx);
-	duk_to_object(ctx, -1);  /* FIXME: common enough to warrant an internal helper?  push_this_to_object */
+	len = push_this_obj_len_u32(ctx);
 
-	/* [ sep ToObject(this) ] */
-
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	/* [ sep ToObject(this) len ] */
 
 	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len);
 
 	duk_require_stack(ctx, len + 1);
 	duk_dup(ctx, 0);
 
-	/* [ sep ToObject(this) sep ] */
+	/* [ sep ToObject(this) len sep ] */
 
 	for (i = 0; i < len; i++) {
 		duk_get_prop_index(ctx, 1, i);
@@ -110,14 +120,30 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 		}
 	}
 
-	/* [ sep ToObject(this) sep str0 ... str(len-1) ] */
+	/* [ sep ToObject(this) len sep str0 ... str(len-1) ] */
 
 	duk_join(ctx, len);
 	return 1;
 }
 
 int duk_builtin_array_prototype_pop(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	unsigned int len;
+	unsigned int idx;
+
+	DUK_ASSERT_TOP(ctx, 0);
+	len = push_this_obj_len_u32(ctx);
+	if (len == 0) {
+		duk_push_int(ctx, 0);
+		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: this must be a "throwing" variant */
+		return 0;
+	}
+	idx = len - 1;
+
+	duk_get_prop_index(ctx, 0, idx);
+	duk_del_prop_index(ctx, 0, idx);  /* FIXME: this must be a "throwing" variant */
+	duk_push_int(ctx, idx);  /* FIXME: unsigned */
+	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: this must be a "throwing" variant */
+	return 1;
 }
 
 int duk_builtin_array_prototype_push(duk_context *ctx) {
@@ -126,25 +152,28 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 	 * so the algorithm has e.g. an explicit update for the 'length'
 	 * property which is normally "magical" in arrays.
 	 */
-	duk_u32 len;
+
+	double len;
 	int i, n;
 
 	n = duk_get_top(ctx);
-
-	duk_push_this(ctx);
-	duk_to_object(ctx, -1);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	len = (double) push_this_obj_len_u32(ctx);
 
 	/* [ arg1 ... argN obj length ] */
 
+	/* Note: we keep track of length with a double instead of a 32-bit
+	 * (unsigned) int because the length can go beyond 32 bits and the
+	 * final length value is NOT wrapped to 32 bits on this call.
+	 */
+
 	for (i = 0; i < n; i++) {
+		duk_push_number(ctx, len);
 		duk_dup(ctx, i);
-		duk_put_prop_index(ctx, -3, len);  /* FIXME: "Throw" is true for this [[Put]] call, needs API support */
-		len++;
+		duk_put_prop(ctx, -4);  /* FIXME: "Throw" is true for this [[Put]] call, needs API support */
+		len += 1.0;
 	}
 
-	duk_push_number(ctx, (double) len);  /* FIXME: duk_push_u32 */
+	duk_push_number(ctx, len);
 	duk_dup_top(ctx);
 	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH);
 
@@ -194,9 +223,7 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	nargs = duk_get_top(ctx);
 	duk_set_top(ctx, 2);
 
-	duk_push_this_coercible_to_object(ctx);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	len = push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		goto not_found;
 	}
@@ -299,9 +326,7 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 	/* each call this helper serves has nargs==2 */
 	DUK_ASSERT_TOP(ctx, 2);
 
-	duk_push_this_coercible_to_object(ctx);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	len = push_this_obj_len_u32(ctx);
 	if (!duk_is_callable(ctx, 0)) {
 		goto type_error;
 	}
@@ -443,9 +468,7 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 	DUK_DPRINT("nargs=%d", nargs);
 
 	duk_set_top(ctx, 2);
-	duk_push_this_coercible_to_object(ctx);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	len = push_this_obj_len_u32(ctx);
 	if (!duk_is_callable(ctx, 0)) {
 		goto type_error;
 	}
