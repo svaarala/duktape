@@ -2331,3 +2331,40 @@ void duk_error(duk_context *ctx, int err_code, const char *fmt, ...) {
 	duk_throw(ctx);
 }
 
+int duk_equals(duk_context *ctx, int index1, int index2) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv1, *tv2;
+
+	tv1 = duk_get_tval(ctx, index1);
+	if (!tv1) {
+		return 0;
+	}
+	tv2 = duk_get_tval(ctx, index2);
+	if (!tv2) {
+		return 0;
+	}
+
+	/* Coercion may be needed, the helper handles that by pushing the
+	 * tagged values to the stack.
+	 */
+	return duk_js_equals(thr, tv1, tv2);
+
+}
+
+int duk_strict_equals(duk_context *ctx, int index1, int index2) {
+	duk_tval *tv1, *tv2;
+
+	tv1 = duk_get_tval(ctx, index1);
+	if (!tv1) {
+		return 0;
+	}
+	tv2 = duk_get_tval(ctx, index2);
+	if (!tv2) {
+		return 0;
+	}
+
+	/* No coercions or other side effects, so safe */
+	return duk_js_strict_equals(tv1, tv2);
+}
+
+

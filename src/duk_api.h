@@ -456,9 +456,10 @@ void duk_trim(duk_context *ctx, int index);                         /* trim usin
 
 /* FIXME: what to include; there are plenty of operators, arithmetic, comparison, bit ops, etc */
 
-#if 0  /* FIXME: to be decided */
 int duk_equals(duk_context *ctx, int index1, int index2);           /* true if equals with Ecmascript '==' semantics; false if either index invalid */
-int duk_strictly_equals(duk_context *ctx, int index1, int index2);  /* true if equals with Ecmascript '===' semantics; false if either index invalid */
+int duk_strict_equals(duk_context *ctx, int index1, int index2);    /* true if equals with Ecmascript '===' semantics; false if either index invalid */
+
+#if 0  /* FIXME: to be decided */
 int duk_less_than(duk_context *ctx, int index1, int index2);        /* 'x < y' comparison, E5 Section 11.8.5 */
 int duk_same_value(duk_context *ctx, int index1, int index2);       /* true with Ecmascript SameValue, E5 Section 9.12 (stricter than '===') */
 #endif
