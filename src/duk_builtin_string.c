@@ -334,7 +334,7 @@ int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
  *  indexOf() and lastIndexOf()
  */
 
-static int indexof_helper(duk_context *ctx, int is_lastindexof) {
+static int string_indexof_helper(duk_context *ctx, int is_lastindexof) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_this;
 	duk_hstring *h_search;
@@ -428,12 +428,12 @@ static int indexof_helper(duk_context *ctx, int is_lastindexof) {
 }
 
 int duk_builtin_string_prototype_index_of(duk_context *ctx) {
-	return indexof_helper(ctx, 0 /*is_lastindexof*/);
+	return string_indexof_helper(ctx, 0 /*is_lastindexof*/);
 }
 
 int duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
 	/* -1 is used because the generated x86 load is shorter than for 1 */
-	return indexof_helper(ctx, -1 /*is_lastindexof*/);
+	return string_indexof_helper(ctx, -1 /*is_lastindexof*/);
 }
 
 /*
