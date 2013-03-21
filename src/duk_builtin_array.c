@@ -197,7 +197,6 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(ctx, -1);
-	duk_pop(ctx);
 	if (len == 0) {
 		goto not_found;
 	}
@@ -239,11 +238,14 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	/* stack[0] = searchElement
 	 * stack[1] = fromIndex
 	 * stack[2] = object
+	 * stack[3] = length (not needed, but not popped above)
 	 */
 
 	for (i = fromIndex;
 	     i >= 0 && i < len;
 	     i += idx_step) {
+		DUK_ASSERT_TOP(ctx, 4);
+
 		/* FIXME: just use duk_get_prop_index and check its rc */
 		if (!duk_has_prop_index(ctx, 2, i)) {
 			continue;
@@ -251,8 +253,8 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 
 		duk_get_prop_index(ctx, 2, i);
 
-		DUK_ASSERT_TOP(ctx, 4);
-		if (duk_strict_equals(ctx, 0, 3)) {
+		DUK_ASSERT_TOP(ctx, 5);
+		if (duk_strict_equals(ctx, 0, 4)) {
 			duk_push_int(ctx, i);
 			return 1;
 		}
@@ -264,7 +266,6 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	duk_push_int(ctx, -1);
 	return 1;
 }
-
 
 int duk_builtin_array_prototype_index_of(duk_context *ctx) {
 	return array_indexof_helper(ctx, 1 /*idx_step*/);
@@ -443,7 +444,8 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 
 	duk_set_top(ctx, 2);
 	duk_push_this_coercible_to_object(ctx);
-	len = duk_get_length(ctx, -1);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
+	len = duk_to_uint32(ctx, -1);
 	if (!duk_is_callable(ctx, 0)) {
 		goto type_error;
 	}
@@ -451,7 +453,8 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 	/* stack[0] = callback fn
 	 * stack[1] = initialValue
 	 * stack[2] = object (coerced this)
-	 * stack[3] = accumulator
+	 * stack[3] = length (not needed, but not popped above)
+	 * stack[4] = accumulator
 	 */
 
 	have_acc = 0;
@@ -465,10 +468,10 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 	     i >= 0 && i < len;
 	     i += idx_step) {
 		DUK_DPRINT("i=%d, len=%d, have_acc=%d, top=%d, acc=%!T",
-		           i, len, have_acc, duk_get_top(ctx), duk_get_tval(ctx, 3));
+		           i, len, have_acc, duk_get_top(ctx), duk_get_tval(ctx, 4));
 
-		DUK_ASSERT((have_acc && duk_get_top(ctx) == 4) ||
-		           (!have_acc && duk_get_top(ctx) == 3));
+		DUK_ASSERT((have_acc && duk_get_top(ctx) == 5) ||
+		           (!have_acc && duk_get_top(ctx) == 4));
 
 		/* FIXME: just use duk_get_prop_index and check its rc */
 		if (!duk_has_prop_index(ctx, 2, i)) {
@@ -476,14 +479,14 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 		}
 
 		if (!have_acc) {
-			DUK_ASSERT_TOP(ctx, 3);
+			DUK_ASSERT_TOP(ctx, 4);
 			duk_get_prop_index(ctx, 2, i);
 			have_acc = 1;
-			DUK_ASSERT_TOP(ctx, 4);
+			DUK_ASSERT_TOP(ctx, 5);
 		} else {
-			DUK_ASSERT_TOP(ctx, 4);
+			DUK_ASSERT_TOP(ctx, 5);
 			duk_dup(ctx, 0);
-			duk_dup(ctx, 3);
+			duk_dup(ctx, 4);
 			duk_get_prop_index(ctx, 2, i);
 			duk_push_int(ctx, i);  /* FIXME: type */
 			duk_dup(ctx, 2);
@@ -492,8 +495,8 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 			           duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 			duk_call(ctx, 4);
 			DUK_DPRINT("-> result: %!T", duk_get_tval(ctx, -1));
-			duk_replace(ctx, 3);
-			DUK_ASSERT_TOP(ctx, 4);
+			duk_replace(ctx, 4);
+			DUK_ASSERT_TOP(ctx, 5);
 		}
 	}
 
@@ -501,7 +504,7 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 		goto type_error;
 	}
 
-	DUK_ASSERT_TOP(ctx, 4);
+	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
 
  type_error:
