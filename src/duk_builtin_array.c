@@ -182,7 +182,44 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_reverse(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	unsigned int len;
+	unsigned int middle;
+	unsigned int lower, upper;
+	int have_lower, have_upper;
+
+	len = push_this_obj_len_u32(ctx);
+	middle = len / 2;
+
+	for (lower = 0; lower < middle; lower++) {
+		DUK_ASSERT_TOP(ctx, 2);
+
+		upper = len - lower - 1;
+
+		have_lower = duk_get_prop_index(ctx, -2, lower);
+		have_upper = duk_get_prop_index(ctx, -3, upper);
+
+		/* [ ToObject(this) ToUint32(length) lowerValue upperValue ] */
+
+		if (have_upper) {
+			duk_put_prop_index(ctx, -4, lower);  /* FIXME: must Throw */
+		} else {
+			duk_del_prop_index(ctx, -4, lower);
+			duk_pop(ctx);
+		}
+
+		if (have_lower) {
+			duk_put_prop_index(ctx, -3, upper);
+		} else {
+			duk_del_prop_index(ctx, -3, upper);
+			duk_pop(ctx);
+		}
+
+		DUK_ASSERT_TOP(ctx, 2);
+	}
+
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_pop(ctx);  /* -> [ ToObject(this) ] */
+	return 1;
 }
 
 int duk_builtin_array_prototype_shift(duk_context *ctx) {
@@ -232,6 +269,7 @@ int duk_builtin_array_prototype_sort(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_splice(duk_context *ctx) {
+	/* FIXME: can unshift() use the same helper?  unshift is close to splice(0, 0, [items])? */
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
