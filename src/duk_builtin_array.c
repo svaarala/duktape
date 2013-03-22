@@ -186,7 +186,41 @@ int duk_builtin_array_prototype_reverse(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_shift(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	unsigned int len;
+	unsigned int i;
+
+	len = push_this_obj_len_u32(ctx);
+	if (len == 0) {
+		duk_push_int(ctx, 0);
+		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: needs to Throw */
+		return 0;
+	}
+
+	duk_get_prop_index(ctx, 0, 0);
+
+	/* stack[0] = object (this)
+	 * stack[1] = ToUint32(length)
+	 * stack[2] = elem at index 0 (retval)
+	 */
+
+	for (i = 1; i < len; i++) {
+		DUK_ASSERT_TOP(ctx, 3);
+		if (duk_get_prop_index(ctx, 0, i)) {
+			/* fromPresent = true */
+			duk_put_prop_index(ctx, 0, i - 1);  /* FIXME: needs to Throw */
+		} else {
+			/* fromPresent = false */
+			duk_del_prop_index(ctx, 0, i - 1);
+			duk_pop(ctx);
+		}
+	}
+	duk_del_prop_index(ctx, 0, len - 1);  /* FIXME: needs to Throw */
+
+	duk_push_number(ctx, (double) (len - 1));  /* FIXME: push uint */
+	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
+
+	DUK_ASSERT_TOP(ctx, 3);
+	return 1;
 }
 
 int duk_builtin_array_prototype_slice(duk_context *ctx) {
@@ -202,7 +236,57 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_unshift(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	int nargs;
+	unsigned int len;
+	unsigned int i;
+	double final_len;
+
+	nargs = duk_get_top(ctx);
+	len = push_this_obj_len_u32(ctx);
+
+	/* stack[0...nargs-1] = unshift args (vararg)
+	 * stack[nargs] = ToObject(this)
+	 * stack[nargs+1] = ToUint32(length)
+	 */
+
+	DUK_ASSERT_TOP(ctx, nargs + 2);
+
+	/* Note: unshift() may operate on indices above unsigned 32-bit range
+	 * and the final length may be >= 2**32.  Hence we use 'double' vars
+	 * here, when appropriate.
+	 */
+
+	i = len;
+	while (i > 0) {
+		DUK_ASSERT_TOP(ctx, nargs + 2);
+		i--;
+		duk_push_number(ctx, ((double) i) + ((double) nargs));  /* k+argCount-1; note that may be above 32-bit range */
+		if (duk_get_prop_index(ctx, -3, i)) {
+			/* fromPresent = true */
+			/* [ ... ToObject(this) ToUint32(length) to val ] */
+			duk_put_prop(ctx, -4);  /* -> [ ... ToObject(this) ToUint32(length) ] */  /* FIXME: must Throw */
+		} else {
+			/* fromPresent = false */
+			/* [ ... ToObject(this) ToUint32(length) to val ] */
+			duk_pop(ctx);
+			duk_del_prop(ctx, -3);  /* -> [ ... ToObject(this) ToUint32(length) ] */  /* FIXME: must Throw */
+		}
+		DUK_ASSERT_TOP(ctx, nargs + 2);
+	}
+
+	for (i = 0; i < nargs; i++) {
+		DUK_ASSERT_TOP(ctx, nargs + 2);
+		duk_dup(ctx, i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
+		duk_put_prop_index(ctx, -3, i);  /* FIXME: must Throw */
+		DUK_ASSERT_TOP(ctx, nargs + 2);
+	}
+
+	DUK_ASSERT_TOP(ctx, nargs + 2);
+	final_len = ((double) len) + ((double) nargs);
+	duk_push_number(ctx, final_len);
+	duk_dup_top(ctx);  /* -> [ ... ToObject(this) ToUint32(length) final_len final_len ] */
+	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);  /* FIXME: must Throw */
+	return 1;
 }
 
 /*
