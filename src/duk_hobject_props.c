@@ -1979,6 +1979,10 @@ static duk_u32 get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_prop
 
 	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
 
+	/* FIXME: this assumption is actually invalid, because e.g. Array.prototype.push()
+	 * can create an array whose length is above 2**32.
+	 */
+
 	/* Call only for objects with array special behavior, as we assume
 	 * that the length property always exists, and always contains a
 	 * valid number value (in unsigned 32-bit range).
