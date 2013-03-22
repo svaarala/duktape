@@ -307,9 +307,140 @@ int duk_builtin_array_prototype_sort(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
+/*
+ *  splice()
+ */
+
+/* FIXME: this compiles to over 500 bytes now, even without special handling
+ * for an array part.  Uses signed ints so does not handle full array range correctly.
+ */
+/* FIXME: can shift() / unshift() use the same helper?
+ *   shift() is (close to?) <--> splice(0, 1)
+ *   unshift is (close to?) <--> splice(0, 0, [items])?
+ */
+
 int duk_builtin_array_prototype_splice(duk_context *ctx) {
-	/* FIXME: can unshift() use the same helper?  unshift is close to splice(0, 0, [items])? */
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	int nargs;
+	int item_count;
+	int len;
+	int rel_start;
+	int del_count;
+	int i;
+
+	nargs = duk_get_top(ctx);
+	if (nargs < 2) {
+		duk_set_top(ctx, 2);
+		nargs = 2;
+	}
+
+	len = push_this_obj_len_u32(ctx);
+
+	rel_start = duk_to_int_clamped(ctx, 0, -len, len);
+	if (rel_start < 0) {
+		rel_start = len + rel_start;
+	}
+	DUK_ASSERT(rel_start >= 0 && rel_start <= len);
+
+	del_count = duk_to_int_clamped(ctx, 1, 0, len - rel_start);
+	DUK_ASSERT(del_count >= 0 && del_count <= len - rel_start);
+	DUK_ASSERT(del_count + rel_start <= len);
+
+	duk_push_new_array(ctx);
+
+	/* stack[0] = start
+	 * stack[1] = deleteCount
+	 * stack[2...nargs-1] = items
+	 * stack[nargs] = ToObject(this)               -3
+	 * stack[nargs+1] = ToUint32(length)           -2
+	 * stack[nargs+2] = result array               -1
+	 */
+
+	DUK_ASSERT_TOP(ctx, nargs + 3);
+
+	/* Step 9: copy elements-to-be-deleted into the result array */
+
+	for (i = 0; i < del_count; i++) {
+		if (duk_get_prop_index(ctx, -3, rel_start + i)) {
+			duk_put_prop_index(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
+		} else {
+			duk_pop(ctx);
+		}
+	}
+
+	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
+
+	DUK_ASSERT(nargs >= 2);
+	item_count = nargs - 2;
+	if (item_count < del_count) {
+		/*    [ A B C D E F G H ]    rel_index = 2, del_count 3, item count 1
+		 * -> [ A B F G H ]          (conceptual intermediate step)
+		 * -> [ A B . F G H ]        (placeholder marked)
+		 *    [ A B C F G H ]        (actual result at this point, C will be replaced)
+		 */
+
+		DUK_ASSERT_TOP(ctx, nargs + 3);
+
+		for (i = rel_start; i < len - del_count; i++) {
+			if (duk_get_prop_index(ctx, -3, i + del_count)) {
+				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: must Throw */
+			} else {
+				duk_pop(ctx);
+				duk_del_prop_index(ctx, -3, i + item_count);  /* FIXME: must Throw */
+			}
+		}
+
+		DUK_ASSERT_TOP(ctx, nargs + 3);
+
+		/* loop iterator init and limit changed from standard algorithm */
+		for (i = len - 1; i >= len - del_count + item_count; i--) {
+			duk_del_prop_index(ctx, -3, i);  /* FIXME: must Throw */
+		}
+
+		DUK_ASSERT_TOP(ctx, nargs + 3);
+	} else if (item_count > del_count) {
+		/*    [ A B C D E F G H ]    rel_index = 2, del_count 3, item count 4
+		 * -> [ A B F G H ]          (conceptual intermediate step)
+		 * -> [ A B . . . . F G H ]  (placeholder marked)
+		 *    [ A B C D E F F G H ]  (actual result at this point)
+		 */
+
+		DUK_ASSERT_TOP(ctx, nargs + 3);
+
+		/* loop iterator init and limit changed from standard algorithm */
+		for (i = len - del_count - 1; i >= rel_start; i--) {
+			if (duk_get_prop_index(ctx, -3, i + del_count)) {
+				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: must Throw */
+			} else {
+				duk_pop(ctx);
+				duk_del_prop_index(ctx, -3, i + item_count);  /* FIXME: must Throw */
+			}
+		}
+
+		DUK_ASSERT_TOP(ctx, nargs + 3);
+	} else {
+		/*    [ A B C D E F G H ]    rel_index = 2, del_count 3, item count 3
+		 * -> [ A B F G H ]          (conceptual intermediate step)
+		 * -> [ A B . . . F G H ]    (placeholder marked)
+		 *    [ A B C D E F G H ]    (actual result at this point)
+		 */
+	}
+	DUK_ASSERT_TOP(ctx, nargs + 3);
+
+	/* Step 15: insert itemCount elements into the hole made above */
+
+	for (i = 0; i < item_count; i++) {
+		duk_dup(ctx, i + 2);  /* args start at index 2 */
+		duk_put_prop_index(ctx, -4, rel_start + i);  /* FIXME: must Throw */
+	}
+
+	/* Step 16: update length; note that the final length may be above 32 bit range */
+
+	duk_push_number(ctx, ((double) len) - ((double) del_count) + ((double) item_count));
+	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);
+
+	/* result array is already at the top of stack */
+	DUK_ASSERT_TOP(ctx, nargs + 3);
+	return 1;
 }
 
 int duk_builtin_array_prototype_unshift(duk_context *ctx) {
