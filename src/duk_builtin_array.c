@@ -175,7 +175,7 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 
 	duk_push_number(ctx, len);
 	duk_dup_top(ctx);
-	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH);
+	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);
 
 	/* [ arg1 ... argN obj length new_length ] */
 	return 1;
