@@ -261,7 +261,46 @@ int duk_builtin_array_prototype_shift(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_slice(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	unsigned int len;
+	int start, end;
+	int idx;
+	int i;
+
+	len = push_this_obj_len_u32(ctx);
+	duk_push_new_array(ctx);
+
+	/* stack[0] = start
+	 * stack[1] = end
+	 * stack[2] = ToObject(this)
+	 * stack[3] = ToUint32(length)
+	 * stack[4] = result array
+	 */
+
+	start = duk_to_int_clamped(ctx, 0, -len, len);  /* FIXME: does not support full 32-bit range */
+	if (start < 0) {
+		start = len + start;
+	}
+	end = duk_to_int_clamped(ctx, 1, -len, len);
+	if (end < 0) {
+		end = len + end;
+	}
+	DUK_ASSERT(start >= 0 && start <= len);
+	DUK_ASSERT(end >= 0 && end <= len);
+
+	idx = 0;
+	for (i = start; i < end; i++) {
+		DUK_ASSERT_TOP(ctx, 5);
+		if (duk_get_prop_index(ctx, 2, i)) {
+			duk_put_prop_index(ctx, 4, idx);
+		} else {
+			duk_pop(ctx);
+		}
+		idx++;
+		DUK_ASSERT_TOP(ctx, 5);
+	}
+
+	DUK_ASSERT_TOP(ctx, 5);
+	return 1;
 }
 
 int duk_builtin_array_prototype_sort(duk_context *ctx) {
