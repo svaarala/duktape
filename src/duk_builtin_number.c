@@ -79,7 +79,8 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 }
 
 int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* FIXME */
+	return duk_builtin_number_prototype_to_string(ctx);
 }
 
 int duk_builtin_number_prototype_value_of(duk_context *ctx) {
