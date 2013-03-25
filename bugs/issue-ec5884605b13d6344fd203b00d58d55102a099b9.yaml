@@ -1,0 +1,29 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check Throw flags of [[Put]], [[Delete]], [[DefineOwnProperty]]
+desc: |-
+  Sometimes (most often) the flag is false, sometimes it is dependent on
+  the current strictness, and sometimes the flag is true (even for
+  non-strict code).
+  
+  Check all occurrences of Throw-flags in the specification, check that
+  the implementation conforms, and add tests to verify the behavior.
+  Currently e.g. Array built-ins don't always behave correctly.
+type: :task
+component: duk
+release: v0.5
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-21 19:47:49.225808 Z
+references: []
+
+id: ec5884605b13d6344fd203b00d58d55102a099b9
+log_events: 
+- - 2013-03-21 19:47:49.590677 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
+- - 2013-03-21 20:04:13.935369 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.5 from unassigned
+  - ""

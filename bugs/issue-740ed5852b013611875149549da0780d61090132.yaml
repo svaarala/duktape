@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement fast paths for Array built-ins when 'this' is an array with an array part
+desc: |-
+  This might be worthwhile, at least for some built-in functions (push, pop, shift, unshift,
+  reverse, sort?).
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-21 18:02:26.073635 Z
+references: []
+
+id: 740ed5852b013611875149549da0780d61090132
+log_events: 
+- - 2013-03-21 18:02:26.254562 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
