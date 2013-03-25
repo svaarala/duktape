@@ -23,10 +23,10 @@ TypeError
 TypeError
 TypeError
 TypeError
-object 5 boolean:true,number:1,number:2,string:foo,string:bar
-object 5 boolean:false,number:1,number:2,string:foo,string:bar
-object 5 number:123,number:1,number:2,string:foo,string:bar
-object 5 string:foo,number:1,number:2,string:foo,string:bar
+object 5 object:true,number:1,number:2,string:foo,string:bar
+object 5 object:false,number:1,number:2,string:foo,string:bar
+object 5 object:123,number:1,number:2,string:foo,string:bar
+object 5 object:foo,number:1,number:2,string:foo,string:bar
 object 6 number:1,number:2,number:1,number:2,string:foo,string:bar
 object 5 object:[object Object],number:1,number:2,string:foo,string:bar
 object 4 number:1,number:2,number:3,number:4
@@ -36,7 +36,7 @@ object 202 number:1,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,
 object 101 [object Object]
 object 101 [object Object]
 object 2 object:[object Object],object:[object Object]
-object 4 boolean:true,number:1,number:2,number:3
+object 4 object:true,number:1,number:2,number:3
 object 4 object:[object Object],number:1,number:2,number:3
 object 4 object:[object Object],number:1,number:2,number:3
 object 5 string:foo,string:bar,number:1,number:2,number:3
@@ -83,6 +83,8 @@ function basicTest() {
     test(undefined, [ undefined ]);
 
     // basic types test
+    // (note that 'this' argument is always ToObject() coerced, even for
+    // strict functions)
 
     test(undefined, [ 1, 2, [ 'foo', 'bar' ] ]);
     test(null, [ 1, 2, [ 'foo', 'bar' ] ]);
