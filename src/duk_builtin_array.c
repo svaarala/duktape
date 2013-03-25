@@ -23,6 +23,10 @@ static unsigned int push_this_obj_len_u32(duk_context *ctx) {
 	return len;
 }
 
+/*
+ *  Constructor
+ */
+
 int duk_builtin_array_constructor(duk_context *ctx) {
 	int nargs;
 	double d;
@@ -55,6 +59,10 @@ int duk_builtin_array_constructor(duk_context *ctx) {
 	return 1;
 }
 
+/*
+ *  isArray()
+ */
+
 int duk_builtin_array_constructor_is_array(duk_context *ctx) {
 	duk_hobject *h;
 
@@ -62,6 +70,10 @@ int duk_builtin_array_constructor_is_array(duk_context *ctx) {
 	duk_push_boolean(ctx, (h != NULL));
 	return 1;
 }
+
+/*
+ *  toString()
+ */
 
 int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -96,9 +108,9 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_array_prototype_to_locale_string(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
+/*
+ *  concat()
+ */
 
 int duk_builtin_array_prototype_concat(duk_context *ctx) {
 	int i, n;
@@ -151,6 +163,10 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
 	return 1;
 }
 
+/*
+ *  join(), toLocaleString()
+ */
+
 /* Note: checking valstack is necessary, but only in the per-element loop */
 
 /* FIXME: This placeholder does not work for a large number of elements.
@@ -158,11 +174,11 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
  * them here.
  */
 
-int duk_builtin_array_prototype_join(duk_context *ctx) {
+static int array_join_helper(duk_context *ctx, int to_locale_string) {
 	duk_u32 len;
 	duk_u32 i;
 
-	DUK_ASSERT_TOP(ctx, 1);  /* nargs is 1 */
+	DUK_ASSERT_TOP(ctx, 1);
 	if (duk_is_undefined(ctx, 0)) {
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);
@@ -187,7 +203,15 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 			duk_pop(ctx);
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 		} else {
-			duk_to_string(ctx, -1);
+			if (to_locale_string) {
+				duk_to_object(ctx, -1);
+				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_LOCALE_STRING);
+				duk_insert(ctx, -2);  /* -> [ ... toLocaleString ToObject(val) ] */
+				duk_call_method(ctx, 0);
+				duk_to_string(ctx, -1);
+			} else {
+				duk_to_string(ctx, -1);
+			}
 		}
 	}
 
@@ -196,6 +220,21 @@ int duk_builtin_array_prototype_join(duk_context *ctx) {
 	duk_join(ctx, len);
 	return 1;
 }
+
+int duk_builtin_array_prototype_join(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 1);  /* nargs is 1 */
+	return array_join_helper(ctx, 0 /*to_locale_string*/);
+}
+
+int duk_builtin_array_prototype_to_locale_string(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 0);  /* nargs is 0 */
+	duk_push_undefined(ctx);  /* array_join_helper() will default to a comma */
+	return array_join_helper(ctx, 1 /*to_locale_string*/);
+}
+
+/*
+ *  pop(), push()
+ */
 
 int duk_builtin_array_prototype_pop(duk_context *ctx) {
 	unsigned int len;
@@ -249,128 +288,6 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
 	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);
 
 	/* [ arg1 ... argN obj length new_length ] */
-	return 1;
-}
-
-int duk_builtin_array_prototype_reverse(duk_context *ctx) {
-	unsigned int len;
-	unsigned int middle;
-	unsigned int lower, upper;
-	int have_lower, have_upper;
-
-	len = push_this_obj_len_u32(ctx);
-	middle = len / 2;
-
-	for (lower = 0; lower < middle; lower++) {
-		DUK_ASSERT_TOP(ctx, 2);
-
-		upper = len - lower - 1;
-
-		have_lower = duk_get_prop_index(ctx, -2, lower);
-		have_upper = duk_get_prop_index(ctx, -3, upper);
-
-		/* [ ToObject(this) ToUint32(length) lowerValue upperValue ] */
-
-		if (have_upper) {
-			duk_put_prop_index(ctx, -4, lower);  /* FIXME: must Throw */
-		} else {
-			duk_del_prop_index(ctx, -4, lower);
-			duk_pop(ctx);
-		}
-
-		if (have_lower) {
-			duk_put_prop_index(ctx, -3, upper);
-		} else {
-			duk_del_prop_index(ctx, -3, upper);
-			duk_pop(ctx);
-		}
-
-		DUK_ASSERT_TOP(ctx, 2);
-	}
-
-	DUK_ASSERT_TOP(ctx, 2);
-	duk_pop(ctx);  /* -> [ ToObject(this) ] */
-	return 1;
-}
-
-int duk_builtin_array_prototype_shift(duk_context *ctx) {
-	unsigned int len;
-	unsigned int i;
-
-	len = push_this_obj_len_u32(ctx);
-	if (len == 0) {
-		duk_push_int(ctx, 0);
-		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: needs to Throw */
-		return 0;
-	}
-
-	duk_get_prop_index(ctx, 0, 0);
-
-	/* stack[0] = object (this)
-	 * stack[1] = ToUint32(length)
-	 * stack[2] = elem at index 0 (retval)
-	 */
-
-	for (i = 1; i < len; i++) {
-		DUK_ASSERT_TOP(ctx, 3);
-		if (duk_get_prop_index(ctx, 0, i)) {
-			/* fromPresent = true */
-			duk_put_prop_index(ctx, 0, i - 1);  /* FIXME: needs to Throw */
-		} else {
-			/* fromPresent = false */
-			duk_del_prop_index(ctx, 0, i - 1);
-			duk_pop(ctx);
-		}
-	}
-	duk_del_prop_index(ctx, 0, len - 1);  /* FIXME: needs to Throw */
-
-	duk_push_number(ctx, (double) (len - 1));  /* FIXME: push uint */
-	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
-
-	DUK_ASSERT_TOP(ctx, 3);
-	return 1;
-}
-
-int duk_builtin_array_prototype_slice(duk_context *ctx) {
-	unsigned int len;
-	int start, end;
-	int idx;
-	int i;
-
-	len = push_this_obj_len_u32(ctx);
-	duk_push_new_array(ctx);
-
-	/* stack[0] = start
-	 * stack[1] = end
-	 * stack[2] = ToObject(this)
-	 * stack[3] = ToUint32(length)
-	 * stack[4] = result array
-	 */
-
-	start = duk_to_int_clamped(ctx, 0, -len, len);  /* FIXME: does not support full 32-bit range */
-	if (start < 0) {
-		start = len + start;
-	}
-	end = duk_to_int_clamped(ctx, 1, -len, len);
-	if (end < 0) {
-		end = len + end;
-	}
-	DUK_ASSERT(start >= 0 && start <= len);
-	DUK_ASSERT(end >= 0 && end <= len);
-
-	idx = 0;
-	for (i = start; i < end; i++) {
-		DUK_ASSERT_TOP(ctx, 5);
-		if (duk_get_prop_index(ctx, 2, i)) {
-			duk_put_prop_index(ctx, 4, idx);
-		} else {
-			duk_pop(ctx);
-		}
-		idx++;
-		DUK_ASSERT_TOP(ctx, 5);
-	}
-
-	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
 }
 
@@ -764,6 +681,144 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, nargs + 3);
 	return 1;
 }
+
+/*
+ *  reverse()
+ */
+
+int duk_builtin_array_prototype_reverse(duk_context *ctx) {
+	unsigned int len;
+	unsigned int middle;
+	unsigned int lower, upper;
+	int have_lower, have_upper;
+
+	len = push_this_obj_len_u32(ctx);
+	middle = len / 2;
+
+	for (lower = 0; lower < middle; lower++) {
+		DUK_ASSERT_TOP(ctx, 2);
+
+		upper = len - lower - 1;
+
+		have_lower = duk_get_prop_index(ctx, -2, lower);
+		have_upper = duk_get_prop_index(ctx, -3, upper);
+
+		/* [ ToObject(this) ToUint32(length) lowerValue upperValue ] */
+
+		if (have_upper) {
+			duk_put_prop_index(ctx, -4, lower);  /* FIXME: must Throw */
+		} else {
+			duk_del_prop_index(ctx, -4, lower);
+			duk_pop(ctx);
+		}
+
+		if (have_lower) {
+			duk_put_prop_index(ctx, -3, upper);
+		} else {
+			duk_del_prop_index(ctx, -3, upper);
+			duk_pop(ctx);
+		}
+
+		DUK_ASSERT_TOP(ctx, 2);
+	}
+
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_pop(ctx);  /* -> [ ToObject(this) ] */
+	return 1;
+}
+
+/*
+ *  slice()
+ */
+
+int duk_builtin_array_prototype_slice(duk_context *ctx) {
+	unsigned int len;
+	int start, end;
+	int idx;
+	int i;
+
+	len = push_this_obj_len_u32(ctx);
+	duk_push_new_array(ctx);
+
+	/* stack[0] = start
+	 * stack[1] = end
+	 * stack[2] = ToObject(this)
+	 * stack[3] = ToUint32(length)
+	 * stack[4] = result array
+	 */
+
+	start = duk_to_int_clamped(ctx, 0, -len, len);  /* FIXME: does not support full 32-bit range */
+	if (start < 0) {
+		start = len + start;
+	}
+	end = duk_to_int_clamped(ctx, 1, -len, len);
+	if (end < 0) {
+		end = len + end;
+	}
+	DUK_ASSERT(start >= 0 && start <= len);
+	DUK_ASSERT(end >= 0 && end <= len);
+
+	idx = 0;
+	for (i = start; i < end; i++) {
+		DUK_ASSERT_TOP(ctx, 5);
+		if (duk_get_prop_index(ctx, 2, i)) {
+			duk_put_prop_index(ctx, 4, idx);
+		} else {
+			duk_pop(ctx);
+		}
+		idx++;
+		DUK_ASSERT_TOP(ctx, 5);
+	}
+
+	DUK_ASSERT_TOP(ctx, 5);
+	return 1;
+}
+
+/*
+ *  shift()
+ */
+
+int duk_builtin_array_prototype_shift(duk_context *ctx) {
+	unsigned int len;
+	unsigned int i;
+
+	len = push_this_obj_len_u32(ctx);
+	if (len == 0) {
+		duk_push_int(ctx, 0);
+		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: needs to Throw */
+		return 0;
+	}
+
+	duk_get_prop_index(ctx, 0, 0);
+
+	/* stack[0] = object (this)
+	 * stack[1] = ToUint32(length)
+	 * stack[2] = elem at index 0 (retval)
+	 */
+
+	for (i = 1; i < len; i++) {
+		DUK_ASSERT_TOP(ctx, 3);
+		if (duk_get_prop_index(ctx, 0, i)) {
+			/* fromPresent = true */
+			duk_put_prop_index(ctx, 0, i - 1);  /* FIXME: needs to Throw */
+		} else {
+			/* fromPresent = false */
+			duk_del_prop_index(ctx, 0, i - 1);
+			duk_pop(ctx);
+		}
+	}
+	duk_del_prop_index(ctx, 0, len - 1);  /* FIXME: needs to Throw */
+
+	duk_push_number(ctx, (double) (len - 1));  /* FIXME: push uint */
+	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
+
+	DUK_ASSERT_TOP(ctx, 3);
+	return 1;
+}
+
+/*
+ *  unshift()
+ */
 
 int duk_builtin_array_prototype_unshift(duk_context *ctx) {
 	int nargs;
