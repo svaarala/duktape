@@ -303,8 +303,259 @@ int duk_builtin_array_prototype_slice(duk_context *ctx) {
 	return 1;
 }
 
+/*
+ *  sort()
+ *
+ *  Currently qsort with random pivot.  This is now really, really slow,
+ *  because there is no fast path for array parts.
+ */
+
+static int array_sort_compare(duk_context *ctx, int idx1, int idx2) {
+	int have1, have2;
+	int undef1, undef2;
+	int ret;
+	int idx_obj = 1, idx_fn = 0;  /* fixed offsets in valstack */
+	duk_hstring *h1, *h2;
+
+	/* Fast exit if indices are identical.  This is valid for a non-existent property,
+	 * for an undefined value, and almost always for ToString() coerced comparison of
+	 * arbitrary values (corner cases where this is not the case include e.g. a an
+	 * object with varying ToString() coercion).
+	 *
+	 * The specification does not prohibit "caching" of values read from the array, so
+	 * assuming equality for comparing an index with itself falls into the category of
+	 * "caching".
+	 *
+	 * Also, compareFn may be inconsistent, so skipping a call to compareFn here may
+	 * have an effect on the final result.  The specification does not require any
+	 * specific behavior for inconsistent compare functions, so again, this fast path
+	 * is OK.
+	 */
+
+	if (idx1 == idx2) {
+		DUK_DDDPRINT("array_sort_compare: idx1=%d, idx2=%d -> indices identical, quick exit", idx1, idx2);
+		return 0;
+	}
+
+	have1 = duk_get_prop_index(ctx, idx_obj, idx1);
+	have2 = duk_get_prop_index(ctx, idx_obj, idx2);
+
+	DUK_DDDPRINT("array_sort_compare: idx1=%d, idx2=%d, have1=%d, have2=%d, val1=%!T, val2=%!T",
+	             idx1, idx2, have1, have2, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+
+	if (have1) {
+		if (have2) {
+			;
+		} else {
+			ret = -1;
+			goto pop_ret;
+		}
+	} else {
+		if (have2) {
+			ret = 1;
+			goto pop_ret;
+		} else {
+			ret = 0;
+			goto pop_ret;
+		}
+	}
+
+	undef1 = duk_is_undefined(ctx, -2);
+	undef2 = duk_is_undefined(ctx, -1);
+	if (undef1) {
+		if (undef2) {
+			ret = 0;
+			goto pop_ret;
+		} else {
+			ret = 1;
+			goto pop_ret;
+		}
+	} else {
+		if (undef2) {
+			ret = -1;
+			goto pop_ret;
+		} else {
+			;
+		}
+	}
+
+	if (!duk_is_undefined(ctx, idx_fn)) {
+		double d;
+
+		/* no need to check callable; duk_call() will do that */
+		duk_dup(ctx, idx_fn);    /* -> [ ... x y fn ] */
+		duk_insert(ctx, -3);     /* -> [ ... fn x y ] */
+		duk_call(ctx, 2);        /* -> [ ... res ] */
+
+		/* The specification is a bit vague what to do if the return
+		 * value is not a number.  Other implementations seem to
+		 * tolerate non-numbers but e.g. V8 won't apparently do a
+		 * ToNumber().
+		 */
+
+		/* FIXME: best behavior for real world compatibility? */
+
+		d = duk_to_number(ctx, -1);
+		if (d < 0.0) {
+			ret = -1;
+		} else if (d > 0.0) {
+			ret = 1;
+		} else {
+			ret = 0;
+		}
+
+		duk_pop(ctx);
+		DUK_DDDPRINT("-> result %d (from comparefn, after coercion)", ret);
+		return ret;
+	}
+
+	/* string compare is the default (a bit oddly) */
+
+	h1 = duk_to_hstring(ctx, -2);
+	h2 = duk_to_hstring(ctx, -1);
+	DUK_ASSERT(h1 != NULL);
+	DUK_ASSERT(h2 != NULL);
+
+	ret = duk_js_string_compare(h1, h2);  /* retval is directly usable */
+	goto pop_ret;
+
+ pop_ret:
+	duk_pop_2(ctx);
+	DUK_DDDPRINT("-> result %d", ret);
+	return ret;
+}
+
+static void array_sort_swap(duk_context *ctx, int l, int r) {
+	int have_l, have_r;
+	int idx_obj = 1;  /* fixed offsets in valstack */
+
+	if (l == r) {
+		return;
+	}
+
+	/* swap elements; deal with non-existent elements correctly */
+	have_l = duk_get_prop_index(ctx, idx_obj, l);
+	have_r = duk_get_prop_index(ctx, idx_obj, r);
+
+	if (have_r) {
+		/* right exists, [[Put]] regardless whether or not left exists */
+		duk_put_prop_index(ctx, idx_obj, l);
+	} else {
+		duk_del_prop_index(ctx, idx_obj, l);
+		duk_pop(ctx);
+	}
+
+	if (have_l) {
+		duk_put_prop_index(ctx, idx_obj, r);
+	} else {
+		duk_del_prop_index(ctx, idx_obj, r);
+		duk_pop(ctx);
+	}
+}
+
+static void array_qsort(duk_context *ctx, int lo, int hi) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	int p, l, r;
+
+	DUK_DDDPRINT("array_qsort: lo=%d, hi=%d, obj=%!T", lo, hi, duk_get_tval(ctx, 1));
+
+	DUK_ASSERT_TOP(ctx, 3);
+
+	/* In some cases it may be that lo > hi, or hi < 0; these
+	 * degenerate cases happen e.g. for empty arrays, and in
+	 * recursion leaves.
+	 */
+
+	/* trivial cases */
+	if (hi - lo < 1) {
+		DUK_DDDPRINT("degenerate case, return immediately");
+		return;
+	}
+	DUK_ASSERT(hi > lo);
+	DUK_ASSERT(hi - lo + 1 >= 2);
+
+	/* randomized pivot selection */
+	p = lo + (duk_util_tinyrandom_get_bits(thr, 30) % (hi - lo + 1));
+	DUK_ASSERT(p >= lo && p <= hi);
+	DUK_DDDPRINT("lo=%d, hi=%d, chose pivot p=%d", lo, hi, p);
+
+	/* move pivot out of the way */
+	array_sort_swap(ctx, p, lo);
+	p = lo;
+	DUK_DDDPRINT("pivot moved out of the way: %!T", duk_get_tval(ctx, 1));
+
+	l = lo + 1;
+	r = hi;
+	for (;;) {
+		/* find elements to swap */
+		for (;;) {
+			DUK_DDDPRINT("left scan: l=%d, r=%d, p=%d", l, r, p);
+			if (l >= hi) {
+				break;
+			}
+			if (array_sort_compare(ctx, l, p) >= 0) {  /* !(l < p) */
+				break;
+			}
+			l++;
+		}
+		for (;;) {
+			DUK_DDDPRINT("right scan: l=%d, r=%d, p=%d", l, r, p);
+			if (r <= lo) {
+				break;
+			}
+			if (array_sort_compare(ctx, p, r) >= 0) {  /* !(p < r) */
+				break;
+			}
+			r--;
+		}
+		if (l >= r) {
+			goto done;
+		}
+		DUK_ASSERT(l < r);
+
+		DUK_DDDPRINT("swap %d and %d", l, r);
+
+		array_sort_swap(ctx, l, r);
+
+		DUK_DDDPRINT("after swap: %!T", duk_get_tval(ctx, 1));
+		l++;
+		r--;
+	}
+ done:
+	/* Note that 'l' and 'r' may cross, i.e. r < l */
+	DUK_ASSERT(l >= lo && l <= hi);
+	DUK_ASSERT(r >= lo && r <= hi);
+
+	/* FIXME: there's no explicit recursion bound here now.  For the average
+	 * qsort recursion depth O(log n) that's not really necessary: e.g. for
+	 * 2**32 recursion depth would be about 32 which is OK.  However, qsort
+	 * worst case recursion depth is O(n) which may be a problem.
+	 */
+
+	/* move pivot to its final place */
+	DUK_DDDPRINT("before final pivot swap: %!T", duk_get_tval(ctx, 1));
+	array_sort_swap(ctx, lo, r);	
+
+	DUK_DDDPRINT("recurse: pivot=%d, obj=%!T", r, duk_get_tval(ctx, 1));
+	array_qsort(ctx, lo, r - 1);
+	array_qsort(ctx, r + 1, hi);
+}
+
 int duk_builtin_array_prototype_sort(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	unsigned int len;
+
+	len = push_this_obj_len_u32(ctx);
+
+	/* stack[0] = compareFn
+	 * stack[1] = ToObject(this)
+	 * stack[2] = ToUint32(length)
+	 */
+
+	array_qsort(ctx, 0, len - 1);
+
+	DUK_ASSERT_TOP(ctx, 3);
+	duk_pop(ctx);
+	return 1;  /* return ToObject(this) */
 }
 
 /*
