@@ -298,6 +298,8 @@ int duk_builtin_array_prototype_push(duk_context *ctx) {
  *  because there is no fast path for array parts.
  */
 
+/* FIXME: throught, the Throw flag should be set for [[Get]], [[Put]], [[Delete]] ops */
+
 static int array_sort_compare(duk_context *ctx, int idx1, int idx2) {
 	int have1, have2;
 	int undef1, undef2;
