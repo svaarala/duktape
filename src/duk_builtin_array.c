@@ -101,7 +101,54 @@ int duk_builtin_array_prototype_to_locale_string(duk_context *ctx) {
 }
 
 int duk_builtin_array_prototype_concat(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	int i, n;
+	int j, len;
+	int idx;
+	duk_hobject *h;
+
+	/* FIXME: the insert here is a bit expensive if there are a lot of items.
+	 * It could also be special cased in the outermost for loop quite easily
+	 * (as the element is dup()'d anyway).
+	 */
+
+	duk_push_this_coercible_to_object(ctx);
+	duk_insert(ctx, 0);
+	n = duk_get_top(ctx);
+	duk_push_new_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */
+
+	idx = 0;
+	for (i = 0; i < n; i++) {
+		DUK_ASSERT_TOP(ctx, n + 1);
+
+		/* [ ToObject(this) item1 ... itemN arr ] */
+
+		duk_dup(ctx, i);
+		h = duk_get_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_ARRAY);
+		if (!h) {
+			duk_put_prop_index(ctx, -2, idx++);
+			continue;
+		}
+
+		/* [ ToObject(this) item1 ... itemN arr item(i) ] */
+
+		/* FIXME: an array can have length higher than 32 bits; this is not handled
+		 * correctly now (also len is signed so length above 2**31-1 will have trouble.
+		 */
+		len = duk_get_length(ctx, -1);
+		for (j = 0; j < len; j++) {
+			if (duk_get_prop_index(ctx, -1, j)) {
+				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
+				duk_put_prop_index(ctx, -3, idx++);
+			} else {
+				idx++;
+				duk_pop(ctx);
+			}
+		}
+		duk_pop(ctx);
+	}
+
+	DUK_ASSERT_TOP(ctx, n + 1);
+	return 1;
 }
 
 /* Note: checking valstack is necessary, but only in the per-element loop */
