@@ -24,11 +24,35 @@ static unsigned int push_this_obj_len_u32(duk_context *ctx) {
 }
 
 int duk_builtin_array_constructor(duk_context *ctx) {
-	if (duk_is_constructor_call(ctx)) {
-		return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-	} else {
-		return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	int nargs;
+	double d;
+	duk_u32 len;
+	int i;
+
+	nargs = duk_get_top(ctx);
+	duk_push_new_array(ctx);
+
+	if (nargs == 1 && duk_is_number(ctx, 0)) {
+		/* FIXME: expensive check */
+		d = duk_get_number(ctx, 0);
+		len = duk_to_uint32(ctx, 0);
+		if (((double) len) != d) {
+			return DUK_RET_RANGE_ERROR;
+		}
+		duk_dup(ctx, 0);
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
+		return 1;
 	}
+
+	/* FIXME: optimize by creating array into correct size directly, and
+	 * operating on the array part directly; values can be memcpy()'d from
+	 * value stack directly as long as refcounts are increased.
+	 */
+	for (i = 0; i < nargs; i++) {
+		duk_dup(ctx, i);
+		duk_put_prop_index(ctx, -2, i);
+	}
+	return 1;
 }
 
 int duk_builtin_array_constructor_is_array(duk_context *ctx) {
