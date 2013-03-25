@@ -742,12 +742,18 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	 * it because there are some platform specific bugs.  Don't use
 	 * strncmp() because it stops comparing at a NUL.
 	 */
+
+	/* FIXME: use a wrapper utility memcmp() instead of doing the zero
+	 * check everywhere separately.
+	 */
+
 	if (prefix_len == 0) {
-		return 0;
-	}	
-	rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
-	            (const char *) DUK_HSTRING_GET_DATA(h2),
-	            prefix_len);
+		rc = 0;
+	} else {
+		rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
+		            (const char *) DUK_HSTRING_GET_DATA(h2),
+		            prefix_len);
+	}
 
 	if (rc < 0) {
 		return -1;
