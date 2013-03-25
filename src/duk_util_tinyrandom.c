@@ -24,7 +24,8 @@ duk_u32 duk_util_tinyrandom_get_bits(duk_hthread *thr, int n) {
 
 	for (i = 0; i < n; i++) {
 		UPDATE_RND(rnd);
-		res = RND_BIT(rnd);
+		res <<= 1;
+		res += RND_BIT(rnd);
 	}
 
 	thr->heap->rnd_state = rnd;
