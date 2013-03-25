@@ -715,6 +715,57 @@ int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y) {
  * needs to push stuff on the stack anyway...
  */
 
+int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
+	/*
+	 *  String comparison (E5 Section 11.8.5, step 4), which
+	 *  needs to compare codepoint by codepoint.
+	 *
+	 *  However, UTF-8 allows us to use strcmp directly: the shared
+	 *  prefix will be encoded identically (UTF-8 has unique encoding)
+	 *  and the first differing character can be compared with a simple
+	 *  unsigned byte comparison (which strcmp does).
+	 *
+	 *  This will not work properly for non-xutf-8 strings, but this
+	 *  is not an issue for compliance.
+	 */
+
+	size_t h1_len, h2_len, prefix_len;
+	int rc;
+
+	DUK_ASSERT(h1 != NULL);
+	DUK_ASSERT(h2 != NULL);
+	h1_len = DUK_HSTRING_GET_BYTELEN(h1);
+	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
+	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
+
+	/* memcmp() should return zero (equal) for zero length, but avoid
+	 * it because there are some platform specific bugs.  Don't use
+	 * strncmp() because it stops comparing at a NUL.
+	 */
+	if (prefix_len == 0) {
+		return 0;
+	}	
+	rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
+	            (const char *) DUK_HSTRING_GET_DATA(h2),
+	            prefix_len);
+
+	if (rc < 0) {
+		return -1;
+	} else if (rc > 0) {
+		return 1;
+	}
+
+	/* prefix matches, lengths matter now */
+	if (h1_len < h2_len) {
+		/* e.g. "x" < "xx" */
+		return -1;
+	} else if (h1_len > h2_len) {
+		return 1;
+	}
+
+	return 0;
+}
+
 int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int eval_left_first, int negate) {
 	duk_context *ctx = (duk_context *) thr;
 	double d1, d2;
@@ -739,56 +790,17 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	tv_y = duk_get_tval(ctx, -1);
 
 	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
-		/*
-		 *  String comparison (E5 Section 11.8.5, step 4), which
-		 *  needs to compare codepoint by codepoint.
-		 *
-		 *  However, UTF-8 allows us to use strcmp directly: the shared
-		 *  prefix will be encoded identically (UTF-8 has unique encoding)
-		 *  and the first differing character can be compared with a simple
-		 *  unsigned byte comparison (which strcmp does).
-		 *
-		 *  This will not work properly for non-xutf-8 strings, but this
-		 *  is not an issue for compliance.
-		 */
-
-		/* FIXME: test cases to verify all paths */
-
 		duk_hstring *h1 = DUK_TVAL_GET_STRING(tv_x);
 		duk_hstring *h2 = DUK_TVAL_GET_STRING(tv_y);
-		size_t h1_len, h2_len, prefix_len;
-
 		DUK_ASSERT(h1 != NULL);
 		DUK_ASSERT(h2 != NULL);
-		h1_len = DUK_HSTRING_GET_BYTELEN(h1);
-		h2_len = DUK_HSTRING_GET_BYTELEN(h2);
-		prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
 
-		/* memcmp() should return zero (equal) for zero length, but avoid
-		 * it because there are some platform specific bugs.  Don't use
-		 * strncmp() because it stops comparing at a NUL.
-		 */
-		if (prefix_len == 0) {
-			rc = 0;
-			goto skip_memcmp;
-		}	
-		rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
-		            (const char *) DUK_HSTRING_GET_DATA(h2),
-		            prefix_len);
-	 skip_memcmp:
-
+		rc = duk_js_string_compare(h1, h2);
 		if (rc < 0) {
 			goto lt_true;
-		} else if (rc > 0) {
+		} else {
 			goto lt_false;
 		}
-
-		/* prefix matches, lengths matter now */
-		if (h1_len >= h2_len) {
-			/* e.g. "xx" < "xx" and "xx" < "x" are false */
-			goto lt_false;
-		}
-		goto lt_true;
 	} else {
 		/* Ordering should not matter (E5 Section 11.8.5, step 3.a) but
 		 * preserve it just in case.

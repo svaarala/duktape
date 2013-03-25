@@ -32,6 +32,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 int duk_js_strict_equals(duk_tval *tv_x, duk_tval *tv_y);
 int duk_js_samevalue_number(double x, double y);
 int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y);
+int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);
 int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int eval_left_first, int negate);
 int duk_js_lessthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 int duk_js_greaterthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
