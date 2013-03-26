@@ -73,7 +73,8 @@ function basicTest() {
     test(obj);
 
     // the join() fallback is the standard Object.prototype.toString() function,
-    // i.e. override should have no effect
+    // i.e. override should have no effect (must return '[object Object]' and
+    // not 'OBJ-TOSTRING').
 
     Object.prototype.toString = function() { return 'OBJ-TOSTRING'; };
     test({ foo: 1, bar: 2 });
