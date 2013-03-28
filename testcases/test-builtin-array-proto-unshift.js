@@ -1,4 +1,5 @@
 
+// FIXME: util
 function printDesc(obj, key) {
     var pd = Object.getOwnPropertyDescriptor(obj, key);
     if (!pd) {
