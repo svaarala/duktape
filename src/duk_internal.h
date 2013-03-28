@@ -15,6 +15,7 @@
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
+#include <stdint.h>
 
 #include "duk_features.h"
 #include "duk_misc.h"
