@@ -36,6 +36,7 @@ Infinity
 string Infinity
 undefined
 string NaN
+64
 ===*/
 
 function basicTest() {
@@ -58,6 +59,10 @@ function basicTest() {
         print(values[i]);
         test(values[i]);
     }
+
+    // radix argument is passed to toString now
+
+    print(new Number(100).toLocaleString(16));
 }
 
 try {
