@@ -23,7 +23,7 @@ desc: |-
     "foo\u1234bar".printCodePoints();
 type: :task
 component: duk
-release: v0.4
+release: v0.5
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -35,4 +35,8 @@ log_events:
 - - 2013-03-14 21:30:40.692697 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-03-28 21:43:52.112892 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.5 from v0.4
   - ""
