@@ -24,6 +24,10 @@
 #      initialization order (and hence enumeration order) of keys can be
 #      controlled.
 
+# FIXME: Some algorithms need to refer to the original, unmodified built-in
+# functions (like Object.toString).  These should be marked somehow here and
+# slots in thr->builtins should be allocated for them.
+
 import os
 import sys
 import json
@@ -493,6 +497,7 @@ bi_number_constructor = {
 	'name': 'Number',
 
 	'length': 1,
+	'varargs': True,
 	'native': 'duk_builtin_number_constructor',
 	'callable': True,
 	'constructable': True,
