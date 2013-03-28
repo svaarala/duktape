@@ -35,7 +35,7 @@ function functionTest() {
         }
     }
 
-    // no arg given should behave the same as undefined given
+    // no arg given should be treated as +0
     t = Number(); print(typeof t, t);
 
     // other basic argument types
@@ -103,7 +103,7 @@ function constructorTest() {
         }
     }
 
-    // no arg given should behave the same as undefined given
+    // no arg given should be treated as +0
     test(undefined, 0);
 
     // other basic argument types
