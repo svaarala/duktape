@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add documentation on sorting
+desc: ""
+type: :task
+component: duk
+release: v0.4
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-03-28 19:45:54.958051 Z
+references: []
+
+id: bb3f19f27e4b52077f3533389f51a6f68246e8ac
+log_events: 
+- - 2013-03-28 19:45:55.122883 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
