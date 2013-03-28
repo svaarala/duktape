@@ -4,6 +4,27 @@
 
 #include "duk_internal.h"
 
+static void push_this_number_plain(duk_context *ctx) {
+	duk_hobject *h;
+
+	/* Number built-in accepts a plain number or a Number object (whose
+	 * internal value is operated on).  Other types cause TypeError.
+	 */
+
+	duk_push_this(ctx);
+	if (duk_is_number(ctx, -1)) {
+		return;
+	}
+	h = duk_get_hobject(ctx, -1);
+	if (!h || 
+	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "expected a number");
+	}
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+	DUK_ASSERT(duk_is_number(ctx, -1));
+	duk_remove(ctx, -2);
+}
+
 int duk_builtin_number_constructor(duk_context *ctx) {
 	int nargs;
 	duk_hobject *h_this;
@@ -60,74 +81,39 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 }
 
 int duk_builtin_number_prototype_to_string(duk_context *ctx) {
-	duk_hobject *h;
-
 	/* FIXME: radixes etc:
 	 *
 	 * > (5.66).toString(36)
 	 * '5.nrcyk5rcykogq2xpdb7ta9k9'
 	 */
 
-	duk_push_this(ctx);
-	if (duk_is_number(ctx, -1)) {
-		/* number is directly ok */
-	} else {
-		h = duk_get_hobject(ctx, -1);
-		if (!h) {
-			goto type_error;
-		}
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER) {
-			goto type_error;
-		}
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
-		DUK_ASSERT(duk_is_number(ctx, -1));
-	}  /* uneven stack on purpose */
-
-	duk_to_string(ctx, -1);
+	push_this_number_plain(ctx);
+	duk_to_string(ctx, -1);  /* FIXME: incorrect */
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
-	/* FIXME */
+	push_this_number_plain(ctx);
 	return duk_builtin_number_prototype_to_string(ctx);
 }
 
 int duk_builtin_number_prototype_value_of(duk_context *ctx) {
-	duk_hobject *h;
-
-	/* FIXME: shared prechecks, refactor */
-
-	duk_push_this(ctx);
-	if (duk_is_number(ctx, -1)) {
-		return 1;
-	}
-	h = duk_get_hobject(ctx, -1);
-	if (!h) {
-		goto type_error;
-	}
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER) {
-		goto type_error;
-	}
-
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+	push_this_number_plain(ctx);
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
+	push_this_number_plain(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
+	push_this_number_plain(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
+	push_this_number_plain(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
