@@ -5,46 +5,58 @@
 #include "duk_internal.h"
 
 int duk_builtin_number_constructor(duk_context *ctx) {
-	duk_hobject *this;
+	int nargs;
+	duk_hobject *h_this;
 
 	DUK_ASSERT_TOP(ctx, 1);
 
-	if (duk_is_constructor_call(ctx)) {
-		/*
-		 *  E5 Section 15.7.2.1 requires that the constructed object
-		 *  must have the original Number.prototype as its internal
-		 *  prototype.  However, since Number.prototype is non-writable
-		 *  and non-configurable, this doesn't have to be enforced here:
-		 *  The default object (bound to 'this') is OK, though we have
-		 *  to change its class.
-		 */
+	/*
+	 *  The Number constructor uses ToNumber(arg) for number coercion
+	 *  (coercing an undefined argument to NaN).  However, if the
+	 *  argument is not given at all, +0 must be used instead.  This
+	 *  is a vararg function to detect whether an argument was given
+	 *  or not.
+	 */
 
-		/* FIXME: helper */
-		duk_push_this(ctx);
-		this = duk_get_hobject(ctx, -1);
-		DUK_ASSERT(this != NULL);
-		DUK_ASSERT(this->prototype == ((duk_hthread *) ctx)->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
+	nargs = duk_get_top(ctx);
+	if (nargs == 0) {
+		duk_push_int(ctx, 0);
+	}
+	duk_to_number(ctx, 0);
+	duk_set_top(ctx, 1);
+	DUK_ASSERT_TOP(ctx, 1);
 
-		DUK_HOBJECT_SET_CLASS_NUMBER(this, DUK_HOBJECT_CLASS_NUMBER);
-
-		/* [ val obj ] */
-
-		/* Internal value set to ToNumber(arg) or +0; if no arg given,
-		 * ToNumber(undefined) = +0 so no special check needed.
-		 *
-		 * String internal value is immutable.
-		 */
-		DUK_DDDPRINT("coercing argument: %!T", duk_get_tval(ctx, 0));
-		duk_to_number(ctx, 0);
-		duk_dup(ctx, 0);  /* -> [ val obj val ] */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
-
-		return 0;
-	} else {
-		/* FIXME: approximate */
-		duk_to_number(ctx, 0);
+	if (!duk_is_constructor_call(ctx)) {
 		return 1;
 	}
+
+	/*
+	 *  E5 Section 15.7.2.1 requires that the constructed object
+	 *  must have the original Number.prototype as its internal
+	 *  prototype.  However, since Number.prototype is non-writable
+	 *  and non-configurable, this doesn't have to be enforced here:
+	 *  The default object (bound to 'this') is OK, though we have
+	 *  to change its class.
+	 *
+	 *  Internal value set to ToNumber(arg) or +0; if no arg given,
+	 *  ToNumber(undefined) = NaN, so special treatment is needed
+	 *  (above).  String internal value is immutable.
+	 */
+
+	/* FIXME: helper */
+	duk_push_this(ctx);
+	h_this = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h_this != NULL);
+	DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_NUMBER);
+
+	DUK_ASSERT(h_this->prototype == ((duk_hthread *) ctx)->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
+	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_this) == DUK_HOBJECT_CLASS_NUMBER);
+	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
+
+	duk_dup(ctx, 0);  /* -> [ val obj val ] */
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+
+	return 0;  /* no return value -> don't replace created value */
 }
 
 int duk_builtin_number_prototype_to_string(duk_context *ctx) {
