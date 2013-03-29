@@ -247,7 +247,6 @@ int main(int argc, char *argv[]) {
 	duk_context *ctx = NULL;
 	int retval = 0;
 	const char *filename = NULL;
-	int bytecode = 0;
 	int interactive = 0;
 	int memlimit_high = 0;
 	int i;
@@ -262,9 +261,7 @@ int main(int argc, char *argv[]) {
 		if (!arg) {
 			goto usage;
 		}
-		if (strcmp(arg, "-b") == 0) {
-			bytecode = 1;
-		} else if (strcmp(arg, "-m") == 0) {
+		if (strcmp(arg, "-m") == 0) {
 			memlimit_high = 1;
 		} else if (strlen(arg) > 1 && arg[0] == '-') {
 			goto usage;
@@ -277,11 +274,6 @@ int main(int argc, char *argv[]) {
 	}
 	if (!filename) {
 		interactive = 1;
-	}
-	if (bytecode) {
-		fprintf(stderr, "bytecode execution not implemented\n");
-		fflush(stderr);
-		exit(1);
 	}
 
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
@@ -325,9 +317,8 @@ int main(int argc, char *argv[]) {
 	return retval;
 
  usage:
-	fprintf(stderr, "Usage: duk [-b] <filename>\n");
+	fprintf(stderr, "Usage: duk [-m] <filename>\n");
 	fprintf(stderr, "where\n");
-	fprintf(stderr, "   -b      load bytecode instead of Ecmascript code\n");
 	fprintf(stderr, "   -m      use high memory limit (useful for valgrind use)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
