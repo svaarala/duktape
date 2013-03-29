@@ -129,6 +129,7 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	duk_hstring *h;
 	duk_u8 *p, *p_start, *p_end;
 	duk_u32 cp;
+	int clamped;
 
 	/* FIXME: faster implementation */
 
@@ -138,9 +139,12 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 
-	/* FIXME: need clamped check or clamp limits [-1, len+1] */
-	pos = duk_to_int(ctx, 0);
-	if (pos < 0 || pos >= DUK_HSTRING_GET_CHARLEN(h)) {
+	pos = duk_to_int_clamped_raw(ctx,
+	                             0 /*index*/,
+	                             0 /*min(incl)*/,
+	                             DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl*/,
+	                             &clamped /*clamped*/);
+	if (clamped) {
 		duk_push_number(ctx, NAN);  /* FIXME: best constant for NAN? */
 		return 1;
 	}

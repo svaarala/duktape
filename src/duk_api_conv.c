@@ -261,11 +261,12 @@ const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 }
 
 /* FIXME: other variants like uint, u32 etc */
-int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval) {
+int duk_to_int_clamped_raw(duk_context *ctx, int index, int minval, int maxval, int *out_clamped) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
 	double d;
+	int clamped = 0;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -273,9 +274,11 @@ int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval) {
 	DUK_ASSERT(tv != NULL);
 	d = duk_js_tointeger(thr, tv);  /* E5 Section 9.4, ToInteger() */
 
-	if (d <= (double) minval) {
+	if (d < (double) minval) {
+		clamped = 1;
 		d = (double) minval;
-	} else if (d >= (double) maxval) {
+	} else if (d > (double) maxval) {
+		clamped = 1;
 		d = (double) maxval;
 	}
 
@@ -285,7 +288,25 @@ int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval) {
 	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
+	if (out_clamped) {
+		*out_clamped = clamped;
+	} else {
+		/* coerced value is updated to value stack even when RangeError thrown */
+		if (clamped) {
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "number outside range");
+		}
+	}
+
 	return (int) d;
+}
+
+int duk_to_int_clamped(duk_context *ctx, int index, int minval, int maxval) {
+	int dummy;
+	return duk_to_int_clamped_raw(ctx, index, minval, maxval, &dummy);
+}
+
+int duk_to_int_check_range(duk_context *ctx, int index, int minval, int maxval) {
+	return duk_to_int_clamped_raw(ctx, index, minval, maxval, NULL);  /* NULL -> RangeError */
 }
 
 static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {

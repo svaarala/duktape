@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static void push_this_number_plain(duk_context *ctx) {
+static double push_this_number_plain(duk_context *ctx) {
 	duk_hobject *h;
 
 	/* Number built-in accepts a plain number or a Number object (whose
@@ -13,16 +13,20 @@ static void push_this_number_plain(duk_context *ctx) {
 
 	duk_push_this(ctx);
 	if (duk_is_number(ctx, -1)) {
-		return;
+		DUK_DDDPRINT("plain number value: %!T", duk_get_tval(ctx, -1));
+		return duk_get_number(ctx, -1);
 	}
 	h = duk_get_hobject(ctx, -1);
 	if (!h || 
 	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
+		DUK_DDDPRINT("unacceptable this value: %!T", duk_get_tval(ctx, -1));
 		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "expected a number");
 	}
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(ctx, -1));
+	DUK_DDDPRINT("number object: %!T, internal value: %!T", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 	duk_remove(ctx, -2);
+	return duk_get_number(ctx, -1);
 }
 
 int duk_builtin_number_constructor(duk_context *ctx) {
@@ -86,34 +90,89 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 	 * > (5.66).toString(36)
 	 * '5.nrcyk5rcykogq2xpdb7ta9k9'
 	 */
+	double d;
 
-	push_this_number_plain(ctx);
+	d = push_this_number_plain(ctx);
 	duk_to_string(ctx, -1);  /* FIXME: incorrect */
 	return 1;
 }
 
 int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
-	push_this_number_plain(ctx);
+	/* FIXME: just use toString() for now; permitted although not recommended.
+	 * nargs==1, so radix is passed to toString().
+	 */
 	return duk_builtin_number_prototype_to_string(ctx);
 }
 
 int duk_builtin_number_prototype_value_of(duk_context *ctx) {
-	push_this_number_plain(ctx);
+	double d;
+
+	d = push_this_number_plain(ctx);
 	return 1;
 }
 
 int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
-	push_this_number_plain(ctx);
+	int frac_digits;
+	double d;
+
+	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
+	d = push_this_number_plain(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
-	push_this_number_plain(ctx);
+	int frac_digits;
+	double d;
+
+	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
+	d = push_this_number_plain(ctx);
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
 int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
-	push_this_number_plain(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+	/* The specification has quite awkward order of coercion and
+	 * checks for toPrecision().  The operations below are a bit
+	 * reordered, within constraints of observable side effects.
+	 */
+
+	double d;
+	int prec;
+	int c;
+	int neg = 0;
+
+	DUK_ASSERT_TOP(ctx, 1);
+
+	d = push_this_number_plain(ctx);
+	if (duk_is_undefined(ctx, 0)) {
+		goto use_to_string;
+	}
+	DUK_ASSERT_TOP(ctx, 2);
+
+	duk_to_int(ctx, 0);  /* for side effects */
+
+	c = fpclassify(d);
+	if (c == FP_NAN || c == FP_INFINITE) {
+		goto use_to_string;
+	}
+
+	prec = duk_to_int_check_range(ctx, 0, 1, 21);
+
+	if (d < 0.0) {
+		d = -d;
+		neg = 1;
+	}
+
+	/* FIXME: placeholder */
+	duk_push_sprintf(ctx, "%s%.*lf", (neg ? "-" : ""), d, prec);
+	return 1;
+
+ use_to_string:
+	/* Used when precision is undefined; also used for NaN (-> "NaN"),
+	 * and +/- infinity (-> "Infinity", "-Infinity").
+	 */
+
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_to_string(ctx, -1);
+	return 1;
 }
 

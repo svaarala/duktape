@@ -526,7 +526,7 @@ bi_number_prototype = {
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_number_prototype_to_string',		'length': 1 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_number_prototype_to_locale_string',	'length': 0 },
+		{ 'name': 'toLocaleString',		'native': 'duk_builtin_number_prototype_to_locale_string',	'length': 1 },
 		{ 'name': 'valueOf',			'native': 'duk_builtin_number_prototype_value_of',		'length': 0 },
 		{ 'name': 'toFixed',			'native': 'duk_builtin_number_prototype_to_fixed',		'length': 1 },
 		{ 'name': 'toExponential',		'native': 'duk_builtin_number_prototype_to_exponential',	'length': 1 },
