@@ -398,3 +398,15 @@ int duk_builtin_duk_object_dec(duk_context *ctx) {
 	}
 }
 
+int duk_builtin_duk_object_sleep(duk_context *ctx) {
+	struct timeval tv;
+	int msec;
+
+	/* FIXME: signal handling */
+	msec = duk_to_int(ctx, 0);
+	tv.tv_sec = msec / 1000;
+	tv.tv_usec = (msec % 1000) * 1000;
+	(void) select(0, NULL, NULL, NULL, &tv);
+	return 0;
+}
+

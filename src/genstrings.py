@@ -36,6 +36,24 @@ define_prefix = 'DUK_STRIDX_'
 # XXX: currently the keywords are not recorded; use them later to organize
 # strings more optimally
 
+class BuiltinString:
+	name = None
+	section_b = None
+	browser_like = None
+	custom = None
+	internal = None
+	reserved_word = None
+	future_reserved_word = None
+	future_reserved_word_strict = None
+	special_literal = None
+	class_name = None
+
+	# computed
+	req_8bit = None
+
+	def __init__(self):
+		pass
+
 def mkstr(x,
           section_b=False,
           browser_like=False,
@@ -56,7 +74,23 @@ def mkstr(x,
 	if internal:
 		x = '\x00' + x
 
-	return x
+	ret = BuiltinString()
+	ret.name = x
+	ret.section_b = section_b
+	ret.browser_like = browser_like
+	ret.custom = custom
+	ret.internal = internal
+	ret.reserved_word = reserved_word
+	ret.future_reserved_word = future_reserved_word
+	ret.future_reserved_word_strict = future_reserved_word_strict
+	ret.special_literal = special_literal
+	ret.class_name = class_name
+
+	ret.req_8bit = False
+	if class_name:
+		ret.req_8bit = True
+
+	return ret
 
 # Standard built-in object related strings
 standard_builtin_string_list = [
@@ -511,6 +545,7 @@ duk_string_list = [
 	mkstr("dec", custom=True),
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
+	mkstr("sleep", custom=True),
 
 	# special literals for custom compatible json encoding
 	# FIXME: placeholders, change later
@@ -666,6 +701,7 @@ special_define_names = {
 
 # Get a define name for a string
 def get_define_name(x):
+	x = x.name
 	if special_define_names.has_key(x):
 		return define_prefix + special_define_names[x]
 
@@ -791,28 +827,19 @@ def gen_strings_data_bitpacked(strlist):
 
 	return res, maxlen
 
-
-if __name__ == '__main__':
-	parser = optparse.OptionParser()
-	parser.add_option('--out-header', dest='out_header')
-	parser.add_option('--out-source', dest='out_source')
-	parser.add_option('--out-python', dest='out_python')
-	parser.add_option('--out-bin', dest='out_bin')
-	parser.add_option('--byte-order', dest='byte_order')	# currently unused
-	(opts, args) = parser.parse_args()
-
+def gen_string_list():
 	# Strings are ordered in the result as follows:
 	#   1. Strings not in either of the following two categories
 	#   2. Reserved words in strict mode only
 	#   3. Reserved words in both non-strict and strict mode
 	#
-	# Strings that below in multiple categories (such as 'true') are
-	# output in the earliest category.  The lexer needs to have the
-	# reserved words in an easy-to-use order.  Strings needed by built-in
-	# initialization should be in the beginning to ensure that a 1-byte
-	# index suffices for them.
+	# Reserved words must follow an exact order because they are
+	# translated to/from token numbers by addition/subtraction.
+	# The remaining strings (in category 1) must be ordered so
+	# that those strings requiring an 8-bit index must be in the
+	# beginning.
 	#
-	# XXX: this should be based on string metadata given to mkstr().
+	# XXX: quite hacky, rework.
 
 	strlist = []
 	num_nonstrict_reserved = None
@@ -822,7 +849,7 @@ if __name__ == '__main__':
 	idx_start_strict_reserved = None
 
 	def _add(x, append):
-		n_str = x
+		n_str = x.name
 		n_def = get_define_name(x)
 		for o_str, o_def in strlist:
 			if o_str == n_str and o_def == n_def:
@@ -840,6 +867,10 @@ if __name__ == '__main__':
 		else:
 			strlist.insert(0, (n_str, n_def))
 
+	# Add reserved words in order of occurrence first.  The order matters
+	# because the string indices must be convertible to token numbers by
+	# addition/subtraction.
+
 	for i in standard_reserved_words_list:
 		_add(i, True)
 	num_nonstrict_reserved = len(strlist)
@@ -849,18 +880,61 @@ if __name__ == '__main__':
 	num_all_reserved = len(strlist)
 	num_strict_reserved = num_all_reserved - num_nonstrict_reserved
 
-	for i in standard_builtin_string_list:
-		_add(i, False)
+	# Figure out, for the remaining strings, which strings need to be
+	# in the 8-bit range.  Note that a certain string may appear multiple
+	# times in different roles (e.g. as a class name and a built-in object
+	# name) so check every occurrence.
 
-	for i in standard_other_string_list:
-		_add(i, False)
+	req_8bit = {}
 
-	for i in duk_string_list:
-		_add(i, False)
+	str_lists = [ standard_builtin_string_list,
+	              standard_other_string_list,
+	              duk_string_list ]
+
+	for lst in str_lists:
+		for i in lst:
+			if i.req_8bit:
+				req_8bit[i.name] = True
+
+	# Prepend strings not requiring 8-bit indices first; then prepend
+	# strings requiring 8-bit indices (as early as possible).
+
+	for lst in str_lists:
+		for i in lst:
+			if req_8bit.has_key(i.name):
+				continue
+			_add(i, False)
+
+	for lst in str_lists:
+		for i in lst:
+			_add(i, False)
+
+	# Check that 8-bit string constraints are satisfied
+
+	for i,v in enumerate(strlist):
+		name, defname = v[0], v[1]
+		if req_8bit.has_key(name):
+			if i >= 256:
+				raise Exception('8-bit string index not satisfied: ' + repr(v))
+
+	#for i,v in enumerate(strlist):
+	#	print(i,v)
 
 	idx_start_reserved = len(strlist) - num_all_reserved
 	idx_start_strict_reserved = len(strlist) - num_strict_reserved
 
+	return strlist, idx_start_reserved, idx_start_strict_reserved
+
+if __name__ == '__main__':
+	parser = optparse.OptionParser()
+	parser.add_option('--out-header', dest='out_header')
+	parser.add_option('--out-source', dest='out_source')
+	parser.add_option('--out-python', dest='out_python')
+	parser.add_option('--out-bin', dest='out_bin')
+	parser.add_option('--byte-order', dest='byte_order')	# currently unused
+	(opts, args) = parser.parse_args()
+
+	strlist, idx_start_reserved, idx_start_strict_reserved = gen_string_list()
 	strdata, maxlen = gen_strings_data_bitpacked(strlist)
 
 	# write raw data file

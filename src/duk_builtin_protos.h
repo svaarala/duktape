@@ -98,6 +98,7 @@ int duk_builtin_duk_object_print(duk_context *ctx);
 int duk_builtin_duk_object_time(duk_context *ctx);
 int duk_builtin_duk_object_enc(duk_context *ctx);
 int duk_builtin_duk_object_dec(duk_context *ctx);
+int duk_builtin_duk_object_sleep(duk_context *ctx);
 
 int duk_builtin_error_constructor(duk_context *ctx);
 int duk_builtin_error_prototype_to_string(duk_context *ctx);
