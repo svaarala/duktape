@@ -2,6 +2,10 @@
  *  Number built-ins
  */
 
+/* FIXME: needs to be refactored when exact parsing / string conversion
+ * primitives are implemented.
+ */
+
 #include "duk_internal.h"
 
 static double push_this_number_plain(duk_context *ctx) {
@@ -14,7 +18,7 @@ static double push_this_number_plain(duk_context *ctx) {
 	duk_push_this(ctx);
 	if (duk_is_number(ctx, -1)) {
 		DUK_DDDPRINT("plain number value: %!T", duk_get_tval(ctx, -1));
-		return duk_get_number(ctx, -1);
+		goto done;
 	}
 	h = duk_get_hobject(ctx, -1);
 	if (!h || 
@@ -26,6 +30,8 @@ static double push_this_number_plain(duk_context *ctx) {
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDDPRINT("number object: %!T, internal value: %!T", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 	duk_remove(ctx, -2);
+
+ done:
 	return duk_get_number(ctx, -1);
 }
 
@@ -38,9 +44,8 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 	/*
 	 *  The Number constructor uses ToNumber(arg) for number coercion
 	 *  (coercing an undefined argument to NaN).  However, if the
-	 *  argument is not given at all, +0 must be used instead.  This
-	 *  is a vararg function to detect whether an argument was given
-	 *  or not.
+	 *  argument is not given at all, +0 must be used instead.  To do
+	 *  this, a vararg function is used.
 	 */
 
 	nargs = duk_get_top(ctx);
@@ -80,8 +85,12 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 
 	duk_dup(ctx, 0);  /* -> [ val obj val ] */
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
-
 	return 0;  /* no return value -> don't replace created value */
+}
+
+int duk_builtin_number_prototype_value_of(duk_context *ctx) {
+	(void) push_this_number_plain(ctx);
+	return 1;
 }
 
 int duk_builtin_number_prototype_to_string(duk_context *ctx) {
@@ -91,8 +100,18 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 	 * '5.nrcyk5rcykogq2xpdb7ta9k9'
 	 */
 	double d;
+	int radix;
 
 	d = push_this_number_plain(ctx);
+	d = d; /*FIXME*/
+	if (duk_is_undefined(ctx, 0)) {
+		radix = 10;
+	} else {
+		radix = duk_to_int_check_range(ctx, 0, 2, 36);
+	}
+	DUK_DDDPRINT("radix=%d", radix);
+	radix = radix; /*FIXME*/
+
 	duk_to_string(ctx, -1);  /* FIXME: incorrect */
 	return 1;
 }
@@ -104,29 +123,68 @@ int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
 	return duk_builtin_number_prototype_to_string(ctx);
 }
 
-int duk_builtin_number_prototype_value_of(duk_context *ctx) {
-	double d;
+/*
+ *  toFixed(), toExponential(), toPrecision()
+ */
 
-	d = push_this_number_plain(ctx);
-	return 1;
-}
+/* FIXME: shared helper for toFixed(), toExponential(), toPrecision()? */
 
 int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 	int frac_digits;
 	double d;
+	int c;
 
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
 	d = push_this_number_plain(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+
+	c = fpclassify(d);
+	if (c == FP_NAN || c == FP_INFINITE) {
+		goto use_to_string;
+	}
+
+	if (d >= 1.0e21 || d <= -1.0e21) {
+		goto use_to_string;
+	}
+
+	duk_push_sprintf(ctx, "%.*lf", frac_digits, d);
+	return 1;
+
+ use_to_string:
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_to_string(ctx, -1);
+	return 1;
 }
 
 int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
+	int frac_undefined;
 	int frac_digits;
 	double d;
+	int c;
+
+	d = push_this_number_plain(ctx);
+
+	frac_undefined = duk_is_undefined(ctx, 0);
+	duk_to_int(ctx, 0);  /* for side effects */
+
+	c = fpclassify(d);
+	if (c == FP_NAN || c == FP_INFINITE) {
+		goto use_to_string;
+	}
 
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
-	d = push_this_number_plain(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
+
+	/* FIXME: placeholder */
+	if (frac_undefined) {
+		duk_push_sprintf(ctx, "%.*lg", frac_digits, d);
+	} else {
+		duk_push_sprintf(ctx, "%.*le", frac_digits, d);
+	}
+	return 1;
+
+ use_to_string:
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_to_string(ctx, -1);
+	return 1;
 }
 
 int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
@@ -138,7 +196,6 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 	double d;
 	int prec;
 	int c;
-	int neg = 0;
 
 	DUK_ASSERT_TOP(ctx, 1);
 
@@ -157,13 +214,8 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 
 	prec = duk_to_int_check_range(ctx, 0, 1, 21);
 
-	if (d < 0.0) {
-		d = -d;
-		neg = 1;
-	}
-
 	/* FIXME: placeholder */
-	duk_push_sprintf(ctx, "%s%.*lf", (neg ? "-" : ""), d, prec);
+	duk_push_sprintf(ctx, "%.*lf", d, prec);
 	return 1;
 
  use_to_string:
