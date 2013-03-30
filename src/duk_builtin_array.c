@@ -451,6 +451,37 @@ static void array_sort_swap(duk_context *ctx, int l, int r) {
 	}
 }
 
+#ifdef DUK_USE_DDDEBUG
+/* Debug print which visualizes the qsort partitioning process. */
+static void debuglog_qsort_state(duk_context *ctx, int lo, int hi, int pivot) {
+	char buf[4096];
+	char *ptr = buf;
+	int i, n;
+	n = duk_get_length(ctx, 1);
+	if (n > 4000) {
+		n = 4000;
+	}
+	*ptr++ = '[';
+	for (i = 0; i < n; i++) {
+		if (i == pivot) {
+			*ptr++ = '|';
+		} else if (i == lo) {
+			*ptr++ = '<';
+		} else if (i == hi) {
+			*ptr++ = '>';
+		} else if (i >= lo && i <= hi) {
+			*ptr++ = '-';
+		} else {
+			*ptr++ = ' ';
+		}
+	}
+	*ptr++ = ']';
+	*ptr++ = '\0';
+
+	DUK_DDDPRINT("%s   (lo=%d, hi=%d, pivot=%d)", buf, lo, hi, pivot);
+}
+#endif
+
 static void array_qsort(duk_context *ctx, int lo, int hi) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int p, l, r;
@@ -473,7 +504,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 	DUK_ASSERT(hi - lo + 1 >= 2);
 
 	/* randomized pivot selection */
-	p = lo + (duk_util_tinyrandom_get_bits(thr, 30) % (hi - lo + 1));
+	p = lo + (duk_util_tinyrandom_get_bits(thr, 30) % (hi - lo + 1));  /* rnd in [lo,hi] */
 	DUK_ASSERT(p >= lo && p <= hi);
 	DUK_DDDPRINT("lo=%d, hi=%d, chose pivot p=%d", lo, hi, p);
 
@@ -533,6 +564,10 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 	/* move pivot to its final place */
 	DUK_DDDPRINT("before final pivot swap: %!T", duk_get_tval(ctx, 1));
 	array_sort_swap(ctx, lo, r);	
+
+#ifdef DUK_USE_DDDEBUG
+	debuglog_qsort_state(ctx, lo, hi, r);
+#endif
 
 	DUK_DDDPRINT("recurse: pivot=%d, obj=%!T", r, duk_get_tval(ctx, 1));
 	array_qsort(ctx, lo, r - 1);
