@@ -146,6 +146,7 @@ int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 		goto use_to_string;
 	}
 
+	/* FIXME: placeholder */
 	duk_push_sprintf(ctx, "%.*lf", frac_digits, d);
 	return 1;
 
