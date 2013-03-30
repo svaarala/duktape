@@ -1028,6 +1028,7 @@ bi_duk = {
 		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
 		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
 		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
+		{ 'name': 'sleep',			'native': 'duk_builtin_duk_object_sleep',		'length': 1 },
 	],
 }
 
