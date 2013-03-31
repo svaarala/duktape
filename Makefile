@@ -20,7 +20,8 @@ DIST_FILES =	\
 	doc/SConscript \
 	doc/datetime.txt \
 	doc/regexp.txt \
-	doc/json.txt
+	doc/json.txt \
+	doc/sorting.txt
 
 default:	all
 
@@ -35,11 +36,13 @@ test:
 
 vgtest:
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/build/400/duk.400 --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind --verbose testcases/
+
+# FIXME: torturetest; torture + valgrind
 	
 install:
 	scons -j 8 install
 
-VERSION=0.2.0
+VERSION=0.4.0
 
 dist-src:
 	-rm -rf duktape-$(VERSION)/
