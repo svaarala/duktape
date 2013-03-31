@@ -216,7 +216,7 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 	prec = duk_to_int_check_range(ctx, 0, 1, 21);
 
 	/* FIXME: placeholder */
-	duk_push_sprintf(ctx, "%.*lf", d, prec);
+	duk_push_sprintf(ctx, "%.*lf", prec, d);
 	return 1;
 
  use_to_string:
