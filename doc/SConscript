@@ -7,7 +7,8 @@ import os
 docs = [
 	'datetime.txt',
 	'json.txt',
-	'regexp.txt'
+	'regexp.txt',
+	'sorting.txt'
 ]
 
 for doc in docs:
