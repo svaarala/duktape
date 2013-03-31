@@ -19,20 +19,15 @@ and regular expressions.  Other feature highlights include:
   * Tail call support
 
 This is an early development version which is not intended for actual use.
-Most basic things work:
+All basic components are in place: Ecmascript compiler and executor, regexp
+compiler and executor, garbage collection, data types, semantics for property
+and identifier access, and initial implementations of built-in objects (with
+some known issues).
 
-  * Ecmascript compiler and bytecode executor
-
-  * Regexp compiler and regexp bytecode executor
-
-  * Garbage collection (reference counting and mark-and-sweep)
-
-  * Object, array, function, identifier access etc basic semantics
-
-However, some built-ins are missing and there are (known and unknown) bugs
-here and there (for instance, number parsing is incomplete).  There is also
-minimal documentation in this release.  API and internal documentation will
-be included in future releases.
+However, there are (known and unknown) bugs here and there; in particular,
+number parsing and string conversion is incomplete.  The user API is also
+not yet nearly finished, and there is still minimal documentation in this
+release.  API and internal documentation will be included in future releases.
 
 To build (only Linux at the moment)::
 
