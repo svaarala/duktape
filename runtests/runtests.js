@@ -210,17 +210,24 @@ function executeTest(options, callback) {
  *  Main
  */
 
+var DUK_HEADER =
+    "this.__engine__ = 'duk';\n\n";
+
 var NODEJS_HEADER =
-    "/* nodejs header begin */\n" +
+    "this.__engine__ = 'v8';\n" +
     "function print() {\n" +
     "    // Note: Array.prototype.map() is required to support 'this' binding\n" +
     "    // other than an array (arguments object here).\n" +
     "    var tmp = Array.prototype.map.call(arguments, function (x) { return String(x); });\n" +
     "    var msg = tmp.join(' ') + '\\n';\n" +
     "    process.stdout.write(msg);\n" +
-    "}\n" +
-    "/* nodejs header end */\n" +
-    "\n";
+    "}\n\n";
+
+var RHINO_HEADER =
+    "this.__engine__ = 'rhino';\n\n";
+
+var SMJS_HEADER =
+    "this.__engine__ = 'smjs';\n\n";
 
 function findTestCasesSync(argList) {
     var found = {};
@@ -508,16 +515,24 @@ function testRunnerMain() {
 
     engines = [];
     if (argv['run-duk']) {
-        engines.push({ name: 'duk', fullPath: argv['cmd-duk'] || 'duk' });
+        engines.push({ name: 'duk',
+                       fullPath: argv['cmd-duk'] || 'duk' ,
+                       jsPrefix: DUK_HEADER });
     }
     if (argv['run-nodejs']) {
-        engines.push({ name: 'nodejs', fullPath: argv['cmd-nodejs'] || 'node', jsPrefix: NODEJS_HEADER });
+        engines.push({ name: 'nodejs',
+                       fullPath: argv['cmd-nodejs'] || 'node',
+                       jsPrefix: NODEJS_HEADER });
     }
     if (argv['run-rhino']) {
-        engines.push({ name: 'rhino', fullPath: argv['cmd-rhino'] || 'rhino' });
+        engines.push({ name: 'rhino',
+                       fullPath: argv['cmd-rhino'] || 'rhino',
+                       jsPrefix: RHINO_HEADER });
     }
     if (argv['run-smjs']) {
-        engines.push({ name: 'smjs',  fullPath: argv['cmd-smjs'] || 'smjs' });
+        engines.push({ name: 'smjs',
+                       fullPath: argv['cmd-smjs'] || 'smjs',
+                       jsPrefix: SMJS_HEADER });
     }
 
     testcases = findTestCasesSync(argv._);
