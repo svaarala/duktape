@@ -249,7 +249,7 @@ static int init_heap_strings(duk_heap *heap) {
 
 		/* special flags */
 
-		if (tmp[0] == 0xff) {
+		if (len > 0 && tmp[0] == 0xff) {
 			DUK_HSTRING_SET_INTERNAL(h);
 		}
 		if (i == DUK_STRIDX_EVAL || i == DUK_STRIDX_LC_ARGUMENTS) {
