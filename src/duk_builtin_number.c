@@ -94,25 +94,19 @@ int duk_builtin_number_prototype_value_of(duk_context *ctx) {
 }
 
 int duk_builtin_number_prototype_to_string(duk_context *ctx) {
-	/* FIXME: radixes etc:
-	 *
-	 * > (5.66).toString(36)
-	 * '5.nrcyk5rcykogq2xpdb7ta9k9'
-	 */
 	double d;
 	int radix;
 
 	d = push_this_number_plain(ctx);
-	d = d; /*FIXME*/
 	if (duk_is_undefined(ctx, 0)) {
 		radix = 10;
 	} else {
 		radix = duk_to_int_check_range(ctx, 0, 2, 36);
 	}
 	DUK_DDDPRINT("radix=%d", radix);
-	radix = radix; /*FIXME*/
 
-	duk_to_string(ctx, -1);  /* FIXME: incorrect */
+	/* FIXME: check options */
+	duk_numconv_stringify(ctx, d, radix /*radix*/, -1 /*precision:shortest*/);
 	return 1;
 }
 

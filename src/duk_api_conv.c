@@ -309,41 +309,6 @@ int duk_to_int_check_range(duk_context *ctx, int index, int minval, int maxval) 
 	return duk_to_int_clamped_raw(ctx, index, minval, maxval, NULL);  /* NULL -> RangeError */
 }
 
-static void handle_to_string_number(duk_context *ctx, int index, duk_tval *tv) {
-	double d;
-	int c;
-
-	/*
-	 *  FIXME: incorrect placeholder -- see E5 Section 9.8.1, very finicky
-	 */
-
-	d = DUK_TVAL_GET_NUMBER(tv);
-	c = fpclassify(d);
-
-	if (c == FP_INFINITE) {
-		if (d < 0) {
-			/* -Infinity */
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_MINUS_INFINITY);
-		} else {
-			/* Infinity */
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_INFINITY);
-		}
-	} else if (c == FP_NAN) {
-		/* NaN */
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_NAN);
-	} else {
-		if (DUK_TVAL_GET_NUMBER(tv) == (int) d) {
-			duk_push_sprintf(ctx, "%d", (int) d);
-		} else if (DUK_TVAL_GET_NUMBER(tv) == (unsigned int) d) {
-			duk_push_sprintf(ctx, "%u", (unsigned int) d);
-		} else if (isfinite(d) && floor(d) == d) {
-			duk_push_sprintf(ctx, "%.0lf", (double) d);
-		} else {
-			duk_push_sprintf(ctx, "%lf", (double) d);
-		}
-	}
-}
-
 const char *duk_to_string(duk_context *ctx, int index) {
 	duk_tval *tv;
 
@@ -396,8 +361,11 @@ const char *duk_to_string(duk_context *ctx, int index) {
 	}
 	default: {
 		/* number */
+		double d;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		handle_to_string_number(ctx, index, tv);
+
+		d = DUK_TVAL_GET_NUMBER(tv);
+		duk_numconv_stringify(ctx, d, 10 /*radix*/, -1 /*precision:shortest*/);
 		break;
 	}
 	}
