@@ -21,7 +21,7 @@
  *  number conversion needs.
  */
 
-#define  BI_MAX_PARTS  35  /* 35x32 = 1120 bits */
+#define  BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
 
 #ifdef DUK_USE_DEBUG
 #define  BI_PRINT(name,x)  bi_print((name),(x))
@@ -29,7 +29,7 @@
 #define  BI_PRINT(name,x)
 #endif
 
-/* Current size is about 144 bytes. */
+/* Current size is about 152 bytes. */
 typedef struct {
 	int n;
 	uint32_t v[BI_MAX_PARTS];  /* low to high */
@@ -349,7 +349,7 @@ static void bi_twoexp(duk_bigint *x, int y) {
  */
 
 typedef struct {
-	/* Currently about 7*144 = 1008 bytes. */
+	/* Currently about 7*152 = 1064 bytes. */
 	duk_bigint f, r, s, mp, mm, t1, t2;  /* FIXME: better reuse, eliminate 1? */
 
 	double x;       /* input number */
