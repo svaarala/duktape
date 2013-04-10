@@ -627,7 +627,7 @@ static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, char *esc_str, i
 	while (digits > 0) {
 		digits--;
 		dig = (cp >> (4 * digits)) & 0x0f;
-		duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_nybbles[dig]);
+		duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[dig]);
 	}
 }
 
@@ -1254,8 +1254,8 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 			EMIT_1(js_ctx, '|');
 			while (p < p_end) {
 				x = (int) *p++;
-				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_nybbles[(x >> 4) & 0x0f]);
-				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_nybbles[x & 0x0f]);
+				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[(x >> 4) & 0x0f]);
+				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[x & 0x0f]);
 			}
 			EMIT_1(js_ctx, '|');
 		} else {
