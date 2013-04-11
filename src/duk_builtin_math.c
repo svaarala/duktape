@@ -84,6 +84,61 @@ static double fmax_fixed(double x, double y) {
 	return fmax(x, y);
 }
 
+static double round_fixed(double x) {
+	/* Numbers must be rounded towards +Infinity, e.g. -3.5 must
+	 * be rounded to -3 (not -4).  When rounded to zero, zero sign
+	 * must be set appropriately.  E5.1 Section 15.8.2.15.
+	 *
+	 * Note that ANSI C round() is "round to nearest integer, away
+	 * from zero", which is incorrect for negative values.
+	 */
+
+	int c = fpclassify(x);
+	if (c == FP_NAN || c == FP_INFINITE || c == FP_ZERO) {
+		return x;
+	}
+
+	if (x >= 0.0) {
+		/* FIXME: rely on [0,0.5[ rounding to +0? */
+		if (x < 0.5) {
+			return +0.0;
+		} else {
+			return round(x);
+		}
+	} else {
+		if (x >= -0.5) {
+			return -0.0;
+		} else {
+			x = floor(x + 0.5);
+			DUK_ASSERT(x <= -1.0);
+			return x;
+		}
+	}
+}
+
+static double pow_fixed(double x, double y) {
+	/* The ANSI C pow() semantics differ from Ecmascript.
+	 *
+	 * E.g. when x==1 and y is +/- infinite, the Ecmascript required
+	 * result is NaN, while at least Linux pow() returns 1.
+	 */
+
+	int cy;
+
+	cy = fpclassify(y);
+
+	if (cy == FP_NAN) {
+		goto ret_nan;
+	}
+	if (fabs(x) == 1.0 && cy == FP_INFINITE) {
+		goto ret_nan;
+	}
+
+	return pow(x, y);
+
+ ret_nan:
+	return NAN;
+}
 
 int duk_builtin_math_object_abs(duk_context *ctx) {
 	return math_one_arg(ctx, fabs);
@@ -134,7 +189,7 @@ int duk_builtin_math_object_min(duk_context *ctx) {
 }
 
 int duk_builtin_math_object_pow(duk_context *ctx) {
-	return math_two_arg(ctx, pow);
+	return math_two_arg(ctx, pow_fixed);
 }
 
 int duk_builtin_math_object_random(duk_context *ctx) {
@@ -143,10 +198,7 @@ int duk_builtin_math_object_random(duk_context *ctx) {
 }
 
 int duk_builtin_math_object_round(duk_context *ctx) {
-	/* FIXME: numbers must be rounded towards +Infinity, e.g.
-	 * -3.5 must be rounded to -3 (not -4).
-	 */
-	return math_one_arg(ctx, round);
+	return math_one_arg(ctx, round_fixed);
 }
 
 int duk_builtin_math_object_sin(duk_context *ctx) {
