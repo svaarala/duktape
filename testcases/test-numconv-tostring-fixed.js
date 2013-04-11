@@ -6,6 +6,14 @@
 1
 0
 1
+0
+0
+0.0
+0.00
+0
+0
+0.0
+0.00
 ===*/
 
 function fixedTest() {
@@ -21,6 +29,15 @@ function fixedTest() {
     test(0.9, 0);  // rounds up
     test(0.1, undefined);
     test(0.9, undefined);  // rounds up
+
+    test(+0, undefined);
+    test(+0, 0);
+    test(+0, 1);
+    test(+0, 2);
+    test(-0, undefined);
+    test(-0, 0);
+    test(-0, 1);
+    test(-0, 2);
 }
 
 try {

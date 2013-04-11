@@ -3,7 +3,7 @@
 1.00
 1.00
 0.9999
-0.99999
+0.99990
 1.23457e+7
 1.234568e+7
 12345678
@@ -18,6 +18,14 @@
 44444
 1.000e+5
 99999
+0
+0
+0.0
+0.00
+0
+0
+0.0
+0.00
 ===*/
 
 function precisionTest() {
@@ -49,6 +57,16 @@ function precisionTest() {
 
     test(99999, 4);  // rounds up, carries
     test(99999, 5);
+
+    // NB: precision=0 is a RangeError
+    test(+0, undefined);  // -> ToString()
+    test(+0, 1);
+    test(+0, 2);
+    test(+0, 3);
+    test(-0, undefined);  // -> ToString()
+    test(-0, 1);
+    test(-0, 2);
+    test(-0, 3);
 }
 
 try {
