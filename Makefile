@@ -42,7 +42,7 @@ vgtest:
 install:
 	scons -j 8 install
 
-VERSION=0.4.0
+VERSION=0.5.0
 
 dist-src:
 	-rm -rf duktape-$(VERSION)/
