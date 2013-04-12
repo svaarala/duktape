@@ -351,10 +351,13 @@ static void bi_twoexp(duk_bigint *x, int y) {
  */
 
 /* Maximum number of digits generated. */
-#define  MAX_OUTPUT_DIGITS  512  /* FIXME */
+#define  MAX_OUTPUT_DIGITS  1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
 
 /* Number of extra digits for fixed-format rounding. */
 #define  FIXED_FORMAT_EXTRA_DIGITS  1
+
+/* Maximum number of characters in formatted value. */
+#define  MAX_FORMATTED_LENGTH  1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
 
 /* Number and (minimum) of bigints in the nc_ctx structure. */
 #define  NUMCONV_CTX_NUM_BIGINTS    7
@@ -852,23 +855,63 @@ static void dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx) {
 	DUK_ASSERT(nc_ctx->count >= 1);
 }
 
-static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_context *ctx, int radix, int neg) {
+#define  NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
+
+static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_context *ctx, int radix, int flags, int neg) {
 	int k;
 	int i;
 	int pos;
+	int exp;
 	char *q;
 	char *buf;
 
-	/* Reuse bigint space in the context for string output, as there is more
-	 * than enough space for that (>1kB at the moment).
+	/*
+	 *  The string conversion here incorporates all the necessary Ecmascript
+	 *  semantics without attempting to be generic.  nc_ctx->digits contains
+	 *  nc_ctx->count digits (>= 1), with the topmost digit's 'position'
+	 *  indicated by nc_ctx->k as follows:
 	 *
-	 * FIXME: currently ugly, use a union.
+	 *    digits="123" count=3 k=0   -->   0.123
+	 *    digits="123" count=3 k=1   -->   1.23
+	 *    digits="123" count=3 k=5   -->   12300
+	 *    digits="123" count=3 k=-1  -->   0.0123
+	 *
+	 *  Note that the identifier names used for format selection are different
+	 *  in Burger-Dybvig paper and Ecmascript specification (quite confusingly
+	 *  so, because e.g. 'k' has a totally different meaning in each).  See
+	 *  documentation for discussion.
+	 *
+	 *  Ecmascript doesn't specify any specific behavior for format selection
+	 *  (e.g. when to use exponent notation) for non-base-10 numbers.
+	 *
+	 *  The bigint space in the context is reused for string output, as there
+	 *  is more than enough space for that (>1kB at the moment), and we avoid
+	 *  allocating even more stack.
+	 *
+	 *  FIXME: currently ugly, use a union.
 	 */
+
 	DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= 1024);  /* FIXME: what's maximum output size? */
+	DUK_ASSERT(nc_ctx->count >= 1);
 
 	k = nc_ctx->k;
 	buf = (char *) &nc_ctx->f;
 	q = buf;
+
+	/* Exponent handling: if exponent format is used, record exponent value and
+	 * fake k such that one leading digit is generated (e.g. digits=123 -> "1.23").
+	 */
+	if ((flags & DUK_NUMCONV_FLAG_FORCE_EXP) ||         /* exponential notation forced */
+	    ((flags & DUK_NUMCONV_FLAG_NO_ZERO_PAD) &&      /* fixed precision and zero padding would be required */
+             (k - nc_ctx->count >= 1)) ||                   /* (e.g. digits=12, k=3, count=2 -> "12X") */
+	    ((k > 21 || k <= -6) && (radix == 10))) {       /* toString() conditions */
+		DUK_DPRINT("use exponential notation: k=%d -> exp=%d", k, k - 1);
+		exp = k - 1;  /* e.g. 12.3 -> digits="123" k=2 -> 1.23e1 */
+		k = 1;  /* generate mantissa with a single leading whole number digit */
+	} else {
+		DUK_DPRINT("use non-exponential notation: k=%d", k);
+		exp = NO_EXP;
+	}
 
 	if (neg) {
 		*q++ = '-';
@@ -896,39 +939,43 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
 		*q++ = DIGITCHAR(dig);
 	}
 
-#if 1
-	for (;; i++) {
-		int pos = k - i;
-		if (pos <= 0) {
-			break;
+	if (exp == NO_EXP) {
+		for (;; i++) {
+			int pos = k - i;
+			if (pos <= 0) {
+				break;
+			}
+			*q++ = '0';
 		}
-		*q++ = '0';
-	}
-#else
-	/*
-	 *  Exponent notation for non-base-10 numbers isn't specified in Ecmascript
-	 *  specification, as it never explicitly turns up: non-decimal numbers can
-	 *  only be formatted with Number.prototype.toString([radix]) and for that,
-	 *  behavior is not explicitly specified.
-	 *
-	 *  Logical choices include formatting the exponent as decimal (e.g. binary
-	 *  100000 as 1e+5) or in current radix (e.g. binary 100000 as 1e+101).
-	 *  The Dragon4 algorithm (in the original paper) prints the exponent value
-	 *  in the target radix B.  However, for radix values 15 and above, the
-	 *  exponent separator 'e' is no longer easily parseable.  Consider, for
-	 *  instance, the number "1.faecee+1c".
-	 */
+	} else {
+		/*
+		 *  Exponent notation for non-base-10 numbers isn't specified in Ecmascript
+		 *  specification, as it never explicitly turns up: non-decimal numbers can
+		 *  only be formatted with Number.prototype.toString([radix]) and for that,
+		 *  behavior is not explicitly specified.
+		 *
+		 *  Logical choices include formatting the exponent as decimal (e.g. binary
+		 *  100000 as 1e+5) or in current radix (e.g. binary 100000 as 1e+101).
+		 *  The Dragon4 algorithm (in the original paper) prints the exponent value
+		 *  in the target radix B.  However, for radix values 15 and above, the
+		 *  exponent separator 'e' is no longer easily parseable.  Consider, for
+		 *  instance, the number "1.faecee+1c".
+		 */
 
-	pos = k - i;
-	if (pos > 0) {
 		size_t len;
+		char exp_sign;
 
 		*q++ = 'e';
-		*q++ = '+';
-		len = dragon4_format_uint(q, (unsigned int) pos, radix);
+		if (exp >= 0) {
+			exp_sign = '+';
+		} else {
+			exp_sign = '-';
+			exp = -exp;
+		}
+		*q++ = exp_sign;
+		len = dragon4_format_uint(q, (unsigned int) exp, radix);
 		q += len;
 	}
-#endif
 
 	duk_push_lstring(ctx, buf, q - buf);
 }
@@ -937,7 +984,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
  *  Exposed number-to-string API
  */
 
-void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
+void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, int flags) {
 	int c;
 	int neg;
 	unsigned int uval;
@@ -949,12 +996,13 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 	 */
 
 	c = fpclassify(x);
-	if (x < 0) {
+	if (signbit(x)) {
 		x = -x;
 		neg = 1;
 	} else {
 		neg = 0;
 	}
+	DUK_ASSERT(signbit(x) == 0);
 
 	if (c == FP_NAN) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_NAN);
@@ -969,28 +1017,33 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 		}
 		return;
 	} else if (c == FP_ZERO) {
-		/* zero sign is not printed -- FIXME: flag? */
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_ZERO);
-		return;
+		/* We can't shortcut zero here if it goes through special formatting
+		 * (such as forced exponential notation).
+		 */
+		;
 	}
 
 	/*
 	 *  Handle integers in 32-bit range (that is, [-(2**32-1),2**32-1])
 	 *  specially, as they're very likely for embedded programs.  This
-	 *  is now done for all radix values.
+	 *  is now done for all radix values.  We must be careful not to use
+	 *  the fast path when special formatting (e.g. forced exponential)
+	 *  is in force.
 	 *
 	 *  FIXME: can save space by supporting radix 10 only and using
 	 *  sprintf "%u".
 	 */
 
 	uval = (unsigned int) x;
-	if (((double) uval) == x) {
+	if (((double) uval) == x &&  /* integer number in range */
+	    flags == 0) {            /* no special formatting */
 		/* use bigint area as a temp */
 		char *buf = (char *) (&nc_ctx->f);
 		char *p = buf;
 
 		DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= 32 + 1);  /* max size: radix=2 + sign */
-		if (neg) {
+		if (neg && uval != 0) {
+			/* no negative sign for zero */
 			*p++ = '-';
 		}
 		p += dragon4_format_uint(p, uval, radix);
@@ -1001,6 +1054,10 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 	/*
 	 *  Convert double from IEEE representation for conversion;
 	 *  normal finite values have an implicit leading 1-bit.
+	 *
+	 *  The slow path algorithms (like Dragon4) don't handle zero,
+	 *  so zero is special cased but still creates a valid nc_ctx,
+	 *  and goes through normal formatting.
 	 */
 
 	/* Would be nice to do this, but the context is 1-2 kilobytes and
@@ -1012,10 +1069,26 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 
 	nc_ctx->x = x;
 	nc_ctx->B = radix;
-	if (digits > 0) {
+	if (flags & DUK_NUMCONV_FLAG_FIXED_FORMAT) {
+		/* FIXME: DUK_NUMCONV_FLAG_FRACTION_DIGITS */
 		nc_ctx->req_digits = digits + FIXED_FORMAT_EXTRA_DIGITS;
 	} else {
 		nc_ctx->req_digits = 0;
+	}
+
+	if (c == FP_ZERO) {
+		/* zero special case: fake requested number of zero digits; ensure
+		 * no sign bit is printed.
+		 */
+		int count = nc_ctx->req_digits;
+		if (count == 0) {
+			count = 1;
+		}
+		memset((void *) nc_ctx->digits, 0, count);
+		nc_ctx->count = count;
+		nc_ctx->k = 1;  /* 0.000... */
+		neg = 0;
+		goto zero_skip;
 	}
 
 	dragon4_convert_double(nc_ctx);   /* -> sets 'f' and 'e' */
@@ -1052,7 +1125,9 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 
 	dragon4_generate(nc_ctx);
 
-	if (digits > 0) {
+ zero_skip:
+
+	if (nc_ctx->req_digits > 0) {
 		/* Perform fixed-format rounding. */
 		dragon4_fixed_format_round(nc_ctx);
 	}
@@ -1061,6 +1136,6 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits) {
 	 *  Convert and push final string.
 	 */
 
-	dragon4_convert_and_push(nc_ctx, ctx, radix, neg);  /* FIXME: lots of options */
+	dragon4_convert_and_push(nc_ctx, ctx, radix, flags, neg);
 }
 

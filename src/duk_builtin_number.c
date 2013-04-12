@@ -105,8 +105,11 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 	}
 	DUK_DDDPRINT("radix=%d", radix);
 
-	/* FIXME: check options */
-	duk_numconv_stringify(ctx, d, radix /*radix*/, -1 /*precision:shortest*/);
+	duk_numconv_stringify(ctx,
+	                      d,
+	                      radix /*radix*/,
+	                      0 /*digits*/,
+	                      0 /*flags*/);
 	return 1;
 }
 
@@ -127,6 +130,7 @@ int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 	int frac_digits;
 	double d;
 	int c;
+	int flags;
 
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
 	d = push_this_number_plain(ctx);
@@ -140,8 +144,14 @@ int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 		goto use_to_string;
 	}
 
-	/* FIXME: placeholder */
-	duk_push_sprintf(ctx, "%.*lf", frac_digits, d);
+	flags = DUK_NUMCONV_FLAG_FIXED_FORMAT |
+	        DUK_NUMCONV_FLAG_FRACTION_DIGITS;
+
+	duk_numconv_stringify(ctx,
+	                      d,
+	                      10 /*radix*/,
+	                      frac_digits /*digits*/,
+	                      flags /*flags*/);
 	return 1;
 
  use_to_string:
@@ -155,6 +165,7 @@ int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
 	int frac_digits;
 	double d;
 	int c;
+	int flags;
 
 	d = push_this_number_plain(ctx);
 
@@ -168,12 +179,18 @@ int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
 
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
 
-	/* FIXME: placeholder */
 	if (frac_undefined) {
-		duk_push_sprintf(ctx, "%.*lg", frac_digits, d);
+		flags = DUK_NUMCONV_FLAG_FORCE_EXP;
 	} else {
-		duk_push_sprintf(ctx, "%.*le", frac_digits, d);
+		flags = DUK_NUMCONV_FLAG_FORCE_EXP |
+		        DUK_NUMCONV_FLAG_FIXED_FORMAT;
 	}
+
+	duk_numconv_stringify(ctx,
+	                      d,
+	                      10 /*radix*/,
+	                      frac_digits + 1 /*leading digit + fractions*/,
+	                      flags /*flags*/);
 	return 1;
 
  use_to_string:
@@ -191,6 +208,7 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 	double d;
 	int prec;
 	int c;
+	int flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 
@@ -209,8 +227,14 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 
 	prec = duk_to_int_check_range(ctx, 0, 1, 21);
 
-	/* FIXME: placeholder */
-	duk_push_sprintf(ctx, "%.*lf", prec, d);
+	flags = DUK_NUMCONV_FLAG_FIXED_FORMAT |
+	        DUK_NUMCONV_FLAG_NO_ZERO_PAD;
+
+	duk_numconv_stringify(ctx,
+	                      d,
+	                      10 /*radix*/,
+	                      prec /*digits*/,
+	                      flags /*flags*/);
 	return 1;
 
  use_to_string:
