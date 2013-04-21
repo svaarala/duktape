@@ -256,6 +256,7 @@ static void json_dec_number(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_u8 *p_start;
 	int x;
+	int s2n_flags;
 
 	DUK_DDDPRINT("parse_number");
 
@@ -290,8 +291,18 @@ static void json_dec_number(duk_json_dec_ctx *js_ctx) {
 
 	DUK_ASSERT(js_ctx->p > p_start);
 	duk_push_lstring(ctx, (const char *) p_start, (size_t) (js_ctx->p - p_start));
+
+	s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
+	            DUK_S2N_FLAG_ALLOW_MINUS |  /* but don't allow leading plus */
+	            DUK_S2N_FLAG_ALLOW_FRAC;
+
 	DUK_DDDPRINT("parse_number: string before parsing: %!T", duk_get_tval(ctx, -1));
-	duk_to_number(ctx, -1);
+	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
+	if (duk_is_nan(ctx, -1)) {
+		/* FIXME: retcode parse error indicator? */
+		DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid number");
+	}
+	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDDPRINT("parse_number: final number: %!T", duk_get_tval(ctx, -1));
 
 	/* [ ... num ] */
@@ -1273,6 +1284,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		int c;
 		int s;
 		int stridx;
+		int n2s_flags;
 		duk_hstring *h_str;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 
@@ -1282,6 +1294,9 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 
 		if (!(c == FP_INFINITE || c == FP_NAN)) {
 			DUK_ASSERT(isfinite(d));
+			n2s_flags = 0;
+			/* [ ... number ] -> [ ... string ] */
+			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
 			h_str = duk_to_hstring(ctx, -1);
 			DUK_ASSERT(h_str != NULL);
 			EMIT_HSTR(js_ctx, h_str);

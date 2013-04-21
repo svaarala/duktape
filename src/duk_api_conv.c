@@ -361,12 +361,9 @@ const char *duk_to_string(duk_context *ctx, int index) {
 	}
 	default: {
 		/* number */
-		double d;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-
-		d = DUK_TVAL_GET_NUMBER(tv);
+		duk_push_tval(ctx, tv);
 		duk_numconv_stringify(ctx,
-		                      d,
 		                      10 /*radix*/,
 		                      0 /*precision:shortest*/,
 		                      0 /*force_exponential*/);

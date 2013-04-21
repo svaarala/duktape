@@ -133,47 +133,32 @@ int duk_js_toboolean(duk_tval *tv) {
 
 /* E5 Section 9.3.1 */
 static double tonumber_string_raw(duk_hthread *thr, duk_hstring *h) {
-	/* FIXME: just something to work with, not correct,
-	 * need an actual parser, need to accept whitespace,
-	 * need to accept hex, etc.
+	duk_context *ctx = (duk_context *) thr;
+	int s2n_flags;
+	double d;
+
+	duk_push_hstring(ctx, h);
+
+	/* Quite lenient, e.g. allow empty as zero, but don't allow trailing
+	 * garbage.
 	 */
+	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
+	            DUK_S2N_FLAG_ALLOW_EXP |
+	            DUK_S2N_FLAG_ALLOW_PLUS |
+	            DUK_S2N_FLAG_ALLOW_MINUS |
+	            DUK_S2N_FLAG_ALLOW_INF |
+	            DUK_S2N_FLAG_ALLOW_FRAC |
+	            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
+	            DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO |
+	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
+	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
 
-	/*
-	 *  Special checks for infinities
-	 */
+	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
+	d = duk_get_number(ctx, -1);
+	duk_pop(ctx);
 
-	if (h == DUK_HTHREAD_STRING_INFINITY(thr)) {
-		/* "Infinity" */
-		return INFINITY;
-	} else if (h == DUK_HTHREAD_STRING_PLUS_INFINITY(thr)) {
-		/* "+Infinity" */
-		return INFINITY;
-	} else if (h == DUK_HTHREAD_STRING_MINUS_INFINITY(thr)) {
-		/* "-Infinity" */
-		return -INFINITY;
-	}
-
-	/*
-	 *  Parse as an actual number (decimal or hex, not infinity)
-	 */
-
-	/* FIXME: placeholder */
-	{
-		char *p, *p_end;
-		double d;
-
-		p = (char *) DUK_HSTRING_GET_DATA(h);
-
-		/* would actually need to tolerate whitespace */
-		if (strlen(p) == 0) {
-			return 0.0;
-		}
-		d = strtod(p, &p_end);
-		if (p_end == p || p_end != p + strlen(p)) {
-			return NAN;
-		}
-		return d;
-	}
+	return d;
 }
 
 double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {

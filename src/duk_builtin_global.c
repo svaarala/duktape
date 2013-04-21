@@ -513,31 +513,12 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
  */
 
 int duk_builtin_global_object_parse_int(duk_context *ctx) {
-	duk_hstring *h_str;
-	duk_u8 *p_start, *p_end, *p, *p_start_dig;
-	int neg = 0;
 	int strip_prefix;
 	duk_i32 radix;
-	int t;
-	double val;
+	int s2n_flags;
 
+	DUK_ASSERT_TOP(ctx, 2);
 	duk_to_string(ctx, 0);
-	duk_trim(ctx, 0);
-	h_str = duk_get_hstring(ctx, 0);
-	DUK_ASSERT(h_str != NULL);
-	p_start = DUK_HSTRING_GET_DATA(h_str);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
-	p = p_start;
-
-	if (p_end > p) {
-		t = *p;
-		if (t == '-') {
-			neg = 1;
-			p++;
-		} else if (t == '+') {
-			p++;
-		}
-	}
 
 	strip_prefix = 1;
 	radix = duk_to_int32(ctx, 1);
@@ -551,48 +532,17 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 	} else {
 		radix = 10;
 	}
-	if (strip_prefix) {
-		if ((p_end - p >= 2) &&
-		    (p[0] == (duk_u8) '0') &&
-		    ((p[1] == (duk_u8) 'x') || (p[1] == (duk_u8) 'X'))) {
-			p += 2;
-			radix = 16;
-		}
-	}
 
-	/* FIXME: this is correct for radix 2, 4, 8, 16, and 32, but incorrect
-	 * for radix 10 which is also required to be "exact".  Other radixes are
-	 * not required to be exact, so this would be OK for them.
-	 */
+	/* FIXME: octal support */
+	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
+	            DUK_S2N_FLAG_ALLOW_GARBAGE |
+	            DUK_S2N_FLAG_ALLOW_PLUS |
+	            DUK_S2N_FLAG_ALLOW_MINUS |
+	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
+	            (strip_prefix ? DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT : 0);
 
-	p_start_dig = p;
-	val = 0.0;
-	while (p < p_end) {
-		t = *p;
-		if (t >= (int) '0' && t <= (int) '9') {
-			t = t - (int) '0';
-		} else if (t >= (int) 'a' && t <= (int) 'z') {
-			t = t - (int) 'a' + 0x0a;
-		} else if (t >= (int) 'A' && t <= (int) 'Z') {
-			t = t - (int) 'A' + 0x0a;
-		} else {
-			break;
-		}
-		if (t >= radix) {
-			break;
-		}
-
-		val = val * ((double) radix) + ((double) t);
-		p++;
-	}
-	if (p == p_start_dig) {
-		goto ret_nan;
-	}
-	if (neg) {
-		val = -val;
-	}
-
-	duk_push_number(ctx, val);
+	duk_dup(ctx, 0);
+	duk_numconv_parse(ctx, radix, s2n_flags);
 	return 1;
 
  ret_nan:
@@ -601,10 +551,24 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 }
 
 int duk_builtin_global_object_parse_float(duk_context *ctx) {
-	/* FIXME: incorrect placeholder */
+	int s2n_flags;
+
+	DUK_ASSERT_TOP(ctx, 1);
 	duk_to_string(ctx, 0);
-	duk_trim(ctx, 0);
-	duk_to_number(ctx, 0);
+
+	/* FIXME: flags */
+	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
+	            DUK_S2N_FLAG_ALLOW_EXP |
+	            DUK_S2N_FLAG_ALLOW_GARBAGE |
+	            DUK_S2N_FLAG_ALLOW_PLUS |
+	            DUK_S2N_FLAG_ALLOW_MINUS |
+	            DUK_S2N_FLAG_ALLOW_INF |
+	            DUK_S2N_FLAG_ALLOW_FRAC |
+	            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
+	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
+
+	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
 	return 1;
 }
 

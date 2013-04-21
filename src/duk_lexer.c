@@ -1046,6 +1046,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			                 * 2=after exp, allow '+' or '-'
 			                 * 3=after exp and exp sign
 			                 */
+			int s2n_flags;
 
 			/* FIXME: because of the final check below (that the literal is not
 			 * followed by a digit, this could maybe be simplified, if we bail
@@ -1093,11 +1094,24 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				ADVANCE(lex_ctx, 1);
 			}
 
-			/* FIXME: incorrect: allows more syntax than should right now */
 			/* FIXME: better coercion */
 			internbuffer(lex_ctx, lex_ctx->slot1_idx);
-			/*out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);*/
-			val = duk_to_number((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+
+			/* FIXME: octal handling */
+			s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
+			            DUK_S2N_FLAG_ALLOW_PLUS |
+			            DUK_S2N_FLAG_ALLOW_MINUS |
+			            DUK_S2N_FLAG_ALLOW_FRAC |
+			            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+			            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC;
+
+			duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+			duk_numconv_parse((duk_context *) lex_ctx->thr, 10 /*radix*/, s2n_flags);
+			val = duk_to_number((duk_context *) lex_ctx->thr, -1);
+			if (isnan(val)) {
+				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid numeric literal");
+			}
+			duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* FIXME: or pop? */
 
 			INITBUFFER(lex_ctx);	/* free some memory */
 		}
