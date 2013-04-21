@@ -67,9 +67,6 @@ function getZeros(n) {
 }
 
 function buildNumber(exp) {
-    var t;
-    var i;
-
     if (exp > 0) {
         return '1' + getZeros(exp);
     } else if (exp < 0) {
@@ -80,7 +77,7 @@ function buildNumber(exp) {
 }
 
 function expOverflowUnderflowTest() {
-    var i, str, radix, t;
+    var i, str, radix, t, val;
 
     if (this.__engine__ === 'rhino') {
         throw new Error("Rhino forever loops on some exponents, so skip test on Rhino");
