@@ -1,9 +1,9 @@
 /*
  *  Number-to-string and string-to-number conversions.
  *
- *  Number-to-string conversion is based on a Dragon4 variant,
- *  with a fast path for radix 10 integers.  Limited big integer
- *  arithmetic is needed for guaranteeing that the conversion is
+ *  Slow path number-to-string and string-to-number conversion is based on
+ *  a Dragon4 variant, with fast paths for small integers.  Limited big
+ *  integer arithmetic is needed for guaranteeing that the conversion is
  *  correct and uses a minimum number of digits.
  *
  *  See: doc/number_conversion.txt.
@@ -17,10 +17,52 @@
 #define  DIGITCHAR(x)  duk_lc_digits[(x)]
 
 /*
+ *  Tables generated with src/gennumdigits.py.
+ *
+ *  str2num_digits_for_radix indicates, for each radix, how many input
+ *  digits should be considered significant.  The input is also padded
+ *  to this many digits to give the Dragon4 conversion enough (apparent)
+ *  precision to work with.
+ *
+ *  str2num_exp_limits indicates, for each radix, the radix-specific
+ *  minimum/maximum exponent values (for a Dragon4 integer mantissa)
+ *  below and above which the number is guaranteed to underflow to zero
+ *  or overflow to Infinity.  This allows parsing to keep bigint values
+ *  bounded.
+ */
+
+static unsigned char str2num_digits_for_radix[] = {
+	69, 44, 35, 30, 27, 25, 23, 22, 20, 20,    /* 2 to 11 */
+	20, 19, 19, 18, 18, 17, 17, 17, 16, 16,    /* 12 to 21 */
+	16, 16, 16, 15, 15, 15, 15, 15, 15, 14,    /* 22 to 31 */
+	14, 14, 14, 14, 14                         /* 31 to 36 */
+};
+
+typedef struct {
+	int16_t upper;
+	int16_t lower;
+} duk_exp_limits;
+
+static duk_exp_limits str2num_exp_limits[] = {
+	{ 957, -1147 }, { 605, -725 },  { 479, -575 },  { 414, -496 },
+	{ 372, -446 },  { 342, -411 },  { 321, -384 },  { 304, -364 },
+	{ 291, -346 },  { 279, -334 },  { 268, -323 },  { 260, -312 },
+	{ 252, -304 },  { 247, -296 },  { 240, -289 },  { 236, -283 },
+	{ 231, -278 },  { 227, -273 },  { 223, -267 },  { 220, -263 },
+	{ 216, -260 },  { 213, -256 },  { 210, -253 },  { 208, -249 },
+	{ 205, -246 },  { 203, -244 },  { 201, -241 },  { 198, -239 },
+	{ 196, -237 },  { 195, -234 },  { 193, -232 },  { 191, -230 },
+	{ 190, -228 },  { 188, -226 },  { 187, -225 },
+};
+
+/*
  *  Limited functionality bigint implementation.  Restricted to non-negative
  *  numbers with less than 32 * BI_MAX_PARTS bits, with the caller responsible
  *  for ensuring this is never exceeded.  Operations have been tailored for
  *  number conversion needs.
+ *
+ *  Argument order is "assignment order", i.e. target first, then arguments:
+ *  x <- y * z --> bi_mul(x, y, z);
  */
 
 #define  BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
@@ -75,16 +117,16 @@ static void bi_normalize(duk_bigint *x) {
 	DUK_ASSERT(bi_is_normalized(x));
 }
 
-/* y <- x */
+/* x <- y */
 static void bi_copy(duk_bigint *x, duk_bigint *y) {
 	int n;
 
-	n = x->n;
-	y->n = n;
+	n = y->n;
+	x->n = n;
 	if (n == 0) {
 		return;
 	}
-	memcpy((void *) y->v, (void *) x->v, (size_t) (sizeof(uint32_t) * n));
+	memcpy((void *) x->v, (void *) y->v, (size_t) (sizeof(uint32_t) * n));
 }
 
 static void bi_set_small(duk_bigint *x, uint32_t v) {
@@ -95,159 +137,6 @@ static void bi_set_small(duk_bigint *x, uint32_t v) {
 		x->v[0] = v;
 	}
 	DUK_ASSERT(bi_is_normalized(x));
-}
-
-/* z <- x+y */
-static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
-	uint64_t tmp;
-	int i, nx, ny;
-
-	DUK_ASSERT(bi_is_normalized(x));
-	DUK_ASSERT(bi_is_normalized(y));
-
-	if (y->n > x->n) {
-		duk_bigint *t;
-		t = x; x = y; y = t;
-	}
-	/* now x->n >= y->n */
-
-	nx = x->n; ny = y->n;
-	tmp = 0;
-	for (i = 0; i < nx; i++) {
-		DUK_ASSERT(i < BI_MAX_PARTS);
-		tmp += x->v[i];
-		if (i < ny) {
-			tmp += y->v[i];
-		}
-		z->v[i] = (uint32_t) (tmp & 0xffffffffU);
-		tmp = tmp >> 32;
-	}
-	if (tmp != 0) {
-		DUK_ASSERT(i < BI_MAX_PARTS);
-		z->v[i++] = (uint32_t) tmp;
-	}
-	z->n = i;
-	DUK_ASSERT(z->n < BI_MAX_PARTS);
-
-	/* no need to normalize */
-	DUK_ASSERT(bi_is_normalized(z));
-}
-
-/* z <- x-y, require x >= y => z >= 0 */
-static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
-	int nx, ny;
-	int i;
-	uint32_t tx, ty;
-	int64_t tmp;
-
-	DUK_ASSERT(bi_is_normalized(x));
-	DUK_ASSERT(bi_is_normalized(y));
-
-	nx = x->n;
-	ny = y->n;
-	/* ASSERT: x normalized, y normalized, nx >= ny */
-
-	tmp = 0;
-	for (i = 0; i < nx; i++) {
-		tx = x->v[i];
-		if (i < ny) {
-			ty = y->v[i];
-		} else {
-			ty = 0;
-		}
-		tmp = (int64_t) tx - (int64_t) ty + tmp;
-		z->v[i] = (uint32_t) (tmp & 0xffffffffU);
-		tmp = tmp >> 32;  /* 0 or -1 */
-	}
-	/* ASSERT: tmp == 0 */
-
-	z->n = i;
-	bi_normalize(z);  /* need to normalize, may even cancel to 0 */
-	DUK_ASSERT(bi_is_normalized(z));
-}
-
-/* z <- x*y */
-static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
-	int i, j, ny, nz;
-	uint64_t tmp;
-
-	DUK_ASSERT(bi_is_normalized(x));
-	DUK_ASSERT(bi_is_normalized(y));
-
-	nz = x->n + y->n;  /* max possible */
-	DUK_ASSERT(nz < BI_MAX_PARTS);
-
-	if (nz == 0) {
-		z->n = 0;
-		return;
-	}
-
-	memset((void *) z->v, 0, (size_t) (sizeof(uint32_t) * nz));
-	z->n = nz;
-
-	ny = y->n;
-	for (i = 0; i < x->n; i++) {
-		tmp = 0;
-		for (j = 0; j < ny; j++) {
-			tmp += (uint64_t) x->v[i] * (uint64_t) y->v[j] + z->v[i+j];
-			z->v[i+j] = (uint32_t) (tmp & 0xffffffffU);
-			tmp = tmp >> 32;
-		}
-		if (tmp > 0) {
-			DUK_ASSERT(i + j < nz);
-			DUK_ASSERT(i + j < BI_MAX_PARTS);
-			z->v[i+j] += (uint32_t) tmp;
-		}
-	}
-
-	bi_normalize(z);
-	DUK_ASSERT(bi_is_normalized(z));
-}
-
-/* z <- x*y */
-static void bi_mul_small(duk_bigint *x, uint32_t y, duk_bigint *z) {
-	duk_bigint tmp;
-
-	DUK_ASSERT(bi_is_normalized(x));
-
-	/* FIXME: optimize */
-	if (y == 0) {
-		tmp.n = 0;
-	} else {
-		tmp.n = 1;
-		tmp.v[0] = y;
-	}
-	bi_mul(x, &tmp, z);
-
-	DUK_ASSERT(bi_is_normalized(z));
-}
-
-#if 0  /* FIXME: unused */
-/* x <- x+y, use t as temp */
-static void bi_add_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
-	bi_add(x, y, t);
-	bi_copy(t, x);
-}
-#endif
-
-/* x <- x-y, use t as temp */
-static void bi_sub_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
-	bi_sub(x, y, t);
-	bi_copy(t, x);
-}
-
-#if 0  /* FIXME: unused */
-/* x <- x*y, use t as temp */
-static void bi_mul_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
-	bi_mul(x, y, t);
-	bi_copy(t, x);
-}
-#endif
-
-/* x <- x*y, use t as temp */
-static void bi_mul_small_copy(duk_bigint *x, uint32_t y, duk_bigint *t) {
-	bi_mul_small(x, y, t);
-	bi_copy(t, x);
 }
 
 /* Return value: <0  <=>  x < y
@@ -291,17 +180,194 @@ static int bi_compare(duk_bigint *x, duk_bigint *y) {
 	return -1;
 }
 
+/* x <- y + z */
+static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
+	uint64_t tmp;
+	int i, ny, nz;
+
+	DUK_ASSERT(bi_is_normalized(y));
+	DUK_ASSERT(bi_is_normalized(z));
+
+	if (z->n > y->n) {
+		duk_bigint *t;
+		t = y; y = z; z = t;
+	}
+	/* now y->n >= z->n */
+
+	ny = y->n; nz = z->n;
+	tmp = 0;
+	for (i = 0; i < ny; i++) {
+		DUK_ASSERT(i < BI_MAX_PARTS);
+		tmp += y->v[i];
+		if (i < nz) {
+			tmp += z->v[i];
+		}
+		x->v[i] = (uint32_t) (tmp & 0xffffffffU);
+		tmp = tmp >> 32;
+	}
+	if (tmp != 0) {
+		DUK_ASSERT(i < BI_MAX_PARTS);
+		x->v[i++] = (uint32_t) tmp;
+	}
+	x->n = i;
+	DUK_ASSERT(x->n < BI_MAX_PARTS);
+
+	/* no need to normalize */
+	DUK_ASSERT(bi_is_normalized(x));
+}
+
+/* x <- y + z */
+static void bi_add_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
+	duk_bigint tmp;
+
+	DUK_ASSERT(bi_is_normalized(y));
+
+	/* FIXME: optimize */
+	bi_set_small(&tmp, z);
+	bi_add(x, y, &tmp);
+
+	DUK_ASSERT(bi_is_normalized(x));
+}
+
+#if 0  /* unused */
+/* x <- x + y, use t as temp */
+static void bi_add_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
+	bi_add(t, x, y);
+	bi_copy(x, t);
+}
+#endif
+
+/* x <- y - z, require x >= y => z >= 0, i.e. y >= z */
+static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
+	int ny, nz;
+	int i;
+	uint32_t ty, tz;
+	int64_t tmp;
+
+	DUK_ASSERT(bi_is_normalized(y));
+	DUK_ASSERT(bi_is_normalized(z));
+	DUK_ASSERT(bi_compare(y, z) >= 0);
+
+	ny = y->n;
+	nz = z->n;
+
+	tmp = 0;
+	for (i = 0; i < ny; i++) {
+		ty = y->v[i];
+		if (i < nz) {
+			tz = z->v[i];
+		} else {
+			tz = 0;
+		}
+		tmp = (int64_t) ty - (int64_t) tz + tmp;
+		x->v[i] = (uint32_t) (tmp & 0xffffffffU);
+		tmp = tmp >> 32;  /* 0 or -1 */
+	}
+	DUK_ASSERT(tmp == 0);
+
+	x->n = i;
+	bi_normalize(x);  /* need to normalize, may even cancel to 0 */
+	DUK_ASSERT(bi_is_normalized(x));
+}
+
+#if 0  /* unused */
+/* x <- y - z */
+static void bi_sub_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
+	duk_bigint tmp;
+
+	DUK_ASSERT(bi_is_normalized(y));
+
+	/* FIXME: optimize */
+	bi_set_small(&tmp, z);
+	bi_sub(x, y, &tmp);
+
+	DUK_ASSERT(bi_is_normalized(x));
+}
+#endif
+
+/* x <- x - y, use t as temp */
+static void bi_sub_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
+	bi_sub(t, x, y);
+	bi_copy(x, t);
+}
+
+/* x <- y * z */
+static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
+	int i, j, nx, nz;
+	uint64_t tmp;
+
+	DUK_ASSERT(bi_is_normalized(y));
+	DUK_ASSERT(bi_is_normalized(z));
+
+	nx = y->n + z->n;  /* max possible */
+	DUK_ASSERT(nx < BI_MAX_PARTS);
+
+	if (nx == 0) {
+		/* Both inputs are zero; cases where only one is zero can go
+		 * through main algorithm.
+		 */
+		x->n = 0;
+		return;
+	}
+
+	memset((void *) x->v, 0, (size_t) (sizeof(uint32_t) * nx));
+	x->n = nx;
+
+	nz = z->n;
+	for (i = 0; i < y->n; i++) {
+		tmp = 0;
+		for (j = 0; j < nz; j++) {
+			tmp += (uint64_t) y->v[i] * (uint64_t) z->v[j] + x->v[i+j];
+			x->v[i+j] = (uint32_t) (tmp & 0xffffffffU);
+			tmp = tmp >> 32;
+		}
+		if (tmp > 0) {
+			DUK_ASSERT(i + j < nx);
+			DUK_ASSERT(i + j < BI_MAX_PARTS);
+			x->v[i+j] += (uint32_t) tmp;
+		}
+	}
+
+	bi_normalize(x);
+	DUK_ASSERT(bi_is_normalized(x));
+}
+
+/* x <- y * z */
+static void bi_mul_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
+	duk_bigint tmp;
+
+	DUK_ASSERT(bi_is_normalized(y));
+
+	/* FIXME: optimize */
+	bi_set_small(&tmp, z);
+	bi_mul(x, y, &tmp);
+
+	DUK_ASSERT(bi_is_normalized(x));
+}
+
+#if 0  /* unused */
+/* x <- x * y, use t as temp */
+static void bi_mul_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
+	bi_mul(t, x, y);
+	bi_copy(x, t);
+}
+#endif
+
+/* x <- x * y, use t as temp */
+static void bi_mul_small_copy(duk_bigint *x, uint32_t y, duk_bigint *t) {
+	bi_mul_small(t, x, y);
+	bi_copy(x, t);
+}
+
 static int bi_is_even(duk_bigint *x) {
 	DUK_ASSERT(bi_is_normalized(x));
 	return (x->n == 0) || ((x->v[0] & 0x01) == 0);
 }
 
-#if 0  /* FIXME: unused */
 static int bi_is_zero(duk_bigint *x) {
 	DUK_ASSERT(bi_is_normalized(x));
 	return (x->n == 0);  /* this is the case for normalized numbers */
 }
-#endif
 
 /* Bigint is 2^52.  Used to detect normalized IEEE double mantissa values
  * which are at the lowest edge (next floating point value downwards has
@@ -332,34 +398,49 @@ static void bi_twoexp(duk_bigint *x, int y) {
 	x->v[n - 1] = (((uint32_t) 1) << r);
 }
 
+/* x <- b^y */
+static void bi_exp_small(duk_bigint *x, int b, int y) {
+	/* FIXME: optimize */
+	duk_bigint tmp;
+
+	if (b == 2) {
+		bi_twoexp(x, y);
+		return;
+	}
+	bi_set_small(x, 1);
+	while (y-- > 0) {
+		bi_mul_small_copy(x, b, &tmp);
+	}
+}
+
 /*
  *  A Dragon4 number-to-string variant, based on:
  *
- *    Guy L. Steele Jr., Jon L. White: "How to Print Floating-Point
- *    Numbers Accurately"
+ *    Guy L. Steele Jr., Jon L. White: "How to Print Floating-Point Numbers
+ *    Accurately"
  *
- *    Robert G. Burger, R. Kent Dybvig: "Printing Floating-Point
- *    Numbers Quickly and Accurately"
+ *    Robert G. Burger, R. Kent Dybvig: "Printing Floating-Point Numbers
+ *    Quickly and Accurately"
  *
  *  The current algorithm is based on Figure 1 of the Burger-Dybvig paper,
  *  i.e. the base implementation without logarithm estimation speedups;
- *  these would increase code footprint considerably.
+ *  these would increase code footprint considerably.  Fixed-format output
+ *  does not follow the suggestions in the paper; instead, we generate an
+ *  extra digit and round-with-carry.
  *
- *  b=2 is assumed (and optimized for); B is arbitrary.
+ *  The same algorithm is used for number parsing (with b=10 and B=2)
+ *  by generating one extra digit and doing rounding manually.
  *
  *  FIXME: compile option to prefer speed over code footprint.
  */
 
 /* Maximum number of digits generated. */
-#define  MAX_OUTPUT_DIGITS  1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
-
-/* Number of extra digits for fixed-format rounding. */
-#define  FIXED_FORMAT_EXTRA_DIGITS  1
+#define  MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
 
 /* Maximum number of characters in formatted value. */
-#define  MAX_FORMATTED_LENGTH  1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
+#define  MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
 
-/* Number and (minimum) of bigints in the nc_ctx structure. */
+/* Number and (minimum) size of bigints in the nc_ctx structure. */
 #define  NUMCONV_CTX_NUM_BIGINTS    7
 #define  NUMCONV_CTX_BIGINTS_SIZE   (sizeof(duk_bigint) * NUMCONV_CTX_NUM_BIGINTS)
 
@@ -369,16 +450,19 @@ typedef struct {
 	 * the final string.  This is a bit awkard; a union would be
 	 * more correct.
 	 */
-	/* FIXME: better reuse, eliminate 1? */
-	duk_bigint f, r, s, mp, mm, t1, t2;
+	duk_bigint f, r, s, mp, mm, t1, t2;  /* XXX: can probably eliminate at least 1 by reusing */
 
-	double x;       /* input number */
-	int req_digits; /* request number of output digits; 0 = free-format */
-	int e;          /* exponent for 'f' */
-	int B;          /* output radix */
-	int k;          /* see algorithm */
-	int low_ok;     /* see algorithm */
-	int high_ok;    /* see algorithm */
+	int is_s2n;        /* if 1, doing a string-to-number; else doing a number-to-string */
+	int is_fixed;      /* if 1, doing a fixed format output (not free format) */
+	int req_digits;    /* request number of output digits; 0 = free-format */
+	int abs_pos;       /* digit position is absolute, not relative */
+	int e;             /* exponent for 'f' */
+	int b;             /* input radix */
+	int B;             /* output radix */
+	int k;             /* see algorithm */
+	int low_ok;        /* see algorithm */
+	int high_ok;       /* see algorithm */
+	int unequal_gaps;  /* m+ != m- (very rarely) */
 
 	/* Buffer used for generated digits, values are in the range [0,B-1]. */
 	char digits[MAX_OUTPUT_DIGITS];
@@ -395,90 +479,41 @@ typedef struct {
 		((nc_ctx)->digits[(idx) - 1]) = (x); \
 	} while(0)
 
-/* FIXME: very clunky */
-size_t dragon4_format_uint(char *buf, unsigned int x, int radix) {
-	char *p = buf;
+size_t dragon4_format_uint32(char *buf, unsigned int x, int radix) {
+	char *p;
 	size_t len;
-	int i;
+	int dig;
+	int t;
 
 	DUK_ASSERT(radix >= 2 && radix <= 36);
 
-	/* output first in inverse order */
-	for (;;) {
-		int dig;
-		int t;
+	/* A 32-bit unsigned integer formats to at most 32 digits (the
+	 * worst case happens with radix == 2).  Output the digits backwards,
+	 * and use a memmove() to get them in the right place.
+	 */
 
+	p = buf + 32;
+	for (;;) {
 		t = x / radix;
 		dig = x - t * radix;
 		x = t;
 
-		*p++ = DIGITCHAR(dig);
+		*(--p) = DIGITCHAR(dig);
 
 		if (x == 0) {
 			break;
 		}
 	}
-	len = p - buf;
+	len = (buf + 32) - p;
 
-	/* then fix order: '12345' -> '54321' */
-	for (i = 0; i < len / 2; i++) {
-		/* even len: '1234' -> len=4 -> loop i=0,1
-		 * odd len: '12345' -> len=5 -> loop i=0,1
-		 */
-		char tmp;
-
-		tmp = buf[i];
-		buf[i] = buf[len - i - 1];
-		buf[len - i - 1] = tmp;
-	}
+	memmove((void *) buf, (void *) p, len);
 
 	return len;
 }
 
-static void dragon4_convert_double(duk_numconv_stringify_ctx *nc_ctx) {
-	/* FIXME: share duk_tval.h? */
-	volatile union {
-		double d;
-		uint32_t v[2];
-	} u;
-	int exp;
-
-	/*
-	 *    seeeeeee eeeeffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff
-	 *       A        B        C        D        E        F        G        H
-	 *
-	 *    s       sign bit
-	 *    eee...  exponent field
-	 *    fff...  fraction
-	 *
-	 *    ieee value = 1.ffff... * 2^(e - 1023)  (normal)
-	 *               = 0.ffff... * 2^(-1022)     (denormal)
-	 *
-	 *    algorithm v = f * b^e
-	 */
-
-	u.d = nc_ctx->x;
-
-	/* FIXME: platform specific; need endianness define from duk_tval.h */
-
-	nc_ctx->f.n = 2;
-	nc_ctx->f.v[0] = u.v[0];
-	nc_ctx->f.v[1] = u.v[1] & 0x000fffffU;
-
-	exp = (u.v[1] >> 20) & 0x07ffU;
-	if (exp == 0) {
-		/* denormal */
-		exp = IEEE_DOUBLE_EXP_MIN - 52;
-	} else {
-		/* normal: implicit leading 1-bit */
-		nc_ctx->f.v[1] |= 0x00100000U;
-		exp = exp - IEEE_DOUBLE_EXP_BIAS - 52;
-	}
-	
-	nc_ctx->e = exp;
-}
-
 static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
+	int lowest_mantissa;
+
 #if 1
 	/* Assume IEEE round-to-even, so that shorter encoding can be used
 	 * when round-to-even would produce correct result.  By removing
@@ -505,15 +540,27 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 	nc_ctx->high_ok = 0;
 #endif
 
+	/* For string-to-number, pretend we never have the lowest mantissa as there
+	 * is no natural "precision" for inputs.  Having lowest_mantissa == 0, we'll
+	 * fall into the base cases for both e >= 0 and e < 0.
+	 */
+	if (nc_ctx->is_s2n) {
+		lowest_mantissa = 0;
+	} else {
+		lowest_mantissa = bi_is_2to52(&nc_ctx->f);
+	}
+
+	nc_ctx->unequal_gaps = 0;
 	if (nc_ctx->e >= 0) {
 		/* exponent non-negative (and thus not minimum exponent) */
-		if (bi_is_2to52(&nc_ctx->f)) {
+
+		if (lowest_mantissa) {
 			/* (>= e 0) AND (= f (expt b (- p 1)))
 			 *
 			 * be <- (expt b e) == b^e
 			 * be1 <- (* be b) == (expt b (+ e 1)) == b^(e+1)
-			 * r <- (* f be1 2) == 2 * f * b^(e+1) ;  if b==2 -> f * b^(e+2)
-			 * s <- (* b 2) ;  if b==2 -> 4
+			 * r <- (* f be1 2) == 2 * f * b^(e+1)    [if b==2 -> f * b^(e+2)]
+			 * s <- (* b 2)                           [if b==2 -> 4]
 			 * m+ <- be1 == b^(e+1)
 			 * m- <- be == b^e
 			 * k <- 0
@@ -526,16 +573,17 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "lowest mantissa value for this exponent -> "
 			           "unequal gaps");
 
-			bi_twoexp(&nc_ctx->t1, nc_ctx->e + 2);
-			bi_mul(&nc_ctx->f, &nc_ctx->t1, &nc_ctx->r);
-			bi_set_small(&nc_ctx->s, 4);
-			bi_twoexp(&nc_ctx->mp, nc_ctx->e + 1);
-			bi_twoexp(&nc_ctx->mm, nc_ctx->e);
+			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e);    /* mm <- b^e */
+			bi_mul_small(&nc_ctx->mp, &nc_ctx->mm, nc_ctx->b);  /* mp <- b^(e+1) */
+			bi_mul_small(&nc_ctx->t1, &nc_ctx->f, 2);
+			bi_mul(&nc_ctx->r, &nc_ctx->t1, &nc_ctx->mp);       /* r <- (2 * f) * b^(e+1) */
+			bi_set_small(&nc_ctx->s, nc_ctx->b * 2);            /* s <- 2 * b */
+			nc_ctx->unequal_gaps = 1;
 		} else {
 			/* (>= e 0) AND (not (= f (expt b (- p 1))))
 			 *
 			 * be <- (expt b e) == b^e
-			 * r <- (* f be 2) == 2 * f * b^e ;  if b==2 -> f * b^(e+1)
+			 * r <- (* f be 2) == 2 * f * b^e    [if b==2 -> f * b^(e+1)]
 			 * s <- 2
 			 * m+ <- be == b^e
 			 * m- <- be == b^e
@@ -549,18 +597,20 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "not lowest mantissa for this exponent -> "
 			           "equal gaps");
 
-			bi_twoexp(&nc_ctx->t1, nc_ctx->e + 1);
-			bi_mul(&nc_ctx->f, &nc_ctx->t1, &nc_ctx->r);        /* r <- (* 2 f (expt b e)) = (* f (expt b (+ e 1))) */
-			bi_set_small(&nc_ctx->s, 2);
-			bi_twoexp(&nc_ctx->t1, nc_ctx->e);
-			bi_copy(&nc_ctx->t1, &nc_ctx->mp);
-			bi_copy(&nc_ctx->t1, &nc_ctx->mm);
+			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e);  /* mm <- b^e */
+			bi_copy(&nc_ctx->mp, &nc_ctx->mm);                /* mp <- b^e */
+			bi_mul_small(&nc_ctx->t1, &nc_ctx->f, 2);
+			bi_mul(&nc_ctx->r, &nc_ctx->t1, &nc_ctx->mp);     /* r <- (2 * f) * b^e */
+			bi_set_small(&nc_ctx->s, 2);                      /* s <- 2 */
 		}
 	} else {
+		/* When doing string-to-number, lowest_mantissa is always 0 so
+		 * the exponent check, while incorrect, won't matter.
+		 */
 		if (nc_ctx->e > IEEE_DOUBLE_EXP_MIN /*not minimum exponent*/ &&
-		    bi_is_2to52(&nc_ctx->f) /* lowest mantissa for this exponent*/) {
-			/* r <- (* f b 2) == (* f 4)
-			 * s <- (* (expt b (- 1 e)) 2) == b^(1-e) * 2 ;  if b==2 -> b^(2-e)
+		    lowest_mantissa /* lowest mantissa for this exponent*/) {
+			/* r <- (* f b 2)                                [if b==2 -> (* f 4)]
+			 * s <- (* (expt b (- 1 e)) 2) == b^(1-e) * 2    [if b==2 -> b^(2-e)]
 			 * m+ <- b == 2
 			 * m- <- 1
 			 * k <- 0
@@ -573,14 +623,16 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "lowest mantissa for this exponent -> "
 			           "unequal gaps");
 
-			bi_mul_small(&nc_ctx->f, 4, &nc_ctx->r);
-			bi_twoexp(&nc_ctx->s, 2 - nc_ctx->e);
+			bi_mul_small(&nc_ctx->r, &nc_ctx->f, nc_ctx->b * 2);  /* r <- (2 * b) * f */
+			bi_exp_small(&nc_ctx->t1, nc_ctx->b, 1 - nc_ctx->e);
+			bi_mul_small(&nc_ctx->s, &nc_ctx->t1, 2);             /* s <- b^(1-e) * 2 */
 			bi_set_small(&nc_ctx->mp, 2);
 			bi_set_small(&nc_ctx->mm, 1);
+			nc_ctx->unequal_gaps = 1;
 		} else {
 			/* r <- (* f 2)
-			 * s <- (* (expt b (- e)) 2) == b^(-e) * 2 ;  if b==2 -> b^(1-e)
-			 * m+ <- b == 1
+			 * s <- (* (expt b (- e)) 2) == b^(-e) * 2    [if b==2 -> b^(1-e)]
+			 * m+ <- 1
 			 * m- <- 1
 			 * k <- 0
 			 * B <- B
@@ -592,8 +644,9 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "lowest mantissa for this exponent -> "
 			           "equal gaps");
 
-			bi_mul_small(&nc_ctx->f, 2, &nc_ctx->r);
-			bi_twoexp(&nc_ctx->s, 1 - nc_ctx->e);
+			bi_mul_small(&nc_ctx->r, &nc_ctx->f, 2);            /* r <- 2 * f */
+			bi_exp_small(&nc_ctx->t1, nc_ctx->b, -nc_ctx->e);
+			bi_mul_small(&nc_ctx->s, &nc_ctx->t1, 2);           /* s <- b^(-e) * 2 */
 			bi_set_small(&nc_ctx->mp, 1);
 			bi_set_small(&nc_ctx->mm, 1);
 		}
@@ -612,17 +665,17 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 	 * while the logical algorithm finds 'k' with 's' having its initial
 	 * value, after which 's' is updated separately (see the Burger-Dybvig
 	 * paper, Section 3.1, steps 2 and 3).
+	 *
+	 * The case where m+ == m- (almost always) is optimized for, because
+	 * it reduces the bigint operations considerably and almost always
+	 * applies.  The scale loop only needs to work with m+, so this works.
 	 */
 
-	/* FIXME: this algorithm could be optimized quite a lot by using e.g.
+	/* XXX: this algorithm could be optimized quite a lot by using e.g.
 	 * a logarithm based estimator for 'k' and performing B^n multiplication
 	 * using a lookup table or using some bit-representation based exp
 	 * algorithm.  Currently we just loop, with significant performance
 	 * impact for very large and very small numbers.
-	 */
-
-	/* FIXME: optimize for the case when mp === mm.  This is a VERY likely case
-	 * and saves on bigint arithmetic.
 	 */
 
 	DUK_DPRINT("scale: B=%d, low_ok=%d, high_ok=%d", nc_ctx->B, nc_ctx->low_ok, nc_ctx->high_ok);
@@ -638,7 +691,7 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 		BI_PRINT("m+", &nc_ctx->mp);
 		BI_PRINT("m-", &nc_ctx->mm);
 
-		bi_add(&nc_ctx->r, &nc_ctx->mp, &nc_ctx->t1);  /* t1 = (+ r m+) */
+		bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 = (+ r m+) */
 		if (bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (nc_ctx->high_ok ? 0 : 1)) {
 			DUK_DPRINT("k is too low");
 			/* r <- r
@@ -667,8 +720,8 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 		BI_PRINT("m+", &nc_ctx->mp);
 		BI_PRINT("m-", &nc_ctx->mm);
 
-		bi_add(&nc_ctx->r, &nc_ctx->mp, &nc_ctx->t1);  /* t1 = (+ r m+) */
-		bi_mul_small(&nc_ctx->t1, nc_ctx->B, &nc_ctx->t2);   /* t2 = (* (+ r m+) B) */
+		bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 = (+ r m+) */
+		bi_mul_small(&nc_ctx->t2, &nc_ctx->t1, nc_ctx->B);   /* t2 = (* (+ r m+) B) */
 		if (bi_compare(&nc_ctx->t2, &nc_ctx->s) <= (nc_ctx->high_ok ? -1 : 0)) {
 			DUK_DPRINT("k is too high");
 			/* r <- (* r B)
@@ -679,7 +732,10 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 			 */
 			bi_mul_small_copy(&nc_ctx->r, nc_ctx->B, &nc_ctx->t1);
 			bi_mul_small_copy(&nc_ctx->mp, nc_ctx->B, &nc_ctx->t1);
-			bi_mul_small_copy(&nc_ctx->mm, nc_ctx->B, &nc_ctx->t1);
+			if (nc_ctx->unequal_gaps) {
+				DUK_DPRINT("m+ != m- -> need to update m- too");
+				bi_mul_small_copy(&nc_ctx->mm, nc_ctx->B, &nc_ctx->t1);
+			}
 			k--;
 		} else {
 			break;
@@ -688,14 +744,41 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 
  skip_dec_k:
 
-	DUK_DPRINT("final k: %d", k);
+	if (!nc_ctx->unequal_gaps) {
+		DUK_DPRINT("equal gaps, copy m- from m+");
+		bi_copy(&nc_ctx->mm, &nc_ctx->mp);  /* mm <- mp */
+	}
 	nc_ctx->k = k;
+
+	DUK_DPRINT("final k: %d", k);
+	BI_PRINT("r(final)", &nc_ctx->r);
+	BI_PRINT("s(final)", &nc_ctx->s);
+	BI_PRINT("mp(final)", &nc_ctx->mp);
+	BI_PRINT("mm(final)", &nc_ctx->mm);
 }
 
 static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 	int tc1, tc2;
 	int d;
 	int count = 0;
+
+	/*
+	 *  Digit generation loop.
+	 *
+	 *  Different termination conditions:
+	 *
+	 *    1. Free format output.  Terminate when shortest accurate
+	 *       representation found.
+	 *
+	 *    2. Fixed format output, with specific number of digits.
+	 *       Ignore termination conditions, terminate when digits
+	 *       generated.  Caller requests an extra digit and rounds.
+	 *
+	 *    3. Fixed format output, with a specific absolute cut-off
+	 *       position (e.g. 10 digits after decimal point).  Note
+	 *       that we always generate at least one digit, even if
+	 *       the digit is below the cut-off point already.
+	 */
 
 	for (;;) {
 		DUK_DPRINT("generate loop, count=%d, k=%d, B=%d, low_ok=%d, high_ok=%d",
@@ -706,7 +789,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		BI_PRINT("m-", &nc_ctx->mm);
 
 		/* (quotient-remainder (* r B) s) using a dummy subtraction loop */
-		bi_mul_small(&nc_ctx->r, nc_ctx->B, &nc_ctx->t1);       /* t1 <- (* r B) */
+		bi_mul_small(&nc_ctx->t1, &nc_ctx->r, nc_ctx->B);       /* t1 <- (* r B) */
 		d = 0;
 		for (;;) {
 			if (bi_compare(&nc_ctx->t1, &nc_ctx->s) < 0) {
@@ -715,7 +798,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 			bi_sub_copy(&nc_ctx->t1, &nc_ctx->s, &nc_ctx->t2);  /* t1 <- t1 - s */
 			d++;
 		}
-		bi_copy(&nc_ctx->t1, &nc_ctx->r);  /* r <- (remainder (* r B) s) */
+		bi_copy(&nc_ctx->r, &nc_ctx->t1);  /* r <- (remainder (* r B) s) */
 		                                   /* d <- (quotient (* r B) s)   (in range 0...B-1) */
 		DUK_DPRINT("-> d(quot)=%d", d);
 		BI_PRINT("r(rem)", &nc_ctx->r);
@@ -731,11 +814,11 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		 * extra digits and use rounding (with carry) to finish the output.
 		 */
 
-		if (nc_ctx->req_digits == 0) {
+		if (nc_ctx->is_fixed == 0) {
 			/* free-form */
 			tc1 = (bi_compare(&nc_ctx->r, &nc_ctx->mm) <= (nc_ctx->low_ok ? 0 : -1));
 
-			bi_add(&nc_ctx->r, &nc_ctx->mp, &nc_ctx->t1);  /* t1 <- (+ r m+) */
+			bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 <- (+ r m+) */
 			tc2 = (bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (&nc_ctx->high_ok ? 0 : 1));
 
 			DUK_DPRINT("tc1=%d, tc2=%d", tc1, tc2);
@@ -753,7 +836,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		if (tc1) {
 			if (tc2) {
 				/* tc1 = true, tc2 = true */
-				bi_mul_small(&nc_ctx->r, 2, &nc_ctx->t1);  /* FIXME: shift */
+				bi_mul_small(&nc_ctx->t1, &nc_ctx->r, 2);  /* FIXME: shift */
 				if (bi_compare(&nc_ctx->t1, &nc_ctx->s) < 0) {  /* (< (* r 2) s) */
 					DUK_DPRINT("tc1=true, tc2=true, 2r > s: output d --> %d (k=%d)", d, nc_ctx->k);
 					DRAGON4_OUTPUT(nc_ctx, count, d);
@@ -791,24 +874,77 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 			}
 		}
 
-		if (nc_ctx->req_digits > 0 && count >= nc_ctx->req_digits) {
-			DUK_DPRINT("digit count reached req_digits, end generate loop");
-			break;
+		/* fixed-format termination conditions */
+		if (nc_ctx->is_fixed) {
+			if (nc_ctx->abs_pos) {
+				int pos = nc_ctx->k - count + 1;  /* count is already incremented, take into account */
+				DUK_DPRINT("fixed format, absolute: abs pos=%d, k=%d, count=%d, req=%d", pos, nc_ctx->k, count, nc_ctx->req_digits);
+				if (pos <= nc_ctx->req_digits) {
+					DUK_DPRINT("digit position reached req_digits, end generate loop");
+					break;
+				}
+			} else {
+				DUK_DPRINT("fixed format, relative: k=%d, count=%d, req=%d", nc_ctx->k, count, nc_ctx->req_digits);
+				if (count >= nc_ctx->req_digits) {
+					DUK_DPRINT("digit count reached req_digits, end generate loop");
+					break;
+				}
+			}
 		}
 	}  /* for */
 
 	nc_ctx->count = count;
 
 	DUK_DPRINT("generate finished");
+
+#ifdef DUK_USE_DEBUG
+	{
+		char buf[2048];
+		int i, t;
+		memset(buf, 0, sizeof(buf));
+		for (i = 0; i < nc_ctx->count; i++) {
+			t = nc_ctx->digits[i];
+			if (t < 0 || t > 36) {
+				buf[i] = '?';
+			} else {
+				buf[i] = DIGITCHAR(t);
+			}
+		}
+		DUK_DPRINT("-> generated digits; k=%d, digits='%s'", nc_ctx->k, buf);
+	}
+#endif
 }
 
-static void dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx) {
+/* Round up digits to a given position.  If position is out-of-bounds,
+ * does nothing.  If carry propagates over the first digit, a '1' is
+ * prepended to digits and 'k' will be updated.  Return value indicates
+ * whether carry propagated over the first digit.
+ *
+ * Note that nc_ctx->count is NOT updated based on the rounding position
+ * (it is updated only if carry overflows over the first digit and an
+ * extra digit is prepended).
+ */
+static int dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx, int round_idx) {
 	int t;
 	char *p;
 	int roundup_limit;
+	int ret = 0;
 
-	DUK_ASSERT(nc_ctx->req_digits >= FIXED_FORMAT_EXTRA_DIGITS);
-	DUK_ASSERT(nc_ctx->count == nc_ctx->req_digits);
+	/*
+	 *  round_idx points to the digit which is considered for rounding; the
+	 *  digit to its left is the final digit of the rounded value.  If round_idx
+	 *  is zero, rounding will be performed; the result will either be an empty
+	 *  rounded value or if carry happens a '1' digit is generated.
+	 */
+
+	if (round_idx >= nc_ctx->count) {
+		DUK_DPRINT("round_idx out of bounds (%d >= %d (count)) -> no rounding",
+		           round_idx, nc_ctx->count);
+		return 0;
+	} else if (round_idx < 0) {
+		DUK_DPRINT("round_idx out of bounds (%d < 0) -> no rounding", round_idx);
+		return 0;
+	}
 
 	/*
 	 *  Round-up limit.
@@ -820,11 +956,24 @@ static void dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx) {
 	 */
 	roundup_limit = (nc_ctx->B + 1) / 2;
 
-	p = &nc_ctx->digits[nc_ctx->count - 1];
+	p = &nc_ctx->digits[round_idx];
 	if (*p >= roundup_limit) {
 		DUK_DPRINT("fixed-format rounding carry required");
 		/* carry */
 		for (;;) {
+			*p = 0;
+			if (p == &nc_ctx->digits[0]) {
+				DUK_DPRINT("carry propagated to first digit -> special case handling");
+				memmove((void *) (&nc_ctx->digits[1]),
+				        (void *) (&nc_ctx->digits[0]),
+				        (size_t) (sizeof(char) * nc_ctx->count));
+				nc_ctx->digits[0] = 1;  /* don't increase 'count' */
+				nc_ctx->k++;  /* position of highest digit changed */
+				nc_ctx->count++;  /* number of digits changed */
+				ret = 1;
+				break;
+			}
+
 			DUK_DPRINT("fixed-format rounding carry: B=%d, roundup_limit=%d, p=%p, digits=%p",
 			           (int) nc_ctx->B, roundup_limit, (void *) p, (void *) nc_ctx->digits);
 			p--;
@@ -837,31 +986,19 @@ static void dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx) {
 			}
 
 			DUK_DPRINT("wraps, carry to next digit");
-			*p = 0;
-			if (p == &nc_ctx->digits[0]) {
-				DUK_DPRINT("carry propagated to first digit -> special case handling");
-				memmove((void *) (&nc_ctx->digits[1]),
-				        (void *) (&nc_ctx->digits[0]),
-				        (size_t) (sizeof(char) * nc_ctx->count));
-				nc_ctx->digits[0] = 1;  /* don't increase 'count' */
-				nc_ctx->k++;  /* position of highest digit changed */
-				break;
-			}
 		}
 	}
 
-	/* 'erase' extra digits */
-	nc_ctx->count -= FIXED_FORMAT_EXTRA_DIGITS;
-	DUK_ASSERT(nc_ctx->count >= 1);
+	return ret;
 }
 
 #define  NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
 
-static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_context *ctx, int radix, int flags, int neg) {
+static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_context *ctx, int radix, int digits, int flags, int neg) {
 	int k;
-	int i;
-	int pos;
+	int pos, pos_end;
 	int exp;
+	int dig;
 	char *q;
 	char *buf;
 
@@ -887,67 +1024,81 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
 	 *  The bigint space in the context is reused for string output, as there
 	 *  is more than enough space for that (>1kB at the moment), and we avoid
 	 *  allocating even more stack.
-	 *
-	 *  FIXME: currently ugly, use a union.
 	 */
 
-	DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= 1024);  /* FIXME: what's maximum output size? */
+	DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= MAX_FORMATTED_LENGTH);
 	DUK_ASSERT(nc_ctx->count >= 1);
 
 	k = nc_ctx->k;
-	buf = (char *) &nc_ctx->f;
+	buf = (char *) &nc_ctx->f;  /* FIXME: union would be more correct */
 	q = buf;
 
 	/* Exponent handling: if exponent format is used, record exponent value and
 	 * fake k such that one leading digit is generated (e.g. digits=123 -> "1.23").
+	 *
+	 * toFixed() prevents exponent use; otherwise apply a set of criteria to
+	 * match the other API calls (toString(), toPrecision, etc).
 	 */
-	if ((flags & DUK_NUMCONV_FLAG_FORCE_EXP) ||         /* exponential notation forced */
-	    ((flags & DUK_NUMCONV_FLAG_NO_ZERO_PAD) &&      /* fixed precision and zero padding would be required */
-             (k - nc_ctx->count >= 1)) ||                   /* (e.g. digits=12, k=3, count=2 -> "12X") */
-	    ((k > 21 || k <= -6) && (radix == 10))) {       /* toString() conditions */
-		DUK_DPRINT("use exponential notation: k=%d -> exp=%d", k, k - 1);
-		exp = k - 1;  /* e.g. 12.3 -> digits="123" k=2 -> 1.23e1 */
-		k = 1;  /* generate mantissa with a single leading whole number digit */
-	} else {
-		DUK_DPRINT("use non-exponential notation: k=%d", k);
-		exp = NO_EXP;
+
+	exp = NO_EXP;
+	if (!nc_ctx->abs_pos /* toFixed() */) {
+		if ((flags & DUK_N2S_FLAG_FORCE_EXP) ||             /* exponential notation forced */
+		    ((flags & DUK_N2S_FLAG_NO_ZERO_PAD) &&          /* fixed precision and zero padding would be required */
+	             (k - digits >= 1)) ||                          /* (e.g. k=3, digits=2 -> "12X") */
+		    ((k > 21 || k <= -6) && (radix == 10))) {       /* toString() conditions */
+			DUK_DPRINT("use exponential notation: k=%d -> exp=%d", k, k - 1);
+			exp = k - 1;  /* e.g. 12.3 -> digits="123" k=2 -> 1.23e1 */
+			k = 1;  /* generate mantissa with a single leading whole number digit */
+		}
 	}
 
 	if (neg) {
 		*q++ = '-';
 	}
 
-	/* k == 0 -> first digit is in first fraction position (0.X) */
-	if (k <= 0) {
-		*q++ = '0';
-		if (k < 0) {
-			*q++ = '.';
-			for (i = 0; i > k; i--) {
-				*q++ = '0';
-			}
+	/* Start position (inclusive) and end position (exclusive) */
+	pos = (k >= 1 ? k : 1);
+	if (nc_ctx->is_fixed) {
+		if (nc_ctx->abs_pos) {
+			/* toFixed() */
+			pos_end = -digits;
+		} else {
+			pos_end = k - digits;
 		}
+	} else {
+		pos_end = k - nc_ctx->count;
+	}
+	if (pos_end > 0) {
+		pos_end = 0;
 	}
 
-	for (i = 0; i < nc_ctx->count; i++) {
-		int dig = nc_ctx->digits[i];
-		DUK_ASSERT(dig >= 0 && dig < nc_ctx->B);
+	DUK_DPRINT("exp=%d, k=%d, count=%d, pos=%d, pos_end=%d, is_fixed=%d, "
+	           "digits=%d, abs_pos=%d",
+	           exp, k, nc_ctx->count, pos, pos_end, nc_ctx->is_fixed,
+	           digits, nc_ctx->abs_pos);
 
-		pos = k - i;
+	/* Digit generation */
+	while (pos > pos_end) {
+		DUK_DPRINT("digit generation: pos=%d, pos_end=%d", pos, pos_end);
 		if (pos == 0) {
 			*q++ = '.';
 		}
-		*q++ = DIGITCHAR(dig);
-	}
-
-	if (exp == NO_EXP) {
-		for (;; i++) {
-			int pos = k - i;
-			if (pos <= 0) {
-				break;
-			}
+		if (pos > k) {
 			*q++ = '0';
-		}
-	} else {
+		} else if (pos <= k - nc_ctx->count) {
+			*q++ = '0';
+		} else {
+			dig = nc_ctx->digits[k - pos];
+			DUK_ASSERT(dig >= 0 && dig < nc_ctx->B);
+			*q++ = DIGITCHAR(dig);
+		} 
+
+		pos--;
+	}
+	DUK_ASSERT(pos <= 1);
+
+	/* Exponent */
+	if (exp != NO_EXP) {
 		/*
 		 *  Exponent notation for non-base-10 numbers isn't specified in Ecmascript
 		 *  specification, as it never explicitly turns up: non-decimal numbers can
@@ -973,7 +1124,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
 			exp = -exp;
 		}
 		*q++ = exp_sign;
-		len = dragon4_format_uint(q, (unsigned int) exp, radix);
+		len = dragon4_format_uint32(q, (unsigned int) exp, radix);
 		q += len;
 	}
 
@@ -981,15 +1132,210 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
 }
 
 /*
- *  Exposed number-to-string API
+ *  Conversion helpers
  */
 
-void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, int flags) {
+static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
+	/* FIXME: share duk_tval.h? */
+	/* FIXME: reliable union */
+	volatile union {
+		volatile double d;
+		volatile uint32_t v[2];
+	} u;
+	int exp;
+
+	/*
+	 *    seeeeeee eeeeffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff
+	 *       A        B        C        D        E        F        G        H
+	 *
+	 *    s       sign bit
+	 *    eee...  exponent field
+	 *    fff...  fraction
+	 *
+	 *    ieee value = 1.ffff... * 2^(e - 1023)  (normal)
+	 *               = 0.ffff... * 2^(-1022)     (denormal)
+	 *
+	 *    algorithm v = f * b^e
+	 */
+
+	u.d = x;
+
+	/* FIXME: platform specific; need endianness define from duk_tval.h
+	 * or macros.
+	 */
+
+	nc_ctx->f.n = 2;
+#if 1  /* FIXME: little endian */
+	nc_ctx->f.v[0] = u.v[0];
+	nc_ctx->f.v[1] = u.v[1] & 0x000fffffU;
+#endif
+
+	exp = (u.v[1] >> 20) & 0x07ffU;
+	if (exp == 0) {
+		/* denormal */
+		exp = IEEE_DOUBLE_EXP_MIN - 52;
+		bi_normalize(&nc_ctx->f);
+	} else {
+		/* normal: implicit leading 1-bit */
+		nc_ctx->f.v[1] |= 0x00100000U;
+		exp = exp - IEEE_DOUBLE_EXP_BIAS - 52;
+		DUK_ASSERT(bi_is_normalized(&nc_ctx->f));  /* true, because v[1] has at least one bit set */
+	}
+
+	DUK_ASSERT(bi_is_normalized(&nc_ctx->f));
+
+	nc_ctx->e = exp;
+}
+
+void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
+	/* FIXME: share duk_tval.h? */
+	volatile union {
+		volatile double d;
+		volatile uint32_t v[2];
+	} u;
+	int exp;
+	int i;
+	int bitstart;
+	int bitround;
+	int bitidx;
+	int skip_round;
+	uint32_t t, v;
+
+	DUK_ASSERT(nc_ctx->count == 53 + 1);
+	DUK_ASSERT(nc_ctx->digits[0] == 1);  /* zero handled by caller */
+
+	/*
+	 *  Figure out how generated digits match up with the mantissa,
+	 *  and then perform rounding.  If mantissa overflows, need to
+	 *  recompute the exponent (it is bumped and may overflow to
+	 *  infinity).
+	 *
+	 *  For normal numbers the leading '1' is hidden and ignored,
+	 *  and the last bit is used for rounding:
+	 *
+	 *                          rounding pt
+	 *       <--------52------->|
+	 *     1 x x x x ... x x x x|y  ==>  x x x x ... x x x x
+	 *
+	 *  For denormals, the leading '1' is included in the number,
+	 *  and the rounding point is different:
+	 *
+	 *                      rounding pt
+	 *     <--52 or less--->|
+	 *     1 x x x x ... x x|x x y  ==>  0 0 ... 1 x x ... x x
+	 *
+	 *  The largest denormals will have a mantissa beginning with
+	 *  a '1' (the explicit leading bit); smaller denormals will
+	 *  have leading zero bits.
+	 *
+	 *  If the exponent would become too high, the result becomes
+	 *  Infinity.  If the exponent is so small that the entire
+	 *  mantissa becomes zero, the result becomes zero.
+	 *
+	 *  Note: the Dragon4 'k' is off-by-one with respect to the IEEE
+	 *  exponent.  For instance, k==0 indicates that the leading '1'
+	 *  digit is at the first binary fraction position (0.1xxx...);
+	 *  the corresponding IEEE exponent would be -1.
+	 */
+
+	/* FIXME: platform specific; need endianness define from duk_tval.h */
+
+	skip_round = 0;
+
+ recheck_exp:
+
+	exp = nc_ctx->k - 1;   /* IEEE exp without bias */
+	if (exp > 1023) {
+		/* Infinity */
+		bitstart = -255;  /* needed for inf: causes mantissa to become zero,
+		                   * and rounding to be skipped.
+		                   */
+		exp = 2047;
+	} else if (exp >= -1022) {
+		/* normal */
+		bitstart = 1;  /* skip leading digit */
+		exp += IEEE_DOUBLE_EXP_BIAS;
+		DUK_ASSERT(exp >= 1 && exp <= 2046);
+	} else {
+		/* denormal or zero */
+		bitstart = 1023 + exp;  /* exp==-1023 -> bitstart=0 (leading 1);
+		                         * exp==-1024 -> bitstart=-1 (one left of leading 1), etc
+		                         */
+		exp = 0;
+	}
+	bitround = bitstart + 52;
+
+	DUK_DPRINT("ieee exp=%d, bitstart=%d, bitround=%d", exp, bitstart, bitround);
+
+	if (!skip_round) {
+		if (dragon4_fixed_format_round(nc_ctx, bitround)) {
+			/* Corner case: see test-numconv-parse-mant-carry.js.  We could
+			 * just bump the exponent and update bitstart, but it's more robust
+			 * to recompute (but avoid rounding twice).
+			 */
+			DUK_DPRINT("rounding caused exponent to be bumped, recheck exponent");
+			skip_round = 1;
+			goto recheck_exp;
+		}
+	}
+
+	/*
+	 *  Create mantissa
+	 */
+
+	t = 0;
+	for (i = 0; i < 52; i++) {
+		bitidx = bitstart + 52 - 1 - i;
+		if (bitidx >= nc_ctx->count) {
+			v = 0;
+		} else if (bitidx < 0) {
+			v = 0;
+		} else {
+			v = nc_ctx->digits[bitidx];
+		}
+		DUK_ASSERT(v == 0 || v == 1);
+		t += v << (i % 32);
+		if (i == 31) {
+			/* low 32 bits is complete */
+			u.v[0] = t;
+			t = 0;
+		}
+	}
+	/* t has high mantissa */
+
+	DUK_DPRINT("mantissa is complete: %08x %08x", t, (unsigned int) u.v[0]);
+
+	DUK_ASSERT(exp >= 0 && exp <= 0x7ff);
+	t += exp << 20;
+#if 0  /* caller handles sign change */
+	if (negative) {
+		t |= 0x80000000U;
+	}
+#endif
+	u.v[1] = t;
+
+	DUK_DPRINT("number is complete: %08x %08x", (unsigned int) u.v[1], (unsigned int) u.v[0]);
+
+	*x = u.d;
+}
+
+/*
+ *  Exposed number-to-string API
+ *
+ *  Input: [ number ]
+ *  Output: [ string ]
+ */
+
+void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
+	double x;
 	int c;
 	int neg;
 	unsigned int uval;
-	duk_numconv_stringify_ctx nc_ctx_alloc;  /* large context; around 1kB now */
+	duk_numconv_stringify_ctx nc_ctx_alloc;  /* large context; around 2kB now */
 	duk_numconv_stringify_ctx *nc_ctx = &nc_ctx_alloc;
+
+	x = duk_require_number(ctx, -1);
+	duk_pop(ctx);
 
 	/*
 	 *  Handle special cases (NaN, infinity, zero).
@@ -1031,7 +1377,7 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, in
 	 *  is in force.
 	 *
 	 *  FIXME: can save space by supporting radix 10 only and using
-	 *  sprintf "%u".
+	 *  sprintf "%u" for the fast and for exponent formatting.
 	 */
 
 	uval = (unsigned int) x;
@@ -1046,44 +1392,66 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, in
 			/* no negative sign for zero */
 			*p++ = '-';
 		}
-		p += dragon4_format_uint(p, uval, radix);
+		p += dragon4_format_uint32(p, uval, radix);
 		duk_push_lstring(ctx, buf, (size_t) (p - buf));
 		return;
 	}
 
 	/*
-	 *  Convert double from IEEE representation for conversion;
-	 *  normal finite values have an implicit leading 1-bit.
+	 *  Dragon4 setup.
 	 *
-	 *  The slow path algorithms (like Dragon4) don't handle zero,
-	 *  so zero is special cased but still creates a valid nc_ctx,
-	 *  and goes through normal formatting.
+	 *  Convert double from IEEE representation for conversion;
+	 *  normal finite values have an implicit leading 1-bit.  The
+	 *  slow path algorithm doesn't handle zero, so zero is special
+	 *  cased here but still creates a valid nc_ctx, and goes
+	 *  through normal formatting in case special formatting has
+	 *  been requested (e.g. forced exponential format: 0 -> "0e+0").
 	 */
 
-	/* Would be nice to do this, but the context is 1-2 kilobytes and
-	 * nothing should rely on it being zeroed.
+	/* Would be nice to bulk clear the allocation, but the context
+	 * is 1-2 kilobytes and nothing should rely on it being zeroed.
 	 */
 #if 0
 	memset((void *) nc_ctx, 0, sizeof(*nc_ctx));  /* slow init, do only for slow path cases */
 #endif
 
-	nc_ctx->x = x;
+	nc_ctx->is_s2n = 0;
+	nc_ctx->b = 2;
 	nc_ctx->B = radix;
-	if (flags & DUK_NUMCONV_FLAG_FIXED_FORMAT) {
-		/* FIXME: DUK_NUMCONV_FLAG_FRACTION_DIGITS */
-		nc_ctx->req_digits = digits + FIXED_FORMAT_EXTRA_DIGITS;
+	nc_ctx->abs_pos = 0;
+	if (flags & DUK_N2S_FLAG_FIXED_FORMAT) {
+		nc_ctx->is_fixed = 1;
+		if (flags & DUK_N2S_FLAG_FRACTION_DIGITS) {
+			/* absolute req_digits; e.g. digits = 1 -> last digit is 0,
+			 * but add an extra digit for rounding.
+			 */
+			nc_ctx->abs_pos = 1;
+			nc_ctx->req_digits = (-digits + 1) - 1;
+		} else {
+			nc_ctx->req_digits = digits + 1;
+		}
 	} else {
+		nc_ctx->is_fixed = 0;
 		nc_ctx->req_digits = 0;
 	}
 
 	if (c == FP_ZERO) {
-		/* zero special case: fake requested number of zero digits; ensure
-		 * no sign bit is printed.
+		/* Zero special case: fake requested number of zero digits; ensure
+		 * no sign bit is printed.  Relative and absolute fixed format
+		 * require separate handling.
 		 */
-		int count = nc_ctx->req_digits;
-		if (count == 0) {
+		int count;
+		if (nc_ctx->is_fixed) {
+			if (nc_ctx->abs_pos) {
+				count = digits + 2;  /* lead zero + 'digits' fractions + 1 for rounding */
+			} else {
+				count = digits + 1;  /* + 1 for rounding */
+			}
+		} else {
 			count = 1;
 		}
+		DUK_DPRINT("count=%d", count);
+		DUK_ASSERT(count >= 1);
 		memset((void *) nc_ctx->digits, 0, count);
 		nc_ctx->count = count;
 		nc_ctx->k = 1;  /* 0.000... */
@@ -1091,12 +1459,12 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, in
 		goto zero_skip;
 	}
 
-	dragon4_convert_double(nc_ctx);   /* -> sets 'f' and 'e' */
+	dragon4_double_to_ctx(nc_ctx, x);   /* -> sets 'f' and 'e' */
 	BI_PRINT("f", &nc_ctx->f);
 	DUK_DPRINT("e=%d", nc_ctx->e);
 
 	/*
-	 *  Preparation part (flonum->digits).
+	 *  Dragon4 slow path digit generation.
 	 */
 
 	dragon4_prepare(nc_ctx);  /* setup many variables in nc_ctx */
@@ -1107,9 +1475,520 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, in
 	BI_PRINT("mp", &nc_ctx->mp);
 	BI_PRINT("mm", &nc_ctx->mm);
 
+	dragon4_scale(nc_ctx);
+
+	DUK_DPRINT("after scale; k=%d", nc_ctx->k);
+	BI_PRINT("r", &nc_ctx->r);
+	BI_PRINT("s", &nc_ctx->s);
+	BI_PRINT("mp", &nc_ctx->mp);
+	BI_PRINT("mm", &nc_ctx->mm);
+
+	dragon4_generate(nc_ctx);
+
 	/*
-	 *  Scale part.
+	 *  Convert and push final string.
 	 */
+
+ zero_skip:
+
+	if (flags & DUK_N2S_FLAG_FIXED_FORMAT) {
+		/* Perform fixed-format rounding. */
+		int roundpos;
+		if (flags & DUK_N2S_FLAG_FRACTION_DIGITS) {
+			/* 'roundpos' is relative to nc_ctx->k and increases to the right
+			 * (opposite of how 'k' changes).
+			 */
+			roundpos = -digits;  /* absolute position for digit considered for rounding */
+			roundpos = nc_ctx->k - roundpos;
+			
+		} else {
+			roundpos = digits;
+		}
+		DUK_DPRINT("rounding: k=%d, count=%d, digits=%d, roundpos=%d",
+		           nc_ctx->k, nc_ctx->count, digits, roundpos);
+		(void) dragon4_fixed_format_round(nc_ctx, roundpos);
+
+		/* Note: 'count' is currently not adjusted by rounding (i.e. the
+		 * digits are not "chopped off".  That shouldn't matter because
+		 * the digit position (absolute or relative) is passed on to the
+		 * convert-and-push function.
+		 */
+	}
+
+	dragon4_convert_and_push(nc_ctx, ctx, radix, digits, flags, neg);
+}
+
+/*
+ *  Exposed string-to-number API
+ *
+ *  Input: [ string ]
+ *  Output: [ number ]
+ *
+ *  If number parsing fails, a NaN is pushed as the result.  If number parsing
+ *  fails due to an internal error, an InternalError is thrown.
+ *
+ *  FIXME: is this reasonable? should caller have the assurance that no error
+ *  can be thrown?  Comment in documentation.
+ */
+
+void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_numconv_stringify_ctx nc_ctx_alloc;  /* large context; around 2kB now */
+	duk_numconv_stringify_ctx *nc_ctx = &nc_ctx_alloc;
+	double res;
+	duk_hstring *h_str;
+	int exp;
+	int exp_neg;
+	int exp_adj;
+	int neg;
+	int dig;
+	int dig_whole;
+	int dig_lzero;
+	int dig_frac;
+	int dig_exp;
+	int dig_prec;
+	duk_exp_limits *explim;
+	const unsigned char *p;
+	int ch;
+
+	/* FIXME: macros or explicit flag checks - check impact on code size */
+	int trim_white = (flags & DUK_S2N_FLAG_TRIM_WHITE);
+	int allow_exp = (flags & DUK_S2N_FLAG_ALLOW_EXP);
+	int allow_garbage = (flags & DUK_S2N_FLAG_ALLOW_GARBAGE);
+	int allow_plus = (flags & DUK_S2N_FLAG_ALLOW_PLUS);
+	int allow_minus = (flags & DUK_S2N_FLAG_ALLOW_MINUS);
+	int allow_infinity = (flags & DUK_S2N_FLAG_ALLOW_INF);
+	int allow_frac = (flags & DUK_S2N_FLAG_ALLOW_FRAC);
+	int allow_naked_frac = (flags & DUK_S2N_FLAG_ALLOW_NAKED_FRAC);
+	int allow_empty_frac = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_FRAC);
+	int allow_empty = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO);
+	int allow_leading_zero = (flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO);
+	int allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
+
+	DUK_ASSERT(radix >= 2 && radix <= 36);
+	DUK_ASSERT(radix - 2 < sizeof(str2num_digits_for_radix));
+
+	/*
+	 *  Preliminaries: trim, sign, Infinity check
+	 *
+	 *  We rely on the interned string having a NUL terminator, which will
+	 *  cause a parse failure wherever it is encountered.  As a result, we
+	 *  don't need separate pointer checks.
+	 *
+	 *  There is no special parsing for 'NaN' in the specification although
+	 *  'Infinity' (with an optional sign) is allowed in some contexts.
+	 *  Some contexts allow plus/minus sign, while others only allow the
+	 *  minus sign (like JSON.parse()).
+	 *
+	 *  Automatic hex number detection (leading '0x' or '0X') is detected
+	 *  here, too.
+	 */
+
+	if (trim_white) {
+		/* Leading / trailing whitespace is sometimes accepted and
+		 * sometimes not.  After white space trimming, all valid input
+		 * characters are pure ASCII.
+		 */
+		duk_trim(ctx, -1);
+	}
+	h_str = duk_require_hstring(ctx, -1);
+	DUK_ASSERT(h_str != NULL);
+	p = (const unsigned char *) DUK_HSTRING_GET_DATA(h_str);
+
+	neg = 0;
+	ch = *p;
+	if (ch == '+') {
+		if (!allow_plus) {
+			DUK_DPRINT("parse failed: leading plus sign not allowed");
+			goto parse_fail;
+		}
+		p++;
+	} else if (ch == '-') {
+		if (!allow_minus) {
+			DUK_DPRINT("parse failed: leading minus sign not allowed");
+			goto parse_fail;
+		}
+		p++;
+		neg = 1;
+	}
+
+	ch = *p;
+	if (allow_infinity && ch == 'I') {
+		/* Don't check for Infinity unless the context allows it.
+		 * 'Infinity' is a valid integer literal in e.g. base-36:
+		 *
+		 *   parseInt('Infinity', 36)
+		 *   1461559270678
+		 */
+
+		const unsigned char *q;
+
+		/* borrow literal Infinity from builtin string */
+		q = (const unsigned char *) DUK_HSTRING_GET_DATA(DUK_HTHREAD_STRING_INFINITY(thr));
+		if (strcmp((const char *) p, (const char *) q) == 0) {
+			if (!allow_garbage && (p[8] != (unsigned char) 0)) {
+				DUK_DPRINT("parse failed: trailing garbage after matching 'Infinity' not allowed");
+				goto parse_fail;
+			} else {
+				res = INFINITY;
+				goto neg_and_ret;
+			}
+		}
+	}
+	if (allow_auto_hex_int && ch == '0') {
+		ch = p[1];
+		if (ch == 'x' || ch == 'X') {
+			DUK_DPRINT("detected 0x/0X hex prefix, changing radix and preventing fractions and exponent");
+			radix = 16;
+			allow_exp = 0;
+			allow_frac = 0;
+			allow_naked_frac = 0;
+			allow_empty_frac = 0;
+			p += 2;
+		}
+	}
+
+	/*
+	 *  Scan number and setup for Dragon4.
+	 *
+	 *  The fast path case is detected during setup: an integer which
+	 *  can be converted without rounding, no net exponent.  The fast
+	 *  path could be implemented as a separate scan, but may not really
+	 *  be worth it: the multiplications for building 'f' are not
+	 *  expensive when 'f' is small.
+	 *
+	 *  The significand ('f') must contain enough bits of (apparent)
+	 *  accuracy, so that Dragon4 will generate enough binary output digits.
+	 *  For decimal numbers, this means generating a 20-digit significand,
+	 *  which should yield enough practical accuracy to parse IEEE doubles.
+	 *  In fact, the Ecmascript specification explicitly allows an
+	 *  implementation to treat digits beyond 20 as zeroes (and even
+	 *  to round the 20th digit upwards).  For non-decimal numbers, the
+	 *  appropriate number of digits has been precomputed for comparable
+	 *  accuracy.
+	 *
+	 *  Digit counts:
+	 *
+	 *    [ dig_lzero ]
+	 *      |
+	 *     .+-..---[ dig_prec ]----.
+	 *     |  ||                   |
+	 *     0000123.456789012345678901234567890e+123456
+	 *     |     | |                         |  |    |
+	 *     `--+--' `------[ dig_frac ]-------'  `-+--'
+	 *        |                                   |
+	 *    [ dig_whole ]                       [ dig_exp ]
+	 *
+	 *    dig_frac and dig_exp are -1 if not present
+	 *    dig_lzero is only computed for whole number part
+	 *
+	 *  Parsing state
+	 *
+	 *     Parsing whole part      dig_frac < 0 AND dig_exp < 0
+	 *     Parsing fraction part   dig_frac >= 0 AND dig_exp < 0
+	 *     Parsing exponent part   dig_exp >= 0   (dig_frac may be < 0 or >= 0)
+	 * 
+	 *  Note: in case we hit an implementation limit (like exponent range),
+	 *  we should throw an error, NOT return NaN or Infinity.  Even with
+	 *  very large exponent (or significand) values the final result may be
+	 *  finite, so NaN/Infinity would be incorrect.
+	 */
+
+	bi_set_small(&nc_ctx->f, 0);
+	dig_prec = 0;
+	dig_lzero = 0;
+	dig_whole = 0;
+	dig_frac = -1;
+	dig_exp = -1;
+	exp = 0;
+	exp_adj = 0;  /* essentially tracks digit position of lowest 'f' digit */
+	exp_neg = 0;
+	for (;;) {
+		ch = *p++;
+
+		DUK_DPRINT("parse digits: p=%p, ch='%c' (%d), exp=%d, exp_adj=%d, "
+		           "dig_whole=%d, dig_frac=%d, dig_exp=%d, dig_lzero=%d, dig_prec=%d",
+		           (void *) p, (ch >= 0x20 && ch <= 0x7e) ? ch : '?', ch,
+		           exp, exp_adj, dig_whole, dig_frac, dig_exp, dig_lzero, dig_prec);
+		BI_PRINT("f", &nc_ctx->f);
+
+		/* Most common cases first. */
+		if (ch >= '0' && ch <= '9') {
+			dig = (int) ch - '0' + 0;
+		} else if (ch == '.') {
+			/* A leading digit is not required in some cases, e.g. accept ".123".
+			 * In other cases (JSON.parse()) a leading digit is required.  This
+			 * is checked for after the loop.
+			 */
+			if (dig_frac >= 0 || dig_exp >= 0) {
+				if (allow_garbage) {
+					DUK_DPRINT("garbage termination (invalid period)");
+					break;
+				} else {
+					DUK_DPRINT("parse failed: period not allowed");
+					goto parse_fail;
+				}
+			}
+
+			if (!allow_frac) {
+				/* Some contexts don't allow fractions at all; this can't be a
+				 * post-check because the state ('f' and exp) would be incorrect.
+				 */
+				if (allow_garbage) {
+					DUK_DPRINT("garbage termination (invalid first period)");
+					break;
+				} else {
+					DUK_DPRINT("parse failed: fraction part not allowed");
+				}
+			}
+
+			DUK_DPRINT("start fraction part");
+			dig_frac = 0;
+			continue;
+		} else if (ch == (char) 0) {
+			DUK_DPRINT("NUL termination");
+			break;
+		} else if (allow_exp && dig_exp < 0 && (ch == 'e' || ch == 'E')) {
+			/* Note: we don't parse back exponent notation for anything else
+			 * than radix 10, so this is not an ambiguous check (e.g. hex
+			 * exponent values may have 'e' either as a significand digit
+			 * or as an exponent separator).
+			 *
+			 * If the exponent separator occurs twice, 'e' will be interpreted
+			 * as a digit (= 14) and will be rejected as an invalid decimal
+			 * digit.
+			 */
+
+			DUK_DPRINT("start exponent part");
+
+			/* Exponent without a sign or with a +/- sign is accepted
+			 * by all call sites (even JSON.parse()).
+			 */
+			ch = *p;
+			if (ch == '-') {
+				exp_neg = 1;
+				p++;
+			} else if (ch == '+') {
+				p++;
+			}
+			dig_exp = 0;
+			continue;
+		} else if (ch >= 'a' && ch <= 'z') {
+			dig = (int) ch - 'a' + 0x0a;
+		} else if (ch >= 'A' && ch <= 'Z') {
+			dig = (int) ch - 'A' + 0x0a;
+		} else {
+			dig = 255;  /* triggers garbage digit check below */
+		}
+		DUK_ASSERT((dig >= 0 && dig <= 35) || dig == 255);
+
+		if (dig >= radix) {
+			if (allow_garbage) {
+				DUK_DPRINT("garbage termination");
+				break;
+			} else {
+				DUK_DPRINT("parse failed: trailing garbage or invalid digit");
+				goto parse_fail;
+			}
+		}
+
+		if (dig_exp < 0) {
+			/* whole or fraction digit */
+
+			if (dig_prec < str2num_digits_for_radix[radix - 2]) {
+				/* significant from precision perspective */
+
+				int f_zero = bi_is_zero(&nc_ctx->f);
+				if (f_zero && dig == 0) {
+					/* Leading zero is not counted towards precision digits; not
+					 * in the integer part, nor in the fraction part.
+					 */
+					if (dig_frac < 0) {
+						dig_lzero++;
+					}
+				} else {
+					/* FIXME: join these ops */
+					bi_mul_small(&nc_ctx->t1, &nc_ctx->f, radix);
+					bi_add_small(&nc_ctx->f, &nc_ctx->t1, dig);
+					dig_prec++;
+				}
+			} else {
+				/* Ignore digits beyond a radix-specific limit, but note them
+				 * in exp_adj.
+				 */
+				exp_adj++;
+			}
+	
+			if (dig_frac >= 0) {
+				dig_frac++;
+				exp_adj--;
+			} else {
+				dig_whole++;
+			}
+		} else {
+			/* exponent digit */
+
+			exp = exp * radix + dig;
+			if (exp > DUK_S2N_MAX_EXPONENT) {
+				/* impose a reasonable exponent limit, so that exp
+				 * doesn't need to get tracked using a bigint.
+				 */
+				DUK_DPRINT("parse failed: exponent too large");
+				goto parse_int_error;
+			}
+			dig_exp++;
+		}
+	}
+
+	/* Leading zero. */
+
+	if (dig_lzero > 0 && dig_whole > 1) {
+		if (!allow_leading_zero) {
+			DUK_DPRINT("parse failed: leading zeroes not allowed in integer part");
+			goto parse_fail;
+		}
+	}
+
+	/* Validity checks for various fraction formats ("0.1", ".1", "1.", "."). */
+
+	if (dig_whole == 0) {
+		if (dig_frac == 0) {
+			/* "." is not accepted in any format */
+			DUK_DPRINT("parse failed: plain period without leading or trailing digits");
+			goto parse_fail;
+		} else if (dig_frac > 0) {
+			/* ".123" */
+			if (!allow_naked_frac) {
+				DUK_DPRINT("parse failed: fraction part not allowed without "
+				           "leading integer digit(s)");
+				goto parse_fail;
+			}
+		} else {
+			/* empty ("") is allowed in some formats (e.g. Number(''), as zero */
+			if (!allow_empty) {
+				DUK_DPRINT("parse failed: empty string not allowed (as zero)");
+				goto parse_fail;
+			}
+		}
+	} else {
+		if (dig_frac == 0) {
+			/* "123." is allowed in some formats */
+			if (!allow_empty_frac) {
+				DUK_DPRINT("parse failed: empty fractions");
+				goto parse_fail;
+			}
+		} else if (dig_frac > 0) {
+			/* "123.456" */
+			;
+		} else {
+			/* "123" */
+			;
+		}
+	}
+
+	/* Exponent without digits (e.g. "1e" or "1e+").  If trailing garbage is
+	 * allowed, ignore exponent part as garbage (= parse as "1", i.e. exp 0).
+	 */
+
+	if (dig_exp == 0) {
+		if (!allow_garbage) {
+			DUK_DPRINT("parse failed: empty exponent");
+			goto parse_fail;
+		}
+		DUK_ASSERT(exp == 0);
+	}
+
+	if (exp_neg) {
+		exp = -exp;
+	}
+	DUK_DPRINT("exp=%d, exp_adj=%d, net exponent -> %d", exp, exp_adj, exp + exp_adj);
+	exp += exp_adj;
+
+	/* Fast path check. */
+
+	if (nc_ctx->f.n <= 1 &&   /* 32-bit value */
+	    exp == 0    /* no net exponent */) {
+		/* Fast path is triggered for no exponent and also for balanced exponent
+		 * and fraction parts, e.g. for "1.23e2" == "123".  Remember to respect
+		 * zero sign.
+		 */
+
+		/* FIXME: could accept numbers larger than 32 bits, e.g. up to 53 bits? */
+		DUK_DPRINT("fast path number parse");
+		if (nc_ctx->f.n == 1) {
+			res = (double) nc_ctx->f.v[0];
+		} else {
+			res = 0.0;
+		}
+		goto neg_and_ret;
+	}
+
+	/* Significand ('f') padding. */
+
+	while (dig_prec < str2num_digits_for_radix[radix - 2]) {
+		/* Pad significand with "virtual" zero digits so that Dragon4 will
+		 * have enough (apparent) precision to work with.
+		 */
+		DUK_DPRINT("dig_prec=%d, pad significand with zero", dig_prec);
+		bi_mul_small_copy(&nc_ctx->f, radix, &nc_ctx->t1);
+		BI_PRINT("f", &nc_ctx->f);
+		exp--;
+		dig_prec++;
+	}
+
+	DUK_DPRINT("final exponent: %d", exp);
+
+	/* Detect zero special case. */
+
+	if (nc_ctx->f.n == 0) {
+		/* This may happen even after the fast path check, if exponent is
+		 * not balanced (e.g. "0e1").  Remember to respect zero sign.
+		 */
+		DUK_DPRINT("significand is zero");
+		res = 0.0;
+		goto neg_and_ret;
+	}
+
+
+	/* Quick reject of too large or too small exponents.  This check
+	 * would be incorrect for zero (e.g. "0e1000" is zero, not Infinity)
+	 * so zero check must be above.
+	 */
+
+	explim = &str2num_exp_limits[radix - 2];
+	if (exp > explim->upper) {
+		DUK_DPRINT("exponent too large -> infinite");
+		res = INFINITY;
+		goto neg_and_ret;
+	} else if (exp < explim->lower) {
+		DUK_DPRINT("exponent too small -> zero");
+		res = 0.0;
+		goto neg_and_ret;
+	}
+
+	nc_ctx->is_s2n = 1;
+	nc_ctx->e = exp;
+	nc_ctx->b = radix;
+	nc_ctx->B = 2;
+	nc_ctx->is_fixed = 1;
+	nc_ctx->abs_pos = 0;
+	nc_ctx->req_digits = 53 + 1;
+
+	BI_PRINT("f", &nc_ctx->f);
+	DUK_DPRINT("e=%d", nc_ctx->e);
+
+	/*
+	 *  Dragon4 slow path (binary) digit generation.
+	 *  An extra digit is generated for rounding.
+	 */
+
+	dragon4_prepare(nc_ctx);  /* setup many variables in nc_ctx */
+
+	DUK_DPRINT("after prepare:");
+	BI_PRINT("r", &nc_ctx->r);
+	BI_PRINT("s", &nc_ctx->s);
+	BI_PRINT("mp", &nc_ctx->mp);
+	BI_PRINT("mm", &nc_ctx->mm);
 
 	dragon4_scale(nc_ctx);
 
@@ -1119,23 +1998,36 @@ void duk_numconv_stringify(duk_context *ctx, double x, int radix, int digits, in
 	BI_PRINT("mp", &nc_ctx->mp);
 	BI_PRINT("mm", &nc_ctx->mm);
 
-	/*
-	 *  Generate part.
-	 */
-
 	dragon4_generate(nc_ctx);
 
- zero_skip:
-
-	if (nc_ctx->req_digits > 0) {
-		/* Perform fixed-format rounding. */
-		dragon4_fixed_format_round(nc_ctx);
-	}
+	DUK_ASSERT(nc_ctx->count == 53 + 1);
 
 	/*
-	 *  Convert and push final string.
+	 *  Convert binary digits into an IEEE double.  Need to handle
+	 *  denormals and rounding correctly.
 	 */
 
-	dragon4_convert_and_push(nc_ctx, ctx, radix, flags, neg);
+	dragon4_ctx_to_double(nc_ctx, &res);
+	goto neg_and_ret;
+
+ neg_and_ret:
+	if (neg) {
+		res = -res;
+	}
+	duk_pop(ctx);
+	duk_push_number(ctx, res);
+	DUK_DPRINT("result: %!T", duk_get_tval(ctx, -1));
+	return;
+
+ parse_fail:
+	DUK_DPRINT("parse failed");
+	duk_pop(ctx);
+	duk_push_nan(ctx);
+	return;
+
+ parse_int_error:
+	DUK_DPRINT("parse failed, internal error, can't return a value");
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "number parse error");
+	return;
 }
 
