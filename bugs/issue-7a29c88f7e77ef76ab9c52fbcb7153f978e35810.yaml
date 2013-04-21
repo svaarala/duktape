@@ -9,7 +9,7 @@ desc: |-
   code to use the helpers.
 type: :task
 component: duk
-release: v0.5
+release: v0.6
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2013-03-10 20:50:54.161335 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-04-21 19:31:51.977648 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.6 from v0.5
   - ""

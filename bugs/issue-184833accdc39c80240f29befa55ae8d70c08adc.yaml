@@ -23,3 +23,16 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-04-21 19:28:42.864816 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    Also eliminate the last sscanf() in duk_js_ops.c, for string-to-array-index
+    conversion.
+- - 2013-04-21 19:30:18.390709 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    There are still a lot sprintf/snprintf/vsnprintf dependencies in the
+    implementation -- however, these are only for formatting strings and
+    integers, no floats or doubles now.
