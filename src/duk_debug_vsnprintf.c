@@ -865,7 +865,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				/* FIXME: check size for other types.. actually it would be best to switch
 				 * for supported standard formats and get args explicitly
 				 */
-				if (ch == 'f') {
+				if (ch == 'f' || ch == 'g' || ch == 'e') {
 					double arg;
 					arg = va_arg(ap, double);
 					duk_fb_sprintf(&fb, fmtbuf, arg);
