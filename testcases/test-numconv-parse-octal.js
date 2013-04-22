@@ -1,7 +1,32 @@
+
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
+63
+SyntaxError
+SyntaxError
+SyntaxError
+SyntaxError
+63
+SyntaxError
+SyntaxError
+63
+0
+0
+7
+63
+63
+NaN
+NaN
 ===*/
 
-/* FIXME: differences in support, match with documentation */
+/* FIXME: what's the expected output?  Currently SyntaxError for invalid octal
+ * in eval().
+ */
 
 function octalTest() {
     function e(x) {
@@ -35,6 +60,14 @@ function octalTest() {
     e('099');
     e('0789');
     e('07789');
+    e('00077');  // leading zeroes are typically allowed for octals
+
+    // For comparison: hex prefix without digits -> SyntaxError.  One
+    // could also interpret this as an octal number (0) followed by an 'x'.
+    e('0x');
+
+    // For comparison: hex prefix with an invalid first digit -> SyntaxError.
+    e('0xg');
 
     /*
      *  Technically, there is no octal syntax for parseInt().
@@ -51,6 +84,14 @@ function octalTest() {
     pI('099');    // V8: 0, Rhino: NaN
     pI('0789');   // V8 and Rhino: 7
     pI('07789');  // V8 and Rhino: 63
+    pI('00077');
+
+    // For comparison: hex prefix without digits -> NaN.
+    pI('0x');
+
+    // For comparison: hex prefix with an invalid first digit -> NaN.
+    pI('0xg');
+
 }
 
 try {
