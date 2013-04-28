@@ -54,6 +54,7 @@
 #define  DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
 #define  DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
 #define  DUK_HSTRING_GET_DATA(x)                     ((duk_u8 *) ((x) + 1))
+#define  DUK_HSTRING_GET_DATA_END(x)                 (((duk_u8 *) ((x) + 1)) + ((x)->blen))
 
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
 #define  DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffU)
