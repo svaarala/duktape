@@ -75,6 +75,11 @@
  */
 #define  DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT   (1 << 11)
 
+/* Allow automatic detection of octal base, overrides radix
+ * argument and forces integer mode.
+ */
+#define  DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT   (1 << 12)
+
 /*
  *  Prototypes
  */

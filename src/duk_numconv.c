@@ -1551,6 +1551,8 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 	const unsigned char *p;
 	int ch;
 
+	DUK_DPRINT("parse number: %!T, radix=%d, flags=0x%08x", duk_get_tval(ctx, -1), radix, flags);
+
 	/* FIXME: macros or explicit flag checks - check impact on code size */
 	int trim_white = (flags & DUK_S2N_FLAG_TRIM_WHITE);
 	int allow_exp = (flags & DUK_S2N_FLAG_ALLOW_EXP);
@@ -1564,6 +1566,7 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 	int allow_empty = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO);
 	int allow_leading_zero = (flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO);
 	int allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
+	int allow_auto_oct_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT);
 
 	DUK_ASSERT(radix >= 2 && radix <= 36);
 	DUK_ASSERT(radix - 2 < sizeof(str2num_digits_for_radix));
@@ -1580,8 +1583,9 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 	 *  Some contexts allow plus/minus sign, while others only allow the
 	 *  minus sign (like JSON.parse()).
 	 *
-	 *  Automatic hex number detection (leading '0x' or '0X') is detected
-	 *  here, too.
+	 *  Automatic hex number detection (leading '0x' or '0X') and octal
+	 *  number detection (leading '0' followed by at least one octal digit)
+	 *  is done here too.
 	 */
 
 	if (trim_white) {
@@ -1635,16 +1639,27 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 			}
 		}
 	}
-	if (allow_auto_hex_int && ch == '0') {
+	if (ch == '0') {
+		int detect_radix = 0;
 		ch = p[1];
-		if (ch == 'x' || ch == 'X') {
+		if (allow_auto_hex_int && (ch == 'x' || ch == 'X')) {
 			DUK_DPRINT("detected 0x/0X hex prefix, changing radix and preventing fractions and exponent");
-			radix = 16;
+			detect_radix = 16;
+			allow_empty = 0;  /* interpret e.g. '0x' and '0xg' as a NaN (= parse error) */
+			p += 2;
+		} else if (allow_auto_oct_int && (ch >= '0' && ch <= '9')) {
+			DUK_DPRINT("detected 0n oct prefix, changing radix and preventing fractions and exponent");
+			detect_radix = 8;
+			allow_empty = 1;  /* interpret e.g. '09' as '0', not NaN */
+			p += 1;
+		}
+		if (detect_radix > 0) {
+			radix = detect_radix;
 			allow_exp = 0;
 			allow_frac = 0;
 			allow_naked_frac = 0;
 			allow_empty_frac = 0;
-			p += 2;
+			allow_leading_zero = 1;  /* allow e.g. '0x0009' and '00077' */
 		}
 	}
 
