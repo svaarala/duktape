@@ -201,6 +201,11 @@ void duk_trim(duk_context *ctx, int index) {
 	DUK_DDDPRINT("trim: p_start=%p, p_end=%p, q_start=%p, q_end=%p",
 	             (void *) p_start, (void *) p_end, (void *) q_start, (void *) q_end);
 
+	if (q_start == p_start && q_end == p_end) {
+		DUK_DDDPRINT("nothing was trimmed: avoid interning (hashing etc)");
+		return;
+	}
+
 	duk_push_lstring(ctx, (const char *) q_start, (size_t) (q_end - q_start));
 	duk_replace(ctx, index);
 }
