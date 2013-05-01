@@ -526,6 +526,7 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 		if (radix < 2 || radix > 36) {
 			goto ret_nan;
 		}
+		/* FIXME: how should octal behave here? */
 		if (radix != 16) {
 			strip_prefix = 0;
 		}
@@ -533,12 +534,14 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 		radix = 10;
 	}
 
-	/* FIXME: octal support */
 	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
 	            DUK_S2N_FLAG_ALLOW_GARBAGE |
 	            DUK_S2N_FLAG_ALLOW_PLUS |
 	            DUK_S2N_FLAG_ALLOW_MINUS |
 	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
+#ifdef DUK_USE_OCTAL_SUPPORT
+	            (strip_prefix ? DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT : 0) |
+#endif
 	            (strip_prefix ? DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT : 0);
 
 	duk_dup(ctx, 0);

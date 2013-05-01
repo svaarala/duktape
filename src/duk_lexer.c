@@ -960,161 +960,119 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	} else if (ISDIGIT(x) || (x == '.')) {
 		/* Note: decimal number may start with a period, but must be followed by a digit */
 
-		double val = 0.0;	/* accumulation temp, accumulating directly to
-		                         * out_token->num increased code size.
-					 */
+		/*
+		 *  DecimalLiteral, HexIntegerLiteral, OctalIntegerLiteral
+		 *  "pre-parsing", followed by an actual, accurate parser step.
+		 *
+		 *  Note: the leading sign character ('+' or '-') is -not- part of
+		 *  the production in E5 grammar, and that the a DecimalLiteral
+		 *  starting with a '0' must be followed by a non-digit.  Leading
+		 *  zeroes are syntax errors and must be checked for.
+		 *
+		 *  FIXME: the two step parsing process is quite awkward, it would
+		 *  be more straightforward to allow numconv to parse the longest
+		 *  valid prefix (it already does that, it only needs to indicate
+		 *  where the input ended).  However, the lexer decodes characters
+		 *  using a lookup window, so this is not a trivial change.
+		 */
 
+		/* FIXME: because of the final check below (that the literal is not
+		 * followed by a digit), this could maybe be simplified, if we bail
+		 * out early from a leading zero (and if there are no periods etc).
+		 * Maybe too complex.
+		 */
+
+		double val;
+		int int_only = 0;
+		int allow_hex = 0;
+		int st;		/* 0=before period/exp,
+		                 * 1=after period, before exp
+		                 * 2=after exp, allow '+' or '-'
+		                 * 3=after exp and exp sign
+		                 */
+		int s2n_flags;
+
+		INITBUFFER(lex_ctx);
 		if (x == '0' && (y == 'x' || y == 'X')) {
-			/*
-			 *  HexIntegerLiteral
-			 */
-
-			/* FIXME: this method of parsing is not accurate, see E5 Section 7.8.3.
-			 * Add a test to demonstrate inaccuracy and fix.
-			 */
-
+			APPENDBUFFER(lex_ctx, x);
+			APPENDBUFFER(lex_ctx, y);
 			ADVANCE(lex_ctx, 2);
-			for (;;) {
-				x = L0();
-				if (ISHEXDIGIT(x)) {
-					val = val * 16.0 + (double) hexval(lex_ctx, (char) x);
-					;
-				} else {
-					break;
-				}
-				ADVANCE(lex_ctx, 1);
-			}
+			int_only = 1;
+			allow_hex = 1;
 #ifdef DUK_USE_OCTAL_SUPPORT
 		} else if (!strict_mode && x == '0' && ISDIGIT(y)) {
-			/*
-			 *  OctalIntegerLiteral
-			 *
-			 *  Note: if DecimalLiteral starts with a '0', it can
-			 *  only be followed by a period or an exponent
-			 *  indicator which starts with 'e' or 'E'.  Hence the
-			 *  check above ensures that OctalIntegerLiteral is
-			 *  the only valid NumericLiteral alternative at this
-			 *  point (even if y is, say, '9').
+			/* Note: if DecimalLiteral starts with a '0', it can only be
+			 * followed by a period or an exponent indicator which starts
+			 * with 'e' or 'E'.  Hence the if-check above ensures that
+			 * OctalIntegerLiteral is the only valid NumericLiteral
+			 * alternative at this point (even if y is, say, '9').
 			 */
-
-			/* FIXME: this method of parsing is not accurate, see E5 Section 7.8.3.
-			 * Add a test to demonstrate inaccuracy and fix.
-			 */
-
+	
+			APPENDBUFFER(lex_ctx, x);
 			ADVANCE(lex_ctx, 1);
-			for (;;) {
-				x = L0();
-				if (ISOCTDIGIT(x)) {
-					val = val * 8.0 + (double) hexval(lex_ctx, (char) x);  /* note: share hexval */
-				} else {
-					break;
-				}
-				ADVANCE(lex_ctx, 1);
-			}
-#else
-		/* fall through to DecimalLiteral, which will reject octal constants */
-#endif
-		} else {
-			/*
-			 *  DecimalLiteral
-			 *
-			 *  Parsing decimal literals is relatively complex.  Ecmascript
-			 *  has one literal syntax for the language itself, and another
-			 *  for ToNumber() conversion (E5 Section 9.3.1).  Some differences
-			 *  include:
-			 *
-			 *   1. ToNumber() allows whitespaces and signs.
-			 *   2. ToNumber() allows leading zeroes.
-			 *   3. ToNumber() allows hex literals.
-			 *
-			 *  To save code space, a helper which is capable of parsing both
-			 *  syntaxes is used.
-			 *
-			 *  Note: the leading sign character ('+' or '-') is -not- part of
-			 *  the production in E5 grammar, and that the a DecimalLiteral
-			 *  starting with a '0' must be followed by a non-digit.  Leading
-			 *  zeroes are syntax errors and must be checked for.
-			 *
-			 */
-
-			/* FIXME: shared parser could perhaps parse directly somehow, so that
-			 * this pre-parse step could be avoided.
-			 */
-
-			int st;		/* 0=before period/exp,
-			                 * 1=after period, before exp
-			                 * 2=after exp, allow '+' or '-'
-			                 * 3=after exp and exp sign
-			                 */
-			int s2n_flags;
-
-			/* FIXME: because of the final check below (that the literal is not
-			 * followed by a digit, this could maybe be simplified, if we bail
-			 * out early from a leading zero (and if there are no periods etc).
-			 * Maybe too complex.
-			 */
-
-			if (L0() == '0' && ISDIGIT(L1())) {
-				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "leading zeroes not allowed");
-			}
-
-			st = 0;
-			INITBUFFER(lex_ctx);
-			for (;;) {
-				x = L0();	/* re-lookup curr char on first round */
-				if (x == '.') {
-					if (st >= 1) {
-						break;
-					} else {
-						st = 1;
-					}
-				} else if (x == 'e' || x == 'E') {
-					if (st >= 2) {
-						break;
-					} else {
-						st = 2;
-					}
-				} else if (x == '-' || x == '+') {
-					if (st != 2) {
-						break;
-					} else {
-						st = 3;
-					}
-				} else if (ISDIGIT(x)) {
-					/* Note: intentionally allow leading zeroes here, as the
-					 * actual parser will check for them.
-					 */
-					if (st == 2) {
-						st = 3;
-					}
-				} else {
-					break;
-				}
-				APPENDBUFFER(lex_ctx, x);
-				ADVANCE(lex_ctx, 1);
-			}
-
-			/* FIXME: better coercion */
-			internbuffer(lex_ctx, lex_ctx->slot1_idx);
-
-			/* FIXME: octal handling */
-			s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
-			            DUK_S2N_FLAG_ALLOW_PLUS |
-			            DUK_S2N_FLAG_ALLOW_MINUS |
-			            DUK_S2N_FLAG_ALLOW_FRAC |
-			            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
-			            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC;
-
-			duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
-			duk_numconv_parse((duk_context *) lex_ctx->thr, 10 /*radix*/, s2n_flags);
-			val = duk_to_number((duk_context *) lex_ctx->thr, -1);
-			if (isnan(val)) {
-				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid numeric literal");
-			}
-			duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* FIXME: or pop? */
-
-			INITBUFFER(lex_ctx);	/* free some memory */
+			int_only = 1;
 		}
+#endif
+
+		st = 0;
+		for (;;) {
+			x = L0();	/* re-lookup curr char on first round */
+			if (ISDIGIT(x)) {
+				/* Note: intentionally allow leading zeroes here, as the
+				 * actual parser will check for them.
+				 */
+				if (st == 2) {
+					st = 3;
+				}
+			} else if (allow_hex && ISHEXDIGIT(x)) {
+				/* Note: 'e' and 'E' are also accepted here. */
+				;
+			} else if (x == '.') {
+				if (st >= 1 || int_only) {
+					break;
+				} else {
+					st = 1;
+				}
+			} else if (x == 'e' || x == 'E') {
+				if (st >= 2 || int_only) {
+					break;
+				} else {
+					st = 2;
+				}
+			} else if (x == '-' || x == '+') {
+				if (st != 2) {
+					break;
+				} else {
+					st = 3;
+				}
+			} else {
+				break;
+			}
+			APPENDBUFFER(lex_ctx, x);
+			ADVANCE(lex_ctx, 1);
+		}
+
+		/* FIXME: better coercion */
+		internbuffer(lex_ctx, lex_ctx->slot1_idx);
+
+		s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
+		            DUK_S2N_FLAG_ALLOW_FRAC |
+		            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+		            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
+#ifdef DUK_USE_OCTAL_SUPPORT
+		            (strict_mode ? 0 : DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT) |
+#endif
+		            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+
+		duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+		duk_numconv_parse((duk_context *) lex_ctx->thr, 10 /*radix*/, s2n_flags);
+		val = duk_to_number((duk_context *) lex_ctx->thr, -1);
+		if (isnan(val)) {
+			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid numeric literal");
+		}
+		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* FIXME: or pop? */
+
+		INITBUFFER(lex_ctx);	/* free some memory */
 
 		/* Section 7.8.3 (note): NumericLiteral must be followed by something other than
 		 * IdentifierStart or DecimalDigit.
