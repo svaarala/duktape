@@ -2196,6 +2196,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	int num_pairs;          /* number of pairs in current MPUTOBJ set */
 	int reg_key;            /* temp reg for key literal */
 	int reg_temp;           /* temp reg */
+	int first;		/* first value: comma must not precede the value */
 
 	DUK_ASSERT(comp_ctx->prev_token.t == DUK_TOK_LCURLY);
 
@@ -2215,6 +2216,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	 *  single value initializers do not have special handling now.
 	 */
 
+	first = 1;
 	for (;;) {
 		num_pairs = 0;
 		SETTEMP(comp_ctx, temp_start);
@@ -2254,6 +2256,23 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
 				/* the outer loop will recheck and exit */
 				break;
+			}
+			if (num_pairs >= max_init_pairs) {
+				/* MPUTOBJ emitted by outer loop */
+				break;
+			}
+
+			if (first) {
+				first = 0;
+			} else {
+				if (comp_ctx->curr_token.t != DUK_TOK_COMMA) {
+					goto syntax_error;
+				}
+				advance(comp_ctx);
+				if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
+					/* trailing comma followed by rcurly */
+					break;
+				}
 			}
 
 			/* advance to get one step of lookup */		
@@ -2335,16 +2354,6 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				SETTEMP(comp_ctx, reg_temp + 1);
 
 				num_pairs++;
-			}
-
-			if (comp_ctx->curr_token.t != DUK_TOK_COMMA) {
-				break;
-			}
-			advance(comp_ctx);
-
-			if (num_pairs >= max_init_pairs) {
-				/* MPUTOBJ emitted by outer loop */
-				break;
 			}
 		}
 
