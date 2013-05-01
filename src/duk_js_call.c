@@ -254,7 +254,7 @@ static void create_arguments_object(duk_hthread *thr,
 	             i_map, duk_get_hobject(ctx, i_map),
 	             i_mappednames, duk_get_hobject(ctx, i_mappednames));
 
-	/* [args(n) [crud] formals arguments map mappednames] -> [args [crud] arguments] */
+	/* [args(n) [crud] formals arguments map mappednames] -> [args [crud] arguments] */
 	duk_pop_2(ctx);
 	duk_remove(ctx, -2);
 }

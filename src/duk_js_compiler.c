@@ -2239,7 +2239,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			 *  and
 			 *
 			 *     { get foo() { return 1 } }
-			 *     { get get() { return 1 } }    // 'get' as getter propertyname
+			 *     { get get() { return 1 } }    // 'get' as getter propertyname
 			 *
 			 *  Finally, a trailing comma is allowed.
 			 *
@@ -6314,7 +6314,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	 *  Mangle stack for result
 	 */
 
-	/* [ ... sourcecode (temps) func ] */
+	/* [ ... sourcecode (temps) func ] */
 
 	DUK_ASSERT(entry_top - 1 >= 0);
 	duk_replace(ctx, entry_top - 1);  /* replace sourcecode with func */

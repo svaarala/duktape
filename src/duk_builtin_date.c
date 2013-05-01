@@ -913,7 +913,7 @@ static double get_timeval_from_dparts(double *dparts, int flags) {
 		 * the chicken-and-egg problem.
 		 *
 		 * See E5.1 Section 15.9.1.9:
-		 * UTC(t) = t – LocalTZA – DaylightSavingTA(t – LocalTZA)
+		 * UTC(t) = t - LocalTZA - DaylightSavingTA(t - LocalTZA)
 		 */
 		d -= GET_LOCAL_TZOFFSET(d) * 1000;
 	}
@@ -1301,7 +1301,7 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 	/* Parts are in local time, convert when setting. */
 
 	set_this_timeval_from_dparts(ctx, dparts, FLAG_LOCALTIME /*flags*/);  /* -> [ ... this timeval ] */
-	duk_pop(ctx);  /* -> [ ... this ] */
+	duk_pop(ctx);  /* -> [ ... this ] */
 	return 1;
 }
 

@@ -804,7 +804,7 @@ static void json_enc_objarr_shared_entry(duk_json_enc_ctx *js_ctx, duk_hstring *
 	if (duk_has_prop(ctx, js_ctx->idx_loop)) {
 		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "cyclic input");
 	}
-	duk_push_true(ctx);  /* -> [ ... voidp true ] */
+	duk_push_true(ctx);  /* -> [ ... voidp true ] */
 	duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
 
 	/* c recursion check */

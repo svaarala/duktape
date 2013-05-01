@@ -148,7 +148,7 @@
 #else
 #ifdef DUK_USE_GCC_PRAGMAS
 #define  DUK_PANIC_HANDLER(code,msg)  do { \
-		/* GCC pragmas to suppress: warning: the address of ‘xxx’ will always evaluate as ‘true’ [-Waddress]' */ \
+		/* GCC pragmas to suppress: warning: the address of 'xxx' will always evaluate as 'true' [-Waddress]' */ \
 		_Pragma("GCC diagnostic push"); \
 		_Pragma("GCC diagnostic ignored \"-Waddress\""); \
 		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \

@@ -1089,7 +1089,7 @@ static int lookup_arguments_map(duk_hthread *thr,
 		return 0;
 	}
 
-	/* [... varname] */
+	/* [... varname] */
 	DUK_DDDPRINT("-> 'map' exists, and contains key, key is mapped to argument/variable binding %!T",
 	             duk_get_tval(ctx, -1));
 	DUK_ASSERT(duk_is_string(ctx, -1));  /* guaranteed when building arguments */

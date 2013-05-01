@@ -126,7 +126,7 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	if (duk_is_string(ctx, -2) || duk_is_string(ctx, -1)) {
 		duk_to_string(ctx, -2);
 		duk_to_string(ctx, -1);
-		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */
+		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */
 		duk_replace(ctx, idx_z);  /* side effects */
 	} else {
 		double d1, d2;

@@ -171,7 +171,7 @@ int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start,
 		res = ch & 0x07;
 		n = 3;
 	} else if (ch < 0xfc) {
-		/* 1111 10xx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [26 bits] */
+		/* 1111 10xx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [26 bits] */
 		res = ch & 0x03;
 		n = 4;
 	} else if (ch < 0xfe) {

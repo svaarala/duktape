@@ -517,7 +517,7 @@ void duk_new(duk_context *ctx, int nargs);                                 /* [.
  *          v
  *    [ ... | ... | a b c ]            stack before calling 'func'
  * 
- *    [ ... | ... | a b | x y z w ]    stack after calling 'func', which has
+ *    [ ... | ... | a b | x y z w ]    stack after calling 'func', which has
  *                                     popped one argument and written four
  *                                     return values
  * 
