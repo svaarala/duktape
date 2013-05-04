@@ -41,6 +41,14 @@
  *  little endian format (H G F E D C B A).  When a double is read as an
  *  unsigned long long from memory, the register will contain the (logical)
  *  value E F G H A B C D.  This requires some special handling below.
+ *
+ *  Indexes of various types (8-bit, 16-bit, 32-bit) in memory relative to
+ *  the logical (big endian) order:
+ *
+ *  byte order     unsigned char     unsigned short     unsigned int
+ *    BE             01234567         0123               01
+ *    LE             76543210         3210               10
+ *    ME (ARM)       32107654         1032               01
  */
 
 #ifndef DUK_TVAL_H_INCLUDED
@@ -55,26 +63,15 @@
 #include "duk_features.h"
 #include "duk_forwdecl.h"
 
-#ifdef DUK_USE_PACKED_TVAL
-/* ======================================================================== */
-
 /*
- *  Packed 8-byte representation
+ *  Union to access IEEE double memory representation
  */
-
-#include <limits.h>
 
 /* FIXME: OSX/Darwin temporary workaround */
 #ifdef __APPLE__
 #include <architecture/byte_order.h>
 #else
 #include <endian.h>
-#endif
-
-/* best effort viability checks, not particularly accurate */
-#if (defined(__WORDSIZE) && (__WORDSIZE != 32)) || \
-    (defined(UINT_MAX) && (UINT_MAX != 4294967295))
-#error packed representation not supported if: __WORDSIZE != 32, UINT_MAX != 4294967295
 #endif
 
 /* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
@@ -84,21 +81,122 @@
 #elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)
 #define _USE_ME_VARIANT 1
 #else
-#error packed representation not supported if: __BYTE_ORDER == __LITTLE_ENDIAN but __FLOAT_WORD_ORDER != __LITTLE_ENDIAN or __BIG_ENDIAN (ARM order)
+#error unsupported: __BYTE_ORDER == __LITTLE_ENDIAN but __FLOAT_WORD_ORDER != __LITTLE_ENDIAN or __BIG_ENDIAN (ARM order)
 #endif
 #elif defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)
 #define _USE_BE_VARIANT 1
 #else
-#error packed representation not supported if: __BYTE_ORDER == __BIG_ENDIAN but __FLOAT_WORD_ORDER != __BIG_ENDIAN
+#error unsupported: __BYTE_ORDER == __BIG_ENDIAN but __FLOAT_WORD_ORDER != __BIG_ENDIAN
 #endif
 #else
-#error packed representation not supported if: __BYTE_ORDER != __LITTLE_ENDIAN and __BYTE_ORDER != __BIG_ENDIAN
+#error unsupported: __BYTE_ORDER != __LITTLE_ENDIAN and __BYTE_ORDER != __BIG_ENDIAN
 #endif
 
 #if !defined(_USE_LE_VARIANT) && !defined(_USE_ME_VARIANT) && !defined(_USE_BE_VARIANT)
-#error packed representation not available, cannot determine byte order variant
+#error unsupported: cannot determine byte order variant
 #endif
+
+/* indexes of various types with respect to big endian (logical) layout */
+#ifdef _USE_LE_VARIANT
+#define  _DUK_IDX_ULL0   0
+#define  _DUK_IDX_UI0    1
+#define  _DUK_IDX_UI1    0
+#define  _DUK_IDX_US0    3
+#define  _DUK_IDX_US1    2
+#define  _DUK_IDX_US2    1
+#define  _DUK_IDX_US3    0
+#define  _DUK_IDX_UC0    7
+#define  _DUK_IDX_UC1    6
+#define  _DUK_IDX_UC2    5
+#define  _DUK_IDX_UC3    4
+#define  _DUK_IDX_UC4    3
+#define  _DUK_IDX_UC5    2
+#define  _DUK_IDX_UC6    1
+#define  _DUK_IDX_UC7    0
+#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
+#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#endif
+#ifdef _USE_BE_VARIANT
+#define  _DUK_IDX_ULL0   0
+#define  _DUK_IDX_UI0    0
+#define  _DUK_IDX_UI1    1
+#define  _DUK_IDX_US0    0
+#define  _DUK_IDX_US1    1
+#define  _DUK_IDX_US2    2
+#define  _DUK_IDX_US3    3
+#define  _DUK_IDX_UC0    0
+#define  _DUK_IDX_UC1    1
+#define  _DUK_IDX_UC2    2
+#define  _DUK_IDX_UC3    3
+#define  _DUK_IDX_UC4    4
+#define  _DUK_IDX_UC5    5
+#define  _DUK_IDX_UC6    6
+#define  _DUK_IDX_UC7    7
+#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
+#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#endif
+#ifdef _USE_ME_VARIANT
+#define  _DUK_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
+#define  _DUK_IDX_UI0    0
+#define  _DUK_IDX_UI1    1
+#define  _DUK_IDX_US0    1
+#define  _DUK_IDX_US1    0
+#define  _DUK_IDX_US2    3
+#define  _DUK_IDX_US3    2
+#define  _DUK_IDX_UC0    3
+#define  _DUK_IDX_UC1    2
+#define  _DUK_IDX_UC2    1
+#define  _DUK_IDX_UC3    0
+#define  _DUK_IDX_UC4    7
+#define  _DUK_IDX_UC5    6
+#define  _DUK_IDX_UC6    5
+#define  _DUK_IDX_UC7    4
+#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
+#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#endif
+
+/* Almost the same as a packed duk_tval, but only for accessing doubles e.g.
+ * for numconv, which is needed regardless of duk_tval representation.
+ */
+
+union duk_double_union {
+	double d;
+	unsigned long long ull[1];
+	unsigned int ui[2];
+	unsigned short us[4];
+	unsigned char uc[8];
+};
+typedef union duk_double_union duk_double_union;
+
+/* macros for duk_numconv.c */
+#define  DUK_DBLUNION_SET_DOUBLE(u,v)  do {  \
+		(u)->d = (v); \
+	} while (0)
+#define  DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
+		(u)->ui[_DUK_IDX_UI0] = (unsigned int) (v); \
+	} while (0)
+#define  DUK_DBLUNION_SET_LOW32(u,v)  do {  \
+		(u)->ui[_DUK_IDX_UI1] = (unsigned int) (v); \
+	} while (0)
+#define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
+#define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[_DUK_IDX_UI0])
+#define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[_DUK_IDX_UI1])
+
+#ifdef DUK_USE_PACKED_TVAL
+/* ======================================================================== */
+
+/*
+ *  Packed 8-byte representation
+ */
+
+/* best effort viability checks, not particularly accurate */
+#if (defined(__WORDSIZE) && (__WORDSIZE != 32)) || \
+    (defined(UINT_MAX) && (UINT_MAX != 4294967295))
+#error packed representation not supported if: __WORDSIZE != 32, UINT_MAX != 4294967295
+#endif
+
+#include <limits.h>
 
 /* Use a union for bit manipulation to minimize aliasing issues in practice.
  * The C99 standard does not guarantee that this should work, but it's a very
@@ -134,11 +232,6 @@ typedef union duk_tval duk_tval;
 #define  DUK_XTAG_BOOLEAN_TRUE     0xfff30001
 
 /*
- *  byte order     unsigned char     unsigned short     unsigned int
- *    BE             01234567         0123               01
- *    LE             76543210         3210               10
- *    ME (ARM)       32107654         1032               01
- *
  *  The ME variant below is specifically for ARM byte order, which has the
  *  feature that while doubles have a mixed byte order (32107654), unsigned
  *  long long values has a little endian byte order (76543210).  When writing
@@ -146,65 +239,6 @@ typedef union duk_tval duk_tval;
  *  swapped; hence the #ifdefs below for ULL writes with _USE_ME_VARIANT.
  *  This is not full ARM support but suffices for some environments.
  */
-
-/* indexes of various types with respect to big endian (logical) layout */
-#ifdef _USE_LE_VARIANT
-#define  _DUK_IDX_ULL0   0
-#define  _DUK_IDX_UI0    1
-#define  _DUK_IDX_UI1    0
-#define  _DUK_IDX_US0    3
-#define  _DUK_IDX_US1    2
-#define  _DUK_IDX_US2    1
-#define  _DUK_IDX_US3    0
-#define  _DUK_IDX_UC0    7
-#define  _DUK_IDX_UC1    6
-#define  _DUK_IDX_UC2    5
-#define  _DUK_IDX_UC3    4
-#define  _DUK_IDX_UC4    3
-#define  _DUK_IDX_UC5    2
-#define  _DUK_IDX_UC6    1
-#define  _DUK_IDX_UC7    0
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1
-#endif
-#ifdef _USE_BE_VARIANT
-#define  _DUK_IDX_ULL0   0
-#define  _DUK_IDX_UI0    0
-#define  _DUK_IDX_UI1    1
-#define  _DUK_IDX_US0    0
-#define  _DUK_IDX_US1    1
-#define  _DUK_IDX_US2    2
-#define  _DUK_IDX_US3    3
-#define  _DUK_IDX_UC0    0
-#define  _DUK_IDX_UC1    1
-#define  _DUK_IDX_UC2    2
-#define  _DUK_IDX_UC3    3
-#define  _DUK_IDX_UC4    4
-#define  _DUK_IDX_UC5    5
-#define  _DUK_IDX_UC6    6
-#define  _DUK_IDX_UC7    7
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1
-#endif
-#ifdef _USE_ME_VARIANT
-#define  _DUK_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
-#define  _DUK_IDX_UI0    0
-#define  _DUK_IDX_UI1    1
-#define  _DUK_IDX_US0    1
-#define  _DUK_IDX_US1    0
-#define  _DUK_IDX_US2    3
-#define  _DUK_IDX_US3    2
-#define  _DUK_IDX_UC0    3
-#define  _DUK_IDX_UC1    2
-#define  _DUK_IDX_UC2    1
-#define  _DUK_IDX_UC3    0
-#define  _DUK_IDX_UC4    7
-#define  _DUK_IDX_UC5    6
-#define  _DUK_IDX_UC6    5
-#define  _DUK_IDX_UC7    4
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1
-#endif
 
 /* raw setters */
 #ifdef _USE_ME_VARIANT
