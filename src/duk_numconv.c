@@ -222,7 +222,7 @@ static void bi_add_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
 
 	DUK_ASSERT(bi_is_normalized(y));
 
-	/* FIXME: optimize */
+	/* FIXME: optimize, though only one caller now */
 	bi_set_small(&tmp, z);
 	bi_add(x, y, &tmp);
 
@@ -345,13 +345,11 @@ static void bi_mul_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
 	DUK_ASSERT(bi_is_normalized(x));
 }
 
-#if 0  /* unused */
 /* x <- x * y, use t as temp */
 static void bi_mul_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
 	bi_mul(t, x, y);
 	bi_copy(x, t);
 }
-#endif
 
 /* x <- x * y, use t as temp */
 static void bi_mul_small_copy(duk_bigint *x, uint32_t y, duk_bigint *t) {
@@ -380,11 +378,6 @@ static int bi_is_2to52(duk_bigint *x) {
 	return (x->n == 2) && (x->v[0] == 0) && (x->v[1] == (1 << (52-32)));
 }
 
-#if 0  /* FIXME: not implemented, would be useful */
-static void bi_shift(duk_bigint *x) {
-}
-#endif
-
 /* x <- (1<<y) */
 static void bi_twoexp(duk_bigint *x, int y) {
 	int n, r;
@@ -398,19 +391,41 @@ static void bi_twoexp(duk_bigint *x, int y) {
 	x->v[n - 1] = (((uint32_t) 1) << r);
 }
 
-/* x <- b^y */
-static void bi_exp_small(duk_bigint *x, int b, int y) {
-	/* FIXME: optimize */
-	duk_bigint tmp;
+/* x <- b^y; use t1 and t2 as temps */
+static void bi_exp_small(duk_bigint *x, int b, int y, duk_bigint *t1, duk_bigint *t2) {
+	/* Fast path the binary case */
+
+	DUK_ASSERT(x != t1 && x != t2 && t1 != t2);  /* distinct bignums, easy mistake to make */
+	DUK_ASSERT(b >= 0);
+	DUK_ASSERT(y >= 0);
 
 	if (b == 2) {
 		bi_twoexp(x, y);
 		return;
 	}
+
+	/* http://en.wikipedia.org/wiki/Exponentiation_by_squaring */
+
+	DUK_DPRINT("exp_small: b=%d, y=%d", b, y);
+
 	bi_set_small(x, 1);
-	while (y-- > 0) {
-		bi_mul_small_copy(x, b, &tmp);
+	bi_set_small(t1, b);
+	for (;;) {
+		/* Loop structure ensures that we don't compute t1^2 unnecessarily
+		 * on the final round, as that might create a bignum exceeding the
+		 * current BI_MAX_PARTS limit.
+		 */
+		if (y & 0x01) {
+			bi_mul_copy(x, t1, t2);
+		}
+		y = y >> 1;
+		if (y == 0) {
+			break;
+		}
+		bi_mul_copy(t1, t1, t2);
 	}
+
+	BI_PRINT("exp_small result", x);
 }
 
 /*
@@ -573,7 +588,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "lowest mantissa value for this exponent -> "
 			           "unequal gaps");
 
-			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e);    /* mm <- b^e */
+			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e, &nc_ctx->t1, &nc_ctx->t2);  /* mm <- b^e */
 			bi_mul_small(&nc_ctx->mp, &nc_ctx->mm, nc_ctx->b);  /* mp <- b^(e+1) */
 			bi_mul_small(&nc_ctx->t1, &nc_ctx->f, 2);
 			bi_mul(&nc_ctx->r, &nc_ctx->t1, &nc_ctx->mp);       /* r <- (2 * f) * b^(e+1) */
@@ -597,7 +612,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "not lowest mantissa for this exponent -> "
 			           "equal gaps");
 
-			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e);  /* mm <- b^e */
+			bi_exp_small(&nc_ctx->mm, nc_ctx->b, nc_ctx->e, &nc_ctx->t1, &nc_ctx->t2);  /* mm <- b^e */
 			bi_copy(&nc_ctx->mp, &nc_ctx->mm);                /* mp <- b^e */
 			bi_mul_small(&nc_ctx->t1, &nc_ctx->f, 2);
 			bi_mul(&nc_ctx->r, &nc_ctx->t1, &nc_ctx->mp);     /* r <- (2 * f) * b^e */
@@ -624,7 +639,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "unequal gaps");
 
 			bi_mul_small(&nc_ctx->r, &nc_ctx->f, nc_ctx->b * 2);  /* r <- (2 * b) * f */
-			bi_exp_small(&nc_ctx->t1, nc_ctx->b, 1 - nc_ctx->e);
+			bi_exp_small(&nc_ctx->t1, nc_ctx->b, 1 - nc_ctx->e, &nc_ctx->t1, &nc_ctx->t2);
 			bi_mul_small(&nc_ctx->s, &nc_ctx->t1, 2);             /* s <- b^(1-e) * 2 */
 			bi_set_small(&nc_ctx->mp, 2);
 			bi_set_small(&nc_ctx->mm, 1);
@@ -645,7 +660,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			           "equal gaps");
 
 			bi_mul_small(&nc_ctx->r, &nc_ctx->f, 2);            /* r <- 2 * f */
-			bi_exp_small(&nc_ctx->t1, nc_ctx->b, -nc_ctx->e);
+			bi_exp_small(&nc_ctx->t1, nc_ctx->b, -nc_ctx->e, &nc_ctx->s, &nc_ctx->t2);  /* NB: use 's' as temp on purpose */
 			bi_mul_small(&nc_ctx->s, &nc_ctx->t1, 2);           /* s <- b^(-e) * 2 */
 			bi_set_small(&nc_ctx->mp, 1);
 			bi_set_small(&nc_ctx->mm, 1);
@@ -836,7 +851,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		if (tc1) {
 			if (tc2) {
 				/* tc1 = true, tc2 = true */
-				bi_mul_small(&nc_ctx->t1, &nc_ctx->r, 2);  /* FIXME: shift */
+				bi_mul_small(&nc_ctx->t1, &nc_ctx->r, 2);
 				if (bi_compare(&nc_ctx->t1, &nc_ctx->s) < 0) {  /* (< (* r 2) s) */
 					DUK_DPRINT("tc1=true, tc2=true, 2r > s: output d --> %d (k=%d)", d, nc_ctx->k);
 					DRAGON4_OUTPUT(nc_ctx, count, d);
