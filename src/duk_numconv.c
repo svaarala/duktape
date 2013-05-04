@@ -1151,12 +1151,8 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
  */
 
 static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
-	/* FIXME: share duk_tval.h? */
-	/* FIXME: reliable union */
-	volatile union {
-		volatile double d;
-		volatile uint32_t v[2];
-	} u;
+	volatile duk_double_union u;
+	uint32_t tmp;
 	int exp;
 
 	/*
@@ -1173,19 +1169,16 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 	 *    algorithm v = f * b^e
 	 */
 
-	u.d = x;
-
-	/* FIXME: platform specific; need endianness define from duk_tval.h
-	 * or macros.
-	 */
+	DUK_DBLUNION_SET_DOUBLE(&u, x);
 
 	nc_ctx->f.n = 2;
-#if 1  /* FIXME: little endian */
-	nc_ctx->f.v[0] = u.v[0];
-	nc_ctx->f.v[1] = u.v[1] & 0x000fffffU;
-#endif
 
-	exp = (u.v[1] >> 20) & 0x07ffU;
+	tmp = (uint32_t) DUK_DBLUNION_GET_LOW32(&u);
+	nc_ctx->f.v[0] = tmp;
+	tmp = (uint32_t) DUK_DBLUNION_GET_HIGH32(&u);
+	nc_ctx->f.v[1] = tmp & 0x000fffffU;
+	exp = (tmp >> 20) & 0x07ffU;
+
 	if (exp == 0) {
 		/* denormal */
 		exp = IEEE_DOUBLE_EXP_MIN - 52;
@@ -1203,11 +1196,7 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 }
 
 void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
-	/* FIXME: share duk_tval.h? */
-	volatile union {
-		volatile double d;
-		volatile uint32_t v[2];
-	} u;
+	volatile duk_double_union u;
 	int exp;
 	int i;
 	int bitstart;
@@ -1312,13 +1301,15 @@ void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
 		t += v << (i % 32);
 		if (i == 31) {
 			/* low 32 bits is complete */
-			u.v[0] = t;
+			DUK_DBLUNION_SET_LOW32(&u, t);
 			t = 0;
 		}
 	}
 	/* t has high mantissa */
 
-	DUK_DPRINT("mantissa is complete: %08x %08x", t, (unsigned int) u.v[0]);
+	DUK_DPRINT("mantissa is complete: %08x %08x",
+	           t,
+	           (unsigned int) DUK_DBLUNION_GET_LOW32(&u));
 
 	DUK_ASSERT(exp >= 0 && exp <= 0x7ff);
 	t += exp << 20;
@@ -1327,11 +1318,13 @@ void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
 		t |= 0x80000000U;
 	}
 #endif
-	u.v[1] = t;
+	DUK_DBLUNION_SET_HIGH32(&u, t);
 
-	DUK_DPRINT("number is complete: %08x %08x", (unsigned int) u.v[1], (unsigned int) u.v[0]);
+	DUK_DPRINT("number is complete: %08x %08x",
+	           (unsigned int) DUK_DBLUNION_GET_HIGH32(&u),
+	           (unsigned int) DUK_DBLUNION_GET_LOW32(&u));
 
-	*x = u.d;
+	*x = DUK_DBLUNION_GET_DOUBLE(&u);
 }
 
 /*
