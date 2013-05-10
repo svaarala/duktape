@@ -646,7 +646,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 			             "unequal gaps");
 
 			bi_mul_small(&nc_ctx->r, &nc_ctx->f, nc_ctx->b * 2);  /* r <- (2 * b) * f */
-			bi_exp_small(&nc_ctx->t1, nc_ctx->b, 1 - nc_ctx->e, &nc_ctx->t1, &nc_ctx->t2);
+			bi_exp_small(&nc_ctx->t1, nc_ctx->b, 1 - nc_ctx->e, &nc_ctx->s, &nc_ctx->t2);  /* NB: use 's' as temp on purpose */
 			bi_mul_small(&nc_ctx->s, &nc_ctx->t1, 2);             /* s <- b^(1-e) * 2 */
 			bi_set_small(&nc_ctx->mp, 2);
 			bi_set_small(&nc_ctx->mm, 1);

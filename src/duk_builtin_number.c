@@ -39,8 +39,6 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 	int nargs;
 	duk_hobject *h_this;
 
-	DUK_ASSERT_TOP(ctx, 1);
-
 	/*
 	 *  The Number constructor uses ToNumber(arg) for number coercion
 	 *  (coercing an undefined argument to NaN).  However, if the
