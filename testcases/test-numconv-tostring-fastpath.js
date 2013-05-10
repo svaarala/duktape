@@ -6,6 +6,12 @@
  *  skip; both endpoint values are always included though.
  */
 
+/*---
+{
+    "slow": true
+}
+---*/
+
 /* FIXME: util */
 /* Trivial string checksum used to summarize brute force output lines
  * (minimizes test case size).
