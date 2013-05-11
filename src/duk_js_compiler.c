@@ -5540,7 +5540,6 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 				goto error_argname;
 			}
 		}
-		DUK_ASSERT(!DUK_HSTRING_HAS_RESERVED_WORD(h_name));
 
 		/* overwrite any previous binding of the same name; the effect is
 		 * that last argument of a certain name wins.
