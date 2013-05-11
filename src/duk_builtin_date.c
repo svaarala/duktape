@@ -124,6 +124,11 @@ static int get_local_tzoffset_gmtime(double d) {
 	double dparts[NUM_PARTS];
 	struct tm tms[2];
 
+	/* For NaN/inf, the return value doesn't matter. */
+	if (!isfinite(d)) {
+		return 0;
+	}
+
 	/*
 	 *  This is a bit tricky to implement portably.  The result depends
 	 *  on the timestamp (specifically, DST depends on the timestamp).
@@ -914,7 +919,10 @@ static double get_timeval_from_dparts(double *dparts, int flags) {
 		 *
 		 * See E5.1 Section 15.9.1.9:
 		 * UTC(t) = t - LocalTZA - DaylightSavingTA(t - LocalTZA)
+		 *
+		 * For NaN/inf, GET_LOCAL_TZOFFSET() returns 0.
 		 */
+
 		d -= GET_LOCAL_TZOFFSET(d) * 1000;
 	}
 	d = timeclip(d);
@@ -958,7 +966,9 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 	DUK_ASSERT(!isinf(d));
 
 	if (flags & FLAG_LOCALTIME) {
-		/* Note: DST adjustment is determined using UTC time. */
+		/* Note: DST adjustment is determined using UTC time.
+		 * If 'd' is NaN, tzoffset will be 0.
+		 */
 		tzoffset = GET_LOCAL_TZOFFSET(d);  /* seconds */
 		d += tzoffset * 1000;
 	}
@@ -1127,7 +1137,17 @@ static int set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 
 	nargs = duk_get_top(ctx);
 	d = push_this_and_get_timeval(ctx, flags_and_maxnargs);
-	timeval_to_parts(d, parts, dparts, flags_and_maxnargs);
+	DUK_ASSERT(isfinite(d) || isnan(d));
+
+	if (isfinite(d)) {
+		timeval_to_parts(d, parts, dparts, flags_and_maxnargs);
+	} else {
+		/* NaN timevalue: we need to coerce the arguments, but
+		 * the resulting internal timestamp needs to remain NaN.
+		 * This works but is not pretty: parts and dparts will
+		 * be partially uninitialized, but we only write to it.
+		 */
+	}
 
 	/*
 	 *  Determining which datetime components to overwrite based on
@@ -1186,7 +1206,13 @@ static int set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 	/* Leaves new timevalue on stack top and returns 1, which is correct
 	 * for part setters.
 	 */
-	return set_this_timeval_from_dparts(ctx, dparts, flags_and_maxnargs);
+	if (isfinite(d)) {
+		return set_this_timeval_from_dparts(ctx, dparts, flags_and_maxnargs);
+	} else {
+		/* Internal timevalue is already NaN, so don't touch it. */
+		duk_push_nan(ctx);
+		return 1;
+	}
 }
 
 /* Apply ToNumber() to specified index; if ToInteger(val) in [0,99], add
@@ -1389,6 +1415,7 @@ int duk_builtin_date_prototype_value_of(duk_context *ctx) {
 	 */
 
 	double d = push_this_and_get_timeval(ctx, 0 /*flags*/);  /* -> [ this ] */
+	DUK_ASSERT(isfinite(d) || isnan(d));
 	duk_push_number(ctx, d);
 	return 1;
 }
@@ -1461,8 +1488,14 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
 
 	/* Note: DST adjustment is determined using UTC time. */
 	d = push_this_and_get_timeval(ctx, 0 /*flags*/);
-	tzoffset = GET_LOCAL_TZOFFSET(d);
-	duk_push_int(ctx, -tzoffset / 60);
+	DUK_ASSERT(isfinite(d) || isnan(d));
+	if (isnan(d)) {
+		duk_push_nan(ctx);
+	} else {
+		DUK_ASSERT(isfinite(d));
+		tzoffset = GET_LOCAL_TZOFFSET(d);
+		duk_push_int(ctx, -tzoffset / 60);
+	}
 	return 1;
 }
 
