@@ -54,7 +54,7 @@ int duk_builtin_object_constructor_get_own_property_descriptor(duk_context *ctx)
 }
 
 int duk_builtin_object_constructor_get_own_property_names(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);
+	DUK_ASSERT_TOP(ctx, 1);
 	(void) duk_require_hobject(ctx, 0);
 	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_INCLUDE_NONENUMERABLE |
 	                                            DUK_ENUM_OWN_PROPERTIES_ONLY);
@@ -182,7 +182,7 @@ int duk_builtin_object_constructor_is_extensible(duk_context *ctx) {
 }
 
 int duk_builtin_object_constructor_keys(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);
+	DUK_ASSERT_TOP(ctx, 1);
 	(void) duk_require_hobject(ctx, 0);
 	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY);
 }
