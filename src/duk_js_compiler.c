@@ -142,7 +142,7 @@ static int expr_lbp(duk_compiler_ctx *comp_ctx);
 static int expr_is_empty(duk_compiler_ctx *comp_ctx);
 
 /* exprtop is the top level variant which resets nud/led counts */
-static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
+static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
 static void exprtop(duk_compiler_ctx *ctx, duk_ivalue *res, int rbp_flags);
 
 /* convenience helpers */
@@ -3635,16 +3635,17 @@ static int expr_lbp(duk_compiler_ctx *comp_ctx) {
 #define  EXPR_FLAG_ALLOW_EMPTY   (1 << 9)
 
 /* main expression parser function */
-static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
+static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 	duk_ivalue tmp_alloc;   /* 'res' is used for "left", and 'tmp' for "right" */
 	duk_ivalue *tmp = &tmp_alloc;
+	int rbp;
 
 	RECURSION_INCREASE(comp_ctx, thr);
 
 	/* filter out flags from exprtop rbp_flags here to save space */
-	rbp = rbp & EXPR_RBP_MASK;
+	rbp = rbp_flags & EXPR_RBP_MASK;
 
 	DUK_DDDPRINT("expr(), rbp=%d, allow_in=%d, paren_level=%d",
 	             rbp, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level);
@@ -3667,6 +3668,9 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
 	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON || comp_ctx->curr_token.t == DUK_TOK_RPAREN) {
 		/* FIXME: incorrect hack for testing */
 		DUK_DDDPRINT("empty expression");
+		if (!(rbp_flags & EXPR_FLAG_ALLOW_EMPTY)) {
+			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "empty expression not allowed");
+		}
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_VALUE;
 		duk_push_undefined(ctx);
