@@ -146,14 +146,14 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
 static void exprtop(duk_compiler_ctx *ctx, duk_ivalue *res, int rbp_flags);
 
 /* convenience helpers */
-static int expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
+static int expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
 #if 0  /* unused */
 static int expr_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
 #endif
-static int expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp, int forced_reg);
-static int expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
-static void expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
-static void expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp);
+static int expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags, int forced_reg);
+static int expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
+static void expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
+static void expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
 static int exprtop_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
 #if 0  /* unused */
 static int exprtop_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags);
@@ -2415,7 +2415,7 @@ static int parse_arguments(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		SETTEMP(comp_ctx, tr);
 
 		/* binding power must be high enough to NOT allow comma expressions directly */
-		expr_toforcedreg(comp_ctx, res, BP_COMMA /*rbp*/, tr);  /* always allow 'in', coerce to 'tr' just in case */
+		expr_toforcedreg(comp_ctx, res, BP_COMMA /*rbp_flags*/, tr);  /* always allow 'in', coerce to 'tr' just in case */
 
 		SETTEMP(comp_ctx, tr + 1);
 		nargs++;
@@ -2555,7 +2555,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		prev_allow_in = comp_ctx->curr_func.allow_in;
 		comp_ctx->curr_func.allow_in = 1; /* reset 'allow_in' for parenthesized expression */
 
-		expr(comp_ctx, res, BP_FOR_EXPR /*rbp*/);  /* Expression, terminates at a ')' */
+		expr(comp_ctx, res, BP_FOR_EXPR /*rbp_flags*/);  /* Expression, terminates at a ')' */
 
 		advance_expect(comp_ctx, DUK_TOK_RPAREN);
 		comp_ctx->curr_func.allow_in = prev_allow_in;
@@ -2586,7 +2586,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		DUK_DDDPRINT("begin parsing new expression");
 
 		reg_target = ALLOCTEMP(comp_ctx);
-		expr_toforcedreg(comp_ctx, res, BP_CALL /*rbp*/, reg_target /*forced_reg*/);
+		expr_toforcedreg(comp_ctx, res, BP_CALL /*rbp_flags*/, reg_target /*forced_reg*/);
 		SETTEMP(comp_ctx, reg_target + 1);
 
 		if (comp_ctx->curr_token.t == DUK_TOK_LPAREN) {
@@ -2645,7 +2645,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * a reference (which is only known at runtime) seemingly at compile time
 		 * (= SyntaxError throwing).
 		 */
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		if (res->t == DUK_IVAL_VAR) {
 			/* not allowed in strict mode, regardless of whether resolves;
 			 * in non-strict mode DELVAR handles both non-resolving and
@@ -2697,7 +2697,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		return;
 	}
 	case DUK_TOK_VOID: {
-		expr_toplain_ignore(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr_toplain_ignore(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		duk_push_undefined(ctx);
 		goto plain_value;
 	}
@@ -2707,7 +2707,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * will never be unresolvable so special handling is only required
 		 * when an identifier is a "slow path" one.
 		 */
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 
 		if (res->t == DUK_IVAL_VAR) {
 			int reg_varbind;
@@ -2741,7 +2741,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	}
 	case DUK_TOK_ADD: {
 		/* unary plus */
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		if (res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_VALUE &&
 		    duk_is_number(ctx, res->x1.valstack_idx)) {
 			/* unary plus of a number is identity */
@@ -2754,7 +2754,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	}
 	case DUK_TOK_SUB: {
 		/* unary minus */
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		if (res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_VALUE &&
 		    duk_is_number(ctx, res->x1.valstack_idx)) {
 			/* this optimization is important to handle negative literals (which are not directly
@@ -2774,12 +2774,12 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		return;
 	}
 	case DUK_TOK_BNOT: {
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		args = (DUK_OP_BNOT << 8) + 0;
 		goto unary;
 	}
 	case DUK_TOK_LNOT: {
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		args = (DUK_OP_LNOT << 8) + 0;
 		goto unary;
 	}
@@ -2824,7 +2824,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 		reg_res = ALLOCTEMP(comp_ctx);
 
-		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp*/);  /* UnaryExpression */
+		expr(comp_ctx, res, BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		if (res->t == DUK_IVAL_VAR) {
 			duk_hstring *h_varname;
 			int reg_varbind;
@@ -2949,7 +2949,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 
 		ivalue_toplain(comp_ctx, left);
 
-		expr_toplain(comp_ctx, res, BP_FOR_EXPR /*rbp*/);  /* Expression, ']' terminates */
+		expr_toplain(comp_ctx, res, BP_FOR_EXPR /*rbp_flags*/);  /* Expression, ']' terminates */
 
 		advance_expect(comp_ctx, DUK_TOK_RBRACKET);
 
@@ -3282,7 +3282,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 		/* right associative */
 
 		ivalue_toplain_ignore(comp_ctx, left);  /* need side effects, not value */
-		expr_toplain(comp_ctx, res, BP_COMMA - 1 /*rbp*/);
+		expr_toplain(comp_ctx, res, BP_COMMA - 1 /*rbp_flags*/);
 
 		/* return 'res' (of right part) as our result */
 		return;
@@ -3311,7 +3311,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 	 */
 	{
 		ivalue_toplain(comp_ctx, left);
-		expr_toplain(comp_ctx, res, args & 0xff /*rbp*/);
+		expr_toplain(comp_ctx, res, args & 0xff /*rbp_flags*/);
 
 		/* combine left->x1 and res->x1 (right->x1, really) -> (left->x1 OP res->x1) */
 		DUK_ASSERT(left->t == DUK_IVAL_PLAIN);
@@ -3367,7 +3367,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 		ivalue_toforcedreg(comp_ctx, left, reg_temp);
 		emit_a_b(comp_ctx, DUK_OP_IF, args_truthval, reg_temp);  /* skip jump conditionally */
 		pc_jump = emit_jump_empty(comp_ctx);
-		expr_toforcedreg(comp_ctx, res, args_rbp /*rbp*/, reg_temp /*forced_reg*/);
+		expr_toforcedreg(comp_ctx, res, args_rbp /*rbp_flags*/, reg_temp /*forced_reg*/);
 		patch_jump_here(comp_ctx, pc_jump);
 
 		res->t = DUK_IVAL_PLAIN;
@@ -3408,7 +3408,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			/* already in fluly evaluated form */
 			DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE);
 
-			expr_toreg(comp_ctx, res, args_rbp /*rbp*/);
+			expr_toreg(comp_ctx, res, args_rbp /*rbp_flags*/);
 			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 
 			h_varname = duk_get_hstring(ctx, left->x1.valstack_idx);
@@ -3454,7 +3454,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			int reg_res;
 			int reg_temp;
 
-			expr_toregconst(comp_ctx, res, args_rbp /*rbp*/);
+			expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
 			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 
 			/* Don't allow a constant for the object (even for a number etc), as
@@ -3496,7 +3496,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			ivalue_toplain_ignore(comp_ctx, left);
 
 			/* then evaluate RHS fully (its value becomes the expression value too) */
-			reg_res = expr_toregconst(comp_ctx, res, args_rbp /*rbp*/);
+			reg_res = expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
 	
 			emit_extraop_only(comp_ctx, DUK_EXTRAOP_INVLHS);
 
@@ -3647,8 +3647,8 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
 	/* filter out flags from exprtop rbp_flags here to save space */
 	rbp = rbp_flags & EXPR_RBP_MASK;
 
-	DUK_DDDPRINT("expr(), rbp=%d, allow_in=%d, paren_level=%d",
-	             rbp, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level);
+	DUK_DDDPRINT("expr(), rbp_flags=%d, rbp=%d, allow_in=%d, paren_level=%d",
+	             rbp_flags, rbp, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level);
 
 	memset(&tmp_alloc, 0, sizeof(tmp_alloc));
 	tmp->x1.valstack_idx = duk_get_top(ctx);
@@ -3719,35 +3719,35 @@ static void exprtop(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) 
  * Each helper needs at least 2-3 calls to make it worth while to wrap.
  */
 
-static int expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	expr(comp_ctx, res, rbp);
+static int expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
+	expr(comp_ctx, res, rbp_flags);
 	return ivalue_toreg(comp_ctx, res);
 }
 
 #if 0  /* unused */
-static int expr_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	expr(comp_ctx, res, rbp);
+static int expr_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
+	expr(comp_ctx, res, rbp_flags);
 	return ivalue_totempreg(comp_ctx, res);
 }
 #endif
 
-static int expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp, int forced_reg) {
-	expr(comp_ctx, res, rbp);
+static int expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags, int forced_reg) {
+	expr(comp_ctx, res, rbp_flags);
 	return ivalue_toforcedreg(comp_ctx, res, forced_reg);
 }
 
-static int expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	expr(comp_ctx, res, rbp);
+static int expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
+	expr(comp_ctx, res, rbp_flags);
 	return ivalue_toregconst(comp_ctx, res);
 }
 
-static void expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	expr(comp_ctx, res, rbp);
+static void expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
+	expr(comp_ctx, res, rbp_flags);
 	ivalue_toplain(comp_ctx, res);
 }
 
-static void expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp) {
-	expr(comp_ctx, res, rbp);
+static void expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
+	expr(comp_ctx, res, rbp_flags);
 	ivalue_toplain_ignore(comp_ctx, res);
 }
 
