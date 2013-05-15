@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: should debug version panic macro cause a segfault?
+desc: |-
+  A segfault gives a nice traceback in valgrind or debugger, the
+  current exit() call does not.
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-05-10 21:07:51.365401 Z
+references: []
+
+id: d3c2741808b2083f4994cfb1f780a1f15ec62ee7
+log_events: 
+- - 2013-05-10 21:07:51.674321 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
