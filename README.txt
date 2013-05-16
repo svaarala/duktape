@@ -24,9 +24,8 @@ compiler and executor, garbage collection, data types, semantics for property
 and identifier access, and initial implementations of built-in objects (with
 some known issues).
 
-However, there are (known and unknown) bugs here and there; in particular,
-number parsing and string conversion is incomplete.  The user API is also
-not yet nearly finished, and there is still minimal documentation in this
+However, there are (known and unknown) bugs here and there.  The user API is
+also not yet nearly finished, and there is still minimal documentation in this
 release.  API and internal documentation will be included in future releases.
 
 To build (only Linux at the moment)::
