@@ -210,24 +210,28 @@ function executeTest(options, callback) {
  *  Main
  */
 
-var DUK_HEADER =
-    "this.__engine__ = 'duk';\n\n";
+/* The engine specific headers should not have a newline, to avoid
+ * affecting line numbers in errors / tracebacks.
+ */
 
+var DUK_HEADER =
+    "this.__engine__ = 'duk'; ";
+
+// Note: Array.prototype.map() is required to support 'this' binding
+// other than an array (arguments object here).
 var NODEJS_HEADER =
-    "this.__engine__ = 'v8';\n" +
-    "function print() {\n" +
-    "    // Note: Array.prototype.map() is required to support 'this' binding\n" +
-    "    // other than an array (arguments object here).\n" +
-    "    var tmp = Array.prototype.map.call(arguments, function (x) { return String(x); });\n" +
-    "    var msg = tmp.join(' ') + '\\n';\n" +
-    "    process.stdout.write(msg);\n" +
-    "}\n\n";
+    "this.__engine__ = 'v8'; " +
+    "function print() {" +
+    " var tmp = Array.prototype.map.call(arguments, function (x) { return String(x); });" +
+    " var msg = tmp.join(' ') + '\\n';" +
+    " process.stdout.write(msg);" +
+    " } ";
 
 var RHINO_HEADER =
-    "this.__engine__ = 'rhino';\n\n";
+    "this.__engine__ = 'rhino'; ";
 
 var SMJS_HEADER =
-    "this.__engine__ = 'smjs';\n\n";
+    "this.__engine__ = 'smjs'; ";
 
 function findTestCasesSync(argList) {
     var found = {};
