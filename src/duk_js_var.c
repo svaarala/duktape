@@ -98,6 +98,13 @@ static void increase_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunctio
 	}
 }
 
+/* Push a new closure on the stack.
+ *
+ * Note: if fun_temp has NEWENV, i.e. a new lexical and variable
+ * declaration is created when the function is called, only
+ * outer_lex_env matters (outer_var_env is ignored and may or
+ * may not be same as outer_lex_env).
+ */
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
@@ -207,17 +214,14 @@ void duk_js_push_closure(duk_hthread *thr,
 			 *  in an intermediate environment record.  The "outer"
 			 *  lexical/variable environment will thus be:
 			 *
-			 *  a) { funcname: <func>, _prototype: outer_var_env }
-			 *  b) { funcname: <func>, _prototype:  <globalenv> }  (if outer_var_env missing)
-			 *
-			 *  For named function expressions outer_var_env == outer_lex_env.
+			 *  a) { funcname: <func>, _prototype: outer_lex_env }
+			 *  b) { funcname: <func>, _prototype:  <globalenv> }  (if outer_lex_env missing)
 			 */
 
-			DUK_ASSERT(outer_var_env == outer_lex_env);
 			DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_NAME));  /* required if NAMEBINDING set */
 
-			if (outer_var_env) {
-				proto = outer_var_env;
+			if (outer_lex_env) {
+				proto = outer_lex_env;
 			} else {
 				proto = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 			}
@@ -240,7 +244,9 @@ void duk_js_push_closure(duk_hthread *thr,
 			/* [ ... closure template env ] */
 
 			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
-			/* since outer_var_env == outer_lex_env, never define DUK_STRIDX_INT_VARENV */
+			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
+			 * will be ignored anyway
+			 */
 
 			/* [ ... closure template ] */
 		} else {
@@ -248,16 +254,13 @@ void duk_js_push_closure(duk_hthread *thr,
 			 *  Other cases (function declaration, anonymous function expression,
 			 *  strict direct eval code).  The "outer" environment will be whatever
 			 *  the caller gave us.
-			 *
-			 *  Here, too, outer_var_env == outer_lex_env.
 			 */
-
-			/* FIXME: code is same as !NEWENV code below; also, varenv == lexenv always? */
-
-			DUK_ASSERT(outer_var_env == outer_lex_env);
 
 			duk_push_hobject(ctx, outer_lex_env);  /* -> [ ... closure template env ] */
 			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
+			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
+			 * will be ignored anyway
+			 */
 
 			/* [ ... closure template ] */
 		}

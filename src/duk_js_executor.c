@@ -1972,6 +1972,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_ASSERT(act->var_env != NULL);
 			DUK_ASSERT(act->lex_env != NULL);
 
+			/* functions always have a NEWENV flag, i.e. they get a
+			 * new variable declaration environment, so only lex_env
+			 * matters here.
+			 */
 			duk_js_push_closure(thr,
 			                    (duk_hcompiledfunction *) fun_temp,
 			                    act->var_env,

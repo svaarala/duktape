@@ -59,6 +59,10 @@ int duk_builtin_function_constructor(duk_context *ctx) {
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
 
+	/* only outer_lex_env matters, as functions always get a new
+	 * variable declaration environment.
+	 */
+
 	outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 
