@@ -67,30 +67,43 @@
  *  Union to access IEEE double memory representation
  */
 
-/* FIXME: OSX/Darwin temporary workaround */
+/* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
+ * and __FLOAT_WORD_ORDER or resort to GCC/ARM specifics.  Improve the
+ * detection code and perhaps allow some compiler define to override the
+ * detection for unhandled cases.
+ */
+
 #ifdef __APPLE__
 #include <architecture/byte_order.h>
 #else
 #include <endian.h>
 #endif
 
+#include <limits.h>
+#include <sys/param.h>
+
 /* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
-#if defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)
-#if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN)
+#if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
+    (defined(__LITTLE_ENDIAN__))
+#if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
+    (defined(__GNUC__) && !defined(__arm__))
 #define _USE_LE_VARIANT 1
-#elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)
+#elif (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
+      (defined(__GNUC__) && defined(__arm__))
 #define _USE_ME_VARIANT 1
 #else
-#error unsupported: __BYTE_ORDER == __LITTLE_ENDIAN but __FLOAT_WORD_ORDER != __LITTLE_ENDIAN or __BIG_ENDIAN (ARM order)
+#error unsupported: byte order is little endian but cannot determine float word order
 #endif
-#elif defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)
-#if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)
+#elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)) || \
+      (defined(__BIG_ENDIAN__))
+#if (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
+    (defined(__GNUC__) && !defined(__arm__))
 #define _USE_BE_VARIANT 1
 #else
-#error unsupported: __BYTE_ORDER == __BIG_ENDIAN but __FLOAT_WORD_ORDER != __BIG_ENDIAN
+#error unsupported: byte order is big endian but cannot determine float word order
 #endif
 #else
-#error unsupported: __BYTE_ORDER != __LITTLE_ENDIAN and __BYTE_ORDER != __BIG_ENDIAN
+#error unsupported: cannot determine byte order
 #endif
 
 #if !defined(_USE_LE_VARIANT) && !defined(_USE_ME_VARIANT) && !defined(_USE_BE_VARIANT)
@@ -195,8 +208,6 @@ typedef union duk_double_union duk_double_union;
     (defined(UINT_MAX) && (UINT_MAX != 4294967295))
 #error packed representation not supported if: __WORDSIZE != 32, UINT_MAX != 4294967295
 #endif
-
-#include <limits.h>
 
 /* Use a union for bit manipulation to minimize aliasing issues in practice.
  * The C99 standard does not guarantee that this should work, but it's a very
