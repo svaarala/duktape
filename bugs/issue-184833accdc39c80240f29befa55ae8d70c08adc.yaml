@@ -12,8 +12,8 @@ type: :task
 component: duk
 release: v0.5
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-03-15 21:30:22.339406 Z
 references: []
 
@@ -36,3 +36,7 @@ log_events:
     There are still a lot sprintf/snprintf/vsnprintf dependencies in the
     implementation -- however, these are only for formatting strings and
     integers, no floats or doubles now.
+- - 2013-05-16 19:53:13.223885 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
+  - ""
