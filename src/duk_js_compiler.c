@@ -4001,6 +4001,7 @@ static void parse_for_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 				}
 				DUK_DDDPRINT("variant 2 has another variable initializer");
 
+				advance(comp_ctx);  /* eat comma */
 				parse_variable_declaration(comp_ctx, res, EXPR_FLAG_REJECT_IN, &reg_varname, &reg_varbind);
 			}
 			goto parse_1_or_2;
