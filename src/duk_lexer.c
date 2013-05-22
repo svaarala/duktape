@@ -1521,8 +1521,11 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 			}
 		} else if (!duk_unicode_is_identifier_part(y) ||
 		           y == DUK_UNICODE_CP_ZWNJ ||
-		           y == DUK_UNICODE_CP_ZWJ) {
-			/* IdentityEscape */
+		           y == DUK_UNICODE_CP_ZWJ ||
+		           y == '$') {
+			/* IdentityEscape, with dollar added as a valid additional
+			 * non-standard escape (see test-regexp-identity-escape-dollar.js).
+			 */
 			out_token->num = y;
 		} else {
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
