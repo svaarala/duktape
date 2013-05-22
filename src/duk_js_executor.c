@@ -2851,7 +2851,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					duk_pop_2(ctx);
 				} else {
 					/* unresolvable, no stack changes */
-					duk_push_undefined(ctx);
+					duk_push_hstring_stridx(ctx, DUK_STRIDX_UNDEFINED);
 					duk_replace(ctx, b);
 				}
 
