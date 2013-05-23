@@ -1,5 +1,6 @@
 /*===
-SyntaxError
+object
+object $
 object
 object $
 ===*/
@@ -25,6 +26,9 @@ object $
  * This is a bit problematic for practical regular expressions: since a '$'
  * has a special meaning, a literal dollar sign needs to be expressed as a
  * numeric character escape which is quite awkward.
+ *
+ * Real world code seems to contain these '\$' escapes, so the current
+ * expectation is to allow them.
  */
 
 function invalidDollarEscape() {
