@@ -797,9 +797,16 @@ int duk_builtin_array_prototype_slice(duk_context *ctx) {
 	if (start < 0) {
 		start = len + start;
 	}
-	end = duk_to_int_clamped(ctx, 1, -len, len);
-	if (end < 0) {
-		end = len + end;
+	/* FIXME: could duk_is_undefined() provide defaulting undefined to 'len'
+	 * (the upper limit)?
+	 */
+	if (duk_is_undefined(ctx, 1)) {
+		end = len;
+	} else {
+		end = duk_to_int_clamped(ctx, 1, -len, len);
+		if (end < 0) {
+			end = len + end;
+		}
 	}
 	DUK_ASSERT(start >= 0 && start <= len);
 	DUK_ASSERT(end >= 0 && end <= len);
