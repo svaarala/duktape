@@ -24,8 +24,10 @@
 #ifndef DUK_API_H_INCLUDED
 #define DUK_API_H_INCLUDED
 
-#include <limits.h>  /* MIN_INT */
+#include <limits.h>  /* INT_MIN */
 #include <stdarg.h>  /* va_list etc */
+#include <stdlib.h>
+#include <stddef.h>
 
 /*
  *  Typedefs; avoid all dependencies on internal types
@@ -101,6 +103,7 @@ struct duk_memory_functions {
 #define  DUK_TYPECHAR_INTEGER    'i'
 #define  DUK_TYPECHAR_STRING     's'
 #define  DUK_TYPECHAR_LSTRING    'l'
+/* FIXME: buffer */
 #define  DUK_TYPECHAR_POINTER    'p'
 #define  DUK_TYPECHAR_SKIP       '-'
 
@@ -284,6 +287,8 @@ void duk_pop_3(duk_context *ctx);  /* shortcut */
 int duk_get_type(duk_context *ctx, int index);                   /* returns one of DUK_TYPE_xxx, DUK_TYPE_NONE for invalid index */
 int duk_get_type_mask(duk_context *ctx, int index);              /* returns one of DUK_TYPE_MASK_xxx, DUK_TYPE_MASK_NONE for invalid index */
 
+/* FIXME: duk_match_type_mask(duk_context *ctx, int index, int mask) ? */
+
 int duk_is_undefined(duk_context *ctx, int index);
 int duk_is_null(duk_context *ctx, int index);
 int duk_is_null_or_undefined(duk_context *ctx, int index);       /* useful in Ecmascript, similar to 'x == null' which also matches undefined */
@@ -320,7 +325,7 @@ int duk_get_boolean(duk_context *ctx, int index);                        /* defa
 double duk_get_number(duk_context *ctx, int index);                      /* default: NaN */
 int duk_get_int(duk_context *ctx, int index);                            /* default: 0, truncated using E5 Section 9.4 */
 const char *duk_get_string(duk_context *ctx, int index);                 /* default: NULL */
-const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len); /* default: NULL (lua uses lstring), out_len may be NULL */
+const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len); /* default: NULL, out_len may be NULL */
 void *duk_get_buffer(duk_context *ctx, int index, size_t *out_size);     /* default: NULL, out_size may be NULL */
 void *duk_get_pointer(duk_context *ctx, int index);                      /* default: NULL */
 void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...);
@@ -380,7 +385,11 @@ void duk_base64_decode(duk_context *ctx, int index);
 void duk_hex_decode(duk_context *ctx, int index);
 void duk_hex_encode(duk_context *ctx, int index);
 
-/* XXX: duk_to_json */
+/* XXX: duk_to_json in place, return const char *, would be
+ * nice for printing.
+ */
+const char *duk_json_encode(duk_context *ctx, int index);
+void duk_json_decode(duk_context *ctx, int index);
 
 /*
  *  Buffer
@@ -543,12 +552,11 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-/* FIXME: flags, such as "strict"? */
 /* FIXME: helper for protected eval, duk_peval()? */
 /* FIXME: global program -> through compile flags? */
 
-int duk_eval(duk_context *ctx);                           /* [code] -> [retval] (may throw error) */
-int duk_compile(duk_context *ctx);                        /* [code] -> [func] (may throw error) */
+void duk_eval(duk_context *ctx, int flags);                /* [code] -> [retval] (may throw error) */
+void duk_compile(duk_context *ctx, int flags);             /* [code] -> [func] (may throw error) */
 
 #endif  /* DUK_API_H_INCLUDED */
 
