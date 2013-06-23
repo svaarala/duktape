@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a dll makefile example to distributable source
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-06-23 19:03:46.673060 Z
+references: []
+
+id: df0376157b92d2cc188e976c1f7697d5fbb10926
+log_events: 
+- - 2013-06-23 19:03:46.870091 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
