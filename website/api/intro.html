@@ -1,6 +1,8 @@
 <hr> <!-- this improves readability on e.g. elinks and w3m -->
 <h2 id="introduction">Introduction</h2>
 
+<h3>Document scope</h3>
+
 <p>The Duktape API (defined in <tt>duk_api.h</tt>) is a relatively stable
 set of constants and API calls which allows C/C++ programs to interface
 with Ecmascript code and shields them from internal details like value
@@ -11,7 +13,27 @@ representation.
 its core concepts.  If you're new to Duktape, please read the
 <a href="guide.html">Duktape Programmer's Guide</a> first.</p>
 
-<p>Minimal Duktape program:</p>
+<h3>Searching for functions using browser search</h3>
+
+<p>You can use browser search (typically CTRL-F) to search for
+function definitions by prepending a dot to the search term.  For instance,
+use ".duk_example_func" to look for <tt>duk_example_func()</tt>.  In most
+browsers only the actual section defining the function should be found.</p>
+
+<h3>API safety</h3>
+
+<p>As a general rule, API calls check all their parameters and tolerate
+<tt>NULL</tt> arguments and invalid value stack indices without unsafe
+behavior (crashes).</p>
+
+<p>One major exception is the Duktape context argument, <tt>ctx</tt>.
+Unless stated otherwise, it is not checked and is required to be
+non-<tt>NULL</tt> or unsafe behavior may occur.  This is the case
+because explicit checks for the argument would increase code footprint
+for little practical gain.</p>
+
+<h3>Minimal Duktape program</h3>
+
 <pre class="c-code">
 #include "duk_api.h"
 
@@ -25,11 +47,4 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 </pre>
-
-<div class="tip">
-<p>You can use browser search (typically CTRL-F) to search for
-function definitions by prepending a dot to the search term.  For instance,
-use ".duk_example_func" to look for <tt>duk_example_func()</tt>.  In most
-browsers only the actual section defining the function should be found.</p>
-</div>
 

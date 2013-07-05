@@ -1,0 +1,39 @@
+=proto
+const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
+
+=stack
+[ ... ] -> [ ... str! ]
+
+=summary
+<p>Format a string like <tt>vsprintf()</tt> (but safely) and push the result
+value to the value stack.  Returns a non-<tt>NULL</tt> pointer to the
+resulting string.</p>
+
+<p>If <tt>fmt</tt> is <tt>NULL</tt>, an empty string is pushed to the stack
+and a non-<tt>NULL</tt> pointer to an empty string is returned (this
+behavior mimics what <tt>vsprintf()</tt> does for a <tt>NULL</tt> format
+string, at least on Linux).  The returned pointer can be dereferenced and a
+NUL terminator character is guaranteed.</p>
+
+<p>Unlike <tt>vsprintf()</tt> the string formatting is safe.  Concretely,
+the implementation will try increasing temporary buffer sizes until a
+large enough buffer is found for the temporary formatted value.</p>
+
+<div class="note">
+<p>The <tt>ap</tt> argument cannot be safely reused for multiple calls.
+This is a limitation of the vararg mechanism.</p>
+</div>
+
+=example
+void test_vsprintf(duk_context *ctx, ...) {
+    va_list ap;
+
+    va_start(ap, ctx);
+    duk_push_vsprintf(ctx, "test: %d+%d=%d", ap);
+    va_end(ap);
+}
+
+void test(duk_context *ctx) {
+    test_vsprintf(ctx, 2, 3, 5);
+}
+

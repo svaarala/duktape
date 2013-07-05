@@ -1,0 +1,12 @@
+=proto
+void duk_push_null(duk_context *ctx);
+
+=stack
+[ ... ] -> [ ... null! ]
+
+=summary
+<p>Push <tt>null</tt> to the stack.</p>
+
+=example
+duk_push_null(ctx);
+

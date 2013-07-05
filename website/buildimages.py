@@ -8,7 +8,7 @@
 import base64
 
 if __name__ == '__main__':
-	for image in [ 'bg-c.png', 'bg-ecmascript.png' ]:
+	for image in [ 'bg-c.png', 'bg-ecmascript.png', 'bg-c-2.png', 'bg-ecmascript-2.png' ]:
 		f = open(image, 'rb')
 		data = f.read()
 		f.close()

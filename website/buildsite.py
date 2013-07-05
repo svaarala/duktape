@@ -319,6 +319,7 @@ def generateApiDoc(apidocdir):
 		if os.path.splitext(filename)[1] == '.txt':
 			apifiles.append(filename)
 	apifiles.sort()
+	print(apifiles)
 
 	# nav
 
@@ -365,7 +366,6 @@ def generateApiDoc(apidocdir):
 			print repr(data)
 			print 'FAIL: ' + repr(filename)
 			raise
-		res += data
 
 	res += [ '<hr>' ]
 
@@ -396,7 +396,6 @@ def generateFrontPage():
 
 def generateGuide():
 	templ_soup = validateAndParseHtml(readFile('template.html'))
-	front_soup = validateAndParseHtml(readFile('guide/guide.html'))
 
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
@@ -422,7 +421,9 @@ def generateGuide():
 	res = []
 	res += [ '<h1 class="main-title">Duktape Programmer\'s Guide</h1>' ]
 
-	res += processRawDoc('guide/guide.html')  # FIXME
+	# FIXME
+	res += processRawDoc('guide/intro.html')
+	res += processRawDoc('guide/limitations.html')
 
 	res += [ '<hr>' ]
 	content_soup = validateAndParseHtml('\n'.join(res))

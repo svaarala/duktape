@@ -1,0 +1,14 @@
+=proto
+void duk_push_int(duk_context *ctx, int val);
+
+=stack
+[ ... ] -> [ ... val! ]
+
+=summary
+<p>Convert <tt>val</tt> to an IEEE double and push it to the stack.</p>
+
+<p>This is a shorthand for calling
+<tt><a href="#duk_push_number">duk_push_number(ctx, (double) val)</a></tt>.</p>
+
+=example
+duk_push_int(ctx, 123);
