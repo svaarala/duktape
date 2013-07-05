@@ -1,0 +1,25 @@
+<h2 id="structsandtypedefs">Structs and typedefs</h2>
+
+<pre class="c-code">
+struct duk_memory_functions;
+
+typedef void duk_context;
+typedef struct duk_memory_functions duk_memory_functions;
+
+typedef int (*duk_c_function)(duk_context *ctx);
+typedef void *(*duk_alloc_function) (void *udata, size_t size);
+typedef void *(*duk_realloc_function) (void *udata, void *ptr, size_t size);
+typedef void (*duk_free_function) (void *udata, void *ptr);
+typedef void (*duk_fatal_function) (duk_context *ctx, int code);
+typedef void (*duk_decode_char_function) (void *udata, int codepoint);
+typedef int (*duk_map_char_function) (void *udata, int codepoint);
+typedef int (*duk_safe_call_function) (duk_context *ctx);
+
+struct duk_memory_functions {
+        duk_alloc_function alloc;
+        duk_realloc_function realloc;
+        duk_free_function free;
+        void *udata;
+};
+</pre>
+

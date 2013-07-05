@@ -1,0 +1,84 @@
+<div id="front-blurp">
+
+<h1 class="main-title">Duktape</h1>
+
+<p>Duktape is an <b>embeddable Javascript</b> (Ecmascript E5/E5.1) engine,
+with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
+
+<p>Duktape is easy to integrate into a C/C++ project: add a set of C
+files to your build script.  It's also easy to call Ecmascript functions
+from C code and vice versa.</p> 
+
+<p>Main features:</p>
+<ul>
+<li>Embeddable, portable, compact</li>
+<li>Ecmascript E5/E5.1 compliant</li>
+<li>Built-in regular expression engine</li>
+<li>Built-in Unicode support</li>
+<li>Minimal platform dependencies</li>
+<li>Combined reference counting and mark-and-sweep garbage collection</li>
+<li>Liberal license</li>
+</ul>
+
+<div class="fixme">Clean up.</div>
+
+</div>  <!-- front-blurp -->
+
+<div id="front-steps">
+
+<h2><span class="step">1</span> Add to build</h2>
+
+<p>Add Duktape C sources and headers to your build.  Any build system can
+be used.  The distributable contains an example Makefile for reference.</p>
+
+<h2><span class="step">2</span> Initialize a context</h2>
+
+<p>Initialize and use Duktape somewhere in your program:</p>
+
+<pre class="c-code">
+#include &quot;duk_api.h&quot;
+
+duk_context *ctx = duk_create_heap_default();
+duk_push_string(ctx, "print('Hello world from Javascript!');");
+duk_eval(ctx);
+duk_destroy_heap(ctx);
+</pre>
+
+<h2><span class="step">3</span> Add C function bindings</h2>
+
+<p>To call a C function from Ecmascript code, first declare your
+C function:</p>
+
+<pre class="c-code">
+int my_adder(duk_context *ctx) {
+    int i;
+    int n = duk_get_top(ctx);  /* number of args */
+    double res = 0.0;
+
+    for (i = 0; i &lt; n; i++) {
+        res += duk_to_number(ctx, i);
+    }
+
+    duk_push_number(ctx, res);
+    return 1;  /* one return value */
+}
+</pre>
+
+<p>Register your function e.g. into the global object:</p>
+
+<pre class="c-code">
+duk_push_global_object(ctx);
+duk_push_new_c_function(ctx, my_adder, DUK_VARARGS);
+duk_put_prop_string(ctx, -2, "myAdder");
+duk_pop(ctx);  /* pop global */
+</pre>
+
+<p>You can then call your function from Ecmascript code:</p>
+
+<pre class="c-code">
+duk_eval(ctx, "print('2+3 is', myAdder(2, 3));");
+duk_pop(ctx);  /* pop eval result */
+</pre>
+
+</div>  <!-- front-steps -->
+

@@ -1,0 +1,116 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="concepts">Concepts</h2>
+
+<h3>Heap</h3>
+
+<p>A single region for garbage collection.  Shared by one or more
+contexts.</p>
+
+<h3>Context</h3>
+
+<p>A handle used in the Duktape API, associated with a Duktape thread
+(coroutine) and its call and value stacks.</p>
+
+<h3>Call stack (of a context)</h3>
+
+<p>Book-keeping of the active function call chain in a context.
+Includes both Ecmascript and Duktape/C function calls.</p>
+
+<h3>Value stack (of a context)</h3>
+
+<p>Book-keeping of tagged values belonging to current activations
+in a context's call stack.</p>
+
+<p>The values kept in a value stack are traditional tagged <a href="#stack-type">types</a>.
+Stack entries are indexed either from the bottom or from the top of the
+most recent function call.
+</p>
+
+<h3>Value stack index</h3>
+
+<p>Non-negative (&gt;= 0) indices refer to stack entries in the
+current stack frame, relative to the frame bottom:</p>
+
+<pre class="stack">
+[ 0 1 2 3 4 5! ]
+</pre>
+
+<p>Negative (&lt; 0) indices refer to stack entries relative to the top:</p>
+
+<pre class="stack">
+[ -6 -5 -4 -3 -2 -1! ]
+</pre>
+
+<p>The special constant <tt>DUK_INVALID_INDEX</tt> is a negative integer
+which denotes an invalid stack index.  It can be returned from API calls
+and can also be given to API calls to indicate a "no value".</p>
+
+<p>The <i>value stack top</i> (or just "top") is the non-negative index of
+an imaginary element just above the highest used index.  For instance, above
+the highest used index is 5, so the stack top is 6.  The top indicates the
+current stack size, and is also the index of the next element pushed to the
+stack.</p>
+
+<pre class="stack">
+[ 0 1 2 3 4 5! 6? ]
+</pre>
+
+<div class="note">
+<p>API stack operations are always confined to the current stack frame.
+There is no way to refer to stack entries below the current frame.  This
+is intentional, as it protects functions in the call stack from affecting
+each other's values.</p>
+</div>
+
+<h3 id="stack-type">Stack type</h3>
+
+<div class="table-wrap">
+<table>
+<tr class="header"><th>Type</th><th>Type constant</th><th>Type mask constant</th><th>Description</th><th>Heap alloc</th></tr>
+<tr><td>(none)</td><td>DUK_TYPE_NONE</td><td>DUK_TYPE_MASK_NONE</td><td>no type (missing value, invalid index, etc)</td><td>no</td></tr>
+<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><tt>undefined</tt></td><td>no</td></tr>
+<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><tt>null</tt></td><td>no</td></tr>
+<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><tt>true</tt> and <tt>false</tt></td><td>no</td></tr>
+<tr><td>number</td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td><td>no</td></tr>
+<tr><td>string</td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable string</td><td>yes</td></tr>
+<tr><td>object</td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td><td>yes</td></tr>
+<tr><td>buffer</td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable byte buffer, fixed/dynamic</td><td>yes</td></tr>
+<tr><td>pointer</td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td><td>no</td></tr>
+</table>
+</div>
+
+<p>The "Heap alloc" column indicates whether the tagged value points to
+a heap allocated object with possibly additional allocations (like object
+property table).</p>
+
+<h3>Stack type mask</h3>
+
+<p>Each stack type has a bit index which allows a set of stack types to be
+represented as a bit mask.  Calling code can use such bit sets to e.g. check
+whether or not a certain stack value belongs to a set of types.  Example:</p>
+
+<pre class="c-code">
+if (duk_get_type_mask(ctx, -3) &amp; (DUK_TYPE_MASK_NUMBER |
+                                  DUK_TYPE_MASK_STRING |
+                                  DUK_TYPE_MASK_OBJECT)) {
+    printf("type is number, string, or object\n");
+}
+</pre>
+
+<div class="fixme">
+Add duk_check_type_mask() to shortcut above use case?
+</div>
+
+<h3>Array index</h3>
+
+<p>Ecmascript object and array keys can only be strings; this includes
+array indices (0, 1, 2, ...) which are expressed as canonical string
+representations ("0", "1", "2", ...) of the respective numbers for all
+integers in the range [0, 2**32-1].  Conceptually any key used in a
+property lookup is first coerced to a string, so that <tt>obj[123]</tt>
+is really just a shorthand for <tt>obj["123"]</tt>.</p>
+
+<p>Duktape tries to avoid explicit number-to-string conversions for array
+accesses whenever possible, so it is preferable to use numeric array
+indices in both Ecmascript code and C code using the Duktape API.</p>
+

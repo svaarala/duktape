@@ -1,0 +1,33 @@
+#site-bottom {
+	clear: both;
+	width: 100%;
+	padding: 20px 0px 20px 0px;
+	border: 0;
+	margin: 10ex 0px 0px 0px;
+	background: #eeeeee;
+	color: #888888;
+	font-size: 10pt;
+}
+@media print {
+	#site-bottom {
+		font-size: 8pt;
+	}
+}
+
+#site-bottom p {
+	color: #888888;
+	text-align: center;
+}
+#site-bottom a {
+	color: #8888dd;
+	text-decoration: none;
+}
+#site-bottom a:visited {
+	color: #8888dd;
+	text-decoration: none;
+}
+#site-bottom a:hover {
+	color: #4444dd;
+	text-decoration: underline;
+}
+

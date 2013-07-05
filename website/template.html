@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html class="wf-nojavascript">
+<head>
+<script>
+// allows non-javascript browsers to render with fallback fonts
+document.getElementsByTagName("html")[0].className = "";
+/*
+  WebFont.load({
+    google: {
+      families: ['Open Sans', 'Droid Sans Mono']
+    }
+  });
+*/
+// link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'
+// link href='http://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'
+
+WebFontConfig = {
+    google: {
+      families: ['Open Sans', 'Droid Sans Mono']
+    }
+};
+
+// http://kevindew.me/post/47052453532/a-fallback-for-when-google-web-font-loader-fails
+(function() {
+    var wf = document.createElement('script');
+    wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+        '://ajax.googleapis.com/ajax/libs/webfont/1.4.2/webfont.js';
+    wf.type = 'text/javascript';
+    wf.async = 'true';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(wf, s);
+    setTimeout(function() {
+        if (!("WebFont" in window)) {
+            document.getElementsByTagName("html")[0].className += " wf-fail";
+        }
+    }, 1000);
+})();
+</script>
+
+<!--<link href="reset.css" rel="stylesheet" type="text/css">-->
+<link href="style.css" rel="stylesheet" type="text/css">
+<!--<link href="highlight.css" rel="stylesheet" type="text/css">-->
+<title id="template-title"></title>
+</head>
+<body>
+<div id="site-top">
+<div id="site-top-logo">
+<h1 id="logo">((o) Duktape</h1>
+</div>  <!-- site-top-logo -->
+<div id="site-top-nav">
+<ul>
+<li>Home</li>
+<li>Download</li>
+<li class="selected">API</li>
+<li>Guide</li>
+</ul>
+</div>  <!-- site-top-nav -->
+</div>  <!-- site-top -->
+<div id="site-middle">
+<div id="site-middle-nav">
+</div>  <!-- site-middle-nav -->
+<div id="site-middle-content">
+</div>  <!-- site-middle-content -->
+</div>  <!-- site-middle -->
+<div id="site-bottom">
+<p>Duktape is (C) Sami Vaarala and licensed under the
+<a href="http://opensource.org/licenses/MIT">MIT</a>
+license.</p>
+</div>  <!-- site-bottom -->
+
+</body>
+</html>
+

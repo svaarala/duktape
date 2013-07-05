@@ -1,0 +1,35 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="introduction">Introduction</h2>
+
+<p>The Duktape API (defined in <tt>duk_api.h</tt>) is a relatively stable
+set of constants and API calls which allows C/C++ programs to interface
+with Ecmascript code and shields them from internal details like value
+representation.
+</p>
+
+<p>This document provides a concise reference for the Duktape API and
+its core concepts.  If you're new to Duktape, please read the
+<a href="guide.html">Duktape Programmer's Guide</a> first.</p>
+
+<p>Minimal Duktape program:</p>
+<pre class="c-code">
+#include "duk_api.h"
+
+int main(int argc, char *argv[]) {
+    duk_context *ctx = duk_create_heap_default(ctx);
+    if (ctx) {
+        duk_push_string(ctx, "print('Hello world from Javascript!');");
+        duk_eval(ctx);
+        duk_destroy_heap(ctx);
+    }
+    return 0;
+}
+</pre>
+
+<div class="tip">
+<p>You can use browser search (typically CTRL-F) to search for
+function definitions by prepending a dot to the search term.  For instance,
+use ".duk_example_func" to look for <tt>duk_example_func()</tt>.  In most
+browsers only the actual section defining the function should be found.</p>
+</div>
+

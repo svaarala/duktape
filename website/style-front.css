@@ -1,0 +1,61 @@
+#front-steps {
+	width: 45%;
+	float: right;
+	background: #fcfcfc;
+	border: 2px solid black;
+	box-shadow: 3px 3px 5px #bbbbbb;
+	margin: 0 1em 1em 0;
+	padding: 1em;
+	border-radius: 1em;
+}
+
+#front-steps .step {
+	font-weight: bold;
+	margin-right: 0.5em;
+	color: #ffffff;
+	font-size: 24pt;
+
+	text-shadow: 0px 0px 6px #000000;
+	filter: dropshadow(color=#000000, offx=2, offy=2);
+}
+
+#front-steps pre {
+	font-size: 80%;
+}
+
+#front-blurp {
+	width: 45%;
+	float: left;
+	margin: 0 0 1em 1em;
+}
+
+#front-blurp p {
+	font-size: 16pt;
+}
+#front-blurp b {
+	font-size: 16pt;
+}
+
+@media screen and (max-width:800px) {
+	#front-steps {
+		float: none;
+		width: auto;
+		margin: 0 1em 1em 1em;
+	}
+	#front-blurp {
+		float: none;
+		width: auto;
+		margin: 0 1em 4em 1em;  /* extra bottom margin: space before steps */
+	}
+}
+
+#front-blurp ul {
+	margin-top: 2ex;
+	font-size: 16pt;
+}
+
+#front-blurp ul li {
+	margin-top: 1.5ex;
+	font-size: 16pt;
+}
+

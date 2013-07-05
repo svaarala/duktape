@@ -1,0 +1,349 @@
+/* The 'content' class can be applied to any element which wants to get
+ * styling for "main content".
+ */
+
+/*
+ *  Common headings, text styles etc
+ */
+
+.content h1 {
+	font-size: 24pt;
+	margin: 4ex 0 2ex 0;
+	color: #000000;
+	text-shadow: 1px 1px 1px #777777;
+	filter: dropshadow(color=#777777, offx=1, offy=1);
+}
+@media print {
+	.content h1 {
+		font-size: 21pt;
+		text-shadow: none;
+		filter: none;
+	}
+}
+
+/* Main title of a page is special */
+.content h1.main-title {
+	margin-top: 0;
+}
+
+.content h2 {
+	font-size: 21pt;
+	margin: 4ex 0 1ex 0;
+	padding: 0 0 1ex; 0;
+	border-bottom: 1px solid #eeeeee;
+}
+@media print {
+	.content h2 {
+		font-size: 16pt;
+	}
+}
+
+.content h2 a {
+	color: #000000;
+	text-decoration: none;
+}
+.content h2 a:visited {
+	color: #000000;
+	text-decoration: none;
+}
+.content h2 a:hover {
+	color: #222266;
+	text-decoration: none;
+}
+
+.content h3 {
+	font-size: 18pt;
+	margin: 2ex 0 1ex 0;
+	color: #6666ff;
+}
+@media print {
+	.content h3 {
+		font-size: 13pt;
+	}
+}
+
+.content p {
+	font-size: 12pt;
+	margin: 2ex 0 1ex 0;
+	line-height: 1.4;
+}
+@media print {
+	.content p {
+		font-size: 10pt;
+	}
+}
+
+.content tt {
+	font-family: 'Droid Sans Mono', sans-serif;
+}
+@media print {
+	.content tt {
+	}
+}
+
+.content b {
+	font-size: 12pt;
+	font-weight: 700;
+}
+@media print {
+	.content b {
+		font-size: 10pt;
+	}
+}
+
+.content ul {
+}
+
+.content ul li {
+	margin: 1ex 0 1ex 2em;
+	/* list-style: disc; */
+	list-style: circle;
+	list-style-position: outside;
+}
+
+.content pre {
+	overflow: auto;
+	font-family: monospace;
+	font-size: 12pt;
+	font-weight: 400;
+	line-height: 1.4;
+	background: #eeeeee;
+	border: 2px dashed #cccccc;
+	padding: 1.5ex;
+	margin: 2ex 2em 2ex 0ex;
+}
+@media print {
+	.content pre {
+		overflow: visible;
+		font-family: monospace;
+		font-size: 10pt;
+		font-weight: 400;
+		page-break-inside: avoid;
+	}
+}
+
+/* narrow layout: smaller preformatted text (tends to be quite wide) */
+@media screen and (max-width:800px) {
+	.content pre {
+		font-size: 10pt;
+	}
+}
+
+/* generated manually with buildimages.py */
+@media screen {
+	.content pre.c-code {
+		background: #eeeeee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAcCAYAAABsxO8nAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAWFAAAFhQBQCn3SgAAAAd0SU1FB90HBQ4NGqXYI04AAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAABkElEQVQ4y92Vv0vWURSHn+9rQWG8UamDRiISDdJQiBCBq85B4r8grg79AY7RXktQQ1AYbUEhioNDg4s4iBgNJhioiIrwZj4t98ZJXnvV7zt14MD5cc/nfu7lnHsLlWbIhRPi3cAjYAjoAdqBGrAOfAc+A6+B7T8VatTr6nO1ZmM5UJ+qLSpFOFoP8BG4k/yfwDQwk1hcAnqBQeBhYP8JGMlMLqtLYbdVtf8Y26gP1JWw/mVOPAvBWfXqP0CydqrfUs0R6g11PwV+qX2nAMn6WF1WJ1HHA5tXZwD5Syvp8rK8OG8fVYD7wV8pA9SW7D1gowxQNdlrZUakAuwmu7Ms0Fayq0BHGaDF4N8uAzQf/NFzYNwCCtRu9TA1ZE3tPUMjXlM31IUceBe6+0N+Ghpoi/o2F+Vgl7odwObSUJ4EckWdCuunY3I4DK/qD/WJeletphehX51IuSxf1PbjOw2kaT6tvFdbVerRvqiOpeMd1ineUd+o92Jd0eAXqQI30zweAF+BzXoLi2Z9RxWaJP8x0G/PqsRusfOQWwAAAABJRU5ErkJggg==) no-repeat right top;
+	}
+	.content pre.ecmascript-code {
+		background: #eeeeee url(data:image/png;base64,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) no-repeat right top;
+	}
+}
+
+/*
+ *  Table
+ */
+
+/* containing div.table-wrap ensures table overflow works cleanly */
+/* http://stackoverflow.com/questions/1648622/tables-overflowing-with-css-in-firefox */
+.content .table-wrap {
+	overflow: auto;
+}
+@media print {
+	.content .table-wrap {
+		overflow: visible;
+	}
+}
+
+.content table {
+	margin: 2ex 1em 2ex 1em;
+	border: none;
+}
+
+.content table tr {
+}
+
+.content table tr.header th {
+	padding-bottom: 1ex;
+}
+
+.content table tr.header {
+	border-bottom: 1px solid #cccccc;
+}
+
+.content table th {
+	padding: 0.75ex 0.75em 0.75ex 0.75em;
+	text-align: left;
+	font-weight: 700;
+}
+
+.content table td {
+	padding: 0.75ex 0.75em 0.75ex 0.75em;
+	text-align: left;
+}
+
+.content a {
+	text-decoration: none;
+	color: #4444ff;
+}
+
+.content a:visited {
+	color: #4444ff;
+}
+
+.content a:hover {
+	text-decoration: underline;
+	color: #222266;
+	text-shadow: 0px 0px 10px #7777ff;
+	filter: dropshadow(color=#9999ff, offx=1, offy=1);
+}
+
+/*
+ *  Stack
+ */
+
+.content .stack-wrapper {
+	display: block;
+}
+
+/* narrow layout: smaller font */
+@media screen and (max-width:800px) {
+	.content .stack-wrapper {
+		font-size: 10pt;
+	}
+}
+
+/* .arrow and .arrow .text have invisible borders, shadows, etc, to keep
+ * them aligned
+ */
+.content .stack-wrapper .arrow {
+	display: inline-block;  /* for "shrink-to-fit" */
+	overflow: auto;  /* clear fix */
+	width: auto;
+	background: #ffffff;
+	margin: 1ex 0.1em 1ex 0.1em;
+	border: 2px solid #ffffff;
+	border-radius: 10px;
+	box-shadow: 3px 3px 5px #ffffff;
+	padding: 1ex 0.1em 1ex 0.1em;
+	vertical-align: middle;
+}
+
+.content .stack-wrapper .arrow b {
+	float: left;
+	min-width: 1.25em;
+	background: #ffffff;
+	margin: 0.1ex 0.1em 0.1ex 0.1em;
+	border: 1px solid #ffffff;
+	border-radius: 5px;
+	box-shadow: 1px 1px 3px #ffffff;
+	padding: 0;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 24pt;
+}
+
+.content .stack-wrapper .stack {
+	display: inline-block;  /* for "shrink-to-fit" */
+	overflow: auto;  /* clear fix */
+	width: auto;
+	background: #eeeeee;
+	margin: 1ex 0px 1ex 0px;
+	border: 2px solid #888888;
+	border-radius: 10px;
+	box-shadow: 3px 3px 5px #bbbbbb;
+	padding: 1ex 1em 1ex 1em;
+	vertical-align: middle;
+}
+
+.content .stack-wrapper .stack .elem {
+	float: left;
+	min-width: 1.25em;
+	background: #cccccc;
+	margin: 0.1ex 0.1em 0.1ex 0.1em;
+	border: 1px solid #888888;
+	border-radius: 5px;
+	box-shadow: 1px 1px 3px #bbbbbb;
+	padding: 0.5ex 0.5em 0.5ex 0.5em;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.content .stack-wrapper .stack .ellipsis {
+	width: 2em;
+	text-align: center;
+}
+
+.content .stack-wrapper .stack .active {
+	background: #ffffff;
+}
+
+.content .stack-wrapper .stack .referred {
+	background: #dddddd;
+}
+
+.content .stack-wrapper .stack .ghost {
+	border-style: dashed;
+	background: #eeeeee;
+	color: #666666;
+	box-shadow: none;
+}
+
+/* orthogonal */
+.content .stack-wrapper .stack .literal {
+	font-family: monospace;
+	font-size: 12pt;
+}
+
+.content .stack-wrapper .stack .cap {
+	display: none;
+}
+
+.content .stack-wrapper .stack-comment {
+	float: right;
+	margin: 0.1ex 0.3em 0.1ex 2em;
+	padding-top: 3ex;
+	width: 20em;
+	color: #888888;
+}
+
+/*
+ *  Callouts
+ */
+
+.content .tip {
+	border: 2px solid #eeeeee;
+	background: #ffffff;
+	color: #000000;
+	padding: 1.5ex;
+	margin: 2ex 2em 2ex 0ex;
+}
+.content .tip:before {
+	content: "TIP: ";
+	font-weight: 700;
+}
+
+.content .note {
+	border: 2px solid #eeeeee;
+	background: #ffffff;
+	color: #000000;
+	padding: 1.5ex;
+	margin: 2ex 2em 2ex 0ex;
+}
+.content .note:before {
+	content: "NOTE: ";
+	font-weight: 700;
+}
+
+.content .fixme {
+	border: 2px solid red;
+	background: #000000;
+	color: #ffffff;
+	padding: 1.5ex;
+	margin: 2ex 2em 2ex 0ex;
+}
+.content .fixme:before {
+	content: "FIXME: ";
+	font-weight: 700;
+
+}
+

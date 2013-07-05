@@ -1,0 +1,57 @@
+body {  background-color: white;  }
+
+/* the color for context lines (when specified with line ranges) */
+.context {  color: gray; }
+
+.keyword { color: blue; font-weight: bold; }
+.type { color: darkgreen; }
+.usertype, .classname { color: teal; }
+.string { color: red; font-family: monospace; }
+.regexp { color: orange; }
+.specialchar { color: pink; font-family: monospace; }
+.comment { color: brown; font-style: italic; }
+.number { color: purple; }
+.preproc { color: darkblue; font-weight: bold; }
+.symbol { color: darkred; }
+.function { color: black; font-weight: bold; }
+.cbracket { color: red; }
+.todo { font-weight: bold; background-color: cyan; }
+
+/* line numbers */
+.linenum { color: black; font-family: monospace; }
+
+/* Internet related */
+.url { color: blue; text-decoration: underline; font-family: monospace; }
+
+/* other elements for ChangeLog and Log files */
+.date { color: blue; font-weight: bold; }
+.time, .file { color: darkblue; font-weight: bold; }
+.ip, .name { color: darkgreen; }
+
+/* for Prolog, Perl */
+.variable { color: darkgreen; }
+.italics { color: darkgreen; font-style: italic; }
+.bold { color: darkgreen; font-weight: bold; }
+
+/* for LaTeX */
+.underline { color: darkgreen; text-decoration: underline; }
+.fixed { color: green; font-family: monospace; }
+.argument, .optionalargument { color: darkgreen; }
+.math { color: orange; }
+.bibtex { color: blue; }
+
+/* for diffs */
+.oldfile { color: orange; }
+.newfile { color: darkgreen; }
+.difflines { color: blue; }
+
+/* for css */
+.selector { color: purple; }
+.property { color: blue; }
+.value { color: darkgreen; font-style: italic; }
+
+/* for Oz */
+.atom { color: orange; }
+.meta { font-style: italic; }
+
+
