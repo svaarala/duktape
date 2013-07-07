@@ -1,0 +1,16 @@
+=proto
+void duk_pop(duk_context *ctx);
+
+=stack
+[ ... val! ] -> [ ... ]
+
+=summary
+<p>Pop one element off the stack.  If the stack is empty, throws an error.</p>
+
+<p>To pop multiple elements, use
+<tt><a href="#duk_pop_n">duk_pop_n()</a></tt> or the shortcuts for common cases:
+<tt><a href="#duk_pop_2">duk_pop_2()</a></tt> and
+<tt><a href="#duk_pop_3">duk_pop_3()</a></tt>.</p>
+
+=example
+duk_pop(ctx);

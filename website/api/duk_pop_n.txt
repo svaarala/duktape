@@ -1,0 +1,13 @@
+=proto
+void duk_pop_n(duk_context *ctx, unsigned int count);
+
+=stack
+[ ... val1! ...! valN! ] -> [ ... ]
+
+=summary
+<p>Pop <tt>count</tt> elements off the stack.  If the stack has fewer than
+<tt>count</tt> elements, throws an error.  If <tt>count</tt> is zero, the
+call is a no-op.</p>
+
+=example
+duk_pop_n(ctx, 10);

@@ -1,0 +1,21 @@
+=proto
+void duk_concat(duk_context *ctx, unsigned int count);
+
+=stack
+[ ... val1! ...! valN! ] -> [ ... result! ]
+
+=summary
+<p>Concatenate zero or more values into a result string.  The input values
+are automatically coerced with <tt>ToString()</tt>.</p>
+
+<p>This primitive minimizes the number of intermediate string interning
+operations and is better than concatenating strings manually.</p>
+
+=example
+duk_push_string(ctx, "foo");
+duk_push_int(ctx, 123);
+duk_push_true(ctx);
+duk_concat(ctx, 3);
+
+printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo123true" */
+duk_pop(ctx);
