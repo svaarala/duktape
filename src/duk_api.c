@@ -1586,11 +1586,19 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 	duk_tval *tv_slot;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(str != NULL || len == 0);  /* if len == 0, str may be NULL */
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+	}
+
+	/* NULL with zero length represents an empty string; NULL with higher
+	 * length is also now trated like an empty string although it is
+	 * a bit dubious.  This is unlike duk_push_string() which pushes a
+	 * 'null' if the input string is a NULL.
+	 */
+	if (!str) {
+		len = 0;
 	}
 
 	h = duk_heap_string_intern_checked(thr, (duk_u8 *) str, (duk_u32) len);
@@ -1606,9 +1614,13 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 
 const char *duk_push_string(duk_context *ctx, const char *str) {
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(str != NULL);
 
-	return duk_push_lstring(ctx, str, (unsigned int) strlen(str));
+	if (str) {
+		return duk_push_lstring(ctx, str, (unsigned int) strlen(str));
+	} else {
+		duk_push_null(ctx);
+		return NULL;
+	}
 }
 
 void duk_push_pointer(duk_context *ctx, void *val) {
@@ -1806,13 +1818,21 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	const char *res;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(fmt != NULL);
+
+	/* special handling of fmt==NULL */
+	if (!fmt) {
+		duk_hstring *h_str;
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+		h_str = DUK_HTHREAD_STRING_EMPTY_STRING(thr);  /* rely on interning, must be this string */
+		return (const char *) DUK_HSTRING_GET_DATA(h_str);
+	}
 
 	/* initial estimate based on format string */
 	sz = strlen(fmt) + 10;  /* XXX: plus something to avoid just missing */
 	if (sz < DUK_PUSH_SPRINTF_INITIAL_SIZE) {
 		sz = DUK_PUSH_SPRINTF_INITIAL_SIZE;
 	}
+	DUK_ASSERT(sz > 0);
 
 	buf = duk_push_new_growable_buffer(ctx, sz);
 
@@ -1842,6 +1862,7 @@ const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...) {
 	va_list ap;
 	const char *retval;
 
+	/* allow fmt==NULL */
 	va_start(ap, fmt);
 	retval = duk_push_vsprintf(ctx, fmt, ap);
 	va_end(ap);
