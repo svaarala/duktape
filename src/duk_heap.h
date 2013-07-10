@@ -345,7 +345,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_free_function free_func,
                          void *alloc_udata,
                          duk_fatal_function fatal_func);
-duk_heap *duk_heap_alloc_default(void);
 void duk_heap_free(duk_heap *heap);
 void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr);
 

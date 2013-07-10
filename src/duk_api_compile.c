@@ -4,6 +4,8 @@
 
 #include "duk_internal.h"
 
+/* FIXME: placeholder */
+
 void duk_eval(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int comp_flags;
@@ -26,7 +28,7 @@ void duk_eval(duk_context *ctx, int flags) {
 	/* [ ... func_template closure ] */
 
 	duk_remove(ctx, -2);  /* -> [ ... closure ] */
-        duk_call(ctx, 0);     /* -> [ ... result ] */
+	duk_call(ctx, 0);     /* -> [ ... result ] */
 
 	/* [ ... result ] */
 }

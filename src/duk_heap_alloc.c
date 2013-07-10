@@ -458,12 +458,3 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	return NULL;
 }
 
-duk_heap *duk_heap_alloc_default(void) {
-	return duk_heap_alloc(duk_default_alloc_function,
-	                      duk_default_realloc_function,
-	                      duk_default_free_function,
-	                      NULL,
-	                      duk_default_fatal_handler);
-}
-
-

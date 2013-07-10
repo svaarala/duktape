@@ -164,6 +164,8 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_fatal_function fatal_handler);
 void duk_destroy_heap(duk_context *ctx);
 
+#define  duk_create_heap_default()  (duk_create_heap(NULL, NULL, NULL, NULL, NULL))
+
 /*
  *  Memory management
  *
@@ -320,6 +322,7 @@ int duk_is_thread(duk_context *ctx, int index);                  /* implies: duk
 
 int duk_is_callable(duk_context *ctx, int index);                /* currently same as duk_is_function() */
 int duk_is_dynamic(duk_context *ctx, int index);                 /* for buffer */
+int duk_is_fixed(duk_context *ctx, int index);                   /* for buffer */
 
 int duk_is_primitive(duk_context *ctx, int index);               /* E5 Section 9.1; anything but object is primitive */
 int duk_is_object_coercible(duk_context *ctx, int index);        /* E5 Section 9.10 */
