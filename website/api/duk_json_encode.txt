@@ -1,0 +1,21 @@
+=proto
+const char *duk_json_encode(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... json(val)! ... ]
+
+=summary
+<p>Encodes an arbitrary value into its JSON representation as an in-place
+operation.  Returns pointer to the resulting string for convenience.</p>
+
+=example
+duk_push_new_object(ctx);
+duk_push_int(ctx, 42);
+duk_put_prop_string(ctx, -2, "meaningOfLife");
+printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));
+duk_pop(ctx);
+
+/* Output:
+ * JSON encoded: {"meaningOfLife":42}
+ */
+
