@@ -1,0 +1,64 @@
+=proto
+duk_context *duk_create_heap(duk_alloc_function alloc_func,
+                             duk_realloc_function realloc_func,
+                             duk_free_function free_func,
+                             void *alloc_udata,
+                             duk_fatal_function fatal_handler);
+
+=summary
+<p>Create a new Duktape heap and return an initial context (thread).
+If heap initialization fails, a <tt>NULL</tt> is returned.  There is
+currently no way to obtain more detailed error information.</p>
+
+<p>The caller may provide custom memory management functions in
+<tt>alloc_func</tt>, <tt>realloc_func</tt>, and <tt>free_func</tt>;
+the pointers must either all be <tt>NULL</tt> or all be
+non-<tt>NULL</tt>.  If the pointers are <tt>NULL</tt>, default
+memory management functions (ANSI C <tt>malloc()</tt>, <tt>realloc()</tt>
+, and <tt>free()</tt>) are used.  The memory management functions
+share the same opaque userdata pointer, <tt>alloc_udata</tt>.</p>
+
+<p>A fatal error handler is provided in <tt>fatal_handler</tt>.  This
+handler is called in unrecoverable error situations such as uncaught
+errors, out-of-memory errors not resolved by garbage collection, etc.
+A caller SHOULD implement a fatal error handler in most applications.
+If not given, a default fatal error handler is used.  The default
+handler ultimately calls ANSI C <tt>exit()</tt>, which may not always
+be the preferred action.</p>
+
+<p>To create a Duktape heap with default settings, use
+<tt><a href="#duk_create_heap_default">duk_create_heap_default()</a></tt>.</p>
+
+<p>New contexts linked to the same heap can be created with
+<tt><a href="#duk_push_new_thread">duk_push_new_thread()</a></tt>.</p>
+
+=example
+/*
+ *  Simple case: use default allocation functions and fatal error handler
+ */
+
+duk_context *ctx;
+ctx = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
+if (ctx) {
+    /* success */
+} else {
+    /* error */
+}
+
+/*
+ *  Customized handlers
+ */
+
+duk_context *ctx;
+
+ctx = duk_create_heap(my_alloc, my_realloc, my_free,
+                      (void *) 0xdeadbeef, my_fatal);
+if (ctx) {
+    /* success */
+
+    /* ... after heap is no longer needed: */
+    duk_destroy_heap(ctx);
+} else {
+    /* error */
+}
+
