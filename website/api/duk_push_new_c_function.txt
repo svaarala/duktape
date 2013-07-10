@@ -1,0 +1,52 @@
+=proto
+int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs);
+
+=stack
+[ ... ] -> [ ... func! ]
+
+=summary
+<p>Push a new function object, associated with a C function, to the stack.
+The function object is an Ecmascript function object; when called, <tt>func</tt>
+will be called using the Duktape/C function interface.  Returns non-negative index
+(relative to stack bottom) of the pushed function.</p>
+
+<p>The <tt>nargs</tt> argument controls how the value stack looks like when
+<tt>func</tt> is entered:</p>
+
+<ul>
+<li>If <tt>nargs</tt> is >= 0, it indicates the exact number of arguments the
+    function expects to see; extra arguments are discarded and missing arguments
+    are filled in with <tt>undefined</tt> values.  Upon entry to the function, value
+    stack top will always match <tt>nargs</tt>.</li>
+<li>If <tt>nargs</tt> is set to <tt>DUK_VARARGS</tt>, the value stack will contain
+    actual (variable) call arguments and the function needs to check actual argument
+    count with <tt><a href="#duk_get_top">duk_get_top()</a></tt>.</li>
+</ul>
+
+=example
+int my_addtwo(duk_context *ctx) {
+    double a, b;
+
+    /* Here one can expect that duk_get_top(ctx) == 2, because nargs
+     * for duk_push_new_c_function() is 2.
+     */
+
+    a = duk_get_number(ctx, 0);
+    b = duk_get_number(ctx, 1);
+    duk_push_number(ctx, a + b);
+    return 1;   /*  1 = return value at top
+                 *  0 = return 'undefined'
+                 * <0 = throw error (use DUK_RET_xxx constants)
+                 */
+}
+
+int test(void) {
+    int func_idx;
+
+    func_idx = duk_push_new_c_function(ctx, my_addtwo, 2);
+    duk_push_int(ctx, 2);
+    duk_push_int(ctx, 3);  /* -> [ ... func 2 3 ] */
+    duk_call(ctx, 2);      /* -> [ ... res ] */
+    printf("2+3 is %d\n", duk_get_int(ctx, -1));
+    duk_pop(ctx);
+}
