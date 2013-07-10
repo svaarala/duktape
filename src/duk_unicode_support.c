@@ -603,7 +603,7 @@ int duk_unicode_is_identifier_part(int x) {
  */
 
 static int slow_case_conversion(duk_hthread *thr,
-                                duk_hbuffer_growable *buf,
+                                duk_hbuffer_dynamic *buf,
                                 int x,
                                 duk_bitdecoder_ctx *bd_ctx) {
 	int skip = 0;
@@ -696,7 +696,7 @@ static int slow_case_conversion(duk_hthread *thr,
  */
 
 static int case_transform_helper(duk_hthread *thr,
-                                 duk_hbuffer_growable *buf,
+                                 duk_hbuffer_dynamic *buf,
                                  int x,
                                  int prev,
                                  int next,
@@ -775,7 +775,7 @@ static int case_transform_helper(duk_hthread *thr,
 void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_input;
-	duk_hbuffer_growable *h_buf;
+	duk_hbuffer_dynamic *h_buf;
 	duk_u8 *p, *p_start, *p_end;
 	int prev, curr, next;
 
@@ -783,10 +783,10 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 	DUK_ASSERT(h_input != NULL);
 
 	/* FIXME: should init with a spare of at least h_input->blen? */
-	duk_push_new_growable_buffer(ctx, 0);
-	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
 	/* [ ... input buffer ] */
 

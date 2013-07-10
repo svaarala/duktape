@@ -439,7 +439,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 
 	case DUK_HTYPE_BUFFER:
 		/*
-		 *  Buffers have no internal references.  However, a growable
+		 *  Buffers have no internal references.  However, a dynamic
 		 *  buffer has a separate allocation for the buffer.  This is
 		 *  freed by duk_heap_free_heaphdr_raw().
 		 */

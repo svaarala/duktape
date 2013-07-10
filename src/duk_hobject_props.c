@@ -336,9 +336,9 @@ static void realloc_props(duk_hthread *thr,
 	/*
 	 *  Compute new alloc size and alloc new area.
 	 *
-	 *  The new area is allocated as a growable buffer and placed into
-	 *  the valstack for reachability.  The actual buffer is then detached
-	 *  at the end.
+	 *  The new area is allocated as a dynamic buffer and placed into the
+	 *  valstack for reachability.  The actual buffer is then detached at
+	 *  the end.
 	 *
 	 *  Note: heap_mark_and_sweep_base_flags are altered here to ensure
 	 *  no-one touches this object while we're resizing and rehashing it.
@@ -372,11 +372,11 @@ static void realloc_props(duk_hthread *thr,
 		 * the object we're resizing etc.
 		 */
 
-		/* Note: buffer is growable so that we can 'steal' the actual
+		/* Note: buffer is dynamic so that we can 'steal' the actual
 		 * allocation later.
 		 */
 
-		new_p = duk_push_new_growable_buffer(ctx, new_alloc_size);  /* errors out if out of memory */
+		new_p = duk_push_new_dynamic_buffer(ctx, new_alloc_size);  /* errors out if out of memory */
 		DUK_ASSERT(new_p != NULL);  /* since new_alloc_size > 0 */
 	}
 
@@ -617,19 +617,19 @@ static void realloc_props(duk_hthread *thr,
 
 	if (new_p) {
 		/*
-		 *  Detach actual buffer from growable buffer in valstack, and
+		 *  Detach actual buffer from dynamic buffer in valstack, and
 		 *  pop it from the stack.
 		 *
 		 *  XXX: the buffer object is certainly not reachable at this point,
 		 *  so it would be nice to free it forcibly even with only
 		 *  mark-and-sweep enabled.  Not a big issue though.
 		 */
-		duk_hbuffer_growable *buf;
+		duk_hbuffer_dynamic *buf;
 		DUK_ASSERT(new_alloc_size > 0);
 		DUK_ASSERT(duk_is_buffer(ctx, -1));
-		buf = (duk_hbuffer_growable *) duk_require_hbuffer(ctx, -1);
+		buf = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, -1);
 		DUK_ASSERT(buf != NULL);
-		DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(buf));
+		DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
 		buf->curr_alloc = NULL;
 		buf->size = 0;  /* these size resets are not strictly necessary, but nice for consistency */
 		buf->usable_size = 0;

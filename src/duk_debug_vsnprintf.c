@@ -596,9 +596,9 @@ static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
 		return;
 	}
 
-	if (DUK_HBUFFER_HAS_GROWABLE(h)) {
-		duk_hbuffer_growable *g = (duk_hbuffer_growable *) h;
-		duk_fb_sprintf(fb, "buffer:growable:%p:%d:%d",
+	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
+		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
+		duk_fb_sprintf(fb, "buffer:dynamic:%p:%d:%d",
 		               g->curr_alloc, g->size, g->usable_size);
 	} else {
 		duk_fb_sprintf(fb, "buffer:fixed:%d", DUK_HBUFFER_GET_SIZE(h));

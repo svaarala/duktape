@@ -48,9 +48,9 @@ static void free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
-	if (DUK_HBUFFER_HAS_GROWABLE(h)) {
-		duk_hbuffer_growable *g = (duk_hbuffer_growable *) h;
-		DUK_DDDPRINT("free growable buffer %p", g->curr_alloc);
+	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
+		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
+		DUK_DDDPRINT("free dynamic buffer %p", g->curr_alloc);
 		DUK_FREE(heap, g->curr_alloc);
 	}
 }

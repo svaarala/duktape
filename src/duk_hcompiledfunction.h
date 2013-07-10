@@ -84,7 +84,7 @@ struct duk_hcompiledfunction {
 	 *  Pointers to function data area for faster access.  Function
 	 *  data is a buffer shared between all closures of the same
 	 *  "template" function.  The data buffer is always fixed (non-
-	 *  growable, hence stable), with a layout as follows:
+	 *  dynamic, hence stable), with a layout as follows:
 	 *
 	 *    constants (duk_tval)
 	 *    inner functions (duk_hobject *)

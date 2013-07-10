@@ -162,7 +162,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		DUK_DPRINT("  nregs: %d", (int) h->nregs);
 		DUK_DPRINT("  nargs: %d", (int) h->nargs);
 
-		if (h->data && DUK_HBUFFER_HAS_GROWABLE(h->data) && DUK_HBUFFER_GET_DATA_PTR(h->data)) {
+		if (h->data && DUK_HBUFFER_HAS_DYNAMIC(h->data) && DUK_HBUFFER_GET_DATA_PTR(h->data)) {
 			DUK_DPRINT("  consts: %p (%d, %d bytes)",
 			           (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(h),
 			           (int) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h),

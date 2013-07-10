@@ -222,7 +222,7 @@ void duk_base64_decode(duk_context *ctx, int index) {
 		goto type_error;
 	}
 	dstlen = (srclen + 3) / 4 * 3;  /* upper limit */
-	dst = duk_push_new_growable_buffer(ctx, dstlen);
+	dst = duk_push_new_dynamic_buffer(ctx, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
 	ret = base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
@@ -313,5 +313,14 @@ void duk_hex_decode(duk_context *ctx, int index) {
 
  type_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "hex decode failed");
+}
+
+const char *duk_json_encode(duk_context *ctx, int index) {
+	/* FIXME */
+	return NULL;
+}
+
+void duk_json_decode(duk_context *ctx, int index) {
+	/* FIXME */
 }
 

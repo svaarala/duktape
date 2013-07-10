@@ -118,7 +118,7 @@ struct duk_compiler_func {
 	duk_hstring *h_name;                /* function name (borrowed reference), ends up in _name */
 
 	int code_idx;
-	duk_hbuffer_growable *h_code;       /* C array of duk_compiler_instr */
+	duk_hbuffer_dynamic *h_code;        /* C array of duk_compiler_instr */
 
 	int consts_idx;
 	duk_hobject *h_consts;              /* array */
@@ -137,7 +137,7 @@ struct duk_compiler_func {
 	duk_hobject *h_labelnames;          /* array of label names */
 
 	int labelinfos_idx;
-	duk_hbuffer_growable *h_labelinfos; /* C array of duk_labelinfo */
+	duk_hbuffer_dynamic *h_labelinfos;  /* C array of duk_labelinfo */
 
 	int argnames_idx;                   /* array of formal argument names (-> _formals) */
 	duk_hobject *h_argnames;

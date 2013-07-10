@@ -479,13 +479,13 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	duk_require_stack(ctx, FUNCTION_INIT_REQUIRE_SLOTS);
 
-	/* FIXME: getter for growable buffer */
+	/* FIXME: getter for dynamic buffer */
 
-	duk_push_new_growable_buffer(ctx, 0);
+	duk_push_new_dynamic_buffer(ctx, 0);
 	func->code_idx = entry_top + 0;
-	func->h_code = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, entry_top + 0);
+	func->h_code = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
 	DUK_ASSERT(func->h_code != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(func->h_code));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
 
 	duk_push_new_array(ctx);
 	func->consts_idx = entry_top + 1;
@@ -507,11 +507,11 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->h_labelnames = duk_get_hobject(ctx, entry_top + 4);
 	DUK_ASSERT(func->h_labelnames != NULL);
 
-	duk_push_new_growable_buffer(ctx, 0);
+	duk_push_new_dynamic_buffer(ctx, 0);
 	func->labelinfos_idx = entry_top + 5;
-	func->h_labelinfos = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, entry_top + 5);
+	func->h_labelinfos = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 5);
 	DUK_ASSERT(func->h_labelinfos != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(func->h_labelinfos));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_labelinfos));
 
 	duk_push_new_array(ctx);
 	func->argnames_idx = entry_top + 6;
@@ -723,8 +723,8 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	h_res->bytecode = p_instr;
 
 	/* copy bytecode instructions one at a time */
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(func->h_code));
-	q_instr = (duk_compiler_instr *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(func->h_code);
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
+	q_instr = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(func->h_code);
 	for (i = 0; i < code_count; i++) {
 		p_instr[i] = q_instr[i].ins;
 	}
@@ -901,7 +901,7 @@ static duk_compiler_instr *get_instr_ptr(duk_compiler_ctx *comp_ctx, int pc) {
 	char *p;
 	duk_compiler_instr *code_begin, *code_end;
 
-	p = (char *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(f->h_code);
+	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(f->h_code);
 	code_begin = (duk_compiler_instr *) p;
 	code_end = (duk_compiler_instr *) (p + DUK_HBUFFER_GET_SIZE(f->h_code));
 	code_end = code_end;  /* suppress warning */
@@ -916,7 +916,7 @@ static duk_compiler_instr *get_instr_ptr(duk_compiler_ctx *comp_ctx, int pc) {
  * of cases.
  */
 static void emit(duk_compiler_ctx *comp_ctx, duk_instr ins) {
-	duk_hbuffer_growable *h;
+	duk_hbuffer_dynamic *h;
 	int line;
 	duk_compiler_instr instr;
 
@@ -1023,7 +1023,7 @@ static void emit_loadint(duk_compiler_ctx *comp_ctx, int reg, int val) {
 }
 
 static void emit_jump(duk_compiler_ctx *comp_ctx, int target_pc) {
-	duk_hbuffer_growable *h;
+	duk_hbuffer_dynamic *h;
 	int curr_pc;
 	int offset;
 
@@ -1047,7 +1047,7 @@ static int emit_jump_empty(duk_compiler_ctx *comp_ctx) {
  * currently needed for compiling for-in.
  */
 static void insert_jump_empty(duk_compiler_ctx *comp_ctx, int jump_pc) {
-	duk_hbuffer_growable *h;
+	duk_hbuffer_dynamic *h;
 	int line;
 	duk_compiler_instr instr;
 	size_t offset;
@@ -1120,7 +1120,7 @@ static void emit_invalid(duk_compiler_ctx *comp_ctx) {
  */
 
 static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
-	duk_hbuffer_growable *h;
+	duk_hbuffer_dynamic *h;
 	duk_compiler_instr *bc;
 	int iter;
 	int i, n;
@@ -1128,9 +1128,9 @@ static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 
 	h = comp_ctx->curr_func.h_code;
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
 
-	bc = (duk_compiler_instr *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(h);
+	bc = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h);
 	n = DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr);
 
 	for (iter = 0; iter < DUK_COMPILER_PEEPHOLE_MAXITER; iter++) {
@@ -1821,7 +1821,7 @@ static void add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, int pc_l
 	 * of the E5 specification, see Section 12.12.
 	 */
 
-	p = (char *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	n = (size_t) (li - li_start);
@@ -1843,7 +1843,7 @@ static void add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, int pc_l
 	/* FIXME: spare handling, slow now */
 
 	/* relookup after possible realloc */
-	p = (char *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li--;
@@ -1869,7 +1869,7 @@ static void update_label_flags(duk_compiler_ctx *comp_ctx, int label_id, int fla
 	char *p;
 	duk_labelinfo *li_start, *li;
 
-	p = (char *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 
@@ -1917,7 +1917,7 @@ static void lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label
 
 	ctx = ctx;  /* suppress warning */
 
-	p = (char *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li_end = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li = li_end;
@@ -6241,7 +6241,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 
 	duk_require_stack(ctx, COMPILE_ENTRY_SLOTS);
 
-	duk_push_new_growable_buffer(ctx, 0);  /* entry_top + 0 */
+	duk_push_new_dynamic_buffer(ctx, 0);   /* entry_top + 0 */
 	duk_push_undefined(ctx);               /* entry_top + 1 */
 	duk_push_undefined(ctx);               /* entry_top + 2 */
 	duk_push_undefined(ctx);               /* entry_top + 3 */
@@ -6262,9 +6262,9 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	comp_ctx->lex.slot1_idx = comp_ctx->tok11_idx;
 	comp_ctx->lex.slot2_idx = comp_ctx->tok12_idx;
 	comp_ctx->lex.buf_idx = entry_top + 0;
-	comp_ctx->lex.buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, entry_top + 0);
+	comp_ctx->lex.buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
 	DUK_ASSERT(comp_ctx->lex.buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(comp_ctx->lex.buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf));
 
 #if 0  /* not needed */
 	memset(lex_pt, 0, sizeof(*lex_pt));

@@ -1473,7 +1473,7 @@ int duk_is_callable(duk_context *ctx, int index) {
 	                                   DUK_HOBJECT_FLAG_BOUND);
 }
 
-int duk_is_growable(duk_context *ctx, int index) {
+int duk_is_dynamic(duk_context *ctx, int index) {
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
@@ -1482,7 +1482,7 @@ int duk_is_growable(duk_context *ctx, int index) {
 	if (DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
-		return (DUK_HBUFFER_HAS_GROWABLE(h) ? 1 : 0);
+		return (DUK_HBUFFER_HAS_DYNAMIC(h) ? 1 : 0);
 	}
 	return 0;
 }
@@ -1834,7 +1834,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 	DUK_ASSERT(sz > 0);
 
-	buf = duk_push_new_growable_buffer(ctx, sz);
+	buf = duk_push_new_dynamic_buffer(ctx, sz);
 
 	for(;;) {
 		len = try_push_vsprintf(ctx, buf, sz, fmt, ap);
@@ -2143,7 +2143,7 @@ int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, .
 }
 
 /* FIXME: repetition, see duk_push_new_object */
-void *duk_push_new_buffer(duk_context *ctx, size_t size, int growable) {
+void *duk_push_new_buffer(duk_context *ctx, size_t size, int dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hbuffer *h;
@@ -2155,7 +2155,7 @@ void *duk_push_new_buffer(duk_context *ctx, size_t size, int growable) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
 	}
 
-	h = duk_hbuffer_alloc(thr->heap, size, growable);
+	h = duk_hbuffer_alloc(thr->heap, size, dynamic);
 	if (!h) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate buffer");
 	}
@@ -2172,7 +2172,7 @@ void *duk_push_new_fixed_buffer(duk_context *ctx, size_t size) {
 	return duk_push_new_buffer(ctx, size, 0);
 }
 
-void *duk_push_new_growable_buffer(duk_context *ctx, size_t size) {
+void *duk_push_new_dynamic_buffer(duk_context *ctx, size_t size) {
 	return duk_push_new_buffer(ctx, size, 1);
 }
 

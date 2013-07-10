@@ -24,7 +24,7 @@
 /* Encoding state.  Heap object references are all borrowed. */
 typedef struct {
 	duk_hthread *thr;
-	duk_hbuffer_growable *h_buf;
+	duk_hbuffer_dynamic *h_buf;
 	duk_hobject *h_replacer;     /* replacer function */
 	duk_hstring *h_gap;          /* gap (if empty string, NULL) */
 	duk_hstring *h_indent;       /* current indent (if gap is NULL, this is NULL) */

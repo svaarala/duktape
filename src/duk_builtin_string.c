@@ -39,7 +39,7 @@ int duk_builtin_string_constructor(duk_context *ctx) {
 
 int duk_builtin_string_constructor_from_char_code(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hbuffer_growable *h;
+	duk_hbuffer_dynamic *h;
 	size_t i, n;
 	unsigned int cp;
 
@@ -48,8 +48,8 @@ int duk_builtin_string_constructor_from_char_code(duk_context *ctx) {
 	 */
 
 	n = duk_get_top(ctx);
-	duk_push_new_growable_buffer(ctx, 0);  /* FIXME: initial size estimate from 'n' */
-	h = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, 0);  /* FIXME: initial size estimate from 'n' */
+	h = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 
 	for (i = 0; i < n; i++) {
 		cp = duk_to_uint16(ctx, i);
@@ -463,7 +463,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_hstring *h_match;
 	duk_hstring *h_search;
 	duk_hobject *h_re;
-	duk_hbuffer_growable *h_buf;
+	duk_hbuffer_dynamic *h_buf;
 	int is_regexp;
 	int is_global;
 	int is_repl_func;
@@ -476,8 +476,8 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_push_this_coercible_to_string(ctx);
 	h_input = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
-	duk_push_new_growable_buffer(ctx, 0);
-	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT_TOP(ctx, 4);
 

@@ -4,14 +4,14 @@
 
 #include "duk_internal.h"
 
-duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int growable) {
+duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	duk_hbuffer *res = NULL;
 	size_t alloc_size;
 
 	DUK_DDDPRINT("allocate hbuffer");
 
-	if (growable) {
-		alloc_size = sizeof(duk_hbuffer_growable);
+	if (dynamic) {
+		alloc_size = sizeof(duk_hbuffer_dynamic);
 	} else {
 		/* FIXME: maybe remove safety NUL term for buffers? */
 		alloc_size = sizeof(duk_hbuffer_fixed) + size + 1;  /* +1 for a safety nul term */
@@ -25,12 +25,12 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int growable) {
 	/* zero everything */
 	memset(res, 0, alloc_size);
 
-	if (growable) {
-		duk_hbuffer_growable *h = (duk_hbuffer_growable *) res;
+	if (dynamic) {
+		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
 		void *ptr;
 		if (size > 0) {
 			/* FIXME: maybe remove safety NUL term for buffers? */
-			DUK_DDDPRINT("growable buffer with nonzero size, alloc actual buffer");
+			DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer");
 			ptr = DUK_ALLOC(heap, size + 1);  /* +1 for a safety nul term */
 			if (!ptr) {
 				goto error;
@@ -49,8 +49,8 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int growable) {
 	res->size = size;
 
 	DUK_HEAPHDR_SET_TYPE(&res->hdr, DUK_HTYPE_BUFFER);
-	if (growable) {
-		DUK_HBUFFER_SET_GROWABLE(res);
+	if (dynamic) {
+		DUK_HBUFFER_SET_DYNAMIC(res);
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 

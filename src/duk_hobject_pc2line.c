@@ -12,7 +12,7 @@
 /* Generate pc2line data for an instruction sequence, leaving a buffer on stack top. */
 void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size_t length) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_hbuffer_growable *h_buf;
+	duk_hbuffer_dynamic *h_buf;
 	duk_bitencoder_ctx be_ctx_alloc;
 	duk_bitencoder_ctx *be_ctx = &be_ctx_alloc;
 	duk_u32 *hdr;
@@ -23,19 +23,19 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 	int curr_pc;
 	int hdr_index;
 
-	/* FIXME: add proper spare handling to growable buffer, to minimize
+	/* FIXME: add proper spare handling to dynamic buffer, to minimize
 	 * reallocs; currently there is no spare at all.
 	 */
 
 	num_header_entries = (length + DUK_PC2LINE_SKIP - 1) / DUK_PC2LINE_SKIP;
 	curr_offset = sizeof(duk_u32) + num_header_entries * sizeof(duk_u32) * 2;
 
-	duk_push_new_growable_buffer(ctx, curr_offset);
-	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, curr_offset);
+	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
-	hdr = (duk_u32 *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(h_buf);
+	hdr = (duk_u32 *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
 	DUK_ASSERT(hdr != NULL);
 	hdr[0] = (duk_u32) length;  /* valid pc range is [0, length[ */
 
@@ -44,7 +44,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 		new_size = curr_offset + DUK_PC2LINE_MAX_DIFF_LENGTH;
 		duk_hbuffer_resize(thr, h_buf, new_size, new_size);
 
-		hdr = (duk_u32 *) DUK_HBUFFER_GROWABLE_GET_CURR_DATA_PTR(h_buf);
+		hdr = (duk_u32 *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
 		DUK_ASSERT(hdr != NULL);
 		DUK_ASSERT(curr_pc < length);
 		hdr_index = 1 + (curr_pc / DUK_PC2LINE_SKIP) * 2;
@@ -130,7 +130,7 @@ duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 	int curr_line;
 
 	DUK_ASSERT(buf != NULL);
-	DUK_ASSERT(!DUK_HBUFFER_HAS_GROWABLE(buf));
+	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(buf));
 
 	hdr_index = pc / DUK_PC2LINE_SKIP;
 	pc_base = hdr_index * DUK_PC2LINE_SKIP;

@@ -742,7 +742,7 @@ static duk_u32 parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
 static void create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h;
-	duk_hbuffer_growable *buf;
+	duk_hbuffer_dynamic *buf;
 	const char *p;
 	int i, n;
 	char c_prev, c;
@@ -758,8 +758,8 @@ static void create_escaped_source(duk_hthread *thr, int idx_pattern) {
 		return;
 	}
 
-	duk_push_new_growable_buffer(ctx, 0);
-	buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, 0);
+	buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(buf != NULL);
 
 	c_prev = (char) 0;
@@ -802,7 +802,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 	duk_lexer_point lex_point;
 	duk_hstring *h_pattern;
 	duk_hstring *h_flags;
-	duk_hbuffer_growable *h_buffer;
+	duk_hbuffer_dynamic *h_buffer;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -829,9 +829,9 @@ void duk_regexp_compile(duk_hthread *thr) {
 	 *  Init compilation context
 	 */
 
-	duk_push_new_growable_buffer(ctx, 0);
-	h_buffer = (duk_hbuffer_growable *) duk_require_hbuffer(ctx, -1);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buffer));
+	duk_push_new_dynamic_buffer(ctx, 0);
+	h_buffer = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, -1);
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buffer));
 
 	/* [ ... pattern flags escaped_source buffer ] */
 

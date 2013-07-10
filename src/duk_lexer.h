@@ -398,7 +398,7 @@ struct duk_lexer_ctx {
 	int slot1_idx;                          /* valstack slot for 1st token value */
 	int slot2_idx;                          /* valstack slot for 2nd token value */
 	int buf_idx;                            /* valstack slot for temp buffer */
-	duk_hbuffer_growable *buf;              /* temp accumulation buffer (on valstack) */
+	duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
 };
 
 /*

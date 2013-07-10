@@ -169,7 +169,7 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_PC2LINE);
 				if (duk_is_buffer(ctx, -1)) {
 					pc2line = duk_get_hbuffer(ctx, -1);
-					DUK_ASSERT(!DUK_HBUFFER_HAS_GROWABLE(pc2line));
+					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(pc2line));
 					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, pc);
 					duk_push_number(ctx, (double) line);  /* FIXME: u32 */
 					duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_LINE_NUMBER);

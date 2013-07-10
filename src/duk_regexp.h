@@ -64,7 +64,7 @@ struct duk_re_compiler_ctx {
 	duk_u32 re_flags;
 	duk_lexer_ctx lex;
 	duk_re_token curr_token;
-	duk_hbuffer_growable *buf;
+	duk_hbuffer_dynamic *buf;
 	duk_u32 captures;
 	duk_u32 highest_backref;
 	duk_u32 recursion_depth;

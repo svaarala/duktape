@@ -21,7 +21,7 @@ struct duk_hnativefunction;
 struct duk_hthread;
 struct duk_hbuffer;
 struct duk_hbuffer_fixed;
-struct duk_hbuffer_growable;
+struct duk_hbuffer_dynamic;
 
 struct duk_propaccessor;
 union duk_propvalue;
@@ -65,7 +65,7 @@ typedef struct duk_hnativefunction duk_hnativefunction;
 typedef struct duk_hthread duk_hthread;
 typedef struct duk_hbuffer duk_hbuffer;
 typedef struct duk_hbuffer_fixed duk_hbuffer_fixed;
-typedef struct duk_hbuffer_growable duk_hbuffer_growable;
+typedef struct duk_hbuffer_dynamic duk_hbuffer_dynamic;
 
 typedef struct duk_propaccessor duk_propaccessor;
 typedef union duk_propvalue duk_propvalue;

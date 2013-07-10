@@ -177,7 +177,7 @@ static void json_dec_req_stridx(duk_json_dec_ctx *js_ctx, int stridx) {
 static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_hbuffer_growable *h_buf;
+	duk_hbuffer_dynamic *h_buf;
 	int x;
 
 	/* '"' was eaten by caller */
@@ -187,10 +187,10 @@ static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 	 * so they'll simply pass through (valid UTF-8 or not).
 	 */
 
-	duk_push_new_growable_buffer(ctx, 0);
-	h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	duk_push_new_dynamic_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(h_buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
 	for (;;) {
 		x = json_dec_get(js_ctx);
@@ -1423,7 +1423,8 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 
 	/* FIXME: Extract a generic helper.  This will be needed if/when JSON
 	 * encoding and decoding have multiple exposed entry points (e.g. for
-	 * accessing custom formatting options).
+	 * accessing custom formatting options).  Also needed for adding JSON
+	 * operations to public API.
 	 */
 
 	DUK_DDDPRINT("JSON.stringify() start: value=%!T, replacer=%!T, space=%!T, stack_top=%d",
@@ -1477,10 +1478,10 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 		                             DUK_TYPE_MASK_BUFFER;
 	}
 
-	(void) duk_push_new_growable_buffer(ctx, 0);
-	js_ctx->h_buf = (duk_hbuffer_growable *) duk_get_hbuffer(ctx, -1);
+	(void) duk_push_new_dynamic_buffer(ctx, 0);
+	js_ctx->h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(js_ctx->h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_GROWABLE(js_ctx->h_buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(js_ctx->h_buf));
 
 	js_ctx->idx_loop = duk_push_new_object_internal(ctx);
 	DUK_ASSERT(js_ctx->idx_loop >= 0);

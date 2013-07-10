@@ -78,7 +78,7 @@ struct duk_memory_functions {
 #define  DUK_TYPE_NUMBER       4    /* Ecmascript number: double */
 #define  DUK_TYPE_STRING       5    /* Ecmascript string: CESU-8 / extended UTF-8 encoded */
 #define  DUK_TYPE_OBJECT       6    /* Ecmascript object: includes objects, arrays, functions, threads */
-#define  DUK_TYPE_BUFFER       7    /* fixed or growable, garbage collected byte buffer */
+#define  DUK_TYPE_BUFFER       7    /* fixed or dynamic, garbage collected byte buffer */
 #define  DUK_TYPE_POINTER      8    /* raw void pointer */
 
 /* Value mask types, used by e.g. duk_get_type_mask() */
@@ -152,6 +152,17 @@ struct duk_memory_functions {
 #define  DUK_RET_SYNTAX_ERROR         (-DUK_ERR_SYNTAX_ERROR)
 #define  DUK_RET_TYPE_ERROR           (-DUK_ERR_TYPE_ERROR)
 #define  DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
+
+/*
+ *  Context management
+ */
+
+duk_context *duk_create_heap(duk_alloc_function alloc_func,
+                             duk_realloc_function realloc_func,
+                             duk_free_function free_func,
+                             void *alloc_udata,
+                             duk_fatal_function fatal_handler);
+void duk_destroy_heap(duk_context *ctx);
 
 /*
  *  Memory management
@@ -264,9 +275,9 @@ int duk_push_new_array(duk_context *ctx);                                       
 int duk_push_new_thread(duk_context *ctx);                                          /* returns positive index of pushed thread (may fail) */
 int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs);      /* returns positive index of pushed object (may fail); nargs == DUK_VARARGS creates a variable args function */
 int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, ...);  /* returns positive index of pushed error */
-void *duk_push_new_buffer(duk_context *ctx, size_t size, int growable);             /* returns pointer to buffer (may be NULL if size is 0; may fail) */
+void *duk_push_new_buffer(duk_context *ctx, size_t size, int dynamic);              /* returns pointer to buffer (may be NULL if size is 0; may fail) */
 void *duk_push_new_fixed_buffer(duk_context *ctx, size_t size);
-void *duk_push_new_growable_buffer(duk_context *ctx, size_t size);
+void *duk_push_new_dynamic_buffer(duk_context *ctx, size_t size);
 
 /*
  *  Pop operations
@@ -308,7 +319,7 @@ int duk_is_bound_function(duk_context *ctx, int index);          /* implies: duk
 int duk_is_thread(duk_context *ctx, int index);                  /* implies: duk_is_object=true */
 
 int duk_is_callable(duk_context *ctx, int index);                /* currently same as duk_is_function() */
-int duk_is_growable(duk_context *ctx, int index);                /* for buffer */
+int duk_is_dynamic(duk_context *ctx, int index);                 /* for buffer */
 
 int duk_is_primitive(duk_context *ctx, int index);               /* E5 Section 9.1; anything but object is primitive */
 int duk_is_object_coercible(duk_context *ctx, int index);        /* E5 Section 9.10 */
