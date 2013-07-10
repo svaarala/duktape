@@ -1,0 +1,18 @@
+=proto
+int duk_get_type_mask(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns type mask of value at <tt>index</tt>.  The return value is one of
+<tt>DUK_TYPE_MASK_xxx</tt> or <tt>DUK_TYPE_MASK_NONE</tt> if <tt>index</tt>
+is invalid.</p>
+
+<p>Type masks allow for a convenient comparison for multiple types at once.</p>
+
+=example
+if (duk_get_type_mask(ctx, -3) & (DUK_TYPE_MASK_STRING |
+                                  DUK_TYPE_MASK_NUMBER)) {
+    printf("value is a string or a number\n");
+}

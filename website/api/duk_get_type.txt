@@ -1,0 +1,15 @@
+=proto
+int duk_get_type(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns type of value at <tt>index</tt>.  The return value is one of
+<tt>DUK_TYPE_xxx</tt> or <tt>DUK_TYPE_NONE</tt> if <tt>index</tt> is
+invalid.</p>
+
+=example
+if (duk_get_type(ctx, -3) == DUK_TYPE_NUMBER) {
+    printf("value is a number\n");
+}
