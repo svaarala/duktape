@@ -1,0 +1,23 @@
+=proto
+int duk_is_c_function(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is a Function object and is
+assocated with a C function, otherwise returns 0.
+If <tt>index</tt> is invalid, also returns 0.</p>
+
+<p>An example of an underlying C function observing the Duktape/C API
+calling convention:</p>
+<pre class="c-code">
+int my_func(duk_context *ctx) {
+    /* ... */
+}
+</pre>
+
+=example
+if (duk_is_c_function(ctx, -3)) {
+    /* ... */
+}

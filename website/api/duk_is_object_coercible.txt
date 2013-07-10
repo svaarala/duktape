@@ -1,0 +1,22 @@
+=proto
+int duk_is_object_coercible(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is object coercible, as defined in
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">E5.1 Section 9.10</a>,
+otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+
+<p>All Ecmascript types are object coercible except <tt>undefined</tt> and
+<tt>null</tt>.  The custom buffer and pointer types are currently not object
+coercible.</p>
+
+=example
+if (duk_is_object_coercible(ctx, -3)) {
+    /* ... */
+}
+
+=fixme
+Make buffer and pointer object coercible, and give them a prototype object?

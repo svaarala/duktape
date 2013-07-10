@@ -1,0 +1,14 @@
+=proto
+int duk_is_pointer(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is a pointer, otherwise
+returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+
+=example
+if (duk_is_pointer(ctx, -3)) {
+    /* ... */
+}

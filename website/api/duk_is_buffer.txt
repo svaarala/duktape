@@ -1,0 +1,14 @@
+=proto
+int duk_is_buffer(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is a buffer, otherwise
+returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+
+=example
+if (duk_is_buffer(ctx, -3)) {
+    /* ... */
+}

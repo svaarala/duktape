@@ -1,0 +1,17 @@
+=proto
+int duk_is_null_or_undefined(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is either <tt>null</tt> or <tt>undefined</tt>,
+otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+
+<p>This API call is similar to a <tt>(x == null)</tt> comparison in Ecmascript, which
+is true for both <tt>null</tt> and <tt>undefined</tt>.</p>
+
+=example
+if (duk_is_null_or_undefined(ctx, -3)) {
+    /* ... */
+}

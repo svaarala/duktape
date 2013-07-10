@@ -1,0 +1,15 @@
+=proto
+int duk_is_thread(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is an object and is a Duktape
+thread (coroutine), otherwise returns 0.  If <tt>index</tt> is invalid,
+also returns 0.</p>
+
+=example
+if (duk_is_thread(ctx, -3)) {
+    /* ... */
+}

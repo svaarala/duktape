@@ -1,0 +1,14 @@
+=proto
+int duk_is_null(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is either <tt>null</tt>, otherwise
+returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+
+=example
+if (duk_is_null(ctx, -3)) {
+    /* ... */
+}

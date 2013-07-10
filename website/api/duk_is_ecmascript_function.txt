@@ -1,0 +1,18 @@
+=proto
+int duk_is_ecmascript_function(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Returns 1 if value at <tt>index</tt> is a Function object which has
+been compiled from Ecmascript source code, otherwise returns 0.
+If <tt>index</tt> is invalid, also returns 0.</p>
+
+<p>Internally Ecmascript functions are compiled into bytecode and executed
+with the Ecmascript bytecode interpreter.</p>
+
+=example
+if (duk_is_ecmascript_function(ctx, -3)) {
+    /* ... */
+}

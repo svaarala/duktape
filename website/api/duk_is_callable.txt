@@ -1,0 +1,17 @@
+=proto
+int duk_is_callable(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Return 1 if value at <tt>index</tt> is callable, otherwise returns 0.
+Also returns 0 if <tt>index</tt> is invalid.</p>
+
+<p>Currently this is the same as
+<tt><a href="#duk_is_function">duk_is_function()</a></tt>.</p>
+
+=example
+if (duk_is_callable(ctx, -3)) {
+    /* ... */
+}
