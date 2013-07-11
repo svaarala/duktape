@@ -1,0 +1,12 @@
+=proto
+int duk_require_normalize_index(duk_context *ctx, int index);
+
+=summary
+<p>
+Normalize argument index relative to the bottom of the current frame.
+The resulting index will be 0 or greater and will be independent of
+later stack modifications.  If the input index is invalid, throws
+an error.</p>
+
+=example
+int idx = duk_require_normalize_index(-3);
