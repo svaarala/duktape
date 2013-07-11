@@ -1,6 +1,9 @@
 =proto
 int duk_require_normalize_index(duk_context *ctx, int index);
 
+=stack
+[ ... val! ... ]
+
 =summary
 <p>
 Normalize argument index relative to the bottom of the current frame.

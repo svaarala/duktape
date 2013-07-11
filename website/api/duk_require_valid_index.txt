@@ -1,0 +1,13 @@
+=proto
+void duk_require_valid_index(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Validate argument index.  Throw an error if index is valid, return
+(without a return value) otherwise.</p>
+
+=example
+duk_require_valid_index(ctx, -3);
+printf("index -3 is valid\n");
