@@ -1,0 +1,31 @@
+=proto
+int duk_push_new_array(duk_context *ctx);
+
+=stack
+[ ... ] -> [ ... arr! ]
+
+=summary
+<p>Push an empty array to the stack.  Returns non-negative index (relative to stack bottom)
+of the pushed array.</p>
+
+=example
+int arr_idx;
+
+arr_idx = duk_push_new_array(ctx);
+duk_push_string(ctx, "foo");
+duk_put_prop_index(ctx, arr_idx, 0);
+duk_push_string(ctx, "bar");
+duk_put_prop_index(ctx, arr_idx, 1);
+
+/* array is now: [ "foo", "bar" ], and array.length is 2 (automatically
+ * updated for Ecmascript arrays).
+ */
+
+duk_pop(ctx);  /* pop array */
+
+=fixme
+There is no way to give an initial size for array.
+This would be useful to minimize memory allocations.
+
+=fixme
+Rename to duk_push_array()?
