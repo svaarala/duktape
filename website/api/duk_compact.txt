@@ -12,7 +12,7 @@ Although compaction is normally safe, it can fail due to an internal error
 <p>
 Compaction is not a final operation and has no impact on object semantics.
 Adding new properties to the object is still possible (assuming the object
-is extensible), but causes an object resize.  Old property values can be
+is extensible), but causes an object resize.  Existing property values can be
 changed (assuming the properties are writable) without affecting the object's
 internal memory allocation.  An object can be compacted multiple times:
 for instance, if a new property is added to a previously compacted object,
@@ -38,4 +38,7 @@ duk_push_new_object(ctx);                       /* [ ... obj ] */
 duk_push_int(ctx, 42);                          /* [ ... obj 42 ] */
 duk_put_prop_string(ctx, -2, "meaningOfLife");  /* [ ... obj ] */
 duk_compact(ctx, -1);                           /* [ ... obj ] */
+
+=fixme
+Clarify that compaction only affects an object's "own properties".
 
