@@ -328,7 +328,7 @@ def generateApiDoc(apidocdir):
 	navlinks.append(['#introduction', 'Introduction'])
 	navlinks.append(['#concepts', 'Concepts'])
 	navlinks.append(['#notation', 'Notation'])
-	navlinks.append(['#structsandtypedefs', 'Structs and typedefs'])
+	navlinks.append(['#defines', 'Header definitions'])
 	for filename in apifiles:
 		funcname = os.path.splitext(os.path.basename(filename))[0]
 		navlinks.append(['#' + funcname, funcname])
@@ -352,7 +352,7 @@ def generateApiDoc(apidocdir):
 	res += processRawDoc('api/intro.html')
 	res += processRawDoc('api/concepts.html')
 	res += processRawDoc('api/notation.html')
-	res += processRawDoc('api/structsandtypedefs.html')
+	res += processRawDoc('api/defines.html')
 
 	for filename in apifiles:
 		# FIXME: Here we'd like to validate individual processApiDoc() results so

@@ -1,0 +1,91 @@
+<h2 id="defines">Header definitions</h2>
+
+<h3>Structs and typedefs</h3>
+<pre class="c-code">
+struct duk_memory_functions;
+
+typedef void duk_context;
+typedef struct duk_memory_functions duk_memory_functions;
+
+typedef int (*duk_c_function)(duk_context *ctx);
+typedef void *(*duk_alloc_function) (void *udata, size_t size);
+typedef void *(*duk_realloc_function) (void *udata, void *ptr, size_t size);
+typedef void (*duk_free_function) (void *udata, void *ptr);
+typedef void (*duk_fatal_function) (duk_context *ctx, int code);
+typedef void (*duk_decode_char_function) (void *udata, int codepoint);
+typedef int (*duk_map_char_function) (void *udata, int codepoint);
+typedef int (*duk_safe_call_function) (duk_context *ctx);
+
+struct duk_memory_functions {
+        duk_alloc_function alloc;
+        duk_realloc_function realloc;
+        duk_free_function free;
+        void *udata;
+};
+</pre>
+
+<h3>Error codes</h3>
+<pre class="c-code">
+/* Internal error codes */
+#define  DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */
+#define  DUK_ERR_UNSUPPORTED_ERROR    51   /* UnsupportedError */
+#define  DUK_ERR_INTERNAL_ERROR       52   /* InternalError */
+#define  DUK_ERR_ALLOC_ERROR          53   /* AllocError */
+#define  DUK_ERR_ASSERTION_ERROR      54   /* AssertionError */
+#define  DUK_ERR_API_ERROR            55   /* APIError */
+#define  DUK_ERR_UNCAUGHT_ERROR       56   /* UncaughtError */
+
+/* Ecmascript E5 specification error codes */
+#define  DUK_ERR_ERROR                100  /* Error */
+#define  DUK_ERR_EVAL_ERROR           101  /* EvalError */
+#define  DUK_ERR_RANGE_ERROR          102  /* RangeError */
+#define  DUK_ERR_REFERENCE_ERROR      103  /* ReferenceError */
+#define  DUK_ERR_SYNTAX_ERROR         104  /* SyntaxError */
+#define  DUK_ERR_TYPE_ERROR           105  /* TypeError */
+#define  DUK_ERR_URI_ERROR            106  /* URIError */
+</pre>
+
+<h3>Return codes from Duktape/C functions</h3>
+<pre class="c-code">
+/* Return codes for C functions */
+#define  DUK_RET_UNIMPLEMENTED_ERROR  (-DUK_ERR_UNIMPLEMENTED_ERROR)
+#define  DUK_RET_UNSUPPORTED_ERROR    (-DUK_ERR_UNSUPPORTED_ERROR)
+#define  DUK_RET_INTERNAL_ERROR       (-DUK_ERR_INTERNAL_ERROR)
+#define  DUK_RET_ALLOC_ERROR          (-DUK_ERR_ALLOC_ERROR)
+#define  DUK_RET_ASSERTION_ERROR      (-DUK_ERR_ASSERTION_ERROR)
+#define  DUK_RET_API_ERROR            (-DUK_ERR_API_ERROR)
+#define  DUK_RET_UNCAUGHT_ERROR       (-DUK_ERR_UNCAUGHT_ERROR)
+#define  DUK_RET_ERROR                (-DUK_ERR_ERROR)
+#define  DUK_RET_EVAL_ERROR           (-DUK_ERR_EVAL_ERROR)
+#define  DUK_RET_RANGE_ERROR          (-DUK_ERR_RANGE_ERROR)
+#define  DUK_RET_REFERENCE_ERROR      (-DUK_ERR_REFERENCE_ERROR)
+#define  DUK_RET_SYNTAX_ERROR         (-DUK_ERR_SYNTAX_ERROR)
+#define  DUK_RET_TYPE_ERROR           (-DUK_ERR_TYPE_ERROR)
+#define  DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
+</pre>
+
+<h3>Enumeration flags</h3>
+<pre class="c-code">
+/* Enumeration flags for duk_enum() */
+#define  DUK_ENUM_INCLUDE_NONENUMERABLE    (1 &lt;&lt; 0)    /* enumerate non-numerable properties in addition to enumerable */
+#define  DUK_ENUM_INCLUDE_INTERNAL         (1 &lt;&lt; 1)    /* enumerate internal properties (regardless of enumerability) */
+#define  DUK_ENUM_OWN_PROPERTIES_ONLY      (1 &lt;&lt; 2)    /* don't walk prototype chain, only check own properties */
+#define  DUK_ENUM_ARRAY_INDICES_ONLY       (1 &lt;&lt; 3)    /* only enumerate array indices */
+#define  DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
+</pre>
+
+<h3>Coercion hints</h3>
+<pre class="c-code">
+/* Coercion hints */
+#define  DUK_HINT_NONE         0    /* prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8) */
+#define  DUK_HINT_STRING       1    /* prefer string */
+#define  DUK_HINT_NUMBER       2    /* prefer number */
+</pre>
+
+<h3>Misc defines</h3>
+<pre class="c-code">
+#define  DUK_INVALID_INDEX     INT_MIN 
+
+#define  DUK_VARARGS           (-1)
+</pre>
+
