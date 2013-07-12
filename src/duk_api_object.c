@@ -334,11 +334,11 @@ void duk_compact(duk_context *ctx, int obj_index) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	obj = duk_require_hobject(ctx, obj_index);
-	DUK_ASSERT(obj != NULL);
-
-	/* Note: this may fail, caller should protect the call if necessary */
-	duk_hobject_compact_props(thr, obj);
+	obj = duk_get_hobject(ctx, obj_index);
+	if (obj) {
+		/* Note: this may fail, caller should protect the call if necessary */
+		duk_hobject_compact_props(thr, obj);
+	}
 }
 
 /* FIXME: the duk_hobject_enum.c stack APIs should be reworked */

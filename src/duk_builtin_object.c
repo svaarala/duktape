@@ -126,6 +126,12 @@ static int seal_freeze_helper(duk_context *ctx, int is_freeze) {
 	DUK_ASSERT(h != NULL);
 
 	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze /*freeze*/);
+
+	/* Sealed and frozen objects cannot gain any more properties,
+	 * so this is a good time to compact them.
+	 */
+	duk_hobject_compact_props(thr, h);
+
 	return 1;
 }
 
@@ -138,12 +144,19 @@ int duk_builtin_object_constructor_freeze(duk_context *ctx) {
 }
 
 int duk_builtin_object_constructor_prevent_extensions(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
+
+	/* A non-extensible object cannot gain any more properties,
+	 * so this is a good time to compact.
+	 */
+	duk_hobject_compact_props(thr, h);
+	
 	return 1;
 }
 
