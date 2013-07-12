@@ -648,8 +648,12 @@ duk_tval *duk_get_tval(duk_context *ctx, int index) {
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
 	if (index < 0) {
+		if (index == DUK_INVALID_INDEX) {
+			return NULL;
+		}
 		tv = thr->valstack_top + index;
 		DUK_ASSERT(tv < thr->valstack_top);
 		if (tv < thr->valstack_bottom) {
@@ -670,8 +674,16 @@ duk_tval *duk_require_tval(duk_context *ctx, int index) {
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
 	if (index < 0) {
+		if (index == DUK_INVALID_INDEX) {
+			/* XXX: this check may not be necessary
+			 * on some architectures but be careful
+			 * of wrapping.
+			 */
+			goto fail;
+		}
 		tv = thr->valstack_top + index;
 		DUK_ASSERT(tv < thr->valstack_top);
 		if (tv < thr->valstack_bottom) {
@@ -2081,6 +2093,7 @@ int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	 */
 
 	obj = duk_hnativefunction_alloc(thr->heap, DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                           DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                                           DUK_HOBJECT_FLAG_NATIVEFUNCTION |
 	                                           DUK_HOBJECT_FLAG_NEWENV |
 	                                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
