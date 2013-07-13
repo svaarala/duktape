@@ -1,0 +1,24 @@
+=proto
+void duk_replace(duk_context *ctx, int to_index);
+
+=stack
+[ ... old(to_index)! ... val! ] -> [ ... val(to_index)! ... ]
+
+=summary
+<p>Replace value at <tt>to_index</tt> with a value popped from the
+stack top.</p>
+
+<div class="note">
+Negative indices are evaluated prior to popping the value at the stack
+top.  This is also illustrated by the example.
+</div>
+
+=example
+duk_push_int(ctx, 123);
+duk_push_int(ctx, 234);
+duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
+duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
+duk_replace(ctx, -3);         /* -> [ 123 "foo" 345 ] */
+
+=fixme
+Document handling of invalid indices.
