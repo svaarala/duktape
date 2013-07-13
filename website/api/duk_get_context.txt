@@ -1,0 +1,36 @@
+=proto
+duk_context *duk_get_context(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get a context pointer for a Duktape thread at <tt>index</tt>.  If the
+value at <tt>index</tt> is not a Duktape thread or the index is invalid,
+returns <tt>NULL</tt>.</p>
+
+<p>The returned context pointer is only valid while the Duktape thread
+is reachable from a garbage collection point of view.</p>
+
+=example
+duk_context *new_ctx;
+
+/* Create a new thread and get a context pointer. */
+
+(void) duk_push_new_thread(ctx);
+new_ctx = duk_get_context(ctx, -1);
+
+/* You can use new_ctx as long as the related thread is reachable
+ * from a garbage collection point of view.
+ */
+
+duk_push_string(new_ctx, "foo");
+
+/* This duk_pop() makes the new thread unreachable (assuming there
+ * is no other reference to it), so new_ctx is no longer valid
+ * afterwards.
+ */
+
+duk_pop(ctx);
+
+/* Using new_ctx here may cause a crash. */
