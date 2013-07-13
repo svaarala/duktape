@@ -6,13 +6,11 @@ void duk_remove(duk_context *ctx, int index);
 
 =summary
 <p>Remove value at <tt>index</tt>.  Elements above <tt>index</tt>
-are shifted down the stack by a step.</p>
+are shifted down the stack by a step.  If <tt>to_index</tt> is
+an invalid index, throws an error.</p>
 
 =example
 duk_push_int(ctx, 123);
 duk_push_int(ctx, 234);
 duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
 duk_remove(ctx, -2);          /* -> [ 123 345 ] */
-
-=fixme
-Document handling of invalid indices.
