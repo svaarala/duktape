@@ -56,5 +56,6 @@ void test(duk_context *ctx) {
 	test_encode_apidoc(ctx);
 	test_decode(ctx);
 	test_decode_apidoc(ctx);
+	/* FIXME: test decode error */
 }
 

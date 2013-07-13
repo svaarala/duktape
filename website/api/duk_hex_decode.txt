@@ -1,0 +1,20 @@
+=proto
+void duk_hex_decode(duk_context *ctx, int index);
+
+=stack
+[ ... hex_val! ... ] -> [ ... val! ... ]
+
+=summary
+<p>Decodes a hex encoded value into a buffer as an in-place operation.
+If the input is invalid, throws an error.</p>
+
+=example
+duk_push_string(ctx, "7465737420737472696e67");
+duk_hex_decode(ctx, -1);  /* buffer */
+printf("hex decoded: %s\n", duk_to_string(ctx, -1));
+duk_pop(ctx);
+
+/* Output:
+ * hex decoded: test string
+ */
+

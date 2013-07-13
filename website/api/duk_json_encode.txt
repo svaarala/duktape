@@ -2,7 +2,7 @@
 const char *duk_json_encode(duk_context *ctx, int index);
 
 =stack
-[ ... val! ... ] -> [ ... json(val)! ... ]
+[ ... val! ... ] -> [ ... json_val! ... ]
 
 =summary
 <p>Encodes an arbitrary value into its JSON representation as an in-place

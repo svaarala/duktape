@@ -1,0 +1,25 @@
+=proto
+const char *duk_base64_encode(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... base64_val! ... ]
+
+=summary
+<p>Coerces an arbitrary value into a buffer and then encodes the result
+into base-64 as an in-place operation.  Returns pointer to the resulting
+string for convenience.</p>
+
+<div class="note">
+Coercing to a buffer first coerces a non-buffer value into a string, and
+then coerces the string into a buffer.  The resulting buffer contains the
+string in an CESU-8 encoding.
+</div>
+
+=example
+duk_push_string(ctx, "foo");
+printf("base-64 encoded: %s\n", duk_base64_encode(ctx, -1));
+
+/* Output:
+ * base-64 encoded: Zm9v
+ */
+
