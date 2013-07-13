@@ -1,0 +1,17 @@
+=proto
+void duk_throw(duk_context *ctx);
+
+=stack
+[ ... val! ]
+
+=summary
+<p>Throw the value on top of the stack.  This call never returns.</p>
+
+=example
+/* Throw a string value; equivalent to the Ecmascript code:
+ *
+ *   throw "this string is thrown";
+ */
+
+duk_push_string(ctx, "this string is thrown");
+duk_throw(ctx);
