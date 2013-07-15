@@ -1,0 +1,30 @@
+=proto
+size_t duk_get_length(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get a type-specific "length" for value at <tt>index</tt>:</p>
+<ul>
+<li>String: character length of string (<i>not</i> byte length)</li>
+<li>Object: <tt>Math.floor(ToNumber(obj.length))</tt> if result within
+            32-bit unsigned range; otherwise 0</li>
+<li>Buffer: byte length of buffer</li>
+<li>Other type or invalid stack index: 0</li>
+</ul>
+
+<p>To get the byte length of a string, use
+<tt><a href="#duk_get_lstring">duk_get_lstring()</a></tt>.
+</p>
+
+=example
+if (duk_is_string(ctx, -3)) {
+    printf("string char len is %d\n", duk_get_length(ctx, -3));
+}
+
+=fixme
+Handling of object length is a bit curious as it is not clamped or
+checked against the size_t range.  The 32-bit unsigned range comes
+from the fact that Ecmascript semantics for array lengths are defined
+for 32-bit unsigned integer lengths (E5).  Explain this here?
