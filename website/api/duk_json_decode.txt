@@ -5,7 +5,8 @@ void duk_json_decode(duk_context *ctx, int index);
 [ ... json_val! ... ] -> [ ... val! ... ]
 
 =summary
-<p>Decodes an arbitrary JSON value as an in-place operation.</p>
+<p>Decodes an arbitrary JSON value as an in-place operation.
+If the input is invalid, throws an error.</p>
 
 =example
 duk_push_string(ctx, "{\"meaningOfLife\":42}");
