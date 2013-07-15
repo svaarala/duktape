@@ -1,0 +1,13 @@
+=proto
+double duk_get_number(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the number value at <tt>index</tt> without modifying or coercing
+the value.  Returns <tt>NaN</tt> if the value is not a number or the
+index is invalid.</p>
+
+=example
+printf("value: %lf\n", duk_get_number(ctx, -3));

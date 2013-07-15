@@ -1,0 +1,16 @@
+=proto
+void *duk_get_pointer(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the pointer value at <tt>index</tt> as <tt>void *</tt> without
+modifying or coercing the value.  Returns <tt>NULL</tt> if the value is
+not a pointer or the index is invalid.</p>
+
+=example
+void *ptr;
+
+ptr = duk_get_pointer(ctx, -3);
+printf("my pointer is: %p\n", ptr);

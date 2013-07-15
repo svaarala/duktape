@@ -1,0 +1,31 @@
+=proto
+const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get character data pointer and length for a string at <tt>index</tt>
+without modifying or coercing the value.  Returns a non-<tt>NULL</tt>
+pointer to the read-only, NUL-terminated string data, and writes the
+string byte length to <tt>*out_len</tt> (if <tt>out_len</tt> is
+non-<tt>NULL</tt>).  Returns <tt>NULL</tt> and writes zero to <tt>*out_len</tt>
+(if <tt>out_len</tt> is non-<tt>NULL</tt>) if the value is not a string or
+the index is invalid.</p>
+
+<p>To get the string character length (instead of byte length), use
+<tt><a href="#duk_get_length">duk_get_length()</a></tt>.</p>
+
+<div class="note">
+A non-<tt>NULL</tt> return value is guaranteed even for zero length strings;
+this differs from how buffer data pointers are handled (for technical reasons).
+</div>
+
+=example
+const char *buf;
+size_t len;
+
+buf = duk_get_lstring(ctx, -3, &len);
+if (buf) {
+    printf("value is a string, %d bytes\n", (int) len);
+}
