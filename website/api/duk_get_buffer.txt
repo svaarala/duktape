@@ -1,0 +1,28 @@
+=proto
+void *duk_get_buffer(duk_context *ctx, int index, size_t *out_size);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the data pointer for a buffer value at <tt>index</tt> without modifying
+or coercing the value.  Returns a non-<tt>NULL</tt> pointer if the value is a
+valid buffer (fixed or dynamic) with a non-zero size.  For a zero-size buffer,
+may return a <tt>NULL</tt> or a <tt>non-NULL</tt> pointer.  Returns <tt>NULL</tt>
+if the value is not a buffer or the index is invalid.  If <tt>out_size</tt> is
+non-<tt>NULL</tt>, the size of the buffer is written to <tt>*out_size</tt>; 0
+is written if the return value is <tt>NULL</tt>.</p>
+
+<div class="note">
+There is no reliable way to distinguish a zero-size buffer from a non-buffer
+based on the return values.  A <tt>NULL</tt> with zero size is returned for
+a non-buffer.  The same values may be returned for a zero-size buffer (although
+it is also possible that a non-<tt>NULL</tt> pointer is returned).
+</div>
+
+=example
+void *ptr;
+size_t sz;
+
+ptr = duk_get_buffer(ctx, &sz);
+printf("buf=%p, size=%d\n", ptr, (int) sz);

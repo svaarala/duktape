@@ -1,0 +1,24 @@
+=proto
+int duk_get_boolean(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the boolean value at <tt>index</tt> without modifying or coercing
+the value.  Returns 1 if the value is <tt>true</tt>, 0 if the value is
+<tt>false</tt>, not a boolean, or the index is invalid.</p>
+
+<p>Note that the value is not coerced, so a "truthy" Ecmascript value
+(like a non-empty string) will be treated as false.  If you want to coerce
+the value, use <tt><a href="#duk_to_boolean">duk_to_boolean()</a></tt>.</p>
+
+=example
+if (duk_get_boolean(ctx, -3)) {
+    printf("value is true\n");
+}
+
+=fixme
+An API primitive which coerces but doesn't modify value?  This would be
+closest to ordinary Ecmascript use.  The current behavior comes from the
+idea that duk_get_xxx() calls do not coerce anything.

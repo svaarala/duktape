@@ -1,0 +1,36 @@
+=proto
+int duk_get_int(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the number at <tt>index</tt> and convert it to a C <tt>int</tt>
+by first clamping the value between [INT_MIN, INT_MAX] and then
+truncating towards zero.  The value on the stack is not modified.
+If the value is a NaN, is not a number, or the index is invalid,
+returns 0.</p>
+
+<p>Conversion examples:</p>
+<ul>
+<li>-Infinity => INT_MIN</li>
+<li>INT_MIN - 1 => INT_MIN</li>
+<li>-3.9 => -3</li>
+<li>3.9 => 3</li>
+<li>INT_MAX + 1 => INT_MAX</li>
+<li>+Infinity => INT_MAX</li>
+<li>NaN => 0</li>
+<li>"123" => 0 (non-number)</li>
+</ul>
+
+<div class="note">
+The coercion is different from a basic C cast from <tt>double</tt> to
+<tt>int</tt>, which may have counterintuitive behavior like coercing
+NaN to INT_MIN.  The coercion is also different from Ecmascript
+<tt>ToInt32()</tt> coercion because the full range of the native
+<tt>int</tt> is allowed, which is useful on platforms with a 64-bit
+<tt>int</tt> type.
+</div>
+
+=example
+printf("int value: %d\n", duk_get_int(ctx, -3));
