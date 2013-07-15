@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: pointer wrapping bugs in e.g. duk_set_top()
+desc: See src/duk_api.c FIXME in duk_set_top().
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-07-15 13:12:30.468079 Z
+references: []
+
+id: 3e7f20b94fb57094b9acc8bb8ce55c0caa7fc038
+log_events: 
+- - 2013-07-15 13:12:31.219985 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
