@@ -1,0 +1,26 @@
+=proto
+int duk_to_boolean(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... ToBoolean(val)! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.2">ToBoolean()</a>
+coerced value.  Returns 1 if the result of the coercion <tt>true</tt>, 0 otherwise.
+If <tt>index</tt> is invalid, throws an error.</p>
+
+<p>Custom type coercion:</p>
+<ul>
+<li>Buffer: <tt>false</tt> for zero-size buffer, <tt>true</tt> otherwise
+<li>Pointer: <tt>false</tt> for <tt>NULL</tt> pointer, <tt>true</tt> otherwise
+</ul>
+
+=example
+if (duk_to_boolean(ctx, -3)) {
+    printf("coerced value is true\n");
+}
+
+=fixme
+Describe coercion rules for custom types in a central location and just link
+there?

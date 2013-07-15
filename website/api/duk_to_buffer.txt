@@ -1,0 +1,27 @@
+=proto
+void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with a buffer-coerced value.  Returns
+a pointer to the buffer data (may be <tt>NULL</tt> for a zero-size buffer),
+and writes the size of the buffer into <tt>*out_size</tt> (if <tt>out_size</tt>
+is non-<tt>NULL</tt>).  If <tt>index</tt> is invalid, throws an error.</p>
+
+<p>Coercion rules:</p>
+<ul>
+<li>Buffer: no change, dynamic/fixed nature not changed</li>
+<li>String: coerces into a fixed size buffer, byte-for-byte</li>
+<li>Other types: first apply Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>,
+then coerce into a fixed size buffer, byte-for-byte</li>
+</ul>
+
+=example
+void *ptr;
+size_t sz;
+
+ptr = duk_to_buffer(ctx, -3, &sz);
+printf("coerced data at %p, size %u\n", ptr, (unsigned int) sz);
