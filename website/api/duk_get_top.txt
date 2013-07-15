@@ -1,0 +1,14 @@
+=proto
+int duk_get_top(duk_context *ctx);
+
+=summary
+<p>Get current stack top (>= 0), indicating the number of values currently on
+the value stack (of the current activation).</p>
+
+=example
+printf("stack top is %d\n", duk_get_top(ctx));
+
+=fixme
+Return value is an int, unsigned int would be more accurate but probably
+inconvenient for calling code (signedness), and would not match
+duk_set_top() which takes an int because it allows negative indices.
