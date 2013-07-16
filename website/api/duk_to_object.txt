@@ -1,0 +1,28 @@
+=proto
+void duk_to_object(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... ToObject(val)! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.9">ToObject()</a>
+coerced value.  There is no return value.  Throws an error if value at
+<tt>index</tt> is not
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
+or if <tt>index</tt> is invalid.</p>
+
+<p>The following types are not object coercible:</p>
+<ul>
+<li><tt>undefined</tt></li>
+<li><tt>null</tt></li>
+<li>buffer</li>
+<li>pointer</li>
+</ul>
+
+=example
+duk_to_object(ctx, -3);
+
+=fixme
+Buffer and pointer may become object coercible in a future version (they'll then
+have a prototype object etc, like Number).
