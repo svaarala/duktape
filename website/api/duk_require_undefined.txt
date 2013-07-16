@@ -1,0 +1,17 @@
+=proto
+void duk_require_undefined(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Throw an error if the value at <tt>index</tt> is not <tt>undefined</tt>
+or if the index is invalid.</p>
+
+<div class="note">
+There is no "get" primitive (<tt>duk_get_undefined()</tt>) because such a
+function would be a no-op.
+</div>
+
+=example
+duk_require_undefined(ctx, -3);

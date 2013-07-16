@@ -1,0 +1,15 @@
+=proto
+int duk_require_boolean(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_get_boolean">duk_get_boolean()</a></tt>,
+but throws an error if the value at <tt>index</tt> is not a boolean
+or if the index is invalid.</p>
+
+=example
+if (duk_require_boolean(ctx, -3)) {
+    printf("value is true\n");
+}

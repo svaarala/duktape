@@ -1,0 +1,16 @@
+=proto
+void *duk_require_pointer(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_get_pointer">duk_get_pointer()</a></tt>,
+but throws an error if the value at <tt>index</tt> is not a pointer
+or if the index is invalid.</p>
+
+=example
+void *ptr;
+
+ptr = duk_require_pointer(ctx, -3);
+printf("my pointer is: %p\n", ptr);

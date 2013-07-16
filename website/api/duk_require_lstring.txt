@@ -1,0 +1,17 @@
+=proto
+const char *duk_require_lstring(duk_context *ctx, int index, size_t *out_len);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_get_lstring">duk_get_lstring()</a></tt>,
+but throws an error if the value at <tt>index</tt> is not a string
+or if the index is invalid.</p>
+
+=example
+const char *buf;
+size_t len;
+
+buf = duk_require_lstring(ctx, -3, &len);
+printf("value is a string, %d bytes\n", (int) len);

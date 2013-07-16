@@ -5,15 +5,9 @@ duk_context *duk_require_context(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get a context pointer for a Duktape thread at <tt>index</tt>.  If the
-value at <tt>index</tt> is not a Duktape thread or the index is invalid,
-throws an error.</p>
-
-<p>The returned context pointer is only valid while the Duktape thread
-is reachable from a garbage collection point of view.</p>
-
-<p>If you prefer a <tt>NULL</tt> to be returned for an invalid value or index,
-use <tt><a href="#duk_get_context">duk_get_context()</a></tt>.</p>
+<p>Like <tt><a href="#duk_get_context">duk_get_context()</a></tt>,
+but throws an error if the value at <tt>index</tt> is not a Duktape
+thread or if the index is invalid.</p>
 
 =example
 duk_context *new_ctx;

@@ -1,0 +1,18 @@
+=proto
+int duk_require_int(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_get_int">duk_get_int()</a></tt>,
+but throws an error if the value at <tt>index</tt> is not a number
+or if the index is invalid.</p>
+
+<!--
+<p>The number is coerced as for <tt><a href="#duk_get_int">duk_get_int()</a></tt>
+with only numeric inputs allowed.</p>
+-->
+
+=example
+printf("int value: %d\n", duk_require_int(ctx, -3));
