@@ -1,0 +1,31 @@
+=proto
+unsigned int duk_to_uint32(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... ToUint32(val)! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.6">ToUint32()</a>
+coerced value.  Returns the coerced value.  If <tt>index</tt> is invalid, throws
+an error.</p>
+
+<p>Custom type coercion:</p>
+<ul>
+<li>Buffer: <tt>0</tt> for zero-size buffer, <tt>1</tt> otherwise
+<li>Pointer: <tt>0</tt> for <tt>NULL</tt> pointer, <tt>1</tt> otherwise
+</ul>
+
+<div class="note">
+The result of <tt>ToUint32()</tt> is an unsigned 32-bit integer and is assumed to
+fit into the C <tt>unsigned int</tt> type.  If the C type is smaller, the value will be
+coerced by the C compiler (<tt>double</tt> to <tt>unsigned int</tt>).
+</div>
+
+=example
+printf("ToUint32(): %u\n", duk_to_uint32(ctx, -3));
+
+=fixme
+Apply the duk_get_int() coercion to the result just in case?  It would clamp
+output values to INT_MIN and INT_MAX.  This is not very relevant because if
+int is smaller than 32 bits, everything will break anyway.

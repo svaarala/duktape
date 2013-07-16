@@ -1,0 +1,27 @@
+=proto
+void duk_to_primitive(duk_context *ctx, int index, int hint);
+
+=stack
+[ ... val! ... ] -> [ ... ToPrimitive(val)! ]
+
+=summary
+<p>Replace the object at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.1">ToPrimitive()</a>
+coerced value.  The <tt>hint</tt> argument affects coercion of an object into a
+primitive type, and indicates preference for a string (<tt>DUK_HINT_STRING</tt>),
+a number (<tt>DUK_HINT_NUMBER</tt>), or neither (<tt>DUK_HINT_NONE</tt>).
+<tt>DUK_HINT_NONE</tt> causes a preference to a number, unless the input value
+is a <tt>Date</tt> instance, in which case a string is preferred (the exact
+coercion behavior is described in the Ecmascript specification).  If <tt>index</tt>
+is invalid, throws an error.</p>
+
+<p>Custom type coercion:</p>
+<ul>
+<li>Buffer: keep existing value (no coercion)</li>
+<li>Pointer: keep existing value (no coercion)</li>
+</ul>
+
+<p>In other words, custom types are considered primitive.</p>
+
+=example
+duk_to_primitive(ctx, -3, DUK_HINT_NUMBER);

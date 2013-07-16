@@ -1,0 +1,39 @@
+=proto
+int duk_to_int(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... ToNumber(val)! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.4">ToInteger()</a>
+coerced value.  Returns an <tt>int</tt> further coerced from the <tt>ToInteger()</tt>
+result using the algorithm described in
+<tt><a href="#duk_get_int">duk_get_int()</a></tt> (this second coercion is not
+reflected in the new stack value).  If <tt>index</tt> is invalid, throws an error.</p>
+
+<p>Custom type coercion:</p>
+<ul>
+<li>Buffer: <tt>0</tt> for zero-size buffer, <tt>1</tt> otherwise</li>
+<li>Pointer: <tt>0</tt> for <tt>NULL</tt> pointer, <tt>1</tt> otherwise</li>
+</ul>
+
+<p>If you want the <tt>double</tt> version of the <tt>ToInteger()</tt> coerced value,
+use:</p>
+<pre class="c-code">
+double d;
+
+(void) duk_to_int(ctx, -3);
+d = duk_get_number(ctx, -3);
+</pre>
+
+<div class="note">
+<tt>duk_get_int()</tt> int coercion is applied only to the return value, it is not
+reflected on the value stack.  For instance, if value stack contains the string
+<tt>"Infinity"</tt>, the value on the stack will be coerced to the number
+<tt>Infinity</tt> and <tt>INT_MAX</tt> will be returned from the API call.
+</div>
+
+=example
+printf("ToInteger() + int coercion: %d\n", duk_to_int(ctx, -3));
+printf("ToInteger() coercion: %lf\n", duk_get_number(ctx, -3));

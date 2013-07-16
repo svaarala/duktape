@@ -2,7 +2,7 @@
 void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size);
 
 =stack
-[ ... val! ... ]
+[ ... val! ... ] -> [ ... buffer(val)! ... ]
 
 =summary
 <p>Replace the value at <tt>index</tt> with a buffer-coerced value.  Returns

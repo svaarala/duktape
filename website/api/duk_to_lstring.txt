@@ -1,0 +1,27 @@
+=proto
+const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len);
+
+=stack
+[ ... val! ... ] -> [ ... ToString(val)! ... ]
+
+=summary
+<p>Replace the value at <tt>index</tt> with an Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
+coerced value.  Returns a non-<tt>NULL</tt> pointer to the read-only,
+NUL-terminated string data, and writes the string byte length to <tt>*out_len</tt>
+(if <tt>out_len</tt> is non-<tt>NULL</tt>).  If <tt>index</tt> is invalid, throws
+an error.</p>
+
+<p>Custom type coercion:</p>
+<ul>
+<li>Buffer: coerces byte-for-byte into a string</li>
+<li>Pointer: coerces to a string formatted with <tt>sprintf()</tt> format
+    <tt>%p</tt></li>
+</ul>
+
+=example
+const char *ptr;
+size_t sz;
+
+ptr = duk_to_lstring(ctx, -3, &sz);
+printf("coerced string: %s (length %d)\n", ptr, (int) sz);

@@ -2,7 +2,7 @@
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
 
 =stack
-[ ... val! ... ]
+[ ... val! ... ] -> [ ... DefaultValue(val)! ... ]
 
 =summary
 <p>Replace the object at <tt>index</tt> with an Ecmascript
