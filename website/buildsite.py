@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 colorize = True
 fancy_stack = True
 remove_fixme = False
+testcase_refs = True
 
 def readFile(x):
 	f = open(x, 'rb')
@@ -185,7 +186,7 @@ def parseApiDoc(filename):
 
 	return parts
 
-def processApiDoc(filename):
+def processApiDoc(filename, testrefs):
 	parts = parseApiDoc(filename)
 	res = []
 
@@ -254,6 +255,16 @@ def processApiDoc(filename):
 		res.append('</pre>')
 		res.append('')
 
+	if testcase_refs:
+		res.append('<h3>Related test cases</h3>')
+		if testrefs.has_key(funcname):
+			res.append('<ul>')
+			for i in testrefs[funcname]:
+				res.append('<li>%s</li>' % htmlEscape(i))
+			res.append('</ul>')
+		else:
+			res.append('<p>None.</p>')
+
 	if parts.has_key('fixme'):
 		p = parts['fixme']
 		res.append('<div class="fixme">')
@@ -306,12 +317,36 @@ def transformRemoveClass(soup, cssClass):
 
 # FIXME: refactor shared parts
 
-def generateApiDoc(apidocdir):
+def scanApiCalls(apitestdir):	
+	re_api_call = re.compile(r'duk_[0-9a-zA-Z_]+')
+
+	res = {}  # api call -> [ test1, ..., testN ]
+
+	tmpfiles = os.listdir(apitestdir)
+	for filename in tmpfiles:
+		if os.path.splitext(filename)[1] != '.c':
+			continue
+
+		f = open(os.path.join(apitestdir, filename))
+		data = f.read()
+		f.close()
+
+		apicalls = re_api_call.findall(data)
+		for i in apicalls:
+			if not res.has_key(i):
+				res[i] = []
+			if filename not in res[i]:
+				res[i].append(filename)
+
+	for k in res.keys():
+		res[k].sort()
+
+	return res
+
+def generateApiDoc(apidocdir, apitestdir):
 	templ_soup = validateAndParseHtml(readFile('template.html'))
 
-	title_elem = templ_soup.select('#template-title')[0]
-	del title_elem['id']
-	title_elem.string = 'Duktape API'
+	# scan api files
 
 	tmpfiles = os.listdir(apidocdir)
 	apifiles = []
@@ -319,7 +354,19 @@ def generateApiDoc(apidocdir):
 		if os.path.splitext(filename)[1] == '.txt':
 			apifiles.append(filename)
 	apifiles.sort()
-	print(apifiles)
+	#print(apifiles)
+	print '%d api files' % len(apifiles)
+
+	# scan api testcases for references to API calls
+
+	testrefs = scanApiCalls(apitestdir)
+	print(repr(testrefs))
+
+	# title
+
+	title_elem = templ_soup.select('#template-title')[0]
+	del title_elem['id']
+	title_elem.string = 'Duktape API'
 
 	# nav
 
@@ -360,7 +407,7 @@ def generateApiDoc(apidocdir):
 		# that they don't break the entire page.
 
 		try:
-			data = processApiDoc(os.path.join('api', filename))
+			data = processApiDoc(os.path.join(apidocdir, filename), testrefs)
 			res += data
 		except:
 			print repr(data)
@@ -475,20 +522,25 @@ def writeFile(name, data):
 def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
+	apitestdir = '../api-testcases'
 
+	print 'Generating style.css'
 	data = generateStyleCss()
 	writeFile(os.path.join(outdir, 'style.css'), data)
 	#writeFile(os.path.join(outdir, 'reset.css'), readFile('reset.css'))
 	#writeFile(os.path.join(outdir, 'highlight.css'), readFile('highlight.css'))
 
-	soup = generateApiDoc(apidocdir)
+	print 'Generating api.html'
+	soup = generateApiDoc(apidocdir, apitestdir)
 	soup = postProcess(soup)
 	writeFile(os.path.join(outdir, 'api.html'), soup.encode('ascii'))
 
+	print 'Generating guide.html'
 	soup = generateGuide()
 	soup = postProcess(soup)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode('ascii'))
 
+	print 'Generating frontpage.html'
 	soup = generateFrontPage()
 	soup = postProcess(soup)
 	writeFile(os.path.join(outdir, 'frontpage.html'), soup.encode('ascii'))
