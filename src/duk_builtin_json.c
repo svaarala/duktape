@@ -1346,17 +1346,24 @@ static int json_enc_allow_into_proplist(duk_tval *tv) {
 }
 
 /*
- *  Entry points
+ *  Top level wrappers
  */
 
-int duk_builtin_json_object_parse(duk_context *ctx) {
+void duk_builtin_json_parse_helper(duk_context *ctx,
+                                   int idx_value,
+                                   int idx_reviver,
+                                   int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_json_dec_ctx js_ctx_alloc;
 	duk_json_dec_ctx *js_ctx = &js_ctx_alloc;
 	duk_hstring *h_text;
+#ifdef DUK_USE_ASSERTIONS
+	int top_at_entry = duk_get_top(ctx);
+#endif
 
-	DUK_DDDPRINT("JSON.parse() start: text=%!T, reviver=%!T, stack_top=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_top(ctx));
+	DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08x, stack_top=%d",
+	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
+	             flags, duk_get_top(ctx));
 
 	memset(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
@@ -1365,14 +1372,16 @@ int duk_builtin_json_object_parse(duk_context *ctx) {
 #endif
 	js_ctx->recursion_limit = DUK_JSON_DEC_RECURSION_LIMIT;
 
-	h_text = duk_to_hstring(ctx, 0);
+	/* FIXME: flags for custom parsing */
+
+	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place */
 	DUK_ASSERT(h_text != NULL);
 
 	js_ctx->p = (duk_u8 *) DUK_HSTRING_GET_DATA(h_text);
 	js_ctx->p_end = ((duk_u8 *) DUK_HSTRING_GET_DATA(h_text)) +
 	                DUK_HSTRING_GET_BYTELEN(h_text);
 
-	json_dec_value(js_ctx);  /* -> [ text reviver value ] */
+	json_dec_value(js_ctx);  /* -> [ ... value ] */
 
 	/* Trailing whitespace has been eaten by json_dec_value(), so if
 	 * we're not at end of input here, it's a SyntaxError.
@@ -1382,11 +1391,10 @@ int duk_builtin_json_object_parse(duk_context *ctx) {
 		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "invalid json");
 	}
 
-	if (duk_is_callable(ctx, 1)) {
-		DUK_DDDPRINT("applying reviver: %!T", duk_get_tval(ctx, 1));
+	if (duk_is_callable(ctx, idx_reviver)) {
+		DUK_DDDPRINT("applying reviver: %!T", duk_get_tval(ctx, idx_reviver));
 
-		/* FIXME: could be made constant */
-		js_ctx->idx_reviver = 1;
+		js_ctx->idx_reviver = idx_reviver;
 
 		DUK_ASSERT_TOP(ctx, 3);
 
@@ -1399,37 +1407,39 @@ int duk_builtin_json_object_parse(duk_context *ctx) {
 		             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
 		json_dec_reviver_walk(js_ctx);  /* [ ... val root "" ] -> [ ... val val' ] */
+		duk_remove(ctx, -2);            /* -> [ ... val' ] */
 	} else {
 		DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
-		             duk_get_tval(ctx, 1));
+		             duk_get_tval(ctx, idx_reviver));
 	}
-	/* stack unbalanced on purpose */
 
-	DUK_DDDPRINT("JSON.parse() end: text=%!T, reviver=%!T, result=%!T, stack_top=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_tval(ctx, -1),
-	             duk_get_top(ctx));
+	/* Final result is at stack top. */
 
-	return 1;
+	DUK_DDDPRINT("JSON parse end: text=%!T, reviver=%!T, flags=0x%08x, result=%!T, stack_top=%d",
+	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
+	             flags, duk_get_tval(ctx, -1), duk_get_top(ctx));
+
+	DUK_ASSERT(duk_get_top(ctx) == top_at_entry + 1);
 }
 
-int duk_builtin_json_object_stringify(duk_context *ctx) {
+void duk_builtin_json_stringify_helper(duk_context *ctx,
+                                       int idx_value,
+                                       int idx_replacer,
+                                       int idx_space,
+                                       int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_json_enc_ctx js_ctx_alloc;
 	duk_json_enc_ctx *js_ctx = &js_ctx_alloc;
 	duk_hobject *h;
 	int undef;
-	int flags;
 	int idx_holder;
+	int top_at_entry;
 
-	/* FIXME: Extract a generic helper.  This will be needed if/when JSON
-	 * encoding and decoding have multiple exposed entry points (e.g. for
-	 * accessing custom formatting options).  Also needed for adding JSON
-	 * operations to public API.
-	 */
+	DUK_DDDPRINT("JSON stringify start: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, stack_top=%d",
+	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
+	             duk_get_tval(ctx, idx_space), flags, duk_get_top(ctx));
 
-	DUK_DDDPRINT("JSON.stringify() start: value=%!T, replacer=%!T, space=%!T, stack_top=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1),
-	             duk_get_tval(ctx, 2), duk_get_top(ctx));
+	top_at_entry = duk_get_top(ctx);
 
 	/*
 	 *  Context init
@@ -1445,7 +1455,6 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	js_ctx->idx_proplist = -1;
 	js_ctx->recursion_limit = DUK_JSON_ENC_RECURSION_LIMIT;
 
-	flags = 0;
 #if 0  /* FIXME: custom formats; some implemented, some not */
 	flags |= DUK_JSON_ENC_FLAG_ASCII_ONLY;
 	flags |= DUK_JSON_ENC_FLAG_AVOID_KEY_QUOTES;
@@ -1486,11 +1495,13 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	js_ctx->idx_loop = duk_push_new_object_internal(ctx);
 	DUK_ASSERT(js_ctx->idx_loop >= 0);
 
+	/* [ ... buf loop ] */
+
 	/*
-	 *  Process replacer/proplist (2nd argument)
+	 *  Process replacer/proplist (2nd argument to JSON.stringify)
 	 */
 
-	h = duk_get_hobject(ctx, 1);
+	h = duk_get_hobject(ctx, idx_replacer);
 	if (h != NULL) {
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
@@ -1509,7 +1520,7 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 
 			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
 			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
-			duk_enum(ctx, 1, enum_flags);
+			duk_enum(ctx, idx_replacer, enum_flags);
 			while (duk_next(ctx, -1 /*enum_index*/, 1 /*get_value*/)) {
 				/* [ ... proplist enum_obj key val ] */
 				if (json_enc_allow_into_proplist(duk_get_tval(ctx, -1))) {
@@ -1530,29 +1541,31 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 		}
 	}
 
+	/* [ ... buf loop (proplist) ] */
+
 	/*
-	 *  Process space (3rd argument)
+	 *  Process space (3rd argument to JSON.stringify)
 	 */
 
-	h = duk_get_hobject(ctx, 2);
+	h = duk_get_hobject(ctx, idx_space);
 	if (h != NULL) {
 		int c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		if (c == DUK_HOBJECT_CLASS_NUMBER) {
-			duk_to_number(ctx, 2);
+			duk_to_number(ctx, idx_space);
 		} else if (c == DUK_HOBJECT_CLASS_STRING) {
-			duk_to_string(ctx, 2);
+			duk_to_string(ctx, idx_space);
 		}
 	}
 
-	if (duk_is_number(ctx, 2)) {
+	if (duk_is_number(ctx, idx_space)) {
 		double d;
 		int nspace;
 		char spaces[10] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };  /* FIXME:helper */
 
 		/* ToInteger() coercion; NaN -> 0, infinities are clamped to 0 and 10 */
 		/* FIXME: get_clamped_int; double arithmetic is expensive */
-		(void) duk_to_int(ctx, 2);
-		d = duk_get_number(ctx, 2);
+		(void) duk_to_int(ctx, idx_space);
+		d = duk_get_number(ctx, idx_space);
 		if (d > 10) {
 			nspace = 10;
 		} else if (d < 1) {
@@ -1565,9 +1578,9 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 		duk_push_lstring(ctx, spaces, nspace);
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
-	} else if (duk_is_string(ctx, 2)) {
+	} else if (duk_is_string(ctx, idx_space)) {
 		/* FIXME: substring API requires a dup */
-		duk_dup(ctx, 2);
+		duk_dup(ctx, idx_space);
 		duk_substring(ctx, 0, 10);  /* clamp to 10 chars */
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
@@ -1588,12 +1601,14 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	DUK_ASSERT((js_ctx->h_gap == NULL && js_ctx->h_indent == NULL) ||
 	           (js_ctx->h_gap != NULL && js_ctx->h_indent != NULL));
 
+	/* [ ... buf loop (proplist) (gap) ] */
+
 	/*
 	 *  Create wrapper object and serialize
 	 */
 
 	idx_holder = duk_push_new_object(ctx);
-	duk_dup(ctx, 0);
+	duk_dup(ctx, idx_value);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 
 	DUK_DDDPRINT("before: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
@@ -1609,12 +1624,10 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	/* serialize the wrapper with empty string key */
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
-	undef = json_enc_value1(js_ctx, idx_holder);  /* [ ... key ] -> [ ... key val ] */
-	if (undef) {
-		return 0;
-	} else {
-		json_enc_value2(js_ctx);  /* [ ... key val ] -> [ ... ] */
-	}
+
+	/* [ ... buf loop (proplist) (gap) holder "" ] */
+
+	undef = json_enc_value1(js_ctx, idx_holder);  /* [ ... holder key ] -> [ ... holder key val ] */
 
 	DUK_DDDPRINT("after: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
 	             js_ctx->flags,
@@ -1624,20 +1637,57 @@ int duk_builtin_json_object_stringify(duk_context *ctx) {
 	             js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL,
 	             js_ctx->h_gap,
 	             js_ctx->h_indent,
-	             duk_get_tval(ctx, -1));
+	             duk_get_tval(ctx, -3));
 
-	/*
-	 *  Convert buffer to result string
+	if (undef) {
+		/*
+		 *  Result is undefined
+		 */
+
+		duk_push_undefined(ctx);
+	} else {
+		/*
+		 *  Finish and convert buffer to result string
+		 */
+
+		json_enc_value2(js_ctx);  /* [ ... key val ] -> [ ... ] */
+		DUK_ASSERT(js_ctx->h_buf != NULL);
+		duk_push_hbuffer(ctx, (duk_hbuffer *) js_ctx->h_buf);
+		duk_to_string(ctx, -1);
+	}
+
+	/* The stack has a variable shape here, so force it to the
+	 * desired one explicitly.
 	 */
 
-	DUK_ASSERT(js_ctx->h_buf != NULL);
-	duk_push_hbuffer(ctx, (duk_hbuffer *) js_ctx->h_buf);
-	duk_to_string(ctx, -1);
+	duk_replace(ctx, top_at_entry);
+	duk_set_top(ctx, top_at_entry + 1);
 
-	DUK_DDDPRINT("JSON.stringify() end: value=%!T, replacer=%!T, space=%!T, stack_top=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1),
-	             duk_get_tval(ctx, 2), duk_get_top(ctx));
+	DUK_DDDPRINT("JSON stringify end: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, result=%!T, stack_top=%d",
+	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
+	             duk_get_tval(ctx, idx_space), flags, duk_get_tval(ctx, -1), duk_get_top(ctx));
 
+	DUK_ASSERT(duk_get_top(ctx) == top_at_entry + 1);
+}
+
+/*
+ *  Entry points
+ */
+
+int duk_builtin_json_object_parse(duk_context *ctx) {
+	duk_builtin_json_parse_helper(ctx,
+	                              0 /*idx_value*/,
+	                              1 /*idx_replacer*/,
+	                              0 /*flags*/);
+	return 1;
+}
+
+int duk_builtin_json_object_stringify(duk_context *ctx) {
+	duk_builtin_json_stringify_helper(ctx,
+	                                  0 /*idx_value*/,
+	                                  1 /*idx_replacer*/,
+	                                  2 /*idx_space*/,
+	                                  0 /*flags*/);
 	return 1;
 }
 

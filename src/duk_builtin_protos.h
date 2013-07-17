@@ -136,6 +136,15 @@ int duk_builtin_global_object_print(duk_context *ctx);
 int duk_builtin_global_object_alert(duk_context *ctx);
 #endif
 
+void duk_builtin_json_parse_helper(duk_context *ctx,
+                                   int idx_value,
+                                   int idx_reviver,
+                                   int flags);
+void duk_builtin_json_stringify_helper(duk_context *ctx,
+                                       int idx_value,
+                                       int idx_replacer,
+                                       int idx_space,
+                                       int flags);
 int duk_builtin_json_object_parse(duk_context *ctx);
 int duk_builtin_json_object_stringify(duk_context *ctx);
 
