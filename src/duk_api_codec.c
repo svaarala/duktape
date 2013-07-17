@@ -159,13 +159,13 @@ static int base64_decode_helper(const unsigned char *src, const unsigned char *s
 	return 0;
 }
 
-
-void duk_base64_encode(duk_context *ctx, int index) {
+const char *duk_base64_encode(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	unsigned char *src;
 	size_t srclen;
 	size_t dstlen;
 	unsigned char *dst;
+	const char *ret;
 
 	/* FIXME: optimize for string inputs: no need to coerce to a buffer
 	 * which makes a copy of the input.
@@ -189,12 +189,13 @@ void duk_base64_encode(duk_context *ctx, int index) {
 	base64_encode_helper((const unsigned char *) src, (const unsigned char *) (src + srclen),
 	                     (unsigned char *) dst, (unsigned char *) (dst + dstlen));
 
-	duk_to_string(ctx, -1);
+	ret = duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
-	return;
+	return ret;
 
  type_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "base64 encode failed");
+	return NULL;  /* never here */
 }
 
 void duk_base64_decode(duk_context *ctx, int index) {
@@ -204,7 +205,7 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	size_t dstlen;
 	unsigned char *dst;
 	unsigned char *dst_final;
-	int ret;
+	int retval;
 
 	/* FIXME: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
@@ -225,9 +226,9 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	dst = duk_push_new_dynamic_buffer(ctx, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
-	ret = base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
-	                           dst, dst + dstlen, &dst_final);
-	if (!ret) {
+	retval = base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
+	                              dst, dst + dstlen, &dst_final);
+	if (!retval) {
 		goto type_error;
 	}
 
@@ -240,15 +241,17 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "base64 decode failed");
 }
 
-void duk_hex_encode(duk_context *ctx, int index) {
+const char *duk_hex_encode(duk_context *ctx, int index) {
 	unsigned char *data;
 	size_t len;
 	size_t i;
 	int t;
 	unsigned char *buf;
+	const char *ret;
 
 	/* FIXME: special case for input string, no need to coerce to buffer */
 
+	index = duk_require_normalize_index(ctx, index);
 	data = duk_to_buffer(ctx, index, &len);
 	DUK_ASSERT(data != NULL);
 
@@ -262,8 +265,9 @@ void duk_hex_encode(duk_context *ctx, int index) {
 		buf[i*2 + 1] = duk_lc_digits[t & 0x0f];
 	}
 
-	duk_to_string(ctx, -1);
+	ret = duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
+	return ret;
 }
 
 void duk_hex_decode(duk_context *ctx, int index) {
@@ -278,6 +282,7 @@ void duk_hex_decode(duk_context *ctx, int index) {
 	 * which causes an unnecessary interning.
 	 */
 
+	index = duk_require_normalize_index(ctx, index);
 	str = duk_to_lstring(ctx, index, &len);
 	DUK_ASSERT(str != NULL);
 
@@ -316,11 +321,38 @@ void duk_hex_decode(duk_context *ctx, int index) {
 }
 
 const char *duk_json_encode(duk_context *ctx, int index) {
-	/* FIXME */
-	return NULL;
+#ifdef DUK_USE_ASSERTIONS
+	int top_at_entry = duk_get_top(ctx);
+#endif
+	const char *ret;
+
+	index = duk_require_normalize_index(ctx, index);
+	duk_builtin_json_stringify_helper(ctx,
+	                                  index /*idx_value*/,
+	                                  DUK_INVALID_INDEX /*idx_replacer*/,
+	                                  DUK_INVALID_INDEX /*idx_space*/,
+	                                  0 /*flags*/);
+	DUK_ASSERT(duk_is_string(ctx, -1));
+	duk_replace(ctx, index);
+	ret = duk_get_string(ctx, index);
+
+	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
+
+	return ret;
 }
 
 void duk_json_decode(duk_context *ctx, int index) {
-	/* FIXME */
+#ifdef DUK_USE_ASSERTIONS
+	int top_at_entry = duk_get_top(ctx);
+#endif
+
+	index = duk_require_normalize_index(ctx, index);
+	duk_builtin_json_parse_helper(ctx,
+	                              index /*idx_value*/,
+	                              DUK_INVALID_INDEX /*idx_reviver*/,
+	                              0 /*flags*/);
+	duk_replace(ctx, index);
+
+	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
 }
 
