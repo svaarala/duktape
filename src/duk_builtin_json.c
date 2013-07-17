@@ -1506,11 +1506,10 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
 		} else if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY) {
-			/* Here the specification requires correct array index enumeration.
-			 * We don't currently fulfill that requirement for sparse arrays,
-			 * as that would be quite complicated and/or slow to do.  We now
-			 * enumerate ancestors too, although the specification is not very
-			 * clear on whether that is required.
+			/* Here the specification requires correct array index enumeration
+			 * which is a bit tricky for sparse arrays (it is handled by the
+			 * enum setup code).  We now enumerate ancestors too, although the
+			 * specification is not very clear on whether that is required.
 			 */
 
 			int plist_idx = 0;
