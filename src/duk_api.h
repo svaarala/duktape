@@ -394,14 +394,10 @@ void duk_to_primitive(duk_context *ctx, int index, int hint);            /* Ecma
  *  Misc conversion
  */
 
-void duk_base64_encode(duk_context *ctx, int index);
+const char *duk_base64_encode(duk_context *ctx, int index);
 void duk_base64_decode(duk_context *ctx, int index);
+const char *duk_hex_encode(duk_context *ctx, int index);
 void duk_hex_decode(duk_context *ctx, int index);
-void duk_hex_encode(duk_context *ctx, int index);
-
-/* XXX: duk_to_json in place, return const char *, would be
- * nice for printing.
- */
 const char *duk_json_encode(duk_context *ctx, int index);
 void duk_json_decode(duk_context *ctx, int index);
 

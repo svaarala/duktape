@@ -108,8 +108,11 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			h = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(h != NULL);
 
-			/* Currently all built-in native functions are strict. */
-			DUK_HOBJECT_SET_STRICT(h);
+			/* Currently all built-in native functions are strict.
+			 * duk_push_new_c_function() now sets strict flag, so
+			 * assert for it.
+			 */
+			DUK_ASSERT(DUK_HOBJECT_HAS_STRICT(h));
 
 			/* FIXME: function properties */
 
