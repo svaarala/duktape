@@ -6,22 +6,23 @@ int duk_get_prop(duk_context *ctx, int obj_index);
 [ ... obj! ... key! ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
 
 =summary
-<p>Get the value of property <tt>key</tt> from a value at <tt>obj_index</tt>.
+<p>Get the property <tt>key</tt> of a value at <tt>obj_index</tt>.
 The <tt>key</tt> is removed from the stack and the property value is pushed
 to the stack, effectively replacing <tt>key</tt>.
-If the property exists, a non-zero value is returned by the call.
-If the property does not exist, a zero is returned and <tt>undefined</tt>
+If the property exists, a non-zero value is returned.
+If the property does not exist, 0 is returned and <tt>undefined</tt>
 is provided as the property value.
 If <tt>obj_index</tt> is invalid, throws an error.</p>
 
-<p>The property access is equivalent to the Ecmascript expression:</p>
+<p>The property read is equivalent to the Ecmascript expression:</p>
 <pre class="ecmascript-code">
-result = obj[key]
+obj[key]
 </pre>
 
 <p>For semantics, see
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>
-and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue(V)</a>.
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue(V)</a>,
+and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.3">[[Get]](P)</a>.
 Both the target value and the <tt>key</tt> are coerced:</p>
 <ul>
 <li>The target value is automatically coerced to an object.  For instance,
@@ -61,4 +62,4 @@ duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
 
 =fixme
 The obj_index argument name is misleading: the value doesn't have to be
-an object.
+an object.  Change "non-zero" to "1" for return value?
