@@ -14,9 +14,14 @@ If the property does not exist, a zero is returned and <tt>undefined</tt>
 is provided as the property value.
 If <tt>obj_index</tt> is invalid, throws an error.</p>
 
-<p>The property access follows Ecmascript semantics (see
+<p>The property access is equivalent to the Ecmascript expression:</p>
+<pre class="ecmascript-code">
+result = obj[key]
+</pre>
+
+<p>For semantics, see
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>
-and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue(V)</a>).
+and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue(V)</a>.
 Both the target value and the <tt>key</tt> are coerced:</p>
 <ul>
 <li>The target value is automatically coerced to an object.  For instance,
