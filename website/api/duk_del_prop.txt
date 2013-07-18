@@ -1,0 +1,57 @@
+=proto
+int duk_del_prop(duk_context *ctx, int obj_index);
+
+=stack
+[ ... obj! ... key! ] -> [ ... obj! ... ]
+
+=summary
+<p>Delete the property <tt>key</tt> of a value at <tt>obj_index</tt>.
+The <tt>key</tt> is removed from the stack.  Return code and throwing
+behavior is a bit elaborate:</p>
+<ul>
+<li>If property exists and is configurable (deletable), returns non-zero.</li>
+<li>If property exists but is not configurable, throws an error if current
+    function is strict, returns 0 otherwise.</li>
+<li>If property does not exist, returns non-zero.</li>
+<li>If <tt>obj_index</tt> is invalid, throws an error.</li>
+</ul>
+
+<p>The property deletion is equivalent to the Ecmascript expression:</p>
+<pre class="ecmascript-code">
+delete obj[key]
+</pre>
+
+<p>For semantics, see
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.4.1">The delete operator</a>
+and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.7">[[Delete]](P, Throw)</a>.
+The return value and error throwing behavior mirrors the Ecmascript
+<tt>delete</tt> operator behavior.
+Both the target value and the <tt>key</tt> are coerced:</p>
+<ul>
+<li>The target value is automatically coerced to an object.  However, this
+    object is a temporary one, so deleting its properties is not very useful.</li>
+<li>The <tt>key</tt> argument is internally coerced to a string.  There is
+    an internal fast path for arrays and numeric indices which avoids an
+    explicit string coercion, so use a numeric <tt>key</tt> when applicable.</p>
+</ul>
+
+<div class="note">
+At the moment all Duktape/C functions are strict.  When called from a
+Duktape/C function, this API call thus either returns non-zero or throws
+an error.  However, if called outside a Duktape/C function (when the
+context has an empty call stack) the API call executes in non-strict mode,
+i.e. returns 0 when trying to delete a non-configurable property.
+</div>
+
+<p>If the key is a fixed string you can avoid one API call and use the
+<tt><a href="#duk_del_prop_string">duk_del_prop_string()</a></tt> variant.
+Similarly, if the key is an array index, you can use the
+<tt><a href="#duk_del_prop_index">duk_del_prop_index()</a></tt> variant.</p>
+
+=example
+int rc;
+
+duk_push_string(ctx, "myProperty");
+rc = duk_del_prop(ctx, -3);
+printf("delete obj.myProperty -> rc=%d\n", rc);
