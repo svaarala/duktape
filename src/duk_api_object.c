@@ -62,13 +62,12 @@ int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	return duk_get_prop(ctx, obj_index);
 }
 
-/* FIXME: checked variant? */
 int duk_put_prop(duk_context *ctx, int obj_index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_obj;
 	duk_tval *tv_key;
 	duk_tval *tv_val;
-	int throw_flag = 0;
+	int throw_flag;
 	int rc;
 
 	DUK_ASSERT(ctx != NULL);
@@ -81,7 +80,7 @@ int duk_put_prop(duk_context *ctx, int obj_index) {
 	tv_obj = duk_require_tval(ctx, obj_index);
 	tv_key = duk_require_tval(ctx, -2);
 	tv_val = duk_require_tval(ctx, -1);
-	throw_flag = 0;  /* 0 = don't throw */
+	throw_flag = duk_is_strict_call(ctx);  /* FIXME */
 
 	rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, throw_flag);
 
@@ -120,7 +119,6 @@ int duk_put_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	return duk_put_prop(ctx, obj_index);
 }
 
-/* FIXME: checked variant? */
 int duk_del_prop(duk_context *ctx, int obj_index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_obj;
@@ -136,7 +134,7 @@ int duk_del_prop(duk_context *ctx, int obj_index) {
 
 	tv_obj = duk_require_tval(ctx, obj_index);
 	tv_key = duk_require_tval(ctx, -1);
-	throw_flag = 0;  /* 0 = don't throw */
+	throw_flag = duk_is_strict_call(ctx);  /* FIXME */
 
 	rc = duk_hobject_delprop(thr, tv_obj, tv_key, throw_flag);
 
