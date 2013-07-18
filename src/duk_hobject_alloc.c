@@ -133,6 +133,8 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags) {
 		}
 	}
 #endif
+	/* when nothing is running, API calls are in non-strict mode */
+	DUK_ASSERT(res->strict == 0);
 
 	res->heap = heap;
 	res->valstack_max = DUK_VALSTACK_DEFAULT_MAX;
