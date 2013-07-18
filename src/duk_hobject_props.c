@@ -3050,7 +3050,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	DUK_DDDPRINT("delete failed: property found, not configurable");
 
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property is not configurable");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property not configurable");
 	}
 	return 0;
 }
