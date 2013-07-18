@@ -1,0 +1,59 @@
+=proto
+int duk_get_prop(duk_context *ctx, int obj_index);
+
+=stack
+[ ... obj! ... key! ] -> [ ... obj! ... val! ]  (if key exists)
+[ ... obj! ... key! ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
+
+=summary
+<p>Get the value of property <tt>key</tt> from a value at <tt>obj_index</tt>.
+The <tt>key</tt> is removed from the stack and the property value is pushed
+to the stack, effectively replacing <tt>key</tt>.
+If the property exists, a non-zero value is returned by the call.
+If the property does not exist, a zero is returned and <tt>undefined</tt>
+is provided as the property value.
+If <tt>obj_index</tt> is invalid, throws an error.</p>
+
+<p>The property access follows Ecmascript semantics (see
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>
+and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue(V)</a>).
+Both the target value and the <tt>key</tt> are coerced:</p>
+<ul>
+<li>The target value is automatically coerced to an object.  For instance,
+    a string is converted to a <tt>String</tt> and you can access its
+    <tt>"length"</tt> property.</li>
+<li>The <tt>key</tt> argument is internally coerced to a string.  There is
+    an internal fast path for arrays and numeric indices which avoids an
+    explicit string coercion, so use a numeric <tt>key</tt> when applicable.</p>
+</ul>
+
+<p>If the key is a fixed string you can avoid one API call and use the
+<tt><a href="#duk_get_prop_string">duk_get_prop_string()</a></tt> variant.
+Similarly, if the key is an array index, you can use the
+<tt><a href="#duk_get_prop_index">duk_get_prop_index()</a></tt> variant.</p>
+
+=example
+/* reading [global object].Math.PI */
+duk_push_global_object(ctx);    /* -> [ global ] */
+duk_push_string(ctx, "Math");   /* -> [ global "Math" ] */
+duk_get_prop(ctx, -2);          /* -> [ global Math ] */
+duk_push_string(ctx, "PI");     /* -> [ global Math "PI" ] */
+duk_get_prop(ctx, -2);          /* -> [ global Math PI ] */
+printf("Math.PI is %lf\n", duk_get_number(ctx, -1));
+duk_pop_n(ctx, 3);
+
+/* reading a configuration value, cfg_idx is normalized
+ * index of a configuration object.
+ */
+duk_push_string(ctx, "mySetting");
+if (duk_get_prop(ctx, cfg_idx)) {
+    const char *str_value = duk_to_string(ctx, -1);
+    printf("configuration setting present, value: %s\n", str_value);
+} else {
+    printf("configuration setting missing\n");
+}
+duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
+
+=fixme
+The obj_index argument name is misleading: the value doesn't have to be
+an object.

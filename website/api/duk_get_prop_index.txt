@@ -1,0 +1,22 @@
+=proto
+int duk_get_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... val! ]  (if key exists)
+[ ... obj! ... ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
+
+=summary
+<p>Like <tt><a href="#duk_get_prop">duk_get_prop()</a></tt>,
+but the property name is given as an unsigned integer
+<tt>arr_index</tt>.  This is especially useful for accessing
+array elements (but is not limited to that).</p>
+
+<p>Conceptually the number is coerced to a string for property
+access, e.g. <tt>123</tt> would be equivalent to a property name
+<tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
+possible.</p>
+
+=example
+duk_get_prop_index(ctx, -3, 123);
+printf("obj[123] = '%s'\n", duk_to_string(ctx, -1));
+duk_pop(ctx);

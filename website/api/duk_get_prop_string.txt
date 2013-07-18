@@ -1,0 +1,16 @@
+=proto
+int duk_get_prop_string(duk_context *ctx, int obj_index, const char *key);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... val! ]  (if key exists)
+[ ... obj! ... ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
+
+=summary
+<p>Like <tt><a href="#duk_get_prop">duk_get_prop()</a></tt>,
+but the property name is given as a NUL-terminated C string
+<tt>key</tt>.</p>
+
+=example
+duk_get_prop_string(ctx, -3, "propertyName");
+printf("obj.propertyName = '%s'\n", duk_to_string(ctx, -1));
+duk_pop(ctx);
