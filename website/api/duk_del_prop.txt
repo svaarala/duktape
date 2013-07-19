@@ -13,6 +13,9 @@ behavior is a bit elaborate:</p>
 <li>If property exists but is not configurable, throws an error if current
     function is strict, returns 0 otherwise.</li>
 <li>If property does not exist, returns non-zero.</li>
+<li>If the value at <tt>obj_index</tt> is not
+    <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
+    throws an error.</p>
 <li>If <tt>obj_index</tt> is invalid, throws an error.</li>
 </ul>
 

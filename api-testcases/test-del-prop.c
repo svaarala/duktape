@@ -20,6 +20,8 @@ rc=1, result='TypeError: property not configurable'
 rc=1, result='Error: index out of bounds'
 *** test_1e
 rc=1, result='Error: index out of bounds'
+*** test_1f
+rc=1, result='TypeError: invalid base reference for property delete'
 *** test_2a
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
@@ -188,6 +190,20 @@ int test_1e(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	rc = duk_del_prop(ctx, DUK_INVALID_INDEX);
 	printf("delete obj.foo -> rc=%d\n", rc);
+
+	printf("final top: %d\n", duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_del_prop(), not object coercible */
+int test_1f(duk_context *ctx) {
+	int rc;
+
+	duk_set_top(ctx, 0);
+	duk_push_null(ctx);
+	duk_push_string(ctx, "foo");
+	rc = duk_del_prop(ctx, -2);
+	printf("delete null.foo -> rc=%d\n", rc);
 
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
@@ -386,6 +402,7 @@ void test(duk_context *ctx) {
 	TESTWRAPPED(test_1c);
 	TEST(test_1d);
 	TEST(test_1e);
+	TEST(test_1f);
 
 	TEST(test_2a);
 	TESTWRAPPED(test_2b);

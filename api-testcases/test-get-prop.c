@@ -19,6 +19,8 @@ Math.PI is 3.141593
 configuration setting present, value: setting value
 final top: 4
 rc=0, result='undefined'
+*** test_1e
+rc=1, result='TypeError: invalid base reference for property read'
 *** test_2a
 obj.foo -> rc=1, result='fooval'
 obj.nonexistent -> rc=0, result='undefined'
@@ -179,6 +181,22 @@ int test_1d(duk_context *ctx) {
 	return 0;
 }
 
+/* duk_get_prop(), not object coercible */
+int test_1e(duk_context *ctx) {
+	int rc;
+
+	duk_set_top(ctx, 0);
+
+	duk_push_null(ctx);
+	duk_push_string(ctx, "foo");
+	rc = duk_get_prop(ctx, -2);
+	printf("null.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %d\n", duk_get_top(ctx));
+	return 0;
+}
+
 /* duk_get_prop_string(), success cases */
 int test_2a(duk_context *ctx) {
 	int rc;
@@ -321,6 +339,7 @@ void test(duk_context *ctx) {
 	TEST(test_1b);
 	TEST(test_1c);
 	TEST(test_1d);
+	TEST(test_1e);
 
 	TEST(test_2a);
 	TEST(test_2b);

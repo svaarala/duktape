@@ -7,12 +7,17 @@ int duk_get_prop(duk_context *ctx, int obj_index);
 
 =summary
 <p>Get the property <tt>key</tt> of a value at <tt>obj_index</tt>.
-The <tt>key</tt> is removed from the stack and the property value is pushed
-to the stack, effectively replacing <tt>key</tt>.
-If the property exists, a non-zero value is returned.
-If the property does not exist, 0 is returned and <tt>undefined</tt>
-is provided as the property value.
-If <tt>obj_index</tt> is invalid, throws an error.</p>
+Return code and throwing behavior is a bit elaborate:</p>
+<ul>
+<li>If the property exists, a non-zero value is returned and <tt>key</tt>
+    is replaced by the property value on the value stack.</li>
+<li>If the property does not exist, 0 is returned and <tt>key</tt>
+    is replaced by <tt>undefined</tt> on the value stack.</li>
+<li>If the value at <tt>obj_index</tt> is not
+    <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
+    throws an error.</p>
+<li>If <tt>obj_index</tt> is invalid, throws an error.</li>
+</ul>
 
 <p>The property read is equivalent to the Ecmascript expression:</p>
 <pre class="ecmascript-code">
