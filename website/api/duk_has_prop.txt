@@ -1,0 +1,57 @@
+=proto
+int duk_has_prop(duk_context *ctx, int obj_index);
+
+=stack
+[ ... obj! ... key! ] -> [ ... obj! ... ]
+
+=summary
+<p>Check whether value at <tt>obj_index</tt> has a property <tt>key</tt>.
+<tt>key</tt> is removed from the stack.  Return code and error throwing
+behavior:</p>
+<ul>
+<li>If the property exists, a non-zero value is returned.</li>
+<li>If the property doesn't exist, 0 is returned.</li>
+<li>If the value at <tt>obj_index</tt> is not an object, throws an error.</li>
+<li>If <tt>obj_index</tt> is invalid, throws an error.</li>
+</ul>
+
+<p>The property existence check is equivalent to the Ecmascript expression:</p>
+<pre class="ecmascript-code">
+key in obj
+</pre>
+
+<p>For semantics, see
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7">The in operator</a>,
+and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.6">[[HasProperty]] (P)</a>.
+Both the target value and the <tt>key</tt> are coerced:</p>
+<ul>
+<li>The target value is automatically coerced to an object.  For instance,
+    a string is converted to a <tt>String</tt> and you can check for its
+    <tt>"length"</tt> property.</li>
+<li>The <tt>key</tt> argument is internally coerced to a string.  There is
+    an internal fast path for arrays and numeric indices which avoids an
+    explicit string coercion, so use a numeric <tt>key</tt> when applicable.</p>
+</ul>
+
+<div class="note">
+Instead of accepting any
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>
+value (like most property related API calls) this call accepts only an object
+as its target value.  This is intentional as it follows Ecmascript operator semantics.
+</div>
+
+<p>If the key is a fixed string you can avoid one API call and use the
+<tt><a href="#duk_has_prop_string">duk_has_prop_string()</a></tt> variant.
+Similarly, if the key is an array index, you can use the
+<tt><a href="#duk_has_prop_index">duk_has_prop_index()</a></tt> variant.</p>
+
+=example
+int rc;
+
+duk_push_string(ctx, "myProperty");
+if (duk_has_prop(ctx, -3)) {
+    printf("obj has 'myProperty'\n");
+} else {
+    printf("obj does not have 'myProperty'\n");
+}
