@@ -13,8 +13,8 @@
 11:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
 12:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=1 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
 13:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=1 efun=0 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
-14:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=1 arr=0 fun=1 cfun=0 efun=1 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
-15:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=1 call=1 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
+14:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=1 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
+15:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=1 call=1 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
 16:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=1 buf=0 dyn=0 fix=0 ptr=0 prim=0 objcoerc=1
 17:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=1 ptr=0 prim=1 objcoerc=0
 18:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=1 fix=0 ptr=0 prim=1 objcoerc=0
@@ -77,18 +77,12 @@ void test(duk_context *ctx) {
 	duk_push_new_c_function(ctx, my_c_func, DUK_VARARGS);
 
 	/* 14 */
-#if 0
-	duk_eval(ctx, "(function() { print('hello'); })");
-#else
-	duk_push_string(ctx, "FIXME");
-#endif
+	duk_push_string(ctx, "(function() { print('hello'); })");
+	duk_eval(ctx);
 
 	/* 15 */
-#if 0
-	duk_eval(ctx, "escape.bind(null, 'foo')");
-#else
-	duk_push_string(ctx, "FIXME");
-#endif
+	duk_push_string(ctx, "escape.bind(null, 'foo')");
+	duk_eval(ctx);
 
 	/* 16 */
 	duk_push_new_thread(ctx);
