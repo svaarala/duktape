@@ -1,0 +1,17 @@
+=proto
+int duk_has_prop_string(duk_context *ctx, int obj_index, const char *key);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_has_prop">duk_has_prop()</a></tt>,
+but the property name is given as a NUL-terminated C string
+<tt>key</tt>.</p>
+
+=example
+if (duk_has_prop(ctx, -3, "myProperty")) {
+    printf("obj has 'myProperty'\n");
+} else {
+    printf("obj does not have 'myProperty'\n");
+}

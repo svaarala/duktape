@@ -1,0 +1,21 @@
+=proto
+int duk_put_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
+
+=stack
+[ ... obj! ... val! ] -> [ ... obj! ... ]
+
+=summary
+<p>Like <tt><a href="#duk_put_prop">duk_put_prop()</a></tt>,
+but the property name is given as an unsigned integer
+<tt>arr_index</tt>.  This is especially useful for writing to
+array elements (but is not limited to that).</p>
+
+<p>Conceptually the number is coerced to a string for the property
+write, e.g. <tt>123</tt> would be equivalent to a property
+name <tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
+possible.</p>
+
+=example
+duk_push_string(ctx, "value");
+rc = duk_put_prop_index(ctx, -3, 123);  /* write to obj[123] */
+printf("rc=%d\n", rc);
