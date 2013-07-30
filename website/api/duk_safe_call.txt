@@ -1,0 +1,62 @@
+=proto
+int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets, int errhandler_index);
+
+=stack
+[ ... arg1! ...! argN! ] -> [ ... ret1! ...! retN! ]
+
+=summary
+<p>Perform a protected pure C function call.  Operates on the existing value stack
+frame and is not visible on the call stack.  This call is useful as it provides a
+way to catch errors, perform cleanup, and perhaps rethrow.</p>
+
+<p>Because this call operates on the current value stack frame, stack behavior
+differs a bit from other call types.</p>
+
+<p>The top <tt>nargs</tt> elements of the stack top are identified as arguments to
+<tt>func</tt> establishing a "base index" for the return stack as:</p>
+<pre>
+(duk_get_top() - nargs)
+</pre>
+
+<p>When <tt>func</tt> returns, it indicates with its return value the number of
+return values it has pushed on top of the stack; multiple or zero return
+values possible.  The stack is then manipulated so that there are exactly
+<tt>nrets</tt> values starting at the "base index" established before the call.</p>
+
+<p>Note that since <tt>func</tt> has full access to the value stack, it may modify
+the stack below the indended arguments and even pop elements below the "base index"
+off the stack.  Such elements are restored with <tt>undefined</tt> values before
+returning, to ensure that the stack is always in a consistent state upon returning.</p>
+
+<p>If an error occurs, the stack will still have <tt>nrets</tt> values at "base index";
+the first of such values is the error, and the remaining values are <tt>undefined</tt>.
+If <tt>nrets</tt> is zero, the error will not be present on the stack (the return stack
+top will equal the "base index"), so calling this function with <tt>nrets</tt> as 0
+is not very useful.</p>
+
+<p>Example with <tt>nargs = 3</tt>, <tt>nrets = 2</tt>, <tt>func</tt> returns 4.
+Pipe chars indicate logical boundaries:</p>
+
+<pre>
+      .--- frame bottom
+      |
+      |     .--- "base index"
+      v     v
+[ ... | ... | a b c ]            stack before calling 'func'
+
+[ ... | ... | a b | x y z w ]    stack after calling 'func', which has
+                                 popped one argument and written four
+                                 return values
+
+[ ... | ... | x y ]              stack after duk_safe_call() returns,
+                                 2 (= nrets) first 'func' return values
+                                 are left at "base index"
+</pre>
+
+<div class="note">
+Note that <tt>func</tt> uses caller stack frame, so bottom-based references
+are dangerous within 'func'.
+</div>
+
+=example
+FIXME
