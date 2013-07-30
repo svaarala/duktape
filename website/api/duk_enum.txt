@@ -1,0 +1,48 @@
+=proto
+void duk_enum(duk_context *ctx, int obj_index, int enum_flags);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... enum! ]
+
+=summary
+<p>Create an enumerator for object at <tt>obj_index</tt>.  Enumeration
+details can be controlled with <tt>enum_flags</tt>.  If the target value
+is not an object, throws an error.</p>
+
+<p>Enumeration flags:</p>
+<ul>
+<li><tt>DUK_ENUM_INCLUDE_NONENUMERABLE</tt>: enumerate also non-enumerable
+    properties (by default only enumerable properties are enumerated)</li>
+<li><tt>DUK_ENUM_INCLUDE_INTERNAL</tt>: enumerate also internal properties
+    (by default internal properties are not enumerated)</li>
+<li><tt>DUK_ENUM_OWN_PROPERTIES_ONLY</tt>: enumerate only an object's "own"
+    properties (by default also inherited properties are enumerated) </li>
+<li><tt>DUK_ENUM_ARRAY_INDICES_ONLY</tt>: enumerate only array indices,
+    i.e. property names of the form "0", "1", "2", etc.</li>
+<li><tt>DUK_ENUM_SORT_ARRAY_INDICES</tt>: sort array indices by their numeric
+    value, only use with <tt>DUK_ENUM_ARRAY_INDICES_ONLY</tt>; this is quite
+    slow</li>
+</ul>
+
+<p>Without any flags, enumeration follows the Ecmascript default enumeration
+semantics, as in the expression:</p>
+<pre class="ecmascript-code">
+for (key in obj) {
+    print(key, obj[i]);
+}
+</pre>
+
+<p>Once the enumerator has been created, use
+<tt><a href="#duk_next">duk_next()</a></tt> to extract keys (or key/value
+pairs) from the enumerator.</p>
+
+=example
+duk_enum(ctx, -3, DUK_ENUM_INCLUDE_NONENUMERABLE);
+
+while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
+    /* [ ... enum key ] */
+    printf("-> key '%s'\n", duk_get_string(ctx, -1));
+    duk_pop(ctx);
+}
+
+duk_pop(ctx);  /* pop enum object */
