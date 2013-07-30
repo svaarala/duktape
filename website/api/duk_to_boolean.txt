@@ -12,8 +12,8 @@ If <tt>index</tt> is invalid, throws an error.</p>
 
 <p>Custom type coercion:</p>
 <ul>
-<li>Buffer: <tt>false</tt> for zero-size buffer, <tt>true</tt> otherwise
-<li>Pointer: <tt>false</tt> for <tt>NULL</tt> pointer, <tt>true</tt> otherwise
+<li>Buffer: <tt>false</tt> for zero-size buffer, <tt>true</tt> otherwise</li>
+<li>Pointer: <tt>false</tt> for <tt>NULL</tt> pointer, <tt>true</tt> otherwise</li>
 </ul>
 
 =example

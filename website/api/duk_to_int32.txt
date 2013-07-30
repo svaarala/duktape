@@ -12,8 +12,8 @@ an error.</p>
 
 <p>Custom type coercion:</p>
 <ul>
-<li>Buffer: <tt>0</tt> for zero-size buffer, <tt>1</tt> otherwise
-<li>Pointer: <tt>0</tt> for <tt>NULL</tt> pointer, <tt>1</tt> otherwise
+<li>Buffer: <tt>0</tt> for zero-size buffer, <tt>1</tt> otherwise</li>
+<li>Pointer: <tt>0</tt> for <tt>NULL</tt> pointer, <tt>1</tt> otherwise</li>
 </ul>
 
 <div class="note">
