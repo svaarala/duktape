@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update thr->strict correctly when winding/unwinding call stack
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-07-18 21:14:07.536467 Z
+references: []
+
+id: 2acc135b47d7530394592e5d07cf10a48dfe8754
+log_events: 
+- - 2013-07-18 21:14:07.837269 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

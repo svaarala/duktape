@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: should duk_alloc() and duk_alloc_raw() zero allocated memory by default
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-07-30 22:28:06.219092 Z
+references: []
+
+id: 0d973cac2cdbef93a9ca1135ca08270929014be1
+log_events: 
+- - 2013-07-30 22:28:06.424267 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

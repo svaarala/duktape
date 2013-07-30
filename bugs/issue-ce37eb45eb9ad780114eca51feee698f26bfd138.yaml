@@ -8,8 +8,8 @@ type: :task
 component: duk
 release: v0.6
 reporter: sva <sami.vaarala@poplatek.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-07-17 00:00:49.386364 Z
 references: []
 
@@ -19,3 +19,9 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-07-17 00:27:47.318712 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - closed with disposition fixed
+  - |-
+    duk_push_new_c_function() now sets the strict flag for all functions.
+    Built-in functions are also always strict.
