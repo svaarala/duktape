@@ -119,6 +119,11 @@ struct duk_memory_functions {
 #define  DUK_ENUM_ARRAY_INDICES_ONLY       (1 << 3)    /* only enumerate array indices */
 #define  DUK_ENUM_SORT_ARRAY_INDICES       (1 << 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
 
+/* Compilation flags for duk_compile() */
+#define  DUK_COMPILE_EVAL                  (1 << 0)    /* compile eval code (instead of program) */
+#define  DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
+#define  DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
+
 /* Internal error codes */
 #define  DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */
 #define  DUK_ERR_UNSUPPORTED_ERROR    51   /* UnsupportedError */
@@ -562,11 +567,20 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-/* FIXME: helper for protected eval, duk_peval()? */
-/* FIXME: global program -> through compile flags? */
-
-void duk_eval(duk_context *ctx, int flags);                /* [code] -> [retval] (may throw error) */
+void duk_eval(duk_context *ctx);                           /* [code] -> [retval] (may throw error) */
 void duk_compile(duk_context *ctx, int flags);             /* [code] -> [func] (may throw error) */
+
+#define  duk_eval_string(ctx,str)  \
+	do { \
+		(void) duk_push_string((ctx),(str)); \
+		duk_eval((ctx)); \
+	} while (0)
+
+#define  duk_compile_string(ctx,flags,str)  \
+	do { \
+		(void) duk_push_string((ctx),(str)); \
+		duk_compile((ctx), (flags)); \
+	} while (0)
 
 #endif  /* DUK_API_H_INCLUDED */
 
