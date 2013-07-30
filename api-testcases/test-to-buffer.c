@@ -49,7 +49,7 @@ void dump_buffer(duk_context *ctx) {
 	int i;
 
 	ptr = (unsigned char *) duk_get_buffer(ctx, -1, &sz);
-	printf("buffer: dynamic=%d, size=%d: ", duk_is_dynamic(ctx, -1), sz);
+	printf("buffer: dynamic=%d, size=%d: ", duk_is_dynamic(ctx, -1), (int) sz);
 	for (i = 0; i < (int) sz; i++) {
 		unsigned char c = ptr[i];
 		if (c >= 0x20 && c <= 0x7e) {
