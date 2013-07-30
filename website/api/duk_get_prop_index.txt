@@ -11,8 +11,8 @@ but the property name is given as an unsigned integer
 <tt>arr_index</tt>.  This is especially useful for accessing
 array elements (but is not limited to that).</p>
 
-<p>Conceptually the number is coerced to a string for property
-access, e.g. <tt>123</tt> would be equivalent to a property name
+<p>Conceptually the number is coerced to a string for the property
+read, e.g. <tt>123</tt> would be equivalent to a property name
 <tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
 possible.</p>
 

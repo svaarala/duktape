@@ -10,9 +10,9 @@ but the property name is given as an unsigned integer
 <tt>arr_index</tt>.  This is especially useful for deleting
 array elements (but is not limited to that).</p>
 
-<p>Conceptually the number is coerced to a string for property
-access, e.g. <tt>123</tt> would be equivalent to a property name
-<tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
+<p>Conceptually the number is coerced to a string for the
+property deletion, e.g. <tt>123</tt> would be equivalent to a property
+name <tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
 possible.</p>
 
 =example
