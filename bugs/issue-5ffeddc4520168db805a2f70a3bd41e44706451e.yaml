@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix gcc-3.x compatibility (compile issues on opendarwin)
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-07-30 22:34:32.100456 Z
+references: []
+
+id: 5ffeddc4520168db805a2f70a3bd41e44706451e
+log_events: 
+- - 2013-07-30 22:34:32.281395 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
