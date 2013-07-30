@@ -1,0 +1,25 @@
+=proto
+void *duk_alloc_raw(duk_context *ctx, size_t size);
+
+=summary
+<p>Allocate <tt>size</tt> bytes using the raw allocation function registered
+to the context.  If allocation fails, returns <tt>NULL</tt>.  If <tt>size</tt>
+is zero, the call may either return a <tt>NULL</tt> or some non-<tt>NULL</tt>
+value which may be safely given to e.g. <tt>duk_free_raw()</tt>.  The allocation
+cannot trigger a garbage collection, and the allocated memory is not automatically
+garbage collected.</p>
+
+<p>Memory allocated with <tt>duk_alloc_raw()</tt> can be freed with either
+<tt><a href="#duk_free">duk_free()</a></tt> or
+<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+
+=example
+void *buf = duk_alloc_raw(ctx, 1024);
+if (buf) {
+    printf("allocation successful: %p\n", buf);
+} else {
+    printf("allocation failed\n");
+}
+
+=fixme
+Zero allocated memory automatically?

@@ -1,0 +1,23 @@
+=proto
+void *duk_realloc(duk_context *ctx, void *ptr, size_t size);
+
+=summary
+<p>Like <tt><a href="#duk_realloc_raw">duk_realloc_raw()</a></tt> but may
+trigger a garbage collection to satisfy the request.  However, the
+allocated memory itself is not automatically garbage collected.</p>
+
+<p>Memory reallocated with <tt>duk_realloc()</tt> can be freed with either
+<tt><a href="#duk_free">duk_free()</a></tt> or
+<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+
+=example
+void *buf = duk_alloc(ctx, 1024);
+if (buf) {
+    void *buf2 = duk_realloc(ctx, 2048);
+    if (!buf2) {
+        printf("failed to reallocate, 'buf' still valid\n");
+    } else {
+        printf("reallocate successful, 'buf2' now valid\n");
+    }
+}
+

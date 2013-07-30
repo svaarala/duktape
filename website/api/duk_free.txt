@@ -1,0 +1,23 @@
+=proto
+void duk_free(duk_context *ctx, void *ptr);
+
+=summary
+<p>Like <tt><a href="#duk_free_raw">duk_free_raw()</a></tt> but may involve
+garbage collection steps.  The garbage collection interaction cannot cause
+the operation to fail.</p>
+
+<p><tt>duk_free()</tt> can be used to free memory allocated with either
+<tt><a href="#duk_alloc">duk_alloc()</a></tt> or
+<tt><a href="#duk_alloc_raw">duk_alloc_raw()</a></tt>
+and their reallocation variants.</p>
+
+<div class="note">
+Currently a <tt>duk_free()</tt> cannot cause a garbage collection
+pass but does update internal GC trigger counters.
+</div>
+
+=example
+void *buf = duk_alloc(ctx, 1024);
+/* ... */
+
+duk_free(ctx, buf);  /* safe even if 'buf' is NULL */

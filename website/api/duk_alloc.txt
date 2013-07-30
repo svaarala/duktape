@@ -1,0 +1,28 @@
+=proto
+void *duk_alloc(duk_context *ctx, size_t size);
+
+=summary
+<p>Like <tt><a href="#duk_alloc_raw">duk_alloc_raw()</a></tt> but may trigger
+a garbage collection to satisfy the request.  However, the allocated memory
+itself is not automatically garbage collected.  The allocation request may
+fail even after garbage collection, in which case a <tt>NULL</tt> is returned.</p>
+
+<p>Memory allocated with <tt>duk_alloc()</tt> can be freed with either
+<tt><a href="#duk_free">duk_free()</a></tt> or
+<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+
+=example
+/* Although duk_alloc() triggers a GC if necessary, it can still fail to
+ * allocate the desired amount of memory.  Caller must check for NULL
+ * (however, if allocation size is 0, a NULL may be returned even in
+ * a success case).
+ */
+void *buf = duk_alloc(ctx, 1024);
+if (buf) {
+    printf("allocation successful: %p\n", buf);
+} else {
+    printf("allocation failed\n");
+}
+
+=fixme
+Zero allocated memory automatically?
