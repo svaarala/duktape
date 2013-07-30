@@ -7,7 +7,8 @@ void duk_join(duk_context *ctx, unsigned int count);
 =summary
 <p>Join zero or more values into a result string with a separator between
 each value.  The separator and the input values are automatically coerced
-with <tt>ToString()</tt>.</p>
+with
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
 
 <p>This primitive minimizes the number of intermediate string interning
 operations and is better than joining strings manually.</p>

@@ -6,7 +6,8 @@ void duk_concat(duk_context *ctx, unsigned int count);
 
 =summary
 <p>Concatenate zero or more values into a result string.  The input values
-are automatically coerced with <tt>ToString()</tt>.</p>
+are automatically coerced with
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
 
 <p>This primitive minimizes the number of intermediate string interning
 operations and is better than concatenating strings manually.</p>
