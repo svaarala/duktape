@@ -14,7 +14,7 @@ function call is not automatically caught.
 <p>The target function <tt>this</tt> binding is initially set to
 <tt>undefined</tt>.  If the target function is not strict, the binding
 is replaced by the global object before the function is invoked; see
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">E5.1 Section 10.4.3</a>.
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">Entering Function Code</a>.
 If you want to control the <tt>this</tt> binding, you can use
 <tt><a href="#duk_call_method">duk_call_method()</a></tt> instead.</p>
 

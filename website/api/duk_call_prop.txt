@@ -12,7 +12,7 @@ An error during the function call is not automatically caught.</p>
 
 <p>If the target function is not strict, the binding value seen by the
 target function may be modified by processing specified in
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">E5.1 Section 10.4.3</a>.
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">Entering Function Code</a>.
 </p>
 
 <p>This API call is equivalent to:</p>

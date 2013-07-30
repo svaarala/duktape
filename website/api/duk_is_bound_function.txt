@@ -12,7 +12,7 @@ otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
 <p>Bound functions are an Ecmascript concept: they point to a target
 function and supply a <tt>this</tt> binding and zero or more argument
 bindings.  See
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.3.4.5">E5.1 Section 15.3.4.5</a>.
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.3.4.5">Function.prototype.bind (thisArg [, arg1 [, arg2, ...]])</a>.
 </p>
 
 =example

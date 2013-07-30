@@ -6,7 +6,7 @@ int duk_is_primitive(duk_context *ctx, int index);
 
 =summary
 <p>Returns 1 if value at <tt>index</tt> is a primitive type, as defined in
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.1">E5.1 Section 9.1</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.1">ToPrimitive</a>,
 otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
 
 <p>Anything other than an object is a primitive type at the moment, including
