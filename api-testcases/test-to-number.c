@@ -4,8 +4,8 @@ index 0, number: nan
 index 1, number: 0.000000
 index 2, number: 1.000000
 index 3, number: 0.000000
-index 4, number: 0.000000
-index 5, number: 1.000000
+index 4, number: 1.000000
+index 5, number: -123.456000
 index 6, number: nan
 index 7, number: inf
 index 8, number: 0.000000
@@ -42,8 +42,8 @@ int test_1(duk_context *ctx) {
 	duk_push_null(ctx);
 	duk_push_true(ctx);
 	duk_push_false(ctx);
-	duk_push_int(ctx, 0);
 	duk_push_int(ctx, 1);
+	duk_push_number(ctx, -123.456);
 	duk_push_nan(ctx);
 	duk_push_number(ctx, INFINITY);
 	duk_push_string(ctx, "");
