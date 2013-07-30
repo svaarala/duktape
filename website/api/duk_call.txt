@@ -1,0 +1,42 @@
+=proto
+void duk_call(duk_context *ctx, int nargs);
+
+=stack
+[ ... func! arg1! ...! argN! ] -> [ ... retval! ]
+
+=summary
+<p>Call target function <tt>func</tt> with <tt>nargs</tt> arguments
+(not counting the function itself).  The function and its arguments
+are replaced by a single return value.  An error thrown during the
+function call is not automatically caught.
+</p>
+
+<p>The target function <tt>this</tt> binding is initially set to
+<tt>undefined</tt>.  If the target function is not strict, the binding
+is replaced by the global object before the function is invoked; see
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">E5.1 Section 10.4.3</a>.
+If you want to control the <tt>this</tt> binding, you can use
+<tt><a href="#duk_call_method">duk_call_method()</a></tt> instead.</p>
+
+<p>This API call is equivalent to:</p>
+<pre class="ecmascript-code">
+var retval = func(arg1, ..., argN);
+</pre>
+
+<p>or:</p>
+<pre class="ecmascript-code">
+var retval = func.call(undefined, arg1, ..., argN);
+</pre>
+
+=example
+/* Assume target function is already on stack at func_idx; the target
+ * function adds arguments and returns the result.
+ */
+int func_idx;
+
+duk_dup(ctx, func_idx);
+duk_push_int(ctx, 2);
+duk_push_int(ctx, 3);
+duk_call(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
+printf("2+3=%d\n", duk_get_int(ctx, -1));
+duk_pop(ctx);
