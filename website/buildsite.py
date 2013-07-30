@@ -360,7 +360,7 @@ def generateApiDoc(apidocdir, apitestdir):
 	# scan api testcases for references to API calls
 
 	testrefs = scanApiCalls(apitestdir)
-	print(repr(testrefs))
+	#print(repr(testrefs))
 
 	# title
 

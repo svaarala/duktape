@@ -99,6 +99,7 @@
 	/* list-style: disc; */
 	list-style: circle;
 	list-style-position: outside;
+	line-height: 1.4;
 }
 
 .content pre {
@@ -344,6 +345,5 @@
 .content .fixme:before {
 	content: "FIXME: ";
 	font-weight: 700;
-
 }
 
