@@ -79,13 +79,13 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_push_lstring(ctx, "foo\0bar", 7);  /* internal NULs are kept */
 	duk_push_new_object(ctx);
-	buf = (char *) duk_push_new_fixed_buffer(ctx, 0);
-	buf = (char *) duk_push_new_fixed_buffer(ctx, 16);
+	buf = (char *) duk_push_fixed_buffer(ctx, 0);
+	buf = (char *) duk_push_fixed_buffer(ctx, 16);
 	for (i = 0; i < 16; i++) {
 		buf[i] = i;
 	}
-	buf = (char *) duk_push_new_dynamic_buffer(ctx, 0);
-	buf = (char *) duk_push_new_dynamic_buffer(ctx, 16);
+	buf = (char *) duk_push_dynamic_buffer(ctx, 0);
+	buf = (char *) duk_push_dynamic_buffer(ctx, 16);
 	for (i = 0; i < 16; i++) {
 		buf[i] = i;
 	}

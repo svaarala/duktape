@@ -124,7 +124,7 @@ int duk_socket_read(duk_context *ctx) {
 		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
 	}
 
-	data = duk_push_new_fixed_buffer(ctx, rc);
+	data = duk_push_fixed_buffer(ctx, rc);
 	memcpy(data, readbuf, rc);
 	return 1;
 }

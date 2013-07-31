@@ -38,7 +38,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_push_new_object(ctx);
 	duk_push_new_array(ctx);
-	duk_push_new_fixed_buffer(ctx, 16);
+	duk_push_fixed_buffer(ctx, 16);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);

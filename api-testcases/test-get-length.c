@@ -84,10 +84,10 @@ void test(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "length");
 
 	/* 13 */
-	duk_push_new_fixed_buffer(ctx, 1234);
+	duk_push_fixed_buffer(ctx, 1234);
 
 	/* 14 */
-	duk_push_new_dynamic_buffer(ctx, 2345);
+	duk_push_dynamic_buffer(ctx, 2345);
 
 	/* 15 */
 	duk_push_undefined(ctx);

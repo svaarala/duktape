@@ -783,7 +783,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 	DUK_ASSERT(h_input != NULL);
 
 	/* FIXME: should init with a spare of at least h_input->blen? */
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));

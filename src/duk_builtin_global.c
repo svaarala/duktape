@@ -123,7 +123,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	tfm_ctx->h_str = duk_to_hstring(ctx, 0);
 	DUK_ASSERT(tfm_ctx->h_str != NULL);
 
-	(void) duk_push_new_dynamic_buffer(ctx, 0);
+	(void) duk_push_dynamic_buffer(ctx, 0);
 	tfm_ctx->h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(tfm_ctx->h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(tfm_ctx->h_buf));

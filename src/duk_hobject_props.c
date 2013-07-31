@@ -376,7 +376,7 @@ static void realloc_props(duk_hthread *thr,
 		 * allocation later.
 		 */
 
-		new_p = duk_push_new_dynamic_buffer(ctx, new_alloc_size);  /* errors out if out of memory */
+		new_p = duk_push_dynamic_buffer(ctx, new_alloc_size);  /* errors out if out of memory */
 		DUK_ASSERT(new_p != NULL);  /* since new_alloc_size > 0 */
 	}
 

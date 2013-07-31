@@ -19,10 +19,10 @@ int test_1(duk_context *ctx) {
 	int i;
 
 	duk_set_top(ctx, 0);
-	duk_push_new_fixed_buffer(ctx, 1024);
-	duk_push_new_fixed_buffer(ctx, 0);
-	duk_push_new_dynamic_buffer(ctx, 1024);
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_fixed_buffer(ctx, 1024);
+	duk_push_fixed_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 1024);
+	duk_push_dynamic_buffer(ctx, 0);
 
 	for (i = 0; i < 4; i++) {
 		sz = (size_t) 0xdeadbeef;

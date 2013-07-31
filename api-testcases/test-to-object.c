@@ -79,28 +79,28 @@ int test_2b(duk_context *ctx) {
 }
 int test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	duk_push_new_fixed_buffer(ctx, 0);
+	duk_push_fixed_buffer(ctx, 0);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
 int test_2d(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	duk_push_new_fixed_buffer(ctx, 1024);
+	duk_push_fixed_buffer(ctx, 1024);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
 int test_2e(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
 int test_2f(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	duk_push_new_dynamic_buffer(ctx, 1024);
+	duk_push_dynamic_buffer(ctx, 1024);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;

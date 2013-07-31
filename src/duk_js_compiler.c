@@ -481,7 +481,7 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	/* FIXME: getter for dynamic buffer */
 
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	func->code_idx = entry_top + 0;
 	func->h_code = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
 	DUK_ASSERT(func->h_code != NULL);
@@ -507,7 +507,7 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->h_labelnames = duk_get_hobject(ctx, entry_top + 4);
 	DUK_ASSERT(func->h_labelnames != NULL);
 
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	func->labelinfos_idx = entry_top + 5;
 	func->h_labelinfos = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 5);
 	DUK_ASSERT(func->h_labelinfos != NULL);
@@ -685,7 +685,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	             (int) funcs_count, (int) sizeof(duk_hobject *),
 	             (int) code_size, (int) data_size);
 
-	duk_push_new_fixed_buffer(ctx, data_size);
+	duk_push_fixed_buffer(ctx, data_size);
 	h_data = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_data != NULL);
 
@@ -6241,7 +6241,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 
 	duk_require_stack(ctx, COMPILE_ENTRY_SLOTS);
 
-	duk_push_new_dynamic_buffer(ctx, 0);   /* entry_top + 0 */
+	duk_push_dynamic_buffer(ctx, 0);       /* entry_top + 0 */
 	duk_push_undefined(ctx);               /* entry_top + 1 */
 	duk_push_undefined(ctx);               /* entry_top + 2 */
 	duk_push_undefined(ctx);               /* entry_top + 3 */

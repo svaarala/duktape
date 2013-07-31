@@ -187,7 +187,7 @@ static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 	 * so they'll simply pass through (valid UTF-8 or not).
 	 */
 
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
@@ -1487,7 +1487,7 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 		                             DUK_TYPE_MASK_BUFFER;
 	}
 
-	(void) duk_push_new_dynamic_buffer(ctx, 0);
+	(void) duk_push_dynamic_buffer(ctx, 0);
 	js_ctx->h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(js_ctx->h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(js_ctx->h_buf));

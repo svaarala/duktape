@@ -758,7 +758,7 @@ static void create_escaped_source(duk_hthread *thr, int idx_pattern) {
 		return;
 	}
 
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(buf != NULL);
 
@@ -829,7 +829,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 	 *  Init compilation context
 	 */
 
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	h_buffer = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, -1);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buffer));
 

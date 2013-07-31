@@ -34,7 +34,7 @@ int duk_fileio_readfile(duk_context *ctx) {
 		goto error;
 	}
 
-	buf = duk_push_new_fixed_buffer(ctx, (size_t) len);
+	buf = duk_push_fixed_buffer(ctx, (size_t) len);
 
 	got = fread(buf, 1, len, f);
 	if (got != len) {

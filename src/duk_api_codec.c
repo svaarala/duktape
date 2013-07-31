@@ -184,7 +184,7 @@ const char *duk_base64_encode(duk_context *ctx, int index) {
 		goto type_error;
 	}
 	dstlen = (srclen + 2) / 3 * 4;
-	dst = duk_push_new_fixed_buffer(ctx, dstlen);
+	dst = duk_push_fixed_buffer(ctx, dstlen);
 
 	base64_encode_helper((const unsigned char *) src, (const unsigned char *) (src + srclen),
 	                     (unsigned char *) dst, (unsigned char *) (dst + dstlen));
@@ -223,7 +223,7 @@ void duk_base64_decode(duk_context *ctx, int index) {
 		goto type_error;
 	}
 	dstlen = (srclen + 3) / 4 * 3;  /* upper limit */
-	dst = duk_push_new_dynamic_buffer(ctx, dstlen);
+	dst = duk_push_dynamic_buffer(ctx, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
 	retval = base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
@@ -255,7 +255,7 @@ const char *duk_hex_encode(duk_context *ctx, int index) {
 	data = duk_to_buffer(ctx, index, &len);
 	DUK_ASSERT(data != NULL);
 
-	buf = (unsigned char *) duk_push_new_fixed_buffer(ctx, len * 2);
+	buf = (unsigned char *) duk_push_fixed_buffer(ctx, len * 2);
 	DUK_ASSERT(buf != NULL);
 	/* buf is always zeroed */
 
@@ -290,7 +290,7 @@ void duk_hex_decode(duk_context *ctx, int index) {
 		goto type_error;
 	}
 
-	buf = (unsigned char *) duk_push_new_fixed_buffer(ctx, len / 2);
+	buf = (unsigned char *) duk_push_fixed_buffer(ctx, len / 2);
 	DUK_ASSERT(buf != NULL);
 	/* buf is always zeroed */
 

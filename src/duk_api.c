@@ -1763,7 +1763,7 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 		h_str = duk_get_hstring(ctx, index);
 		DUK_ASSERT(h_str != NULL);
 
-		buf = duk_push_new_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
+		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
 		memcpy(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
 		duk_replace(ctx, index);
 	}
@@ -2496,7 +2496,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 	DUK_ASSERT(sz > 0);
 
-	buf = duk_push_new_dynamic_buffer(ctx, sz);
+	buf = duk_push_dynamic_buffer(ctx, sz);
 
 	for(;;) {
 		len = try_push_vsprintf(ctx, buf, sz, fmt, ap);
@@ -2807,7 +2807,7 @@ int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, .
 }
 
 /* FIXME: repetition, see duk_push_new_object */
-void *duk_push_new_buffer(duk_context *ctx, size_t size, int dynamic) {
+void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hbuffer *h;
@@ -2832,12 +2832,12 @@ void *duk_push_new_buffer(duk_context *ctx, size_t size, int dynamic) {
 	return DUK_HBUFFER_GET_DATA_PTR(h);
 }
 
-void *duk_push_new_fixed_buffer(duk_context *ctx, size_t size) {
-	return duk_push_new_buffer(ctx, size, 0);
+void *duk_push_fixed_buffer(duk_context *ctx, size_t size) {
+	return duk_push_buffer(ctx, size, 0);
 }
 
-void *duk_push_new_dynamic_buffer(duk_context *ctx, size_t size) {
-	return duk_push_new_buffer(ctx, size, 1);
+void *duk_push_dynamic_buffer(duk_context *ctx, size_t size) {
+	return duk_push_buffer(ctx, size, 1);
 }
 
 int duk_push_new_object_internal(duk_context *ctx) {

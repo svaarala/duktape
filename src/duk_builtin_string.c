@@ -48,7 +48,7 @@ int duk_builtin_string_constructor_from_char_code(duk_context *ctx) {
 	 */
 
 	n = duk_get_top(ctx);
-	duk_push_new_dynamic_buffer(ctx, 0);  /* FIXME: initial size estimate from 'n' */
+	duk_push_dynamic_buffer(ctx, 0);  /* FIXME: initial size estimate from 'n' */
 	h = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 
 	for (i = 0; i < n; i++) {
@@ -476,7 +476,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_push_this_coercible_to_string(ctx);
 	h_input = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
-	duk_push_new_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 0);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT_TOP(ctx, 4);

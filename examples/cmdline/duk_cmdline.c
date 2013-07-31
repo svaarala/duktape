@@ -107,7 +107,7 @@ int wrapped_compile_execute(duk_context *ctx) {
 	return 0;
 }
 
-int handle_fh(duk_heap *heap, duk_context *ctx, FILE *f) {
+int handle_fh(duk_context *ctx, FILE *f) {
 	char *buf = NULL;
 	int len;
 	int got;
@@ -155,7 +155,7 @@ int handle_fh(duk_heap *heap, duk_context *ctx, FILE *f) {
 	return retval;
 }
 
-int handle_file(duk_heap *heap, duk_context *ctx, const char *filename) {
+int handle_file(duk_context *ctx, const char *filename) {
 	FILE *f = NULL;
 	int retval;
 
@@ -166,7 +166,7 @@ int handle_file(duk_heap *heap, duk_context *ctx, const char *filename) {
 		goto error;
 	}
 
-	retval = handle_fh(heap, ctx, f);
+	retval = handle_fh(ctx, f);
 
 	fclose(f);
 	return retval;
@@ -175,15 +175,15 @@ int handle_file(duk_heap *heap, duk_context *ctx, const char *filename) {
 	return -1;
 }
 
-int handle_stdin(duk_heap *heap, duk_context *ctx) {
+int handle_stdin(duk_context *ctx) {
 	int retval;
 
-	retval = handle_fh(heap, ctx, stdin);
+	retval = handle_fh(ctx, stdin);
 
 	return retval;
 }
 
-int handle_interactive(duk_heap *heap, duk_context *ctx) {
+int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
 	char *buffer = NULL;
 	int retval = 0;
@@ -243,7 +243,6 @@ int handle_interactive(duk_heap *heap, duk_context *ctx) {
 }
 
 int main(int argc, char *argv[]) {
-	duk_heap *heap = NULL;
 	duk_context *ctx = NULL;
 	int retval = 0;
 	const char *filename = NULL;
@@ -278,8 +277,7 @@ int main(int argc, char *argv[]) {
 
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
 
-	heap = duk_heap_alloc_default();
-	ctx = (duk_context *) heap->heap_thread;
+	ctx = duk_create_heap_default();
 
 	duk_ncurses_register(ctx);
 	duk_socket_register(ctx);
@@ -287,12 +285,12 @@ int main(int argc, char *argv[]) {
 
 	if (filename) {
 		if (strcmp(filename, "-") == 0) {
-			if (handle_stdin(heap, ctx) != 0) {
+			if (handle_stdin(ctx) != 0) {
 				retval = 1;
 				goto cleanup;
 			}
 		} else {
-			if (handle_file(heap, ctx, filename) != 0) {
+			if (handle_file(ctx, filename) != 0) {
 				retval = 1;
 				goto cleanup;
 			}
@@ -300,7 +298,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (interactive) {
-		if (handle_interactive(heap, ctx) != 0) {
+		if (handle_interactive(ctx) != 0) {
 			retval = 1;
 			goto cleanup;
 		}
@@ -310,8 +308,8 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "Cleaning up...\n");
 	fflush(stderr);
 
-	if (heap) {
-		duk_heap_free(heap);
+	if (ctx) {
+		duk_destroy_heap(ctx);
 	}
 
 	return retval;

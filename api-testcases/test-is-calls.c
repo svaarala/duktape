@@ -88,10 +88,10 @@ void test(duk_context *ctx) {
 	duk_push_new_thread(ctx);
 
 	/* 17 */
-	duk_push_new_buffer(ctx, 1024, 0 /*dynamic*/);
+	duk_push_buffer(ctx, 1024, 0 /*dynamic*/);
 
 	/* 18 */
-	duk_push_new_buffer(ctx, 1024, 1 /*dynamic*/);
+	duk_push_buffer(ctx, 1024, 1 /*dynamic*/);
 
 	/* 19 */
 	duk_push_pointer(ctx, (void *) 0xf00);

@@ -30,7 +30,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 	num_header_entries = (length + DUK_PC2LINE_SKIP - 1) / DUK_PC2LINE_SKIP;
 	curr_offset = sizeof(duk_u32) + num_header_entries * sizeof(duk_u32) * 2;
 
-	duk_push_new_dynamic_buffer(ctx, curr_offset);
+	duk_push_dynamic_buffer(ctx, curr_offset);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));

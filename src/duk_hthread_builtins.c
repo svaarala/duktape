@@ -288,7 +288,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				char *p;
 
 				n = duk_bd_decode(bd, STRING_LENGTH_BITS);
-				p = (char *) duk_push_new_fixed_buffer(ctx, n);
+				p = (char *) duk_push_fixed_buffer(ctx, n);
 				for (k = 0; k < n; k++) {
 					*p++ = duk_bd_decode(bd, STRING_CHAR_BITS);
 				}

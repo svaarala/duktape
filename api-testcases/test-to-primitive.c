@@ -46,10 +46,10 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, 123.456);
 	duk_to_object(ctx, -1);  /* Number(123.456) */
 	duk_push_new_thread(ctx);
-	duk_push_new_fixed_buffer(ctx, 0);
-	duk_push_new_fixed_buffer(ctx, 1024);
-	duk_push_new_dynamic_buffer(ctx, 0);
-	duk_push_new_dynamic_buffer(ctx, 1024);
+	duk_push_fixed_buffer(ctx, 0);
+	duk_push_fixed_buffer(ctx, 1024);
+	duk_push_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) NULL);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 

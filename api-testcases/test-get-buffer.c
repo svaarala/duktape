@@ -25,10 +25,10 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 123);
 	duk_push_new_object(ctx);
-	duk_push_new_fixed_buffer(ctx, 0);
-	duk_push_new_fixed_buffer(ctx, 1024);
-	duk_push_new_dynamic_buffer(ctx, 0);
-	duk_push_new_dynamic_buffer(ctx, 2048);
+	duk_push_fixed_buffer(ctx, 0);
+	duk_push_fixed_buffer(ctx, 1024);
+	duk_push_dynamic_buffer(ctx, 0);
+	duk_push_dynamic_buffer(ctx, 2048);
 
 	n = duk_get_top(ctx);
 	printf("top: %d\n", n);
