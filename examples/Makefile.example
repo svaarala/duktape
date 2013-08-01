@@ -52,7 +52,7 @@ DUKTAPE_SOURCES =	\
 	src/duk_js_var.c \
 	src/duk_numconv.c \
 	src/duk_api_call.c \
-	src/duk_api_conv.c \
+	src/duk_api_compile.c \
 	src/duk_api_codec.c \
 	src/duk_api_memory.c \
 	src/duk_api_string.c \
@@ -90,7 +90,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 	examples/cmdline/duk_socket.c \
 	examples/cmdline/duk_fileio.c
 
-# Compiler options are quite flexible, some platform specific defines may be
+# Compiler options are quite flexible.  Some platform specific defines may be
 # necessary to interface with platform specific functionality (like time
 # handling).  GCC versions have a significant impact on the size of -Os code,
 # e.g. gcc-4.6 is much worse than gcc-4.5.
@@ -107,7 +107,8 @@ DEFINES = -DDUK_PROFILE=100                 # if omitted, profile defaults to 10
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 
-# These are only needed by the example modules (duk_socket, duk_curses.c)
+# These are only needed by the example modules (duk_socket, duk_curses.c),
+# and are not needed for embedding Duktape into your own project.
 CCOPTS += -I/usr/include/ncursesw
 CCLIBS += -lreadline -lncursesw
 
