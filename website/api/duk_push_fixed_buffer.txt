@@ -1,0 +1,16 @@
+=proto
+void *duk_push_fixed_buffer(duk_context *ctx, size_t size);
+
+=stack
+[ ... ] -> [ ... buf! ]
+
+=summary
+<p>Allocate a fixed size buffer and push it to the value stack.
+Shortcut for <tt><a href="#duk_push_buffer">duk_push_buffer()</a></tt>
+with <tt>dynamic = 0</tt>.</p>
+
+=example
+void *p;
+
+p = duk_push_fixed_buffer(ctx, 1024);
+printf("allocated buffer, data area: %p\n", p);
