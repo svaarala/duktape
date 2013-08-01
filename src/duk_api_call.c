@@ -51,7 +51,7 @@ static int resolve_errhandler(duk_context *ctx, int pop_count, int errhandler_in
 	DUK_ASSERT(pop_count <= duk_get_top(ctx));  /* caller ensures */
 
 	duk_pop_n(ctx, pop_count);
-	(void) duk_push_new_error_object(ctx, DUK_ERR_API_ERROR, "invalid errhandler");
+	(void) duk_push_error_object(ctx, DUK_ERR_API_ERROR, "invalid errhandler");
 	return 0;
 }
 
@@ -348,7 +348,7 @@ void duk_new(duk_context *ctx, int nargs) {
 	 *  property of the constructor.
 	 */
 
-	duk_push_new_object(ctx);  /* class Object, extensible */
+	duk_push_object(ctx);  /* class Object, extensible */
 
 	/* [... constructor arg1 ... argN final_cons fallback] */
 

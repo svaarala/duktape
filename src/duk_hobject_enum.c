@@ -172,7 +172,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(target != NULL);
 
-	duk_push_new_object_internal(ctx);
+	duk_push_object_internal(ctx);
 
 	DUK_DDDPRINT("created internal object");
 
@@ -447,7 +447,7 @@ int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	 */
 
 	duk_hobject_enumerator_create(ctx, enum_flags);
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	/* [target enum res] */
 

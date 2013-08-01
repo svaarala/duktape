@@ -487,22 +487,22 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(func->h_code != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	func->consts_idx = entry_top + 1;
 	func->h_consts = duk_get_hobject(ctx, entry_top + 1);
 	DUK_ASSERT(func->h_consts != NULL);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	func->funcs_idx = entry_top + 2;
 	func->h_funcs = duk_get_hobject(ctx, entry_top + 2);
 	DUK_ASSERT(func->h_funcs != NULL);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	func->decls_idx = entry_top + 3;
 	func->h_decls = duk_get_hobject(ctx, entry_top + 3);
 	DUK_ASSERT(func->h_decls != NULL);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	func->labelnames_idx = entry_top + 4;
 	func->h_labelnames = duk_get_hobject(ctx, entry_top + 4);
 	DUK_ASSERT(func->h_labelnames != NULL);
@@ -513,12 +513,12 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(func->h_labelinfos != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_labelinfos));
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	func->argnames_idx = entry_top + 6;
 	func->h_argnames = duk_get_hobject(ctx, entry_top + 6);
 	DUK_ASSERT(func->h_argnames != NULL);
 
-	duk_push_new_object_internal(ctx);
+	duk_push_object_internal(ctx);
 	func->varmap_idx = entry_top + 7;
 	func->h_varmap = duk_get_hobject(ctx, entry_top + 7);
 	DUK_ASSERT(func->h_varmap != NULL);
@@ -620,7 +620,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 
 	/* Valstack should suffice here, required on function valstack init */
 
-	(void) duk_push_new_compiledfunction(ctx);
+	(void) duk_push_compiledfunction(ctx);
 	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* FIXME: specific getter */
 
 	if (func->is_function) {
@@ -2207,7 +2207,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	temp_start = GETTEMP(comp_ctx);
 
 	/* temp object for tracking / detecting duplicate keys */
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	/*
 	 *  Emit initializers in sets of maximum max_init_pairs keys.

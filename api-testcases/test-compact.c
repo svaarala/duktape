@@ -5,7 +5,7 @@
 ===*/
 
 void test(duk_context *ctx) {
-	duk_push_new_object(ctx);                       /* [ ... obj ] */
+	duk_push_object(ctx);                           /* [ ... obj ] */
 	duk_push_int(ctx, 42);                          /* [ ... obj 42 ] */
 	duk_put_prop_string(ctx, -2, "meaningOfLife");  /* [ ... obj ] */
 

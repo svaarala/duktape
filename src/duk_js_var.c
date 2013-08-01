@@ -127,7 +127,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(outer_var_env != NULL);
 	DUK_ASSERT(outer_lex_env != NULL);
 
-	duk_push_new_compiledfunction(ctx);
+	duk_push_compiledfunction(ctx);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
 	fun_clos = (duk_hcompiledfunction *) duk_get_hobject(ctx, -2);  /* FIXME: duk_get_hcompiledfunction */
@@ -227,10 +227,10 @@ void duk_js_push_closure(duk_hthread *thr,
 			}
 
 			/* -> [ ... closure template env ] */
-			(void) duk_push_new_object_helper(ctx,
-	   		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                                  -1);  /* no prototype, updated below */
+			(void) duk_push_object_helper(ctx,
+	   		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                              -1);  /* no prototype, updated below */
 
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
 			duk_dup(ctx, -4);                                    /* -> [ ... closure template env funcname closure ] */
@@ -355,7 +355,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/* [ ... closure template ] */
 
-	duk_push_new_object(ctx);  /* -> [ ... closure template newobj ] */
+	duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
 	duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
 	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
@@ -453,10 +453,10 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 		parent = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	}
 
-	(void) duk_push_new_object_helper(ctx,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-	                                  -1);  /* no prototype, updated below */
+	(void) duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+	                              -1);  /* no prototype, updated below */
 	env = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(env != NULL);
 	DUK_HOBJECT_SET_PROTOTYPE(thr, env, parent);  /* parent env is the prototype, updates refcounts */

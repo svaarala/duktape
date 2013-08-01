@@ -78,7 +78,7 @@ int test_1(duk_context *ctx) {
 	duk_push_int(ctx, 123);
 	duk_push_string(ctx, "foo");
 	duk_push_lstring(ctx, "foo\0bar", 7);  /* internal NULs are kept */
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	buf = (char *) duk_push_fixed_buffer(ctx, 0);
 	buf = (char *) duk_push_fixed_buffer(ctx, 16);
 	for (i = 0; i < 16; i++) {

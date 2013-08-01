@@ -571,10 +571,10 @@ static void handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finall
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_ASSERT(act->func != NULL);
 
-		(void) duk_push_new_object_helper(ctx,
-		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-		                                  -1);  /* no prototype, updated below */
+		(void) duk_push_object_helper(ctx,
+		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+		                              -1);  /* no prototype, updated below */
 		new_env = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(new_env != NULL);
 		DUK_DDDPRINT("new_env allocated: %!iO", new_env);
@@ -2639,10 +2639,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				}
 				DUK_ASSERT(act->lex_env != NULL);
 
-				(void) duk_push_new_object_helper(ctx,
-				                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-				                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-				                                  -1);  /* no prototype, updated below */
+				(void) duk_push_object_helper(ctx,
+				                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+				                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
+				                              -1);  /* no prototype, updated below */
 
 				duk_push_tval(ctx, REGCONSTP(c));
 				duk_to_object(ctx, -1);
@@ -2787,7 +2787,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_context *ctx = (duk_context *) thr;
 				int b = DUK_DEC_B(ins);
 
-				duk_push_new_object(ctx);
+				duk_push_object(ctx);
 				duk_replace(ctx, b);
 				break;
 			}
@@ -2796,7 +2796,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_context *ctx = (duk_context *) thr;
 				int b = DUK_DEC_B(ins);
 
-				duk_push_new_array(ctx);
+				duk_push_array(ctx);
 				duk_replace(ctx, b);
 				break;
 			}
@@ -2963,7 +2963,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_push_undefined(ctx);
 				duk_dup(ctx, b);
 				duk_dup(ctx, c + 0);
-				duk_push_new_object(ctx);  /* -> [ Object defineProperty undefined obj key desc ] */
+				duk_push_object(ctx);  /* -> [ Object defineProperty undefined obj key desc ] */
 
 				duk_push_true(ctx);
 				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);

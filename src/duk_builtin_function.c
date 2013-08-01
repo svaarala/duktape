@@ -253,11 +253,11 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, nargs + 1);
 
 	/* create bound function object */
-	duk_push_new_object_helper(ctx,
-	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                           DUK_HOBJECT_FLAG_BOUND |
-	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
-	                           DUK_BIDX_FUNCTION_PROTOTYPE);
+	duk_push_object_helper(ctx,
+	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                       DUK_HOBJECT_FLAG_BOUND |
+	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
+	                       DUK_BIDX_FUNCTION_PROTOTYPE);
 
 	/* FIXME: check hobject flags (e.g. strict) */
 
@@ -268,7 +268,7 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	duk_dup(ctx, 0);   /* thisArg */
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	/* [ thisArg arg1 ... argN func boundFunc argArray ] */
 

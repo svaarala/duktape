@@ -941,7 +941,7 @@ void duk_regexp_create_instance(duk_hthread *thr) {
 
 	/* [ ... escaped_source bytecode ] */
 
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	duk_insert(ctx, -3);

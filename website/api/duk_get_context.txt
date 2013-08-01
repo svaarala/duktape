@@ -20,7 +20,7 @@ duk_context *new_ctx;
 
 /* Create a new thread and get a context pointer. */
 
-(void) duk_push_new_thread(ctx);
+(void) duk_push_thread(ctx);
 new_ctx = duk_get_context(ctx, -1);
 
 /* You can use new_ctx as long as the related thread is reachable

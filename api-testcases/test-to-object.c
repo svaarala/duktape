@@ -46,8 +46,8 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, INFINITY);
 	duk_push_string(ctx, "");
 	duk_push_string(ctx, "foo");
-	duk_push_new_object(ctx);
-	duk_push_new_thread(ctx);
+	duk_push_object(ctx);
+	duk_push_thread(ctx);
 
 	n = duk_get_top(ctx);
 	printf("top: %d\n", n);

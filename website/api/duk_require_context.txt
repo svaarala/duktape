@@ -12,5 +12,5 @@ thread or if the index is invalid.</p>
 =example
 duk_context *new_ctx;
 
-(void) duk_push_new_thread(ctx);
+(void) duk_push_thread(ctx);
 new_ctx = duk_require_context(ctx, -1);

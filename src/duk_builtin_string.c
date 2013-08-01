@@ -22,11 +22,11 @@ int duk_builtin_string_constructor(duk_context *ctx) {
 	duk_set_top(ctx, 1);
 
 	if (duk_is_constructor_call(ctx)) {
-		duk_push_new_object_helper(ctx,
-                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-		           DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ |
-                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
-                           DUK_BIDX_STRING_PROTOTYPE);
+		duk_push_object_helper(ctx,
+		                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                       DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ |
+		                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
+		                       DUK_BIDX_STRING_PROTOTYPE);
 
 		/* String object internal value is immutable */
 		duk_dup(ctx, 0);
@@ -821,7 +821,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 	h_input = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	if (duk_is_undefined(ctx, 1)) {
 		limit = 0xffffffffU;
@@ -1164,7 +1164,7 @@ int duk_builtin_string_prototype_match(duk_context *ctx) {
 
 	duk_push_int(ctx, 0);
 	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	/* [ regexp string res_arr ] */
 

@@ -12,7 +12,7 @@ void test(duk_context *ctx) {
 
 	duk_push_int(ctx, 123);  /* dummy */
 
-	thr_idx = duk_push_new_thread(ctx);
+	thr_idx = duk_push_thread(ctx);
 	printf("duk_is_object(%d) = %d\n", thr_idx, duk_is_object(ctx, thr_idx));
 	printf("duk_is_thread(%d) = %d\n", thr_idx, duk_is_thread(ctx, thr_idx));
 	printf("top=%d\n", duk_get_top(ctx));

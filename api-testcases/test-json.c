@@ -10,7 +10,7 @@ top after: 0
 ===*/
 
 void test_encode(duk_context *ctx) {
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	duk_push_int(ctx, 123);
 	duk_put_prop_string(ctx, -2, "foo");
 	duk_push_string(ctx, "quux");
@@ -22,7 +22,7 @@ void test_encode(duk_context *ctx) {
 }
 
 void test_encode_apidoc(duk_context *ctx) {
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	duk_push_int(ctx, 42);
 	duk_put_prop_string(ctx, -2, "meaningOfLife");
 	printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));

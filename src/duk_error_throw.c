@@ -138,9 +138,9 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 		/* Error object is augmented at its creation here. */
 		duk_require_stack(ctx, 1);
 #ifdef DUK_USE_VERBOSE_ERRORS
-		duk_push_new_error_object(ctx, code, msg);
+		duk_push_error_object(ctx, code, msg);
 #else
-		duk_push_new_error_object(ctx, code, NULL);
+		duk_push_error_object(ctx, code, NULL);
 #endif
 	}
 

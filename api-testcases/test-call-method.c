@@ -30,7 +30,7 @@ int my_adder(duk_context *ctx) {
 int test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
-	duk_push_new_c_function(ctx, my_adder, 3 /*nargs*/);
+	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);
 	duk_push_string(ctx, "my this binding");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
@@ -49,7 +49,7 @@ int test_1(duk_context *ctx) {
 int test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
-	duk_push_new_c_function(ctx, my_adder, 3 /*nargs*/);
+	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);
 	duk_push_string(ctx, "my this binding");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);

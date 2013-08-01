@@ -810,7 +810,7 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 		 * short lived.
 		 */
 
-		duk_push_new_array(ctx);
+		duk_push_array(ctx);
 
 #ifdef DUK_USE_ASSERTIONS
 		h_res = duk_require_hobject(ctx, -1);

@@ -30,7 +30,7 @@ be the preferred action.</p>
 <tt><a href="#duk_create_heap_default">duk_create_heap_default()</a></tt>.</p>
 
 <p>New contexts linked to the same heap can be created with
-<tt><a href="#duk_push_new_thread">duk_push_new_thread()</a></tt>.</p>
+<tt><a href="#duk_push_thread">duk_push_thread()</a></tt>.</p>
 
 =example
 /*

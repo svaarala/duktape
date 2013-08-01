@@ -1839,10 +1839,10 @@ void duk_to_object(duk_context *ctx, int index) {
 	case DUK_TAG_BOOLEAN: {
 		int val = DUK_TVAL_GET_BOOLEAN(tv);
 
-		(void) duk_push_new_object_helper(ctx,
-		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BOOLEAN),
-		                                  DUK_BIDX_BOOLEAN_PROTOTYPE);
+		(void) duk_push_object_helper(ctx,
+		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BOOLEAN),
+		                              DUK_BIDX_BOOLEAN_PROTOTYPE);
 		res = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(res != NULL);
 
@@ -1857,10 +1857,10 @@ void duk_to_object(duk_context *ctx, int index) {
 		break;
 	}
 	case DUK_TAG_STRING: {
-		(void) duk_push_new_object_helper(ctx,
-		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
-		                                  DUK_BIDX_STRING_PROTOTYPE);
+		(void) duk_push_object_helper(ctx,
+		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
+		                              DUK_BIDX_STRING_PROTOTYPE);
 		res = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(res != NULL);
 
@@ -1888,10 +1888,10 @@ void duk_to_object(duk_context *ctx, int index) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		val = DUK_TVAL_GET_NUMBER(tv);
 
-		(void) duk_push_new_object_helper(ctx,
-		                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER),
-		                                  DUK_BIDX_NUMBER_PROTOTYPE);
+		(void) duk_push_object_helper(ctx,
+		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER),
+		                              DUK_BIDX_NUMBER_PROTOTYPE);
 		res = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(res != NULL);
 
@@ -2533,7 +2533,7 @@ const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...) {
 }
 
 /* internal */
-int duk_push_new_object_helper(duk_context *ctx, int hobject_flags_and_class, int prototype_bidx) {
+int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int prototype_bidx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hobject *h;
@@ -2573,23 +2573,23 @@ int duk_push_new_object_helper(duk_context *ctx, int hobject_flags_and_class, in
 	return ret;
 }
 
-int duk_push_new_object(duk_context *ctx) {
-	return duk_push_new_object_helper(ctx,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                  DUK_BIDX_OBJECT_PROTOTYPE);
+int duk_push_object(duk_context *ctx) {
+	return duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                              DUK_BIDX_OBJECT_PROTOTYPE);
 }
 
-int duk_push_new_array(duk_context *ctx) {
+int duk_push_array(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	int ret;
 
-	ret = duk_push_new_object_helper(ctx,
-	                                 DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                 DUK_HOBJECT_FLAG_ARRAY_PART |
-	                                 DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY),
-	                                 DUK_BIDX_ARRAY_PROTOTYPE);
+	ret = duk_push_object_helper(ctx,
+	                             DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                             DUK_HOBJECT_FLAG_ARRAY_PART |
+	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY),
+	                             DUK_BIDX_ARRAY_PROTOTYPE);
 
 	obj = duk_require_hobject(ctx, ret);
 
@@ -2609,7 +2609,7 @@ int duk_push_new_array(duk_context *ctx) {
 	return ret;
 }
 
-int duk_push_new_thread(duk_context *ctx) {
+int duk_push_thread(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *obj;
 	int ret;
@@ -2657,7 +2657,7 @@ int duk_push_new_thread(duk_context *ctx) {
 	return ret;
 }
 
-int duk_push_new_compiledfunction(duk_context *ctx) {
+int duk_push_compiledfunction(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hcompiledfunction *obj;
 	int ret;
@@ -2697,7 +2697,7 @@ int duk_push_new_compiledfunction(duk_context *ctx) {
 	return ret;
 }
 
-int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs) {
+int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hnativefunction *obj;
 	int ret;
@@ -2759,7 +2759,7 @@ int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	return 0;  /* not reached */
 }
 
-int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, ...) {
+int duk_push_error_object(duk_context *ctx, int err_code, const char *fmt, ...) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
 	va_list ap;
@@ -2771,10 +2771,10 @@ int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, .
 
 	va_start(ap, fmt);
 
-	retval = duk_push_new_object_helper(ctx,
-	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
-	                                    DUK_BIDX_ERROR_PROTOTYPE);  /* prototype updated below */
+	retval = duk_push_object_helper(ctx,
+	                                DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
+	                                DUK_BIDX_ERROR_PROTOTYPE);  /* prototype updated below */
 
 	errobj = duk_require_hobject(ctx, -1);
 
@@ -2806,7 +2806,7 @@ int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, .
 	return retval;
 }
 
-/* FIXME: repetition, see duk_push_new_object */
+/* FIXME: repetition, see duk_push_object */
 void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
@@ -2840,11 +2840,11 @@ void *duk_push_dynamic_buffer(duk_context *ctx, size_t size) {
 	return duk_push_buffer(ctx, size, 1);
 }
 
-int duk_push_new_object_internal(duk_context *ctx) {
-	return duk_push_new_object_helper(ctx,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                  -1);  /* no prototype */
+int duk_push_object_internal(duk_context *ctx) {
+	return duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                              -1);  /* no prototype */
 }
 
 /* internal */
@@ -3006,13 +3006,13 @@ void duk_fatal(duk_context *ctx, int err_code) {
 }
 
 void duk_error(duk_context *ctx, int err_code, const char *fmt, ...) {
-	/* FIXME: push_new_error_object_vsprintf? */
+	/* FIXME: push_error_object_vsprintf? */
 	va_list ap;
 
 	va_start(ap, fmt);
 	duk_push_vsprintf(ctx, fmt, ap);
 	va_end(ap);
-	duk_push_new_error_object(ctx, err_code, "%s", duk_get_string(ctx, -1));
+	duk_push_error_object(ctx, err_code, "%s", duk_get_string(ctx, -1));
 	duk_throw(ctx);
 }
 

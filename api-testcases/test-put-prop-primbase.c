@@ -37,7 +37,7 @@ int test_put(duk_context *ctx) {
 /* execute test inside of a Duktape/C activation (= strict mode) */
 #define  TESTWRAPPED(func)  do { \
 		printf("*** %s (wrapped)\n", #func); \
-		duk_push_new_c_function(ctx, (func), 0); \
+		duk_push_c_function(ctx, (func), 0); \
 		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \
 		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
 		duk_pop(ctx); \

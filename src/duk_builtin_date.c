@@ -1292,10 +1292,10 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 
 	DUK_DDDPRINT("Date constructor, nargs=%d, is_cons=%d", nargs, is_cons);
 
-	duk_push_new_object_helper(ctx,
-	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATE),
-	                           DUK_BIDX_DATE_PROTOTYPE);
+	duk_push_object_helper(ctx,
+	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATE),
+	                       DUK_BIDX_DATE_PROTOTYPE);
 
 	/* Unlike most built-ins, the internal [[PrimitiveValue]] of a Date
 	 * is mutable.

@@ -68,13 +68,13 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 
 	/* 11 */
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	/* 12 */
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	/* 13 */
-	duk_push_new_c_function(ctx, my_c_func, DUK_VARARGS);
+	duk_push_c_function(ctx, my_c_func, DUK_VARARGS);
 
 	/* 14 */
 	duk_push_string(ctx, "(function() { print('hello'); })");
@@ -85,7 +85,7 @@ void test(duk_context *ctx) {
 	duk_eval(ctx);
 
 	/* 16 */
-	duk_push_new_thread(ctx);
+	duk_push_thread(ctx);
 
 	/* 17 */
 	duk_push_buffer(ctx, 1024, 0 /*dynamic*/);

@@ -12,7 +12,7 @@ int test_1(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	duk_set_top(ctx, 0);
-	(void) duk_push_new_thread(ctx);
+	(void) duk_push_thread(ctx);
 	new_ctx = duk_get_context(ctx, -1);
 
 	duk_push_string(new_ctx, "foo");

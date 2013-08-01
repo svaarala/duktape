@@ -53,10 +53,10 @@ void test(duk_context *ctx) {
 
 	/* test C function arg count variants */
 
-	duk_push_new_c_function(ctx, my_int_adder, 0);              /* [0] = c func with 0 args */
-	duk_push_new_c_function(ctx, my_int_adder, 1);              /* [1] = c func with 1 arg */
-	duk_push_new_c_function(ctx, my_int_adder, 2);              /* [2] = c func with 2 args */
-	duk_push_new_c_function(ctx, my_int_adder, DUK_VARARGS);    /* [3] = c func with varargs */
+	duk_push_c_function(ctx, my_int_adder, 0);              /* [0] = c func with 0 args */
+	duk_push_c_function(ctx, my_int_adder, 1);              /* [1] = c func with 1 arg */
+	duk_push_c_function(ctx, my_int_adder, 2);              /* [2] = c func with 2 args */
+	duk_push_c_function(ctx, my_int_adder, DUK_VARARGS);    /* [3] = c func with varargs */
 
 	for (funcidx = 0; funcidx < 4; funcidx++) {
 		for (argcount = 0; argcount < 5; argcount++) {
@@ -76,13 +76,13 @@ void test(duk_context *ctx) {
 	/* test C function return value 0 and negative */
 
 	duk_set_top(ctx, 0);
-	duk_push_new_c_function(ctx, my_zero_ret, 0);
+	duk_push_c_function(ctx, my_zero_ret, 0);
 	duk_call(ctx, 0);
 	printf("top after calling my_zero_ret: %d, retval='%s'\n", duk_get_top(ctx), duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_set_top(ctx, 0);
-	duk_push_new_c_function(ctx, my_neg_ret, 0);
+	duk_push_c_function(ctx, my_neg_ret, 0);
 	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
 	printf("top after calling my_neg_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);

@@ -57,10 +57,10 @@ int duk_fileio_readfile(duk_context *ctx) {
 void duk_fileio_register(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_push_string(ctx, "fileio");
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	duk_push_string(ctx, "readfile");
-	duk_push_new_c_function(ctx, duk_fileio_readfile, 1);
+	duk_push_c_function(ctx, duk_fileio_readfile, 1);
 	duk_put_prop(ctx, -3);
 
 	duk_put_prop(ctx, -3);

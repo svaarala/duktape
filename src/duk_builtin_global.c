@@ -446,10 +446,10 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 			             "var_env and lex_env to a fresh env, "
 			             "this_binding to caller's this_binding");
 
-			(void) duk_push_new_object_helper(ctx,
-			                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                                  -1);  /* no prototype, updated below */
+			(void) duk_push_object_helper(ctx,
+			                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                              -1);  /* no prototype, updated below */
 			new_env = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(new_env != NULL);
 			DUK_DDDPRINT("new_env allocated: %!iO", new_env);

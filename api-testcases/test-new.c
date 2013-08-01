@@ -43,7 +43,7 @@ int test_raw(duk_context *ctx) {
 	 * controls the internal prototype of created instances.
 	 */
 
-	duk_push_new_c_function(ctx, my_func_1, 0);
+	duk_push_c_function(ctx, my_func_1, 0);
 	duk_eval_string(ctx, "({ name: 'my prototype' })");
 	duk_put_prop_string(ctx, -2, "prototype");
 	duk_new(ctx, 0);   /* -> [ ret ] */
@@ -53,7 +53,7 @@ int test_raw(duk_context *ctx) {
 	 * created for the constructor "this" binding.
 	 */
 
-	duk_push_new_c_function(ctx, my_func_2, 0);
+	duk_push_c_function(ctx, my_func_2, 0);
 	duk_eval_string(ctx, "({ name: 'my prototype' })");
 	duk_put_prop_string(ctx, -2, "prototype");
 	duk_new(ctx, 0);   /* -> [ ret ] */

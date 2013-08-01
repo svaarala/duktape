@@ -80,7 +80,7 @@ int duk_builtin_duk_object_spawn(duk_context *ctx) {
 	func = duk_get_hobject(ctx, 0);
 	DUK_ASSERT(func != NULL);
 
-	duk_push_new_thread(ctx);
+	duk_push_thread(ctx);
 	new_thr = (duk_hthread *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(new_thr != NULL);
 	new_thr->state = DUK_HTHREAD_STATE_INACTIVE;

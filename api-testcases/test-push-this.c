@@ -28,7 +28,7 @@ int func(duk_context *ctx) {
 void test(duk_context *ctx) {
 	int i, n;
 
-	duk_push_new_c_function(ctx, func, 0);
+	duk_push_c_function(ctx, func, 0);
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -36,8 +36,8 @@ void test(duk_context *ctx) {
 	duk_push_false(ctx);
 	duk_push_number(ctx, 123.456);
 	duk_push_string(ctx, "foo");
-	duk_push_new_object(ctx);
-	duk_push_new_array(ctx);
+	duk_push_object(ctx);
+	duk_push_array(ctx);
 	duk_push_fixed_buffer(ctx, 16);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 

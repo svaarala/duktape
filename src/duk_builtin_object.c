@@ -23,10 +23,10 @@ int duk_builtin_object_constructor(duk_context *ctx) {
 
 	/* FIXME: handling for POINTER and BUFFER */
 
-	duk_push_new_object_helper(ctx,
-	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                           DUK_BIDX_OBJECT_PROTOTYPE);
+	duk_push_object_helper(ctx,
+	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                       DUK_BIDX_OBJECT_PROTOTYPE);
 	return 1;
 }
 
@@ -80,10 +80,10 @@ int duk_builtin_object_constructor_create(duk_context *ctx) {
 	}
 
 	/* FIXME: direct helper to create with specific prototype */
-	(void) duk_push_new_object_helper(ctx,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                  -1);
+	(void) duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                              -1);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(h->prototype == NULL);

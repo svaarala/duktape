@@ -95,7 +95,7 @@ int duk_socket_accept(duk_context *ctx) {
 	if (addrlen == sizeof(addr)) {
 		uint32_t tmp = ntohl(addr.sin_addr.s_addr);
 
-		duk_push_new_object(ctx);
+		duk_push_object(ctx);
 
 		duk_push_string(ctx, "fd");
 		duk_push_int(ctx, rc);
@@ -196,7 +196,7 @@ int duk_socket_poll(duk_context *ctx) {
 		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
 	}
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 	nchanged = 0;
 	for (i = 0; i < n; i++) {
 		/* update revents */
@@ -225,30 +225,30 @@ int duk_socket_poll(duk_context *ctx) {
 void duk_socket_register(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_push_string(ctx, "socket");
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	duk_push_string(ctx, "createServerSocket");
-	duk_push_new_c_function(ctx, duk_socket_create_server_socket, 2);
+	duk_push_c_function(ctx, duk_socket_create_server_socket, 2);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "close");
-	duk_push_new_c_function(ctx, duk_socket_close, 1);
+	duk_push_c_function(ctx, duk_socket_close, 1);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "accept");
-	duk_push_new_c_function(ctx, duk_socket_accept, 1);
+	duk_push_c_function(ctx, duk_socket_accept, 1);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "read");
-	duk_push_new_c_function(ctx, duk_socket_read, 1);
+	duk_push_c_function(ctx, duk_socket_read, 1);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "write");
-	duk_push_new_c_function(ctx, duk_socket_write, 2);
+	duk_push_c_function(ctx, duk_socket_write, 2);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "poll");
-	duk_push_new_c_function(ctx, duk_socket_poll, 2);
+	duk_push_c_function(ctx, duk_socket_poll, 2);
 	duk_put_prop(ctx, -3);
 
 	duk_put_prop(ctx, -3);

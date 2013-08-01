@@ -338,7 +338,7 @@ int test_new_not_extensible(duk_context *ctx) {
 		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
 		duk_pop(ctx); \
 		printf("*** %s (inside, strict)\n", #func); \
-		duk_push_new_c_function(ctx, (func), 0); \
+		duk_push_c_function(ctx, (func), 0); \
 		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \
 		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
 		duk_pop(ctx); \

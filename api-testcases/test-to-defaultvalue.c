@@ -18,7 +18,7 @@ int test_1(duk_context *ctx) {
 	int i, n;
 
 	duk_set_top(ctx, 0);
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	duk_push_int(ctx, 123);
 	duk_to_object(ctx, -1);   /* ToObject(123) is a Number object */
 	duk_push_true(ctx);

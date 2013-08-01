@@ -10,7 +10,7 @@ int my_func(duk_context *ctx) {
 }
 
 int test_raw(duk_context *ctx) {
-	duk_push_new_c_function(ctx, my_func, 0);
+	duk_push_c_function(ctx, my_func, 0);
 
 	duk_dup(ctx, 0);   /* -> [ func func ] */
 	duk_call(ctx, 0);  /* -> [ func ret ] */

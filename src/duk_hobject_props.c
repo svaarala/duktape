@@ -3298,7 +3298,7 @@ int duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 		return 1;
 	}
 
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	/* [obj key value desc] */
 
@@ -3350,7 +3350,7 @@ static void normalize_property_descriptor(duk_context *ctx) {
 	DUK_ASSERT(duk_is_object(ctx, -1));
 
 	idx_in = duk_require_normalize_index(ctx, -1);
-	duk_push_new_object(ctx);  /* [... desc_in desc_out] */
+	duk_push_object(ctx);  /* [... desc_in desc_out] */
 	idx_out = idx_in + 1;
 
 	/* this approach allows us to be care-free with the "stack policy"
@@ -4317,7 +4317,7 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 
 	DUK_DDDPRINT("target=%!iT, properties=%!iT", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1));
 
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	duk_enum(ctx, 1, DUK_ENUM_OWN_PROPERTIES_ONLY /*enum_flags*/);
 
 	/* [hobject props descriptors enum(props)] */
@@ -4373,7 +4373,7 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
 		 * object here (the property is configurable so a caller may have changed
 		 * it).  This is not a good approach.
 		 */
-		duk_push_new_c_function(ctx, duk_hobject_object_define_property, 3);
+		duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
 		duk_insert(ctx, -4);
 
 		/* [hobject props descriptors enum(descriptors) Object.defineProperty hobject key desc_norm] */

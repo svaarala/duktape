@@ -9,10 +9,10 @@ int duk_builtin_error_constructor(duk_context *ctx) {
 	 * exactly the same.
 	 */
 
-	duk_push_new_object_helper(ctx,
-	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
-	                           DUK_BIDX_ERROR_PROTOTYPE);
+	duk_push_object_helper(ctx,
+	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
+	                       DUK_BIDX_ERROR_PROTOTYPE);
 
 	if (!duk_is_undefined(ctx, 0)) {
 		duk_to_string(ctx, 0);

@@ -277,12 +277,12 @@ void duk_push_current_function(duk_context *ctx);                               
 void duk_push_current_thread(duk_context *ctx);                                     /* push the currently running thread */
 void duk_push_global_object(duk_context *ctx);                                      /* push the global object */
 
-int duk_push_new_object(duk_context *ctx);                                          /* returns positive index of pushed object (may fail) */
-int duk_push_new_array(duk_context *ctx);                                           /* returns positive index of pushed array (may fail) */
-int duk_push_new_thread(duk_context *ctx);                                          /* returns positive index of pushed thread (may fail) */
-int duk_push_new_c_function(duk_context *ctx, duk_c_function func, int nargs);      /* returns positive index of pushed object (may fail); nargs == DUK_VARARGS creates a variable args function */
-int duk_push_new_error_object(duk_context *ctx, int err_code, const char *fmt, ...);  /* returns positive index of pushed error */
-void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic);                    /* returns pointer to buffer (may be NULL if size is 0; may fail) */
+int duk_push_object(duk_context *ctx);                                              /* returns positive index of pushed object (may fail) */
+int duk_push_array(duk_context *ctx);                                               /* returns positive index of pushed array (may fail) */
+int duk_push_thread(duk_context *ctx);                                              /* returns positive index of pushed thread (may fail) */
+int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);          /* returns positive index of pushed object (may fail); nargs == DUK_VARARGS creates a variable args function */
+int duk_push_error_object(duk_context *ctx, int err_code, const char *fmt, ...);    /* returns positive index of pushed error */
+void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic);                  /* returns pointer to buffer (may be NULL if size is 0; may fail) */
 void *duk_push_fixed_buffer(duk_context *ctx, size_t size);
 void *duk_push_dynamic_buffer(duk_context *ctx, size_t size);
 

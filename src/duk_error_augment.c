@@ -37,7 +37,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 
 	DUK_DDDPRINT("adding traceback to object: %!O", (duk_heaphdr *) obj);
 
-	duk_push_new_array(ctx);  /* XXX: specify array size, as we know it */
+	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
 
 	depth = DUK_OPT_TRACEBACK_DEPTH;
 	i_min = (thr_callstack->callstack_top > depth ? thr_callstack->callstack_top - depth : 0);

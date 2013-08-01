@@ -339,7 +339,7 @@ static void json_dec_object(duk_json_dec_ctx *js_ctx) {
 
 	json_dec_objarr_shared_entry(js_ctx);
 
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	/* Initial '{' has been checked and eaten by caller. */
 
@@ -422,7 +422,7 @@ static void json_dec_array(duk_json_dec_ctx *js_ctx) {
 
 	json_dec_objarr_shared_entry(js_ctx);
 
-	duk_push_new_array(ctx);
+	duk_push_array(ctx);
 
 	/* Initial '[' has been checked and eaten by caller. */
 
@@ -1398,7 +1398,7 @@ void duk_builtin_json_parse_helper(duk_context *ctx,
 
 		DUK_ASSERT_TOP(ctx, 3);
 
-		duk_push_new_object(ctx);
+		duk_push_object(ctx);
 		duk_dup(ctx, -2);  /* -> [ ... val root val ] */
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
@@ -1492,7 +1492,7 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 	DUK_ASSERT(js_ctx->h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(js_ctx->h_buf));
 
-	js_ctx->idx_loop = duk_push_new_object_internal(ctx);
+	js_ctx->idx_loop = duk_push_object_internal(ctx);
 	DUK_ASSERT(js_ctx->idx_loop >= 0);
 
 	/* [ ... buf loop ] */
@@ -1515,7 +1515,7 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 			int plist_idx = 0;
 			int enum_flags;
 
-			js_ctx->idx_proplist = duk_push_new_array(ctx);  /* FIXME: array internal? */
+			js_ctx->idx_proplist = duk_push_array(ctx);  /* FIXME: array internal? */
 
 			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
 			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
@@ -1606,7 +1606,7 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 	 *  Create wrapper object and serialize
 	 */
 
-	idx_holder = duk_push_new_object(ctx);
+	idx_holder = duk_push_object(ctx);
 	duk_dup(ctx, idx_value);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 

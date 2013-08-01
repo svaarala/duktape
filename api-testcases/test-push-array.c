@@ -9,7 +9,7 @@ void test(duk_context *ctx) {
 
 	duk_push_int(ctx, 123);  /* dummy */
 
-	arr_idx = duk_push_new_array(ctx);
+	arr_idx = duk_push_array(ctx);
 	duk_push_string(ctx, "foo");
 	duk_put_prop_index(ctx, arr_idx, 0);
 	duk_push_string(ctx, "bar");

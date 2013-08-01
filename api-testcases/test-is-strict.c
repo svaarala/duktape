@@ -17,7 +17,7 @@ void test(duk_context *ctx) {
 
 	printf("outside: %d\n", duk_is_strict_call(ctx));
 
-	duk_push_new_c_function(ctx, my_func, 0);
+	duk_push_c_function(ctx, my_func, 0);
 	duk_call(ctx, 0);
 }
 

@@ -77,25 +77,25 @@ static void create_arguments_object(duk_hthread *thr,
 	 *    - 'mappedNames' object: temporary value used during construction
 	 */
 
-	i_arg = duk_push_new_object_helper(ctx,
-	                                   DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                   DUK_HOBJECT_FLAG_ARRAY_PART |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
-	                                   DUK_BIDX_OBJECT_PROTOTYPE);
+	i_arg = duk_push_object_helper(ctx,
+	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                               DUK_HOBJECT_FLAG_ARRAY_PART |
+	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
+	                               DUK_BIDX_OBJECT_PROTOTYPE);
 	DUK_ASSERT(i_arg >= 0);
 	arg = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(arg != NULL);
 
-	i_map = duk_push_new_object_helper(ctx,
-	                                   DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                   -1);  /* no prototype */
+	i_map = duk_push_object_helper(ctx,
+	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                               -1);  /* no prototype */
 	DUK_ASSERT(i_map >= 0);
 
-	i_mappednames = duk_push_new_object_helper(ctx,
-	                                           DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                           -1);  /* no prototype */
+	i_mappednames = duk_push_object_helper(ctx,
+	                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                                       -1);  /* no prototype */
 	DUK_ASSERT(i_mappednames >= 0);
 
 	/* [... formals arguments map mappedNames] */

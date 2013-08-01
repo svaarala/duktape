@@ -20,7 +20,7 @@ void test(duk_context *ctx) {
 	duk_push_false(ctx);
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 123);
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 	duk_push_pointer(ctx, (void *) NULL);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 

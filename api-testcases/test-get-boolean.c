@@ -26,7 +26,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "false");
 	duk_push_int(ctx, 0);
 	duk_push_int(ctx, 123);
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	n = duk_get_top(ctx);
 	printf("top: %d\n", n);

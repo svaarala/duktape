@@ -34,7 +34,7 @@ void test(duk_context *ctx) {
 	duk_push_lstring(ctx, "foo\0bar", 7);
 	duk_push_string(ctx, "\xe1\x88\xb4xyz");  /* 4 chars, first char utf-8 encoded U+1234 */
 	duk_push_nan(ctx);
-	duk_push_new_object(ctx);
+	duk_push_object(ctx);
 
 	n = duk_get_top(ctx);
 	printf("top: %d\n", n);

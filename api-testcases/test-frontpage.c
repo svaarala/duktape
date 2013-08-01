@@ -21,7 +21,7 @@ int my_adder(duk_context *ctx) {
 
 void test(duk_context *ctx) {
 	duk_push_global_object(ctx);
-	duk_push_new_c_function(ctx, my_adder, DUK_VARARGS);
+	duk_push_c_function(ctx, my_adder, DUK_VARARGS);
 	duk_put_prop_string(ctx, -2, "myAdder");
 	duk_pop(ctx);  /* pop global */
 

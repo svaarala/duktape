@@ -31,9 +31,9 @@ void test(duk_context *ctx) {
 	duk_push_boolean(ctx, 123);
 	duk_push_number(ctx, 234);
 	duk_push_string(ctx, "foo");
-	duk_push_new_object(ctx);
-	duk_push_new_array(ctx);
-	duk_push_new_c_function(ctx, my_c_func, DUK_VARARGS);
+	duk_push_object(ctx);
+	duk_push_array(ctx);
+	duk_push_c_function(ctx, my_c_func, DUK_VARARGS);
 	duk_push_fixed_buffer(ctx, 1024);
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);

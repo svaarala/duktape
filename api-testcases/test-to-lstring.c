@@ -62,8 +62,8 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "");
 	duk_push_string(ctx, "foo");
 	duk_push_lstring(ctx, "foo\0bar", 7);
-	duk_push_new_object(ctx);
-	duk_push_new_thread(ctx);
+	duk_push_object(ctx);
+	duk_push_thread(ctx);
 	(void) duk_push_fixed_buffer(ctx, 0);
 	ptr = (char *) duk_push_fixed_buffer(ctx, 16);
 	for (i = 0; i < 16; i++) {
