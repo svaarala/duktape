@@ -317,6 +317,7 @@
 	color: #000000;
 	padding: 1.5ex;
 	margin: 2ex 2em 2ex 0ex;
+	line-height: 1.4;
 }
 .content .tip:before {
 	content: "TIP: ";
@@ -329,6 +330,7 @@
 	color: #000000;
 	padding: 1.5ex;
 	margin: 2ex 2em 2ex 0ex;
+	line-height: 1.4;
 }
 .content .note:before {
 	content: "NOTE: ";
@@ -341,6 +343,7 @@
 	color: #ffffff;
 	padding: 1.5ex;
 	margin: 2ex 2em 2ex 0ex;
+	line-height: 1.4;
 }
 .content .fixme:before {
 	content: "FIXME: ";
