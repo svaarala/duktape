@@ -1,0 +1,27 @@
+=proto
+int duk_equals(duk_context *ctx, int index1, int index2);
+
+=stack
+[ ... val1! ... val2! ... ]
+
+=summary
+<p>Compare values at <tt>index1</tt> and <tt>index2</tt> for equality.
+Returns 1 if values are considered equal using Ecmascript
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.1">Equals</a>
+operator (<tt>==</tt>) semantics, otherwise returns 0.  Also returns 0 if either
+index is invalid.</p>
+
+<p>Because
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3">The Abstract Equality Comparison Algorithm</a>
+used by the Equals operator performs value coercion (<tt>ToNumber()</tt> and <tt>ToPrimitive()</tt>),
+the comparison may have side effects and may throw an error.  The strict equality comparison,
+available through <tt><a href="#duk_strict_equals">duk_strict_equals()</a></tt>, has no
+side effects.</p>
+
+=example
+if (duk_equals(ctx, -3, -7)) {
+    printf("values at indices -3 and -7 are equal\n");
+}
+
+=fixme
+Currently buffer equality does not cause buffer contents to be compared.
