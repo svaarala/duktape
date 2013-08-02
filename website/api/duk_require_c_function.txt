@@ -1,0 +1,14 @@
+=proto
+FIXME
+
+=stack
+[ ... val! ... ]
+
+=summary
+FIXME
+
+=example
+FIXME
+
+=fixme
+Get the underlying C function pointer from a Function object.
