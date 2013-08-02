@@ -2,10 +2,12 @@
 no running function
 type=1
 duk_is_object: 0
+duk_is_function: 0
 basic case
 my_func, top=1
 type=6
 duk_is_object: 1
+duk_is_function: 1
 final top: 2
 rc=0, result='undefined'
 ===*/
@@ -16,6 +18,7 @@ int my_func(duk_context *ctx) {
 	duk_push_current_function(ctx);
 	printf("type=%d\n", duk_get_type(ctx, -1));
 	printf("duk_is_object: %d\n", duk_is_object(ctx, -1));
+	printf("duk_is_function: %d\n", duk_is_function(ctx, -1));
 
 	/* FIXME: get the underlying function and compare against 'my_func' */
 
@@ -32,6 +35,7 @@ void test(duk_context *ctx) {
 	duk_push_current_function(ctx);
 	printf("type=%d\n", duk_get_type(ctx, -1));
 	printf("duk_is_object: %d\n", duk_is_object(ctx, -1));
+	printf("duk_is_function: %d\n", duk_is_function(ctx, -1));
 	duk_pop(ctx);
 
 	/* then test the basic case */
