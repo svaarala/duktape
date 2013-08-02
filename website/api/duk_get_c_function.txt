@@ -1,14 +1,18 @@
 =proto
-FIXME
+duk_c_function duk_get_c_function(duk_context *ctx, int index);
 
 =stack
 [ ... val! ... ]
 
 =summary
-FIXME
+<p>Get the Duktape/C function pointer (a <tt>duk_c_function</tt>) from an
+Ecmascript function object associated with a Duktape/C function.  If the
+value is not such a function or <tt>index</tt> is invalid, returns <tt>NULL</tt>.</p>
+
+<p>If you prefer an error to be thrown for an invalid value or index, use
+<tt><a href="#duk_require_c_function">duk_require_c_function()</a></tt>.</p>
 
 =example
-FIXME
+duk_c_function funcptr;
 
-=fixme
-Get the underlying C function pointer from a Function object.
+funcptr = duk_get_c_function(ctx, -3);

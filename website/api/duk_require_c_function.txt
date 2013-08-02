@@ -1,14 +1,15 @@
 =proto
-FIXME
+duk_c_function duk_require_c_function(duk_context *ctx, int index);
 
 =stack
 [ ... val! ... ]
 
 =summary
-FIXME
+<p>Like <tt><a href="#duk_get_c_function">duk_get_c_function()</a></tt>, but
+throws an error if the value at <tt>index</tt> is not an Ecmascript function
+associated with a Duktape/C function or if the index is invalid.</p>
 
 =example
-FIXME
+duk_c_function funcptr;
 
-=fixme
-Get the underlying C function pointer from a Function object.
+funcptr = duk_require_c_function(ctx, -3);
