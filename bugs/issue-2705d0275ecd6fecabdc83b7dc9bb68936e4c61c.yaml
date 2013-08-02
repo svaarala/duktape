@@ -8,7 +8,7 @@ desc: |-
   function (guarding against zero compare) to be used.
 type: :task
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -20,4 +20,8 @@ log_events:
 - - 2013-03-15 09:17:12.093175 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-08-02 14:54:01.257940 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.7 from v0.6
   - ""

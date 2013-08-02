@@ -3,7 +3,7 @@ title: add testcases for defineProperty(), covering special (exotic) objects
 desc: ""
 type: :task
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2013-04-21 19:32:01.310632 Z
   - sva <sami.vaarala@poplatek.fi>
   - assigned to release v0.6 from v0.5
+  - ""
+- - 2013-08-02 15:00:05.814076 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.7 from v0.6
   - ""

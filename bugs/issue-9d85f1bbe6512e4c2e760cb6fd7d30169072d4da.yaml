@@ -3,7 +3,7 @@ title: decide what to do with __duk__.version
 desc: Running number or actual release version number?
 type: :task
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-08-01 21:44:32.716870 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-08-02 15:00:08.407098 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.7 from v0.6
   - ""

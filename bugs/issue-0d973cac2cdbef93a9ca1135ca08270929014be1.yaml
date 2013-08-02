@@ -3,7 +3,7 @@ title: should duk_alloc() and duk_alloc_raw() zero allocated memory by default
 desc: ""
 type: :task
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-07-30 22:28:06.424267 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
+  - ""
+- - 2013-08-02 15:00:07.590967 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.7 from v0.6
   - ""

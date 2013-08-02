@@ -5,7 +5,7 @@ desc: |-
   testcases are good enough and check the implementation.
 type: :task
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
@@ -25,4 +25,8 @@ log_events:
 - - 2013-04-21 19:32:07.695988 Z
   - sva <sami.vaarala@poplatek.fi>
   - assigned to release v0.6 from v0.5
+  - ""
+- - 2013-08-02 15:00:06.022893 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - assigned to release v0.7 from v0.6
   - ""
