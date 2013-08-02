@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clarify duk_pcall and duk_safe_call errhandler_index semantics
+desc: How to specify default handler vs. use current handler?
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-02 11:05:17.649400 Z
+references: []
+
+id: b50d98a3e83898332b23a8a9fec12c8a69213fa6
+log_events: 
+- - 2013-08-02 11:05:17.841192 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
