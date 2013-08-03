@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: multiple get/put primitive to api
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-02 19:56:35.020681 Z
+references: []
+
+id: e713214d272d595a5723ff6ce636535311ebd514
+log_events: 
+- - 2013-08-02 19:56:35.233476 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

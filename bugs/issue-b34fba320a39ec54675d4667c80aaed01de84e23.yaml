@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement public api for get/put/del/has variable
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-02 21:02:10.142939 Z
+references: []
+
+id: b34fba320a39ec54675d4667c80aaed01de84e23
+log_events: 
+- - 2013-08-02 21:02:10.323879 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
