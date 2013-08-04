@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an error message to fatal errors?
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-04 20:35:29.267959 Z
+references: []
+
+id: 1ff063f6688e2c3885d12953c85c10ea8814858f
+log_events: 
+- - 2013-08-04 20:35:29.449022 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
