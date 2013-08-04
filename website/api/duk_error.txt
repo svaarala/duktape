@@ -1,0 +1,22 @@
+=proto
+void duk_error(duk_context *ctx, int err_code, const char *fmt, ...);
+
+=stack
+[ ... ] -> [ ... err! ]
+
+=summary
+<p>Push a new Error object to the stack and throw it.
+This call never returns.</p>
+
+<p>The <tt>message</tt> property of the error object will be set to a <tt>sprintf</tt>-formatted
+string using <tt>fmt</tt> and the remaining arguments.  The (custom) <tt>code</tt> property
+will be set to <tt>err_code</tt>.  The internal prototype for the created error object is chosen
+based on <tt>err_code</tt>.  For instance, <tt>DUK_ERR_RANGE_ERROR</tt> causes the built-in
+<tt>RangeError</tt> prototype to be used.</p>
+
+<p>To push an Error object to the stack without throwing it, use
+<tt><a href="#duk_push_error_object">duk_push_error_object()</a></tt>.
+</p>
+
+=example
+duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", argval);
