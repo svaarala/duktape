@@ -1,0 +1,16 @@
+=proto
+void duk_fatal(duk_context *ctx, int err_code);
+
+=summary
+<p>Call fatal error handler with a specified error code.</p>
+
+<p>A fatal error handler never returns and may e.g. exit the current
+process.  Error catching points (like <tt>try-catch</tt> statements
+and error catching API calls) are bypassed.  You should only call
+this function when a truly fatal, unrecoverable error has occurred.</p>
+
+=example
+duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR);
+
+=fixme
+Useful to expose?  No message.
