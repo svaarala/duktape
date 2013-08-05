@@ -1,0 +1,13 @@
+=proto
+void duk_compile_string(duk_context *ctx, int flags, const char *str);
+
+=stack
+[ ... ] -> [ ... function! ]
+
+=summary
+<p>Like
+<tt><a href="#duk_compile">duk_compile()</a></tt>, but the compile input
+is given as a C string.</p>
+
+=example
+duk_compile_string(ctx, 0, "print('program code');");

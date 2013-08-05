@@ -1,0 +1,139 @@
+=proto
+void duk_compile(duk_context *ctx, int flags);
+
+=stack
+[ ... source! ] -> [ ... function! ]
+
+=summary
+<p>Compile Ecmascript source code and replace it with a compiled function
+object (the code is not executed).  May throw a <tt>SyntaxError</tt> for any
+compile-time errors (in addition to the usual internal errors like out-of-memory,
+internal limit errors, etc).</p>
+
+<p>The following flags may be given:</p>
+<ul>
+<li><tt>DUK_COMPILE_EVAL</tt>: compile the input as eval code instead of
+    as an Ecmascript program</li>
+<li><tt>DUK_COMPILE_FUNCTION</tt>: compile the input as a function instead
+    of as an Ecmascript program</li>
+<li><tt>DUK_COMPILE_STRICT</tt>: force the input to be compiled in strict
+    mode</li>
+</ul>
+
+<p>The source code being compiled may be:</p>
+
+<ul>
+<li>Program code: compiles into a function with zero arguments, which
+    executes like a top level Ecmascript program (default)</li>
+<li>Eval code: compiles into a function with zero arguments, which
+    executes like an Ecmascript <tt>eval</tt> call
+    (flag <tt>DUK_COMPILE_EVAL</tt>)</li>
+<li>Function code: compiles into a function with zero or more arguments
+    (flag <tt>DUK_COMPILE_FUNCTION</tt>)</li>
+</ul>
+
+<p>All of these have slightly different semantics in Ecmascript.  See
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4">Establishing an Execution Context</a>
+for a detailed discussion.
+One major difference is that program and eval contexts have an implicit
+return value: the last <i>non-empty</i> statement value is an automatic
+return value for the program or eval code, whereas functions don't have
+an automatic return value.
+</p>
+
+<p>Program and eval code don't have an explicit <tt>function</tt> syntax.
+For instance, the following can be compiled both as a program and as an
+eval expression:</p>
+<pre class="ecmascript-code">
+print("Hello world!");
+123;  // implicit return value
+</pre>
+
+<p>Function code follows the Ecmascript <tt>function</tt> syntax
+(the function name is optional):</p>
+<pre class="ecmascript-code">
+function adder(x,y) {
+    return x+y;
+}
+</pre>
+
+<p>Compiling a function is equivalent to compiling eval code which contains
+a function expression.  Note that the outermost parentheses are required,
+otherwise the eval code will register a global function named "adder" instead
+of returning a plain function value:</p>
+<pre class="ecmascript-code">
+(function adder(x,y) {
+    return x+y;
+})
+</pre>
+
+<p>The bytecode generated for program and eval code is currently slower
+than that generated for functions: a "slow path" is used for all variable
+accesses in program and eval code, and the implicit return value handling
+of program and eval code generates much unnecessary bytecode.  From a
+performance point of view (both memory and execution performance) it is
+thus preferable to have as much code inside functions as possible.</p>
+
+<p>When compiling eval and program expressions, be careful to avoid the
+usual Ecmascript gotchas, such as:</p>
+<pre class="ecmascript-code">
+/* Function at top level is a function declaration which registers a global
+ * function, and is different from a function expression.  Use parentheses
+ * around the top level expression.
+ */
+
+eval("function adder(x,y) { return x+y; }");   /* registers 'adder' to global */
+eval("function (x,y) { return x+y; }");        /* not allowed */
+eval("(function (x,y) { return x+y; })");      /* function expression (anonymous) */
+eval("(function adder(x,y) { return x+y; })"); /* function expression (named) */
+
+/* Opening curly brace at top level is interpreted as start of a block
+ * expression, not an object literal.  Use parentheses around the top
+ * level expression.
+ */
+
+eval("{ myfunc: 1 }");   /* block with -label- "myfunc" and statement "1" (!) */
+eval("({ myfunc: 1 })";  /* object literal { myfunc: 1 } */
+</pre>
+
+<div class="note">
+DUK_COMPILE_FUNCTION is currently unimplemented.
+</div>
+
+=example
+/* Program code.  Note that the hello() function is a function
+ * declaration which gets registered into the global object when
+ * executed.  Implicit return value is 123.
+ */
+
+duk_push_string(ctx, "print('program');\n"
+                     "function hello() { print('Hello world!'); }\n"
+                     "123;");
+duk_compile(ctx, 0);
+duk_call(ctx, 0);      /* [ func ] -> [ result ] */
+printf("program result: %lf\n", duk_get_number(ctx, -1));
+duk_pop(ctx);
+
+/* Eval code */
+
+duk_push_string(ctx, "2+3");
+duk_compile(ctx, DUK_COMPILE_EVAL);
+duk_call(ctx, 0);      /* [ func ] -> [ result ] */
+printf("eval result: %lf\n", duk_get_number(ctx, -1));
+duk_pop(ctx);
+
+/* Function code */
+
+duk_push_string(ctx, "function (x,y) { return x+y; }");
+duk_compile(ctx, DUK_COMPILE_FUNCTION);
+duk_push_int(ctx, 5);
+duk_push_int(ctx, 6);
+duk_call(ctx, 2);      /* [ func 5 6 ] -> [ result ] */
+printf("function result: %lf\n", duk_get_number(ctx, -1));
+duk_pop(ctx);
+
+=fixme
+Remove DUK_COMPILE_FUNCTION, one can simply just eval a function expression?
+Practical difference between program/eval code, because there is never a
+lexical/variable environment for calling code.  In strict mode eval code
+would get its own environment.
