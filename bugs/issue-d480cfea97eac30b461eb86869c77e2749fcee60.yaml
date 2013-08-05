@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "review api consistency: operator on stack top vs. explicit index"
+desc: |-
+  Explicit index produces larger code but sometimes requires more stack trickery
+  on part of the caller.
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-05 10:52:48.086860 Z
+references: []
+
+id: d480cfea97eac30b461eb86869c77e2749fcee60
+log_events: 
+- - 2013-08-05 10:52:48.259910 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
