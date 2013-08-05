@@ -14,6 +14,7 @@ colorize = True
 fancy_stack = True
 remove_fixme = False
 testcase_refs = True
+list_tags = True
 
 def readFile(x):
 	f = open(x, 'rb')
@@ -186,11 +187,17 @@ def parseApiDoc(filename):
 
 	return parts
 
-def processApiDoc(filename, testrefs):
+def processApiDoc(filename, testrefs, used_tags):
 	parts = parseApiDoc(filename)
 	res = []
 
 	funcname = os.path.splitext(os.path.basename(filename))[0]
+
+	# collect used tags from all api docs
+	if parts.has_key('tags'):
+		for i in parts['tags']:
+			if i not in used_tags:
+				used_tags.append(i)
 
 	# this improves readability on e.g. elinks and w3m
 	res.append('<hr />')
@@ -264,6 +271,18 @@ def processApiDoc(filename, testrefs):
 			res.append('</ul>')
 		else:
 			res.append('<p>None.</p>')
+
+	if list_tags and parts.has_key('tags'):
+		# FIXME: placeholder
+		res.append('<h3>Tags</h3>')
+		res.append('<p>')
+		p = parts['tags']
+		for idx, val in enumerate(p):
+			if idx > 0:
+				res.append(' ')
+			res.append(htmlEscape(val))
+		res.append('</p>')
+		res.append('')
 
 	if parts.has_key('fixme'):
 		p = parts['fixme']
@@ -401,18 +420,23 @@ def generateApiDoc(apidocdir, apitestdir):
 	res += processRawDoc('api/notation.html')
 	res += processRawDoc('api/defines.html')
 
+	# FIXME: tag-based function index here (requires changes to tag parsing placeholder)
+
+	used_tags = []
 	for filename in apifiles:
 		# FIXME: Here we'd like to validate individual processApiDoc() results so
 		# that they don't e.g. have unbalanced tags.  Or at least normalize them so
 		# that they don't break the entire page.
 
 		try:
-			data = processApiDoc(os.path.join(apidocdir, filename), testrefs)
+			data = processApiDoc(os.path.join(apidocdir, filename), testrefs, used_tags)
 			res += data
 		except:
 			print repr(data)
 			print 'FAIL: ' + repr(filename)
 			raise
+
+	print('used tags: ' + repr(used_tags))
 
 	res += [ '<hr>' ]
 
