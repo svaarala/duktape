@@ -51,7 +51,9 @@ int test_1(duk_context *ctx) {
 
 	/* basic case */
 	duk_dup_top(ctx);
-	duk_substring(ctx, -1, 2, 5);
+	duk_push_int(ctx, 123);  /* dummy */
+	duk_substring(ctx, -2, 2, 5);  /* test index other than stack top */
+	duk_pop(ctx);
 	dump_string(ctx);
 
 	/* end is clamped */
