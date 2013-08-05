@@ -118,7 +118,7 @@ int duk_builtin_string_prototype_char_at(duk_context *ctx) {
 
 	duk_push_this_coercible_to_string(ctx);
 	pos = duk_to_int(ctx, 0);
-	duk_substring(ctx, pos, pos + 1);
+	duk_substring(ctx, -1, pos, pos + 1);
 	return 1;
 }
 
@@ -205,7 +205,7 @@ int duk_builtin_string_prototype_substring(duk_context *ctx) {
 
 	DUK_ASSERT(end_pos >= start_pos);
 
-	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
+	duk_substring(ctx, -1, (size_t) start_pos, (size_t) end_pos);
 	return 1;
 }
 
@@ -255,7 +255,7 @@ int duk_builtin_string_prototype_substr(duk_context *ctx) {
 	DUK_ASSERT(end_pos >= 0 && end_pos <= len);
 	DUK_ASSERT(end_pos >= start_pos);
 
-	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
+	duk_substring(ctx, -1, (size_t) start_pos, (size_t) end_pos);
 	return 1;
 }
 #endif  /* DUK_USE_SECTION_B */
@@ -298,7 +298,7 @@ int duk_builtin_string_prototype_slice(duk_context *ctx) {
 
 	DUK_ASSERT(end_pos >= start_pos);
 
-	duk_substring(ctx, (size_t) start_pos, (size_t) end_pos);
+	duk_substring(ctx, -1, (size_t) start_pos, (size_t) end_pos);
 	return 1;
 }
 

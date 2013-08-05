@@ -1359,7 +1359,7 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 				DUK_DDDPRINT("-> found, array index inside string");
 				if (push_value) {
 					duk_push_hstring(ctx, h_val);
-					duk_substring(ctx, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
+					duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
 				}
 				out_desc->flags = DUK_PROPDESC_FLAG_ENUMERABLE;  /* E5 Section 15.5.5.2 */
 
@@ -1693,7 +1693,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			if ((double) idx == t &&                     /* is whole and >= 0 */
 			    idx < DUK_HSTRING_GET_CHARLEN(h)) {      /* and inside string */
 				duk_push_hstring(ctx, h);
-				duk_substring(ctx, idx, idx + 1);  /* [str] -> [substr] */
+				duk_substring(ctx, -1, idx, idx + 1);  /* [str] -> [substr] */
 
 				DUK_DDDPRINT("-> %!T (base is a string, key is a whole number "
 				             "inside string length -> return char)",
@@ -1724,7 +1724,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			duk_pop(ctx);  /* [key] -> [] */
 			duk_push_hstring(ctx, h);
-			duk_substring(ctx, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
+			duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
 
 			DUK_DDDPRINT("-> %!T (base is string, key is an index inside string length "
 			             "after coercion -> return char)",

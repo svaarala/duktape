@@ -92,21 +92,6 @@ struct duk_memory_functions {
 #define  DUK_TYPE_MASK_BUFFER      (1 << DUK_TYPE_BUFFER)
 #define  DUK_TYPE_MASK_POINTER     (1 << DUK_TYPE_POINTER)
 
-/* FIXME: these are now used by duk_get_multiple() and duk_push_multiple(),
- * but the type chararacters are not very logical and don't cover all the
- * current types.
- */
-#define  DUK_TYPECHAR_UNDEFINED  'u'
-#define  DUK_TYPECHAR_NULL       'n'
-#define  DUK_TYPECHAR_BOOLEAN    'b'
-#define  DUK_TYPECHAR_NUMBER     'd'
-#define  DUK_TYPECHAR_INTEGER    'i'
-#define  DUK_TYPECHAR_STRING     's'
-#define  DUK_TYPECHAR_LSTRING    'l'
-/* FIXME: buffer */
-#define  DUK_TYPECHAR_POINTER    'p'
-#define  DUK_TYPECHAR_SKIP       '-'
-
 /* Coercion hints */
 #define  DUK_HINT_NONE         0    /* prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8) */
 #define  DUK_HINT_STRING       1    /* prefer string */
@@ -270,7 +255,6 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len);    
 void duk_push_pointer(duk_context *ctx, void *p);
 const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);               /* may fail */
 const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);       /* may fail */
-void duk_push_multiple(duk_context *ctx, const char *types, ...);                   /* push multiple values, see duk_get_multiple */
 
 void duk_push_this(duk_context *ctx);                                               /* push the current 'this' binding */
 void duk_push_current_function(duk_context *ctx);                                   /* push the currently running (C) function */
@@ -347,7 +331,6 @@ const char *duk_get_string(duk_context *ctx, int index);                 /* defa
 const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len); /* default: NULL, out_len may be NULL */
 void *duk_get_buffer(duk_context *ctx, int index, size_t *out_size);     /* default: NULL, out_size may be NULL */
 void *duk_get_pointer(duk_context *ctx, int index);                      /* default: NULL */
-void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...);
 duk_c_function duk_get_c_function(duk_context *ctx, int index);
 duk_context *duk_get_context(duk_context *ctx, int index);
 size_t duk_get_length(duk_context *ctx, int index);                      /* string: char length,
@@ -468,7 +451,7 @@ void duk_concat(duk_context *ctx, unsigned int count);              /* [val1 ...
 void duk_join(duk_context *ctx, unsigned int count);                /* [sep val1 ... valN] -> [res], coerced and joined */
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
-void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset);
+void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_offset);
 void duk_trim(duk_context *ctx, int index);                         /* trim using StrWhiteSpaceChar: WhiteSpace + LineTerminator,
                                                                      * matches String.prototype.trim(), global object parseInt()
                                                                      * and parseFloat().

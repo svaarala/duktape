@@ -99,7 +99,7 @@ void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback,
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
 }
 
-void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset) {
+void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_hstring *res;
@@ -108,7 +108,8 @@ void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	h = duk_require_hstring(ctx, -1);
+	index = duk_require_normalize_index(ctx, index);
+	h = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h != NULL);
 
 	if (end_offset >= DUK_HSTRING_GET_CHARLEN(h)) {
@@ -131,7 +132,7 @@ void duk_substring(duk_context *ctx, size_t start_offset, size_t end_offset) {
 	                                     end_byte_offset - start_byte_offset);
 
 	duk_push_hstring(ctx, res);
-	duk_remove(ctx, -2);
+	duk_replace(ctx, index);
 }
 
 /* FIXME: this is quite clunky.  Add Unicode helpers to scan backwards and

@@ -1578,9 +1578,9 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
 	} else if (duk_is_string(ctx, idx_space)) {
-		/* FIXME: substring API requires a dup */
+		/* FIXME: substring in-place at idx_place? */
 		duk_dup(ctx, idx_space);
-		duk_substring(ctx, 0, 10);  /* clamp to 10 chars */
+		duk_substring(ctx, -1, 0, 10);  /* clamp to 10 chars */
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
 	} else {
