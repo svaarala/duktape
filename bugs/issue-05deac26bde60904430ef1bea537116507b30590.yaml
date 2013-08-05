@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a seealso notation to the api doc format
+desc: ""
+type: :task
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-05 12:06:32.345788 Z
+references: []
+
+id: 05deac26bde60904430ef1bea537116507b30590
+log_events: 
+- - 2013-08-05 12:06:32.549893 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

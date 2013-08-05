@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement DUK_COMPILE_FUNCTION to duk_compile()
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-05 12:10:12.804181 Z
+references: []
+
+id: 1a69073b77285baf6e6de94e39da6aad99a1edbb
+log_events: 
+- - 2013-08-05 12:10:12.984991 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
