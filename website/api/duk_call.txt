@@ -16,7 +16,8 @@ function call is not automatically caught.
 is replaced by the global object before the function is invoked; see
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">Entering Function Code</a>.
 If you want to control the <tt>this</tt> binding, you can use
-<tt><a href="#duk_call_method">duk_call_method()</a></tt> instead.</p>
+<tt><a href="#duk_call_method">duk_call_method()</a></tt> or
+<tt><a href="#duk_call_prop">duk_call_prop()</a></tt> instead.</p>
 
 <p>This API call is equivalent to:</p>
 <pre class="ecmascript-code">
@@ -40,3 +41,6 @@ duk_push_int(ctx, 3);
 duk_call(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
 printf("2+3=%d\n", duk_get_int(ctx, -1));
 duk_pop(ctx);
+
+=tags
+call

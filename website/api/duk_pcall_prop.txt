@@ -1,0 +1,22 @@
+=proto
+int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_index);
+
+=stack
+[ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... retval! ]  (if success, return value == 0)
+[ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... err! ]  (if failure, return value != 0)
+
+=summary
+FIXME
+
+<p>Return code behavior is the same as for <tt><a href="#duk_pcall">duk_pcall()</a></tt>.</p>
+
+=example
+FIXME
+
+=tags
+property
+call
+
+=fixme
+This call is currently not safe: the property is looked up before a error
+catching is active.

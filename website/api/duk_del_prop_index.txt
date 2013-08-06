@@ -20,3 +20,6 @@ int rc;
 
 rc = duk_del_prop_index(ctx, -3, 123);
 printf("delete obj[123] -> rc=%d\n", rc);
+
+=tags
+property

@@ -19,3 +19,6 @@ possible.</p>
 duk_push_string(ctx, "value");
 rc = duk_put_prop_index(ctx, -3, 123);  /* write to obj[123] */
 printf("rc=%d\n", rc);
+
+=tags
+property

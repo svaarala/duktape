@@ -63,3 +63,6 @@ duk_push_string(ctx, "key");
 duk_push_string(ctx, "value");
 rc = duk_put_prop(ctx, -3);
 printf("rc=%d\n", rc);
+
+=tags
+property

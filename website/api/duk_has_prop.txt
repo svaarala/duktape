@@ -55,3 +55,6 @@ if (duk_has_prop(ctx, -3)) {
 } else {
     printf("obj does not have 'myProperty'\n");
 }
+
+=tags
+property

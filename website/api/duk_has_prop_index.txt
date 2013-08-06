@@ -21,3 +21,6 @@ if (duk_has_prop_index(ctx, -3, 123)) {
 } else {
     printf("obj does not have index 123\n");
 }
+
+=tags
+property

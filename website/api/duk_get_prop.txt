@@ -70,3 +70,6 @@ duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
 =fixme
 The obj_index argument name is misleading: the value doesn't have to be
 an object.  Change "non-zero" to "1" for return value?
+
+=tags
+property

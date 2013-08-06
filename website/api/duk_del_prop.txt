@@ -65,3 +65,6 @@ int rc;
 duk_push_string(ctx, "myProperty");
 rc = duk_del_prop(ctx, -3);
 printf("delete obj.myProperty -> rc=%d\n", rc);
+
+=tags
+property

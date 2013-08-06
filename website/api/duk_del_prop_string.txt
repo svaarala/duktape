@@ -14,3 +14,6 @@ int rc;
 
 rc = duk_del_prop_string(ctx, -3, "propertyName");
 printf("delete obj.propertyName -> rc=%d\n", rc);
+
+=tags
+property

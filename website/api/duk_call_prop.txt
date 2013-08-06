@@ -36,3 +36,7 @@ duk_push_int(ctx, 3);
 duk_call_prop(ctx, obj_idx, 2);  /* [ ... "myAdderMethod" 2 3 ] -> [ ... 5 ] */
 printf("2+3=%d\n", duk_get_int(ctx, -1));
 duk_pop(ctx);
+
+=tags
+property
+call
