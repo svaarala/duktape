@@ -2,7 +2,7 @@
 void duk_trim(duk_context *ctx, int index);
 
 =stack
-[ ... val! ... ] -> [ ... trimmed_val! ... ]
+[ ... str! ... ] -> [ ... trimmed_str! ... ]
 
 =summary
 <p>Trim string at <tt>index</tt>.  If the value at <tt>index</tt> is not a
