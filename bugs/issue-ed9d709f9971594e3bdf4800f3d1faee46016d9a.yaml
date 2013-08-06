@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: memory not zeroed correctly by duk_hbuffer_resize
+desc: Causes API testcase test-resize-buffer.c to valgrind gripe.
+type: :bugfix
+component: duk
+release: v0.6
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-06 13:56:14.881020 Z
+references: []
+
+id: ed9d709f9971594e3bdf4800f3d1faee46016d9a
+log_events: 
+- - 2013-08-06 13:56:15.056941 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
