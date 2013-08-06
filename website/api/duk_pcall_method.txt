@@ -1,0 +1,39 @@
+=proto
+int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index);
+
+=stack
+[ ... func! this! arg! ...! argN! ] -> [ ... retval! ]  (if success, return value == 0)
+[ ... func! this! arg! ...! argN! ] -> [ ... err! ]  (if failure, return value != 0)
+
+=summary
+<p>Like <tt><a href="#duk_pcall">duk_pcall()</a></tt>, but the target function
+<tt>func</tt> is called with an explicit <tt>this</tt> binding given on the value
+stack.</p>
+
+=example
+/* The target function here prints:
+ *
+ *    this: 123
+ *    2 3
+ *
+ * and returns 5.
+ */
+
+int rc;
+
+duk_push_string(ctx, "function(x,y) { print('this:', this); "
+                     "print(x,y); return x+y; }");
+duk_eval(ctx);  /* -> [ ... func ] */
+duk_push_int(ctx, 123);
+duk_push_int(ctx, 2);
+duk_push_int(ctx, 3);
+rc = duk_pcall_method(ctx, 2, DUK_INVALID_INDEX);  /* [ ... func 123 2 3 ] -> [ 5 ] */
+if (rc == DUK_EXEC_SUCCESS) {
+    printf("2+3=%d\n", duk_get_int(ctx, -1));  /* prints 5 */
+} else {
+    printf("error: %s\n", duk_to_string(ctx, -1));
+}
+duk_pop(ctx);
+
+=tags
+call

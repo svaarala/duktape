@@ -5,12 +5,33 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 [ ... arg1! ...! argN! ] -> [ ... ret1! ...! retN! ]
 
 =summary
-<p>Perform a protected pure C function call.  Operates on the existing value stack
-frame and is not visible on the call stack.  This call is useful as it provides a
-way to catch errors, perform cleanup, and perhaps rethrow.</p>
+<p>Perform a protected pure C function call inside the current value stack frame
+(the call is not visible on the call stack).  <tt>nargs</tt> topmost values in the
+current value stack frame are identified as call arguments, and <tt>nrets</tt>
+return values are provided after the call returns.  <tt>errhandler_index</tt> points
+to an error handler function in the current stack frame (below call arguments) which
+can modify an error value before it is thrown; to use the default error handler,
+set <tt>errhandler_index</tt> to <tt>DUK_INVALID_INDEX</tt>.</p>
+
+<p>The return value is one of:</p>
+<ul>
+<li><tt>DUK_EXEC_SUCCESS</tt> (0): call succeeded, <tt>nargs</tt> arguments are replaced
+    with <tt>nrets</tt> return values.  (This return code constant is guaranteed to be
+    zero, so that one can check for success with a "zero or non-zero" check.)</li>
+<li><tt>DUK_EXEC_ERROR</tt>: call failed, <tt>nargs</tt> arguments are replaced with
+    <tt>nrets</tt> values, first of which is an error value and the rest are <tt>undefined</tt>.
+    (In exceptional cases, e.g. when there are too few arguments on the value stack, the call
+    returns non-zero but may leave the stack in an inconsistent state.)</li>
+</ul>
+
+<div class="note">
+Unlike most Duktape API calls, this call returns zero on success.  This allows
+multiple error codes to be defined later.
+</div>
 
 <p>Because this call operates on the current value stack frame, stack behavior
-differs a bit from other call types.</p>
+differs a bit from other call types.  Although the target function signature
+matches Duktape/C functions, value stack and return code policies are different.</p>
 
 <p>The top <tt>nargs</tt> elements of the stack top are identified as arguments to
 <tt>func</tt> establishing a "base index" for the return stack as:</p>
@@ -46,7 +67,7 @@ Pipe chars indicate logical boundaries:</p>
 
 [ ... | ... | a b | x y z w ]    stack after calling 'func', which has
                                  popped one argument and written four
-                                 return values
+                                 return values (and returned 4)
 
 [ ... | ... | x y ]              stack after duk_safe_call() returns,
                                  2 (= nrets) first 'func' return values
@@ -59,4 +80,36 @@ are dangerous within 'func'.
 </div>
 
 =example
-FIXME
+int my_func(duk_context *ctx) {
+    double a, b, c;
+
+    a = duk_get_number(ctx, -3);
+    b = duk_get_number(ctx, -2);
+    c = duk_get_number(ctx, -1);
+    duk_push_number(ctx, a + b);
+
+    /* Indicates that there is only one return value.  Because the caller
+     * requested two (nrets == 2), Duktape will automatically add an
+     * additional "undefined" result value.
+     */
+    return 1;
+}
+
+duk_push_int(ctx, 10);
+duk_push_int(ctx, 11);
+duk_push_int(ctx, 12);
+rc = duk_safe_call(ctx, my_func, 3 /*nargs*/, 2 /*nrets*/, DUK_INVALID_INDEX);
+if (rc == DUK_EXEC_SUCCESS) {
+    printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
+    printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
+} else {
+    printf("error value: %s\n", duk_to_string(ctx, -2));
+}
+duk_pop_2(ctx);
+
+=tags
+call
+
+=fixme
+Refine return codes.
+Error handler model to be cleaned up.

@@ -6,12 +6,25 @@ int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_in
 [ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... err! ]  (if failure, return value != 0)
 
 =summary
-FIXME
-
-<p>Return code behavior is the same as for <tt><a href="#duk_pcall">duk_pcall()</a></tt>.</p>
+<p>Like <tt><a href="#duk_pcall">duk_pcall()</a></tt>, but the target function
+is looked up from <tt>obj.key</tt> and <tt>obj</tt> is used as the function's
+<tt>this</tt> binding.</p>
 
 =example
-FIXME
+/* obj.myAdderMethod(2,3) -> 5 */
+int obj_idx;
+int rc;
+
+duk_push_string(ctx, "myAdderMethod");
+duk_push_int(ctx, 2);
+duk_push_int(ctx, 3);
+rc = duk_pcall_prop(ctx, obj_idx, 2, DUK_INVALID_INDEX);  /* [ ... "myAdderMethod" 2 3 ] -> [ ... 5 ] */
+if (rc == DUK_EXEC_SUCCESS) {
+    printf("2+3=%d\n", duk_get_int(ctx, -1));
+} else {
+    printf("error: %s\n", duk_to_string(ctx, -1));
+}
+duk_pop(ctx);
 
 =tags
 property
