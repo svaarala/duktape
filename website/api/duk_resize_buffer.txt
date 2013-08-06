@@ -5,11 +5,12 @@ void *duk_resize_buffer(duk_context *ctx, int index, size_t new_size);
 [ ... val! ... ]
 
 =summary
-<p>Resize a dynamic buffer to <tt>new_size</tt> bytes.  If <tt>new_size</tt>
-is larger than the current size, newly allocated bytes (above old size) are
-automatically zeroed.  Returns a pointer to the new buffer data area.
-If <tt>new_size</tt> is zero, may return either <tt>NULL</tt> or some
-non-<tt>NULL</tt> value.  If resizing fails, throws an error.</p>
+<p>Resize a dynamic buffer at <tt>index</tt> to <tt>new_size</tt> bytes.
+If <tt>new_size</tt> is larger than the current size, newly allocated bytes
+(above old size) are automatically zeroed.  Returns a pointer to the new buffer
+data area.  If <tt>new_size</tt> is zero, may return either <tt>NULL</tt> or some
+non-<tt>NULL</tt> value.  If resizing fails, the value at <tt>index</tt> is not
+a dynamic buffer, or <tt>index</tt> is invalid, throws an error.</p>
 
 =example
 void *ptr;

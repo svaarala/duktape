@@ -1,0 +1,18 @@
+=proto
+void duk_to_fixed_buffer(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Convert buffer at <tt>index</tt> to a fixed buffer.  If the buffer is
+already fixed, does nothing.  If conversion fails, the value at <tt>index</tt>
+is not a buffer, or <tt>index</tt> is invalid, throws an error.</p>
+
+=example
+duk_to_fixed_buffer(ctx, -3);
+
+=fixme
+Naming: duk_fixate_buffer?
+Reverse operation: convert buffer to dynamic?
+Return value, void pointer for consistency?
