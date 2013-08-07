@@ -1,0 +1,29 @@
+=proto
+void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
+
+=stack
+[ ... val! ... ] -> [ ... val! ... ]
+
+=summary
+<p>Process string at <tt>index</tt>, calling <tt>callback</tt> for each codepoint
+of the string.  The callback is given the <tt>udata</tt> argument and a codepoint
+and returns a replacement codepoint.  If successful, a new string consisting of
+the replacement codepoints replaces the original.  If the value is not a string or
+the index is invalid, throws an error.</p>
+
+=example
+static int map_char(void *udata, int codepoint) {
+    /* Convert ASCII to uppercase. */
+    if (codepoint >= (int) 'a' && codepoint <= (int) 'z') {
+        return codepoint - (int) 'a' + (int) 'A';
+    }
+    return codepoint;
+}
+
+duk_push_string(ctx, "test_string");
+duk_map_string(ctx, -1, map_char, NULL);
+printf("result: '%s'\n", duk_to_string(ctx, -1));
+duk_pop(ctx);
+
+=fixme
+Currently implemented.  Necessary?
