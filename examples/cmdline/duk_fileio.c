@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "duk_api.h"
+#include "duktape.h"
 
 int duk_fileio_readfile(duk_context *ctx) {
 	const char *filename = duk_to_string(ctx, 0);

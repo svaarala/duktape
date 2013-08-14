@@ -13,7 +13,7 @@
 #include <poll.h>
 #include <time.h>
 
-#include "duk_api.h"
+#include "duktape.h"
 
 int duk_socket_create_server_socket(duk_context *ctx) {
 	const char *addr = duk_to_string(ctx, 0);

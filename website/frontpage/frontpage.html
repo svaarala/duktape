@@ -20,6 +20,11 @@ from C code and vice versa.</p>
 <li>Liberal license</li>
 </ul>
 
+<p>Current status:</p>
+<ul>
+<li>Alpha</li>
+</ul>
+
 <div class="fixme">Clean up.</div>
 
 </div>  <!-- front-blurp -->
@@ -36,7 +41,7 @@ be used.  The distributable contains an example Makefile for reference.</p>
 <p>Initialize and use Duktape somewhere in your program:</p>
 
 <pre class="c-code">
-#include &quot;duk_api.h&quot;
+#include &quot;duktape.h&quot;
 
 duk_context *ctx = duk_create_heap_default();
 duk_push_string(ctx, "print('Hello world from Javascript!');");
@@ -76,7 +81,8 @@ duk_pop(ctx);  /* pop global */
 <p>You can then call your function from Ecmascript code:</p>
 
 <pre class="c-code">
-duk_eval(ctx, "print('2+3 is', myAdder(2, 3));");
+duk_push_string(ctx, "print('2+3 is', myAdder(2, 3));");
+duk_eval(ctx);
 duk_pop(ctx);  /* pop eval result */
 </pre>
 

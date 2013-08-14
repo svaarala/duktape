@@ -15,7 +15,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "duk_api.h"
+#include "duktape.h"
 #include "duk_internal.h"
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */

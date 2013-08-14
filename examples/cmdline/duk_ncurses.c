@@ -5,7 +5,7 @@
  */
 
 #include <curses.h>
-#include "duk_api.h"
+#include "duktape.h"
 
 int duk_ncurses_initscr(duk_context *ctx) {
 	WINDOW *win;

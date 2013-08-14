@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "duk_api.h"
+#include "duktape.h"
 
 extern void test(duk_context *ctx);
 

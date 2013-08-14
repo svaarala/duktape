@@ -4,8 +4,8 @@
  *  See the API reference for documentation on call semantics.
  */
 
-#ifndef DUK_API_H_INCLUDED
-#define DUK_API_H_INCLUDED
+#ifndef DUKTAPE_H_INCLUDED
+#define DUKTAPE_H_INCLUDED
 
 #include <limits.h>  /* INT_MIN */
 #include <stdarg.h>  /* va_list etc */
@@ -471,5 +471,5 @@ void duk_compile(duk_context *ctx, int flags);
 		duk_compile((ctx), (flags)); \
 	} while (0)
 
-#endif  /* DUK_API_H_INCLUDED */
+#endif  /* DUKTAPE_H_INCLUDED */
 
