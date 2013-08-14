@@ -1,0 +1,43 @@
+=proto
+void duk_get_var(duk_context *ctx);
+
+=stack
+[ ... varname! ] -> [ ... val! ]
+
+=summary
+<p>Look up identifier <tt>varname</tt>.  If identifier is found, replace
+<tt>varname</tt> with its value and return.  If identifier is not found,
+throws a <tt>ReferenceError</tt>.  If the input stack is empty, throws an
+error.</p>
+
+<p>The identifier lookup is equivalent to the Ecmascript expression:</p>
+<pre class="ecmascript-code">
+varname
+</pre>
+
+<p>For semantics, see
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.3.1">Identifier Resolution</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.2.2.1">GetIdentifierReference (lex, name, strict)</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.1.2">Identifier Reference</a>,
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue (V)</a>.
+Ecmascript semantics require that a <tt>ReferenceError</tt> be thrown if the identifier
+cannot be resolved (this is the case even in non-strict mode).
+</p>
+
+<div class="note">
+Because Duktape/C functions cannot currently be nested functions, their
+outer lexical environment is always the global environment.
+</div>
+
+=example
+duk_push_string(ctx, "Math");
+duk_get_var(ctx);  /* [ ... "Math" ] -> [ ... Math ] */
+duk_get_prop_string(ctx, -1, "PI");  /* -> [ ... Math PI ] */
+printf("Math.PI=%lf\n", duk_get_number(ctx, -1));
+duk_pop_2(ctx);
+
+=fixme
+Although Ecmascript semantics always require a ReferenceError for
+unresolvable identifiers, it might fit the API better to return zero
+if identifier is not found and non-zero if found.  This would match
+the property access API.
