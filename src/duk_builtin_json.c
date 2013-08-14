@@ -574,7 +574,7 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 			duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);
 			while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
 				DUK_DDDPRINT("walk: object, top=%d, holder=%!T, name=%!T, val=%!T, enum=%!iT, obj_key=%!T",
-				             duk_get_top(ctx), i, duk_get_tval(ctx, -5),
+				             duk_get_top(ctx), duk_get_tval(ctx, -5),
 				             duk_get_tval(ctx, -4), duk_get_tval(ctx, -3),
 				             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
