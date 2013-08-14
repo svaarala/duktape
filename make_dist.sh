@@ -34,6 +34,7 @@ echo "Creating distributable sources to: $DIST"
 rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src
+mkdir $DIST/src-combined
 mkdir $DIST/doc
 #mkdir $DIST/runtests
 #mkdir $DIST/ecmascript-testcases
@@ -408,7 +409,7 @@ mv $DISTSRC/duk_strings_little.h.tmp $DISTSRC/duk_strings.h
 mv $DISTSRC/duk_builtins_little.c.tmp $DISTSRC/duk_builtins.c
 mv $DISTSRC/duk_builtins_little.h.tmp $DISTSRC/duk_builtins.h
 
-# Clean up: after this step only relevant files should remain
+# Clean up sources: after this step only relevant files should remain
 
 rm $DISTSRC/*.tmp
 rm $DISTSRC/*.tmpc  # python compiled file
@@ -418,4 +419,15 @@ rm $DISTSRC/IdentifierStart-noascii-bmponly.txt
 rm $DISTSRC/IdentifierPart-minus-IdentifierStart-noascii.txt
 rm $DISTSRC/IdentifierPart-minus-IdentifierStart-noascii-bmponly.txt
 rm $DISTSRC/CaseConversion.txt
+
+# Create a combined source file, duktape.c, into a separate combined source
+# directory.  This allows user to just include "duktape.c" and "duktape.h"
+# into a project and maximizes inlining and size optimization opportunities
+# even with older compilers.  The resulting duktape.c is quite ugly though.
+
+python combine_src.py $DISTSRC $DIST/src-combined/duktape.c
+cp $DISTSRC/duktape.h $DIST/src-combined/duktape.h
+
+# Final cleanup
+# nothing now
 
