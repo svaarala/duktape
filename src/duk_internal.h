@@ -29,7 +29,7 @@
 #include "duk_regexp.h"
 #include "duk_tval.h"
 #include "duk_heaphdr.h"
-#include "duk_api.h"
+#include "duktape.h"
 #include "duk_api_internal.h"
 #include "duk_hstring.h"
 #include "duk_hobject.h"

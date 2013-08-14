@@ -8,7 +8,7 @@
 #include "duk_misc.h"
 
 /*
- *  Error codes (defined in duk_api.h)
+ *  Error codes (defined in duktape.h)
  *
  *  Error codes are used as a shorthand to throw exceptions from inside
  *  the implementation.  The appropriate Ecmascript object is constructed
