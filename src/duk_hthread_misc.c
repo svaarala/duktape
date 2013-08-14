@@ -13,6 +13,8 @@
 void duk_hthread_terminate(duk_hthread *thr) {
 	int i;
 
+	DUK_ASSERT(thr != NULL);
+
 	duk_hthread_callstack_unwind(thr, 0);  /* side effects, possibly errors */
 
 	duk_hthread_catchstack_unwind(thr, 0);
@@ -35,4 +37,13 @@ void duk_hthread_terminate(duk_hthread *thr) {
 	/* FIXME: shrink to minimum size, but don't free stacks? */
 }
 
+duk_activation *duk_hthread_get_current_activation(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+
+	if (thr->callstack_top > 0) {
+		return thr->callstack + thr->callstack_top - 1;
+	} else {
+		return NULL;
+	}
+}
 

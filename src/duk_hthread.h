@@ -237,5 +237,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr);
 void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top);
 
+duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
+
 #endif  /* DUK_HTHREAD_H_INCLUDED */
 
