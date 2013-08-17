@@ -21,6 +21,7 @@
 #if defined(DUK_USE_DATE_TZO_GMTIME) || \
     defined(DUK_USE_DATE_PRS_STRPTIME) || \
     defined(DUK_USE_DATE_FMT_STRFTIME)
+#define _XOPEN_SOURCE
 #include <time.h>
 #endif
 
