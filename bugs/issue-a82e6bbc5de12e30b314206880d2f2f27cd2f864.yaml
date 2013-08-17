@@ -1,18 +1,18 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: change duk_cmdline to use public duktape.h
+title: add stack slice operations to the exposed API
 desc: ""
 type: :task
 component: duk
-release: v0.6
+release: v0.8
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
-creation_time: 2013-06-20 22:30:21.925600 Z
+creation_time: 2013-08-17 22:04:14.976344 Z
 references: []
 
-id: 80c68f7b545aa072dc250ade23d1d6dcdb42fba7
+id: a82e6bbc5de12e30b314206880d2f2f27cd2f864
 log_events: 
-- - 2013-06-20 22:30:22.154486 Z
+- - 2013-08-17 22:04:15.195439 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""

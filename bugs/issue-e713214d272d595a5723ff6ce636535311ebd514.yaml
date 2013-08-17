@@ -16,3 +16,13 @@ log_events:
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
+- - 2013-08-17 22:02:03.188307 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - commented
+  - |-
+    Current header stuff:
+    
+    /* FIXME: not very logical, missing buffer */
+    
+    void duk_push_multiple(duk_context *ctx, const char *types, ...);                   /* push multiple values, see duk_get_multiple */
+    void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...);

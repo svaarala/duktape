@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: change duk_cmdline to use public duktape.h
+title: rename duk_api.h to duktape.h
 desc: ""
 type: :task
 component: duk
@@ -7,12 +7,12 @@ release: v0.6
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :unstarted
 disposition: 
-creation_time: 2013-06-20 22:30:21.925600 Z
+creation_time: 2013-08-14 13:54:30.882284 Z
 references: []
 
-id: 80c68f7b545aa072dc250ade23d1d6dcdb42fba7
+id: 3f18c237bf9af32bb22ae0d9a919c31aa85d3f76
 log_events: 
-- - 2013-06-20 22:30:22.154486 Z
+- - 2013-08-14 13:54:31.105937 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""

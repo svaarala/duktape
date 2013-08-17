@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add more relational (compare) operations to the exposed API
+desc: "For instance: duk_less_than(), duk_same_value()."
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-17 22:03:43.901460 Z
+references: []
+
+id: c92ae992e029de8676526128ed127bd38b8ad2ed
+log_events: 
+- - 2013-08-17 22:03:44.074415 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
