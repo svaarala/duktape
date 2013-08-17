@@ -4551,3 +4551,12 @@ int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) 
  *    DUK_HOBJECT_OBJECT_IS_EXTENSIBLE()
  */
 
+/* Undefine local defines */
+
+#undef  NO_ARRAY_INDEX
+#undef  HASH_INITIAL
+#undef  HASH_PROBE_STEP
+#undef  HASH_UNUSED
+#undef  HASH_DELETED
+#undef  VALSTACK_SPACE
+

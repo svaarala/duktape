@@ -412,3 +412,8 @@ void duk_heap_force_stringtable_resize(duk_heap *heap) {
 	resize_hash(heap);
 }
 
+/* Undefine local defines */
+#undef  HASH_INITIAL
+#undef  HASH_PROBE_STEP
+#undef  DELETED_MARKER
+
