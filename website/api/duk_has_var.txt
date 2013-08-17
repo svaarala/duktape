@@ -1,0 +1,29 @@
+=proto
+int duk_has_var(duk_context *ctx);
+
+=stack
+[ ... varname! ] -> [ ... ]
+
+=summary
+FIXME
+
+<p>The identifier existence check does not have a direct Ecmascript equivalent.
+The closest equivalent is:</p>
+<pre class="ecmascript-code">
+typeof varname !== 'undefined'
+</pre>
+
+<p>However, if the identifier is defined but has the value <tt>undefined</tt>,
+the above check gives a different result than this API call.  Note that the
+value of the identifier is not looked up and there can thus be no side effects
+from e.g. getter calls.</p>
+
+=tags
+variable
+omit
+
+=example
+FIXME
+
+=fixme
+Incomplete.

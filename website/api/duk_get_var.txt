@@ -5,10 +5,15 @@ void duk_get_var(duk_context *ctx);
 [ ... varname! ] -> [ ... val! ]
 
 =summary
-<p>Look up identifier <tt>varname</tt>.  If identifier is found, replace
-<tt>varname</tt> with its value and return.  If identifier is not found,
-throws a <tt>ReferenceError</tt>.  If the input stack is empty, throws an
-error.</p>
+<p>Look up identifier <tt>varname</tt>.  Possible outcomes:</p>
+<ul>
+<li>If identifier is found, replaces <tt>varname</tt> with its value on the
+    value stack and returns.</li>
+<li>If identifier is not found, throws a <tt>ReferenceError</tt> (this applies
+    to both strict and non-strict code).</li>
+<li>If the input stack is empty (or some other internal error occurs),
+    throws an error.</li>
+</ul>
 
 <p>The identifier lookup is equivalent to the Ecmascript expression:</p>
 <pre class="ecmascript-code">
@@ -36,8 +41,12 @@ duk_get_prop_string(ctx, -1, "PI");  /* -> [ ... Math PI ] */
 printf("Math.PI=%lf\n", duk_get_number(ctx, -1));
 duk_pop_2(ctx);
 
+=tags
+variable
+omit
+
 =fixme
 Although Ecmascript semantics always require a ReferenceError for
 unresolvable identifiers, it might fit the API better to return zero
 if identifier is not found and non-zero if found.  This would match
-the property access API.
+the property access API.  Incomplete.
