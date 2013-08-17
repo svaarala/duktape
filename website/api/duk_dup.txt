@@ -12,3 +12,6 @@ If <tt>from_index</tt> is invalid, throws an error.</p>
 duk_push_int(ctx, 123);  /* -> [ ... 123 ] */
 duk_push_int(ctx, 234);  /* -> [ ... 123 234 ] */
 duk_dup(ctx, -2);        /* -> [ ... 123 234 123 ] */
+
+=tags
+stack

@@ -21,5 +21,8 @@ if (buf) {
     printf("allocation failed\n");
 }
 
+=tags
+memory
+
 =fixme
 Zero allocated memory automatically?

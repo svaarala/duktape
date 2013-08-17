@@ -20,3 +20,6 @@ duk_context *new_ctx;
 
 thr_idx = duk_push_thread(ctx);
 new_ctx = duk_get_context(ctx, thr_idx);
+
+=tags
+stack

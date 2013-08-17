@@ -10,3 +10,6 @@ void duk_push_false(duk_context *ctx);
 
 =example
 duk_push_false(ctx);
+
+=tags
+stack

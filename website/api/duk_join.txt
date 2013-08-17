@@ -22,3 +22,6 @@ duk_join(ctx, 3);
 
 printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo; 123; true" */
 duk_pop(ctx);
+
+=tags
+string

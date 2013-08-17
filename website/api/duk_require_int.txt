@@ -16,3 +16,6 @@ with only numeric inputs allowed.</p>
 
 =example
 printf("int value: %d\n", duk_require_int(ctx, -3));
+
+=tags
+stack

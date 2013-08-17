@@ -13,3 +13,6 @@ or if the index is invalid.</p>
 if (duk_require_boolean(ctx, -3)) {
     printf("value is true\n");
 }
+
+=tags
+stack

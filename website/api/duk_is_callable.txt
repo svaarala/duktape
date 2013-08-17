@@ -15,3 +15,6 @@ Also returns 0 if <tt>index</tt> is invalid.</p>
 if (duk_is_callable(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack

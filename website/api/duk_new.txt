@@ -34,3 +34,7 @@ duk_push_int(ctx, 123);
 duk_new(ctx, 2);  /* [ ... func "foo" 123 ] -> [ ... res ] */
 printf("result is object: %d\n", duk_is_object(ctx, -1));
 duk_pop(ctx);
+
+=tags
+object
+call

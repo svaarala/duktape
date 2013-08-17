@@ -19,3 +19,5 @@ duk_pop(ctx);
  * JSON encoded: {"meaningOfLife":42}
  */
 
+=tags
+codec

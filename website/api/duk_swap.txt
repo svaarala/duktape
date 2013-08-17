@@ -9,5 +9,8 @@ void duk_swap(duk_context *ctx, int index1, int index2);
 indices are the same, the call is a no-op.  If either index is invalid,
 throws an error.</p>
 
+=tags
+stack
+
 =example
 duk_swap(ctx, -5, -1);

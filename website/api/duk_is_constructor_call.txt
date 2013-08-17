@@ -14,3 +14,6 @@ if (duk_is_constructor_call(ctx)) {
 } else {
     printf("called as a normal function\n");
 }
+
+=tags
+stack

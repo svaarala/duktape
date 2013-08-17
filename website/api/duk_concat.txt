@@ -20,3 +20,6 @@ duk_concat(ctx, 3);
 
 printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo123true" */
 duk_pop(ctx);
+
+=tags
+string

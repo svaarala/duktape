@@ -12,3 +12,6 @@ void duk_push_number(duk_context *ctx, double val);
 
 =example
 duk_push_number(ctx, 123.0);
+
+=tags
+stack

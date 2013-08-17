@@ -11,3 +11,6 @@ void duk_require_valid_index(duk_context *ctx, int index);
 =example
 duk_require_valid_index(ctx, -3);
 printf("index -3 is valid\n");
+
+=tags
+stack

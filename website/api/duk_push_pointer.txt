@@ -12,3 +12,6 @@ interpret the pointer in any manner.</p>
 struct mystruct *p;
 
 duk_push_pointer(ctx, (void *) p);
+
+=tags
+stack

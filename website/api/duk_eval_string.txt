@@ -14,6 +14,9 @@ duk_eval_string(ctx, "'testString'.toUpperCase()");
 printf("result is: '%s'\n", duk_get_string(ctx, -1));
 duk_pop(ctx);
 
+=tags
+compile
+
 =fixme
 Remove?  Note that this is a macro somewhere?
 

@@ -30,5 +30,8 @@ bytes.
 duk_substring(ctx, -3, 2, 5);
 printf("substring: %s\n", duk_get_string(ctx, -3));
 
+=tags
+string
+
 =fixme
 Return const char *?

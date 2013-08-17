@@ -25,3 +25,6 @@ is invalid, throws an error.</p>
 
 =example
 duk_to_primitive(ctx, -3, DUK_HINT_NUMBER);
+
+=tags
+stack

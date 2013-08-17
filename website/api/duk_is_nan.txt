@@ -17,3 +17,6 @@ for any kind of a <tt>NaN</tt>.</p>
 if (duk_is_nan(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack

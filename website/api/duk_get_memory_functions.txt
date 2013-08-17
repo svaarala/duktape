@@ -15,3 +15,7 @@ such as
 duk_memory_functions funcs;
 
 duk_get_memory_functions(ctx, &funcs);
+
+=tags
+memory
+heap

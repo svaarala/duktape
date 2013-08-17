@@ -10,3 +10,7 @@ the stack.</p>
 
 =example
 duk_push_this(ctx);
+
+=tags
+stack
+function

@@ -15,3 +15,6 @@ is true for both <tt>null</tt> and <tt>undefined</tt>.</p>
 if (duk_is_null_or_undefined(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack

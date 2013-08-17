@@ -14,3 +14,7 @@ const char *buf;
 
 buf = duk_require_string(ctx);
 printf("value is a string: %s\n", buf);
+
+=tags
+stack
+string

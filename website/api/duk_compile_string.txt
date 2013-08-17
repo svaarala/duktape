@@ -11,3 +11,6 @@ is given as a C string.</p>
 
 =example
 duk_compile_string(ctx, 0, "print('program code');");
+
+=tags
+compile

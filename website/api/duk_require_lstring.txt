@@ -15,3 +15,7 @@ size_t len;
 
 buf = duk_require_lstring(ctx, -3, &len);
 printf("value is a string, %d bytes\n", (int) len);
+
+=tags
+stack
+string

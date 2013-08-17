@@ -37,3 +37,6 @@ duk_push_string(new_ctx, "foo");
 duk_pop(ctx);
 
 /* Using new_ctx here may cause a crash. */
+
+=tags
+stack

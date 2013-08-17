@@ -18,3 +18,5 @@ duk_pop(ctx);
  * base-64 decoded: foo
  */
 
+=tags
+codec

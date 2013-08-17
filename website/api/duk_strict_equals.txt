@@ -21,5 +21,8 @@ if (duk_strict_equals(ctx, -3, -7)) {
     printf("values at indices -3 and -7 are strictly equal\n");
 }
 
+=tags
+compare
+
 =fixme
 Currently buffer equality does not cause buffer contents to be compared.

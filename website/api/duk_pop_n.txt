@@ -11,3 +11,6 @@ call is a no-op.</p>
 
 =example
 duk_pop_n(ctx, 10);
+
+=tags
+stack

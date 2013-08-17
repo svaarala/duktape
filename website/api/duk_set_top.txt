@@ -21,3 +21,6 @@ duk_push_int(ctx, 123);  /* -> top=1, stack: [ 123 ] */
 duk_set_top(ctx, 3);     /* -> top=3, stack: [ 123 undefined undefined ] */
 duk_set_top(ctx, -1);    /* -> top=2, stack: [ 123 undefined ] */
 duk_set_top(ctx, 0);     /* -> top=0, stack: [ ] */
+
+=tags
+stack

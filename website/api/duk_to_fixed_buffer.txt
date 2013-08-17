@@ -12,6 +12,10 @@ is not a buffer, or <tt>index</tt> is invalid, throws an error.</p>
 =example
 duk_to_fixed_buffer(ctx, -3);
 
+=tags
+stack
+buffer
+
 =fixme
 Naming: duk_fixate_buffer?
 Reverse operation: convert buffer to dynamic?

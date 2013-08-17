@@ -19,5 +19,8 @@ if (duk_is_strict_call(ctx)) {
     printf("non-strict call\n");
 }
 
+=tags
+function
+
 =fixme
 Necessary?

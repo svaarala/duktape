@@ -25,5 +25,9 @@ The trimming behavior matches those of
 =example
 duk_trim(ctx, -3);
 
+=tags
+stack
+string
+
 =fixme
 Return const char *?

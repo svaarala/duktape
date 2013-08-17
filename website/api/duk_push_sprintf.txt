@@ -22,3 +22,7 @@ large enough buffer is found for the temporary formatted value.</p>
 =example
 duk_push_sprintf(ctx, "meaning of life: %d, name: %s",
                  42, "Zaphod");
+
+=tags
+stack
+string

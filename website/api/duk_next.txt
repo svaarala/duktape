@@ -23,3 +23,6 @@ while (duk_next(ctx, enum_idx, 1)) {
     duk_pop_2(ctx);
 }
 
+=tags
+object
+property

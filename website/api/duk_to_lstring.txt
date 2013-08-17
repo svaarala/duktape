@@ -25,3 +25,7 @@ size_t sz;
 
 ptr = duk_to_lstring(ctx, -3, &sz);
 printf("coerced string: %s (length %d)\n", ptr, (int) sz);
+
+=tags
+stack
+string

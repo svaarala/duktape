@@ -18,6 +18,9 @@ if (duk_get_boolean(ctx, -3)) {
     printf("value is true\n");
 }
 
+=tags
+stack
+
 =fixme
 An API primitive which coerces but doesn't modify value?  This would be
 closest to ordinary Ecmascript use.  The current behavior comes from the

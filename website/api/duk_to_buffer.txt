@@ -25,3 +25,7 @@ size_t sz;
 
 ptr = duk_to_buffer(ctx, -3, &sz);
 printf("coerced data at %p, size %u\n", ptr, (unsigned int) sz);
+
+=tags
+stack
+buffer

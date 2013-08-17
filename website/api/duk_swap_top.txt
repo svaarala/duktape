@@ -11,3 +11,6 @@ to the stack top, the call is a no-op.  If the value stack is empty or
 
 =example
 duk_swap_top(ctx, -3);
+
+=tags
+stack

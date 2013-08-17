@@ -9,3 +9,7 @@ void duk_push_global_object(duk_context *ctx);
 
 =example
 duk_push_global_object(ctx);
+
+=tags
+stack
+object

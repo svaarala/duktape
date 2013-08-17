@@ -10,3 +10,6 @@ throws an error.</p>
 
 =example
 duk_pop_3(ctx);
+
+=tags
+stack

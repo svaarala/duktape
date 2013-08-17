@@ -32,5 +32,8 @@ duk_eval(ctx);
 printf("return value is: %lf\n", duk_get_number(ctx, -1));
 duk_pop(ctx);
 
+=tags
+compile
+
 =fixme
 Remove?

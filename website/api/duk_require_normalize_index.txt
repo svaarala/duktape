@@ -13,3 +13,6 @@ an error.</p>
 
 =example
 int idx = duk_require_normalize_index(-3);
+
+=tags
+stack

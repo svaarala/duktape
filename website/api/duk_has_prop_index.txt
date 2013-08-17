@@ -24,3 +24,4 @@ if (duk_has_prop_index(ctx, -3, 123)) {
 
 =tags
 property
+stack

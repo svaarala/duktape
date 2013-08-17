@@ -25,5 +25,8 @@ calling code.
 =example
 duk_to_defaultvalue(ctx, -3, DUK_HINT_NUMBER);
 
+=tags
+stack
+
 =fixme
-Remove from exposed API?
+Remove from exposed API?  'coerce' tag?

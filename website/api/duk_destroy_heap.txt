@@ -11,3 +11,6 @@ linked to the heap, and also all string and buffer pointers within the heap.</p>
 
 =example
 duk_destroy_heap(ctx);
+
+=tags
+heap

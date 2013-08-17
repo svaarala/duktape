@@ -23,6 +23,9 @@ if (duk_is_string(ctx, -3)) {
     printf("string char len is %d\n", duk_get_length(ctx, -3));
 }
 
+=tags
+stack
+
 =fixme
 Handling of object length is a bit curious as it is not clamped or
 checked against the size_t range.  The 32-bit unsigned range comes

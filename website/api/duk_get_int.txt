@@ -34,3 +34,6 @@ NaN to INT_MIN.  The coercion is also different from Ecmascript
 
 =example
 printf("int value: %d\n", duk_get_int(ctx, -3));
+
+=tags
+stack

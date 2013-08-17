@@ -29,3 +29,6 @@ differs from the one returned by <tt>duk_get_string()</tt> and
 =example
 /* Don't dereference the pointer. */
 printf("coerced pointer: %p\n", duk_to_pointer(ctx, -3));
+
+=tags
+stack

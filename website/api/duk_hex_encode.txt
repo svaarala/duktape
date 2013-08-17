@@ -22,3 +22,6 @@ printf("hex encoded: %s\n", duk_hex_encode(ctx, -1));
 /* Output:
  * hex encoded: 666f6f
  */
+
+=tags
+codec

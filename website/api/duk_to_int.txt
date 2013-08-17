@@ -37,3 +37,6 @@ reflected on the value stack.  For instance, if value stack contains the string
 =example
 printf("ToInteger() + int coercion: %d\n", duk_to_int(ctx, -3));
 printf("ToInteger() coercion: %lf\n", duk_get_number(ctx, -3));
+
+=tags
+stack

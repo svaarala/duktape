@@ -12,5 +12,8 @@ this function when a truly fatal, unrecoverable error has occurred.</p>
 =example
 duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR);
 
+=tags
+error
+
 =fixme
 Useful to expose?  No message.

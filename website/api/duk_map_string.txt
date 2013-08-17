@@ -25,5 +25,8 @@ duk_map_string(ctx, -1, map_char, NULL);
 printf("result: '%s'\n", duk_to_string(ctx, -1));
 duk_pop(ctx);
 
+=tags
+string
+
 =fixme
 Currently implemented.  Necessary?

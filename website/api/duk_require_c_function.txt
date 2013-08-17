@@ -13,3 +13,7 @@ associated with a Duktape/C function or if the index is invalid.</p>
 duk_c_function funcptr;
 
 funcptr = duk_require_c_function(ctx, -3);
+
+=tags
+stack
+function

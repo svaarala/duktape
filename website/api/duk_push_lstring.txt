@@ -27,3 +27,6 @@ duk_push_lstring(ctx, tmp2, 0);   /* push empty string */
 duk_push_lstring(ctx, NULL, 0);   /* push empty string */
 duk_push_lstring(ctx, NULL, 10);  /* push empty string */
 
+=tags
+stack
+string

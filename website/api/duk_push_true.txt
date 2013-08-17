@@ -10,3 +10,7 @@ void duk_push_true(duk_context *ctx);
 
 =example
 duk_push_true(ctx);
+
+=tags
+stack
+

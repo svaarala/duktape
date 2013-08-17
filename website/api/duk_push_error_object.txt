@@ -19,3 +19,7 @@ int err_idx;
 
 err_idx = duk_push_error_object(ctx, DUK_ERR_TYPE_ERROR, "invalid argument value: %d", arg_value);
 
+=tags
+stack
+object
+error

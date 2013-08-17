@@ -12,3 +12,7 @@ returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
 if (duk_is_buffer(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack
+buffer

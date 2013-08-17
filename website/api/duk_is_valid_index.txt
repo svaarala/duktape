@@ -13,3 +13,6 @@ if (duk_is_valid_index(ctx, -3)) {
 } else {
     printf("index -3 is not valid\n");
 }
+
+=tags
+stack

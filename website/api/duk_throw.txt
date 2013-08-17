@@ -15,3 +15,6 @@ void duk_throw(duk_context *ctx);
 
 duk_push_string(ctx, "this string is thrown");
 duk_throw(ctx);
+
+=tags
+error

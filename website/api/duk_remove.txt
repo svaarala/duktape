@@ -14,3 +14,6 @@ duk_push_int(ctx, 123);
 duk_push_int(ctx, 234);
 duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
 duk_remove(ctx, -2);          /* -> [ 123 345 ] */
+
+=tags
+stack

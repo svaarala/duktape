@@ -18,3 +18,5 @@ duk_pop(ctx);
  * hex decoded: test string
  */
 
+=tags
+codec

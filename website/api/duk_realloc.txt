@@ -21,3 +21,5 @@ if (buf) {
     }
 }
 
+=tags
+memory

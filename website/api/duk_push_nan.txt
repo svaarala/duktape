@@ -12,3 +12,5 @@ duk_push_nan(ctx);
 
 printf("NaN is number: %d\n", duk_is_number(ctx, -1));
 
+=tags
+stack

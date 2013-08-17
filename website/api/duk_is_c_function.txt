@@ -21,3 +21,7 @@ int my_func(duk_context *ctx) {
 if (duk_is_c_function(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack
+function

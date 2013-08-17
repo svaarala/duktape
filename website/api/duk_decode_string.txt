@@ -18,6 +18,9 @@ static void decode_char(void *udata, int codepoint) {
 duk_push_string(ctx, "test_string");
 duk_decode_string(ctx, -1, decode_char, NULL);
 
+=tags
+string
+
 =fixme
 Currently implemented.  Necessary?
 

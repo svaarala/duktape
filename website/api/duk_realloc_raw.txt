@@ -48,3 +48,5 @@ if (buf) {
     }
 }
 
+=tags
+memory

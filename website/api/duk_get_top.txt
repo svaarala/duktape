@@ -8,6 +8,9 @@ the value stack (of the current activation).</p>
 =example
 printf("stack top is %d\n", duk_get_top(ctx));
 
+=tags
+stack
+
 =fixme
 Return value is an int, unsigned int would be more accurate but probably
 inconvenient for calling code (signedness), and would not match

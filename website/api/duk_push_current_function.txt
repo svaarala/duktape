@@ -17,3 +17,7 @@ can also act as an internal state stash.</p>
 
 =example
 duk_push_current_function(ctx);
+
+=tags
+stack
+function

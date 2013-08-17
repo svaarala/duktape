@@ -50,3 +50,7 @@ int test(void) {
     printf("2+3 is %d\n", duk_get_int(ctx, -1));
     duk_pop(ctx);
 }
+
+=tags
+stack
+function

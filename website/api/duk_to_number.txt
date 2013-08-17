@@ -19,6 +19,9 @@ an error.</p>
 =example
 printf("coerced number: %lf\n", duk_to_number(ctx, -3));
 
+=tags
+stack
+
 =fixme
 Are the current custom coercions sensible?  For instance, should pointer
 coerce to its numeric value?

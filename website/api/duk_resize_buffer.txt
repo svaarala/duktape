@@ -17,6 +17,10 @@ void *ptr;
 
 ptr = duk_resize_buffer(ctx, -3, 4096);
 
+=tags
+stack
+buffer
+
 =fixme
 Currently the buffer is "snug" i.e. there is no spare area (which is supported
 internally).  Expose this somehow, or manage spare automatically and use

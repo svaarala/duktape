@@ -23,6 +23,10 @@ or if <tt>index</tt> is invalid.</p>
 =example
 duk_to_object(ctx, -3);
 
+=tags
+stack
+object
+
 =fixme
 Buffer and pointer may become object coercible in a future version (they'll then
 have a prototype object etc, like Number).

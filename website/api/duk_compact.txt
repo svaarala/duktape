@@ -39,6 +39,11 @@ duk_push_int(ctx, 42);                          /* [ ... obj 42 ] */
 duk_put_prop_string(ctx, -2, "meaningOfLife");  /* [ ... obj ] */
 duk_compact(ctx, -1);                           /* [ ... obj ] */
 
+=tags
+object
+property
+memory
+
 =fixme
 Clarify that compaction only affects an object's "own properties".
 

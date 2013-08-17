@@ -19,3 +19,7 @@ NUL-terminated string data.  If <tt>index</tt> is invalid, throws an error.</p>
 
 =example
 printf("coerced string: %s\n", duk_to_string(ctx, -3));
+
+=tags
+stack
+string

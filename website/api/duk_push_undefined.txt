@@ -10,3 +10,5 @@ void duk_push_undefined(duk_context *ctx);
 =example
 duk_push_undefined(ctx);
 
+=tags
+stack

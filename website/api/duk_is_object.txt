@@ -25,3 +25,7 @@ e.g. <tt><a href="#duk_is_array">duk_is_array()</a></tt>.</p>
 if (duk_is_object(ctx, -3)) {
     /* ... */
 }
+
+=tags
+stack
+object

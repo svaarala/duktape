@@ -46,3 +46,7 @@ while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
 }
 
 duk_pop(ctx);  /* pop enum object */
+
+=tags
+object
+property

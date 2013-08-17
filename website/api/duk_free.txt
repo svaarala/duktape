@@ -21,3 +21,6 @@ void *buf = duk_alloc(ctx, 1024);
 /* ... */
 
 duk_free(ctx, buf);  /* safe even if 'buf' is NULL */
+
+=tags
+memory

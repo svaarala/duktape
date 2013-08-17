@@ -17,3 +17,7 @@ thread, <tt>undefined</tt> is pushed instead.</p>
 
 =example
 duk_push_thread(ctx);
+
+=tags
+stack
+function

@@ -12,3 +12,6 @@ void duk_push_int(duk_context *ctx, int val);
 
 =example
 duk_push_int(ctx, 123);
+
+=tags
+stack

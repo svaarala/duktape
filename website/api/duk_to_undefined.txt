@@ -15,3 +15,6 @@ to target index.
 
 =example
 duk_to_undefined(ctx, -3);
+
+=tags
+stack

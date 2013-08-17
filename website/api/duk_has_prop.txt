@@ -58,3 +58,4 @@ if (duk_has_prop(ctx, -3)) {
 
 =tags
 property
+stack

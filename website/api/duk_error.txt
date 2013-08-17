@@ -20,3 +20,6 @@ based on <tt>err_code</tt>.  For instance, <tt>DUK_ERR_RANGE_ERROR</tt> causes t
 
 =example
 duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", argval);
+
+=tags
+error

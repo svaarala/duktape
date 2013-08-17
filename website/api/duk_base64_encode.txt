@@ -23,3 +23,5 @@ printf("base-64 encoded: %s\n", duk_base64_encode(ctx, -1));
  * base-64 encoded: Zm9v
  */
 
+=tags
+codec

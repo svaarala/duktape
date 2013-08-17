@@ -11,3 +11,6 @@ or if the index is invalid.</p>
 
 =example
 printf("value: %lf\n", duk_require_number(ctx, -3));
+
+=tags
+stack

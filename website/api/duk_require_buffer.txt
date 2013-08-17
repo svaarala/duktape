@@ -15,3 +15,7 @@ size_t sz;
 
 ptr = duk_require_buffer(ctx, &sz);
 printf("buf=%p, size=%d\n", ptr, (int) sz);
+
+=tags
+stack
+buffer

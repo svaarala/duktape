@@ -37,3 +37,6 @@ void test(duk_context *ctx) {
     test_vsprintf(ctx, 2, 3, 5);
 }
 
+=tags
+stack
+string

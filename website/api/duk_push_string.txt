@@ -26,3 +26,6 @@ duk_push_string(ctx, "foo\0bar");  /* push "foo", not "foo\0bar" */
 duk_push_string(ctx, "");          /* push empty string */
 duk_push_string(ctx, NULL);        /* push 'null' */
 
+=tags
+stack
+string

@@ -25,6 +25,9 @@ coerced by the C compiler (<tt>double</tt> to <tt>unsigned int</tt>).
 =example
 printf("ToUint32(): %u\n", duk_to_uint32(ctx, -3));
 
+=tags
+stack
+
 =fixme
 Apply the duk_get_int() coercion to the result just in case?  It would clamp
 output values to INT_MIN and INT_MAX.  This is not very relevant because if

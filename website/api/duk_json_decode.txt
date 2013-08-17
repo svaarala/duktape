@@ -19,3 +19,5 @@ duk_pop_2(ctx);
  * JSON decoded meaningOfLife is: 42
  */
 
+=tags
+codec

@@ -29,3 +29,6 @@ buf = duk_get_lstring(ctx, -3, &len);
 if (buf) {
     printf("value is a string, %d bytes\n", (int) len);
 }
+
+=tags
+stack

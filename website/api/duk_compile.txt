@@ -132,6 +132,9 @@ duk_call(ctx, 2);      /* [ func 5 6 ] -> [ result ] */
 printf("function result: %lf\n", duk_get_number(ctx, -1));
 duk_pop(ctx);
 
+=tags
+compile
+
 =fixme
 Remove DUK_COMPILE_FUNCTION, one can simply just eval a function expression?
 Practical difference between program/eval code, because there is never a
