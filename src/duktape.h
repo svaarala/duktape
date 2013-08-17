@@ -391,8 +391,9 @@ int duk_has_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
  *  Variable access
  */
 
+/* FIXME: incomplete, not usable now */
 void duk_get_var(duk_context *ctx);
-int duk_put_var(duk_context *ctx);
+void duk_put_var(duk_context *ctx);
 int duk_del_var(duk_context *ctx);
 int duk_has_var(duk_context *ctx);
 
