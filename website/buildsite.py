@@ -13,8 +13,8 @@ from bs4 import BeautifulSoup
 colorize = True
 fancy_stack = True
 remove_fixme = False
-testcase_refs = True
-list_tags = True
+testcase_refs = False
+list_tags = False
 
 def readFile(x):
 	f = open(x, 'rb')
@@ -187,17 +187,8 @@ def parseApiDoc(filename):
 
 	return parts
 
-def processApiDoc(filename, testrefs, used_tags):
-	parts = parseApiDoc(filename)
+def processApiDoc(parts, funcname, testrefs, used_tags):
 	res = []
-
-	funcname = os.path.splitext(os.path.basename(filename))[0]
-
-	# collect used tags from all api docs
-	if parts.has_key('tags'):
-		for i in parts['tags']:
-			if i not in used_tags:
-				used_tags.append(i)
 
 	# this improves readability on e.g. elinks and w3m
 	res.append('<hr />')
@@ -272,6 +263,9 @@ def processApiDoc(filename, testrefs, used_tags):
 		else:
 			res.append('<p>None.</p>')
 
+	if not testrefs.has_key(funcname):
+		res.append('<div class="fixme">This API call has no test cases.</div>')
+		
 	if list_tags and parts.has_key('tags'):
 		# FIXME: placeholder
 		res.append('<h3>Tags</h3>')
@@ -362,6 +356,24 @@ def scanApiCalls(apitestdir):
 
 	return res
 
+def createTagIndex(api_docs, used_tags):
+	res = []
+	res.append('<h2 id="bytag">API calls by tag</h2>')
+
+	for tag in used_tags:
+		res.append('<h3>' + htmlEscape(tag) + '</h3>')
+		res.append('<ul class="taglist">')
+		for doc in api_docs:
+			if not doc['parts'].has_key('tags'):
+				continue
+			for i in doc['parts']['tags']:
+				if i != tag:
+					continue
+				res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(doc['name']), htmlEscape(doc['name'])))
+		res.append('</ul>')
+
+	return res
+
 def generateApiDoc(apidocdir, apitestdir):
 	templ_soup = validateAndParseHtml(readFile('template.html'))
 
@@ -395,6 +407,7 @@ def generateApiDoc(apidocdir, apitestdir):
 	navlinks.append(['#concepts', 'Concepts'])
 	navlinks.append(['#notation', 'Notation'])
 	navlinks.append(['#defines', 'Header definitions'])
+	navlinks.append(['#bytag', 'API calls by tag'])
 	for filename in apifiles:
 		funcname = os.path.splitext(os.path.basename(filename))[0]
 		navlinks.append(['#' + funcname, funcname])
@@ -420,16 +433,36 @@ def generateApiDoc(apidocdir, apitestdir):
 	res += processRawDoc('api/notation.html')
 	res += processRawDoc('api/defines.html')
 
-	# FIXME: tag-based function index here (requires changes to tag parsing placeholder)
+	# scan api doc files
 
 	used_tags = []
+	api_docs = []   # [ { 'parts': xxx, 'name': xxx } ]
+
 	for filename in apifiles:
+		parts = parseApiDoc(os.path.join(apidocdir, filename))
+		funcname = os.path.splitext(os.path.basename(filename))[0]
+		if parts.has_key('tags') and 'omit' in parts['tags']:
+			print 'Omit API doc: ' + str(funcname)
+			continue
+		if parts.has_key('tags'):
+			for i in parts['tags']:
+				if i not in used_tags:
+					used_tags.append(i)
+		api_docs.append({ 'parts': parts, 'name': funcname })
+
+	used_tags.sort()
+
+	# tag index
+	res += createTagIndex(api_docs, used_tags)
+
+	# api docs
+	for doc in api_docs:
 		# FIXME: Here we'd like to validate individual processApiDoc() results so
 		# that they don't e.g. have unbalanced tags.  Or at least normalize them so
 		# that they don't break the entire page.
 
 		try:
-			data = processApiDoc(os.path.join(apidocdir, filename), testrefs, used_tags)
+			data = processApiDoc(doc['parts'], doc['name'], testrefs, used_tags)
 			res += data
 		except:
 			print repr(data)

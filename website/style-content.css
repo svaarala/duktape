@@ -102,6 +102,26 @@
 	line-height: 1.4;
 }
 
+/* special style for tag lists */
+ul.taglist {
+	-moz-column-count:4; /* Firefox */
+	-webkit-column-count:4; /* Safari and Chrome */
+	column-count:4;
+	font-size: 10pt;
+}
+ul.taglist li {
+	margin: 0.25ex 0 0.25ex 2em;
+	list-style: none;
+	line-height: 1.2;
+}
+@media screen and (max-width:800px) {
+	.taglist {
+		-moz-column-count:1; /* Firefox */
+		-webkit-column-count:1; /* Safari and Chrome */
+		column-count:1;
+	}
+}
+
 .content pre {
 	overflow: auto;
 	font-family: monospace;
