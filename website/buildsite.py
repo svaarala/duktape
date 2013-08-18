@@ -253,6 +253,14 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</pre>')
 		res.append('')
 
+	if parts.has_key('seealso'):
+		p = parts['seealso']
+		res.append('<h3>See also</h3>')
+		res.append('<ul>')
+		for i in p:
+			res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(i), htmlEscape(i)))
+		res.append('</ul>')
+
 	if testcase_refs:
 		res.append('<h3>Related test cases</h3>')
 		if testrefs.has_key(funcname):
