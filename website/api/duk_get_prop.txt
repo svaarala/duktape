@@ -67,9 +67,13 @@ if (duk_get_prop(ctx, cfg_idx)) {
 }
 duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
 
+=tags
+property
+
+=seealso
+duk_get_prop_string
+duk_get_prop_index
+
 =fixme
 The obj_index argument name is misleading: the value doesn't have to be
 an object.  Change "non-zero" to "1" for return value?
-
-=tags
-property

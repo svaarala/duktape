@@ -15,3 +15,6 @@ duk_dup(ctx, -2);        /* -> [ ... 123 234 123 ] */
 
 =tags
 stack
+
+=seealso
+duk_dup_top

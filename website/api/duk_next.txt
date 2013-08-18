@@ -26,3 +26,6 @@ while (duk_next(ctx, enum_idx, 1)) {
 =tags
 object
 property
+
+=seealso
+duk_enum

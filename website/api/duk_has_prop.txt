@@ -59,3 +59,7 @@ if (duk_has_prop(ctx, -3)) {
 =tags
 property
 stack
+
+=seealso
+duk_has_prop_string
+duk_has_prop_index

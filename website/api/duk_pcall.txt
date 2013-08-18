@@ -61,6 +61,10 @@ duk_pop(ctx);
 =tags
 call
 
+=seealso
+duk_pcall_method
+duk_pcall_prop
+
 =fixme
 Refine return codes.
 Error handler model to be cleaned up.

@@ -14,3 +14,6 @@ stack
 
 =example
 duk_swap(ctx, -5, -1);
+
+=seealso
+duk_swap_top

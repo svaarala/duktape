@@ -24,5 +24,8 @@ if (duk_strict_equals(ctx, -3, -7)) {
 =tags
 compare
 
+=seealso
+duk_equals
+
 =fixme
 Currently buffer equality does not cause buffer contents to be compared.

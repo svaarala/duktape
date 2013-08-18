@@ -27,5 +27,8 @@ if (buf) {
 =tags
 memory
 
+=seealso
+duk_alloc_raw
+
 =fixme
 Zero allocated memory automatically?

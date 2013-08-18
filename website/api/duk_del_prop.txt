@@ -68,3 +68,8 @@ printf("delete obj.myProperty -> rc=%d\n", rc);
 
 =tags
 property
+
+=seealso
+duk_del_prop_string
+duk_del_prop_index
+

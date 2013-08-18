@@ -24,3 +24,6 @@ duk_insert(ctx, -3);          /* -> [ 123 "foo" 234 345 ] */
 
 =tags
 stack
+
+=seealso
+duk_replace

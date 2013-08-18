@@ -50,3 +50,6 @@ if (buf) {
 
 =tags
 memory
+
+=seealso
+duk_realloc

@@ -65,3 +65,6 @@ if (ctx) {
 =tags
 heap
 
+=seealso
+duk_create_heap_default
+duk_destroy_heap

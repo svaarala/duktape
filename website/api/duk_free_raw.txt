@@ -19,3 +19,6 @@ duk_free_raw(ctx, buf);  /* safe even if 'buf' is NULL */
 
 =tags
 memory
+
+=seealso
+duk_free

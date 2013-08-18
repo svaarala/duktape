@@ -16,3 +16,6 @@ if (duk_get_type(ctx, -3) == DUK_TYPE_NUMBER) {
 
 =tags
 stack
+
+=seealso
+duk_get_type_mask

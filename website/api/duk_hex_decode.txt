@@ -20,3 +20,6 @@ duk_pop(ctx);
 
 =tags
 codec
+
+=seealso
+duk_hex_encode

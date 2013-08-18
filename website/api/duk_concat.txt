@@ -23,3 +23,6 @@ duk_pop(ctx);
 
 =tags
 string
+
+=seealso
+duk_join

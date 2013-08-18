@@ -23,3 +23,7 @@ duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", argval);
 
 =tags
 error
+
+=seealso
+duk_throw
+duk_push_error_object

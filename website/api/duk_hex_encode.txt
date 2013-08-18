@@ -25,3 +25,6 @@ printf("hex encoded: %s\n", duk_hex_encode(ctx, -1));
 
 =tags
 codec
+
+=seealso
+duk_hex_decode

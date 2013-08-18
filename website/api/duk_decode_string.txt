@@ -21,6 +21,9 @@ duk_decode_string(ctx, -1, decode_char, NULL);
 =tags
 string
 
+=seealso
+duk_map_string
+
 =fixme
 Currently implemented.  Necessary?
 

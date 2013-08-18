@@ -44,3 +44,7 @@ duk_pop(ctx);
 
 =tags
 call
+
+=seealso
+duk_call_method
+duk_call_prop

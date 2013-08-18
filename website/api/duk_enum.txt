@@ -50,3 +50,6 @@ duk_pop(ctx);  /* pop enum object */
 =tags
 object
 property
+
+=seealso
+duk_next

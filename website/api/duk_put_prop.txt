@@ -66,3 +66,7 @@ printf("rc=%d\n", rc);
 
 =tags
 property
+
+=seealso
+duk_put_prop_string
+duk_put_prop_index

@@ -25,3 +25,6 @@ printf("base-64 encoded: %s\n", duk_base64_encode(ctx, -1));
 
 =tags
 codec
+
+=seealso
+duk_base64_decode
