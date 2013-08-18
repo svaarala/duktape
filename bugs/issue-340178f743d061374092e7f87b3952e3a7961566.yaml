@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a test environment for big endian byte order
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-17 22:11:27.729354 Z
+references: []
+
+id: 340178f743d061374092e7f87b3952e3a7961566
+log_events: 
+- - 2013-08-17 22:11:27.982235 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

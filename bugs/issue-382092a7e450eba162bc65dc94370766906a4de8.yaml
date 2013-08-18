@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an exposed API call to move values between different stacks
+desc: |-
+  Something like:
+  
+  /* move 'count' value between tops of two contexts of the same heap */
+  void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count);
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-18 22:03:42.379428 Z
+references: []
+
+id: 382092a7e450eba162bc65dc94370766906a4de8
+log_events: 
+- - 2013-08-18 22:03:42.558775 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
