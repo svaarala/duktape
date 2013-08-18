@@ -1,0 +1,22 @@
+=proto
+int duk_get_top_index(duk_context *ctx);
+
+=summary
+<p>Get the absolute index (>= 0) of the topmost value on the stack.
+If the stack is empty, returns <tt>DUK_INVALID_INDEX</tt>.</p>
+
+=example
+int idx_top;
+
+idx_top = duk_get_top_index(ctx);
+if (idx_top == DUK_INVALID_INDEX) {
+    printf("stack is empty\n");
+} else {
+    printf("index of top element: %d\n", idx_top);
+}
+
+=tags
+stack
+
+=seealso
+duk_require_top_index
