@@ -1,0 +1,25 @@
+=proto
+void duk_require_stack(duk_context *ctx, unsigned int extra);
+
+=summary
+<p>Like <tt><a href="#duk_check_stack">duk_check_stack()</a></tt> but an
+error is thrown if the value stack needs to be reallocated and that
+reallocation fails.</p>
+
+<p>As a general rule, callers should use this function to reserve more
+stack space.  If value stack cannot be extended, there is almost never a
+useful recovery strategy except to throw an error and unwind.</p>
+
+=example
+int nargs;
+
+nargs = duk_get_top(ctx);  /* number or arguments */
+
+/* reserve space for one temporary for each input argument */
+duk_require_stack(ctx, nargs * 2);
+
+=tags
+stack
+
+=seealso
+duk_check_stack
