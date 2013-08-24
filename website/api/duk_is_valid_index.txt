@@ -16,3 +16,6 @@ if (duk_is_valid_index(ctx, -3)) {
 
 =tags
 stack
+
+=seealso
+duk_require_valid_index

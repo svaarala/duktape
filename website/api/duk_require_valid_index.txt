@@ -14,3 +14,6 @@ printf("index -3 is valid\n");
 
 =tags
 stack
+
+=seealso
+duk_is_valid_index
