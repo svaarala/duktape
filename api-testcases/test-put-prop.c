@@ -1,30 +1,30 @@
 /*===
-*** test_ex_writable (outside, non-strict)
+*** test_ex_writable (duk_safe_call)
 strict: 0
 put rc=1
 result: {"foo":"bar"}
 final top: 1
-rc=0, result='undefined'
-*** test_ex_writable (inside, strict)
+==> rc=0, result='undefined'
+*** test_ex_writable (duk_pcall)
 strict: 1
 put rc=1
 result: {"foo":"bar"}
 final top: 1
-rc=0, result='undefined'
-*** test_ex_nonwritable (outside, non-strict)
+==> rc=0, result='undefined'
+*** test_ex_nonwritable (duk_safe_call)
 strict: 0
 get Math -> rc=1
 Math.PI=3.141592653589793
 put rc=0
 Math.PI=3.141592653589793
 final top: 2
-rc=0, result='undefined'
-*** test_ex_nonwritable (inside, strict)
+==> rc=0, result='undefined'
+*** test_ex_nonwritable (duk_pcall)
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
-rc=1, result='TypeError: property not writable'
-*** test_ex_accessor_wo_setter (outside, non-strict)
+==> rc=1, result='TypeError: property not writable'
+*** test_ex_accessor_wo_setter (duk_safe_call)
 strict: 0
 eval:
 (function () {
@@ -41,8 +41,8 @@ top after eval: 1
 put rc=0
 result: {}
 final top: 1
-rc=0, result='undefined'
-*** test_ex_accessor_wo_setter (inside, strict)
+==> rc=0, result='undefined'
+*** test_ex_accessor_wo_setter (duk_pcall)
 strict: 1
 eval:
 (function () {
@@ -56,8 +56,8 @@ eval:
     return o;
 })()
 top after eval: 1
-rc=1, result='TypeError: undefined setter for accessor'
-*** test_ex_setter_throws (outside, non-strict)
+==> rc=1, result='TypeError: undefined setter for accessor'
+*** test_ex_setter_throws (duk_safe_call)
 strict: 0
 eval:
 (function () {
@@ -72,8 +72,8 @@ eval:
 })()
 top after eval: 1
 setter, throw error
-rc=1, result='setter error'
-*** test_ex_setter_throws (inside, strict)
+==> rc=1, result='setter error'
+*** test_ex_setter_throws (duk_pcall)
 strict: 1
 eval:
 (function () {
@@ -88,20 +88,20 @@ eval:
 })()
 top after eval: 1
 setter, throw error
-rc=1, result='setter error'
-*** test_new_extensible (outside, non-strict)
+==> rc=1, result='setter error'
+*** test_new_extensible (duk_safe_call)
 strict: 0
 put rc=1
 result: {"foo":1,"bar":"quux"}
 final top: 1
-rc=0, result='undefined'
-*** test_new_extensible (inside, strict)
+==> rc=0, result='undefined'
+*** test_new_extensible (duk_pcall)
 strict: 1
 put rc=1
 result: {"foo":1,"bar":"quux"}
 final top: 1
-rc=0, result='undefined'
-*** test_new_not_extensible (outside, non-strict)
+==> rc=0, result='undefined'
+*** test_new_not_extensible (duk_safe_call)
 strict: 0
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
@@ -109,13 +109,13 @@ top after eval: 1
 put rc=0
 result: {"foo":1}
 final top: 1
-rc=0, result='undefined'
-*** test_new_not_extensible (inside, strict)
+==> rc=0, result='undefined'
+*** test_new_not_extensible (duk_pcall)
 strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
 top after eval: 1
-rc=1, result='TypeError: object not extensible'
+==> rc=1, result='TypeError: object not extensible'
 ===*/
 
 /* Test property writing API call.
@@ -333,20 +333,11 @@ int test_new_not_extensible(duk_context *ctx) {
 }
 
 #define  TEST(func)  do { \
-		printf("*** %s (outside, non-strict)\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-		printf("*** %s (inside, strict)\n", #func); \
-		duk_push_c_function(ctx, (func), 0); \
-		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
+		TEST_SAFE_CALL(func); \
+		TEST_PCALL(func); \
 	} while (0)
 
 void test(duk_context *ctx) {
-	int rc;
-
 	/*
 	 *  Cases where own property already exists
 	 */

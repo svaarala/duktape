@@ -1,5 +1,5 @@
 /*===
-*** test_1a
+*** test_1a (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
 delete obj[123] -> rc=1
@@ -11,18 +11,18 @@ delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
 final top: 7
-rc=0, result='undefined'
-*** test_1b (wrapped)
-rc=1, result='TypeError: property not configurable'
-*** test_1c (wrapped)
-rc=1, result='TypeError: property not configurable'
-*** test_1d
-rc=1, result='Error: index out of bounds'
-*** test_1e
-rc=1, result='Error: index out of bounds'
-*** test_1f
-rc=1, result='TypeError: invalid base reference for property delete'
-*** test_2a
+==> rc=0, result='undefined'
+*** test_1b (duk_pcall)
+==> rc=1, result='TypeError: property not configurable'
+*** test_1c (duk_pcall)
+==> rc=1, result='TypeError: property not configurable'
+*** test_1d (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_1e (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_1f (duk_safe_call)
+==> rc=1, result='TypeError: invalid base reference for property delete'
+*** test_2a (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
 delete obj['123'] -> rc=1
@@ -34,16 +34,16 @@ delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
 final top: 7
-rc=0, result='undefined'
-*** test_2b (wrapped)
-rc=1, result='TypeError: property not configurable'
-*** test_2c (wrapped)
-rc=1, result='TypeError: property not configurable'
-*** test_2d
-rc=1, result='Error: invalid index: 234'
-*** test_2e
-rc=1, result='Error: invalid index: -2147483648'
-*** test_3a
+==> rc=0, result='undefined'
+*** test_2b (duk_pcall)
+==> rc=1, result='TypeError: property not configurable'
+*** test_2c (duk_pcall)
+==> rc=1, result='TypeError: property not configurable'
+*** test_2d (duk_safe_call)
+==> rc=1, result='Error: invalid index: 234'
+*** test_2e (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
+*** test_3a (duk_safe_call)
 delete obj[31337] -> rc=1
 delete obj[123] -> rc=1
 delete arr[31337] -> rc=1
@@ -52,13 +52,13 @@ delete 'test_string'[5] -> rc=0
 final object: {"foo":"fooval","bar":"barval"}
 final array: ["foo","bar",null]
 final top: 5
-rc=0, result='undefined'
-*** test_3b (wrapped)
-rc=1, result='TypeError: property not configurable'
-*** test_3c
-rc=1, result='Error: invalid index: 234'
-*** test_3d
-rc=1, result='Error: invalid index: -2147483648'
+==> rc=0, result='undefined'
+*** test_3b (duk_pcall)
+==> rc=1, result='TypeError: property not configurable'
+*** test_3c (duk_safe_call)
+==> rc=1, result='Error: invalid index: 234'
+*** test_3d (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 void prep(duk_context *ctx) {
@@ -377,46 +377,27 @@ int test_3d(duk_context *ctx) {
 	return 0;
 }
 
-/* execute test outside of a Duktape/C activation (= non-strict mode) */
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
-/* execute test inside of a Duktape/C activation (= strict mode) */
-#define  TESTWRAPPED(func)  do { \
-		printf("*** %s (wrapped)\n", #func); \
-		duk_push_c_function(ctx, (func), 0); \
-		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
 void test(duk_context *ctx) {
-	int rc;
+	TEST_SAFE_CALL(test_1a);
+	TEST_PCALL(test_1b);
+	TEST_PCALL(test_1c);
+	TEST_SAFE_CALL(test_1d);
+	TEST_SAFE_CALL(test_1e);
+	TEST_SAFE_CALL(test_1f);
 
-	TEST(test_1a);
-	TESTWRAPPED(test_1b);
-	TESTWRAPPED(test_1c);
-	TEST(test_1d);
-	TEST(test_1e);
-	TEST(test_1f);
-
-	TEST(test_2a);
-	TESTWRAPPED(test_2b);
-	TESTWRAPPED(test_2c);
-	TEST(test_2d);
+	TEST_SAFE_CALL(test_2a);
+	TEST_PCALL(test_2b);
+	TEST_PCALL(test_2c);
+	TEST_SAFE_CALL(test_2d);
 	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
 	 * value, nonportable */
-	TEST(test_2e);
+	TEST_SAFE_CALL(test_2e);
 
-	TEST(test_3a);
-	TESTWRAPPED(test_3b);
-	TEST(test_3c);
+	TEST_SAFE_CALL(test_3a);
+	TEST_PCALL(test_3b);
+	TEST_SAFE_CALL(test_3c);
 	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
 	 * value, nonportable */
-	TEST(test_3d);
+	TEST_SAFE_CALL(test_3d);
 }
 

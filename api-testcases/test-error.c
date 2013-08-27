@@ -1,5 +1,6 @@
 /*===
-rc=1
+*** test_1 (duk_pcall)
+==> rc=1
 ToString(error): RangeError: range error: 123
 name: RangeError
 message: range error: 123
@@ -7,7 +8,8 @@ code: 102
 fileName: undefined
 lineNumber: 0
 isNative: undefined
-rc=1
+*** test_2 (duk_pcall)
+==> rc=1
 ToString(error): Error: arbitrary error code
 name: Error
 message: arbitrary error code
@@ -15,7 +17,8 @@ code: 1234567
 fileName: undefined
 lineNumber: 0
 isNative: undefined
-rc=1
+*** test_3 (duk_pcall)
+==> rc=1
 ToString(error): TypeError
 name: TypeError
 message: 
@@ -84,9 +87,11 @@ void dump_error(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
+/* use custom helper because of dump_error() */
 #define  TEST(func)  do {  \
+		printf("*** %s (duk_pcall)\n", #func); \
 		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d\n", rc); \
+		printf("==> rc=%d\n", rc); \
 		dump_error(ctx); \
 		duk_pop(ctx); \
 	} while (0)

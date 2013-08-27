@@ -1,5 +1,5 @@
 /*===
-*** test_1a
+*** test_1a (duk_safe_call)
 fixed size, 0 bytes (no guarantee whether ptr NULL or non-NULL)
 buffer should be all zeroes
 buffer should be writable
@@ -15,8 +15,8 @@ ptr is non-NULL: 1
 buffer should be all zeroes
 buffer should be writable
 final top: 4
-rc=0, result='undefined'
-*** test_1b
+==> rc=0, result='undefined'
+*** test_1b (duk_safe_call)
 fixed size, 0 bytes (no guarantee whether ptr NULL or non-NULL)
 buffer should be all zeroes
 buffer should be writable
@@ -32,13 +32,13 @@ ptr is non-NULL: 1
 buffer should be all zeroes
 buffer should be writable
 final top: 4
-rc=0, result='undefined'
-*** test_2
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
 fixed size buffer, close to maximum size_t (should fail)
-rc=1, result='Error: failed to allocate buffer'
-*** test_3
+==> rc=1, result='Error: failed to allocate buffer'
+*** test_3 (duk_safe_call)
 dynamic size buffer, close to maximum size_t (should fail)
-rc=1, result='Error: failed to allocate buffer'
+==> rc=1, result='Error: failed to allocate buffer'
 ===*/
 
 #ifndef  SIZE_MAX
@@ -149,21 +149,12 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
-
 void test(duk_context *ctx) {
-	int rc;
-
 	/*printf("SIZE_MAX=%lf\n", (double) SIZE_MAX);*/
 
-	TEST(test_1a);
-	TEST(test_1b);
-	TEST(test_2);
-	TEST(test_3);
+	TEST_SAFE_CALL(test_1a);
+	TEST_SAFE_CALL(test_1b);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
 

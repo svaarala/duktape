@@ -1,5 +1,5 @@
 /*===
-*** test_1
+*** test_1 (duk_safe_call)
 top: 10
 index 0, type: 6, string coerced: true
 index 1, type: 6, string coerced: false
@@ -11,27 +11,27 @@ index 6, type: 6, string coerced:
 index 7, type: 6, string coerced: foo
 index 8, type: 6, string coerced: [object Object]
 index 9, type: 6, string coerced: [object Thread]
-rc=0, result=undefined
-*** test_2a
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2b
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2c
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2d
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2e
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2f
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2g
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_2h
-rc=1, result=TypeError: attempt to coerce incompatible value to object
-*** test_3
-rc=1, result=Error: invalid index: 3
-*** test_4
-rc=1, result=Error: invalid index: -2147483648
+==> rc=0, result='undefined'
+*** test_2a (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2b (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2c (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2d (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2e (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2f (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2g (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_2h (duk_safe_call)
+==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+*** test_3 (duk_safe_call)
+==> rc=1, result='Error: invalid index: 3'
+*** test_4 (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -134,30 +134,21 @@ int test_4(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_1);
-	TEST(test_2a);
-	TEST(test_2b);
-	TEST(test_2c);
-	TEST(test_2d);
-	TEST(test_2e);
-	TEST(test_2f);
-	TEST(test_2g);
-	TEST(test_2h);
-	TEST(test_3);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2a);
+	TEST_SAFE_CALL(test_2b);
+	TEST_SAFE_CALL(test_2c);
+	TEST_SAFE_CALL(test_2d);
+	TEST_SAFE_CALL(test_2e);
+	TEST_SAFE_CALL(test_2f);
+	TEST_SAFE_CALL(test_2g);
+	TEST_SAFE_CALL(test_2h);
+	TEST_SAFE_CALL(test_3);
 
 	/* FIXME: this testcase currently exposes the DUK_INVALID_INDEX
 	 * constant in the error message and is thus not portable.
 	 */
-	TEST(test_4);
+	TEST_SAFE_CALL(test_4);
 }
 

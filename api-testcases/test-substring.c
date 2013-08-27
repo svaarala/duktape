@@ -1,17 +1,17 @@
 /*===
-*** test_1
+*** test_1 (duk_safe_call)
 blen=5, clen=3, str="o\xe1\x88\xb4a"
 blen=6, clen=4, str="o\xe1\x88\xb4ar"
 blen=0, clen=0, str=""
 blen=0, clen=0, str=""
 final top: 1
-rc=0, result=undefined
-*** test_2
-rc=1, result=TypeError: incorrect type, expected tag 5
-*** test_3
-rc=1, result=Error: invalid index: -2
-*** test_4
-rc=1, result=Error: invalid index: -2147483648
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='TypeError: incorrect type, expected tag 5'
+*** test_3 (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2'
+*** test_4 (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 void dump_string(duk_context *ctx) {
@@ -108,19 +108,10 @@ int test_4(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_1);
-	TEST(test_2);
-	TEST(test_3);
-	TEST(test_4);  /* FIXME: exposes value of DUK_INVALID_INDEX */
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);  /* FIXME: exposes value of DUK_INVALID_INDEX */
 }
 

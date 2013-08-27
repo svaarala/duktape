@@ -1,10 +1,10 @@
 /*===
-*** test_put
+*** test_put (duk_safe_call)
 put rc=0
 final top: 0
-rc=0, result='undefined'
-*** test_put (wrapped)
-rc=1, result='TypeError: non-object base reference'
+==> rc=0, result='undefined'
+*** test_put (duk_pcall)
+==> rc=1, result='TypeError: non-object base reference'
 ===*/
 
 int test_put(duk_context *ctx) {
@@ -26,26 +26,7 @@ int test_put(duk_context *ctx) {
 	return 0;
 }
 
-/* execute test outside of a Duktape/C activation (= non-strict mode) */
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
-/* execute test inside of a Duktape/C activation (= strict mode) */
-#define  TESTWRAPPED(func)  do { \
-		printf("*** %s (wrapped)\n", #func); \
-		duk_push_c_function(ctx, (func), 0); \
-		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_put);
-	TESTWRAPPED(test_put);
+	TEST_SAFE_CALL(test_put);  /* outside: non-strict */
+	TEST_PCALL(test_put);      /* inside: strict */
 }

@@ -1,12 +1,12 @@
 /*===
-*** test_1
+*** test_1 (duk_safe_call)
 duk_require_c_function == my_func: 1
 final top: 1
-rc=0, result='undefined'
-*** test_2
-rc=1, result='TypeError: incorrect type, expected c function'
-*** test_3
-rc=1, result='TypeError: incorrect type, expected c function'
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='TypeError: incorrect type, expected c function'
+*** test_3 (duk_safe_call)
+==> rc=1, result='TypeError: incorrect type, expected c function'
 ===*/
 
 int my_func(duk_context *ctx) {
@@ -36,7 +36,7 @@ int test_2(duk_context *ctx) {
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
 }
-
+_
 int test_3(duk_context *ctx) {
 	duk_c_function funcptr;
 
@@ -49,18 +49,9 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_1);
-	TEST(test_2);
-	TEST(test_3);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
 

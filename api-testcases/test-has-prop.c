@@ -1,5 +1,5 @@
 /*===
-*** test_1a
+*** test_1a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0
 obj[123] -> rc=1
@@ -7,16 +7,16 @@ arr.nonexistent -> rc=0
 arr[2] -> rc=1
 arr.length -> rc=1
 final top: 3
-rc=0, result='undefined'
-*** test_1b
-rc=1, result='Error: index out of bounds'
-*** test_1c
-rc=1, result='Error: index out of bounds'
-*** test_1d
-rc=1, result='TypeError: invalid base reference for property existence check'
-*** test_1e
-rc=1, result='TypeError: invalid base reference for property existence check'
-*** test_2a
+==> rc=0, result='undefined'
+*** test_1b (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_1c (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_1d (duk_safe_call)
+==> rc=1, result='TypeError: invalid base reference for property existence check'
+*** test_1e (duk_safe_call)
+==> rc=1, result='TypeError: invalid base reference for property existence check'
+*** test_2a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0
 obj['123'] -> rc=1
@@ -24,22 +24,22 @@ arr.nonexistent -> rc=0
 arr['2'] -> rc=1
 arr.length -> rc=1
 final top: 3
-rc=0, result='undefined'
-*** test_2b
-rc=1, result='Error: invalid index: 234'
-*** test_2c
-rc=1, result='Error: invalid index: -2147483648'
-*** test_3a
+==> rc=0, result='undefined'
+*** test_2b (duk_safe_call)
+==> rc=1, result='Error: invalid index: 234'
+*** test_2c (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
+*** test_3a (duk_safe_call)
 obj[31337] -> rc=0
 obj[123] -> rc=1
 arr[31337] -> rc=0
 arr[2] -> rc=1
 final top: 3
-rc=0, result='undefined'
-*** test_3b
-rc=1, result='Error: invalid index: 234'
-*** test_3c
-rc=1, result='Error: invalid index: -2147483648'
+==> rc=0, result='undefined'
+*** test_3b (duk_safe_call)
+==> rc=1, result='Error: invalid index: 234'
+*** test_3c (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 void prep(duk_context *ctx) {
@@ -251,32 +251,23 @@ int test_3c(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while(0)
-
 void test(duk_context *ctx) {
-	int rc;
+	TEST_SAFE_CALL(test_1a);
+	TEST_SAFE_CALL(test_1b);
+	TEST_SAFE_CALL(test_1c);
+	TEST_SAFE_CALL(test_1d);
+	TEST_SAFE_CALL(test_1e);
 
-	TEST(test_1a);
-	TEST(test_1b);
-	TEST(test_1c);
-	TEST(test_1d);
-	TEST(test_1e);
-
-	TEST(test_2a);
-	TEST(test_2b);
+	TEST_SAFE_CALL(test_2a);
+	TEST_SAFE_CALL(test_2b);
 	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
 	 * value, nonportable */
-	TEST(test_2c);
+	TEST_SAFE_CALL(test_2c);
 
-	TEST(test_3a);
-	TEST(test_3b);
+	TEST_SAFE_CALL(test_3a);
+	TEST_SAFE_CALL(test_3b);
 	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
 	 * value, nonportable */
-	TEST(test_3c);
+	TEST_SAFE_CALL(test_3c);
 }
 

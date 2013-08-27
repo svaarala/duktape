@@ -1,16 +1,17 @@
 /*===
+*** test_1 (duk_safe_call)
 program
 program result: 123.000000
 final top: 0
-rc=0, result=undefined
-*** test_2
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
 eval result: 5.000000
 final top: 0
-rc=0, result=undefined
-*** test_3
+==> rc=0, result='undefined'
+*** test_3 (duk_safe_call)
 function result: 11.000000
 final top: 0
-rc=0, result=undefined
+==> rc=0, result='undefined'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -56,18 +57,9 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_1);
-	TEST(test_2);
-	TEST(test_3);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
 

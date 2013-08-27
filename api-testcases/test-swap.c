@@ -1,26 +1,26 @@
 /*===
-*** test_1
+*** test_1 (duk_safe_call)
 [ 123 234 345 456 567 ]
 [ 123 234 345 456 567 ]
 [ 123 456 345 234 567 ]
 [ 123 456 567 234 345 ]
 [ 123 456 567 234 345 ]
 final top: 5
-rc=0, result=undefined
-*** test_2a
-rc=1, result=Error: index out of bounds
-*** test_2b
-rc=1, result=Error: index out of bounds
-*** test_2c
-rc=1, result=Error: index out of bounds
-*** test_2d
-rc=1, result=Error: index out of bounds
-*** test_3a
-rc=1, result=Error: index out of bounds
-*** test_3b
-rc=1, result=Error: index out of bounds
-*** test_3c
-rc=1, result=Error: index out of bounds
+==> rc=0, result='undefined'
+*** test_2a (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_2b (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_2c (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_2d (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_3a (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_3b (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_3c (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
 ===*/
 
 void dump_stack(duk_context *ctx) {
@@ -139,23 +139,14 @@ int test_3c(duk_context *ctx) {
 	return 0;
 }
 
-#define  TEST(func)  do { \
-		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
-		printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
-
 void test(duk_context *ctx) {
-	int rc;
-
-	TEST(test_1);
-	TEST(test_2a);
-	TEST(test_2b);
-	TEST(test_2c);
-	TEST(test_2d);
-	TEST(test_3a);
-	TEST(test_3b);
-	TEST(test_3c);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2a);
+	TEST_SAFE_CALL(test_2b);
+	TEST_SAFE_CALL(test_2c);
+	TEST_SAFE_CALL(test_2d);
+	TEST_SAFE_CALL(test_3a);
+	TEST_SAFE_CALL(test_3b);
+	TEST_SAFE_CALL(test_3c);
 }
 
