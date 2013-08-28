@@ -63,52 +63,24 @@
 #include "duk_features.h"
 #include "duk_forwdecl.h"
 
-/*
- *  Union to access IEEE double memory representation
- */
-
-/* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
- * and __FLOAT_WORD_ORDER or resort to GCC/ARM specifics.  Improve the
- * detection code and perhaps allow some compiler define to override the
- * detection for unhandled cases.
- */
-
-#ifdef __APPLE__
-#include <architecture/byte_order.h>
-#else
-#include <endian.h>
+#ifdef DUK_USE_DOUBLE_LE
+#define  _USE_LE_VARIANT
+#endif
+#ifdef DUK_USE_DOUBLE_ME
+#define  _USE_ME_VARIANT
+#endif
+#ifdef DUK_USE_DOUBLE_BE
+#define  _USE_BE_VARIANT
 #endif
 
-#include <limits.h>
-#include <sys/param.h>
-
-/* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
-#if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
-    (defined(__LITTLE_ENDIAN__))
-#if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
-    (defined(__GNUC__) && !defined(__arm__))
-#define _USE_LE_VARIANT 1
-#elif (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
-      (defined(__GNUC__) && defined(__arm__))
-#define _USE_ME_VARIANT 1
-#else
-#error unsupported: byte order is little endian but cannot determine float word order
-#endif
-#elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)) || \
-      (defined(__BIG_ENDIAN__))
-#if (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
-    (defined(__GNUC__) && !defined(__arm__))
-#define _USE_BE_VARIANT 1
-#else
-#error unsupported: byte order is big endian but cannot determine float word order
-#endif
-#else
-#error unsupported: cannot determine byte order
-#endif
-
+/* sanity */
 #if !defined(_USE_LE_VARIANT) && !defined(_USE_ME_VARIANT) && !defined(_USE_BE_VARIANT)
 #error unsupported: cannot determine byte order variant
 #endif
+
+/*
+ *  Union to access IEEE double memory representation
+ */
 
 /* indexes of various types with respect to big endian (logical) layout */
 #ifdef _USE_LE_VARIANT
@@ -203,10 +175,9 @@ typedef union duk_double_union duk_double_union;
  *  Packed 8-byte representation
  */
 
-/* best effort viability checks, not particularly accurate */
-#if (defined(__WORDSIZE) && (__WORDSIZE != 32)) || \
-    (defined(UINT_MAX) && (UINT_MAX != 4294967295))
-#error packed representation not supported if: __WORDSIZE != 32, UINT_MAX != 4294967295
+/* sanity */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE)
+#error packed representation not supported
 #endif
 
 /* Use a union for bit manipulation to minimize aliasing issues in practice.
@@ -613,6 +584,17 @@ struct duk_tval_struct {
 
 #define  DUK_TVAL_SET_BOOLEAN_TRUE(v)        DUK_TVAL_SET_BOOLEAN(v, 1)
 #define  DUK_TVAL_SET_BOOLEAN_FALSE(v)       DUK_TVAL_SET_BOOLEAN(v, 0)
+
+/* undefine local defines */
+#ifdef _USE_LE_VARIANT
+#undef _USE_LE_VARIANT
+#endif
+#ifdef _USE_ME_VARIANT
+#undef _USE_ME_VARIANT
+#endif
+#ifdef _USE_BE_VARIANT
+#undef _USE_BE_VARIANT
+#endif
 
 #endif  /* DUK_TVAL_H_INCLUDED */
 

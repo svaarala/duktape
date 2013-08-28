@@ -6,6 +6,10 @@
  *
  *  This is included before anything else.
  *
+ *  Useful resources:
+ *
+ *    http://sourceforge.net/p/predef/wiki/Architectures/
+ *
  *  FIXME: at the moment there is no direct way of configuring
  *  or overriding individual settings.
  */
@@ -23,6 +27,79 @@
 #define  _DUK_C99
 #else
 #undef   _DUK_C99
+#endif
+
+/*
+ *  Byte order and double memory layout detection
+ *
+ *  This needs to be done before choosing a default profile, as it affects
+ *  profile selection.
+ */
+
+/* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
+ * and __FLOAT_WORD_ORDER or resort to GCC/ARM specifics.  Improve the
+ * detection code and perhaps allow some compiler define to override the
+ * detection for unhandled cases.
+ */
+
+#ifdef __APPLE__
+#include <architecture/byte_order.h>
+#else
+#include <endian.h>
+#endif
+
+#include <limits.h>
+#include <sys/param.h>
+
+/* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
+#if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
+    (defined(__LITTLE_ENDIAN__))
+#if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
+    (defined(__GNUC__) && !defined(__arm__))
+#define DUK_USE_DOUBLE_LE
+#elif (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
+      (defined(__GNUC__) && defined(__arm__))
+#define DUK_USE_DOUBLE_ME
+#else
+#error unsupported: byte order is little endian but cannot determine IEEE double word order
+#endif
+#elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)) || \
+      (defined(__BIG_ENDIAN__))
+#if (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
+    (defined(__GNUC__) && !defined(__arm__))
+#define DUK_USE_DOUBLE_BE
+#else
+#error unsupported: byte order is big endian but cannot determine IEEE double word order
+#endif
+#else
+#error unsupported: cannot determine byte order
+#endif
+
+#if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
+#error unsupported: cannot determine IEEE double byte order variant
+#endif
+
+/*
+ *  Check whether or not a packed duk_tval representation is possible
+ */
+
+/* best effort viability checks, not particularly accurate */
+#if (defined(__WORDSIZE) && (__WORDSIZE == 32)) && \
+    (defined(UINT_MAX) && (UINT_MAX == 4294967295))
+#define DUK_USE_PACKED_TVAL_POSSIBLE
+#else
+#undef  DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/*
+ *  Support for unaligned accesses
+ */
+
+/* FIXME: currently just a hack for ARM, what would be a good way to detect? */
+#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
+#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#else
+#define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #endif
 
 /* 
@@ -43,7 +120,11 @@
  */
 
 #if !defined(DUK_PROFILE)
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE)
 #define  DUK_PROFILE  100
+#else
+#define  DUK_PROFILE  400
+#endif
 #endif
 
 #if (DUK_PROFILE > 0)
@@ -68,8 +149,6 @@
 #undef   DUK_USE_VARIADIC_MACROS                    /* feature determination below */
 #define  DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
 #undef   DUK_USE_EXPLICIT_NULL_INIT
-#define  DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS     /* FIXME: platform dependent */
-#define  DUK_USE_HOBJECT_UNALIGNED_LAYOUT           /* FIXME: platform dependent */
 #define  DUK_USE_REGEXP_SUPPORT
 #define  DUK_USE_STRICT_UTF8_SOURCE
 #define  DUK_USE_OCTAL_SUPPORT
@@ -77,6 +156,15 @@
 #define  DUK_USE_DPRINT_COLORS
 #define  DUK_USE_BROWSER_LIKE
 #define  DUK_USE_SECTION_B
+
+/* unaligned accesses */
+#ifdef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#define  DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#define  DUK_USE_HOBJECT_UNALIGNED_LAYOUT
+#else
+#undef   DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#undef   DUK_USE_HOBJECT_UNALIGNED_LAYOUT
+#endif
 
 /* profile specific modifications */
 
