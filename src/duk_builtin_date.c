@@ -21,7 +21,10 @@
 #if defined(DUK_USE_DATE_TZO_GMTIME) || \
     defined(DUK_USE_DATE_PRS_STRPTIME) || \
     defined(DUK_USE_DATE_FMT_STRFTIME)
-#define _XOPEN_SOURCE
+/* duk_internal.h should ensure this is the case */
+#ifndef _XOPEN_SOURCE
+#error expected _XOPEN_SOURCE to be defined here
+#endif
 #include <time.h>
 #endif
 

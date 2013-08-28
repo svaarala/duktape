@@ -8,6 +8,26 @@
 #ifndef DUK_INTERNAL_H_INCLUDED
 #define DUK_INTERNAL_H_INCLUDED
 
+/*
+ *  Feature selection defines must appear before any system headers
+ *  are included.  This is a good place, because all implementation
+ *  files include duk_internal.h only.
+ */
+
+/* XXX: these should be cleaned up and match whatever is actually included.
+ * The actual defines depend on Duktape features (in particular, which Date
+ * backend is used), however, duk_features.h already requires some system
+ * headers for endianness and the like.
+ */
+
+#define  _POSIX_C_SOURCE  200809L
+#define  _GNU_SOURCE      /* e.g. getdate_r */
+#define  _XOPEN_SOURCE    /* e.g. strptime */
+
+/*
+ *  System includes
+ */
+
 /* these need to be cleaned up eventually to be more precise */
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +36,10 @@
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
 #include <stdint.h>
+
+/*
+ *  Duktape includes
+ */
 
 #include "duk_features.h"
 #include "duk_misc.h"
