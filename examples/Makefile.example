@@ -106,7 +106,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 # on the size of -Os code, e.g. gcc-4.6 is much worse than gcc-4.5.
 
 CC	= gcc
-CCOPTS	= -Os -pedantic -ansi -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./src-combined  # for combined sources
 #CCOPTS += -I./src-separate  # for separate sources
 CCLIBS	= -lm
@@ -120,8 +120,9 @@ CCLIBS	= -lm
 
 # These are only needed by the example modules (duk_socket, duk_curses.c),
 # and are not needed for embedding Duktape into your own project.
-CCOPTS += -I/usr/include/ncursesw
-CCLIBS += -lreadline -lncursesw
+CCOPTS += -I/usr/include/ncurses
+CCLIBS += -lreadline
+CCLIBS += -lncurses
 
 # Example target for one profile (using duk_cmdline.c as the "main" program)
 duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)

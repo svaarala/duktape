@@ -1,7 +1,7 @@
 /*
  *  Ncurses bindings example.
  *
- *  Debian: install libncursesw5-dev
+ *  Debian: install libncurses5-dev
  */
 
 #include <curses.h>
