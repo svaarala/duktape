@@ -18,41 +18,36 @@ and regular expressions.  Other feature highlights include:
 
   * Tail call support
 
-This is an early development version which is not intended for actual use.
-All basic components are in place: Ecmascript compiler and executor, regexp
-compiler and executor, garbage collection, data types, semantics for property
-and identifier access, and initial implementations of built-in objects (with
-some known issues).
+You can browse Duktape programmer's API using the off-line version included
+in this distributable, or at::
 
-However, there are (known and unknown) bugs here and there.  The user API is
-also not yet nearly finished, and there is still minimal documentation in this
-release.  API and internal documentation will be included in future releases.
+  http://www.duktape.org/
 
-To build (only Linux at the moment)::
+Building and integrating Duktape into your project is very straightforward.
+To build an example command line tool, use the following (see the Makefile
+for details on how to compile Duktape in your own project)::
 
-  $ scons -s -j 8
+  $ cd <dist_root>
+  $ make -f Makefile.example
 
-To test the command line version::
+To test the command line tool::
 
-  $ build/400/duk.400
+  $ cd <dist_root>
+  $ ./duk
   duk> print('Hello world!');
-  [bytecode length 6 opcodes, registers 4, constants 2, inner functions 0]
   Hello world!
   = undefined
 
-To run the current test suite, install node.js and then::
+The source code should currently compile cleanly on Linux and OSX
+(Darwin), for both x86 and ARM.  The goal is of course to compile
+on almost any reasonable platform.
 
-  $ cd runtests/
-  $ npm install   # installs dependencies
-  $ cd ..  
-  $ node runtests/runtests.js --run-duk --cmd-duk=build/400/duk.400 \
-        --num-threads 8 --log-file=/tmp/log.txt testcases/
+There is a separate tar ball for developing Duktape: it contains
+internal documentation and unit tests which are not necessary to
+use Duktape.
 
-The source code compiles on Darwin (and maybe OSX), but you need to
-change the following in src/SConscript::
-
-  -                   LIBS=['m', 'rt', 'readline', 'ncursesw'])
-  +                   LIBS=['m', 'rt', 'readline', 'ncurses'])
+Duktape is licensed under the MIT license (see ``LICENSE.txt``).
+MurmurHash2 is used internally; it is also under the MIT license.
 
 Have fun!
 
