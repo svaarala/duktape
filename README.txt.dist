@@ -24,15 +24,20 @@ in this distributable, or at::
   http://www.duktape.org/
 
 Building and integrating Duktape into your project is very straightforward.
-To build an example command line tool, use the following (see the Makefile
-for details on how to compile Duktape in your own project)::
+See Makefile.example for an example::
 
   $ cd <dist_root>
   $ make -f Makefile.example
+  [...]
+  $ ./test
+  Hello world!
+  2+3=5
 
-To test the command line tool::
+To build an example command line tool, use the following::
 
   $ cd <dist_root>
+  $ make -f Makefile.cmdline
+  [...]
   $ ./duk
   ((o) Duktape
   [... build info ...]

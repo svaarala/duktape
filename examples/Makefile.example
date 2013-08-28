@@ -1,6 +1,5 @@
 #
 #  Example Makefile for building a program with embedded Duktape.
-#  The example program here is the Duktape command line tool.
 #
 #  There are two alternatives to building Duktape:
 #
@@ -8,7 +7,7 @@
 #    2) with separate sources: a bunch of source and header files
 #
 #  Whichever you use, simply include the relevant sources into your
-#  C project.
+#  C project.  This Makefile uses the combined source file.
 
 # Combined sources - compile from a single file
 DUKTAPE_SOURCES_COMBINED = src-combined/duktape.c
@@ -95,13 +94,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 
 DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 
-# Duktape command line tool - example of a main() program
-DUKTAPE_CMDLINE_SOURCES = \
-	examples/cmdline/duk_cmdline.c \
-	examples/cmdline/duk_ncurses.c \
-	examples/cmdline/duk_socket.c \
-	examples/cmdline/duk_fileio.c
-
 # Compiler options are quite flexible.  GCC versions have a significant impact
 # on the size of -Os code, e.g. gcc-4.6 is much worse than gcc-4.5.
 
@@ -118,13 +110,6 @@ CCLIBS	= -lm
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 
-# These are only needed by the example modules (duk_socket, duk_curses.c),
-# and are not needed for embedding Duktape into your own project.
-CCOPTS += -I/usr/include/ncurses
-CCLIBS += -lreadline
-CCLIBS += -lncurses
-
-# Example target for one profile (using duk_cmdline.c as the "main" program)
-duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+test:	$(DUKTAPE_SOURCES) test.c
+	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) test.c $(CCLIBS)
 
