@@ -34,6 +34,8 @@ To test the command line tool::
 
   $ cd <dist_root>
   $ ./duk
+  ((o) Duktape
+  [... build info ...]
   duk> print('Hello world!');
   Hello world!
   = undefined

@@ -184,6 +184,9 @@ int handle_interactive(duk_context *ctx) {
 	int retval = 0;
 	int rc;
 
+	duk_eval_string(ctx, "print('((o) Duktape'); print(__duk__.build);");
+	duk_pop(ctx);
+
 	/*
 	 *  Note: using readline leads to valgrind-reported leaks inside
 	 *  readline itself.  Execute code from an input file (and not

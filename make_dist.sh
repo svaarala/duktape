@@ -178,12 +178,8 @@ for i in \
 	cp examples/$i $DIST/
 done
 
-for i in \
-	README.txt \
-	LICENSE.txt \
-	; do
-	cp $i $DIST/
-done
+cp README.txt.dist $DIST/README.txt
+cp LICENSE.txt $DIST/LICENSE.txt
 
 # FIXME: web docs?
 
