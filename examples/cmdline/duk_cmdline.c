@@ -16,7 +16,6 @@
 #include <readline/history.h>
 
 #include "duktape.h"
-#include "duk_internal.h"
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
@@ -65,18 +64,13 @@ static void set_sigint_handler(void) {
 }
 
 int wrapped_compile_execute(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	int comp_flags;
 
-	/* FIXME: uses internal API */
 	comp_flags = 0;
-	duk_js_compile(thr, comp_flags);
+	duk_compile(ctx, comp_flags);
 
-        duk_js_push_closure(thr,
-	                   (duk_hcompiledfunction *) duk_get_hobject(ctx, -1),
-	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
-	                   thr->builtins[DUK_BIDX_GLOBAL_ENV]);
-
+#if 0
+	/* FIXME: something similar with public API */
 	if (interactive_mode) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 
@@ -92,6 +86,7 @@ int wrapped_compile_execute(duk_context *ctx) {
 			fflush(stdout);
 		}
 	}
+#endif
 
         duk_call(ctx, 0);
 
@@ -136,7 +131,7 @@ int handle_fh(duk_context *ctx, FILE *f) {
 	interactive_mode = 0;  /* global */
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, 1 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
-	if (rc != DUK_ERR_EXEC_SUCCESS) {
+	if (rc != DUK_EXEC_SUCCESS) {
 		duk_to_string(ctx, -1);
 		fprintf(stderr, "Error: %s (rc=%d)\n", duk_get_string(ctx, -1), rc);
 		fflush(stderr);
@@ -222,7 +217,7 @@ int handle_interactive(duk_context *ctx) {
 		interactive_mode = 1;  /* global */
 
 		rc = duk_safe_call(ctx, wrapped_compile_execute, 1 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
-		if (rc != DUK_ERR_EXEC_SUCCESS) {
+		if (rc != DUK_EXEC_SUCCESS) {
 			duk_to_string(ctx, -1);
 
 			/* in interactive mode, write to stdout */
