@@ -711,8 +711,8 @@ prE(Math.round(0.5));
 prE(Math.round(-0.5));
 print(zeroSign(Math.round(-0.5)));
 print(Math.round(-0.500001));
-prE(Math.round(3.5));
-prE(Math.round(-3.5));  // tie break towards +Infinity
+prE(Math.round(3.5));   // tie break towards +Infinity -> 4
+prE(Math.round(-3.5));  // tie break towards +Infinity -> -3
 
 /*===
 sin
