@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: where should platform specific headers like time.h be included?
+desc: |-
+  Currently duk_builtin_date.c includes these, based on platform defines.
+  
+  However, the headers depend on e.g. _XOPEN_SOURCE being defined, and
+  that should be defined before any system headers are included.
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-28 20:45:31.606103 Z
+references: []
+
+id: ec8923b08f28b40cd3e7c2bc6b3e59cf2ad8656a
+log_events: 
+- - 2013-08-28 20:45:31.795481 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

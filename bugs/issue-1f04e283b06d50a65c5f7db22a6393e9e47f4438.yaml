@@ -1,0 +1,28 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up value stack reserve + extra handling
+desc: |-
+  Currently there are only internal constants for value stack reservation.
+  The duktape.h header should expose at least the reserve that a user can
+  expect to have upon function entry.
+  
+  Also, currently on entry to a Duktape/C function only DUK_VALSTACK_INTERNAL_EXTRA
+  value stack reserve is automatically allocated.  If this constant is really
+  for internal use only, there is actually no user reservation by default.
+  This should be fixed by adding the user reserve to the value stack check
+  at least when entering a Duktape/C function (this isn't necessary for
+  Ecmascript functions).
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-23 23:17:56.338437 Z
+references: []
+
+id: 1f04e283b06d50a65c5f7db22a6393e9e47f4438
+log_events: 
+- - 2013-08-23 23:17:56.511375 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an API primitive to get a heap ptr for debugging?
+desc: Something like duk_get_voidptr().
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-08-27 21:16:46.442040 Z
+references: []
+
+id: 306281b62690fe31b0f46be685d7ffe47efb05da
+log_events: 
+- - 2013-08-27 21:16:46.622933 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
