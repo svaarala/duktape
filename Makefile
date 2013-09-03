@@ -175,7 +175,7 @@ all64:	duk.400 duk.401 \
 
 clean:
 	-@rm -rf dist/
-	-@rm -rf maint/
+	-@rm -rf full/
 	-@rm -f $(DUK_CMDLINE_TOOLS_NONDEBUG)
 	-@rm -f $(DUK_CMDLINE_TOOLS_DEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
@@ -184,10 +184,10 @@ clean:
 	-@rm -rf duktape-$(VERSION)/
 	-@rm -f duktape-$(VERSION).tar*
 	-@rm -f duktape-$(VERSION).iso
-	-@rm -rf duktape-maint-$(VERSION)/
-	-@rm -f duktape-maint-$(VERSION).tar*
-	-@rm -rf duktape-web-$(VERSION)/
-	-@rm -f duktape-web-$(VERSION).tar*
+	-@rm -rf duktape-full-$(VERSION)/
+	-@rm -f duktape-full-$(VERSION).tar*
+	-@rm -rf duktape-site-$(VERSION)/
+	-@rm -f duktape-site-$(VERSION).tar*
 	-@rm -f doc/*.html
 
 $(DUK_SHARED_LIBS_NONDEBUG): dist
@@ -243,31 +243,31 @@ dist-src:	dist
 	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
 
 # Maintenance distributable
-maint:
-	sh make_maint.sh
+full:
+	sh make_full.sh
 
-dist-maint:	maint
-	rm -rf duktape-maint-$(VERSION)
-	rm -rf duktape-maint-$(VERSION).tar*
-	mkdir duktape-maint-$(VERSION)
-	cp -r maint/* duktape-maint-$(VERSION)/
-	tar cvfj duktape-maint-$(VERSION).tar.bz2 duktape-maint-$(VERSION)/
-	tar cvf duktape-maint-$(VERSION).tar duktape-maint-$(VERSION)/
-	xz -z -e -9 duktape-maint-$(VERSION).tar
-	mkisofs -o duktape-maint-$(VERSION).iso duktape-maint-$(VERSION).tar.bz2
+dist-full:	full
+	rm -rf duktape-full-$(VERSION)
+	rm -rf duktape-full-$(VERSION).tar*
+	mkdir duktape-full-$(VERSION)
+	cp -r full/* duktape-full-$(VERSION)/
+	tar cvfj duktape-full-$(VERSION).tar.bz2 duktape-full-$(VERSION)/
+	tar cvf duktape-full-$(VERSION).tar duktape-full-$(VERSION)/
+	xz -z -e -9 duktape-full-$(VERSION).tar
+	mkisofs -o duktape-full-$(VERSION).iso duktape-full-$(VERSION).tar.bz2
 
 # Website
-web:
-	rm -rf web
-	mkdir web
-	cd website/; python buildsite.py ../web/
-	-@rm -rf /tmp/web/
-	cp -r web /tmp/  # FIXME
+site:
+	rm -rf site
+	mkdir site
+	cd website/; python buildsite.py ../site/
+	-@rm -rf /tmp/site/
+	cp -r site /tmp/  # FIXME
 
-dist-web:	web
-	rm -rf duktape-web-$(VERSION)
-	rm -rf duktape-web-$(VERSION).tar*
-	mkdir duktape-web-$(VERSION)
-	cp -r web/* duktape-web-$(VERSION)/
-	tar cvf duktape-web-$(VERSION).tar duktape-web-$(VERSION)/
-	xz -z -e -9 duktape-web-$(VERSION).tar
+dist-site:	site
+	rm -rf duktape-site-$(VERSION)
+	rm -rf duktape-site-$(VERSION).tar*
+	mkdir duktape-site-$(VERSION)
+	cp -r site/* duktape-site-$(VERSION)/
+	tar cvf duktape-site-$(VERSION).tar duktape-site-$(VERSION)/
+	xz -z -e -9 duktape-site-$(VERSION).tar
