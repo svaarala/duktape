@@ -22,7 +22,6 @@
 DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src-combined
-DISTFILE=duktape-dist.tar.xz
 
 # FIXME
 BUILDINFO="`date +%Y-%m-%d`; `uname -a`; `git rev-parse HEAD`"
@@ -174,6 +173,8 @@ done
 
 for i in \
 	Makefile.example \
+	Makefile.cmdline \
+	test.c \
 	; do
 	cp examples/$i $DIST/
 done
