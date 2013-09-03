@@ -181,10 +181,13 @@ clean:
 	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_DEBUG)
 	-@rm -f libduktape*.so*
-	-@rm -rf duktape-$(VERSION)
-	-@rm -f duktape-$(VERSION).tar
-	-@rm -f duktape-$(VERSION).tar.*
+	-@rm -rf duktape-$(VERSION)/
+	-@rm -f duktape-$(VERSION).tar*
 	-@rm -f duktape-$(VERSION).iso
+	-@rm -rf duktape-maint-$(VERSION)/
+	-@rm -f duktape-maint-$(VERSION).tar*
+	-@rm -rf duktape-web-$(VERSION)/
+	-@rm -f duktape-web-$(VERSION).tar*
 	-@rm -f doc/*.html
 
 $(DUK_SHARED_LIBS_NONDEBUG): dist
