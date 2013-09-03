@@ -5,6 +5,7 @@
 
 import os
 import sys
+import shutil
 import re
 import tempfile
 import atexit
@@ -506,6 +507,22 @@ def generateFrontPage():
 
 	return templ_soup
 
+def generateDownloadPage():
+	templ_soup = validateAndParseHtml(readFile('template.html'))
+	down_soup = validateAndParseHtml(readFile('download/download.html'))
+
+	title_elem = templ_soup.select('#template-title')[0]
+	del title_elem['id']
+	title_elem.string = 'Downloads'
+
+	tmp_soup = templ_soup.select('#site-middle')[0]
+	tmp_soup.clear()
+	for i in down_soup.select('body')[0]:
+		tmp_soup.append(i)
+	tmp_soup['class'] = 'content'
+
+	return templ_soup
+
 def generateGuide():
 	templ_soup = validateAndParseHtml(readFile('template.html'))
 
@@ -535,7 +552,12 @@ def generateGuide():
 
 	# FIXME
 	res += processRawDoc('guide/intro.html')
+	res += processRawDoc('guide/gettingstarted.html')
+	res += processRawDoc('guide/concepts.html')
+	res += processRawDoc('guide/types.html')
+	res += processRawDoc('guide/goals.html')
 	res += processRawDoc('guide/limitations.html')
+	res += processRawDoc('guide/luacomparison.html')
 
 	res += [ '<hr>' ]
 	content_soup = validateAndParseHtml('\n'.join(res))
@@ -556,6 +578,7 @@ def generateStyleCss():
 		'style-middle.css',
 		'style-bottom.css',
 		'style-front.css',
+		'style-download.css',
 		'highlight.css'
 	]
 
@@ -609,6 +632,15 @@ def main():
 	soup = generateFrontPage()
 	soup = postProcess(soup)
 	writeFile(os.path.join(outdir, 'frontpage.html'), soup.encode('ascii'))
+
+	print 'Generating download.html'
+	soup = generateDownloadPage()
+	soup = postProcess(soup)
+	writeFile(os.path.join(outdir, 'download.html'), soup.encode('ascii'))
+
+	print 'Copying binaries'
+	for i in os.listdir('binaries'):
+		shutil.copyfile(os.path.join('binaries', i), os.path.join(outdir, i))
 
 if __name__ == '__main__':
 	main()
