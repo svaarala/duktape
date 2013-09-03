@@ -36,7 +36,7 @@ int test_2(duk_context *ctx) {
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
 }
-_
+
 int test_3(duk_context *ctx) {
 	duk_c_function funcptr;
 
