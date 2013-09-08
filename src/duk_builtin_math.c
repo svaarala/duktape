@@ -67,7 +67,11 @@ static double fmin_fixed(double x, double y) {
 			return +0.0;
 		}
 	}
+#ifdef DUK_USE_MATH_FMIN
 	return fmin(x, y);
+#else
+	return (x < y ? x : y);
+#endif
 }
 
 static double fmax_fixed(double x, double y) {
@@ -81,16 +85,20 @@ static double fmax_fixed(double x, double y) {
 			return -0.0;
 		}
 	}
+#ifdef DUK_USE_MATH_FMAX
 	return fmax(x, y);
+#else
+	return (x > y ? x : y);
+#endif
 }
 
 static double round_fixed(double x) {
-	/* Numbers must be rounded towards +Infinity, e.g. -3.5 must
-	 * be rounded to -3 (not -4).  When rounded to zero, zero sign
-	 * must be set appropriately.  E5.1 Section 15.8.2.15.
+	/* Numbers half-way between integers must be rounded towards +Infinity,
+	 * e.g. -3.5 must be rounded to -3 (not -4).  When rounded to zero, zero
+	 * sign must be set appropriately.  E5.1 Section 15.8.2.15.
 	 *
-	 * Note that ANSI C round() is "round to nearest integer, away
-	 * from zero", which is incorrect for negative values.
+	 * Note that ANSI C round() is "round to nearest integer, away from zero",
+	 * which is incorrect for negative values.  Here we make do with floor().
 	 */
 
 	int c = fpclassify(x);
@@ -98,22 +106,31 @@ static double round_fixed(double x) {
 		return x;
 	}
 
-	if (x >= 0.0) {
-		/* FIXME: rely on [0,0.5[ rounding to +0? */
-		if (x < 0.5) {
-			return +0.0;
-		} else {
-			return round(x);
-		}
-	} else {
-		if (x >= -0.5) {
+	/*
+	 *  x is finite and non-zero
+	 *
+	 *  -1.6 -> floor(-1.1) -> -2
+	 *  -1.5 -> floor(-1.0) -> -1  (towards +Inf)
+	 *  -1.4 -> floor(-0.9) -> -1
+	 *  -0.5 -> -0.0               (special case)
+	 *  -0.1 -> -0.0               (special case)
+	 *  +0.1 -> +0.0               (special case)
+	 *  +0.5 -> floor(+1.0) -> 1   (towards +Inf)
+	 *  +1.4 -> floor(+1.9) -> 1
+	 *  +1.5 -> floor(+2.0) -> 2   (towards +Inf)
+	 *  +1.6 -> floor(+2.1) -> 2
+	 */
+
+	if (x >= -0.5 && x < 0.5) {
+		/* +0.5 is handled by floor, this is on purpose */
+		if (x < 0.0) {
 			return -0.0;
 		} else {
-			x = floor(x + 0.5);
-			DUK_ASSERT(x <= -1.0);
-			return x;
+			return +0.0;
 		}
 	}
+
+	return floor(x + 0.5);
 }
 
 static double pow_fixed(double x, double y) {
