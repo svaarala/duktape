@@ -24,7 +24,11 @@ DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src-combined
 
 # FIXME
-BUILDINFO="`date +%Y-%m-%d`; `uname -a`; `git rev-parse HEAD`"
+if [ -f .git ]; then
+	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; `git rev-parse HEAD`"
+else
+	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; exported"
+fi
 DUK_VERSION=1
 
 echo "Creating distributable sources to: $DIST"

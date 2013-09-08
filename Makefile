@@ -1,10 +1,5 @@
 #
-#  Makefile for the Duktape repository (Duktape development)
-#
-#  This is an internal Makefile usd to create distributables like a
-#  source package, documentation, or Duktape website pages.  It also
-#  supports Duktape development, e.g. convenient test case runs for
-#  both Ecmascript and Duktape C API test cases.
+#  Makefile for the Duktape development
 #
 #  Duktape command line tools are built by first creating a source
 #  dist directory, and then using the sources from the dist directory
@@ -175,19 +170,11 @@ all64:	duk.400 duk.401 \
 
 clean:
 	-@rm -rf dist/
-	-@rm -rf full/
 	-@rm -f $(DUK_CMDLINE_TOOLS_NONDEBUG)
 	-@rm -f $(DUK_CMDLINE_TOOLS_DEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_DEBUG)
 	-@rm -f libduktape*.so*
-	-@rm -rf duktape-$(VERSION)/
-	-@rm -f duktape-$(VERSION).tar*
-	-@rm -f duktape-$(VERSION).iso
-	-@rm -rf duktape-full-$(VERSION)/
-	-@rm -f duktape-full-$(VERSION).tar*
-	-@rm -rf duktape-site-$(VERSION)/
-	-@rm -f duktape-site-$(VERSION).tar*
 	-@rm -f doc/*.html
 
 $(DUK_SHARED_LIBS_NONDEBUG): dist
@@ -228,46 +215,7 @@ doc:	$(patsubst %.txt,%.html,$(wildcard doc/*.txt))
 doc/%.html: doc/%.txt
 	rst2html $< $@
 
-# Source distributable for end users
+# Simulate end user distribution, creates dist/ directory
 dist:
 	sh make_dist.sh
 
-dist-src:	dist
-	rm -rf duktape-$(VERSION)
-	rm -rf duktape-$(VERSION).tar*
-	mkdir duktape-$(VERSION)
-	cp -r dist/* duktape-$(VERSION)/
-	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)/
-	tar cvf duktape-$(VERSION).tar duktape-$(VERSION)/
-	xz -z -e -9 duktape-$(VERSION).tar
-	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
-
-# Maintenance distributable
-full:
-	sh make_full.sh
-
-dist-full:	full
-	rm -rf duktape-full-$(VERSION)
-	rm -rf duktape-full-$(VERSION).tar*
-	mkdir duktape-full-$(VERSION)
-	cp -r full/* duktape-full-$(VERSION)/
-	tar cvfj duktape-full-$(VERSION).tar.bz2 duktape-full-$(VERSION)/
-	tar cvf duktape-full-$(VERSION).tar duktape-full-$(VERSION)/
-	xz -z -e -9 duktape-full-$(VERSION).tar
-	mkisofs -o duktape-full-$(VERSION).iso duktape-full-$(VERSION).tar.bz2
-
-# Website
-site:
-	rm -rf site
-	mkdir site
-	cd website/; python buildsite.py ../site/
-	-@rm -rf /tmp/site/
-	cp -r site /tmp/  # FIXME
-
-dist-site:	site
-	rm -rf duktape-site-$(VERSION)
-	rm -rf duktape-site-$(VERSION).tar*
-	mkdir duktape-site-$(VERSION)
-	cp -r site/* duktape-site-$(VERSION)/
-	tar cvf duktape-site-$(VERSION).tar duktape-site-$(VERSION)/
-	xz -z -e -9 duktape-site-$(VERSION).tar

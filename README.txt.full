@@ -1,0 +1,25 @@
+==========================
+Duktape full distributable
+==========================
+
+This is a full Duktape distributable.  You'll only need this if you want to
+make changes to Duktape internals or perhaps run Duktape internal testcases.
+
+Getting started:
+
+  1. Install nodejs packages::
+
+    $ cd <toplevel>/runtests
+    $ npm install
+
+  2. Compile libraries and command line tools::
+
+    $ cd <toplevel>
+    $ make
+
+  3. Run Ecmascript and API testcases::
+
+    $ cd <toplevel>
+    $ make test
+    $ make apitest
+
