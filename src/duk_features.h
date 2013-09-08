@@ -8,6 +8,7 @@
  *
  *  Useful resources:
  *
+ *    http://sourceforge.net/p/predef/wiki/Home/
  *    http://sourceforge.net/p/predef/wiki/Architectures/
  *
  *  FIXME: at the moment there is no direct way of configuring
@@ -272,6 +273,21 @@
 #define  DUK_USE_GCC_PRAGMAS
 #else
 #undef  DUK_USE_GCC_PRAGMAS
+#endif
+
+/* Some math functions are C99 only.  This is also an issue with some
+ * embedded environments using uclibc where uclibc has been configured
+ * not to provide some functions.  For now, use replacements whenever
+ * using uclibc.
+ */
+#if defined(_DUK_C99) && !defined(__UCLIBC__)
+#define  DUK_USE_MATH_FMIN
+#define  DUK_USE_MATH_FMAX
+#define  DUK_USE_MATH_ROUND
+#else
+#undef  DUK_USE_MATH_FMIN
+#undef  DUK_USE_MATH_FMAX
+#undef  DUK_USE_MATH_ROUND
 #endif
 
 /*
