@@ -1,5 +1,7 @@
 /*
- *  Test case runner.
+ *  Test case runner.  Supports both Ecmascript tests and Duktape API
+ *  C tests.  Duktape API C tests are compiled on-the-fly against a
+ *  dynamic or static library.
  *
  *  Error handling is currently not correct throughout.
  */
@@ -25,8 +27,8 @@ var TIMEOUT_NORMAL = 120 * 1000;
 var tmpCount = 0;
 var tmpUniq = process.pid || Math.floor(Math.random() * 1e6);
 
-function mkTempName() {
-    return '/tmp/runtests-' + tmpUniq + '-' + (++tmpCount);
+function mkTempName(ext) {
+    return '/tmp/runtests-' + tmpUniq + '-' + (++tmpCount) + (ext !== undefined ? ext : '');
 }
 
 function safeUnlinkSync(filePath) {
@@ -111,8 +113,10 @@ function executeTest(options, callback) {
     var cmd, cmdline;
     var execopts;
     var tempInput, tempVgxml, tempVgout;
+    var tempSource, tempExe;
     var timeout;
 
+    // testcase execution done
     function execDone(error, stdout, stderr) {
         var res;
 
@@ -120,8 +124,8 @@ function executeTest(options, callback) {
             testcase: options.testcase,
             engine: options.engine,
             error: error,
-            stdout: stdout,
-            stderr: stderr,
+            stdout: stdout || '',
+            stderr: stderr || '',
             cmdline: cmdline,
             execopts: execopts
         };
@@ -132,6 +136,8 @@ function executeTest(options, callback) {
         safeUnlinkSync(tempInput);
         safeUnlinkSync(tempVgxml);
         safeUnlinkSync(tempVgout);
+        safeUnlinkSync(tempSource);
+        safeUnlinkSync(tempExe);
 
         if (res.valgrind_xml &&
             res.valgrind_xml.substring(0, 5) === '<?xml' &&
@@ -160,50 +166,109 @@ function executeTest(options, callback) {
         }
     }
 
-    if (options.engine.jsPrefix) {
-        // doesn't work
-        // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
-        tempInput = mkTempName();
+    // testcase compilation done (only relevant for API tests), ready to execute
+    function compileDone(error, stdout, stderr) {
+        /* FIXME: use child_process.spawn(); we don't currently escape command
+         * line parameters which is risky.
+         */
+
+        if (error) {
+            console.log(error);
+            execDone(error);
+            return;
+        }
+
+        if (options.engine.jsPrefix) {
+            // doesn't work
+            // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
+            tempInput = mkTempName();
+            try {
+                fs.writeFileSync(tempInput, options.engine.jsPrefix + fs.readFileSync(options.testPath));
+            } catch (e) {
+                console.log(e);
+                callback(e);
+                return;
+            }
+        }
+
+        cmd = [];
+        if (options.valgrind) {
+            tempVgxml = mkTempName();
+            tempVgout = mkTempName();
+            cmd = cmd.concat([ 'valgrind', '--tool=memcheck', '--xml=yes',
+                               '--xml-file=' + tempVgxml,
+                               '--log-file=' + tempVgout,
+                               '--child-silent-after-fork=yes', '-q' ]);
+        }
+        if (tempExe) {
+            cmd.push(tempExe);
+        } else {
+            cmd.push(options.engine.fullPath);
+            if (options.valgrind && options.engine.name === 'duk') {
+                cmd.push('-m');  // higher memory limit
+            }
+            cmd.push(tempInput || options.testPath);
+        }
+        cmdline = cmd.join(' ');
+
+        if (options.testcase.meta.slow) {
+            timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
+        } else {
+            timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
+        }
+        execopts = {
+            maxBuffer: 128 * 1024 * 1024,
+            timeout: timeout,
+            stdio: 'pipe'
+        };
+
+        //console.log(cmdline);
+        child = child_process.exec(cmdline, execopts, execDone);
+    }
+
+    function compileApiTest() {
+        tempSource = mkTempName('.c');
         try {
-            fs.writeFileSync(tempInput, options.engine.jsPrefix + fs.readFileSync(options.testPath));
+            fs.writeFileSync(tempSource, options.engine.cPrefix + fs.readFileSync(options.testPath));
         } catch (e) {
             console.log(e);
             callback(e);
             return;
         }
+        tempExe = mkTempName();
+
+        // FIXME: listing specific options here is awkward, must match Makefile
+        cmd = [ 'gcc', '-o', tempExe,
+                '-L.',
+                '-Idist/src-combined',
+                '-Wl,-rpath,.',
+                '-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
+                '-g', '-ggdb',
+                '-Werror',
+                //'-m32',
+                '-DDUK_PROFILE=400',
+                'runtests/api_testcase_main.c',
+                tempSource,
+                '-lduktape400',
+                //'-lduktape401',
+                '-lm' ];
+
+        cmdline = cmd.join(' ');
+        execopts = {
+            maxBuffer: 128 * 1024 * 1024,
+            timeout: timeout,
+            stdio: 'pipe'
+        };
+
+        console.log(options.testPath, cmdline);
+        child = child_process.exec(cmdline, execopts, compileDone);
     }
 
-    /* FIXME: use child_process.spawn(); we don't currently escape command
-     * line parameters which is risky.
-     */
-    cmd = [];
-    if (options.valgrind) {
-        tempVgxml = mkTempName();
-        tempVgout = mkTempName();
-        cmd = cmd.concat([ 'valgrind', '--tool=memcheck', '--xml=yes',
-                           '--xml-file=' + tempVgxml,
-                           '--log-file=' + tempVgout,
-                           '--child-silent-after-fork=yes', '-q' ]);
-    }
-    cmd.push(options.engine.fullPath);
-    if (options.valgrind && options.engine.name === 'duk') {
-        cmd.push('-m');  // higher memory limit
-    }
-    cmd.push(tempInput || options.testPath);
-    cmdline = cmd.join(' ');
-
-    if (options.testcase.meta.slow) {
-        timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
+    if (options.engine.name === 'api') {
+        compileApiTest();
     } else {
-        timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
+        compileDone(null, null, null);
     }
-    execopts = {
-        maxBuffer: 128 * 1024 * 1024,
-        timeout: timeout,
-        stdio: 'pipe'
-    };
-
-    child = child_process.exec(cmdline, execopts, execDone);
 }
 
 /*
@@ -233,9 +298,36 @@ var RHINO_HEADER =
 var SMJS_HEADER =
     "this.__engine__ = 'smjs'; ";
 
+var API_TEST_HEADER =
+    "#include <stdio.h>\n" +
+    "#include <stdlib.h>\n" +
+    "#include <string.h>\n" +
+    "#include <math.h>\n" +
+    "#include <limits.h>  /* INT_MIN, INT_MAX */\n" +
+    "#include \"duktape.h\"\n" +
+    "\n" +
+    "#define  TEST_SAFE_CALL(func)  do { \\\n" +
+    "\t\tint _rc; \\\n" +
+    "\t\tprintf(\"*** %s (duk_safe_call)\\n\", #func); \\\n" +
+    "\t\t_rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \\\n" +
+    "\t\tprintf(\"==> rc=%d, result='%s'\\n\", _rc, duk_to_string(ctx, -1)); \\\n" +
+    "\t\tduk_pop(ctx); \\\n" +
+    "\t} while (0)\n" +
+    "\n" +
+    "#define  TEST_PCALL(func)  do { \\\n" +
+    "\t\tint _rc; \\\n" +
+    "\t\tprintf(\"*** %s (duk_pcall)\\n\", #func); \\\n" +
+    "\t\tduk_push_c_function(ctx, (func), 0); \\\n" +
+    "\t\t_rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX); \\\n" +
+    "\t\tprintf(\"==> rc=%d, result='%s'\\n\", _rc, duk_to_string(ctx, -1)); \\\n" +
+    "\t\tduk_pop(ctx); \\\n" +
+    "\t} while (0)\n" +
+    "\n" +
+    "#line 1\n";
+
 function findTestCasesSync(argList) {
     var found = {};
-    var pat = /^([a-zA-Z0-9_-]+).js$/;
+    var pat = /^([a-zA-Z0-9_-]+).(js|c)$/;
     var testcases = [];
 
     argList.forEach(function checkArg(arg) {
@@ -352,15 +444,26 @@ function testRunnerMain() {
 
             results[testcase.name] = {};  // create in test case order
 
-            engines.forEach(function testWithEngine(engine) {
+            if (path.extname(fullPath) === '.c') {
                 tasks.push({
-                    engine: engine,
+                    engine: engine_api,
                     filename: filename,
                     testPath: fullPath,
                     testcase: testcase,
-                    valgrind: argv.valgrind && (engine.name === 'duk')
+                    valgrind: argv.valgrind
                 });
-            });
+ 
+            } else {
+                engines.forEach(function testWithEngine(engine) {
+                    tasks.push({
+                        engine: engine,
+                        filename: filename,
+                        testPath: fullPath,
+                        testcase: testcase,
+                        valgrind: argv.valgrind && (engine.name === 'duk')
+                    });
+                });
+            }
         });
 
         if (tasks.length === 0) {
@@ -390,7 +493,7 @@ function testRunnerMain() {
                     resultKey: 'diff_expect'
                 });
             }
-            if (en !== 'duk') {
+            if (en !== 'duk' || en === 'api') {
                 return;
             }
 
@@ -440,6 +543,10 @@ function testRunnerMain() {
             var vgerrors;
             var need = false;
 
+            if (en !== 'duk' && en !== 'api') {
+                return;
+            }
+
             vgerrors = getValgrindErrorSummary(res.valgrind_root);
 
             parts.push(res.testcase.name);
@@ -474,7 +581,7 @@ function testRunnerMain() {
            if (need) { 
                lines.push(parts);
            }
-        }, 'duk');
+        }, null);
 
         lines.forEach(function printLine(line) {
             var tmp = ('                                                  ' + line[0]);
@@ -538,9 +645,12 @@ function testRunnerMain() {
                        fullPath: argv['cmd-smjs'] || 'smjs',
                        jsPrefix: SMJS_HEADER });
     }
+    engine_api = { name: 'api',
+                   cPrefix: API_TEST_HEADER };
 
     testcases = findTestCasesSync(argv._);
     testcases.sort();
+    //console.log(testcases);
 
     queue1 = async.queue(function (task, callback) {
         executeTest(task, function testDone(err, val) {
