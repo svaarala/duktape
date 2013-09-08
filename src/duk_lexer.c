@@ -1311,7 +1311,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
  */
 
 void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
-	int advtok;
+	int advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
 	int x, y;
 
 	memset(out_token, 0, sizeof(*out_token));
