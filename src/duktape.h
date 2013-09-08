@@ -15,7 +15,7 @@
 /*
  *  Typedefs; avoid all dependencies on internal types
  *
- *  (duk_context *) currently maps directly to (duk_hthread *).
+ *  (duk_context *) currently maps directly to internal type (duk_hthread *).
  */
 
 struct duk_memory_functions;
@@ -44,7 +44,8 @@ struct duk_memory_functions {
  */
 
 /* Used to represent invalid index; if caller uses this without checking,
- * this index will almost certainly map to a non-existent stack entry.
+ * this index will map to a non-existent stack entry.  Also used in some
+ * API calls as a marker to denote "no value".
  */
 #define  DUK_INVALID_INDEX                 INT_MIN 
 
@@ -94,7 +95,7 @@ struct duk_memory_functions {
 #define  DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
 #define  DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
 
-/* Internal error codes */
+/* Duktape specific error codes */
 #define  DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
 #define  DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */
 #define  DUK_ERR_INTERNAL_ERROR            52   /* InternalError */
@@ -112,7 +113,7 @@ struct duk_memory_functions {
 #define  DUK_ERR_TYPE_ERROR                105  /* TypeError */
 #define  DUK_ERR_URI_ERROR                 106  /* URIError */
 
-/* Return codes for C functions */
+/* Return codes for C functions (shortcut for throwing an error) */
 #define  DUK_RET_UNIMPLEMENTED_ERROR       (-DUK_ERR_UNIMPLEMENTED_ERROR)
 #define  DUK_RET_UNSUPPORTED_ERROR         (-DUK_ERR_UNSUPPORTED_ERROR)
 #define  DUK_RET_INTERNAL_ERROR            (-DUK_ERR_INTERNAL_ERROR)
@@ -131,8 +132,10 @@ struct duk_memory_functions {
 /* Return codes for protected calls (duk_safe_call(), duk_pcall()). */
 #define  DUK_EXEC_SUCCESS                  0
 #define  DUK_EXEC_ERROR                    1
-/* FIXME: further codes to be defined (some sort of fatal?) */
-/* FIXME: these must now match DUK_ERR_EXEC_xxx, remove the internal codes */
+/* FIXME: these codes will be refined later (separate code for a fatal API error,
+ * distinct from normal error).  These must now match internal DUK_ERR_EXEC_xxx
+ * defines.  The internal codes should be removed.
+ */
 
 /*
  *  Context management
@@ -206,7 +209,7 @@ void duk_dup_top(duk_context *ctx);
 void duk_insert(duk_context *ctx, int to_index);
 void duk_replace(duk_context *ctx, int to_index);
 void duk_remove(duk_context *ctx, int index);
-void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count);
+void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count);  /* FIXME: undocumented */
 
 /*
  *  Push operations
