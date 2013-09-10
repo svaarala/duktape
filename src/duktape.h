@@ -412,9 +412,6 @@ int duk_next(duk_context *ctx, int enum_index, int get_value);
  *  String manipulation
  */
 
-/* FIXME: decode and map string should probably have a slice syntax */
-/* FIXME: char_code_at */
-
 void duk_concat(duk_context *ctx, unsigned int count);
 void duk_join(duk_context *ctx, unsigned int count);
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
@@ -425,8 +422,6 @@ void duk_trim(duk_context *ctx, int index);
 /*
  *  Ecmascript operators
  */
-
-/* FIXME: what to include; there are plenty of operators, arithmetic, comparison, bit ops, etc */
 
 int duk_equals(duk_context *ctx, int index1, int index2);
 int duk_strict_equals(duk_context *ctx, int index1, int index2);
