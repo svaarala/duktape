@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 
 colorize = True
 fancy_stack = True
-remove_fixme = False
+remove_fixme = True
 testcase_refs = False
 list_tags = False
 
@@ -335,7 +335,13 @@ def transformFancyStacks(soup):
 
 def transformRemoveClass(soup, cssClass):
 	for elem in soup.select('.' + cssClass):
-		elem.remove()
+		elem.extract()
+
+def setNavSelected(soup, pagename):
+	# pagename must match <li><a> content
+	for elem in soup.select('#site-top-nav li'):
+		if elem.text == pagename:
+			elem['class'] = 'selected'
 
 # FIXME: refactor shared parts
 
@@ -385,6 +391,7 @@ def createTagIndex(api_docs, used_tags):
 
 def generateApiDoc(apidocdir, apitestdir):
 	templ_soup = validateAndParseHtml(readFile('template.html'))
+	setNavSelected(templ_soup, 'API')
 
 	# scan api files
 
@@ -491,9 +498,10 @@ def generateApiDoc(apidocdir, apitestdir):
 
 	return templ_soup
 
-def generateFrontPage():
+def generateIndexPage():
 	templ_soup = validateAndParseHtml(readFile('template.html'))
-	front_soup = validateAndParseHtml(readFile('frontpage/frontpage.html'))
+	index_soup = validateAndParseHtml(readFile('index/index.html'))
+	setNavSelected(templ_soup, 'Home')
 
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
@@ -501,7 +509,7 @@ def generateFrontPage():
 
 	tmp_soup = templ_soup.select('#site-middle')[0]
 	tmp_soup.clear()
-	for i in front_soup.select('body')[0]:
+	for i in index_soup.select('body')[0]:
 		tmp_soup.append(i)
 	tmp_soup['class'] = 'content'
 
@@ -510,6 +518,7 @@ def generateFrontPage():
 def generateDownloadPage():
 	templ_soup = validateAndParseHtml(readFile('template.html'))
 	down_soup = validateAndParseHtml(readFile('download/download.html'))
+	setNavSelected(templ_soup, 'Download')
 
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
@@ -525,6 +534,7 @@ def generateDownloadPage():
 
 def generateGuide():
 	templ_soup = validateAndParseHtml(readFile('template.html'))
+	setNavSelected(templ_soup, 'Guide')
 
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
@@ -534,7 +544,12 @@ def generateGuide():
 
 	res = []
 	navlinks = []
-	navlinks.append(['#fixme', 'FIXME'])
+	navlinks.append(['#introduction', 'Introduction'])
+	navlinks.append(['#gettingstarted', 'Getting started'])
+	navlinks.append(['#concepts', 'Concepts'])
+	navlinks.append(['#types', 'Types'])
+	navlinks.append(['#limitations', 'Limitations'])
+	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
 	for nav in navlinks:
 		res.append('<li><a href="' + htmlEscape(nav[0]) + '">' + htmlEscape(nav[1]) + '</a></li>')
 	res.append('</ul>')
@@ -555,7 +570,6 @@ def generateGuide():
 	res += processRawDoc('guide/gettingstarted.html')
 	res += processRawDoc('guide/concepts.html')
 	res += processRawDoc('guide/types.html')
-	res += processRawDoc('guide/goals.html')
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
 
@@ -577,7 +591,7 @@ def generateStyleCss():
 		'style-top.css',
 		'style-middle.css',
 		'style-bottom.css',
-		'style-front.css',
+		'style-index.css',
 		'style-download.css',
 		'highlight.css'
 	]
@@ -628,10 +642,10 @@ def main():
 	soup = postProcess(soup)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode('ascii'))
 
-	print 'Generating frontpage.html'
-	soup = generateFrontPage()
+	print 'Generating index.html'
+	soup = generateIndexPage()
 	soup = postProcess(soup)
-	writeFile(os.path.join(outdir, 'frontpage.html'), soup.encode('ascii'))
+	writeFile(os.path.join(outdir, 'index.html'), soup.encode('ascii'))
 
 	print 'Generating download.html'
 	soup = generateDownloadPage()
