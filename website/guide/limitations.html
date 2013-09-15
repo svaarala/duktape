@@ -1,0 +1,80 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="limitations">Limitations</h2>
+
+<p>The following is a list of known limitations of the current implementation.
+Limitations include shortcomings from a semantics perspective, performance
+limitations, and implementation limits (which are inevitable).</p>
+
+<p>Trivial bugs are not listed unless they are "long term bugs".</p>
+
+<h3>No re-entrancy</h3>
+
+<p>A single Duktape heap, i.e. contexts sharing the same garbage collector,
+is <b>not re-entrant</b>.  Only one C/C++ thread can call Duktape APIs
+at a time for a particular Duktape heap (although the calling thread
+can change over time).</p>
+
+<h3>String limits</h3>
+
+<p>The internal representation allows a maximum length of 2**32-1 *bytes*
+for strings.  16-bit codepoints encode into 3 bytes of UTF-8 in the worst
+case, so the maximum string length which is guaranteed to work is about
+1.4G characters.</p>
+
+<h3>Property limits</h3>
+
+<p>An object can have at most <tt>DUK_HOBJECT_MAX_PROPERTIES</tt> (an
+internal define).  Currently this limit is 0x7ffffffff.</p>
+
+<h3>Regexp infinite loop</h3>
+
+<p>The regexp engine gets stuck when a quantifier is used over an
+empty match.  For instance, the following should produce a "no match"
+result but hits an internal recursion limit instead:</p>
+
+<pre>
+$ duk
+duk&gt; t = /(x*)*/.exec('y');
+Error: Error: regexp executor recursion limit reached (rc=1) [ignored]
+</pre>
+
+<h3>Invalid stack indices</h3>
+
+<p>The internal implementation for some stack operations (like
+<tt>duk_set_top()</tt> uses pointer arithmetic.  On 32-bit platforms
+the pointer arithmetic may wrap and work in unexpected ways if stack
+index values are large enough (e.g. 0x20000000 on a 32-bit platform
+with 8-byte packed value type).</p>
+
+<h3>Error handler model incomplete</h3>
+
+<p>The model for error handlers is incomplete.  Use <tt>DUK_INVALID_INDEX</tt>
+as the error handler index for now.</p>
+
+<h3>Coroutines are experimental</h3>
+
+<p>Coroutines are currently experimental.  Although they work for the most
+part, there are many limitations in the implementation.  For instance, one
+cannot yield if there are any Duktape/C function calls, constructor calls
+(<tt>new Foo()</tt>), or getter/setter calls in the current call stack.</p>
+
+<h3>Unicode case conversion is not locale or context sensitive</h3>
+
+<p>E5 Sections 15.5.4.16 to 15.5.4.19 require context and locale processing
+of Unicode SpecialCasing.txt.  However, we don't currently have a notion
+of "current locale".</p>
+
+<h3>Array performance when using non-default property attributes</h3>
+
+<p>All array elements are expected to be writable, enumerable, and configurable
+(default property attributes for new properties).  If this assumption is violated,
+even temporarily, the entire "array part" of an object is abandoned permanently
+and array entries are moved to the "entry part".  This involves interning all used
+array indices as explicit string keys (e.g. "0", "1", etc).  This is not a
+compliance concern, but degrades performance.</p>
+
+<h3>Compiler performance for inner functions</h3>
+
+<p>Compiler needs multiple passes over the same function.  Inner functions
+are scanned ``2**n`` times, where ``n`` is the function level (0, 1, ...).</p>
+

@@ -1,0 +1,231 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="types">Types</h2>
+
+<p>Duktape stack types are:</p>
+
+<div class="table-wrap">
+<table>
+<tr class="header"><th>Type</th><th>Type constant</th><th>Type mask constant</th><th>Description</th></tr>
+<tr><td>(none)</td><td>DUK_TYPE_NONE</td><td>DUK_TYPE_MASK_NONE</td><td>no type (missing value, invalid index, etc)</td></tr>
+<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><tt>undefined</tt></td></tr>
+<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><tt>null</tt></td></tr>
+<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><tt>true</tt> and <tt>false</tt></td></tr>
+<tr><td>number</td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
+<tr><td>string</td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable string</td></tr>
+<tr><td>object</td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
+<tr><td>buffer</td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable byte buffer, fixed/dynamic</td></tr>
+<tr><td>pointer</td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
+</table>
+</div>
+
+<h3>Memory allocations</h3>
+
+<p>The following stack types involve additional heap allocations:</p>
+
+<ul>
+<li>String: a single allocation contains a combined heap and string header
+    and the immutable string data.</li>
+<li>Object: one allocation is used for a combined heap and object header,
+    and another allocation is used for object properties.</li>
+<li>Buffer: for fixed buffers a single allocation contains a combined heap
+    and buffer header and the mutable fixed-size buffer.  For dynamic
+    buffers the current buffer is allocated separately.</li>
+</ul>
+ 
+<p>Note that while strings are considered a primitive (pass-by-value)
+type in Ecmascript, it is a heap allocated type from a memory allocation
+viewpoint.</p>
+
+<h3>Type masks</h3>
+
+<p>Type masks allows calling code to easily check whether a type belongs to
+a certain type set.  For instance, to check that a certain stack value is
+a number, string, or an object:</p>
+
+<pre class="c-code">
+if (duk_get_type_mask(ctx, -3) &amp; (DUK_TYPE_MASK_NUMBER |
+                                  DUK_TYPE_MASK_STRING |
+                                  DUK_TYPE_MASK_OBJECT)) {
+    printf("type is number, string, or object\n");
+}
+</pre>
+
+FIXME: shortcut?  duk_match_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER | DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_OBJECT);
+
+<p>This is faster and more compact than the alternatives:</p>
+
+<pre class="c-code">
+// alt 1
+if (duk_is_number(ctx, -3) || duk_is_string(ctx, -3) || duk_is_object(ctx, -3)) {
+    printf("type is number, string, or object\n");
+}
+
+// alt 2
+int t = duk_get_type(ctx, -3);
+if (t == DUK_TYPE_NUMBER || t == DUK_TYPE_STRING || t == DUK_TYPE_OBJECT) {
+    printf("type is number, string, or object\n");
+}
+</pre>
+
+<h3>None</h3>
+
+<p>The <b>none</b> type is not actually a type but is used in the API to
+indicate that a value does not exist, a stack index is invalid, etc.</p>
+
+<h3>Undefined</h3>
+
+<p>The <b>undefined</b> type maps to Ecmascript <tt>undefined</tt>, which is
+distinguished from a <tt>null</tt>.</p>
+
+<p>Values read from outside the active value stack range read back as
+<b>undefined</b>.</p>
+
+<h3>Null</h3>
+
+<p>The <b>null</b> type maps to Ecmascript <tt>null</tt>.</p>
+
+<h3>Boolean</h3>
+
+<p>The <b>boolean</b> type is represented in the C API as an integer: zero for false,
+and non-zero for true.</p>
+
+<p>Whenever giving boolean values as arguments in API calls, any non-zero value is
+accepted as a "true" value.  Whenever API calls return boolean values, the value
+<tt>1</tt> is always used for a "true" value.  This allows certain C idioms to be
+used.  For instance, a bitmask can be built directly based on API call return values,
+as follows:
+</p>
+
+<pre class="c-code">
+// this works and generates nice code
+int bitmask = (duk_get_boolean(ctx, -3) &lt;&lt; 2) |
+              (duk_get_boolean(ctx, -2) &lt;&lt; 1) |
+              duk_get_boolean(ctx, -1);
+
+// more verbose variant not relying on "true" being represented by 1
+int bitmask = ((duk_get_boolean(ctx, -3) ? 1 : 0) &lt;&lt; 2) |
+              ((duk_get_boolean(ctx, -2) ? 1 : 0) &lt;&lt; 1) |
+              (duk_get_boolean(ctx, -1) ? 1 : 0);
+
+// another verbose variant
+int bitmask = (duk_get_boolean(ctx, -3) ? (1 &lt;&lt; 2) : 0) |
+              (duk_get_boolean(ctx, -2) ? (1 &lt;&lt; 1) : 0) |
+              (duk_get_boolean(ctx, -1) ? 1 : 0);
+</pre>
+
+<h3>Number</h3>
+
+<p>The <b>number</b> type is an IEEE double, including +/- Infinity and NaN values.
+Zero sign is also preserved.  An IEEE double represents all integers up to 53 bits
+accurately.</p>
+
+<p>IEEE double allows NaN values to have additional signaling bits.  Because these
+bits are used by Duktape internal tagged type representation (when using 8-byte
+packed values), NaN values in the Duktape API are normalized.  Concretely, if you
+e.g. push a certain NaN value to the value stack, another (normalized) NaN value
+may come out.</p>
+
+<h3>String</h3>
+
+<p>The <b>string</b> type is a raw byte sequence of a certain length which may
+contain internal NUL (0x00) values.  Strings are always automatically NUL
+terminated for C coding convenience.  For instance, the string <tt>"foo"</tt>
+has byte length 3 and is stored in memory as <tt>{ 'f', 'o', 'o', '\0' }</tt>.
+Because of the guaranteed NUL termination, strings can be pointed to using
+a simple <tt>const char *</tt> as long as internal NULs are not an issue;
+if they are, the explicit byte length of the string can be queried with the
+API.</p>
+
+<p>Strings are interned for efficiency: only a single copy of a certain string ever
+exists at a time.  Strings are immutable and must NEVER be changed by calling C
+code.  Doing so will lead to very mysterious issues which are hard to diagnose.</p>
+
+<p>Calling code most often deals with Ecmascript strings, which may contain
+arbitrary 16-bit codepoints but cannot represent
+non-<a href="http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane">BMP</a>
+codepoints (this is how strings are defined in the Ecmascript standard).
+In Duktape, Ecmascript strings are encoded with
+<a href="http://en.wikipedia.org/wiki/CESU-8">CESU-8</a> encoding.  CESU-8
+matches <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> except that it
+allows codepoints in the surrogate pair range (U+D800 to U+DFFF) to be encoded
+directly (these are prohibited in UTF-8).  CESU-8, like UTF-8, encodes all 7-bit
+ASCII characters as-is which is convenient for C code.  For example:</p>
+
+<ul>
+<li>U+0041 ("A") encodes to <tt>41</tt>.</li>
+<li>U+1234 (ETHIOPIC SYLLABLE SEE) encodes to <tt>e1 88 b4</tt>.</li>
+<li>U+D812 (high surrogate) encodes to <tt>ed a0 92</tt> (this would be
+    <a href="http://en.wikipedia.org/wiki/UTF-8#Invalid_code_points">invalid UTF-8</a>).</li>
+</ul>
+
+<p>Duktape also allows extended strings internally.  Codepoints up to U+10FFFF
+can be represented with UTF-8, and codepoints above that up to full 32 bits
+can be represented with
+<a href="http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range">"extended UTF-8"</a>.
+Non-standard strings are used for storing custom and internal object properties;
+using a non-standard string ensures that such properties never conflict with
+properties accessible using standard Ecmascript strings.  Non-standard strings
+can be given to Ecmascript built-in functions, but since behavior may not be exactly
+specified, results may vary.</p>
+
+<p>The "extended UTF-8" encoding used by Duktape is described in the table below.
+The leading byte is shown in binary (with "x" marking data bits) while
+continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</p>
+
+<table>
+<thead>
+<tr class="header"><th>Codepoint range</th><th>Bits</th><th>Byte sequence</th></tr>
+</tr>
+</thead>
+<tbody>
+<tr><td>U+0000 to U+007F</td><td>7</td><td>0xxxxxxx</td></tr>
+<tr><td>U+0080 to U+07FF</td><td>11</td><td>110xxxxx C</td></tr>
+<tr><td>U+0800 to U+FFFF</td><td>16</td><td>1110xxxx C C</td></tr>
+<tr><td>U+1 0000 to U+1F FFFF</td><td>21</td><td>11110xxx C C C</td></tr>
+<tr><td>U+20 0000 to U+3FF FFFF</td><td>26</td><td>111110xx C C C C</td></tr>
+<tr><td>U+400 0000 to U+7FFF FFFF</td><td>31</td><td>1111110x C C C C C</td></tr>
+<tr><td>U+8000 0000 to U+F FFFF FFFF</td><td>36 (32 used)</td><td>11111110 C C C C C C</td></tr>
+</tbody>
+</table>
+
+<p>The downside of the encoding for codepoints above U+7FFFFFFF is that
+the leading byte will be <tt>0xfe</tt> which conflicts with Unicode byte order
+marker encoding.  This is not a practical concern in Duktape's internal use.</p>
+
+<h3>Object</h3>
+
+<p>The <b>object</b> type includes Ecmascript objects and arrays, functions, and
+threads (coroutines).  In other words, anything with properties is an object.
+Properties are key-value pairs with a string key and an arbitrary value
+(including <b>undefined</b>).</p>
+
+<p>Objects may participate in garbage collection finalization.</p>
+
+<h3>Buffer</h3>
+
+<p>The <b>buffer</b> type is a raw buffer for userdata of either fixed or dynamic
+size.  The size of a fixed buffer is given at its creation, and fixed buffers
+have an unchanging (stable) data pointer.  Dynamic buffers may change during their
+life time at the cost of having a (potentially) changing data pointer.  Dynamic
+buffers also need two memory allocations internally, while fixed buffers only
+need one.</p>
+
+<p>Buffers are automatically garbage collected.  This also means that C code
+must not hold onto a buffer data pointer unless the buffer is reachable to
+Duktape, e.g. resides in an active value stack.</p>
+
+<p>The buffer type is not standard Ecmascript.  Tthere are a few
+different Ecmascript typed array specifications, though, see e.g.
+<a href="http://www.khronos.org/registry/typedarray/specs/latest/">Typed Array Specification</a>.
+These will be implemented on top of raw arrays, most likely.
+</p>
+
+<h3>Pointer</h3>
+
+<p>The <b>pointer</b> type is a raw, uninterpreted C pointer, essentially
+a <tt>void *</tt>.  Pointers can be used to point to native objects (memory
+allocations, handles, etc), but because Duktape doesn't know their use, they
+are not automatically garbage collected.  You can, however, put one or more
+pointers inside an object and use the object finalizer to free the
+native resources related to the pointer(s).</p>
+

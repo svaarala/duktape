@@ -1,0 +1,400 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="gettingstarted">Getting started</h2>
+
+<h3>Downloading</h3>
+
+<p>Download the source distributable from
+<a href="http://www.duktape.org/downloads.html">Downloads</a>.</p>
+
+<p>There are currently two distributables: a source distributable
+for using Duktape in your program, and a full distributable for
+Duktape development.</p>
+
+<h3>Command line tool</h3>
+
+<p>Unpack the distributable:</p>
+<pre>
+$ cd /tmp
+$ tar xvfJ ~/duktape-0.6.0.tar.xz
+</pre>
+
+<p>Compile the command line tool using the provided Makefile:</p>
+<pre>
+$ cd /tmp/duktape-0.6.0/
+$ make -f Makefile.cmdline
+</pre>
+
+<p>You can now run Ecmascript code interactively:</p>
+<pre>
+$ ./duk
+((o) Duktape
+[version info]
+duk&gt; print('Hello world!')
+Hello world!
+= undefined
+</pre>
+
+<p>You can also run Ecmascript code from a file which is useful for playing with
+features and algorithms.  As an example, create <tt>/tmp/fib.js</tt>:</p>
+<pre class="ecmascript-code">
+// /tmp/fib.js
+function fib(n) {
+    if (n == 0) { return 0; }
+    if (n == 1) { return 1; }
+    return fib(n-1) + fib(n-2);
+}
+
+function test() {
+    var res = [];
+    for (i = 0; i &lt; 20; i++) {
+        res.push(fib(i));
+    }
+    print(res.join(' '));
+}
+
+test();
+</pre>
+
+<p>Test the script from the command line:</p>
+<pre>
+$ ./duk /tmp/fib.js
+0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181
+Cleaning up...
+</pre>
+
+<h3>Integrating into your own project</h3>
+
+<p>The command line tool is simply an example of a program which embeds
+Duktape.  Embedding Duktape into your program is very simple: just add
+<tt>duktape.c</tt> and <tt>duktape.h</tt> to your build, and call the
+Duktape API from elsewhere in your program.</p>
+
+<p>The distributable contains a very simple example program, <tt>test.c</tt>,
+which illustrates this process.  Compile the test program e.g. as:</p>
+<pre>
+$ cd /tmp/duktape-0.6.0/
+$ gcc -o test -Isrc-combined/ src-combined/duktape.c test.c -lm
+</pre>
+
+<p>The test program creates a Duktape context and uses it to run some
+Ecmascript code:</p>
+<pre>
+$ ./test
+Hello world!
+2+3=5
+</pre>
+
+<p>Because Duktape is an embeddable interpreter, you don't need to change
+the control flow of your program.  The basic approach is:</p>
+<ul>
+<li>Create a Duktape context e.g. in program initialization
+    (or even on-demand when scripting is needed).  Usually you
+    would also load your scripts during initialization, though
+    that can also be done on-demand.</li>
+<li>Identify points in your code where you would like to use scripting
+    and insert calls to script functions there.</li>
+<li>To make a script function call, first push call arguments to the
+    Duktape context's <i>value stack</i> using the Duktape API.
+    Then, use another Duktape API call to initiate the actual call.</li>
+<li>Once script execution is finished, control is returned to your
+    program (the API call returns) and a return value is left on the
+    Duktape context's value stack for C code to consume.</li>
+</ul>
+
+<h3>Duktape integration example</h3>
+
+<p>Let's look at a simple line processing program.  The program reads in a
+line using a C mainloop,calls an Ecmascript helper to transform the line,
+and prints out the transformed line.  The line processing function can take
+advantage of Ecmascript goodies like regular expressions, and can be easily
+modified.</p>
+
+<p>The script code will be placed in <tt>/tmp/script.js</tt>.  The example
+line processing function converts a plain text line into HTML, and
+automatically bolds text between stars:</p>
+
+<pre class="ecmascript-code">
+// script.js
+function processLine(line) {
+    return line.trim()
+        .replace(/[&lt;&gt;&amp;"'\u0000-\u001F\u007E-\uFFFF]/g, function(x) {
+            // escape HTML characters
+            return '&amp;#' + x.charCodeAt(0) + ';'
+         })
+        .replace(/\*(.*?)\*/g, function(x, m) {
+            // automatically bold text between stars
+            return '&lt;b&gt;' + m + '&lt;/b&gt;';
+         });
+}
+</pre>
+
+<p>The C code initializes a Duktape context, compiles the script, gets a
+reference to <tt>processLine</tt> and then proceeds to process lines.</p>
+<pre class="c-code">
+/* processlines.c */
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "duktape.h"
+
+static void load_script(duk_context *ctx) {
+    char buf[4096];
+    FILE *f;
+    size_t got;
+
+    f = fopen("script.js", "rb");
+    if (!f) { exit(1); }
+    got = fread(buf, 1, sizeof(buf), f);
+    fclose(f);
+
+    duk_push_lstring(ctx, buf, got);
+    duk_eval(ctx);
+    duk_pop(ctx);  /* pop eval result */
+}
+
+int main(int argc, const char *argv[]) {
+    duk_context *ctx = NULL;
+    char line[4096];
+    char idx;
+    int ch;
+
+    ctx = duk_create_heap_default();
+    if (!ctx) { exit(1); }
+
+    load_script(ctx);
+
+    memset(line, 0, sizeof(line));
+    idx = 0;
+    for (;;) {
+        if (idx &gt;= sizeof(line)) { exit(1); }
+
+        ch = fgetc(stdin);
+        if (ch == 0x0a) {
+            line[idx++] = '\0';
+
+            duk_push_global_object(ctx);
+            duk_get_prop_string(ctx, -1, "processLine");
+            duk_push_string(ctx, line);
+            duk_call(ctx, 1);
+            printf("%s\n", duk_to_string(ctx, -1));
+            duk_pop(ctx);
+
+            idx = 0;
+        } else if (ch == EOF) {
+            break;
+        } else {
+            line[idx++] = (char) ch;
+        }
+    }
+
+    duk_destroy_heap(ctx);
+
+    exit(0);
+}
+</pre>
+
+<p>Compile like above:</p>
+<pre>
+$ gcc -o test -Isrc-combined/ src-combined/duktape.c processlines.c -lm
+</pre>
+
+<p>Test run:</p>
+<pre>
+$ echo "I like *Sam &amp; Max*." | ./processlines
+I like &lt;b&gt;Sam &amp;<!-- avoidind double decode is tricky -->&#35;38; Max&lt;/b&gt;.
+</pre>
+
+<h3>Calling C code from Ecmascript (Duktape/C bindings)</h3>
+
+<p>The integration example illustrated how C code can call into Ecmascript
+to do things which are easy in Ecmascript but difficult in C.</p>
+
+<p>Ecmascript also often needs to call into C when the situation is
+reversed.  For instance, while scripting is useful for many things, it is
+not optimal for low level byte or character processing.  Being able to
+call optimized C helpers allows you to write most of your script logic in
+nice Ecmascript but call into C for the performance critical parts.
+Another reason for using native functions is to provide access to native
+libraries.</p>
+
+<p>To implement a native function you write an ordinary C function which
+conforms to a special calling convention, the Duktape/C binding.  Duktape/C
+functions take a single argument, a Duktape context, and return a single
+value indicating either error or number of return values.  The function
+accesses call arguments and places return values through the Duktape context's
+<i>value stack</i>, manipulated with the Duktape API.  We'll go deeper into
+Duktape/C binding and the Duktape API later on.  Example:</p>
+<pre class="c-code">
+int my_native_func(duk_context *ctx) {
+    double arg = duk_require_number(ctx, 0 /*index*/);  /* read 1st arg */
+    duk_push_number(ctx, arg * arg);  /* push arg^2 */
+    return 1;  /* return value on top of stack, i.e. arg^2 */
+</pre>
+
+<p>We'll use a primality test as an example for using native code to speed
+up Ecmascript algorithms.  More specifically, our test program searches for
+primes under 1000000 which end with the digits '9999'.  The Ecmascript
+version of the program is:</p>
+<pre class="ecmascript-code">
+// Pure Ecmascript version of low level helper
+function primeCheckEcmascript(val, limit) {
+    for (var i = 2; i &lt;= limit; i++) {
+        if ((val % i) == 0) { return false; }
+    }
+    return true;
+}
+
+// Select available helper at load time
+var primeCheckHelper = (this.primeCheckNative || primeCheckEcmascript);
+
+// Check 'val' for primality
+function primeCheck(val) {
+    if (val == 1 || val == 2) { return true; }
+    var limit = Math.ceil(Math.sqrt(val));
+    while (limit * limit &lt; val) { limit += 1; }
+    return primeCheckHelper(val, limit);
+}
+
+// Find primes below one million ending in '9999'.
+function primeTest() {
+    var res = [];
+
+    print('Have native helper: ' + (primeCheckHelper !== primeCheckEcmascript)); 
+    for (var i = 1; i &lt; 1000000; i++) {
+        if (primeCheck(i) &amp;&amp; (i % 10000) == 9999) { res.push(i); }
+    }
+    print(res.join(' '));
+}
+</pre>
+
+<p>Note that the program uses the native helper if it's available but falls
+back to an Ecmascript version if it's not.  This allows the Ecmascript code
+to be used in other containing programs.  Also, if the prime check program
+is ported to another platform where the native version does not compile
+without changes, the program remains functional (though slower) until the
+helper is ported.</p>
+
+<p>In this case the native helper detection happens when the script is loaded.
+You can also detect it when the code is actually called which is more flexible.
+</p>
+
+<p>A native helper with functionality equivalent to <tt>primeCheckEcmascript</tt>
+can be implemented as:</p>
+<pre class="c-code">
+static int native_prime_check(duk_context *ctx) {
+    int val = duk_require_int(ctx, 0);
+    int lim = duk_require_int(ctx, 1);
+    int i;
+
+    for (i = 2; i &lt;= lim; i++) {
+        if (val % i == 0) {
+            duk_push_false(ctx);
+            return 1;
+        }
+    }
+
+    duk_push_true(ctx);
+    return 1;
+}
+</pre>
+
+<p>Putting it all together into C source <tt>primecheck.c</tt>:</p>
+<pre class="c-code">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "duktape.h"
+
+static void load_script(duk_context *ctx) {
+    char buf[4096];
+    FILE *f;
+    size_t got;
+
+    f = fopen("prime.js", "rb");
+    if (!f) { exit(1); }
+    got = fread(buf, 1, sizeof(buf), f);
+    fclose(f);
+
+    duk_push_lstring(ctx, buf, got);
+    duk_eval(ctx);
+    duk_pop(ctx);  /* pop eval result */
+}
+
+static int native_prime_check(duk_context *ctx) {
+    int val = duk_require_int(ctx, 0);
+    int lim = duk_require_int(ctx, 1);
+    int i;
+
+    for (i = 2; i &lt;= lim; i++) {
+        if (val % i == 0) {
+            duk_push_false(ctx);
+            return 1;
+        }
+    }
+
+    duk_push_true(ctx);
+    return 1;
+}
+
+int main(int argc, const char *argv[]) {
+    duk_context *ctx = NULL;
+    char line[4096];
+    char idx;
+    int ch;
+
+    ctx = duk_create_heap_default();
+    if (!ctx) { exit(1); }
+
+    duk_push_global_object(ctx);
+    duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
+    duk_put_prop_string(ctx, -2, "primeCheckNative");
+
+    load_script(ctx);
+ 
+    duk_get_prop_string(ctx, -1, "primeTest");
+    duk_call(ctx, 0);
+    duk_pop(ctx);
+
+    duk_destroy_heap(ctx);
+
+    exit(0);
+}
+</pre>
+
+<p>Compile like above:</p>
+<pre>
+$ gcc -o test -Isrc-combined/ src-combined/duktape.c primecheck.c -lm
+</pre>
+
+<p>Test run:</p>
+<pre>
+$ time ./test
+Have native helper: true
+49999 59999 79999 139999 179999 199999 239999 289999 329999 379999 389999
+409999 419999 529999 599999 619999 659999 679999 769999 799999 839999 989999
+
+real	0m2.985s
+user	0m2.976s
+sys	0m0.000s
+</pre>
+
+<p>Because most execution time is spent in the prime check, the speed-up
+compared to plain Ecmascript is significant.  You can check this by editing
+<tt>prime.js</tt> and disabling the use of the native helper:</p>
+<pre class="ecmascript-code">
+// Select available helper at load time
+var primeCheckHelper = primeCheckEcmascript;
+</pre>
+
+<p>Re-compiling and re-running the test:</p>
+<pre>
+$ time ./test
+Have native helper: false
+49999 59999 79999 139999 179999 199999 239999 289999 329999 379999 389999
+409999 419999 529999 599999 619999 659999 679999 769999 799999 839999 989999
+
+real	0m23.609s
+user	0m23.573s
+sys	0m0.000s
+</pre>
+

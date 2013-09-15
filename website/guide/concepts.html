@@ -1,0 +1,133 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="concepts">Concepts</h2>
+
+<p>The important basic concepts are:</p>
+
+<ul>
+<li>Heap</li>
+<li>Context</li>
+<li>Call stack</li>
+<li>Value stack</li>
+<li>Stack index</li>
+</ul>
+
+<h3>Heap</h3>
+
+<p>Heap: a single region for garbage collection.</p>
+
+<h3>Context</h3>
+
+<p>A context, represented by a <tt>duk_context *</tt>, is a handle for
+interacting with a Duktape thread and its value stack.  The Duktape API
+interacts with the stack frame of the topmost (most recent) function
+call on the value stack.</p>
+
+FIXME: context creation.
+
+<p>
+Context: a context for Duktape API calls, refers to a
+Duktape coroutine (co-operative thread).  A context "lives"
+in a heap, and multiple contexts can share the same heap.</li>
+</p>
+
+<p>The calling code first creates a Duktape execution <b>context</b>,
+and then uses the Duktape API to work with the context: values can be
+inserted or queried, functions can be called, etc.</p>
+
+
+which is then given to almost every other API call as the first argument
+of the API call.  No global variables or states are used, and there are
+no restrictions on running multiple, independent Duktape contexts at the
+same time (though there are multi-threading restrictions, see below).</p>
+
+<p>A context identifies a certain Duktape coroutine (a co-operating thread).
+Each coroutine has a <b>call stack</b> which controls execution, keeping
+track of function calls, native or Ecmascript, within the Ecmascript engine.
+Each coroutine also has a <b>value stack</b> which stores all the Ecmascript
+values of the coroutine's active call stack.  The value stack always has an
+active <b>stack frame</b> for the most recent function call.  The Duktape API
+calls operate almost exclusively in the currently active stack frame.</p>
+
+<p>Multiple contexts can share the same Duktape <b>heap</b>.  In more concrete
+terms this means that multiple contexts can share the same garbage collection
+state, and can exchange object references safely.  Contexts in different heaps
+cannot exchange direct object references; all values must be serialized in one
+way or another.</p>
+
+<h3>Call stack</h3>
+
+<p>Call stack of a context: book-keeping of the chain of function
+calls (either native or Ecmascript) in a context.</p>
+
+<div class="note">Don't confuse with the C call stack.</div>
+
+<h3>Value stack</h3>
+
+<p>Value stack of a context: book-keeping of tagged values related
+to a context.</p>
+
+<p>The values kept in a value stack are traditional tagged types
+(for the set of available types, see <a href="#types">Types</a>).
+Stack entries are indexed either from the bottom or from the top.
+</p>
+
+<div class="note">Don't confuse with the C stack.</div>
+
+<h3>Value stack index</h3>
+
+<p>Non-negative (&gt;= 0) indices refer to stack entries in the
+current stack frame, relative to the frame bottom:</p>
+
+FIXME: pre.stack
+
+<p>Negative (&lt; 0) indices refer to stack entries relative to the top:</p>
+
+FIXME: pre.stack
+
+<p>The special constant <tt>DUK_INVALID_INDEX</tt> is a negative integer
+which denotes an invalid stack index.  It can be returned from API calls
+and can also be given to API calls to indicate a "no value".</p>
+
+<p>The <i>value stack top</i> (or just "top") is the index of an imaginary
+element just above the highest used index.  For instance, above the highest
+used index is 5, so the stack top is 6.  The top indicates the current stack
+size, and is also the index of the next element pushed to the stack.</p>
+
+FIXME: pre.stack
+
+<p>NOTE: All API stack operations are always confined to the current
+stack frame.  There is no way to refer to stack entries below th
+current frame.  This is intentional, as it protects functions in the
+call stack from affecting each other's values.</p>
+
+<h3>Array index</h3>
+
+<p>Ecmascript object and array keys can only be strings.  Array indices
+(e.g. 0, 1, 2) are represented as canonical string representations of the
+respective numbers.  More technically, all canonical string representations
+of the integers in the range [0, 2**32-1] are valid array indices.</p>
+
+<p>To illustrate the Ecmascript array index handling, consider the following
+example:</p>
+
+<pre class="ecmascript-code">
+var arr = [ 'foo', 'bar', 'quux' ];
+
+print(arr[1]);     // refers to 'bar'
+print(arr["1"]);   // refers to 'bar'
+
+print(arr[1.0]);   // refers to 'bar', canonical encoding is "1"
+print(arr["1.0"]); // undefined, not an array index
+</pre>
+
+<p>Some API calls operating on Ecmascript arrays accept numeric array index
+arguments.  This is really just a short hand for denoting a string conversion
+of that number.  For instance, if the API is given the integer 123, this
+really refers to the property name "123".</p>
+
+<p>Internally, Duktape tries to avoid converting numeric indices to actual
+strings whenever possible, so it is preferable to use array index API calls
+when they are relevant.  Similarly, when writing Ecmascript code it is
+preferable to use numeric rather than string indices, as the same fast path
+applies for Ecmascript code.</p>
+
