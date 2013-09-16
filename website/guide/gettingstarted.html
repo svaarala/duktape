@@ -107,7 +107,7 @@ the transformed line.  The line processing function can take advantage of
 Ecmascript goodies like regular expressions, and can be easily modified
 without recompiling the C program.</p>
 
-<p>The script code will be placed in <tt>/tmp/script.js</tt>.  The example
+<p>The script code will be placed in <tt>script.js</tt>.  The example
 line processing function converts a plain text line into HTML, and
 automatically bolds text between stars:</p>
 
@@ -126,8 +126,9 @@ function processLine(line) {
 }
 </pre>
 
-<p>The C code initializes a Duktape context, compiles the script, gets a
-reference to <tt>processLine</tt> and then proceeds to process lines.</p>
+<p>The C code, <tt>processlines.c</tt> initializes a Duktape context,
+compiles the script, gets a reference to <tt>processLine()</tt> and
+then proceeds to process lines from stdin.</p>
 <pre class="c-code">
 /* processlines.c */
 #include &lt;stdio.h&gt;
@@ -185,7 +186,7 @@ $ gcc -o test -Isrc/ src/duktape.c processlines.c -lm
 <p>Test run:</p>
 <pre>
 $ echo "I like *Sam &amp; Max*." | ./processlines
-I like &lt;b&gt;Sam &amp;<!-- avoidind double decode is tricky -->&#35;38; Max&lt;/b&gt;.
+I like &lt;b&gt;Sam &amp;<!-- avoiding double decode is tricky -->&#35;38; Max&lt;/b&gt;.
 </pre>
 
 <h3>Calling C code from Ecmascript (Duktape/C bindings)</h3>

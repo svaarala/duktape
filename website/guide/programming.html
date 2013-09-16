@@ -290,12 +290,11 @@ in which case call arguments are not modified prior to C function entry.</p>
     thrown.  Error codes named <tt>DUK_RET_xxx</tt> map to specific kinds
     of errors (do not confuse these with <tt>DUK_ERR_xxx</tt> which are
     positive values).</li>
+<li>A return value higher than 1 is currently undefined, as Ecmascript
+    doesn't support multiple return values in Edition 5.1.  (Values higher
+    than 1 may be taken into to support multiple return values in Ecmascript
+    Edition 6.)</li>
 </ul>
-
-<p>A return value higher than 1 is currently undefined, as Ecmascript
-doesn't support multiple return values in Edition 5.1.  (Values higher
-than 1 may be taken into to support multiple return values in Ecmascript
-Edition 6.)</p>
 
 <p>A negative error return value is intended to simplify common error
 handling, and is an alternative to constructing and throwing an error
@@ -312,42 +311,41 @@ int my_func(duk_context *ctx) {
 }
 </pre>
 
-<h3>Strictness</h3>
-
-<p>All Duktape/C functions are always "strict".  For instance, attempt to
-delete a non-configurable property using <tt>duk_del_prop()</tt> will
-cause an error to be thrown.  This is the case with a strict Ecmascript
-function too:</p>
+<p>All Duktape/C functions are considered <b>strict</b> in the
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">Ecmascript sense</a>.
+For instance, attempt to delete a non-configurable property using <tt>duk_del_prop()</tt>
+will cause an error to be thrown.  This is the case with a strict Ecmascript function too:</p>
 
 <pre class="ecmascript-code">
 function f() {
     'use strict';
     var arr = [1, 2, 3];
-
-    // array 'length' is non-configurable
-    return delete arr.length;
+    return delete arr.length;  // array 'length' is non-configurable
 }
 
-// this throws an error because f() is strict
-print(f());
+print(f());  // this throws an error because f() is strict
 </pre>
 
-<p>All API calls made from inside a Duktape/C call thus obey Ecmascript
-strict semantics.</p>
+<p>As a consequence of Duktape/C function strictness, all Duktape API calls
+made from inside a Duktape/C call obey Ecmascript strict semantics.  However,
+when API calls are made from outside a Duktape/C function (when the call stack
+is empty), all API calls obey Ecmascript <i>non-strict</i> semantics, as this
+is the Ecmascript default.</p>
 
-<p>However, when API calls are made from outside a Duktape/C function
-(when the call stack is empty), all API calls obey Ecmascript
-<i>non-strict</i> semantics, as this is the Ecmascript default.</p>
+<p>Also as a consequence of Duktape/C function strictness, the <tt>this</tt>
+binding given to Duktape/C functions is not
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>
+as is normal for non-strict Ecmascript functions.  As an example:</p>
+<pre class="ecmascript-code">
+function strictFunc() { 'use strict'; print(typeof this); }
+function nonStrictFunc() { print(typeof this); }
 
-<h3>"This" binding and constructability of Duktape/C functions</h3>
+strictFunc.call('foo');     // prints 'string' (uncoerced)
+nonStrictFunc.call('foo');  // prints 'object' (coerced)
+</pre>
 
-<p>Duktape/C functions are always considered strict.  Because of this, the
-<tt>this</tt> binding given to them is used directly as given by the caller.
-Ecmascript semantics provide some coercion processing for the <tt>this</tt>
-binding which reaches a non-strict function.</p>
-
-<p>Duktape/C functions are currently always constructable, i.e. they can
-always be used in <tt>new Foo()</tt> expressions.  You can check whether
+<p>Duktape/C functions are currently always <b>constructable</b>, i.e. they
+can always be used in <tt>new Foo()</tt> expressions.  You can check whether
 a function was called in constructor mode as follows:</p>
 <pre class="c-code">
 static int my_func(duk_context *ctx) {
@@ -370,14 +368,28 @@ instance of the function.  Note that a certain Duktape/C function can
 be associated with multiple independent Function objects and thus
 independent states.</p>
 
-<p>A Duktape/C function can also be called as a method, e.g.:</p>
+<p>Accessing the Ecmascript Function object of a Duktape/C function
+is easy:</p>
+<pre class="c-code">
+duk_push_current_function(ctx);
+duk_get_prop_string(ctx, -1, "my_state_variable");
+</pre>
+
+<p>Another alternative for storing state is to call the Duktape/C function
+as a method and then use the <tt>this</tt> binding for storing state.  For
+instance, consider a Duktape/C function called as:</p>
 <pre class="ecmascript-code">
 foo.my_c_func()
 </pre>
 
-<p>In this case the Duktape/C function gets <tt>foo</tt> as its <tt>this</tt>
-binding, and can access the <tt>foo</tt> object with <tt>duk_push_this()</tt>.
-The object that a method "belongs to" can also be used to store state and
-parameters.  The different to using the Function object is that the same
-object is shared by all methods.</p>
+<p>When called, the Duktape/C function gets <tt>foo</tt> as its <tt>this</tt>
+binding, and one could store state directly in <tt>foo</tt>.  The difference
+to using the Function object approach is that the same object is shared by all
+methods, which has both advantages and disadvantages.</p>
+
+<p>Accessing the <tt>this</tt> binding is easy:</p>
+<pre class="c-code">
+duk_push_this(ctx);
+duk_get_prop_string(ctx, -1, "my_state_variable");
+</pre>
 
