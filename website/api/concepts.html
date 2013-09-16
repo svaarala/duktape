@@ -114,3 +114,54 @@ is really just a shorthand for <tt>obj["123"]</tt>.</p>
 accesses whenever possible, so it is preferable to use numeric array
 indices in both Ecmascript code and C code using the Duktape API.</p>
 
+<h3>Duktape/C function</h3>
+
+<p>A C function with a Duktape/C API signature can be associated with an
+Ecmascript function object, and gets called when the Ecmascript function
+object is called.  A Duktape/C API function looks as follows:</p>
+<pre class="c-code">
+int my_func(duk_context *ctx) {
+    duk_push_int(ctx, 123);
+    return 1;
+}
+</pre>
+
+<p>The function gets Ecmascript call argument in the value stack of
+<tt>ctx</tt>, with <tt>duk_get_top(ctx)</tt> indicating the number of
+arguments present on the value stack.  When creating an Ecmascript function
+object associated with a Duktape/C function, one can select the desired
+number of arguments.  Extra arguments are dropped and missing arguments
+are replaced with <tt>undefined</tt>.  A function can also be registered
+as a vararg function (by giving <tt>DUK_VARARGS</tt> as the argument count)
+in which case call arguments are not modified prior to C function entry.</p>
+
+<p>The function can return one of the following:</p>
+<ul>
+<li>Return value 1 indicates that the value on the stack top is to be
+    interpreted as a return value.</li>
+<li>Return value 0 indicates that there is no explicit return value on
+    the value stack; an <tt>undefined</tt> is returned to caller.</li>
+<li>A negative return value indicates that an error is to be automatically
+    thrown.  Error codes named <tt>DUK_RET_xxx</tt> map to specific kinds
+    of errors (do not confuse these with <tt>DUK_ERR_xxx</tt> which are
+    positive values).</li>
+</ul>
+
+<p>A return value higher than 1 is currently undefined, as Ecmascript
+doesn't support multiple return values in Edition 5.1.</p>
+
+<p>A negative error return value is intended to simplify common error
+handling, and is an alternative to constructing and throwing an error
+explicitly with Duktape API calls.  No error message can be given; a
+message is automatically constructed by Duktape.  For example:</p>
+
+<pre class="c-code">
+int my_func(duk_context *ctx) {
+    if (duk_get_top(ctx) == 0) {
+        /* throw TypeError if no arguments given */
+        return DUK_RET_TYPE_ERROR;
+    }
+    /* ... */
+}
+</pre>
+

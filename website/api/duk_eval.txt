@@ -37,6 +37,7 @@ compile
 
 =seealso
 duk_eval_string
+duk_eval_file
 
 =fixme
 Remove?

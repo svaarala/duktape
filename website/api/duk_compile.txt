@@ -137,6 +137,7 @@ compile
 
 =seealso
 duk_compile_string
+duk_compile_file
 
 =fixme
 Remove DUK_COMPILE_FUNCTION, one can simply just eval a function expression?

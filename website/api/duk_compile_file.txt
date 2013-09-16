@@ -1,0 +1,16 @@
+=proto
+void duk_compile_file(duk_context *ctx, int flags, const char *path);
+
+=stack
+[ ... ] -> [ ... function! ]
+
+=summary
+<p>Like
+<tt><a href="#duk_compile">duk_compile()</a></tt>, but the compile input
+is given as a filename.</p>
+
+=example
+duk_compile_file(ctx, 0, "test.js");
+
+=tags
+compile

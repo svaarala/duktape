@@ -64,7 +64,14 @@ struct duk_memory_functions {
 #define  DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
 </pre>
 
-<h3>Enumeration flags</h3>
+<h3>Compilation flags for duk_compile()</h3>
+<pre class="c-code">
+#define  DUK_COMPILE_EVAL                  (1 &lt;&lt; 0)    /* compile eval code (instead of program) */
+#define  DUK_COMPILE_FUNCTION              (1 &lt;&lt; 1)    /* compile function code (instead of program) */
+#define  DUK_COMPILE_STRICT                (1 &lt;&lt; 2)    /* use strict (outer) context for program, eval, or function */
+</pre>
+
+<h3>Enumeration flags for duk_enum()</h3>
 <pre class="c-code">
 /* Enumeration flags for duk_enum() */
 #define  DUK_ENUM_INCLUDE_NONENUMERABLE    (1 &lt;&lt; 0)    /* enumerate non-numerable properties in addition to enumerable */

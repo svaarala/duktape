@@ -1,0 +1,20 @@
+=proto
+void duk_eval_file(duk_context *ctx, const char *path);
+
+=stack
+[ ... ] -> [ ... result! ]
+
+=summary
+<p>Like
+<tt><a href="#duk_eval">duk_eval()</a></tt>, but the eval input
+is given as a filename.</p>
+
+=example
+duk_eval_string(ctx, "test.js");
+printf("result is: '%s'\n", duk_get_string(ctx, -1));
+duk_pop(ctx);
+
+=tags
+compile
+
+=macro
