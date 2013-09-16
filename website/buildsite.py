@@ -424,6 +424,7 @@ def generateApiDoc(apidocdir, apitestdir):
 	navlinks.append(['#notation', 'Notation'])
 	navlinks.append(['#defines', 'Header definitions'])
 	navlinks.append(['#bytag', 'API calls by tag'])
+	navlinks.append(['', u'\u00a0'])  # XXX: force vertical space
 	for filename in apifiles:
 		funcname = os.path.splitext(os.path.basename(filename))[0]
 		navlinks.append(['#' + funcname, funcname])
@@ -546,7 +547,7 @@ def generateGuide():
 	navlinks = []
 	navlinks.append(['#introduction', 'Introduction'])
 	navlinks.append(['#gettingstarted', 'Getting started'])
-	navlinks.append(['#concepts', 'Concepts'])
+	navlinks.append(['#programming', 'Programming model'])
 	navlinks.append(['#types', 'Types'])
 	navlinks.append(['#finalization', 'Finalization'])
 	navlinks.append(['#coroutines', 'Coroutines'])
@@ -570,7 +571,7 @@ def generateGuide():
 	# FIXME
 	res += processRawDoc('guide/intro.html')
 	res += processRawDoc('guide/gettingstarted.html')
-	res += processRawDoc('guide/concepts.html')
+	res += processRawDoc('guide/programming.html')
 	res += processRawDoc('guide/types.html')
 	res += processRawDoc('guide/finalization.html')
 	res += processRawDoc('guide/coroutines.html')

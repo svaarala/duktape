@@ -62,7 +62,7 @@ $ ./duk /tmp/fib.js
 Cleaning up...
 </pre>
 
-<h3>Integrating into your own project</h3>
+<h3>Integrating Duktape into your program</h3>
 
 <p>The command line tool is simply an example of a program which embeds
 Duktape.  Embedding Duktape into your program is very simple: just add
@@ -101,13 +101,11 @@ the control flow of your program.  The basic approach is:</p>
     Duktape context's value stack for C code to consume.</li>
 </ul>
 
-<h3>Duktape integration example</h3>
-
-<p>Let's look at a simple line processing program.  The program reads in a
-line using a C mainloop,calls an Ecmascript helper to transform the line,
-and prints out the transformed line.  The line processing function can take
-advantage of Ecmascript goodies like regular expressions, and can be easily
-modified.</p>
+<p>Let's look at a simple example program.  The program reads in a line using
+a C mainloop, calls an Ecmascript helper to transform the line, and prints out
+the transformed line.  The line processing function can take advantage of
+Ecmascript goodies like regular expressions, and can be easily modified
+without recompiling the C program.</p>
 
 <p>The script code will be placed in <tt>/tmp/script.js</tt>.  The example
 line processing function converts a plain text line into HTML, and
@@ -265,26 +263,8 @@ You can also detect it when the code is actually called which is more flexible.
 </p>
 
 <p>A native helper with functionality equivalent to <tt>primeCheckEcmascript</tt>
-can be implemented as:</p>
-<pre class="c-code">
-static int native_prime_check(duk_context *ctx) {
-    int val = duk_require_int(ctx, 0);
-    int lim = duk_require_int(ctx, 1);
-    int i;
-
-    for (i = 2; i &lt;= lim; i++) {
-        if (val % i == 0) {
-            duk_push_false(ctx);
-            return 1;
-        }
-    }
-
-    duk_push_true(ctx);
-    return 1;
-}
-</pre>
-
-<p>Putting it all together into C source <tt>primecheck.c</tt>:</p>
+is quite straightforward to implement.  Adding a program main we get
+<tt>primecheck.c</tt>:</p>
 <pre class="c-code">
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;

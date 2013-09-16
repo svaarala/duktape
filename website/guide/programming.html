@@ -1,0 +1,314 @@
+<hr> <!-- this improves readability on e.g. elinks and w3m -->
+<h2 id="programming">Programming model</h2>
+
+FIXME: growing/checking the value stack
+
+<h3>Overview</h3>
+
+<p>Programming with Duktape is quite straightforward:</p>
+<ul>
+<li>Add Duktape source (<tt>duktape.c</tt>) and header (<tt>duktape.h</tt>)
+    to your build.</li>
+<li>Create a Duktape <b>heap</b> (a garbage collection region) and an initial
+    <b>context</b> (essentially a thread handle) in your program.</li>
+<li>Load the necessary Ecmascript script files, and register your Duktape/C
+    functions.  Duktape/C functions are C functions you can call from
+    Ecmascript code for better performance, bindings to native libraries, etc.</li>
+<li>Use the Duktape API to call Ecmascript functions whenever appropriate.
+    Duktape API is used to pass values to and from functions.  Values are
+    converted between their C representation and the Duktape internal
+    (Ecmascript compatible) representation.</li>
+<li>Duktape API is also used by Duktape/C functions to access call arguments
+    and to provide return values.</li>
+</ul>
+
+<p>Let's look at all the steps and their related concepts in more detail.</p>
+
+<h3>Heap and context</h3>
+
+<p>A Duktape <b>heap</b> is a single region for garbage collection.  A heap
+is used to allocate storage for strings, Ecmascript objects, and other
+variable size, garbage collected data.  Objects in the heap have an internal
+heap header which provides the necessary information for reference counting,
+mark-and-sweep garbage collection, object finalization, etc.</p>
+
+<p>Heap objects can reference each other, creating a reachability graph from
+a garbage collection perspective.  For instance, the properties of an Ecmascript
+object reference both the keys and values of the object's property set.  You can
+have multiple heaps, but objects in different heaps cannot reference each other
+directly; you need to use serialization to pass values between heaps.</p>
+
+<p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which "lives"
+in a certain Duktape heap.  A context is represented by a <tt>duk_context *</tt>
+in the Duktape API, and is associated with an internal Duktape coroutine (a form
+of a co-operative thread).  The context handle is given to almost every Duktape
+API call, and allows the caller to interact with the <b>value stack</b> of the
+Duktape coroutine: values can be inserted and queries, functions can be called,
+and so on.</p>
+
+<p>Each coroutine has a <b>call stack</b> which controls execution, keeping
+track of function calls, native or Ecmascript, within the Ecmascript engine.
+Each coroutine also has a <b>value stack</b> which stores all the Ecmascript
+values of the coroutine's active call stack.  The value stack always has an
+active <b>stack frame</b> for the most recent function call (when no function
+calls have been made, the active stack frame is the value stack as is).
+The Duktape API calls operate almost exclusively in the currently active
+stack frame.  A coroutine also has an internal <b>catch stack</b> which is used
+to track error catching sites established using e.g. <tt>try-catch-finally</tt>
+blocks.  This is not visible to the caller in any way at the moment.</p>
+
+<p>Multiple contexts can share the same Duktape <b>heap</b>.  In more concrete
+terms this means that multiple contexts can share the same garbage collection
+state, and can exchange object references safely.  Contexts in different heaps
+cannot exchange direct object references; all values must be serialized in one
+way or another.</p>
+
+<p>Almost every API call provided by the Duktape API takes a context pointer
+as its first argument: no global variables or states are used, and there are
+no restrictions on running multiple, independent Duktape heaps and contexts
+at the same time.  There are multi-threading restrictions, however: only one
+native thread can execute any code within a single heap at any time.</p>
+
+<p>To create a Duktape heap and an initial context inside the heap, you can
+simply use:</p>
+<pre class="c-code">
+duk_context *ctx = duk_create_heap_default();
+if (!ctx) { exit(1); }
+</pre>
+
+<p>If you wish to provide your own memory allocation functions and a fatal
+error handler function (recommended), use:</p>
+<pre class="c-code">
+duk_context *ctx = duk_create_heap(my_alloc,
+                                   my_realloc,
+                                   my_free,
+                                   my_udata,
+                                   my_fatal);
+if (!ctx) { exit(1); }
+</pre>
+
+<p>To create additional contexts inside the same heap:</p>
+<pre class="c-code">
+duk_context *new_ctx;
+
+(void) duk_push_thread(ctx);
+new_ctx = duk_get_context(ctx, -1 /*index*/);
+</pre>
+
+<p>Contexts are automatically garbage collected when they become unreachable.
+This also means that if your C code holds a <tt>duk_context *</tt>, the
+corresponding Duktape coroutine MUST be reachable from a garbage collection
+point of view.</p>
+
+<p>A heap must be destroyed explicitly when the caller is done with it:</p>
+<pre class="c-code">
+duk_destroy_heap(ctx);
+</pre>
+
+<h3>Call stack and catch stack (of a context)</h3>
+
+<p>The call stack of a context is not directly visible to the caller.
+It keeps track of the chain of function calls, either C or Ecmascript,
+currently executing in a context.  The main purpose of this book-keeping is
+to facilitate the passing of arguments and results between function callers
+and callees, and to keep track of how the value stack is divided between
+function calls.  The call stack also allows Duktape to construct a traceback
+for errors.</p>
+
+<p>Closely related to the call stack, Duktape also maintains a catch stack
+for keeping track of current error catching sites established using e.g.
+<tt>try-catch-finally</tt>.  The catch stack is even less visible to the
+caller than the call stack.</p>
+
+<p>Because Duktape supports tail calls, the call stack does not always
+accurately represent the true call chain: tail calls will be "squashed"
+together in the call stack.</p>
+
+<div class="note">Don't confuse with the C call stack.</div>
+
+<h3>Value stack (of a context) and value stack index</h3>
+
+<p>The value stack of a context is an array of tagged type values related
+to the current execution state of a coroutine.  The tagged types used are:
+<tt>undefined</tt>, <tt>null</tt>, boolean, number, string, object, buffer,
+and pointer.  For a detailed discussion of the available tagged types, see
+<a href="#types">Types</a>.</p>
+
+<p>The value stack is divided between the currently active function calls
+(activations) on the coroutine's call stack.  At any time, there is an active
+stack frame which provides an origin for indexing elements on the stack.
+More concretely, at any time there is a <b>bottom</b> which is referred
+to with the index zero in the Duktape API.  There is also a conceptual
+<b>top</b> which identifies the stack element right above the highest
+currently used element.  The following diagram illustrates this:</p>
+<pre>
+ Value stack
+ of 10 entries
+ (absolute indices)
+
+.----.
+| 15 |
+| 14 |
+| 13 |
+| 12 |      Active stack frame (indices
+| 11 |      relative to stack bottom)
+| 10 |
+|  9 |      .---.
+|  8 |      | 5 |   API index 0 is bottom (at value stack index 3).
+|  7 |      | 4 |
+|  6 |      | 3 |   API index 5 is highest used (at value stack index 8).
+|  5 |      | 2 |   
+|  4 |      | 1 |   Stack top is 6 (relative to stack bottom).
+|  3 | &lt;--- | 0 |
+|  2 |      `---'
+|  1 |
+|  0 |
+`----'
+</pre>
+
+<p>There is no direct way to refer to elements in the internal value stack:
+Duktape API always deals with the currently active stack frame.  Stack frames
+are shown horizontally throughout the documentation for space reasons.  For
+example, the active stack frame in the figure above would be shown as:</p>
+<pre class="stack">
+[ 0 1 2 3 4 5 ]
+</pre>
+
+<p>A <b>value stack index</b> is a signed integer index used in the Duktape
+API to refer to elements in currently active stack frame, relative to the
+current frame bottom.</p>
+
+<p>Non-negative (&gt;= 0) indices refer to stack entries in the
+current stack frame, relative to the frame bottom:</p>
+
+<pre class="stack">
+[ 0 1 2 3 4 5! ]
+</pre>
+
+<p>Negative (&lt; 0) indices refer to stack entries relative to the top:</p>
+
+<pre class="stack">
+[ -6 -5 -4 -3 -2 -1! ]
+</pre>
+
+<p>The special constant <tt>DUK_INVALID_INDEX</tt> is a negative integer
+which denotes an invalid stack index.  It can be returned from API calls
+and can also be given to API calls to indicate a "no value".</p>
+
+<p>The <b>value stack top</b> (or just "top") is the non-negative index of
+an imaginary element just above the highest used index.  For instance, above
+the highest used index is 5, so the stack top is 6.  The top indicates the
+current stack size, and is also the index of the next element pushed to the
+stack.</p>
+
+<pre class="stack">
+[ 0 1 2 3 4 5! 6? ]
+</pre>
+
+<div class="note">
+<p>API stack operations are always confined to the current stack frame.
+There is no way to refer to stack entries below the current frame.  This
+is intentional, as it protects functions in the call stack from affecting
+each other's values.</p>
+</div>
+
+<div class="note">Don't confuse with the C stack.</div>
+
+<h3>Growing the value stack</h3>
+
+<p>FIXME.</p>
+
+<h3>Ecmascript array index</h3>
+
+<p>Ecmascript object and array keys can only be strings.  Array indices
+(e.g. 0, 1, 2) are represented as canonical string representations of the
+respective numbers.  More technically, all canonical string representations
+of the integers in the range [0, 2**32-1] are valid array indices.</p>
+
+<p>To illustrate the Ecmascript array index handling, consider the following
+example:</p>
+
+<pre class="ecmascript-code">
+var arr = [ 'foo', 'bar', 'quux' ];
+
+print(arr[1]);     // refers to 'bar'
+print(arr["1"]);   // refers to 'bar'
+
+print(arr[1.0]);   // refers to 'bar', canonical encoding is "1"
+print(arr["1.0"]); // undefined, not an array index
+</pre>
+
+<p>Some API calls operating on Ecmascript arrays accept numeric array index
+arguments.  This is really just a short hand for denoting a string conversion
+of that number.  For instance, if the API is given the integer 123, this
+really refers to the property name "123".</p>
+
+<p>Internally, Duktape tries to avoid converting numeric indices to actual
+strings whenever possible, so it is preferable to use array index API calls
+when they are relevant.  Similarly, when writing Ecmascript code it is
+preferable to use numeric rather than string indices, as the same fast path
+applies for Ecmascript code.</p>
+
+<h3>Duktape API</h3>
+
+<p>The Duktape API calls are generally error tolerant and will check all
+arguments for errors (such as <tt>NULL</tt> pointers).  However, to minimize
+footprint, the <tt>ctx</tt> argument is not checked, and the caller MUST NOT
+call any Duktape API calls with a <tt>NULL</tt> context.</p>
+
+<p>For details on the available API calls, please see the
+<a href="api.html">API reference</a>.</p>
+
+<h3>Duktape/C function</h3>
+
+<p>A C function with a Duktape/C API signature can be associated with an
+Ecmascript function object, and gets called when the Ecmascript function
+object is called.  A Duktape/C API function looks as follows:</p>
+<pre class="c-code">
+int my_func(duk_context *ctx) {
+    duk_push_int(ctx, 123);
+    return 1;
+}
+</pre>
+
+<p>The function gets Ecmascript call argument in the value stack of
+<tt>ctx</tt>, with <tt>duk_get_top(ctx)</tt> indicating the number of
+arguments present on the value stack.  When creating an Ecmascript function
+object associated with a Duktape/C function, one can select the desired
+number of arguments.  Extra arguments are dropped and missing arguments
+are replaced with <tt>undefined</tt>.  A function can also be registered
+as a vararg function (by giving <tt>DUK_VARARGS</tt> as the argument count)
+in which case call arguments are not modified prior to C function entry.</p>
+
+<p>The function can return one of the following:</p>
+<ul>
+<li>Return value 1 indicates that the value on the stack top is to be
+    interpreted as a return value.</li>
+<li>Return value 0 indicates that there is no explicit return value on
+    the value stack; an <tt>undefined</tt> is returned to caller.</li>
+<li>A negative return value indicates that an error is to be automatically
+    thrown.  Error codes named <tt>DUK_RET_xxx</tt> map to specific kinds
+    of errors (do not confuse these with <tt>DUK_ERR_xxx</tt> which are
+    positive values).</li>
+</ul>
+
+<p>A return value higher than 1 is currently undefined, as Ecmascript
+doesn't support multiple return values in Edition 5.1.  (Values higher
+than 1 may be taken into to support multiple return values in Ecmascript
+Edition 6.)</p>
+
+<p>A negative error return value is intended to simplify common error
+handling, and is an alternative to constructing and throwing an error
+explicitly with Duktape API calls.  No error message can be given; a
+message is automatically constructed by Duktape.  For example:</p>
+
+<pre class="c-code">
+int my_func(duk_context *ctx) {
+    if (duk_get_top(ctx) == 0) {
+        /* throw TypeError if no arguments given */
+        return DUK_RET_TYPE_ERROR;
+    }
+    /* ... */
+}
+</pre>
+
