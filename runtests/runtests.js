@@ -240,7 +240,7 @@ function executeTest(options, callback) {
         // FIXME: listing specific options here is awkward, must match Makefile
         cmd = [ 'gcc', '-o', tempExe,
                 '-L.',
-                '-Idist/src-combined',
+                '-Idist/src',
                 '-Wl,-rpath,.',
                 '-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
                 '-g', '-ggdb',
