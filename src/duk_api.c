@@ -1764,6 +1764,7 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 		DUK_ASSERT(h_str != NULL);
 
 		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
+		DUK_ASSERT(buf != NULL);
 		memcpy(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
 		duk_replace(ctx, index);
 	}
@@ -2283,6 +2284,51 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
 		duk_push_null(ctx);
 		return NULL;
 	}
+}
+
+/* This is a bit clunky because it is ANSI C portable.  Should perhaps
+ * relocate to another file because this is potentially platform
+ * dependent.
+ */
+const char *duk_push_string_file(duk_context *ctx, const char *path) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	FILE *f = NULL;
+	char *buf;
+	long sz;
+
+	DUK_ASSERT(ctx != NULL);
+	if (!path) {
+		goto fail;
+	}
+	f = fopen(path, "rb");
+	if (!f) {
+		goto fail;
+	}
+	if (fseek(f, 0, SEEK_END) < 0) {
+		goto fail;
+	}
+	sz = ftell(f);
+	if (sz < 0) {
+		goto fail;
+	}
+	if (fseek(f, 0, SEEK_SET) < 0) {
+		goto fail;
+	}
+	buf = duk_push_fixed_buffer(ctx, sz);
+	DUK_ASSERT(buf != NULL);
+	if (fread(buf, 1, sz, f) != sz) {
+		goto fail;
+	}
+	(void) fclose(f);  /* ignore fclose() error */
+	f = NULL;
+	return duk_to_string(ctx, -1);
+
+ fail:
+	if (f) {
+		fclose(f);
+	}
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "failed to read file");
+	return NULL;
 }
 
 void duk_push_pointer(duk_context *ctx, void *val) {

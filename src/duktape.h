@@ -229,6 +229,7 @@ void duk_push_number(duk_context *ctx, double val);
 void duk_push_nan(duk_context *ctx);
 void duk_push_int(duk_context *ctx, int val);
 const char *duk_push_string(duk_context *ctx, const char *str);
+const char *duk_push_string_file(duk_context *ctx, const char *path);
 const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len);
 void duk_push_pointer(duk_context *ctx, void *p);
 const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
@@ -467,6 +468,18 @@ void duk_compile(duk_context *ctx, int flags);
 #define  duk_compile_string(ctx,flags,str)  \
 	do { \
 		(void) duk_push_string((ctx),(str)); \
+		duk_compile((ctx), (flags)); \
+	} while (0)
+
+#define  duk_eval_file(ctx,path)  \
+	do { \
+		(void) duk_push_string_file((ctx),(path)); \
+		duk_eval((ctx)); \
+	} while (0)
+
+#define  duk_compile_file(ctx,flags,str)  \
+	do { \
+		(void) duk_push_string_file((ctx),(path)); \
 		duk_compile((ctx), (flags)); \
 	} while (0)
 
