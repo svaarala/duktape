@@ -309,9 +309,6 @@ static int native_prime_check(duk_context *ctx) {
 
 int main(int argc, const char *argv[]) {
     duk_context *ctx = NULL;
-    char line[4096];
-    char idx;
-    int ch;
 
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
