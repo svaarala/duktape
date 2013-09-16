@@ -1,24 +1,5 @@
 /*===
---- top=0
-top=0, idx=0, type 0 -> (null)
---- top=3
-top=3, idx=0, type 5 -> foo
-top=3, idx=1, type 5 -> bar
-top=3, idx=2, type 5 -> quux
-top=3, idx=3, type 0 -> (null)
---- top=5
-top=5, idx=0, type 5 -> foo
-top=5, idx=1, type 5 -> bar
-top=5, idx=2, type 5 -> quux
-top=5, idx=3, type 1 -> undefined
-top=5, idx=4, type 1 -> undefined
-top=5, idx=5, type 0 -> (null)
---- top=2
-top=2, idx=0, type 5 -> foo
-top=2, idx=1, type 5 -> bar
-top=2, idx=2, type 0 -> (null)
---- top=0
-top=0, idx=0, type 0 -> (null)
+FIXME
 ===*/
 
 void print_stack(duk_context *ctx) {
@@ -108,9 +89,6 @@ int test_5(duk_context *ctx) {
 
 	return 0;
 }
-
-
-
 
 void test(duk_context *ctx) {
 	int rc;
