@@ -312,3 +312,72 @@ int my_func(duk_context *ctx) {
 }
 </pre>
 
+<h3>Strictness</h3>
+
+<p>All Duktape/C functions are always "strict".  For instance, attempt to
+delete a non-configurable property using <tt>duk_del_prop()</tt> will
+cause an error to be thrown.  This is the case with a strict Ecmascript
+function too:</p>
+
+<pre class="ecmascript-code">
+function f() {
+    'use strict';
+    var arr = [1, 2, 3];
+
+    // array 'length' is non-configurable
+    return delete arr.length;
+}
+
+// this throws an error because f() is strict
+print(f());
+</pre>
+
+<p>All API calls made from inside a Duktape/C call thus obey Ecmascript
+strict semantics.</p>
+
+<p>However, when API calls are made from outside a Duktape/C function
+(when the call stack is empty), all API calls obey Ecmascript
+<i>non-strict</i> semantics, as this is the Ecmascript default.</p>
+
+<h3>"This" binding and constructability of Duktape/C functions</h3>
+
+<p>Duktape/C functions are always considered strict.  Because of this, the
+<tt>this</tt> binding given to them is used directly as given by the caller.
+Ecmascript semantics provide some coercion processing for the <tt>this</tt>
+binding which reaches a non-strict function.</p>
+
+<p>Duktape/C functions are currently always constructable, i.e. they can
+always be used in <tt>new Foo()</tt> expressions.  You can check whether
+a function was called in constructor mode as follows:</p>
+<pre class="c-code">
+static int my_func(duk_context *ctx) {
+    if (duk_is_constructor_call(ctx)) {
+        printf("called as a constructor\n");
+    } else {
+        printf("called as a function\n");
+    }
+}
+</pre>
+
+<h3>Storing state for a Duktape/C function</h3>
+
+<p>A Duktape/C function can use its Function object to store state or
+parameters.  A certain Duktape/C function (the actual C function)
+is always represented by an Ecmascript Function object which is
+magically associated with the underlying C function.   The Function
+object can be used to store properties related to that particular
+instance of the function.  Note that a certain Duktape/C function can
+be associated with multiple independent Function objects and thus
+independent states.</p>
+
+<p>A Duktape/C function can also be called as a method, e.g.:</p>
+<pre class="ecmascript-code">
+foo.my_c_func()
+</pre>
+
+<p>In this case the Duktape/C function gets <tt>foo</tt> as its <tt>this</tt>
+binding, and can access the <tt>foo</tt> object with <tt>duk_push_this()</tt>.
+The object that a method "belongs to" can also be used to store state and
+parameters.  The different to using the Function object is that the same
+object is shared by all methods.</p>
+
