@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: decide on a module import mechanism
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-13 21:17:10.688901 Z
+references: []
+
+id: 5c6d981574ec825af59dc7210881253545121a76
+log_events: 
+- - 2013-09-13 21:17:10.869821 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

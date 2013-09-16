@@ -1,0 +1,32 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement a basic debugger interface
+desc: |-
+  Some ideas:
+  
+  * Ability to control execution
+  
+  * Call stack inspection: current call chain, files, lines, etc
+  
+  * Register inspection for Ecmascript functions (through register map)
+  
+  * Expression evaluation at current point of execution
+  
+  * Interface with some existing debugging toolkit so that IDE can be
+    reused
+  
+    - Example: http://www.eclipse.org/articles/Article-Debugger/how-to.html
+type: :task
+component: duk
+release: 
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-16 19:19:34.437809 Z
+references: []
+
+id: 025a205e4402f86a9f19f9f8f9ec034cffce04fa
+log_events: 
+- - 2013-09-16 19:19:35.077787 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""

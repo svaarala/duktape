@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add some api examples to distributable source
+title: freebsd 10 compile fixes (endian.h at least)
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.6
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-06-20 21:05:00.276111 Z
+creation_time: 2013-09-16 00:01:23.931782 Z
 references: []
 
-id: 9144c48a26216e7514eb80bd7cde5956166b2351
+id: d789a31c88e99d89c6653ba57b7857a194b511e0
 log_events: 
-- - 2013-06-20 21:05:00.817074 Z
+- - 2013-09-16 00:01:24.323669 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
-- - 2013-09-08 20:42:06.257282 Z
+- - 2013-09-16 00:43:17.237607 Z
   - sva <sami.vaarala@poplatek.fi>
   - closed with disposition fixed
   - ""

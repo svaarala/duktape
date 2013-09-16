@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add some api examples to distributable source
-desc: ""
+title: api call to compile from file?
+desc: This is platform specific, will depend on ANSI I/O.
 type: :task
 component: duk
 release: v0.6
 reporter: sva <sami.vaarala@poplatek.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-06-20 21:05:00.276111 Z
+creation_time: 2013-09-14 09:07:37.118033 Z
 references: []
 
-id: 9144c48a26216e7514eb80bd7cde5956166b2351
+id: 9c280e03f2212df93c389b640c0a964f0e5bd3a0
 log_events: 
-- - 2013-06-20 21:05:00.817074 Z
+- - 2013-09-14 09:07:37.331035 Z
   - sva <sami.vaarala@poplatek.fi>
   - created
   - ""
-- - 2013-09-08 20:42:06.257282 Z
+- - 2013-09-16 01:10:59.991152 Z
   - sva <sami.vaarala@poplatek.fi>
   - closed with disposition fixed
-  - ""
+  - Implemented.
