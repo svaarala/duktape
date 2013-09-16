@@ -2,12 +2,12 @@
 
 <h1 class="main-title">Duktape</h1>
 
-<p>Duktape is an <b>embeddable Javascript</b> (Ecmascript E5/E5.1) engine,
+<p>Duktape is an <b>embeddable Javascript</b> engine,
 with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
 
-<p>Duktape is easy to integrate into a C/C++ project: add a set of C
-files to your build script.  It's also easy to call Ecmascript functions
-from C code and vice versa.</p> 
+<p>Duktape is easy to integrate into a C/C++ project: add <tt>duktape.c</tt>
+and <tt>duktape.h</tt> to your build and call Duktape API from your program.
+It's also easy to call Ecmascript functions from C code and vice versa.</p> 
 
 <p>Main features:</p>
 <ul>
@@ -22,10 +22,8 @@ from C code and vice versa.</p>
 
 <p>Current status:</p>
 <ul>
-<li>Alpha</li>
+<li>Alpha: functional, API in flux</li>
 </ul>
-
-<div class="fixme">Clean up.</div>
 
 </div>  <!-- front-blurp -->
 
@@ -34,19 +32,29 @@ from C code and vice versa.</p>
 <h2><span class="step">1</span> Add to build</h2>
 
 <p>Add Duktape C sources and headers to your build.  Any build system can
-be used.  The distributable contains an example Makefile for reference.</p>
+be used.  The distributable contains an example Makefile for reference.
+In the simplest case:</p>
+
+<pre>
+$ gcc -o test test.c duktape.c -lm
+$ ./test
+Hello world!
+</pre>
 
 <h2><span class="step">2</span> Initialize a context</h2>
 
 <p>Initialize and use Duktape somewhere in your program:</p>
 
 <pre class="c-code">
+/* test.c */
 #include &quot;duktape.h&quot;
 
-duk_context *ctx = duk_create_heap_default();
-duk_push_string(ctx, "print('Hello world from Javascript!');");
-duk_eval(ctx);
-duk_destroy_heap(ctx);
+int main(int argc, char *argv[]) {
+  duk_context *ctx = duk_create_heap_default();
+  duk_eval_string(ctx, "print('Hello world!');");
+  duk_destroy_heap(ctx);
+  return 0;
+}
 </pre>
 
 <h2><span class="step">3</span> Add C function bindings</h2>
@@ -55,17 +63,17 @@ duk_destroy_heap(ctx);
 C function:</p>
 
 <pre class="c-code">
-int my_adder(duk_context *ctx) {
-    int i;
-    int n = duk_get_top(ctx);  /* number of args */
-    double res = 0.0;
+int adder(duk_context *ctx) {
+  int i;
+  int n = duk_get_top(ctx);  /* #args */
+  double res = 0.0;
 
-    for (i = 0; i &lt; n; i++) {
-        res += duk_to_number(ctx, i);
-    }
+  for (i = 0; i &lt; n; i++) {
+    res += duk_to_number(ctx, i);
+  }
 
-    duk_push_number(ctx, res);
-    return 1;  /* one return value */
+  duk_push_number(ctx, res);
+  return 1;  /* one return value */
 }
 </pre>
 
@@ -73,16 +81,15 @@ int my_adder(duk_context *ctx) {
 
 <pre class="c-code">
 duk_push_global_object(ctx);
-duk_push_new_c_function(ctx, my_adder, DUK_VARARGS);
-duk_put_prop_string(ctx, -2, "myAdder");
+duk_push_c_function(ctx, adder, DUK_VARARGS);
+duk_put_prop_string(ctx, -2, "adder");
 duk_pop(ctx);  /* pop global */
 </pre>
 
 <p>You can then call your function from Ecmascript code:</p>
 
 <pre class="c-code">
-duk_push_string(ctx, "print('2+3 is', myAdder(2, 3));");
-duk_eval(ctx);
+duk_eval_string(ctx, "print('2+3=' + adder(2, 3));");
 duk_pop(ctx);  /* pop eval result */
 </pre>
 

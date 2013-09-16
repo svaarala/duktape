@@ -137,21 +137,6 @@ reference to <tt>processLine</tt> and then proceeds to process lines.</p>
 #include &lt;string.h&gt;
 #include "duktape.h"
 
-static void load_script(duk_context *ctx) {
-    char buf[4096];
-    FILE *f;
-    size_t got;
-
-    f = fopen("script.js", "rb");
-    if (!f) { exit(1); }
-    got = fread(buf, 1, sizeof(buf), f);
-    fclose(f);
-
-    duk_push_lstring(ctx, buf, got);
-    duk_eval(ctx);
-    duk_pop(ctx);  /* pop eval result */
-}
-
 int main(int argc, const char *argv[]) {
     duk_context *ctx = NULL;
     char line[4096];
@@ -161,7 +146,8 @@ int main(int argc, const char *argv[]) {
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
 
-    load_script(ctx);
+    duk_eval_file(ctx, "script.js");
+    duk_pop(ctx);  /* pop eval result */
 
     memset(line, 0, sizeof(line));
     idx = 0;
@@ -305,21 +291,6 @@ static int native_prime_check(duk_context *ctx) {
 #include &lt;string.h&gt;
 #include "duktape.h"
 
-static void load_script(duk_context *ctx) {
-    char buf[4096];
-    FILE *f;
-    size_t got;
-
-    f = fopen("prime.js", "rb");
-    if (!f) { exit(1); }
-    got = fread(buf, 1, sizeof(buf), f);
-    fclose(f);
-
-    duk_push_lstring(ctx, buf, got);
-    duk_eval(ctx);
-    duk_pop(ctx);  /* pop eval result */
-}
-
 static int native_prime_check(duk_context *ctx) {
     int val = duk_require_int(ctx, 0);
     int lim = duk_require_int(ctx, 1);
@@ -349,8 +320,9 @@ int main(int argc, const char *argv[]) {
     duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
     duk_put_prop_string(ctx, -2, "primeCheckNative");
 
-    load_script(ctx);
- 
+    duk_eval_file(ctx, "prime.js");
+    duk_pop(ctx);  /* pop eval result */
+
     duk_get_prop_string(ctx, -1, "primeTest");
     duk_call(ctx, 0);
     duk_pop(ctx);

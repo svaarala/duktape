@@ -548,6 +548,8 @@ def generateGuide():
 	navlinks.append(['#gettingstarted', 'Getting started'])
 	navlinks.append(['#concepts', 'Concepts'])
 	navlinks.append(['#types', 'Types'])
+	navlinks.append(['#finalization', 'Finalization'])
+	navlinks.append(['#coroutines', 'Coroutines'])
 	navlinks.append(['#limitations', 'Limitations'])
 	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
 	for nav in navlinks:
@@ -570,6 +572,8 @@ def generateGuide():
 	res += processRawDoc('guide/gettingstarted.html')
 	res += processRawDoc('guide/concepts.html')
 	res += processRawDoc('guide/types.html')
+	res += processRawDoc('guide/finalization.html')
+	res += processRawDoc('guide/coroutines.html')
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
 

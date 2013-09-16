@@ -64,13 +64,18 @@
 	color: #cccccc;
 }
 
-#site-top-nav ul li.selected {
+#site-top-nav ul li a {
+	color: #cccccc;
+	text-decoration: none;
+}
+
+#site-top-nav ul li.selected a {
 	color: #ffffff;
 	text-shadow: 3px 3px 3px #000000;
 	filter: dropshadow(color=#000000, offx=3, offy=3);
 }
 
-#site-top-nav ul li:hover {
+#site-top-nav ul li a:hover {
 	color: #9999ff;
 	text-shadow: 3px 3px 3px #000000;
 	filter: dropshadow(color=#000000, offx=3, offy=3);

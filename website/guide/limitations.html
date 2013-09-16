@@ -16,10 +16,10 @@ can change over time).</p>
 
 <h3>String limits</h3>
 
-<p>The internal representation allows a maximum length of 2**32-1 *bytes*
-for strings.  16-bit codepoints encode into 3 bytes of UTF-8 in the worst
-case, so the maximum string length which is guaranteed to work is about
-1.4G characters.</p>
+<p>The internal representation allows a maximum length of 2**32-1 <i>bytes</i>
+(not characters) for strings.  16-bit codepoints encode into 3 bytes of UTF-8
+in the worst case, so the maximum string length which is guaranteed to work is
+about 1.4G characters.</p>
 
 <h3>Property limits</h3>
 
@@ -76,5 +76,60 @@ compliance concern, but degrades performance.</p>
 <h3>Compiler performance for inner functions</h3>
 
 <p>Compiler needs multiple passes over the same function.  Inner functions
-are scanned ``2**n`` times, where ``n`` is the function level (0, 1, ...).</p>
+are scanned <tt>2**n</tt> times, where <tt>n</tt> is the function level
+(0, 1, ...).</p>
 
+<h3>Global/eval code is slower than function code</h3>
+
+<p>Bytecode generated for global and eval code cannot assign variables
+statically to registers, and will use explicit name-based variable
+read/write accesses.  Bytecode generated for function code doesn't
+have this limitation; most variables are assigned statically to registers
+and direct register references are used used to access them.</p>
+
+<p>This is a minor issue unless you spend a lot of time running top-level
+global/eval code.  The workaround is simple: put code in a function which
+you call from the top level; for instance:</p>
+<pre class="ecmascript-code">
+function main() {
+    // ...
+}
+main();
+</pre>
+
+<p>There is also a common idiom of using an anonymous function for this
+purpose:</p>
+<pre class="ecmascript-code">
+(function () {
+    // ...
+})();
+</pre>
+
+<h3>Function temporaries may be live for garbage collection longer than expected</h3>
+
+<p>Ecmascript functions are compiled into bytecode with a fixed set of
+registers.  Some registers are reserved for arguments and variable
+bindings while others are used as temporaries.  All registers are
+considered live from a garbage collection perspective, even temporary
+registers containing old values which the function actually cannot
+reference any more.  Such temporaries are considered reachable until they
+are overwritten by the evaluation of another expression or until the
+function exits.  Function exit is the only easily predicted condition to
+ensure garbage collection.</p>
+
+<p>If you have a function which remains running for a very long time, it
+should contain the bare minimum of variables and temporaries that could
+remain live.  For instance, you can structure code like:</p>
+<pre class="ecmascript-code">
+function runOnce() {
+    // run one iteration, lots of temporaries
+}
+
+function foreverLoop() {
+    for (;;) {
+        runOnce();
+    }
+}
+</pre>
+
+<p>This is typically not an issue if there are no long-running functions.</p>
