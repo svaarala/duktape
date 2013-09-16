@@ -1,106 +1,21 @@
 #
 #  Example Makefile for building a program with embedded Duktape.
 #
-#  There are two alternatives to building Duktape:
+#  There are two source sets in the distribution: combined sources where
+#  you only need duktape.c and duktape.h, and separate sources where you
+#  have a bunch of source and header files.  Whichever you use, simply
+#  include the relevant sources into your C project.  This Makefile uses
+#  the combined source file.
 #
-#    1) with a "combined" source: duktape.c and duktape.h
-#    2) with separate sources: a bunch of source and header files
-#
-#  Whichever you use, simply include the relevant sources into your
-#  C project.  This Makefile uses the combined source file.
 
-# Combined sources - compile from a single file
-DUKTAPE_SOURCES_COMBINED = src-combined/duktape.c
-
-# Separate sources
-DUKTAPE_SOURCES_SEPARATE =	\
-	src-separate/duk_util_hashbytes.c \
-	src-separate/duk_util_hashprime.c \
-	src-separate/duk_util_bitdecoder.c \
-	src-separate/duk_util_bitencoder.c \
-	src-separate/duk_util_tinyrandom.c \
-	src-separate/duk_util_misc.c \
-	src-separate/duk_alloc_default.c \
-	src-separate/duk_debug_macros.c \
-	src-separate/duk_debug_vsnprintf.c \
-	src-separate/duk_debug_heap.c \
-	src-separate/duk_debug_hobject.c \
-	src-separate/duk_debug_fixedbuffer.c \
-	src-separate/duk_error_macros.c \
-	src-separate/duk_error_longjmp.c \
-	src-separate/duk_error_throw.c \
-	src-separate/duk_error_fatal.c \
-	src-separate/duk_error_augment.c \
-	src-separate/duk_error_misc.c \
-	src-separate/duk_heap_misc.c \
-	src-separate/duk_heap_memory.c \
-	src-separate/duk_heap_alloc.c \
-	src-separate/duk_heap_refcount.c \
-	src-separate/duk_heap_markandsweep.c \
-	src-separate/duk_heap_hashstring.c \
-	src-separate/duk_heap_stringtable.c \
-	src-separate/duk_heap_stringcache.c \
-	src-separate/duk_hthread_misc.c \
-	src-separate/duk_hthread_alloc.c \
-	src-separate/duk_hthread_builtins.c \
-	src-separate/duk_hthread_stacks.c \
-	src-separate/duk_hobject_alloc.c \
-	src-separate/duk_hobject_class.c \
-	src-separate/duk_hobject_enum.c \
-	src-separate/duk_hobject_props.c \
-	src-separate/duk_hobject_finalizer.c \
-	src-separate/duk_hobject_pc2line.c \
-	src-separate/duk_hobject_misc.c \
-	src-separate/duk_hbuffer_alloc.c \
-	src-separate/duk_hbuffer_ops.c \
-	src-separate/duk_unicode_tables.c \
-	src-separate/duk_unicode_support.c \
-	src-separate/duk_strings.c \
-	src-separate/duk_builtins.c \
-	src-separate/duk_js_ops.c \
-	src-separate/duk_js_var.c \
-	src-separate/duk_numconv.c \
-	src-separate/duk_api_call.c \
-	src-separate/duk_api_compile.c \
-	src-separate/duk_api_codec.c \
-	src-separate/duk_api_memory.c \
-	src-separate/duk_api_string.c \
-	src-separate/duk_api_object.c \
-	src-separate/duk_api_thread.c \
-	src-separate/duk_api_buffer.c \
-	src-separate/duk_api_var.c \
-	src-separate/duk_api.c \
-	src-separate/duk_lexer.c \
-	src-separate/duk_js_call.c \
-	src-separate/duk_js_executor.c \
-	src-separate/duk_js_compiler.c \
-	src-separate/duk_regexp_compiler.c \
-	src-separate/duk_regexp_executor.c \
-	src-separate/duk_builtin_duk.c \
-	src-separate/duk_builtin_thread.c \
-	src-separate/duk_builtin_thrower.c \
-	src-separate/duk_builtin_array.c \
-	src-separate/duk_builtin_boolean.c \
-	src-separate/duk_builtin_date.c \
-	src-separate/duk_builtin_error.c \
-	src-separate/duk_builtin_function.c \
-	src-separate/duk_builtin_global.c \
-	src-separate/duk_builtin_json.c \
-	src-separate/duk_builtin_math.c \
-	src-separate/duk_builtin_number.c \
-	src-separate/duk_builtin_object.c \
-	src-separate/duk_builtin_regexp.c \
-	src-separate/duk_builtin_string.c
-
-DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
+DUKTAPE_SOURCES = src-combined/duktape.c
 
 # Compiler options are quite flexible.  GCC versions have a significant impact
 # on the size of -Os code, e.g. gcc-4.6 is much worse than gcc-4.5.
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./src-combined  # for combined sources
-#CCOPTS += -I./src-separate  # for separate sources
+CCOPTS += -I./src  # for combined sources
 CCLIBS	= -lm
 
 # These should not be needed but you might consider them

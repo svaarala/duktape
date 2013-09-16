@@ -35,9 +35,9 @@ Hello world!
 </pre>
 
 <p>You can also run Ecmascript code from a file which is useful for playing with
-features and algorithms.  As an example, create <tt>/tmp/fib.js</tt>:</p>
+features and algorithms.  As an example, create <tt>fib.js</tt>:</p>
 <pre class="ecmascript-code">
-// /tmp/fib.js
+// fib.js
 function fib(n) {
     if (n == 0) { return 0; }
     if (n == 1) { return 1; }
@@ -57,7 +57,7 @@ test();
 
 <p>Test the script from the command line:</p>
 <pre>
-$ ./duk /tmp/fib.js
+$ ./duk fib.js
 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181
 Cleaning up...
 </pre>
@@ -73,7 +73,7 @@ Duktape API from elsewhere in your program.</p>
 which illustrates this process.  Compile the test program e.g. as:</p>
 <pre>
 $ cd /tmp/duktape-0.6.0/
-$ gcc -o test -Isrc-combined/ src-combined/duktape.c test.c -lm
+$ gcc -o test -Isrc/ src/duktape.c test.c -lm
 </pre>
 
 <p>The test program creates a Duktape context and uses it to run some
@@ -179,7 +179,7 @@ int main(int argc, const char *argv[]) {
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o test -Isrc-combined/ src-combined/duktape.c processlines.c -lm
+$ gcc -o test -Isrc/ src/duktape.c processlines.c -lm
 </pre>
 
 <p>Test run:</p>
@@ -312,7 +312,7 @@ int main(int argc, const char *argv[]) {
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o test -Isrc-combined/ src-combined/duktape.c primecheck.c -lm
+$ gcc -o test -Isrc/ src/duktape.c primecheck.c -lm
 </pre>
 
 <p>Test run:</p>

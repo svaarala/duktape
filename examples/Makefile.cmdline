@@ -2,15 +2,13 @@
 #  Example Makefile for building a program with embedded Duktape.
 #  The example program here is the Duktape command line tool.
 
-DUKTAPE_SOURCES_COMBINED = src-combined/duktape.c
+DUKTAPE_SOURCES = src/duktape.c
 
 DUKTAPE_CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
 	examples/cmdline/duk_ncurses.c \
 	examples/cmdline/duk_socket.c \
 	examples/cmdline/duk_fileio.c
-
-DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer

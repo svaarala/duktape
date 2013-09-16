@@ -15,7 +15,7 @@
 VERSION=0.6.0
 
 DISTSRCSEP = dist/src-separate
-DISTSRCCOM = dist/src-combined
+DISTSRCCOM = dist/src
 DISTCMD = dist/examples/cmdline
 
 DUKTAPE_SOURCES_COMBINED =	\
@@ -142,7 +142,7 @@ DUK_CMDLINE_TOOLS_DEBUG = \
 # Compiler setup for Linux
 CC	= gcc
 CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
-CCOPTS_SHARED += -I./dist/src-combined
+CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 CCOPTS_SHARED += -I/usr/include/ncurses            # for cmdline tool

@@ -7,7 +7,7 @@
 VERSION=0.6.0
 
 DISTSRCSEP = dist/src-separate
-DISTSRCCOM = dist/src-combined
+DISTSRCCOM = dist/src
 DISTCMD = dist/examples/cmdline
 
 clean:

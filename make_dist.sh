@@ -15,13 +15,13 @@
 #
 #    4. Compile their program (which uses Duktape API).
 #
-#  In addition to sources, documentation, example programs, an example
-#  Makefile, and test cases are packaged into the dist package.
+#  In addition to sources, documentation, example programs, and some
+#  example Makefiles are packaged into the dist package.
 #
 
 DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
-DISTSRCCOM=$DIST/src-combined
+DISTSRCCOM=$DIST/src
 
 # FIXME
 if [ -f .git ]; then
@@ -38,7 +38,7 @@ echo "Creating distributable sources to: $DIST"
 rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
-mkdir $DIST/src-combined
+mkdir $DIST/src
 mkdir $DIST/doc
 mkdir $DIST/licenses
 mkdir $DIST/examples
