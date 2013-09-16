@@ -27,6 +27,10 @@
 #  throwing and other diagnostic info will work in a useful manner when
 #  deployed.
 #
+#  Making the process deterministic is important, so that if users have
+#  diffs that they apply to the combined source, such diffs would apply
+#  for as long as possible.
+#
 #  Limitations and notes:
 #
 #    * #defines are not #undef'd at the end of an input file, so defines
@@ -204,7 +208,9 @@ def main():
 
 	print 'Read input files'
 	files = []
-	for fn in os.listdir(sys.argv[1]):
+	filelist = os.listdir(sys.argv[1])
+	filelist.sort()  # for consistency
+	for fn in filelist:
 		if os.path.splitext(fn)[1] not in [ '.c', '.h' ]:
 			continue
 		res = read(os.path.join(sys.argv[1], fn))
