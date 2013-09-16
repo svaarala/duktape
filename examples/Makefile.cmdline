@@ -12,7 +12,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./src-combined
+CCOPTS += -I./src
 CCLIBS	= -lm
 
 # For the command line tool

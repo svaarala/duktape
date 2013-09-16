@@ -8,7 +8,7 @@
 #  the combined source file.
 #
 
-DUKTAPE_SOURCES = src-combined/duktape.c
+DUKTAPE_SOURCES = src/duktape.c
 
 # Compiler options are quite flexible.  GCC versions have a significant impact
 # on the size of -Os code, e.g. gcc-4.6 is much worse than gcc-4.5.
