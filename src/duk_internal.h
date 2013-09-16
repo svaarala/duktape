@@ -9,26 +9,27 @@
 #define DUK_INTERNAL_H_INCLUDED
 
 /*
- *  Feature selection defines must appear before any system headers
- *  are included.  This is a good place, because all implementation
- *  files include duk_internal.h only.
+ *  Feature selection defines (e.g. _XOPEN_SOURCE) must appear before any
+ *  system headers are included.  On the other hand, some platform detection
+ *  requires header inclusion (like <endian.h>).  The current approach is
+ *  that duk_features.h is included first, and it is responsible for doing
+ *  feature selection before including any other headers it needs.
+ *
+ *  In any case, all implementation files include duk_internal.h first, so
+ *  feature selection defines get set correctly.
  */
 
-/* XXX: these should be cleaned up and match whatever is actually included.
- * The actual defines depend on Duktape features (in particular, which Date
- * backend is used), however, duk_features.h already requires some system
- * headers for endianness and the like.
- */
-
-#define  _POSIX_C_SOURCE  200809L
-#define  _GNU_SOURCE      /* e.g. getdate_r */
-#define  _XOPEN_SOURCE    /* e.g. strptime */
+#include "duk_features.h"
 
 /*
  *  System includes
+ *
+ *  This is currently the set of headers that we include on all platforms.
+ *  Platform specific headers are included in duk_features.h.  The set of
+ *  included files should be more precise, so perhaps these all should go
+ *  to duk_features.h.
  */
 
-/* these need to be cleaned up eventually to be more precise */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,10 +39,9 @@
 #include <stdint.h>
 
 /*
- *  Duktape includes
+ *  Duktape includes (other than duk_features.h)
  */
 
-#include "duk_features.h"
 #include "duk_misc.h"
 #include "duk_rdtsc.h"
 #include "duk_bittypes.h"

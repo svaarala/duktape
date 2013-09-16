@@ -1,15 +1,22 @@
 /*
- *  Determines the build-time feature defines to be used, based on
- *  DUK_PROFILE, other user-supplied defines, and feature detection.
- *  Defines individual DUK_USE_XXX defines which are (only) checked
- *  in internal code.
+ *  Determine platform features, select feature selection defines
+ *  (e.g. _XOPEN_SOURCE), and define DUK_USE_XXX defines which are
+ *  (only) checked in Duktape internal code for activated features.
+ *  Duktape feature selection is based on DUK_PROFILE, other user
+ *  supplied defines, and automatic feature detection.
  *
- *  This is included before anything else.
+ *  This is included before anything else.  Feature selection defines
+ *  (e.g. _XOPEN_SOURCE) must be defined before any system headers
+ *  are included.  This file is included by duk_internal.h before it
+ *  includes anything else.  We're responsible for first setting feature
+ *  selection defines but after that we can include other headers as
+ *  needed.
  *
  *  Useful resources:
  *
  *    http://sourceforge.net/p/predef/wiki/Home/
  *    http://sourceforge.net/p/predef/wiki/Architectures/
+ *    http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
  *
  *  FIXME: at the moment there is no direct way of configuring
  *  or overriding individual settings.
@@ -20,14 +27,40 @@
 
 #include "duk_rdtsc.h"  /* DUK_RDTSC_AVAILABLE */
 
+/* FIXME: remove _DUK_C99 and _DUK_BSD, prefer no names beginning with
+ * underscore.
+ */
+
 /*
- *  Feature detection (produce feature defines, but don't use them yet)
+ *  Compiler features
  */
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #define  _DUK_C99
 #else
 #undef   _DUK_C99
+#endif
+
+/*
+ *  Intermediate platform detection
+ */
+
+/* FIXME: reconcile with direct detection below */
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
+    defined(__bsdi__) || defined(__DragonFly__)
+#define  _DUK_BSD
+#endif
+
+/*
+ *  Feature selection defines (e.g. _XOPEN_SOURCE)
+ *
+ *  MUST be set before ANY system headers are included!
+ */
+
+#if defined(__linux)
+#define  _POSIX_C_SOURCE  200809L
+#define  _GNU_SOURCE      /* e.g. getdate_r */
+#define  _XOPEN_SOURCE    /* e.g. strptime */
 #endif
 
 /*
@@ -43,9 +76,12 @@
  * detection for unhandled cases.
  */
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <architecture/byte_order.h>
+#elif defined(_DUK_BSD)
+#include <sys/endian.h>
 #else
+/* Linux and hopefully others */
 #include <endian.h>
 #endif
 
@@ -291,9 +327,15 @@
 #endif
 
 /*
- *  Platform specific defines
+ *  Date built-in platform primitive selection
  *
- *  http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+ *  This is a direct platform dependency which is difficult to eliminate.
+ *  Select provider through defines, and then include necessary system
+ *  headers so that duk_builtin_date.c compiles.
+ *
+ *  FIXME: add a way to provide custom functions to provide the critical
+ *  primitives; this would be convenient when porting to unknown platforms
+ *  (rather than muck with Duktape internals).
  */
 
 /* NOW = getting current time (required)
@@ -336,6 +378,20 @@
 #error platform not supported
 #endif
 
+#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
+#include <sys/time.h>
+#endif
+
+#if defined(DUK_USE_DATE_TZO_GMTIME) || \
+    defined(DUK_USE_DATE_PRS_STRPTIME) || \
+    defined(DUK_USE_DATE_FMT_STRFTIME)
+/* just a sanity check */
+#if defined(__linux) && !defined(_XOPEN_SOURCE)
+#error expected _XOPEN_SOURCE to be defined here
+#endif
+#include <time.h>
+#endif
+
 #else  /* DUK_PROFILE > 0 */
 
 /*
@@ -348,9 +404,9 @@
 /* FIXME: An alternative approach to customization would be to include
  * some user define file at this point.  The user file could then modify
  * the base settings.  Something like:
-#ifdef DUK_CUSTOM_HEADER
-#include "duk_custom.h"
-#endif
+ * #ifdef DUK_CUSTOM_HEADER
+ * #include "duk_custom.h"
+ * #endif
  */
 
 /*

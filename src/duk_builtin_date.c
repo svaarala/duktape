@@ -12,21 +12,12 @@
 
 /*
  *  Platform specific includes and defines
+ *
+ *  Note that necessary system headers (like <sys/time.h>) are included
+ *  by duk_internal.h (or duk_features.h, which is included by duk_internal.h)
+ *  because the header locations vary between systems and we don't want
+ *  that clutter here.
  */
-
-#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-#include <sys/time.h>
-#endif
-
-#if defined(DUK_USE_DATE_TZO_GMTIME) || \
-    defined(DUK_USE_DATE_PRS_STRPTIME) || \
-    defined(DUK_USE_DATE_FMT_STRFTIME)
-/* duk_internal.h should ensure this is the case */
-#ifndef _XOPEN_SOURCE
-#error expected _XOPEN_SOURCE to be defined here
-#endif
-#include <time.h>
-#endif
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 #define  GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
