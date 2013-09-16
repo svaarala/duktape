@@ -54,14 +54,14 @@ state, and can exchange object references safely.  Contexts in different heaps
 cannot exchange direct object references; all values must be serialized in one
 way or another.</p>
 
-<h3>Call stack</h3>
+<h3>Call stack (of a context)</h3>
 
 <p>Call stack of a context: book-keeping of the chain of function
 calls (either native or Ecmascript) in a context.</p>
 
 <div class="note">Don't confuse with the C call stack.</div>
 
-<h3>Value stack</h3>
+<h3>Value stack (of a context)</h3>
 
 <p>Value stack of a context: book-keeping of tagged values related
 to a context.</p>
@@ -100,6 +100,10 @@ stack frame.  There is no way to refer to stack entries below th
 current frame.  This is intentional, as it protects functions in the
 call stack from affecting each other's values.</p>
 
+<h3>Stack type</h3>
+
+<h3>Stack type mask</h3>
+
 <h3>Array index</h3>
 
 <p>Ecmascript object and array keys can only be strings.  Array indices
@@ -130,4 +134,6 @@ strings whenever possible, so it is preferable to use array index API calls
 when they are relevant.  Similarly, when writing Ecmascript code it is
 preferable to use numeric rather than string indices, as the same fast path
 applies for Ecmascript code.</p>
+
+<h3>Duktape/C function</h3>
 
