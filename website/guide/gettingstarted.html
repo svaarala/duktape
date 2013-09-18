@@ -15,7 +15,7 @@ Duktape development.</p>
 <p>Unpack the distributable:</p>
 <pre>
 $ cd /tmp
-$ tar xvfJ ~/duktape-&lt;version&gt;.tar.xz
+$ tar xvfJ duktape-&lt;version&gt;.tar.xz
 </pre>
 
 <p>Compile the command line tool using the provided Makefile (your system
@@ -88,7 +88,7 @@ Hello world!
 </pre>
 
 <p>Because Duktape is an embeddable interpreter, you don't need to change
-the control flow of your program.  The basic approach is:</p>
+the basic control flow of your program.  The basic approach is:</p>
 <ul>
 <li>Create a Duktape context e.g. in program initialization
     (or even on-demand when scripting is needed).  Usually you
@@ -110,12 +110,12 @@ the transformed line.  The line processing function can take advantage of
 Ecmascript goodies like regular expressions, and can be easily modified
 without recompiling the C program.</p>
 
-<p>The script code will be placed in <tt>script.js</tt>.  The example
+<p>The script code will be placed in <tt>process.js</tt>.  The example
 line processing function converts a plain text line into HTML, and
 automatically bolds text between stars:</p>
 
 <pre class="ecmascript-code">
-// script.js
+// process.js
 function processLine(line) {
     return line.trim()
         .replace(/[&lt;&gt;&amp;"'\u0000-\u001F\u007E-\uFFFF]/g, function(x) {
@@ -130,8 +130,8 @@ function processLine(line) {
 </pre>
 
 <p>The C code, <tt>processlines.c</tt> initializes a Duktape context,
-compiles the script, gets a reference to <tt>processLine()</tt> and
-then proceeds to process lines from stdin.</p>
+compiles the script, then proceeds to process lines from <tt>stdin</tt>,
+calling <tt>processLine()</tt> for every line:</p>
 <pre class="c-code">
 /* processlines.c */
 #include &lt;stdio.h&gt;
@@ -148,7 +148,7 @@ int main(int argc, const char *argv[]) {
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
 
-    duk_eval_file(ctx, "script.js");
+    duk_eval_file(ctx, "process.js");
     duk_pop(ctx);  /* pop eval result */
 
     memset(line, 0, sizeof(line));
@@ -217,6 +217,7 @@ int my_native_func(duk_context *ctx) {
     double arg = duk_require_number(ctx, 0 /*index*/);  /* read 1st arg */
     duk_push_number(ctx, arg * arg);  /* push arg^2 */
     return 1;  /* return value on top of stack, i.e. arg^2 */
+}
 </pre>
 
 <p>We'll use a primality test as an example for using native code to speed
@@ -260,11 +261,9 @@ back to an Ecmascript version if it's not.  This allows the Ecmascript code
 to be used in other containing programs.  Also, if the prime check program
 is ported to another platform where the native version does not compile
 without changes, the program remains functional (though slower) until the
-helper is ported.</p>
-
-<p>In this case the native helper detection happens when the script is loaded.
-You can also detect it when the code is actually called which is more flexible.
-</p>
+helper is ported.  In this case the native helper detection happens when the
+script is loaded.  You can also detect it when the code is actually called
+which is more flexible.</p>
 
 <p>A native helper with functionality equivalent to <tt>primeCheckEcmascript</tt>
 is quite straightforward to implement.  Adding a program main we get

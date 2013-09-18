@@ -168,6 +168,19 @@ properties accessible using standard Ecmascript strings.  Non-standard strings
 can be given to Ecmascript built-in functions, but since behavior may not be exactly
 specified, results may vary.</p>
 
+<p>Duktape uses internal object properties to record internal implementation
+related fields in e.g. function objects.  For example, a finalizer reference is
+stored in an internal finalizer property.  Such internal keys are kept separate
+from valid Ecmascript keys by using a byte sequence which can never occur in
+a valid CESU-8 string; consequently, standard Ecmascript code cannot accidentally
+reference such fields.  Internal properties are never enumerable, and are not
+returned by e.g. <tt>Object.getOwnPropertyNames()</tt>.  Currently, internal
+property names begin with an <tt>0xFF</tt> byte followed by the property name.
+For instance the finalizer property key consists of the byte <tt>0xFF</tt>
+followed by the ASCII string <tt>"finalizer"</tt>.  In internal documentation
+this property would usually be referred to as <tt>_finalizer</tt> for convenience.
+You should never read or write internal properties directly.</p>
+
 <p>The "extended UTF-8" encoding used by Duktape is described in the table below.
 The leading byte is shown in binary (with "x" marking data bits) while
 continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</p>

@@ -38,6 +38,12 @@ duk&gt; t = /(x*)*/.exec('y');
 Error: Error: regexp executor recursion limit reached (rc=1) [ignored]
 </pre>
 
+<h3>Regexp dollar escape</h3>
+
+<p>The Duktape RegExp syntax allows dollar escaping (e.g. <tt>/\$/</tt>)
+even though it is not allowed by the E5.1 specification.  RegExp dollar
+escapes are used in existing Ecmascript code quite widely.</p>
+
 <h3>Invalid stack indices</h3>
 
 <p>The internal implementation for some stack operations (like

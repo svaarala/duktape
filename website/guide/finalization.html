@@ -1,9 +1,14 @@
 <hr> <!-- this improves readability on e.g. elinks and w3m -->
 <h2 id="finalization">Finalization</h2>
 
-<p>An object which has an internal <tt>_finalizer</tt> property in
-its prototype chain is subject to finalization before being freed.
-The finalizer may be triggered by either reference counting or
+<p><b>(This section is incomplete.)</b></p>
+
+<h3>Overview of finalization</h3>
+
+<p>An object which has an internal finalizer property in its prototype
+chain (or the object itself) is subject to finalization before being freed.
+The internal finalizer property is set using <tt>__duk__.setFinalizer()</tt>
+method.  The finalizer may be triggered by either reference counting or
 mark-and-sweep.</p>
 
 <p>The finalizer method is called with the target object as its sole
@@ -17,7 +22,9 @@ can currently be any coroutine in the heap.  (This will be fixed in the future.)
 
 <!-- FIXME: comment on whether or not finalizers are run multiple times -->
 
-<p>Example:</p>
+<h3>Example</h3>
+
+<p>Finalization example:</p>
 <pre class="ecmascript-code">
 // finalize.js
 var a;
