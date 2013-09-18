@@ -39,7 +39,7 @@ rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
 mkdir $DIST/src
-mkdir $DIST/doc
+#mkdir $DIST/doc
 mkdir $DIST/licenses
 mkdir $DIST/examples
 mkdir $DIST/examples/hello
