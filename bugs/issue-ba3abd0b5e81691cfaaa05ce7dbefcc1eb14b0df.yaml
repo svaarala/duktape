@@ -9,7 +9,7 @@ desc: "The correct algorithm is in E5.1 Section 15.9.1.9:\n\n\
 type: :bugfix
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-02-20 20:28:10.528642 Z
@@ -18,6 +18,6 @@ references: []
 id: ba3abd0b5e81691cfaaa05ce7dbefcc1eb14b0df
 log_events: 
 - - 2013-02-20 20:28:10.772216 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

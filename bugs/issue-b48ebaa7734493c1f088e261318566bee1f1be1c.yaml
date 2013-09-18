@@ -12,7 +12,7 @@ desc: |-
 type: :task
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-03-08 22:55:37.885811 Z
@@ -21,11 +21,11 @@ references: []
 id: b48ebaa7734493c1f088e261318566bee1f1be1c
 log_events: 
 - - 2013-03-08 22:55:38.530826 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-03-11 15:08:24.376731 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - commented
   - |-
     There is a beginning of such a helper in duk_builtin_global.c,

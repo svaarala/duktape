@@ -9,7 +9,7 @@ desc: |-
 type: :task
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-02-26 14:23:14.610402 Z
@@ -18,11 +18,11 @@ references: []
 id: 0bfc892356da41337a6bc98098f1c9546084e840
 log_events: 
 - - 2013-02-26 14:23:14.802338 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-03-05 13:10:07.477603 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - commented
   - "Apparently String case conversions (toLowerCase() and toUpperCase()) should\n\
     normally NOT use locale/language information.  Locale-specific case conversions\n\
@@ -34,6 +34,6 @@ log_events:
     do with respect to locales.  String functions like toLowerCase() and\n\
     toLocaleLowerCase() must use the appropriate flags."
 - - 2013-03-05 13:30:33.268995 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - commented
   - Update test-builtin-string-proto-tolowercase.js and other case conversion tests.

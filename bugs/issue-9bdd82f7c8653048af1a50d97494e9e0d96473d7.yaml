@@ -7,7 +7,7 @@ desc: |-
 type: :task
 component: duk
 release: v0.5
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
 creation_time: 2013-03-30 21:52:18.711782 Z
@@ -16,10 +16,10 @@ references: []
 id: 9bdd82f7c8653048af1a50d97494e9e0d96473d7
 log_events: 
 - - 2013-03-30 21:52:18.922953 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-05-16 19:53:23.692025 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

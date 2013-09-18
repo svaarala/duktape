@@ -13,7 +13,7 @@ desc: |-
 type: :bugfix
 component: duk
 release: v0.2
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
 creation_time: 2013-02-26 09:43:27.849051 Z
@@ -22,11 +22,11 @@ references: []
 id: 12f3fcbbfec4e6e3829dcf19b19c4a654ded6696
 log_events: 
 - - 2013-02-26 09:43:28.238012 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-02-26 11:45:13.570119 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - |-
     Fixed by adding SETTEMP_CHECKMAX() which is used only during pass 2

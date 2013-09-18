@@ -4,7 +4,7 @@ desc: Running number or actual release version number?
 type: :task
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-08-01 21:44:32.560376 Z
@@ -13,10 +13,10 @@ references: []
 id: 9d85f1bbe6512e4c2e760cb6fd7d30169072d4da
 log_events: 
 - - 2013-08-01 21:44:32.716870 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-08-02 15:00:08.407098 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
   - ""

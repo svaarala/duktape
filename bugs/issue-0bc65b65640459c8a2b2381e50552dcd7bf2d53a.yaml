@@ -4,7 +4,7 @@ desc: Built-in indices are named similarly (DUK_BIDX_XXX).
 type: :task
 component: duk
 release: v0.2
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
 creation_time: 2013-02-26 13:10:51.931395 Z
@@ -13,10 +13,10 @@ references: []
 id: 0bc65b65640459c8a2b2381e50552dcd7bf2d53a
 log_events: 
 - - 2013-02-26 13:10:52.112391 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-02-26 16:05:31.167697 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

@@ -4,7 +4,7 @@ desc: Also update regexp.txt.
 type: :task
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-02-27 10:18:39.087412 Z
@@ -13,6 +13,6 @@ references: []
 id: e320d89503cf411ea27d64a40e4785c22923d815
 log_events: 
 - - 2013-02-27 10:18:39.343222 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

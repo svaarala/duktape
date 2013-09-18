@@ -4,7 +4,7 @@ desc: "For instance: duk_less_than(), duk_same_value()."
 type: :task
 component: duk
 release: v0.8
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-08-17 22:03:43.901460 Z
@@ -13,6 +13,6 @@ references: []
 id: c92ae992e029de8676526128ed127bd38b8ad2ed
 log_events: 
 - - 2013-08-17 22:03:44.074415 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

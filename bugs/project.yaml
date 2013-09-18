@@ -11,11 +11,11 @@ releases:
   release_time: 2013-02-14 00:00:00 Z
   log_events: 
   - - 2013-02-14 00:00:00 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
   - - 2013-02-14 00:00:00 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -24,11 +24,11 @@ releases:
   release_time: 2013-02-27 16:25:31.310841 Z
   log_events: 
   - - 2013-02-17 01:38:12.567901 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
   - - 2013-02-27 16:25:31.310863 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -37,11 +37,11 @@ releases:
   release_time: 2013-03-16 19:50:09.615167 Z
   log_events: 
   - - 2013-02-17 01:38:22.089104 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
   - - 2013-03-16 19:50:09.615174 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -50,11 +50,11 @@ releases:
   release_time: 2013-03-31 21:58:37.814216 Z
   log_events: 
   - - 2013-02-27 14:50:50.048912 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
   - - 2013-03-31 21:58:37.814237 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -63,11 +63,11 @@ releases:
   release_time: 2013-05-23 18:02:18.765167 Z
   log_events: 
   - - 2013-03-02 12:10:01.617306 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
   - - 2013-05-23 18:02:18.765185 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -76,7 +76,7 @@ releases:
   release_time: 
   log_events: 
   - - 2013-03-12 22:06:52.926144 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -85,7 +85,7 @@ releases:
   release_time: 
   log_events: 
   - - 2013-07-30 22:33:36.876643 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
@@ -94,6 +94,6 @@ releases:
   release_time: 
   log_events: 
   - - 2013-07-30 22:33:49.557961 Z
-    - sva <sami.vaarala@poplatek.fi>
+    - sva <sami.vaarala@iki.fi>
     - created
     - ""

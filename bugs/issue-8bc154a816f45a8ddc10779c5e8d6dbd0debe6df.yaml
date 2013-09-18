@@ -4,7 +4,7 @@ desc: Fix and add corner case test cases.
 type: :task
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-03-11 16:01:42.774179 Z
@@ -13,22 +13,22 @@ references: []
 id: 8bc154a816f45a8ddc10779c5e8d6dbd0debe6df
 log_events: 
 - - 2013-03-11 16:01:42.979101 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-03-15 21:31:56.663051 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.4 from v0.3
   - ""
 - - 2013-03-28 21:43:37.899360 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.5 from v0.4
   - ""
 - - 2013-04-21 19:31:56.075199 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.6 from v0.5
   - ""
 - - 2013-08-02 15:00:05.527046 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
   - ""

@@ -11,7 +11,7 @@ desc: |-
 type: :task
 component: duk
 release: v0.2
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
 creation_time: 2013-02-26 12:47:20.878984 Z
@@ -20,7 +20,7 @@ references: []
 id: 6f72bf0fef73cc5c4e4578ef439d0d2ae730d2a0
 log_events: 
 - - 2013-02-26 12:48:13.690994 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - |-
     Before this fix, test-dev-bug-const-overflow.js caused a valgrind caused
@@ -28,6 +28,6 @@ log_events:
     caused invalid opcodes to be emitted (constant accesses are then confused
     with register accesses).
 - - 2013-02-26 14:03:39.192399 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

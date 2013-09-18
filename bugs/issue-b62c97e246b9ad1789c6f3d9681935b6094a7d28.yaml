@@ -4,7 +4,7 @@ desc: http://test262.ecmascript.org/
 type: :task
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-03-21 09:52:03.643261 Z
@@ -13,6 +13,6 @@ references: []
 id: b62c97e246b9ad1789c6f3d9681935b6094a7d28
 log_events: 
 - - 2013-03-21 09:52:03.840577 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

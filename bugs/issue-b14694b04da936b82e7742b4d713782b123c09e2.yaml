@@ -13,7 +13,7 @@ desc: |-
 type: :task
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-03-25 09:32:20.972490 Z
@@ -22,6 +22,6 @@ references: []
 id: b14694b04da936b82e7742b4d713782b123c09e2
 log_events: 
 - - 2013-03-25 09:32:21.276458 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

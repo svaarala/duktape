@@ -4,7 +4,7 @@ desc: ""
 type: :task
 component: duk
 release: v0.4
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
 creation_time: 2013-02-20 02:26:25.665248 Z
@@ -13,15 +13,15 @@ references: []
 id: 3e1ee87fcc3abb5110cd4d1afd71229f2dbb145e
 log_events: 
 - - 2013-02-20 02:26:25.878167 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-02-27 14:51:53.600856 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.4 from unassigned
   - ""
 - - 2013-03-30 21:51:26.052136 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - |-
     Coercion and parameter handling behavior should be OK now, but the implementation

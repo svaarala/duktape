@@ -4,7 +4,7 @@ desc: Developer should not need to give any defines.
 type: :task
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-06-30 21:32:51.479054 Z
@@ -13,10 +13,10 @@ references: []
 id: f96e940ca162e832f96a1182947c45101da688de
 log_events: 
 - - 2013-06-30 21:32:51.668166 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-08-02 15:00:06.454892 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
   - ""

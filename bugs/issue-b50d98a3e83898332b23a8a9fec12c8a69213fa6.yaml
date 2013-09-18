@@ -4,7 +4,7 @@ desc: How to specify default handler vs. use current handler?
 type: :task
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-08-02 11:05:17.649400 Z
@@ -13,10 +13,10 @@ references: []
 id: b50d98a3e83898332b23a8a9fec12c8a69213fa6
 log_events: 
 - - 2013-08-02 11:05:17.841192 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-08-17 22:28:00.418553 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
   - ""

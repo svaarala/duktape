@@ -10,7 +10,7 @@ desc: |-
 type: :bugfix
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-08-01 21:19:35.438114 Z
@@ -19,11 +19,11 @@ references: []
 id: 7a8c6688d5b86d9d2403b286d0dc00f44fad5f7b
 log_events: 
 - - 2013-08-01 21:19:35.690953 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
 - - 2013-08-01 21:33:35.017475 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - commented
   - |-
     The string pushing implementation has a size overflow problem but also
@@ -35,6 +35,6 @@ log_events:
     than 2**32 anyway).  Another alternative is to change the internal
     string helpers to use a size_t.
 - - 2013-08-27 20:40:01.277065 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
   - ""

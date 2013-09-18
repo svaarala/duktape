@@ -4,7 +4,7 @@ desc: Currently buffer contents are never compared, even for non-strict equality
 type: :task
 component: duk
 release: v0.7
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-08-02 21:31:39.572329 Z
@@ -13,6 +13,6 @@ references: []
 id: 8282b1213cbecd4feef892d169ea71e2d7ff9c61
 log_events: 
 - - 2013-08-02 21:31:39.737295 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""

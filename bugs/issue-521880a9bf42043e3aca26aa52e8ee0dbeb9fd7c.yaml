@@ -6,7 +6,7 @@ desc: |-
 type: :bugfix
 component: duk
 release: 
-reporter: sva <sami.vaarala@poplatek.fi>
+reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
 creation_time: 2013-07-16 09:39:30.516255 Z
@@ -15,6 +15,6 @@ references: []
 id: 521880a9bf42043e3aca26aa52e8ee0dbeb9fd7c
 log_events: 
 - - 2013-07-16 09:39:31.024934 Z
-  - sva <sami.vaarala@poplatek.fi>
+  - sva <sami.vaarala@iki.fi>
   - created
   - ""
