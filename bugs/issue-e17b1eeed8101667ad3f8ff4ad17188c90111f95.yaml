@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add guide section on using coffeescript
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-18 18:32:48.519521 Z
+references: []
+
+id: e17b1eeed8101667ad3f8ff4ad17188c90111f95
+log_events: 
+- - 2013-09-18 18:32:48.663377 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
