@@ -2,27 +2,28 @@
 <h2 id="introduction">Introduction</h2>
 
 <p>Version: 0.6.0 (2013-09-XX)</p>
+<p><b>Work in progress</b></p>
 
 <h3>Document scope</h3>
 
 <p>This guide provides an introduction to using Duktape in your programs.
 Once you're familiar with the basics, there is a concise
-<a href="api.html">API reference</a> for looking up function semantics.</p>
+<a href="api.html">API reference</a> for looking up API details.</p>
 
 <h3>What is Duktape?</h3>
 
 <p>Duktape is an embeddable Ecmascript E5/E5.1 interpreter with a focus
-on portability and compact footprint.  You can extend the functionality
-of your C/C++ program by adding scripting capabilities.  You can also
-build the main control flow of your program in Ecmascript and use fast
-C code functions to do heavy lifting.</p>
+on portability and compact footprint.  By integrating Duktape into your
+C/C++ program you can easily extend its functionality through scripting.
+You can also build the main control flow of your program in Ecmascript
+and use fast C code functions to do heavy lifting.</p>
 
 <p>The terms Ecmascript and Javascript are often considered more or less
 equivalent, although Javascript and its variants are technically just one
 environment where the Ecmascript language is used.  The line between the
-two is not very clear in practice: non-browser Ecmascript environments
+two is not very clear in practice: even non-browser Ecmascript environments
 often provide some browser-specific built-ins.  Duktape is no exception,
-and provides e.g. the commonly used <tt>print()</tt> and <tt>alert()</tt>
+and provides the commonly used <tt>print()</tt> and <tt>alert()</tt>
 built-ins.  Even so, we use the term Ecmascript throughout to refer to the
 language implemented by Duktape.</p>
 
@@ -41,11 +42,14 @@ no support for its features.</p>
 <h3>Features</h3>
 
 <p>Besides standard Ecmascript features, Duktape has the following additional
-features (some are visible to applications, while others are just internal):</p>
+features (some are visible to applications, while others are internal):</p>
 <ul>
-<li>Additional built-ins: browser-borrowed <tt>print()</tt> and <tt>alert()</tt>,
-    Duktape specific built-ins in the <tt>__duk__</tt> global object</li>
-<li>Extended types: custom "buffer" and "pointer" types, extended string type which supports arbitary binary strings and non-<a href="http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">BMP</a> strings</li>
+<li>Additional built-ins: <tt>print()</tt> and <tt>alert()</tt> borrowed from
+    browsers, Duktape specific built-ins in the <tt>__duk__</tt> global object</li>
+<li>Extended types: custom "buffer" and "pointer" types, extended string type
+    which supports arbitary binary strings and
+    non-<a href="http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">BMP</a>
+    strings (standard Ecmascript only supports 16-bit codepoints)</li>
 <li>Combined reference counting and mark-and-sweep garbage collection,
     with finalizers and emergency garbage collection (you can also build
     with just reference counting or mark-and-sweep)</li>
@@ -70,7 +74,8 @@ the <tt>Date</tt> built-in.</p>
 
 <p><b>Easy C interface</b>.  The interface between Duktape and C programs
 should be natural and error-tolerant.  As a particular issue, string
-representation should be UTF-8 to match common C use.</p>
+representation should be UTF-8 with automatic NUL terminators to match
+common C use.</p>
 
 <p><b>Small footprint</b>.  Code and data footprint should be as small as
 possible, even for small programs.  This is more important than performance,
@@ -78,20 +83,21 @@ as there are already several very fast engines but fewer very compact,
 portable engines.</p>
 
 <p><b>Reasonable performance</b>.  Small footprint (and portability, to some
-extent) probably eliminates the possibility of a JIT-based engine, so there
-is no practical way of competing with very competitive JIT-based engines
-like the Mozilla engines in Firefox or Google V8.  Performance should still
-be reasonable for typical embedded programs.  <a href="http://www.lua.org/">Lua</a>
-is a good benchmark in this respect.</p>
+extent) probably eliminates the possibility of a competitive JIT-based engine,
+so there is no practical way of competing with very advanced JIT-based engines
+like SpiderMonkey (and its optimized variants) or Google V8.  Performance
+should still be reasonable for typical embedded programs.
+<a href="http://www.lua.org/">Lua</a> is a good benchmark in this respect.
+(Adding optional, modular support for JITing later would be nice.)</p>
 
 <p><b>ASCII string performance</b>.  It's important that operations dealing
-with plain ASCII strings be very fast.  Operations dealing with non-ASCII
-strings need to perform reasonably but are not critical.  This is a necessary
-trade-off: using C-compatible strings means essentially using UTF-8 string
-representation which makes string indexing and many other operations slower
-than with fixed size character representations.  It's important to support
-common idioms like iterating strings sequentially (in either direction)
-efficiently.</p>
+with plain ASCII strings be very fast: ASCII dominates most embedded use.
+Operations dealing with non-ASCII strings need to perform reasonably but are
+not critical.  This is a necessary trade-off: using C-compatible strings means
+essentially using UTF-8 string representation which makes string indexing and
+many other operations slower than with fixed size character representations.
+It's still important to support common idioms like iterating strings sequentially
+(in either direction) efficiently.</p>
 
 <h3>Document organization</h3>
 
@@ -99,15 +105,19 @@ efficiently.</p>
 compiling, and integrating Duktape into your program.  It also provides concrete
 examples of how you can integrate scripting capabilities into your program.</p>
 
-<p><a href="#concepts">Concepts</a> and <a href="#types">Types</a> discuss core
-Duktape concepts such as <i>heap</i>, <i>context</i>, and <i>value stacks</i>.
-Duktape types are discussed in detail.</p>
+<p><a href="#programming">Programming model</a> and <a href="#types">Types</a>
+discuss core Duktape concepts such as <i>heap</i>, <i>context</i>, <i>value stacks</i>,
+<i>Duktape API</i>, and <i>Duktape/C functions</i>.  Duktape types are discussed
+in detail. <b>(This is currently a bit of a jumble and will be cleaned up in a later
+release.)</b></p>
+
+<p><a href="#finalization">Finalization</a> and <a href="#coroutines">Coroutines</a>
+discuss invididual technical topics separately from the basic programming model.
+<b>(These are also very much in flux.)</b></p>
 
 <p><a href="#limitations">Limitations</a> discusses currently known limitations
 and provides possible workarounds.</p>
 
 <p><a href="#luacomparison">Comparison to Lua</a> discusses some differences
 between Lua and Duktape; it may be useful reading if you're already familiar with Lua.</p>
-
-<p><a href="#goals">Goals</a> discusses the Duktape project goals in more detail.</p>
 

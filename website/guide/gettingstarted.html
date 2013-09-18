@@ -15,12 +15,15 @@ Duktape development.</p>
 <p>Unpack the distributable:</p>
 <pre>
 $ cd /tmp
-$ tar xvfJ ~/duktape-0.6.0.tar.xz
+$ tar xvfJ ~/duktape-&lt;version&gt;.tar.xz
 </pre>
 
-<p>Compile the command line tool using the provided Makefile:</p>
+<p>Compile the command line tool using the provided Makefile (your system
+needs to have <tt>readline</tt> and <tt>ncurses</tt> library and headers
+installed):</p>
 <pre>
-$ cd /tmp/duktape-0.6.0/
+# NOTE: ensure you have readline and curses library and headers installed
+$ cd /tmp/duktape-&lt;version&gt;/
 $ make -f Makefile.cmdline
 </pre>
 
@@ -69,17 +72,17 @@ Duktape.  Embedding Duktape into your program is very simple: just add
 <tt>duktape.c</tt> and <tt>duktape.h</tt> to your build, and call the
 Duktape API from elsewhere in your program.</p>
 
-<p>The distributable contains a very simple example program, <tt>test.c</tt>,
+<p>The distributable contains a very simple example program, <tt>hello.c</tt>,
 which illustrates this process.  Compile the test program e.g. as:</p>
 <pre>
-$ cd /tmp/duktape-0.6.0/
-$ gcc -o test -Isrc/ src/duktape.c test.c -lm
+$ cd /tmp/duktape-&lt;version&gt;/
+$ gcc -o hello -Isrc/ src/duktape.c examples/hello/hello.c -lm
 </pre>
 
 <p>The test program creates a Duktape context and uses it to run some
 Ecmascript code:</p>
 <pre>
-$ ./test
+$ ./hello
 Hello world!
 2+3=5
 </pre>
@@ -180,7 +183,7 @@ int main(int argc, const char *argv[]) {
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o test -Isrc/ src/duktape.c processlines.c -lm
+$ gcc -o processlines -Isrc/ src/duktape.c processlines.c -lm
 </pre>
 
 <p>Test run:</p>
@@ -313,12 +316,12 @@ int main(int argc, const char *argv[]) {
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o test -Isrc/ src/duktape.c primecheck.c -lm
+$ gcc -o primecheck -Isrc/ src/duktape.c primecheck.c -lm
 </pre>
 
 <p>Test run:</p>
 <pre>
-$ time ./test
+$ time ./primecheck
 Have native helper: true
 49999 59999 79999 139999 179999 199999 239999 289999 329999 379999 389999
 409999 419999 529999 599999 619999 659999 679999 769999 799999 839999 989999
@@ -338,7 +341,7 @@ var primeCheckHelper = primeCheckEcmascript;
 
 <p>Re-compiling and re-running the test:</p>
 <pre>
-$ time ./test
+$ time ./primecheck
 Have native helper: false
 49999 59999 79999 139999 179999 199999 239999 289999 329999 379999 389999
 409999 419999 529999 599999 619999 659999 679999 769999 799999 839999 989999
