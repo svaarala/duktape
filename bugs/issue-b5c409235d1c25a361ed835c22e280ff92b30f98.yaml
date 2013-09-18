@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: dynamic loader and dll module convention
+desc: |-
+  This is useful but perhaps not a part of the core, embeddable concept?
+  It will be platform specific, and heavily so.
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@poplatek.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-18 18:01:33.500386 Z
+references: []
+
+id: b5c409235d1c25a361ed835c22e280ff92b30f98
+log_events: 
+- - 2013-09-18 18:01:33.668286 Z
+  - sva <sami.vaarala@poplatek.fi>
+  - created
+  - ""
