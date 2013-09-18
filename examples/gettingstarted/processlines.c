@@ -12,7 +12,7 @@ int main(int argc, const char *argv[]) {
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
 
-    duk_eval_file(ctx, "script.js");
+    duk_eval_file(ctx, "process.js");
     duk_pop(ctx);  /* pop eval result */
 
     memset(line, 0, sizeof(line));
