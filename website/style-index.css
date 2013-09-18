@@ -1,12 +1,20 @@
 #front-steps {
 	width: 45%;
 	float: right;
+
+/*
 	background: #fcfcfc;
 	border: 2px solid black;
+	border-radius: 1em;
 	box-shadow: 3px 3px 5px #bbbbbb;
 	margin: 0 1em 1em 0;
 	padding: 1em;
-	border-radius: 1em;
+*/
+
+	background: #ffffff;
+	border-left: 2px dashed #bbbbbb;
+	margin: 0 1em 1em 0;
+	padding: 1em;
 }
 
 #front-steps .step {
