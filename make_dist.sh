@@ -176,7 +176,6 @@ done
 for i in \
 	Makefile.example \
 	Makefile.cmdline \
-	test.c \
 	; do
 	cp examples/$i $DIST/
 done

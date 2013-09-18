@@ -29,7 +29,7 @@ See Makefile.example for an example::
   $ cd <dist_root>
   $ make -f Makefile.example
   [...]
-  $ ./test
+  $ ./hello
   Hello world!
   2+3=5
 

@@ -25,6 +25,6 @@ CCLIBS	= -lm
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 
-test:	$(DUKTAPE_SOURCES) test.c
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) test.c $(CCLIBS)
+hello:	$(DUKTAPE_SOURCES) examples/hello/hello.c
+	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) examples/hello/hello.c $(CCLIBS)
 
