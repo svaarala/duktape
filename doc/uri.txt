@@ -1,0 +1,60 @@
+=========================
+URI encoding and decoding
+=========================
+
+Specification notes
+===================
+
+Reserved set / unescaped set
+----------------------------
+
+The "unescaped set" for encoding and the "reserved set" for decoding always
+consist of only ASCII codepoints.  Thus comparing codepoints against the sets
+should only be necessary when processing ASCII range characters.
+
+When encoding, step 4.c will catch characters in the "unescaped set" and
+encode them as-is into the output.  Note that these can only be single-byte
+ASCII characters.  If we go to step 4.d, the codepoint may either be ASCII
+or non-ASCII, and will be escaped regardless.
+
+When decoding percent escaped codepoints, one-byte encoded codepoints (i.e.
+ASCII) are checked in step 4.d.vi; multi-byte encoded codepoints in the BMP
+range are checked in step 4.d.vii but codepoints above BMP are not checked.
+
+Apparently the idea here is to ensure no characters in the reserved set are
+decoded from percent escapes even if invalid UTF-8 (non-shortest) encodings
+are allowed.  Because characters above BMP are encoded with surrogate pairs,
+the formula for surrogate pairs ensures that the codepoint cannot be below
+U+00010000 (0x10000 is added to the surrogate pair bits), and thus no check
+against the "reserved set" is needed.
+
+However, at the end of Section 15.1.3:
+
+  RFC 3629 prohibits the decoding of invalid UTF-8 octet sequences. For
+  example, the invalid sequence C0 80 must not decode into the character
+  U+0000. Implementations of the Decode algorithm are required to throw a
+  URIError when encountering such invalid sequences.
+
+Because "reserved set" / "unescaped set" always consists of only ASCII
+codepoints, the check in step 4.d.vii should not be necessary.  The UTF-8
+validity check happens in step 4.d.vii.8.
+
+Decoding characters outside BMP
+-------------------------------
+
+The URI decoding algorithm requires that UTF-8 encoded codepoints consisting
+of more than 4 encoded bytes are rejected.  4 byte encoding contains 21 bits,
+so the maximum codepoint which can be expressed is U+1FFFFF.  However, since
+the bytes must also be valid UTF-8 (step 4.d.vii.8) the highest allowed
+codepoint is actually U+10FFFF.
+
+It would be nice to be able to:
+
+* decode higher codepoints because Duktape can represent them
+
+* decode codepoints up to U+10FFFF without surrogate pairs
+
+Because the API requirements are strict, these cannot be added to the standard
+API without breaking compliance.  Custom URI encoding/decoding functions could
+provide these extended semantics.
+

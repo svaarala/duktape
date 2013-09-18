@@ -30,6 +30,8 @@ for i in \
 	doc/number_conversion.txt \
 	doc/regexp.txt \
 	doc/sorting.txt \
+	doc/uri.txt \
+	doc/testcases.txt \
 	; do
 	cp --parents $i $FULL/
 done
@@ -43,20 +45,17 @@ for i in \
 done
 
 for i in \
-	examples/test.c \
 	examples/cmdline/duk_cmdline.c \
 	examples/cmdline/duk_ncurses.c \
 	examples/cmdline/duk_socket.c \
 	examples/cmdline/duk_fileio.c \
-	examples/coffee/mandel.js \
-	examples/coffee/hello.js \
-	examples/coffee/globals.js \
+	examples/coffee/Makefile \
 	examples/coffee/mandel.coffee \
 	examples/coffee/hello.coffee \
 	examples/coffee/globals.coffee \
+	examples/hello/hello.c \
 	examples/Makefile.cmdline \
 	examples/Makefile.example \
-	examples/hello/hello.c \
 	; do
 	cp --parents $i $FULL/
 done

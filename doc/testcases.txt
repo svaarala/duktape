@@ -1,0 +1,199 @@
+==========
+Test cases
+==========
+
+Introduction
+============
+
+There are two separate test case sets for Duktape:
+
+1. Ecmascript test cases for testing Ecmascript compliance
+
+2. Duktape API test cases for testing that the exposed user API works
+
+Ecmascript test cases
+=====================
+
+How to test?
+------------
+
+There are many unit testing frameworks for Ecmascript such as `Jasmine`_
+(see also `List of unit testing frameworks`_).  However, when testing an
+Ecmascript *implementation*, a testing framework cannot always assume
+that even simple language features like functions or exceptions work
+correctly.
+
+How to do automatic testing then?
+
+.. _Jasmine: http://pivotal.github.com/jasmine/
+.. _List of unit testing frameworks: http://en.wikipedia.org/wiki/List_of_unit_testing_frameworks#JavaScript
+
+The current solution is to run an Ecmascript test case file with a command
+line interpreter and compare the resulting ``stdout`` text to expected.
+Control information, including expected ``stdout`` results, are embedded
+into Ecmascript comments which the test runner parses.
+
+The intent of the test cases is to test various features of the implementation
+against the specification *and real world behavior*.  Thus, the tests are
+*not* intended to be strict conformance tests: implementation specific
+features and internal behavior are also covered by tests.  However, whenever
+possible, test output can be compared to output of other Ecmascript engines,
+currently: Rhino, NodeJS (V8), and Smjs.
+
+Test case scripts write their output using the ``print()`` function.  If
+``print()`` is not available for a particular interpretation (as is the case
+with NodeJS), a prologue defining it is injected.
+
+Test case format
+----------------
+
+Test cases are plain Ecmascript files ending with the extension ``.js`` with
+special markup inside comments.
+
+Example::
+
+  /*
+   *  Example test.
+   *
+   *  Expected result is delimited as follows; the expected response
+   *  here is "hello world\n".
+   */
+
+  /*---
+  {
+     "slow": false,
+     "_comment": "optional metadata is encoded as a single JSON object"
+  }
+  ---*/
+
+  /*===
+  hello world
+  ===*/
+
+  if (1) {
+      print("hello world");   /* automatic newline */
+  } else {
+      print("not quite");
+  }
+
+  /*===
+  second test
+  ===*/
+
+  /* there can be multiple "expected" blocks (but only one metadata block) */
+  print("second test");
+
+The metadata block and all metadata keys are optional.  Boolean flags
+default to false if metadata block or the key is not present.  Current
+metadata keys:
+
+* ``slow``: if true, test is slow and increased timelimits are applied
+  to avoid incorrect timeout errors.
+
+* ``skip``: if true, test is not finished yet, and a failure is not
+  counted towards failcount.
+
+* ``custom``: if true, some implementation dependent features are tested,
+  and comparison to other Ecmascript engines is not relevant.
+
+Practices
+---------
+
+Indentation
+:::::::::::
+
+Indent with space, 4 spaces.
+
+Verifying exception type
+::::::::::::::::::::::::
+
+Since Ecmascript doesn't require specific error messages for errors
+thrown, the messages should not be inspected or printed out in test
+cases.  Ecmascript does require specific error types though (such as
+``TypeError``.  These can be verified by printing the ``name``
+property of an error object.
+
+For instance::
+
+  try {
+      null.foo = 1;
+  } catch (e) {
+      print(e.name);
+  }
+
+prints::
+
+  TypeError
+
+When an error is not supposed to occur in a successful test run, the
+exception message can (and should) be printed, as it makes it easier
+to resolve a failing test case.  This can be done most easily as::
+
+  try {
+      null.foo = 1;
+  } catch (e) {
+      print(e);
+  }
+
+Test cases
+----------
+
+Test cases filenames consist of lowercase words delimited by dashes, e.g.::
+
+  test-stmt-trycatch.js
+
+The first part of each test case is ``test``.  The second part indicates a
+major test category.  The test categories are not very strictly defined, and
+there is currently no tracking of specification coverage.
+
+Test cases starting with ``test-dev-`` are development time test cases
+which demonstrate a particular issue and may not be very well documented.
+
+Test cases starting with ``test-dev-bug-`` illustrate a particular
+development time bug which has usually already been fixed.
+
+Duktape API test cases
+======================
+
+Test case format
+----------------
+
+Test case files are C files with a ``test()`` function.  The test function
+gets as its argument an already initialized ``duk_context *`` and print out
+text to ``stdout``.  The test case can assume ``duktape.h`` and common headers
+like ``stdio.h`` have been included.  There are also some predefined macros
+(like ``TEST_SAFE_CALL()`` and ``TEST_PCALL()``) to minimize duplication in
+test case code.
+
+Expected output is defined as for Ecmascript test cases.  There is currently
+no metadata.
+
+Example::
+
+  /*===
+  Hello world from Ecmascript!
+  Hello world from C!
+  ===*/
+
+  void test(duk_context *ctx) {
+      duk_push_string("print('Hello world from Ecmascript!');");
+      duk_eval(ctx);
+      printf("Hello world from C!\n");
+  }
+
+Test runner
+===========
+
+The current test runner is a NodeJS program which handles both Ecmascript
+and API testcases.  See ``runtests/runtests.js``.
+
+Future work
+===========
+
+* Put test cases in a directory hierarchy instead (``test/stmt/trycatch.js``),
+  perhaps scales better (at the expense of adding hassle to e.g. grepping).
+
+* Keep simple input-output model but add includes.  There is a lot of
+  boilerplate now for basic things like dumping descriptors.
+
+
