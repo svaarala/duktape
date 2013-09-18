@@ -176,6 +176,7 @@ clean:
 	-@rm -f $(DUK_SHARED_LIBS_DEBUG)
 	-@rm -f libduktape*.so*
 	-@rm -f doc/*.html
+	-@rm -f src/*.pyc
 
 $(DUK_SHARED_LIBS_NONDEBUG): dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@)
