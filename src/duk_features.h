@@ -314,7 +314,7 @@
 #define  DUK_USE_STRUCT_HACK  /* non-portable */
 #endif
 
-/* FIXME: GCC pragma inside a function fails in some earlier GCC versions.
+/* FIXME: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
  * This is very approximate but allows clean builds for development right now.
  */
 /* http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html */

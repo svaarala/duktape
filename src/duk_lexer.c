@@ -507,9 +507,10 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
                                     duk_token *out_token,
                                     int strict_mode,
                                     int regexp_mode) {
-	int x, y;		/* temporaries, must be 32-bit to hold Unicode code points */
-	int advtok;		/* (advance << 8) + token_type, updated at function end */
-
+	int x, y;               /* temporaries, must be 32-bit to hold Unicode code points */
+	int advtok = 0;         /* (advance << 8) + token_type, updated at function end,
+	                         * init is unnecessary but suppresses "may be used uninitialized warnings
+	                         */
 	eat_whitespace(lex_ctx);
 
 	out_token->t = DUK_TOK_EOF;
