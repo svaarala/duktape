@@ -770,7 +770,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 						goto repl_write;
 					}
 				}  /* default case */
-				}  /* switch(ch2) */
+				}  /* switch (ch2) */
 
 			 repl_write:
 				/* ch1 = (r_increment << 8) + byte */

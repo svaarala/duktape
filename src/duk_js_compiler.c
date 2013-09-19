@@ -5299,7 +5299,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 
 		stmt_flags |= HAS_VAL | HAS_TERM;
 	}
-	}  /* end switch(tok) */
+	}  /* end switch (tok) */
 
 	/*
 	 *  Statement value handling.

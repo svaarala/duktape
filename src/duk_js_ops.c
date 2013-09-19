@@ -63,7 +63,7 @@
  */
 
 int duk_js_toboolean(duk_tval *tv) {
-	switch(DUK_TVAL_GET_TAG(tv)) {
+	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL:
 		return 0;
