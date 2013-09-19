@@ -609,7 +609,7 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	h_regexp = duk_require_hobject_with_class(ctx, -2, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_ASSERT(h_regexp != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_regexp) == DUK_HOBJECT_CLASS_REGEXP);
-	h_regexp = h_regexp;  /* suppress warning */
+	DUK_UNREF(h_regexp);
 
 	duk_to_string(ctx, -1);
 	h_input = duk_get_hstring(ctx, -1);

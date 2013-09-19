@@ -139,6 +139,19 @@
 #define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #endif
 
+/*
+ *  Macro for suppressing warnings for potentially unreferenced variables.
+ *  The variables can be actually unreferenced or unreferenced in some
+ *  specific cases only; for instance, if a variable is only debug printed,
+ *  it is unreferenced when debug printing is disabled.
+ *
+ *  (Introduced here because it's potentially compiler specific.)
+ */
+
+#define  DUK_UNREF(x)  do { \
+		(void) (x); \
+	} while (0)
+
 /* 
  *  Profile processing
  *

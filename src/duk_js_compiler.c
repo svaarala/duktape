@@ -904,7 +904,7 @@ static duk_compiler_instr *get_instr_ptr(duk_compiler_ctx *comp_ctx, int pc) {
 	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(f->h_code);
 	code_begin = (duk_compiler_instr *) p;
 	code_end = (duk_compiler_instr *) (p + DUK_HBUFFER_GET_SIZE(f->h_code));
-	code_end = code_end;  /* suppress warning */
+	DUK_UNREF(code_end);
 
 	DUK_ASSERT(pc >= 0);
 	DUK_ASSERT(pc < (code_end - code_begin));
@@ -1372,7 +1372,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			int constidx;
 
 			h = DUK_TVAL_GET_STRING(tv);
-			h = h;  /* suppress warning */
+			DUK_UNREF(h);
 			DUK_ASSERT(h != NULL);
 
 #if 0  /* FIXME: to be implemented? */
@@ -1659,8 +1659,8 @@ static int ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	duk_context *ctx = (duk_context *) thr;
 	int reg;
 
-	thr = thr;  /* suppress warnings */
-	ctx = ctx;
+	DUK_UNREF(thr);
+	DUK_UNREF(ctx);
 
 	DUK_DDDPRINT("ivalue_toregconst_raw(): x={t=%d,op=%d,x1={%d:%d:%!T},x2={%d:%d:%!T}}, "
 	             "forced_reg=%d, allow_const=%d, require_temp=%d",
@@ -1915,7 +1915,7 @@ static void lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label
 
 	DUK_DDDPRINT("looking up active label: label='%!O', is_break=%d", h_label, is_break);
 
-	ctx = ctx;  /* suppress warning */
+	DUK_UNREF(ctx);
 
 	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
@@ -4943,7 +4943,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 	stmt_id = comp_ctx->curr_func.stmt_next++;
 	dir_prol_at_entry = comp_ctx->curr_func.in_directive_prologue;
 
-	stmt_id = stmt_id;  /* suppress warning */
+	DUK_UNREF(stmt_id);
 
 	DUK_DDDPRINT("parsing a statement, stmt_id=%d, temp_at_entry=%d, labels_len_at_entry=%d, "
 	             "is_strict=%d, in_directive_prologue=%d, catch_depth=%d",

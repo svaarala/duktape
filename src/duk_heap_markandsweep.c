@@ -92,7 +92,7 @@ static void mark_hobject(duk_heap *heap, duk_hobject *h) {
 		}
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
-		f = f;  /* suppress warning */
+		DUK_UNREF(f);
 		/* nothing to mark */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;

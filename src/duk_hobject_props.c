@@ -1096,7 +1096,7 @@ static int lookup_arguments_map(duk_hthread *thr,
 
 	/* get varenv for varname (callee's declarative lexical environment) */
 	rc = get_own_property_desc(thr, obj, DUK_HTHREAD_STRING_INT_VARENV(thr), temp_desc, 1);  /* push_value = 1 */
-	rc = rc;  /* suppress warning */
+	DUK_UNREF(rc);
 	DUK_ASSERT(rc != 0);  /* arguments MUST have an initialized lexical environment reference */
 	varenv = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(varenv != NULL);
@@ -1989,7 +1989,7 @@ static duk_u32 get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_prop
 	 */
 
 	rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, temp_desc, 0);
-	rc = rc;  /* suppress warning */
+	DUK_UNREF(rc);
 	DUK_ASSERT(rc != 0);  /* arrays MUST have a 'length' property */
 	DUK_ASSERT(temp_desc->e_idx >= 0);
 
@@ -2176,7 +2176,7 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 			 *  is configurable, and no resize occurs.
 			 */
 			rc = duk_hobject_delprop_raw(thr, obj, key, 0);
-			rc = rc;  /* suppress warning */
+			DUK_UNREF(rc);
 			DUK_ASSERT(rc != 0);
 		}
 
@@ -2822,7 +2822,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		DUK_DDDPRINT("write successful, pending array length update to: %d", new_array_length);
 
 		rc = get_own_property_desc_raw(thr, orig, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, &desc, 0);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 		DUK_ASSERT(rc != 0);
 		DUK_ASSERT(desc.e_idx >= 0);
 
@@ -2990,12 +2990,12 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 
 			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(obj, desc.e_idx, NULL);
-			tmp = tmp;  /* suppress warning */
+			DUK_UNREF(tmp);
 			DUK_HOBJECT_DECREF(thr, tmp);
 
 			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(obj, desc.e_idx, NULL);
-			tmp = tmp;  /* suppress warning */
+			DUK_UNREF(tmp);
 			DUK_HOBJECT_DECREF(thr, tmp);
 		} else {
 			tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(obj, desc.e_idx);
@@ -3480,7 +3480,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	(void) duk_to_string(ctx, 1);
 	key = duk_require_hstring(ctx, 1);
 	desc = duk_require_hobject(ctx, 2);
-	desc = desc;  /* suppress warning */
+	DUK_UNREF(desc);
 	idx_desc = 2;
 
 	DUK_ASSERT(obj != NULL);
@@ -3926,7 +3926,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 				abandon_array_checked(thr, obj);
 				duk_pop(ctx);  /* remove old value */
 				rc = get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
-				rc = rc;  /* suppress warning */
+				DUK_UNREF(rc);
 				DUK_ASSERT(rc != 0);
 				DUK_ASSERT(curr.e_idx >= 0 && curr.a_idx < 0);
 			}
@@ -3948,7 +3948,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
 			duk_pop(ctx);  /* remove old value */
 			rc = get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
-			rc = rc;  /* suppress warning */
+			DUK_UNREF(rc);
 			DUK_ASSERT(rc != 0);
 		}
 	} else if (has_value || has_writable) {
@@ -3972,11 +3972,11 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 
 			DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, curr.e_idx));
 			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(obj, curr.e_idx);
-			tmp = tmp;  /* suppress warning */
+			DUK_UNREF(tmp);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(obj, curr.e_idx, NULL);
 			DUK_HOBJECT_DECREF(thr, tmp);
 			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(obj, curr.e_idx);
-			tmp = tmp;  /* suppress warning */
+			DUK_UNREF(tmp);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(obj, curr.e_idx, NULL);
 			DUK_HOBJECT_DECREF(thr, tmp);
 
@@ -3989,7 +3989,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
 			duk_pop(ctx);  /* remove old value */
 			rc = get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
-			rc = rc;  /* suppress warning */
+			DUK_UNREF(rc);
 			DUK_ASSERT(rc != 0);
 		} else {
 			/* curr and desc are data */
@@ -4083,7 +4083,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		abandon_array_checked(thr, obj);
 		duk_pop(ctx);  /* remove old value */
 		rc = get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 		DUK_ASSERT(rc != 0);
 		DUK_ASSERT(curr.e_idx >= 0 && curr.a_idx < 0);
 	}
@@ -4103,7 +4103,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, curr.e_idx));
 
 		tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(obj, curr.e_idx);
-		tmp = tmp;  /* suppress warning */
+		DUK_UNREF(tmp);
 		DUK_HOBJECT_E_SET_VALUE_SETTER(obj, curr.e_idx, set);
 		DUK_HOBJECT_INCREF(thr, set);
 		DUK_HOBJECT_DECREF(thr, tmp);
@@ -4115,7 +4115,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, curr.e_idx));
 
 		tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(obj, curr.e_idx);
-		tmp = tmp;  /* suppress warning */
+		DUK_UNREF(tmp);
 		DUK_HOBJECT_E_SET_VALUE_GETTER(obj, curr.e_idx, get);
 		DUK_HOBJECT_INCREF(thr, get);
 		DUK_HOBJECT_DECREF(thr, tmp);
@@ -4167,7 +4167,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 
 			/* Note: reuse 'curr' */
 			rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, &curr, 0);
-			rc = rc;  /* suppress warning */
+			DUK_UNREF(rc);
 			DUK_ASSERT(rc != 0);
 			DUK_ASSERT(curr.e_idx >= 0);
 

@@ -29,11 +29,11 @@ static void free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
-		f = f;
+		DUK_UNREF(f);
 		/* Currently nothing to free; 'data' is a heap object */
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
-		f = f;
+		DUK_UNREF(f);
 		/* Currently nothing to free */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;

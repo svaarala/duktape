@@ -110,7 +110,7 @@ void duk_call(duk_context *ctx, int nargs) {
 	                     nargs,         /* num_stack_args */
 	                     call_flags,    /* call_flags */
 	                     errhandler);   /* errhandler */
-	rc = rc;  /* suppress warning */
+	DUK_UNREF(rc);
 }
 
 void duk_call_method(duk_context *ctx, int nargs) {
@@ -137,7 +137,7 @@ void duk_call_method(duk_context *ctx, int nargs) {
 	                     nargs,         /* num_stack_args */
 	                     call_flags,    /* call_flags */
 	                     errhandler);   /* errhandler */
-	rc = rc;  /* suppress warning */
+	DUK_UNREF(rc);
 }
 
 void duk_call_prop(duk_context *ctx, int obj_index, int nargs) {
@@ -401,7 +401,7 @@ void duk_new(duk_context *ctx, int nargs) {
 	                     nargs,         /* num_stack_args */
 	                     call_flags,    /* call_flags */
 	                     errhandler);   /* errhandler */
-	rc = rc;  /* suppress warning */
+	DUK_UNREF(rc);
 
 	/* [... fallback retval] */
 

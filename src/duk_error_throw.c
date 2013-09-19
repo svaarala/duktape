@@ -77,7 +77,7 @@ static void call_errhandler(duk_hthread *thr) {
 	                     1,          /* num args */
 	                     call_flags, /* call_flags */
 	                     NULL);      /* errhandler */
-	rc = rc;  /* no need to check now: both success and error are OK */
+	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
 
 	/* [ ... errval ] */
 }
@@ -207,7 +207,7 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 	default:                           msg = "unknown error"; break;
 	}
 
-	msg = msg;  /* suppress warning */
+	DUK_UNREF(msg);
 
 	DUK_ERROR(thr, code, "%s (rc %d)", msg, rc);
 	DUK_NEVER_HERE();

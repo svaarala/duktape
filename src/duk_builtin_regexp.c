@@ -12,7 +12,7 @@ static void get_this_regexp(duk_context *ctx) {
 	duk_push_this(ctx);
 	h = duk_require_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_ASSERT(h != NULL);
-	h = h;  /* suppress warning */
+	DUK_UNREF(h);
 	duk_insert(ctx, 0);  /* prepend regexp to valstack 0 index */
 }
 

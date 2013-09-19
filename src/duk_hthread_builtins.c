@@ -365,7 +365,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			duk_push_c_function(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
-			h_func = h_func;  /* suppress warning (not referenced now) */
+			DUK_UNREF(h_func);
 
 			/* Currently all built-in native functions are strict.
 			 * This doesn't matter for many functions, but e.g.

@@ -1422,7 +1422,7 @@ void duk_to_undefined(duk_context *ctx, int index) {
 	duk_tval tv_temp;
 
 	DUK_ASSERT(ctx != NULL);
-	thr = thr;  /* suppress warning */
+	DUK_UNREF(thr);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
@@ -1437,7 +1437,7 @@ void duk_to_null(duk_context *ctx, int index) {
 	duk_tval tv_temp;
 
 	DUK_ASSERT(ctx != NULL);
-	thr = thr;  /* suppress warning */
+	DUK_UNREF(thr);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
@@ -1475,7 +1475,7 @@ int duk_to_boolean(duk_context *ctx, int index) {
 	int val;
 
 	DUK_ASSERT(ctx != NULL);
-	thr = thr;  /* suppress warning */
+	DUK_UNREF(thr);
 
 	index = duk_require_normalize_index(ctx, index);
 

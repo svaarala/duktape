@@ -105,7 +105,7 @@ static void refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) f->data);
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
-		f = f;  /* suppress warning */
+		DUK_UNREF(f);
 		/* nothing to finalize */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
@@ -295,7 +295,7 @@ static void refzero_free_pending(duk_hthread *thr) {
 		int emergency = 0;
 		DUK_DPRINT("refcount triggering mark-and-sweep");
 		rc = duk_heap_mark_and_sweep(heap, emergency);
-		rc = rc;
+		DUK_UNREF(rc);
 		DUK_DPRINT("refcount triggered mark-and-sweep => rc %d", rc);
 	}
 #endif

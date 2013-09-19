@@ -2003,7 +2003,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tv_key = REGCONSTP(c);
 			DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", a, REGCONSTP(b), REGCONSTP(c));
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
-			rc = rc;  /* ignore */
+			DUK_UNREF(rc);  /* ignore */
 			DUK_DDDPRINT("GETPROP --> %!T", duk_get_tval(ctx, -1));
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
@@ -2034,7 +2034,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tv_val = REGCONSTP(c);
 			DUK_DDDPRINT("PUTPROP: obj=%!T, key=%!T, val=%!T", REGP(a), REGCONSTP(b), REGCONSTP(c));
 			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, STRICT());
-			rc = rc;  /* ignore */
+			DUK_UNREF(rc);  /* ignore */
 			DUK_DDDPRINT("PUTPROP --> obj=%!T, key=%!T, val=%!T", REGP(a), REGCONSTP(b), REGCONSTP(c));
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
@@ -2085,7 +2085,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tv_obj = REGP(b);
 			tv_key = REGCONSTP(c);
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
-			rc = rc;  /* unused */
+			DUK_UNREF(rc);  /* unused */
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 
@@ -2533,7 +2533,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_ASSERT(thr->catchstack_top >= 1);
 
 			cat = &thr->catchstack[thr->catchstack_top - 1];
-			cat = cat;  /* suppress warning */
+			DUK_UNREF(cat);
 			DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
 			DUK_ASSERT(DUK_CAT_GET_LABEL(cat) == abc);
 

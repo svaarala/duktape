@@ -1588,11 +1588,11 @@ static int declvar_helper(duk_hthread *thr,
 				tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(holder, e_idx);
 				DUK_HOBJECT_E_SET_VALUE_GETTER(holder, e_idx, NULL);
 				DUK_HOBJECT_DECREF(thr, tmp);
-				tmp = tmp;  /* suppress warning */
+				DUK_UNREF(tmp);
 				tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(holder, e_idx);
 				DUK_HOBJECT_E_SET_VALUE_SETTER(holder, e_idx, NULL);
 				DUK_HOBJECT_DECREF(thr, tmp);
-				tmp = tmp;  /* suppress warning */
+				DUK_UNREF(tmp);
 			} else {
 				duk_tval tv_tmp;
 

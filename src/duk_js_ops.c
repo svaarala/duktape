@@ -1232,7 +1232,7 @@ duk_u32 duk_js_to_arrayindex_string_helper(duk_hstring *h) {
 	rc = raw_string_to_arrayindex(DUK_HSTRING_GET_DATA(h),
 	                              DUK_HSTRING_GET_BYTELEN(h),
 	                              &res);
-	rc = rc;
+	DUK_UNREF(rc);
 	DUK_ASSERT(rc != 0);
 	return res;
 }

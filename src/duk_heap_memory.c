@@ -29,7 +29,7 @@ static void run_voluntary_gc(duk_heap *heap) {
 		DUK_DPRINT("triggering voluntary mark-and-sweep");
 		flags = 0;
 		rc = duk_heap_mark_and_sweep(heap, flags);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 	}
 }
 
@@ -65,7 +65,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDDPRINT("gc torture enabled, pretend that first alloc attempt fails");
 		res = NULL;
-		res = res;  /* suppress warning */
+		DUK_UNREF(res);
 		goto skip_attempt;
 	}
 #endif
@@ -106,7 +106,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 		}
 
 		rc = duk_heap_mark_and_sweep(heap, flags);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 
 		res = heap->alloc_func(heap->alloc_udata, size);
 		if (res) {
@@ -175,7 +175,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails");
 		res = NULL;
-		res = res;  /* suppress warning */
+		DUK_UNREF(res);
 		goto skip_attempt;
 	}
 #endif
@@ -214,7 +214,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 		}
 
 		rc = duk_heap_mark_and_sweep(heap, flags);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 
 		res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
 		if (res) {
@@ -271,7 +271,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize)
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails");
 		res = NULL;
-		res = res;  /* suppress warning */
+		DUK_UNREF(res);
 		goto skip_attempt;
 	}
 #endif
@@ -317,7 +317,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize)
 		}
 
 		rc = duk_heap_mark_and_sweep(heap, flags);
-		rc = rc;  /* suppress warning */
+		DUK_UNREF(rc);
 #ifdef DUK_USE_ASSERTIONS
 		if (ptr_pre != *iptr) {
 			/* useful for debugging */
