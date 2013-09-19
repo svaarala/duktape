@@ -1,0 +1,133 @@
+===========
+Code issues
+===========
+
+This documents covers C coding issues related to Duktape implementation
+such as:
+
+* Conventions
+* Portability concerns
+* Size and performance optimization issues
+
+Conventions
+===========
+
+Indentantion, naming, etc
+-------------------------
+
+Indent with tab.  On continuation lines indent with tab to shared indent
+depth and then indent with spaces.  For example, denoting tab indent with
+colon and space indent with period::
+
+  ::::::::snprintf(buf,
+  ::::::::.........sizeof(buf), 
+  ::::::::........."%d",
+  ::::::::.........123);
+
+Names are lowercase, underscore separated::
+
+  void duk_func(void) {
+          /* ... */
+  }
+
+Macros are uppercase, underscore separated::
+
+  #define  DUK_MACRO(x)  /* ... */
+
+Comments are always traditional C comments, never ``//``::
+
+  /* always used traditional C comments */
+
+Opening brace on the same line as the start of the construct, even
+for functions::
+
+  void func(int x) {
+          if (x) {
+                  /* ... */
+          } else {
+                  /* ... */
+          }
+  }
+
+The case-statements of a switch are at the same level as the switch
+to reduce indent.  If case clauses have their own blocks, this leads
+to a confusing closing brace, so a comment for that may be in order::
+
+  switch (x) {
+  case A: {
+          /* ... */
+          break;
+  }
+  case B: {
+          /* ... */
+          break;
+  }
+  default: {
+  }
+  }  /* switch */
+
+Space after ``if``, ``switch``, etc::
+
+  if (x) { ... }   /* correct */
+  if(x) { ... }    /* incorrect */
+
+  switch (x) { ... }  /* correct */
+  switch(x) { ... }   /* incorrect */
+
+Use of goto for error cleanup and shared error handling is not only
+allowed but encouraged.
+
+No naked statements in e.g. ``if-then-else``, always use a block.
+This is more macro compatible.  Example::
+
+  if (x) {
+          return 1;  /* correct */
+  }
+
+  if (x)
+          return 1;  /* incorrect */
+
+Multi-statement macros should use a ``do-while(0)`` construct::
+
+  #define  FROBNICATE(x,y)  do { \
+                  x = x * x; \
+                  y = y * y; \
+          } while (0)
+
+Include guards
+--------------
+
+There are multiple include guard conventions.  Leading underscores are
+reserved and should be avoided in user code.  The current include guard
+convention is::
+
+  /* duk_foo.h */
+
+  #ifndef DUK_FOO_H_INCLUDED
+  #define DUK_FOO_H_INCLUDED
+
+  ...
+
+  #endif  /* DUK_FOO_H_INCLUDED */
+
+http://en.wikipedia.org/wiki/Include_guard
+
+``#pragma once`` is not portable, and is not used.
+
+Unused variables
+----------------
+
+Suppressing unused variable warnings use the following macro::
+
+  DUK_UNREF(my_unused_var);
+
+Internally, this currently uses the form::
+
+  (void) my_unused_var;  /* suppress warning */
+
+This seems to work with both GCC and Clang.  The form::
+
+  my_unused_var = my_unused_var;  /* suppress warning */
+
+works with GCC but not with Clang.
+
