@@ -339,6 +339,8 @@ value on top of the value stack.  You could also return <tt>0</tt> to indicate
 that no return value is given (in which case Duktape defaults to Ecmascript
 <tt>undefined</tt>).  A negative return value which causes an error to be
 automatically thrown: this is a shorthand for throwing errors conveniently.
+Note that you don't need to pop any values off the stack, Duktape will do that
+for you automatically when the function returns.
 See <a href="#programming">Programming model</a> for more details.</li>
 
 </ul>  <!-- breakdown -->
@@ -435,6 +437,66 @@ int main(int argc, const char *argv[]) {
     exit(0);
 }
 </pre>
+
+<p>The new steps here, line by line:</p>
+<ul class="breakdown">  <!-- breakdown -->
+
+<li>
+<pre>
+int val = duk_require_int(ctx, 0);
+int lim = duk_require_int(ctx, 1);
+</pre>
+<p>These two calls check the two argument values given to the native helper.
+If the values are not of the Ecmascript number type, an error is thrown.
+If they are numbers, their value is converted to an integer and assigned to
+the <tt>val</tt> and <tt>lim</tt> locals.  The index 0 refers to the first
+function argument and index 1 to the second.</p>
+</li>
+
+<li>
+<pre>
+duk_push_false(ctx);
+return 1;
+</pre>
+<p>Pushes an Ecmascript <tt>false</tt> to the value stack.  The C return value
+1 indicates that the <tt>false</tt> value is returned to the Ecmascript caller.</p>
+</li>
+
+<li>
+<pre>
+duk_push_global_object(ctx);
+duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
+duk_put_prop_string(ctx, -2, "primeCheckNative");
+</pre>
+<p>The first call, like before, pushes the Ecmascript global object to the
+value stack.  The second call creates an Ecmascript <tt>Function</tt> object
+and pushes it to the value stack.  The function object is bound to the
+Duktape/C function <tt>native_prime_check</tt>: when the Ecmascript function
+created here is called from Ecmascript, the C function gets invoked.
+The second argument (<tt>2</tt>) to the call indicates how many arguments
+the C function gets on the value stack.  If the caller gives less arguments,
+the missing arguments are padded with <tt>undefined</tt>; if the caller gives
+more arguments, the extra arguments are dropped automatically.  Finally, the
+third call registers the function object into the global object with the
+name <tt>primeCheckNative</tt> and pops the function value off the stack.
+</p>
+</li>
+
+<li>
+<pre>
+duk_get_prop_string(ctx, -1, "primeTest");
+duk_call(ctx, 0);
+duk_pop(ctx);
+</pre>
+<p>When we come here the value stack already contains the global object
+at the stack top.  The first line looks up the <tt>primeTest</tt> function
+from the global object (which was defined by the loaded script).  The
+second line calls the <tt>primeTest</tt> function with zero arguments.
+The third line pops the call result off the stack; we don't need the return
+value here.</p>
+</li>
+
+</ul>  <!-- breakdown -->
 
 <p>Compile like above:</p>
 <pre>
