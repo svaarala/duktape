@@ -161,9 +161,9 @@ int main(int argc, const char *argv[]) {
             line[idx++] = '\0';
 
             duk_push_global_object(ctx);
-            duk_get_prop_string(ctx, -1, "processLine");
+            duk_get_prop_string(ctx, -1 /*index*/, "processLine");
             duk_push_string(ctx, line);
-            duk_call(ctx, 1);
+            duk_call(ctx, 1 /*nargs*/);
             printf("%s\n", duk_to_string(ctx, -1));
             duk_pop(ctx);
 
@@ -180,6 +180,97 @@ int main(int argc, const char *argv[]) {
     exit(0);
 }
 </pre>
+
+<p>Let's look at the Duktape specific parts of the example code line by line.
+Here we need to gloss over some details for brevity, see
+<a href="#programming">Programming model</a> for a detailed discussion:</p>
+<ul class="breakdown"> <!-- breakdown -->
+
+<li>
+<pre>
+ctx = duk_create_heap_default();
+if (!ctx) { exit(1); }
+</pre>
+<p>First we create a Duktape context.  A context allows us to exchange values
+with Ecmascript code by pushing and popping values to the <b>value stack</b>.
+Most calls in the Duktape API operate with the value stack, pushing, popping,
+and examining values on the stack.</p>
+</li>
+
+<li>
+<pre>
+duk_eval_file(ctx, "process.js");
+duk_pop(ctx);  /* pop eval result */
+</pre>
+<p>The first call reads in <tt>process.js</tt> and evaluates its contents.
+The script registers the <tt>processLine()</tt> function into the Ecmascript
+global object.  The result of the evaluation is pushed on top of the value
+stack.  Here we don't need the evaluation result, so we pop the value off
+the stack.</p>
+</li>
+
+<li>
+<pre>
+duk_push_global_object(ctx);
+duk_get_prop_string(ctx, -1 /*index*/, "processLine");
+</pre>
+<p>The first call pushes the Ecmascript global object to the value stack.
+The second call looks up <tt>processLine</tt> property of the global object.
+The script in <tt>process.js</tt> has registered a callback function into
+the global object with this name.  The <tt>-1</tt> argument is an index to
+the value stack; negative values refer to stack elements starting from the
+top, so <tt>-1</tt> refers to the topmost element of the stack, the property
+lookup result.</p>
+</li>
+
+<li>
+<pre>
+duk_push_string(ctx, line);
+</pre>
+<p>Pushes the string pointed to by <tt>line</tt> to the value stack.  The
+string length is automatically determined by scanning for a NUL terminator
+(same as <tt>strlen()</tt>).  Duktape makes a copy of the string when it is
+pushed to the stack, so the <tt>line</tt> buffer can be freely modified when
+the call returns.</p>
+</li>
+
+<li>
+<pre>
+duk_call(ctx, 1 /*nargs*/);
+</pre>
+<p>At this point the value stack contains: the global object, the processLine
+function, and the <tt>line</tt> string.  This line calls an Ecmascript function
+with the specified number of arguments; here the argument count is 1.  The
+target function is expected to reside just before the argument list on the
+value stack.  After the API call returns, the arguments have been replaced with
+a single return value, so the stack contains: the global object and the call
+result.</p>
+</li>
+
+<li>
+<pre>
+printf("%s\n", duk_to_string(ctx, -1));
+duk_pop(ctx);
+</pre>
+<p>The <tt>duk_to_string()</tt> call requests Duktape to convert the value stack
+element at index -1 (the topmost value on the stack, which is the processLine
+function call result here) to a string, returning a <tt>const char *</tt> pointing
+to the result.  This return value is a read-only, NUL terminated UTF-8 value which
+C code can use directly.  Here we just print out the string.  After we've printed
+the string, we pop the value off the value stack.</p>
+</li>
+
+<li>
+<pre>
+duk_destroy_heap(ctx);
+</pre>
+<p>Destroy the Duktape context, freeing all resources held by the context.
+In our example we left the global object on the value stack on purpose.
+This call will free the value stack and all references on the value stack.
+No memory leaks will occur even if the value stack is not empty.</p>
+</li>
+
+</ul>  <!-- breakdown -->
 
 <p>Compile like above:</p>
 <pre>
@@ -214,11 +305,43 @@ accesses call arguments and places return values through the Duktape context's
 Duktape/C binding and the Duktape API later on.  Example:</p>
 <pre class="c-code">
 int my_native_func(duk_context *ctx) {
-    double arg = duk_require_number(ctx, 0 /*index*/);  /* read 1st arg */
-    duk_push_number(ctx, arg * arg);  /* push arg^2 */
-    return 1;  /* return value on top of stack, i.e. arg^2 */
+    double arg = duk_require_number(ctx, 0 /*index*/);
+    duk_push_number(ctx, arg * arg);
+    return 1;
 }
 </pre>
+
+<p>Let's look at this example line by line:</p>
+<ul class="breakdown">  <!-- breakdown -->
+
+<li>
+<pre>
+double arg = duk_require_number(ctx, 0 /*index*/);
+</pre>
+<p>Check that the number at value stack index 0 (bottom of the stack, first
+argument to function call) is a number; if not, throws an error and never
+returns.  If the value is a number, return it as a <tt>double</tt>.</p>
+</li>
+
+<li>
+<pre>
+duk_push_number(ctx, arg * arg);
+</pre>
+<p>Compute square of argument and push it to the value stack.</p>
+</li>
+
+<li>
+<pre>
+return 1;
+</pre>
+<p>Return from the function call, indicating that there is a (single) return
+value on top of the value stack.  You could also return <tt>0</tt> to indicate
+that no return value is given (in which case Duktape defaults to Ecmascript
+<tt>undefined</tt>).  A negative return value which causes an error to be
+automatically thrown: this is a shorthand for throwing errors conveniently.
+See <a href="#programming">Programming model</a> for more details.</li>
+
+</ul>  <!-- breakdown -->
 
 <p>We'll use a primality test as an example for using native code to speed
 up Ecmascript algorithms.  More specifically, our test program searches for

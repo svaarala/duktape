@@ -25,9 +25,9 @@ int main(int argc, const char *argv[]) {
             line[idx++] = '\0';
 
             duk_push_global_object(ctx);
-            duk_get_prop_string(ctx, -1, "processLine");
+            duk_get_prop_string(ctx, -1 /*index*/, "processLine");
             duk_push_string(ctx, line);
-            duk_call(ctx, 1);
+            duk_call(ctx, 1 /*nargs*/);
             printf("%s\n", duk_to_string(ctx, -1));
             duk_pop(ctx);
 

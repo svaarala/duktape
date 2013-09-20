@@ -122,6 +122,25 @@ ul.taglist li {
 	}
 }
 
+/* special styling for breakdowns (additive to base ul / ul li style) */
+ul.breakdown {
+	margin: 2ex 0 2ex 2em;  /* additional indent */
+}
+
+ul.breakdown li {
+	list-style: none;
+	padding: 0.5ex 2ex 1ex 2ex;
+	/*background: #f8f8f8;*/
+	border: 2px solid #eeeeee;
+	border-radius: 10px;
+	margin: 1ex 0 1ex 0;
+}
+@media screen and (max-width:800px) {
+	ul.breakdown {
+		margin: 2ex 0 2ex 0;  /* remove indent */
+	}
+}
+
 .content pre {
 	overflow: auto;
 	font-family: monospace;
