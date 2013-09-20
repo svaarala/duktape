@@ -337,6 +337,16 @@ def transformRemoveClass(soup, cssClass):
 	for elem in soup.select('.' + cssClass):
 		elem.extract()
 
+def transformReadIncludes(soup, includeDir):
+	for elem in soup.select('pre'):
+		if not elem.has_key('include'):
+			continue
+		filename = elem['include']
+		del elem['include']
+		f = open(os.path.join(includeDir, filename), 'rb')
+		elem.string = f.read()
+		f.close()
+
 def setNavSelected(soup, pagename):
 	# pagename must match <li><a> content
 	for elem in soup.select('#site-top-nav li'):
@@ -608,7 +618,11 @@ def generateStyleCss():
 
 	return style
 
-def postProcess(soup):
+def postProcess(soup, includeDir):
+	# read in source snippets from include files
+	if True:
+		transformReadIncludes(soup, includeDir)
+
 	if colorize:
 		transformColorizeCode(soup, 'c-code', 'c')
 		transformColorizeCode(soup, 'ecmascript-code', 'javascript')
@@ -630,6 +644,8 @@ def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
 	apitestdir = '../api-testcases'
+	guideincdir = '../examples/guide'
+	apiincdir = '../examples/api'
 
 	print 'Generating style.css'
 	data = generateStyleCss()
@@ -639,22 +655,22 @@ def main():
 
 	print 'Generating api.html'
 	soup = generateApiDoc(apidocdir, apitestdir)
-	soup = postProcess(soup)
+	soup = postProcess(soup, apiincdir)
 	writeFile(os.path.join(outdir, 'api.html'), soup.encode('ascii'))
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup)
+	soup = postProcess(soup, guideincdir)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode('ascii'))
 
 	print 'Generating index.html'
 	soup = generateIndexPage()
-	soup = postProcess(soup)
+	soup = postProcess(soup, None)
 	writeFile(os.path.join(outdir, 'index.html'), soup.encode('ascii'))
 
 	print 'Generating download.html'
 	soup = generateDownloadPage()
-	soup = postProcess(soup)
+	soup = postProcess(soup, None)
 	writeFile(os.path.join(outdir, 'download.html'), soup.encode('ascii'))
 
 	print 'Copying binaries'
