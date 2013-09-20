@@ -419,7 +419,14 @@ void duk_new(duk_context *ctx, int nargs) {
 		duk_pop(ctx);
 	}
 
-	/* FIXME: error augmenatation here? */
+	/*
+	 *  Augment created errors upon creation.
+	 *
+	 * Note: errors should be augmented when they are created, not when
+	 * they are thrown or rethrown.
+	 */
+
+	duk_err_augment_error(thr, thr, -1);
 
 	/* [... retval] */
 
