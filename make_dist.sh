@@ -46,7 +46,7 @@ mkdir $DIST/licenses
 mkdir $DIST/examples
 mkdir $DIST/examples/hello
 mkdir $DIST/examples/cmdline
-mkdir $DIST/examples/gettingstarted
+mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
 
 # Copy most files directly
@@ -183,8 +183,9 @@ for i in \
 	processlines.c \
 	prime.js \
 	primecheck.c \
+	uppercase.c \
 	; do
-	cp examples/gettingstarted/$i $DIST/examples/gettingstarted/
+	cp examples/guide/$i $DIST/examples/guide/
 done
 
 for i in \

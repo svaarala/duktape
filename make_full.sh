@@ -17,7 +17,7 @@ mkdir $FULL/runtests
 mkdir $FULL/examples
 mkdir $FULL/examples/hello
 mkdir $FULL/examples/cmdline
-mkdir $FULL/examples/gettingstarted
+mkdir $FULL/examples/guide
 mkdir $FULL/examples/coffee
 mkdir $FULL/ecmascript-testcases
 mkdir $FULL/api-testcases
@@ -34,6 +34,7 @@ for i in \
 	doc/sorting.txt \
 	doc/uri.txt \
 	doc/testcases.txt \
+	doc/code-issues.txt \
 	; do
 	cp --parents $i $FULL/
 done
@@ -58,11 +59,12 @@ for i in \
 	examples/cmdline/duk_socket.c \
 	examples/cmdline/duk_fileio.c \
 	examples/hello/hello.c \
-	examples/gettingstarted/fib.js \
-	examples/gettingstarted/process.js \
-	examples/gettingstarted/processlines.c \
-	examples/gettingstarted/prime.js \
-	examples/gettingstarted/primecheck.c \
+	examples/guide/fib.js \
+	examples/guide/process.js \
+	examples/guide/processlines.c \
+	examples/guide/prime.js \
+	examples/guide/primecheck.c \
+	examples/guide/uppercase.c \
 	examples/coffee/Makefile \
 	examples/coffee/mandel.coffee \
 	examples/coffee/hello.coffee \
