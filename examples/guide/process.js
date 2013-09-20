@@ -1,3 +1,4 @@
+// process.js
 function processLine(line) {
     return line.trim()
         .replace(/[<>&"'\u0000-\u001F\u007E-\uFFFF]/g, function(x) {

@@ -1,3 +1,5 @@
+// prime.js
+
 // Pure Ecmascript version of low level helper
 function primeCheckEcmascript(val, limit) {
     for (var i = 2; i <= limit; i++) {

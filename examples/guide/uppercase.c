@@ -1,3 +1,4 @@
+/* uppercase.c */
 #include <stdio.h>
 #include <stdlib.h>
 #include "duktape.h"
@@ -26,6 +27,7 @@ int main(int argc, char *argv[]) {
     duk_context *ctx;
 
     if (argc < 2) { exit(1); }
+
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
 
