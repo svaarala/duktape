@@ -1,7 +1,7 @@
 <hr> <!-- this improves readability on e.g. elinks and w3m -->
 <h2 id="programming">Programming model</h2>
 
-FIXME: growing/checking the value stack
+<p><b>(This section is under work.)</b></p>
 
 <h3>Overview</h3>
 
@@ -30,15 +30,14 @@ FIXME: growing/checking the value stack
 is used to allocate storage for strings, Ecmascript objects, and other
 variable size, garbage collected data.  Objects in the heap have an internal
 heap header which provides the necessary information for reference counting,
-mark-and-sweep garbage collection, object finalization, etc.</p>
-
-<p>Heap objects can reference each other, creating a reachability graph from
+mark-and-sweep garbage collection, object finalization, etc.
+Heap objects can reference each other, creating a reachability graph from
 a garbage collection perspective.  For instance, the properties of an Ecmascript
 object reference both the keys and values of the object's property set.  You can
 have multiple heaps, but objects in different heaps cannot reference each other
 directly; you need to use serialization to pass values between heaps.</p>
 
-<p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which "lives"
+<p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which lives
 in a certain Duktape heap.  A context is represented by a <tt>duk_context *</tt>
 in the Duktape API, and is associated with an internal Duktape coroutine (a form
 of a co-operative thread).  The context handle is given to almost every Duktape
@@ -105,6 +104,12 @@ point of view.</p>
 duk_destroy_heap(ctx);
 </pre>
 
+<p>This frees all heap objects allocated, and invalidates any pointers to
+such objects.  In particular, if the calling program holds string pointers
+to values which resided on the value stack of a context associated with the
+heap, such pointers are invalidated and must never be dereferenced after
+the heap destruction call returns.</p>
+
 <h3>Call stack and catch stack (of a context)</h3>
 
 <p>The call stack of a context is not directly visible to the caller.
@@ -124,7 +129,7 @@ caller than the call stack.</p>
 accurately represent the true call chain: tail calls will be "squashed"
 together in the call stack.</p>
 
-<div class="note">Don't confuse with the C call stack.</div>
+<div class="note">Don't confuse with the C stack.</div>
 
 <h3>Value stack (of a context) and value stack index</h3>
 
@@ -216,7 +221,42 @@ each other's values.</p>
 
 <h3>Growing the value stack</h3>
 
-<p>FIXME.</p>
+<p>At any time, the value stack of a context is allocated for a certain
+maximum number of entries.  Attempt to push values beyond the allocated
+size will cause an error to be thrown, it will <b>not</b> cause the value
+stack to be automatically extended.  This simplifies the internal
+implementation and also improves performance by minimizing reallocations
+when you know, beforehand, that a certain number of entries will be needed
+during a function.</p>
+
+<p>When a value stack is created or a Duktape/C function is entered, the
+value stack is always guaranteed up to size XXX.  In the typical case this
+is more than sufficient so that the majority of Duktape/C functions don't
+need to extend the value stack.  Only functions that need more space or
+perhaps need an input-dependent amount of space need to grow the value
+stack.</p>
+
+<p>You can extend the stack allocation explicitly with <tt>duk_check_stack()</tt>
+or (usually more preferably) <tt>duk_require_stack()</tt>.  Once successfully
+extended, you are again guaranteed that the specified number of elements can
+be pushed to the stack.  There is no way to shrink the allocation except by
+returning from a Duktape/C function.</p>
+
+<p>Consider, for instance, the following function which will uppercase an
+input ASCII string by pushing uppercased characters one-by-one on the stack
+and then concatenating the result.  This example illustrates how the number
+of value stack entries required may depend on the input (otherwise this is
+not a very good approach for uppercasing a string):</p>
+
+<pre class="ecmascript-code" include="uppercase.c"></pre>
+
+<p>In addition to user reserved elements, Duktape keeps an automatic internal
+value stack reserve to ensure all API calls have enough value stack space to
+work without further allocations.  The value stack is also extended in somewhat
+large steps to minimize memory reallocation activity.  As a result the internal
+number of value stack elements available beyond the caller specified extra
+varies considerably.  The caller does not need to take this into account and
+should never rely on any additional elements being available.</p>
 
 <h3>Ecmascript array index</h3>
 
@@ -251,13 +291,14 @@ applies for Ecmascript code.</p>
 
 <h3>Duktape API</h3>
 
+<p>Duktape API is the collection of user callable API calls defined in
+<tt>duktape.h</tt> and documented in the
+<a href="api.html">API reference</a>.</p>
+
 <p>The Duktape API calls are generally error tolerant and will check all
 arguments for errors (such as <tt>NULL</tt> pointers).  However, to minimize
 footprint, the <tt>ctx</tt> argument is not checked, and the caller MUST NOT
 call any Duktape API calls with a <tt>NULL</tt> context.</p>
-
-<p>For details on the available API calls, please see the
-<a href="api.html">API reference</a>.</p>
 
 <h3>Duktape/C function</h3>
 

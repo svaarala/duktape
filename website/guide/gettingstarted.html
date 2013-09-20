@@ -39,24 +39,7 @@ Hello world!
 
 <p>You can also run Ecmascript code from a file which is useful for playing with
 features and algorithms.  As an example, create <tt>fib.js</tt>:</p>
-<pre class="ecmascript-code">
-// fib.js
-function fib(n) {
-    if (n == 0) { return 0; }
-    if (n == 1) { return 1; }
-    return fib(n-1) + fib(n-2);
-}
-
-function test() {
-    var res = [];
-    for (i = 0; i &lt; 20; i++) {
-        res.push(fib(i));
-    }
-    print(res.join(' '));
-}
-
-test();
-</pre>
+<pre class="ecmascript-code" include="fib.js"></pre>
 
 <p>Test the script from the command line:</p>
 <pre>
@@ -114,72 +97,12 @@ without recompiling the C program.</p>
 line processing function converts a plain text line into HTML, and
 automatically bolds text between stars:</p>
 
-<pre class="ecmascript-code">
-// process.js
-function processLine(line) {
-    return line.trim()
-        .replace(/[&lt;&gt;&amp;"'\u0000-\u001F\u007E-\uFFFF]/g, function(x) {
-            // escape HTML characters
-            return '&amp;#' + x.charCodeAt(0) + ';'
-         })
-        .replace(/\*(.*?)\*/g, function(x, m) {
-            // automatically bold text between stars
-            return '&lt;b&gt;' + m + '&lt;/b&gt;';
-         });
-}
-</pre>
+<pre class="ecmascript-code" include="process.js"></pre>
 
 <p>The C code, <tt>processlines.c</tt> initializes a Duktape context,
 compiles the script, then proceeds to process lines from <tt>stdin</tt>,
 calling <tt>processLine()</tt> for every line:</p>
-<pre class="c-code">
-/* processlines.c */
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
-#include "duktape.h"
-
-int main(int argc, const char *argv[]) {
-    duk_context *ctx = NULL;
-    char line[4096];
-    char idx;
-    int ch;
-
-    ctx = duk_create_heap_default();
-    if (!ctx) { exit(1); }
-
-    duk_eval_file(ctx, "process.js");
-    duk_pop(ctx);  /* pop eval result */
-
-    memset(line, 0, sizeof(line));
-    idx = 0;
-    for (;;) {
-        if (idx &gt;= sizeof(line)) { exit(1); }
-
-        ch = fgetc(stdin);
-        if (ch == 0x0a) {
-            line[idx++] = '\0';
-
-            duk_push_global_object(ctx);
-            duk_get_prop_string(ctx, -1 /*index*/, "processLine");
-            duk_push_string(ctx, line);
-            duk_call(ctx, 1 /*nargs*/);
-            printf("%s\n", duk_to_string(ctx, -1));
-            duk_pop(ctx);
-
-            idx = 0;
-        } else if (ch == EOF) {
-            break;
-        } else {
-            line[idx++] = (char) ch;
-        }
-    }
-
-    duk_destroy_heap(ctx);
-
-    exit(0);
-}
-</pre>
+<pre class="c-code" include="processlines.c"></pre>
 
 <p>Let's look at the Duktape specific parts of the example code line by line.
 Here we need to gloss over some details for brevity, see
@@ -349,37 +272,7 @@ See <a href="#programming">Programming model</a> for more details.</li>
 up Ecmascript algorithms.  More specifically, our test program searches for
 primes under 1000000 which end with the digits '9999'.  The Ecmascript
 version of the program is:</p>
-<pre class="ecmascript-code">
-// Pure Ecmascript version of low level helper
-function primeCheckEcmascript(val, limit) {
-    for (var i = 2; i &lt;= limit; i++) {
-        if ((val % i) == 0) { return false; }
-    }
-    return true;
-}
-
-// Select available helper at load time
-var primeCheckHelper = (this.primeCheckNative || primeCheckEcmascript);
-
-// Check 'val' for primality
-function primeCheck(val) {
-    if (val == 1 || val == 2) { return true; }
-    var limit = Math.ceil(Math.sqrt(val));
-    while (limit * limit &lt; val) { limit += 1; }
-    return primeCheckHelper(val, limit);
-}
-
-// Find primes below one million ending in '9999'.
-function primeTest() {
-    var res = [];
-
-    print('Have native helper: ' + (primeCheckHelper !== primeCheckEcmascript)); 
-    for (var i = 1; i &lt; 1000000; i++) {
-        if (primeCheck(i) &amp;&amp; (i % 10000) == 9999) { res.push(i); }
-    }
-    print(res.join(' '));
-}
-</pre>
+<pre class="ecmascript-code" include="prime.js"></pre>
 
 <p>Note that the program uses the native helper if it's available but falls
 back to an Ecmascript version if it's not.  This allows the Ecmascript code
@@ -393,52 +286,9 @@ which is more flexible.</p>
 <p>A native helper with functionality equivalent to <tt>primeCheckEcmascript</tt>
 is quite straightforward to implement.  Adding a program main we get
 <tt>primecheck.c</tt>:</p>
-<pre class="c-code">
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
-#include "duktape.h"
+<pre class="c-code" include="primecheck.c"></pre>
 
-static int native_prime_check(duk_context *ctx) {
-    int val = duk_require_int(ctx, 0);
-    int lim = duk_require_int(ctx, 1);
-    int i;
-
-    for (i = 2; i &lt;= lim; i++) {
-        if (val % i == 0) {
-            duk_push_false(ctx);
-            return 1;
-        }
-    }
-
-    duk_push_true(ctx);
-    return 1;
-}
-
-int main(int argc, const char *argv[]) {
-    duk_context *ctx = NULL;
-
-    ctx = duk_create_heap_default();
-    if (!ctx) { exit(1); }
-
-    duk_push_global_object(ctx);
-    duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
-    duk_put_prop_string(ctx, -2, "primeCheckNative");
-
-    duk_eval_file(ctx, "prime.js");
-    duk_pop(ctx);  /* pop eval result */
-
-    duk_get_prop_string(ctx, -1, "primeTest");
-    duk_call(ctx, 0);
-    duk_pop(ctx);
-
-    duk_destroy_heap(ctx);
-
-    exit(0);
-}
-</pre>
-
-<p>The new steps here, line by line:</p>
+<p>The new steps here are, line by line:</p>
 <ul class="breakdown">  <!-- breakdown -->
 
 <li>
