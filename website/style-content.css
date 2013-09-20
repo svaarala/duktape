@@ -144,9 +144,9 @@ ul.breakdown li {
 .content pre {
 	overflow: auto;
 	font-family: monospace;
-	font-size: 12pt;
+	font-size: 10pt;
 	font-weight: 400;
-	line-height: 1.4;
+	line-height: 1.5;
 	background: #eeeeee;
 	border: 2px dashed #cccccc;
 	padding: 1.5ex;
