@@ -4,7 +4,7 @@
 #  When creating actual distributables, always clean first.
 #
 
-VERSION=0.6.0
+VERSION=0.7.0
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
