@@ -430,8 +430,8 @@ def generateApiDoc(apidocdir, apitestdir):
 	res = []
 	navlinks = []
 	navlinks.append(['#introduction', 'Introduction'])
-	navlinks.append(['#concepts', 'Concepts'])
 	navlinks.append(['#notation', 'Notation'])
+	navlinks.append(['#concepts', 'Concepts'])
 	navlinks.append(['#defines', 'Header definitions'])
 	navlinks.append(['#bytag', 'API calls by tag'])
 	navlinks.append(['', u'\u00a0'])  # XXX: force vertical space
@@ -456,8 +456,8 @@ def generateApiDoc(apidocdir, apitestdir):
 
 	# FIXME: generate from the same list as nav links for these
 	res += processRawDoc('api/intro.html')
-	res += processRawDoc('api/concepts.html')
 	res += processRawDoc('api/notation.html')
+	res += processRawDoc('api/concepts.html')
 	res += processRawDoc('api/defines.html')
 
 	# scan api doc files
