@@ -1,7 +1,7 @@
 <hr> <!-- this improves readability on e.g. elinks and w3m -->
 <h2 id="introduction">Introduction</h2>
 
-<p>Version: 0.6.0 (2013-09-XX)</p>
+<p>Version: 0.6.0 (2013-09-21)</p>
 <p><b>Work in progress</b></p>
 
 <h3>Document scope</h3>
@@ -66,11 +66,11 @@ features (some are visible to applications, while others are internal):</p>
 Ecmascript compliance requires regular expression and Unicode support.</p>
 
 <p><b>Portability</b>.  Minimal system dependencies are nice when porting,
-so Duktape depends on very few system libraries: number formatting and
-parsing, regular expressions, and Unicode are all implemented internally
-in Duktape.  One of the few dependencies that cannot be fully eliminated is
-system date/time integration.  This is confined to the implementation of
-the <tt>Date</tt> built-in.</p>
+so Duktape depends on very few system libraries.  For example, number
+formatting and parsing, regular expressions, and Unicode are all implemented
+internally by Duktape.  One of the few dependencies that cannot be fully
+eliminated is system date/time integration.  This is confined to the
+implementation of the <tt>Date</tt> built-in.</p>
 
 <p><b>Easy C interface</b>.  The interface between Duktape and C programs
 should be natural and error-tolerant.  As a particular issue, string
@@ -88,7 +88,8 @@ so there is no practical way of competing with very advanced JIT-based engines
 like SpiderMonkey (and its optimized variants) or Google V8.  Performance
 should still be reasonable for typical embedded programs.
 <a href="http://www.lua.org/">Lua</a> is a good benchmark in this respect.
-(Adding optional, modular support for JITing later would be nice.)</p>
+(Adding optional, modular support for JITing or perhaps off-line compilation
+would be nice.)</p>
 
 <p><b>ASCII string performance</b>.  It's important that operations dealing
 with plain ASCII strings be very fast: ASCII dominates most embedded use.
