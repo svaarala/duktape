@@ -157,6 +157,10 @@ CSS reset:
 
 * http://www.cssreset.com/
 
+Favicon creator:
+
+* http://www.favicon.cc/
+
 Future work
 ===========
 

@@ -673,6 +673,10 @@ def main():
 	soup = postProcess(soup, None)
 	writeFile(os.path.join(outdir, 'download.html'), soup.encode('ascii'))
 
+	print 'Copying misc files'
+	for i in [ 'favicon.ico' ]:
+		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, i))
+
 	print 'Copying binaries'
 	for i in os.listdir('binaries'):
 		shutil.copyfile(os.path.join('binaries', i), os.path.join(outdir, i))
