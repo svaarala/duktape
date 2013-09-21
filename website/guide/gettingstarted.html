@@ -110,7 +110,7 @@ Here we need to gloss over some details for brevity, see
 <ul class="breakdown"> <!-- breakdown -->
 
 <li>
-<pre>
+<pre class="c-code">
 ctx = duk_create_heap_default();
 if (!ctx) { exit(1); }
 </pre>
@@ -121,7 +121,7 @@ and examining values on the stack.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_eval_file(ctx, "process.js");
 duk_pop(ctx);  /* pop eval result */
 </pre>
@@ -133,21 +133,21 @@ the stack.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_push_global_object(ctx);
 duk_get_prop_string(ctx, -1 /*index*/, "processLine");
 </pre>
 <p>The first call pushes the Ecmascript global object to the value stack.
 The second call looks up <tt>processLine</tt> property of the global object.
-The script in <tt>process.js</tt> has registered a callback function into
-the global object with this name.  The <tt>-1</tt> argument is an index to
-the value stack; negative values refer to stack elements starting from the
-top, so <tt>-1</tt> refers to the topmost element of the stack, the property
+The script in <tt>process.js</tt> has registered a function into the global
+object with this name.  The <tt>-1</tt> argument is an index to the value
+stack; negative values refer to stack elements starting from the top, so
+<tt>-1</tt> refers to the topmost element of the stack, the property
 lookup result.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_push_string(ctx, line);
 </pre>
 <p>Pushes the string pointed to by <tt>line</tt> to the value stack.  The
@@ -158,7 +158,7 @@ the call returns.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_call(ctx, 1 /*nargs*/);
 </pre>
 <p>At this point the value stack contains: the global object, the processLine
@@ -171,7 +171,7 @@ result.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 printf("%s\n", duk_to_string(ctx, -1));
 duk_pop(ctx);
 </pre>
@@ -179,12 +179,13 @@ duk_pop(ctx);
 element at index -1 (the topmost value on the stack, which is the processLine
 function call result here) to a string, returning a <tt>const char *</tt> pointing
 to the result.  This return value is a read-only, NUL terminated UTF-8 value which
-C code can use directly.  Here we just print out the string.  After we've printed
-the string, we pop the value off the value stack.</p>
+C code can use directly as long as the value resides on the value stack.  Here we
+just print out the string.  After we've printed the string, we pop the value off
+the value stack.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_destroy_heap(ctx);
 </pre>
 <p>Destroy the Duktape context, freeing all resources held by the context.
@@ -238,7 +239,7 @@ int my_native_func(duk_context *ctx) {
 <ul class="breakdown">  <!-- breakdown -->
 
 <li>
-<pre>
+<pre class="c-code">
 double arg = duk_require_number(ctx, 0 /*index*/);
 </pre>
 <p>Check that the number at value stack index 0 (bottom of the stack, first
@@ -247,14 +248,14 @@ returns.  If the value is a number, return it as a <tt>double</tt>.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_push_number(ctx, arg * arg);
 </pre>
 <p>Compute square of argument and push it to the value stack.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 return 1;
 </pre>
 <p>Return from the function call, indicating that there is a (single) return
@@ -288,11 +289,11 @@ is quite straightforward to implement.  Adding a program main we get
 <tt>primecheck.c</tt>:</p>
 <pre class="c-code" include="primecheck.c"></pre>
 
-<p>The new steps here are, line by line:</p>
+<p>The new calls here are, line by line:</p>
 <ul class="breakdown">  <!-- breakdown -->
 
 <li>
-<pre>
+<pre class="c-code">
 int val = duk_require_int(ctx, 0);
 int lim = duk_require_int(ctx, 1);
 </pre>
@@ -304,7 +305,7 @@ function argument and index 1 to the second.</p>
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_push_false(ctx);
 return 1;
 </pre>
@@ -313,7 +314,7 @@ return 1;
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_push_global_object(ctx);
 duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
 duk_put_prop_string(ctx, -2, "primeCheckNative");
@@ -324,7 +325,7 @@ and pushes it to the value stack.  The function object is bound to the
 Duktape/C function <tt>native_prime_check</tt>: when the Ecmascript function
 created here is called from Ecmascript, the C function gets invoked.
 The second argument (<tt>2</tt>) to the call indicates how many arguments
-the C function gets on the value stack.  If the caller gives less arguments,
+the C function gets on the value stack.  If the caller gives fewer arguments,
 the missing arguments are padded with <tt>undefined</tt>; if the caller gives
 more arguments, the extra arguments are dropped automatically.  Finally, the
 third call registers the function object into the global object with the
@@ -333,7 +334,7 @@ name <tt>primeCheckNative</tt> and pops the function value off the stack.
 </li>
 
 <li>
-<pre>
+<pre class="c-code">
 duk_get_prop_string(ctx, -1, "primeTest");
 duk_call(ctx, 0);
 duk_pop(ctx);
