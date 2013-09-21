@@ -13,7 +13,7 @@ Because 0 is no longer available to denote an invalid/non-existent element,
 the constant <tt>DUK_INVALID_INDEX</tt> is used instead in Duktape.</p>
 
 <p>String indices are also zero-based, and slices are indicated with an
-inclusive start index and an *exclusive* end index (i.e. [start,end[).
+inclusive start index and an exclusive end index (i.e. [start,end[).
 In Lua, slices are indicated with inclusive indices (i.e. [start,end]).</p>
 
 <h3>Object type represents functions and threads</h3>
@@ -21,7 +21,7 @@ In Lua, slices are indicated with inclusive indices (i.e. [start,end]).</p>
 <p>In Lua functions and threads are a separate type from objects.
 In Duktape the object type is used for plain objects, Ecmascript and
 native functions, and threads (coroutines).  As a result, all of these
-have a mutable set of properties.</p>
+have a mutable and extensible set of properties.</p>
 
 <h3>Lua userdata and lightuserdata</h3>
 
@@ -45,13 +45,14 @@ finalizer to the object to free any resources related to the buffer.  This
 works reasonably well as long as nothing else holds a reference to the buffer.
 If this were the case, the buffer could get used after the object had already
 been finalized.  To safeguard against this, the native C structure should
-have a flag indicating whether the data structure is open or closed.</p>
+have a flag indicating whether the data structure is open or closed.  This
+is good practice anyway for robust native code.</p>
 
 <h3>Reference counting</h3>
 
-<p>Duktape has a combined reference counting and mark-and-sweep garbage
-collector (although compilation options can be used to change this).
-Lua has an incremental collector but no reference counting.</p>
+<p>Duktape has a combined reference counting and non-incremental backup
+mark-and-sweep garbage collector (although compilation options can be used
+to change this).  Lua has an incremental collector but no reference counting.</p>
 
 <h3>Emergency garbage collection</h3>
 
@@ -102,9 +103,10 @@ for a similar effect (though not with respect to performance):
 <h3>Coroutines</h3>
 
 <p>There are no primitives for coroutine control in the Duktape API
-(Lua API has e.g. <tt>lua_resume</tt>).  Further, Duktape has quite many
-coroutine yield restrictions now; for instance, coroutines cannot yield
-from inside constructor calls or getter/setter calls.</p>
+(Lua API has e.g. <tt>lua_resume</tt>).  Coroutines can only be controlled
+using the functions exposed by the <tt>__duk__</tt> built-in.  Further,
+Duktape has quite many coroutine yield restrictions now; for instance,
+coroutines cannot yield from inside constructor calls or getter/setter calls.</p>
 
 <h3>Multiple return values</h3>
 
