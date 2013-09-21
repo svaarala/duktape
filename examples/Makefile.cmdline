@@ -1,6 +1,7 @@
 #
 #  Example Makefile for building a program with embedded Duktape.
 #  The example program here is the Duktape command line tool.
+#
 
 DUKTAPE_SOURCES = src/duktape.c
 
