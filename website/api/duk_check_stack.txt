@@ -11,6 +11,7 @@ occur).  The caller MUST NOT rely on being able to push more than
 <tt>extra</tt> values; although this is possible, such elements are
 reserved for Duktape's internal use.</p>
 
+<!--FIXME-->
 <p>Upon entry to a Duktape/C function and when outside any call
 there is an automatic reserve (of XXX elements) allocated for the
 caller.  If more value stack space is needed, the caller must reserve

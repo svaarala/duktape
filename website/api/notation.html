@@ -31,16 +31,9 @@ or removed, have a white background:</p>
 [ ... obj! key! ]
 </pre>
 
-<p>Elements which are identified by an explicit index are indicated with a
-separate color and an additional ellipsis, to emphasize that they may be
-anywhere in the stack:</p>
-
-<pre class="stack">
-[ ... obj* ... key! value! ]
-</pre>
-
-<p>However, if the explicitly indexed element is modified, it is also
-shown with a white background:</p>
+<p>Elements which are identified by an explicit index in an API call are
+indicated with surrounding ellipsis elements, to emphasize that they may
+be anywhere in the stack:</p>
 
 <pre class="stack">
 [ ... obj! ... key! value! ]
@@ -55,6 +48,6 @@ or symbolic value in parenthesis:</p>
 <p>Stack transformation is represented with an arrow and two stacks:</p>
 
 <pre class="stack">
-[ ... obj ... key! value! ] -> [ ... obj ... ]
+[ ... obj! ... key! value! ] -> [ ... obj! ... ]
 </pre>
 

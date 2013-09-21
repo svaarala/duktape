@@ -13,17 +13,17 @@ contexts.</p>
 
 <h3>Call stack (of a context)</h3>
 
-<p>Book-keeping of the active function call chain in a context.
+<p>Book-keeping of the active function call chain of a context.
 Includes both Ecmascript and Duktape/C function calls.</p>
 
 <h3>Value stack (of a context)</h3>
 
-<p>Book-keeping of tagged values belonging to current activations
-in a context's call stack.</p>
+<p>Storage for tagged values belonging to current activations in a
+context's call stack.</p>
 
 <p>The values kept in a value stack are traditional tagged <a href="#stack-type">types</a>.
-Stack entries are indexed either from the bottom or from the top of the
-most recent function call.
+Stack entries are indexed either from the bottom (&gt;= 0) or from the top
+(&lt; 0) of the most recent function call.
 </p>
 
 <h3>Value stack index</h3>

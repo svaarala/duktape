@@ -6,10 +6,9 @@
 
 <h3>Document scope</h3>
 
-<p>The Duktape API (defined in <tt>duktape.h</tt>) is a relatively stable
-set of constants and API calls which allows C/C++ programs to interface
-with Ecmascript code and shields them from internal details like value
-representation.
+<p>The Duktape API (defined in <tt>duktape.h</tt>) is a set of constants
+and API calls which allows C/C++ programs to interface with Ecmascript
+code and shields them from internal details like value representation.
 </p>
 
 <p>This document provides a concise reference for the Duktape API and
@@ -47,8 +46,7 @@ for little practical gain.</p>
 int main(int argc, char *argv[]) {
     duk_context *ctx = duk_create_heap_default(ctx);
     if (ctx) {
-        duk_push_string(ctx, "print('Hello world from Javascript!');");
-        duk_eval(ctx);
+        duk_eval_string(ctx, "print('Hello world from Javascript!');");
         duk_destroy_heap(ctx);
     }
     return 0;

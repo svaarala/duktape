@@ -12,7 +12,7 @@ string for convenience.</p>
 <div class="note">
 Coercing to a buffer first coerces a non-buffer value into a string, and
 then coerces the string into a buffer.  The resulting buffer contains the
-string in an CESU-8 encoding.
+string in CESU-8 encoding.
 </div>
 
 =example
