@@ -86,7 +86,7 @@ int adder(duk_context *ctx) {
 <pre class="c-code">
 duk_push_global_object(ctx);
 duk_push_c_function(ctx, adder, DUK_VARARGS);
-duk_put_prop_string(ctx, -2, "adder");
+duk_put_prop_string(ctx, -2 /*idx:global*/, "adder");
 duk_pop(ctx);  /* pop global */
 </pre>
 
