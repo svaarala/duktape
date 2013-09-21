@@ -23,17 +23,19 @@
 <p>The following stack types involve additional heap allocations:</p>
 
 <ul>
-<li>String: a single allocation contains a combined heap and string header
-    and the immutable string data.</li>
+<li>String: a single allocation contains a combined heap and string header,
+    followed by the immutable string data.</li>
 <li>Object: one allocation is used for a combined heap and object header,
-    and another allocation is used for object properties.</li>
+    and another allocation is used for object properties.  The property
+    allocation contains both array entries and normal properties, and if
+    the object is large enough, a hash table to speed up lookups.</li>
 <li>Buffer: for fixed buffers a single allocation contains a combined heap
-    and buffer header and the mutable fixed-size buffer.  For dynamic
-    buffers the current buffer is allocated separately.</li>
+    and buffer header, followed by the mutable fixed-size buffer.  For
+    dynamic buffers the current buffer is allocated separately.</li>
 </ul>
  
 <p>Note that while strings are considered a primitive (pass-by-value)
-type in Ecmascript, it is a heap allocated type from a memory allocation
+type in Ecmascript, they are a heap allocated type from a memory allocation
 viewpoint.</p>
 
 <h3>Type masks</h3>
@@ -122,33 +124,37 @@ accurately.</p>
 <p>IEEE double allows NaN values to have additional signaling bits.  Because these
 bits are used by Duktape internal tagged type representation (when using 8-byte
 packed values), NaN values in the Duktape API are normalized.  Concretely, if you
-e.g. push a certain NaN value to the value stack, another (normalized) NaN value
-may come out.</p>
+push a certain NaN value to the value stack, another (normalized) NaN value may
+come out.  Don't rely on NaNs preserving their exact form.</p>
 
 <h3>String</h3>
 
 <p>The <b>string</b> type is a raw byte sequence of a certain length which may
 contain internal NUL (0x00) values.  Strings are always automatically NUL
-terminated for C coding convenience.  For instance, the string <tt>"foo"</tt>
-has byte length 3 and is stored in memory as <tt>{ 'f', 'o', 'o', '\0' }</tt>.
-Because of the guaranteed NUL termination, strings can be pointed to using
-a simple <tt>const char *</tt> as long as internal NULs are not an issue;
-if they are, the explicit byte length of the string can be queried with the
-API.</p>
+terminated for C coding convenience.  The NUL terminator is not counted as part
+of the string length.  For instance, the string <tt>"foo"</tt> has byte length 3
+and is stored in memory as <tt>{ 'f', 'o', 'o', '\0' }</tt>.  Because of the
+guaranteed NUL termination, strings can always be pointed to using a simple
+<tt>const char *</tt> as long as internal NULs are not an issue; if they are,
+the explicit byte length of the string can be queried with the API.  Calling code
+can refer directly to the string data held by Duktape.  Such string data
+pointers are valid (and stable) for as long as a string is reachable in the
+Duktape heap.</p>
 
-<p>Strings are interned for efficiency: only a single copy of a certain string ever
-exists at a time.  Strings are immutable and must NEVER be changed by calling C
-code.  Doing so will lead to very mysterious issues which are hard to diagnose.</p>
+<p>Strings are <a href="http://en.wikipedia.org/wiki/String_interning">interned</a>
+for efficiency: only a single copy of a certain string ever exists at a time.
+Strings are immutable and must NEVER be changed by calling C code.  Doing so will
+lead to very mysterious issues which are hard to diagnose.</p>
 
 <p>Calling code most often deals with Ecmascript strings, which may contain
-arbitrary 16-bit codepoints but cannot represent
+arbitrary 16-bit codepoints (the whole range 0x0000 to 0xFFFF) but cannot represent
 non-<a href="http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane">BMP</a>
 codepoints (this is how strings are defined in the Ecmascript standard).
 In Duktape, Ecmascript strings are encoded with
 <a href="http://en.wikipedia.org/wiki/CESU-8">CESU-8</a> encoding.  CESU-8
 matches <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> except that it
 allows codepoints in the surrogate pair range (U+D800 to U+DFFF) to be encoded
-directly (these are prohibited in UTF-8).  CESU-8, like UTF-8, encodes all 7-bit
+directly; these are prohibited in UTF-8.  CESU-8, like UTF-8, encodes all 7-bit
 ASCII characters as-is which is convenient for C code.  For example:</p>
 
 <ul>
@@ -162,10 +168,10 @@ ASCII characters as-is which is convenient for C code.  For example:</p>
 can be represented with UTF-8, and codepoints above that up to full 32 bits
 can be represented with
 <a href="http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range">"extended UTF-8"</a>.
-Non-standard strings are used for storing custom and internal object properties;
-using a non-standard string ensures that such properties never conflict with
-properties accessible using standard Ecmascript strings.  Non-standard strings
-can be given to Ecmascript built-in functions, but since behavior may not be exactly
+Non-standard strings are used for storing internal object properties; using a
+non-standard string ensures that such properties never conflict with properties
+accessible using standard Ecmascript strings.  Non-standard strings can be given
+to Ecmascript built-in functions, but since behavior may not be exactly
 specified, results may vary.</p>
 
 <p>Duktape uses internal object properties to record internal implementation
@@ -202,7 +208,7 @@ continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</
 </table>
 
 <p>The downside of the encoding for codepoints above U+7FFFFFFF is that
-the leading byte will be <tt>0xfe</tt> which conflicts with Unicode byte order
+the leading byte will be <tt>0xFE</tt> which conflicts with Unicode byte order
 marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
 <h3>Object</h3>
@@ -216,7 +222,7 @@ Properties are key-value pairs with a string key and an arbitrary value
 
 <h3>Buffer</h3>
 
-<p>The <b>buffer</b> type is a raw buffer for userdata of either fixed or dynamic
+<p>The <b>buffer</b> type is a raw buffer for user data of either fixed or dynamic
 size.  The size of a fixed buffer is given at its creation, and fixed buffers
 have an unchanging (stable) data pointer.  Dynamic buffers may change during their
 life time at the cost of having a (potentially) changing data pointer.  Dynamic
