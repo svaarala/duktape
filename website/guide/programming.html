@@ -222,7 +222,7 @@ each other's values.</p>
 <h3>Growing the value stack</h3>
 
 <p>At any time, the value stack of a context is allocated for a certain
-maximum number of entries.  Attempt to push values beyond the allocated
+maximum number of entries.  An attempt to push values beyond the allocated
 size will cause an error to be thrown, it will <b>not</b> cause the value
 stack to be automatically extended.  This simplifies the internal
 implementation and also improves performance by minimizing reallocations
@@ -252,11 +252,11 @@ not a very good approach for uppercasing a string):</p>
 
 <p>In addition to user reserved elements, Duktape keeps an automatic internal
 value stack reserve to ensure all API calls have enough value stack space to
-work without further allocations.  The value stack is also extended in somewhat
-large steps to minimize memory reallocation activity.  As a result the internal
-number of value stack elements available beyond the caller specified extra
-varies considerably.  The caller does not need to take this into account and
-should never rely on any additional elements being available.</p>
+work without further allocations.  The value stack is also extended and shrunk
+in somewhat large steps to minimize memory reallocation activity.  As a result
+the internal number of value stack elements available beyond the caller
+specified extra varies considerably.  The caller does not need to take this
+into account and should never rely on any additional elements being available.</p>
 
 <h3>Ecmascript array index</h3>
 
@@ -376,7 +376,8 @@ is the Ecmascript default.</p>
 <p>Also as a consequence of Duktape/C function strictness, the <tt>this</tt>
 binding given to Duktape/C functions is not
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>
-as is normal for non-strict Ecmascript functions.  As an example:</p>
+as is normal for non-strict Ecmascript functions.  An example of how coercion
+happens in Ecmascript code:</p>
 <pre class="ecmascript-code">
 function strictFunc() { 'use strict'; print(typeof this); }
 function nonStrictFunc() { print(typeof this); }
@@ -400,8 +401,12 @@ static int my_func(duk_context *ctx) {
 
 <h3>Storing state for a Duktape/C function</h3>
 
-<p>A Duktape/C function can use its Function object to store state or
-parameters.  A certain Duktape/C function (the actual C function)
+<p>Sometimes it would be nice to provide parameters or additional state
+to a Duktape/C function out-of-band, i.e. outside explicit call arguments.
+There are a few ways to achieve this.</p>
+
+<p>First, a Duktape/C function can use its Function object to store state
+or parameters.  A certain Duktape/C function (the actual C function)
 is always represented by an Ecmascript Function object which is
 magically associated with the underlying C function.   The Function
 object can be used to store properties related to that particular
@@ -409,7 +414,7 @@ instance of the function.  Note that a certain Duktape/C function can
 be associated with multiple independent Function objects and thus
 independent states.</p>
 
-<p>Accessing the Ecmascript Function object of a Duktape/C function
+<p>Accessing the Ecmascript Function object related to a Duktape/C function
 is easy:</p>
 <pre class="c-code">
 duk_push_current_function(ctx);
