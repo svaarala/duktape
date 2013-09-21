@@ -30,3 +30,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2013-09-19 07:12:50.251175 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Also the return value of snprintf (and its friends) seems to vary between
+    implementations when the string is truncated.  This is mostly the case with
+    old environments.  Document that snprintf return value is not to be trusted
+    without care.

@@ -3,7 +3,7 @@ title: type-pun warning in duk_api.c:275 and a few other places
 desc: ""
 type: :bugfix
 component: duk
-release: v0.6
+release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -35,3 +35,7 @@ log_events:
     duk_hthread_stacks.c: In function \xE2\x80\x98duk_hthread_catchstack_shrink_check\xE2\x80\x99:\n\
     duk_hthread_stacks.c:301: warning: dereferencing type-punned pointer\n\
     will break strict-aliasing rules"
+- - 2013-09-19 13:35:45.278193 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.7 from v0.6
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "guide: discuss pointer stability"
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-21 17:25:52.913098 Z
+references: []
+
+id: 616f5a10ce74dc91eb858214a2c2d510bf60d053
+log_events: 
+- - 2013-09-21 17:25:53.078280 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
