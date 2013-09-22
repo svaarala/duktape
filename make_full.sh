@@ -27,6 +27,7 @@ for i in src/*.c src/*.h src/*.py src/*.txt; do
 done
 
 for i in \
+	doc/rst-conventions.txt \
 	doc/json.txt \
 	doc/datetime.txt \
 	doc/number_conversion.txt \
