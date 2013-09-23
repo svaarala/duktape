@@ -140,7 +140,6 @@ for i in	\
 	duk_js_var.c		\
 	duk_lexer.c		\
 	duk_lexer.h		\
-	duk_misc.h		\
 	duk_numconv.c		\
 	duk_numconv.h		\
 	duk_rdtsc.h		\

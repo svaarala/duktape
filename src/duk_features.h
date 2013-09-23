@@ -152,6 +152,61 @@
 		(void) (x); \
 	} while (0)
 
+/*
+ *  Some double constants which may be platform specific.
+ *
+ *  INFINITY/HUGE_VAL is problematic on GCC-3.3: it causes an overflow warning
+ *  and there is no pragma in GCC-3.3 to disable it.  Using __builtin_inf()
+ *  avoids this problem for some reason.
+ */
+
+#include <math.h>
+
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+    (((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4))
+/* GCC older than 4.6 */
+#define  DUK_DOUBLE_INFINITY  (__builtin_inf())
+#else
+#define  DUK_DOUBLE_INFINITY  ((double) INFINITY)
+#endif
+
+#define  DUK_DOUBLE_2TO32     4294967296.0
+#define  DUK_DOUBLE_2TO31     2147483648.0
+
+/*
+ *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
+ *  see: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string
+ */
+
+#define  _DUK_STRINGIFY_HELPER(x)  #x
+#define  DUK_MACRO_STRINGIFY(x)  _DUK_STRINGIFY_HELPER(x)
+
+/*
+ *  GCC specific compile time messages
+ *
+ *  Note: no semicolon should be used after these because they may appear e.g. at top level:
+ *
+ *      DUK_FIXME("this needs fixing")
+ */
+
+/* FIXME: make these conditional to a specific compiler option (don't want to see these normally) */
+
+#if defined(__GNUC__) && defined(FIXME_COMMENTED_OUT)
+
+/* http://gcc.gnu.org/onlinedocs/gcc-4.6.0/gcc/Diagnostic-Pragmas.html */
+#define  DUK_DO_PRAGMA(x)   _Pragma(#x)
+#define  DUK_FIXME(x)       DUK_DO_PRAGMA(message ("FIXME: " DUK_MACRO_STRINGIFY(x)))
+#define  DUK_TODO(x)        DUK_DO_PRAGMA(message ("TODO: " DUK_MACRO_STRINGIFY(x)))
+#define  DUK_XXX(x)         DUK_DO_PRAGMA(message ("XXX: " DUK_MACRO_STRINGIFY(x)))
+
+#else
+
+#define  DUK_FIXME(x)
+#define  DUK_TODO(x)
+#define  DUK_XXX(x)
+
+#endif  /* __GNUC__ */
+
 /* 
  *  Profile processing
  *

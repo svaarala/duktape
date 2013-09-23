@@ -42,7 +42,6 @@
  *  Duktape includes (other than duk_features.h)
  */
 
-#include "duk_misc.h"
 #include "duk_rdtsc.h"
 #include "duk_bittypes.h"
 #include "duk_jmpbuf.h"

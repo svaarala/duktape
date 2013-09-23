@@ -5,8 +5,6 @@
 #ifndef DUK_ERROR_H_INCLUDED
 #define DUK_ERROR_H_INCLUDED
 
-#include "duk_misc.h"
-
 /*
  *  Error codes (defined in duktape.h)
  *

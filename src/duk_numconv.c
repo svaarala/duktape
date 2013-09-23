@@ -1648,7 +1648,7 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 				goto parse_fail;
 			} else {
 				/* FIXME: compile warning here on gcc-4.0, floating constant exceeds range of 'float' */
-				res = INFINITY;
+				res = DUK_DOUBLE_INFINITY;
 				goto neg_and_ret;
 			}
 		}
@@ -1987,8 +1987,7 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 	explim = &str2num_exp_limits[radix - 2];
 	if (exp > explim->upper) {
 		DUK_DDDPRINT("exponent too large -> infinite");
-		/* FIXME: compile warning here on gcc-4.0, floating constant exceeds range of 'float' */
-		res = INFINITY;
+		res = DUK_DOUBLE_INFINITY;
 		goto neg_and_ret;
 	} else if (exp < explim->lower) {
 		DUK_DDDPRINT("exponent too small -> zero");

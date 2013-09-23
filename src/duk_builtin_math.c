@@ -198,13 +198,11 @@ int duk_builtin_math_object_log(duk_context *ctx) {
 }
 
 int duk_builtin_math_object_max(duk_context *ctx) {
-	/* FIXME: compile warning here on gcc-4.0, floating constant exceeds range of 'float' */
-	return math_minmax(ctx, -((double) INFINITY), fmax_fixed);
+	return math_minmax(ctx, -DUK_DOUBLE_INFINITY, fmax_fixed);
 }
 
 int duk_builtin_math_object_min(duk_context *ctx) {
-	/* FIXME: compile warning here on gcc-4.0, floating constant exceeds range of 'float' */
-	return math_minmax(ctx, (double) INFINITY, fmin_fixed);
+	return math_minmax(ctx, DUK_DOUBLE_INFINITY, fmin_fixed);
 }
 
 int duk_builtin_math_object_pow(duk_context *ctx) {
