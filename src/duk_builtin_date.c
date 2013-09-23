@@ -217,7 +217,7 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
 	DUK_MEMSET(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf) - 1, "%s", str);
+	DUK_SNPRINTF(buf, sizeof(buf) - 1, "%s", str);
 
 	DUK_DDDPRINT("parsing: '%s'", buf);
 
@@ -1008,19 +1008,19 @@ static int format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset, int 
 	/* Note: %06d for positive value, %07d for negative value to include sign and
 	 * 6 digits.
 	 */
-	sprintf(yearstr,
-	        (parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999) ? "%04d" :
-		        ((parts[IDX_YEAR] >= 0) ? "+%06d" : "%07d"),
-	        parts[IDX_YEAR]);
+	DUK_SPRINTF(yearstr,
+	            (parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999) ? "%04d" :
+	                    ((parts[IDX_YEAR] >= 0) ? "+%06d" : "%07d"),
+	            parts[IDX_YEAR]);
 
 	if (flags_and_sep & FLAG_LOCALTIME) {
 		/* tzoffset seconds are dropped */
 		if (tzoffset >= 0) {
 			int tmp = tzoffset / 60;
-			sprintf(tzstr, "+%02d:%02d", tmp / 60, tmp % 60);
+			DUK_SPRINTF(tzstr, "+%02d:%02d", tmp / 60, tmp % 60);
 		} else {
 			int tmp = -tzoffset / 60;
-			sprintf(tzstr, "-%02d:%02d", tmp / 60, tmp % 60);
+			DUK_SPRINTF(tzstr, "-%02d:%02d", tmp / 60, tmp % 60);
 		}
 	} else {
 		tzstr[0] = 'Z';

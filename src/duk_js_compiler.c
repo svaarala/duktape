@@ -5283,7 +5283,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				 */
 
 				if (DUK_HSTRING_GET_BYTELEN(h_dir) == 10 &&
-				    strncmp((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict", 10) == 0) {
+				    DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict", 10) == 0) {
 					DUK_DDDPRINT("use strict directive detected: strict flag %d -> %d",
 					             comp_ctx->curr_func.is_strict, 1);
 					comp_ctx->curr_func.is_strict = 1;

@@ -36,7 +36,7 @@ void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 	va_start(ap, fmt);
 	avail = (fb->offset >= fb->length ? (duk_u32) 0 : (duk_u32) (fb->length - fb->offset));
 	if (avail > 0) {
-		int res = vsnprintf((char *) (fb->buffer + fb->offset), avail, fmt, ap);
+		int res = DUK_VSNPRINTF((char *) (fb->buffer + fb->offset), avail, fmt, ap);
 		if (res < 0) {
 			/* error */
 		} else if (res >= avail) {

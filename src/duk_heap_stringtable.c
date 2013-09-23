@@ -382,13 +382,13 @@ duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_u8 *str, duk_u
 
 duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_u32 val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
-	sprintf(buf, "%u", (unsigned int) val);
+	DUK_SPRINTF(buf, "%u", (unsigned int) val);
 	return duk_heap_string_lookup(heap, (duk_u8 *) buf, strlen(buf));
 }
 
 duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_u32 val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
-	sprintf(buf, "%u", (unsigned int) val);
+	DUK_SPRINTF(buf, "%u", (unsigned int) val);
 	return duk_heap_string_intern(heap, (duk_u8 *) buf, strlen(buf));
 }
 

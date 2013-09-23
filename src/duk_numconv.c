@@ -91,12 +91,12 @@ static void bi_print(const char *name, duk_bigint *x) {
 	char *p = buf;
 	int i;
 
-	p += sprintf(p, "%p n=%d", (void *) x, x->n);
+	p += DUK_SPRINTF(p, "%p n=%d", (void *) x, x->n);
 	if (x->n == 0) {
-		p += sprintf(p, " 0");
+		p += DUK_SPRINTF(p, " 0");
 	}
 	for (i = x->n - 1; i >= 0; i--) {
-		p += sprintf(p, " %08x", (unsigned int) x->v[i]);
+		p += DUK_SPRINTF(p, " %08x", (unsigned int) x->v[i]);
 	}
 
 	DUK_DDDPRINT("%s: %s", name, buf);
@@ -1642,7 +1642,7 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 
 		/* borrow literal Infinity from builtin string */
 		q = (const unsigned char *) DUK_HSTRING_GET_DATA(DUK_HTHREAD_STRING_INFINITY(thr));
-		if (strcmp((const char *) p, (const char *) q) == 0) {
+		if (DUK_STRCMP((const char *) p, (const char *) q) == 0) {
 			if (!allow_garbage && (p[8] != (unsigned char) 0)) {
 				DUK_DDDPRINT("parse failed: trailing garbage after matching 'Infinity' not allowed");
 				goto parse_fail;

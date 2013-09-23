@@ -38,7 +38,7 @@ static void format_func_ptr(char *buf, int buf_size, unsigned char *fptr, int fp
 		if (left <= 0) {
 			break;
 		}
-		p += snprintf(p, left, "%02x", (int) fptr[i]);
+		p += DUK_SNPRINTF(p, left, "%02x", (int) fptr[i]);
 	}	
 }
 

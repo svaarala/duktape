@@ -1216,7 +1216,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 			DUK_ASSERT(js_ctx->flag_ext_compatible);
 			fmt = "{\"_ptr\":\"(%p)\"}";
 		}
-		snprintf(buf, sizeof(buf) - 1, fmt, (void *) DUK_TVAL_GET_POINTER(tv));
+		DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, (void *) DUK_TVAL_GET_POINTER(tv));
 		EMIT_CSTR(js_ctx, buf);
 		break;
 	}
