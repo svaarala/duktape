@@ -181,32 +181,6 @@
 #define  _DUK_STRINGIFY_HELPER(x)  #x
 #define  DUK_MACRO_STRINGIFY(x)  _DUK_STRINGIFY_HELPER(x)
 
-/*
- *  GCC specific compile time messages
- *
- *  Note: no semicolon should be used after these because they may appear e.g. at top level:
- *
- *      DUK_FIXME("this needs fixing")
- */
-
-/* FIXME: make these conditional to a specific compiler option (don't want to see these normally) */
-
-#if defined(__GNUC__) && defined(FIXME_COMMENTED_OUT)
-
-/* http://gcc.gnu.org/onlinedocs/gcc-4.6.0/gcc/Diagnostic-Pragmas.html */
-#define  DUK_DO_PRAGMA(x)   _Pragma(#x)
-#define  DUK_FIXME(x)       DUK_DO_PRAGMA(message ("FIXME: " DUK_MACRO_STRINGIFY(x)))
-#define  DUK_TODO(x)        DUK_DO_PRAGMA(message ("TODO: " DUK_MACRO_STRINGIFY(x)))
-#define  DUK_XXX(x)         DUK_DO_PRAGMA(message ("XXX: " DUK_MACRO_STRINGIFY(x)))
-
-#else
-
-#define  DUK_FIXME(x)
-#define  DUK_TODO(x)
-#define  DUK_XXX(x)
-
-#endif  /* __GNUC__ */
-
 /* 
  *  Profile processing
  *
