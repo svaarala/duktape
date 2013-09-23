@@ -748,7 +748,7 @@ static int case_transform_helper(duk_hthread *thr,
 	}
 
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
-	memset(&bd_ctx, 0, sizeof(bd_ctx));
+	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	if (uppercase) {
 		bd_ctx.data = (duk_u8 *) duk_unicode_caseconv_uc;
 		bd_ctx.length = (duk_u32) sizeof(duk_unicode_caseconv_uc);

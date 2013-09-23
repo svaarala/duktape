@@ -64,9 +64,9 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 		 */
 
 		DUK_ASSERT(new_usable_size + 1 > new_size);
-		memset((void *) ((char *) res + new_size),
-		       0,
-		       new_usable_size + 1 - new_size);
+		DUK_MEMSET((void *) ((char *) res + new_size),
+		           0,
+		           new_usable_size + 1 - new_size);
 
 		buf->size = new_size;
 		buf->usable_size = new_usable_size;
@@ -132,14 +132,14 @@ void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 		/* not an append */
 
 		DUK_ASSERT(DUK_HBUFFER_GET_SIZE(buf) - offset > 0);  /* not a zero byte memmove */
-		memmove((void *) (p + offset + length),
-		        (void *) (p + offset),
-		        DUK_HBUFFER_GET_SIZE(buf) - offset);
+		DUK_MEMMOVE((void *) (p + offset + length),
+		            (void *) (p + offset),
+		            DUK_HBUFFER_GET_SIZE(buf) - offset);
 	}
 
-	memcpy((void *) (p + offset),
-	       data,
-	       length);
+	DUK_MEMCPY((void *) (p + offset),
+	           data,
+	           length);
 
 	buf->size += length;
 }
@@ -368,14 +368,14 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 
 	if (end_offset < DUK_HBUFFER_GET_SIZE(buf)) {
 		/* not strictly from end of buffer; need to shuffle data */
-		memmove(p + offset,
-		        p + end_offset,
-	                DUK_HBUFFER_GET_SIZE(buf) - end_offset);  /* always > 0 */
+		DUK_MEMMOVE(p + offset,
+		            p + end_offset,
+	                    DUK_HBUFFER_GET_SIZE(buf) - end_offset);  /* always > 0 */
 	}
 
-	memset(p + DUK_HBUFFER_GET_SIZE(buf) - length,
-	       0,
-	       length);  /* always > 0 */
+	DUK_MEMSET(p + DUK_HBUFFER_GET_SIZE(buf) - length,
+	           0,
+	           length);  /* always > 0 */
 
 	buf->size -= length;
 
@@ -424,34 +424,34 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	/* create a hole for the insert */
 	len = DUK_HBUFFER_GET_SIZE(buf) - dst_offset;
 	if (len > 0) {
-		memmove(p + dst_offset + length,
-		        p + dst_offset,
-		        len);
+		DUK_MEMMOVE(p + dst_offset + length,
+		            p + dst_offset,
+		            len);
 	}
 
 	if (src_offset < dst_offset) {
 		if (src_end_offset <= dst_offset) {
 			/* entire source is before 'dst_offset' */
-			memcpy(p + dst_offset,
-			       p + src_offset,
-			       length);
+			DUK_MEMCPY(p + dst_offset,
+			           p + src_offset,
+			           length);
 		} else {
 			/* part of the source is before 'dst_offset'; straddles */
 			len = dst_offset - src_offset;
 			DUK_ASSERT(len >= 1 && len < length);
 			DUK_ASSERT(length - len >= 1);
-			memcpy(p + dst_offset,
-			       p + src_offset,
-			       len);
-			memcpy(p + dst_offset + len,
-			       p + src_offset + length + len,  /* take above memmove() into account */
-			       length - len);
+			DUK_MEMCPY(p + dst_offset,
+			           p + src_offset,
+			           len);
+			DUK_MEMCPY(p + dst_offset + len,
+			           p + src_offset + length + len,  /* take above memmove() into account */
+			           length - len);
 		}
 	} else {
 		/* entire source is after 'dst_offset' */
-		memcpy(p + dst_offset,
-		       p + src_offset + length,  /* take above memmove() into account */
-		       length);
+		DUK_MEMCPY(p + dst_offset,
+		           p + src_offset + length,  /* take above memmove() into account */
+		           length);
 	}
 
 	buf->size += length;

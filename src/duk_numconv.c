@@ -134,7 +134,7 @@ static void bi_copy(duk_bigint *x, duk_bigint *y) {
 	if (n == 0) {
 		return;
 	}
-	memcpy((void *) x->v, (void *) y->v, (size_t) (sizeof(uint32_t) * n));
+	DUK_MEMCPY((void *) x->v, (void *) y->v, (size_t) (sizeof(uint32_t) * n));
 }
 
 static void bi_set_small(duk_bigint *x, uint32_t v) {
@@ -317,7 +317,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		return;
 	}
 
-	memset((void *) x->v, 0, (size_t) (sizeof(uint32_t) * nx));
+	DUK_MEMSET((void *) x->v, 0, (size_t) (sizeof(uint32_t) * nx));
 	x->n = nx;
 
 	nz = z->n;
@@ -392,7 +392,7 @@ static void bi_twoexp(duk_bigint *x, int y) {
 	n = (y / 32) + 1;
 	DUK_ASSERT(n > 0);
 	r = y % 32;
-	memset((void *) x->v, 0, sizeof(uint32_t) * n);
+	DUK_MEMSET((void *) x->v, 0, sizeof(uint32_t) * n);
 	x->n = n;
 	x->v[n - 1] = (((uint32_t) 1) << r);
 }
@@ -528,7 +528,7 @@ size_t dragon4_format_uint32(char *buf, unsigned int x, int radix) {
 	}
 	len = (buf + 32) - p;
 
-	memmove((void *) buf, (void *) p, len);
+	DUK_MEMMOVE((void *) buf, (void *) p, len);
 
 	return len;
 }
@@ -923,7 +923,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 	{
 		char buf[2048];
 		int i, t;
-		memset(buf, 0, sizeof(buf));
+		DUK_MEMSET(buf, 0, sizeof(buf));
 		for (i = 0; i < nc_ctx->count; i++) {
 			t = nc_ctx->digits[i];
 			if (t < 0 || t > 36) {
@@ -986,9 +986,9 @@ static int dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx, int rou
 			*p = 0;
 			if (p == &nc_ctx->digits[0]) {
 				DUK_DDDPRINT("carry propagated to first digit -> special case handling");
-				memmove((void *) (&nc_ctx->digits[1]),
-				        (void *) (&nc_ctx->digits[0]),
-				        (size_t) (sizeof(char) * nc_ctx->count));
+				DUK_MEMMOVE((void *) (&nc_ctx->digits[1]),
+				            (void *) (&nc_ctx->digits[0]),
+				            (size_t) (sizeof(char) * nc_ctx->count));
 				nc_ctx->digits[0] = 1;  /* don't increase 'count' */
 				nc_ctx->k++;  /* position of highest digit changed */
 				nc_ctx->count++;  /* number of digits changed */
@@ -1425,7 +1425,7 @@ void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
 	 * is 1-2 kilobytes and nothing should rely on it being zeroed.
 	 */
 #if 0
-	memset((void *) nc_ctx, 0, sizeof(*nc_ctx));  /* slow init, do only for slow path cases */
+	DUK_MEMSET((void *) nc_ctx, 0, sizeof(*nc_ctx));  /* slow init, do only for slow path cases */
 #endif
 
 	nc_ctx->is_s2n = 0;
@@ -1465,7 +1465,7 @@ void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
 		}
 		DUK_DDDPRINT("count=%d", count);
 		DUK_ASSERT(count >= 1);
-		memset((void *) nc_ctx->digits, 0, count);
+		DUK_MEMSET((void *) nc_ctx->digits, 0, count);
 		nc_ctx->count = count;
 		nc_ctx->k = 1;  /* 0.000... */
 		neg = 0;

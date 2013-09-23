@@ -141,7 +141,7 @@ void *duk_heap_mem_alloc_zeroed(duk_heap *heap, size_t size) {
 	res = DUK_ALLOC(heap, size);
 	if (res) {
 		/* assume memset with zero size is OK */
-		memset(res, 0, size);
+		DUK_MEMSET(res, 0, size);
 	}
 	return res;
 }
@@ -417,7 +417,7 @@ void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, size_t size) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory alloc failed");
 	}
 	/* assume memset with zero size is OK */
-	memset(res, 0, size);
+	DUK_MEMSET(res, 0, size);
 	return res;
 }
 

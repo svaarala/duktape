@@ -411,7 +411,7 @@ static void advance_helper(duk_compiler_ctx *comp_ctx, int expect) {
 	}
 
 	/* make current token the previous; need to fiddle with valstack "backing store" */
-	memcpy(&comp_ctx->prev_token, &comp_ctx->curr_token, sizeof(duk_token));
+	DUK_MEMCPY(&comp_ctx->prev_token, &comp_ctx->curr_token, sizeof(duk_token));
 	duk_dup(ctx, comp_ctx->tok11_idx);
 	duk_replace(ctx, comp_ctx->tok21_idx);
 	duk_dup(ctx, comp_ctx->tok12_idx);
@@ -464,7 +464,7 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	entry_top = duk_get_top(ctx);
 
-	memset(func, 0, sizeof(*func));  /* intentional overlap with earlier memzero */
+	DUK_MEMSET(func, 0, sizeof(*func));  /* intentional overlap with earlier memzero */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	func->h_name = NULL;
 	func->h_code = NULL;
@@ -3650,7 +3650,7 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
 	DUK_DDDPRINT("expr(), rbp_flags=%d, rbp=%d, allow_in=%d, paren_level=%d",
 	             rbp_flags, rbp, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level);
 
-	memset(&tmp_alloc, 0, sizeof(tmp_alloc));
+	DUK_MEMSET(&tmp_alloc, 0, sizeof(tmp_alloc));
 	tmp->x1.valstack_idx = duk_get_top(ctx);
 	tmp->x2.valstack_idx = tmp->x1.valstack_idx + 1;
 	duk_push_undefined(ctx);
@@ -5416,7 +5416,7 @@ static void parse_statements(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
 	 * for nested functions (which may occur inside expressions).
 	 */
 
-	memset(&res_alloc, 0, sizeof(res_alloc));
+	DUK_MEMSET(&res_alloc, 0, sizeof(res_alloc));
 	res->t = DUK_IVAL_PLAIN;
 	res->x1.t = DUK_ISPEC_VALUE;
 	res->x1.valstack_idx = duk_get_top(ctx);
@@ -6133,9 +6133,9 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 	 */
 
 	entry_top = duk_get_top(ctx);
-	memcpy(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
+	DUK_MEMCPY(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
 
-	memset(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
+	DUK_MEMSET(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
 	init_function_valstack_slots(comp_ctx);
 	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
 
@@ -6166,7 +6166,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 	 *  Cleanup: restore original function, restore valstack state.
 	 */
 	
-	memcpy(&comp_ctx->curr_func, &old_func, sizeof(duk_compiler_func));
+	DUK_MEMCPY(&comp_ctx->curr_func, &old_func, sizeof(duk_compiler_func));
 	duk_set_top(ctx, entry_top);
 
 	DUK_ASSERT_TOP(ctx, entry_top);
@@ -6229,7 +6229,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	 *  Init compiler and lexer contexts
 	 */
 
-	memset(comp_ctx, 0, sizeof(*comp_ctx));
+	DUK_MEMSET(comp_ctx, 0, sizeof(*comp_ctx));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	comp_ctx->thr = NULL;
 	comp_ctx->h_filename = NULL;
@@ -6267,7 +6267,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf));
 
 #if 0  /* not needed */
-	memset(lex_pt, 0, sizeof(*lex_pt));
+	DUK_MEMSET(lex_pt, 0, sizeof(*lex_pt));
 #endif
 	lex_pt->offset = 0;
 	lex_pt->line = 1;

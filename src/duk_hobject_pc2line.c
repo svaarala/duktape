@@ -60,7 +60,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 		             (int) hdr[hdr_index + 1]);
 #endif
 
-		memset(be_ctx, 0, sizeof(*be_ctx));
+		DUK_MEMSET(be_ctx, 0, sizeof(*be_ctx));
 		be_ctx->data = ((unsigned char *) hdr) + curr_offset;
 		be_ctx->length = DUK_PC2LINE_MAX_DIFF_LENGTH;
 
@@ -156,7 +156,7 @@ duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 		goto error;
 	}
 
-	memset(bd_ctx, 0, sizeof(*bd_ctx));
+	DUK_MEMSET(bd_ctx, 0, sizeof(*bd_ctx));
 	bd_ctx->data = ((unsigned char *) hdr) + start_offset;
 	bd_ctx->length = DUK_HBUFFER_GET_SIZE(buf) - start_offset;
 

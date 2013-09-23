@@ -130,9 +130,9 @@ static void sort_array_indices(duk_hobject *h_obj) {
 		             (void *) (p_insert + 1), (void *) p_insert,
 		             (int) (p_curr - p_insert), (void *) h_curr);
 
-		memmove((void *) (p_insert + 1),
-		        (void *) p_insert,
-		        (size_t) ((p_curr - p_insert) * sizeof(duk_hstring *)));
+		DUK_MEMMOVE((void *) (p_insert + 1),
+		            (void *) p_insert,
+		            (size_t) ((p_curr - p_insert) * sizeof(duk_hstring *)));
 		*p_insert = h_curr;
 		/* keep val_highest */
 	}

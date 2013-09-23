@@ -1209,7 +1209,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		const char *fmt;
 
 		/* FIXME: NULL results in '((nil))' now */
-		memset(buf, 0, sizeof(buf));
+		DUK_MEMSET(buf, 0, sizeof(buf));
 		if (js_ctx->flag_ext_custom) {
 			fmt = "(%p)";
 		} else {
@@ -1365,7 +1365,7 @@ void duk_builtin_json_parse_helper(duk_context *ctx,
 	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
 	             flags, duk_get_top(ctx));
 
-	memset(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
+	DUK_MEMSET(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	/* nothing now */
@@ -1445,7 +1445,7 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 	 *  Context init
 	 */
 
-	memset(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
+	DUK_MEMSET(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	js_ctx->h_replacer = NULL;

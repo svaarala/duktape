@@ -354,7 +354,7 @@ int duk_builtin_duk_object_print(duk_context *ctx) {
 int duk_builtin_duk_object_time(duk_context *ctx) {
 	struct timeval tv;
 
-	memset(&tv, 0, sizeof(tv));
+	DUK_MEMSET(&tv, 0, sizeof(tv));
 	if (gettimeofday(&tv, NULL) != 0) {
 		return DUK_RET_ERROR;
 	}

@@ -256,9 +256,9 @@ duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk
 			duk_strcache tmp;
 
 			tmp = *sce;
-			memmove((void *) (&heap->strcache[1]),
-			        (void *) (&heap->strcache[0]),
-			        (size_t) (((char *) sce) - ((char *) &heap->strcache[0])));
+			DUK_MEMMOVE((void *) (&heap->strcache[1]),
+			            (void *) (&heap->strcache[0]),
+			            (size_t) (((char *) sce) - ((char *) &heap->strcache[0])));
 			heap->strcache[0] = tmp;
 
 			/* 'sce' points to the wrong entry here, but is no longer used */

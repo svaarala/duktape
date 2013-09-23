@@ -13,7 +13,7 @@
 void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...) {
 	va_list ap;
 	char msg[BUFSIZE];
-	memset(msg, 0, sizeof(msg));
+	DUK_MEMSET(msg, 0, sizeof(msg));
 	va_start(ap, fmt);
 	(void) vsnprintf(msg, sizeof(msg) - 1, fmt, ap);
 	duk_err_create_and_throw(thr, code, msg, filename, line);
@@ -24,8 +24,8 @@ void duk_err_handle_panic(const char *filename, int line, int code, const char *
 	va_list ap;
 	char msg1[BUFSIZE];
 	char msg2[BUFSIZE];
-	memset(msg1, 0, sizeof(msg1));
-	memset(msg2, 0, sizeof(msg2));
+	DUK_MEMSET(msg1, 0, sizeof(msg1));
+	DUK_MEMSET(msg2, 0, sizeof(msg2));
 	va_start(ap, fmt);
 	(void) vsnprintf(msg1, sizeof(msg1) - 1, fmt, ap);
 	(void) snprintf(msg2, sizeof(msg2) - 1, "(%s:%d): %s", filename ? filename : "null", line, msg1);
@@ -38,7 +38,7 @@ int duk_err_line_stash = -1;
 
 static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
 	char msg[BUFSIZE];
-	memset(msg, 0, sizeof(msg));
+	DUK_MEMSET(msg, 0, sizeof(msg));
 	(void) vsnprintf(msg, sizeof(msg) - 1, fmt, ap);
 	duk_err_create_and_throw(thr, code, msg, filename, line);
 }
@@ -46,8 +46,8 @@ static void _handle_error(const char *filename, int line, duk_hthread *thr, int 
 static void _handle_panic(const char *filename, int line, int code, const char *fmt, va_list ap) {
 	char msg1[BUFSIZE];
 	char msg2[BUFSIZE];
-	memset(msg1, 0, sizeof(msg1));
-	memset(msg2, 0, sizeof(msg2));
+	DUK_MEMSET(msg1, 0, sizeof(msg1));
+	DUK_MEMSET(msg2, 0, sizeof(msg2));
 	(void) vsnprintf(msg1, sizeof(msg1) - 1, fmt, ap);
 	(void) snprintf(msg2, sizeof(msg2) - 1, "(%s:%d): %s", filename ? filename : "null", line, msg1);
 	DUK_PANIC_HANDLER(code, msg2);

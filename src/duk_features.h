@@ -181,6 +181,34 @@
 #define  _DUK_STRINGIFY_HELPER(x)  #x
 #define  DUK_MACRO_STRINGIFY(x)  _DUK_STRINGIFY_HELPER(x)
 
+/*
+ *  ANSI C string/memory function wrapper defines to allow easier workarounds.
+ *
+ *  For instance, some platforms don't support zero-size memcpy correctly,
+ *  some arcane uclibc versions have a buggy memcpy (but working memmove)
+ *  and so on.  Such broken platforms can be dealt with here.
+ */
+
+/* Old uclibcs have a broken memcpy so use memmove instead (this is overly
+ * wide now on purpose):
+ * http://lists.uclibc.org/pipermail/uclibc-cvs/2008-October/025511.html
+ */
+#if defined(__UCLIBC__)
+#define  DUK_MEMCPY       memmove
+#else
+#define  DUK_MEMCPY       memcpy
+#endif
+
+#define  DUK_MEMMOVE      memmove
+#define  DUK_MEMCMP       memcmp
+#define  DUK_MEMSET       memset
+#define  DUK_STRCMP       strcmp
+#define  DUK_STRNCMP      strncmp
+#define  DUK_SPRINTF      sprintf
+#define  DUK_SNPRINTF     snprintf
+#define  DUK_VSPRINTF     vsprintf
+#define  DUK_VSNPRINTF    vsnprintf
+
 /* 
  *  Profile processing
  *

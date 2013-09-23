@@ -835,7 +835,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 
 	/* [ ... pattern flags escaped_source buffer ] */
 
-	memset(&re_ctx, 0, sizeof(re_ctx));
+	DUK_MEMSET(&re_ctx, 0, sizeof(re_ctx));
 	DUK_LEXER_INITCTX(&re_ctx.lex);  /* duplicate zeroing, expect for (possible) NULL inits */
 	re_ctx.thr = thr;
 	re_ctx.lex.thr = thr;

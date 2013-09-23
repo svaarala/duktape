@@ -33,7 +33,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 		goto error;
 	}
 
-	memset(res, 0, sizeof(duk_hstring));
+	DUK_MEMSET(res, 0, sizeof(duk_hstring));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
@@ -48,7 +48,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 	res->clen = duk_unicode_unvalidated_utf8_length(str, blen);
 
 	data = (duk_u8 *) (res + 1);
-	memcpy(data, str, blen);
+	DUK_MEMCPY(data, str, blen);
 	data[blen] = (duk_u8) 0;
 
 	DUK_DDDPRINT("interned string, hash=0x%08x, blen=%d, clen=%d, arridx=%d",
@@ -131,7 +131,7 @@ static duk_hstring *find_matching_string(duk_heap *heap, duk_hstring **entries, 
 			return NULL;
 		}
 		if (e != DELETED_MARKER(heap) && DUK_HSTRING_GET_BYTELEN(e) == blen) {
-			if (memcmp(str, DUK_HSTRING_GET_DATA(e), blen) == 0) {
+			if (DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(e), blen) == 0) {
 				DUK_DDDPRINT("find matching hit: %d (step %d, size %d)", i, step, size);
 				return e;
 			}
@@ -235,7 +235,7 @@ static int resize_hash_raw(duk_heap *heap, duk_u32 new_size) {
 		new_entries[i] = NULL;
 	}
 #else
-	memset(new_entries, 0, sizeof(duk_hstring *) * new_size);
+	DUK_MEMSET(new_entries, 0, sizeof(duk_hstring *) * new_size);
 #endif
 
 	/* Because new_size > count_used(heap), guaranteed to work */

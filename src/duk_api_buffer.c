@@ -39,7 +39,7 @@ void duk_to_fixed_buffer(duk_context *ctx, int index) {
 	data = duk_push_fixed_buffer(ctx, size);
 	if (size > 0) {
 		DUK_ASSERT(data != NULL);
-		memcpy(data, DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_src), size);
+		DUK_MEMCPY(data, DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_src), size);
 	}
 
 	duk_replace(ctx, index);

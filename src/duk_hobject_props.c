@@ -511,7 +511,7 @@ static void realloc_props(duk_hthread *thr,
 		if (obj->a_size > 0) {
 			/* avoid zero copy; if a_size == 0, obj->p might be NULL */
 			DUK_ASSERT(obj->p != NULL);
-			memcpy((void *) new_a, (void *) DUK_HOBJECT_A_GET_BASE(obj), sizeof(duk_tval) * obj->a_size);
+			DUK_MEMCPY((void *) new_a, (void *) DUK_HOBJECT_A_GET_BASE(obj), sizeof(duk_tval) * obj->a_size);
 		}
 
 		/* fill new entries with -unused- (required, gc reachable) */
@@ -536,7 +536,7 @@ static void realloc_props(duk_hthread *thr,
 			/* avoid zero copy; if new_a_size == obj->a_size == 0, obj->p might be NULL */
 			DUK_ASSERT(obj->a_size > 0);
 			DUK_ASSERT(obj->p != NULL);
-			memcpy((void *) new_a, (void *) DUK_HOBJECT_A_GET_BASE(obj), sizeof(duk_tval) * new_a_size);
+			DUK_MEMCPY((void *) new_a, (void *) DUK_HOBJECT_A_GET_BASE(obj), sizeof(duk_tval) * new_a_size);
 		}
 	}
 
@@ -552,7 +552,7 @@ static void realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_h != NULL);
 
 		/* fill new_h with u32 0xff = UNUSED */
-		memset(new_h, 0xff, sizeof(duk_u32) * new_h_size);
+		DUK_MEMSET(new_h, 0xff, sizeof(duk_u32) * new_h_size);
 
 		DUK_ASSERT(new_e_used <= new_h_size);  /* equality not actually possible */
 		for (i = 0; i < new_e_used; i++) {

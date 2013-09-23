@@ -44,11 +44,11 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	for (i = count; i >= 1; i--) {
 		if (is_join && i != count) {
 			h = duk_require_hstring(ctx, -count-2);  /* extra -1 for buffer */
-			memcpy(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+			DUK_MEMCPY(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 			idx += DUK_HSTRING_GET_BYTELEN(h);
 		}
 		h = duk_require_hstring(ctx, -i-1);  /* extra -1 for buffer */
-		memcpy(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+		DUK_MEMCPY(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 		idx += DUK_HSTRING_GET_BYTELEN(h);
 	}
 

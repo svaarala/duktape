@@ -59,7 +59,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	DUK_DPRINT("INITBUILTINS BEGIN");
 
-	memset(&bd_ctx, 0, sizeof(bd_ctx));
+	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	bd->data = (duk_u8 *) duk_builtins_data;
 	bd->length = DUK_BUILTINS_DATA_LENGTH;
 

@@ -48,12 +48,12 @@
 #else  /* DUK_USE_VARIADIC_MACROS */
 
 #define  _DUK_DEBUG_STASH(lev)    \
-	(void) memset((void *) duk_debug_file_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) memset((void *) duk_debug_line_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) memset((void *) duk_debug_func_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) snprintf(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __FILE__), \
-	(void) snprintf(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE - 1, "%d", (int) __LINE__), \
-	(void) snprintf(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __func__), \
+	(void) DUK_MEMSET((void *) duk_debug_file_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
+	(void) DUK_MEMSET((void *) duk_debug_line_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
+	(void) DUK_MEMSET((void *) duk_debug_func_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
+	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __FILE__), \
+	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE - 1, "%d", (int) __LINE__), \
+	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __func__), \
 	(void) (duk_debug_level_stash = (lev))
 
 #ifdef DUK_USE_DEBUG
@@ -90,7 +90,7 @@
 /* summary macros */
 
 #define  DUK_DEBUG_SUMMARY_INIT()  do { \
-		memset(duk_debug_summary_buf, 0, sizeof(duk_debug_summary_buf)); \
+		DUK_MEMSET(duk_debug_summary_buf, 0, sizeof(duk_debug_summary_buf)); \
 		duk_debug_summary_idx = 0; \
 	} while (0)
 

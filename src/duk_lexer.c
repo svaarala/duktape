@@ -362,7 +362,7 @@ static void internbuffer(duk_lexer_ctx *lex_ctx, int valstack_idx) {
 void duk_lexer_initctx(duk_lexer_ctx *lex_ctx) {
 	DUK_ASSERT(lex_ctx != NULL);
 
-	memset(lex_ctx, 0, sizeof(*lex_ctx));
+	DUK_MEMSET(lex_ctx, 0, sizeof(*lex_ctx));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	lex_ctx->thr = NULL;
 	lex_ctx->input = NULL;
@@ -1315,7 +1315,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	int advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
 	int x, y;
 
-	memset(out_token, 0, sizeof(*out_token));
+	DUK_MEMSET(out_token, 0, sizeof(*out_token));
 
 	x = L0();
 	y = L1();

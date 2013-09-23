@@ -590,7 +590,7 @@ void duk_insert(duk_context *ctx, int to_index) {
 	DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d", to_index, p, q, nbytes);
 	if (nbytes > 0) {
 		DUK_TVAL_SET_TVAL(&tv, q);
-		memmove((void *) (p + 1), (void *) p, nbytes);
+		DUK_MEMMOVE((void *) (p + 1), (void *) p, nbytes);
 		DUK_TVAL_SET_TVAL(p, &tv);
 	} else {
 		/* nop: insert top to top */
@@ -654,7 +654,7 @@ void duk_remove(duk_context *ctx, int index) {
 
 	nbytes = (size_t) (((duk_u8 *) q) - ((duk_u8 *) p));  /* Note: 'q' is top-1 */
 	if (nbytes > 0) {
-		memmove(p, p + 1, nbytes);
+		DUK_MEMMOVE(p, p + 1, nbytes);
 	}
 	DUK_TVAL_SET_UNDEFINED_UNUSED(q);
 	thr->valstack_top--;
@@ -687,7 +687,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 	}
 
 	/* copy values (no overlap even if ctx == from_ctx) */
-	memcpy((void *) thr->valstack_top, src, nbytes);
+	DUK_MEMCPY((void *) thr->valstack_top, src, nbytes);
 
 	/* incref them */
 	p = thr->valstack_top;
@@ -1765,7 +1765,7 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 
 		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
 		DUK_ASSERT(buf != NULL);
-		memcpy(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
+		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
 		duk_replace(ctx, index);
 	}
 

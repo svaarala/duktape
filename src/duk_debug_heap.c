@@ -12,7 +12,7 @@ static void sanitize_snippet(char *buf, int buf_size, duk_hstring *str) {
 	int maxchars;
 	duk_u8 *data;
 
-	memset(buf, 0, buf_size);
+	DUK_MEMSET(buf, 0, buf_size);
 
 	maxchars = buf_size - 1;
 	data = DUK_HSTRING_GET_DATA(str);
@@ -31,7 +31,7 @@ static void format_func_ptr(char *buf, int buf_size, unsigned char *fptr, int fp
 	char *p = buf;
 	char *p_end = buf + buf_size - 1;
 
-	memset(buf, 0, buf_size);
+	DUK_MEMSET(buf, 0, buf_size);
 
 	for (i = 0; i < fptr_size; i++) {
 		int left = p_end - p;

@@ -12,11 +12,11 @@ void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_u8 *buffer, duk_u32 length) {
 
 	avail = (fb->offset >= fb->length ? (duk_u32) 0 : (duk_u32) (fb->length - fb->offset));
 	if (length > avail) {
-		memcpy(fb->buffer + fb->offset, buffer, avail);
+		DUK_MEMCPY(fb->buffer + fb->offset, buffer, avail);
 		fb->offset += avail;
 		fb->truncated = 1;
 	} else {
-		memcpy(fb->buffer + fb->offset, buffer, length);
+		DUK_MEMCPY(fb->buffer + fb->offset, buffer, length);
 		fb->offset += length;
 	}
 }

@@ -23,7 +23,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	}
 
 	/* zero everything */
-	memset(res, 0, alloc_size);
+	DUK_MEMSET(res, 0, alloc_size);
 
 	if (dynamic) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
@@ -35,7 +35,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 			if (!ptr) {
 				goto error;
 			}
-			memset(ptr, 0, size + 1);
+			DUK_MEMSET(ptr, 0, size + 1);
 
 			h->curr_alloc = ptr;
 			h->usable_size = size;  /* snug */

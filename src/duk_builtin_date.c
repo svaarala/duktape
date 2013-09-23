@@ -165,10 +165,10 @@ static int get_local_tzoffset_gmtime(double d) {
 
 	t1 = t;
 
-	memset((void *) tms, 0, sizeof(struct tm) * 2);
+	DUK_MEMSET((void *) tms, 0, sizeof(struct tm) * 2);
 
 	(void) gmtime_r(&t, &tms[0]);
-	memcpy((void *) &tms[1], &tms[0], sizeof(struct tm));
+	DUK_MEMCPY((void *) &tms[1], &tms[0], sizeof(struct tm));
 	DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
 	             "wday:%d,yday:%d,isdst:%d}",
 	             (int) tms[0].tm_sec, (int) tms[0].tm_min, (int) tms[0].tm_hour,
@@ -216,12 +216,12 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 	char buf[STRPTIME_BUF_SIZE];
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
-	memset(buf, 0, sizeof(buf));
+	DUK_MEMSET(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf) - 1, "%s", str);
 
 	DUK_DDDPRINT("parsing: '%s'", buf);
 
-	memset(&tm, 0, sizeof(tm));
+	DUK_MEMSET(&tm, 0, sizeof(tm));
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
 		DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
 		             "wday:%d,yday:%d,isdst:%d}",
@@ -252,7 +252,7 @@ static int parse_string_getdate(duk_context *ctx, const char *str) {
 	 * convenient for an embeddable interpreter.
 	 */
 
-	memset(&tm, 0, sizeof(struct tm));
+	DUK_MEMSET(&tm, 0, sizeof(struct tm));
 	rc = getdate_r(str, &tm);
 	DUK_DDDPRINT("getdate_r() -> %d", rc);
 
@@ -289,7 +289,7 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
 		return 0;
 	}
 
-	memset(&tm, 0, sizeof(tm));
+	DUK_MEMSET(&tm, 0, sizeof(tm));
 	tm.tm_sec = parts[IDX_SECOND];
 	tm.tm_min = parts[IDX_MINUTE];
 	tm.tm_hour = parts[IDX_HOUR];
@@ -299,7 +299,7 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
 	tm.tm_wday = parts[IDX_WEEKDAY];
 	tm.tm_isdst = 0;
 
-	memset(buf, 0, sizeof(buf));
+	DUK_MEMSET(buf, 0, sizeof(buf));
 	if ((flags & FLAG_TOSTRING_DATE) && (flags & FLAG_TOSTRING_TIME)) {
 		fmt = "%c";
 	} else if (flags & FLAG_TOSTRING_DATE) {
@@ -422,7 +422,7 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	int i;
 
 	/* During parsing, month and day are one-based; set defaults here. */
-	memset(parts, 0, sizeof(parts));
+	DUK_MEMSET(parts, 0, sizeof(parts));
 	DUK_ASSERT(parts[IDX_YEAR] == 0);  /* don't care value, year is mandatory */
 	parts[IDX_MONTH] = 1;
 	parts[IDX_DAY] = 1;

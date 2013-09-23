@@ -723,21 +723,18 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
 	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
 
+	/* FIXME: this special case can now be removed with DUK_MEMCMP */
 	/* memcmp() should return zero (equal) for zero length, but avoid
 	 * it because there are some platform specific bugs.  Don't use
 	 * strncmp() because it stops comparing at a NUL.
 	 */
 
-	/* FIXME: use a wrapper utility memcmp() instead of doing the zero
-	 * check everywhere separately.
-	 */
-
 	if (prefix_len == 0) {
 		rc = 0;
 	} else {
-		rc = memcmp((const char *) DUK_HSTRING_GET_DATA(h1),
-		            (const char *) DUK_HSTRING_GET_DATA(h2),
-		            prefix_len);
+		rc = DUK_MEMCMP((const char *) DUK_HSTRING_GET_DATA(h1),
+		                (const char *) DUK_HSTRING_GET_DATA(h2),
+		                prefix_len);
 	}
 
 	if (rc < 0) {
@@ -1183,7 +1180,7 @@ static int raw_string_to_arrayindex(duk_u8 *str, duk_u32 blen, duk_u32 *out_idx)
 	if (blen > 10) {
 		return 0;
 	}
-	memcpy(buf, str, blen);
+	DUK_MEMCPY(buf, str, blen);
 	buf[blen] = (char) 0;
 
 	if (sscanf(buf, "%d", (int *) out_idx) == 1 && strstr(buf, ".") == NULL) {
