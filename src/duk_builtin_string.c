@@ -602,9 +602,6 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 			match_start_coff = 0;
 
 			while (p <= p_end) {
-				/* FIXME: wrapped utility memcmp() which is guaranteed to work
-				 * even if byte count is zero?
-				 */
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
 				if (DUK_MEMCMP((void *) p, (void *) q_start, (size_t) q_blen) == 0) {
 					duk_dup(ctx, 0);
