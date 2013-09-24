@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: hide fpclassify, signbit, and related constants behind DUK_xxx macros (remove C99 hard dependency)
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-23 21:15:50.945589 Z
+references: []
+
+id: 5d18b32c392f5d33b52b62c0c558fe02caf3c67c
+log_events: 
+- - 2013-09-23 21:15:51.161760 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
