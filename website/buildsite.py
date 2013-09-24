@@ -674,7 +674,15 @@ def main():
 	writeFile(os.path.join(outdir, 'download.html'), soup.encode('ascii'))
 
 	print 'Copying misc files'
-	for i in [ 'favicon.ico' ]:
+	for i in [ 'favicon.ico',
+	           'startup_image_320x480.png',
+	           'touch_icon_114x114.png',
+	           'touch_icon_120x120.png',
+	           'touch_icon_144x144.png',
+	           'touch_icon_152x152.png',
+	           'touch_icon_57x57.png',
+	           'touch_icon_60x60.png',
+	           'touch_icon_72x72.png' ]:
 		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, i))
 
 	print 'Copying binaries'

@@ -134,6 +134,69 @@ all browsers.  For now, use::
   <table>...</table>
   </div>
 
+Favicon
+-------
+
+The site should provide a 16x16 favicon.
+
+Apple touch icon
+----------------
+
+The site should provide an Apple touch icon.  It is also used by Android and
+Nokia N9 (and probably a lot of other devices) to automagic an icon for a
+bookmarked web page.  If there is no such icon, there will be multiple
+unnecessary requests to the server for a page load.
+
+Without any document meta headers Nokia N9, for instance, attempts to get::
+
+  GET /apple-touch-icon-80x80-precomposed.png
+  GET /apple-touch-icon-80x80.png
+  GET /apple-touch-icon-precomposed.png
+  GET /apple-touch-icon.png
+
+Various iPhone/iPad versions will have different automatic icon searches,
+like::
+
+  GET /apple-touch-icon-57x57-precomposed.png
+  GET /apple-touch-icon-57x57.png
+  GET /apple-touch-icon-precomposed.png
+  GET /apple-touch-icon.png
+
+Various devices prefer different icon sizes.  You can specify multiple
+sizes in the document metadata; apparently devices will select first
+matching.  Older devices which don't understand a "sizes" specification
+will apparently use last entry::
+
+  <link rel="apple-touch-icon" sizes="144x144" href="touch-icon-ipad-144.png" />
+  <link rel="apple-touch-icon" href="touch-icon-default.png" />
+
+Other issues:
+
+* There's various information about the appropriate icon sizes and they've
+  apparently changed with iOS 7.
+
+* Icons can either be "precomposed" (= gloss effect already applied) or
+  non-precomposed in which case the device will apply whatever gloss
+  effects it desires.  The movement is perhaps away from automatic
+  glossing; Apple docs say: "Safari on iOS 7 doesn’t add effects to icons.".
+
+Resources:
+
+* https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+* http://stackoverflow.com/questions/2997437/what-size-should-apple-touch-icon-png-be-for-ipad-and-iphone-4
+
+Startup image
+-------------
+
+Some devices can also support a "startup image" when a bookmark is loaded.
+Specify as::
+
+  <link rel="apple-touch-startup-image" href="/startup.png">
+
+References:
+
+* https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+
 Credits
 =======
 
