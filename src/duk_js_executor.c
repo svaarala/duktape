@@ -2718,7 +2718,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_EXTRA: {
 			/* FIXME: shared decoding of 'b' and 'c'? */
 
-			switch (DUK_DEC_A(ins)) {
+			int extraop = DUK_DEC_A(ins);
+			switch (extraop) {
 
 			case DUK_EXTRAOP_NOP: {
 				/* nop */
@@ -2768,17 +2769,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				break;
 			}
 
-			case DUK_EXTRAOP_LDBOOL: {
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+			case DUK_EXTRAOP_LDTRUE:
+			case DUK_EXTRAOP_LDFALSE: {
+				int bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
+				int bval = (extraop == DUK_EXTRAOP_LDTRUE ? 1 : 0);
 
-				DUK_ASSERT(c == 0 || c == 1);
-
-				tv1 = REGP(b);
+				tv1 = REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-				DUK_TVAL_SET_BOOLEAN(tv1, c);
+				DUK_TVAL_SET_BOOLEAN(tv1, bval);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 				break;
 			}

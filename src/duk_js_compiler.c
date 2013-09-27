@@ -82,6 +82,7 @@ static void emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc);
 static void emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc);
 static void emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop, int b, int c);
 static void emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop, int b);
+static void emit_extraop_bc(duk_compiler_ctx *comp_ctx, int extraop, int bc);
 static void emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop);
 static void emit_loadint(duk_compiler_ctx *comp_ctx, int reg, int val);
 static void emit_jump(duk_compiler_ctx *comp_ctx, int target_pc);
@@ -1007,6 +1008,11 @@ static void emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop, int b) {
 	emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, b, 0);
 }
 
+static void emit_extraop_bc(duk_compiler_ctx *comp_ctx, int extraop, int bc) {
+	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
+	emit_a_bc(comp_ctx, DUK_OP_EXTRA, extraop, bc);
+}
+
 static void emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop) {
 	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
 	emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, 0, 0);
@@ -1359,7 +1365,9 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 		}
 		case DUK_TAG_BOOLEAN: {
 			int dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
-			emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDBOOL, dest, DUK_TVAL_GET_BOOLEAN(tv));
+			emit_extraop_bc(comp_ctx,
+			                (DUK_TVAL_GET_BOOLEAN(tv) ? DUK_EXTRAOP_LDTRUE : DUK_EXTRAOP_LDFALSE),
+			                dest);
 			return dest;
 		}
 		case DUK_TAG_POINTER: {
@@ -2666,7 +2674,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			duk_dup(ctx, res->x1.valstack_idx);
 			if (lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 				/* register bound variables are non-configurable -> always false */
-				emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDBOOL, reg_temp, 0);
+				emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDFALSE, reg_temp);
 			} else {
 				duk_dup(ctx, res->x1.valstack_idx);
 				reg_varname = getconst(comp_ctx);
