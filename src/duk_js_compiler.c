@@ -1355,12 +1355,12 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			 * the 'void' operator.
 			 */
 			int dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
-			emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDUNDEF, dest, 0);
+			emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDUNDEF, dest);
 			return dest; 
 		}
 		case DUK_TAG_NULL: {
 			int dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
-			emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDNULL, dest, 0);
+			emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDNULL, dest);
 			return dest;
 		}
 		case DUK_TAG_BOOLEAN: {
@@ -4666,7 +4666,7 @@ static void parse_throw_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	    comp_ctx->curr_token.allow_auto_semi) {         /* automatic semi will be inserted */
 		DUK_DDDPRINT("empty throw value -> undefined");
 		reg_val = ALLOCTEMP(comp_ctx);
-		emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDUNDEF, reg_val, 0);
+		emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDUNDEF, reg_val);
 	} else {
 		DUK_DDDPRINT("throw with a value");
 
@@ -5810,7 +5810,7 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 		 * it here.
 		 */
 #if 0
-		emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDUNDEF, 0, 0);
+		emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDUNDEF, 0);
 #endif
 	}
 
@@ -5915,7 +5915,7 @@ static void parse_function_body(duk_compiler_ctx *comp_ctx, int expect_eof, int 
 	 */
 
 	if (implicit_return_value) {
-		emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_LDUNDEF, 0, 0);
+		emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDUNDEF, 0);
 	}
 
 	DUK_DDDPRINT("begin 2nd pass");

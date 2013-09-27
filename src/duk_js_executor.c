@@ -2746,11 +2746,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LDUNDEF: {
-				int b = DUK_DEC_B(ins);
+				int bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
-				tv1 = REGP(b);
+				tv1 = REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
@@ -2758,11 +2758,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LDNULL: {
-				int b = DUK_DEC_B(ins);
+				int bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
-				tv1 = REGP(b);
+				tv1 = REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_NULL(tv1);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
