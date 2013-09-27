@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: first round of work on compile const/temp limits
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-26 07:54:16.741084 Z
+references: []
+
+id: f6af59bee5db6f2369f301eb50b59ac95a597ece
+log_events: 
+- - 2013-09-26 07:54:17.237121 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

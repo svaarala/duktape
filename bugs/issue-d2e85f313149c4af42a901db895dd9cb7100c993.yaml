@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: change compiler ispec/ivalue handling to use bit flags
+desc: ""
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-09-26 07:54:05.685185 Z
+references: []
+
+id: d2e85f313149c4af42a901db895dd9cb7100c993
+log_events: 
+- - 2013-09-26 07:54:05.877049 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

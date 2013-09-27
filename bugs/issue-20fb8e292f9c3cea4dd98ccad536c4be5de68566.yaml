@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-22 10:48:09.973011 Z
 references: []
 
@@ -23,3 +23,7 @@ log_events:
     https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
     
     There is also a launch image.  Probably not that relevant.
+- - 2013-09-24 07:58:35.180012 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
