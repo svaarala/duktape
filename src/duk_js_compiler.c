@@ -32,6 +32,11 @@
 /* FIXME: hack, remove when const lookup is not O(n) */
 #define  GETCONST_MAX_CONSTS_CHECK    256
 
+/* these limits are based on bytecode limits */
+#define  MAX_CONSTS       (DUK_BC_BC_MAX + 1)
+#define  MAX_FUNCS        (DUK_BC_BC_MAX + 1)
+#define  MAX_TEMPS        (DUK_BC_BC_MAX + 1)
+
 #define  RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", __FILE__, __LINE__); \
 		recursion_increase((comp_ctx)); \
@@ -1250,10 +1255,15 @@ static int alloctemps(duk_compiler_ctx *comp_ctx, int num) {
 	comp_ctx->curr_func.temp_next += num;
 
 	/* FIXME: placeholder, catches most cases */
+#if 1
 	if (comp_ctx->curr_func.temp_next > 256) { /* 256 is OK */
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of temp regs");
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of temps");
 	}
-
+#else
+	if (comp_ctx->curr_func.temp_next > MAX_TEMPS) {  /* == MAX_TEMPS is OK */
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of temps");
+	}
+#endif
 	/* maintain highest 'used' temporary, needed to figure out nregs of function */
 	if (comp_ctx->curr_func.temp_next > comp_ctx->curr_func.temp_max) {
 		comp_ctx->curr_func.temp_max = comp_ctx->curr_func.temp_next;
@@ -1304,9 +1314,15 @@ static int getconst(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/* FIXME: placeholder, catches most cases */
+#if 1
 	if (n > 255) { /* 255 is OK */
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of consts");
 	}
+#else
+	if (n >= MAX_CONSTS) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of consts");
+	}
+#endif
 
 	DUK_DDDPRINT("allocating new constant for %!T -> const index %d", tv1, n);
 	(void) duk_put_prop_index(ctx, f->consts_idx, n);  /* invalidates tv1, tv2 */
@@ -6174,10 +6190,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 	/* FIXME: append primitive */
 	n_funcs = duk_get_length(ctx, old_func.funcs_idx);
 
-	/* FIXME: placeholder, catches most cases; this limit is actually too tight
-	 * because CLOSURE can handle much more.
-	 */
-	if (n_funcs > 255) {
+	if (n_funcs >= MAX_FUNCS) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of funcs");
 	}
 
