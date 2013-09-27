@@ -1190,6 +1190,7 @@ static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  */
 
 #define  ISREG(comp_ctx,x)              (((x) & CONST_MARKER) == 0)
+#define  ISCONST(comp_ctx,x)            (((x) & CONST_MARKER) != 0)
 #define  ISTEMP(comp_ctx,x)             (ISREG((comp_ctx), (x)) && (x) >= ((comp_ctx)->curr_func.temp_first))
 #define  GETTEMP(comp_ctx)              ((comp_ctx)->curr_func.temp_next)
 #define  SETTEMP(comp_ctx,x)            ((comp_ctx)->curr_func.temp_next = (x))  /* dangerous: must only lower (temp_max not updated) */
@@ -1622,7 +1623,7 @@ static void ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int fo
 			x->x1.regconst = reg_varbind;
 		} else {
 			dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
-			emit_a_b(comp_ctx, DUK_OP_GETVAR, dest, reg_varname);
+			emit_a_bc(comp_ctx, DUK_OP_GETVAR, dest, reg_varname);
 			x->t = DUK_IVAL_PLAIN;
 			x->x1.t = DUK_ISPEC_REGCONST;
 			x->x1.regconst = dest;
@@ -2850,9 +2851,9 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				emit_a_b(comp_ctx, args_op, reg_varbind, reg_varbind);
 				emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_res, reg_varbind);
 			} else {
-				emit_a_b(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
+				emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
 				emit_a_b(comp_ctx, args_op, reg_res, reg_res);
-				emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_res);
+				emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_res, reg_varname);
 			}
 
 			DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%d, reg_varname=%d",
@@ -3440,7 +3441,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 				if (reg_varbind >= 0) {
 					emit_a_b_c(comp_ctx, args_op, reg_temp, reg_varbind, res->x1.regconst);
 				} else {
-					emit_a_b(comp_ctx, DUK_OP_GETVAR, reg_temp, reg_varname);
+					emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_temp, reg_varname);
 					emit_a_b_c(comp_ctx, args_op, reg_temp, reg_temp, res->x1.regconst);
 				}
 				reg_res = reg_temp;
@@ -3449,7 +3450,19 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			if (reg_varbind >= 0) {
 				emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_res);
 			} else {
-				emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_res);
+				/* Only a reg fits into 'A' and reg_res may be a const in
+				 * straight assignment.
+				 *
+				 * XXX: here the current A/B/C split is suboptimal: we could
+				 * just use 9 bits for reg_res (and support constants) and 17
+				 * instead of 18 bits for the varname const index.
+				 */
+				if (ISCONST(comp_ctx, reg_res)) {
+					reg_temp = ALLOCTEMP(comp_ctx);
+					emit_a_bc(comp_ctx, DUK_OP_LDCONST, reg_temp, reg_res);
+					reg_res = reg_temp;
+				}
+				emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_res, reg_varname);
 			}
 
 			res->t = DUK_IVAL_PLAIN;
@@ -3556,10 +3569,10 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 				emit_a_b(comp_ctx, args_op, reg_varbind, reg_res);
 			} else {
 				int reg_temp = ALLOCTEMP(comp_ctx);
-				emit_a_b(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
+				emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
 				emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);
 				emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
-				emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_temp);
+				emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temp, reg_varname);
 			}
 
 			DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%d, reg_varname=%d",
@@ -3896,7 +3909,7 @@ static void parse_variable_declaration(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 		} else {
 			int reg_val;
 			reg_val = ivalue_toreg(comp_ctx, res);
-			emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_val);
+			emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_val, reg_varname);
 		}
 	}
 
@@ -3993,7 +4006,7 @@ static void parse_for_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 			if (reg_varbind >= 0) {
 				emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temps + 0);
 			} else {
-				emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_temps + 0);
+				emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temps + 0, reg_varname);
 			}
 			goto parse_3_or_4;
 		} else {
@@ -4045,7 +4058,7 @@ static void parse_for_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 				if (lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 					emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temps + 0);
 				} else {
-					emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0, reg_varname, reg_temps + 0);
+					emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temps + 0, reg_varname);
 				}
 			} else if (res->t == DUK_IVAL_PROP) {
 				/* Don't allow a constant for the object (even for a number etc), as
@@ -4800,7 +4813,7 @@ static void parse_try_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk_push_null(ctx);
 		duk_put_prop(ctx, comp_ctx->curr_func.varmap_idx);
 
-		emit_a_b_c(comp_ctx, DUK_OP_PUTVAR, 0 /*unused */, const_varname /*varname*/, reg_catch + 0 /*value*/);
+		emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_catch + 0 /*value*/, const_varname /*varname*/);
 
 		DUK_DDDPRINT("varmap before parsing catch clause: %!iT", duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx));
 

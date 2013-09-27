@@ -1806,11 +1806,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_GETVAR: {
 			duk_context *ctx = (duk_context *) thr;
 			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			int bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
 
-			tv1 = REGCONSTP(b);
+			tv1 = CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				DUK_DDDPRINT("GETVAR not a string: %!T", tv1);
 				INTERNAL_ERROR("GETVAR name not a string");
@@ -1825,22 +1825,22 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_PUTVAR: {
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			int a = DUK_DEC_A(ins);
+			int bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
 
-			tv1 = REGCONSTP(b);
+			tv1 = CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				INTERNAL_ERROR("PUTVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 
-			/* FIXME: putvar takes an duk_tval pointer, which is awkward and
+			/* FIXME: putvar takes a duk_tval pointer, which is awkward and
 			 * should be reworked.
 			 */
 
-			tv1 = REGCONSTP(c);  /* val */
+			tv1 = REGP(a);  /* val */
 			duk_js_putvar_activation(thr, act, name, tv1, STRICT());
 			break;
 		}
