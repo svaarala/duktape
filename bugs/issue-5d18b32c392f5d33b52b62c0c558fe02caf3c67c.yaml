@@ -3,7 +3,7 @@ title: hide fpclassify, signbit, and related constants behind DUK_xxx macros (re
 desc: ""
 type: :task
 component: duk
-release: v0.7
+release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-09-23 21:15:51.161760 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-09-29 10:05:51.706189 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.8 from v0.7
   - ""

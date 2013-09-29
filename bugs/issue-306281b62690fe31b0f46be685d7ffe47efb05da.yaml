@@ -3,7 +3,7 @@ title: add an API primitive to get a heap ptr for debugging?
 desc: Something like duk_get_voidptr().
 type: :task
 component: duk
-release: v0.7
+release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-08-27 21:16:46.622933 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-09-29 10:05:52.993699 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.8 from v0.7
   - ""
