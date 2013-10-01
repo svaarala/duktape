@@ -8,6 +8,12 @@
 	color: #ffffff;
 	box-shadow: 7px 7px 15px #bbbbbb;
 
+	/* This only matters if the browser is so narrow that the nav
+	 * div clears the logo.  This rule extends the dark background
+	 * to cover the nav even in that case.
+	 */
+	overflow: auto;
+
 	/* Font is already set here so that we can size both the logo
 	 * and the nav float using the same font point size (point
 	 * sizes refer to -parent- font).
