@@ -6,6 +6,11 @@
 	font-family: monospace;
 }
 
+#download .latest {
+	border: 1px dashed #cccccc;
+	background: #f8f8f8;
+}
+
 /* Control table cells only if browser is wide enough */
 @media screen and (min-width:800px) {
 	.releases {
