@@ -1,8 +1,31 @@
+#download {
+	margin: 0 0 1em 1em;
+}
+
 #download .hash {
 	font-family: monospace;
 }
 
-#download {
-	margin: 0 0 1em 1em;
+/* Control table cells only if browser is wide enough */
+@media screen and (min-width:800px) {
+	.releases {
+		width: 90%;
+	}
+	.releases tr {
+		height: 3ex;
+	}
+	.releases .reldate {
+		width: 6em;
+	}
+	.releases .filename {
+		width: 11em;
+	}
+	.releases .description {
+		/* flex */
+	}
+	.releases .hash {
+		/* XXX: this is sized using -parent- font, not the monospace one */
+		width: 21em;
+	}
 }
 
