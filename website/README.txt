@@ -210,6 +210,8 @@ Browser testing is ad hoc now.  Current browser set:
 
 * Nokia N9 browser
 
+* Konqueror
+
 * Netscape Navigator 4.79
 
   - Graceful degradation test for CSS
