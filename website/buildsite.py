@@ -191,10 +191,6 @@ def parseApiDoc(filename):
 def processApiDoc(parts, funcname, testrefs, used_tags):
 	res = []
 
-	# this improves readability on e.g. elinks and w3m
-	res.append('<hr />')
-	#res.append('<hr>')
-
 	# the 'hidechar' span is to allow browser search without showing the char
 	res.append('<h2 id="%s"><a href="#%s"><span class="hidechar">.</span>%s()</a></h2>' % (funcname, funcname, funcname))
 
@@ -347,6 +343,10 @@ def transformReadIncludes(soup, includeDir):
 		elem.string = f.read()
 		f.close()
 
+def transformAddHrBeforeH2(soup):
+	for elem in soup.select('h2'):
+		elem.insert_before(soup.new_tag('hr'))
+
 def setNavSelected(soup, pagename):
 	# pagename must match <li><a> content
 	for elem in soup.select('#site-top-nav li'):
@@ -498,8 +498,6 @@ def generateApiDoc(apidocdir, apitestdir):
 
 	print('used tags: ' + repr(used_tags))
 
-	res += [ '<hr>' ]
-
 	content_soup = validateAndParseHtml('\n'.join(res))
 	tmp_soup = templ_soup.select('#site-middle-content')[0]
 	tmp_soup.clear()
@@ -588,7 +586,6 @@ def generateGuide():
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
 
-	res += [ '<hr>' ]
 	content_soup = validateAndParseHtml('\n'.join(res))
 	tmp_soup = templ_soup.select('#site-middle-content')[0]
 	tmp_soup.clear()
@@ -622,6 +619,11 @@ def postProcess(soup, includeDir):
 	# read in source snippets from include files
 	if True:
 		transformReadIncludes(soup, includeDir)
+
+	# add <hr> elements before all <h2> elements to improve readability
+	# in text browsers
+	if True:
+		transformAddHrBeforeH2(soup)
 
 	if colorize:
 		transformColorizeCode(soup, 'c-code', 'c')
