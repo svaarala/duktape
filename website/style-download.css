@@ -23,14 +23,14 @@
 		width: 6em;
 	}
 	.releases .filename {
-		width: 11em;
+		width: 12.5em;
 	}
 	.releases .description {
 		/* flex */
 	}
 	.releases .hash {
 		/* XXX: this is sized using -parent- font, not the monospace one */
-		width: 21em;
+		width: 20em;
 	}
 }
 
