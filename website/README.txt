@@ -197,6 +197,28 @@ References:
 
 * https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
 
+Browser testing
+===============
+
+Browser testing is ad hoc now.  Current browser set:
+
+* Firefox
+
+* Chromium
+
+* Android browser
+
+* Nokia N9 browser
+
+* Netscape Navigator 4.79
+
+  - Graceful degradation test for CSS
+  - http://www.ailis.de/~k/archives/75-Netscape-Navigator-4-on-Ubuntu-Linux-12.10.html
+
+* W3m
+
+* Elinks
+
 Credits
 =======
 
