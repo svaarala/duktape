@@ -224,6 +224,17 @@ Favicon creator:
 
 * http://www.favicon.cc/
 
+Random notes
+============
+
+* http://stackoverflow.com/questions/14323376/do-html5-script-tag-need-type-javascript
+
+* overflow:auto is an alternative to the traditional "clearfix"
+
+* http://designshack.net/articles/css/whats-the-deal-with-display-inline-block/
+
+* http://coding.smashingmagazine.com/2011/09/19/css3-flexible-box-layout-explained/
+
 Future work
 ===========
 

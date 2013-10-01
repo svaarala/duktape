@@ -1,11 +1,21 @@
 #site-top {
+	display: block;
 	width: 100%;
 	padding: 20px 0px 20px 0px;
 	border: 0;
 	margin: 0;
 	background: #444444;
 	color: #ffffff;
-	box-shadow: 10px 10px 15px #bbbbbb;
+	box-shadow: 7px 7px 15px #bbbbbb;
+
+	/* Font is already set here so that we can size both the logo
+	 * and the nav float using the same font point size (point
+	 * sizes refer to -parent- font).
+	 */
+	font-family: 'Droid Sans Mono', sans-serif;
+	font-size: 24pt;
+	font-weight: 400;
+	
 }
 @media print {
 	#site-top {
@@ -15,13 +25,11 @@
 
 #site-top-logo {
 	display: inline;
-	margin: 0 0 0 1em;
+	margin: 0 0 0 0.5em;  /* logo font */
 }
-
 #logo {
 	display: inline;
 	font-family: 'Droid Sans Mono', sans-serif;
-	/*font-family: 'Droid Sans Mono', fantasy;*/
 	font-size: 24pt;
 	font-weight: 400;
 	color: #ffffff;
@@ -29,6 +37,9 @@
 	filter: dropshadow(color=#000000, offx=3, offy=3);
 }
 @media print {
+	/* Note: not actually displayed now in print (the entire top
+	 * div is hidden).
+	 */
 	#logo {
 		font-family: 'Droid Sans Mono', sans-serif;
 		font-size: 20pt;
@@ -36,54 +47,47 @@
 	}
 }
 
-#logo:hover {
-	/* transition: text-shadow 3s; */
-	text-shadow: 5px 5px 5px #000000;
-	filter: dropshadow(color=#000000, offx=5, offy=5);
-}
-
 #site-top-nav {
-	display: inline;
+	display: block;
 	float: right;
-/*
-	margin: 0 1em 0 0;
-*/
-	margin: 0.5ex 1em 0 0;
+	margin: 0 0.75em 0 0;  /* logo font */
 }
 
 #site-top-nav ul {
 	display: inline;
+	vertical-align: bottom;
+	line-height: 24pt;
 	margin: 0;
 	border: 0;
 	padding: 0;
-}
 
-#site-top-nav ul li {
-	display: inline;
-	margin-right: 1em;
-/*
-	font-family: 'Open Sans', sans-serif;
-	font-size: 24pt;
-	font-weight: 400;
-*/
+	/* 'line-height' in this element is sized using logo font inherited
+	 * from #site-top.  The margins in #site-top-nav are sized using the
+	 * navigation font which needs to be set here (in the parent) for that
+	 * to be possible.
+	 */
 	font-family: 'Droid Sans Mono', sans-serif;
 	font-size: 18pt;
 	font-weight: 400;
-
+}
+#site-top-nav ul li {
+	display: inline;
+	vertical-align: bottom;
+	margin: 0 0.5em 0 0;
+	font-family: 'Droid Sans Mono', sans-serif;
+	font-size: 18pt;
+	font-weight: 400;
 	color: #cccccc;
 }
-
 #site-top-nav ul li a {
 	color: #cccccc;
 	text-decoration: none;
 }
-
 #site-top-nav ul li.selected a {
 	color: #ffffff;
 	text-shadow: 3px 3px 3px #000000;
 	filter: dropshadow(color=#000000, offx=3, offy=3);
 }
-
 #site-top-nav ul li a:hover {
 	color: #9999ff;
 	text-shadow: 3px 3px 3px #000000;
