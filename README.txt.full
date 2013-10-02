@@ -7,10 +7,7 @@ make changes to Duktape internals or perhaps run Duktape internal testcases.
 
 Getting started:
 
-  1. Install nodejs packages::
-
-    $ cd <toplevel>/runtests
-    $ npm install
+  1. Install NodeJS and npm.
 
   2. Compile libraries and command line tools::
 
@@ -26,3 +23,9 @@ Getting started:
 Duktape is (C) Sami Vaarala and licensed under the MIT license
 (see ``LICENSE.txt``).  MurmurHash2 is used internally; it is also
 under the MIT license.
+
+Have fun!
+
+-- 
+Sami Vaarala
+sami.vaarala@iki.fi
