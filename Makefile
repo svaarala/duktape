@@ -179,13 +179,13 @@ clean:
 	-@rm -f src/*.pyc
 
 $(DUK_SHARED_LIBS_NONDEBUG): dist
-	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@)
+	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -DDUK_PROFILE=$(subst d,,$(subst .so.1.0.0,,$(subst libduktape,,$@))) $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
 $(DUK_SHARED_LIBS_DEBUG): dist
-	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@)
+	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -DDUK_PROFILE=$(subst d,,$(subst .so.1.0.0,,$(subst libduktape,,$@))) $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
@@ -196,19 +196,26 @@ $(DUK_CMDLINE_TOOLS_NONDEBUG): dist
 $(DUK_CMDLINE_TOOLS_DEBUG): dist
 	$(CC) -o $@ -DDUK_PROFILE=$(subst d,,$(subst duk.,,$@)) $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
-test:	duk.400
+test:	npminst duk.400
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-qtest:	duk.400
+qtest:	npminst duk.400
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-vgtest:		duk.400
+vgtest:	npminst duk.400
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
-apitest:	libduktape400.so.1.0.0
+apitest:	npminst libduktape400.so.1.0.0
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
 # FIXME: torturetest; torture + valgrind
+
+.PHONY:	npminst
+npminst:	runtests/node_modules
+
+runtests/node_modules:
+	echo "Installing required NodeJS modules for runtests"
+	cd runtests; npm install
 
 .PHONY:	doc
 doc:	$(patsubst %.txt,%.html,$(wildcard doc/*.txt))
