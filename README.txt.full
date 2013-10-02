@@ -23,3 +23,6 @@ Getting started:
     $ make test
     $ make apitest
 
+Duktape is (C) Sami Vaarala and licensed under the MIT license
+(see ``LICENSE.txt``).  MurmurHash2 is used internally; it is also
+under the MIT license.
