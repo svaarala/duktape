@@ -464,13 +464,34 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 			return DUK_TVAL_GET_POINTER(tv_x) == DUK_TVAL_GET_POINTER(tv_y);
 		}
 		case DUK_TAG_STRING:
-		case DUK_TAG_OBJECT:
-		case DUK_TAG_BUFFER: {
+		case DUK_TAG_OBJECT: {
 			/* heap pointer comparison suffices */
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
+		case DUK_TAG_BUFFER: {
+			/* non-strict equality for buffers compares contents */
+			duk_hbuffer *h_x = DUK_TVAL_GET_BUFFER(tv_x);
+			duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
+			size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
+			size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
+			void *buf_x;
+			void *buf_y;
+			if (len_x != len_y) {
+				return 0;
+			}
+			buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(h_x);
+			buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
+			/* if len_x == len_y == 0, buf_x and/or buf_y may
+			 * be NULL, but that's OK.
+			 */
+			DUK_ASSERT(len_x == len_y);
+			DUK_ASSERT(len_x == 0 || buf_x != NULL);
+			DUK_ASSERT(len_y == 0 || buf_y != NULL);
+			return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
+		}
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
 			DUK_NEVER_HERE();
 			return 0;
 		}
@@ -509,23 +530,23 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return duk_js_equals_number(d1, d2);
 	}
 
-	/* boolean/(any) -> coerce boolean to number and try again */
+	/* boolean/any -> coerce boolean to number and try again */
 	if (DUK_TVAL_IS_BOOLEAN(tv_x)) {
-		/* FIXME: ToNumber(bool) is +1.0 or 0.0 -> make faster */
+		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
 		int rc;
-		duk_push_tval(ctx, tv_x);
+		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_x) == 0 || DUK_TVAL_GET_BOOLEAN(tv_x) == 1);
+		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_x));
 		duk_push_tval(ctx, tv_y);
-		duk_to_number(ctx, -2);
 		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 		duk_pop_2(ctx);
 		return rc;
 	}
 	if (DUK_TVAL_IS_BOOLEAN(tv_y)) {
-		/* FIXME: ToNumber(bool) is +1.0 or 0.0 -> make faster */
+		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
 		int rc;
+		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(ctx, tv_x);
-		duk_push_tval(ctx, tv_y);
-		duk_to_number(ctx, -1);
+		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
 		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 		duk_pop_2(ctx);
 		return rc;
@@ -553,7 +574,8 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return rc;
 	}
 
-	/* FIXME: coercion rules for internal types */
+	/* FIXME: object vs. buffer: coerce object to primitive and retry? */	
+	/* FIXME: string vs. buffer: compare contents? */
 
 	/* nothing worked -> not equal */
 	return 0;
