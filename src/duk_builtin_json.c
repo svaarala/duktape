@@ -1141,7 +1141,7 @@ static int json_enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 	tv = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv != NULL);
 
-	if (duk_get_type_mask(ctx, -1) & js_ctx->mask_for_undefined) {
+	if (duk_check_type_mask(ctx, -1, js_ctx->mask_for_undefined)) {
 		/* will result in undefined */
 		DUK_DDDPRINT("-> will result in undefined (type mask check)");
 		goto undef;

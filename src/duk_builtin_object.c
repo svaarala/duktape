@@ -15,8 +15,9 @@ int duk_builtin_object_constructor(duk_context *ctx) {
 		return 1;
 	}
 
-	if (duk_get_type_mask(ctx, 0) &
-	    (DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER)) {
+	if (duk_check_type_mask(ctx, 0, DUK_TYPE_MASK_STRING |
+	                                DUK_TYPE_MASK_BOOLEAN |
+	                                DUK_TYPE_MASK_NUMBER)) {
 		duk_to_object(ctx, 0);
 		return 1;
 	}

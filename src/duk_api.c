@@ -2159,13 +2159,11 @@ int duk_is_primitive(duk_context *ctx, int index) {
 }
 
 int duk_is_object_coercible(duk_context *ctx, int index) {
-	int mask = DUK_TYPE_MASK_BOOLEAN |
-	           DUK_TYPE_MASK_NUMBER |
-	           DUK_TYPE_MASK_STRING |
-	           DUK_TYPE_MASK_OBJECT;
 	/* FIXME: what about buffer and pointer? */
-
-	return (duk_get_type_mask(ctx, index) & mask ? 1 : 0);
+	return duk_check_type_mask(ctx, index, DUK_TYPE_MASK_BOOLEAN |
+	                                       DUK_TYPE_MASK_NUMBER |
+	                                       DUK_TYPE_MASK_STRING |
+	                                       DUK_TYPE_MASK_OBJECT);
 }
 
 /*
