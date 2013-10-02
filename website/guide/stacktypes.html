@@ -1,4 +1,4 @@
-<h2 id="types">Types</h2>
+<h2 id="types">Stack types</h2>
 
 <p>Duktape stack types are:</p>
 
@@ -51,9 +51,18 @@ if (duk_get_type_mask(ctx, -3) &amp; (DUK_TYPE_MASK_NUMBER |
 }
 </pre>
 
-FIXME: shortcut?  duk_match_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER | DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_OBJECT);
+<p>There is a specific API call for matching a set of types even more
+conveniently:</p>
 
-<p>This is faster and more compact than the alternatives:</p>
+<pre class="c-code">
+if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
+                                 DUK_TYPE_MASK_STRING |
+                                 DUK_TYPE_MASK_OBJECT)) {
+    printf("type is number, string, or object\n");
+}
+</pre>
+
+<p>These are faster and more compact than the alternatives:</p>
 
 <pre class="c-code">
 // alt 1

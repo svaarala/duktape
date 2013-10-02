@@ -96,9 +96,16 @@ if (duk_get_type_mask(ctx, -3) &amp; (DUK_TYPE_MASK_NUMBER |
 }
 </pre>
 
-<div class="fixme">
-Add duk_check_type_mask() to shortcut above use case?
-</div>
+<p>There is a specific API call for matching a set of types even more
+conveniently:</p>
+
+<pre class="c-code">
+if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
+                                 DUK_TYPE_MASK_STRING |
+                                 DUK_TYPE_MASK_OBJECT)) {
+    printf("type is number, string, or object\n");
+}
+</pre>
 
 <h3>Array index</h3>
 

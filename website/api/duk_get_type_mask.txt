@@ -9,7 +9,9 @@ int duk_get_type_mask(duk_context *ctx, int index);
 <tt>DUK_TYPE_MASK_xxx</tt> or <tt>DUK_TYPE_MASK_NONE</tt> if <tt>index</tt>
 is invalid.</p>
 
-<p>Type masks allow for a convenient comparison for multiple types at once.</p>
+<p>Type masks allow e.g. for a convenient comparison for multiple types at once
+(the <tt><a href="#duk_check_type_mask">duk_check_type_mask()</a></tt> call is
+even more convenient for this purpose).</p>
 
 =example
 if (duk_get_type_mask(ctx, -3) & (DUK_TYPE_MASK_STRING |
@@ -22,3 +24,4 @@ stack
 
 =seealso
 duk_get_type
+duk_check_type_mask

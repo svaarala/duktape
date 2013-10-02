@@ -19,3 +19,5 @@ stack
 
 =seealso
 duk_get_type_mask
+duk_check_type_mask
+
