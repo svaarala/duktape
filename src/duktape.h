@@ -267,6 +267,7 @@ void duk_pop_3(duk_context *ctx);
 
 int duk_get_type(duk_context *ctx, int index);
 int duk_get_type_mask(duk_context *ctx, int index);
+int duk_check_type_mask(duk_context *ctx, int index, int mask);
 
 int duk_is_undefined(duk_context *ctx, int index);
 int duk_is_null(duk_context *ctx, int index);

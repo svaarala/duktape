@@ -1995,6 +1995,10 @@ int duk_get_type_mask(duk_context *ctx, int index) {
 	DUK_NEVER_HERE();
 }
 
+int duk_check_type_mask(duk_context *ctx, int index, int mask) {
+	return (duk_get_type_mask(ctx, index) & mask) ? 1 : 0;
+}
+
 int duk_is_undefined(duk_context *ctx, int index) {
 	DUK_ASSERT(ctx != NULL);
 	return _tag_check(ctx, index, DUK_TAG_UNDEFINED);
