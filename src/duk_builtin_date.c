@@ -21,6 +21,8 @@
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 #define  GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
+#elif defined(DUK_USE_DATE_NOW_TIME)
+#define  GET_NOW_TIMEVAL      get_now_timeval_time
 #else
 #error no function to get current time
 #endif
@@ -110,6 +112,14 @@ static double get_now_timeval_gettimeofday(duk_context *ctx) {
 	return d;
 }
 #endif  /* DUK_USE_DATE_NOW_GETTIMEOFDAY */
+
+#ifdef DUK_USE_DATE_NOW_TIME
+/* Not a very good provider: only full seconds are available. */
+static double get_now_timeval_time(duk_context *ctx) {
+	time_t t = time(NULL);
+	return (double) t;
+}
+#endif  /* DUK_USE_DATE_NOW_TIME */
 
 #ifdef DUK_USE_DATE_TZO_GMTIME
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
