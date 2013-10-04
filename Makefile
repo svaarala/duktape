@@ -98,7 +98,9 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_builtin_number.c \
 	$(DISTSRCSEP)/duk_builtin_object.c \
 	$(DISTSRCSEP)/duk_builtin_regexp.c \
-	$(DISTSRCSEP)/duk_builtin_string.c
+	$(DISTSRCSEP)/duk_builtin_string.c \
+	$(DISTSRCSEP)/duk_builtin_buffer.c \
+	$(DISTSRCSEP)/duk_builtin_pointer.c
 
 # Use combined sources for testing etc.
 DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)

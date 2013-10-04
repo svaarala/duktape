@@ -66,9 +66,9 @@ for i in	\
 	duk_api_string.c	\
 	duk_api_thread.c	\
 	duk_api_var.c		\
-	duk_bittypes.h		\
 	duk_builtin_array.c	\
 	duk_builtin_boolean.c	\
+	duk_builtin_buffer.c	\
 	duk_builtin_date.c	\
 	duk_builtin_duk.c	\
 	duk_builtin_error.c	\
@@ -78,6 +78,7 @@ for i in	\
 	duk_builtin_math.c	\
 	duk_builtin_number.c	\
 	duk_builtin_object.c	\
+	duk_builtin_pointer.c	\
 	duk_builtin_protos.h	\
 	duk_builtin_regexp.c	\
 	duk_builtin_string.c	\
@@ -142,7 +143,6 @@ for i in	\
 	duk_lexer.h		\
 	duk_numconv.c		\
 	duk_numconv.h		\
-	duk_rdtsc.h		\
 	duk_regexp_compiler.c	\
 	duk_regexp_executor.c	\
 	duk_regexp.h		\
