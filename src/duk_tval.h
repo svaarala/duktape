@@ -54,12 +54,6 @@
 #ifndef DUK_TVAL_H_INCLUDED
 #define DUK_TVAL_H_INCLUDED
 
-#include <math.h>  /* provides NAN with -std=c99 */
-
-#ifndef  NAN
-#error missing a define for NAN, try -std=c99 or fix this header
-#endif
-
 #include "duk_features.h"
 #include "duk_forwdecl.h"
 

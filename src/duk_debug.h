@@ -9,7 +9,6 @@
 #define DUK_DEBUG_H_INCLUDED
 
 #include "duk_features.h"  /* rely on DUK_USE_VARIADIC_MACROS */
-#include "duk_bittypes.h"
 #include "duk_forwdecl.h"
 
 #ifdef DUK_USE_DEBUG
@@ -17,8 +16,6 @@
 /*
  *  Exposed debug macros: debugging enabled
  */
-
-#include <stdarg.h>
 
 #define  DUK_LEVEL_DEBUG    1
 #define  DUK_LEVEL_DDEBUG   2

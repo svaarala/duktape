@@ -1,22 +1,34 @@
 /*
  *  Determine platform features, select feature selection defines
- *  (e.g. _XOPEN_SOURCE), and define DUK_USE_XXX defines which are
- *  (only) checked in Duktape internal code for activated features.
- *  Duktape feature selection is based on DUK_PROFILE, other user
- *  supplied defines, and automatic feature detection.
+ *  (e.g. _XOPEN_SOURCE), include system headers, and define DUK_USE_XXX
+ *  defines which are (only) checked in Duktape internal code for
+ *  activated features.  Duktape feature selection is based on DUK_PROFILE,
+ *  other user supplied defines, and automatic feature detection.
  *
- *  This is included before anything else.  Feature selection defines
- *  (e.g. _XOPEN_SOURCE) must be defined before any system headers
- *  are included.  This file is included by duk_internal.h before it
- *  includes anything else.  We're responsible for first setting feature
- *  selection defines but after that we can include other headers as
- *  needed.
+ *  This file is included by duk_internal.h before anything else is
+ *  included.  Feature selection defines (e.g. _XOPEN_SOURCE) are defined
+ *  here before any system headers are included (which is a requirement for
+ *  system headers to work correctly).  This file is responsible for including
+ *  all system headers and contains all platform dependent cruft in general.
+ *
+ *  The general order of handling:
+ *    - Compiler feature detection (require no includes)
+ *    - Intermediate platform detection (-> easier platform defines)
+ *    - Platform detection, system includes, byte order detection, etc
+ *    - ANSI C wrappers (e.g. DUK_MEMCMP), wrappers for constants, etc
+ *    - Duktape profile handling, DUK_USE_xxx constants are set
+ *    - Duktape Date provider settings
+ *    - Final sanity checks
+ *
+ *  DUK_F_XXX are internal feature detection macros which should not
+ *  be used outside this header.
  *
  *  Useful resources:
  *
  *    http://sourceforge.net/p/predef/wiki/Home/
  *    http://sourceforge.net/p/predef/wiki/Architectures/
  *    http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+ *    http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
  *
  *  FIXME: at the moment there is no direct way of configuring
  *  or overriding individual settings.
@@ -25,10 +37,8 @@
 #ifndef DUK_FEATURES_H_INCLUDED
 #define DUK_FEATURES_H_INCLUDED
 
-#include "duk_rdtsc.h"  /* DUK_RDTSC_AVAILABLE */
-
-/* FIXME: remove _DUK_C99 and _DUK_BSD, prefer no names beginning with
- * underscore.
+/* FIXME: platform detection and all includes and defines in one big
+ * if-else ladder (now e.g. datetime providers is a separate ladder).
  */
 
 /*
@@ -36,31 +46,161 @@
  */
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-#define  _DUK_C99
+#define  DUK_F_C99
 #else
-#undef   _DUK_C99
+#undef   DUK_F_C99
+#endif
+
+/*
+ *  Provides the duk_rdtsc() inline function (if available)
+ *
+ *  See: http://www.mcs.anl.gov/~kazutomo/rdtsc.html
+ */
+
+/* XXX: more accurate detection of what gcc versions work; more inline
+ * asm versions for other compilers.
+ */
+#if defined(__GNUC__) && defined(__i386__)
+static __inline__ unsigned long long duk_rdtsc(void) {
+	unsigned long long int x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return x;
+}
+#define  DUK_RDTSC_AVAILABLE 1
+#elif defined(__GNUC__) && defined(__x86_64__)
+static __inline__ unsigned long long duk_rdtsc(void) {
+	unsigned hi, lo;
+	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+	return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
+}
+#define  DUK_RDTSC_AVAILABLE 1
+#else
+/* not available */
+#undef  DUK_RDTSC_AVAILABLE
 #endif
 
 /*
  *  Intermediate platform detection
+ *
+ *  Provide easier defines for platforms.
  */
 
 /* FIXME: reconcile with direct detection below */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
-#define  _DUK_BSD
+#define  DUK_F_BSD
+#endif
+
+/* FIXME: Atari ST (TOS) with PureC is an exotic platform test; it now
+ * fails because 'int' is 16 bit.
+ */
+#if defined(__TOS__)
+#define  DUK_F_TOS
 #endif
 
 /*
- *  Feature selection defines (e.g. _XOPEN_SOURCE)
+ *  Platform detection and system includes
  *
- *  MUST be set before ANY system headers are included!
+ *  Feature selection (e.g. _XOPEN_SOURCE) must happen before any system
+ *  headers are included.
+ *
+ *  Can trigger standard byte order detection (later in this file) or
+ *  specify byte order explicitly on more exotic platforms.
  */
 
 #if defined(__linux)
 #define  _POSIX_C_SOURCE  200809L
 #define  _GNU_SOURCE      /* e.g. getdate_r */
 #define  _XOPEN_SOURCE    /* e.g. strptime */
+#endif
+
+#if defined(__APPLE__)
+/* Apple OSX */
+#define  DUK_F_STD_BYTEORDER_DETECT
+#include <architecture/byte_order.h>
+#include <limits.h>
+#include <sys/param.h>
+#elif defined(DUK_F_BSD)
+/* BSD */
+#define  DUK_F_STD_BYTEORDER_DETECT
+#include <sys/endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#elif defined(DUK_F_TOS)
+/* Atari ST */
+#define  DUK_USE_DOUBLE_BE
+#include <limits.h>
+#else
+/* Linux and hopefully others */
+#define  DUK_F_STD_BYTEORDER_DETECT
+#include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>  /* varargs */
+#include <setjmp.h>
+#include <stddef.h>  /* e.g. ptrdiff_t */
+
+#ifdef DUK_F_TOS
+/*FIXME*/
+#else
+#include <stdint.h>
+#endif
+
+#include <math.h>
+
+/*
+ *  Sanity check types and define bit types such as duk_u32
+ */
+
+/* FIXME: Is there a reason not to rely on C99 types only, and only fall
+ * back to guessing if C99 types are not available?
+ */
+
+/* FIXME: How to do reasonable automatic detection on older compilers,
+ * and how to allow user override?
+ */
+
+#ifdef INT_MAX
+#if INT_MAX < 2147483647
+#error INT_MAX too small, expected int to be 32 bits at least
+#endif
+#else
+#error INT_MAX not defined
+#endif
+
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+/* C99 */
+#include <inttypes.h>
+typedef uint8_t duk_u8;
+typedef int8_t duk_i8;
+typedef uint16_t duk_u16;
+typedef int16_t duk_i16;
+typedef uint32_t duk_u32;
+typedef int32_t duk_i32;
+#else
+/* FIXME: need actual detection here */
+typedef unsigned char duk_u8;
+typedef signed char duk_i8;
+typedef unsigned short duk_u16;
+typedef signed short duk_i16;
+typedef unsigned int duk_u32;
+typedef signed int duk_i32;
+#endif
+
+/*
+ *  Support for unaligned accesses
+ */
+
+/* FIXME: currently just a hack for ARM, what would be a good way to detect? */
+#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
+#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#else
+#define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #endif
 
 /*
@@ -76,18 +216,7 @@
  * detection for unhandled cases.
  */
 
-#if defined(__APPLE__)
-#include <architecture/byte_order.h>
-#elif defined(_DUK_BSD)
-#include <sys/endian.h>
-#else
-/* Linux and hopefully others */
-#include <endian.h>
-#endif
-
-#include <limits.h>
-#include <sys/param.h>
-
+#if defined(DUK_F_STD_BYTEORDER_DETECT)
 /* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
 #if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
     (defined(__LITTLE_ENDIAN__))
@@ -111,6 +240,7 @@
 #else
 #error unsupported: cannot determine byte order
 #endif
+#endif  /* DUK_F_STD_BYTEORDER_DETECT */
 
 #if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
 #error unsupported: cannot determine IEEE double byte order variant
@@ -129,38 +259,12 @@
 #endif
 
 /*
- *  Support for unaligned accesses
- */
-
-/* FIXME: currently just a hack for ARM, what would be a good way to detect? */
-#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
-#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#else
-#define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#endif
-
-/*
- *  Macro for suppressing warnings for potentially unreferenced variables.
- *  The variables can be actually unreferenced or unreferenced in some
- *  specific cases only; for instance, if a variable is only debug printed,
- *  it is unreferenced when debug printing is disabled.
- *
- *  (Introduced here because it's potentially compiler specific.)
- */
-
-#define  DUK_UNREF(x)  do { \
-		(void) (x); \
-	} while (0)
-
-/*
  *  Some double constants which may be platform specific.
  *
  *  INFINITY/HUGE_VAL is problematic on GCC-3.3: it causes an overflow warning
  *  and there is no pragma in GCC-3.3 to disable it.  Using __builtin_inf()
  *  avoids this problem for some reason.
  */
-
-#include <math.h>
 
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
     (((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4))
@@ -173,13 +277,12 @@
 #define  DUK_DOUBLE_2TO32     4294967296.0
 #define  DUK_DOUBLE_2TO31     2147483648.0
 
-/*
- *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
- *  see: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string
- */
-
-#define  _DUK_STRINGIFY_HELPER(x)  #x
-#define  DUK_MACRO_STRINGIFY(x)  _DUK_STRINGIFY_HELPER(x)
+#ifdef  NAN
+#define  DUK_DOUBLE_NAN       NAN
+#else
+#define  DUK_DOUBLE_NAN       (0.0 / 0.0)
+#define  NAN                  DUK_DOUBLE_NAN  /*FIXME*/
+#endif
 
 /*
  *  ANSI C string/memory function wrapper defines to allow easier workarounds.
@@ -208,6 +311,27 @@
 #define  DUK_SNPRINTF     snprintf
 #define  DUK_VSPRINTF     vsprintf
 #define  DUK_VSNPRINTF    vsnprintf
+
+/*
+ *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
+ *  see: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string
+ */
+
+#define  DUK_F_STRINGIFY_HELPER(x)  #x
+#define  DUK_MACRO_STRINGIFY(x)  DUK_F_STRINGIFY_HELPER(x)
+
+/*
+ *  Macro for suppressing warnings for potentially unreferenced variables.
+ *  The variables can be actually unreferenced or unreferenced in some
+ *  specific cases only; for instance, if a variable is only debug printed,
+ *  it is unreferenced when debug printing is disabled.
+ *
+ *  (Introduced here because it's potentially compiler specific.)
+ */
+
+#define  DUK_UNREF(x)  do { \
+		(void) (x); \
+	} while (0)
 
 /* 
  *  Profile processing
@@ -358,14 +482,14 @@
 #undef  DUK_USE_DPRINT_RDTSC
 #endif
 
-#ifdef _DUK_C99
+#ifdef DUK_F_C99
 #define  DUK_USE_VARIADIC_MACROS
 #else
 #undef  DUK_USE_VARIADIC_MACROS
 #endif
 
 /* zero-size array at end of struct (char buf[0]) instead of C99 version (char buf[]) */
-#ifdef _DUK_C99
+#ifdef DUK_F_C99
 #undef  DUK_USE_STRUCT_HACK
 #else
 #define  DUK_USE_STRUCT_HACK  /* non-portable */
@@ -386,7 +510,7 @@
  * not to provide some functions.  For now, use replacements whenever
  * using uclibc.
  */
-#if defined(_DUK_C99) && !defined(__UCLIBC__)
+#if defined(DUK_F_C99) && !defined(__UCLIBC__)
 #define  DUK_USE_MATH_FMIN
 #define  DUK_USE_MATH_FMAX
 #define  DUK_USE_MATH_ROUND
@@ -443,6 +567,12 @@
 #define  DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define  DUK_USE_DATE_TZO_GMTIME
 #define  DUK_USE_DATE_PRS_STRPTIME
+#define  DUK_USE_DATE_FMT_STRFTIME
+#elif defined(DUK_F_TOS)
+/* Atari ST */
+#define  DUK_USE_DATE_NOW_TIME
+#define  DUK_USE_DATE_TZO_GMTIME
+/* no parsing (not an error) */
 #define  DUK_USE_DATE_FMT_STRFTIME
 #else
 #error platform not supported

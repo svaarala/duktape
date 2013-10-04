@@ -12,7 +12,6 @@
 #ifndef DUK_HBUFFER_H_INCLUDED
 #define DUK_HBUFFER_H_INCLUDED
 
-#include "duk_bittypes.h"
 #include "duk_forwdecl.h"
 
 #define  DUK_HBUFFER_FLAG_DYNAMIC        DUK_HEAPHDR_USER_FLAG(0)  /* buffer is resizable */

@@ -5,8 +5,6 @@
 #ifndef DUK_JS_BYTECODE_H_INCLUDED
 #define DUK_JS_BYTECODE_H_INCLUDED
 
-#include "duk_bittypes.h"
-
 /*
  *  Logical instruction layout
  *  ==========================

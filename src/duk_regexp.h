@@ -5,8 +5,6 @@
 #ifndef DUK_REGEXP_H_INCLUDED
 #define DUK_REGEXP_H_INCLUDED
 
-#include "duk_bittypes.h"
-
 /* maximum bytecode copies for {n,m} quantifiers */
 #define  DUK_RE_MAX_ATOM_COPIES             1000
 
