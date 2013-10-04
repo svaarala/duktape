@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check builtin object implementations for size optimization
+desc: E.g. valueOf() implementation is often very similar.
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-04 21:45:40.698272 Z
+references: []
+
+id: b1059e8219aa2044e874bde22f3585e0a99c1a6c
+log_events: 
+- - 2013-10-04 21:45:40.882171 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

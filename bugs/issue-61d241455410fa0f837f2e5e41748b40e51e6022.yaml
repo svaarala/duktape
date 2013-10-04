@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: document Ecmascript coercions for custom types
+title: coercion/comparison behavior cleanups for custom types
 desc: ""
 type: :task
 component: duk
@@ -7,20 +7,16 @@ release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
-creation_time: 2013-07-15 16:48:43.012905 Z
+creation_time: 2013-10-02 21:03:51.942201 Z
 references: []
 
-id: 7ce453e777d46c3182a6c11373f0600fe223d83e
+id: 61d241455410fa0f837f2e5e41748b40e51e6022
 log_events: 
-- - 2013-07-15 16:48:43.188796 Z
+- - 2013-10-02 21:03:52.390151 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-08-02 15:00:07.143189 Z
-  - sva <sami.vaarala@iki.fi>
-  - assigned to release v0.7 from v0.6
-  - ""
-- - 2013-10-02 21:02:28.670886 Z
+- - 2013-10-03 22:10:51.657525 Z
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
