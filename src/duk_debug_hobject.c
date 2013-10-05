@@ -7,7 +7,7 @@
 #ifdef DUK_USE_DEBUG
 
 /* must match duk_hobject.h */
-static const char *class_names[16] = {
+static const char *class_names[32] = {
 	"unused",
 	"Arguments",
 	"Array",
@@ -22,8 +22,24 @@ static const char *class_names[16] = {
 	"RegExp",
 	"String",
 	"global",
-	"objenv",
-	"decenv",
+	"ObjEnv",
+	"DecEnv",
+	"Buffer",
+	"Pointer",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
+	"unused",
 };
 
 /* for thread dumping */

@@ -19,7 +19,7 @@ typedef union {
  *  Encoding constants, must match genbuiltins.py
  */
 
-#define  CLASS_BITS                  4
+#define  CLASS_BITS                  5
 #define  BIDX_BITS                   6
 #define  STRIDX_BITS                 9  /* FIXME: try to optimize to 8 */
 #define  NATIDX_BITS                 8
@@ -44,6 +44,7 @@ typedef union {
 #define  PROP_TYPE_UNDEFINED         4
 #define  PROP_TYPE_BOOLEAN_TRUE      5
 #define  PROP_TYPE_BOOLEAN_FALSE     6
+#define  PROP_TYPE_ACCESSOR          7
 
 /*
  *  Create built-in objects by parsing an init bitstream generated
@@ -210,7 +211,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		t = duk_bd_decode(bd, BIDX_BITS);
 		if (t != NO_BIDX_MARKER) {
-			DUK_DDDPRINT("set prototype: built-in %d", (int) t);
+			DUK_DDDPRINT("set internal prototype: built-in %d", (int) t);
 			DUK_HOBJECT_SET_PROTOTYPE(thr, h, thr->builtins[t]);
 		}
 
@@ -322,6 +323,13 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 			case PROP_TYPE_BOOLEAN_FALSE: {
 				duk_push_false(ctx);
+				break;
+			}
+			case PROP_TYPE_ACCESSOR: {
+				/* FIXME: handle accessors here? need to skip the shared
+				 * define property call, and need something to actually
+				 * set the accessors (only Ecmascript code can do that now).
+				 */
 				break;
 			}
 			default: {

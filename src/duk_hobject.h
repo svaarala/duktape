@@ -50,9 +50,10 @@
 #define  DUK_HOBJECT_FLAG_SPECIAL_ARRAY         DUK_HEAPHDR_USER_FLAG(13)  /* 'Array' object, array length and index special behavior */
 #define  DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ     DUK_HEAPHDR_USER_FLAG(14)  /* 'String' object, array index special behavior */
 #define  DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS     DUK_HEAPHDR_USER_FLAG(15)  /* 'Arguments' object and has arguments special behavior (non-strict callee) */
+/* bit 16 unused */
 
-#define  DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(18)
-#define  DUK_HOBJECT_FLAG_CLASS_BITS            4
+#define  DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(17)
+#define  DUK_HOBJECT_FLAG_CLASS_BITS            5
 
 #define  DUK_HOBJECT_GET_CLASS_NUMBER(h)        \
 	DUK_HEAPHDR_GET_FLAG_RANGE(&(h)->hdr, DUK_HOBJECT_FLAG_CLASS_BASE, DUK_HOBJECT_FLAG_CLASS_BITS)
@@ -79,6 +80,8 @@
 #define  DUK_HOBJECT_CLASS_GLOBAL               13
 #define  DUK_HOBJECT_CLASS_OBJENV               14  /* custom */
 #define  DUK_HOBJECT_CLASS_DECENV               15  /* custom */
+#define  DUK_HOBJECT_CLASS_BUFFER               16  /* custom */
+#define  DUK_HOBJECT_CLASS_POINTER              17  /* custom */
 
 #define  DUK_HOBJECT_IS_OBJENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_OBJENV)
 #define  DUK_HOBJECT_IS_DECENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DECENV)
@@ -452,7 +455,7 @@ struct duk_hobject {
  *  Exposed data
  */
 
-extern duk_u8 duk_class_number_to_stridx[16];
+extern duk_u8 duk_class_number_to_stridx[32];
 
 /*
  *  Prototypes
