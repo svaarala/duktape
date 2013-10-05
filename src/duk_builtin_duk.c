@@ -2,8 +2,6 @@
  *  __duk__ built-ins
  */
 
-#include <sys/time.h>
-
 #include "duk_internal.h"
 
 int duk_builtin_duk_object_addr(duk_context *ctx) {
@@ -351,16 +349,17 @@ int duk_builtin_duk_object_print(duk_context *ctx) {
 	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
 }
 
+/* FIXME: disabled because time handling is a portability issue which
+ * is otherwise contained in duk_builtin_date.c.
+ */
+#if 0
 int duk_builtin_duk_object_time(duk_context *ctx) {
-	struct timeval tv;
-
-	DUK_MEMSET(&tv, 0, sizeof(tv));
-	if (gettimeofday(&tv, NULL) != 0) {
-		return DUK_RET_ERROR;
-	}
-	duk_push_number(ctx, (double) tv.tv_sec + ((double) tv.tv_usec) / 1000000.0);
-	return 1;
+	return DUK_RET_UNIMPLEMENTED_ERROR;
 }
+int duk_builtin_duk_object_sleep(duk_context *ctx) {
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+#endif
 
 int duk_builtin_duk_object_enc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -397,16 +396,3 @@ int duk_builtin_duk_object_dec(duk_context *ctx) {
 		return DUK_RET_TYPE_ERROR;
 	}
 }
-
-int duk_builtin_duk_object_sleep(duk_context *ctx) {
-	struct timeval tv;
-	int msec;
-
-	/* FIXME: signal handling */
-	msec = duk_to_int(ctx, 0);
-	tv.tv_sec = msec / 1000;
-	tv.tv_usec = (msec % 1000) * 1000;
-	(void) select(0, NULL, NULL, NULL, &tv);
-	return 0;
-}
-
