@@ -430,9 +430,10 @@ int duk_js_equals_number(double x, double y) {
 	return 0;
 }
 
-/* E5 Section 11.9.3 */
+/* E5 Section 11.9.3. */
 int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_context *ctx = (duk_context *) thr;
+	duk_tval *tv_tmp;
 
 	/*
 	 *  FIXME: very direct translation now - should be made more
@@ -442,8 +443,8 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	/*
 	 *  Same type?
 	 *
-	 *  Note: since number values have no explicit tag, need the awkward
-	 *  if + switch.
+	 *  Note: since number values have no explicit tag in the 8-byte
+	 *  representation, need the awkward if + switch.
 	 */
 
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
@@ -500,6 +501,9 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 
 	/*
 	 *  Types are different; various cases
+	 *
+	 *  Since comparison is symmetric, we use a "swap trick" to reduce
+	 *  code size.
 	 */
 
 	/* undefined/null are considered equal (e.g. "null == undefined" -> true) */
@@ -508,38 +512,57 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return 1;
 	}
 
-	/* number/string -> coerce string to number (e.g. "'1.5' == 1.5" -> true) */
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
-		/* FIXME: this is possible without resorting to the value stack */
-		double d1, d2;
-		d1 = DUK_TVAL_GET_NUMBER(tv_x);
-		duk_push_tval(ctx, tv_y);
-		duk_to_number(ctx, -1);
-		d2 = duk_require_number(ctx, -1);
-		duk_pop(ctx);
-		return duk_js_equals_number(d1, d2);
+	/* number/string-or-buffer -> coerce string to number (e.g. "'1.5' == 1.5" -> true) */
+	if (DUK_TVAL_IS_NUMBER(tv_x) && (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
+		/* the next 'if' is guaranteed to match after swap */
+		tv_tmp = tv_x;
+		tv_x = tv_y;
+		tv_y = tv_tmp;
 	}
-	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
+	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* FIXME: this is possible without resorting to the value stack */
 		double d1, d2;
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		duk_push_tval(ctx, tv_x);
+		duk_to_string(ctx, -1);  /* buffer values are coerced first to string here */
 		duk_to_number(ctx, -1);
 		d1 = duk_require_number(ctx, -1);
 		duk_pop(ctx);
 		return duk_js_equals_number(d1, d2);
 	}
 
+	/* buffer/string -> compare contents */
+	if (DUK_TVAL_IS_BUFFER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
+		tv_tmp = tv_x;
+		tv_x = tv_y;
+		tv_y = tv_tmp;
+	}
+	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_BUFFER(tv_y)) {
+		duk_hstring *h_x = DUK_TVAL_GET_STRING(tv_x);
+		duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
+		size_t len_x = DUK_HSTRING_GET_BYTELEN(h_x);
+		size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
+		void *buf_x;
+		void *buf_y;
+		if (len_x != len_y) {
+			return 0;
+		}
+		buf_x = (void *) DUK_HSTRING_GET_DATA(h_x);
+		buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
+		/* if len_x == len_y == 0, buf_x and/or buf_y may
+		 * be NULL, but that's OK.
+		 */
+		DUK_ASSERT(len_x == len_y);
+		DUK_ASSERT(len_x == 0 || buf_x != NULL);
+		DUK_ASSERT(len_y == 0 || buf_y != NULL);
+		return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
+	}
+
 	/* boolean/any -> coerce boolean to number and try again */
 	if (DUK_TVAL_IS_BOOLEAN(tv_x)) {
-		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
-		int rc;
-		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_x) == 0 || DUK_TVAL_GET_BOOLEAN(tv_x) == 1);
-		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_x));
-		duk_push_tval(ctx, tv_y);
-		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
-		duk_pop_2(ctx);
-		return rc;
+		tv_tmp = tv_x;
+		tv_x = tv_y;
+		tv_y = tv_tmp;
 	}
 	if (DUK_TVAL_IS_BOOLEAN(tv_y)) {
 		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
@@ -552,19 +575,15 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return rc;
 	}
 
-	/* string-or-number/object -> coerce object to primitive (apparently without hint), then try again */
-	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x)) &&
+	/* string-number-buffer/object -> coerce object to primitive (apparently without hint), then try again */
+	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) &&
 	    DUK_TVAL_IS_OBJECT(tv_y)) {
-		int rc;
-		duk_push_tval(ctx, tv_x);
-		duk_push_tval(ctx, tv_y);
-		duk_to_primitive(ctx, -1, DUK_HINT_NONE);  /* apparently no hint? */
-		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
-		duk_pop_2(ctx);
-		return rc;
+		tv_tmp = tv_x;
+		tv_x = tv_y;
+		tv_y = tv_tmp;
 	}
 	if (DUK_TVAL_IS_OBJECT(tv_x) &&
-	    (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y))) {
+	    (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
 		int rc;
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
@@ -573,9 +592,6 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		duk_pop_2(ctx);
 		return rc;
 	}
-
-	/* FIXME: object vs. buffer: coerce object to primitive and retry? */	
-	/* FIXME: string vs. buffer: compare contents? */
 
 	/* nothing worked -> not equal */
 	return 0;
@@ -1148,7 +1164,7 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	}
 	case DUK_TAG_POINTER: {
 		/* implementation specific */
-		idx = DUK_STRIDX_POINTER;
+		idx = DUK_STRIDX_LC_POINTER;
 		break;
 	}
 	case DUK_TAG_STRING: {
@@ -1167,7 +1183,7 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	}
 	case DUK_TAG_BUFFER: {
 		/* implementation specific */
-		idx = DUK_STRIDX_BUFFER;
+		idx = DUK_STRIDX_LC_BUFFER;
 		break;
 	}
 	default: {
