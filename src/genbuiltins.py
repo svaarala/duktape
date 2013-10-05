@@ -94,7 +94,7 @@ LENGTH_PROPERTY_ATTRIBUTES = ""
 DEFAULT_PROPERTY_ATTRIBUTES = "wc"
 
 # encoding constants (must match duk_hthread_builtins.c)
-CLASS_BITS = 4
+CLASS_BITS = 5
 BIDX_BITS = 6
 STRIDX_BITS = 9   # FIXME: try to optimize to 8
 NATIDX_BITS = 8
@@ -144,6 +144,8 @@ _classnames = [
 	'global',
 	'ObjEnv',
 	'DecEnv',
+	'Buffer',
+	'Pointer',
 ]
 _class2num = {}
 for i,v in enumerate(_classnames):
@@ -745,7 +747,7 @@ bi_error_prototype = {
 	'class': 'Error',
 
 	'values': [
-		# Property attributes:
+		# Standard properties; property attributes:
 		#
 		# 'message' is writable and deletable.  This matches the default
 		# attributes of 'wc'.  V8 and Smjs both match this.
@@ -764,6 +766,12 @@ bi_error_prototype = {
 
 		{ 'name': 'name',			'value': 'Error' },
 		{ 'name': 'message',			'value': '' },
+
+		# Custom properties
+
+		{ 'name': 'stack',			'value': '' },
+		# FIXME: custom properties
+
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_error_prototype_to_string',		'length': 0 },
@@ -1012,6 +1020,8 @@ bi_duk = {
 	'values': [
 		# Note: 'version' and 'build' are added from parameter file.
 		# They are intentionally non-writable and non-configurable now.
+		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_buffer_constructor' } },
+		{ 'name': 'Pointer',			'value': { 'type': 'builtin', 'id': 'bi_pointer_constructor' } },
 	],
 	'functions': [
 		# FIXME: 'yield' is a bad method name, since yield is a reserved word
@@ -1025,10 +1035,10 @@ bi_duk = {
 		{ 'name': 'yield',			'native': 'duk_builtin_duk_object_yield',		'length': 2 },
 		{ 'name': 'resume',			'native': 'duk_builtin_duk_object_resume',		'length': 3 },
 		{ 'name': 'curr',			'native': 'duk_builtin_duk_object_curr',		'length': 0 },
-		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
 		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
 		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
-		{ 'name': 'sleep',			'native': 'duk_builtin_duk_object_sleep',		'length': 1 },
+#		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
+#		{ 'name': 'sleep',			'native': 'duk_builtin_duk_object_sleep',		'length': 1 },
 	],
 }
 
@@ -1050,6 +1060,66 @@ bi_thread_prototype = {
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_thread_prototype_to_string',	'length': 0 },
+	],
+}
+
+bi_buffer_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_buffer_prototype',
+	'class': 'Function',
+	'name': 'Buffer',
+
+	'length': 1,
+	'varargs': True,
+	'native': 'duk_builtin_buffer_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+	]
+}
+
+bi_buffer_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_buffer_constructor',
+	'class': 'Buffer',
+
+	'values': [
+	],
+	'functions': [
+		{ 'name': 'toString',			'native': 'duk_builtin_buffer_prototype_to_string',		'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_builtin_buffer_prototype_value_of',		'length': 0 },
+	],
+}
+
+bi_pointer_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_pointer_prototype',
+	'class': 'Function',
+	'name': 'Pointer',
+
+	'length': 1,
+	'varargs': True,
+	'native': 'duk_builtin_pointer_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+	]
+}
+
+bi_pointer_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_pointer_constructor',
+	'class': 'Pointer',
+
+	'values': [
+	],
+	'functions': [
+		{ 'name': 'toString',			'native': 'duk_builtin_pointer_prototype_to_string',		'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_builtin_pointer_prototype_value_of',		'length': 0 },
 	],
 }
 
@@ -1115,6 +1185,10 @@ builtins = [
 	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
 	{ 'id': 'bi_duk',				'info': bi_duk },
 	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype },
+	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor },
+	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype },
+	{ 'id': 'bi_pointer_constructor',		'info': bi_pointer_constructor },
+	{ 'id': 'bi_pointer_prototype',			'info': bi_pointer_prototype },
 	{ 'id': 'bi_double_error',                      'info': bi_double_error },
 ]
 

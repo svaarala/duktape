@@ -462,19 +462,23 @@ standard_other_string_list = [
 duk_string_list = [
 	# non-standard class values
 	mkstr("global", custom=True, class_name=True),	# implementation specific but shared by e.g. smjs and V8
+	mkstr("ObjEnv", custom=True, class_name=True),
+	mkstr("DecEnv", custom=True, class_name=True),
+	mkstr("Buffer", custom=True, class_name=True),
+	mkstr("Pointer", custom=True, class_name=True),
 
 	# non-standard built-in object names
 	mkstr("ThrowTypeError", custom=True),  # implementation specific, matches V8
 
-	# non-standard error object properties
+	# non-standard error object (or Error.prototype) properties
+	mkstr("stack", custom=True),
 	mkstr("pc", custom=True),
 	mkstr("fileName", custom=True),
 	mkstr("lineNumber", custom=True),
 	mkstr("isNative", custom=True),
 	mkstr("code", custom=True),
 	mkstr("cause", custom=True),
-	mkstr("traceback", custom=True),
-	mkstr("trunc", custom=True),	# FIXME: unused
+	mkstr("tracedata", custom=True),
 
 	# non-standard function instance properties
 	mkstr("name", custom=True),	# function declaration/expression name (or empty)
@@ -645,6 +649,10 @@ special_define_names = {
 	'String': 'UC_STRING',
 	'arguments': 'LC_ARGUMENTS',
 	'Arguments': 'UC_ARGUMENTS',
+	'buffer': 'LC_BUFFER',
+	'Buffer': 'UC_BUFFER',
+	'pointer': 'LC_POINTER',
+	'Pointer': 'UC_POINTER',
 
 	'+Infinity': 'PLUS_INFINITY',
 	'-Infinity': 'MINUS_INFINITY',
