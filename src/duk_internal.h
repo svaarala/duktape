@@ -19,6 +19,7 @@
  *  Duktape includes (other than duk_features.h)
  */
 
+#include "duk_replacements.h"
 #include "duk_jmpbuf.h"
 #include "duk_forwdecl.h"
 #include "duk_js_bytecode.h"

@@ -85,7 +85,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  Provide easier defines for platforms.
  */
 
-/* FIXME: reconcile with direct detection below */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
 #define  DUK_F_BSD
@@ -96,6 +95,13 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  */
 #if defined(__TOS__)
 #define  DUK_F_TOS
+#endif
+
+/* FIXME: This is now incorrect; is there a define for AmigaOS?  Assume
+ * VBCC implies AmigaOS for now.
+ */
+#if defined(__VBCC__)
+#define  DUK_F_AMIGAOS
 #endif
 
 /*
@@ -128,6 +134,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <sys/param.h>
 #elif defined(DUK_F_TOS)
 /* Atari ST */
+#define  DUK_USE_DOUBLE_BE
+#include <limits.h>
+#elif defined(DUK_F_AMIGAOS)
+/* Amiga OS on M68k */
+/* FIXME: check for M68k */
 #define  DUK_USE_DOUBLE_BE
 #include <limits.h>
 #else
@@ -173,7 +184,8 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error INT_MAX not defined
 #endif
 
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
+    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS has C99 but no inttypes.h */
 /* C99 */
 #include <inttypes.h>
 typedef uint8_t duk_u8;
@@ -259,29 +271,100 @@ typedef signed int duk_i32;
 #endif
 
 /*
- *  Some double constants which may be platform specific.
+ *  Detection of double constants and math related functions.  Availability
+ *  of constants and math functions is a significant porting concern.
  *
  *  INFINITY/HUGE_VAL is problematic on GCC-3.3: it causes an overflow warning
  *  and there is no pragma in GCC-3.3 to disable it.  Using __builtin_inf()
  *  avoids this problem for some reason.
  */
 
-#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
-    (((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4))
-/* GCC older than 4.6 */
-#define  DUK_DOUBLE_INFINITY  (__builtin_inf())
-#else
-#define  DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#endif
-
 #define  DUK_DOUBLE_2TO32     4294967296.0
 #define  DUK_DOUBLE_2TO31     2147483648.0
 
-#ifdef  NAN
-#define  DUK_DOUBLE_NAN       NAN
+#undef  DUK_USE_COMPUTED_INFINITY
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+    (((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4))
+/* GCC older than 4.6: avoid overflow warnings related to using INFINITY */
+#define  DUK_DOUBLE_INFINITY  (__builtin_inf())
+#elif defined(INFINITY)
+#define  DUK_DOUBLE_INFINITY  ((double) INFINITY)
+#elif !defined(__VBCC__)
+#define  DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
+/* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
+ * Use a computed infinity(initialized when a heap is created at the
+ * latest).
+ */
+extern double duk_computed_infinity;
+#define  DUK_USE_COMPUTED_INFINITY
+#define  DUK_DOUBLE_INFINITY  duk_computed_infinity
+#endif
+
+#undef  DUK_USE_COMPUTED_NAN
+#if defined(NAN)
+#define  DUK_DOUBLE_NAN       NAN
+#elif !defined(__VBCC__)
 #define  DUK_DOUBLE_NAN       (0.0 / 0.0)
 #define  NAN                  DUK_DOUBLE_NAN  /*FIXME*/
+#else
+/* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
+ * Use a computed NaN (initialized when a heap is created at the
+ * latest).
+ */
+extern double duk_computed_nan;
+#define  DUK_USE_COMPUTED_NAN
+#define  DUK_DOUBLE_NAN       duk_computed_nan
+#define  NAN                  DUK_DOUBLE_NAN  /*FIXME*/
+#endif
+
+/* Many platforms are missing fpclassify() and friends, so use replacements
+ * if necessary.  The replacement constants (FP_NAN etc) can be anything but
+ * match Linux constants now.
+ */
+#if !(defined(FP_NAN) && defined(FP_INFINITE) && defined(FP_ZERO) && \
+      defined(FP_SUBNORMAL) && defined(FP_NORMAL)) || \
+    (defined(DUK_F_AMIGAOS) && defined(__VBCC__))
+#define  DUK_USE_REPL_FPCLASSIFY
+#define  DUK_USE_REPL_SIGNBIT
+#define  DUK_USE_REPL_ISFINITE
+#define  DUK_FPCLASSIFY       duk_repl_fpclassify
+#define  DUK_SIGNBIT          duk_repl_signbit
+#define  DUK_ISFINITE         duk_repl_isfinite
+#define  DUK_FP_NAN           0
+#define  DUK_FP_INFINITE      1
+#define  DUK_FP_ZERO          2
+#define  DUK_FP_SUBNORMAL     3
+#define  DUK_FP_NORMAL        4
+#else
+#undef  DUK_USE_REPL_FPCLASSIFY
+#undef  DUK_USE_REPL_SIGNBIT
+#undef  DUK_USE_REPL_ISFINITE
+#define  DUK_FPCLASSIFY       fpclassify
+#define  DUK_SIGNBIT          signbit
+#define  DUK_ISFINITE         isfinite
+#define  DUK_FP_NAN           FP_NAN
+#define  DUK_FP_INFINITE      FP_INFINITE
+#define  DUK_FP_ZERO          FP_ZERO
+#define  DUK_FP_SUBNORMAL     FP_SUBNORMAL
+#define  DUK_FP_NORMAL        FP_NORMAL
+#endif
+
+/* Some math functions are C99 only.  This is also an issue with some
+ * embedded environments using uclibc where uclibc has been configured
+ * not to provide some functions.  For now, use replacements whenever
+ * using uclibc.
+ */
+#if defined(DUK_F_C99) && \
+    !defined(__UCLIBC__) /* uclibc may be missing these */ && \
+    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS may be missing these */
+#define  DUK_USE_MATH_FMIN
+#define  DUK_USE_MATH_FMAX
+#define  DUK_USE_MATH_ROUND
+#else
+#undef  DUK_USE_MATH_FMIN
+#undef  DUK_USE_MATH_FMAX
+#undef  DUK_USE_MATH_ROUND
 #endif
 
 /*
@@ -505,21 +588,6 @@ typedef signed int duk_i32;
 #undef  DUK_USE_GCC_PRAGMAS
 #endif
 
-/* Some math functions are C99 only.  This is also an issue with some
- * embedded environments using uclibc where uclibc has been configured
- * not to provide some functions.  For now, use replacements whenever
- * using uclibc.
- */
-#if defined(DUK_F_C99) && !defined(__UCLIBC__)
-#define  DUK_USE_MATH_FMIN
-#define  DUK_USE_MATH_FMAX
-#define  DUK_USE_MATH_ROUND
-#else
-#undef  DUK_USE_MATH_FMIN
-#undef  DUK_USE_MATH_FMAX
-#undef  DUK_USE_MATH_ROUND
-#endif
-
 /*
  *  Date built-in platform primitive selection
  *
@@ -570,6 +638,12 @@ typedef signed int duk_i32;
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_TOS)
 /* Atari ST */
+#define  DUK_USE_DATE_NOW_TIME
+#define  DUK_USE_DATE_TZO_GMTIME
+/* no parsing (not an error) */
+#define  DUK_USE_DATE_FMT_STRFTIME
+#elif defined(DUK_F_AMIGAOS)
+/* Amiga OS */
 #define  DUK_USE_DATE_NOW_TIME
 #define  DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */

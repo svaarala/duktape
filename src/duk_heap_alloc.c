@@ -317,6 +317,27 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_DPRINT("allocate heap");
 
+#ifdef DUK_USE_COMPUTED_NAN
+	do {
+		/* Workaround for some exotic platforms where NAN is missing
+		 * and the expression (0.0 / 0.0) does NOT result in a NaN.
+		 * Such platforms use the global 'duk_computed_nan' which must
+		 * be initialized at runtime.
+		 */
+		double dbl_zero = 0.0;
+		duk_computed_nan = dbl_zero / dbl_zero;
+	} while(0);
+#endif
+
+#ifdef DUK_USE_COMPUTED_INFINITY
+	do {
+		/* Similar workaround for INFINITY. */
+		double dbl_one = 1.0;
+		double dbl_zero = 0.0;
+		duk_computed_infinity = dbl_one / dbl_zero;
+	} while(0);
+#endif
+
 	/* use a raw call, all macros expect the heap to be initialized */
 	res = alloc_func(alloc_udata, sizeof(duk_heap));
 	if (!res) {
