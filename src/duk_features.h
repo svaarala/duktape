@@ -322,27 +322,31 @@ extern double duk_computed_nan;
  * if necessary.  The replacement constants (FP_NAN etc) can be anything but
  * match Linux constants now.
  */
+#undef  DUK_USE_REPL_FPCLASSIFY
+#undef  DUK_USE_REPL_SIGNBIT
+#undef  DUK_USE_REPL_ISFINITE
+#undef  DUK_USE_REPL_ISNAN
 #if !(defined(FP_NAN) && defined(FP_INFINITE) && defined(FP_ZERO) && \
       defined(FP_SUBNORMAL) && defined(FP_NORMAL)) || \
     (defined(DUK_F_AMIGAOS) && defined(__VBCC__))
 #define  DUK_USE_REPL_FPCLASSIFY
 #define  DUK_USE_REPL_SIGNBIT
 #define  DUK_USE_REPL_ISFINITE
+#define  DUK_USE_REPL_ISNAN
 #define  DUK_FPCLASSIFY       duk_repl_fpclassify
 #define  DUK_SIGNBIT          duk_repl_signbit
 #define  DUK_ISFINITE         duk_repl_isfinite
+#define  DUK_ISNAN            duk_repl_isnan
 #define  DUK_FP_NAN           0
 #define  DUK_FP_INFINITE      1
 #define  DUK_FP_ZERO          2
 #define  DUK_FP_SUBNORMAL     3
 #define  DUK_FP_NORMAL        4
 #else
-#undef  DUK_USE_REPL_FPCLASSIFY
-#undef  DUK_USE_REPL_SIGNBIT
-#undef  DUK_USE_REPL_ISFINITE
 #define  DUK_FPCLASSIFY       fpclassify
 #define  DUK_SIGNBIT          signbit
 #define  DUK_ISFINITE         isfinite
+#define  DUK_ISNAN            isnan
 #define  DUK_FP_NAN           FP_NAN
 #define  DUK_FP_INFINITE      FP_INFINITE
 #define  DUK_FP_ZERO          FP_ZERO

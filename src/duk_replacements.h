@@ -13,4 +13,8 @@ int duk_repl_signbit(double x);
 int duk_repl_isfinite(double x);
 #endif
 
+#ifdef DUK_USE_REPL_ISNAN
+int duk_repl_isnan(double x);
+#endif
+	
 #endif  /* DUK_REPLACEMENTS_H_INCLUDED */

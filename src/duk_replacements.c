@@ -31,3 +31,9 @@ int duk_repl_isfinite(double x) {
 }
 #endif
 
+#ifdef DUK_USE_REPL_ISNAN
+int duk_repl_isnan(double x) {
+	return 0;  /*FIXME*/
+}
+#endif
+
