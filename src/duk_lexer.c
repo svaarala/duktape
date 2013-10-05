@@ -1068,7 +1068,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 		duk_numconv_parse((duk_context *) lex_ctx->thr, 10 /*radix*/, s2n_flags);
 		val = duk_to_number((duk_context *) lex_ctx->thr, -1);
-		if (isnan(val)) {
+		if (DUK_ISNAN(val)) {
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid numeric literal");
 		}
 		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* FIXME: or pop? */

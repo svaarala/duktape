@@ -130,7 +130,7 @@ static int get_local_tzoffset_gmtime(double d) {
 	struct tm tms[2];
 
 	/* For NaN/inf, the return value doesn't matter. */
-	if (!isfinite(d)) {
+	if (!DUK_ISFINITE(d)) {
 		return 0;
 	}
 
@@ -667,7 +667,7 @@ static int is_leap_year(int year) {
 }
 
 static double timeclip(double x) {
-	if (!isfinite(x)) {
+	if (!DUK_ISFINITE(x)) {
 		return NAN;
 	}
 
@@ -750,7 +750,7 @@ static double make_day(double year, double month, double day) {
 	 * must return NaN or infinity to ensure time value becomes NaN.
 	 */
 
-	if (!isfinite(year) || !isfinite(month)) {
+	if (!DUK_ISFINITE(year) || !DUK_ISFINITE(month)) {
 		return NAN;
 	}
 	
@@ -797,8 +797,8 @@ static void timeval_to_parts(double d, int *parts, double *dparts, int flags) {
 	int i;
 	int is_leap;
 
-	DUK_ASSERT(isfinite(d));    /* caller checks */
-	DUK_ASSERT(floor(d) == d);  /* no fractions in internal time */
+	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
+	DUK_ASSERT(floor(d) == d);      /* no fractions in internal time */
 
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
@@ -886,7 +886,7 @@ static double get_timeval_from_dparts(double *dparts, int flags) {
 	 */
 	for (i = 0; i <= IDX_MILLISECOND; i++) {
 		d = dparts[i];
-		if (isfinite(d)) {
+		if (DUK_ISFINITE(d)) {
 			dparts[i] = duk_js_tointeger_number(d);
 		}
 	}
@@ -959,7 +959,7 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 	d = duk_to_number(ctx, -1);
 	duk_pop(ctx);
 
-	if (isnan(d)) {
+	if (DUK_ISNAN(d)) {
 		if (flags & FLAG_NAN_TO_ZERO) {
 			d = 0.0;
 		}
@@ -1063,11 +1063,11 @@ static int to_string_helper(duk_context *ctx, int flags_and_sep) {
 	int rc;
 
 	d = push_this_and_get_timeval_tzoffset(ctx, flags_and_sep, &tzoffset);
-	if (isnan(d)) {
+	if (DUK_ISNAN(d)) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_INVALID_DATE);
 		return 1;
 	}
-	DUK_ASSERT(isfinite(d));
+	DUK_ASSERT(DUK_ISFINITE(d));
 
 	/* formatters always get one-based month/day-of-month */
 	timeval_to_parts(d, parts, NULL, FLAG_ONEBASED);
@@ -1108,11 +1108,11 @@ static int get_part_helper(duk_context *ctx, int flags_and_idx) {
 	DUK_ASSERT(idx_part >= 0 && idx_part < NUM_PARTS);
 
 	d = push_this_and_get_timeval(ctx, flags_and_idx);
-	if (isnan(d)) {
+	if (DUK_ISNAN(d)) {
 		duk_push_nan(ctx);
 		return 1;
 	}
-	DUK_ASSERT(isfinite(d));
+	DUK_ASSERT(DUK_ISFINITE(d));
 
 	timeval_to_parts(d, parts, NULL, flags_and_idx);
 
@@ -1142,9 +1142,9 @@ static int set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 
 	nargs = duk_get_top(ctx);
 	d = push_this_and_get_timeval(ctx, flags_and_maxnargs);
-	DUK_ASSERT(isfinite(d) || isnan(d));
+	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
 
-	if (isfinite(d)) {
+	if (DUK_ISFINITE(d)) {
 		timeval_to_parts(d, parts, dparts, flags_and_maxnargs);
 	} else {
 		/* NaN timevalue: we need to coerce the arguments, but
@@ -1211,7 +1211,7 @@ static int set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 	/* Leaves new timevalue on stack top and returns 1, which is correct
 	 * for part setters.
 	 */
-	if (isfinite(d)) {
+	if (DUK_ISFINITE(d)) {
 		return set_this_timeval_from_dparts(ctx, dparts, flags_and_maxnargs);
 	} else {
 		/* Internal timevalue is already NaN, so don't touch it. */
@@ -1420,7 +1420,7 @@ int duk_builtin_date_prototype_value_of(duk_context *ctx) {
 	 */
 
 	double d = push_this_and_get_timeval(ctx, 0 /*flags*/);  /* -> [ this ] */
-	DUK_ASSERT(isfinite(d) || isnan(d));
+	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
 	duk_push_number(ctx, d);
 	return 1;
 }
@@ -1456,7 +1456,7 @@ int duk_builtin_date_prototype_to_json(duk_context *ctx) {
 	duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
 	if (duk_is_number(ctx, -1)) {
 		double d = duk_get_number(ctx, -1);
-		if (!isfinite(d)) {
+		if (!DUK_ISFINITE(d)) {
 			duk_push_null(ctx);
 			return 1;
 		}
@@ -1493,11 +1493,11 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
 
 	/* Note: DST adjustment is determined using UTC time. */
 	d = push_this_and_get_timeval(ctx, 0 /*flags*/);
-	DUK_ASSERT(isfinite(d) || isnan(d));
-	if (isnan(d)) {
+	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
+	if (DUK_ISNAN(d)) {
 		duk_push_nan(ctx);
 	} else {
-		DUK_ASSERT(isfinite(d));
+		DUK_ASSERT(DUK_ISFINITE(d));
 		tzoffset = GET_LOCAL_TZOFFSET(d);
 		duk_push_int(ctx, -tzoffset / 60);
 	}

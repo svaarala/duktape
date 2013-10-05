@@ -580,13 +580,13 @@ int duk_builtin_global_object_parse_float(duk_context *ctx) {
  */
 int duk_builtin_global_object_is_nan(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
-	duk_push_boolean(ctx, isnan(d));
+	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
 
 int duk_builtin_global_object_is_finite(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
-	duk_push_boolean(ctx, isfinite(d));
+	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
 }
 

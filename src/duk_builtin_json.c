@@ -1293,7 +1293,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		s = signbit(d);
 
 		if (!(c == FP_INFINITE || c == FP_NAN)) {
-			DUK_ASSERT(isfinite(d));
+			DUK_ASSERT(DUK_ISFINITE(d));
 			n2s_flags = 0;
 			/* [ ... number ] -> [ ... string ] */
 			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);

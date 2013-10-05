@@ -2040,7 +2040,7 @@ int duk_is_nan(duk_context *ctx, int index) {
 	 * coerce to NaN.  In particular, duk_get_number() returns a NaN for
 	 * non-numbers, so should this also return true for non-numbers?
 	 */
-	return duk_is_number(ctx, index) && isnan(duk_get_number(ctx, index));
+	return duk_is_number(ctx, index) && DUK_ISNAN(duk_get_number(ctx, index));
 }
 
 int duk_is_string(duk_context *ctx, int index) {
