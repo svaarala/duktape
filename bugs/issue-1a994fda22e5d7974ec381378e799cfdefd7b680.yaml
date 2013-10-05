@@ -8,8 +8,8 @@ type: :task
 component: duk
 release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-08-31 22:53:04.631136 Z
 references: []
 
@@ -19,3 +19,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2013-10-05 23:00:22.927426 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - Current solution is to avoid these always with uclibc.
