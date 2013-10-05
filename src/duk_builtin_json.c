@@ -1289,10 +1289,10 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 
 		d = DUK_TVAL_GET_NUMBER(tv);
-		c = fpclassify(d);
-		s = signbit(d);
+		c = DUK_FPCLASSIFY(d);
+		s = DUK_SIGNBIT(d);
 
-		if (!(c == FP_INFINITE || c == FP_NAN)) {
+		if (!(c == DUK_FP_INFINITE || c == DUK_FP_NAN)) {
 			DUK_ASSERT(DUK_ISFINITE(d));
 			n2s_flags = 0;
 			/* [ ... number ] -> [ ... string ] */
@@ -1308,7 +1308,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		if (!(js_ctx->flags & (DUK_JSON_ENC_FLAG_EXT_CUSTOM |
 		                       DUK_JSON_ENC_FLAG_EXT_COMPATIBLE))) {
 			stridx = DUK_STRIDX_NULL;
-		} else if (c == FP_NAN) {
+		} else if (c == DUK_FP_NAN) {
 			stridx = js_ctx->stridx_custom_nan;
 		} else if (s == 0) {
 			stridx = js_ctx->stridx_custom_neginf;

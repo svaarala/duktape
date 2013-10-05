@@ -566,8 +566,8 @@ struct duk_tval_struct {
 
 /* misc */
 #define  DUK_DOUBLE_NORMALIZE_NAN_CHECK(d)  /* nop: no need to normalize */
-#define  DUK_DOUBLE_IS_NAN(d)               (fpclassify(*(d)) == FP_NAN)
-#define  DUK_DOUBLE_IS_NORMALIZED_NAN(d)    (fpclassify(*(d)) == FP_NAN)  /* all NaNs are considered normalized */
+#define  DUK_DOUBLE_IS_NAN(d)               (DUK_ISNAN(*(d)))
+#define  DUK_DOUBLE_IS_NORMALIZED_NAN(d)    (DUK_ISNAN(*(d)))  /* all NaNs are considered normalized */
 #define  DUK_DOUBLE_IS_NORMALIZED(d)        1  /* all doubles are considered normalized */
 
 #endif  /* DUK_USE_PACKED_TVAL */

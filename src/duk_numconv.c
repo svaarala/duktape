@@ -1354,19 +1354,19 @@ void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
 	 *  Handle special cases (NaN, infinity, zero).
 	 */
 
-	c = fpclassify(x);
-	if (signbit(x)) {
+	c = DUK_FPCLASSIFY(x);
+	if (DUK_SIGNBIT(x)) {
 		x = -x;
 		neg = 1;
 	} else {
 		neg = 0;
 	}
-	DUK_ASSERT(signbit(x) == 0);
+	DUK_ASSERT(DUK_SIGNBIT(x) == 0);
 
-	if (c == FP_NAN) {
+	if (c == DUK_FP_NAN) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_NAN);
 		return;
-	} else if (c == FP_INFINITE) {
+	} else if (c == DUK_FP_INFINITE) {
 		if (neg) {
 			/* -Infinity */
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_MINUS_INFINITY);
@@ -1375,7 +1375,7 @@ void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_INFINITY);
 		}
 		return;
-	} else if (c == FP_ZERO) {
+	} else if (c == DUK_FP_ZERO) {
 		/* We can't shortcut zero here if it goes through special formatting
 		 * (such as forced exponential notation).
 		 */
@@ -1448,7 +1448,7 @@ void duk_numconv_stringify(duk_context *ctx, int radix, int digits, int flags) {
 		nc_ctx->req_digits = 0;
 	}
 
-	if (c == FP_ZERO) {
+	if (c == DUK_FP_ZERO) {
 		/* Zero special case: fake requested number of zero digits; ensure
 		 * no sign bit is printed.  Relative and absolute fixed format
 		 * require separate handling.

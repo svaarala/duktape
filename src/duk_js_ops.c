@@ -91,8 +91,8 @@ int duk_js_toboolean(duk_tval *tv) {
 		/* number */
 		int c;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		c = fpclassify(DUK_TVAL_GET_NUMBER(tv));  /* FIXME: portability */
-		if (c == FP_ZERO || c == FP_NAN) {
+		c = DUK_FPCLASSIFY(DUK_TVAL_GET_NUMBER(tv));
+		if (c == DUK_FP_ZERO || c == DUK_FP_NAN) {
 			return 0;
 		} else {
 			return 1;
@@ -235,17 +235,17 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 
 /* exposed, used by e.g. duk_builtin_date.c */
 double duk_js_tointeger_number(double x) {
-	int c = fpclassify(x);
+	int c = DUK_FPCLASSIFY(x);
 
-	if (c == FP_NAN) {
+	if (c == DUK_FP_NAN) {
 		return 0.0;
-	} else if (c == FP_ZERO || c == FP_INFINITE) {
+	} else if (c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
 		/* FIXME: FP_ZERO check can be removed, the else clause handles it
 		 * correctly (preserving sign).
 		 */
 		return x;
 	} else {
-		int s = signbit(x);
+		int s = DUK_SIGNBIT(x);
 		x = floor(fabs(x));  /* truncate towards zero */
 		if (s) {
 			x = -x;
@@ -265,16 +265,16 @@ double duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
 
 /* combined algorithm matching E5 Sections 9.5 and 9.6 */	
 static double toint32_or_touint32_helper(double x, int is_toint32) {
-	int c = fpclassify(x);
+	int c = DUK_FPCLASSIFY(x);
 	int s;
 
-	if (c == FP_NAN || c == FP_ZERO || c == FP_INFINITE) {
+	if (c == DUK_FP_NAN || c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
 		return 0.0;
 	}
 
 
 	/* x = sign(x) * floor(abs(x)), i.e. truncate towards zero, keep sign */
-	s = signbit(x);
+	s = DUK_SIGNBIT(x);
 	x = floor(fabs(x));
 	if (s) {
 		x = -x;
@@ -305,7 +305,7 @@ static double toint32_or_touint32_helper(double x, int is_toint32) {
 duk_i32 duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = toint32_or_touint32_helper(d, 1);
-	DUK_ASSERT(fpclassify(d) == FP_ZERO || fpclassify(d) == FP_NORMAL);
+	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
 	DUK_ASSERT(d == ((double) ((duk_i32) d)));  /* whole, won't clip */
 	return (duk_i32) d;
@@ -315,7 +315,7 @@ duk_i32 duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 duk_u32 duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = toint32_or_touint32_helper(d, 0);
-	DUK_ASSERT(fpclassify(d) == FP_ZERO || fpclassify(d) == FP_NORMAL);
+	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */
 	DUK_ASSERT(d == ((double) ((duk_u32) d)));  /* whole, won't clip */
 	return (duk_u32) d;
@@ -410,16 +410,16 @@ int duk_js_iscallable(duk_tval *tv_x) {
  */
 
 int duk_js_equals_number(double x, double y) {
-	int cx = fpclassify(x);
-	int cy = fpclassify(y);
+	int cx = DUK_FPCLASSIFY(x);
+	int cy = DUK_FPCLASSIFY(y);
 
-	if (cx == FP_NAN || cy == FP_NAN) {
+	if (cx == DUK_FP_NAN || cy == DUK_FP_NAN) {
 		return 0;
 	}
 
 	/* FIXME: optimize */
 
-	if (cx == FP_ZERO && cy == FP_ZERO) {
+	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
 		return 1;
 	}
 
@@ -649,23 +649,23 @@ int duk_js_strict_equals(duk_tval *tv_x, duk_tval *tv_y) {
 
 /* E5 Section 9.12 */
 int duk_js_samevalue_number(double x, double y) {
-	int cx = fpclassify(x);
-	int cy = fpclassify(y);
+	int cx = DUK_FPCLASSIFY(x);
+	int cy = DUK_FPCLASSIFY(y);
 
-	if (cx == FP_NAN && cy == FP_NAN) {
+	if (cx == DUK_FP_NAN && cy == DUK_FP_NAN) {
 		/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
 		return 1;
 	}
 
-	if (cx == FP_ZERO && cy == FP_ZERO) {
+	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
 		/* Note: cannot assume that a non-zero return value of signbit() would
 		 * always be the same -- hence cannot (portably) use something like:
 		 *
 		 *     signbit(x) == signbit(y)
 		 */
 
-		int sx = (signbit(x) ? 1 : 0);
-		int sy = (signbit(y) ? 1 : 0);
+		int sx = (DUK_SIGNBIT(x) ? 1 : 0);
+		int sy = (DUK_SIGNBIT(y) ? 1 : 0);
 
 		return (sx == sy);
 	}
@@ -840,16 +840,16 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 			d1 = duk_to_number(ctx, -2);
 		}
 
-		c1 = fpclassify(d1);
-		s1 = signbit(d1);
-		c2 = fpclassify(d2);
-		s2 = signbit(d2);
+		c1 = DUK_FPCLASSIFY(d1);
+		s1 = DUK_SIGNBIT(d1);
+		c2 = DUK_FPCLASSIFY(d2);
+		s2 = DUK_SIGNBIT(d2);
 
-		if (c1 == FP_NAN || c2 == FP_NAN) {
+		if (c1 == DUK_FP_NAN || c2 == DUK_FP_NAN) {
 			goto lt_undefined;
 		}
 
-		if (c1 == FP_ZERO && c2 == FP_ZERO) {
+		if (c1 == DUK_FP_ZERO && c2 == DUK_FP_ZERO) {
 			/* For all combinations: +0 < +0, +0 < -0, -0 < +0, -0 < -0,
 			 * steps e, f, and g.
 			 */
@@ -860,22 +860,22 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 			goto lt_false;
 		}
 
-		if (c1 == FP_INFINITE && s1 == 0) {
+		if (c1 == DUK_FP_INFINITE && s1 == 0) {
 			/* x == +Infinity */
 			goto lt_false;
 		}
 
-		if (c2 == FP_INFINITE && s2 == 0) {
+		if (c2 == DUK_FP_INFINITE && s2 == 0) {
 			/* y == +Infinity */
 			goto lt_true;
 		}
 
-		if (c2 == FP_INFINITE && s2 != 0) {
+		if (c2 == DUK_FP_INFINITE && s2 != 0) {
 			/* y == -Infinity */
 			goto lt_false;
 		}
 
-		if (c1 == FP_INFINITE && s1 != 0) {
+		if (c1 == DUK_FP_INFINITE && s1 != 0) {
 			/* x == -Infinity */
 			goto lt_true;
 		}

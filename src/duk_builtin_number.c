@@ -134,8 +134,8 @@ int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
 	d = push_this_number_plain(ctx);
 
-	c = fpclassify(d);
-	if (c == FP_NAN || c == FP_INFINITE) {
+	c = DUK_FPCLASSIFY(d);
+	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
 
@@ -170,8 +170,8 @@ int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
 	frac_undefined = duk_is_undefined(ctx, 0);
 	duk_to_int(ctx, 0);  /* for side effects */
 
-	c = fpclassify(d);
-	if (c == FP_NAN || c == FP_INFINITE) {
+	c = DUK_FPCLASSIFY(d);
+	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
 
@@ -213,8 +213,8 @@ int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
 
 	duk_to_int(ctx, 0);  /* for side effects */
 
-	c = fpclassify(d);
-	if (c == FP_NAN || c == FP_INFINITE) {
+	c = DUK_FPCLASSIFY(d);
+	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
 

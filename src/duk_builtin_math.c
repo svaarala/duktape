@@ -42,7 +42,7 @@ static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
 
 	for (i = 0; i < n; i++) {
 		t = duk_to_number(ctx, i);
-		if (fpclassify(t) == FP_NAN || fpclassify(res) == FP_NAN) {
+		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN || DUK_FPCLASSIFY(res) == DUK_FP_NAN) {
 			/* Note: not normalized, but duk_push_number() will normalize */
 			/* FIXME: best constant for NAN? */
 			res = NAN;
@@ -61,7 +61,7 @@ static double fmin_fixed(double x, double y) {
 	 */
 	if (x == 0 && y == 0) {
 		/* XXX: what's the safest way of creating a negative zero? */
-		if (signbit(x) != 0 || signbit(y) != 0) {
+		if (DUK_SIGNBIT(x) != 0 || DUK_SIGNBIT(y) != 0) {
 			return -0.0;
 		} else {
 			return +0.0;
@@ -79,7 +79,7 @@ static double fmax_fixed(double x, double y) {
 	 * +0 as Ecmascript requires.
 	 */
 	if (x == 0 && y == 0) {
-		if (signbit(x) == 0 || signbit(y) == 0) {
+		if (DUK_SIGNBIT(x) == 0 || DUK_SIGNBIT(y) == 0) {
 			return +0.0;
 		} else {
 			return -0.0;
@@ -101,8 +101,8 @@ static double round_fixed(double x) {
 	 * which is incorrect for negative values.  Here we make do with floor().
 	 */
 
-	int c = fpclassify(x);
-	if (c == FP_NAN || c == FP_INFINITE || c == FP_ZERO) {
+	int c = DUK_FPCLASSIFY(x);
+	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE || c == DUK_FP_ZERO) {
 		return x;
 	}
 
@@ -142,12 +142,12 @@ static double pow_fixed(double x, double y) {
 
 	int cy;
 
-	cy = fpclassify(y);
+	cy = DUK_FPCLASSIFY(y);
 
-	if (cy == FP_NAN) {
+	if (cy == DUK_FP_NAN) {
 		goto ret_nan;
 	}
-	if (fabs(x) == 1.0 && cy == FP_INFINITE) {
+	if (fabs(x) == 1.0 && cy == DUK_FP_INFINITE) {
 		goto ret_nan;
 	}
 

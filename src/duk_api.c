@@ -27,7 +27,7 @@ static int api_coerce_d2i(double d) {
 	 *  on platforms with a 64-bit int type, the full range is allowed.
 	 */
 
-	if (fpclassify(d) == FP_NAN) {
+	if (DUK_FPCLASSIFY(d) == DUK_FP_NAN) {
 		return 0;
 	} else if (d < INT_MIN) {
 		/* covers -Infinity */
