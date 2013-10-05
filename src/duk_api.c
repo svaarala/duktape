@@ -823,7 +823,7 @@ int duk_require_boolean(duk_context *ctx, int index) {
 }
 
 double duk_get_number(duk_context *ctx, int index) {
-	double ret = NAN;  /* default: NaN */
+	double ret = DUK_DOUBLE_NAN;  /* default: NaN */
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
@@ -835,10 +835,10 @@ double duk_get_number(duk_context *ctx, int index) {
 	}
 
 	/*
-	 *  Number should already be in NAN-normalized form,
+	 *  Number should already be in NaN-normalized form,
 	 *  but let's normalize anyway.
 	 *
-	 *  XXX: NAN normalization for external API might be
+	 *  XXX: NaN normalization for external API might be
 	 *  different from internal normalization?
 	 */
 
@@ -858,10 +858,10 @@ double duk_require_number(duk_context *ctx, int index) {
 		double ret = DUK_TVAL_GET_NUMBER(tv);
 
 		/*
-		 *  Number should already be in NAN-normalized form,
+		 *  Number should already be in NaN-normalized form,
 		 *  but let's normalize anyway.
 		 *
-		 *  XXX: NAN normalization for external API might be
+		 *  XXX: NaN normalization for external API might be
 		 *  different from internal normalization?
 		 */
 		DUK_DOUBLE_NORMALIZE_NAN_CHECK(&ret);
@@ -869,7 +869,7 @@ double duk_require_number(duk_context *ctx, int index) {
 	}
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not number");
-	return NAN;  /* not reachable */
+	return DUK_DOUBLE_NAN;  /* not reachable */
 }
 
 int duk_get_int(duk_context *ctx, int index) {
@@ -2233,7 +2233,7 @@ void duk_push_int(duk_context *ctx, int val) {
 }
 
 void duk_push_nan(duk_context *ctx) {
-	duk_push_number(ctx, NAN);
+	duk_push_number(ctx, DUK_DOUBLE_NAN);
 }
 
 const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {

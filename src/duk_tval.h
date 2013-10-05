@@ -527,13 +527,13 @@ struct duk_tval_struct {
 #define  DUK_TVAL_SET_NAN(tv)  do { \
 		/* in non-packed representation we don't care about which NaN is used */ \
 		(tv)->t = _DUK_TAG_NUMBER; \
-		(tv)->v.d = NAN; \
+		(tv)->v.d = DUK_DOUBLE_NAN; \
 	} while (0)
 
 #define  DUK_DOUBLE_SET_NAN(d)  do { \
 		/* in non-packed representation we don't care about which NaN is used */ \
 		/* assume d is 'double *' */ \
-		(d)[0] = NAN; \
+		(d)[0] = DUK_DOUBLE_NAN; \
 	} while (0)
 
 #define  DUK_TVAL_SET_TVAL(v,x)              do { *(v) = *(x); } while (0)

@@ -306,7 +306,6 @@ extern double duk_computed_infinity;
 #define  DUK_DOUBLE_NAN       NAN
 #elif !defined(__VBCC__)
 #define  DUK_DOUBLE_NAN       (0.0 / 0.0)
-#define  NAN                  DUK_DOUBLE_NAN  /*FIXME*/
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
  * Use a computed NaN (initialized when a heap is created at the
@@ -315,7 +314,6 @@ extern double duk_computed_infinity;
 extern double duk_computed_nan;
 #define  DUK_USE_COMPUTED_NAN
 #define  DUK_DOUBLE_NAN       duk_computed_nan
-#define  NAN                  DUK_DOUBLE_NAN  /*FIXME*/
 #endif
 
 /* Many platforms are missing fpclassify() and friends, so use replacements

@@ -515,7 +515,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 	out_token->t = DUK_TOK_EOF;
 	out_token->t_nores = -1;	/* marker: copy t if not changed */
-	out_token->num = NAN;
+	out_token->num = DUK_DOUBLE_NAN;
 	out_token->str1 = NULL;
 	out_token->str2 = NULL;
 	out_token->num_escapes = 0;

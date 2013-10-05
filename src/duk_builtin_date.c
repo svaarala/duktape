@@ -668,11 +668,11 @@ static int is_leap_year(int year) {
 
 static double timeclip(double x) {
 	if (!DUK_ISFINITE(x)) {
-		return NAN;
+		return DUK_DOUBLE_NAN;
 	}
 
 	if (x > 8.64e15 || x < -8.64e15) {
-		return NAN;
+		return DUK_DOUBLE_NAN;
 	}
 
 	x = duk_js_tointeger_number(x);
@@ -751,7 +751,7 @@ static double make_day(double year, double month, double day) {
 	 */
 
 	if (!DUK_ISFINITE(year) || !DUK_ISFINITE(month)) {
-		return NAN;
+		return DUK_DOUBLE_NAN;
 	}
 	
 	year += floor(month / 12);

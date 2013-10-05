@@ -145,7 +145,7 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	                             DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl*/,
 	                             &clamped /*clamped*/);
 	if (clamped) {
-		duk_push_number(ctx, NAN);  /* FIXME: best constant for NAN? */
+		duk_push_number(ctx, DUK_DOUBLE_NAN);
 		return 1;
 	}
 

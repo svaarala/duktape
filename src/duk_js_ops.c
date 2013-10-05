@@ -169,7 +169,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
-		/* return a specific NAN (although not strictly necessary) */
+		/* return a specific NaN (although not strictly necessary) */
 		double d;
 		DUK_DOUBLE_SET_NAN(&d);
 		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d));
@@ -215,7 +215,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		return 0.0;
 	}
 	case DUK_TAG_POINTER: {
-		/* FIXME: what's a good conversion?  pointer as a number?  NAN? */
+		/* FIXME: what's a good conversion?  pointer as a number?  NaN? */
 		void *p = DUK_TVAL_GET_POINTER(tv);
 		return (p != NULL ? 1.0 : 0.0);
 	}

@@ -31,12 +31,12 @@ static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
 
 	/*
 	 *  Note: fmax() does not match the E5 semantics.  E5 requires
-	 *  that if -any- input to Math.max() is a NAN, the result is a
-	 *  NaN.  fmax() will return a NAN only if -both- inputs are NaN.
+	 *  that if -any- input to Math.max() is a NaN, the result is a
+	 *  NaN.  fmax() will return a NaN only if -both- inputs are NaN.
 	 *  Same applies to fmin().
 	 *
 	 *  Note: every input value must be coerced with ToNumber(), even
-	 *  if we know the result will be a NAN anyway: ToNumber() may have
+	 *  if we know the result will be a NaN anyway: ToNumber() may have
 	 *  side effects for which even order of evaluation matters.
 	 */
 
@@ -44,8 +44,7 @@ static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
 		t = duk_to_number(ctx, i);
 		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN || DUK_FPCLASSIFY(res) == DUK_FP_NAN) {
 			/* Note: not normalized, but duk_push_number() will normalize */
-			/* FIXME: best constant for NAN? */
-			res = NAN;
+			res = DUK_DOUBLE_NAN;
 		} else {
 			res = min_max(res, t);
 		}
@@ -154,7 +153,7 @@ static double pow_fixed(double x, double y) {
 	return pow(x, y);
 
  ret_nan:
-	return NAN;
+	return DUK_DOUBLE_NAN;
 }
 
 int duk_builtin_math_object_abs(duk_context *ctx) {
