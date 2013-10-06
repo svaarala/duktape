@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: use gmtime() or gmtime_r() in Date built-in (now always gmtime_r, which is nonportable)
+title: computed NAN/INFINITE constants fail in vbcc with optimization
 desc: ""
-type: :task
+type: :bugfix
 component: duk
 release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-10-05 21:01:16.361150 Z
+creation_time: 2013-10-06 21:35:19.656224 Z
 references: []
 
-id: fec1b274f5ff7e27a2469af8aa8305acada1125f
+id: fd6308b8e2361f6d17d753795d0e214d70cd56a5
 log_events: 
-- - 2013-10-05 21:01:16.545080 Z
+- - 2013-10-06 21:35:19.848336 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-10-06 20:02:57.349119 Z
+- - 2013-10-06 21:35:33.887875 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
-  - ""
+  - Fix by using volatile double variables.

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: split tester cmdline from example cmdline tool
+desc: Tester cmdline need rlimits and such.
+type: :task
+component: duk
+release: v0.7
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-06 20:46:18.279942 Z
+references: []
+
+id: 8d23ad5dd413b42b2d5c22e4d5e2d2a1d8e611be
+log_events: 
+- - 2013-10-06 20:46:18.447920 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

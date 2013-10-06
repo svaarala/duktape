@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: use gmtime() or gmtime_r() in Date built-in (now always gmtime_r, which is nonportable)
+title: make use of __func__ conditional, not available e.g. in VBCC (even with -c99)
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-10-05 21:01:16.361150 Z
+creation_time: 2013-10-06 19:52:41.610377 Z
 references: []
 
-id: fec1b274f5ff7e27a2469af8aa8305acada1125f
+id: 8ae4195fd4fe8eb4de2fa8819bacc3b1d661198e
 log_events: 
-- - 2013-10-05 21:01:16.545080 Z
+- - 2013-10-06 19:52:41.778302 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-10-06 20:02:57.349119 Z
+- - 2013-10-06 20:02:46.725245 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""
