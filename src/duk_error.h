@@ -54,9 +54,9 @@
 #ifdef DUK_USE_VARIADIC_MACROS
 
 /* __VA_ARGS__ has comma issues for empty lists, so we mandate at least 1 argument for '...' (format string) */
-#define  DUK_ERROR(thr,err,...)                    duk_err_handle_error(__FILE__, (int) __LINE__, (thr), (err), __VA_ARGS__)
+#define  DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (int) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
 #define  DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((file), (line), (thr), (err), __VA_ARGS__)
-#define  DUK_PANIC(err,...)                        duk_err_handle_panic(__FILE__, __LINE__, (err), __VA_ARGS__)
+#define  DUK_PANIC(err,...)                        duk_err_handle_panic(DUK_FILE_MACRO, DUK_LINE_MACRO, (err), __VA_ARGS__)
 #define  DUK_PANIC_RAW(file,line,err,...)          duk_err_handle_panic((file), (line), (err), __VA_ARGS__)
 
 #else  /* DUK_USE_VARIADIC_MACROS */
@@ -66,13 +66,13 @@
  */
 
 #define  DUK_ERROR  \
-	duk_err_file_stash = (const char *) __FILE__, \
-	duk_err_line_stash = (int) __LINE__, \
+	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
+	duk_err_line_stash = (int) DUK_LINE_MACRO, \
 	(void) duk_err_handle_error_stash
 #define  DUK_ERROR_RAW                             duk_err_handle_error
 #define  DUK_PANIC  \
-	duk_err_file_stash = (const char *) __FILE__, \
-	duk_err_line_stash = (int) __LINE__, \
+	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
+	duk_err_line_stash = (int) DUK_LINE_MACRO, \
 	(void) duk_err_handle_panic_stash
 #define  DUK_PANIC_RAW                             duk_err_handle_panic
 
@@ -116,7 +116,7 @@
 	if (!(x)) { \
 		DUK_PANIC(DUK_ERR_ASSERTION_ERROR, \
 			"assertion failed: " #x \
-			" (" __FILE__ ":" DUK_MACRO_STRINGIFY(__LINE__) ")"); \
+			" (" DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO) ")"); \
 	} \
 	} while (0)
 

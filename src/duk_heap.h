@@ -192,13 +192,13 @@
  *  Memory calls: relative to a thread, GC interaction, throw error on alloc failure
  */
 
-/* XXX: add __func__ */
+/* XXX: add __func__; use DUK_FUNC_MACRO because __func__ is not always available */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-#define  DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size), __FILE__, __LINE__)
-#define  DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size), __FILE__, __LINE__)
-#define  DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize), __FILE__, __LINE__)
-#define  DUK_REALLOC_INDIRECT_CHECKED(thr,iptr,newsize)  duk_heap_mem_realloc_indirect_checked((thr), (iptr), (newsize), __FILE__, __LINE__)
+#define  DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
+#define  DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
+#define  DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
+#define  DUK_REALLOC_INDIRECT_CHECKED(thr,iptr,newsize)  duk_heap_mem_realloc_indirect_checked((thr), (iptr), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
 #define  DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))  /* must not fail */
 #else
 #define  DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))

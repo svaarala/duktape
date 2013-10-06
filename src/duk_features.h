@@ -263,11 +263,12 @@ typedef signed int duk_i32;
  */
 
 /* best effort viability checks, not particularly accurate */
+#undef  DUK_USE_PACKED_TVAL_POSSIBLE
 #if (defined(__WORDSIZE) && (__WORDSIZE == 32)) && \
     (defined(UINT_MAX) && (UINT_MAX == 4294967295))
 #define DUK_USE_PACKED_TVAL_POSSIBLE
-#else
-#undef  DUK_USE_PACKED_TVAL_POSSIBLE
+#elif defined(DUK_F_AMIGAOS) /* FIXME: M68K */
+#define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
 /*
@@ -417,6 +418,22 @@ extern double duk_computed_nan;
 #define  DUK_UNREF(x)  do { \
 		(void) (x); \
 	} while (0)
+
+/*
+ *  __FILE__, __LINE__, __func__ are wrapped.  Especially __func__ is a
+ *  problem because it is not available even in some compilers which try
+ *  to be C99 compatible (e.g. VBCC with -c99 option).
+ */
+
+#define  DUK_FILE_MACRO  __FILE__
+
+#define  DUK_LINE_MACRO  __LINE__
+
+#if !defined(__VBCC__)
+#define  DUK_FUNC_MACRO  __func__
+#else
+#define  DUK_FUNC_MACRO  "unknown"
+#endif
 
 /* 
  *  Profile processing
@@ -574,7 +591,8 @@ extern double duk_computed_nan;
 #endif
 
 /* zero-size array at end of struct (char buf[0]) instead of C99 version (char buf[]) */
-#ifdef DUK_F_C99
+/* FIXME: need to add third option */
+#if defined(DUK_F_C99)
 #undef  DUK_USE_STRUCT_HACK
 #else
 #define  DUK_USE_STRUCT_HACK  /* non-portable */
@@ -617,25 +635,25 @@ extern double duk_computed_nan;
 #elif defined(__APPLE__)
 /* Mac OSX, iPhone, Darwin */
 #define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_TZO_GMTIME_R
 #define  DUK_USE_DATE_PRS_STRPTIME
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__linux)
 /* Linux (__unix also defined) */
 #define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_TZO_GMTIME_R
 #define  DUK_USE_DATE_PRS_STRPTIME
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__unix)
 /* Other Unix */
 #define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_TZO_GMTIME_R
 #define  DUK_USE_DATE_PRS_STRPTIME
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__posix)
 /* POSIX */
 #define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME
+#define  DUK_USE_DATE_TZO_GMTIME_R
 #define  DUK_USE_DATE_PRS_STRPTIME
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_TOS)
@@ -659,6 +677,7 @@ extern double duk_computed_nan;
 #endif
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || \
+    defined(DUK_USE_DATE_TZO_GMTIME_R) || \
     defined(DUK_USE_DATE_PRS_STRPTIME) || \
     defined(DUK_USE_DATE_FMT_STRFTIME)
 /* just a sanity check */

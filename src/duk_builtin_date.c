@@ -27,7 +27,7 @@
 #error no function to get current time
 #endif
 
-#if defined(DUK_USE_DATE_TZO_GMTIME)
+#if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 #define  GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
 #else
 #error no function to get local tzoffset
@@ -121,13 +121,16 @@ static double get_now_timeval_time(duk_context *ctx) {
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
 
-#ifdef DUK_USE_DATE_TZO_GMTIME
+#if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
 static int get_local_tzoffset_gmtime(double d) {
 	time_t t, t1, t2;
 	int parts[NUM_PARTS];
 	double dparts[NUM_PARTS];
 	struct tm tms[2];
+#ifdef DUK_USE_DATE_TZO_GMTIME
+	struct tm *tm_ptr;
+#endif
 
 	/* For NaN/inf, the return value doesn't matter. */
 	if (!DUK_ISFINITE(d)) {
@@ -177,8 +180,16 @@ static int get_local_tzoffset_gmtime(double d) {
 
 	DUK_MEMSET((void *) tms, 0, sizeof(struct tm) * 2);
 
+#if defined(DUK_USE_DATE_TZO_GMTIME_R)
 	(void) gmtime_r(&t, &tms[0]);
+#elif defined(DUK_USE_DATE_TZO_GMTIME)
+	tm_ptr = gmtime(&t);
+	DUK_MEMCPY((void *) &tms[0], tm_ptr, sizeof(struct tm));
+#else
+#error internal error
+#endif
 	DUK_MEMCPY((void *) &tms[1], &tms[0], sizeof(struct tm));
+
 	DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
 	             "wday:%d,yday:%d,isdst:%d}",
 	             (int) tms[0].tm_sec, (int) tms[0].tm_min, (int) tms[0].tm_hour,

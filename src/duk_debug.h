@@ -26,7 +26,7 @@
 /* Note: combining __FILE__, __LINE__, and __func__ into fmt would be
  * possible compile time, but waste some space with shared function names.
  */
-#define  _DUK_DEBUG_LOG(lev,...)  duk_debug_log((lev), __FILE__, (int) __LINE__, __func__, __VA_ARGS__);
+#define  _DUK_DEBUG_LOG(lev,...)  duk_debug_log((lev), DUK_FILE_MACRO, (int) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
 
 #define  DUK_DPRINT(...)          _DUK_DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -48,9 +48,9 @@
 	(void) DUK_MEMSET((void *) duk_debug_file_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
 	(void) DUK_MEMSET((void *) duk_debug_line_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
 	(void) DUK_MEMSET((void *) duk_debug_func_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __FILE__), \
-	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE - 1, "%d", (int) __LINE__), \
-	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", __func__), \
+	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", DUK_FILE_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE - 1, "%d", (int) DUK_LINE_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", DUK_FUNC_MACRO), \
 	(void) (duk_debug_level_stash = (lev))
 
 #ifdef DUK_USE_DEBUG
