@@ -322,19 +322,23 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		/* Workaround for some exotic platforms where NAN is missing
 		 * and the expression (0.0 / 0.0) does NOT result in a NaN.
 		 * Such platforms use the global 'duk_computed_nan' which must
-		 * be initialized at runtime.
+		 * be initialized at runtime.  Use 'volatile' to ensure that
+		 * the compiler will actually do the computation and not try
+		 * to do constant folding which might result in the original
+		 * problem.
 		 */
-		double dbl_zero = 0.0;
-		duk_computed_nan = dbl_zero / dbl_zero;
+		volatile double dbl1 = 0.0;
+		volatile double dbl2 = 0.0;
+		duk_computed_nan = dbl1 / dbl2;
 	} while(0);
 #endif
 
 #ifdef DUK_USE_COMPUTED_INFINITY
 	do {
 		/* Similar workaround for INFINITY. */
-		double dbl_one = 1.0;
-		double dbl_zero = 0.0;
-		duk_computed_infinity = dbl_one / dbl_zero;
+		volatile double dbl1 = 1.0;
+		volatile double dbl2 = 0.0;
+		duk_computed_infinity = dbl1 / dbl2;
 	} while(0);
 #endif
 
