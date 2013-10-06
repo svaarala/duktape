@@ -20,19 +20,22 @@ int duk_repl_fpclassify(double x) {
 	int mzero;
 
 	u.d = x;
-	exp = (u.us[_DUK_IDX_US0] & 0x7ff0) >> 4;
-	if (exp > 0x000 && exp < 0x7ff) {
+	exp = (u.us[_DUK_IDX_US0] & 0x7ff0);
+	if (exp > 0x0000 && exp < 0x7ff0) {
+		/* exp values [0x001,0x7fe] = normal */
 		return DUK_FP_NORMAL;
 	}
 
 	mzero = (u.ui[_DUK_IDX_UI1] == 0 && (u.ui[_DUK_IDX_UI0] & 0x000fffff) == 0);
-	if (exp == 0x000) {
+	if (exp == 0x0000) {
+		/* exp 0x000 is zero/subnormal */
 		if (mzero) {
 			return DUK_FP_ZERO;
 		} else {
 			return DUK_FP_SUBNORMAL;
 		}
 	} else {
+		/* exp 0xfff is infinite/nan */
 		if (mzero) {
 			return DUK_FP_INFINITE;
 		} else {
