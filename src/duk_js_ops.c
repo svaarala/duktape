@@ -105,6 +105,8 @@ int duk_js_toboolean(duk_tval *tv) {
 /*
  *  ToNumber()  (E5 Section 9.3)
  *
+ *  Value to convert must be on stack top, and is popped before exit.
+ *
  *  See: http://www.cs.indiana.edu/~burger/FP-Printing-PLDI96.pdf
  *       http://www.cs.indiana.edu/~burger/fp/index.html
  *
@@ -126,18 +128,13 @@ int duk_js_toboolean(duk_tval *tv) {
  *
  *    - Unlike source code literals, ToNumber() coerces empty strings
  *      and strings with only whitespace to zero (not NaN).
- *
- *  FIXME: unify E5 Section 9.3.1 and main source literal syntax parsers
- *  into a shared helper, providing both (slightly different) semantics?
  */	
 
 /* E5 Section 9.3.1 */
-static double tonumber_string_raw(duk_hthread *thr, duk_hstring *h) {
+static double tonumber_string_raw(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	int s2n_flags;
 	double d;
-
-	duk_push_hstring(ctx, h);
 
 	/* Quite lenient, e.g. allow empty as zero, but don't allow trailing
 	 * garbage.
@@ -187,7 +184,8 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
-		return tonumber_string_raw(thr, h);
+		duk_push_hstring(ctx, h);
+		return tonumber_string_raw(thr);
 	}
 	case DUK_TAG_OBJECT: {
 		/* Note: ToPrimitive(object,hint) == [[DefaultValue]](object,hint),
@@ -206,16 +204,19 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		return d;
 	}
 	case DUK_TAG_BUFFER: {
-		/* FIXME: what's a good conversion?  parse contents as a string (tonumber_string_raw)? */
+		/* Coerce like a string.  This makes sense because addition also treats
+		 * buffers like strings.
+		 */
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
-		DUK_ASSERT(h != NULL);
-		if (DUK_HBUFFER_GET_SIZE(h) > 0) {
-			return 1.0;
-		}
-		return 0.0;
+		duk_push_hbuffer(ctx, h);
+		duk_to_string(ctx, -1);  /* XXX: expensive, but numconv now expects to see a string */
+		return tonumber_string_raw(thr);
 	}
 	case DUK_TAG_POINTER: {
-		/* FIXME: what's a good conversion?  pointer as a number?  NaN? */
+		/* Coerce like boolean.  This allows code to do something like:
+		 *
+		 *    if (ptr) { ... }
+		 */
 		void *p = DUK_TVAL_GET_POINTER(tv);
 		return (p != NULL ? 1.0 : 0.0);
 	}
