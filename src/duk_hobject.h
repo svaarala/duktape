@@ -82,6 +82,7 @@
 #define  DUK_HOBJECT_CLASS_DECENV               15  /* custom */
 #define  DUK_HOBJECT_CLASS_BUFFER               16  /* custom */
 #define  DUK_HOBJECT_CLASS_POINTER              17  /* custom */
+#define  DUK_HOBJECT_CLASS_THREAD               18  /* custom */
 
 #define  DUK_HOBJECT_IS_OBJENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_OBJENV)
 #define  DUK_HOBJECT_IS_DECENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DECENV)

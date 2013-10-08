@@ -146,6 +146,7 @@ _classnames = [
 	'DecEnv',
 	'Buffer',
 	'Pointer',
+	'Thread',
 ]
 _class2num = {}
 for i,v in enumerate(_classnames):
@@ -1022,6 +1023,7 @@ bi_duk = {
 		# They are intentionally non-writable and non-configurable now.
 		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_buffer_constructor' } },
 		{ 'name': 'Pointer',			'value': { 'type': 'builtin', 'id': 'bi_pointer_constructor' } },
+		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
 	],
 	'functions': [
 		# FIXME: 'yield' is a bad method name, since yield is a reserved word
@@ -1042,12 +1044,27 @@ bi_duk = {
 	],
 }
 
-# non-standard built-in prototype object
-# FIXME: where to keep reachable? not global object?
+bi_thread_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_thread_prototype',
+	'class': 'Function',
+	'name': 'Thread',
+
+	'length': 1,
+	'varargs': True,
+	'native': 'duk_builtin_thread_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+	]
+}
+
 bi_thread_prototype = {
 	'internal_prototype': 'bi_object_prototype',
-	# 'external_constructor': '',  # FIXME: __duk__.Thread?
-	'class': 'Object',
+	'external_constructor': 'bi_thread_constructor',
+	'class': 'Thread',
 
 	# Note: we don't keep up with the E5 "convention" that prototype objects
 	# are some faux instances of their type (e.g. Date.prototype is a Date
@@ -1060,6 +1077,7 @@ bi_thread_prototype = {
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_thread_prototype_to_string',	'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_builtin_thread_prototype_value_of',	'length': 0 },
 	],
 }
 
@@ -1183,7 +1201,10 @@ builtins = [
 	{ 'id': 'bi_math',				'info': bi_math },
 	{ 'id': 'bi_json',				'info': bi_json },
 	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
+
+	# custom
 	{ 'id': 'bi_duk',				'info': bi_duk },
+	{ 'id': 'bi_thread_constructor',		'info': bi_thread_constructor },
 	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype },
 	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor },
 	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype },

@@ -466,6 +466,7 @@ duk_string_list = [
 	mkstr("DecEnv", custom=True, class_name=True),
 	mkstr("Buffer", custom=True, class_name=True),
 	mkstr("Pointer", custom=True, class_name=True),
+	mkstr("Thread", custom=True, class_name=True),
 
 	# non-standard built-in object names
 	mkstr("ThrowTypeError", custom=True),  # implementation specific, matches V8
@@ -653,6 +654,8 @@ special_define_names = {
 	'Buffer': 'UC_BUFFER',
 	'pointer': 'LC_POINTER',
 	'Pointer': 'UC_POINTER',
+	#'thread': 'LC_THREAD',
+	'Thread': 'UC_THREAD',
 
 	'+Infinity': 'PLUS_INFINITY',
 	'-Infinity': 'MINUS_INFINITY',

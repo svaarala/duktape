@@ -68,7 +68,7 @@ duk_u8 duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_DEC_ENV,
 	DUK_STRIDX_UC_BUFFER,
 	DUK_STRIDX_UC_POINTER,
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
+	DUK_STRIDX_UC_THREAD,     /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
