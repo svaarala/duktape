@@ -556,7 +556,9 @@ def generateGuide():
 	navlinks.append(['#introduction', 'Introduction'])
 	navlinks.append(['#gettingstarted', 'Getting started'])
 	navlinks.append(['#programming', 'Programming model'])
-	navlinks.append(['#types', 'Types'])
+	navlinks.append(['#types', 'Stack types'])
+	navlinks.append(['#typealgorithms', 'Type algorithms'])
+	navlinks.append(['#errorobjects', 'Error objects'])
 	navlinks.append(['#finalization', 'Finalization'])
 	navlinks.append(['#coroutines', 'Coroutines'])
 	navlinks.append(['#limitations', 'Limitations'])
@@ -580,7 +582,9 @@ def generateGuide():
 	res += processRawDoc('guide/intro.html')
 	res += processRawDoc('guide/gettingstarted.html')
 	res += processRawDoc('guide/programming.html')
-	res += processRawDoc('guide/types.html')
+	res += processRawDoc('guide/stacktypes.html')
+	res += processRawDoc('guide/typealgorithms.html')
+	res += processRawDoc('guide/errorobjects.html')
 	res += processRawDoc('guide/finalization.html')
 	res += processRawDoc('guide/coroutines.html')
 	res += processRawDoc('guide/limitations.html')
@@ -605,6 +609,8 @@ def generateStyleCss():
 		'style-bottom.css',
 		'style-index.css',
 		'style-download.css',
+		'style-api.css',
+		'style-guide.css',
 		'highlight.css'
 	]
 

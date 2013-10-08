@@ -1,0 +1,11 @@
+/*
+ *  Guide specific CSS rules
+ */
+
+.typeshorthand tbody td:nth-child(1) {
+	text-align: center;
+}
+
+.typecomparison tbody td {
+	text-align: center;
+}
