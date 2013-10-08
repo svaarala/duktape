@@ -1664,11 +1664,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 	switch (DUK_TVAL_GET_TAG(tv_obj)) {
 	case DUK_TAG_UNDEFINED:
-	case DUK_TAG_NULL:
-	case DUK_TAG_BUFFER:
-	case DUK_TAG_POINTER: {
-		/* FIXME: add a prototype object for buffers and perhaps for pointers? */
-
+	case DUK_TAG_NULL: {
 		/* Note: unconditional throw */
 		DUK_DDDPRINT("base object is undefined, null, buffer, or pointer -> reject");
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid base reference for property read");
@@ -1774,6 +1770,19 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 			goto lookup;  /* avoid double coercion */
 		}
+		break;
+	}
+
+	/* Buffer doesn't have virtual properties at the moment (indices or length). */
+	case DUK_TAG_BUFFER: {
+		DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype");
+		curr = thr->builtins[DUK_BIDX_BUFFER_PROTOTYPE];
+		break;
+	}
+
+	case DUK_TAG_POINTER: {
+		DUK_DDDPRINT("base object is a pointer, start lookup from pointer prototype");
+		curr = thr->builtins[DUK_BIDX_POINTER_PROTOTYPE];
 		break;
 	}
 
