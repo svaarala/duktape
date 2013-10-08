@@ -80,6 +80,7 @@ struct duk_hbuffer_fixed {
 	duk_heaphdr hdr;
 	size_t size;
 
+/* FIXME: issue with e.g. vbcc without -c99 option (with either alternative) */
 #ifdef DUK_USE_STRUCT_HACK
 	duk_u8 fixed_data[0];
 #else
