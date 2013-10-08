@@ -83,6 +83,8 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	 *  the exact semantics.
 	 *
 	 *  E5 Section 11.6.1.
+	 *
+	 *  Custom types also have special behavior implemented here.
 	 */
 
 	duk_context *ctx = (duk_context *) thr;
@@ -123,7 +125,12 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* side effects -> don't use tv_x, tv_y after */
 	duk_to_primitive(ctx, -1, DUK_HINT_NONE);
 
-	if (duk_is_string(ctx, -2) || duk_is_string(ctx, -1)) {
+	/* As a first approximation, buffer values are coerced to strings
+	 * for addition.  This means that adding two buffers currently
+	 * results in a string.
+	 */
+	if (duk_check_type_mask(ctx, -2, DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_BUFFER) ||
+	    duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_BUFFER)) {
 		duk_to_string(ctx, -2);
 		duk_to_string(ctx, -1);
 		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */
@@ -202,7 +209,7 @@ static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y
 		break;
 	}
 	default: {
-		val = NAN;  /* should not happen */
+		val = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
 	}
@@ -361,7 +368,7 @@ static void _vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int 
 		break;
 	}
 	default: {
-		val = NAN;  /* should not happen */
+		val = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
 	}
