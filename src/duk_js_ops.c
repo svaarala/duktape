@@ -436,8 +436,8 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_tval *tv_tmp;
 
 	/*
-	 *  FIXME: very direct translation now - should be made more
-	 *  efficient, avoid recursion, etc.
+	 *  XXX: very direct translation now - should be made more efficient,
+	 *  avoid recursion, etc.
 	 */
 
 	/*
@@ -506,13 +506,13 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	 *  code size.
 	 */
 
-	/* undefined/null are considered equal (e.g. "null == undefined" -> true) */
+	/* Undefined/null are considered equal (e.g. "null == undefined" -> true). */
 	if ((DUK_TVAL_IS_UNDEFINED(tv_x) && DUK_TVAL_IS_NULL(tv_y)) ||
 	    (DUK_TVAL_IS_NULL(tv_x) && DUK_TVAL_IS_UNDEFINED(tv_y))) {
 		return 1;
 	}
 
-	/* number/string-or-buffer -> coerce string to number (e.g. "'1.5' == 1.5" -> true) */
+	/* Number/string-or-buffer -> coerce string to number (e.g. "'1.5' == 1.5" -> true). */
 	if (DUK_TVAL_IS_NUMBER(tv_x) && (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
 		/* the next 'if' is guaranteed to match after swap */
 		tv_tmp = tv_x;
@@ -531,7 +531,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return duk_js_equals_number(d1, d2);
 	}
 
-	/* buffer/string -> compare contents */
+	/* Buffer/string -> compare contents. */
 	if (DUK_TVAL_IS_BUFFER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
 		tv_tmp = tv_x;
 		tv_x = tv_y;
@@ -558,7 +558,11 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
 	}
 
-	/* boolean/any -> coerce boolean to number and try again */
+	/* Boolean/any -> coerce boolean to number and try again.  If boolean is
+	 * compared to a pointer, the final comparison after coercion now always
+	 * yields false (as pointer vs. number compares to false), but this is
+	 * not special cased.
+	 */
 	if (DUK_TVAL_IS_BOOLEAN(tv_x)) {
 		tv_tmp = tv_x;
 		tv_x = tv_y;
@@ -575,7 +579,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return rc;
 	}
 
-	/* string-number-buffer/object -> coerce object to primitive (apparently without hint), then try again */
+	/* String-number-buffer/object -> coerce object to primitive (apparently without hint), then try again. */
 	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) &&
 	    DUK_TVAL_IS_OBJECT(tv_y)) {
 		tv_tmp = tv_x;
@@ -593,7 +597,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		return rc;
 	}
 
-	/* nothing worked -> not equal */
+	/* Nothing worked -> not equal. */
 	return 0;
 }
 
