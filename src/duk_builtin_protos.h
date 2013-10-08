@@ -33,6 +33,10 @@ int duk_builtin_boolean_constructor(duk_context *ctx);
 int duk_builtin_boolean_prototype_to_string(duk_context *ctx);
 int duk_builtin_boolean_prototype_value_of(duk_context *ctx);
 
+int duk_builtin_buffer_constructor(duk_context *ctx);
+int duk_builtin_buffer_prototype_to_string(duk_context *ctx);
+int duk_builtin_buffer_prototype_value_of(duk_context *ctx);
+
 int duk_builtin_date_constructor(duk_context *ctx);
 int duk_builtin_date_constructor_parse(duk_context *ctx);
 int duk_builtin_date_constructor_utc(duk_context *ctx);
@@ -196,6 +200,10 @@ int duk_builtin_object_prototype_has_own_property(duk_context *ctx);
 int duk_builtin_object_prototype_is_prototype_of(duk_context *ctx);
 int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx);
 
+int duk_builtin_pointer_constructor(duk_context *ctx);
+int duk_builtin_pointer_prototype_to_string(duk_context *ctx);
+int duk_builtin_pointer_prototype_value_of(duk_context *ctx);
+
 int duk_builtin_regexp_prototype_exec(duk_context *ctx);
 int duk_builtin_regexp_prototype_test(duk_context *ctx);
 int duk_builtin_regexp_prototype_to_string(duk_context *ctx);
@@ -223,7 +231,9 @@ int duk_builtin_string_prototype_trim(duk_context *ctx);
 #if 1  /* FIXME: section B */
 int duk_builtin_string_prototype_substr(duk_context *ctx);
 #endif
+int duk_builtin_thread_constructor(duk_context *ctx);
 int duk_builtin_thread_prototype_to_string(duk_context *ctx);
+int duk_builtin_thread_prototype_value_of(duk_context *ctx);
 
 int duk_builtin_type_error_thrower(duk_context *ctx);
 
