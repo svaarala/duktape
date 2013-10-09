@@ -1027,7 +1027,6 @@ bi_duk = {
 	],
 	'functions': [
 		# FIXME: 'yield' is a bad method name, since yield is a reserved word
-		{ 'name': 'print',			'native': 'duk_builtin_duk_object_print',		'length': 1,	'varargs': True },
 		{ 'name': 'addr',			'native': 'duk_builtin_duk_object_addr',                'length': 1 },
 		{ 'name': 'refc',			'native': 'duk_builtin_duk_object_refc',                'length': 1 },
 		{ 'name': 'gc',				'native': 'duk_builtin_duk_object_gc',			'length': 1 },
