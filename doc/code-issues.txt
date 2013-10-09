@@ -7,6 +7,7 @@ such as:
 
 * Conventions
 * Portability concerns
+* Specific platforms and compilers
 * Size and performance optimization issues
 
 Conventions
@@ -130,4 +131,62 @@ This seems to work with both GCC and Clang.  The form::
   my_unused_var = my_unused_var;  /* suppress warning */
 
 works with GCC but not with Clang.
+
+Portability concerns
+====================
+
+Platforms and compilers
+=======================
+
+VBCC
+----
+
+Even in C99 mode VBCC 0.9b:
+
+* Does not have ``inttypes.h``.
+
+* Does not have ``fpclassify()`` and friends.
+
+* Does not have ``NAN`` or ``INFINITY``.
+
+* The expression ``0.0 / 0.0`` causes a warning and results in ``0.0``
+  instead of ``NaN`` as expected.
+
+* The expression ``1.0 / 0.0`` causes a warning and results in ``0.0``
+  instead of infinity as expected.
+
+The following program demonstrates the NaN issue::
+
+  #include <stdio.h>
+
+  void main(void) {
+      double z = 0.0;
+      double t;
+      volatile union {
+          double d;
+          unsigned char b[8];
+      } u;
+      int i;
+  
+      /* this results in 0.0 */
+      t = 0.0 / 0.0;
+      printf("result: %lf\n", t);
+  
+      /* this results in NaN */
+      t = z / z;
+      printf("result: %lf\n", t);
+      
+      u.d = t;
+      for (i = 0; i < 8; i++) {
+          printf("%02x\n", u.b[i]);
+      }
+  }
+
+To work with compiler optimization, the above approach needs to have the
+``double`` values in ``volatile`` variables.  Otherwise VBCC will end up
+replacing the result with zero.  So something like this is probably safest::
+
+  volatile double a = 0.0;
+  volatile double b = 0.0;
+  double t = a / b;  /* -> NaN */
 
