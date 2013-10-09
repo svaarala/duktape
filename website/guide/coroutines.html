@@ -9,12 +9,12 @@ coroutine A resumes or initiates coroutine B, coroutine B runs until it yields
 or finishes (either successfully or through an uncaught error), after which
 coroutine A continues execution with the yield result.</p>
 
-<p>Coroutines are created with <tt>__duk__.spawn()</tt>, which gets as its sole
-argument the initial function where the new coroutine begins execution on its
-first resume.  The resume argument becomes the initial function's first (and
+<p>Coroutines are created with <tt>new __duk__.Thread()</tt>, which gets as its
+sole argument the initial function where the new coroutine begins execution on
+its first resume.  The resume argument becomes the initial function's first (and
 only) argument value.</p>
 
-<p>A coroutine is resumed using <tt>__duk__.resume()</tt> which takes the
+<p>A coroutine is resumed using <tt>__duk__.Thread.resume()</tt> which takes the
 following arguments: the coroutine to resume, the resume value, and (optionally)
 a flag indicating whether the resume value is an ordinary value or an error to
 be injected into the target coroutine.  Injecting an error means that the resume
@@ -22,8 +22,8 @@ value will be "thrown" at the site of the target coroutine's last yield operatio
 In other words, instead of returning with an ordinary value, the yield will
 seemingly throw an error.</p>
 
-<p>A coroutine yields its current execution using <tt>__duk__.yield()</tt> which
-takes as its arguments: the value to yield, and (optionally) a flag indicating
+<p>A coroutine yields its current execution using <tt>__duk__.Thread.yield()</tt>
+which takes as its arguments: the value to yield, and (optionally) a flag indicating
 whether the yield value is an ordinary value or an error to be thrown in the
 context of the resuming coroutine.  In other words, an error value causes the
 resume operation to seemingly throw an error instead of returning an ordinary
@@ -45,7 +45,7 @@ See <a href="#limitations">Limitations</a>.</p>
 <pre class="ecmascript-code">
 // coroutine.js
 function yielder(x) {
-    var yield = __duk__.yield;
+    var yield = __duk__.Thread.yield;
 
     print('yielder starting');
     print('yielder arg:', x);
@@ -58,13 +58,13 @@ function yielder(x) {
     return 123;
 }
 
-var t = __duk__.spawn(yielder);
+var t = new __duk__.Thread(yielder);
 
 print('resume test');
-print('yielded with', __duk__.resume(t, 'foo'));
-print('yielded with', __duk__.resume(t, 'bar'));
-print('yielded with', __duk__.resume(t, 'quux'));
-print('yielded with', __duk__.resume(t, 'baz'));
+print('yielded with', __duk__.Thread.resume(t, 'foo'));
+print('yielded with', __duk__.Thread.resume(t, 'bar'));
+print('yielded with', __duk__.Thread.resume(t, 'quux'));
+print('yielded with', __duk__.Thread.resume(t, 'baz'));
 print('finished');
 </pre>
 
