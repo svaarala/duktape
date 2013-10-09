@@ -20,7 +20,7 @@ finished
 ===*/
 
 function yielder(x) {
-    var yield = __duk__.yield;
+    var yield = __duk__.Thread.yield;
 
     print('yielder starting');
     print('yielder arg:', x);
@@ -33,13 +33,13 @@ function yielder(x) {
     return 123;
 }
 
-var t = __duk__.spawn(yielder);
+var t = new __duk__.Thread(yielder);
 
 print('resume tests');
-print('yielded with', __duk__.resume(t, 'foo'));
-print('yielded with', __duk__.resume(t, 'bar'));
-print('yielded with', __duk__.resume(t, 'quux'));
-print('yielded with', __duk__.resume(t, 'baz'));
+print('yielded with', __duk__.Thread.resume(t, 'foo'));
+print('yielded with', __duk__.Thread.resume(t, 'bar'));
+print('yielded with', __duk__.Thread.resume(t, 'quux'));
+print('yielded with', __duk__.Thread.resume(t, 'baz'));
 
 print('finished');
 

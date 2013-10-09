@@ -4,6 +4,7 @@ var res;
 
 /*===
 123
+123
 ===*/
 
 /* Calling via Function.prototype.call() or Function.prototype.apply() would
@@ -11,7 +12,7 @@ var res;
  */
 
 function innerfunc() {
-    __duk__.yield(123);
+    __duk__.Thread.yield(123);
 }
 
 function coroutine1() {
@@ -25,16 +26,16 @@ function coroutine2() {
 }
 
 try {
-    thread = __duk__.spawn(coroutine1);
-    res = __duk__.resume(thread, 0);
+    thread = new __duk__.Thread(coroutine1);
+    res = __duk__.Thread.resume(thread, 0);
     print(res);
 } catch (e) {
     print(e.name);
 }
 
 try {
-    thread = __duk__.spawn(coroutine2);
-    res = __duk__.resume(thread, 0);
+    thread = new __duk__.Thread(coroutine2);
+    res = __duk__.Thread.resume(thread, 0);
     print(res);
 } catch (e) {
     print(e.name);

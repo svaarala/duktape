@@ -3,6 +3,7 @@
  */
 
 /*===
+coroutine start
 123
 TypeError
 ===*/
@@ -10,7 +11,7 @@ TypeError
 var thr;
 
 function Foo() {
-    __duk__.yield(123);
+    __duk__.Thread.yield(123);
 }
 
 function coroutine() {
@@ -20,9 +21,9 @@ function coroutine() {
 }
 
 try {
-    thr = __duk__.spawn(coroutine);
-    print(__duk__.resume(thr));
-    print(__duk__.resume(thr));
+    thr = new __duk__.Thread(coroutine);
+    print(__duk__.Thread.resume(thr));
+    print(__duk__.Thread.resume(thr));
 } catch (e) {
     print(e.name);
 }
