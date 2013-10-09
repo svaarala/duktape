@@ -537,10 +537,6 @@ duk_string_list = [
 	mkstr("build", custom=True),
 	mkstr("addr", custom=True),
 	mkstr("refc", custom=True),
-	mkstr("spawn", custom=True),
-	mkstr("yield", custom=True),
-	mkstr("resume", custom=True),
-	mkstr("curr", custom=True),
 	mkstr("gc", custom=True),
 	mkstr("print", custom=True),
 	mkstr("time", custom=True),
@@ -551,6 +547,21 @@ duk_string_list = [
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
 	mkstr("sleep", custom=True),
+
+	# Buffer constructor
+
+	# Buffer prototype
+
+	# Pointer constructor
+
+	# Pointer prototype
+
+	# Thread constructor
+	mkstr("yield", custom=True),
+	mkstr("resume", custom=True),
+	mkstr("current", custom=True),
+
+	# Thread prototype
 
 	# special literals for custom compatible json encoding
 	# FIXME: placeholders, change later

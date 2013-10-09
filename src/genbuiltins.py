@@ -1026,16 +1026,11 @@ bi_duk = {
 		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
 	],
 	'functions': [
-		# FIXME: 'yield' is a bad method name, since yield is a reserved word
 		{ 'name': 'addr',			'native': 'duk_builtin_duk_object_addr',                'length': 1 },
 		{ 'name': 'refc',			'native': 'duk_builtin_duk_object_refc',                'length': 1 },
 		{ 'name': 'gc',				'native': 'duk_builtin_duk_object_gc',			'length': 1 },
 		{ 'name': 'getFinalizer',		'native': 'duk_builtin_duk_object_get_finalizer',	'length': 1 },
 		{ 'name': 'setFinalizer',		'native': 'duk_builtin_duk_object_set_finalizer',	'length': 2 },
-		{ 'name': 'spawn',			'native': 'duk_builtin_duk_object_spawn',		'length': 1 },
-		{ 'name': 'yield',			'native': 'duk_builtin_duk_object_yield',		'length': 2 },
-		{ 'name': 'resume',			'native': 'duk_builtin_duk_object_resume',		'length': 3 },
-		{ 'name': 'curr',			'native': 'duk_builtin_duk_object_curr',		'length': 0 },
 		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
 		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
 #		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
@@ -1057,6 +1052,10 @@ bi_thread_constructor = {
 
 	'values': [],
 	'functions': [
+		# 'yield' is a reserved word but does not prevent its use as a property name
+		{ 'name': 'yield',			'native': 'duk_builtin_thread_yield',			'length': 2 },
+		{ 'name': 'resume',			'native': 'duk_builtin_thread_resume',			'length': 3 },
+		{ 'name': 'current',			'native': 'duk_builtin_thread_current',			'length': 0 },
 	]
 }
 

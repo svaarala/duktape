@@ -94,10 +94,6 @@ int duk_builtin_duk_object_refc(duk_context *ctx);
 int duk_builtin_duk_object_gc(duk_context *ctx);
 int duk_builtin_duk_object_get_finalizer(duk_context *ctx);
 int duk_builtin_duk_object_set_finalizer(duk_context *ctx);
-int duk_builtin_duk_object_spawn(duk_context *ctx);
-int duk_builtin_duk_object_resume(duk_context *ctx);
-int duk_builtin_duk_object_yield(duk_context *ctx);
-int duk_builtin_duk_object_curr(duk_context *ctx);
 int duk_builtin_duk_object_time(duk_context *ctx);
 int duk_builtin_duk_object_enc(duk_context *ctx);
 int duk_builtin_duk_object_dec(duk_context *ctx);
@@ -231,6 +227,9 @@ int duk_builtin_string_prototype_trim(duk_context *ctx);
 int duk_builtin_string_prototype_substr(duk_context *ctx);
 #endif
 int duk_builtin_thread_constructor(duk_context *ctx);
+int duk_builtin_thread_resume(duk_context *ctx);
+int duk_builtin_thread_yield(duk_context *ctx);
+int duk_builtin_thread_current(duk_context *ctx);
 int duk_builtin_thread_prototype_to_string(duk_context *ctx);
 int duk_builtin_thread_prototype_value_of(duk_context *ctx);
 
