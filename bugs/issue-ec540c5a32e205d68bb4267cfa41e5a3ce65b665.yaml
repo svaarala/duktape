@@ -1,0 +1,38 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: investigate typedarray spec
+desc: http://www.khronos.org/registry/typedarray/specs/latest/
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-09 10:46:38.283156 Z
+references: []
+
+id: ec540c5a32e205d68bb4267cfa41e5a3ce65b665
+log_events: 
+- - 2013-10-09 10:46:38.488108 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2013-10-09 10:52:44.096868 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Seems to require:
+    
+    * ArrayBuffer class, internal pointer is a Duktape plain (fixed?) buffer.
+      This seems straightforward.  A 'byteLength' special property (like
+      array 'length') would be useful; however, accessor classes also have
+      a 'byteLength' and a 'byteOffset' and these properties cannot be
+      magical.
+    
+    * Typed array view types: Int32Array etc.  To work efficiently, property
+      access primitives need to provide fast paths for these.
+    
+    * DataView view type.
+- - 2013-10-09 10:53:59.476872 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - "See also: http://wiki.commonjs.org/wiki/Binary"
