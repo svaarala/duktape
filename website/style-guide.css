@@ -9,3 +9,7 @@
 .typecomparison tbody td {
 	text-align: center;
 }
+
+.propname {
+	font-family: monospace;
+}

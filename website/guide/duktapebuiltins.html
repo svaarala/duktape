@@ -1,0 +1,116 @@
+<h2 id="duktapebuiltins">Duktape built-ins</h2>
+
+<p>This section describes Duktape-specific built-in objects, methods, and
+values.</p>
+
+<h3>Additional global object properties</h3>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="propname">__duk__</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
+<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing entries to <tt>stdout</tt>.</td></tr>
+<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing entries to <tt>stderr</tt>.</td></tr>
+</tbody>
+</table>
+
+<h3>The __duk__ object</h3>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="propname">build</td><td>Opaque build information string.</td></tr>
+<tr><td class="propname">Buffer</td><td>Buffer constructor function.</td></tr>
+<tr><td class="propname">Pointer</td><td>Pointer constructor function.</td></tr>
+<tr><td class="propname">Thread</td><td>Thread constructor function.</td></tr>
+</tbody>
+</table>
+
+<h3>__duk__.Buffer (constructor)</h3>
+
+<p>The Buffer constructor is a function which can be called both as an
+ordinary function and as a constructor:</p>
+<ul>
+<li>When called as a function, coerces the first argument to a buffer using
+    the custom <tt>ToBuffer</tt> coercion.  The return value is a plain
+    buffer (not a Buffer object).</li>
+<li>When called as a constructor, coerces the first argument to a buffer
+    using the custom <tt>ToBuffer</tt> coercion.  Returns a Buffer object
+    whose internal value is the buffer resulting from the coercion.  The
+    internal prototype of the newly created Buffer will be the
+    <tt>__duk__.Buffer.prototype</tt> object.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<h3>__duk__.Buffer.prototype</h3>
+
+<h3>__duk__.Pointer (constructor)</h3>
+
+<p>The Pointer constructor is a function which can be called both as an
+ordinary function and as a constructor:</p>
+<ul>
+<li>When called as a function, coerces the first argument to a pointer using
+    the custom <tt>ToPointer</tt> coercion.  The return value is a plain
+    pointer (not a Pointer object).</li>
+<li>When called as a constructor, coerces the first argument to a pointer
+    using the custom <tt>ToPointer</tt> coercion.  Returns a Pointer object
+    whose internal value is the pointer resulting from the coercion.  The
+    internal prototype of the newly created Pointer will be the
+    <tt>__duk__.Pointer.prototype</tt> object.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<h3>__duk__.Pointer.prototype</h3>
+
+<h3>__duk__.Thread (constructor)</h3>
+
+<p>The Thread constructor is a function which can be called both as an
+ordinary function and as a constructor.  The behavior is the same in both
+cases:</p>
+<ul>
+<li>The first argument is checked to be a function (if not, a <tt>TypeError</tt>
+    is thrown).  The return value is a new thread whose initial function is
+    recorded to be the argument function (this function will start executing
+    when the new thread is first resumed).  The internal prototype of the
+    newly created Thread will be the <tt>__duk__.Thread.prototype</tt> object.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+
+<h3>__duk__.Thread.prototype</h3>
+
