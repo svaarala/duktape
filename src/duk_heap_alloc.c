@@ -285,7 +285,7 @@ static int init_heap_thread(duk_heap *heap) {
 	thr = duk_hthread_alloc(heap,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                        DUK_HOBJECT_FLAG_THREAD |
-	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
+	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (!thr) {
 		DUK_DPRINT("failed to alloc heap_thread");
 		return 0;
@@ -304,6 +304,9 @@ static int init_heap_thread(duk_heap *heap) {
 
 	/* FIXME: this may now fail, and is not handled correctly */
 	duk_hthread_create_builtin_objects(thr);
+
+	/* default prototype (Note: 'thr' must be reachable) */
+	DUK_HOBJECT_SET_PROTOTYPE(thr, (duk_hobject *) thr, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	return 1;
 }

@@ -1074,8 +1074,7 @@ bi_thread_prototype = {
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_thread_prototype_to_string',	'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_thread_prototype_value_of',	'length': 0 },
+		# toString() and valueOf() are inherited from Object.prototype
 	],
 }
 
