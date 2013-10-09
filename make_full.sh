@@ -36,6 +36,7 @@ for i in \
 	doc/uri.txt \
 	doc/testcases.txt \
 	doc/code-issues.txt \
+	doc/unicode-support.txt \
 	; do
 	cp --parents $i $FULL/
 done
