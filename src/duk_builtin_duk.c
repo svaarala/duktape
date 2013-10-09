@@ -345,10 +345,6 @@ int duk_builtin_duk_object_curr(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_duk_object_print(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;	/*FIXME*/
-}
-
 /* FIXME: disabled because time handling is a portability issue which
  * is otherwise contained in duk_builtin_date.c.
  */

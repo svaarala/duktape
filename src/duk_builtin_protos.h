@@ -98,7 +98,6 @@ int duk_builtin_duk_object_spawn(duk_context *ctx);
 int duk_builtin_duk_object_resume(duk_context *ctx);
 int duk_builtin_duk_object_yield(duk_context *ctx);
 int duk_builtin_duk_object_curr(duk_context *ctx);
-int duk_builtin_duk_object_print(duk_context *ctx);
 int duk_builtin_duk_object_time(duk_context *ctx);
 int duk_builtin_duk_object_enc(duk_context *ctx);
 int duk_builtin_duk_object_dec(duk_context *ctx);
