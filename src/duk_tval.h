@@ -32,9 +32,9 @@
  *
  *  At least three memory layouts are relevant here:
  *
- *    A B C D E F G H    Big endian (e.g. 68k)           _USE_BE_VARIANT
- *    H G F E D C B A    Little endian (e.g. x86)        _USE_LE_VARIANT
- *    D C B A H G F E    Middle/cross endian (e.g. ARM)  _USE_ME_VARIANT
+ *    A B C D E F G H    Big endian (e.g. 68k)           USE__BE_VARIANT
+ *    H G F E D C B A    Little endian (e.g. x86)        USE__LE_VARIANT
+ *    D C B A H G F E    Middle/cross endian (e.g. ARM)  USE__ME_VARIANT
  *
  *  ARM is a special case: ARM double values are in middle/cross endian
  *  format while ARM unsigned long long (64-bit) values are in standard
@@ -55,17 +55,17 @@
 #define DUK_TVAL_H_INCLUDED
 
 #ifdef DUK_USE_DOUBLE_LE
-#define  _USE_LE_VARIANT
+#define  USE__LE_VARIANT
 #endif
 #ifdef DUK_USE_DOUBLE_ME
-#define  _USE_ME_VARIANT
+#define  USE__ME_VARIANT
 #endif
 #ifdef DUK_USE_DOUBLE_BE
-#define  _USE_BE_VARIANT
+#define  USE__BE_VARIANT
 #endif
 
 /* sanity */
-#if !defined(_USE_LE_VARIANT) && !defined(_USE_ME_VARIANT) && !defined(_USE_BE_VARIANT)
+#if !defined(USE__LE_VARIANT) && !defined(USE__ME_VARIANT) && !defined(USE__BE_VARIANT)
 #error unsupported: cannot determine byte order variant
 #endif
 
@@ -119,12 +119,12 @@ typedef union duk_tval duk_tval;
  *  feature that while doubles have a mixed byte order (32107654), unsigned
  *  long long values has a little endian byte order (76543210).  When writing
  *  a logical double value through a ULL pointer, the 32-bit words need to be
- *  swapped; hence the #ifdefs below for ULL writes with _USE_ME_VARIANT.
+ *  swapped; hence the #ifdefs below for ULL writes with USE__ME_VARIANT.
  *  This is not full ARM support but suffices for some environments.
  */
 
 /* raw setters */
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) DUK_XTAG_UNDEFINED_ACTUAL; \
 	} while (0)
@@ -138,7 +138,7 @@ typedef union duk_tval duk_tval;
 		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_ACTUAL; \
 	} while (0)
 
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) DUK_XTAG_UNDEFINED_UNUSED; \
 	} while (0)
@@ -152,7 +152,7 @@ typedef union duk_tval duk_tval;
 		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_UNUSED; \
 	} while (0)
 
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_NULL_FULL(v)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_NULL) << 16); \
 	} while (0)
@@ -167,7 +167,7 @@ typedef union duk_tval duk_tval;
 		(v)->us[DUK_DBL_IDX_US0] = (unsigned short) DUK_TAG_NULL; \
 	} while (0)
 
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  do { \
 		DUK_ASSERT((val) == 0 || (val) == 1); \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_BOOLEAN) << 16) | ((unsigned long long) (val)); \
@@ -193,7 +193,7 @@ typedef union duk_tval duk_tval;
 #define  DUK__TVAL_SET_NUMBER_NOTFULL(v,d)  DUK__TVAL_SET_NUMBER_FULL(v,d)
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) (tag)) << 16) | (((unsigned long long) (unsigned int) (h)) << 32); \
 	} while (0)
@@ -203,7 +203,7 @@ typedef union duk_tval duk_tval;
 	} while (0)
 #endif
 
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_NAN_FULL(v)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = 0x000000007ff80000ULL; \
 	} while (0)
@@ -285,7 +285,7 @@ typedef union duk_tval duk_tval;
  */
 
 /* XXX: reading unsigned int instead of unsigned short is one byte shorter on x86 :) */
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__DOUBLE_IS_NAN_FULL(d) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	(((((duk_tval *)(d))->us[DUK_DBL_IDX_US0] & 0x7ff0) == 0x7ff0) && \
@@ -315,7 +315,7 @@ typedef union duk_tval duk_tval;
 		} \
 	} while (0)
 
-#ifdef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
 #define  DUK__DOUBLE_IS_NORMALIZED_NAN_FULL(d) \
 	(((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0] == 0x000000007ff80000ULL)
 #else
@@ -487,14 +487,14 @@ struct duk_tval_struct {
 #define  DUK_TVAL_SET_BOOLEAN_FALSE(v)       DUK_TVAL_SET_BOOLEAN(v, 0)
 
 /* undefine local defines */
-#ifdef _USE_LE_VARIANT
-#undef _USE_LE_VARIANT
+#ifdef USE__LE_VARIANT
+#undef USE__LE_VARIANT
 #endif
-#ifdef _USE_ME_VARIANT
-#undef _USE_ME_VARIANT
+#ifdef USE__ME_VARIANT
+#undef USE__ME_VARIANT
 #endif
-#ifdef _USE_BE_VARIANT
-#undef _USE_BE_VARIANT
+#ifdef USE__BE_VARIANT
+#undef USE__BE_VARIANT
 #endif
 
 #endif  /* DUK_TVAL_H_INCLUDED */
