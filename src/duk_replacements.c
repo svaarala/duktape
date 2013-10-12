@@ -20,13 +20,13 @@ int duk_repl_fpclassify(double x) {
 	int mzero;
 
 	u.d = x;
-	exp = (u.us[_DUK_IDX_US0] & 0x7ff0);
+	exp = (u.us[DUK_DBL_IDX_US0] & 0x7ff0);
 	if (exp > 0x0000 && exp < 0x7ff0) {
 		/* exp values [0x001,0x7fe] = normal */
 		return DUK_FP_NORMAL;
 	}
 
-	mzero = (u.ui[_DUK_IDX_UI1] == 0 && (u.ui[_DUK_IDX_UI0] & 0x000fffff) == 0);
+	mzero = (u.ui[DUK_DBL_IDX_UI1] == 0 && (u.ui[DUK_DBL_IDX_UI0] & 0x000fffff) == 0);
 	if (exp == 0x0000) {
 		/* exp 0x000 is zero/subnormal */
 		if (mzero) {
@@ -49,7 +49,7 @@ int duk_repl_fpclassify(double x) {
 int duk_repl_signbit(double x) {
 	volatile duk_double_union u;
 	u.d = x;
-	return u.uc[_DUK_IDX_UC0] & 0x80;
+	return u.uc[DUK_DBL_IDX_UC0] & 0x80;
 }
 #endif
 

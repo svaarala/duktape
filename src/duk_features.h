@@ -268,61 +268,60 @@ typedef signed int duk_i32;
  */
 
 /* indexes of various types with respect to big endian (logical) layout */
-/* FIXME: fix the naming, _DUK prefix is not good */
 #if defined(DUK_USE_DOUBLE_LE)
-#define  _DUK_IDX_ULL0   0
-#define  _DUK_IDX_UI0    1
-#define  _DUK_IDX_UI1    0
-#define  _DUK_IDX_US0    3
-#define  _DUK_IDX_US1    2
-#define  _DUK_IDX_US2    1
-#define  _DUK_IDX_US3    0
-#define  _DUK_IDX_UC0    7
-#define  _DUK_IDX_UC1    6
-#define  _DUK_IDX_UC2    5
-#define  _DUK_IDX_UC3    4
-#define  _DUK_IDX_UC4    3
-#define  _DUK_IDX_UC5    2
-#define  _DUK_IDX_UC6    1
-#define  _DUK_IDX_UC7    0
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#define  DUK_DBL_IDX_ULL0   0
+#define  DUK_DBL_IDX_UI0    1
+#define  DUK_DBL_IDX_UI1    0
+#define  DUK_DBL_IDX_US0    3
+#define  DUK_DBL_IDX_US1    2
+#define  DUK_DBL_IDX_US2    1
+#define  DUK_DBL_IDX_US3    0
+#define  DUK_DBL_IDX_UC0    7
+#define  DUK_DBL_IDX_UC1    6
+#define  DUK_DBL_IDX_UC2    5
+#define  DUK_DBL_IDX_UC3    4
+#define  DUK_DBL_IDX_UC4    3
+#define  DUK_DBL_IDX_UC5    2
+#define  DUK_DBL_IDX_UC6    1
+#define  DUK_DBL_IDX_UC7    0
+#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_BE)
-#define  _DUK_IDX_ULL0   0
-#define  _DUK_IDX_UI0    0
-#define  _DUK_IDX_UI1    1
-#define  _DUK_IDX_US0    0
-#define  _DUK_IDX_US1    1
-#define  _DUK_IDX_US2    2
-#define  _DUK_IDX_US3    3
-#define  _DUK_IDX_UC0    0
-#define  _DUK_IDX_UC1    1
-#define  _DUK_IDX_UC2    2
-#define  _DUK_IDX_UC3    3
-#define  _DUK_IDX_UC4    4
-#define  _DUK_IDX_UC5    5
-#define  _DUK_IDX_UC6    6
-#define  _DUK_IDX_UC7    7
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#define  DUK_DBL_IDX_ULL0   0
+#define  DUK_DBL_IDX_UI0    0
+#define  DUK_DBL_IDX_UI1    1
+#define  DUK_DBL_IDX_US0    0
+#define  DUK_DBL_IDX_US1    1
+#define  DUK_DBL_IDX_US2    2
+#define  DUK_DBL_IDX_US3    3
+#define  DUK_DBL_IDX_UC0    0
+#define  DUK_DBL_IDX_UC1    1
+#define  DUK_DBL_IDX_UC2    2
+#define  DUK_DBL_IDX_UC3    3
+#define  DUK_DBL_IDX_UC4    4
+#define  DUK_DBL_IDX_UC5    5
+#define  DUK_DBL_IDX_UC6    6
+#define  DUK_DBL_IDX_UC7    7
+#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_ME)
-#define  _DUK_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
-#define  _DUK_IDX_UI0    0
-#define  _DUK_IDX_UI1    1
-#define  _DUK_IDX_US0    1
-#define  _DUK_IDX_US1    0
-#define  _DUK_IDX_US2    3
-#define  _DUK_IDX_US3    2
-#define  _DUK_IDX_UC0    3
-#define  _DUK_IDX_UC1    2
-#define  _DUK_IDX_UC2    1
-#define  _DUK_IDX_UC3    0
-#define  _DUK_IDX_UC4    7
-#define  _DUK_IDX_UC5    6
-#define  _DUK_IDX_UC6    5
-#define  _DUK_IDX_UC7    4
-#define  _DUK_IDX_VP0    _DUK_IDX_UI0  /* packed tval */
-#define  _DUK_IDX_VP1    _DUK_IDX_UI1  /* packed tval */
+#define  DUK_DBL_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
+#define  DUK_DBL_IDX_UI0    0
+#define  DUK_DBL_IDX_UI1    1
+#define  DUK_DBL_IDX_US0    1
+#define  DUK_DBL_IDX_US1    0
+#define  DUK_DBL_IDX_US2    3
+#define  DUK_DBL_IDX_US3    2
+#define  DUK_DBL_IDX_UC0    3
+#define  DUK_DBL_IDX_UC1    2
+#define  DUK_DBL_IDX_UC2    1
+#define  DUK_DBL_IDX_UC3    0
+#define  DUK_DBL_IDX_UC4    7
+#define  DUK_DBL_IDX_UC5    6
+#define  DUK_DBL_IDX_UC6    5
+#define  DUK_DBL_IDX_UC7    4
+#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #else
 #error internal error
 #endif
@@ -342,14 +341,14 @@ typedef union duk_double_union duk_double_union;
 		(u)->d = (v); \
 	} while (0)
 #define  DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
-		(u)->ui[_DUK_IDX_UI0] = (unsigned int) (v); \
+		(u)->ui[DUK_DBL_IDX_UI0] = (unsigned int) (v); \
 	} while (0)
 #define  DUK_DBLUNION_SET_LOW32(u,v)  do {  \
-		(u)->ui[_DUK_IDX_UI1] = (unsigned int) (v); \
+		(u)->ui[DUK_DBL_IDX_UI1] = (unsigned int) (v); \
 	} while (0)
 #define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
-#define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[_DUK_IDX_UI0])
-#define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[_DUK_IDX_UI1])
+#define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
+#define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
 
 /*
  *  Check whether or not a packed duk_tval representation is possible
