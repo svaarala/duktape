@@ -54,9 +54,6 @@
 #ifndef DUK_TVAL_H_INCLUDED
 #define DUK_TVAL_H_INCLUDED
 
-#include "duk_features.h"
-#include "duk_forwdecl.h"
-
 #ifdef DUK_USE_DOUBLE_LE
 #define  _USE_LE_VARIANT
 #endif

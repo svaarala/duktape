@@ -5,8 +5,6 @@
 #ifndef DUK_UNICODE_H_INCLUDED
 #define DUK_UNICODE_H_INCLUDED
 
-#include "duk_features.h"
-
 #define  DUK_UNICODE_MAX_XUTF8_LENGTH   7   /* up to 36 bit codepoints */
 #define  DUK_UNICODE_MAX_CESU8_LENGTH   6   /* all codepoints up to U+10FFFF */
 

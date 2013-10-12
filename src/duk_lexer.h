@@ -5,8 +5,6 @@
 #ifndef DUK_LEXER_H_INCLUDED
 #define DUK_LEXER_H_INCLUDED
 
-#include "duk_strings.h"
-
 typedef void (*duk_re_range_callback)(void *user, duk_u32 r1, duk_u32 r2, int direct);
 
 /*

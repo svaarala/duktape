@@ -8,9 +8,6 @@
 #ifndef DUK_DEBUG_H_INCLUDED
 #define DUK_DEBUG_H_INCLUDED
 
-#include "duk_features.h"  /* rely on DUK_USE_VARIADIC_MACROS */
-#include "duk_forwdecl.h"
-
 #ifdef DUK_USE_DEBUG
 
 /*

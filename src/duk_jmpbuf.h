@@ -11,8 +11,6 @@
 #ifndef DUK_JMPBUF_H_INCLUDED
 #define DUK_JMPBUF_H_INCLUDED
 
-#include <setjmp.h>
-
 struct duk_jmpbuf {
 	jmp_buf jb;
 };
