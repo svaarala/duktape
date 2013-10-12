@@ -26,25 +26,25 @@
 /* Note: combining __FILE__, __LINE__, and __func__ into fmt would be
  * possible compile time, but waste some space with shared function names.
  */
-#define  _DUK_DEBUG_LOG(lev,...)  duk_debug_log((lev), DUK_FILE_MACRO, (int) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
+#define  DUK__DEBUG_LOG(lev,...)  duk_debug_log((lev), DUK_FILE_MACRO, (int) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
 
-#define  DUK_DPRINT(...)          _DUK_DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
+#define  DUK_DPRINT(...)          DUK__DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
 
 #ifdef DUK_USE_DDEBUG
-#define  DUK_DDPRINT(...)         _DUK_DEBUG_LOG(DUK_LEVEL_DDEBUG, __VA_ARGS__)
+#define  DUK_DDPRINT(...)         DUK__DEBUG_LOG(DUK_LEVEL_DDEBUG, __VA_ARGS__)
 #else
 #define  DUK_DDPRINT(...)
 #endif
 
 #ifdef DUK_USE_DDDEBUG
-#define  DUK_DDDPRINT(...)        _DUK_DEBUG_LOG(DUK_LEVEL_DDDEBUG, __VA_ARGS__)
+#define  DUK_DDDPRINT(...)        DUK__DEBUG_LOG(DUK_LEVEL_DDDEBUG, __VA_ARGS__)
 #else
 #define  DUK_DDDPRINT(...)
 #endif
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
-#define  _DUK_DEBUG_STASH(lev)    \
+#define  DUK__DEBUG_STASH(lev)    \
 	(void) DUK_MEMSET((void *) duk_debug_file_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
 	(void) DUK_MEMSET((void *) duk_debug_line_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
 	(void) DUK_MEMSET((void *) duk_debug_func_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
@@ -54,19 +54,19 @@
 	(void) (duk_debug_level_stash = (lev))
 
 #ifdef DUK_USE_DEBUG
-#define  DUK_DPRINT  _DUK_DEBUG_STASH(DUK_LEVEL_DEBUG), (void) duk_debug_log  /* args go here in parens */
+#define  DUK_DPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define  DUK_DPRINT  0 && 
 #endif
 
 #ifdef DUK_USE_DDEBUG
-#define  DUK_DDPRINT  _DUK_DEBUG_STASH(DUK_LEVEL_DDEBUG), (void) duk_debug_log  /* args go here in parens */
+#define  DUK_DDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define  DUK_DDPRINT  0 && 
 #endif
 
 #ifdef DUK_USE_DDDEBUG
-#define  DUK_DDDPRINT  _DUK_DEBUG_STASH(DUK_LEVEL_DDDEBUG), (void) duk_debug_log  /* args go here in parens */
+#define  DUK_DDDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define  DUK_DDDPRINT  0 && 
 #endif
