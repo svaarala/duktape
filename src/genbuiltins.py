@@ -1556,8 +1556,8 @@ if __name__ == '__main__':
 	# write C header file
 	genc = dukutil.GenerateC()
 	genc.emitHeader('genbuiltins.py')
-	genc.emitLine('#ifndef __DUK_BUILTINS_H')
-	genc.emitLine('#define __DUK_BUILTINS_H 1')
+	genc.emitLine('#ifndef DUK_BUILTINS_H_INCLUDED')
+	genc.emitLine('#define DUK_BUILTINS_H_INCLUDED')
 	genc.emitLine('')
 	genc.emitLine('extern duk_c_function duk_builtin_native_functions[];')
 	genc.emitLine('')
@@ -1571,7 +1571,7 @@ if __name__ == '__main__':
 	genc.emitLine('')
 	genc.emitDefine('DUK_NUM_BUILTINS', len(builtins))
 	genc.emitLine('')
-	genc.emitLine('#endif  /* __DUK_BUILTINS_H */')
+	genc.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */')
 
 	f = open(opts.out_header, 'wb')
 	f.write(genc.getString())

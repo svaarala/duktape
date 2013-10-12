@@ -979,8 +979,8 @@ if __name__ == '__main__':
 	# write C header file
 	genc = dukutil.GenerateC()
 	genc.emitHeader('genstrings.py')
-	genc.emitLine('#ifndef __DUK_STRINGS_H')
-	genc.emitLine('#define __DUK_STRINGS_H 1')
+	genc.emitLine('#ifndef DUK_STRINGS_H_INCLUDED')
+	genc.emitLine('#define DUK_STRINGS_H_INCLUDED')
 	genc.emitLine('')
 	genc.emitLine('extern char duk_strings_data[];')  # FIXME: unsigned char?
 	genc.emitLine('')
@@ -1006,7 +1006,7 @@ if __name__ == '__main__':
 	genc.emitDefine('DUK_STRIDX_START_STRICT_RESERVED', idx_start_strict_reserved)
 	genc.emitDefine('DUK_STRIDX_END_RESERVED', len(strlist), comment='exclusive endpoint')
 	genc.emitLine('')
-	genc.emitLine('#endif  /* __DUK_STRINGS_H */')
+	genc.emitLine('#endif  /* DUK_STRINGS_H_INCLUDED */')
 	f = open(opts.out_header, 'wb')
 	f.write(genc.getString())
 	f.close()
