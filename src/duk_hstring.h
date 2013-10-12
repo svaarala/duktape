@@ -17,8 +17,6 @@
 #ifndef DUK_HSTRING_H_INCLUDED
 #define DUK_HSTRING_H_INCLUDED
 
-#include "duk_heaphdr.h"
-
 /* FIXME: flag for 'valid extended utf-8' (internal strings are not, regexp bytecode is)? */
 /* FIXME: flag for 'contains non-bmp chars'? */
 

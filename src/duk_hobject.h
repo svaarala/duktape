@@ -32,8 +32,6 @@
 #ifndef DUK_HOBJECT_H_INCLUDED
 #define DUK_HOBJECT_H_INCLUDED
 
-#include "duk_strings.h"
-
 /* there are currently 22 flag bits available */
 #define  DUK_HOBJECT_FLAG_EXTENSIBLE            DUK_HEAPHDR_USER_FLAG(0)   /* object is extensible */
 #define  DUK_HOBJECT_FLAG_CONSTRUCTABLE         DUK_HEAPHDR_USER_FLAG(1)   /* object is constructable */

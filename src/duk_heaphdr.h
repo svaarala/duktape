@@ -6,9 +6,6 @@
 #ifndef DUK_HEAPHDR_H_INCLUDED
 #define DUK_HEAPHDR_H_INCLUDED
 
-#include "duk_forwdecl.h"
-#include "duk_tval.h"
-
 /*
  *  Common heap header
  *

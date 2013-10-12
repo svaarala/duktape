@@ -8,9 +8,6 @@
 #ifndef DUK_HTHREAD_H_INCLUDED
 #define DUK_HTHREAD_H_INCLUDED
 
-#include "duk_forwdecl.h"
-#include "duk_builtins.h"
-
 /*
  *  Stack constants
  */
