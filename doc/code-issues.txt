@@ -35,6 +35,16 @@ Macros are uppercase, underscore separated::
 
   #define  DUK_MACRO(x)  /* ... */
 
+Macro names must not begin with an underscore.  Macros which are of local
+interest only can have a local name or have a double underscore after "DUK"::
+
+  /* 'foo' alternatives, not to be used directly */
+  #define  DUK__FOO_ALT1  /* ... */
+  #define  DUK__FOO_ALT2  /* ... */
+
+  /* select DUK_FOO provider */
+  #define  DUK_FOO  DUK_FOO_ALT2
+
 Comments are always traditional C comments, never ``//``::
 
   /* always used traditional C comments */
