@@ -682,12 +682,22 @@ extern double duk_computed_nan;
 #undef  DUK_USE_VARIADIC_MACROS
 #endif
 
-/* zero-size array at end of struct (char buf[0]) instead of C99 version (char buf[]) */
-/* FIXME: need to add third option */
+/* Variable size array at the end of a structure is nonportable.  There are
+ * three alternatives:
+ *  1) C99 (flexible array member): char buf[]
+ *  2) Compiler specific (e.g. GCC): char buf[0]
+ *  3) Portable but wastes memory / complicates allocation: char buf[1]
+ */
+/* FIXME: Currently unused, only hbuffer.h needed this at some point. */
+#undef  DUK_USE_FLEX_C99
+#undef  DUK_USE_FLEX_ZEROSIZE
+#undef  DUK_USE_FLEX_ONESIZE
 #if defined(DUK_F_C99)
-#undef  DUK_USE_STRUCT_HACK
+#define  DUK_USE_FLEX_C99
+#elif defined(__GNUC__)
+#define  DUK_USE_FLEX_ZEROSIZE
 #else
-#define  DUK_USE_STRUCT_HACK  /* non-portable */
+#define  DUK_USE_FLEX_ONESIZE
 #endif
 
 /* FIXME: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
