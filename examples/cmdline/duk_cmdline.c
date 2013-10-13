@@ -203,7 +203,7 @@ int handle_interactive(duk_context *ctx) {
 	int got_eof = 0;
 	int rc;
 
-	duk_eval_string(ctx, "print('((o) Duktape'); print(__duk__.build);");
+	duk_eval_string(ctx, "print('((o) Duktape [no readline]'); print(__duk__.build);");
 	duk_pop(ctx);
 
 	buffer = malloc(LINEBUF_SIZE);

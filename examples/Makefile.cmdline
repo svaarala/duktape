@@ -16,6 +16,9 @@ CCLIBS	= -lm
 # For the command line tool
 CCLIBS += -lreadline
 
+# If you don't have readline, or something else fails to compile
+#CCOPTS += -DDUK_CMDLINE_BAREBONES
+
 duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
