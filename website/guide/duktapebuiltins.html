@@ -28,13 +28,25 @@ values.</p>
 </thead>
 <tbody>
 <tr><td class="propname">build</td><td>Opaque build information string.</td></tr>
-<tr><td class="propname">Buffer</td><td>Buffer constructor function.</td></tr>
-<tr><td class="propname">Pointer</td><td>Pointer constructor function.</td></tr>
-<tr><td class="propname">Thread</td><td>Thread constructor function.</td></tr>
+<tr><td class="propname">version</td><td><b>FIXME</b></td></tr>
+<tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
+<tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
+<tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
 </tbody>
 </table>
 
 <h3>__duk__.Buffer (constructor)</h3>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="2">No properties at the moment.</td></tr>
+</tbody>
+</table>
 
 <p>The Buffer constructor is a function which can be called both as an
 ordinary function and as a constructor:</p>
@@ -49,6 +61,8 @@ ordinary function and as a constructor:</p>
     <tt>__duk__.Buffer.prototype</tt> object.</li>
 </ul>
 
+<h3>__duk__.Buffer.prototype</h3>
+
 <table>
 <thead>
 <tr>
@@ -56,12 +70,29 @@ ordinary function and as a constructor:</p>
 </tr>
 </thead>
 <tbody>
+<tr><td class="propname">toString</td><td>Convert Buffer to a printable string.</td></tr>
+<tr><td class="propname">valueOf</td><td>Return the primitive buffer value held by Buffer.</td></tr>
 </tbody>
 </table>
 
-<h3>__duk__.Buffer.prototype</h3>
+<p><tt>toString()</tt> and <tt>valueOf</tt> accept both plain buffers and
+Buffer objects as their <tt>this</tt> binding.  This allows code such as:</p>
+<pre class="ecmascript-code">
+print(plain_buf.toString());
+</pre>
 
 <h3>__duk__.Pointer (constructor)</h3>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="2">No properties at the moment.</td></tr>
+</tbody>
+</table>
 
 <p>The Pointer constructor is a function which can be called both as an
 ordinary function and as a constructor:</p>
@@ -76,6 +107,8 @@ ordinary function and as a constructor:</p>
     <tt>__duk__.Pointer.prototype</tt> object.</li>
 </ul>
 
+<h3>__duk__.Pointer.prototype</h3>
+
 <table>
 <thead>
 <tr>
@@ -83,23 +116,18 @@ ordinary function and as a constructor:</p>
 </tr>
 </thead>
 <tbody>
+<tr><td class="propname">toString</td><td>Convert Pointer to a printable string.</td></tr>
+<tr><td class="propname">valueOf</td><td>Return the primitive pointer value held by Pointer.</td></tr>
 </tbody>
 </table>
 
-<h3>__duk__.Pointer.prototype</h3>
+<p><tt>toString()</tt> and <tt>valueOf</tt> accept both plain pointers and
+Pointer objects as their <tt>this</tt> binding.  This allows code such as:</p>
+<pre class="ecmascript-code">
+print(plain_ptr.toString());
+</pre>
 
 <h3>__duk__.Thread (constructor)</h3>
-
-<p>The Thread constructor is a function which can be called both as an
-ordinary function and as a constructor.  The behavior is the same in both
-cases:</p>
-<ul>
-<li>The first argument is checked to be a function (if not, a <tt>TypeError</tt>
-    is thrown).  The return value is a new thread whose initial function is
-    recorded to be the argument function (this function will start executing
-    when the new thread is first resumed).  The internal prototype of the
-    newly created Thread will be the <tt>__duk__.Thread.prototype</tt> object.</li>
-</ul>
 
 <table>
 <thead>
@@ -114,6 +142,26 @@ cases:</p>
 </tbody>
 </table>
 
+<p>The Thread constructor is a function which can be called both as an
+ordinary function and as a constructor.  The behavior is the same in both
+cases:</p>
+<ul>
+<li>The first argument is checked to be a function (if not, a <tt>TypeError</tt>
+    is thrown).  The return value is a new thread whose initial function is
+    recorded to be the argument function (this function will start executing
+    when the new thread is first resumed).  The internal prototype of the
+    newly created Thread will be the <tt>__duk__.Thread.prototype</tt> object.</li>
+</ul>
 
 <h3>__duk__.Thread.prototype</h3>
 
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td colspan="2">No properties at the moment.</td></tr>
+</tbody>
+</table>
