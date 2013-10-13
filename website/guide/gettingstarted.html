@@ -26,6 +26,13 @@ $ cd /tmp/duktape-&lt;version&gt;/
 $ make -f Makefile.cmdline
 </pre>
 
+<div class="note">
+The command line tool requires <tt>readline</tt> by default.  If it's
+not available or there are other portability issues, try enabling the
+<tt>-DDUK_CMDLINE_BAREBONES</tt> compile option in the Makefile.  The
+option minimizes any non-portable dependencies.
+</div>
+
 <p>You can now run Ecmascript code interactively:</p>
 <pre>
 $ ./duk
