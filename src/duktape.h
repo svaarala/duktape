@@ -7,6 +7,16 @@
 #ifndef DUKTAPE_H_INCLUDED
 #define DUKTAPE_H_INCLUDED
 
+/*
+ *  Includes and minimal feature detection required by the public API.
+ */
+
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#define  DUK_API_VARIADIC_MACROS
+#else
+#undef  DUK_API_VARIADIC_MACROS
+#endif
+
 #include <limits.h>  /* INT_MIN */
 #include <stdarg.h>  /* va_list etc */
 #include <stdlib.h>
@@ -138,6 +148,16 @@ struct duk_memory_functions {
  */
 
 /*
+ *  If no variadic macros, __FILE__ and __LINE__ are passed through globals
+ *  which is ugly and not thread safe.
+ */
+
+#ifdef DUK_API_VARIADIC_MACROS
+extern const char *duk_api_global_filename;
+extern int duk_api_global_line;
+#endif
+
+/*
  *  Context management
  */
 
@@ -169,7 +189,18 @@ void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs)
  */
 
 void duk_throw(duk_context *ctx);
-void duk_error(duk_context *ctx, int err_code, const char *fmt, ...);
+
+void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
+#ifdef DUK_API_VARIADIC_MACROS
+#define  duk_error(ctx,err_code,...)  \
+	duk_error_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
+#else
+#define  duk_error  \
+	duk_api_global_filename = __FILE__, \
+	duk_api_global_line = __LINE__, \
+	duk_error_stash  /* arguments follow */
+#endif
+
 void duk_fatal(duk_context *ctx, int err_code);
 
 /*
@@ -244,7 +275,18 @@ int duk_push_object(duk_context *ctx);
 int duk_push_array(duk_context *ctx);
 int duk_push_thread(duk_context *ctx);
 int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);
-int duk_push_error_object(duk_context *ctx, int err_code, const char *fmt, ...);
+
+int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
+#ifdef DUK_API_VARIADIC_MACROS
+#define  duk_push_error_object(ctx,err_code,...)  \
+	duk_push_error_object_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
+#else
+#define  duk_push_error_object  \
+	duk_api_global_filename = __FILE__, \
+	duk_api_global_line = __LINE__, \
+	duk_push_error_object_stash  /* arguments follow */
+#endif
+
 void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic);
 void *duk_push_fixed_buffer(duk_context *ctx, size_t size);
 void *duk_push_dynamic_buffer(duk_context *ctx, size_t size);

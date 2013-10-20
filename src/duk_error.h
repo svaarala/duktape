@@ -68,12 +68,12 @@
 #define  DUK_ERROR  \
 	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
 	duk_err_line_stash = (int) DUK_LINE_MACRO, \
-	(void) duk_err_handle_error_stash
+	(void) duk_err_handle_error_stash  /* arguments follow */
 #define  DUK_ERROR_RAW                             duk_err_handle_error
 #define  DUK_PANIC  \
 	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
 	duk_err_line_stash = (int) DUK_LINE_MACRO, \
-	(void) duk_err_handle_panic_stash
+	(void) duk_err_handle_panic_stash  /* arguments follow */
 #define  DUK_PANIC_RAW                             duk_err_handle_panic
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
@@ -241,7 +241,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code);
 void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc);
 
 #ifdef DUK_USE_AUGMENT_ERRORS
-void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err_index);
+void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err_index, const char *filename, int line);
 #endif
 
 void duk_err_longjmp(duk_hthread *thr);

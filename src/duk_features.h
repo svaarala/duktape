@@ -11,6 +11,13 @@
  *  system headers to work correctly).  This file is responsible for including
  *  all system headers and contains all platform dependent cruft in general.
  *
+ *  The public duktape.h has minimal feature detection required by the public
+ *  API (for instance use of variadic macros is detected there).  Duktape.h
+ *  exposes its detection results as DUK_API_xxx.  The public header and the
+ *  implementation must agree on e.g. names and argument lists of exposed
+ *  calls; these are checked by duk_features_sanity.h (duktape.h is not yet
+ *  included when this file is included).
+ *
  *  The general order of handling:
  *    - Compiler feature detection (require no includes)
  *    - Intermediate platform detection (-> easier platform defines)
@@ -805,34 +812,6 @@ extern double duk_computed_nan;
  * #include "duk_custom.h"
  * #endif
  */
-
-/*
- *  Sanity checks on defines
- */
-
-#if defined(DUK_DDEBUG) && !defined(DUK_DEBUG)
-#error DUK_DEBUG and DUK_DDEBUG should not be defined (obsolete)
-#endif
-
-#if defined(DUK_USE_DDEBUG) && !defined(DUK_USE_DEBUG)
-#error DUK_USE_DDEBUG defined without DUK_USE_DEBUG
-#endif
-
-#if defined(DUK_USE_DDDEBUG) && !defined(DUK_USE_DEBUG)
-#error DUK_USE_DDDEBUG defined without DUK_USE_DEBUG
-#endif
-
-#if defined(DUK_USE_DDDEBUG) && !defined(DUK_USE_DDEBUG)
-#error DUK_USE_DDDEBUG defined without DUK_USE_DDEBUG
-#endif
-
-#if defined(DUK_USE_REFERENCE_COUNTING) && !defined(DUK_USE_DOUBLE_LINKED_HEAP)
-#error DUK_USE_REFERENCE_COUNTING defined without DUK_USE_DOUBLE_LINKED_HEAP
-#endif
-
-#if defined(DUK_USE_GC_TORTURE) && !defined(DUK_USE_MARK_AND_SWEEP)
-#error DUK_USE_GC_TORTURE defined without DUK_USE_MARK_AND_SWEEP
-#endif
 
 #endif  /* DUK_FEATURES_H_INCLUDED */
 

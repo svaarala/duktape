@@ -98,6 +98,7 @@ for i in	\
 	duk_error_misc.c	\
 	duk_error_throw.c	\
 	duk_features.h		\
+	duk_features_sanity.h	\
 	duk_forwdecl.h		\
 	duk_hbuffer_alloc.c	\
 	duk_hbuffer.h		\

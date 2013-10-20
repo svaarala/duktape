@@ -137,10 +137,11 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 	} else {
 		/* Error object is augmented at its creation here. */
 		duk_require_stack(ctx, 1);
+		/* FIXME: unnecessary '%s' formatting here */
 #ifdef DUK_USE_VERBOSE_ERRORS
-		duk_push_error_object(ctx, code, msg);
+		duk_push_error_object_raw(ctx, code, filename, line, "%s", msg);
 #else
-		duk_push_error_object(ctx, code, NULL);
+		duk_push_error_object_raw(ctx, code, NULL, 0, NULL);
 #endif
 	}
 
@@ -177,6 +178,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
  */
 
 void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
+	duk_context *ctx = (duk_context *) thr;
 	const char *msg;
 	int code;
 
@@ -209,8 +211,13 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 
 	DUK_UNREF(msg);
 
-	DUK_ERROR(thr, code, "%s (rc %d)", msg, rc);
+	/*
+	 *  The __FILE__ and __LINE__ information is intentionally not used in the
+	 *  creation of the error object, as it isn't useful in the tracedata.  The
+	 *  tracedata still contains the function which returned the negative return
+	 *  code, and having the file/line of this function isn't very useful.
+	 */
+
+	duk_error_raw(ctx, code, NULL, 0, "%s (rc %d)", msg, rc);
 	DUK_NEVER_HERE();
 }
-
-

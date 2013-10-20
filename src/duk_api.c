@@ -10,6 +10,15 @@
 #include "duk_internal.h"
 
 /*
+ *  Global state for working around missing variadic macros
+ */
+
+#ifndef DUK_USE_VARIADIC_MACROS
+const char *duk_api_global_filename = NULL;
+int duk_api_global_line = 0;
+#endif
+
+/*
  *  Helpers
  */
 
@@ -2798,17 +2807,14 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	return 0;  /* not reached */
 }
 
-int duk_push_error_object(duk_context *ctx, int err_code, const char *fmt, ...) {
+static int duk_push_error_object_vsprintf(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
-	va_list ap;
 	duk_hobject *errobj;
 	duk_hobject *proto;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
-
-	va_start(ap, fmt);
 
 	retval = duk_push_object_helper(ctx,
 	                                DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -2831,19 +2837,45 @@ int duk_push_error_object(duk_context *ctx, int err_code, const char *fmt, ...) 
 	duk_push_int(ctx, err_code);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
 
-	va_end(ap);
-
 	/* Note: errors should be augmented when they are created, not when
 	 * they are thrown or rethrown.  The caller should augment the newly
 	 * pushed error if it is relevant.
 	 */
 
 #ifdef DUK_USE_AUGMENT_ERRORS
-	duk_err_augment_error(thr, thr, -1);  /* may throw an error */
+	/* filename may be NULL in which case file/line is not recorded */
+	duk_err_augment_error(thr, thr, -1, filename, line);  /* may throw an error */
 #endif
 
 	return retval;
+
 }
+
+int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {
+	va_list ap;
+	int ret;
+
+	va_start(ap, fmt);
+	ret = duk_push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	va_end(ap);
+	return ret;
+}
+
+#ifndef DUK_USE_VARIADIC_MACROS
+int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt, ...) {
+	const char *filename = duk_api_global_filename;
+	int line = duk_api_global_line;
+	va_list ap;
+	int ret;
+
+	duk_api_global_filename = NULL;
+	duk_api_global_line = 0;
+	va_start(ap, fmt);
+	ret = duk_push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	va_end(ap);
+	return ret;
+}
+#endif
 
 /* FIXME: repetition, see duk_push_object */
 void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic) {
@@ -3044,16 +3076,29 @@ void duk_fatal(duk_context *ctx, int err_code) {
 	DUK_NEVER_HERE();
 }
 
-void duk_error(duk_context *ctx, int err_code, const char *fmt, ...) {
-	/* FIXME: push_error_object_vsprintf? */
+void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {
 	va_list ap;
-
 	va_start(ap, fmt);
-	duk_push_vsprintf(ctx, fmt, ap);
+	duk_push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
-	duk_push_error_object(ctx, err_code, "%s", duk_get_string(ctx, -1));
 	duk_throw(ctx);
 }
+
+#ifndef DUK_USE_VARIADIC_MACROS
+void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...) {
+	const char *filename = duk_api_global_filename;
+	int line = duk_api_global_line;
+	va_list ap;
+
+	duk_api_global_filename = NULL;
+	duk_api_global_line = 0;
+
+	va_start(ap, fmt);
+	duk_push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	va_end(ap);
+	duk_throw(ctx);
+}
+#endif
 
 int duk_equals(duk_context *ctx, int index1, int index2) {
 	duk_hthread *thr = (duk_hthread *) ctx;

@@ -2,7 +2,6 @@
  *  Error macro wrapper implementations.
  */
 
-#include <stdarg.h>
 #include "duk_internal.h"
 
 #ifdef DUK_USE_VERBOSE_ERRORS
@@ -34,7 +33,7 @@ void duk_err_handle_panic(const char *filename, int line, int code, const char *
 }
 #else  /* DUK_USE_VARIADIC_MACROS */
 const char *duk_err_file_stash = NULL;
-int duk_err_line_stash = -1;
+int duk_err_line_stash = 0;
 
 static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
 	char msg[BUFSIZE];
