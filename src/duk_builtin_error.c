@@ -4,15 +4,16 @@
 
 #include "duk_internal.h"
 
-int duk_builtin_error_constructor(duk_context *ctx) {
+static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 	/* Behavior for constructor and non-constructor call is
 	 * exactly the same.
 	 */
 
-	duk_push_object_helper(ctx,
-	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
-	                       DUK_BIDX_ERROR_PROTOTYPE);
+	/* same for both error and each subclass like TypeError */
+	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                      DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
+	
+	duk_push_object_helper(ctx, flags_and_class, bidx_prototype);
 
 	if (!duk_is_undefined(ctx, 0)) {
 		duk_to_string(ctx, 0);
@@ -23,28 +24,32 @@ int duk_builtin_error_constructor(duk_context *ctx) {
 	return 1;
 }
 
+int duk_builtin_error_constructor(duk_context *ctx) {
+	return duk_error_constructor_helper(ctx, DUK_BIDX_ERROR_PROTOTYPE);
+}
+
 int duk_builtin_eval_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_EVAL_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_range_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_RANGE_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_reference_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_REFERENCE_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_syntax_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_SYNTAX_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_type_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_TYPE_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_uri_error_constructor(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return duk_error_constructor_helper(ctx, DUK_BIDX_URI_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_error_prototype_to_string(duk_context *ctx) {
