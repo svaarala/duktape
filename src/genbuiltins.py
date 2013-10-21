@@ -770,12 +770,13 @@ bi_error_prototype = {
 
 		# Custom properties
 
-		{ 'name': 'stack',			'value': '' },
 		# FIXME: custom properties
-
+		# FIXME: stack getter/setter
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_error_prototype_to_string',		'length': 0 },
+		# FIXME: placeholder
+		{ 'name': 'stack',			'native': 'duk_builtin_error_prototype_stack',			'length': 0 },
 	],
 }
 

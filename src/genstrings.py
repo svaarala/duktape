@@ -451,6 +451,7 @@ standard_other_string_list = [
 	mkstr("", class_name=True),	# used as a class name for unused/invalid class
 	mkstr(","),			# for array joining
 	mkstr(" "),			# for print()
+	mkstr("\n\t"),			# for tracebacks
 	mkstr("Invalid Date"),		# for invalid Date instances
 	# arguments object (E5 Section 10.6)
 	mkstr("arguments"),
@@ -710,6 +711,7 @@ special_define_names = {
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
 	' ': 'SPACE',
+	'\n\t': 'NEWLINE_TAB',
 
 	'{"_undefined":true}': 'JSON_EXT_UNDEFINED',
 	'{"_nan":true}': 'JSON_EXT_NAN',
