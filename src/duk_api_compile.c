@@ -7,10 +7,10 @@
 /* FIXME: placeholder */
 
 /* Eval is just a wrapper now. */
-void duk_eval(duk_context *ctx) {
+void duk_eval_raw(duk_context *ctx) {
 	int comp_flags;
 
-	/* [ ... source ] */
+	/* [ ... source filename ] */
 
 	comp_flags = DUK_COMPILE_EVAL;
 	if (duk_is_strict_call(ctx)) {
@@ -30,7 +30,7 @@ void duk_compile(duk_context *ctx, int flags) {
 	int comp_flags;
 	duk_hcompiledfunction *h_templ;
 
-	/* [ ... source ] */
+	/* [ ... source filename ] */
 
 	/* FIXME: flags */
 	/* FIXME: unnecessary translation of flags */

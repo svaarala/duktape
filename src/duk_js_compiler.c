@@ -6237,7 +6237,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
  *  Compilation context can be either global code or eval code (see E5
  *  Sections 14 and 15.1.2.1).
  *
- *  Input stack:  [ ... sourcecode ]
+ *  Input stack:  [ ... sourcecode filename ]
  *  Output stack: [ ... func_template ]
  */
 
@@ -6246,6 +6246,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 void duk_js_compile(duk_hthread *thr, int flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_sourcecode;
+	duk_hstring *h_filename;
 	duk_compiler_ctx comp_ctx_alloc;
 	duk_compiler_ctx *comp_ctx = &comp_ctx_alloc;
 	duk_lexer_point lex_pt_alloc;
@@ -6267,8 +6268,9 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	 */
 
 	entry_top = duk_get_top(ctx);
-	h_sourcecode = duk_require_hstring(ctx, -1);
-	DUK_ASSERT(entry_top >= 1);
+	h_sourcecode = duk_require_hstring(ctx, -2);
+	h_filename = duk_get_hstring(ctx, -1);  /* may be undefined */
+	DUK_ASSERT(entry_top >= 2);
 
 	/*
 	 *  Init compiler and lexer contexts
@@ -6292,8 +6294,8 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	duk_push_undefined(ctx);               /* entry_top + 3 */
 	duk_push_undefined(ctx);               /* entry_top + 4 */
 
-	/* FIXME: h_filename */
 	comp_ctx->thr = thr;
+	comp_ctx->h_filename = h_filename;
 	comp_ctx->tok11_idx = entry_top + 1;
 	comp_ctx->tok12_idx = entry_top + 2;
 	comp_ctx->tok21_idx = entry_top + 3;
@@ -6372,14 +6374,14 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	 *  Mangle stack for result
 	 */
 
-	/* [ ... sourcecode (temps) func ] */
+	/* [ ... sourcecode filename (temps) func ] */
 
-	DUK_ASSERT(entry_top - 1 >= 0);
-	duk_replace(ctx, entry_top - 1);  /* replace sourcecode with func */
-	duk_set_top(ctx, entry_top);
+	DUK_ASSERT(entry_top - 2 >= 0);
+	duk_replace(ctx, entry_top - 2);  /* replace sourcecode with func */
+	duk_set_top(ctx, entry_top - 1);
 
 	/* [ ... func ] */
 
-	DUK_ASSERT_TOP(ctx, entry_top);
+	DUK_ASSERT_TOP(ctx, entry_top - 1);
 }
 

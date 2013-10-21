@@ -532,6 +532,9 @@ duk_string_list = [
 	mkstr("target", internal=True, custom=True),	# target object
 	mkstr("this", internal=True, custom=True),	# implicit this binding value
 
+	# fake filename for compiled functions
+	mkstr("compile", custom=True),
+
 	# __duk__ object
 	mkstr("__duk__", custom=True),
 	mkstr("version", custom=True),

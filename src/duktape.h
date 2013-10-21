@@ -500,30 +500,40 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-void duk_eval(duk_context *ctx);
+void duk_eval_raw(duk_context *ctx);
 void duk_compile(duk_context *ctx, int flags);
 
-#define  duk_eval_string(ctx,str)  \
+#define  duk_eval(ctx)  \
 	do { \
-		(void) duk_push_string((ctx),(str)); \
-		duk_eval((ctx)); \
+		(void) duk_push_string((ctx),__FILE__); \
+		duk_eval_raw((ctx)); \
 	} while (0)
 
-#define  duk_compile_string(ctx,flags,str)  \
+#define  duk_eval_string(ctx,src)  \
 	do { \
-		(void) duk_push_string((ctx),(str)); \
+		(void) duk_push_string((ctx),(src)); \
+		(void) duk_push_string((ctx),__FILE__); \
+		duk_eval_raw((ctx)); \
+	} while (0)
+
+#define  duk_compile_string(ctx,flags,src)  \
+	do { \
+		(void) duk_push_string((ctx),(src)); \
+		(void) duk_push_string((ctx),__FILE__); \
 		duk_compile((ctx), (flags)); \
 	} while (0)
 
 #define  duk_eval_file(ctx,path)  \
 	do { \
 		(void) duk_push_string_file((ctx),(path)); \
+		(void) duk_push_string((ctx),(path)); \
 		duk_eval((ctx)); \
 	} while (0)
 
-#define  duk_compile_file(ctx,flags,str)  \
+#define  duk_compile_file(ctx,flags,path)  \
 	do { \
 		(void) duk_push_string_file((ctx),(path)); \
+		(void) duk_push_string((ctx),(path)); \
 		duk_compile((ctx), (flags)); \
 	} while (0)
 
