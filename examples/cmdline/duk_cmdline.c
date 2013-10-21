@@ -80,6 +80,31 @@ static void set_sigint_handler(void) {
 }
 #endif  /* NO_SIGNAL */
 
+/* Print error to stderr and pop error. */
+static void print_error(duk_context *ctx, FILE *f) {
+	if (duk_is_object(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
+		/* FIXME: print error objects specially */
+		/* FIXME: uses stack() function; rework when changed to accessor */
+		/* FIXME: pcall the string coercion */
+		duk_get_prop_string(ctx, -1, "stack");
+		if (duk_is_callable(ctx, -1)) {
+			duk_dup(ctx, -2);
+			duk_call_method(ctx, 0);  /* [ err stack err ] -> [ err res ] */
+			duk_to_string(ctx, -1);
+			fprintf(f, "%s\n", duk_get_string(ctx, -1));
+			fflush(f);
+			duk_pop_2(ctx);
+			return;
+		} else {
+			duk_pop(ctx);
+		}
+	}
+	duk_to_string(ctx, -1);
+	fprintf(f, "%s\n", duk_get_string(ctx, -1));
+	fflush(f);
+	duk_pop(ctx);
+}
+
 int wrapped_compile_execute(duk_context *ctx) {
 	int comp_flags;
 
@@ -113,13 +138,15 @@ int wrapped_compile_execute(duk_context *ctx) {
 		/* In interactive mode, write to stdout so output won't interleave as easily. */
 		fprintf(stdout, "= %s\n", duk_get_string(ctx, -1));
 		fflush(stdout);
+	} else {
+		/* In non-interactive mode, success results are not written at all. */
 	}
 
         duk_pop(ctx);
 	return 0;
 }
 
-int handle_fh(duk_context *ctx, FILE *f) {
+int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	char *buf = NULL;
 	int len;
 	int got;
@@ -141,23 +168,21 @@ int handle_fh(duk_context *ctx, FILE *f) {
 	got = fread((void *) buf, (size_t) 1, (size_t) len, f);
 
 	duk_push_lstring(ctx, buf, got);
+	duk_push_string(ctx, filename);
 
 	free(buf);
 	buf = NULL;
 
 	interactive_mode = 0;  /* global */
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 1 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
 	if (rc != DUK_EXEC_SUCCESS) {
-		duk_to_string(ctx, -1);
-		fprintf(stderr, "Error: %s (rc=%d)\n", duk_get_string(ctx, -1), rc);
-		fflush(stderr);
-		duk_pop(ctx);
+		print_error(ctx, stderr);
 		goto error;
+	} else {
+		duk_pop(ctx);
+		retval = 0;
 	}
-
-	duk_pop(ctx);
-	retval = 0;
 	/* fall thru */
 
  error:
@@ -178,7 +203,7 @@ int handle_file(duk_context *ctx, const char *filename) {
 		goto error;
 	}
 
-	retval = handle_fh(ctx, f);
+	retval = handle_fh(ctx, f, filename);
 
 	fclose(f);
 	return retval;
@@ -190,7 +215,7 @@ int handle_file(duk_context *ctx, const char *filename) {
 int handle_stdin(duk_context *ctx) {
 	int retval;
 
-	retval = handle_fh(ctx, stdin);
+	retval = handle_fh(ctx, stdin, "stdin");
 
 	return retval;
 }
@@ -238,20 +263,18 @@ int handle_interactive(duk_context *ctx) {
 		}
 
 		duk_push_lstring(ctx, buffer, idx);
+		duk_push_string(ctx, "input");
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 1 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
 		if (rc != DUK_EXEC_SUCCESS) {
-			duk_to_string(ctx, -1);
-
 			/* in interactive mode, write to stdout */
-			fprintf(stdout, "Error: %s (rc=%d) [ignored]\n", duk_get_string(ctx, -1), rc);
-			fflush(stdout);
+			print_error(ctx, stdout);
 			retval = -1;  /* an error 'taints' the execution */
+		} else {
+			duk_pop(ctx);
 		}
-
-		duk_pop(ctx);
 	}
 
  done:
@@ -296,6 +319,7 @@ int handle_interactive(duk_context *ctx) {
 		}
 
 		duk_push_lstring(ctx, buffer, strlen(buffer));
+		duk_push_string(ctx, "input");
 
 		if (buffer) {
 			free(buffer);
@@ -304,17 +328,14 @@ int handle_interactive(duk_context *ctx) {
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 1 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
 		if (rc != DUK_EXEC_SUCCESS) {
-			duk_to_string(ctx, -1);
-
 			/* in interactive mode, write to stdout */
-			fprintf(stdout, "Error: %s (rc=%d) [ignored]\n", duk_get_string(ctx, -1), rc);
-			fflush(stdout);
+			print_error(ctx, stdout);
 			retval = -1;  /* an error 'taints' the execution */
+		} else {
+			duk_pop(ctx);
 		}
-
-		duk_pop(ctx);
 	}
 
 	if (buffer) {
