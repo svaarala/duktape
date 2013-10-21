@@ -1964,6 +1964,10 @@ int duk_get_type(duk_context *ctx, int index) {
 	DUK_NEVER_HERE();
 }
 
+int duk_check_type(duk_context *ctx, int index, int type) {
+	return (duk_get_type(ctx, index) == type) ? 1 : 0;
+}
+
 int duk_get_type_mask(duk_context *ctx, int index) {
 	duk_tval *tv;
 
