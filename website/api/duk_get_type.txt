@@ -18,6 +18,7 @@ if (duk_get_type(ctx, -3) == DUK_TYPE_NUMBER) {
 stack
 
 =seealso
+duk_check_type
 duk_get_type_mask
 duk_check_type_mask
 
