@@ -7,14 +7,17 @@ void duk_eval(duk_context *ctx);
 =summary
 <p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
 return value on top of the stack.  May throw an error, errors are not caught
-automatically.</p>
+automatically.  The filename associated with the temporary eval function is
+automatically provided from the <tt>__FILE__</tt> preprocessor define
+of the caller.</p>
 
-<p>This is simply a shortcut for:</p>
+<p>This is essentially a shortcut for:</p>
 <pre class="c-code">
 int flags = DUK_COMPILE_EVAL;
 if (duk_is_strict_call(ctx)) {
     flags |= DUK_COMPILE_STRICT;
 }
+duk_push_string(ctx, __FILE__);
 duk_compile(ctx, flags);
 duk_call(ctx, 0);
 </pre>

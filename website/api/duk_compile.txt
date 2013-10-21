@@ -2,12 +2,14 @@
 void duk_compile(duk_context *ctx, int flags);
 
 =stack
-[ ... source! ] -> [ ... function! ]
+[ ... source! filename! ] -> [ ... function! ]
 
 =summary
 <p>Compile Ecmascript source code and replace it with a compiled function
-object (the code is not executed).  May throw a <tt>SyntaxError</tt> for any
-compile-time errors (in addition to the usual internal errors like out-of-memory,
+object (the code is not executed).  The <tt>filename</tt> argument is stored
+as the <tt>fileName</tt> property of the resulting function, and is the name
+used in e.g. tracebacks to identify the function.  May throw a <tt>SyntaxError</tt>
+for any compile-time errors (in addition to the usual internal errors like out-of-memory,
 internal limit errors, etc).</p>
 
 <p>The following flags may be given:</p>
@@ -109,14 +111,16 @@ DUK_COMPILE_FUNCTION is currently unimplemented.
 duk_push_string(ctx, "print('program');\n"
                      "function hello() { print('Hello world!'); }\n"
                      "123;");
+duk_push_string(ctx, "hello");
 duk_compile(ctx, 0);
-duk_call(ctx, 0);      /* [ func ] -> [ result ] */
+duk_call(ctx, 0);      /* [ func filename ] -> [ result ] */
 printf("program result: %lf\n", duk_get_number(ctx, -1));
 duk_pop(ctx);
 
 /* Eval code */
 
 duk_push_string(ctx, "2+3");
+duk_push_string(ctx, "eval");
 duk_compile(ctx, DUK_COMPILE_EVAL);
 duk_call(ctx, 0);      /* [ func ] -> [ result ] */
 printf("eval result: %lf\n", duk_get_number(ctx, -1));
@@ -125,6 +129,7 @@ duk_pop(ctx);
 /* Function code */
 
 duk_push_string(ctx, "function (x,y) { return x+y; }");
+duk_push_string(ctx, "function");
 duk_compile(ctx, DUK_COMPILE_FUNCTION);
 duk_push_int(ctx, 5);
 duk_push_int(ctx, 6);

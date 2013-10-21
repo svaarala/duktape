@@ -1,5 +1,5 @@
 =proto
-void duk_compile_string(duk_context *ctx, int flags, const char *str);
+void duk_compile_string(duk_context *ctx, int flags, const char *src);
 
 =stack
 [ ... ] -> [ ... function! ]
@@ -7,7 +7,9 @@ void duk_compile_string(duk_context *ctx, int flags, const char *str);
 =summary
 <p>Like
 <tt><a href="#duk_compile">duk_compile()</a></tt>, but the compile input
-is given as a C string.</p>
+is given as a C string.  The filename associated with the function is
+automatically provided from the <tt>__FILE__</tt> preprocessor define
+of the caller.</p>
 
 =example
 duk_compile_string(ctx, 0, "print('program code');");
