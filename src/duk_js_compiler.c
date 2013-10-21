@@ -837,14 +837,14 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 */
 	}
 
-	/* _filename */
+	/* fileName */
 	if (comp_ctx->h_filename) {
 		/*
 		 *  Source filename (or equivalent), for identifying thrown errors.
 		 */
 
 		duk_push_hstring(ctx, comp_ctx->h_filename);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_FILENAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/*

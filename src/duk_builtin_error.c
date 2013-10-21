@@ -153,7 +153,7 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 				pc = (int) fmod(d, DUK_DOUBLE_2TO32);
 				flags = (int) floor(d / DUK_DOUBLE_2TO32);
 				duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
-				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_INT_FILENAME);
+				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
 
 				duk_get_prop_stridx(ctx, -4, DUK_STRIDX_INT_PC2LINE);
 				if (duk_is_buffer(ctx, -1)) {

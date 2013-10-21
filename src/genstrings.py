@@ -483,7 +483,8 @@ duk_string_list = [
 	mkstr("tracedata", custom=True),
 
 	# non-standard function instance properties
-	mkstr("name", custom=True),	# function declaration/expression name (or empty)
+	mkstr("name", custom=True), 	# function declaration/expression name (or empty)
+	mkstr("fileName", custom=True), # filename associated with function (shown in tracebacks)
 
 	# typeof - these produce unfortunate naming conflicts like "Object" vs "object"
 	mkstr("buffer", custom=True),
@@ -506,7 +507,6 @@ duk_string_list = [
 	mkstr("varenv", internal=True, custom=True),
 	mkstr("source", internal=True, custom=True),
 	mkstr("pc2line", internal=True, custom=True),
-	mkstr("filename", internal=True, custom=True),
 
 	# internal properties for thread objects
 

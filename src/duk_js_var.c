@@ -113,10 +113,10 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_hcompiledfunction *fun_clos;
 	duk_u16 proplist[] = { DUK_STRIDX_INT_VARMAP,
 	                       DUK_STRIDX_INT_FORMALS,
-	                       DUK_STRIDX_INT_SOURCE,
 	                       DUK_STRIDX_NAME,
 	                       DUK_STRIDX_INT_PC2LINE,
-	                       DUK_STRIDX_INT_FILENAME };  /* order: most frequent to least frequent */
+	                       DUK_STRIDX_FILE_NAME,
+	                       DUK_STRIDX_INT_SOURCE };  /* order: most frequent to least frequent */
 	int i;
 	duk_u32 len_value;
 
