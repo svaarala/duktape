@@ -38,12 +38,12 @@
 #define  MAX_TEMPS        (DUK_BC_BC_MAX + 1)
 
 #define  RECURSION_INCREASE(comp_ctx,thr)  do { \
-		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", __FILE__, __LINE__); \
+		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		recursion_increase((comp_ctx)); \
 	} while(0)
 
 #define  RECURSION_DECREASE(comp_ctx,thr)  do { \
-		DUK_DDDPRINT("RECURSION DECREASE: %s:%d", __FILE__, __LINE__); \
+		DUK_DDDPRINT("RECURSION DECREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		recursion_decrease((comp_ctx)); \
 	} while(0)
 
@@ -778,7 +778,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	}
 
-	/* _name */
+	/* name */
 	if (func->h_name) {
 		duk_push_hstring(ctx, func->h_name);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
@@ -1235,7 +1235,7 @@ static void copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue 
 static int is_whole_get_i32(double x, duk_i32 *ival) {
 	duk_i32 t;
 
-	if (fpclassify(x) != FP_NORMAL) {
+	if (DUK_FPCLASSIFY(x) != DUK_FP_NORMAL) {
 		return 0;
 	}
 
@@ -5505,6 +5505,12 @@ static void parse_statements(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
  *  to be tracked for detecting duplicates.  Currently such identifiers
  *  are put into the varmap with a 'null' value, which is later cleaned up.
  *
+ *  To support functions with a large number of variable and function
+ *  declarations, registers are not allocated beyond a certain limit;
+ *  after that limit, variables and functions need slow path access.
+ *  Arguments are currently always register bound, which imposes a hard
+ *  (and relatively small) argument count limit.
+ *
  *  Some bindings in E5 are not configurable (= deletable) and almost all
  *  are mutable (writable).  Exceptions are:
  * 
@@ -5549,10 +5555,13 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 
 	/*
 	 *  Function formal arguments, always bound to registers
+	 *  (there's no support for shuffling them now).
 	 */
 
 	num_args = duk_get_length(ctx, comp_ctx->curr_func.argnames_idx);
 	DUK_DDDPRINT("num_args=%d", num_args);
+	/* FIXME: check num_args */
+
 	for (i = 0; i < num_args; i++) {
 		duk_get_prop_index(ctx, comp_ctx->curr_func.argnames_idx, i);
 		h_name = duk_get_hstring(ctx, -1);
@@ -5624,6 +5633,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 
 		duk_get_prop_index(ctx, comp_ctx->curr_func.decls_idx, i);  /* decl name */
 
+		/* FIXME: spilling */
 		if (comp_ctx->curr_func.is_function) {
 			int reg_bind;
 			duk_dup_top(ctx);
@@ -5725,6 +5735,7 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 				continue;
 			}
 
+			/* FIXME: spilling */
 			if (comp_ctx->curr_func.is_function) {
 				int reg_bind = ALLOCTEMP(comp_ctx);
 				/* no need to init reg, it will be undefined on entry */
