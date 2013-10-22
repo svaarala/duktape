@@ -276,47 +276,15 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int s
 }
 
 /* This is a rare property helper; it sets the global thrower (E5 Section 13.2.3)
- * setter/getter into an object property.  Since there are so few places where
- * accessor properties are created (by the implementation), there are almost no
- * other API calls for creating such properties (except calling Object.defineProperty()
- * properly).
- *
- * This is needed by the 'arguments' object creation code and by function instance
- * creation code.
+ * setter/getter into an object property.  This is needed by the 'arguments'
+ * object creation code and by function instance creation code.
  */
 
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *obj;
-	duk_hobject *thrower;
-	int e_idx;
-	int h_idx;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
-
-	/*
-	 *  Since we don't have an internal define function for creating
-	 *  accessor values, first set the value to 'undefined', then get
-	 *  the storage slot and update in-place to an accessor.
-	 */
-
-	obj_index = duk_require_normalize_index(ctx, obj_index);
-
-	duk_push_undefined(ctx);
-	duk_def_prop_stridx(ctx, obj_index, stridx, desc_flags);
-
-	obj = duk_require_hobject(ctx, obj_index);
-	duk_hobject_find_existing_entry(obj, DUK_HTHREAD_GET_STRING(thr, stridx), &e_idx, &h_idx);
-	DUK_ASSERT(e_idx >= 0 && e_idx < obj->e_used);
-
-	/* no need to decref, as previous value is 'undefined' */
-	thrower = thr->builtins[DUK_BIDX_TYPE_ERROR_THROWER];
-	DUK_HOBJECT_E_SLOT_SET_ACCESSOR(obj, e_idx);
-	DUK_HOBJECT_E_SET_VALUE_GETTER(obj, e_idx, thrower);
-	DUK_HOBJECT_E_SET_VALUE_SETTER(obj, e_idx, thrower);
-	DUK_HOBJECT_INCREF(thr, thrower);
-	DUK_HOBJECT_INCREF(thr, thrower);  /* XXX: macro to increment a count directly */
+	duk_hobject *obj = duk_require_hobject(ctx, obj_index);
+	duk_hobject *thrower = thr->builtins[DUK_BIDX_TYPE_ERROR_THROWER];
+	duk_hobject_define_accessor_internal(thr, obj, DUK_HTHREAD_GET_STRING(thr, stridx), thrower, thrower, desc_flags);
 }
 
 /*

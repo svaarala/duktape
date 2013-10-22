@@ -3241,6 +3241,46 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 }
 
 /*
+ *  Internal helper for defining an accessor property, ignoring
+ *  normal semantics such as extensibility, write protection etc.
+ *  Overwrites any existing value and attributes.  This is called
+ *  very rarely, so the implementation first sets a value to undefined
+ *  and then changes the entry to an accessor (this is to save code space).
+ */
+
+void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, int propflags) {
+	duk_context *ctx = (duk_context *) thr;
+	int e_idx;
+	int h_idx;
+
+	DUK_DDDPRINT("define new accessor (internal): thr=%p, obj=%!O, key=%!O, getter=%!O, setter=%!O, flags=0x%02x",
+	             (void *) thr, obj, key, getter, setter, propflags);
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT((propflags & ~DUK_PROPDESC_FLAGS_MASK) == 0);
+	/* setter and/or getter may be NULL */
+
+	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+
+	/* force the property to 'undefined' to create a slot for it */
+	duk_push_undefined(ctx);
+	duk_hobject_define_property_internal(thr, obj, key, propflags);
+	duk_hobject_find_existing_entry(obj, key, &e_idx, &h_idx);
+	DUK_DDDPRINT("accessor slot: e_idx=%d, h_idx=%d", e_idx, h_idx);
+	DUK_ASSERT(e_idx >= 0 && e_idx < obj->e_used);
+
+	/* no need to decref, as previous value is 'undefined' */
+	DUK_HOBJECT_E_SLOT_SET_ACCESSOR(obj, e_idx);
+	DUK_HOBJECT_E_SET_VALUE_GETTER(obj, e_idx, getter);
+	DUK_HOBJECT_E_SET_VALUE_SETTER(obj, e_idx, setter);
+	DUK_HOBJECT_INCREF(thr, getter);
+	DUK_HOBJECT_INCREF(thr, setter);
+}
+
+/*
  *  Internal helpers for managing object 'length'
  */
 

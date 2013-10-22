@@ -482,6 +482,7 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
 int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, int throw_flag);
 int duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, int propflags);
+void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, int propflags);
 void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_u32 length);
 void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
 duk_u32 duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
