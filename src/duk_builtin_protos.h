@@ -101,7 +101,8 @@ int duk_builtin_duk_object_sleep(duk_context *ctx);
 
 int duk_builtin_error_constructor(duk_context *ctx);
 int duk_builtin_error_prototype_to_string(duk_context *ctx);
-int duk_builtin_error_prototype_stack(duk_context *ctx);  /* FIXME: placeholder */
+int duk_builtin_error_prototype_stack_getter(duk_context *ctx);
+int duk_builtin_error_prototype_stack_setter(duk_context *ctx);
 int duk_builtin_eval_error_constructor(duk_context *ctx);
 int duk_builtin_range_error_constructor(duk_context *ctx);
 int duk_builtin_reference_error_constructor(duk_context *ctx);

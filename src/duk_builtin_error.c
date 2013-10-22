@@ -109,7 +109,7 @@ int duk_builtin_error_prototype_to_string(duk_context *ctx) {
  * for prototyping traceback formatting.  The resulting code is
  * also way too large, so needs rework.
  */
-int duk_builtin_error_prototype_stack(duk_context *ctx) {
+int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int idx_td;
 	int i;
@@ -117,6 +117,8 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 	const char *str_strict = " strict";
 	const char *str_construct = " construct";
 	const char *str_empty = "";
+
+	DUK_ASSERT_TOP(ctx, 0);  /* fixed arg count */
 
 	duk_push_this(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TRACEDATA);
@@ -218,3 +220,25 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 	return 1;
 }
 
+int duk_builtin_error_prototype_stack_setter(duk_context *ctx) {
+	/* At the moment, a silent no-op. */
+	DUK_ASSERT_TOP(ctx, 1);  /* fixed arg count */
+#if 0
+	/* Write an own 'stack' property with the new value, which then
+	 * shadows the accessor.
+	 */
+
+	/* FIXME: This would need to define an own property skipping the normal
+	 * property protections.  The current helpers for doing raw property
+	 * setting bypass Ecmascript attribute semantics so they are not
+	 * appropriate here.  What's needed here is a helper for doing what
+	 * Object.defineProperty() does but with a nice API.  One could also
+	 * simply check that 'this' has no own 'stack 'property' and only
+	 * force the property to be defined in this case.
+	 */
+	duk_push_this(ctx);
+	duk_insert(ctx, 0);  /* -> [ this val ] */
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_STACK);
+#endif
+	return 0;
+}

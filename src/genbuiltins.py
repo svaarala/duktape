@@ -119,12 +119,13 @@ PROP_TYPE_BUILTIN = 3
 PROP_TYPE_UNDEFINED = 4
 PROP_TYPE_BOOLEAN_TRUE = 5
 PROP_TYPE_BOOLEAN_FALSE = 6
+PROP_TYPE_ACCESSOR = 7
 
 # must match duk_hobject.h
 PROPDESC_FLAG_WRITABLE =     (1 << 0)
 PROPDESC_FLAG_ENUMERABLE =   (1 << 1)
 PROPDESC_FLAG_CONFIGURABLE = (1 << 2)
-PROPDESC_FLAG_ACCESSOR =     (1 << 3)
+PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
 
 # numeric indices must match duk_hobject.h class numbers
 _classnames = [
@@ -771,12 +772,13 @@ bi_error_prototype = {
 		# Custom properties
 
 		# FIXME: custom properties
-		# FIXME: stack getter/setter
+
+		{ 'name': 'stack',
+		  'getter': 'duk_builtin_error_prototype_stack_getter',
+		  'setter': 'duk_builtin_error_prototype_stack_setter' },
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_error_prototype_to_string',		'length': 0 },
-		# FIXME: placeholder
-		{ 'name': 'stack',			'native': 'duk_builtin_error_prototype_stack',			'length': 0 },
 	],
 }
 
@@ -1235,6 +1237,14 @@ def get_native_funcs(bi):
 		native_func = bi['native']
 		native_func_hash[native_func] = -1
 
+	for valspec in bi['values']:
+		if valspec.has_key('getter'):
+			native_func = valspec['getter']
+			native_func_hash[native_func] = -1
+		if valspec.has_key('setter'):
+			native_func = valspec['setter']
+			native_func_hash[native_func] = -1
+
 	for funspec in bi['functions']:
 		if funspec.has_key('native'):
 			native_func = funspec['native']
@@ -1263,9 +1273,9 @@ def encode_property_flags(flags):
 	if 'c' in flags:
 		nflags += 1
 		res = res | PROPDESC_FLAG_CONFIGURABLE
-
-	# There are no accessor properties now, so DUK_PROPDESC_FLAG_ACCESSOR
-	# is always zero now
+	if 'a' in flags:
+		nflags += 1
+		res = res | PROPDESC_FLAG_ACCESSOR
 
 	if nflags != len(flags):
 		raise Exception('unsupported flags: %s' % repr(flags))
@@ -1314,7 +1324,7 @@ def generate_properties_data_for_builtin(opts, be, bi):
 
 		# NOTE: we rely on there being less than 256 built-in strings
 		stridx = duk_strings.real_name_to_index[valspec['name']]
-		val = valspec['value']
+		val = valspec.get('value')  # missing for accessors
 
 		be.bits(stridx, STRIDX_BITS)
 
@@ -1326,6 +1336,8 @@ def generate_properties_data_for_builtin(opts, be, bi):
 		if valspec.has_key('attributes'):
 			attrs = valspec['attributes']
 
+		# attribute check doesn't check for accessor flag; that is now
+		# automatically set by C code when value is an accessor type
 		if attrs != default_attrs:
 			#print 'non-default attributes: %s -> %r (default %r)' % (valspec['name'], attrs, default_attrs)
 			be.bits(1, 1)  # flag: have custom attributes
@@ -1388,6 +1400,12 @@ def generate_properties_data_for_builtin(opts, be, bi):
 				be.bits(builtin_indexes[val['id']], BIDX_BITS)
 			else:
 				raise Exception('unsupported value: %s' % repr(val))
+		elif val is None and valspec.has_key('getter') and valspec.has_key('setter'):
+			be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS)
+			natidx = native_func_hash[valspec['getter']]
+			be.bits(natidx, NATIDX_BITS)
+			natidx = native_func_hash[valspec['setter']]
+			be.bits(natidx, NATIDX_BITS)
 		else:
 			raise Exception('unsupported value: %s' % repr(val))
 
@@ -1465,7 +1483,7 @@ def generate_creation_data_for_builtin(opts, be, bi):
 			be.bits(0, 1)  # flag: default nargs OK
 
 	# All Function-classed global level objects are callable
-	# (have [[Call]]) but not all are consturactlr (have
+	# (have [[Call]]) but not all are constructable (have
 	# [[Construct]]).  Flag that.
 
 	if bi['class'] == 'Function':

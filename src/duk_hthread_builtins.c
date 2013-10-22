@@ -71,6 +71,10 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  Built-ins will be reachable from both valstack and thr->builtins.
 	 */
 
+	/* XXX: there is no need to resize valstack because builtin count
+	 * is much less than the default space; assert for it.
+	 */
+
 	DUK_DDPRINT("create empty built-ins");
 	DUK_ASSERT_TOP(ctx, 0);
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
@@ -326,11 +330,31 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				break;
 			}
 			case PROP_TYPE_ACCESSOR: {
-				/* FIXME: handle accessors here? need to skip the shared
-				 * define property call, and need something to actually
-				 * set the accessors (only Ecmascript code can do that now).
+				int natidx_getter = duk_bd_decode(bd, NATIDX_BITS);
+				int natidx_setter = duk_bd_decode(bd, NATIDX_BITS);
+				duk_c_function c_func_getter;
+				duk_c_function c_func_setter;
+
+				/* XXX: this is a bit awkward because there is no exposed helper
+				 * in the API style, only this internal helper.
 				 */
-				break;
+				DUK_DPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
+				           i, stridx, natidx_getter, natidx_setter, prop_flags);
+
+				c_func_getter = duk_builtin_native_functions[natidx_getter];
+				c_func_setter = duk_builtin_native_functions[natidx_setter];
+				duk_push_c_function(ctx, c_func_getter, 0);  /* always 0 args */
+				duk_push_c_function(ctx, c_func_setter, 1);  /* always 1 arg */
+
+				prop_flags |= DUK_PROPDESC_FLAG_ACCESSOR;  /* accessor flag not encoded explicitly */
+				duk_hobject_define_accessor_internal(thr,
+				                                     duk_require_hobject(ctx, i),
+				                                     DUK_HTHREAD_GET_STRING(thr, stridx),
+				                                     duk_require_hobject(ctx, -2),
+				                                     duk_require_hobject(ctx, -1),
+				                                     prop_flags);
+				duk_pop_2(ctx);  /* getter and setter, now reachable through object */
+				goto skip_value;
 			}
 			default: {
 				/* exhaustive */
@@ -338,7 +362,11 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 			}
 
+			DUK_ASSERT((prop_flags & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
 			duk_def_prop_stridx(ctx, i, stridx, prop_flags);
+
+		 skip_value:
+			continue;  /* avoid empty label at the end of a compound statement */
 		}
 
 		/* native function properties */
