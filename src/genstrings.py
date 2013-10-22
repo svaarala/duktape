@@ -452,6 +452,7 @@ standard_other_string_list = [
 	mkstr(","),			# for array joining
 	mkstr(" "),			# for print()
 	mkstr("\n\t"),			# for tracebacks
+	mkstr("[...]"),			# for tracebacks
 	mkstr("Invalid Date"),		# for invalid Date instances
 	# arguments object (E5 Section 10.6)
 	mkstr("arguments"),
@@ -716,6 +717,7 @@ special_define_names = {
 	',': 'COMMA',
 	' ': 'SPACE',
 	'\n\t': 'NEWLINE_TAB',
+	'[...]': 'BRACKETED_ELLIPSIS',
 
 	'{"_undefined":true}': 'JSON_EXT_UNDEFINED',
 	'{"_nan":true}': 'JSON_EXT_NAN',

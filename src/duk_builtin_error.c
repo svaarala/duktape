@@ -127,12 +127,13 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 
 	/* [ ... this tracedata sep ToString(this) ] */
 
-	/* FIXME: filename missing */
-	/* FIXME: native / C function */
 	/* FIXME: indicate truncated traceback */
+	/* FIXME: skip null filename? */
 
 	if (duk_check_type(ctx, idx_td, DUK_TYPE_OBJECT)) {
 		int t;
+
+		/* Current tracedata contains 2 entries per callstack entry. */
 		for (i = 0; ; i += 2) {
 			int pc;
 			int line;
@@ -190,6 +191,13 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 				duk_pop_2(ctx);
 				break;
 			}
+		}
+
+		if (i >= DUK_OPT_TRACEBACK_DEPTH * 2) {
+			/* Possibly truncated; there is no explicit truncation
+			 * marker so this is the best we can do.
+			 */
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_BRACKETED_ELLIPSIS);
 		}
 	}
 
