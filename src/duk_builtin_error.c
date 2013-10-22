@@ -110,6 +110,7 @@ int duk_builtin_error_prototype_to_string(duk_context *ctx) {
  * also way too large, so needs rework.
  */
 int duk_builtin_error_prototype_stack(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	int idx_td;
 	int i;
 	const char *str_tailcalled = " tailcalled";
@@ -139,7 +140,9 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 			int line;
 			int flags;
 			double d;
-			duk_hobject *h;
+			const char *funcname;
+			duk_hobject *h_func;
+			duk_hstring *h_name;
 			duk_hbuffer_fixed *pc2line;
 
 			duk_require_stack(ctx, 5);
@@ -148,8 +151,8 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 			d = duk_to_number(ctx, -1);
 			t = duk_get_type(ctx, -2);
 			if (t == DUK_TYPE_OBJECT) {
-				h = duk_get_hobject(ctx, -2);
-				DUK_ASSERT(h != NULL);
+				h_func = duk_get_hobject(ctx, -2);
+				DUK_ASSERT(h_func != NULL);
 
 				pc = (int) fmod(d, DUK_DOUBLE_2TO32);
 				flags = (int) floor(d / DUK_DOUBLE_2TO32);
@@ -166,16 +169,24 @@ int duk_builtin_error_prototype_stack(duk_context *ctx) {
 				}
 				duk_pop(ctx);
 
-				if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h)) {
+				/* [ ... v1 v2 name filename ] */
+
+				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
+				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
+				           "anon" : (const char *) DUK_HSTRING_GET_DATA(h_name);
+				if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
 					duk_push_sprintf(ctx, "%s %s native%s%s%s",
-					                 duk_get_string(ctx, -2), duk_get_string(ctx, -1),
+					                 funcname,
+					                 duk_get_string(ctx, -1),
 					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
 					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
 					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty);
 
 				} else {
 					duk_push_sprintf(ctx, "%s %s:%d%s%s%s",
-					                 duk_get_string(ctx, -2), duk_get_string(ctx, -1), line,
+					                 funcname,
+					                 duk_get_string(ctx, -1),
+					                 line,
 					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
 					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
 					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty);

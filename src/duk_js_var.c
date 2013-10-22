@@ -380,6 +380,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  For Rhino and smjs it is non-writable, non-enumerable, and non-configurable;
 	 *  for V8 it is writable, non-enumerable, non-configurable.  It is also defined
 	 *  for an anonymous function expression in which case the value is an empty string.
+	 *  We could also leave name 'undefined' for anonymous functions but that would
+	 *  differ from behavior of other engines, so use an empty string.
 	 *
 	 *  FIXME: make optional?  costs something per function.
 	 */
