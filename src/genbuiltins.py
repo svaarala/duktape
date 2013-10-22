@@ -771,11 +771,15 @@ bi_error_prototype = {
 
 		# Custom properties
 
-		# FIXME: custom properties
-
 		{ 'name': 'stack',
 		  'getter': 'duk_builtin_error_prototype_stack_getter',
-		  'setter': 'duk_builtin_error_prototype_stack_setter' },
+		  'setter': 'duk_builtin_error_prototype_nop_setter' },
+		{ 'name': 'fileName',
+		  'getter': 'duk_builtin_error_prototype_filename_getter',
+		  'setter': 'duk_builtin_error_prototype_nop_setter' },
+		{ 'name': 'lineNumber',
+		  'getter': 'duk_builtin_error_prototype_linenumber_getter',
+		  'setter': 'duk_builtin_error_prototype_nop_setter' },
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_error_prototype_to_string',		'length': 0 },
