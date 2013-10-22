@@ -533,7 +533,8 @@ duk_string_list = [
 	mkstr("this", internal=True, custom=True),	# implicit this binding value
 
 	# fake filename for compiled functions
-	mkstr("compile", custom=True),
+	mkstr("compile", custom=True),                  # used as a filename for functions created with Function constructor
+	mkstr("input", custom=True),                    # used as a filename for eval temp function
 
 	# __duk__ object
 	mkstr("__duk__", custom=True),

@@ -417,7 +417,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 	}
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_EVAL);  /* XXX: copy from caller? */
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_INPUT);  /* XXX: copy from caller? */
 	duk_js_compile(thr, comp_flags);
 	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
