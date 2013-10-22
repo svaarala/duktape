@@ -338,8 +338,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				/* XXX: this is a bit awkward because there is no exposed helper
 				 * in the API style, only this internal helper.
 				 */
-				DUK_DPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
-				           i, stridx, natidx_getter, natidx_setter, prop_flags);
+				DUK_DDDPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
+				             i, stridx, natidx_getter, natidx_setter, prop_flags);
 
 				c_func_getter = duk_builtin_native_functions[natidx_getter];
 				c_func_setter = duk_builtin_native_functions[natidx_setter];
