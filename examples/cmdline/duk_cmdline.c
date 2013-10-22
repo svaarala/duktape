@@ -84,13 +84,9 @@ static void set_sigint_handler(void) {
 static void print_error(duk_context *ctx, FILE *f) {
 	if (duk_is_object(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
 		/* FIXME: print error objects specially */
-		/* FIXME: uses stack() function; rework when changed to accessor */
 		/* FIXME: pcall the string coercion */
 		duk_get_prop_string(ctx, -1, "stack");
-		if (duk_is_callable(ctx, -1)) {
-			duk_dup(ctx, -2);
-			duk_call_method(ctx, 0);  /* [ err stack err ] -> [ err res ] */
-			duk_to_string(ctx, -1);
+		if (duk_is_string(ctx, -1)) {
 			fprintf(f, "%s\n", duk_get_string(ctx, -1));
 			fflush(f);
 			duk_pop_2(ctx);
