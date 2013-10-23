@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: optimize compilation of concatenation (adding) multiple arguments
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-22 08:52:53.353595 Z
+references: []
+
+id: 3c0f15ae67d0d0b4124a49d3340036780327d736
+log_events: 
+- - 2013-10-22 08:52:53.510472 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
