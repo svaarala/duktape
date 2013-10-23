@@ -105,7 +105,21 @@ int duk_builtin_error_prototype_to_string(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
-int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
+/*
+ *  Traceback handling
+ *
+ *  The unified helper decodes the traceback and produces various requested
+ *  outputs.  It should be optimized for size, and may leave garbage on stack,
+ *  only the topmost return value matters.  For instance, traceback separator
+ *  and decoded strings are pushed even when looking for filename only.
+ */
+
+/* constants arbitrary, chosen for small loads */
+#define  DUK__OUTPUT_TYPE_TRACEBACK   -1
+#define  DUK__OUTPUT_TYPE_FILENAME    0
+#define  DUK__OUTPUT_TYPE_LINENUMBER  1
+
+static int traceback_getter_helper(duk_context *ctx, int output_type) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int idx_td;
 	int i;
@@ -126,7 +140,6 @@ int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 
 	/* [ ... this tracedata sep ToString(this) ] */
 
-	/* FIXME: indicate truncated traceback */
 	/* FIXME: skip null filename? */
 
 	if (duk_check_type(ctx, idx_td, DUK_TYPE_OBJECT)) {
@@ -147,13 +160,20 @@ int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 			duk_get_prop_index(ctx, idx_td, i);
 			duk_get_prop_index(ctx, idx_td, i + 1);
 			d = duk_to_number(ctx, -1);
+			pc = (int) fmod(d, DUK_DOUBLE_2TO32);
+			flags = (int) floor(d / DUK_DOUBLE_2TO32);
 			t = duk_get_type(ctx, -2);
+
 			if (t == DUK_TYPE_OBJECT) {
+				/*
+				 *  Ecmascript/native function call
+				 */
+
+				/* [ ... v1(func) v2(pc+flags) ] */
+
 				h_func = duk_get_hobject(ctx, -2);
 				DUK_ASSERT(h_func != NULL);
 
-				pc = (int) fmod(d, DUK_DOUBLE_2TO32);
-				flags = (int) floor(d / DUK_DOUBLE_2TO32);
 				duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
 				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
 
@@ -168,6 +188,13 @@ int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 				duk_pop(ctx);
 
 				/* [ ... v1 v2 name filename ] */
+
+				if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
+					return 1;
+				} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
+					duk_push_int(ctx, line);
+					return 1;
+				}
 
 				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
@@ -192,11 +219,33 @@ int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 				duk_replace(ctx, -5);   /* [ ... v1 v2 name filename str ] -> [ ... str v2 name filename ] */
 				duk_pop_n(ctx, 3);      /* -> [ ... str ] */
 			} else if (t == DUK_TYPE_STRING) {
+				/*
+				 *  __FILE__ / __LINE__ entry, here 'pc' is line number directly.
+				 *
+				 *  FIXME: add a flag to indicate whether the __FILE__ / __LINE__
+				 *  should be returned as the error's fileName / lineNumber?  If
+				 *  __FILE__ / __LINE__ is recorded from the Duktape API return
+				 *  it as fileName / lineNumber.  If recorded from inside Duktape,
+				 *  ignore it as the fileName / lineNumber (except perhaps when it
+				 *  is the last traceback entry)?
+				 */
+
+				/* [ ... v1(filename) v2(line+flags) ] */
+
+				if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
+					duk_pop(ctx);
+					return 1;
+				} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
+					duk_push_int(ctx, pc);
+					return 1;
+				}
+
 				duk_push_sprintf(ctx, "%s:%d",
-				                      duk_get_string(ctx, -2), (int) d);
+				                      duk_get_string(ctx, -2), pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
 			} else {
+				/* unknown, ignore */
 				duk_pop_2(ctx);
 				break;
 			}
@@ -206,23 +255,40 @@ int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
 			/* Possibly truncated; there is no explicit truncation
 			 * marker so this is the best we can do.
 			 */
+
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_BRACKETED_ELLIPSIS);
 		}
 	}
 
 	/* [ ... this tracedata sep ToString(this) str1 ... strN ] */
 
-	duk_join(ctx, duk_get_top(ctx) - (idx_td + 2) /*count, not including sep*/);
-	return 1;
+	if (output_type != DUK__OUTPUT_TYPE_TRACEBACK) {
+		return 0;
+	} else {
+		duk_join(ctx, duk_get_top(ctx) - (idx_td + 2) /*count, not including sep*/);
+		return 1;
+	}
+}
+
+/* FIXME: output type could be encoded into native function 'magic' value to
+ * save space.
+ */
+
+int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
+	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
 }
 
 int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
 }
 
 int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
+
+#undef  DUK__OUTPUT_TYPE_TRACEBACK
+#undef  DUK__OUTPUT_TYPE_FILENAME
+#undef  DUK__OUTPUT_TYPE_LINENUMBER
 
 int duk_builtin_error_prototype_nop_setter(duk_context *ctx) {
 	/* Attempt to write 'stack', 'fileName', 'lineNumber' is a silent no-op.
