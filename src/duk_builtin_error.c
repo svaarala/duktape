@@ -105,6 +105,8 @@ int duk_builtin_error_prototype_to_string(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
+#ifdef DUK_USE_TRACEBACKS
+
 /*
  *  Traceback handling
  *
@@ -289,6 +291,32 @@ int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
 #undef  DUK__OUTPUT_TYPE_TRACEBACK
 #undef  DUK__OUTPUT_TYPE_FILENAME
 #undef  DUK__OUTPUT_TYPE_LINENUMBER
+
+#else  /* DUK_USE_TRACEBACKS */
+
+/*
+ *  Traceback handling when tracebacks disabled.
+ *
+ *  These stubs are now necessary because built-in data will include the
+ *  accessor properties in Error.prototype.  If those are removed for
+ *  builds without tracebacks, these can also be removed: 'stack' will be
+ *  undefined, fileName / lineNumber will be a concrete own property of
+ *  an error.
+ */
+ 
+int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
+	return 0;
+}
+
+int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
+	return 0;
+}
+
+int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
+	return 0;
+}
+
+#endif  /* DUK_USE_TRACEBACKS */
 
 int duk_builtin_error_prototype_nop_setter(duk_context *ctx) {
 	/* Attempt to write 'stack', 'fileName', 'lineNumber' is a silent no-op.
