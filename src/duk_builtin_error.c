@@ -297,15 +297,19 @@ int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
 /*
  *  Traceback handling when tracebacks disabled.
  *
- *  These stubs are now necessary because built-in data will include the
- *  accessor properties in Error.prototype.  If those are removed for
- *  builds without tracebacks, these can also be removed: 'stack' will be
- *  undefined, fileName / lineNumber will be a concrete own property of
- *  an error.
+ *  The fileName / lineNumber stubs are now necessary because built-in
+ *  data will include the accessor properties in Error.prototype.  If those
+ *  are removed for builds without tracebacks, these can also be removed.
+ *  'stack' should still be present and produce a ToString() equivalent:
+ *  this is useful for user code which prints a stacktrace and expects to
+ *  see something useful.  A normal stacktrace also begins with a ToString()
+ *  of the error so this makes sense.
  */
- 
+
 int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
-	return 0;
+	duk_push_this(ctx);
+	duk_to_string(ctx, -1);
+	return 1;
 }
 
 int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
