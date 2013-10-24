@@ -610,9 +610,10 @@ extern double duk_computed_nan;
 #define  DUK_USE_ASSERTIONS
 #elif (DUK_PROFILE == 200)
 /* MINIMAL */
-#undef   DUK_USE_VERBOSE_ERRORS
+#undef   DUK_USE_TRACEBACKS
 #elif (DUK_PROFILE == 201)
 /* MINIMAL_DEBUG */
+#undef   DUK_USE_TRACEBACKS
 #define  DUK_USE_DEBUG
 #undef   DUK_USE_DDEBUG
 #undef   DUK_USE_DDDEBUG
@@ -634,11 +635,11 @@ extern double duk_computed_nan;
 #define  DUK_USE_MARK_AND_SWEEP
 #undef   DUK_USE_AUGMENT_ERRORS
 #undef   DUK_USE_TRACEBACKS
+#undef   DUK_USE_VERBOSE_ERRORS
 #define  DUK_USE_DEBUG
 #undef   DUK_USE_DDEBUG
 #undef   DUK_USE_DDDEBUG
 #define  DUK_USE_ASSERTIONS
-#undef   DUK_USE_VERBOSE_ERRORS
 #elif (DUK_PROFILE == 400)
 #undef   DUK_USE_PACKED_TVAL
 #undef   DUK_USE_FULL_TVAL
@@ -646,12 +647,12 @@ extern double duk_computed_nan;
 #elif (DUK_PROFILE == 401)
 #undef   DUK_USE_PACKED_TVAL
 #undef   DUK_USE_FULL_TVAL
+#define  DUK_USE_EXPLICIT_NULL_INIT
 #undef   DUK_USE_GC_TORTURE
 #define  DUK_USE_DEBUG
 #undef   DUK_USE_DDEBUG
 #undef   DUK_USE_DDDEBUG
 #define  DUK_USE_ASSERTIONS
-#define  DUK_USE_EXPLICIT_NULL_INIT
 #elif (DUK_PROFILE == 500)
 #undef   DUK_USE_PACKED_TVAL
 #undef   DUK_USE_FULL_TVAL
