@@ -27,13 +27,23 @@ values.</p>
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">build</td><td>Opaque build information string.</td></tr>
-<tr><td class="propname">version</td><td><b>FIXME</b></td></tr>
+<tr><td class="propname">build</td><td>Opaque build information string.  Describes when and how the Duktape distributable sources were built.</td></tr>
+<tr><td class="propname">version</td><td>Duktape version number.  Allows version-based feature detection and behavior.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
 </tbody>
 </table>
+
+<p>The <tt>version</tt> property is a number defined as
+<tt>(major * 10000) + (minor * 100) + patch</tt>, e.g. version 1.2.3
+would have the <tt>version</tt> value 10203.  Version numbers allow
+version specific behavior to be easily enabled.  Comparison are easy:</p>
+<pre class="ecmascript-code">
+    if (__duk__.version &gt;= 700) {
+        print('Duktape 0.7.0 or higher');
+    }
+</pre>
 
 <h3>__duk__.Buffer (constructor)</h3>
 
