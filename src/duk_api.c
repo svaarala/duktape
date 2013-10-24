@@ -2837,9 +2837,12 @@ static int duk_push_error_object_vsprintf(duk_context *ctx, int err_code, const 
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
+#if 0
+	/* FIXME: disabled for now, not sure this is a useful property */
 	/* 'code' property is custom */
 	duk_push_int(ctx, err_code);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
+#endif
 
 	/* Note: errors should be augmented when they are created, not when
 	 * they are thrown or rethrown.  The caller should augment the newly
