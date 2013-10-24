@@ -307,9 +307,10 @@ int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
  */
 
 int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
-	duk_push_this(ctx);
-	duk_to_string(ctx, -1);
-	return 1;
+	/* FIXME: remove this native function and map 'stack' accessor
+	 * to the toString() implementation directly.
+	 */
+	return duk_builtin_error_prototype_to_string(ctx);
 }
 
 int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
