@@ -3,7 +3,7 @@ title: pointer wrapping bugs in e.g. duk_set_top()
 desc: See src/duk_api.c FIXME in duk_set_top().
 type: :task
 component: duk
-release: v0.7
+release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-08-02 15:00:06.663058 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.7 from v0.6
+  - ""
+- - 2013-10-24 00:43:52.763952 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.8 from v0.7
   - ""
