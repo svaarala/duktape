@@ -1,0 +1,99 @@
+<h2 id="errorobjects">Error objects</h2>
+
+<h3>Property summary</h3>
+
+<p>Ecmascript Error objects have very few standard properties, so other
+implementations have added quite a few custom properties.  Duktape uses
+standard Error properties but also borrows the most useful properties
+used by other implementations.  The number of "own" properties of error
+objects is minimized to keep error objects as small as possible.</p>
+
+<p>Error objects have the following properties (mostly inherited):</p>
+
+<table>
+<thead>
+<tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>name</td><td>standard</td><td>Name of error, e.g. <tt>TypeError</tt>, inherited</td></tr>
+<tr><td>message</td><td>standard</td><td>Optional message of error, own property (empty message inherited if absent)</td></tr>
+<tr><td>fileName</td><td>Rhino</td><td>Filename related to error source, inherited accessor</td></tr>
+<tr><td>lineNumber</td><td>Rhino</td><td>Linenumber related to error source, inherited accessor</td></tr>
+<tr><td>stack</td><td>V8</td><td>Traceback as a multi-line human redable string, inherited accessor</td></tr>
+<tr><td>tracedata</td><td>Duktape</td><td>Raw traceback data in an internal format, own property</td></tr>
+</tbody>
+</table>
+
+<p>If Duktape is compiled with traceback support:</p>
+
+<ul>
+<li><tt>stack</tt>, <tt>fileName</tt>, and <tt>lineNumber</tt> are accessor
+    properties inherited from <tt>Error.prototype</tt>.</li>
+<li><tt>tracedata</tt> is an own property of the Error instance which provides
+    the raw data (in an internal format) needed by the accessors.</li>
+</ul>
+
+<p>If Duktape is compiled without traceback support:</p>
+<ul>
+<li>The <tt>stack</tt> accessor will be equivalent to
+    <tt>Error.prototype.toString()</tt>, so that printing the stacktrace
+    always produces a useful result.</li>
+<li><tt>fileName</tt> and <tt>lineNumber</tt> will be own properties of the
+    Error object.</li>
+</ul>
+
+<p>An object is considered an "error object" if its internal prototype
+chain contains the (original) <tt>Error.prototype</tt> object.  Only
+objects matching this criteria get augmented with e.g. traceback data.</p>
+
+<h3>Traceback</h3>
+
+<p>The <tt>stack</tt> property is an accessor (setter/getter) property
+which provides a printable traceback related to an error.  The traceback
+reflects the call stack when the error object was created (not thrown).
+Traceback data is automatically collected and added to an object:</p>
+<ul>
+<li>when an Error instance is constructed;</li>
+<li>when an error is thrown from C code using the Duktape API;</li>
+<li>when an error is thrown from inside Duktape.</li>
+</ul>
+
+<p>The data used to create the traceback is stored in the <tt>tracedata</tt>
+property in an internal and version-dependent format documented in the
+Duktape full distribution.  You shouldn't access the <tt>tracedata</tt>
+directly.</p>
+
+<p>The exact traceback format is still in flux (and you shouldn't rely on
+an exact format in any case).  As an example, the program:</p>
+<pre class="ecmascript-code">
+// shortened from ecmascript-testcases/test-dev-traceback-example.js
+try {
+    decodeURIComponent('%e1%a9%01');  // invalid utf-8
+} catch (e) {
+    print(e.stack);
+}
+</pre>
+
+<p>would print something like:</p>
+<pre>
+URIError: invalid input
+        duk_builtin_global.c:317
+        decodeURIComponent (null) native strict
+        global ecmascript-testcases/test-dev-traceback-example.js:3
+</pre>
+
+<p>Attempt to write to <tt>stack</tt> is silently ignored.  You can still
+override the accessor by defining an own property of the same name explicitly
+with <tt>Object.defineProperty()</tt>.  This behavior differs from V8 where
+<tt>stack</tt> is an own property of the Error instance, and if you assign a
+value to <tt>stack</tt>, the value reads back as assigned.</p>
+
+<h3>Current limitations</h3>
+
+<ul>
+<li>There are no cause chains in Ecmascript or Duktape.</li>
+<li>These is currently no way to access traceback elements programmatically.</li>
+<li>If an error is created with a non-constructor function call
+    (<tt>Error('msg')</tt> instead of <tt>new Error('msg')</tt>) it
+    won't get augmented at the moment.</li>
+</ul>
