@@ -29,11 +29,20 @@ values.</p>
 <tbody>
 <tr><td class="propname">build</td><td>Opaque build information string.  Describes when and how the Duktape distributable sources were built.</td></tr>
 <tr><td class="propname">version</td><td>Duktape version number: <tt>(major * 10000) + (minor * 100) + patch</tt>.</td></tr>
+<tr><td class="propname">setFinalizer</td><td>Set finalizer of an object.</td></tr>
+<tr><td class="propname">getFinalizer</td><td>Set finalizer of an object.</td></tr>
+<tr><td class="propname">enc</td><td>Encode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before encoding.</td></tr>
+<tr><td class="propname">dec</td><td>Decode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before decoding.</td></tr>
+<tr><td class="propname">addr</td><td>Get heap address of a value as a string, <tt>undefined</tt> if not appropriate (debug use).</td></tr>
+<tr><td class="propname">refc</td><td>Get reference count of a value as a number, <tt>undefined</tt> if not appropriate (debug use).</td></tr>
+<tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
 </tbody>
 </table>
+
+<h4>version</h4>
 
 <p>The <tt>version</tt> property allows version-based feature detection and
 behavior.  Version numbers can be compared directly: a logically higher version
@@ -68,6 +77,21 @@ if (!this.__duk__) {
 if (typeof __duk__ !== 'object') {
     print('not Duktape');
 }
+</pre>
+
+<h4>enc() and dec()</h4>
+
+<p>To encode a string into base64:</p>
+<pre class="ecmascript-code">
+__duk__.enc('base64', 'foo')  // returns 'Zm9v'
+</pre>
+
+<p>The input value is automatically coerced to a string and the internal byte
+representation (CESU-8 for Ecmascript strings) is then base64 encoded.</p>
+
+<p>Decoding is similar:</p>
+<pre class="ecmascript-code">
+__duk__.dec('base64', 'Zm9v')  // returns 'foo'
 </pre>
 
 <h3>__duk__.Buffer (constructor)</h3>
