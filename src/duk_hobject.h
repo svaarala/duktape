@@ -169,6 +169,11 @@
                                                   DUK_PROPDESC_FLAG_CONFIGURABLE | \
                                                   DUK_PROPDESC_FLAG_ACCESSOR)
 
+/* additional flags which are passed in the same flags argument as property
+ * flags but are not stored in object properties.
+ */
+#define  DUK_PROPDESC_FLAG_NO_OVERWRITE          (1 << 4)    /* internal define property: skip write silently if exists */
+
 /* convenience */
 #define  DUK_PROPDESC_FLAGS_NONE                 0
 #define  DUK_PROPDESC_FLAGS_W                    (DUK_PROPDESC_FLAG_WRITABLE)
