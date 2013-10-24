@@ -28,21 +28,46 @@ values.</p>
 </thead>
 <tbody>
 <tr><td class="propname">build</td><td>Opaque build information string.  Describes when and how the Duktape distributable sources were built.</td></tr>
-<tr><td class="propname">version</td><td>Duktape version number.  Allows version-based feature detection and behavior.</td></tr>
+<tr><td class="propname">version</td><td>Duktape version number: <tt>(major * 10000) + (minor * 100) + patch</tt>.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
 </tbody>
 </table>
 
-<p>The <tt>version</tt> property is a number defined as
-<tt>(major * 10000) + (minor * 100) + patch</tt>, e.g. version 1.2.3
-would have the <tt>version</tt> value 10203.  Version numbers allow
-version specific behavior to be easily enabled.  Comparison are easy:</p>
+<p>The <tt>version</tt> property allows version-based feature detection and
+behavior.  Version numbers can be compared directly: a logically higher version
+will also be numerically higher.  For example:</p>
 <pre class="ecmascript-code">
-    if (__duk__.version &gt;= 700) {
-        print('Duktape 0.7.0 or higher');
-    }
+if (typeof __duk__ !== 'object') {
+    print('not Duktape');
+} else if (__duk__.version &gt;= 10203) {
+    print('Duktape 1.2.3 or higher');
+} else if (__duk__.version &gt;= 700) {
+    print('Duktape 0.7.0 or higher (but lower than 1.2.3)');
+} else {
+    print('Duktape lower than 0.7.0');
+}
+</pre>
+
+<p>Remember to check for existence of <tt>__duk__</tt> when doing feature
+detection.  Your code should typically work on as many engines as possible.
+Avoid the common pitfall of using a direct identifier reference in the check:</p>
+<pre class="ecmascript-code">
+// Bad idea: ReferenceError if missing
+if (!__duk__) {
+    print('not Duktape');
+}
+
+// Better: check through 'this' (bound to global)
+if (!this.__duk__) {
+    print('not Duktape');
+}
+
+// Better: use typeof to check also type explicitly
+if (typeof __duk__ !== 'object') {
+    print('not Duktape');
+}
 </pre>
 
 <h3>__duk__.Buffer (constructor)</h3>
