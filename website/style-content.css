@@ -65,6 +65,18 @@
 	}
 }
 
+.content h4 {
+	font-size: 14pt;
+	font-weight: bold;
+	margin: 2.5ex 0 0.5ex 0;
+	color: #000000;
+}
+@media print {
+	.content h4 {
+		font-size: 12pt;
+	}
+}
+
 .content p {
 	font-size: 12pt;
 	margin: 2ex 0 1ex 0;
