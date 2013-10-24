@@ -478,9 +478,7 @@ duk_string_list = [
 	mkstr("pc", custom=True),
 	mkstr("fileName", custom=True),
 	mkstr("lineNumber", custom=True),
-	mkstr("isNative", custom=True),
-	mkstr("code", custom=True),
-	mkstr("cause", custom=True),
+	#mkstr("code", custom=True),
 	mkstr("tracedata", custom=True),
 
 	# non-standard function instance properties

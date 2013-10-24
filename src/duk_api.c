@@ -2835,11 +2835,19 @@ static int duk_push_error_object_vsprintf(duk_context *ctx, int err_code, const 
 	if (fmt) {
 		duk_push_vsprintf(ctx, fmt, ap);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+	} else {
+		/* If no explicit message given, put error code into message field
+		 * (as a number).  This is not fully in keeping with the Ecmascript
+		 * error model because messages are supposed to be strings (Error
+		 * constructors use ToString() on their argument).  However, it's
+		 * probably more useful than having a separate 'code' property.
+		 */
+		duk_push_int(ctx, err_code);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 #if 0
-	/* FIXME: disabled for now, not sure this is a useful property */
-	/* 'code' property is custom */
+	/* Disabled for now, not sure this is a useful property */
 	duk_push_int(ctx, err_code);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
 #endif
