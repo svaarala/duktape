@@ -84,9 +84,12 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 
 		/* add a number containing: pc, activation flags */
 		pc = thr_callstack->callstack[i].pc;
+#if 0
+		/* FIXME: this is not the case always now */
 		pc--;  /* PC points to next instruction, find offending PC; note that
 		        * PC == 0 should never be possible for an error.
 		        */
+#endif
 		DUK_ASSERT(pc >= 0 && (double) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 		d = ((double) thr_callstack->callstack[i].flags) * DUK_DOUBLE_2TO32 + (double) pc;
 		duk_push_number(ctx, d);  /* -> [... arr num] */
@@ -184,9 +187,12 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 			duk_u32 line;
 
 			pc = act->pc;
+#if 0
+			/* FIXME: this is not the case always now */
 			pc--;  /* PC points to next instruction, find offending PC; note that
 			        * PC == 0 should never be possible for an error.
 			        */
+#endif
 			DUK_ASSERT(pc >= 0 && (double) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 			act = NULL;  /* invalidated by pushes, so get out of the way */
 
