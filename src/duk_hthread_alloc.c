@@ -25,7 +25,7 @@ int duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
 
 	/* valstack */
 	alloc_size = sizeof(duk_tval) * DUK_VALSTACK_INITIAL_SIZE;
-	thr->valstack = DUK_ALLOC(heap, alloc_size);
+	thr->valstack = (duk_tval *) DUK_ALLOC(heap, alloc_size);
 	if (!thr->valstack) {
 		goto fail;
 	}
@@ -40,7 +40,7 @@ int duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
 
 	/* callstack */
 	alloc_size = sizeof(duk_activation) * DUK_CALLSTACK_INITIAL_SIZE;
-	thr->callstack = DUK_ALLOC(heap, alloc_size);
+	thr->callstack = (duk_activation *) DUK_ALLOC(heap, alloc_size);
 	if (!thr->callstack) {
 		goto fail;
 	}
@@ -50,7 +50,7 @@ int duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
 
 	/* catchstack */
 	alloc_size = sizeof(duk_catcher) * DUK_CATCHSTACK_INITIAL_SIZE;
-	thr->catchstack = DUK_ALLOC(heap, alloc_size);
+	thr->catchstack = (duk_catcher *) DUK_ALLOC(heap, alloc_size);
 	if (!thr->catchstack) {
 		goto fail;
 	}

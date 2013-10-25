@@ -638,7 +638,7 @@ static int print_alert_helper(duk_context *ctx, FILE *f_out) {
 	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
 		const char *buf = NULL;
 		size_t sz = 0;
-		buf = duk_get_buffer(ctx, 0, &sz);
+		buf = (const char *) duk_get_buffer(ctx, 0, &sz);
 		if (buf && sz > 0) {
 			fwrite(buf, 1, sz, f_out);
 		}

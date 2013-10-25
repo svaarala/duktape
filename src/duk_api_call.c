@@ -95,7 +95,7 @@ void duk_call(duk_context *ctx, int nargs) {
 	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
-		DUK_ERROR(ctx, DUK_ERR_API_ERROR, "invalid call args");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
 	}
 
 	/* awkward; we assume there is space for this */
@@ -126,7 +126,7 @@ void duk_call_method(duk_context *ctx, int nargs) {
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
-		DUK_ERROR(ctx, DUK_ERR_API_ERROR, "invalid call args");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
 	}
 
 	errhandler = thr->heap->lj.errhandler;  /* use existing one (if any) */
@@ -168,7 +168,7 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
-		DUK_ERROR(ctx, DUK_ERR_API_ERROR, "invalid call args");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
 		/* FIXME: actually terminate thread? */
 		return DUK_ERR_EXEC_TERM;
 	}

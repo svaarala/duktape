@@ -124,6 +124,7 @@ int duk_debug_level_stash;
 
 void duk_debug_log(char *fmt, ...) {
 	va_list ap;
+	int level = duk_debug_level_stash;
 
 	va_start(ap, fmt);
 

@@ -880,7 +880,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 		if (is_regexp) {
 			duk_dup(ctx, 0);
 			duk_dup(ctx, 2);
-			duk_regexp_match_force_global(ctx);  /* [ ... regexp input ] -> [ res_obj ] */
+			duk_regexp_match_force_global(thr);  /* [ ... regexp input ] -> [ res_obj ] */
 			if (!duk_is_object(ctx, -1)) {
 				duk_pop(ctx);
 				break;

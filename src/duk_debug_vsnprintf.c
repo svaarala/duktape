@@ -611,7 +611,7 @@ static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
 	if (st->hexdump) {
 		duk_fb_sprintf(fb, "=[");
 		n = DUK_HBUFFER_GET_SIZE(h);
-		p = DUK_HBUFFER_GET_DATA_PTR(h);
+		p = (duk_u8 *) DUK_HBUFFER_GET_DATA_PTR(h);
 		for (i = 0; i < n; i++) {
 			duk_fb_sprintf(fb, "%02x", (int) p[i]);
 		}

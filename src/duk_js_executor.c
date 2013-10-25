@@ -1231,7 +1231,7 @@ static int handle_longjmp(duk_hthread *thr,
 	return retval;
 
  convert_to_internal_error:
-	DUK_ERROR((duk_context *) thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor longjmp handler");
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor longjmp handler");
 #if 0
 	/* FIXME: could also handle internally */
 	thr->heap->lj.type = DUK_LJ_TYPE_THROW;
@@ -1769,7 +1769,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			duk_push_tval(ctx, REGCONSTP(c));
 			duk_push_tval(ctx, REGCONSTP(b));  /* -> [ ... escaped_source bytecode ] */
-			duk_regexp_create_instance(ctx);   /* -> [ ... regexp_instance ] */
+			duk_regexp_create_instance(thr);   /* -> [ ... regexp_instance ] */
 			DUK_DDDPRINT("regexp instance: %!iT", duk_get_tval(ctx, -1));
 			duk_replace(ctx, a);
 #else

@@ -67,14 +67,16 @@
 /* XXX: more accurate detection of what gcc versions work; more inline
  * asm versions for other compilers.
  */
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && defined(__i386__) && \
+    !defined(__cplusplus) /* unsigned long long not standard */
 static __inline__ unsigned long long duk_rdtsc(void) {
 	unsigned long long int x;
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;
 }
 #define  DUK_RDTSC_AVAILABLE 1
-#elif defined(__GNUC__) && defined(__x86_64__)
+#elif defined(__GNUC__) && defined(__x86_64__) && \
+    !defined(__cplusplus) /* unsigned long long not standard */
 static __inline__ unsigned long long duk_rdtsc(void) {
 	unsigned hi, lo;
 	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
@@ -122,9 +124,15 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  */
 
 #if defined(__linux)
+#ifndef  _POSIX_C_SOURCE
 #define  _POSIX_C_SOURCE  200809L
+#endif
+#ifndef  _GNU_SOURCE
 #define  _GNU_SOURCE      /* e.g. getdate_r */
+#endif
+#ifndef  _XOPEN_SOURCE
 #define  _XOPEN_SOURCE    /* e.g. strptime */
+#endif
 #endif
 
 #if defined(__APPLE__)

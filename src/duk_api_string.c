@@ -35,7 +35,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", count, len);
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
-	buf = duk_push_fixed_buffer(ctx, len);
+	buf = (duk_u8 *) duk_push_fixed_buffer(ctx, len);
 	DUK_ASSERT(buf != NULL);
 
 	/* [... (sep) str1 str2 ... strN buf] */

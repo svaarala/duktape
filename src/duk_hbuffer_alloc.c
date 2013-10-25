@@ -17,7 +17,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 		alloc_size = sizeof(duk_hbuffer_fixed) + size + 1;  /* +1 for a safety nul term */
 	}
 
-	res = DUK_ALLOC(heap, alloc_size);
+	res = (duk_hbuffer *) DUK_ALLOC(heap, alloc_size);
 	if (!res) {
 		goto error;
 	}

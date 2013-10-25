@@ -173,7 +173,7 @@ extern void duk_debug_log(char *fmt, ...);
 
 void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_u8 *buffer, duk_u32 length);
 void duk_fb_put_byte(duk_fixedbuffer *fb, duk_u8 x);
-void duk_fb_put_cstring(duk_fixedbuffer *fb, char *x);
+void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x);
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...);
 int duk_fb_is_full(duk_fixedbuffer *fb);
 

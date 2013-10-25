@@ -281,7 +281,7 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 	 */
 
 	new_alloc_size = sizeof(duk_tval) * new_size;
-	new_valstack = DUK_REALLOC_INDIRECT(thr->heap, (void **) &thr->valstack, new_alloc_size);
+	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, (void **) &thr->valstack, new_alloc_size);
 	if (!new_valstack) {
 		DUK_DPRINT("failed to resize valstack to %d entries (%d bytes)",
 		           new_size, new_alloc_size);
@@ -445,7 +445,7 @@ static int check_valstack_resize_helper(duk_context *ctx,
 		DUK_DDPRINT("valstack resize failed");
 
 		if (throw_flag) {
-			DUK_ERROR(ctx, DUK_ERR_ALLOC_ERROR, "failed to extend valstack");
+			DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to extend valstack");
 		} else {
 			return 0;
 		}
@@ -2320,7 +2320,7 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	if (fseek(f, 0, SEEK_SET) < 0) {
 		goto fail;
 	}
-	buf = duk_push_fixed_buffer(ctx, sz);
+	buf = (char *) duk_push_fixed_buffer(ctx, sz);
 	DUK_ASSERT(buf != NULL);
 	if (fread(buf, 1, sz, f) != sz) {
 		goto fail;
@@ -2567,7 +2567,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 
 	/* FIXME: buffer to string */
-	res = duk_push_lstring(ctx, buf, len);  /* [buf res] */
+	res = duk_push_lstring(ctx, (const char *) buf, (size_t) len);  /* [buf res] */
 	duk_remove(ctx, -2);
 	return res;
 }

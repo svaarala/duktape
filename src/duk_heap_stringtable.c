@@ -28,7 +28,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 	/* NUL terminate for convenient C access */
 
 	alloc_size = sizeof(duk_hstring) + blen + 1;
-	res = DUK_ALLOC(heap, alloc_size);
+	res = (duk_hstring *) DUK_ALLOC(heap, alloc_size);
 	if (!res) {
 		goto error;
 	}

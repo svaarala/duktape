@@ -346,7 +346,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 
 	/* use a raw call, all macros expect the heap to be initialized */
-	res = alloc_func(alloc_udata, sizeof(duk_heap));
+	res = (duk_heap *) alloc_func(alloc_udata, sizeof(duk_heap));
 	if (!res) {
 		goto error;
 	}

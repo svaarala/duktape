@@ -28,7 +28,7 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx);
 
 static void json_emit_1(duk_json_enc_ctx *js_ctx, char ch);
 static void json_emit_2(duk_json_enc_ctx *js_ctx, int chars);
-static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, char *esc_str, int digits);
+static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, const char *esc_str, int digits);
 static void json_emit_esc16(duk_json_enc_ctx *js_ctx, duk_u32 cp);
 static void json_emit_esc32(duk_json_enc_ctx *js_ctx, duk_u32 cp);
 static void json_emit_xutf8(duk_json_enc_ctx *js_ctx, duk_u32 cp);
@@ -630,7 +630,7 @@ static void json_emit_2(duk_json_enc_ctx *js_ctx, int chars) {
 	duk_hbuffer_append_bytes(js_ctx->thr, js_ctx->h_buf, (duk_u8 *) buf, 2);
 }
 
-static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, char *esc_str, int digits) {
+static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, const char *esc_str, int digits) {
 	int dig;
 
 	duk_hbuffer_append_cstring(js_ctx->thr, js_ctx->h_buf, esc_str);

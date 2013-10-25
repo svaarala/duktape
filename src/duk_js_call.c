@@ -817,7 +817,7 @@ int duk_handle_call(duk_hthread *thr,
 	 */
 
 	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(ctx, DUK_ERR_TYPE_ERROR, "call target not callable");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "call target not callable");
 	}
 	func = duk_get_hobject(thr, idx_func);
 	DUK_ASSERT(func != NULL);
@@ -1732,7 +1732,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 */
 
 	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(ctx, DUK_ERR_TYPE_ERROR, "call target not callable");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "call target not callable");
 	}
 	func = duk_get_hobject(thr, idx_func);
 	DUK_ASSERT(func != NULL);

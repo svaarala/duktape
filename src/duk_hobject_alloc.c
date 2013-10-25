@@ -48,7 +48,7 @@ duk_hobject *duk_hobject_alloc(duk_heap *heap, int hobject_flags) {
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_NATIVEFUNCTION) == 0);
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_THREAD) == 0);
 
-	res = DUK_ALLOC(heap, sizeof(duk_hobject));
+	res = (duk_hobject *) DUK_ALLOC(heap, sizeof(duk_hobject));
 	if (!res) {
 		return NULL;
 	}
@@ -62,7 +62,7 @@ duk_hobject *duk_hobject_alloc(duk_heap *heap, int hobject_flags) {
 duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, int hobject_flags) {
 	duk_hcompiledfunction *res;
 
-	res = DUK_ALLOC(heap, sizeof(duk_hcompiledfunction));
+	res = (duk_hcompiledfunction *) DUK_ALLOC(heap, sizeof(duk_hcompiledfunction));
 	if (!res) {
 		return NULL;
 	}
@@ -82,7 +82,7 @@ duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, int hobject_f
 duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, int hobject_flags) {
 	duk_hnativefunction *res;
 
-	res = DUK_ALLOC(heap, sizeof(duk_hnativefunction));
+	res = (duk_hnativefunction *) DUK_ALLOC(heap, sizeof(duk_hnativefunction));
 	if (!res) {
 		return NULL;
 	}
@@ -108,7 +108,7 @@ duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, int hobject_flags
 duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags) {
 	duk_hthread *res;
 
-	res = DUK_ALLOC(heap, sizeof(duk_hthread));
+	res = (duk_hthread *) DUK_ALLOC(heap, sizeof(duk_hthread));
 	if (!res) {
 		return NULL;
 	}
