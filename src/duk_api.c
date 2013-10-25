@@ -1090,9 +1090,9 @@ duk_hobject *duk_get_hobject(duk_context *ctx, int index) {
 }
 
 /* internal */
-duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int class) {
+duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnum) {
 	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 1);
-	if (h != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h) != class) {
+	if (h != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
 		h = NULL;
 	}
 	return h;
@@ -1104,12 +1104,12 @@ duk_hobject *duk_require_hobject(duk_context *ctx, int index) {
 }
 
 /* internal */
-duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int class) {
+duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int classnum) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
 	DUK_ASSERT(h != NULL);
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != class) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected object with class number %d", class);
+	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected object with class number %d", classnum);
 	}
 	return h;
 }

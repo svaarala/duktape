@@ -43,8 +43,8 @@ int duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 
 /* identifiers and environment handling */
-int duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, int throw);
-int duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, int throw);
+int duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, int throw_flag);
+int duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, int throw_flag);
 void duk_js_putvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_tval *val, int strict);
 void duk_js_putvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, int strict);
 int duk_js_delvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name);

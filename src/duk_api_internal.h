@@ -31,7 +31,7 @@ void duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_push_this
 
 duk_hstring *duk_get_hstring(duk_context *ctx, int index);
 duk_hobject *duk_get_hobject(duk_context *ctx, int index);
-duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int class);
+duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnum);
 duk_hbuffer *duk_get_hbuffer(duk_context *ctx, int index);
 duk_hthread *duk_get_hthread(duk_context *ctx, int index);
 duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, int index);
@@ -48,7 +48,7 @@ int duk_to_int_check_range(duk_context *ctx, int index, int minval, int maxval);
 
 duk_hstring *duk_require_hstring(duk_context *ctx, int index);
 duk_hobject *duk_require_hobject(duk_context *ctx, int index);
-duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int class);
+duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int classnum);
 duk_hbuffer *duk_require_hbuffer(duk_context *ctx, int index);
 duk_hthread *duk_require_hthread(duk_context *ctx, int index);
 duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, int index);

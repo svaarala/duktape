@@ -7,6 +7,10 @@
 #ifndef DUKTAPE_H_INCLUDED
 #define DUKTAPE_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  *  Includes and minimal feature detection required by the public API.
  */
@@ -536,6 +540,10 @@ void duk_compile(duk_context *ctx, int flags);
 		(void) duk_push_string((ctx),(path)); \
 		duk_compile((ctx), (flags)); \
 	} while (0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* DUKTAPE_H_INCLUDED */
 

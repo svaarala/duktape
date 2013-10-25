@@ -1124,7 +1124,7 @@ static int getvar_helper(duk_hthread *thr,
                          duk_hobject *env,
                          duk_activation *act,
                          duk_hstring *name,
-                         int throw) {
+                         int throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_id_lookup_result ref;
 	duk_tval tv_tmp_obj;
@@ -1173,7 +1173,7 @@ static int getvar_helper(duk_hthread *thr,
 
 		return 1;
 	} else {
-		if (throw) {
+		if (throw_flag) {
 			DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR,
 			          "identifier '%s' undefined",
 			          (char *) DUK_HSTRING_GET_DATA(name));
@@ -1186,16 +1186,16 @@ static int getvar_helper(duk_hthread *thr,
 int duk_js_getvar_envrec(duk_hthread *thr,
                          duk_hobject *env,
                          duk_hstring *name,
-                         int throw) {
-	return getvar_helper(thr, env, NULL, name, throw);
+                         int throw_flag) {
+	return getvar_helper(thr, env, NULL, name, throw_flag);
 }
 
 int duk_js_getvar_activation(duk_hthread *thr,
                              duk_activation *act,
                              duk_hstring *name,
-                             int throw) {
+                             int throw_flag) {
 	DUK_ASSERT(act != NULL);
-	return getvar_helper(thr, act->lex_env, act, name, throw);
+	return getvar_helper(thr, act->lex_env, act, name, throw_flag);
 }
 
 /*
