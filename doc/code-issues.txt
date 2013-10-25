@@ -142,6 +142,22 @@ This seems to work with both GCC and Clang.  The form::
 
 works with GCC but not with Clang.
 
+C++ compatibility
+-----------------
+
+The source code is meant to be C++ compatible so that you can both:
+
+1. Compile Duktape with C but use it from C++.
+
+2. Compile Duktape with C++ and use it from C++.
+
+To achieve this:
+
+* Avoid variable names conflicting with C++ keywords (``throw``,
+  ``class``, ``this``, etc).
+
+* Use explicit casts for all pointer conversions.
+
 Portability concerns
 ====================
 
