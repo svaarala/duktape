@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make strings and builtins data profile specific
+desc: |-
+  This is needed e.g. for Error.prototype fileName and lineNumber accessors
+  which should not be present when tracebacks are not enabled.
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-24 17:34:57.618393 Z
+references: []
+
+id: 23a1d148768cf77fa6af6662d75f1e5b8a0da5c8
+log_events: 
+- - 2013-10-24 17:34:57.843701 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

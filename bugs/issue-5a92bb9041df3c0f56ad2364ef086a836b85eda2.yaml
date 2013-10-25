@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.7
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-13 20:54:26.620766 Z
 references: []
 
@@ -16,3 +16,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2013-10-24 19:50:27.083293 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Probably not a good idea because portability may require separate
+    compilation on some old platforms.

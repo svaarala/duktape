@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: create traceback by operating on an allocated array part directly
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-25 13:38:02.410402 Z
+references: []
+
+id: 23f3fe8198da87b8aa47bcd181fb4a321ce12c13
+log_events: 
+- - 2013-10-25 13:38:02.583321 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

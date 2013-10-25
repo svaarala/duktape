@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: record 'this' binding into tracedata?
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-25 13:37:38.737362 Z
+references: []
+
+id: 103cec4ffca5fb48ede639313fb0a00ff74d3d44
+log_events: 
+- - 2013-10-25 13:37:38.910353 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
