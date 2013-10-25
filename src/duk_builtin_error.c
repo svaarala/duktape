@@ -128,6 +128,7 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 	const char *str_tailcalled = " tailcalled";
 	const char *str_strict = " strict";
 	const char *str_construct = " construct";
+	const char *str_prevyield = " preventsyield";
 	const char *str_empty = "";
 
 	DUK_ASSERT_TOP(ctx, 0);  /* fixed arg count */
@@ -202,21 +203,23 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
 				           "anon" : (const char *) DUK_HSTRING_GET_DATA(h_name);
 				if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
-					duk_push_sprintf(ctx, "%s %s native%s%s%s",
+					duk_push_sprintf(ctx, "%s %s native%s%s%s%s",
 					                 funcname,
 					                 duk_get_string(ctx, -1),
 					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
 					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
-					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty);
+					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty,
+					                 (flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty);
 
 				} else {
-					duk_push_sprintf(ctx, "%s %s:%d%s%s%s",
+					duk_push_sprintf(ctx, "%s %s:%d%s%s%s%s",
 					                 funcname,
 					                 duk_get_string(ctx, -1),
 					                 line,
 					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
 					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
-					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty);
+					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty,
+					                 (flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty);
 				}
 				duk_replace(ctx, -5);   /* [ ... v1 v2 name filename str ] -> [ ... str v2 name filename ] */
 				duk_pop_n(ctx, 3);      /* -> [ ... str ] */
