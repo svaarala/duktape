@@ -28,6 +28,9 @@
 # functions (like Object.toString).  These should be marked somehow here and
 # slots in thr->builtins should be allocated for them.
 
+# FIXME: Builtins are now introduced as variables.  They should be built on
+# the fly if profile specific built-in data needs to be supported.
+
 import os
 import sys
 import json
@@ -36,6 +39,7 @@ import struct
 import optparse
 
 import dukutil
+import genstrings
 
 #
 #  Helpers and constants
@@ -1286,7 +1290,7 @@ def encode_property_flags(flags):
 
 	return res
 
-def generate_properties_data_for_builtin(opts, be, bi):
+def generate_properties_data_for_builtin(gb, gs, be, bi):
 	count_builtins[0] += 1
 
 	if bi.has_key('internal_prototype'):
@@ -1307,17 +1311,17 @@ def generate_properties_data_for_builtin(opts, be, bi):
 	# Filter values and functions
 	values = []
 	for valspec in bi['values']:
-		if valspec.has_key('section_b') and valspec['section_b'] and not opts.ext_section_b:
+		if valspec.has_key('section_b') and valspec['section_b'] and not gb.ext_section_b:
 			continue
-		if valspec.has_key('browser') and valspec['browser'] and not opts.ext_browser_like:
+		if valspec.has_key('browser') and valspec['browser'] and not gb.ext_browser_like:
 			continue
 		values.append(valspec)
 
 	functions = []
 	for valspec in bi['functions']:
-		if valspec.has_key('section_b') and valspec['section_b'] and not opts.ext_section_b:
+		if valspec.has_key('section_b') and valspec['section_b'] and not gb.ext_section_b:
 			continue
-		if valspec.has_key('browser') and valspec['browser'] and not opts.ext_browser_like:
+		if valspec.has_key('browser') and valspec['browser'] and not gb.ext_browser_like:
 			continue
 		functions.append(valspec)
 
@@ -1327,7 +1331,7 @@ def generate_properties_data_for_builtin(opts, be, bi):
 		count_normal_props[0] += 1
 
 		# NOTE: we rely on there being less than 256 built-in strings
-		stridx = duk_strings.real_name_to_index[valspec['name']]
+		stridx = gs.stringToIndex(valspec['name'])
 		val = valspec.get('value')  # missing for accessors
 
 		be.bits(stridx, STRIDX_BITS)
@@ -1361,7 +1365,7 @@ def generate_properties_data_for_builtin(opts, be, bi):
 			val = float(val)
 
 			# encoding of double must match target architecture byte order
-			bo = opts.byte_order
+			bo = gb.byte_order
 			if bo == 'big':
 				data = struct.pack('>d', val)	# 01234567
 			elif bo == 'little':
@@ -1372,6 +1376,8 @@ def generate_properties_data_for_builtin(opts, be, bi):
 			else:
 				raise Exception('unsupported byte order: %s' % repr(bo))
 
+			#print('DOUBLE: ' + data.encode('hex'))
+
 			if len(data) != 8:
 				raise Exception('internal error')
 			be.string(data)
@@ -1381,13 +1387,13 @@ def generate_properties_data_for_builtin(opts, be, bi):
 				# because bits/char is too low.
 				val = val.encode('utf-8')
 
-			if duk_strings.real_name_to_index.has_key(val):
+			if gs.hasString(val):
 				# String value is in built-in string table -> encode
 				# using a string index.  This saves some space,
 				# especially for the 'name' property of errors
 				# ('EvalError' etc).
 
-				stridx = duk_strings.real_name_to_index[val]
+				stridx = gs.stringToIndex(val)
 				be.bits(PROP_TYPE_STRIDX, PROP_TYPE_BITS)
 				be.bits(stridx, STRIDX_BITS)
 			else:
@@ -1421,7 +1427,7 @@ def generate_properties_data_for_builtin(opts, be, bi):
 		# NOTE: we rely on there being less than 256 built-in strings
 		# and built-in native functions
 
-		stridx = duk_strings.real_name_to_index[funspec['name']]
+		stridx = gs.stringToIndex(funspec['name'])
 		be.bits(stridx, STRIDX_BITS)
 
 		natidx = native_func_hash[funspec['native']]
@@ -1439,7 +1445,7 @@ def generate_properties_data_for_builtin(opts, be, bi):
 		else:
 			be.bits(0, 1)  # flag: default nargs OK
 
-def generate_creation_data_for_builtin(opts, be, bi):
+def generate_creation_data_for_builtin(gb, gs, be, bi):
 	class_num = classToNumber(bi['class'])
 	be.bits(class_num, CLASS_BITS)
 
@@ -1474,7 +1480,7 @@ def generate_creation_data_for_builtin(opts, be, bi):
 		natidx = native_func_hash[bi['native']]
 		be.bits(natidx, NATIDX_BITS)
 
-		stridx = duk_strings.real_name_to_index[bi['name']]
+		stridx = gs.stringToIndex(bi['name'])
 		be.bits(stridx, STRIDX_BITS)
 
 		if bi.has_key('varargs'):
@@ -1499,7 +1505,7 @@ def generate_creation_data_for_builtin(opts, be, bi):
 		else:
 			be.bits(0, 1)	# flag: not constructable
 
-def generate_builtin_init_data(opts):
+def generate_builtin_init_data(gb, gs):
 	be = dukutil.BitEncoder()
 
 	for bi in builtins:
@@ -1510,12 +1516,12 @@ def generate_builtin_init_data(opts):
 	# objects.
 
 	for bi in builtins:
-		generate_creation_data_for_builtin(opts, be, bi['info'])
+		generate_creation_data_for_builtin(gb, gs, be, bi['info'])
 
 	# Then, emit object properties.
 
 	for bi in builtins:
-		generate_properties_data_for_builtin(opts, be, bi['info'])
+		generate_properties_data_for_builtin(gb, gs, be, bi['info'])
 
 	return be.getByteString()
 
@@ -1532,75 +1538,132 @@ def generate_define_names(id):
 	return 'DUK_BIDX_' + t2, 'DUK_BUILTIN_' + t2
 
 #
+#  GenBuiltins
+#
+
+class GenBuiltins:
+	build_info = None
+	byte_order = None
+	ext_section_b = None
+	ext_browser_like = None
+
+	gs = None
+	init_data = None
+
+	def __init__(self, build_info = None, byte_order=None, ext_section_b=None, ext_browser_like=None):
+		self.build_info = build_info
+		self.byte_order = byte_order
+		self.ext_section_b = ext_section_b
+		self.ext_browser_like = ext_browser_like
+
+	def processBuiltins(self):
+		# generate built-in strings
+		self.gs = genstrings.GenStrings()
+		self.gs.processStrings()
+
+		# hack workaround for counts
+		count_builtins[0] = 0
+		count_normal_props[0] = 0
+		count_function_props[0] = 0
+
+		# generate builtin binary data
+		self.init_data = generate_builtin_init_data(self, self.gs)
+
+		# FIXME: incorrect now
+		print '%d bytes of built-in init data, %d built-in objects, %d normal props, %d func props' % \
+			(len(self.init_data), count_builtins[0], count_normal_props[0], count_function_props[0])
+
+	def emitSource(self, genc):
+		self.gs.emitStringsData(genc)
+
+		genc.emitLine('')
+		write_native_func_array(genc)
+		genc.emitLine('')
+		genc.emitArray(self.init_data, 'duk_builtins_data')
+
+	def emitHeader(self, genc):
+		self.gs.emitStringsHeader(genc)
+
+		genc.emitLine('')
+		genc.emitLine('extern duk_c_function duk_builtin_native_functions[];')
+		genc.emitLine('')
+		genc.emitLine('extern char duk_builtins_data[];')
+		genc.emitLine('')
+		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
+		genc.emitLine('')
+		for idx,t in enumerate(builtins):
+			def_name1, def_name2 = generate_define_names(t['id'])
+			genc.emitDefine(def_name1, idx)
+		genc.emitLine('')
+		genc.emitDefine('DUK_NUM_BUILTINS', len(builtins))
+		genc.emitLine('')
+
+#
 #  Main
 #
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser()
 	parser.add_option('--buildinfo', dest='buildinfo')
-	parser.add_option('--strings-py', dest='strings_py')
 	parser.add_option('--out-header', dest='out_header')
 	parser.add_option('--out-source', dest='out_source')
-	parser.add_option('--out-bin', dest='out_bin')
-	parser.add_option('--byte-order', dest='byte_order')
-	parser.add_option('--ext-section-b', dest='ext_section_b', default=True)
-	parser.add_option('--ext-browser-like', dest='ext_browser_like', default=True)
 	(opts, args) = parser.parse_args()
 
-	import imp
-	duk_strings = imp.load_source('duk_strings', opts.strings_py)
-
 	f = open(opts.buildinfo, 'rb')
-	params = dukutil.json_decode(f.read().strip())
-	bi_duk['values'].insert(0, { 'name': 'version', 'value': params['version'], 'attributes': '' })
-	bi_duk['values'].insert(1, { 'name': 'build', 'value': params['build'], 'attributes': '' })
+	build_info = dukutil.json_decode(f.read().strip())
 	f.close()
 
-	data = generate_builtin_init_data(opts)
+	# finalize built-in data
+	# FIXME: built-in data would actually need to be regenerated for each
+	# byte order / profile variant, fix later
+	bi_duk['values'].insert(0, { 'name': 'version', 'value': build_info['version'], 'attributes': '' })
+	bi_duk['values'].insert(1, { 'name': 'build', 'value': build_info['build'], 'attributes': '' })
 
-	# write raw data file
-	f = open(opts.out_bin, 'wb')
-	f.write(data)
-	f.close()
+	# genbuiltins for different profiles
+	gb_little = GenBuiltins(build_info = build_info, byte_order='little', ext_section_b=True, ext_browser_like=True)
+	gb_little.processBuiltins()
+	gb_big = GenBuiltins(build_info = build_info, byte_order='big', ext_section_b=True, ext_browser_like=True)
+	gb_big.processBuiltins()
+	gb_middle = GenBuiltins(build_info = build_info, byte_order='middle', ext_section_b=True, ext_browser_like=True)
+	gb_middle.processBuiltins()
 
-	# write C source file
+	# write C source file containing both strings and builtins
 	genc = dukutil.GenerateC()
 	genc.emitHeader('genbuiltins.py')
 	genc.emitLine('#include "duk_internal.h"')
 	genc.emitLine('')
-	write_native_func_array(genc)
-	genc.emitLine('')
-	genc.emitArray(data, 'duk_builtins_data')
+	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	gb_little.emitSource(genc)
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	gb_big.emitSource(genc)
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	gb_middle.emitSource(genc)
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid endianness defines')
+	genc.emitLine('#endif')
 
 	f = open(opts.out_source, 'wb')
 	f.write(genc.getString())
 	f.close()
 
-	# write C header file
+	# write C header file containing both strings and builtins
 	genc = dukutil.GenerateC()
 	genc.emitHeader('genbuiltins.py')
 	genc.emitLine('#ifndef DUK_BUILTINS_H_INCLUDED')
 	genc.emitLine('#define DUK_BUILTINS_H_INCLUDED')
 	genc.emitLine('')
-	genc.emitLine('extern duk_c_function duk_builtin_native_functions[];')
-	genc.emitLine('')
-	genc.emitLine('extern char duk_builtins_data[];')
-	genc.emitLine('')
-	genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(data))
-	genc.emitLine('')
-	for idx,t in enumerate(builtins):
-		def_name1, def_name2 = generate_define_names(t['id'])
-		genc.emitDefine(def_name1, idx)
-	genc.emitLine('')
-	genc.emitDefine('DUK_NUM_BUILTINS', len(builtins))
-	genc.emitLine('')
+	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	gb_little.emitHeader(genc)
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	gb_big.emitHeader(genc)
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	gb_middle.emitHeader(genc)
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid endianness defines')
+	genc.emitLine('#endif')
 	genc.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */')
 
 	f = open(opts.out_header, 'wb')
 	f.write(genc.getString())
 	f.close()
-
-	print '%d bytes of built-in init data, %d built-in objects, %d normal props, %d func props' % \
-		(len(data), count_builtins[0], count_normal_props[0], count_function_props[0])
-
 
