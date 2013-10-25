@@ -7,7 +7,8 @@
  *
  *  Ecmascript allows throwing any values, so all values cannot be
  *  augmented.  Currently, we only augment error values which are Error
- *  instances and are also extensible.
+ *  instances (= have the built-in Error.prototype in their prototype
+ *  chain) and are also extensible.
  */
 
 #include "duk_internal.h"
@@ -30,7 +31,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	/*
 	 *  The traceback format is pretty arcane in an attempt to keep it compact
 	 *  and cheap to create.  It may change arbitrarily from version to version.
-	 *  It should be decoded/accessed through version specific accessors.
+	 *  It should be decoded/accessed through version specific accessors only.
 	 *
 	 *  See doc/error-objects.txt.
 	 */
@@ -41,7 +42,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	arr_idx = 0;
 
 	/* filename/line from C macros (__FILE__, __LINE__) are added as an
-	 * entry with a special format
+	 * entry with a special format: (string, number)
 	 */
 	if (filename) {
 		duk_push_string(ctx, filename);
@@ -53,7 +54,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	}
 
 	/* traceback depth doesn't take into account the filename/line
-	 * special handling above
+	 * special handling above (intentional)
 	 */
 	depth = DUK_OPT_TRACEBACK_DEPTH;
 	i_min = (thr_callstack->callstack_top > depth ? thr_callstack->callstack_top - depth : 0);
@@ -67,7 +68,8 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 		 *  Note: each API operation potentially resizes the callstack,
 		 *  so be careful to re-lookup after every operation.  Currently
 		 *  these is no issue because we don't store a temporary 'act'
-		 *  pointer at all.
+		 *  pointer at all.  (This would be a non-issue if we operated
+		 *  directly on the array part.)
 		 */
 
 		/* [... arr] */
@@ -82,18 +84,14 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 
 		/* add a number containing: pc, activation flags */
 		pc = thr_callstack->callstack[i].pc;
-		pc--;  /* PC points to next instruction, find offending PC */
-		d = ((double) thr_callstack->callstack[i].flags) * DUK_DOUBLE_2TO32 +  /* assume PC is at most 32 bits and non-negative */
-		    (double) pc;
+		pc--;  /* PC points to next instruction, find offending PC; note that
+		        * PC == 0 should never be possible for an error.
+		        */
+		DUK_ASSERT(pc >= 0 && (double) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
+		d = ((double) thr_callstack->callstack[i].flags) * DUK_DOUBLE_2TO32 + (double) pc;
 		duk_push_number(ctx, d);  /* -> [... arr num] */
 		duk_put_prop_index(ctx, -2, arr_idx);
 		arr_idx++;
-
-		/* FIXME: some more features to record (somehow):
-		 *   - current this binding?
-		 */
-
-		/* FIXME: efficient array pushing, e.g. preallocate array, write DIRECTLY to array entries, etc. */
 	}
 
 	/* [... arr] */
@@ -102,6 +100,8 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 #endif  /* DUK_USE_TRACEBACKS */
 
 /*
+ *  Augment an error with tracedata, fileName, lineNumber, etc.
+ *
  *  thr: thread containing the error value
  *  thr_callstack: thread which should be used for generating callstack etc.
  */
@@ -140,11 +140,6 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 	}
 
 	/* Yes, augment error. */
-
-	/* FIXME: here we'd like to have a variant of "duk_def_prop_stridx" which
-	 * would refuse to add a property if it already exists to avoid any issues
-	 * with protected properties.
-	 */
 
 #ifdef DUK_USE_TRACEBACKS
 	/*
@@ -189,8 +184,10 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 			duk_u32 line;
 
 			pc = act->pc;
-			pc--;  /* PC points to next instruction, find offending PC */
-
+			pc--;  /* PC points to next instruction, find offending PC; note that
+			        * PC == 0 should never be possible for an error.
+			        */
+			DUK_ASSERT(pc >= 0 && (double) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 			act = NULL;  /* invalidated by pushes, so get out of the way */
 
 			duk_push_hobject(ctx, func);
