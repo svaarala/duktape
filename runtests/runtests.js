@@ -406,6 +406,7 @@ function testRunnerMain() {
     var argv = require('optimist')
         .usage('Execute one or multiple test cases; dirname to execute all tests in a directory.')
         .default('num-threads', 4)
+        .default('test-sleep', 0)
         .boolean('run-duk')
         .boolean('run-nodejs')
         .boolean('run-rhino')
@@ -660,7 +661,11 @@ function testRunnerMain() {
                 tmp = '        ' + task.engine.name + (task.valgrind ? '/vg' : '');
                 console.log(tmp.substring(tmp.length - 8) + ': ' + task.testcase.name);
             }
-            callback();
+            if (argv['test-sleep'] > 0) {
+                setTimeout(callback, Number(argv['test-sleep']));
+            } else {
+                callback();
+            }
         });
     }, argv['num-threads']);
 
