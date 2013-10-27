@@ -195,8 +195,10 @@ print(plain_ptr.toString());
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">resume</td><td>Resume target thread with a value or an error.</td></tr>
-<tr><td class="propname">yield</td><td>Yield a value or an error from current thread.</td></tr>
+<tr><td class="propname">resume</td><td>Resume target thread with a value or an error.
+Arguments: target thread, value, flag indicating whether value is to be thrown (optional, default false).</td></tr>
+<tr><td class="propname">yield</td><td>Yield a value or an error from current thread.
+Arguments: value, flag indicating whether value is to be thrown (optional, default false).</td></tr>
 <tr><td class="propname">current</td><td>Get currently running Thread object.</td></tr>
 </tbody>
 </table>
