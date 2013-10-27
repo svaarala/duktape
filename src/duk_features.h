@@ -16,7 +16,8 @@
  *  exposes its detection results as DUK_API_xxx.  The public header and the
  *  implementation must agree on e.g. names and argument lists of exposed
  *  calls; these are checked by duk_features_sanity.h (duktape.h is not yet
- *  included when this file is included).
+ *  included when this file is included to avoid fouling up feature selection
+ *  defines).
  *
  *  The general order of handling:
  *    - Compiler feature detection (require no includes)
@@ -89,27 +90,63 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /*
- *  Intermediate platform detection
+ *  Intermediate platform, architecture, and compiler detection.  These are
+ *  hopelessly intertwined - e.g. architecture defines depend on compiler etc.
  *
- *  Provide easier defines for platforms.
+ *  Provide easier defines for platforms and compilers which are often tricky
+ *  or verbose to detect.  The intent is not to provide intermediate defines for
+ *  all features; only if existing feature defines are inconvenient.
  */
 
+/* Intel x86 (32-bit) */
+#if defined(i386) || defined(__i386) || defined(__i386__) || \
+    defined(__i486__) || defined(__i586__) || defined(__i686__) || \
+    defined(__IA32__) || defined(_M_IX86) || defined(__X86__) || \
+    defined(_X86_) || defined(__THW_INTEL__) || defined(__I86__)
+#define  DUK_F_X86
+#endif
+
+/* AMD64 (64-bit) */
+#if defined(__amd64__) || defined(__amd64) || \
+    defined(__x86_64__) || defined(__x86_64) || \
+    defined(_M_X64) || defined(_M_AMD64)
+#define  DUK_F_X64
+#endif
+
+/* FIXME: X32: pointers are 32-bit so packed format can be used */
+
+/* MIPS */
+#if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
+    defined(_R3000) || defined(_R4000) || defined(_R5900) || \
+    defined(_MIPS_ISA_MIPS1) || defined(_MIPS_ISA_MIPS2) || \
+    defined(_MIPS_ISA_MIPS3) || defined(_MIPS_ISA_MIPS4) || \
+    defined(__mips) || defined(__MIPS__)
+#define  DUK_F_MIPS
+#endif
+
+/* Motorola 68K */
+#if defined(__m68k__) || defined(M68000) || defined(__MC68K__)
+#define  DUK_F_M68K
+#endif
+
+/* BSD variant */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
 #define  DUK_F_BSD
 #endif
 
-/* FIXME: Atari ST (TOS) with PureC is an exotic platform test; it now
- * fails because 'int' is 16 bit.
- */
+/* Atari ST TOS: __TOS__ defined by PureC (which doesn't work as a target now
+ * because int is 16-bit, to be fixed).  No platform define in VBCC apparently,
+ * so to use with VBCC, user must define '__TOS__' manually.
+  */
 #if defined(__TOS__)
 #define  DUK_F_TOS
 #endif
 
-/* FIXME: This is now incorrect; is there a define for AmigaOS?  Assume
- * VBCC implies AmigaOS for now.
+/* AmigaOS: neither AMIGA nor __amigaos__ is defined on VBCC, so user must
+ * define 'AMIGA' manually.
  */
-#if defined(__VBCC__)
+#if defined(AMIGA) || defined(__amigaos__)
 #define  DUK_F_AMIGAOS
 #endif
 
@@ -148,14 +185,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <limits.h>
 #include <sys/param.h>
 #elif defined(DUK_F_TOS)
-/* Atari ST */
+/* Atari ST TOS */
 #define  DUK_USE_DOUBLE_BE
 #include <limits.h>
 #elif defined(DUK_F_AMIGAOS)
-/* Amiga OS on M68k */
-/* FIXME: check for M68k */
+#if defined(DUK_F_M68K)
+/* AmigaOS on M68k */
 #define  DUK_USE_DOUBLE_BE
 #include <limits.h>
+#else
+#error AmigaOS but not M68K, not supported now
+#endif
 #else
 /* Linux and hopefully others */
 #define  DUK_F_STD_BYTEORDER_DETECT
@@ -164,6 +204,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <sys/param.h>
 #endif
 
+/* Shared includes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -221,13 +262,23 @@ typedef signed int duk_i32;
 
 /*
  *  Support for unaligned accesses
+ *
+ *  Assume unaligned accesses are not supported unless specifically allowed
+ *  in the target platform.
  */
 
-/* FIXME: currently just a hack for ARM, what would be a good way to detect? */
+/* FIXME: alignment is now only guaranteed to 4 bytes in any case, so doubles
+ * are not guaranteed to be aligned.
+ */
+
 #if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
 #undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#else
+#elif defined(DUK_F_MIPS)
+#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#elif defined(DUK_F_X86) || defined(DUK_F_X64)
 #define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#else
+#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #endif
 
 /*
@@ -775,13 +826,13 @@ extern double duk_computed_nan;
 #define  DUK_USE_DATE_PRS_STRPTIME
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_TOS)
-/* Atari ST */
+/* Atari ST TOS */
 #define  DUK_USE_DATE_NOW_TIME
 #define  DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */
 #define  DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_AMIGAOS)
-/* Amiga OS */
+/* AmigaOS */
 #define  DUK_USE_DATE_NOW_TIME
 #define  DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */
