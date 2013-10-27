@@ -1557,6 +1557,22 @@ class GenBuiltins:
 		self.ext_browser_like = ext_browser_like
 
 	def processBuiltins(self):
+		# finalize built-in data
+		# FIXME: built-in data would actually need to be regenerated for each
+		# byte order / profile variant, fix later
+
+		def delValue(obj, name):
+			for i,v in enumerate(obj['values']):
+				if v.has_key('name') and v['name'] == name:
+					obj['values'].pop(i)
+					return
+
+		delValue(bi_duk, 'version')
+		delValue(bi_duk, 'build')
+		build_new = self.build_info['build'] + '; ' + self.byte_order
+		bi_duk['values'].insert(0, { 'name': 'version', 'value': build_info['version'], 'attributes': '' })
+		bi_duk['values'].insert(1, { 'name': 'build', 'value': build_new, 'attributes': '' })
+
 		# generate built-in strings
 		self.gs = genstrings.GenStrings()
 		self.gs.processStrings()
@@ -1612,12 +1628,6 @@ if __name__ == '__main__':
 	f = open(opts.buildinfo, 'rb')
 	build_info = dukutil.json_decode(f.read().strip())
 	f.close()
-
-	# finalize built-in data
-	# FIXME: built-in data would actually need to be regenerated for each
-	# byte order / profile variant, fix later
-	bi_duk['values'].insert(0, { 'name': 'version', 'value': build_info['version'], 'attributes': '' })
-	bi_duk['values'].insert(1, { 'name': 'build', 'value': build_info['build'], 'attributes': '' })
 
 	# genbuiltins for different profiles
 	gb_little = GenBuiltins(build_info = build_info, byte_order='little', ext_section_b=True, ext_browser_like=True)
