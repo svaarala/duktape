@@ -187,6 +187,14 @@ Test runner
 The current test runner is a NodeJS program which handles both Ecmascript
 and API testcases.  See ``runtests/runtests.js``.
 
+Remote tests can be executed with a shell script wrapper which copies the
+test case over with scp and then executes it with ssh.  For instance::
+
+  #!/bin/sh
+
+  scp $1 user@192.168.100.20:/tmp >/dev/null
+  ssh user@192.168.100.20 "./duk /tmp/`basename $1`"
+
 Future work
 ===========
 
