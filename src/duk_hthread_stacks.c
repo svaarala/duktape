@@ -162,16 +162,16 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 #endif
 
 		DUK_ASSERT((p->lex_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HEAP_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HEAP_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HEAP_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HEAP_STRING_INT_REGBASE(thr)) == NULL)));
+		           ((duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
 		DUK_ASSERT((p->var_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HEAP_STRING_INT_REGBASE(thr)) == NULL)));
+		           ((duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
 	 skip_env_close:
 

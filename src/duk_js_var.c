@@ -446,7 +446,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HEAP_STRING_INT_LEXENV(thr));
+	tv = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
 	if (tv) {
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
@@ -710,12 +710,12 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 
 	DUK_ASSERT(DUK_HOBJECT_IS_DECENV(env));
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_CALLEE(thr));
+	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_CALLEE(thr));
 	if (!tv) {
 		/* env is closed, should be missing _callee, _thread, _regbase */
-		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_CALLEE(thr)) == NULL);
-		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_THREAD(thr)) == NULL);
-		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_REGBASE(thr)) == NULL);
+		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL);
+		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL);
+		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL);
 		return 0;
 	}
 
@@ -741,7 +741,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 	reg_rel = DUK_TVAL_GET_NUMBER(tv);
 	DUK_ASSERT(reg_rel >= 0 && reg_rel < ((duk_hcompiledfunction *) env_func)->nregs);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_THREAD(thr));
+	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THREAD(thr));
 	DUK_ASSERT(tv != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 	DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv) != NULL);
@@ -753,7 +753,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 	 * with what thread is used for valstack lookup.
 	 */
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_REGBASE(thr));
+	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_REGBASE(thr));
 	DUK_ASSERT(tv != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 	env_regbase = DUK_TVAL_GET_NUMBER(tv);
@@ -1001,7 +1001,7 @@ static int get_identifier_reference(duk_hthread *thr,
 
 			DUK_ASSERT(cl == DUK_HOBJECT_CLASS_OBJENV);
 
-			tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_TARGET(thr));
+			tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_TARGET(thr));
 			DUK_ASSERT(tv != NULL);
 			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 			target = DUK_TVAL_GET_OBJECT(tv);
@@ -1018,7 +1018,7 @@ static int get_identifier_reference(duk_hthread *thr,
 			if (duk_hobject_hasprop_raw(thr, target, name)) {
 				out->value = NULL;  /* can't get value, may be accessor */
 
-				tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_THIS(thr));
+				tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THIS(thr));
 				out->this_binding = tv;  /* may be NULL */
 
 				out->env = env;
@@ -1642,7 +1642,7 @@ static int declvar_helper(duk_hthread *thr,
 	} else {
 		DUK_ASSERT(DUK_HOBJECT_IS_OBJENV(env));
 
-		tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HEAP_STRING_INT_TARGET(thr));
+		tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_TARGET(thr));
 		DUK_ASSERT(tv != NULL);
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		holder = DUK_TVAL_GET_OBJECT(tv);
