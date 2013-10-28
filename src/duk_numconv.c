@@ -429,7 +429,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 			DUK_ASSERT(i + j < nx);
 			DUK_ASSERT(i + j < BI_MAX_PARTS);
 			DUK_ASSERT(x->v[i+j] == 0);
-			x->v[i+j] += (uint32_t) tmp;
+			x->v[i+j] = (uint32_t) tmp;
 		}
 #else
 		/*
@@ -497,7 +497,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 			DUK_ASSERT(i + j < nx);
 			DUK_ASSERT(i + j < BI_MAX_PARTS);
 			DUK_ASSERT(x->v[i+j] == 0);
-			x->v[i+j] += (uint32_t) f;
+			x->v[i+j] = (uint32_t) f;
 		}
 #endif  /* DUK_USE_64BIT_OPS */
 	}
