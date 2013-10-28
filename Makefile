@@ -108,10 +108,7 @@ DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 # Duktape command line tool - example of a main() program, used
 # for unit testing
 DUKTAPE_CMDLINE_SOURCES = \
-	$(DISTCMD)/duk_cmdline.c \
-	$(DISTCMD)/duk_ncurses.c \
-	$(DISTCMD)/duk_socket.c \
-	$(DISTCMD)/duk_fileio.c
+	$(DISTCMD)/duk_cmdline.c
 
 DUK_SHARED_LIBS_NONDEBUG = \
 	libduktape100.so.1.0.0 libduktape101.so.1.0.0 \
