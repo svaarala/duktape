@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Amiga timestamps have a ISO 8601 form with "-24:00" timezone
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-28 23:42:19.881564 Z
+references: []
+
+id: 9f96dfd40f9c1845a5f27a4606b2579d15249f6a
+log_events: 
+- - 2013-10-28 23:42:20.057557 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
