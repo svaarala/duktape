@@ -3,7 +3,7 @@ title: check why duk.300 fails to complete a testcase run (two cases hang)
 desc: ""
 type: :task
 component: duk
-release: v0.7
+release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,3 +23,22 @@ log_events:
     One of the hanging cases is:
     
       test-builtin-global-uri-bruteforce.js
+- - 2013-10-28 23:23:31.393441 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    The other hanging case is:
+    
+      test-numconv-tostring-fastpath.js
+- - 2013-10-28 23:26:52.330534 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    When manually running profile 300 vs. profile 400, it's apparent that
+    profile 300 gets slower and slower.  Since profile 300 has no refcounting,
+    could this be a garbage collection issue?  Perhaps mark-and-sweeps are
+    happening too often?
+- - 2013-10-28 23:27:07.647729 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.8 from v0.7
+  - ""
