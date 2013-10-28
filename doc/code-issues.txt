@@ -161,6 +161,61 @@ To achieve this:
 Portability concerns
 ====================
 
+Types
+-----
+
+* Availability of C99 types varies
+
+* Currently we also need exact 32-bit types (e.g. number conversion
+  32-bit arithmetic relies on exact unsigned overflows / underflows)
+
+**FIXME: C type usage is not consistent right now, and "int" is expected
+to be 32 bits which is not necessarily true even on platforms which support
+a 32-bit type.**
+
+Alignment
+---------
+
+Platforms vary in their alignment requirements:
+
+* Some platforms cause an error ("bus error") when alignment requirements
+  are violated.  Such platforms may have unaligned access instructions but
+  unaligned accesses may need to be flagged to the compiler.
+
+* Some platforms have slower unaligned accesses but which behave externally
+  just like aligned accesses.  "Slower" may mean that an interrupt / trap
+  handler is invoked, at a considerable penalty.
+
+* Some platforms support aligned and unaligned accesses with more or less
+  the same performance.
+
+Alignment level may also vary, e.g. platform may require 4-byte alignment
+for both 32-bit integers and IEEE doubles, or it may require 4-byte alignment
+for 32-bit integers but 8-byte alignment for doubles, etc.
+
+**FIXME: alignment is now guaranteed to 4 bytes on platforms where unaligned
+accesses are not allowed/preferable.**
+
+64-bit arithmetic
+-----------------
+
+Some compilers on 32-bit platforms may have 64-bit arithmetic problems
+(this seems to be the case with VBCC for example).  There are also older
+compiles with no 64-bit support at all.
+
+Duktape must compile with only 32-bit operations, so replacements are
+needed in the few places where 32 bits are not enough.
+
+Integer overflows
+-----------------
+
+Signed integer overflows are undefined behavior:
+
+* https://www.securecoding.cert.org/confluence/display/seccode/INT32-C.+Ensure+that+operations+on+signed+integers+do+not+result+in+overflow?showComments=false
+
+At least unsigned overflow handling is important, as it is needed to make
+"add with carry" etc convenient.
+
 Platforms and compilers
 =======================
 
