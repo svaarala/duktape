@@ -398,7 +398,6 @@ static void bi_sub_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
 /* x <- y * z */
 static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	int i, j, nx, nz;
-	uint64_t tmp;
 
 	DUK_ASSERT(bi_is_valid(y));
 	DUK_ASSERT(bi_is_valid(z));
@@ -419,7 +418,8 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 
 	nz = z->n;
 	for (i = 0; i < y->n; i++) {
-		tmp = 0;
+#ifdef DUK_USE_64BIT_OPS
+		uint64_t tmp = 0;
 		for (j = 0; j < nz; j++) {
 			tmp += (uint64_t) y->v[i] * (uint64_t) z->v[j] + x->v[i+j];
 			x->v[i+j] = (uint32_t) (tmp & 0xffffffffU);
@@ -428,8 +428,78 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		if (tmp > 0) {
 			DUK_ASSERT(i + j < nx);
 			DUK_ASSERT(i + j < BI_MAX_PARTS);
+			DUK_ASSERT(x->v[i+j] == 0);
 			x->v[i+j] += (uint32_t) tmp;
 		}
+#else
+		/*
+		 *  Multiply + add + carry for 32-bit components using only 16x16->32
+		 *  multiplies and carry detection based on unsigned overflow.
+		 *
+		 *    1st mult, 32-bit: (A*2^16 + B)
+		 *    2nd mult, 32-bit: (C*2^16 + D)
+		 *    3rd add, 32-bit: E
+		 *    4th add, 32-bit: F
+		 *
+		 *      (AC*2^16 + B) * (C*2^16 + D) + E + F
+		 *    = AC*2^32 + AD*2^16 + BC*2^16 + BD + E + F
+		 *    = AC*2^32 + (AD + BC)*2^16 + (BD + E + F)
+		 *    = AC*2^32 + AD*2^16 + BC*2^16 + (BD + E + F)
+		 */
+		uint32_t a, b, c, d, e, f;
+		uint32_t r, s, t;
+
+		a = y->v[i]; b = a & 0xffff; a = a >> 16;
+
+		f = 0;
+		for (j = 0; j < nz; j++) {
+			c = z->v[j]; d = c & 0xffff; c = c >> 16;
+			e = x->v[i+j];
+
+			/* build result as: (r << 32) + s: start with (BD + E + F) */
+			r = 0;
+			s = b * d;
+
+			/* add E */
+			t = s + e;
+			if (t < s) { r++; }  /* carry */
+			s = t;
+
+			/* add F */
+			t = s + f;
+			if (t < s) { r++; }  /* carry */
+			s = t;
+
+			/* add BC*2^16 */
+			t = b * c;
+			r += (t >> 16);
+			t = s + ((t & 0xffff) << 16);
+			if (t < s) { r++; }  /* carry */
+			s = t;
+
+			/* add AD*2^16 */
+			t = a * d;
+			r += (t >> 16);
+			t = s + ((t & 0xffff) << 16);
+			if (t < s) { r++; }  /* carry */
+			s = t;
+
+			/* add AC*2^32 */
+			t = a * c;
+			r += t;
+
+			DUK_DDDPRINT("ab=%08x cd=%08x ef=%08x -> rs=%08x %08x", y->v[i], z->v[j], x->v[i+j], r, s);
+
+			x->v[i+j] = s;
+			f = r;
+		}
+		if (f > 0) {
+			DUK_ASSERT(i + j < nx);
+			DUK_ASSERT(i + j < BI_MAX_PARTS);
+			DUK_ASSERT(x->v[i+j] == 0);
+			x->v[i+j] += (uint32_t) f;
+		}
+#endif  /* DUK_USE_64BIT_OPS */
 	}
 
 	bi_normalize(x);

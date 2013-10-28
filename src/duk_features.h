@@ -263,6 +263,21 @@ typedef signed int duk_i32;
 #endif
 
 /*
+ *  Check whether we should use 64-bit integers
+ */
+
+/* Quite incomplete now: require C99, avoid 64-bit types on VBCC because
+ * they seem to misbehave.  Should use 64-bit operations at least on 64-bit
+ * platforms even when C99 not available (perhaps integrate to bit type
+ * detection?).
+ */
+#if defined(DUK_F_C99) && !defined(__VBCC__)
+#define  DUK_USE_64BIT_OPS
+#else
+#undef  DUK_USE_64BIT_OPS
+#endif
+
+/*
  *  Support for unaligned accesses
  *
  *  Assume unaligned accesses are not supported unless specifically allowed
@@ -397,7 +412,9 @@ typedef signed int duk_i32;
 union duk_double_union {
 	double d;
 	/* FIXME: type size assumptions, fix */
+#ifdef DUK_USE_64BIT_OPS
 	unsigned long long ull[1];
+#endif
 	unsigned int ui[2];
 	unsigned short us[4];
 	unsigned char uc[8];
@@ -429,21 +446,6 @@ typedef union duk_double_union duk_double_union;
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #elif defined(DUK_F_AMIGAOS) /* FIXME: M68K */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
-#endif
-
-/*
- *  Check whether we should use 64-bit integers
- */
-
-/* Quite incomplete now: require C99, avoid 64-bit types on VBCC because
- * they seem to misbehave.  Should use 64-bit operations at least on 64-bit
- * platforms even when C99 not available (perhaps integrate to bit type
- * detection?).
- */
-#if defined(DUK_F_C99) && !defined(__VBCC__)
-#define  DUK_USE_64BIT_OPS
-#else
-#undef  DUK_USE_64BIT_OPS
 #endif
 
 /*
