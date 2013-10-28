@@ -63,6 +63,9 @@
 #ifdef DUK_USE_DOUBLE_BE
 #define  USE__BE_VARIANT
 #endif
+#ifdef DUK_USE_64BIT_OPS
+#define  USE__64BIT
+#endif
 
 /* sanity */
 #if !defined(USE__LE_VARIANT) && !defined(USE__ME_VARIANT) && !defined(USE__BE_VARIANT)
@@ -87,7 +90,10 @@
  */
 union duk_tval {
 	double d;
+	/* FIXME: types */
+#ifdef USE__64BIT
 	unsigned long long ull[1];
+#endif
 	unsigned int ui[2];
 	unsigned short us[4];
 	unsigned char uc[8];
@@ -111,6 +117,7 @@ typedef union duk_tval duk_tval;
 /* for convenience */
 #define  DUK_XTAG_UNDEFINED_ACTUAL 0xfff10000
 #define  DUK_XTAG_UNDEFINED_UNUSED 0xfff10001
+#define  DUK_XTAG_NULL             0xfff20000
 #define  DUK_XTAG_BOOLEAN_FALSE    0xfff30000
 #define  DUK_XTAG_BOOLEAN_TRUE     0xfff30001
 
@@ -124,61 +131,40 @@ typedef union duk_tval duk_tval;
  */
 
 /* raw setters */
+#ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
-#define  DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) DUK_XTAG_UNDEFINED_ACTUAL; \
+#define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) (x); \
 	} while (0)
 #else
-#define  DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = ((unsigned long long) DUK_XTAG_UNDEFINED_ACTUAL) << 32; \
+#define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
+		(v)->ull[DUK_DBL_IDX_ULL0] = ((unsigned long long) (x)) << 32; \
 	} while (0)
 #endif
+#else  /* USE__64BIT */
+#define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
+		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) (x); \
+		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) 0; \
+	} while (0)
+#endif  /* USE__64BIT */
 
+#define  DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
 #define  DUK__TVAL_SET_UNDEFINED_ACTUAL_NOTFULL(v)  do { \
 		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_ACTUAL; \
 	} while (0)
 
-#ifdef USE__ME_VARIANT
-#define  DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) DUK_XTAG_UNDEFINED_UNUSED; \
-	} while (0)
-#else
-#define  DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = ((unsigned long long) DUK_XTAG_UNDEFINED_UNUSED) << 32; \
-	} while (0)
-#endif
-
+#define  DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_UNDEFINED_UNUSED)
 #define  DUK__TVAL_SET_UNDEFINED_UNUSED_NOTFULL(v)  do { \
 		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_UNUSED; \
 	} while (0)
 
-#ifdef USE__ME_VARIANT
-#define  DUK__TVAL_SET_NULL_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_NULL) << 16); \
-	} while (0)
-#else
-#define  DUK__TVAL_SET_NULL_FULL(v)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_NULL) << 48); \
-	} while (0)
-#endif
-
 /* Note: 16-bit initializer suffices (unlike for undefined/boolean) */
+#define  DUK__TVAL_SET_NULL_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_NULL)
 #define  DUK__TVAL_SET_NULL_NOTFULL(v)  do { \
 		(v)->us[DUK_DBL_IDX_US0] = (unsigned short) DUK_TAG_NULL; \
 	} while (0)
 
-#ifdef USE__ME_VARIANT
-#define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  do { \
-		DUK_ASSERT((val) == 0 || (val) == 1); \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_BOOLEAN) << 16) | ((unsigned long long) (val)); \
-	} while (0)
-#else
-#define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  do { \
-		DUK_ASSERT((val) == 0 || (val) == 1); \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) DUK_TAG_BOOLEAN) << 48) | (((unsigned long long) (val)) << 32); \
-	} while (0)
-#endif
-
+#define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  DUK__TVAL_SET_HIGH32((v), (((unsigned int) DUK_TAG_BOOLEAN) << 16) | ((unsigned int) val))
 #define  DUK__TVAL_SET_BOOLEAN_NOTFULL(v,val)  do { \
 		DUK_ASSERT((val) == 0 || (val) == 1); \
 		(v)->ui[DUK_DBL_IDX_UI0] = (((unsigned int) DUK_TAG_BOOLEAN) << 16) | ((unsigned int) (val)); \
@@ -193,6 +179,7 @@ typedef union duk_tval duk_tval;
 #define  DUK__TVAL_SET_NUMBER_NOTFULL(v,d)  DUK__TVAL_SET_NUMBER_FULL(v,d)
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
+#ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) (tag)) << 16) | (((unsigned long long) (unsigned int) (h)) << 32); \
@@ -202,7 +189,14 @@ typedef union duk_tval duk_tval;
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) (tag)) << 48) | ((unsigned long long) (unsigned int) (h)); \
 	} while (0)
 #endif
+#else  /* USE__64BIT */
+#define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
+		(v)->ui[DUK_DBL_IDX_UI0] = ((unsigned int) (tag)) << 16; \
+		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) (h); \
+	} while (0)
+#endif  /* USE__64BIT */
 
+#ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_NAN_FULL(v)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = 0x000000007ff80000ULL; \
@@ -212,6 +206,12 @@ typedef union duk_tval duk_tval;
 		(v)->ull[DUK_DBL_IDX_ULL0] = 0x7ff8000000000000ULL; \
 	} while (0)
 #endif
+#else  /* USE__64BIT */
+#define  DUK__TVAL_SET_NAN_FULL(v)  do { \
+		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) 0x7ff80000; \
+		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) 0x00000000; \
+	} while (0)
+#endif  /* USE__64BIT */
 
 #define  DUK__TVAL_SET_NAN_NOTFULL(v)  do { \
 		(v)->us[DUK_DBL_IDX_US0] = 0x7ff8; \
@@ -285,17 +285,25 @@ typedef union duk_tval duk_tval;
  */
 
 /* XXX: reading unsigned int instead of unsigned short is one byte shorter on x86 :) */
+#ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__DOUBLE_IS_NAN_FULL(d) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	(((((duk_tval *)(d))->us[DUK_DBL_IDX_US0] & 0x7ff0) == 0x7ff0) && \
-	 (((((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0]) & 0x000fffffffffffffULL) != 0))
+	 (((((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0]) & 0xffffffff000fffffULL) != 0))
 #else
 #define  DUK__DOUBLE_IS_NAN_FULL(d) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	(((((duk_tval *)(d))->us[DUK_DBL_IDX_US0] & 0x7ff0) == 0x7ff0) && \
-	 (((((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0]) & 0xffffffff000fffffULL) != 0))
+	 (((((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0]) & 0x000fffffffffffffULL) != 0))
 #endif
+#else  /* USE__64BIT */
+#define  DUK__DOUBLE_IS_NAN_FULL(d) \
+	/* E == 0x7ff, F != 0 => NaN */ \
+	(((((duk_tval *)(d))->ui[DUK_DBL_IDX_UI0] & 0x7ff00000) == 0x7ff00000) && \
+	 ((((duk_tval *)(d))->ui[DUK_DBL_IDX_UI0] & 0x000fffff) != 0 || \
+          ((duk_tval *)(d))->ui[DUK_DBL_IDX_UI1] != 0))
+#endif  /* USE__64BIT */
 
 /* XXX: avoid possible double read? */
 #define  DUK__DOUBLE_IS_NAN_NOTFULL(d) \
@@ -315,6 +323,7 @@ typedef union duk_tval duk_tval;
 		} \
 	} while (0)
 
+#ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__DOUBLE_IS_NORMALIZED_NAN_FULL(d) \
 	(((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0] == 0x000000007ff80000ULL)
@@ -322,6 +331,11 @@ typedef union duk_tval duk_tval;
 #define  DUK__DOUBLE_IS_NORMALIZED_NAN_FULL(d) \
 	(((duk_tval *)(d))->ull[DUK_DBL_IDX_ULL0] == 0x7ff8000000000000ULL)
 #endif
+#else  /* USE__64BIT */
+#define  DUK__DOUBLE_IS_NORMALIZED_NAN_FULL(d) \
+	((((duk_tval *)(d))->ui[DUK_DBL_IDX_UI0] == 0x7ff80000) && \
+	 (((duk_tval *)(d))->ui[DUK_DBL_IDX_UI1] == 0x00000000))
+#endif  /* USE__64BIT */
 
 #define  DUK__DOUBLE_IS_NORMALIZED_NAN_NOTFULL(d) \
 	/* E == 0x7ff, F == 8 => normalized NaN */ \
@@ -495,6 +509,9 @@ struct duk_tval_struct {
 #endif
 #ifdef USE__BE_VARIANT
 #undef USE__BE_VARIANT
+#endif
+#ifdef USE__64BIT
+#undef USE__64BIT
 #endif
 
 #endif  /* DUK_TVAL_H_INCLUDED */

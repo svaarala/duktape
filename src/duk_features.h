@@ -352,7 +352,9 @@ typedef signed int duk_i32;
 
 /* indexes of various types with respect to big endian (logical) layout */
 #if defined(DUK_USE_DOUBLE_LE)
+#ifdef DUK_USE_64BIT_OPS
 #define  DUK_DBL_IDX_ULL0   0
+#endif
 #define  DUK_DBL_IDX_UI0    1
 #define  DUK_DBL_IDX_UI1    0
 #define  DUK_DBL_IDX_US0    3
@@ -370,7 +372,9 @@ typedef signed int duk_i32;
 #define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
 #define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_BE)
+#ifdef DUK_USE_64BIT_OPS
 #define  DUK_DBL_IDX_ULL0   0
+#endif
 #define  DUK_DBL_IDX_UI0    0
 #define  DUK_DBL_IDX_UI1    1
 #define  DUK_DBL_IDX_US0    0
@@ -388,7 +392,9 @@ typedef signed int duk_i32;
 #define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
 #define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_ME)
+#ifdef DUK_USE_64BIT_OPS
 #define  DUK_DBL_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
+#endif
 #define  DUK_DBL_IDX_UI0    0
 #define  DUK_DBL_IDX_UI1    1
 #define  DUK_DBL_IDX_US0    1
