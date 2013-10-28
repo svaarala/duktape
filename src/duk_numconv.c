@@ -188,6 +188,7 @@ static int bi_compare(duk_bigint *x, duk_bigint *y) {
 	return -1;
 }
 
+#ifdef DUK_USE_64BIT_OPS
 /* x <- y + z */
 static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	uint64_t tmp;
@@ -223,6 +224,51 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	/* no need to normalize */
 	DUK_ASSERT(bi_is_valid(x));
 }
+#else  /* DUK_USE_64BIT_OPS */
+/* x <- y + z */
+static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
+	uint32_t carry, tmp1, tmp2;
+	int i, ny, nz;
+
+	DUK_ASSERT(bi_is_valid(y));
+	DUK_ASSERT(bi_is_valid(z));
+
+	if (z->n > y->n) {
+		duk_bigint *t;
+		t = y; y = z; z = t;
+	}
+	DUK_ASSERT(y->n >= z->n);
+
+	ny = y->n; nz = z->n;
+	carry = 0;
+	for (i = 0; i < ny; i++) {
+		/* Carry is detected based on wrapping which relies on exact 32-bit
+		 * types.
+		 */
+		DUK_ASSERT(i < BI_MAX_PARTS);
+		tmp1 = y->v[i];
+		tmp2 = tmp1;
+		if (i < nz) {
+			tmp2 += z->v[i];
+		}
+		if (carry) {
+			tmp2++;
+		}
+		carry = (tmp2 < tmp1 ? 1 : 0);
+		x->v[i] = tmp2;
+	}
+	if (carry) {
+		DUK_ASSERT(i < BI_MAX_PARTS);
+		DUK_ASSERT(carry == 1);
+		x->v[i++] = carry;
+	}
+	x->n = i;
+	DUK_ASSERT(x->n <= BI_MAX_PARTS);
+
+	/* no need to normalize */
+	DUK_ASSERT(bi_is_valid(x));
+}
+#endif  /* DUK_USE_64BIT_OPS */
 
 /* x <- y + z */
 static void bi_add_small(duk_bigint *x, duk_bigint *y, uint32_t z) {
