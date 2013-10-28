@@ -49,10 +49,13 @@ duk_u32 duk_util_get_hash_prime(duk_u32 size) {
 			break;
 		}
 
-		/* FIXME: portability: perhaps use double instead? */
-
-		/* prediction */
-		curr = (duk_u32) ((((unsigned long long) curr) * ((unsigned long long) HASH_SIZE_RATIO)) >> 10);
+		/* prediction: portable variant using doubles if 64-bit values not available */
+#ifdef DUK_USE_64BIT_OPS
+		curr = (duk_u32) ((((uint64_t) curr) * ((uint64_t) HASH_SIZE_RATIO)) >> 10);
+#else
+		/* 32-bit x 11-bit = 43-bit, fits accurately into a double */
+		curr = (duk_u32) floor(((double) curr) * ((double) HASH_SIZE_RATIO) / 1024.0);
+#endif
 
 		/* correction */
 		curr += t;
