@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add x32 support (packed types)
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-27 20:41:05.496387 Z
+references: []
+
+id: 6a2f6a890c4d70d0c723ac33336c73498627eaa9
+log_events: 
+- - 2013-10-27 20:41:05.657152 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
