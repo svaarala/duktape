@@ -188,8 +188,8 @@ static int bi_compare(duk_bigint *x, duk_bigint *y) {
 	return -1;
 }
 
-#ifdef DUK_USE_64BIT_OPS
 /* x <- y + z */
+#ifdef DUK_USE_64BIT_OPS
 static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	uint64_t tmp;
 	int i, ny, nz;
@@ -225,7 +225,6 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	DUK_ASSERT(bi_is_valid(x));
 }
 #else  /* DUK_USE_64BIT_OPS */
-/* x <- y + z */
 static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	uint32_t carry, tmp1, tmp2;
 	int i, ny, nz;
@@ -300,6 +299,7 @@ static void bi_add_copy(duk_bigint *x, duk_bigint *y, duk_bigint *t) {
 #endif
 
 /* x <- y - z, require x >= y => z >= 0, i.e. y >= z */
+#ifdef DUK_USE_64BIT_OPS
 static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	int ny, nz;
 	int i;
@@ -330,6 +330,49 @@ static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	bi_normalize(x);  /* need to normalize, may even cancel to 0 */
 	DUK_ASSERT(bi_is_valid(x));
 }
+#else
+static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
+	int ny, nz;
+	int i;
+	uint32_t tmp1, tmp2, borrow;
+
+	DUK_ASSERT(bi_is_valid(y));
+	DUK_ASSERT(bi_is_valid(z));
+	DUK_ASSERT(bi_compare(y, z) >= 0);
+	DUK_ASSERT(y->n >= z->n);
+
+	ny = y->n; nz = z->n;
+	borrow = 0;
+	for (i = 0; i < ny; i++) {
+		/* Borrow is detected based on wrapping which relies on exact 32-bit
+		 * types.
+		 */
+		tmp1 = y->v[i];
+		tmp2 = tmp1;
+		if (i < nz) {
+			tmp2 -= z->v[i];
+		}
+
+		/* Careful with borrow condition:
+		 *  - If borrow not subtracted: 0x12345678 - 0 - 0xffffffff = 0x12345679 (> 0x12345678)
+		 *  - If borrow subtracted:     0x12345678 - 1 - 0xffffffff = 0x12345678 (== 0x12345678)
+		 */
+		if (borrow) {
+			tmp2--;
+			borrow = (tmp2 >= tmp1 ? 1 : 0);
+		} else {
+			borrow = (tmp2 > tmp1 ? 1 : 0);
+		}
+
+		x->v[i] = tmp2;
+	}
+	DUK_ASSERT(borrow == 0);
+
+	x->n = i;
+	bi_normalize(x);  /* need to normalize, may even cancel to 0 */
+	DUK_ASSERT(bi_is_valid(x));
+}
+#endif
 
 #if 0  /* unused */
 /* x <- y - z */
