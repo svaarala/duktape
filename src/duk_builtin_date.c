@@ -117,7 +117,7 @@ static double get_now_timeval_gettimeofday(duk_context *ctx) {
 /* Not a very good provider: only full seconds are available. */
 static double get_now_timeval_time(duk_context *ctx) {
 	time_t t = time(NULL);
-	return (double) t;
+	return ((double) t) * 1000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
 
