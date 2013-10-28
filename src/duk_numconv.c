@@ -251,10 +251,18 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		if (i < nz) {
 			tmp2 += z->v[i];
 		}
+
+		/* Careful with carry condition:
+		 *  - If carry not added: 0x12345678 + 0 + 0xffffffff = 0x12345677 (< 0x12345678)
+		 *  - If carry added:     0x12345678 + 1 + 0xffffffff = 0x12345678 (== 0x12345678)
+		 */
 		if (carry) {
 			tmp2++;
+			carry = (tmp2 <= tmp1 ? 1 : 0);
+		} else {
+			carry = (tmp2 < tmp1 ? 1 : 0);
 		}
-		carry = (tmp2 < tmp1 ? 1 : 0);
+
 		x->v[i] = tmp2;
 	}
 	if (carry) {
