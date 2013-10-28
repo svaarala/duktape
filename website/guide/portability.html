@@ -1,0 +1,58 @@
+<h2 id="portability">Portability</h2>
+
+<h3>Platforms and compilers</h3>
+
+<p>The table below summarizes the platforms and compilers which Duktape is known
+to work on, with portability notes where appropriate.  This is not a list of
+supported platforms, rather a list of what is known to work.</p>
+
+<table>
+<thead>
+<tr>
+<th>Operating system</th>
+<th>Compiler</th>
+<th>Processor</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td>GCC</td>
+<td>x86, x86-64, ARM, MIPS</td>
+<td></td>
+</tr>
+<tr>
+<td>AmigaOS</td>
+<td>VBCC</td>
+<td>M68K</td>
+<td>Must define <tt>AMIGA</tt> and <tt>__MC68K__</tt> manually (no platform
+    or processor defines available).</td>
+</tr>
+<tr>
+<td>TOS (Atari ST)</td>
+<td>VBCC</td>
+<td>M68K</td>
+<td>Must define <tt>__TOS__</tt> and <tt>__MC68K__</tt> manually (no platform
+    or processor defines available).</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Using C++ instead of C</h3>
+
+<p>There are two ways to use Duktape in a C++ program:</p>
+<ul>
+<li>Compile Duktape in plain C, and use it from a C++ program.  The
+    <tt>duktape.h</tt> header provides the necessary glue to avoid name
+    mangling issues.</li>
+<li>Compile both Duktape and your program as C++..</li>
+</ul>
+
+<h3>Limitations</h3>
+
+<ul>
+<li>The <tt>int</tt> type is assumed to be 32 bits.  This is incorrect even
+    on some platforms which provide a 32-bit type.</li>
+</ul>
+
