@@ -124,7 +124,9 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define  DUK_F_MIPS
 #endif
 
-/* Motorola 68K */
+/* Motorola 68K.  Not defined by VBCC, so user must define one of these
+ * manually when using VBCC.
+ */
 #if defined(__m68k__) || defined(M68000) || defined(__MC68K__)
 #define  DUK_F_M68K
 #endif
@@ -135,7 +137,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define  DUK_F_BSD
 #endif
 
-/* Atari ST TOS: __TOS__ defined by PureC (which doesn't work as a target now
+/* Atari ST TOS. __TOS__ defined by PureC (which doesn't work as a target now
  * because int is 16-bit, to be fixed).  No platform define in VBCC apparently,
  * so to use with VBCC, user must define '__TOS__' manually.
   */
@@ -143,7 +145,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define  DUK_F_TOS
 #endif
 
-/* AmigaOS: neither AMIGA nor __amigaos__ is defined on VBCC, so user must
+/* AmigaOS.  Neither AMIGA nor __amigaos__ is defined on VBCC, so user must
  * define 'AMIGA' manually.
  */
 #if defined(AMIGA) || defined(__amigaos__)
@@ -427,6 +429,21 @@ typedef union duk_double_union duk_double_union;
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #elif defined(DUK_F_AMIGAOS) /* FIXME: M68K */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/*
+ *  Check whether we should use 64-bit integers
+ */
+
+/* Quite incomplete now: require C99, avoid 64-bit types on VBCC because
+ * they seem to misbehave.  Should use 64-bit operations at least on 64-bit
+ * platforms even when C99 not available (perhaps integrate to bit type
+ * detection?).
+ */
+#if defined(DUK_F_C99) && !defined(__VBCC__)
+#define  DUK_USE_64BIT_OPS
+#else
+#undef  DUK_USE_64BIT_OPS
 #endif
 
 /*
