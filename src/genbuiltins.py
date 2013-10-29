@@ -1570,7 +1570,7 @@ class GenBuiltins:
 		delValue(bi_duk, 'version')
 		delValue(bi_duk, 'build')
 		build_new = self.build_info['build'] + '; ' + self.byte_order
-		bi_duk['values'].insert(0, { 'name': 'version', 'value': build_info['version'], 'attributes': '' })
+		bi_duk['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
 		bi_duk['values'].insert(1, { 'name': 'build', 'value': build_new, 'attributes': '' })
 
 		# generate built-in strings
