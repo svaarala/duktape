@@ -851,6 +851,7 @@ double duk_get_number(duk_context *ctx, int index) {
 	 *  different from internal normalization?
 	 */
 
+	/* FIXME: breaks strict aliasing rules */
 	DUK_DOUBLE_NORMALIZE_NAN_CHECK(&ret);
 
 	return ret;
