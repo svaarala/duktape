@@ -166,9 +166,6 @@ done
 
 for i in \
 	duk_cmdline.c \
-	duk_ncurses.c \
-	duk_socket.c \
-	duk_fileio.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
 done
