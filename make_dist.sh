@@ -29,7 +29,7 @@ if [ -d .git ]; then
 else
 	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; exported"
 fi
-DUK_VERSION=700   # major*10000 + minor*100 + patch
+DUK_VERSION=800   # major*10000 + minor*100 + patch
 
 echo "BUILDINFO: $BUILDINFO"
 echo "DUK_VERSION: $DUK_VERSION"
