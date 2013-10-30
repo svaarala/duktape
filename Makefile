@@ -63,7 +63,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_hbuffer_ops.c \
 	$(DISTSRCSEP)/duk_unicode_tables.c \
 	$(DISTSRCSEP)/duk_unicode_support.c \
-	$(DISTSRCSEP)/duk_strings.c \
 	$(DISTSRCSEP)/duk_builtins.c \
 	$(DISTSRCSEP)/duk_js_ops.c \
 	$(DISTSRCSEP)/duk_js_var.c \
@@ -169,6 +168,7 @@ all64:	duk.400 duk.401 \
 
 clean:
 	-@rm -rf dist/
+	-@rm -rf full/
 	-@rm -f $(DUK_CMDLINE_TOOLS_NONDEBUG)
 	-@rm -f $(DUK_CMDLINE_TOOLS_DEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
