@@ -109,14 +109,19 @@ It's still important to support common idioms like iterating strings sequentiall
 compiling, and integrating Duktape into your program.  It also provides concrete
 examples of how you can integrate scripting capabilities into your program.</p>
 
-<p><a href="#programming">Programming model</a> and <a href="#types">Types</a>
+<p><a href="#programming">Programming model</a> and <a href="#types">Stack types</a>
 discuss core Duktape concepts such as <i>heap</i>, <i>context</i>, <i>value stacks</i>,
 <i>Duktape API</i>, and <i>Duktape/C functions</i>.  Duktape types are discussed
-in detail. <b>(This is currently a bit of a jumble and will be cleaned up in a later
+in detail.
+ <b>(This is currently a bit of a jumble and will be cleaned up in a later
 release.)</b></p>
 
-<p><a href="#finalization">Finalization</a> and <a href="#coroutines">Coroutines</a>
-discuss invididual technical topics separately from the basic programming model.
+<p>Duktape specific Ecmascript features are discussed in multiple sections:
+<a href="#typealgorithms">Type algorithms</a> (for custom types),
+<a href="#duktapebuiltins">Duktape built-ins</a> (additional built-ins), 
+<a href="#errorobjects">Error objects</a> (properties and traceback support),
+<a href="#finalization">Finalization</a>, and
+<a href="#coroutines">Coroutines</a>.
 <b>(These are also very much under work.)</b></p>
 
 <p><a href="#limitations">Limitations</a> discusses currently known limitations

@@ -2,11 +2,11 @@
 
 <h3>Property summary</h3>
 
-<p>Ecmascript Error objects have very few standard properties, so other
-implementations have added quite a few custom properties.  Duktape uses
-standard Error properties but also borrows the most useful properties
-used by other implementations.  The number of "own" properties of error
-objects is minimized to keep error objects as small as possible.</p>
+<p>Ecmascript Error objects have very few standard properties, so many
+Ecmascript implementations have added quite a few custom properties.
+Duktape uses standard Error properties but also borrows the most useful
+properties used by other implementations.  The number of "own" properties
+of error objects is minimized to keep error objects as small as possible.</p>
 
 <p>Error objects have the following properties (mostly inherited):</p>
 
@@ -16,7 +16,7 @@ objects is minimized to keep error objects as small as possible.</p>
 </thead>
 <tbody>
 <tr><td>name</td><td>standard</td><td>Name of error, e.g. <tt>TypeError</tt>, inherited</td></tr>
-<tr><td>message</td><td>standard</td><td>Optional message of error, own property (empty message inherited if absent)</td></tr>
+<tr><td>message</td><td>standard</td><td>Optional message of error, own property, empty message inherited if absent</td></tr>
 <tr><td>fileName</td><td>Rhino</td><td>Filename related to error source, inherited accessor</td></tr>
 <tr><td>lineNumber</td><td>Rhino</td><td>Linenumber related to error source, inherited accessor</td></tr>
 <tr><td>stack</td><td>V8</td><td>Traceback as a multi-line human redable string, inherited accessor</td></tr>
