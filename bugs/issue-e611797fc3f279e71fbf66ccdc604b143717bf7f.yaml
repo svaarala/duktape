@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix "Growing the value stack" section, define XXX
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-10-30 20:59:30.836963 Z
+references: []
+
+id: e611797fc3f279e71fbf66ccdc604b143717bf7f
+log_events: 
+- - 2013-10-30 20:59:31.024316 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
