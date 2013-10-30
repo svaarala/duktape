@@ -169,6 +169,7 @@ all64:	duk.400 duk.401 \
 clean:
 	-@rm -rf dist/
 	-@rm -rf full/
+	-@rm -rf site/
 	-@rm -f $(DUK_CMDLINE_TOOLS_NONDEBUG)
 	-@rm -f $(DUK_CMDLINE_TOOLS_DEBUG)
 	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
