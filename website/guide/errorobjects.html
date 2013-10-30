@@ -94,6 +94,17 @@ will return the same value as calling <tt>toString()</tt> on the error
 would.  This means you can always print <tt>e.stack</tt> and get a useful
 output.</p>
 
+<p>The most portable traceback printing approach is something like:</p>
+<pre class="ecmascript-code">
+try {
+    decodeURIComponent('%e1%a9%01');  // invalid utf-8
+} catch (e) {
+    // Print stacktrace on at least Duktape and V8, or a standard error
+    // string otherwise.
+    print(e.stack || e);
+}
+</pre>
+
 <p>Attempt to write to <tt>stack</tt> is silently ignored.  You can still
 override the accessor by defining an own property of the same name explicitly
 with <tt>Object.defineProperty()</tt>.  This behavior differs from V8 where
