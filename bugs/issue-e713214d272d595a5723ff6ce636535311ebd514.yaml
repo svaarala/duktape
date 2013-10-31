@@ -3,7 +3,7 @@ title: multiple get/put primitive to api
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -26,3 +26,7 @@ log_events:
     
     void duk_push_multiple(duk_context *ctx, const char *types, ...);                   /* push multiple values, see duk_get_multiple */
     void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...);
+- - 2013-10-31 00:04:10.342863 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
+  - ""

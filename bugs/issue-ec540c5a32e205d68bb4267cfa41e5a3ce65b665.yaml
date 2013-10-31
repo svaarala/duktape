@@ -3,7 +3,7 @@ title: investigate typedarray spec
 desc: http://www.khronos.org/registry/typedarray/specs/latest/
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -36,3 +36,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - "See also: http://wiki.commonjs.org/wiki/Binary"
+- - 2013-10-31 00:04:11.320418 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
+  - ""

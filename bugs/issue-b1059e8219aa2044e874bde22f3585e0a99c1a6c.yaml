@@ -3,7 +3,7 @@ title: check builtin object implementations for size optimization
 desc: E.g. valueOf() implementation is often very similar.
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-10-04 21:45:40.882171 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-10-31 00:04:11.223924 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

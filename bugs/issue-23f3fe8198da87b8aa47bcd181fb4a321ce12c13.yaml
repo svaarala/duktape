@@ -3,7 +3,7 @@ title: create traceback by operating on an allocated array part directly
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-10-25 13:38:02.583321 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-10-31 00:12:38.951569 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

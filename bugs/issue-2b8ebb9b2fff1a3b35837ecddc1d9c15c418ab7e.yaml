@@ -3,7 +3,7 @@ title: add a snapshot of the site (esp. api/guide) to the distributable
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-09-18 18:51:08.887915 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-10-31 00:04:11.117798 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

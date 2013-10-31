@@ -114,3 +114,12 @@ releases:
     - sva <sami.vaarala@iki.fi>
     - created
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.10
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2013-10-31 00:05:07.328729 Z
+    - sva <sami.vaarala@iki.fi>
+    - created
+    - ""

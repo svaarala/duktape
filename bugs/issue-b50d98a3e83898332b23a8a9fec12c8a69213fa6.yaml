@@ -3,7 +3,7 @@ title: clarify duk_pcall and duk_safe_call errhandler_index semantics
 desc: How to specify default handler vs. use current handler?
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2013-09-29 10:05:52.335095 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-10-31 00:12:37.698297 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

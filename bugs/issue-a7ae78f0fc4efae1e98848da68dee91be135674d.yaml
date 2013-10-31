@@ -5,7 +5,7 @@ desc: |-
   in <dist>/modules/duk_mod_ncurses.c and <dist>/modules/duk_mod_socket.c.
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2013-09-29 10:01:19.309201 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-10-31 00:04:10.925336 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""
