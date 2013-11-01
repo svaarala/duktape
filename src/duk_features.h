@@ -152,6 +152,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define  DUK_F_AMIGAOS
 #endif
 
+/* GCC and GCC version convenience define. */
+#if defined(__GNUC__)
+#define  DUK_F_GCC
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
+/* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
+#define  DUK_F_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#else
+#error cannot figure out gcc version
+#endif
+#endif
+
 /*
  *  Platform detection and system includes
  *
@@ -467,8 +478,7 @@ typedef union duk_double_union duk_double_union;
 #define  DUK_DOUBLE_2TO31     2147483648.0
 
 #undef  DUK_USE_COMPUTED_INFINITY
-#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
-    (((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4))
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION < 40600)
 /* GCC older than 4.6: avoid overflow warnings related to using INFINITY */
 #define  DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
@@ -611,8 +621,7 @@ extern double duk_computed_nan;
  *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
-    ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 5)) || (__GNUC__ >= 3)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
 /* since gcc-2.5 */
 #define  DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(__clang__)
@@ -623,9 +632,31 @@ extern double duk_computed_nan;
 #else
 /* Don't know how to declare a noreturn function, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
- * uninitialized).
+ * uninitialized").
  */
 #define  DUK_NORETURN(decl)  decl
+#endif
+
+/*
+ *  Macro for stating that a certain line cannot be reached.
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc-4.5.0/gcc/Other-Builtins.html#Other-Builtins
+ *  http://clang.llvm.org/docs/LanguageExtensions.html
+ */
+
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500)
+/* since gcc-4.5 */
+#define  DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
+#elif defined(__clang__)
+/* XXX: __has_builtin(__builtin_unreachable) */
+/* same as gcc */
+#define  DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
+#else
+/* Don't know how to declare unreachable point, so don't do it; this
+ * may cause some spurious compilation warnings (e.g. "variable used
+ * uninitialized").
+ */
+#define  DUK_UNREACHABLE()  /* unreachable */
 #endif
 
 /*
