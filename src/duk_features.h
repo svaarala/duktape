@@ -603,6 +603,32 @@ extern double duk_computed_nan;
 	} while (0)
 
 /*
+ *  Macro for declaring a 'noreturn' function.  Unfortunately the noreturn
+ *  declaration may appear in various places of a function declaration, so
+ *  the solution is to wrap the entire declaration inside the macro.
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
+ *  http://clang.llvm.org/docs/LanguageExtensions.html
+ */
+
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+    ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 5)) || (__GNUC__ >= 3)
+/* since gcc-2.5 */
+#define  DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(__clang__)
+/* syntax same as gcc */
+#define  DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define  DUK_NORETURN(decl)  decl __declspec((noreturn))
+#else
+/* Don't know how to declare a noreturn function, so don't do it; this
+ * may cause some spurious compilation warnings (e.g. "variable used
+ * uninitialized).
+ */
+#define  DUK_NORETURN(decl)  decl
+#endif
+
+/*
  *  __FILE__, __LINE__, __func__ are wrapped.  Especially __func__ is a
  *  problem because it is not available even in some compilers which try
  *  to be C99 compatible (e.g. VBCC with -c99 option).
