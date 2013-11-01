@@ -133,7 +133,7 @@ static duk_u32 json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	return 0;
 }
 
@@ -171,7 +171,7 @@ static void json_dec_req_stridx(duk_json_dec_ctx *js_ctx, int stridx) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 static void json_dec_string(duk_json_dec_ctx *js_ctx) {
@@ -249,7 +249,7 @@ static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 static void json_dec_number(duk_json_dec_ctx *js_ctx) {
@@ -410,7 +410,7 @@ static void json_dec_object(duk_json_dec_ctx *js_ctx) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 static void json_dec_array(duk_json_dec_ctx *js_ctx) {
@@ -470,7 +470,7 @@ static void json_dec_array(duk_json_dec_ctx *js_ctx) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 static void json_dec_value(duk_json_dec_ctx *js_ctx) {
@@ -526,7 +526,7 @@ static void json_dec_value(duk_json_dec_ctx *js_ctx) {
 
  syntax_error:
 	json_dec_syntax_error(js_ctx);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 /* Recursive value reviver, implements the Walk() algorithm.  No C recursion

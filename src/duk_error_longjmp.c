@@ -17,7 +17,7 @@ void duk_err_longjmp(duk_hthread *thr) {
 		 */
 
 		duk_fatal((duk_context *) thr, DUK_ERR_UNCAUGHT_ERROR);
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	longjmp(thr->heap->lj.jmpbuf_ptr->jb, DUK_LONGJMP_DUMMY_VALUE);

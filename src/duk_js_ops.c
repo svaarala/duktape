@@ -99,7 +99,7 @@ int duk_js_toboolean(duk_tval *tv) {
 		}
 	}
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 /*
@@ -227,7 +227,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 	}
 
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 /*
@@ -494,7 +494,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			return 0;
 		}
 		}
@@ -639,7 +639,7 @@ int duk_js_strict_equals(duk_tval *tv_x, duk_tval *tv_y) {
 		}
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			return 0;
 		}
 		}
@@ -717,7 +717,7 @@ int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y) {
 		}
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			return 0;
 		}
 		}
@@ -1092,7 +1092,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	if (sanity == 0) {
 		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "instanceof prototype chain sanity exceeded");
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 
  pop_and_false:
 	duk_pop_2(ctx);

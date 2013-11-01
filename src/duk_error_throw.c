@@ -170,7 +170,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
 	             &thr->heap->lj.value1, &thr->heap->lj.value2);
 
 	duk_err_longjmp(thr);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 /*
@@ -219,5 +219,5 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 	 */
 
 	duk_error_raw(ctx, code, NULL, 0, "%s (rc %d)", msg, rc);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }

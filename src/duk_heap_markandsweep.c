@@ -162,7 +162,7 @@ static void mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		break;
 	default:
 		DUK_DPRINT("attempt to mark heaphdr %p with invalid htype %d", (void *) h, (int) DUK_HEAPHDR_GET_TYPE(h));
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	heap->mark_and_sweep_recursion_depth--;

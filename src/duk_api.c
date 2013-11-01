@@ -1962,7 +1962,7 @@ int duk_get_type(duk_context *ctx, int index) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_NUMBER;
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 int duk_check_type(duk_context *ctx, int index, int type) {
@@ -1996,7 +1996,7 @@ int duk_get_type_mask(duk_context *ctx, int index) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_MASK_NUMBER;
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 int duk_check_type_mask(duk_context *ctx, int index, int mask) {
@@ -3059,7 +3059,7 @@ void duk_throw(duk_context *ctx) {
 		 *  happens.
 		 */
 		duk_fatal(ctx, DUK_ERR_UNCAUGHT_ERROR);
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	if (thr->valstack_top == thr->valstack_bottom) {
@@ -3075,7 +3075,7 @@ void duk_throw(duk_context *ctx) {
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
 	duk_err_longjmp(thr);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 void duk_fatal(duk_context *ctx, int err_code) {
@@ -3089,7 +3089,7 @@ void duk_fatal(duk_context *ctx, int err_code) {
 	DUK_DPRINT("fatal error occurred, code %d", err_code);
 
 	thr->heap->fatal_func(ctx, err_code);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {

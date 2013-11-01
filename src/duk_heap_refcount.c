@@ -151,7 +151,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 	case DUK_HTYPE_STRING:
 		/* cannot happen: strings are not put into refzero list (they don't even have the next/prev pointers) */
 	default:
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 }
 
@@ -450,7 +450,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 
 	default:
 		DUK_DPRINT("invalid heap type in decref: %d", (int) DUK_HEAPHDR_GET_TYPE(h));
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 }
 

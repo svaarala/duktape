@@ -142,7 +142,7 @@ static duk_hstring *find_matching_string(duk_heap *heap, duk_hstring **entries, 
 		/* looping should never happen */
 		DUK_ASSERT(i != HASH_INITIAL(strhash, size));
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 }
 
 static void remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_u32 size, duk_hstring *h) {
@@ -158,7 +158,7 @@ static void remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_u
 
 		e = entries[i];
 		if (!e) {
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 		if (e == h) {

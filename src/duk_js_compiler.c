@@ -1388,7 +1388,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			return dest;
 		}
 		case DUK_TAG_POINTER: {
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 		case DUK_TAG_STRING: {
@@ -1420,11 +1420,11 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			return dest;
 		}
 		case DUK_TAG_OBJECT: {
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 		case DUK_TAG_BUFFER: {
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 		default: {

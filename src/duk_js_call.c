@@ -720,7 +720,7 @@ int duk_handle_call(duk_hthread *thr,
 		/* XXX: should setjmp catcher be responsible for this instead? */
 		thr->heap->call_recursion_depth = entry_call_recursion_depth;
 		duk_err_longjmp(thr);
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	duk_hthread_catchstack_unwind(thr, entry_catchstack_top);
@@ -1030,7 +1030,7 @@ int duk_handle_call(duk_hthread *thr,
 	} else {
 		goto native_call;
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 
 	/*
 	 *  Native (C) call
@@ -1064,7 +1064,7 @@ int duk_handle_call(duk_hthread *thr,
 
 	if (rc < 0) {
 		duk_error_throw_from_negative_rc(thr, rc);
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	} else if (rc > 1) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "c function returned invalid rc");
 	}
@@ -1252,7 +1252,7 @@ int duk_handle_call(duk_hthread *thr,
 
  thread_state_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for call (%d)", thr->state);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	return DUK_ERR_EXEC_ERROR;  /* never executed */
 }
 
@@ -1618,7 +1618,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
  thread_state_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for safe_call (%d)", thr->state);
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	return DUK_ERR_EXEC_ERROR;  /* never executed */
 }
 

@@ -358,7 +358,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 			default: {
 				/* exhaustive */
-				DUK_NEVER_HERE();
+				DUK_UNREACHABLE();
 			}
 			}
 

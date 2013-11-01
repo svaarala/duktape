@@ -1112,7 +1112,7 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 			}
 			break;
 		default:
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 		duk_pop_2(ctx);
@@ -1136,7 +1136,7 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
 		break;
 	default:
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 		break;
 	}
 

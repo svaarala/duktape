@@ -827,7 +827,7 @@ static int handle_longjmp(duk_hthread *thr,
 			retval = LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 		break;  /* never here */
 	}
 
@@ -897,7 +897,7 @@ static int handle_longjmp(duk_hthread *thr,
 			retval = LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 		break;  /* never here */
 	}
 
@@ -1212,7 +1212,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 	}  /* end switch */
 
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 
  wipe_and_return:
 	/* this is not strictly necessary, but helps debugging */
@@ -1237,7 +1237,7 @@ static int handle_longjmp(duk_hthread *thr,
 	thr->heap->lj.type = DUK_LJ_TYPE_THROW;
 	goto check_longjmp;
 #endif
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	return retval;
 }
 
@@ -1408,7 +1408,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* errhandler is not changed, so no need to restore */
 
 			duk_err_longjmp(thr);
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 		} else {
 			/*
 			 *  Return from bytecode executor with a return value.
@@ -1421,7 +1421,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* errhandler is kept as is, so no need to store / restore it */
 			return;
 		}
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	/*
@@ -2372,7 +2372,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
 				duk_err_longjmp(thr);
-				DUK_NEVER_HERE();
+				DUK_UNREACHABLE();
 			}
 			break;
 		}
@@ -2495,14 +2495,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
 					duk_err_longjmp(thr);
-					DUK_NEVER_HERE();
+					DUK_UNREACHABLE();
 				}
 
 				/* must reinit setjmp() catchpoint */  /* FIXME: why */
 				goto reset_setjmp_catchpoint;
 			}
 
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 
@@ -2564,7 +2564,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 			duk_err_longjmp(thr);
 
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 
@@ -2584,7 +2584,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 			duk_err_longjmp(thr);
 
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 			break;
 		}
 
@@ -3124,7 +3124,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 					duk_err_longjmp(thr);
-					DUK_NEVER_HERE();
+					DUK_UNREACHABLE();
 				}
 
 				/* continue execution after ENDFIN */
@@ -3149,14 +3149,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 				duk_err_longjmp(thr);
 
-				DUK_NEVER_HERE();
+				DUK_UNREACHABLE();
 				break;
 			}
 
 			case DUK_EXTRAOP_INVLHS: {
 				DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR, "invalid lvalue");
 
-				DUK_NEVER_HERE();
+				DUK_UNREACHABLE();
 				break;
 			}
 
@@ -3226,7 +3226,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		}  /* end switch */
 	}
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 
 #ifdef _COMPACT_ERRORS  /*FIXME*/
  internal_error:

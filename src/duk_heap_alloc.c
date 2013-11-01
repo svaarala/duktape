@@ -72,7 +72,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 		free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
 		break;
 	default:
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	DUK_FREE(heap, hdr);

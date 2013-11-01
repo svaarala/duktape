@@ -127,12 +127,6 @@
 #endif  /* DUK_USE_ASSERTIONS */
 
 /*
- *  "Never here" macro
- */
-
-#define DUK_NEVER_HERE()  DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "should not be here")
-
-/*
  *  Final panic handler macro (unless defined already)
  */
 

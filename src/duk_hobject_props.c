@@ -2204,7 +2204,7 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 		return 0;
 	}
 
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	*out_result_len = 0;
 	return 0;
 }
@@ -2524,7 +2524,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			DUK_DDPRINT("put to existing own plain property, property is writable");
 			goto update_old;
 		}
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 
 	 next_in_chain:
 		if (sanity-- == 0) {
@@ -3026,7 +3026,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 		goto success;
 	}
 
-	DUK_NEVER_HERE();
+	DUK_UNREACHABLE();
 	
  success:
 	/*
@@ -3208,7 +3208,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 			}
 			DUK_DDDPRINT("property already exists but is virtual -> failure");
 			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "attempt to redefine virtual property");
-			DUK_NEVER_HERE();
+			DUK_UNREACHABLE();
 		}
 
 		goto write_value;
@@ -3841,7 +3841,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_HOBJECT_E_SET_FLAGS(obj, e_idx, new_flags);
 			goto success_specials;
 		}
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 	}
 
 	/* we currently assume virtual properties are not configurable (as none of them are) */
