@@ -475,6 +475,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags);
 /* low-level property functions */
 void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_idx, int *h_idx);
 duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key);
+duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int *out_attrs);
 duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uint32_t i);
 
 /* core property functions */

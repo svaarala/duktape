@@ -914,6 +914,26 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring
 	}
 }
 
+/* For internal use: get non-accessor entry value and attributes */
+duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int *out_attrs) {
+	int e_idx;
+	int h_idx;
+
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(out_attrs != NULL);
+
+	duk_hobject_find_existing_entry(obj, key, &e_idx, &h_idx);
+	if (e_idx >= 0) {
+		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, e_idx));
+		*out_attrs = DUK_HOBJECT_E_GET_FLAGS(obj, e_idx);
+		return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(obj, e_idx);
+	} else {
+		*out_attrs = 0;
+		return NULL;
+	}
+}
+
 /* For internal use: get array part value */
 duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uint32_t i) {
 	duk_tval *tv;
