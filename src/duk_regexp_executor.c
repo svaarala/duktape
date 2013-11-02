@@ -16,12 +16,12 @@
  *  Helpers for UTF-8 handling
  */
 
-static duk_u32 bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_u8 **pc) {
+static duk_uint32_t bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
 	return duk_unicode_xutf8_get_u32_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 }
 
-static duk_i32 bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_u8 **pc) {
-	duk_u32 t;
+static duk_int32_t bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
+	duk_uint32_t t;
 
 	/* signed integer encoding needed to work with UTF-8 */
 	t = duk_unicode_xutf8_get_u32_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
@@ -32,8 +32,8 @@ static duk_i32 bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_u8 **pc) {
 	}
 }
 
-static duk_u8 *utf8_backtrack(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end, duk_u32 count) {
-	duk_u8 *p;
+static duk_uint8_t *utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint32_t count) {
+	duk_uint8_t *p;
 
 	/* Note: allow backtracking from p == ptr_end */
 	p = *ptr;
@@ -62,8 +62,8 @@ static duk_u8 *utf8_backtrack(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start,
 	return NULL;  /* never here */
 }
 
-static duk_u8 *utf8_advance(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end, duk_u32 count) {
-	duk_u8 *p;
+static duk_uint8_t *utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint32_t count) {
+	duk_uint8_t *p;
 
 	p = *ptr;
 	if (p < ptr_start || p >= ptr_end) {
@@ -102,20 +102,20 @@ static duk_u8 *utf8_advance(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, d
  * always record non-canonicalized strings even in case-insensitive
  * matching.
  */
-static duk_u32 inp_get_u32(duk_re_matcher_ctx *re_ctx, duk_u8 **sp) {
-	duk_u32 res = duk_unicode_xutf8_get_u32_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
+static duk_uint32_t inp_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp) {
+	duk_uint32_t res = duk_unicode_xutf8_get_u32_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
 	if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
 		res = duk_unicode_re_canonicalize_char(re_ctx->thr, res);
 	}
 	return res;
 }
 
-static duk_u8 *inp_backtrack(duk_re_matcher_ctx *re_ctx, duk_u8 **sp, duk_u32 count) {
+static duk_uint8_t *inp_backtrack(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp, duk_uint32_t count) {
 	return utf8_backtrack(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end, count);
 }
 
 /* Backtrack utf-8 input and return a (possibly canonicalized) input character. */
-static int inp_getprev(duk_re_matcher_ctx *re_ctx, duk_u8 *sp) {
+static int inp_getprev(duk_re_matcher_ctx *re_ctx, duk_uint8_t *sp) {
 	/* note: caller 'sp' is intentionally not updated here */
 	(void) inp_backtrack(re_ctx, &sp, 1);
 	return inp_get_u32(re_ctx, &sp);
@@ -132,7 +132,7 @@ static int inp_getprev(duk_re_matcher_ctx *re_ctx, duk_u8 *sp) {
  *  regexp execution.
  */
 
-static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) {
+static duk_uint8_t *match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp executor recursion limit reached");
 	}
@@ -260,7 +260,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 		}
 		case DUK_REOP_ASSERT_END: {
 			unsigned int c;
-			duk_u8 *temp_sp;
+			duk_uint8_t *temp_sp;
 
 			if (sp >= re_ctx->input_end) {
 				break;
@@ -296,7 +296,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			if (sp >= re_ctx->input_end) {
 				c2 = -1;
 			} else {
-				duk_u8 *tmp_sp = sp;
+				duk_uint8_t *tmp_sp = sp;
 				c2 = inp_get_u32(re_ctx, &tmp_sp);
 			}
 			c2 = duk_unicode_re_is_wordchar(c2);
@@ -314,7 +314,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			break;
 		}
 		case DUK_REOP_JUMP: {
-			duk_i32 skip;
+			duk_int32_t skip;
 
 			skip = bc_get_i32(re_ctx, &pc);
 			pc += skip;
@@ -322,8 +322,8 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 		}
 		case DUK_REOP_SPLIT1: {
 			/* split1: prefer direct execution (no jump) */
-			duk_u8 *sub_sp;
-			duk_i32 skip;
+			duk_uint8_t *sub_sp;
+			duk_int32_t skip;
 
 			skip = bc_get_i32(re_ctx, &pc);
 			sub_sp = match_regexp(re_ctx, pc, sp);
@@ -336,8 +336,8 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 		}
 		case DUK_REOP_SPLIT2: {
 			/* split2: prefer jump execution (not direct) */
-			duk_u8 *sub_sp;
-			duk_i32 skip;
+			duk_uint8_t *sub_sp;
+			duk_int32_t skip;
 
 			skip = bc_get_i32(re_ctx, &pc);
 			sub_sp = match_regexp(re_ctx, pc + skip, sp);
@@ -348,9 +348,9 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			break;
 		}
 		case DUK_REOP_SQMINIMAL: {
-			duk_u32 q, qmin, qmax;
-			duk_i32 skip;
-			duk_u8 *sub_sp;
+			duk_uint32_t q, qmin, qmax;
+			duk_int32_t skip;
+			duk_uint8_t *sub_sp;
 
 			qmin = bc_get_u32(re_ctx, &pc);
 			qmax = bc_get_u32(re_ctx, &pc);
@@ -377,9 +377,9 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			goto fail;
 		}
 		case DUK_REOP_SQGREEDY: {
-			duk_u32 q, qmin, qmax, atomlen;
-			duk_i32 skip;
-			duk_u8 *sub_sp;
+			duk_uint32_t q, qmin, qmax, atomlen;
+			duk_int32_t skip;
+			duk_uint8_t *sub_sp;
 
 			qmin = bc_get_u32(re_ctx, &pc);
 			qmax = bc_get_u32(re_ctx, &pc);
@@ -420,9 +420,9 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			goto fail;
 		}
 		case DUK_REOP_SAVE: {
-			duk_u32 idx;
-			duk_u8 *old;
-			duk_u8 *sub_sp;
+			duk_uint32_t idx;
+			duk_uint8_t *old;
+			duk_uint8_t *sub_sp;
 
 			idx = bc_get_u32(re_ctx, &pc);
 			if (idx >= re_ctx->nsaved) {
@@ -456,17 +456,17 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			 *  We do so regardless, just in case.
 			 */
 
-			duk_i32 skip;
-			duk_u8 **full_save;
-			duk_u8 *sub_sp;
+			duk_int32_t skip;
+			duk_uint8_t **full_save;
+			duk_uint8_t *sub_sp;
 
 			DUK_ASSERT(re_ctx->nsaved > 0);
 
 			duk_require_stack((duk_context *) re_ctx->thr, 1);
-			full_save = (duk_u8 **) duk_push_fixed_buffer((duk_context *) re_ctx->thr,
-			                                              sizeof(duk_u8 *) * re_ctx->nsaved);
+			full_save = (duk_uint8_t **) duk_push_fixed_buffer((duk_context *) re_ctx->thr,
+			                                                   sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			DUK_ASSERT(full_save != NULL);
-			DUK_MEMCPY(full_save, re_ctx->saved, sizeof(duk_u8 *) * re_ctx->nsaved);
+			DUK_MEMCPY(full_save, re_ctx->saved, sizeof(duk_uint8_t *) * re_ctx->nsaved);
 
 			skip = bc_get_i32(re_ctx, &pc);
 			sub_sp = match_regexp(re_ctx, pc, sp);
@@ -491,7 +491,7 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 
 		 lookahead_fail:
 			/* fail: restore saves */
-			DUK_MEMCPY(re_ctx->saved, full_save, sizeof(duk_u8 *) * re_ctx->nsaved);
+			DUK_MEMCPY(re_ctx->saved, full_save, sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			duk_pop((duk_context *) re_ctx->thr);
 			goto fail;
 		}
@@ -510,8 +510,8 @@ static duk_u8 *match_regexp(duk_re_matcher_ctx *re_ctx, duk_u8 *pc, duk_u8 *sp) 
 			 *  not matched anything always succeeds!  See E5 Section
 			 *  15.10.2.9, step 5, sub-step 3.
 			 */
-			duk_u32 idx;
-			duk_u8 *p;
+			duk_uint32_t idx;
+			duk_uint8_t *p;
 
 			idx = bc_get_u32(re_ctx, &pc);
 			idx = idx << 1;		/* backref n -> saved indices [n*2, n*2+1] */
@@ -586,13 +586,13 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	duk_hobject *h_regexp;
 	duk_hstring *h_bytecode;
 	duk_hstring *h_input;
-	duk_u8 *pc;
-	duk_u8 *sp;
+	duk_uint8_t *pc;
+	duk_uint8_t *sp;
 	int match = 0;
 	int global;
 	int i;
 	double d;
-	duk_u32 char_offset;
+	duk_uint32_t char_offset;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -634,9 +634,9 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	DUK_MEMSET(&re_ctx, 0, sizeof(re_ctx));
 
 	re_ctx.thr = thr;
-	re_ctx.input = (duk_u8 *) DUK_HSTRING_GET_DATA(h_input);
+	re_ctx.input = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	re_ctx.input_end = re_ctx.input + DUK_HSTRING_GET_BYTELEN(h_input);
-	re_ctx.bytecode = (duk_u8 *) DUK_HSTRING_GET_DATA(h_bytecode);
+	re_ctx.bytecode = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
 	re_ctx.bytecode_end = re_ctx.bytecode + DUK_HSTRING_GET_BYTELEN(h_bytecode);
 	re_ctx.saved = NULL;
 	re_ctx.recursion_limit = DUK_RE_EXECUTE_RECURSION_LIMIT;
@@ -653,8 +653,8 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	DUK_ASSERT(re_ctx.nsaved >= 2);
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
-	duk_push_fixed_buffer(ctx, sizeof(duk_u8 *) * re_ctx.nsaved);
-	re_ctx.saved = (duk_u8 **) duk_get_buffer(ctx, -1, NULL);
+	duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);
+	re_ctx.saved = (duk_uint8_t **) duk_get_buffer(ctx, -1, NULL);
 	DUK_ASSERT(re_ctx.saved != NULL);
 
 	/* [ ... re_obj input bc saved_buf ] */
@@ -662,7 +662,7 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 	/* buffer is automatically zeroed */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	for (i = 0; i < re_ctx.nsaved; i++) {
-		re_ctx.saved[i] = (duk_u8 *) NULL;
+		re_ctx.saved[i] = (duk_uint8_t *) NULL;
 	}
 #endif
 
@@ -700,14 +700,14 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 			DUK_ASSERT(match == 0);
 			goto match_over;
 		}
-		char_offset = (duk_u32) d;
+		char_offset = (duk_uint32_t) d;
 	} else {
 		/* lastIndex must be ignored for non-global regexps, but get the
 		 * value for (theoretical) side effects.  No side effects can
 		 * really occur, because lastIndex is a normal property and is
 		 * always non-configurable for RegExp instances.
 		 */
-		char_offset = (duk_u32) 0;
+		char_offset = (duk_uint32_t) 0;
 	}
 
 	sp = re_ctx.input + duk_heap_strcache_offset_char2byte(thr, h_input, char_offset);
@@ -765,7 +765,7 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 			 *
 			 *    - Intentionally attempt (empty) match at char_offset == k_input->clen
 			 *
-			 *    - Negative char_offsets have been eliminated and char_offset is duk_u32
+			 *    - Negative char_offsets have been eliminated and char_offset is duk_uint32_t
 			 *      -> no need or use for a negative check
 			 */
 
@@ -798,7 +798,7 @@ static void regexp_match_helper(duk_hthread *thr, int force_global) {
 #ifdef DUK_USE_ASSERTIONS
 		duk_hobject *h_res;
 #endif
-		duk_u32 char_end_offset = 0;
+		duk_uint32_t char_end_offset = 0;
 
 		DUK_DDDPRINT("regexp matches at char_offset %d", (int) char_offset);
 

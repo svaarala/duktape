@@ -95,9 +95,9 @@ static void call_errhandler(duk_hthread *thr) {
  */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code, const char *msg, const char *filename, int line) {
+void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code, const char *msg, const char *filename, int line) {
 #else
-void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code) {
+void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 #endif
 	duk_context *ctx = (duk_context *) thr;
 	int double_error = thr->heap->handling_error;

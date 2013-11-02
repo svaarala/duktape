@@ -103,7 +103,7 @@ static void emit_invalid(duk_compiler_ctx *comp_ctx);
 /* FIXME */
 static void copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst);
 static void copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst);
-static int is_whole_get_i32(double x, duk_i32 *ival);
+static int is_whole_get_i32(double x, duk_int32_t *ival);
 
 /* ivalue/ispec helpers */
 static int alloctemps(duk_compiler_ctx *comp_ctx, int num);
@@ -243,7 +243,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 #define  MK_LBP(bp)                ((bp) >> 1)    /* bp is assumed to be even */
 #define  MK_LBP_FLAGS(bp,flags)    (((bp) >> 1) | (flags))
 
-static duk_i8 token_lbp[] = {
+static duk_int8_t token_lbp[] = {
 	MK_LBP(BP_EOF),                                 /* DUK_TOK_EOF */
 	MK_LBP(BP_INVALID),                             /* DUK_TOK_LINETERM */
 	MK_LBP(BP_INVALID),                             /* DUK_TOK_COMMENT */
@@ -932,7 +932,7 @@ static void emit(duk_compiler_ctx *comp_ctx, duk_instr ins) {
 	instr.ins = ins;
 	instr.line = line;
 
-	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_u8 *) &instr, sizeof(instr));
+	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
 }
 
 #if 0 /* unused */
@@ -1070,7 +1070,7 @@ static void insert_jump_empty(duk_compiler_ctx *comp_ctx, int jump_pc) {
 	instr.line = line;
 	offset = jump_pc * sizeof(duk_compiler_instr);
 
-	duk_hbuffer_insert_bytes(comp_ctx->thr, h, offset, (duk_u8 *) &instr, sizeof(instr));
+	duk_hbuffer_insert_bytes(comp_ctx->thr, h, offset, (duk_uint8_t *) &instr, sizeof(instr));
 }
 
 /* Does not assume that jump_pc contains a DUK_OP_JUMP previously; this is intentional
@@ -1232,14 +1232,14 @@ static void copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue 
 }
 
 /* FIXME: to util */
-static int is_whole_get_i32(double x, duk_i32 *ival) {
-	duk_i32 t;
+static int is_whole_get_i32(double x, duk_int32_t *ival) {
+	duk_int32_t t;
 
 	if (DUK_FPCLASSIFY(x) != DUK_FP_NORMAL) {
 		return 0;
 	}
 
-	t = (duk_i32) x;
+	t = (duk_int32_t) x;
 	if ((double) t == x) {
 		*ival = t;
 		return 1;
@@ -1432,7 +1432,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			int constidx;
 			int dest;
 			double dval;
-			duk_i32 ival;
+			duk_int32_t ival;
 
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 			dval = DUK_TVAL_GET_NUMBER(tv);
@@ -2468,7 +2468,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	duk_token *tk;
 	int temp_at_entry;
 	int tok;
-	duk_u32 args;	/* temp variable to pass constants to shared code */
+	duk_uint32_t args;	/* temp variable to pass constants to shared code */
 
 	/*
 	 *  ctx->prev_token	token to process with expr_nud()
@@ -2920,7 +2920,7 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 	duk_context *ctx = (duk_context *) thr;
 	duk_token *tk;
 	int tok;
-	duk_u32 args;	/* temp variable to pass constants and flags to shared code */
+	duk_uint32_t args;	/* temp variable to pass constants and flags to shared code */
 
 	/*
 	 *  ctx->prev_token	token to process with expr_led()

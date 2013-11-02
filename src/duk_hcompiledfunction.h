@@ -39,8 +39,8 @@
 	( \
 	 (size_t) \
 	 ( \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
 	 ) \
 	)
 
@@ -48,8 +48,8 @@
 	( \
 	 (size_t) \
 	 ( \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
 	 ) \
 	)
 
@@ -57,8 +57,8 @@
 	( \
 	 (size_t) \
 	 ( \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
-	   ((duk_u8 *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
+	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
 	 ) \
 	)
 
@@ -129,8 +129,8 @@ struct duk_hcompiledfunction {
 	 *  at run time, except for debugging, so it is not maintained.
 	 */
 
-	duk_u16 nregs;                /* regs to allocate */
-	duk_u16 nargs;                /* number of arguments allocated to regs */
+	duk_uint16_t nregs;                /* regs to allocate */
+	duk_uint16_t nargs;                /* number of arguments allocated to regs */
 
 	/*
 	 *  Additional control information is placed into the object itself

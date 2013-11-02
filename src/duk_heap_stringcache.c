@@ -38,7 +38,7 @@ void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
  *  String scanning helpers
  */
 
-static duk_u8 *scan_forwards(duk_u8 *p, duk_u8 *q, duk_u32 n) {
+static duk_uint8_t *scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p++;
@@ -54,7 +54,7 @@ static duk_u8 *scan_forwards(duk_u8 *p, duk_u8 *q, duk_u32 n) {
 	return p;
 }
 
-static duk_u8 *scan_backwards(duk_u8 *p, duk_u8 *q, duk_u32 n) {
+static duk_uint8_t *scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p--;
@@ -81,16 +81,16 @@ static duk_u8 *scan_backwards(duk_u8 *p, duk_u8 *q, duk_u32 n) {
 
 /* FIXME: typing throughout */
 
-duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_u32 char_offset) {
+duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint32_t char_offset) {
 	duk_heap *heap;
 	duk_strcache *sce;
-	duk_u32 byte_offset;
+	duk_uint32_t byte_offset;
 	int i;
 	int use_cache;
-	duk_u32 dist_start, dist_end, dist_sce;
-	duk_u8 *p_start;
-	duk_u8 *p_end;
-	duk_u8 *p_found;
+	duk_uint32_t dist_start, dist_end, dist_sce;
+	duk_uint8_t *p_start;
+	duk_uint8_t *p_end;
+	duk_uint8_t *p_found;
 
 	if (char_offset > DUK_HSTRING_GET_CHARLEN(h)) {
 		goto error;
@@ -154,8 +154,8 @@ duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk
 	dist_start = char_offset;
 	dist_end = DUK_HSTRING_GET_CHARLEN(h) - char_offset;
 
-	p_start = (duk_u8 *) DUK_HSTRING_GET_DATA(h);
-	p_end = (duk_u8 *) (p_start + DUK_HSTRING_GET_BYTELEN(h));
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	p_end = (duk_uint8_t *) (p_start + DUK_HSTRING_GET_BYTELEN(h));
 	p_found = NULL;
 
 	if (sce) {
@@ -226,7 +226,7 @@ duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk
 
 	DUK_ASSERT(p_found >= p_start);
 	DUK_ASSERT(p_found <= p_end);  /* may be equal */
-	byte_offset = (duk_u32) (p_found - p_start);
+	byte_offset = (duk_uint32_t) (p_found - p_start);
 
 	DUK_DDDPRINT("-> string %p, cidx %d -> bidx %d", (void *) h, char_offset, byte_offset);
 
@@ -242,7 +242,7 @@ duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk
 			sce->h = h;
 		}
 		DUK_ASSERT(sce != NULL);
-		sce->bidx = (duk_u32) (p_found - p_start);
+		sce->bidx = (duk_uint32_t) (p_found - p_start);
 		sce->cidx = char_offset;
 
 		/* LRU: move our entry to first */

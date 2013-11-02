@@ -184,7 +184,7 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 		func = act->func;
 		if (func) {
 			int pc;
-			duk_u32 line;
+			duk_uint32_t line;
 
 			pc = act->pc;
 #if 0

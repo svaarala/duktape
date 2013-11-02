@@ -231,8 +231,8 @@
 
 struct duk_strcache {
 	duk_hstring *h;
-	duk_u32 bidx;
-	duk_u32 cidx;
+	duk_uint32_t bidx;
+	duk_uint32_t cidx;
 };
 
 /*
@@ -313,15 +313,15 @@ struct duk_heap {
 	int call_recursion_limit;
 
 	/* mix-in value for computing string hashes; should be reasonably unpredictable */
-        duk_u32 hash_seed;
+        duk_uint32_t hash_seed;
 
 	/* rnd_state for duk_util_tinyrandom.c */
-	duk_u32 rnd_state;
+	duk_uint32_t rnd_state;
 
 	/* string intern table (weak refs) */
 	duk_hstring **st;
-	duk_u32 st_size;     /* alloc size in elements */
-	duk_u32 st_used;     /* used elements (includes DELETED) */
+	duk_uint32_t st_size;     /* alloc size in elements */
+	duk_uint32_t st_used;     /* used elements (includes DELETED) */
 
 	/* string access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
@@ -349,17 +349,17 @@ void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 #endif
 
-duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_u8 *str, duk_u32 blen);
-duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_u8 *str, duk_u32 blen);
-duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_u8 *str, duk_u32 len);
-duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_u32 val);
-duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_u32 val);
-duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_u32 val);
+duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
+duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
+duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t len);
+duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
+duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
+duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
 void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
 void duk_heap_force_stringtable_resize(duk_heap *heap);
 
 void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
-duk_u32 duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_u32 char_offset);
+duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint32_t char_offset);
 
 #ifdef DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
 void *duk_default_alloc_function(void *udata, size_t size);
@@ -399,7 +399,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr);
 int duk_heap_mark_and_sweep(duk_heap *heap, int flags);
 #endif
 
-duk_u32 duk_heap_hashstring(duk_heap *heap, duk_u8 *str, duk_u32 len);
+duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_uint32_t len);
 
 #endif  /* DUK_HEAP_H_INCLUDED */
 

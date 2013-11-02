@@ -7,10 +7,10 @@
 
 #ifdef DUK_USE_DEBUG
 
-void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_u8 *buffer, duk_u32 length) {
-	duk_u32 avail;
+void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_uint32_t length) {
+	duk_uint32_t avail;
 
-	avail = (fb->offset >= fb->length ? (duk_u32) 0 : (duk_u32) (fb->length - fb->offset));
+	avail = (fb->offset >= fb->length ? (duk_uint32_t) 0 : (duk_uint32_t) (fb->length - fb->offset));
 	if (length > avail) {
 		DUK_MEMCPY(fb->buffer + fb->offset, buffer, avail);
 		fb->offset += avail;
@@ -21,20 +21,20 @@ void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_u8 *buffer, duk_u32 length) {
 	}
 }
 
-void duk_fb_put_byte(duk_fixedbuffer *fb, duk_u8 x) {
+void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x) {
 	duk_fb_put_bytes(fb, &x, 1);
 }
 
 void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x) {
-	duk_fb_put_bytes(fb, (duk_u8 *) x, (duk_u32) strlen(x));
+	duk_fb_put_bytes(fb, (duk_uint8_t *) x, (duk_uint32_t) strlen(x));
 }
 
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
-	duk_u32 avail;
+	duk_uint32_t avail;
 	va_list ap;
 
 	va_start(ap, fmt);
-	avail = (fb->offset >= fb->length ? (duk_u32) 0 : (duk_u32) (fb->length - fb->offset));
+	avail = (fb->offset >= fb->length ? (duk_uint32_t) 0 : (duk_uint32_t) (fb->length - fb->offset));
 	if (avail > 0) {
 		int res = DUK_VSNPRINTF((char *) (fb->buffer + fb->offset), avail, fmt, ap);
 		if (res < 0) {

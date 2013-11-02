@@ -26,7 +26,7 @@
  */
 
 struct duk_heaphdr {
-	duk_u32 h_flags;
+	duk_uint32_t h_flags;
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	size_t h_refcount;
 #endif
@@ -38,7 +38,7 @@ struct duk_heaphdr {
 };
 
 struct duk_heaphdr_string {
-	duk_u32 h_flags;
+	duk_uint32_t h_flags;
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	size_t h_refcount;
 #endif

@@ -5,15 +5,15 @@
 #ifndef DUK_HNATIVEFUNCTION_H_INCLUDED
 #define DUK_HNATIVEFUNCTION_H_INCLUDED
 
-#define  DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_i16) -1)
-#define  DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_i16) 0x7fff)
+#define  DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_int16_t) -1)
+#define  DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_int16_t) 0x7fff)
 
 struct duk_hnativefunction {
 	/* shared object part */
 	duk_hobject obj;
 
 	duk_c_function func;
-	duk_i16 nargs;
+	duk_int16_t nargs;
 
 	/* XXX: there is a nice 16-bit space here.  What to put here?
 	 *

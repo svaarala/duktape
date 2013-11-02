@@ -9,7 +9,7 @@
  *  XUTF-8 and CESU-8 encoding/decoding
  */
 
-int duk_unicode_get_xutf8_length(duk_u32 x) {
+int duk_unicode_get_xutf8_length(duk_uint32_t x) {
 	if (x < 0x80) {
 		/* 7 bits */
 		return 1;
@@ -25,7 +25,7 @@ int duk_unicode_get_xutf8_length(duk_u32 x) {
 	} else if (x < 0x4000000) {
 		/* 26 bits */
 		return 5;
-	} else if (x < (duk_u32) 0x80000000L) {
+	} else if (x < (duk_uint32_t) 0x80000000L) {
 		/* 31 bits */
 		return 6;
 	} else {
@@ -34,7 +34,7 @@ int duk_unicode_get_xutf8_length(duk_u32 x) {
 	}
 }
 
-duk_u8 duk_unicode_xutf8_markers[7] = {
+duk_uint8_t duk_unicode_xutf8_markers[7] = {
 	0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
 };
 
@@ -42,9 +42,9 @@ duk_u8 duk_unicode_xutf8_markers[7] = {
  * DUK_UNICODE_MAX_XUTF8_LENGTH bytes.  Allows encoding of any
  * 32-bit (unsigned) codepoint.
  */
-size_t duk_unicode_encode_xutf8(duk_u32 x, duk_u8 *out) {
+size_t duk_unicode_encode_xutf8(duk_uint32_t x, duk_uint8_t *out) {
 	size_t len;
-	duk_u8 marker;
+	duk_uint8_t marker;
 	size_t i;
 
 	len = duk_unicode_get_xutf8_length(x);
@@ -75,7 +75,7 @@ size_t duk_unicode_encode_xutf8(duk_u32 x, duk_u8 *out) {
  * DUK_UNICODE_MAX_CESU8_LENGTH bytes; codepoints above U+10FFFF
  * will encode to garbage but won't overwrite the output buffer.
  */
-size_t duk_unicode_encode_cesu8(duk_u32 x, duk_u8 *out) {
+size_t duk_unicode_encode_cesu8(duk_uint32_t x, duk_uint8_t *out) {
 	size_t len;
 
 	if (x < 0x80) {
@@ -134,9 +134,9 @@ size_t duk_unicode_encode_cesu8(duk_u32 x, duk_u8 *out) {
 }
 
 /* Decode helper.  Return zero on error. */
-int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end, duk_u32 *out_cp) {
-	duk_u8 *p;
-	duk_u32 res;
+int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint32_t *out_cp) {
+	duk_uint8_t *p;
+	duk_uint32_t res;
 	int ch;
 	int n;
 
@@ -216,8 +216,8 @@ int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start,
 }
 
 /* used by e.g. duk_regexp_executor.c, string built-ins */
-duk_u32 duk_unicode_xutf8_get_u32_checked(duk_hthread *thr, duk_u8 **ptr, duk_u8 *ptr_start, duk_u8 *ptr_end) {
-	duk_u32 cp;
+duk_uint32_t duk_unicode_xutf8_get_u32_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end) {
+	duk_uint32_t cp;
 
 	if (duk_unicode_xutf8_get_u32(thr, ptr, ptr_start, ptr_end, &cp)) {
 		return cp;
@@ -229,13 +229,13 @@ duk_u32 duk_unicode_xutf8_get_u32_checked(duk_hthread *thr, duk_u8 **ptr, duk_u8
 /* (extended) utf-8 length without codepoint encoding validation, used
  * for string interning (should probably be inlined).
  */
-duk_u32 duk_unicode_unvalidated_utf8_length(duk_u8 *data, duk_u32 blen) {
-        duk_u8 *p = data;
-        duk_u8 *p_end = data + blen;
-        duk_u32 clen = 0;
+duk_uint32_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_uint32_t blen) {
+        duk_uint8_t *p = data;
+        duk_uint8_t *p_end = data + blen;
+        duk_uint32_t clen = 0;
 
         while (p < p_end) {
-                duk_u8 x = *p++;
+                duk_uint8_t x = *p++;
                 if (x < 0x80) {
                         clen++;
                 } else if (x >= 0xc0 ) {
@@ -280,11 +280,11 @@ static int uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 static int uni_range_match(char *unitab, int unilen, int x) {
 	duk_bitdecoder_ctx bd_ctx;
 
-	bd_ctx.data = (duk_u8 *) unitab;
-	bd_ctx.offset = (duk_u32) 0;
-	bd_ctx.length = (duk_u32) unilen;
-	bd_ctx.currval = (duk_u32) 0;
-	bd_ctx.currbits = (duk_u32) 0;
+	bd_ctx.data = (duk_uint8_t *) unitab;
+	bd_ctx.offset = (duk_uint32_t) 0;
+	bd_ctx.length = (duk_uint32_t) unilen;
+	bd_ctx.currval = (duk_uint32_t) 0;
+	bd_ctx.currbits = (duk_uint32_t) 0;
 
 	int prev_re = 0;
 	for (;;) {
@@ -750,11 +750,11 @@ static int case_transform_helper(duk_hthread *thr,
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
 	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	if (uppercase) {
-		bd_ctx.data = (duk_u8 *) duk_unicode_caseconv_uc;
-		bd_ctx.length = (duk_u32) sizeof(duk_unicode_caseconv_uc);
+		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_uc;
+		bd_ctx.length = (duk_uint32_t) sizeof(duk_unicode_caseconv_uc);
 	} else {
-		bd_ctx.data = (duk_u8 *) duk_unicode_caseconv_lc;
-		bd_ctx.length = (duk_u32) sizeof(duk_unicode_caseconv_lc);
+		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_lc;
+		bd_ctx.length = (duk_uint32_t) sizeof(duk_unicode_caseconv_lc);
 	}
 	return slow_case_conversion(thr, buf, x, &bd_ctx);
 
@@ -776,7 +776,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_input;
 	duk_hbuffer_dynamic *h_buf;
-	duk_u8 *p, *p_start, *p_end;
+	duk_uint8_t *p, *p_start, *p_end;
 	int prev, curr, next;
 
 	h_input = duk_require_hstring(ctx, -1);
@@ -790,7 +790,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase) {
 
 	/* [ ... input buffer ] */
 
-	p_start = (duk_u8 *) DUK_HSTRING_GET_DATA(h_input);
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
@@ -881,52 +881,52 @@ int duk_unicode_re_is_wordchar(int x) {
  */
 
 /* exposed because lexer needs these too */
-duk_u16 duk_unicode_re_ranges_digit[2] = {
-	(duk_u16) 0x0030, (duk_u16) 0x0039,
+duk_uint16_t duk_unicode_re_ranges_digit[2] = {
+	(duk_uint16_t) 0x0030, (duk_uint16_t) 0x0039,
 };
-duk_u16 duk_unicode_re_ranges_white[22] = {
-	(duk_u16) 0x0009, (duk_u16) 0x000D,
-	(duk_u16) 0x0020, (duk_u16) 0x0020,
-	(duk_u16) 0x00A0, (duk_u16) 0x00A0,
-	(duk_u16) 0x1680, (duk_u16) 0x1680,
-	(duk_u16) 0x180E, (duk_u16) 0x180E,
-	(duk_u16) 0x2000, (duk_u16) 0x200A,
-	(duk_u16) 0x2028, (duk_u16) 0x2029,
-	(duk_u16) 0x202F, (duk_u16) 0x202F,
-	(duk_u16) 0x205F, (duk_u16) 0x205F,
-	(duk_u16) 0x3000, (duk_u16) 0x3000,
-	(duk_u16) 0xFEFF, (duk_u16) 0xFEFF,
+duk_uint16_t duk_unicode_re_ranges_white[22] = {
+	(duk_uint16_t) 0x0009, (duk_uint16_t) 0x000D,
+	(duk_uint16_t) 0x0020, (duk_uint16_t) 0x0020,
+	(duk_uint16_t) 0x00A0, (duk_uint16_t) 0x00A0,
+	(duk_uint16_t) 0x1680, (duk_uint16_t) 0x1680,
+	(duk_uint16_t) 0x180E, (duk_uint16_t) 0x180E,
+	(duk_uint16_t) 0x2000, (duk_uint16_t) 0x200A,
+	(duk_uint16_t) 0x2028, (duk_uint16_t) 0x2029,
+	(duk_uint16_t) 0x202F, (duk_uint16_t) 0x202F,
+	(duk_uint16_t) 0x205F, (duk_uint16_t) 0x205F,
+	(duk_uint16_t) 0x3000, (duk_uint16_t) 0x3000,
+	(duk_uint16_t) 0xFEFF, (duk_uint16_t) 0xFEFF,
 };
-duk_u16 duk_unicode_re_ranges_wordchar[8] = {
-	(duk_u16) 0x0030, (duk_u16) 0x0039,
-	(duk_u16) 0x0041, (duk_u16) 0x005A,
-	(duk_u16) 0x005F, (duk_u16) 0x005F,
-	(duk_u16) 0x0061, (duk_u16) 0x007A,
+duk_uint16_t duk_unicode_re_ranges_wordchar[8] = {
+	(duk_uint16_t) 0x0030, (duk_uint16_t) 0x0039,
+	(duk_uint16_t) 0x0041, (duk_uint16_t) 0x005A,
+	(duk_uint16_t) 0x005F, (duk_uint16_t) 0x005F,
+	(duk_uint16_t) 0x0061, (duk_uint16_t) 0x007A,
 };
-duk_u16 duk_unicode_re_ranges_not_digit[4] = {
-	(duk_u16) 0x0000, (duk_u16) 0x002F,
-	(duk_u16) 0x003A, (duk_u16) 0xFFFF,
+duk_uint16_t duk_unicode_re_ranges_not_digit[4] = {
+	(duk_uint16_t) 0x0000, (duk_uint16_t) 0x002F,
+	(duk_uint16_t) 0x003A, (duk_uint16_t) 0xFFFF,
 };
-duk_u16 duk_unicode_re_ranges_not_white[24] = {
-	(duk_u16) 0x0000, (duk_u16) 0x0008,
-	(duk_u16) 0x000E, (duk_u16) 0x001F,
-	(duk_u16) 0x0021, (duk_u16) 0x009F,
-	(duk_u16) 0x00A1, (duk_u16) 0x167F,
-	(duk_u16) 0x1681, (duk_u16) 0x180D,
-	(duk_u16) 0x180F, (duk_u16) 0x1FFF,
-	(duk_u16) 0x200B, (duk_u16) 0x2027,
-	(duk_u16) 0x202A, (duk_u16) 0x202E,
-	(duk_u16) 0x2030, (duk_u16) 0x205E,
-	(duk_u16) 0x2060, (duk_u16) 0x2FFF,
-	(duk_u16) 0x3001, (duk_u16) 0xFEFE,
-	(duk_u16) 0xFF00, (duk_u16) 0xFFFF,
+duk_uint16_t duk_unicode_re_ranges_not_white[24] = {
+	(duk_uint16_t) 0x0000, (duk_uint16_t) 0x0008,
+	(duk_uint16_t) 0x000E, (duk_uint16_t) 0x001F,
+	(duk_uint16_t) 0x0021, (duk_uint16_t) 0x009F,
+	(duk_uint16_t) 0x00A1, (duk_uint16_t) 0x167F,
+	(duk_uint16_t) 0x1681, (duk_uint16_t) 0x180D,
+	(duk_uint16_t) 0x180F, (duk_uint16_t) 0x1FFF,
+	(duk_uint16_t) 0x200B, (duk_uint16_t) 0x2027,
+	(duk_uint16_t) 0x202A, (duk_uint16_t) 0x202E,
+	(duk_uint16_t) 0x2030, (duk_uint16_t) 0x205E,
+	(duk_uint16_t) 0x2060, (duk_uint16_t) 0x2FFF,
+	(duk_uint16_t) 0x3001, (duk_uint16_t) 0xFEFE,
+	(duk_uint16_t) 0xFF00, (duk_uint16_t) 0xFFFF,
 };
-duk_u16 duk_unicode_re_ranges_not_wordchar[10] = {
-	(duk_u16) 0x0000, (duk_u16) 0x002F,
-	(duk_u16) 0x003A, (duk_u16) 0x0040,
-	(duk_u16) 0x005B, (duk_u16) 0x005E,
-	(duk_u16) 0x0060, (duk_u16) 0x0060,
-	(duk_u16) 0x007B, (duk_u16) 0xFFFF,
+duk_uint16_t duk_unicode_re_ranges_not_wordchar[10] = {
+	(duk_uint16_t) 0x0000, (duk_uint16_t) 0x002F,
+	(duk_uint16_t) 0x003A, (duk_uint16_t) 0x0040,
+	(duk_uint16_t) 0x005B, (duk_uint16_t) 0x005E,
+	(duk_uint16_t) 0x0060, (duk_uint16_t) 0x0060,
+	(duk_uint16_t) 0x007B, (duk_uint16_t) 0xFFFF,
 };
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */

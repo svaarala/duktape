@@ -234,17 +234,28 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <math.h>
 
 /*
- *  Sanity check types and define bit types such as duk_u32
- */
-
-/* FIXME: Is there a reason not to rely on C99 types only, and only fall
- * back to guessing if C99 types are not available?
+ *  Sanity check types and wrapper typedefs
+ *
+ *  C99 typedefs are quite good but not always available, and we want to avoid
+ *  forcibly defining the C99 typedefs.  So, there are Duktape wrappers for all
+ *  C99 typedefs and Duktape code should only use these typedefs.  The Duktape
+ *  public API is problematic from type detection perspective and must be taken
+ *  into account here.
+ *
+ *  Type detection when C99 is not supported is quite simplistic now and will
+ *  only work on 32-bit platforms (64-bit platforms are OK with C99 types).
+ *
+ *  http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
  */
 
 /* FIXME: How to do reasonable automatic detection on older compilers,
  * and how to allow user override?
  */
 
+/* FIXME: this assumption must be in place until no 'int' variables are
+ * used anywhere, including the public Duktape API.  Also all printf()
+ * format characters need to be changed.
+ */
 #ifdef INT_MAX
 #if INT_MAX < 2147483647
 #error INT_MAX too small, expected int to be 32 bits at least
@@ -257,21 +268,99 @@ static __inline__ unsigned long long duk_rdtsc(void) {
     !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS has C99 but no inttypes.h */
 /* C99 */
 #include <inttypes.h>
-typedef uint8_t duk_u8;
-typedef int8_t duk_i8;
-typedef uint16_t duk_u16;
-typedef int16_t duk_i16;
-typedef uint32_t duk_u32;
-typedef int32_t duk_i32;
+typedef uint8_t duk_uint8_t;
+typedef int8_t duk_int8_t;
+typedef uint16_t duk_uint16_t;
+typedef int16_t duk_int16_t;
+typedef uint32_t duk_uint32_t;
+typedef int32_t duk_int32_t;
+typedef uint64_t duk_uint64_t;
+typedef int64_t duk_int64_t;
+typedef uint_least8_t duk_uint_least8_t;
+typedef int_least8_t duk_int_least8_t;
+typedef uint_least16_t duk_uint_least16_t;
+typedef int_least16_t duk_int_least16_t;
+typedef uint_least32_t duk_uint_least32_t;
+typedef int_least32_t duk_int_least32_t;
+typedef uint_least64_t duk_uint_least64_t;
+typedef int_least64_t duk_int_least64_t;
+typedef uint_fast8_t duk_uint_fast8_t;
+typedef int_fast8_t duk_int_fast8_t;
+typedef uint_fast16_t duk_uint_fast16_t;
+typedef int_fast16_t duk_int_fast16_t;
+typedef uint_fast32_t duk_uint_fast32_t;
+typedef int_fast32_t duk_int_fast32_t;
+typedef uint_fast64_t duk_uint_fast64_t;
+typedef int_fast64_t duk_int_fast64_t;
+typedef intptr_t duk_intptr_t;
+typedef uintptr_t duk_uintptr_t;
+typedef intmax_t duk_intmax_t;
+typedef uintmax_t duk_uintmax_t;
+#else  /* C99 types */
+/* When C99 types are not available, we use simplistic detection to get
+ * the basic 8, 16, and 32 bit types.  The fast/least types are then
+ * assumed to be exactly the same for now: these could be improved per
+ * platform but C99 types are very often now available.
+ *
+ * 64-bit types are not defined at all now (duk_uint64_t etc).
+ */
+#if (defined(CHAR_BIT) && (CHAR_BIT == 8)) || \
+    (defined(UCHAR_MAX) && (UCHAR_MAX == 255))
+typedef unsigned char duk_uint8_t;
+typedef signed char duk_int8_t;
 #else
-/* FIXME: need actual detection here */
-typedef unsigned char duk_u8;
-typedef signed char duk_i8;
-typedef unsigned short duk_u16;
-typedef signed short duk_i16;
-typedef unsigned int duk_u32;
-typedef signed int duk_i32;
+#error cannot detect 8-bit type
 #endif
+
+#if defined(USHRT_MAX) && (USHRT_MAX == 65535)
+typedef unsigned short duk_uint16_t;
+typedef signed short duk_int16_t;
+#else
+#error cannot detect 16-bit type
+#endif
+
+#if defined(UINT_MAX) && (UINT_MAX == 4294967295)
+typedef unsigned int duk_uint32_t;
+typedef signed int duk_int32_t;
+#elif defined(ULONG_MAX) && (ULONG_MAX == 4294967295)
+/* On some platforms int is 16-bit but long is 32-bit (e.g. PureC) */
+typedef unsigned long duk_uint32_t;
+typedef signed long duk_int32_t;
+#else
+#error cannot detect 32-bit type
+#endif
+
+typedef duk_uint8_t duk_uint_least8_t;
+typedef duk_int8_t duk_int_least8_t;
+typedef duk_uint16_t duk_uint_least16_t;
+typedef duk_int16_t duk_int_least16_t;
+typedef duk_uint32_t duk_uint_least32_t;
+typedef duk_int32_t duk_int_least32_t;
+typedef duk_uint8_t duk_uint_fast8_t;
+typedef duk_int8_t duk_int_fast8_t;
+typedef duk_uint16_t duk_uint_fast16_t;
+typedef duk_int16_t duk_int_fast16_t;
+typedef duk_uint32_t duk_uint_fast32_t;
+typedef duk_int32_t duk_int_fast32_t;
+typedef duk_int32_t duk_intmax_t;
+typedef duk_uint32_t duk_uintmax_t;
+
+/* This detection is not very reliable, and only supports 32-bit platforms
+ * now (64-bit platforms work if C99 types are available.
+ */
+#if defined(__WORDSIZE) && (__WORDSIZE == 32)
+typedef duk_int32_t duk_intptr_t;
+typedef duk_uint32_t duk_uintptr_t;
+#else
+#error cannot determine intptr type
+#endif
+#endif  /* C99 types */
+
+/* The best type for an "all around int" in Duktape internals is "at least
+ * 32 bit signed integer" which is fastest.  Same for unsigned type.
+ */
+typedef duk_int_fast32_t duk_int;
+typedef duk_uint_fast32_t duk_uint;
 
 /*
  *  Check whether we should use 64-bit integers

@@ -46,8 +46,8 @@ typedef struct {
 
 typedef struct {
 	duk_hthread *thr;
-	duk_u8 *p;
-	duk_u8 *p_end;
+	duk_uint8_t *p;
+	duk_uint8_t *p_end;
 	int idx_reviver;
 	int flags;
 	int recursion_depth;

@@ -10,11 +10,11 @@
 #include "duk_internal.h"
 
 /* 'magic' constants for Murmurhash2 */
-#define  MAGIC_M  ((duk_u32) 0x5bd1e995)
+#define  MAGIC_M  ((duk_uint32_t) 0x5bd1e995)
 #define  MAGIC_R  24
 
-duk_u32 duk_util_hashbytes(duk_u8 *data, duk_u32 len, duk_u32 seed) {
-	duk_u32 h = seed ^ len;
+duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_uint32_t len, duk_uint32_t seed) {
+	duk_uint32_t h = seed ^ len;
 
 	while (len >= 4) {
 		/* Portability workaround is required for platforms without
@@ -23,12 +23,12 @@ duk_u32 duk_util_hashbytes(duk_u8 *data, duk_u32 len, duk_u32 seed) {
 		 * OK as long as it is consistent for a build.
 		 */
 #ifdef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-		duk_u32 k = *((duk_u32 *) data);
+		duk_uint32_t k = *((duk_uint32_t *) data);
 #else
-		duk_u32 k = ((duk_u32) data[0]) |
-		            (((duk_u32) data[1]) << 8) |
-		            (((duk_u32) data[2]) << 16) |
-		            (((duk_u32) data[3]) << 24);
+		duk_uint32_t k = ((duk_uint32_t) data[0]) |
+		                 (((duk_uint32_t) data[1]) << 8) |
+		                 (((duk_uint32_t) data[2]) << 16) |
+		                 (((duk_uint32_t) data[3]) << 24);
 #endif
 
 		k *= MAGIC_M;

@@ -111,14 +111,14 @@ void duk_js_push_closure(duk_hthread *thr,
                          duk_hobject *outer_lex_env) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hcompiledfunction *fun_clos;
-	duk_u16 proplist[] = { DUK_STRIDX_INT_VARMAP,
-	                       DUK_STRIDX_INT_FORMALS,
-	                       DUK_STRIDX_NAME,
-	                       DUK_STRIDX_INT_PC2LINE,
-	                       DUK_STRIDX_FILE_NAME,
-	                       DUK_STRIDX_INT_SOURCE };  /* order: most frequent to least frequent */
+	duk_uint16_t proplist[] = { DUK_STRIDX_INT_VARMAP,
+	                            DUK_STRIDX_INT_FORMALS,
+	                            DUK_STRIDX_NAME,
+	                            DUK_STRIDX_INT_PC2LINE,
+	                            DUK_STRIDX_FILE_NAME,
+	                            DUK_STRIDX_INT_SOURCE };  /* order: most frequent to least frequent */
 	int i;
-	duk_u32 len_value;
+	duk_uint32_t len_value;
 
 	DUK_ASSERT(fun_temp != NULL);
 	DUK_ASSERT(fun_temp->data != NULL);
@@ -298,7 +298,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	DUK_DDDPRINT("copying properties: closure=%!iT, template=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
-	for (i = 0; i < sizeof(proplist) / sizeof(duk_u16); i++) {
+	for (i = 0; i < sizeof(proplist) / sizeof(duk_uint16_t); i++) {
 		int stridx = (int) proplist[i];
 		if (duk_get_prop_stridx(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
@@ -437,7 +437,7 @@ void duk_js_push_closure(duk_hthread *thr,
 /* shared helper */
 duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
                                                       duk_hobject *func,
-                                                      duk_u32 idx_bottom) {
+                                                      duk_uint32_t idx_bottom) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *env;
 	duk_hobject *parent;
@@ -833,7 +833,7 @@ static int get_identifier_reference(duk_hthread *thr,
                                     int parents,
                                     duk_id_lookup_result *out) {
 	duk_tval *tv;
-	duk_u32 sanity;
+	duk_uint32_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(env != NULL || act != NULL);

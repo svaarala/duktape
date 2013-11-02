@@ -5,7 +5,6 @@
 
 #include "duk_internal.h"
 
-/* FIXME: noreturn */
 void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
@@ -21,5 +20,6 @@ void duk_err_longjmp(duk_hthread *thr) {
 	}
 
 	longjmp(thr->heap->lj.jmpbuf_ptr->jb, DUK_LONGJMP_DUMMY_VALUE);
+	DUK_UNREACHABLE();
 }
 

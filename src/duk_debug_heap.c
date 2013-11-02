@@ -10,7 +10,7 @@ static void sanitize_snippet(char *buf, int buf_size, duk_hstring *str) {
 	int i;
 	int nchars;
 	int maxchars;
-	duk_u8 *data;
+	duk_uint8_t *data;
 
 	DUK_MEMSET(buf, 0, buf_size);
 
@@ -97,7 +97,7 @@ static void dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *nam
 }
 
 static void dump_stringtable(duk_heap *heap) {
-	duk_u32 i;
+	duk_uint32_t i;
 	char buf[64+1];
 
 	DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
@@ -147,7 +147,7 @@ static void dump_stringtable(duk_heap *heap) {
 }
 
 static void dump_strcache(duk_heap *heap) {
-	duk_u32 i;
+	duk_uint32_t i;
 	char buf[64+1];
 
 	DUK_DPRINT("stringcache");

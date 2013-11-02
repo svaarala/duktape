@@ -15,7 +15,7 @@ static void json_dec_eat_white(duk_json_dec_ctx *js_ctx);
 static int json_dec_peek(duk_json_dec_ctx *js_ctx);
 static int json_dec_get(duk_json_dec_ctx *js_ctx);
 static int json_dec_get_nonwhite(duk_json_dec_ctx *js_ctx);
-static duk_u32 json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n);
+static duk_uint32_t json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n);
 static void json_dec_req_stridx(duk_json_dec_ctx *js_ctx, int stridx);
 static void json_dec_string(duk_json_dec_ctx *js_ctx);
 static void json_dec_number(duk_json_dec_ctx *js_ctx);
@@ -28,10 +28,10 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx);
 
 static void json_emit_1(duk_json_enc_ctx *js_ctx, char ch);
 static void json_emit_2(duk_json_enc_ctx *js_ctx, int chars);
-static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, const char *esc_str, int digits);
-static void json_emit_esc16(duk_json_enc_ctx *js_ctx, duk_u32 cp);
-static void json_emit_esc32(duk_json_enc_ctx *js_ctx, duk_u32 cp);
-static void json_emit_xutf8(duk_json_enc_ctx *js_ctx, duk_u32 cp);
+static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_uint32_t cp, const char *esc_str, int digits);
+static void json_emit_esc16(duk_json_enc_ctx *js_ctx, duk_uint32_t cp);
+static void json_emit_esc32(duk_json_enc_ctx *js_ctx, duk_uint32_t cp);
+static void json_emit_xutf8(duk_json_enc_ctx *js_ctx, duk_uint32_t cp);
 static void json_emit_hstring(duk_json_enc_ctx *js_ctx, duk_hstring *h);
 static void json_emit_cstring(duk_json_enc_ctx *js_ctx, const char *p);
 static int json_enc_key_quotes_needed(duk_hstring *h_key);
@@ -102,9 +102,9 @@ static int json_dec_get_nonwhite(duk_json_dec_ctx *js_ctx) {
 	return json_dec_get(js_ctx);
 }
 
-static duk_u32 json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n) {
+static duk_uint32_t json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n) {
 	int i;
-	duk_u32 res = 0;
+	duk_uint32_t res = 0;
 	int x;
 
 	for (i = 0; i < n; i++) {
@@ -139,8 +139,8 @@ static duk_u32 json_dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n) {
 
 static void json_dec_req_stridx(duk_json_dec_ctx *js_ctx, int stridx) {
 	duk_hstring *h;
-	duk_u8 *p;
-	duk_u8 *p_end;
+	duk_uint8_t *p;
+	duk_uint8_t *p_end;
 	int x;
 
 	/* First character has already been eaten and checked by the
@@ -151,8 +151,8 @@ static void json_dec_req_stridx(duk_json_dec_ctx *js_ctx, int stridx) {
 	h = DUK_HTHREAD_GET_STRING(js_ctx->thr, stridx);
 	DUK_ASSERT(h != NULL);
 
-	p = (duk_u8 *) DUK_HSTRING_GET_DATA(h);
-	p_end = ((duk_u8 *) DUK_HSTRING_GET_DATA(h)) +
+	p = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	p_end = ((duk_uint8_t *) DUK_HSTRING_GET_DATA(h)) +
 	        DUK_HSTRING_GET_BYTELEN(h);
 
 	DUK_ASSERT((int) *(js_ctx->p - 1) == (int) *p);
@@ -232,12 +232,12 @@ static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 			default:
 				goto syntax_error;
 			}
-			duk_hbuffer_append_xutf8(thr, h_buf, (duk_u32) x);
+			duk_hbuffer_append_xutf8(thr, h_buf, (duk_uint32_t) x);
 		} else if (x < 0x20) {
 			/* catches EOF (-1) */
 			goto syntax_error;
 		} else {
-			duk_hbuffer_append_byte(thr, h_buf, (duk_u8) x);
+			duk_hbuffer_append_byte(thr, h_buf, (duk_uint8_t) x);
 		}
 	}
 
@@ -254,7 +254,7 @@ static void json_dec_string(duk_json_dec_ctx *js_ctx) {
 
 static void json_dec_number(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_u8 *p_start;
+	duk_uint8_t *p_start;
 	int x;
 	int s2n_flags;
 
@@ -620,17 +620,17 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 #define  EMIT_STRIDX(js_ctx,i)   json_emit_stridx((js_ctx),(i))
 
 static void json_emit_1(duk_json_enc_ctx *js_ctx, char ch) {
-	duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, (duk_u8) ch);
+	duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, (duk_uint8_t) ch);
 }
 
 static void json_emit_2(duk_json_enc_ctx *js_ctx, int chars) {
-	duk_u8 buf[2];
+	duk_uint8_t buf[2];
 	buf[0] = (chars >> 8);
 	buf[1] = chars & 0xff;
-	duk_hbuffer_append_bytes(js_ctx->thr, js_ctx->h_buf, (duk_u8 *) buf, 2);
+	duk_hbuffer_append_bytes(js_ctx->thr, js_ctx->h_buf, (duk_uint8_t *) buf, 2);
 }
 
-static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, const char *esc_str, int digits) {
+static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_uint32_t cp, const char *esc_str, int digits) {
 	int dig;
 
 	duk_hbuffer_append_cstring(js_ctx->thr, js_ctx->h_buf, esc_str);
@@ -642,16 +642,16 @@ static void json_emit_esc(duk_json_enc_ctx *js_ctx, duk_u32 cp, const char *esc_
 	}
 }
 
-static void json_emit_esc16(duk_json_enc_ctx *js_ctx, duk_u32 cp) {
+static void json_emit_esc16(duk_json_enc_ctx *js_ctx, duk_uint32_t cp) {
 	json_emit_esc(js_ctx, cp, "\\u", 4);
 }
 
-static void json_emit_esc32(duk_json_enc_ctx *js_ctx, duk_u32 cp) {
+static void json_emit_esc32(duk_json_enc_ctx *js_ctx, duk_uint32_t cp) {
 	/* custom format */
 	json_emit_esc(js_ctx, cp, "\\U", 8);
 }
 
-static void json_emit_xutf8(duk_json_enc_ctx *js_ctx, duk_u32 cp) {
+static void json_emit_xutf8(duk_json_enc_ctx *js_ctx, duk_uint32_t cp) {
 	(void) duk_hbuffer_append_xutf8(js_ctx->thr, js_ctx->h_buf, cp);
 }
 
@@ -659,7 +659,7 @@ static void json_emit_hstring(duk_json_enc_ctx *js_ctx, duk_hstring *h) {
 	DUK_ASSERT(h != NULL);
 	duk_hbuffer_append_bytes(js_ctx->thr,
 	                         js_ctx->h_buf,
-	                         (duk_u8 *) DUK_HSTRING_GET_DATA(h),
+	                         (duk_uint8_t *) DUK_HSTRING_GET_DATA(h),
 	                         (size_t) DUK_HSTRING_GET_BYTELEN(h));
 }
 
@@ -675,7 +675,7 @@ static void json_emit_stridx(duk_json_enc_ctx *js_ctx, int stridx) {
 
 /* Check whether key quotes would be needed (custom encoding). */
 static int json_enc_key_quotes_needed(duk_hstring *h_key) {
-	duk_u8 *p, *p_start, *p_end;
+	duk_uint8_t *p, *p_start, *p_end;
 	int ch;
 
 	DUK_ASSERT(h_key != NULL);
@@ -722,8 +722,8 @@ static char quote_esc[14] = {
 
 static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_u8 *p, *p_start, *p_end;
-	duk_u32 cp;
+	duk_uint8_t *p, *p_start, *p_end;
+	duk_uint32_t cp;
 
 	DUK_DDDPRINT("json_enc_quote_string: h_str=%!O", h_str);
 
@@ -1258,9 +1258,9 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		 */
 
 		if (js_ctx->flag_ext_custom) {
-			duk_u8 *p, *p_end;
+			duk_uint8_t *p, *p_end;
 			int x;
-			p = (duk_u8 *) DUK_HBUFFER_GET_DATA_PTR(h);
+			p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
 			p_end = p + DUK_HBUFFER_GET_SIZE(h);
 			EMIT_1(js_ctx, '|');
 			while (p < p_end) {
@@ -1377,8 +1377,8 @@ void duk_builtin_json_parse_helper(duk_context *ctx,
 	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place */
 	DUK_ASSERT(h_text != NULL);
 
-	js_ctx->p = (duk_u8 *) DUK_HSTRING_GET_DATA(h_text);
-	js_ctx->p_end = ((duk_u8 *) DUK_HSTRING_GET_DATA(h_text)) +
+	js_ctx->p = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
+	js_ctx->p_end = ((duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text)) +
 	                DUK_HSTRING_GET_BYTELEN(h_text);
 
 	json_dec_value(js_ctx);  /* -> [ ... value ] */

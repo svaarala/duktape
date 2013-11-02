@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_be_encode(duk_bitencoder_ctx *ctx, duk_u32 data, int bits) {
+void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, int bits) {
 	int tmp;
 
 	DUK_ASSERT(ctx != NULL);
@@ -20,7 +20,7 @@ void duk_be_encode(duk_bitencoder_ctx *ctx, duk_u32 data, int bits) {
 		tmp = (ctx->currval >> (ctx->currbits - 8)) & 0xff;
 
 		if (ctx->offset < ctx->length) {
-			ctx->data[ctx->offset++] = (duk_u8) tmp;
+			ctx->data[ctx->offset++] = (duk_uint8_t) tmp;
 		} else {
 			/* If buffer has been exhausted, truncate bitstream */
 			ctx->truncated = 1;

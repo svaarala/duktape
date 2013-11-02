@@ -15,7 +15,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 	duk_hbuffer_dynamic *h_buf;
 	duk_bitencoder_ctx be_ctx_alloc;
 	duk_bitencoder_ctx *be_ctx = &be_ctx_alloc;
-	duk_u32 *hdr;
+	duk_uint32_t *hdr;
 	size_t num_header_entries;
 	size_t curr_offset;
 	size_t new_size;
@@ -28,23 +28,23 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 	 */
 
 	num_header_entries = (length + DUK_PC2LINE_SKIP - 1) / DUK_PC2LINE_SKIP;
-	curr_offset = sizeof(duk_u32) + num_header_entries * sizeof(duk_u32) * 2;
+	curr_offset = sizeof(duk_uint32_t) + num_header_entries * sizeof(duk_uint32_t) * 2;
 
 	duk_push_dynamic_buffer(ctx, curr_offset);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
-	hdr = (duk_u32 *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
 	DUK_ASSERT(hdr != NULL);
-	hdr[0] = (duk_u32) length;  /* valid pc range is [0, length[ */
+	hdr[0] = (duk_uint32_t) length;  /* valid pc range is [0, length[ */
 
 	curr_pc = 0;
 	while (curr_pc < length) {
 		new_size = curr_offset + DUK_PC2LINE_MAX_DIFF_LENGTH;
 		duk_hbuffer_resize(thr, h_buf, new_size, new_size);
 
-		hdr = (duk_u32 *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
 		DUK_ASSERT(hdr != NULL);
 		DUK_ASSERT(curr_pc < length);
 		hdr_index = 1 + (curr_pc / DUK_PC2LINE_SKIP) * 2;
@@ -118,10 +118,10 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size
 	             length, new_size, (double) new_size * 8.0 / (double) length, duk_get_tval(ctx, -1));
 }
 
-duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
+duk_uint32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 	duk_bitdecoder_ctx bd_ctx_alloc;
 	duk_bitdecoder_ctx *bd_ctx = &bd_ctx_alloc;
-	duk_u32 *hdr;
+	duk_uint32_t *hdr;
 	size_t start_offset;
 	size_t pc_limit;
 	int hdr_index;
@@ -136,12 +136,12 @@ duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 	pc_base = hdr_index * DUK_PC2LINE_SKIP;
 	n = pc - pc_base;
 
-	if (DUK_HBUFFER_GET_SIZE(buf) <= sizeof(duk_u32)) {
+	if (DUK_HBUFFER_GET_SIZE(buf) <= sizeof(duk_uint32_t)) {
 		DUK_DDPRINT("pc2line lookup failed: buffer is smaller than minimal header");
 		goto error;
 	}
 
-	hdr = (duk_u32 *) DUK_HBUFFER_FIXED_GET_DATA_PTR(buf);
+	hdr = (duk_uint32_t *) DUK_HBUFFER_FIXED_GET_DATA_PTR(buf);
 	pc_limit = hdr[0];
 	if (pc < 0 || pc >= pc_limit) {
 		DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%d, limit=%d)", pc, pc_limit);
@@ -173,7 +173,7 @@ duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 			if (duk_bd_decode_flag(bd_ctx)) {
 				if (duk_bd_decode_flag(bd_ctx)) {
 					/* 1 1 1 <32 bits> */
-					duk_u32 t;
+					duk_uint32_t t;
 					t = duk_bd_decode(bd_ctx, 16);  /* workaround: max nbits = 24 now */
 					t = (t << 16) + duk_bd_decode(bd_ctx, 16);
 					curr_line = t;

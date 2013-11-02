@@ -50,8 +50,8 @@
 #define  DUK_HSTRING_GET_HASH(x)                     ((x)->hash)
 #define  DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
 #define  DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
-#define  DUK_HSTRING_GET_DATA(x)                     ((duk_u8 *) ((x) + 1))
-#define  DUK_HSTRING_GET_DATA_END(x)                 (((duk_u8 *) ((x) + 1)) + ((x)->blen))
+#define  DUK_HSTRING_GET_DATA(x)                     ((duk_uint8_t *) ((x) + 1))
+#define  DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
 
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
 #define  DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffU)
@@ -80,9 +80,9 @@ struct duk_hstring {
 	 * shared heap header.  Good hashing needs more hash bits though.
 	 */
 
-	duk_u32 hash;         /* string hash */
-	duk_u32 blen;         /* length in bytes (not counting NUL term) */
-	duk_u32 clen;         /* length in codepoints (must be E5 compatible) */
+	duk_uint32_t hash;         /* string hash */
+	duk_uint32_t blen;         /* length in bytes (not counting NUL term) */
+	duk_uint32_t clen;         /* length in codepoints (must be E5 compatible) */
 
 	/*
 	 *  String value of 'blen+1' bytes follows (+1 for NUL termination

@@ -51,7 +51,7 @@ static void sort_array_indices(duk_hobject *h_obj) {
 	duk_hstring **keys;
 	duk_hstring **p_curr, **p_insert, **p_end;
 	duk_hstring *h_curr;
-	duk_u32 val_highest, val_curr, val_insert;
+	duk_uint32_t val_highest, val_curr, val_insert;
 
 	DUK_ASSERT(h_obj != NULL);
 	DUK_ASSERT(h_obj->e_used >= 2);  /* control props */
@@ -189,7 +189,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	curr = target;
 	while (curr) {
-		duk_u32 i;
+		duk_uint32_t i;
 
 		/*
 		 *  Virtual properties.
@@ -205,7 +205,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 			h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
 			DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
 
-			/* FIXME: type for 'i' to match string max len (duk_u32) */
+			/* FIXME: type for 'i' to match string max len (duk_uint32_t) */
 			for (i = 0; i < DUK_HSTRING_GET_CHARLEN(h_val); i++) {
 				duk_hstring *k;
 
@@ -353,7 +353,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_hobject *e;
 	duk_hobject *target;
 	duk_hstring *res = NULL;
-	duk_u32 idx;
+	duk_uint32_t idx;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -363,7 +363,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 
 	/* FIXME: use get tval ptr, more efficient */
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
-	idx = (duk_u32) duk_require_number(ctx, -1);
+	idx = (duk_uint32_t) duk_require_number(ctx, -1);
 	duk_pop(ctx);
 	DUK_DDDPRINT("enumeration: index is: %d", idx);
 

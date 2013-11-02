@@ -203,11 +203,11 @@ static int init_heap_strings(duk_heap *heap) {
 	int i, j;
 
 	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
-	bd->data = (duk_u8 *) duk_strings_data;
+	bd->data = (duk_uint8_t *) duk_strings_data;
 	bd->length = DUK_STRDATA_DATA_LENGTH;
 
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
-		duk_u8 tmp[DUK_STRDATA_MAX_STRLEN];
+		duk_uint8_t tmp[DUK_STRDATA_MAX_STRLEN];
 		duk_hstring *h;
 		int len;
 		int mode;
@@ -238,7 +238,7 @@ static int init_heap_strings(duk_heap *heap) {
 			} else if (t == BITPACK_SEVENBIT) {
 				t = duk_bd_decode(bd, 7);
 			}
-			tmp[j] = (duk_u8) t;
+			tmp[j] = (duk_uint8_t) t;
 		}
 
 		DUK_DDDPRINT("intern built-in string %d", i);
@@ -399,8 +399,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *
 	 *   warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
 	 */
-	res->hash_seed = (duk_u32) (intptr_t) res;
-	res->rnd_state = (duk_u32) (intptr_t) res;
+	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
+	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->lj.jmpbuf_ptr = NULL;

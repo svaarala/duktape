@@ -36,7 +36,7 @@ static unsigned int push_this_obj_len_u32(duk_context *ctx) {
 int duk_builtin_array_constructor(duk_context *ctx) {
 	int nargs;
 	double d;
-	duk_u32 len;
+	duk_uint32_t len;
 	int i;
 
 	nargs = duk_get_top(ctx);
@@ -185,8 +185,8 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
  */
 
 static int array_join_helper(duk_context *ctx, int to_locale_string) {
-	duk_u32 len;
-	duk_u32 i;
+	duk_uint32_t len;
+	duk_uint32_t i;
 
 	DUK_ASSERT_TOP(ctx, 1);
 	if (duk_is_undefined(ctx, 0)) {

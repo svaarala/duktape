@@ -83,15 +83,15 @@ typedef struct {
 	duk_hthread *thr;
 	duk_hstring *h_str;
 	duk_hbuffer_dynamic *h_buf;
-	duk_u8 *p;
-	duk_u8 *p_start;
-	duk_u8 *p_end;
+	duk_uint8_t *p;
+	duk_uint8_t *p_start;
+	duk_uint8_t *p_end;
 } duk_transform_context;
 
-typedef void (*transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp);
+typedef void (*transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp);
 
 /* FIXME: refactor and share with other code */
-static int decode_hex_escape(duk_u8 *p, int n) {
+static int decode_hex_escape(duk_uint8_t *p, int n) {
 	int ch;
 	int t = 0;
 
@@ -116,7 +116,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_transform_context tfm_ctx_alloc;
 	duk_transform_context *tfm_ctx = &tfm_ctx_alloc;
-	duk_u32 cp;
+	duk_uint32_t cp;
 
 	tfm_ctx->thr = thr;
 
@@ -141,16 +141,16 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	return 1;
 }
 
-static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp) {
-	duk_u8 xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
-	duk_u8 buf[3];
+static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+	duk_uint8_t xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
+	duk_uint8_t buf[3];
 	size_t len;
-	duk_u32 cp1, cp2;
+	duk_uint32_t cp1, cp2;
 	int i, t;
-	duk_u8 *unescaped_table = (duk_u8 *) udata;
+	duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
 
 	if ((cp < 128) && CHECK_BITMASK(unescaped_table, cp)) {
-		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_u8) cp);
+		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) cp);
 		return;
 	} else if (cp >= 0xdc00 && cp <= 0xdfff) {
 		goto uri_error;
@@ -180,11 +180,11 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 	}
 
 	len = duk_unicode_encode_xutf8(cp, xutf8_buf);
-	buf[0] = (duk_u8) '%';
+	buf[0] = (duk_uint8_t) '%';
 	for (i = 0; i < len; i++) {
 		t = (int) xutf8_buf[i];
-		buf[1] = (duk_u8) duk_uc_nybbles[t >> 4];
-		buf[2] = (duk_u8) duk_uc_nybbles[t & 0x0f];
+		buf[1] = (duk_uint8_t) duk_uc_nybbles[t >> 4];
+		buf[2] = (duk_uint8_t) duk_uc_nybbles[t & 0x0f];
 		duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, buf, 3);
 	}
 	return;
@@ -193,15 +193,15 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
 }
 
-static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp) {
-	duk_u8 *reserved_table = (duk_u8 *) udata;
+static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
 	int utf8_blen;
 	int min_cp;
 	int t;
 	int i;
 
-	if (cp == (duk_u32) '%') {
-		duk_u8 *p = tfm_ctx->p;
+	if (cp == (duk_uint32_t) '%') {
+		duk_uint8_t *p = tfm_ctx->p;
 		size_t left = (size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		DUK_DDDPRINT("percent encoding, left=%d", (int) left);
@@ -220,9 +220,9 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 			if (CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
-				duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, (duk_u8 *) (p - 1), 3);
+				duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t *) (p - 1), 3);
 			} else {
-				duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_u8) t);
+				duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) t);
 			}
 			tfm_ctx->p += 2;
 			return;
@@ -318,25 +318,25 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 }
 
 #ifdef DUK_USE_SECTION_B
-static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp) {
-	duk_u8 buf[6];
+static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+	duk_uint8_t buf[6];
 	size_t len;
 
 	if ((cp < 128) && CHECK_BITMASK(escape_unescaped_table, cp)) {
-		buf[0] = (duk_u8) cp;
+		buf[0] = (duk_uint8_t) cp;
 		len = 1;
 	} else if (cp < 256) {
-		buf[0] = (duk_u8) '%';
-		buf[1] = (duk_u8) duk_uc_nybbles[cp >> 4];
-		buf[2] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
+		buf[0] = (duk_uint8_t) '%';
+		buf[1] = (duk_uint8_t) duk_uc_nybbles[cp >> 4];
+		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
 		len = 3;
 	} else if (cp < 65536) {
-		buf[0] = (duk_u8) '%';
-		buf[1] = (duk_u8) 'u';
-		buf[2] = (duk_u8) duk_uc_nybbles[cp >> 12];
-		buf[3] = (duk_u8) duk_uc_nybbles[(cp >> 8) & 0x0f];
-		buf[4] = (duk_u8) duk_uc_nybbles[(cp >> 4) & 0x0f];
-		buf[5] = (duk_u8) duk_uc_nybbles[cp & 0x0f];
+		buf[0] = (duk_uint8_t) '%';
+		buf[1] = (duk_uint8_t) 'u';
+		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp >> 12];
+		buf[3] = (duk_uint8_t) duk_uc_nybbles[(cp >> 8) & 0x0f];
+		buf[4] = (duk_uint8_t) duk_uc_nybbles[(cp >> 4) & 0x0f];
+		buf[5] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
 		len = 6;
 	} else {
 		/* Characters outside BMP cannot be escape()'d.  We could
@@ -354,20 +354,20 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
 }
 
-static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_u32 cp) {
+static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
 	int t;
 
-	if (cp == (duk_u32) '%') {
-		duk_u8 *p = tfm_ctx->p;
+	if (cp == (duk_uint32_t) '%') {
+		duk_uint8_t *p = tfm_ctx->p;
 		size_t left = (size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		if (left >= 5 && p[0] == 'u' &&
 		    ((t = decode_hex_escape(p + 1, 4)) >= 0)) {
-			cp = (duk_u32) t;
+			cp = (duk_uint32_t) t;
 			tfm_ctx->p += 5;
 		} else if (left >= 2 &&
 		    ((t = decode_hex_escape(p, 2)) >= 0)) {
-			cp = (duk_u32) t;
+			cp = (duk_uint32_t) t;
 			tfm_ctx->p += 2;
 		}
 	}
@@ -515,7 +515,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 
 int duk_builtin_global_object_parse_int(duk_context *ctx) {
 	int strip_prefix;
-	duk_i32 radix;
+	duk_int32_t radix;
 	int s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 2);

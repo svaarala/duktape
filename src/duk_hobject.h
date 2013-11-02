@@ -200,26 +200,26 @@
 			(h)->e_size * sizeof(duk_hstring *) \
 	))
 #define  DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
-	((duk_u8 *) ( \
+	((duk_uint8_t *) ( \
 		(h)->p + (h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
 	))
 #define  DUK_HOBJECT_A_GET_BASE(h)               \
 	((duk_tval *) ( \
 		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_u8)) \
+			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) \
 	))
 #define  DUK_HOBJECT_H_GET_BASE(h)               \
-	((duk_u32 *) ( \
+	((duk_uint32_t *) ( \
 		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_u8)) + \
+			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			(h)->a_size * sizeof(duk_tval) \
 	))
 
 #define  DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
-		(n_ent) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_u8)) + \
+		(n_ent) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 		(n_arr) * sizeof(duk_tval) + \
-		(n_hash) * sizeof(duk_u32) \
+		(n_hash) * sizeof(duk_uint32_t) \
 	)
 
 #define  DUK_HOBJECT_E_GET_KEY(h,i)              (DUK_HOBJECT_E_GET_KEY_BASE((h))[(i)])
@@ -425,9 +425,9 @@ struct duk_hobject {
 	 *
 	 *    e_size * sizeof(duk_hstring *)   bytes of   entry keys (e_used gc reachable)
 	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
-	 *    e_size * sizeof(duk_u8)          bytes of   entry flags (e_used gc reachable)
+	 *    e_size * sizeof(duk_uint8_t)     bytes of   entry flags (e_used gc reachable)
 	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)
-	 *    h_size * sizeof(duk_u32)         bytes of   (opt) hash indexes to entries (e_size),
+	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
 	 *
 	 *  Objects with few keys don't have a hash index; keys are looked up linearly,
@@ -445,11 +445,11 @@ struct duk_hobject {
 	 *  possible to make accessing them as fast a possible.
 	 */
 
-	duk_u8 *p;
-	duk_u32 e_size;
-	duk_u32 e_used;
-	duk_u32 a_size;
-	duk_u32 h_size;
+	duk_uint8_t *p;
+	duk_uint32_t e_size;
+	duk_uint32_t e_used;
+	duk_uint32_t a_size;
+	duk_uint32_t h_size;
 
 	/* prototype: the only internal property lifted outside 'e' as it is so central */
 	duk_hobject *prototype;
@@ -459,7 +459,7 @@ struct duk_hobject {
  *  Exposed data
  */
 
-extern duk_u8 duk_class_number_to_stridx[32];
+extern duk_uint8_t duk_class_number_to_stridx[32];
 
 /*
  *  Prototypes
@@ -475,7 +475,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags);
 /* low-level property functions */
 void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_idx, int *h_idx);
 duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key);
-duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_u32 i);
+duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uint32_t i);
 
 /* core property functions */
 int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
@@ -488,9 +488,9 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 int duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, int propflags);
 void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, int propflags);
-void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_u32 length);
+void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length);
 void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
-duk_u32 duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
+duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
 
 /* Object built-in methods */
 int duk_hobject_object_define_property(duk_context *ctx);
@@ -520,7 +520,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
 
 /* pc2line */
 void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size_t length);
-duk_u32 duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc);
+duk_uint32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc);
 
 /* misc */	
 int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);

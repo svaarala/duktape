@@ -17,7 +17,7 @@ static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count);
 /* FIXME: overlap with other helpers, rework */
 static duk_hobject *find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_u32 sanity;
+	duk_uint32_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
@@ -232,7 +232,7 @@ static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	 *  depending on the operation.  We coerce the arguments first using
 	 *  ToInt32(), and then cast to an 32-bit value if necessary.  Note that
 	 *  such casts must be correct even if there is no native 32-bit type
-	 *  (e.g., duk_i32 and duk_u32 are 64-bit).
+	 *  (e.g., duk_int32_t and duk_uint32_t are 64-bit).
 	 *
 	 *  E5 Sections 11.10, 11.7.1, 11.7.2, 11.7.3
 	 */
@@ -240,7 +240,7 @@ static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	duk_i32 i1, i2;
+	duk_int32_t i1, i2;
 	double val;
 
 	DUK_ASSERT(thr != NULL);
@@ -274,32 +274,32 @@ static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 		 * must be masked.
 		 */
 
-		duk_u32 u2;
-		duk_i32 i3;
+		duk_uint32_t u2;
+		duk_int32_t i3;
 
-		u2 = ((duk_u32) i2) & 0xffffffffU;
-		i3 = i1 << (u2 & 0x1f);                 /* E5 Section 11.7.1, steps 7 and 8 */
-		i3 = i3 & ((duk_i32) 0xffffffffU);      /* Note: left shift, should mask */
+		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
+		i3 = i1 << (u2 & 0x1f);                     /* E5 Section 11.7.1, steps 7 and 8 */
+		i3 = i3 & ((duk_int32_t) 0xffffffffU);      /* Note: left shift, should mask */
 		val = (double) i3;
 		break;
 	}
 	case DUK_OP_BASR: {
 		/* signed shift */
 
-		duk_u32 u2;
+		duk_uint32_t u2;
 
-		u2 = ((duk_u32) i2) & 0xffffffffU;
+		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
 		val = (double) (i1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	case DUK_OP_BLSR: {
 		/* unsigned shift */
 
-		duk_u32 u1;
-		duk_u32 u2;
+		duk_uint32_t u1;
+		duk_uint32_t u2;
 
-		u1 = ((duk_u32) i1) & 0xffffffffU;
-		u2 = ((duk_u32) i2) & 0xffffffffU;
+		u1 = ((duk_uint32_t) i1) & 0xffffffffU;
+		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
 
 		val = (double) (u1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
@@ -391,7 +391,7 @@ static void _vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	duk_i32 i1, i2;
+	duk_int32_t i1, i2;
 	double val;
 
 	DUK_ASSERT(thr != NULL);
@@ -1304,7 +1304,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	/* 'funcs' is quite rarely used, so no local for it */
 
 	/* "hot" temps for interpretation -- not volatile, value not guaranteed in setjmp error handling */
-	duk_u32 ins;
+	duk_uint32_t ins;
 
 	/* jmpbuf */
 	duk_jmpbuf jmpbuf;
@@ -1673,7 +1673,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_hobject *obj;
 			int idx;
 			int count;
-			duk_u32 arr_idx;
+			duk_uint32_t arr_idx;
 
 			/* A -> register of target object
 			 * B -> first register of value data (start_index, value1, value2, ..., valueN)
@@ -1699,7 +1699,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
 				INTERNAL_ERROR("MPUTARR start index not a number");
 			}
-			arr_idx = (duk_u32) DUK_TVAL_GET_NUMBER(tv1);
+			arr_idx = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 			idx++;
 
 			duk_push_hobject(ctx, obj);
@@ -2812,7 +2812,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				int t;
 				duk_tval *tv1;
 				duk_hobject *h;
-				duk_u32 len;
+				duk_uint32_t len;
 
 				t = DUK_DEC_B(ins); tv1 = REGP(t);
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
@@ -2820,7 +2820,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 				t = DUK_DEC_C(ins); tv1 = REGP(t);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
-				len = (duk_u32) DUK_TVAL_GET_NUMBER(tv1);
+				len = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 
 				duk_hobject_set_length(thr, h, len);
 

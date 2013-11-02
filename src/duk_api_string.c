@@ -9,7 +9,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	unsigned int len;
 	unsigned int idx;
 	duk_hstring *h;
-	duk_u8 *buf;
+	duk_uint8_t *buf;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -35,7 +35,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", count, len);
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
-	buf = (duk_u8 *) duk_push_fixed_buffer(ctx, len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);
 	DUK_ASSERT(buf != NULL);
 
 	/* [... (sep) str1 str2 ... strN buf] */
@@ -141,9 +141,9 @@ void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_
 void duk_trim(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
-	duk_u8 *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
-	duk_u8 *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
-	duk_u32 cp;
+	duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
+	duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
+	duk_uint32_t cp;
 
 	index = duk_require_normalize_index(ctx, index);
 	h = duk_require_hstring(ctx, index);

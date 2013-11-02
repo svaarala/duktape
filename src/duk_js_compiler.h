@@ -61,7 +61,7 @@ typedef struct {
 struct duk_compiler_instr {
 	duk_instr ins;
 #if 1  /* FIXME: line number tracking now always enabled, make optional */
-	duk_u32 line;
+	duk_uint32_t line;
 #endif
 };
 

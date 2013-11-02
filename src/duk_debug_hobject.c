@@ -391,7 +391,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 	DUK_DPRINT("  hash entries:");
 	for (i = 0; i < obj->h_size; i++) {
-		duk_u32 t = DUK_HOBJECT_H_GET_INDEX(obj, i);
+		duk_uint32_t t = DUK_HOBJECT_H_GET_INDEX(obj, i);
 		if (t == DUK_HOBJECT_HASHIDX_UNUSED) {
 			DUK_DPRINT("    [%d]: unused", i);
 		} else if (t == DUK_HOBJECT_HASHIDX_DELETED) {

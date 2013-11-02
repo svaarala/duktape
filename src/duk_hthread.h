@@ -172,10 +172,10 @@ struct duk_hthread {
 	duk_heap *heap;
 
 	/* current strictness flag: affects API calls */
-	duk_u8 strict;
-	duk_u8 state;
-	duk_u8 unused1;
-	duk_u8 unused2;
+	duk_uint8_t strict;
+	duk_uint8_t state;
+	duk_uint8_t unused1;
+	duk_uint8_t unused2;
 
 	/* sanity limits */
 	int valstack_max;

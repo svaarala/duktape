@@ -266,10 +266,10 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 	DUK_ASSERT(thr->valstack_top - thr->valstack <= new_size);  /* can't resize below 'top' */
 
 	/* get pointer offsets for tweaking below */
-	old_bottom_offset = (((duk_u8 *) thr->valstack_bottom) - ((duk_u8 *) thr->valstack));
-	old_top_offset = (((duk_u8 *) thr->valstack_top) - ((duk_u8 *) thr->valstack));
+	old_bottom_offset = (((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack));
+	old_top_offset = (((duk_uint8_t *) thr->valstack_top) - ((duk_uint8_t *) thr->valstack));
 #ifdef DUK_USE_DEBUG
-	old_end_offset_pre = (((duk_u8 *) thr->valstack_end) - ((duk_u8 *) thr->valstack));  /* not very useful, used for debugging */
+	old_end_offset_pre = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* not very useful, used for debugging */
 	old_valstack_pre = thr->valstack;
 #endif
 
@@ -305,18 +305,18 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 	 *   - 'old_end_offset' must be computed after realloc to be correct.
 	 */
 
-	DUK_ASSERT((((duk_u8 *) thr->valstack_bottom) - ((duk_u8 *) thr->valstack)) == old_bottom_offset);
-	DUK_ASSERT((((duk_u8 *) thr->valstack_top) - ((duk_u8 *) thr->valstack)) == old_top_offset);
+	DUK_ASSERT((((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack)) == old_bottom_offset);
+	DUK_ASSERT((((duk_uint8_t *) thr->valstack_top) - ((duk_uint8_t *) thr->valstack)) == old_top_offset);
 
 	/* success, fixup pointers */
-	old_end_offset_post = (((duk_u8 *) thr->valstack_end) - ((duk_u8 *) thr->valstack));  /* must be computed after realloc */
+	old_end_offset_post = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* must be computed after realloc */
 #ifdef DUK_USE_DEBUG
 	old_valstack_post = thr->valstack;
 #endif
 	thr->valstack = new_valstack;
 	thr->valstack_end = new_valstack + new_size;
-	thr->valstack_bottom = (duk_tval *) ((duk_u8 *) new_valstack + old_bottom_offset);
-	thr->valstack_top = (duk_tval *) ((duk_u8 *) new_valstack + old_top_offset);
+	thr->valstack_bottom = (duk_tval *) ((duk_uint8_t *) new_valstack + old_bottom_offset);
+	thr->valstack_top = (duk_tval *) ((duk_uint8_t *) new_valstack + old_top_offset);
 
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
@@ -346,7 +346,7 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 	           (void *) thr->valstack_bottom, (void *) thr->valstack_top);
 
 	/* init newly allocated slots (only) */
-	p = (duk_tval *) ((duk_u8 *) thr->valstack + old_end_offset_post);
+	p = (duk_tval *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
 	while (p < thr->valstack_end) {
 		/* never executed if new size is smaller */
 		DUK_TVAL_SET_UNDEFINED_UNUSED(p);
@@ -594,7 +594,7 @@ void duk_insert(duk_context *ctx, int to_index) {
 	 * => [ ... | q | p | x | x ]
 	 */
 
-	nbytes = (size_t) (((duk_u8 *) q) - ((duk_u8 *) p));  /* Note: 'q' is top-1 */
+	nbytes = (size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 
 	DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d", to_index, p, q, nbytes);
 	if (nbytes > 0) {
@@ -661,7 +661,7 @@ void duk_remove(duk_context *ctx, int index) {
 	DUK_TVAL_SET_TVAL(&tv, p);
 #endif
 
-	nbytes = (size_t) (((duk_u8 *) q) - ((duk_u8 *) p));  /* Note: 'q' is top-1 */
+	nbytes = (size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 	if (nbytes > 0) {
 		DUK_MEMMOVE(p, p + 1, nbytes);
 	}
@@ -687,10 +687,10 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 	if (nbytes == 0) {
 		return;
 	}
-	if (((duk_u8 *) thr->valstack_end) - ((duk_u8 *) thr->valstack_top) < nbytes) {
+	if (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack_top) < nbytes) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
 	}
-	src = (void *) (((duk_u8 *) from_thr->valstack_top) - nbytes);
+	src = (void *) (((duk_uint8_t *) from_thr->valstack_top) - nbytes);
 	if (src < (void *) thr->valstack_bottom) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "source stack does not contain enough elements");
 	}
@@ -700,7 +700,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 
 	/* incref them */
 	p = thr->valstack_top;
-	thr->valstack_top = (duk_tval *) (((duk_u8 *) thr->valstack_top) + nbytes);
+	thr->valstack_top = (duk_tval *) (((duk_uint8_t *) thr->valstack_top) + nbytes);
 	while (p < thr->valstack_top) {
 		DUK_TVAL_INCREF(thr, p);
 		p++;
@@ -2271,7 +2271,7 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 		len = 0;
 	}
 
-	h = duk_heap_string_intern_checked(thr, (duk_u8 *) str, (duk_u32) len);
+	h = duk_heap_string_intern_checked(thr, (duk_uint8_t *) str, (duk_uint32_t) len);
 	DUK_ASSERT(h != NULL);
 
 	tv_slot = thr->valstack_top;
@@ -2755,7 +2755,7 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	duk_hnativefunction *obj;
 	int ret;
 	duk_tval *tv_slot;
-	duk_u16 func_nargs;
+	duk_uint16_t func_nargs;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -2767,7 +2767,7 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 		goto api_error;
 	}
 	if (nargs >= 0 && nargs < DUK_HNATIVEFUNCTION_NARGS_MAX) {
-		func_nargs = (duk_u16) nargs;
+		func_nargs = (duk_uint16_t) nargs;
 	} else if (nargs == DUK_VARARGS) {
 		func_nargs = DUK_HNATIVEFUNCTION_NARGS_VARARGS;
 	} else {

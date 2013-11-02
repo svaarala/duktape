@@ -303,29 +303,29 @@ static double toint32_or_touint32_helper(double x, int is_toint32) {
 	return x;
 }
 
-duk_i32 duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
+duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = toint32_or_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
-	DUK_ASSERT(d == ((double) ((duk_i32) d)));  /* whole, won't clip */
-	return (duk_i32) d;
+	DUK_ASSERT(d == ((double) ((duk_int32_t) d)));  /* whole, won't clip */
+	return (duk_int32_t) d;
 }
 
 
-duk_u32 duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
+duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = toint32_or_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */
-	DUK_ASSERT(d == ((double) ((duk_u32) d)));  /* whole, won't clip */
-	return (duk_u32) d;
+	DUK_ASSERT(d == ((double) ((duk_uint32_t) d)));  /* whole, won't clip */
+	return (duk_uint32_t) d;
 
 }
 
-duk_u16 duk_js_touint16(duk_hthread *thr, duk_tval *tv) {
+duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv) {
 	/* should be a safe way to compute this */
-	return (duk_u16) (duk_js_touint32(thr, tv) & 0x0000ffffU);
+	return (duk_uint16_t) (duk_js_touint32(thr, tv) & 0x0000ffffU);
 }
 
 /*
@@ -981,7 +981,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
-	duk_u32 sanity;
+	duk_uint32_t sanity;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
@@ -1213,7 +1213,7 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
  *  duk_js_to_arrayindex_string_helper().
  */
 
-static int raw_string_to_arrayindex(duk_u8 *str, duk_u32 blen, duk_u32 *out_idx) {
+static int raw_string_to_arrayindex(duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_idx) {
 	char buf[16];
 
 	/*
@@ -1233,8 +1233,8 @@ static int raw_string_to_arrayindex(duk_u8 *str, duk_u32 blen, duk_u32 *out_idx)
 }
 
 /* Called by duk_heap_stringtable.c for string interning */
-int duk_js_is_arrayindex_raw_string(duk_u8 *str, duk_u32 blen) {
-	duk_u32 dummy;
+int duk_js_is_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen) {
+	duk_uint32_t dummy;
 
 	/*
 	 *  All array indexes must match [0-9]{1,10}.
@@ -1247,7 +1247,7 @@ int duk_js_is_arrayindex_raw_string(duk_u8 *str, duk_u32 blen) {
 	if (blen == 0 || blen > 10) {
 		return 0;
 	}
-	if (str[0] < (duk_u8) '0' || str[0] > (duk_u8) '9') {
+	if (str[0] < (duk_uint8_t) '0' || str[0] > (duk_uint8_t) '9') {
 		/* just check the first char; it's usually not a digit
 		 * for non-numbers.
 		 */
@@ -1262,8 +1262,8 @@ int duk_js_is_arrayindex_raw_string(duk_u8 *str, duk_u32 blen) {
 }	
 
 /* Called by duk_hstring.h macros */
-duk_u32 duk_js_to_arrayindex_string_helper(duk_hstring *h) {
-	duk_u32 res;
+duk_uint32_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
+	duk_uint32_t res;
 	int rc;
 
 	if (!DUK_HSTRING_HAS_ARRIDX(h)) {

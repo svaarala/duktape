@@ -315,7 +315,7 @@ static void handle_bound_chain_for_call(duk_hthread *thr,
 	duk_context *ctx = (duk_context *) thr;
 	int num_stack_args;
 	duk_hobject *func;
-	duk_u32 sanity;
+	duk_uint32_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(p_num_stack_args != NULL);
@@ -543,7 +543,7 @@ int duk_handle_call(duk_hthread *thr,
 	int entry_call_recursion_depth;
 	int need_setjmp;
 	duk_hthread *entry_curr_thread;
-	duk_u8 entry_thread_state;
+	duk_uint8_t entry_thread_state;
 	int idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
 	int idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	int nargs;            /* # argument registers target function wants (< 0 => "as is") */
@@ -1365,7 +1365,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	int entry_catchstack_top;
 	int entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
-	duk_u8 entry_thread_state;
+	duk_uint8_t entry_thread_state;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
 	duk_hobject *old_errhandler = NULL;
 	duk_jmpbuf our_jmpbuf;

@@ -144,9 +144,9 @@
 
 #ifdef DUK_USE_DEBUG
 struct duk_fixedbuffer {
-	duk_u8 *buffer;
-	duk_u32 length;
-	duk_u32 offset;
+	duk_uint8_t *buffer;
+	duk_uint32_t length;
+	duk_uint32_t offset;
 	int truncated;
 };
 #endif
@@ -171,8 +171,8 @@ extern int duk_debug_level_stash;
 extern void duk_debug_log(char *fmt, ...);
 #endif
 
-void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_u8 *buffer, duk_u32 length);
-void duk_fb_put_byte(duk_fixedbuffer *fb, duk_u8 x);
+void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_uint32_t length);
+void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x);
 void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x);
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...);
 int duk_fb_is_full(duk_fixedbuffer *fb);

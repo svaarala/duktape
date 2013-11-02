@@ -5,7 +5,7 @@
 #ifndef DUK_LEXER_H_INCLUDED
 #define DUK_LEXER_H_INCLUDED
 
-typedef void (*duk_re_range_callback)(void *user, duk_u32 r1, duk_u32 r2, int direct);
+typedef void (*duk_re_range_callback)(void *user, duk_uint32_t r1, duk_uint32_t r2, int direct);
 
 /*
  *  A token is interpreted as any possible production of InputElementDiv
@@ -364,14 +364,14 @@ struct duk_token {
 	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
 
-#define  DUK_RE_QUANTIFIER_INFINITE         ((duk_u32) 0xffffffffU)
+#define  DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffU)
 
 /* A regexp token value. */
 struct duk_re_token {
 	int t;			/* token type */
-	duk_u32 num;		/* numeric value (character, count) */
-	duk_u32 qmin;
-	duk_u32 qmax;
+	duk_uint32_t num;	/* numeric value (character, count) */
+	duk_uint32_t qmin;
+	duk_uint32_t qmax;
 	int greedy;
 };
 
@@ -385,7 +385,7 @@ struct duk_lexer_point {
 struct duk_lexer_ctx {
 	duk_hthread *thr;                       /* thread; minimizes argument passing */
 
-	duk_u8 *input;
+	duk_uint8_t *input;
 	int input_length;
 	int window[DUK_LEXER_WINDOW_SIZE];	/* window of unicode code points */
 	int offsets[DUK_LEXER_WINDOW_SIZE];	/* input offset for each char */

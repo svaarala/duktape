@@ -29,7 +29,7 @@
  *  the field layout is logically "CBA".
  */ 
 
-typedef duk_u32 duk_instr;
+typedef duk_uint32_t duk_instr;
 
 #define  DUK_DEC_OP(x)               ((x) & 0x3f)
 #define  DUK_DEC_A(x)                (((x) >> 6) & 0xff)

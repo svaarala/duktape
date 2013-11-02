@@ -166,7 +166,7 @@ static int read_char(duk_lexer_ctx *lex_ctx) {
 	int x;
 	int len;
 	int i;
-	duk_u8 *p;
+	duk_uint8_t *p;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
 	int mincp;
 #endif
@@ -578,7 +578,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 *  automatic semicolon insertion.
 			 */
 
-			duk_u8 last_asterisk = 0;
+			duk_uint8_t last_asterisk = 0;
 			advtok = ADVTOK(0, DUK_TOK_COMMENT);
 			ADVANCE(lex_ctx, 2);
 			for (;;) {
@@ -661,7 +661,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 			/* first, parse regexp body roughly */
 
-			duk_u8 state = 0;  /* 0=base, 1=esc, 2=class, 3=class+esc */
+			duk_uint8_t state = 0;  /* 0=base, 1=esc, 2=class, 3=class+esc */
 
 			INITBUFFER(lex_ctx);
 			for (;;) {
@@ -1086,7 +1086,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		out_token->num = val;
 		advtok = ADVTOK(0, DUK_TOK_NUMBER);
 	} else if (x == '"' || x == '\'') {
-		int quote = x;	/* duk_u8 type yields larger code */
+		int quote = x;	/* duk_uint8_t type yields larger code */
 		int adv;
 
 		INITBUFFER(lex_ctx);
@@ -1373,8 +1373,8 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	}
 	case '{': {
 		/* Production allows 'DecimalDigits', including leading zeroes */
-		duk_u32 val1 = 0;
-		duk_u32 val2 = DUK_RE_QUANTIFIER_INFINITE;
+		duk_uint32_t val1 = 0;
+		duk_uint32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		int digits = 0;
 		for (;;) {
 			ADVANCE(lex_ctx, 1);	/* eat '{' on entry */
@@ -1502,7 +1502,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 				advtok = ADVTOK(2, DUK_RETOK_ATOM_CHAR);
 			} else {
 				/* FIXME: shared parsing? */
-				duk_u32 val = 0;
+				duk_uint32_t val = 0;
 				int i;
 				for (i = 0; ; i++) {
 					if (i >= MAX_REGEXP_DECIMAL_ESCAPE_DIGITS) {
@@ -1623,9 +1623,9 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 static void emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
                                    duk_re_range_callback gen_range,
                                    void *userdata,
-                                   duk_u16 *ranges,
+                                   duk_uint16_t *ranges,
                                    int num) {
-	duk_u16 *ranges_end = ranges + num;
+	duk_uint16_t *ranges_end = ranges + num;
 	while (ranges < ranges_end) {
 		/* mark range 'direct', bypass canonicalization (see Wiki) */
 		gen_range(userdata, ranges[0], ranges[1], 1);
@@ -1634,9 +1634,9 @@ static void emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
 }
 
 void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata) {
-	duk_i32 start = -1;
+	duk_int32_t start = -1;
 	int dash = 0;
-	duk_i32 ch;
+	duk_int32_t ch;
 
 	DUK_DDPRINT("parsing regexp ranges");
 
@@ -1718,42 +1718,42 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_digit,
-				                       sizeof(duk_unicode_re_ranges_digit) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_digit) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (x == 'D') {
 				emit_u16_direct_ranges(lex_ctx,
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_not_digit,
-				                       sizeof(duk_unicode_re_ranges_not_digit) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_not_digit) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (x == 's') {
 				emit_u16_direct_ranges(lex_ctx,
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_white,
-				                       sizeof(duk_unicode_re_ranges_white) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_white) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (x == 'S') {
 				emit_u16_direct_ranges(lex_ctx,
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_not_white,
-				                       sizeof(duk_unicode_re_ranges_not_white) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_not_white) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (x == 'w') {
 				emit_u16_direct_ranges(lex_ctx,
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_wordchar,
-				                       sizeof(duk_unicode_re_ranges_wordchar) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_wordchar) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (x == 'W') {
 				emit_u16_direct_ranges(lex_ctx,
 				                       gen_range,
 				                       userdata,
 				                       duk_unicode_re_ranges_not_wordchar,
-				                       sizeof(duk_unicode_re_ranges_not_wordchar) / sizeof(duk_u16));
+				                       sizeof(duk_unicode_re_ranges_not_wordchar) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (ISDIGIT(x)) {
 				/* DecimalEscape, only \0 is allowed, no leading zeroes are allowed */

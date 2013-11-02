@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_u32 duk_bd_decode(duk_bitdecoder_ctx *ctx, int bits) {
+duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, int bits) {
 	int shift;
 	int mask;
 	int tmp;

@@ -232,9 +232,9 @@ DUK_NORETURN(void duk_err_handle_panic_nonverbose2(const char *filename, int lin
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code, const char *msg, const char *filename, int line));
+DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code, const char *msg, const char *filename, int line));
 #else
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_u32 code));
+DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code));
 #endif
 
 DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc));
