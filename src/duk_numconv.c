@@ -40,8 +40,8 @@ static unsigned char str2num_digits_for_radix[] = {
 };
 
 typedef struct {
-	int16_t upper;
-	int16_t lower;
+	duk_int16_t upper;
+	duk_int16_t lower;
 } duk_exp_limits;
 
 static duk_exp_limits str2num_exp_limits[] = {
