@@ -8,7 +8,7 @@ desc: |-
   reachable errors with the same filename, more interned string data is generated.
 type: :task
 component: duk
-release: v0.8
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -20,4 +20,8 @@ log_events:
 - - 2013-10-24 17:15:04.106384 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-11-01 21:30:34.179928 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.8
   - ""
