@@ -38,7 +38,8 @@
 
 typedef struct {
 	duk_hobject *holder;      /* for object-bound identifiers */
-	duk_tval *value;          /* for register-bound identifiers */
+	duk_tval *value;          /* for register-bound and declarative env identifiers */
+	duk_int attrs;            /* property attributes for identifier (relevant if value != NULL) */
 	duk_tval *this_binding;
 	duk_hobject *env;
 } duk_id_lookup_result;
@@ -763,6 +764,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 	DUK_ASSERT(tv >= env_thr->valstack && tv < env_thr->valstack_end);  /* FIXME: more accurate? */
 
 	out->value = tv;
+	out->attrs = DUK_PROPDESC_FLAGS_W;  /* registers are mutable, non-deletable */
 	out->this_binding = NULL;  /* implicit this value always undefined for
 	                            * declarative environment records.
 	                            */
@@ -817,6 +819,7 @@ static int get_identifier_activation_regs(duk_hthread *thr,
 	tv = &thr->valstack[idx];
 
 	out->value = tv;
+	out->attrs = DUK_PROPDESC_FLAGS_W;  /* registers are mutable, non-deletable */
 	out->this_binding = NULL;  /* implicit this value always undefined for
 	                            * declarative environment records.
 	                            */
@@ -927,6 +930,7 @@ static int get_identifier_reference(duk_hthread *thr,
 	while (env != NULL) {
 		duk_tval *tv;
 		int cl;
+		duk_int attrs;
 
 		DUK_DDDPRINT("get_identifier_reference, name=%!O, considering env=%p -> %!iO",
 		             (duk_heaphdr *) name,
@@ -967,9 +971,10 @@ static int get_identifier_reference(duk_hthread *thr,
 			}
 		 skip_regs:
 
-			tv = duk_hobject_find_existing_entry_tval_ptr(env, name);
+			tv = duk_hobject_find_existing_entry_tval_ptr_and_attrs(env, name, &attrs);
 			if (tv) {
 				out->value = tv;
+				out->attrs = attrs;
 				out->this_binding = NULL;  /* implicit this value always undefined for
 				                            * declarative environment records.
 				                            */
@@ -1017,10 +1022,9 @@ static int get_identifier_reference(duk_hthread *thr,
 
 			if (duk_hobject_hasprop_raw(thr, target, name)) {
 				out->value = NULL;  /* can't get value, may be accessor */
-
+				out->attrs = 0;     /* irrelevant when out->value == NULL */
 				tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THIS(thr));
 				out->this_binding = tv;  /* may be NULL */
-
 				out->env = env;
 				out->holder = target;
 
@@ -1260,7 +1264,12 @@ static void putvar_helper(duk_hthread *thr,
 	parents = 1;     /* follow parent chain */
 
 	if (get_identifier_reference(thr, env, name, act, parents, &ref)) {
-		if (ref.value) {
+		if (ref.value && (ref.attrs & DUK_PROPDESC_FLAG_WRITABLE)) {
+			/* Update duk_tval in-place if pointer provided and the
+			 * property is writable.  If the property is not writable
+			 * (immutable binding), use duk_hobject_putprop() which
+			 * will respect mutability.
+			 */
 			duk_tval tv_tmp;
 			duk_tval *tv_val;
 
