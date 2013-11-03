@@ -16,3 +16,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2013-11-02 02:01:48.607360 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - See test-dev-bug-arridx-1.js
