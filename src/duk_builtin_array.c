@@ -931,6 +931,7 @@ int duk_builtin_array_prototype_unshift(duk_context *ctx) {
  *  indexOf(), lastIndexOf()
  */
 
+/* idx_step == 1 is indexOf, idx_step == -1 is lastIndexOf */
 static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	/* FIXME: types, ensure loop below works when fixed (i must be able to go negative right now) */
 	int nargs;
@@ -966,11 +967,18 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
 	 */
 
 	if (nargs >= 2) {
+		/* indexOf: clamp fromIndex to [-len, len]
+		 * (if fromIndex == len, for-loop terminates directly)
+		 *
+		 * lastIndexOf: clamp fromIndex to [-len - 1, len - 1]
+		 * (if clamped to -len-1 -> fromIndex becomes -1, terminates for-loop directly)
+		 */
 		fromIndex = duk_to_int_clamped(ctx,
 		                               1,
 		                               (idx_step > 0 ? -len : -len - 1),
 		                               (idx_step > 0 ? len : len - 1));
 		if (fromIndex < 0) {
+			/* for lastIndexOf, result may be -1 (mark immediate termination) */
 			fromIndex = len + fromIndex;
 		}
 	} else {
