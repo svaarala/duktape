@@ -33,8 +33,8 @@ TypeError
 should not be modified
 ===*/
 
-/* 10.2.1.1.3: The argument S is not ignored. It controls whether an exception is thrown when attempting to set
- * an immutable binding.
+/* 10.2.1.1.3: The argument S is not ignored. It controls whether an exception is
+ * thrown when attempting to set an immutable binding.
  *
  * (There are not very many immutable bindings in the spec.  One of them is
  * the name of a named function expression.  Assigning to it should be silently
@@ -51,18 +51,20 @@ print(func);
 /*===
 ===*/
 
-/* 10.2.1.2.2: In algorithm step 5, true is passed as the last argument to [[DefineOwnProperty]]. */
-
-/* FIXME: impact? property doesn't exist so does the flag matter? */
+/* 10.2.1.2.2: In algorithm step 5, true is passed as the last argument to [[DefineOwnProperty]].
+ *
+ * (Step 3 asserts that the property does not exist to begin with, so this
+ * looks like a purely technical change with no behavioral impact.)
+ */
 
 /*===
 ===*/
 
 /* 10.5: Former algorithm step 5.e is now 5.f and a new step 5.e was added to restore compatibility with 3rd
  * Edition when redefining global functions.
+ *
+ * (Separate testcases: test-spec-redeclare-global*.js)
  */
-
-/* FIXME */
 
 /*===
 ===*/
@@ -72,11 +74,37 @@ print(func);
 /* FIXME */
 
 /*===
+for 1st
+for 2nd
 ===*/
 
-/* 12.6.3: Missing ToBoolean restored in step 3.a.ii of both algorithms. */
+/* 12.6.3: Missing ToBoolean restored in step 3.a.ii of both algorithms.
+ *
+ * (Already implemented this way, easily demonstrated with a test.)
+ */
 
-/* FIXME */
+function forToBooleanTest() {
+    var i;
+
+    // 0 is 'falsy' and terminates loop
+    print('for 1st');
+    for (i = 0; 0; i++) {
+        print('never here');
+        break;  // in case we are, break out
+    }
+
+    print('for 2nd');
+    for (var j = 0; 0; j++) {
+        print('never here');
+        break;
+    }
+}
+
+try {
+    forToBooleanTest();
+} catch (e) {
+    print(e);
+}
 
 /*===
 ===*/
@@ -88,6 +116,11 @@ print(func);
  */
 
 /*===
+switch-break
+undefined
+for-continue
+undefined
+function-return
 undefined
 ===*/
 
@@ -100,8 +133,26 @@ undefined
  * it does matter e.g. in a naked "if () X else Y".)
  */
 
+/* break/continue tests are simply syntax tests */
 try {
-    /* FIXME: break, continue */
+    print('switch-break');
+    print(eval('(function() { switch(123) { case 123: break\n; }; })()'));
+} catch (e) {
+    print(e);
+}
+
+try {
+    print('for-continue');
+   print(eval('(function() { for (;;) { break; continue\n; } })()'));
+} catch (e) {
+    print(e);
+}
+
+try {
+    /* if 'return\n;' is parsed as 'return; ;' it would make the if-statement
+     * invalid, so this is a more useful test.
+     */
+    print('function-return');
     print(eval('(function() { if (true) return\n;else return 234 })()'));
 } catch (e) {
     print(e);
@@ -231,28 +282,79 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.4.4.12: In step 9.a, incorrect reference to relativeStart was replaced with a reference to actualStart. */
 
+/* FIXME: any impact? */
+
 /*===
 ===*/
 
 /* 15.4.4.15: Clarified that the default value for fromIndex is the length minus 1 of the array. */
 
+/* FIXME: any impact? */
+
 /*===
+forEach: 1
+forEach: 2
+forEach: 3
+undefined
 ===*/
 
 /* 15.4.4.18: In step 9 of the algorithm, undefined is now the specified return value. */
 
+try {
+    print([1,2,3].forEach(function(x) { print('forEach:', x); }));
+
+} catch (e) {
+    print(e);
+}
+
 /*===
+reduce: 1 2 1 1,2,3
+reduce this: undefined undefined
+reduce: 3 3 2 1,2,3
+reduce this: undefined undefined
+6
+reduceRight: 3 2 1 1,2,3
+reduceRight this: undefined undefined
+reduceRight: 5 1 2 1,2,3
+reduceRight this: undefined undefined
+6
 ===*/
 
 /* 15.4.4.22: In step 9.c.ii the first argument to the [[Call]] internal method has been
  * changed to undefined for consistency with the definition of Array.prototype.reduce.
+ *
+ * (Test 'this' binding, must use a strict function to get in unmangled.)
  */
+
+try {
+    print([1,2,3].reduce(function(accumulator, kValue, k, O) {
+        'use strict';
+        print('reduce:', accumulator, kValue, k, O);
+        print('reduce this:', typeof this, this);
+        return accumulator + kValue;  // sum
+    }));
+} catch (e) {
+    print(e);
+}
+
+try {
+    print([1,2,3].reduceRight(function(accumulator, kValue, k, O) {
+        'use strict';
+        print('reduceRight:', accumulator, kValue, k, O);
+        print('reduceRight this:', typeof this, this);
+        return accumulator + kValue;  // sum
+    }));
+} catch (e) {
+    print(e);
+}
 
 /*===
 ===*/
 
 /* 15.4.5.1: In Algorithm steps 3.l.ii and 3.l.iii the variable name was inverted resulting
  * in an incorrectly inverted test.
+ *
+ * (Handled correctly by handle_put_array_length_smaller() in duk_hobject_props.c.)
  */
 
 /*===
@@ -260,6 +362,8 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.5.4.9: Normative requirement concerning canonically equivalent strings deleted from paragraph following
  * algorithm because it is listed as a recommendation in NOTE 2.
+ *
+ * (No test.)
  */
 
 /*===
@@ -267,6 +371,8 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.5.4.14: In split algorithm step 11.a and 13.a, the positional order of the arguments to SplitMatch was
  * corrected to match the actual parameter signature of SplitMatch. In step 13.a.iii.7.d, lengthA replaces A.length.
+ *
+ * (Obvious typo fixes, no test.  Current implementation is based on E5.1 anyway.)
  */
 
 /*===
@@ -274,6 +380,10 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.5.5.2: In first paragraph, removed the implication that the individual character property access had array
  * index semantics. Modified algorithm steps 3 and 5 such that they do not enforce array index requirement.
+ *
+ * (This change matters only for strings longer than 4G characters which Duktape
+ * doesn't support at the moment anyway, so there is no way to test.  Added a Ditz
+ * issue for tracking that a fix is done if it becomes relevant.)
  */
 
 /*===
@@ -281,6 +391,8 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.9.1.15: Specified legal value ranges for fields that lacked them. Eliminated time-only formats. Specified
  * default values for all optional fields.
+ *
+ * (Already implemented to E5.1 requirements, no test.)
  */
 
 /*===
@@ -288,12 +400,16 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 
 /* 15.10.2.2: The step numbers of the algorithm for the internal closure produced by step 2 were incorrectly
  * numbered in a manner that implied that they were steps of the outer algorithm.
+ *
+ * (Obvious typo.)
  */
 
 /*===
 ===*/
 
 /* 15.10.2.6: In the abstract operation IsWordChar the first character in the list in step 3 is a rather than A.
+ *
+ * (Obvious typo.)
  */
 
 /*===
@@ -302,52 +418,92 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 /* 15.10.2.8: In the algorithm for the closure returned by the abstract operation CharacterSetMatcher, the variable
  * defined by step 3 and passed as an argument in step 4 was renamed to ch in order to avoid a name conflict
  * with a formal parameter of the closure.
+ *
+ * (No test.)
  */
 
 /*===
 ===*/
 
-/* 15.10.6.2: Step 9.e was deleted because It performed an extra increment of i. */
+/* 15.10.6.2: Step 9.e was deleted because It performed an extra increment of i.
+ *
+ * (Obvious typo, handled correctly in regexp code; no test.)
+ */
 
 /*===
+object
+object
+undefined
+""
 ===*/
 
 /* 15.11.1.1: Removed requirement that the message own property is set to the empty String when the message
  * argument is undefined.
+ *
+ * (It's preferable not to set the own property 'message' when the argument
+ * is undefined because it saves a property slot; an empty message is
+ * inherited automatically anyway.  Funnily enough, this entry appears three
+ * times in the E5.1 Appendix F, and two of the occurrences refer a non-existent
+ * Section 15.11.1.2 :-)
  */
 
-/*===
-===*/
+function errMessageTest1() {
+    var e1 = new Error('foo');
+    var e2 = new Error('');
+    var e3 = new Error();
+    print(typeof Object.getOwnPropertyDescriptor(e1, 'message'));
+    print(typeof Object.getOwnPropertyDescriptor(e2, 'message'));
+    print(typeof Object.getOwnPropertyDescriptor(e3, 'message'));
+    print(JSON.stringify(e3.message));
+}
 
-/* 15.11.1.2: Removed requirement that the message own property is set to the empty String when the message
- * argument is undefined.
- */
+try {
+    errMessageTest1();
+} catch (e) {
+    print(e);
+}
 
 /*===
+"Error"
+"Error"
 ===*/
 
 /* 15.11.4.4: Steps 6-10 modified/added to correctly deal with missing or empty message property value. */
 
+function errMessageTest2() {
+    var e1 = new Error();
+    var e2 = new Error('');
+    print(JSON.stringify(e1.toString()));
+    print(JSON.stringify(e2.toString()));
+}
+
+try {
+    errMessageTest2();
+} catch (e) {
+    print(e);
+}
+
 /*===
 ===*/
 
-/* 15.11.1.2: Removed requirement that the message own property is set to the empty String when the message
- * argument is undefined.
+/* 15.12.3: In step 10.b.iii of the JA internal operation, the last element of the concatenation is ].
+ *
+ * (No test, obvious typo fix in spec.)
  */
 
 /*===
 ===*/
 
-/* 15.12.3: In step 10.b.iii of the JA internal operation, the last element of the concatenation is ]. */
+/* B.2.1: Added to NOTE that the encoding is based upon RFC 1738 rather than the newer RFC 3986.
+ *
+ * (No test, as there is no change in the algorithm itself.)
+ */
 
 /*===
 ===*/
 
-/* B.2.1: Added to NOTE that the encoding is based upon RFC 1738 rather than the newer RFC 3986. */
-
-/*===
-===*/
-
-/* Annex C: An item was added corresponding to 7.6.12 regarding FutureReservedWords in strict mode. */
-
+/* Annex C: An item was added corresponding to 7.6.12 regarding FutureReservedWords in strict mode.
+ *
+ * (No test.)
+ */
 
