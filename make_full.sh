@@ -37,6 +37,7 @@ for i in \
 	doc/testcases.txt \
 	doc/code-issues.txt \
 	doc/unicode-support.txt \
+	doc/identifier-algorithms.txt \
 	; do
 	cp --parents $i $FULL/
 done
