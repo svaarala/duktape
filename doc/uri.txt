@@ -5,6 +5,65 @@ URI encoding and decoding
 Specification notes
 ===================
 
+URI syntax
+----------
+
+E5.1 Annex F::
+
+  15.1.3: Added notes clarifying that ECMAScript‘s URI syntax is based upon
+  RFC 2396 and not the newer RFC 3986. In the algorithm for Decode, a step
+  was removed that immediately preceded the current step 4.d.vii.10.a
+  because it tested for a condition that cannot occur.
+
+Changes from RFC 2396 to RFC 3986 are summarized in RFC 3986:
+
+* http://tools.ietf.org/html/rfc3986#appendix-D
+
+Changes relevant to Ecmascript include:
+
+* Additional characters in "reserved" set.
+
+  - RFC 2396::
+
+     reserved      = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" |
+                     "$" | ","
+
+     ; / ? : @ & = + $ ,
+
+  - RFC 3986::
+
+     reserved      = gen-delims / sub-delims
+     gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+     sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                   / "*" / "+" / "," / ";" / "="
+
+     : / ? # [ ] @ ! $ & ' ( ) * + , ; =
+
+  - New characters in RFC 3986 are::
+
+     # [ ] ! ' ( ) *
+
+Effect on decoding: don't decode hex escapes into reserved characters.
+However, RFC 3986 additional characters should be decoded normally
+because they're not supported in Ecmascript.  Thus::
+
+  decodeURI("%23%5B%5D%21%27%28%29%2A") -> "%23[]!'()*"
+
+The '#' character is explicitly added to the reserved set by the
+decodeURI() algorithm in E5.1 Section 15.1.3.1.
+
+Effect on encoding: don't encode into hex escapes.  However, RFC 3986
+additional characters should be escaped normally because they're not
+supported::
+
+  encodeURI("#[]!'()*") -> "#%5B%5D!'()*"
+
+The '#' character is explicitly added to the reserved set by the
+decodeURI() algorithm in E5.1 Section 15.1.3.1.  The characters
+``!'()*`` are already part of the uriMark production which goes into
+uriUnescaped.  Brackets are not included so they get escaped in
+Ecmascript.
+
 Reserved set / unescaped set
 ----------------------------
 
