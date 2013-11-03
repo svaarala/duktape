@@ -13,7 +13,7 @@
  *  convenient field).  The prototype chain is not followed in the ordinary
  *  sense for variable lookups.
  *
- *  See identifier-design.txt and identifier-algorithms.txt for more details
+ *  See identifier-handling.txt and identifier-algorithms.txt for more details
  *  on identifier handling, and function-objects.txt for details on what
  *  function instances are expected to look like.
  *
@@ -874,9 +874,9 @@ static int get_identifier_reference(duk_hthread *thr,
 
 		if (get_identifier_activation_regs(thr, name, act, out)) {
 			DUK_DDDPRINT("get_identifier_reference successful: "
-			             "name=%!O -> value=%!T, this=%!T, env=%!O, holder=%!O "
+			             "name=%!O -> value=%!T, attrs=%d, this=%!T, env=%!O, holder=%!O "
 			             "(found from register bindings when env=NULL)",
-			             (duk_heaphdr *) name, out->value, out->this_binding,
+			             (duk_heaphdr *) name, out->value, (int) out->attrs, out->this_binding,
 			             out->env, out->holder);
 			return 1;
 		}
@@ -963,9 +963,9 @@ static int get_identifier_reference(duk_hthread *thr,
 
 			if (get_identifier_open_decl_env_regs(thr, name, env, out)) {
 				DUK_DDDPRINT("get_identifier_reference successful: "
-				             "name=%!O -> value=%!T, this=%!T, env=%!O, holder=%!O "
+				             "name=%!O -> value=%!T, attrs=%d, this=%!T, env=%!O, holder=%!O "
 				             "(declarative environment record, scope open, found in regs)",
-				             (duk_heaphdr *) name, out->value, out->this_binding,
+				             (duk_heaphdr *) name, out->value, (int) out->attrs, out->this_binding,
 				             out->env, out->holder);
 				return 1;
 			}
@@ -982,9 +982,9 @@ static int get_identifier_reference(duk_hthread *thr,
 				out->holder = env;
 
 				DUK_DDDPRINT("get_identifier_reference successful: "
-				             "name=%!O -> value=%!T, this=%!T, env=%!O, holder=%!O "
+				             "name=%!O -> value=%!T, attrs=%d, this=%!T, env=%!O, holder=%!O "
 				             "(declarative environment record, found in properties)",
-				             (duk_heaphdr *) name, out->value, out->this_binding,
+				             (duk_heaphdr *) name, out->value, (int) out->attrs, out->this_binding,
 				             out->env, out->holder);
 				return 1;
 			}
@@ -1029,9 +1029,9 @@ static int get_identifier_reference(duk_hthread *thr,
 				out->holder = target;
 
 				DUK_DDDPRINT("get_identifier_reference successful: "
-				             "name=%!O -> value=%!T, this=%!T, env=%!O, holder=%!O "
+				             "name=%!O -> value=%!T, attrs=%d, this=%!T, env=%!O, holder=%!O "
 				             "(object environment record)",
-				             (duk_heaphdr *) name, out->value, out->this_binding,
+				             (duk_heaphdr *) name, out->value, (int) out->attrs, out->this_binding,
 				             out->env, out->holder);
 				return 1;
 			}
@@ -1374,8 +1374,10 @@ static int delvar_helper(duk_hthread *thr,
 	parents = 1;     /* follow parent chain */
 
 	if (get_identifier_reference(thr, env, name, act, parents, &ref)) {
-		if (ref.value) {
-			/* value found, but in regs (not deletable) */
+		if (ref.value && !(ref.attrs & DUK_PROPDESC_FLAG_CONFIGURABLE)) {
+			/* Identifier found in registers (always non-deletable)
+			 * or declarative environment record and non-configurable.
+			 */
 			return 0;
 		}
 		DUK_ASSERT(ref.holder != NULL);
