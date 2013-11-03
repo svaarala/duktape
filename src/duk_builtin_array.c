@@ -608,7 +608,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 	int nargs;
 	int item_count;
 	int len;
-	int rel_start;
+	int act_start;
 	int del_count;
 	int i;
 
@@ -620,15 +620,15 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 
 	len = push_this_obj_len_u32(ctx);
 
-	rel_start = duk_to_int_clamped(ctx, 0, -len, len);
-	if (rel_start < 0) {
-		rel_start = len + rel_start;
+	act_start = duk_to_int_clamped(ctx, 0, -len, len);
+	if (act_start < 0) {
+		act_start = len + act_start;
 	}
-	DUK_ASSERT(rel_start >= 0 && rel_start <= len);
+	DUK_ASSERT(act_start >= 0 && act_start <= len);
 
-	del_count = duk_to_int_clamped(ctx, 1, 0, len - rel_start);
-	DUK_ASSERT(del_count >= 0 && del_count <= len - rel_start);
-	DUK_ASSERT(del_count + rel_start <= len);
+	del_count = duk_to_int_clamped(ctx, 1, 0, len - act_start);
+	DUK_ASSERT(del_count >= 0 && del_count <= len - act_start);
+	DUK_ASSERT(del_count + act_start <= len);
 
 	duk_push_array(ctx);
 
@@ -645,7 +645,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 	/* Step 9: copy elements-to-be-deleted into the result array */
 
 	for (i = 0; i < del_count; i++) {
-		if (duk_get_prop_index(ctx, -3, rel_start + i)) {
+		if (duk_get_prop_index(ctx, -3, act_start + i)) {
 			duk_put_prop_index(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
 		} else {
 			duk_pop(ctx);
@@ -665,7 +665,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 
 		DUK_ASSERT_TOP(ctx, nargs + 3);
 
-		for (i = rel_start; i < len - del_count; i++) {
+		for (i = act_start; i < len - del_count; i++) {
 			if (duk_get_prop_index(ctx, -3, i + del_count)) {
 				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: Throw */
 			} else {
@@ -692,7 +692,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, nargs + 3);
 
 		/* loop iterator init and limit changed from standard algorithm */
-		for (i = len - del_count - 1; i >= rel_start; i--) {
+		for (i = len - del_count - 1; i >= act_start; i--) {
 			if (duk_get_prop_index(ctx, -3, i + del_count)) {
 				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: Throw */
 			} else {
@@ -715,7 +715,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
 
 	for (i = 0; i < item_count; i++) {
 		duk_dup(ctx, i + 2);  /* args start at index 2 */
-		duk_put_prop_index(ctx, -4, rel_start + i);  /* FIXME: Throw */
+		duk_put_prop_index(ctx, -4, act_start + i);  /* FIXME: Throw */
 	}
 
 	/* Step 16: update length; note that the final length may be above 32 bit range */
