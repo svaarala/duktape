@@ -15,6 +15,9 @@ static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 	
 	duk_push_object_helper(ctx, flags_and_class, bidx_prototype);
 
+	/* If message is undefined, the own property 'message' is not set at
+	 * all to save property space.  An empty message is inherited anyway.
+	 */
 	if (!duk_is_undefined(ctx, 0)) {
 		duk_to_string(ctx, 0);
 		duk_dup(ctx, 0);  /* [ message error message ] */
