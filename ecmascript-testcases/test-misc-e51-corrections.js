@@ -69,9 +69,10 @@ print(func);
 /*===
 ===*/
 
-/* 11.5.3: In the final bullet item, use of IEEE 754 round-to-nearest mode is specified. */
-
-/* FIXME */
+/* 11.5.3: In the final bullet item, use of IEEE 754 round-to-nearest mode is specified.
+ *
+ * (No test.)
+ */
 
 /*===
 for 1st
@@ -280,16 +281,20 @@ try { applyTest.apply('mythis', { "0": 'foo', "1": 'bar', "2": 'quux', "length":
 /*===
 ===*/
 
-/* 15.4.4.12: In step 9.a, incorrect reference to relativeStart was replaced with a reference to actualStart. */
-
-/* FIXME: any impact? */
+/* 15.4.4.12: In step 9.a, incorrect reference to relativeStart was replaced
+ * with a reference to actualStart.
+ *
+ * (Implementation already worked in E5.1 fashion.)
+ */
 
 /*===
 ===*/
 
-/* 15.4.4.15: Clarified that the default value for fromIndex is the length minus 1 of the array. */
-
-/* FIXME: any impact? */
+/* 15.4.4.15: Clarified that the default value for fromIndex is the length
+ * minus 1 of the array.
+ *
+ * (Implemented already worked in E5.1 fashion.)
+ */
 
 /*===
 forEach: 1
@@ -315,7 +320,7 @@ reduce this: undefined undefined
 6
 reduceRight: 3 2 1 1,2,3
 reduceRight this: undefined undefined
-reduceRight: 5 1 2 1,2,3
+reduceRight: 5 1 0 1,2,3
 reduceRight this: undefined undefined
 6
 ===*/
