@@ -412,8 +412,10 @@ int main(int argc, char *argv[]) {
 	}
 
  cleanup:
-	fprintf(stderr, "Cleaning up...\n");
-	fflush(stderr);
+	if (interactive) {
+		fprintf(stderr, "Cleaning up...\n");
+		fflush(stderr);
+	}
 
 	if (ctx) {
 		duk_destroy_heap(ctx);
