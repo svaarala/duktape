@@ -295,6 +295,13 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	}
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
+	/* these non-standard properties are copied for convenience */
+	/* FIXME: 'copy properties' API call? */
+	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+
 	DUK_DDDPRINT("created bound function: %!iT", duk_get_tval(ctx, -1));
 
 	return 1;
