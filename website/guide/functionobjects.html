@@ -1,0 +1,48 @@
+<h2 id="functionobjects">Function objects</h2>
+
+<h3>Property summary</h3>
+
+<p>Duktape Function objects add a few properties to standard Ecmascript
+properties.  The table below summarizes properties assigned to newly
+created function instances (properties can of course be added or removed
+afterwards):</p>
+
+<table>
+<thead>
+<tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td class="propname">length</td><td>standard</td><td>Function argument count (if relevant).  Present for all Function objects, including bound functions.</td></tr>
+<tr><td class="propname">prototype</td><td>standard</td><td>Prototype used for new objects when called as a constructor.  Present for most constructable Function objects, not copied to bound functions.</td></tr>
+<tr><td class="propname">caller</td><td>standard</td><td>Accessor which throws an error.  Present for strict functions, not copied to bound functions.</td></tr>
+<tr><td class="propname">arguments</td><td>standard</td><td>Accessor which throws an error.  Present for strict functions, not copied to bound functions.</td></tr>
+<tr><td class="propname">name</td><td>Duktape</td><td>Function name, see below.  Copied to bound function from target function.</td></tr>
+<tr><td class="propname">fileName</td><td>Duktape</td><td>Filename or context where function was declared (same name as in error tracebacks).  Copied to bound function from target function. </td></tr>
+<tr><td class="propname">callee</td><td>n/a</td><td>Never assigned by default (listed here to clarify relationship to "caller" property).</td></tr>
+</tbody>
+</table>
+
+<p>User-created Duktape/C functions (<tt>duk_push_c_function()</tt>) are
+currently missing <tt>length</tt>, <tt>prototype</tt>, <tt>caller</tt>,
+and <tt>arguments</tt> properties by default.  User code can of course
+assign these but is not required to do so.  This is intentional as it
+reduces Function object size.</p>
+
+<p>The <tt>name</tt> property is assigned to all functions and is also
+the name used in tracebacks.  It is assigned as follows:</p>
+<pre class="ecmascript-code">
+function funcDecl() {
+    /* Function declaration: 'name' is declaration name, here 'funcDecl'. */
+}
+
+var foo = function namedFunc() {
+    /* Named function expression: 'name' is the name used in expression,
+     * here 'namedFunc' (not 'foo').
+     */
+}
+
+var bar = function () {
+    /* Anonymous function expression: 'name' is the empty string. */
+}
+</pre>
+
