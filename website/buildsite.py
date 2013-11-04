@@ -560,8 +560,10 @@ def generateGuide():
 	navlinks.append(['#typealgorithms', 'Type algorithms'])
 	navlinks.append(['#duktapebuiltins', 'Duktape built-ins'])
 	navlinks.append(['#errorobjects', 'Error objects'])
+	navlinks.append(['#functionobjects', 'Function objects'])
 	navlinks.append(['#finalization', 'Finalization'])
 	navlinks.append(['#coroutines', 'Coroutines'])
+	navlinks.append(['#portability', 'Portability'])
 	navlinks.append(['#limitations', 'Limitations'])
 	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
 	for nav in navlinks:
@@ -587,8 +589,10 @@ def generateGuide():
 	res += processRawDoc('guide/typealgorithms.html')
 	res += processRawDoc('guide/duktapebuiltins.html')
 	res += processRawDoc('guide/errorobjects.html')
+	res += processRawDoc('guide/functionobjects.html')
 	res += processRawDoc('guide/finalization.html')
 	res += processRawDoc('guide/coroutines.html')
+	res += processRawDoc('guide/portability.html')
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
 
