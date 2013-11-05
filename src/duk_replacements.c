@@ -16,11 +16,11 @@ double duk_computed_infinity;
 #ifdef DUK_USE_REPL_FPCLASSIFY
 int duk_repl_fpclassify(double x) {
 	volatile duk_double_union u;
-	int exp;
-	int mzero;
+	duk_uint_fast16_t exp;
+	int mzero; /* FIXME: type */
 
 	u.d = x;
-	exp = (u.us[DUK_DBL_IDX_US0] & 0x7ff0);
+	exp = (duk_uint_fast16_t) (u.us[DUK_DBL_IDX_US0] & 0x7ff0);
 	if (exp > 0x0000 && exp < 0x7ff0) {
 		/* exp values [0x001,0x7fe] = normal */
 		return DUK_FP_NORMAL;
@@ -49,7 +49,7 @@ int duk_repl_fpclassify(double x) {
 int duk_repl_signbit(double x) {
 	volatile duk_double_union u;
 	u.d = x;
-	return u.uc[DUK_DBL_IDX_UC0] & 0x80;
+	return (int) (u.uc[DUK_DBL_IDX_UC0] & 0x80);
 }
 #endif
 

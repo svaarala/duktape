@@ -1347,9 +1347,9 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 
 	nc_ctx->f.n = 2;
 
-	tmp = (duk_uint32_t) DUK_DBLUNION_GET_LOW32(&u);
+	tmp = DUK_DBLUNION_GET_LOW32(&u);
 	nc_ctx->f.v[0] = tmp;
-	tmp = (duk_uint32_t) DUK_DBLUNION_GET_HIGH32(&u);
+	tmp = DUK_DBLUNION_GET_HIGH32(&u);
 	nc_ctx->f.v[1] = tmp & 0x000fffffU;
 	exp = (tmp >> 20) & 0x07ffU;
 

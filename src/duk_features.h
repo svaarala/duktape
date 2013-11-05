@@ -517,13 +517,12 @@ typedef duk_uint_fast32_t duk_uint;
 
 union duk_double_union {
 	double d;
-	/* FIXME: type size assumptions, fix */
 #ifdef DUK_USE_64BIT_OPS
-	unsigned long long ull[1];
+	duk_uint64_t ull[1];
 #endif
-	unsigned int ui[2];
-	unsigned short us[4];
-	unsigned char uc[8];
+	duk_uint32_t ui[2];
+	duk_uint16_t us[4];
+	duk_uint8_t uc[8];
 };
 typedef union duk_double_union duk_double_union;
 
@@ -532,10 +531,10 @@ typedef union duk_double_union duk_double_union;
 		(u)->d = (v); \
 	} while (0)
 #define  DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
-		(u)->ui[DUK_DBL_IDX_UI0] = (unsigned int) (v); \
+		(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) (v); \
 	} while (0)
 #define  DUK_DBLUNION_SET_LOW32(u,v)  do {  \
-		(u)->ui[DUK_DBL_IDX_UI1] = (unsigned int) (v); \
+		(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (v); \
 	} while (0)
 #define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
 #define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
