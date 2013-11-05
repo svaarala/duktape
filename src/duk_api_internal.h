@@ -10,6 +10,11 @@
 #define  DUK_PUSH_SPRINTF_INITIAL_SIZE  256
 #define  DUK_PUSH_SPRINTF_SANITY_LIMIT  (1*1024*1024*1024)
 
+/* Flag ORed to err_code to indicate __FILE__ / __LINE__ is not
+ * blamed as source of error for error fileName / lineNumber.
+ */
+#define  DUK_ERRCODE_FLAG_NOBLAME_FILELINE  (1 << 24)
+
 int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
 void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
 

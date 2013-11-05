@@ -156,7 +156,7 @@ struct duk_memory_functions {
  *  which is ugly and not thread safe.
  */
 
-#ifdef DUK_API_VARIADIC_MACROS
+#ifndef DUK_API_VARIADIC_MACROS
 extern const char *duk_api_global_filename;
 extern int duk_api_global_line;
 #endif
@@ -199,6 +199,7 @@ void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int lin
 #define  duk_error(ctx,err_code,...)  \
 	duk_error_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
+void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...);
 #define  duk_error  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \
@@ -285,6 +286,7 @@ int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filena
 #define  duk_push_error_object(ctx,err_code,...)  \
 	duk_push_error_object_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
+int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt, ...);
 #define  duk_push_error_object  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \

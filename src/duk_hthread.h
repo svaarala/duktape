@@ -45,6 +45,12 @@
 #define  DUK_ACT_FLAG_DIRECT_EVAL     (1 << 4)  /* activation is a direct eval call */
 
 /*
+ *  Flags for __FILE__ / __LINE__ registered into tracedata
+ */
+
+#define  DUK_TB_FLAG_NOBLAME_FILELINE   (1 << 0)  /* don't report __FILE__ / __LINE__ as fileName/lineNumber */
+
+/*
  *  Catcher defines
  */
 

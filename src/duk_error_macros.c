@@ -35,12 +35,16 @@ void duk_err_handle_panic(const char *filename, int line, int code, const char *
 const char *duk_err_file_stash = NULL;
 int duk_err_line_stash = 0;
 
+DUK_NORETURN(static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap));
+
 static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
 	char msg[BUFSIZE];
 	DUK_MEMSET(msg, 0, sizeof(msg));
 	(void) DUK_VSNPRINTF(msg, sizeof(msg) - 1, fmt, ap);
 	duk_err_create_and_throw(thr, code, msg, filename, line);
 }
+
+DUK_NORETURN(static void _handle_panic(const char *filename, int line, int code, const char *fmt, va_list ap));
 
 static void _handle_panic(const char *filename, int line, int code, const char *fmt, va_list ap) {
 	char msg1[BUFSIZE];

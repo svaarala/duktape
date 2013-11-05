@@ -426,7 +426,7 @@ void duk_new(duk_context *ctx, int nargs) {
 	 */
 
 #ifdef DUK_USE_AUGMENT_ERRORS
-	duk_err_augment_error(thr, thr, -1, NULL, 0);
+	duk_err_augment_error(thr, thr, -1, NULL, 0, 1 /*noblame_fileline*/);
 #endif
 
 	/* [... retval] */

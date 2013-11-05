@@ -232,23 +232,20 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 			} else if (t == DUK_TYPE_STRING) {
 				/*
 				 *  __FILE__ / __LINE__ entry, here 'pc' is line number directly.
-				 *
-				 *  FIXME: add a flag to indicate whether the __FILE__ / __LINE__
-				 *  should be returned as the error's fileName / lineNumber?  If
-				 *  __FILE__ / __LINE__ is recorded from the Duktape API return
-				 *  it as fileName / lineNumber.  If recorded from inside Duktape,
-				 *  ignore it as the fileName / lineNumber (except perhaps when it
-				 *  is the last traceback entry)?
+				 *  Sometimes __FILE__ / __LINE__ is reported as the source for
+				 *  the error (fileName, lineNumber), sometimes not.
 				 */
 
 				/* [ ... v1(filename) v2(line+flags) ] */
 
-				if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
-					duk_pop(ctx);
-					return 1;
-				} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
-					duk_push_int(ctx, pc);
-					return 1;
+				if (!(flags & DUK_TB_FLAG_NOBLAME_FILELINE)) {
+					if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
+						duk_pop(ctx);
+						return 1;
+					} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
+						duk_push_int(ctx, pc);
+						return 1;
+					}
 				}
 
 				duk_push_sprintf(ctx, "%s:%d",

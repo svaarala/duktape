@@ -139,9 +139,18 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 		duk_require_stack(ctx, 1);
 		/* FIXME: unnecessary '%s' formatting here */
 #ifdef DUK_USE_VERBOSE_ERRORS
-		duk_push_error_object_raw(ctx, code, filename, line, "%s", msg);
+		duk_push_error_object_raw(ctx,
+		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
+		                          filename,
+		                          line,
+		                          "%s",
+		                          msg);
 #else
-		duk_push_error_object_raw(ctx, code, NULL, 0, NULL);
+		duk_push_error_object_raw(ctx,
+		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
+		                          NULL,
+		                          0,
+		                          NULL);
 #endif
 	}
 
