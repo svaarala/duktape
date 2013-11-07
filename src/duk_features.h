@@ -541,15 +541,17 @@ typedef union duk_double_union duk_double_union;
 #define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
 
 /*
- *  Check whether or not a packed duk_tval representation is possible
+ *  Check whether or not a packed duk_tval representation is possible.
+ *  What's basically required is that pointers are 32-bit values
+ *  (sizeof(void *) == 4).
  */
 
 /* best effort viability checks, not particularly accurate */
 #undef  DUK_USE_PACKED_TVAL_POSSIBLE
-#if (defined(__WORDSIZE) && (__WORDSIZE == 32)) && \
-    (defined(UINT_MAX) && (UINT_MAX == 4294967295))
+#if (defined(UINTPTR_MAX) && (UINTPTR_MAX == 4294967295))
+/* strict C99 check */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
-#elif defined(DUK_F_AMIGAOS) /* FIXME: M68K */
+#elif defined(DUK_F_M68K)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
