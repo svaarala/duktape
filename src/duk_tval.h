@@ -37,15 +37,15 @@
  *    D C B A H G F E    Middle/cross endian (e.g. ARM)  USE__ME_VARIANT
  *
  *  ARM is a special case: ARM double values are in middle/cross endian
- *  format while ARM unsigned long long (64-bit) values are in standard
- *  little endian format (H G F E D C B A).  When a double is read as an
- *  unsigned long long from memory, the register will contain the (logical)
- *  value E F G H A B C D.  This requires some special handling below.
+ *  format while ARM duk_uint64_t values are in standard little endian
+ *  format (H G F E D C B A).  When a double is read as a duk_uint64_t
+ *  from memory, the register will contain the (logical) value
+ *  E F G H A B C D.  This requires some special handling below.
  *
  *  Indexes of various types (8-bit, 16-bit, 32-bit) in memory relative to
  *  the logical (big endian) order:
  *
- *  byte order     unsigned char     unsigned short     unsigned int
+ *  byte order      duk_uint8_t    duk_uint16_t     duk_uint32_t    
  *    BE             01234567         0123               01
  *    LE             76543210         3210               10
  *    ME (ARM)       32107654         1032               01
@@ -90,14 +90,13 @@
  */
 union duk_tval {
 	double d;
-	/* FIXME: types */
 #ifdef USE__64BIT
-	unsigned long long ull[1];
+	duk_uint64_t ull[1];
 #endif
-	unsigned int ui[2];
-	unsigned short us[4];
-	unsigned char uc[8];
-	void *vp[2];
+	duk_uint32_t ui[2];
+	duk_uint16_t us[4];
+	duk_uint8_t uc[8];
+	void *vp[2];  /* assumes sizeof(void *) == 4 */
 };
 
 typedef union duk_tval duk_tval;
@@ -134,40 +133,40 @@ typedef union duk_tval duk_tval;
 #ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (unsigned long long) (x); \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (duk_uint64_t) (x); \
 	} while (0)
 #else
 #define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = ((unsigned long long) (x)) << 32; \
+		(v)->ull[DUK_DBL_IDX_ULL0] = ((duk_uint64_t) (x)) << 32; \
 	} while (0)
 #endif
 #else  /* USE__64BIT */
 #define  DUK__TVAL_SET_HIGH32_FULL(v,x)  do { \
-		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) (x); \
-		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) 0; \
+		(v)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) (x); \
+		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) 0; \
 	} while (0)
 #endif  /* USE__64BIT */
 
 #define  DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
 #define  DUK__TVAL_SET_UNDEFINED_ACTUAL_NOTFULL(v)  do { \
-		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_ACTUAL; \
+		(v)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) DUK_XTAG_UNDEFINED_ACTUAL; \
 	} while (0)
 
 #define  DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_UNDEFINED_UNUSED)
 #define  DUK__TVAL_SET_UNDEFINED_UNUSED_NOTFULL(v)  do { \
-		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) DUK_XTAG_UNDEFINED_UNUSED; \
+		(v)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) DUK_XTAG_UNDEFINED_UNUSED; \
 	} while (0)
 
 /* Note: 16-bit initializer suffices (unlike for undefined/boolean) */
 #define  DUK__TVAL_SET_NULL_FULL(v)  DUK__TVAL_SET_HIGH32((v), DUK_XTAG_NULL)
 #define  DUK__TVAL_SET_NULL_NOTFULL(v)  do { \
-		(v)->us[DUK_DBL_IDX_US0] = (unsigned short) DUK_TAG_NULL; \
+		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_NULL; \
 	} while (0)
 
-#define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  DUK__TVAL_SET_HIGH32((v), (((unsigned int) DUK_TAG_BOOLEAN) << 16) | ((unsigned int) val))
+#define  DUK__TVAL_SET_BOOLEAN_FULL(v,val)  DUK__TVAL_SET_HIGH32((v), (((duk_uint32_t) DUK_TAG_BOOLEAN) << 16) | ((duk_uint32_t) val))
 #define  DUK__TVAL_SET_BOOLEAN_NOTFULL(v,val)  do { \
 		DUK_ASSERT((val) == 0 || (val) == 1); \
-		(v)->ui[DUK_DBL_IDX_UI0] = (((unsigned int) DUK_TAG_BOOLEAN) << 16) | ((unsigned int) (val)); \
+		(v)->ui[DUK_DBL_IDX_UI0] = (((duk_uint32_t) DUK_TAG_BOOLEAN) << 16) | ((duk_uint32_t) (val)); \
 	} while (0)
 
 /* assumes that caller has normalized a possible NaN value of 'val', otherwise trouble ahead */
@@ -182,17 +181,17 @@ typedef union duk_tval duk_tval;
 #ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) (tag)) << 16) | (((unsigned long long) (unsigned int) (h)) << 32); \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) (tag)) << 16) | (((duk_uint64_t) (duk_uint32_t) (h)) << 32); \
 	} while (0)
 #else
 #define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
-		(v)->ull[DUK_DBL_IDX_ULL0] = (((unsigned long long) (tag)) << 48) | ((unsigned long long) (unsigned int) (h)); \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) (tag)) << 48) | ((duk_uint64_t) (duk_uint32_t) (h)); \
 	} while (0)
 #endif
 #else  /* USE__64BIT */
 #define  DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
-		(v)->ui[DUK_DBL_IDX_UI0] = ((unsigned int) (tag)) << 16; \
-		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) (h); \
+		(v)->ui[DUK_DBL_IDX_UI0] = ((duk_uint32_t) (tag)) << 16; \
+		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (h); \
 	} while (0)
 #endif  /* USE__64BIT */
 
@@ -208,8 +207,8 @@ typedef union duk_tval duk_tval;
 #endif
 #else  /* USE__64BIT */
 #define  DUK__TVAL_SET_NAN_FULL(v)  do { \
-		(v)->ui[DUK_DBL_IDX_UI0] = (unsigned int) 0x7ff80000; \
-		(v)->ui[DUK_DBL_IDX_UI1] = (unsigned int) 0x00000000; \
+		(v)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) 0x7ff80000; \
+		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) 0x00000000; \
 	} while (0)
 #endif  /* USE__64BIT */
 
@@ -284,7 +283,7 @@ typedef union duk_tval duk_tval;
  *      reliable for normalized values
  */
 
-/* XXX: reading unsigned int instead of unsigned short is one byte shorter on x86 :) */
+/* XXX: reading duk_uint32_t instead of duk_uint16_t is one byte shorter on x86 :) */
 #ifdef USE__64BIT
 #ifdef USE__ME_VARIANT
 #define  DUK__DOUBLE_IS_NAN_FULL(d) \
