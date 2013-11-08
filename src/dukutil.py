@@ -90,7 +90,7 @@ class GenerateC:
 		self.emitLine(' */')
 		self.emitLine('')
 
-	def emitArray(self, data, tablename, typename='char', bytesize=None):
+	def emitArray(self, data, tablename, typename='char', bytesize=None, intvalues=False):
 		"Emit an array as a C array."
 
 		# lenient input
@@ -109,7 +109,10 @@ class GenerateC:
 
 		line = ''
 		for i in xrange(len(data)):
-			t = "(%s)'\\x%02x', " % (typename, data[i])
+			if intvalues:
+				t = "%d," % data[i]
+			else:
+				t = "(%s)'\\x%02x', " % (typename, data[i])
 			if len(line) + len(t) >= self.wrap_col:
 				self.emitLine(line)
 				line = t
