@@ -277,7 +277,7 @@ static int uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	}
 }
 
-static int uni_range_match(char *unitab, int unilen, int x) {
+static int uni_range_match(duk_uint8_t *unitab, int unilen, int x) {
 	duk_bitdecoder_ctx bd_ctx;
 
 	bd_ctx.data = (duk_uint8_t *) unitab;

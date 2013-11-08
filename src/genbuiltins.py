@@ -1590,7 +1590,7 @@ class GenBuiltins:
 		genc.emitLine('')
 		self.writeNativeFuncArray(genc)
 		genc.emitLine('')
-		genc.emitArray(self.init_data, 'duk_builtins_data')
+		genc.emitArray(self.init_data, 'duk_builtins_data', typename='duk_uint8_t', intvalues=True)
 
 	def emitHeader(self, genc):
 		self.gs.emitStringsHeader(genc)
@@ -1598,7 +1598,7 @@ class GenBuiltins:
 		genc.emitLine('')
 		genc.emitLine('extern duk_c_function duk_builtin_native_functions[];')
 		genc.emitLine('')
-		genc.emitLine('extern char duk_builtins_data[];')
+		genc.emitLine('extern duk_uint8_t duk_builtins_data[];')
 		genc.emitLine('')
 		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
 		genc.emitLine('')

@@ -331,7 +331,7 @@ def main():
 	# Create C source and header files
 	genc = dukutil.GenerateC()
 	genc.emitHeader('extract_chars.py')
-	genc.emitArray(matchtable3, opts.table_name, bytesize=len(matchtable3))
+	genc.emitArray(matchtable3, opts.table_name, bytesize=len(matchtable3), typename='duk_uint8_t', intvalues=True)
 	if opts.out_source is not None:
 		f = open(opts.out_source, 'wb')
 		f.write(genc.getString())
@@ -339,7 +339,7 @@ def main():
 
 	genc = dukutil.GenerateC()
 	genc.emitHeader('extract_chars.py')
-	genc.emitLine('extern char %s[%d];' % (opts.table_name, len(matchtable3)))
+	genc.emitLine('extern duk_uint8_t %s[%d];' % (opts.table_name, len(matchtable3)))
 	if opts.out_header is not None:
 		f = open(opts.out_header, 'wb')
 		f.write(genc.getString())
