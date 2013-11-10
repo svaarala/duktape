@@ -234,10 +234,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <math.h>
 
 /*
- *  Sanity check types and wrapper typedefs
+ *  Wrapper typedefs and constants for integer types (also sanity check
+ *  types)
  *
  *  C99 typedefs are quite good but not always available, and we want to avoid
- *  forcibly defining the C99 typedefs.  So, there are Duktape wrappers for all
+ *  forcibly redefining the C99 typedefs.  So, there are Duktape wrappers for all
  *  C99 typedefs and Duktape code should only use these typedefs.  The Duktape
  *  public API is problematic from type detection perspective and must be taken
  *  into account here.
@@ -264,10 +265,23 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error INT_MAX not defined
 #endif
 
+/* Check that architecture is two's complement, standard C allows e.g.
+ * INT_MIN to be -2**31+1 (instead of -2**31).
+ */
+#if defined(INT_MAX) && defined(INT_MIN)
+#if INT_MAX != -(INT_MIN + 1)
+#error platform does not seem complement of two
+#endif
+#else
+#error cannot check complement of two
+#endif
+
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
     !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS has C99 but no inttypes.h */
 /* C99 */
+#define DUK_F_HAVE_64BIT
 #include <inttypes.h>
+
 typedef uint8_t duk_uint8_t;
 typedef int8_t duk_int8_t;
 typedef uint16_t duk_uint16_t;
@@ -292,11 +306,73 @@ typedef uint_fast32_t duk_uint_fast32_t;
 typedef int_fast32_t duk_int_fast32_t;
 typedef uint_fast64_t duk_uint_fast64_t;
 typedef int_fast64_t duk_int_fast64_t;
-typedef intptr_t duk_intptr_t;
 typedef uintptr_t duk_uintptr_t;
-typedef intmax_t duk_intmax_t;
+typedef intptr_t duk_intptr_t;
 typedef uintmax_t duk_uintmax_t;
+typedef intmax_t duk_intmax_t;
+typedef size_t duk_size_t;
+
+#define DUK_UINT8_MIN         ((duk_uint8_t) 0)
+#define DUK_UINT8_MAX         ((duk_uint8_t) UINT8_MAX)
+#define DUK_INT8_MIN          ((duk_int8_t) INT8_MIN)
+#define DUK_INT8_MAX          ((duk_int8_t) INT8_MAX)
+#define DUK_UINT_LEAST8_MIN   ((duk_uint_least8_t) 0)
+#define DUK_UINT_LEAST8_MAX   ((duk_uint_least8_t) UINT_LEAST8_MAX)
+#define DUK_INT_LEAST8_MIN    ((duk_int_least8_t) INT_LEAST8_MIN)
+#define DUK_INT_LEAST8_MAX    ((duk_int_least8_t) INT_LEAST8_MAX)
+#define DUK_UINT_FAST8_MIN    ((duk_uint_fast8_t) 0)
+#define DUK_UINT_FAST8_MAX    ((duk_uint_fast8_t) UINT_FAST8_MAX)
+#define DUK_INT_FAST8_MIN     ((duk_int_fast8_t) INT_FAST8_MIN)
+#define DUK_INT_FAST8_MAX     ((duk_int_fast8_t) INT_FAST8_MAX)
+#define DUK_UINT16_MIN        ((duk_uint16_t) 0)
+#define DUK_UINT16_MAX        ((duk_uint16_t) UINT16_MAX)
+#define DUK_INT16_MIN         ((duk_int16_t) INT16_MIN)
+#define DUK_INT16_MAX         ((duk_int16_t) INT16_MAX)
+#define DUK_UINT_LEAST16_MIN  ((duk_uint_least16_t) 0)
+#define DUK_UINT_LEAST16_MAX  ((duk_uint_least16_t) UINT_LEAST16_MAX)
+#define DUK_INT_LEAST16_MIN   ((duk_int_least16_t) INT_LEAST16_MIN)
+#define DUK_INT_LEAST16_MAX   ((duk_int_least16_t) INT_LEAST16_MAX)
+#define DUK_UINT_FAST16_MIN   ((duk_uint_fast16_t) 0)
+#define DUK_UINT_FAST16_MAX   ((duk_uint_fast16_t) UINT_FAST16_MAX)
+#define DUK_INT_FAST16_MIN    ((duk_int_fast16_t) INT_FAST16_MIN)
+#define DUK_INT_FAST16_MAX    ((duk_int_fast16_t) INT_FAST16_MAX)
+#define DUK_UINT32_MIN        ((duk_uint32_t) 0)
+#define DUK_UINT32_MAX        ((duk_uint32_t) UINT32_MAX)
+#define DUK_INT32_MIN         ((duk_int32_t) INT32_MIN)
+#define DUK_INT32_MAX         ((duk_int32_t) INT32_MAX)
+#define DUK_UINT_LEAST32_MIN  ((duk_uint_least32_t) 0)
+#define DUK_UINT_LEAST32_MAX  ((duk_uint_least32_t) UINT_LEAST32_MAX)
+#define DUK_INT_LEAST32_MIN   ((duk_int_least32_t) INT_LEAST32_MIN)
+#define DUK_INT_LEAST32_MAX   ((duk_int_least32_t) INT_LEAST32_MAX)
+#define DUK_UINT_FAST32_MIN   ((duk_uint_fast32_t) 0)
+#define DUK_UINT_FAST32_MAX   ((duk_uint_fast32_t) UINT_FAST32_MAX)
+#define DUK_INT_FAST32_MIN    ((duk_int_fast32_t) INT_FAST32_MIN)
+#define DUK_INT_FAST32_MAX    ((duk_int_fast32_t) INT_FAST32_MAX)
+#define DUK_UINT64_MIN        ((duk_uint64_t) 0)
+#define DUK_UINT64_MAX        ((duk_uint64_t) UINT64_MAX)
+#define DUK_INT64_MIN         ((duk_int64_t) INT64_MIN)
+#define DUK_INT64_MAX         ((duk_int64_t) INT64_MAX)
+#define DUK_UINT_LEAST64_MIN  ((duk_uint_least64_t) 0)
+#define DUK_UINT_LEAST64_MAX  ((duk_uint_least64_t) UINT_LEAST64_MAX)
+#define DUK_INT_LEAST64_MIN   ((duk_int_least64_t) INT_LEAST64_MIN)
+#define DUK_INT_LEAST64_MAX   ((duk_int_least64_t) INT_LEAST64_MAX)
+#define DUK_UINT_FAST64_MIN   ((duk_uint_fast64_t) 0)
+#define DUK_UINT_FAST64_MAX   ((duk_uint_fast64_t) UINT_FAST64_MAX)
+#define DUK_INT_FAST64_MIN    ((duk_int_fast64_t) INT_FAST64_MIN)
+#define DUK_INT_FAST64_MAX    ((duk_int_fast64_t) INT_FAST64_MAX)
+#define DUK_UINTPTR_MIN       ((duk_uintptr_t) 0)
+#define DUK_UINTPTR_MAX       ((duk_uintptr_t) UINTPTR_MAX)
+#define DUK_INTPTR_MIN        ((duk_intptr_t) INTPTR_MIN)
+#define DUK_INTPTR_MAX        ((duk_intptr_t) INTPTR_MAX)
+#define DUK_UINTMAX_MIN       ((duk_uintmax_t) 0)
+#define DUK_UINTMAX_MAX       ((duk_uintmax_t) UINTMAX_MAX)
+#define DUK_INTMAX_MIN        ((duk_intmax_t) INTMAX_MIN)
+#define DUK_INTMAX_MAX        ((duk_intmax_t) INTMAX_MAX)
+#define DUK_SIZE_MIN          ((duk_size_t) 0)
+#define DUK_SIZE_MAX          ((duk_size_t) SIZE_MAX)
+
 #else  /* C99 types */
+
 /* When C99 types are not available, we use simplistic detection to get
  * the basic 8, 16, and 32 bit types.  The fast/least types are then
  * assumed to be exactly the same for now: these could be improved per
@@ -304,6 +380,9 @@ typedef uintmax_t duk_uintmax_t;
  *
  * 64-bit types are not defined at all now (duk_uint64_t etc).
  */
+
+#undef DUK_F_HAVE_64BIT
+
 #if (defined(CHAR_BIT) && (CHAR_BIT == 8)) || \
     (defined(UCHAR_MAX) && (UCHAR_MAX == 255))
 typedef unsigned char duk_uint8_t;
@@ -346,7 +425,7 @@ typedef duk_int32_t duk_intmax_t;
 typedef duk_uint32_t duk_uintmax_t;
 
 /* This detection is not very reliable, and only supports 32-bit platforms
- * now (64-bit platforms work if C99 types are available.
+ * now (64-bit platforms work if C99 types are available).
  */
 #if defined(__WORDSIZE) && (__WORDSIZE == 32)
 typedef duk_int32_t duk_intptr_t;
@@ -354,6 +433,72 @@ typedef duk_uint32_t duk_uintptr_t;
 #else
 #error cannot determine intptr type
 #endif
+
+/* Pretend that maximum int is 32 bits. */
+typedef duk_uintmax_t duk_uint32_t;
+typedef duk_intmax_t duk_int32_t;
+
+typedef duk_size_t size_t;
+
+#define DUK_UINT8_MIN         ((duk_uint8_t) 0UL)
+#define DUK_UINT8_MAX         ((duk_uint8_t) 0xffUL)
+#define DUK_INT8_MIN          ((duk_int8_t) (-0x80L))
+#define DUK_INT8_MAX          ((duk_int8_t) 0x7fL)
+#define DUK_UINT_LEAST8_MIN   ((duk_uint_least8_t) 0UL)
+#define DUK_UINT_LEAST8_MAX   ((duk_uint_least8_t) 0xffUL)
+#define DUK_INT_LEAST8_MIN    ((duk_int_least8_t) (-0x80L))
+#define DUK_INT_LEAST8_MAX    ((duk_int_least8_t) 0x7fL)
+#define DUK_UINT_FAST8_MIN    ((duk_uint_fast8_t) 0UL)
+#define DUK_UINT_FAST8_MAX    ((duk_uint_fast8_t) 0xffUL)
+#define DUK_INT_FAST8_MIN     ((duk_int_fast8_t) (-0x80L))
+#define DUK_INT_FAST8_MAX     ((duk_int_fast8_t) 0x7fL)
+#define DUK_UINT16_MIN        ((duk_uint16_t) 0UL)
+#define DUK_UINT16_MAX        ((duk_uint16_t) 0xffffUL)
+#define DUK_INT16_MIN         ((duk_int16_t) (-0x8000L))
+#define DUK_INT16_MAX         ((duk_int16_t) 0x7fffL)
+#define DUK_UINT_LEAST16_MIN  ((duk_uint_least16_t) 0UL)
+#define DUK_UINT_LEAST16_MAX  ((duk_uint_least16_t) 0xffffUL)
+#define DUK_INT_LEAST16_MIN   ((duk_int_least16_t) (-0x8000L))
+#define DUK_INT_LEAST16_MAX   ((duk_int_least16_t) 0x7fffL)
+#define DUK_UINT_FAST16_MIN   ((duk_uint_fast16_t) 0UL)
+#define DUK_UINT_FAST16_MAX   ((duk_uint_fast16_t) 0xffffUL)
+#define DUK_INT_FAST16_MIN    ((duk_int_fast16_t) (-0x8000L))
+#define DUK_INT_FAST16_MAX    ((duk_int_fast16_t) 0x7fffL)
+#define DUK_UINT32_MIN        ((duk_uint32_t) 0UL)
+#define DUK_UINT32_MAX        ((duk_uint32_t) 0xffffffffUL)
+#define DUK_INT32_MIN         ((duk_int32_t) (-0x80000000L))
+#define DUK_INT32_MAX         ((duk_int32_t) 0x7fffffffL)
+#define DUK_UINT_LEAST32_MIN  ((duk_uint_least32_t) 0UL)
+#define DUK_UINT_LEAST32_MAX  ((duk_uint_least32_t) 0xffffffffUL)
+#define DUK_INT_LEAST32_MIN   ((duk_int_least32_t) (-0x80000000L))
+#define DUK_INT_LEAST32_MAX   ((duk_int_least32_t) 0x7fffffffL)
+#define DUK_UINT_FAST32_MIN   ((duk_uint_fast32_t) 0UL)
+#define DUK_UINT_FAST32_MAX   ((duk_uint_fast32_t) 0xffffffffUL)
+#define DUK_INT_FAST32_MIN    ((duk_int_fast32_t) (-0x80000000L))
+#define DUK_INT_FAST32_MAX    ((duk_int_fast32_t) 0x7fffffffL)
+#define DUK_UINT64_MIN        ((duk_uint64_t) 0ULL)
+#define DUK_UINT64_MAX        ((duk_uint64_t) 0xffffffffffffffffULL)
+#define DUK_INT64_MIN         ((duk_int64_t) (-0x8000000000000000LL))
+#define DUK_INT64_MAX         ((duk_int64_t) 0x7fffffffffffffffULL)
+#define DUK_UINT_LEAST64_MIN  ((duk_uint_least64_t) 0ULL)
+#define DUK_UINT_LEAST64_MAX  ((duk_uint_least64_t) 0xffffffffffffffffULL)
+#define DUK_INT_LEAST64_MIN   ((duk_int_least64_t) (-0x8000000000000000LL))
+#define DUK_INT_LEAST64_MAX   ((duk_int_least64_t) 0x7fffffffffffffffULL)
+#define DUK_UINT_FAST64_MIN   ((duk_uint_fast64_t) 0ULL)
+#define DUK_UINT_FAST64_MAX   ((duk_uint_fast64_t) 0xffffffffffffffffULL)
+#define DUK_INT_FAST64_MIN    ((duk_int_fast64_t) (-0x8000000000000000LL))
+#define DUK_INT_FAST64_MAX    ((duk_int_fast64_t) 0x7fffffffffffffffULL)
+#define DUK_UINTPTR_MIN       ((duk_uintptr_t) 0UL)
+#define DUK_UINTPTR_MAX       ((duk_uintptr_t) 0xffffffffUL)
+#define DUK_INTPTR_MIN        ((duk_intptr_t) (-0x80000000L)
+#define DUK_INTPTR_MAX        ((duk_intptr_t) 0x7fffffffL)
+#define DUK_UINTMAX_MIN       ((duk_uintptr_t) 0UL)
+#define DUK_UINTMAX_MAX       ((duk_uintptr_t) 0xffffffffUL)
+#define DUK_INTMAX_MIN        ((duk_intptr_t) (-0x80000000L))
+#define DUK_INTMAX_MAX        ((duk_intptr_t) 0x7fffffffL)
+#define DUK_SIZE_MIN          ((duk_size_t) 0)
+#define DUK_SIZE_MAX          ((duk_size_t) SIZE_MAX)
+
 #endif  /* C99 types */
 
 /* The best type for an "all around int" in Duktape internals is "at least
@@ -371,7 +516,7 @@ typedef duk_uint_fast32_t duk_uint;
  * platforms even when C99 not available (perhaps integrate to bit type
  * detection?).
  */
-#if defined(DUK_F_C99) && !defined(__VBCC__)
+#if defined(DUK_F_HAVE_64BIT) && !defined(__VBCC__)
 #define  DUK_USE_64BIT_OPS
 #else
 #undef  DUK_USE_64BIT_OPS
@@ -747,6 +892,54 @@ extern double duk_computed_nan;
  * uninitialized").
  */
 #define  DUK_UNREACHABLE()  /* unreachable */
+#endif
+
+/*
+ *  Likely and unlikely branches.  Using these is not at all a clear cut case,
+ *  so the selection is a two-step process: (1) DUK_USE_BRANCH_HINTS is set
+ *  if the architecture, compiler etc make it useful to use the hints, and (2)
+ *  a separate check determines how to do them.
+ *
+ *  These macros expect the argument to be a relational expression with an
+ *  integer value.  If used with pointers, you should use an explicit check
+ *  like:
+ *
+ *    if (DUK_LIKELY(ptr != NULL)) { ... }
+ *
+ *  instead of:
+ *
+ *    if (DUK_LIKELY(ptr)) { ... }
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html  (__builtin_expect)
+ */
+
+/* pretty much a placeholder now */
+#if defined(DUK_F_GCC)
+#define  DUK_USE_BRANCH_HINTS
+#elif defined(DUK_F_CLANG)
+#define  DUK_USE_BRANCH_HINTS
+#else
+#undef  DUK_USE_BRANCH_HINTS
+#endif
+
+#if defined(DUK_USE_BRANCH_HINTS)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERISON >= 40500)
+/* GCC: test not very accurate; enable only in relatively recent builds
+ * because of bugs in gcc-4.4 (http://lists.debian.org/debian-gcc/2010/04/msg00000.html)
+ */
+#define  DUK_LIKELY(x)    __builtin_expect((x), 1)
+#define  DUK_UNLIKELY(x)  __builtin_expect((x), 0)
+#elif defined(DUK_F_CLANG)
+#define  DUK_LIKELY(x)    __builtin_expect((x), 1)
+#define  DUK_UNLIKELY(x)  __builtin_expect((x), 0)
+#endif
+#endif  /* DUK_USE_BRANCH_HINTS */
+
+#if !defined(DUK_LIKELY)
+#define  DUK_LIKELY(x)    (x)
+#endif
+#if !defined(DUK_UNLIKELY)
+#define  DUK_UNLIKELY(x)  (x)
 #endif
 
 /*
