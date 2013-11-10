@@ -55,9 +55,9 @@
  */
 
 /* flags field: LLLLLLFT, L = label (24 bits), F = flags (4 bits), T = type (4 bits) */
-#define  DUK_CAT_TYPE_MASK            0x0000000f
+#define  DUK_CAT_TYPE_MASK            0x0000000fUL
 #define  DUK_CAT_TYPE_BITS            4
-#define  DUK_CAT_LABEL_MASK           0xffffff00
+#define  DUK_CAT_LABEL_MASK           0xffffff00UL
 #define  DUK_CAT_LABEL_BITS           24
 #define  DUK_CAT_LABEL_SHIFT          8
 

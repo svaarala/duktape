@@ -293,8 +293,8 @@
 #define  DUK_PROPDESC_IS_CONFIGURABLE(p)         (((p)->flags & DUK_PROPDESC_FLAG_CONFIGURABLE) != 0)
 #define  DUK_PROPDESC_IS_ACCESSOR(p)             (((p)->flags & DUK_PROPDESC_FLAG_ACCESSOR) != 0)
 
-#define  DUK_HOBJECT_HASHIDX_UNUSED              0xffffffffU
-#define  DUK_HOBJECT_HASHIDX_DELETED             0xfffffffeU
+#define  DUK_HOBJECT_HASHIDX_UNUSED              0xffffffffUL
+#define  DUK_HOBJECT_HASHIDX_DELETED             0xfffffffeUL
 
 /*
  *  Misc
@@ -303,10 +303,10 @@
 /* Maximum prototype traversal depth.  Sanity limit which handles e.g.
  * prototype loops (even complex ones like 1->2->3->4->2->3->4->2->3->4).
  */
-#define  DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY      10000
+#define  DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY      10000L
 
 /* Maximum traversal depth for "bound function" chains. */
-#define  DUK_HOBJECT_BOUND_CHAIN_SANITY          10000
+#define  DUK_HOBJECT_BOUND_CHAIN_SANITY          10000L
 
 /*
  *  Ecmascript [[Class]]

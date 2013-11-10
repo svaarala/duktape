@@ -124,7 +124,7 @@
 #define  DUK_STRTAB_GROW_ST_SIZE(n)         ((n) + (n))      /* used entries + approx 100% -> reset load to 50% */
 
 #define  DUK_STRTAB_U32_MAX_STRLEN          10               /* 4'294'967'295 */
-#define  DUK_STRTAB_HIGHEST_32BIT_PRIME     0xfffffffbU
+#define  DUK_STRTAB_HIGHEST_32BIT_PRIME     0xfffffffbUL
 
 /* probe sequence */
 #define  DUK_STRTAB_HASH_INITIAL(hash,h_size)    ((hash) % (h_size))

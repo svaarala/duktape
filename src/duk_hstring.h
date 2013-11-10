@@ -54,7 +54,7 @@
 #define  DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
 
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
-#define  DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffU)
+#define  DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
 
 /* get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
  * avoids helper call if string has no array index value.

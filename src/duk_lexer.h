@@ -364,7 +364,7 @@ struct duk_token {
 	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
 
-#define  DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffU)
+#define  DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffUL)
 
 /* A regexp token value. */
 struct duk_re_token {
