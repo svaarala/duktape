@@ -20,6 +20,12 @@
 /* FIXME: flag for 'valid extended utf-8' (internal strings are not, regexp bytecode is)? */
 /* FIXME: flag for 'contains non-bmp chars'? */
 
+/* Impose a maximum string byte length for now.  This can be relaxed for
+ * 64-bit platforms and indeed E5.1 makes provisions to support strings
+ * longer than 4G characters.
+ */
+#define  DUK_HSTRING_MAX_BYTELEN                     (0xffffffffUL)
+
 #define  DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(0)  /* string is a valid array index */
 #define  DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(1)  /* string is internal */
 #define  DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(2)  /* string is a reserved word (non-strict) */

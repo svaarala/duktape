@@ -5,9 +5,10 @@
 #include "duk_internal.h"
 
 static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	unsigned int i;
-	unsigned int len;
 	unsigned int idx;
+	size_t len;
 	duk_hstring *h;
 	duk_uint8_t *buf;
 
@@ -19,20 +20,45 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	}
 
 	if (is_join) {
+		size_t t1, t2, limit;
 		h = duk_to_hstring(ctx, -count-1);
 		DUK_ASSERT(h != NULL);
-		len = DUK_HSTRING_GET_BYTELEN(h) * (count - 1);
+
+		/* A bit tricky overflow test, see doc/code-issues.txt. */
+		t1 = (size_t) DUK_HSTRING_GET_BYTELEN(h);
+		t2 = (size_t) (count - 1);
+		limit = (size_t) DUK_HSTRING_MAX_BYTELEN;
+		if (DUK_UNLIKELY(t2 != 0 && t1 > limit / t2)) {
+			goto error_overflow;
+		}
+		len = (size_t) (t1 * t2);
 	} else {
-		len = 0;
+		len = (size_t) 0;
 	}
 
 	for (i = count; i >= 1; i--) {
+		size_t new_len;
 		duk_to_string(ctx, -i);
 		h = duk_require_hstring(ctx, -i);
-		len += DUK_HSTRING_GET_BYTELEN(h);
+		new_len = len + (size_t) DUK_HSTRING_GET_BYTELEN(h);
+
+		/* Impose a string maximum length; overflow check if size_t is
+		 * 32 bits, straight compare if larger.
+		 */
+#if DUK_SIZE_MAX == 0xffffffffUL
+		if (new_len < len) {
+			goto error_overflow;
+		}
+#else
+		if (new_len > (size_t) DUK_HSTRING_MAX_BYTELEN) {
+			goto error_overflow;
+		}
+#endif
+
+		len = new_len;
 	}
 
-	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", count, len);
+	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", (int) count, (int) len);
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);
@@ -81,6 +107,10 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 	duk_remove(ctx, -2);
 
 	/* [... res] */
+	return;
+
+ error_overflow:
+	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "concat result too long");
 }
 
 void duk_concat(duk_context *ctx, unsigned int count) {
