@@ -211,7 +211,7 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		if (i < nz) {
 			tmp += z->v[i];
 		}
-		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffU);
+		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffUL);
 		tmp = tmp >> 32;
 	}
 	if (tmp != 0) {
@@ -321,7 +321,7 @@ static void bi_sub(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 			tz = 0;
 		}
 		tmp = (int64_t) ty - (int64_t) tz + tmp;
-		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffU);
+		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffUL);
 		tmp = tmp >> 32;  /* 0 or -1 */
 	}
 	DUK_ASSERT(tmp == 0);
@@ -422,7 +422,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		duk_uint64_t tmp = 0;
 		for (j = 0; j < nz; j++) {
 			tmp += (duk_uint64_t) y->v[i] * (duk_uint64_t) z->v[j] + x->v[i+j];
-			x->v[i+j] = (duk_uint32_t) (tmp & 0xffffffffU);
+			x->v[i+j] = (duk_uint32_t) (tmp & 0xffffffffUL);
 			tmp = tmp >> 32;
 		}
 		if (tmp > 0) {
@@ -449,11 +449,11 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		duk_uint32_t a, b, c, d, e, f;
 		duk_uint32_t r, s, t;
 
-		a = y->v[i]; b = a & 0xffff; a = a >> 16;
+		a = y->v[i]; b = a & 0xffffUL; a = a >> 16;
 
 		f = 0;
 		for (j = 0; j < nz; j++) {
-			c = z->v[j]; d = c & 0xffff; c = c >> 16;
+			c = z->v[j]; d = c & 0xffffUL; c = c >> 16;
 			e = x->v[i+j];
 
 			/* build result as: (r << 32) + s: start with (BD + E + F) */
@@ -473,14 +473,14 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 			/* add BC*2^16 */
 			t = b * c;
 			r += (t >> 16);
-			t = s + ((t & 0xffff) << 16);
+			t = s + ((t & 0xffffUL) << 16);
 			if (t < s) { r++; }  /* carry */
 			s = t;
 
 			/* add AD*2^16 */
 			t = a * d;
 			r += (t >> 16);
-			t = s + ((t & 0xffff) << 16);
+			t = s + ((t & 0xffffUL) << 16);
 			if (t < s) { r++; }  /* carry */
 			s = t;
 
@@ -1350,8 +1350,8 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 	tmp = DUK_DBLUNION_GET_LOW32(&u);
 	nc_ctx->f.v[0] = tmp;
 	tmp = DUK_DBLUNION_GET_HIGH32(&u);
-	nc_ctx->f.v[1] = tmp & 0x000fffffU;
-	exp = (tmp >> 20) & 0x07ffU;
+	nc_ctx->f.v[1] = tmp & 0x000fffffUL;
+	exp = (tmp >> 20) & 0x07ffUL;
 
 	if (exp == 0) {
 		/* denormal */
@@ -1359,7 +1359,7 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 		bi_normalize(&nc_ctx->f);
 	} else {
 		/* normal: implicit leading 1-bit */
-		nc_ctx->f.v[1] |= 0x00100000U;
+		nc_ctx->f.v[1] |= 0x00100000UL;
 		exp = exp - IEEE_DOUBLE_EXP_BIAS - 52;
 		DUK_ASSERT(bi_is_valid(&nc_ctx->f));  /* true, because v[1] has at least one bit set */
 	}
@@ -1483,7 +1483,7 @@ void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
 	             t,
 	             (unsigned int) DUK_DBLUNION_GET_LOW32(&u));
 
-	DUK_ASSERT(exp >= 0 && exp <= 0x7ff);
+	DUK_ASSERT(exp >= 0 && exp <= 0x7ffL);
 	t += exp << 20;
 #if 0  /* caller handles sign change */
 	if (negative) {
