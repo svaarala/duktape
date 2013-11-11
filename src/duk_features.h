@@ -507,8 +507,17 @@ typedef duk_size_t size_t;
 /* The best type for an "all around int" in Duktape internals is "at least
  * 32 bit signed integer" which is fastest.  Same for unsigned type.
  */
-typedef duk_int_fast32_t duk_int;
-typedef duk_uint_fast32_t duk_uint;
+typedef duk_int_fast32_t duk_int_t;
+typedef duk_uint_fast32_t duk_uint_t;
+
+/* Small integers (16 bits or more) can fall back to the 'int' type, but
+ * have a typedef so they are marked "small" explicitly.
+ */
+typedef int duk_small_int_t;
+typedef unsigned int duk_small_uint_t;
+
+/* IEEE double typedef. */
+typedef double duk_double_t;
 
 /* Size_t must be at least 32 bits currently. */
 #if DUK_SIZE_MAX < 0xffffffffUL
