@@ -915,7 +915,7 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring
 }
 
 /* For internal use: get non-accessor entry value and attributes */
-duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int *out_attrs) {
+duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs) {
 	int e_idx;
 	int h_idx;
 

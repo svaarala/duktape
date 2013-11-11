@@ -39,7 +39,7 @@
 typedef struct {
 	duk_hobject *holder;      /* for object-bound identifiers */
 	duk_tval *value;          /* for register-bound and declarative env identifiers */
-	duk_int attrs;            /* property attributes for identifier (relevant if value != NULL) */
+	duk_int_t attrs;          /* property attributes for identifier (relevant if value != NULL) */
 	duk_tval *this_binding;
 	duk_hobject *env;
 } duk_id_lookup_result;
@@ -930,7 +930,7 @@ static int get_identifier_reference(duk_hthread *thr,
 	while (env != NULL) {
 		duk_tval *tv;
 		int cl;
-		duk_int attrs;
+		duk_int_t attrs;
 
 		DUK_DDDPRINT("get_identifier_reference, name=%!O, considering env=%p -> %!iO",
 		             (duk_heaphdr *) name,
