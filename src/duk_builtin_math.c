@@ -209,7 +209,7 @@ int duk_builtin_math_object_pow(duk_context *ctx) {
 }
 
 int duk_builtin_math_object_random(duk_context *ctx) {
-	duk_push_number(ctx, duk_util_tinyrandom_get_double((duk_hthread *) ctx));
+	duk_push_number(ctx, (double) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
 	return 1;
 }
 

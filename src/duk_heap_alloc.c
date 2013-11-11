@@ -204,7 +204,7 @@ static int init_heap_strings(duk_heap *heap) {
 
 	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	bd->data = (duk_uint8_t *) duk_strings_data;
-	bd->length = DUK_STRDATA_DATA_LENGTH;
+	bd->length = (duk_size_t) DUK_STRDATA_DATA_LENGTH;
 
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 		duk_uint8_t tmp[DUK_STRDATA_MAX_STRLEN];

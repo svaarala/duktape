@@ -345,7 +345,7 @@ static duk_hstring *do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t ble
 
 	DUK_ASSERT(out_strhash);
 
-	*out_strhash = duk_heap_hashstring(heap, str, blen);
+	*out_strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);  /* FIXME: change blen to duk_size_t */
 	res = find_matching_string(heap, heap->st, heap->st_size, str, blen, *out_strhash);
 	return res;
 }

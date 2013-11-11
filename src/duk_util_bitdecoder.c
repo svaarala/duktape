@@ -4,10 +4,10 @@
 
 #include "duk_internal.h"
 
-duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, int bits) {
-	int shift;
-	int mask;
-	int tmp;
+duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
+	duk_small_int_t shift;
+	duk_uint32_t mask;
+	duk_uint32_t tmp;
 
 	/* Note: cannot read more than 24 bits without possibly shifting top bits out.
 	 * Fixable, but adds complexity.
@@ -47,7 +47,7 @@ duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, int bits) {
 	return tmp;
 }
 
-int duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
-	return (int) duk_bd_decode(ctx, 1);
+duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
+	return (duk_small_int_t) duk_bd_decode(ctx, 1);
 }
 

@@ -157,8 +157,8 @@ duk_uint32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc) {
 	}
 
 	DUK_MEMSET(bd_ctx, 0, sizeof(*bd_ctx));
-	bd_ctx->data = ((unsigned char *) hdr) + start_offset;
-	bd_ctx->length = DUK_HBUFFER_GET_SIZE(buf) - start_offset;
+	bd_ctx->data = ((duk_uint8_t *) hdr) + start_offset;
+	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_GET_SIZE(buf) - start_offset);
 
 #if 0
 	DUK_DDDPRINT("pc2line lookup: pc=%d -> hdr_index=%d, pc_base=%d, n=%d, start_offset=%d", pc, hdr_index, pc_base, n, start_offset);

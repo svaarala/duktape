@@ -280,11 +280,9 @@ static int uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 static int uni_range_match(duk_uint8_t *unitab, int unilen, int x) {
 	duk_bitdecoder_ctx bd_ctx;
 
+	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	bd_ctx.data = (duk_uint8_t *) unitab;
-	bd_ctx.offset = (duk_uint32_t) 0;
-	bd_ctx.length = (duk_uint32_t) unilen;
-	bd_ctx.currval = (duk_uint32_t) 0;
-	bd_ctx.currbits = (duk_uint32_t) 0;
+	bd_ctx.length = (duk_size_t) unilen;
 
 	int prev_re = 0;
 	for (;;) {
@@ -751,10 +749,10 @@ static int case_transform_helper(duk_hthread *thr,
 	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
 	if (uppercase) {
 		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_uc;
-		bd_ctx.length = (duk_uint32_t) sizeof(duk_unicode_caseconv_uc);
+		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_uc);
 	} else {
 		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_lc;
-		bd_ctx.length = (duk_uint32_t) sizeof(duk_unicode_caseconv_lc);
+		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_lc);
 	}
 	return slow_case_conversion(thr, buf, x, &bd_ctx);
 

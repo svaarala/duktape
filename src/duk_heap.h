@@ -399,7 +399,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr);
 int duk_heap_mark_and_sweep(duk_heap *heap, int flags);
 #endif
 
-duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_uint32_t len);
+duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len);
 
 #endif  /* DUK_HEAP_H_INCLUDED */
 

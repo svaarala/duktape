@@ -43,7 +43,7 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 
 	curr = (duk_uint32_t) *p++;
 	for (;;) {
-		int t = (int) *p++;
+		duk_small_int_t t = (duk_small_int_t) *p++;
 		if (t < 0) {
 			/* may happen if size is very close to 2^32-1 */
 			break;
