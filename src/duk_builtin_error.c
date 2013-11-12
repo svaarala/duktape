@@ -6,8 +6,13 @@
 
 static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 	/* Behavior for constructor and non-constructor call is
-	 * exactly the same.
+	 * the same except for augmenting the created error.  When
+	 * called as a constructor, the caller (duk_new()) will handle
+	 * augmentation; when called as normal function, we need to do
+	 * it here.
 	 */
+
+	duk_hthread *thr = (duk_hthread *) ctx;
 
 	/* same for both error and each subclass like TypeError */
 	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -24,8 +29,20 @@ static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
+	/* Augment the error if called as a normal function.  __FILE__ and __LINE__
+	 * are not desirable in this case.
+	 */
+
+#ifdef DUK_USE_AUGMENT_ERRORS
+	if (!duk_is_constructor_call(ctx)) {
+		duk_err_augment_error(thr, thr, -1, NULL, 0, 1 /*noblame_fileline*/);
+	}
+#endif
+
 	return 1;
 }
+
+/* FIXME: could share same native function with a 'magic' argument */
 
 int duk_builtin_error_constructor(duk_context *ctx) {
 	return duk_error_constructor_helper(ctx, DUK_BIDX_ERROR_PROTOTYPE);
