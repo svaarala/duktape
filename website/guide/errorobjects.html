@@ -114,9 +114,16 @@ value to <tt>stack</tt>, the value reads back as assigned.</p>
 <h3>Current limitations</h3>
 
 <ul>
-<li>There are no cause chains in Ecmascript or Duktape.</li>
+<li>There is no cause chain support.  Cause chains would be useful but there
+    are no cause chains in Ecmascript, nor does there seem to be a de facto
+    standard for them.</li>
 <li>These is currently no way to access traceback elements programmatically.</li>
-<li>If an error is created with a non-constructor function call
-    (<tt>Error('msg')</tt> instead of <tt>new Error('msg')</tt>) it
-    won't get augmented at the moment.</li>
+<li>If an error is created with a non-constructor function call to a custom
+    error class (<tt>MyError('msg')</tt> instead of <tt>new MyError('msg')</tt>)
+    it won't get augmented with custom fields such as traceback data.  When
+    called as a constructor custom errors inheriting from <tt>Error</tt> get
+    augmented normally.  Built-in standard errors (like <tt>TypeError</tt>)
+    always get augmented, even when created with a non-constructor function call
+    (the tracebacks look slightly different depending on how the error is
+    created, though).</li>
 </ul>
