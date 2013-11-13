@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "portability: pointer comparison is apparently not portable"
+desc: http://stackoverflow.com/questions/6702161/pointer-comparisons-in-c-are-they-signed-or-unsigned
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-09 15:38:05.290690 Z
+references: []
+
+id: 0027ac071806cba5e493ac6ba1bd065d9a9db1a8
+log_events: 
+- - 2013-11-09 15:38:05.463297 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

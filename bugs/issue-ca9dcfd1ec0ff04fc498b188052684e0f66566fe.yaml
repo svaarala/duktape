@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2013-10-22 09:19:05.339361 Z
 references: []
 
@@ -20,3 +20,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
   - ""
+- - 2013-11-08 21:40:51.688462 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - Probably not worth it, as getters are called using normal method call APIs.

@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "change preventyield: track 'allowyield' calls instead?"
+desc: |-
+  Only Ecmascript-to-Ecmascript calls allow yielding, so just track
+  those?  There would then be no need to count native calls etc?
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-10 00:09:26.457980 Z
+references: []
+
+id: af8201e688fc6581ce206dec97480c217c824d10
+log_events: 
+- - 2013-11-10 00:09:26.649170 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: fix type assumptions in duk_double_union and related macros
-desc: ""
+title: add wrapper types for all C types, including size_t and double?
+desc: This would make it very explicit that no built-in types are to be used.
 type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-10-06 20:25:13.186034 Z
+creation_time: 2013-11-11 22:18:17.203064 Z
 references: []
 
-id: 9420f3416099d08e4e661aa3329cbaa6f6458fc5
+id: d7c1f8bc51d9d667d2bdf9d4033cf9fa26b45953
 log_events: 
-- - 2013-10-06 20:25:13.321918 Z
+- - 2013-11-11 22:18:17.419086 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-11-05 23:19:00.911421 Z
+- - 2013-11-13 19:05:11.509614 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

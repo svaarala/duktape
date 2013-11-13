@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check string formatting and debug print types and casts
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-13 11:59:50.892456 Z
+references: []
+
+id: 269fa2cbc7d848ce681b1fd15291530bb1922a2a
+log_events: 
+- - 2013-11-13 11:59:51.068408 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

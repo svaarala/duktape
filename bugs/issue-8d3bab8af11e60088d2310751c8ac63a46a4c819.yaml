@@ -36,3 +36,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
   - ""
+- - 2013-11-09 14:54:07.911753 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Also need to ensure that concatenation results don't overflow length.

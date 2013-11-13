@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: fix raw_string_to_arrayindex()
+title: add a separate typedef for codepoints (duk_codepoint_t)?
 desc: ""
 type: :task
 component: duk
@@ -7,20 +7,16 @@ release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-11-01 23:14:15.442263 Z
+creation_time: 2013-11-13 10:22:38.298637 Z
 references: []
 
-id: 52d384a17dba7e133e34a235c41610fb5739c2f1
+id: ffd8533ec9cb1f851839352290c06e850e967a28
 log_events: 
-- - 2013-11-01 23:14:16.226033 Z
+- - 2013-11-13 10:22:38.474587 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-11-02 02:01:48.607360 Z
-  - sva <sami.vaarala@iki.fi>
-  - commented
-  - See test-dev-bug-arridx-1.js
-- - 2013-11-13 00:31:01.861120 Z
+- - 2013-11-13 19:05:03.045878 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

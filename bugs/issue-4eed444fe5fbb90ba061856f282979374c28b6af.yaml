@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: fix raw_string_to_arrayindex()
+title: add integer limit defines
 desc: ""
 type: :task
 component: duk
@@ -7,20 +7,16 @@ release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-11-01 23:14:15.442263 Z
+creation_time: 2013-11-09 15:35:03.036779 Z
 references: []
 
-id: 52d384a17dba7e133e34a235c41610fb5739c2f1
+id: 4eed444fe5fbb90ba061856f282979374c28b6af
 log_events: 
-- - 2013-11-01 23:14:16.226033 Z
+- - 2013-11-09 15:35:03.369854 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-11-02 02:01:48.607360 Z
-  - sva <sami.vaarala@iki.fi>
-  - commented
-  - See test-dev-bug-arridx-1.js
-- - 2013-11-13 00:31:01.861120 Z
+- - 2013-11-10 21:27:23.514022 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

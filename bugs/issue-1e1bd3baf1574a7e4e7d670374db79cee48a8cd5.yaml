@@ -3,7 +3,7 @@ title: version list and changelog - dist/web
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -24,3 +24,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
   - ""
+- - 2013-11-13 00:48:17.327010 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.8 from v0.9
+  - |-
+    Add an end user versions / change log, which is a sanitized version of the ditz issues
+    closed and git commits made.
