@@ -113,8 +113,7 @@ static int getconst(duk_compiler_ctx *comp_ctx);
 static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                 duk_ispec *x,
                                 int forced_reg,
-                                int allow_const,
-                                int require_temp);
+                                int flags);
 static int ispec_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ispec *x, int forced_reg);
 static void ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int forced_reg);
 static void ivalue_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
@@ -122,8 +121,7 @@ static void ivalue_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
 static int ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                  duk_ivalue *x,
                                  int forced_reg,
-                                 int allow_const,
-                                 int require_temp);
+                                 int flags);
 static int ivalue_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
 #if 0  /* unused */
 static int ivalue_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
@@ -1203,6 +1201,14 @@ static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 #define  ALLOCTEMP(comp_ctx)            alloctemp((comp_ctx))
 #define  ALLOCTEMPS(comp_ctx,count)     alloctemps((comp_ctx),(count))
 
+/* Flags for intermediate value coercions.  A flag for using a forced reg
+ * is not needed, the forced_reg argument suffices and generates better
+ * code (it is checked as it is used).
+ */
+#define  IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
+#define  IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
+#define  IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
+
 /* FIXME: some code might benefit from SETTEMP_IFTEMP(ctx,x) */
 
 static void copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst) {
@@ -1296,8 +1302,9 @@ static int getconst(duk_compiler_ctx *comp_ctx) {
 	tv1 = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv1 != NULL);
 
-	/* sanity workaround for handling functions with a large number of
-	 * constants at least somewhat reasonably.
+	/* Sanity workaround for handling functions with a large number of
+	 * constants at least somewhat reasonably.  Otherwise checking whether
+	 * we already have the constant would grow very slow (as it is O(N^2)).
 	 */
 	n_check = (n > GETCONST_MAX_CONSTS_CHECK ? GETCONST_MAX_CONSTS_CHECK : n);
 	for (i = 0; i < n_check; i++) {
@@ -1348,15 +1355,18 @@ static int getconst(duk_compiler_ctx *comp_ctx) {
 static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                 duk_ispec *x,
                                 int forced_reg,
-                                int allow_const,
-                                int require_temp) {
+                                int flags) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 
 	DUK_DDDPRINT("ispec_toregconst_raw(): x={%d:%d:%!T}, "
-	             "forced_reg=%d, allow_const=%d, require_temp=%d",
+	             "forced_reg=%d, flags 0x%08x: allow_const=%d require_temp=%d require_short=%d",
 	             x->t, x->regconst, duk_get_tval(ctx, x->valstack_idx),
-	             forced_reg, allow_const, require_temp);
+	             forced_reg,
+	             (int) flags,
+	             (flags & IVAL_FLAG_ALLOW_CONST) ? 1 : 0,
+	             (flags & IVAL_FLAG_REQUIRE_TEMP) ? 1 : 0,
+	             (flags & IVAL_FLAG_REQUIRE_SHORT) ? 1 : 0);
 
 	switch (x->t) {
 	case DUK_ISPEC_VALUE: {
@@ -1411,7 +1421,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			duk_dup(ctx, x->valstack_idx);
 			constidx = getconst(comp_ctx);
 
-			if (allow_const) {
+			if (flags & IVAL_FLAG_ALLOW_CONST) {
 				return constidx;
 			}
 
@@ -1437,7 +1447,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 			dval = DUK_TVAL_GET_NUMBER(tv);
 
-			if (!allow_const) {
+			if (!(flags & IVAL_FLAG_ALLOW_CONST)) {
 				/* A number can be loaded either through a constant or
 				 * using LDINT+LDINTX.  Which is better depends on the
 				 * context and how many times a certain constant would
@@ -1460,7 +1470,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			duk_dup(ctx, x->valstack_idx);
 			constidx = getconst(comp_ctx);
 
-			if (allow_const) {
+			if (flags & IVAL_FLAG_ALLOW_CONST) {
 				return constidx;
 			} else {
 				dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
@@ -1471,7 +1481,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 		}  /* end switch */
 	}
 	case DUK_ISPEC_REGCONST: {
-		if ((x->regconst & CONST_MARKER) && !allow_const) {
+		if ((x->regconst & CONST_MARKER) && !(flags & IVAL_FLAG_ALLOW_CONST)) {
 			int dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
 			emit_a_bc(comp_ctx, DUK_OP_LDCONST, dest, x->regconst);
 			return dest;
@@ -1482,7 +1492,7 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 				}
 				return forced_reg;
 			} else {
-				if (require_temp && !ISTEMP(comp_ctx, x->regconst)) {
+				if ((flags & IVAL_FLAG_REQUIRE_TEMP) && !ISTEMP(comp_ctx, x->regconst)) {
 					int dest = ALLOCTEMP(comp_ctx);
 					emit_a_bc(comp_ctx, DUK_OP_LDREG, dest, x->regconst);
 					return dest;
@@ -1502,12 +1512,11 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 }
 
 static int ispec_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ispec *x, int forced_reg) {
-	return ispec_toregconst_raw(comp_ctx, x, forced_reg, 0 /*allow_const*/, 0 /*require_temp*/);
+	return ispec_toregconst_raw(comp_ctx, x, forced_reg, 0 /*flags*/);
 }
 
 /* Coerce an duk_ivalue to a 'plain' value by generating the necessary
  * arithmetic operations, property access, or variable access bytecode.
- *
  * The duk_ivalue argument ('x') is converted into a plain value as a
  * side effect.
  */
@@ -1579,8 +1588,8 @@ static void ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int fo
 			}
 		}
 
-		arg1 = ispec_toregconst_raw(comp_ctx, &x->x1, -1, 1, 0);  /* no forced reg, allow const, no require temp */
-		arg2 = ispec_toregconst_raw(comp_ctx, &x->x2, -1, 1, 0);  /* same flags */
+		arg1 = ispec_toregconst_raw(comp_ctx, &x->x1, -1, IVAL_FLAG_ALLOW_CONST | IVAL_FLAG_REQUIRE_SHORT /*flags*/);
+		arg2 = ispec_toregconst_raw(comp_ctx, &x->x2, -1, IVAL_FLAG_ALLOW_CONST | IVAL_FLAG_REQUIRE_SHORT /*flags*/);
 
 		/* If forced reg, use it as destination.  Otherwise try to
 		 * use either coerced ispec if it is a temporary.
@@ -1603,9 +1612,14 @@ static void ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int fo
 		return;
 	}
 	case DUK_IVAL_PROP: {
-		int arg1 = ispec_toregconst_raw(comp_ctx, &x->x1, -1, 1, 0);  /* no forced reg, allow const, no require temp */
-		int arg2 = ispec_toregconst_raw(comp_ctx, &x->x2, -1, 1, 0);  /* same flags */
+		/* FIXME: very similar to DUK_IVAL_ARITH - merge? */
+		int arg1;
+		int arg2;
 		int dest;
+
+		/* need a short reg/const, does not have to be a mutable temp */
+		arg1 = ispec_toregconst_raw(comp_ctx, &x->x1, -1, IVAL_FLAG_ALLOW_CONST | IVAL_FLAG_REQUIRE_SHORT /*flags*/);
+		arg2 = ispec_toregconst_raw(comp_ctx, &x->x2, -1, IVAL_FLAG_ALLOW_CONST | IVAL_FLAG_REQUIRE_SHORT /*flags*/);
 
 		if (forced_reg >= 0) {
 			dest = forced_reg;
@@ -1678,28 +1692,30 @@ static void ivalue_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
 static int ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                  duk_ivalue *x,
                                  int forced_reg,
-                                 int allow_const,
-                                 int require_temp) {
+                                 int flags) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 	int reg;
-
 	DUK_UNREF(thr);
 	DUK_UNREF(ctx);
 
 	DUK_DDDPRINT("ivalue_toregconst_raw(): x={t=%d,op=%d,x1={%d:%d:%!T},x2={%d:%d:%!T}}, "
-	             "forced_reg=%d, allow_const=%d, require_temp=%d",
+	             "forced_reg=%d, flags 0x%08x: allow_const=%d require_temp=%d require_short=%d",
 	             x->t, x->op,
 	             x->x1.t, x->x1.regconst, duk_get_tval(ctx, x->x1.valstack_idx),
 	             x->x2.t, x->x2.regconst, duk_get_tval(ctx, x->x2.valstack_idx),
-	             forced_reg, allow_const, require_temp);
+	             forced_reg,
+	             (int) flags,
+	             (flags & IVAL_FLAG_ALLOW_CONST) ? 1 : 0,
+	             (flags & IVAL_FLAG_REQUIRE_TEMP) ? 1 : 0,
+	             (flags & IVAL_FLAG_REQUIRE_SHORT) ? 1 : 0);
 
 	/* first coerce to a plain value */
 	ivalue_toplain_raw(comp_ctx, x, forced_reg);
 	DUK_ASSERT(x->t == DUK_IVAL_PLAIN);
 
 	/* then to a register */
-	reg = ispec_toregconst_raw(comp_ctx, &x->x1, forced_reg, allow_const, require_temp);
+	reg = ispec_toregconst_raw(comp_ctx, &x->x1, forced_reg, flags);
 	x->x1.t = DUK_ISPEC_REGCONST;
 	x->x1.regconst = reg;
 
@@ -1707,21 +1723,21 @@ static int ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
 }
 
 static int ivalue_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
-	return ivalue_toregconst_raw(comp_ctx, x, -1, 0, 0);  /* no forced reg, don't allow const, don't require temp */
+	return ivalue_toregconst_raw(comp_ctx, x, -1, 0 /*flags*/);
 }
 
 #if 0  /* unused */
 static int ivalue_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
-	return ivalue_toregconst_raw(comp_ctx, x, -1, 0, 1);  /* no forced reg, don't allow const, require temp */
+	return ivalue_toregconst_raw(comp_ctx, x, -1, IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 }
 #endif
 
 static int ivalue_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int forced_reg) {
-	return ivalue_toregconst_raw(comp_ctx, x, forced_reg, 0, 0);  /* forced reg, don't allow const, don't require temp */
+	return ivalue_toregconst_raw(comp_ctx, x, forced_reg, 0 /*flags*/);
 }
 
 static int ivalue_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
-	return ivalue_toregconst_raw(comp_ctx, x, -1, 1, 0);  /* no forced reg, allow const, don't require temp */
+	return ivalue_toregconst_raw(comp_ctx, x, -1, IVAL_FLAG_ALLOW_CONST /*flags*/);
 }
 
 /* The issues below can be solved with better flags */
@@ -2707,8 +2723,8 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 			SETTEMP(comp_ctx, temp_at_entry);
 			reg_temp = ALLOCTEMP(comp_ctx);
-			reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*allow_const*/, 0 /*require_temp*/);  /* don't allow const */
-			reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, 1 /*allow_const*/, 0 /*require_temp*/);
+			reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
+			reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, IVAL_FLAG_ALLOW_CONST /*flags*/);
 			emit_a_b_c(comp_ctx, DUK_OP_DELPROP, reg_temp, reg_obj, reg_key);
 
 			res->t = DUK_IVAL_PLAIN;
@@ -2821,7 +2837,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 */
 
 		int tr;
-		tr = ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, 0 /*allow_const*/, 1 /*require_temp*/);
+		tr = ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 		emit_a_b(comp_ctx, args >> 8, tr, tr);
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
@@ -2833,7 +2849,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	{
 		/* FIXME: refactor into unary2: above? */
 		int tr;
-		tr = ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, 0 /*allow_const*/, 1 /*require_temp*/);
+		tr = ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 		emit_extraop_b_c(comp_ctx, args >> 8, tr, tr);
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
@@ -2877,8 +2893,8 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		} else if (res->t == DUK_IVAL_PROP) {
 			int reg_obj;  /* allocate to reg only (not const) */
 			int reg_key;
-			reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*allow_const*/, 0 /*require_temp*/);
-			reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, 1 /*allow_const*/, 0 /*require_temp*/);
+			reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
+			reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, IVAL_FLAG_ALLOW_CONST /*flags*/);
 			emit_a_b_c(comp_ctx, DUK_OP_GETPROP, reg_res, reg_obj, reg_key);
 			emit_a_b(comp_ctx, args_op, reg_res, reg_res);
 			emit_a_b_c(comp_ctx, DUK_OP_PUTPROP, reg_obj, reg_key, reg_res);
@@ -3498,8 +3514,8 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			 * it goes into the 'A' field of the opcode.
 			 */
 
-			reg_obj = ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*allow_const*/, 0 /*require_temp*/);
-			reg_key = ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, 1 /*allow_const*/, 0 /*require_temp*/);
+			reg_obj = ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
+			reg_key = ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, IVAL_FLAG_ALLOW_CONST /*flags*/);
 	
 			if (args_op == DUK_OP_INVALID) {
 				reg_res = res->x1.regconst;
@@ -3597,8 +3613,8 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 			int reg_obj;  /* allocate to reg only (not const) */
 			int reg_key;
 			int reg_temp = ALLOCTEMP(comp_ctx);
-			reg_obj = ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*allow_const*/, 0 /*require_temp*/);
-			reg_key = ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, 1 /*allow_const*/, 0 /*require_temp*/);
+			reg_obj = ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
+			reg_key = ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, IVAL_FLAG_ALLOW_CONST /*flags*/);
 			emit_a_b_c(comp_ctx, DUK_OP_GETPROP, reg_res, reg_obj, reg_key);
 			emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);
 			emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
@@ -4082,8 +4098,8 @@ static void parse_for_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 				 */
 				int reg_obj;
 				int reg_key;
-				reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*allow_const*/, 0 /*require_temp*/);
-				reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, 1 /*allow_const*/, 0 /*require_temp*/);
+				reg_obj = ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
+				reg_key = ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, IVAL_FLAG_ALLOW_CONST /*flags*/);
 				emit_a_b_c(comp_ctx, DUK_OP_PUTPROP, reg_obj, reg_key, reg_temps + 0);
 			} else {
 				ivalue_toplain_ignore(comp_ctx, res);  /* just in case */
