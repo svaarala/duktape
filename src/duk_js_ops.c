@@ -1210,68 +1210,59 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
  *  Array length: E5 Section 15.4.5.1 steps 3.c - 3.d (array length write)
  *
  *  The DUK_HSTRING_GET_ARRIDX_SLOW() and DUK_HSTRING_GET_ARRIDX_FAST() macros
- *  duk_js_to_arrayindex_string_helper().
+ *  call duk_js_to_arrayindex_string_helper().
  */
 
-static int raw_string_to_arrayindex(duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_idx) {
-	char buf[16];
-
-	/*
-	 *  FIXME: placeholder, which is not even close.
-	 */
-
-	if (blen > 10) {
-		return 0;
-	}
-	DUK_MEMCPY(buf, str, blen);
-	buf[blen] = (char) 0;
-
-	if (sscanf(buf, "%d", (int *) out_idx) == 1 && strstr(buf, ".") == NULL) {
-		return 1;
-	}
-	return 0;
-}
-
-/* Called by duk_heap_stringtable.c for string interning */
-int duk_js_is_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen) {
-	duk_uint32_t dummy;
-
-	/*
-	 *  All array indexes must match [0-9]{1,10}.
-	 *
-	 *  Use a subset of this for a quick and short reject.
-	 *  (Note: cannot require that first char be [1-9] because
-	 *  '0' is a valid index.)
-	 */
+duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_idx) {
+	duk_uint32_t res, new_res;
 
 	if (blen == 0 || blen > 10) {
-		return 0;
+		goto parse_fail;
 	}
-	if (str[0] < (duk_uint8_t) '0' || str[0] > (duk_uint8_t) '9') {
-		/* just check the first char; it's usually not a digit
-		 * for non-numbers.
-		 */
-		return 0;
+	if (str[0] == (duk_uint8_t) '0' && blen > 1) {
+		goto parse_fail;
 	}
 
-	/*
-	 *  Passed quick reject check, must parse and validate
+	/* Accept 32-bit decimal integers, no leading zeroes, signs, etc.
+	 * Leading zeroes are not accepted (zero index "0" is an exception
+	 * handled above).
 	 */
 
-	return raw_string_to_arrayindex(str, blen, &dummy);
+	res = 0;
+	while (blen-- > 0) {
+		duk_uint8_t c = *str++;
+		if (c >= (duk_uint8_t) '0' && c <= (duk_uint8_t) '9') {
+			new_res = res * 10 + (duk_uint32_t) (c - (duk_uint8_t) '0');
+			if (new_res < res) {
+				/* overflow, more than 32 bits -> not an array index */
+				goto parse_fail;
+			}
+			res = new_res;
+		} else {
+			goto parse_fail;
+		}
+	}
+
+	*out_idx = res;
+	return 1;
+
+ parse_fail:
+	*out_idx = DUK_HSTRING_NO_ARRAY_INDEX;
+	return 0;
 }	
 
 /* Called by duk_hstring.h macros */
 duk_uint32_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
 	duk_uint32_t res;
-	int rc;
+	duk_small_int_t rc;
 
 	if (!DUK_HSTRING_HAS_ARRIDX(h)) {
 		return DUK_HSTRING_NO_ARRAY_INDEX;
 	}
-	rc = raw_string_to_arrayindex(DUK_HSTRING_GET_DATA(h),
-	                              DUK_HSTRING_GET_BYTELEN(h),
-	                              &res);
+
+	rc = duk_js_to_arrayindex_raw_string(DUK_HSTRING_GET_DATA(h),
+	                                     DUK_HSTRING_GET_BYTELEN(h),
+	                                     &res);
 	DUK_UNREF(rc);
 	DUK_ASSERT(rc != 0);
 	return res;

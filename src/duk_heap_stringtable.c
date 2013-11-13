@@ -24,6 +24,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 	duk_hstring *res = NULL;
 	duk_uint8_t *data;
 	duk_uint32_t alloc_size;
+	duk_uint32_t dummy;
 
 	/* NUL terminate for convenient C access */
 
@@ -39,7 +40,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 #endif
 	DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, 0);
 
-	if (duk_js_is_arrayindex_raw_string(str, blen)) {
+	if (duk_js_to_arrayindex_raw_string(str, blen, &dummy)) {
 		DUK_HSTRING_SET_ARRIDX(res);
 	}
 
