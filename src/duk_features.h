@@ -516,6 +516,13 @@ typedef duk_uint_fast32_t duk_uint_t;
 typedef int duk_small_int_t;
 typedef unsigned int duk_small_uint_t;
 
+/* Codepoint type.  Must be 32 bits or more because it is used also for
+ * internal codepoints.  Signed codepoints are needed internally in some
+ * algorithms (e.g. negative value used as a marker).
+ */
+typedef duk_uint_fast32_t duk_codepoint_t;
+typedef duk_int_fast32_t duk_signed_codepoint_t;
+
 /* IEEE double typedef. */
 typedef double duk_double_t;
 
