@@ -634,13 +634,14 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 			DUK_DDDPRINT("range: start_i=%d, start_o=%d, count=%d, skip=%d",
 			             (int) start_i, (int) start_o, (int) count, (int) skip);
 
-			tmp_cp = cp - start_i;
-			if (tmp_cp >= 0 &&
-			    tmp_cp < (duk_codepoint_t) count * (duk_codepoint_t) skip &&
-			    (tmp_cp % (duk_codepoint_t) skip) == 0) {
-				DUK_DDDPRINT("range matches input codepoint");
-				cp = start_o + tmp_cp;
-				goto single;
+			if (cp >= start_i) {
+				tmp_cp = cp - start_i;  /* always >= 0 */
+				if (tmp_cp < (duk_codepoint_t) count * (duk_codepoint_t) skip &&
+				    (tmp_cp % (duk_codepoint_t) skip) == 0) {
+					DUK_DDDPRINT("range matches input codepoint");
+					cp = start_o + tmp_cp;
+					goto single;
+				}
 			}
 		}
 	}
@@ -703,14 +704,12 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 
 static duk_signed_codepoint_t case_transform_helper(duk_hthread *thr,
                                                     duk_hbuffer_dynamic *buf,
-                                                    duk_signed_codepoint_t cp,
+                                                    duk_codepoint_t cp,
                                                     duk_signed_codepoint_t prev,
                                                     duk_signed_codepoint_t next,
                                                     duk_small_int_t uppercase,
                                                     duk_small_int_t language) {
 	duk_bitdecoder_ctx bd_ctx;
-
-	DUK_ASSERT(cp >= 0);
 
 	/* fast path for ASCII */
 	if (cp < 0x80UL) {
@@ -823,7 +822,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 			/* may generate any number of output codepoints */
 			case_transform_helper(thr,
 			                      h_buf,
-			                      curr,
+			                      (duk_codepoint_t) curr,
 			                      prev,
 			                      next,
 			                      uppercase,
@@ -845,7 +844,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
  */
 
 duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp) {
-	duk_codepoint_t y;
+	duk_signed_codepoint_t y;
 
 	y = case_transform_helper(thr,
 	                          NULL,    /* buf */
