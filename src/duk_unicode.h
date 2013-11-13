@@ -43,19 +43,19 @@ extern duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
  *  Prototypes
  */
 
-int duk_unicode_get_xutf8_length(duk_uint32_t x);
-size_t duk_unicode_encode_xutf8(duk_uint32_t x, duk_uint8_t *out);
-size_t duk_unicode_encode_cesu8(duk_uint32_t x, duk_uint8_t *out);
-int duk_unicode_xutf8_get_u32(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint32_t *out_cp);
-duk_uint32_t duk_unicode_xutf8_get_u32_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end);
-duk_uint32_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_uint32_t blen);
-int duk_unicode_is_whitespace(int x);
-int duk_unicode_is_line_terminator(int x);
-int duk_unicode_is_identifier_start(int x);
-int duk_unicode_is_identifier_part(int x);
-void duk_unicode_case_convert_string(duk_hthread *thr, int uppercase);
-int duk_unicode_re_canonicalize_char(duk_hthread *thr, int x);
-int duk_unicode_re_is_wordchar(int x);
+duk_small_int_t duk_unicode_get_xutf8_length(duk_codepoint_t cp);
+duk_small_int_t duk_unicode_encode_xutf8(duk_codepoint_t cp, duk_uint8_t *out);
+duk_small_int_t duk_unicode_encode_cesu8(duk_codepoint_t cp, duk_uint8_t *out);
+duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_codepoint_t *out_cp);
+duk_codepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end);
+duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t blen);
+duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp);
+duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp);
+duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp);
+duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp);
+void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase);
+duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp);
+duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
 
 #endif  /* DUK_UNICODE_H_INCLUDED */
 

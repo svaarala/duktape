@@ -88,12 +88,12 @@ typedef struct {
 	duk_uint8_t *p_end;
 } duk_transform_context;
 
-typedef void (*transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp);
+typedef void (*transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
 
 /* FIXME: refactor and share with other code */
-static int decode_hex_escape(duk_uint8_t *p, int n) {
-	int ch;
-	int t = 0;
+static duk_small_int_t decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
+	duk_small_int_t ch;
+	duk_small_int_t t = 0;
 
 	while (n > 0) {
 		t = t * 16;
@@ -116,7 +116,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_transform_context tfm_ctx_alloc;
 	duk_transform_context *tfm_ctx = &tfm_ctx_alloc;
-	duk_uint32_t cp;
+	duk_codepoint_t cp;
 
 	tfm_ctx->thr = thr;
 
@@ -133,7 +133,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	tfm_ctx->p = tfm_ctx->p_start;
 
 	while (tfm_ctx->p < tfm_ctx->p_end) {
-		cp = duk_unicode_xutf8_get_u32_checked(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
+		cp = duk_unicode_decode_xutf8_checked(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
 		callback(tfm_ctx, udata, cp);
 	}
 
@@ -141,30 +141,30 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	return 1;
 }
 
-static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	duk_uint8_t buf[3];
-	size_t len;
-	duk_uint32_t cp1, cp2;
-	int i, t;
+	duk_small_int_t len;
+	duk_codepoint_t cp1, cp2;
+	duk_small_int_t i, t;
 	duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
 
 	if ((cp < 128) && CHECK_BITMASK(unescaped_table, cp)) {
 		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) cp);
 		return;
-	} else if (cp >= 0xdc00 && cp <= 0xdfff) {
+	} else if (cp >= 0xdc00UL && cp <= 0xdfffUL) {
 		goto uri_error;
-	} else if (cp >= 0xd800 && cp <= 0xdbff) {
+	} else if (cp >= 0xd800UL && cp <= 0xdbffUL) {
 		/* Needs lookahead */
-		if (duk_unicode_xutf8_get_u32(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, &cp2) == 0) {
+		if (duk_unicode_decode_xutf8(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, &cp2) == 0) {
 			goto uri_error;
 		}
-		if (!(cp2 >= 0xdc00 && cp2 <= 0xdfff)) {
+		if (!(cp2 >= 0xdc00UL && cp2 <= 0xdfffUL)) {
 			goto uri_error;
 		}
 		cp1 = cp;
-		cp = ((cp1 - 0xd800) << 10) + (cp2 - 0xdc00) + 0x10000;
-	} else if (cp > 0x10ffff) {
+		cp = ((cp1 - 0xd800UL) << 10) + (cp2 - 0xdc00UL) + 0x10000UL;
+	} else if (cp > 0x10ffffUL) {
 		/* Although we can allow non-BMP characters (they'll decode
 		 * back into surrogate pairs), we don't allow extended UTF-8
 		 * characters; they would encode to URIs which won't decode
@@ -193,16 +193,15 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
 }
 
-static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
-	int utf8_blen;
-	int min_cp;
-	int t;
-	int i;
+	duk_small_int_t utf8_blen;
+	duk_codepoint_t min_cp;
+	duk_small_int_t t, i;
 
-	if (cp == (duk_uint32_t) '%') {
+	if (cp == (duk_codepoint_t) '%') {
 		duk_uint8_t *p = tfm_ctx->p;
-		size_t left = (size_t) (tfm_ctx->p_end - p);  /* bytes left */
+		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		DUK_DDDPRINT("percent encoding, left=%d", (int) left);
 
@@ -244,17 +243,17 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 		} else if (t < 0xe0) {
 			/* 110x xxxx; 2 bytes */
 			utf8_blen = 2;
-			min_cp = 0x80;
+			min_cp = 0x80UL;
 			cp = t & 0x1f;
 		} else if (t < 0xf0) {
 			/* 1110 xxxx; 3 bytes */
 			utf8_blen = 3;
-			min_cp = 0x800;
+			min_cp = 0x800UL;
 			cp = t & 0x0f;
 		} else if (t < 0xf8) {
 			/* 1111 0xxx; 4 bytes */
 			utf8_blen = 4;
-			min_cp = 0x10000;
+			min_cp = 0x10000UL;
 			cp = t & 0x07;
 		} else {
 			/* extended utf-8 not allowed for URIs */
@@ -285,7 +284,7 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 
 		DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp);
 
-		if (cp < min_cp || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff)) {
+		if (cp < min_cp || cp > 0x10ffffUL || (cp >= 0xd800UL && cp <= 0xdfffUL)) {
 			goto uri_error;
 		}
 
@@ -298,13 +297,13 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 		 */
 
 		/* utf-8 validation ensures these */
-		DUK_ASSERT(cp >= 0x80 && cp <= 0x10ffff);
+		DUK_ASSERT(cp >= 0x80UL && cp <= 0x10ffffUL);
 
-		if (cp >= 0x10000) {
-			cp -= 0x10000;
-			DUK_ASSERT(cp < 0x100000);
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp >> 10) + 0xd800);
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp & 0x03ff) + 0xdc00);
+		if (cp >= 0x10000UL) {
+			cp -= 0x10000UL;
+			DUK_ASSERT(cp < 0x100000UL);
+			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp >> 10) + 0xd800UL);
+			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp & 0x03ffUL) + 0xdc00UL);
 		} else {
 			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, cp);
 		}
@@ -318,19 +317,19 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 }
 
 #ifdef DUK_USE_SECTION_B
-static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
+static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t buf[6];
-	size_t len;
+	duk_small_int_t len;
 
-	if ((cp < 128) && CHECK_BITMASK(escape_unescaped_table, cp)) {
+	if ((cp < 0x80UL) && CHECK_BITMASK(escape_unescaped_table, cp)) {
 		buf[0] = (duk_uint8_t) cp;
 		len = 1;
-	} else if (cp < 256) {
+	} else if (cp < 0x100UL) {
 		buf[0] = (duk_uint8_t) '%';
 		buf[1] = (duk_uint8_t) duk_uc_nybbles[cp >> 4];
 		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
 		len = 3;
-	} else if (cp < 65536) {
+	} else if (cp < 0x10000UL) {
 		buf[0] = (duk_uint8_t) '%';
 		buf[1] = (duk_uint8_t) 'u';
 		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp >> 12];
@@ -354,20 +353,20 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
 }
 
-static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_uint32_t cp) {
-	int t;
+static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+	duk_small_int_t t;
 
-	if (cp == (duk_uint32_t) '%') {
+	if (cp == (duk_codepoint_t) '%') {
 		duk_uint8_t *p = tfm_ctx->p;
-		size_t left = (size_t) (tfm_ctx->p_end - p);  /* bytes left */
+		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		if (left >= 5 && p[0] == 'u' &&
 		    ((t = decode_hex_escape(p + 1, 4)) >= 0)) {
-			cp = (duk_uint32_t) t;
+			cp = (duk_codepoint_t) t;
 			tfm_ctx->p += 5;
 		} else if (left >= 2 &&
 		    ((t = decode_hex_escape(p, 2)) >= 0)) {
-			cp = (duk_uint32_t) t;
+			cp = (duk_codepoint_t) t;
 			tfm_ctx->p += 2;
 		}
 	}

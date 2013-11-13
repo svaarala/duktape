@@ -96,8 +96,8 @@ static duk_uint32_t insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t
 
 	if (skip < 0) {
 		/* two encoding attempts suffices */
-		len = duk_unicode_get_xutf8_length(encode_i32(skip));
-		len = duk_unicode_get_xutf8_length(encode_i32(skip - len));
+		len = duk_unicode_get_xutf8_length((duk_codepoint_t) encode_i32(skip));
+		len = duk_unicode_get_xutf8_length((duk_codepoint_t) encode_i32(skip - len));
 		DUK_ASSERT(duk_unicode_get_xutf8_length(encode_i32(skip - len)) == len);  /* no change */
 		skip -= len;
 	}

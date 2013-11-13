@@ -17,14 +17,14 @@
  */
 
 static duk_uint32_t bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
-	return duk_unicode_xutf8_get_u32_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
+	return (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 }
 
 static duk_int32_t bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
 	duk_uint32_t t;
 
 	/* signed integer encoding needed to work with UTF-8 */
-	t = duk_unicode_xutf8_get_u32_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
+	t = (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 	if (t & 1) {
 		return -(t >> 1);
 	} else {
@@ -103,7 +103,7 @@ static duk_uint8_t *utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_
  * matching.
  */
 static duk_uint32_t inp_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp) {
-	duk_uint32_t res = duk_unicode_xutf8_get_u32_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
+	duk_uint32_t res = (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
 	if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
 		res = duk_unicode_re_canonicalize_char(re_ctx->thr, res);
 	}

@@ -185,7 +185,8 @@ void duk_trim(duk_context *ctx, int index) {
 	p = p_start;
 	while (p < p_end) {
 		p_tmp1 = p;
-		cp = duk_unicode_xutf8_get_u32_checked(thr, &p_tmp1, p_start, p_end);
+		/* FIXME: duk_codepoint_t */
+		cp = (duk_uint32_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp1, p_start, p_end);
 		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
 			break;
 		}
@@ -209,7 +210,8 @@ void duk_trim(duk_context *ctx, int index) {
 		}
 		p_tmp2 = p;
 
-		cp = duk_unicode_xutf8_get_u32_checked(thr, &p_tmp2, p_start, p_end);
+		/* FIXME: duk_codepoint_t */
+		cp = (duk_uint32_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp2, p_start, p_end);
 		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
 			p = p_tmp1;
 			break;

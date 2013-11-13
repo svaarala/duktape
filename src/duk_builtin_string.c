@@ -158,7 +158,8 @@ int duk_builtin_string_prototype_char_code_at(duk_context *ctx) {
 	DUK_DDDPRINT("p_start=%p, p_end=%p, p=%p", (void *) p_start, (void *) p_end, (void *) p);
 
 	/* FIXME: this may throw an error, though not for valid E5 strings - is this OK here? */
-	cp = duk_unicode_xutf8_get_u32_checked(thr, &p, p_start, p_end);
+	/* FIXME: duk_codepoint_t */
+	cp = (duk_uint32_t) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 
 	/* FIXME: push_uint or push_u32 */
 	duk_push_number(ctx, (double) cp);
@@ -306,7 +307,7 @@ int duk_builtin_string_prototype_slice(duk_context *ctx) {
  *  Case conversion
  */
 
-static int caseconv_helper(duk_context *ctx, int uppercase) {
+static int caseconv_helper(duk_context *ctx, duk_small_int_t uppercase) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	duk_push_this_coercible_to_string(ctx);

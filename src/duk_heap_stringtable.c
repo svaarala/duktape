@@ -46,7 +46,7 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
 
 	res->hash = strhash;
 	res->blen = blen;
-	res->clen = duk_unicode_unvalidated_utf8_length(str, blen);
+	res->clen = (duk_uint32_t) duk_unicode_unvalidated_utf8_length(str, (duk_size_t) blen);  /* clen <= blen */
 
 	data = (duk_uint8_t *) (res + 1);
 	DUK_MEMCPY(data, str, blen);
