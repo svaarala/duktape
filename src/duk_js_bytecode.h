@@ -31,12 +31,12 @@
 
 typedef duk_uint32_t duk_instr;
 
-#define  DUK_DEC_OP(x)               ((x) & 0x3f)
-#define  DUK_DEC_A(x)                (((x) >> 6) & 0xff)
-#define  DUK_DEC_B(x)                (((x) >> 14) & 0x1ff)
-#define  DUK_DEC_C(x)                (((x) >> 23) & 0x1ff)
-#define  DUK_DEC_BC(x)               (((x) >> 14) & 0x3ffff)
-#define  DUK_DEC_ABC(x)              (((x) >> 6) & 0x3ffffff)
+#define  DUK_DEC_OP(x)               ((x) & 0x3fUL)
+#define  DUK_DEC_A(x)                (((x) >> 6) & 0xffUL)
+#define  DUK_DEC_B(x)                (((x) >> 14) & 0x1ffUL)
+#define  DUK_DEC_C(x)                (((x) >> 23) & 0x1ffUL)
+#define  DUK_DEC_BC(x)               (((x) >> 14) & 0x3ffffUL)
+#define  DUK_DEC_ABC(x)              (((x) >> 6) & 0x3ffffffUL)
 
 #define  DUK_ENC_OP_ABC(op,abc)      ((duk_instr) (((abc) << 6) | (op)))
 #define  DUK_ENC_OP_A_BC(op,a,bc)    ((duk_instr) (((bc) << 14) | ((a) << 6) | (op)))
@@ -45,17 +45,17 @@ typedef duk_uint32_t duk_instr;
 #define  DUK_ENC_OP_A(op,a)          DUK_ENC_OP_A_B_C(op,a,0,0)
 
 #define  DUK_BC_OP_MIN               0
-#define  DUK_BC_OP_MAX               0x3f
+#define  DUK_BC_OP_MAX               0x3fUL
 #define  DUK_BC_A_MIN                0
-#define  DUK_BC_A_MAX                0xff
+#define  DUK_BC_A_MAX                0xffUL
 #define  DUK_BC_B_MIN                0
-#define  DUK_BC_B_MAX                0x1ff
+#define  DUK_BC_B_MAX                0x1ffUL
 #define  DUK_BC_C_MIN                0
-#define  DUK_BC_C_MAX                0x1ff
+#define  DUK_BC_C_MAX                0x1ffUL
 #define  DUK_BC_BC_MIN               0
-#define  DUK_BC_BC_MAX               0x3ffff
+#define  DUK_BC_BC_MAX               0x3ffffUL
 #define  DUK_BC_ABC_MIN              0
-#define  DUK_BC_ABC_MAX              0x3ffffff
+#define  DUK_BC_ABC_MAX              0x3ffffffUL
 #define  DUK_BC_EXTRAOP_MIN          DUK_BC_A_MIN
 #define  DUK_BC_EXTRAOP_MAX          DUK_BC_A_MAX
 
