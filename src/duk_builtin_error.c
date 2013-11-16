@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
+int duk_builtin_error_shared_constructor(duk_context *ctx) {
 	/* Behavior for constructor and non-constructor call is
 	 * the same except for augmenting the created error.  When
 	 * called as a constructor, the caller (duk_new()) will handle
@@ -13,6 +13,7 @@ static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 	 */
 
 	duk_hthread *thr = (duk_hthread *) ctx;
+	int bidx_prototype = duk_get_magic(ctx);
 
 	/* same for both error and each subclass like TypeError */
 	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -40,36 +41,6 @@ static int duk_error_constructor_helper(duk_context *ctx, int bidx_prototype) {
 #endif
 
 	return 1;
-}
-
-/* FIXME: could share same native function with a 'magic' argument */
-
-int duk_builtin_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_eval_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_EVAL_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_range_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_RANGE_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_reference_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_REFERENCE_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_syntax_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_SYNTAX_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_type_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_TYPE_ERROR_PROTOTYPE);
-}
-
-int duk_builtin_uri_error_constructor(duk_context *ctx) {
-	return duk_error_constructor_helper(ctx, DUK_BIDX_URI_ERROR_PROTOTYPE);
 }
 
 int duk_builtin_error_prototype_to_string(duk_context *ctx) {
