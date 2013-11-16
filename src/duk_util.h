@@ -50,6 +50,7 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 
 duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
 duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx);
+duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value);
 
 void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t bits);
 void duk_be_finish(duk_bitencoder_ctx *ctx);

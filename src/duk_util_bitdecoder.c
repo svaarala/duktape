@@ -4,6 +4,7 @@
 
 #include "duk_internal.h"
 
+/* FIXME: change to duk_int32_t, since bits is limited to 24? */
 duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	duk_small_int_t shift;
 	duk_uint32_t mask;
@@ -49,5 +50,17 @@ duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 
 duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
 	return (duk_small_int_t) duk_bd_decode(ctx, 1);
+}
+
+/* Decode a one-bit flag, and if set, decode a value of 'bits', otherwise return
+ * default value.  Return value is signed so that negative marker value can be
+ * used by caller as a "not present" value.
+ */
+duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value) {
+	if (duk_bd_decode_flag(ctx)) {
+		return (duk_int32_t) duk_bd_decode(ctx, bits);
+	} else {
+		return def_value;
+	}
 }
 
