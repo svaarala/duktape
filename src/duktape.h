@@ -214,6 +214,7 @@ void duk_fatal(duk_context *ctx, int err_code);
 
 int duk_is_strict_call(duk_context *ctx);
 int duk_is_constructor_call(duk_context *ctx);
+unsigned int duk_get_magic(duk_context *ctx);
 
 /*
  *  Stack management

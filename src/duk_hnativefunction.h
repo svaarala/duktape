@@ -14,18 +14,15 @@ struct duk_hnativefunction {
 
 	duk_c_function func;
 	duk_int16_t nargs;
+	duk_int16_t magic;
 
-	/* XXX: there is a nice 16-bit space here.  What to put here?
+	/* The 'magic' field allows an opaque 16-bit field to be accessed by the
+	 * Duktape/C function.  This allows, for instance, the same native function
+	 * to be used for a set of very similar functions, with the 'magic' field
+	 * providing the necessary non-argument flags / values to guide the behavior
+	 * of the native function.
 	 *
-	 * One alternative: put a 16-bit 'magic' (or 'salt') here, and allow
-	 * C code to get the 'magic' value of their wrapping duk_hnativefunction.
-	 * This would allow the same C functions to be used internally, while
-	 * flags and small parameter fields could be given through the 'magic'
-	 * value.  For instance, there are a bunch of setter/getter functions
-	 * in the Date built-in which only differ in a few flags.
-	 */
-
-	/* Note: cannot place nargs/magic into the heaphdr flags, because
+	 * Note: cannot place nargs/magic into the heaphdr flags, because
 	 * duk_hobject takes almost all flags already (and needs the spare).
 	 */
 };
