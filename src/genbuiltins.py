@@ -111,6 +111,7 @@ STRING_CHAR_BITS = 7
 LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
+MAGIC_BITS = 8  # 16 bits but only 8 used by built-ins
 
 NARGS_VARARGS_MARKER = 0x07
 NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_UNUSED 
@@ -740,9 +741,10 @@ bi_error_constructor = {
 	'name': 'Error',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -805,9 +807,10 @@ bi_eval_error_constructor = {
 	'name': 'EvalError',
 
 	'length': 1,
-	'native': 'duk_builtin_eval_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_eval_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -832,9 +835,10 @@ bi_range_error_constructor = {
 	'name': 'RangeError',
 
 	'length': 1,
-	'native': 'duk_builtin_range_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_range_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -859,9 +863,10 @@ bi_reference_error_constructor = {
 	'name': 'ReferenceError',
 
 	'length': 1,
-	'native': 'duk_builtin_reference_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_reference_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -886,9 +891,10 @@ bi_syntax_error_constructor = {
 	'name': 'SyntaxError',
 
 	'length': 1,
-	'native': 'duk_builtin_syntax_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_syntax_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -913,9 +919,10 @@ bi_type_error_constructor = {
 	'name': 'TypeError',
 
 	'length': 1,
-	'native': 'duk_builtin_type_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_type_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -940,9 +947,10 @@ bi_uri_error_constructor = {
 	'name': 'URIError',
 
 	'length': 1,
-	'native': 'duk_builtin_uri_error_constructor',
+	'native': 'duk_builtin_error_shared_constructor',
 	'callable': True,
 	'constructable': True,
+	'magic': { 'type': 'bidx', 'value': 'bi_uri_error_prototype' },
 
 	'values': [],
 	'functions': [],
@@ -1334,6 +1342,20 @@ class GenBuiltins:
 
 		return res
 
+	def resolveMagic(self, elem):
+		if elem is None:
+			return 0
+		assert(elem.has_key('type'))
+		if elem['type'] == 'bidx':
+			v = elem['value']
+			for i, bi in enumerate(self.builtins):
+				if bi['id'] == v:
+					#print(v, '->', i)
+					return i
+			raise Exception('invalid builtin index for magic: ' % repr(v))
+		else:
+			raise Exception('invalid magic type: %s' % repr(elem['type']))
+
 	def generatePropertiesDataForBuiltin(self, be, bi):
 		self.count_builtins += 1
 
@@ -1489,6 +1511,17 @@ class GenBuiltins:
 			else:
 				be.bits(0, 1)  # flag: default nargs OK
 
+			# FIXME: make this check conditional to minimize bit count
+			# (there are quite a lot of function properties)
+			magic = self.resolveMagic(funspec.get('magic'))
+			if magic != 0:
+				assert(magic >= 0)
+				assert(magic < (1 << MAGIC_BITS))
+				be.bits(1, 1)
+				be.bits(magic, MAGIC_BITS)
+			else:
+				be.bits(0, 1)
+
 	def generateCreationDataForBuiltin(self, be, bi):
 		class_num = classToNumber(bi['class'])
 		be.bits(class_num, CLASS_BITS)
@@ -1536,11 +1569,10 @@ class GenBuiltins:
 			else:
 				be.bits(0, 1)  # flag: default nargs OK
 
-		# All Function-classed global level objects are callable
-		# (have [[Call]]) but not all are constructable (have
-		# [[Construct]]).  Flag that.
+			# All Function-classed global level objects are callable
+			# (have [[Call]]) but not all are constructable (have
+			# [[Construct]]).  Flag that.
 
-		if bi['class'] == 'Function':
 			assert(bi.has_key('callable'))
 			assert(bi['callable'] == True)
 
@@ -1548,6 +1580,15 @@ class GenBuiltins:
 				be.bits(1, 1)	# flag: constructable
 			else:
 				be.bits(0, 1)	# flag: not constructable
+
+			magic = self.resolveMagic(bi.get('magic'))
+			if magic != 0:
+				assert(magic >= 0)
+				assert(magic < (1 << MAGIC_BITS))
+				be.bits(1, 1)
+				be.bits(magic, MAGIC_BITS)
+			else:
+				be.bits(0, 1)
 
 	def processBuiltins(self):
 		# finalize built-in data

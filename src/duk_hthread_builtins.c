@@ -31,6 +31,7 @@ typedef union {
 #define  LENGTH_PROP_BITS            3
 #define  NARGS_BITS                  3
 #define  PROP_TYPE_BITS              3
+#define  MAGIC_BITS                  8  /* magic field is 16 bits but 8 bits suffice */
 
 #define  NARGS_VARARGS_MARKER        0x07
 #define  NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */
@@ -82,16 +83,14 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		int len = -1;
 
 		class_num = duk_bd_decode(bd, CLASS_BITS);
-
-		if (duk_bd_decode_flag(bd)) {
-			len = duk_bd_decode(bd, LENGTH_PROP_BITS);
-		}
+		len = duk_bd_decode_flagged(bd, LENGTH_PROP_BITS, (duk_int32_t) -1 /*def_value*/);
 
 		if (class_num == DUK_HOBJECT_CLASS_FUNCTION) {
 			int natidx;
 			int stridx;
 			int c_nargs;
 			duk_c_function c_func;
+			duk_uint16_t magic;
 
 			DUK_DDDPRINT("len=%d", len);
 			DUK_ASSERT(len >= 0);
@@ -100,14 +99,12 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			stridx = duk_bd_decode(bd, STRIDX_BITS);
 			c_func = duk_builtin_native_functions[natidx];
 
-			c_nargs = len;
-			if (duk_bd_decode_flag(bd)) {
-				c_nargs = duk_bd_decode(bd, NARGS_BITS);
-				if (c_nargs == NARGS_VARARGS_MARKER) {
-					c_nargs = DUK_VARARGS;
-				}
+			c_nargs = duk_bd_decode_flagged(bd, NARGS_BITS, len /*def_value*/);
+			if (c_nargs == NARGS_VARARGS_MARKER) {
+				c_nargs = DUK_VARARGS;
 			}
 
+			/* FIXME: set magic directly here? (it could share the c_nargs arg) */
 			duk_push_c_function(ctx, c_func, c_nargs);
 
 			h = duk_require_hobject(ctx, -1);
@@ -131,6 +128,9 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			if (duk_bd_decode_flag(bd)) {
 				DUK_HOBJECT_SET_CONSTRUCTABLE(h);
 			}
+
+			magic = (duk_uint16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0 /*def_value*/);
+			((duk_hnativefunction *) h)->magic = magic;
 		} else {
 			/* FIXME: ARRAY_PART for Array prototype? */
 
@@ -346,6 +346,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_push_c_function(ctx, c_func_getter, 0);  /* always 0 args */
 				duk_push_c_function(ctx, c_func_setter, 1);  /* always 1 arg */
 
+				/* FIXME: magic for getter/setter? */
+
 				prop_flags |= DUK_PROPDESC_FLAG_ACCESSOR;  /* accessor flag not encoded explicitly */
 				duk_hobject_define_accessor_internal(thr,
 				                                     duk_require_hobject(ctx, i),
@@ -377,6 +379,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			int natidx;
 			int c_nargs;
 			int c_length;
+			duk_uint16_t magic;
 			duk_c_function c_func;
 			duk_hnativefunction *h_func;
 
@@ -384,12 +387,9 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			natidx = duk_bd_decode(bd, NATIDX_BITS);
 
 			c_length = duk_bd_decode(bd, LENGTH_PROP_BITS);
-			c_nargs = c_length;
-			if (duk_bd_decode_flag(bd)) {
-				c_nargs = duk_bd_decode(bd, NARGS_BITS);
-				if (c_nargs == NARGS_VARARGS_MARKER) {
-					c_nargs = DUK_VARARGS;
-				}
+			c_nargs = duk_bd_decode_flagged(bd, NARGS_BITS, (duk_int32_t) c_length /*def_value*/);
+			if (c_nargs == NARGS_VARARGS_MARKER) {
+				c_nargs = DUK_VARARGS;
 			}
 
 			c_func = duk_builtin_native_functions[natidx];
@@ -410,6 +410,12 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * not automatically coerced.
 			 */
 			DUK_HOBJECT_SET_STRICT((duk_hobject *) h_func);
+
+			/* FIXME: any way to avoid decoding magic bit; there are quite
+			 * many function properties and relatively few with magic values.
+			 */
+			magic = (duk_uint16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0);
+			h_func->magic = magic;
 
 			/* [ (builtin objects) func ] */
 
