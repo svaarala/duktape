@@ -99,21 +99,13 @@ int duk_builtin_duk_object_enc(duk_context *ctx);
 int duk_builtin_duk_object_dec(duk_context *ctx);
 int duk_builtin_duk_object_sleep(duk_context *ctx);
 
-int duk_builtin_error_constructor(duk_context *ctx);
+int duk_builtin_error_shared_constructor(duk_context *ctx);
 int duk_builtin_error_prototype_to_string(duk_context *ctx);
 int duk_builtin_error_prototype_stack_getter(duk_context *ctx);
 int duk_builtin_error_prototype_filename_getter(duk_context *ctx);
 int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx);
 int duk_builtin_error_prototype_stack_getter(duk_context *ctx);
 int duk_builtin_error_prototype_nop_setter(duk_context *ctx);
-int duk_builtin_eval_error_constructor(duk_context *ctx);
-int duk_builtin_range_error_constructor(duk_context *ctx);
-int duk_builtin_reference_error_constructor(duk_context *ctx);
-int duk_builtin_regexp_constructor(duk_context *ctx);
-int duk_builtin_string_constructor(duk_context *ctx);
-int duk_builtin_syntax_error_constructor(duk_context *ctx);
-int duk_builtin_type_error_constructor(duk_context *ctx);
-int duk_builtin_uri_error_constructor(duk_context *ctx);
 
 int duk_builtin_function_constructor(duk_context *ctx);
 int duk_builtin_function_prototype(duk_context *ctx);
