@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-int duk_builtin_error_shared_constructor(duk_context *ctx) {
+int duk_builtin_error_constructor_shared(duk_context *ctx) {
 	/* Behavior for constructor and non-constructor call is
 	 * the same except for augmenting the created error.  When
 	 * called as a constructor, the caller (duk_new()) will handle

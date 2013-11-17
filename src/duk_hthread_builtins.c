@@ -31,7 +31,7 @@ typedef union {
 #define  LENGTH_PROP_BITS            3
 #define  NARGS_BITS                  3
 #define  PROP_TYPE_BITS              3
-#define  MAGIC_BITS                  8  /* magic field is 16 bits but 8 bits suffice */
+#define  MAGIC_BITS                  16
 
 #define  NARGS_VARARGS_MARKER        0x07
 #define  NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */

@@ -111,7 +111,7 @@ STRING_CHAR_BITS = 7
 LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
-MAGIC_BITS = 8  # 16 bits but only 8 used by built-ins
+MAGIC_BITS = 16
 
 NARGS_VARARGS_MARKER = 0x07
 NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_UNUSED 
@@ -132,6 +132,27 @@ PROPDESC_FLAG_WRITABLE =     (1 << 0)
 PROPDESC_FLAG_ENUMERABLE =   (1 << 1)
 PROPDESC_FLAG_CONFIGURABLE = (1 << 2)
 PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
+
+# magic values for Date built-in, must match duk_builtin_date.c
+BI_DATE_FLAG_NAN_TO_ZERO =        (1 << 0)
+BI_DATE_FLAG_NAN_TO_RANGE_ERROR = (1 << 1)
+BI_DATE_FLAG_ONEBASED =           (1 << 2)
+BI_DATE_FLAG_LOCALTIME =          (1 << 3)
+BI_DATE_FLAG_SUB1900 =            (1 << 4)
+BI_DATE_FLAG_TOSTRING_DATE =      (1 << 5)
+BI_DATE_FLAG_TOSTRING_TIME =      (1 << 6)
+BI_DATE_FLAG_TOSTRING_LOCALE =    (1 << 7)
+BI_DATE_FLAG_TIMESETTER =         (1 << 8)
+BI_DATE_FLAG_YEAR_FIXUP =         (1 << 9)
+BI_DATE_FLAG_SET_T =              (1 << 10)
+BI_DATE_IDX_YEAR =           0
+BI_DATE_IDX_MONTH =          1
+BI_DATE_IDX_DAY =            2
+BI_DATE_IDX_HOUR =           3
+BI_DATE_IDX_MINUTE =         4
+BI_DATE_IDX_SECOND =         5
+BI_DATE_IDX_MILLISECOND =    6
+BI_DATE_IDX_WEEKDAY =        7
 
 # numeric indices must match duk_hobject.h class numbers
 _classnames = [
@@ -580,6 +601,10 @@ bi_date_prototype = {
 	# behavior so they share the same C function, but have different
 	# function instances.
 
+	# Getters, setters, and string conversion functions use shared native
+	# helpers and the function 'magic' value is used to pass flags and
+	# parameters to the helpers.
+
 	'values': [
 		# Internal date value (E5 Section 15.9.5).
 		#
@@ -620,20 +645,20 @@ bi_date_prototype = {
 		{ 'name': 'getUTCMilliseconds',		'native': 'duk_builtin_date_prototype_get_utc_milliseconds',	'length': 0 },
 		{ 'name': 'getTimezoneOffset',		'native': 'duk_builtin_date_prototype_get_timezone_offset',	'length': 0 },
 		{ 'name': 'setTime',			'native': 'duk_builtin_date_prototype_set_time',		'length': 1 },
-		{ 'name': 'setMilliseconds',		'native': 'duk_builtin_date_prototype_set_milliseconds',	'length': 1 },
-		{ 'name': 'setUTCMilliseconds',		'native': 'duk_builtin_date_prototype_set_utc_milliseconds',	'length': 1 },
-		{ 'name': 'setSeconds',			'native': 'duk_builtin_date_prototype_set_seconds',		'length': 2,	'varargs': True },
-		{ 'name': 'setUTCSeconds',		'native': 'duk_builtin_date_prototype_set_utc_seconds',		'length': 2,	'varargs': True },
-		{ 'name': 'setMinutes',			'native': 'duk_builtin_date_prototype_set_minutes',		'length': 3,	'varargs': True },
-		{ 'name': 'setUTCMinutes',		'native': 'duk_builtin_date_prototype_set_utc_minutes',		'length': 3,	'varargs': True },
-		{ 'name': 'setHours',			'native': 'duk_builtin_date_prototype_set_hours',		'length': 4,	'varargs': True },
-		{ 'name': 'setUTCHours',		'native': 'duk_builtin_date_prototype_set_utc_hours',		'length': 4,	'varargs': True },
-		{ 'name': 'setDate',			'native': 'duk_builtin_date_prototype_set_date',		'length': 1 },
-		{ 'name': 'setUTCDate',			'native': 'duk_builtin_date_prototype_set_utc_date',		'length': 1 },
-		{ 'name': 'setMonth',			'native': 'duk_builtin_date_prototype_set_month',		'length': 2,	'varargs': True },
-		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_utc_month',		'length': 2,	'varargs': True },
-		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_full_year',		'length': 3,	'varargs': True },
-		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_utc_full_year',	'length': 3,	'varargs': True },
+		{ 'name': 'setMilliseconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
+		{ 'name': 'setUTCMilliseconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (1 << 12) } },
+		{ 'name': 'setSeconds',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
+		{ 'name': 'setUTCSeconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (2 << 12) } },
+		{ 'name': 'setMinutes',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
+		{ 'name': 'setUTCMinutes',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (3 << 12) } },
+		{ 'name': 'setHours',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (4 << 12) } },
+		{ 'name': 'setUTCHours',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (4 << 12) } },
+		{ 'name': 'setDate',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
+		{ 'name': 'setUTCDate',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 0 + (1 << 12) } },
+		{ 'name': 'setMonth',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
+		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << 12) } },
+		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
+		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << 12) } },
 		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_to_utc_string',		'length': 0 },
 		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_to_iso_string',		'length': 0 },
 		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
@@ -644,7 +669,7 @@ bi_date_prototype = {
 		# The lengths below agree with V8.
 
 		{ 'name': 'getYear',			'native': 'duk_builtin_date_prototype_get_year',		'length': 0,	'section_b': True },
-		{ 'name': 'setYear',			'native': 'duk_builtin_date_prototype_set_year',		'length': 1,	'section_b': True },
+		{ 'name': 'setYear',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_YEAR_FIXUP + (3 << 12) } },
 
 		# Note: toGMTString() is required to initially be the same Function object as the initial
 		# Date.prototype.toUTCString.  In other words: Date.prototype.toGMTString === Date.prototype.toUTCString --> true.
@@ -741,7 +766,7 @@ bi_error_constructor = {
 	'name': 'Error',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_error_prototype' },
@@ -807,7 +832,7 @@ bi_eval_error_constructor = {
 	'name': 'EvalError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_eval_error_prototype' },
@@ -835,7 +860,7 @@ bi_range_error_constructor = {
 	'name': 'RangeError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_range_error_prototype' },
@@ -863,7 +888,7 @@ bi_reference_error_constructor = {
 	'name': 'ReferenceError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_reference_error_prototype' },
@@ -891,7 +916,7 @@ bi_syntax_error_constructor = {
 	'name': 'SyntaxError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_syntax_error_prototype' },
@@ -919,7 +944,7 @@ bi_type_error_constructor = {
 	'name': 'TypeError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_type_error_prototype' },
@@ -947,7 +972,7 @@ bi_uri_error_constructor = {
 	'name': 'URIError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_shared_constructor',
+	'native': 'duk_builtin_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_uri_error_prototype' },
@@ -1353,6 +1378,12 @@ class GenBuiltins:
 					#print(v, '->', i)
 					return i
 			raise Exception('invalid builtin index for magic: ' % repr(v))
+		elif elem['type'] == 'plain':
+			v = elem['value']
+			if not (v >= 0 and v < (1 << MAGIC_BITS)):
+				raise Exception('invalid plain value for magic: %s' % repr(v))
+			#print('MAGIC', v)
+			return v
 		else:
 			raise Exception('invalid magic type: %s' % repr(elem['type']))
 
