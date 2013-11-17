@@ -60,6 +60,8 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
  * IDX_MILLISECOND matches argument ordering of Ecmascript API calls
  * (like Date constructor call).  A few functions in this file depend
  * on the specific ordering, so change with care.
+ *
+ * (Must be in-sync with genbuiltins.py.)
  */
 #define  IDX_YEAR           0  /* year */
 #define  IDX_MONTH          1  /* month: 0 to 11 */
@@ -78,6 +80,8 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
  *
  * The unused top bits of the flags field are also used to pass values
  * to helpers (get_part_helper() and set_part_helper()).
+ *
+ * (Must be in-sync with genbuiltins.py.)
  */
 #define  FLAG_NAN_TO_ZERO          (1 << 0)  /* timeval breakdown: internal time value NaN -> zero */
 #define  FLAG_NAN_TO_RANGE_ERROR   (1 << 1)  /* timeval breakdown: internal time value NaN -> RangeError (toISOString) */
@@ -1381,55 +1385,42 @@ int duk_builtin_date_constructor_now(duk_context *ctx) {
 }
 
 /*
- *  Conversions
+ *  String/JSON conversions
  *
  *  Human readable conversions are now basically ISO 8601 with a space
  *  (instead of 'T') as the date/time separator.  This is a good baseline
  *  and is platform independent.
+ *
+ *  A shared native helper to provide many conversions.  Magic value contains
+ *  a set of flags.  The helper provides:
+ *
+ *    toString()
+ *    toDateString()
+ *    toTimeString()
+ *    toLocaleString()
+ *    toLocaleDateString()
+ *    toLocaleTimeString()
+ *    toUTCString()
+ *    toISOString()
  *
  *  Notes:
  *
  *    - Date.prototype.toGMTString() and Date.prototype.toUTCString() are
  *      required to be the same Ecmascript function object (!), so it is
  *      omitted from here.
+ *
+ *    - Date.prototype.toUTCString(): E5.1 specification does not require a
+ *      specific format, but result should be human readable.  The
+ *      specification suggests using ISO 8601 format with a space (instead
+ *      of 'T') separator if a more human readable format is not available.
+ *
+ *    - Date.prototype.toISOString(): unlike other conversion functions,
+ *      toISOString() requires a RangeError for invalid date values.
  */
 
-#define  TOSTRING(ctx,flags)  \
-	to_string_helper((ctx),(flags))
-
-int duk_builtin_date_prototype_to_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
-	                     FLAG_TOSTRING_TIME |
-	                     FLAG_LOCALTIME);
-}
-
-int duk_builtin_date_prototype_to_date_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
-	                     FLAG_LOCALTIME);
-}
-
-int duk_builtin_date_prototype_to_time_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_TIME |
-	                     FLAG_LOCALTIME);
-}
-
-int duk_builtin_date_prototype_to_locale_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
-	                     FLAG_TOSTRING_TIME |
-	                     FLAG_TOSTRING_LOCALE |
-	                     FLAG_LOCALTIME);
-}
-
-int duk_builtin_date_prototype_to_locale_date_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
-	                     FLAG_TOSTRING_LOCALE |
-	                     FLAG_LOCALTIME);
-}
-
-int duk_builtin_date_prototype_to_locale_time_string(duk_context *ctx) {
-	return TOSTRING(ctx, FLAG_TOSTRING_TIME |
-	                     FLAG_TOSTRING_LOCALE |
-	                     FLAG_LOCALTIME);
+int duk_builtin_date_prototype_to_string_shared(duk_context *ctx) {
+	int flags = (int) duk_get_magic(ctx);
+	return to_string_helper(ctx, flags);
 }
 
 int duk_builtin_date_prototype_value_of(duk_context *ctx) {
@@ -1441,26 +1432,6 @@ int duk_builtin_date_prototype_value_of(duk_context *ctx) {
 	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
 	duk_push_number(ctx, d);
 	return 1;
-}
-
-int duk_builtin_date_prototype_to_utc_string(duk_context *ctx) {
-	/* E5.1 specification does not require a specific format, but
-	 * result should be human readable.  The specification suggests
-	 * using ISO 8601 format with a space (instead of 'T') separator
-	 * if a more human readable format is not available.
-	 */
-	return TOSTRING(ctx, FLAG_TOSTRING_DATE |
-	                     FLAG_TOSTRING_TIME);
-}
-
-int duk_builtin_date_prototype_to_iso_string(duk_context *ctx) {
-	/* Unlike other conversion functions, toISOString() requires a
-	 * RangeError for invalid date values.
-	 */
-	return TOSTRING(ctx, FLAG_NAN_TO_RANGE_ERROR |
-	                     FLAG_TOSTRING_DATE |
-	                     FLAG_TOSTRING_TIME |
-	                     FLAG_SEP_T);
 }
 
 int duk_builtin_date_prototype_to_json(duk_context *ctx) {
@@ -1487,46 +1458,6 @@ int duk_builtin_date_prototype_to_json(duk_context *ctx) {
 	duk_call_method(ctx, 0);
 	return 1;
 }
-
-/*
- *  Getters not related to component access.
- */
-
-int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
-	/*
-	 *  Return (t - LocalTime(t)) in minutes:
-	 *
-	 *    t - LocalTime(t) = t - (t + LocalTZA + DaylightSavingTA(t))
-	 *                     = -(LocalTZA + DaylightSavingTA(t))
-	 *
-	 *  where DaylightSavingTA() is checked for time 't'.
-	 *
-	 *  Note that the sign of the result is opposite to common usage,
-	 *  e.g. for EE(S)T which normally is +2h or +3h from UTC, this
-	 *  function returns -120 or -180.
-	 *
-	 */
-
-	double d;
-	int tzoffset;
-
-	/* Note: DST adjustment is determined using UTC time. */
-	d = push_this_and_get_timeval(ctx, 0 /*flags*/);
-	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
-	if (DUK_ISNAN(d)) {
-		duk_push_nan(ctx);
-	} else {
-		DUK_ASSERT(DUK_ISFINITE(d));
-		tzoffset = GET_LOCAL_TZOFFSET(d);
-		duk_push_int(ctx, -tzoffset / 60);
-	}
-	return 1;
-}
-
-/* Date.prototype.getTime() and Date.prototype.valueOf() have identical
- * behavior.  They have separate function objects, but share the same C
- * function (duk_builtin_date_prototype_value_of).
- */
 
 /*
  *  Getters.
@@ -1563,11 +1494,46 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
  *    - Date.prototype.getDate(): 'date' means day-of-month, and is
  *      zero-based in internal calculations but public API expects it to
  *      be one-based.
+ *
+ *    - Date.prototype.getTime() and Date.prototype.valueOf() have identical
+ *      behavior.  They have separate function objects, but share the same C
+ *      function (duk_builtin_date_prototype_value_of).
  */
 
 int duk_builtin_date_prototype_get_shared(duk_context *ctx) {
 	int flags_and_idx = (int) duk_get_magic(ctx);
 	return get_part_helper(ctx, flags_and_idx);
+}
+
+int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
+	/*
+	 *  Return (t - LocalTime(t)) in minutes:
+	 *
+	 *    t - LocalTime(t) = t - (t + LocalTZA + DaylightSavingTA(t))
+	 *                     = -(LocalTZA + DaylightSavingTA(t))
+	 *
+	 *  where DaylightSavingTA() is checked for time 't'.
+	 *
+	 *  Note that the sign of the result is opposite to common usage,
+	 *  e.g. for EE(S)T which normally is +2h or +3h from UTC, this
+	 *  function returns -120 or -180.
+	 *
+	 */
+
+	double d;
+	int tzoffset;
+
+	/* Note: DST adjustment is determined using UTC time. */
+	d = push_this_and_get_timeval(ctx, 0 /*flags*/);
+	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
+	if (DUK_ISNAN(d)) {
+		duk_push_nan(ctx);
+	} else {
+		DUK_ASSERT(DUK_ISFINITE(d));
+		tzoffset = GET_LOCAL_TZOFFSET(d);
+		duk_push_int(ctx, -tzoffset / 60);
+	}
+	return 1;
 }
 
 /*
@@ -1619,6 +1585,11 @@ int duk_builtin_date_prototype_get_shared(duk_context *ctx) {
  *      the year will be set regardless of actual argument count.
  */
 
+int duk_builtin_date_prototype_set_shared(duk_context *ctx) {
+	int flags_and_maxnargs = (int) duk_get_magic(ctx);
+	return set_part_helper(ctx, flags_and_maxnargs);
+}
+
 int duk_builtin_date_prototype_set_time(duk_context *ctx) {
 	double d;
 
@@ -1630,10 +1601,4 @@ int duk_builtin_date_prototype_set_time(duk_context *ctx) {
 
 	return 1;
 }
-
-int duk_builtin_date_prototype_set_shared(duk_context *ctx) {
-	int flags_and_maxnargs = (int) duk_get_magic(ctx);
-	return set_part_helper(ctx, flags_and_maxnargs);
-}
-
 

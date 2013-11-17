@@ -144,7 +144,7 @@ BI_DATE_FLAG_TOSTRING_TIME =      (1 << 6)
 BI_DATE_FLAG_TOSTRING_LOCALE =    (1 << 7)
 BI_DATE_FLAG_TIMESETTER =         (1 << 8)
 BI_DATE_FLAG_YEAR_FIXUP =         (1 << 9)
-BI_DATE_FLAG_SET_T =              (1 << 10)
+BI_DATE_FLAG_SEP_T =              (1 << 10)
 BI_DATE_IDX_YEAR =           0
 BI_DATE_IDX_MONTH =          1
 BI_DATE_IDX_DAY =            2
@@ -619,12 +619,15 @@ bi_date_prototype = {
 		{ 'name': internal('value'),            'value': DBL_NAN,	'attributes': 'w' }
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_date_prototype_to_string',		'length': 0 },
-		{ 'name': 'toDateString',		'native': 'duk_builtin_date_prototype_to_date_string',		'length': 0 },
-		{ 'name': 'toTimeString',		'native': 'duk_builtin_date_prototype_to_time_string',		'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_date_prototype_to_locale_string',	'length': 0 },
-		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_to_locale_date_string',	'length': 0 },
-		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_to_locale_time_string',	'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toDateString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toTimeString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME } },
+		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_NAN_TO_RANGE_ERROR + BI_DATE_FLAG_SEP_T } },
+		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
 		{ 'name': 'valueOf',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },
 		{ 'name': 'getTime',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
 		{ 'name': 'getFullYear',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_YEAR << 12) } },
@@ -659,9 +662,6 @@ bi_date_prototype = {
 		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << 12) } },
 		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
 		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << 12) } },
-		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_to_utc_string',		'length': 0 },
-		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_to_iso_string',		'length': 0 },
-		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
 
 		# Non-standard extensions: E5 Section B.2.4, B.2.5, B.2.6
 		#
