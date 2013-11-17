@@ -49,32 +49,13 @@ int duk_builtin_date_prototype_to_locale_date_string(duk_context *ctx);
 int duk_builtin_date_prototype_to_locale_time_string(duk_context *ctx);
 int duk_builtin_date_prototype_value_of(duk_context *ctx);
 int duk_builtin_date_prototype_get_time(duk_context *ctx);
-int duk_builtin_date_prototype_get_full_year(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_full_year(duk_context *ctx);
-int duk_builtin_date_prototype_get_month(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_month(duk_context *ctx);
-int duk_builtin_date_prototype_get_date(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_date(duk_context *ctx);
-int duk_builtin_date_prototype_get_day(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_day(duk_context *ctx);
-int duk_builtin_date_prototype_get_hours(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_hours(duk_context *ctx);
-int duk_builtin_date_prototype_get_minutes(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_minutes(duk_context *ctx);
-int duk_builtin_date_prototype_get_seconds(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_seconds(duk_context *ctx);
-int duk_builtin_date_prototype_get_milliseconds(duk_context *ctx);
-int duk_builtin_date_prototype_get_utc_milliseconds(duk_context *ctx);
 int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx);
+int duk_builtin_date_prototype_get_shared(duk_context *ctx);
 int duk_builtin_date_prototype_set_time(duk_context *ctx);
 int duk_builtin_date_prototype_set_shared(duk_context *ctx);
 int duk_builtin_date_prototype_to_utc_string(duk_context *ctx);
 int duk_builtin_date_prototype_to_iso_string(duk_context *ctx);
 int duk_builtin_date_prototype_to_json(duk_context *ctx);
-#if 1	/* FIXME: Section B */
-int duk_builtin_date_prototype_get_year(duk_context *ctx);
-int duk_builtin_date_prototype_set_year(duk_context *ctx);
-#endif
 
 int duk_builtin_duk_object_addr(duk_context *ctx);
 int duk_builtin_duk_object_refc(duk_context *ctx);

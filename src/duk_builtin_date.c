@@ -1535,87 +1535,40 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
  *  NaN, or represents milliseconds (without fractions) from Jan 1, 1970.
  *  The internal time value can be converted to integer parts, and each
  *  part will be normalized and will fit into a 32-bit signed integer.
+ *
+ *  A shared native helper to provide all getters.  Magic value contains
+ *  a set of flags and also packs the date component index argument.  The
+ *  helper provides:
+ *
+ *    getFullYear()
+ *    getUTCFullYear()
+ *    getMonth()
+ *    getUTCMonth()
+ *    getDate()
+ *    getUTCDate()
+ *    getDay()
+ *    getUTCDay()
+ *    getHours()
+ *    getUTCHours()
+ *    getMinutes()
+ *    getUTCMinutes()
+ *    getSeconds()
+ *    getUTCSeconds()
+ *    getMilliseconds()
+ *    getUTCMilliseconds()
+ *    getYear()
+ *
+ *  Notes:
+ *
+ *    - Date.prototype.getDate(): 'date' means day-of-month, and is
+ *      zero-based in internal calculations but public API expects it to
+ *      be one-based.
  */
 
-/* part index is encoded into flags field to reduce argument count */
-#define  GET_PART(ctx,flags,partidx)  \
-	get_part_helper((ctx), (flags) | ((partidx) << 12))
-
-int duk_builtin_date_prototype_get_full_year(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_YEAR);
+int duk_builtin_date_prototype_get_shared(duk_context *ctx) {
+	int flags_and_idx = (int) duk_get_magic(ctx);
+	return get_part_helper(ctx, flags_and_idx);
 }
-
-int duk_builtin_date_prototype_get_utc_full_year(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_YEAR);
-}
-
-int duk_builtin_date_prototype_get_month(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_MONTH);
-}
-
-int duk_builtin_date_prototype_get_utc_month(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_MONTH);
-}
-
-int duk_builtin_date_prototype_get_date(duk_context *ctx) {
-	/* Note: 'date' means day-of-month, and is zero-based in internal
-	 * calculations but public API expects it to be one-based.
-	 */
-	return GET_PART(ctx, FLAG_ONEBASED | FLAG_LOCALTIME, IDX_DAY);
-}
-
-int duk_builtin_date_prototype_get_utc_date(duk_context *ctx) {
-	/* Note: 'date' means day-of-month.  Result should be one-based. */
-	return GET_PART(ctx, FLAG_ONEBASED, IDX_DAY);
-}
-
-int duk_builtin_date_prototype_get_day(duk_context *ctx) {
-	/* Note: 'day' means day-of-week */
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_WEEKDAY);
-}
-
-int duk_builtin_date_prototype_get_utc_day(duk_context *ctx) {
-	/* Note: 'day' means day-of-week */
-	return GET_PART(ctx, 0, IDX_WEEKDAY);
-}
-
-int duk_builtin_date_prototype_get_hours(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_HOUR);
-}
-
-int duk_builtin_date_prototype_get_utc_hours(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_HOUR);
-}
-
-int duk_builtin_date_prototype_get_minutes(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_MINUTE);
-}
-
-int duk_builtin_date_prototype_get_utc_minutes(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_MINUTE);
-}
-
-int duk_builtin_date_prototype_get_seconds(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_SECOND);
-}
-
-int duk_builtin_date_prototype_get_utc_seconds(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_SECOND);
-}
-
-int duk_builtin_date_prototype_get_milliseconds(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME, IDX_MILLISECOND);
-}
-
-int duk_builtin_date_prototype_get_utc_milliseconds(duk_context *ctx) {
-	return GET_PART(ctx, 0, IDX_MILLISECOND);
-}
-
-#ifdef DUK_USE_SECTION_B
-int duk_builtin_date_prototype_get_year(duk_context *ctx) {
-	return GET_PART(ctx, FLAG_LOCALTIME | FLAG_SUB1900, IDX_YEAR);
-}
-#endif  /* DUK_USE_SECTION_B */
 
 /*
  *  Setters.
