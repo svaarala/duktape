@@ -26,8 +26,7 @@ int duk_builtin_array_prototype_some(duk_context *ctx);
 int duk_builtin_array_prototype_for_each(duk_context *ctx);
 int duk_builtin_array_prototype_map(duk_context *ctx);
 int duk_builtin_array_prototype_filter(duk_context *ctx);
-int duk_builtin_array_prototype_reduce(duk_context *ctx);
-int duk_builtin_array_prototype_reduce_right(duk_context *ctx);
+int duk_builtin_array_prototype_reduce_shared(duk_context *ctx);
 
 int duk_builtin_boolean_constructor(duk_context *ctx);
 int duk_builtin_boolean_prototype_to_string(duk_context *ctx);

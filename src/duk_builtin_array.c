@@ -1178,12 +1178,12 @@ int duk_builtin_array_prototype_filter(duk_context *ctx) {
  *  reduce(), reduceRight()
  */
 
-static int reduce_helper(duk_context *ctx, int idx_step) {
+int duk_builtin_array_prototype_reduce_shared(duk_context *ctx) {
 	int nargs;
 	int have_acc;
 	int i, len;
-
-	/* idx_step is +1 for reduce, -1 for reduceRight */
+	int idx_step = duk_get_magic(ctx) - 1;  /* 0 -> -1, 2 -> +1 */
+	                                        /* idx_step is +1 for reduce, -1 for reduceRight */
 
 	/* We're a varargs function because we need to detect whether
 	 * initialValue was given or not.
@@ -1255,13 +1255,5 @@ static int reduce_helper(duk_context *ctx, int idx_step) {
 
  type_error:
 	return DUK_RET_TYPE_ERROR;
-}
-
-int duk_builtin_array_prototype_reduce(duk_context *ctx) {
-	return reduce_helper(ctx, 1 /*idx_step*/);
-}
-
-int duk_builtin_array_prototype_reduce_right(duk_context *ctx) {
-	return reduce_helper(ctx, -1 /*idx_step*/);
 }
 
