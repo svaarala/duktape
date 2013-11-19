@@ -161,6 +161,24 @@ BI_ARRAY_ITER_FOREACH =  2
 BI_ARRAY_ITER_MAP =      3
 BI_ARRAY_ITER_FILTER =   4
 
+# magic values for Math built-in
+BI_MATH_FABS_IDX =   0
+BI_MATH_ACOS_IDX =   1
+BI_MATH_ASIN_IDX =   2
+BI_MATH_ATAN_IDX =   3
+BI_MATH_CEIL_IDX =   4
+BI_MATH_COS_IDX =    5
+BI_MATH_EXP_IDX =    6
+BI_MATH_FLOOR_IDX =  7
+BI_MATH_LOG_IDX =    8
+BI_MATH_ROUND_IDX =  9
+BI_MATH_SIN_IDX =    10
+BI_MATH_SQRT_IDX =   11
+BI_MATH_TAN_IDX =    12
+
+BI_MATH_ATAN2_IDX =  0
+BI_MATH_POW_IDX =    1
+
 # numeric indices must match duk_hobject.h class numbers
 _classnames = [
 	'Unused',
@@ -1017,24 +1035,24 @@ bi_math = {
 		{ 'name': 'SQRT2',			'value': DBL_SQRT2,		'attributes': '' },
 	],
 	'functions': [
-		{ 'name': 'abs',			'native': 'duk_builtin_math_object_abs',		'length': 1 },
-		{ 'name': 'acos',			'native': 'duk_builtin_math_object_acos',		'length': 1 },
-		{ 'name': 'asin',			'native': 'duk_builtin_math_object_asin',		'length': 1 },
-		{ 'name': 'atan',			'native': 'duk_builtin_math_object_atan',		'length': 1 },
-		{ 'name': 'atan2',			'native': 'duk_builtin_math_object_atan2',		'length': 2 },
-		{ 'name': 'ceil',			'native': 'duk_builtin_math_object_ceil',		'length': 1 },
-		{ 'name': 'cos',			'native': 'duk_builtin_math_object_cos',		'length': 1 },
-		{ 'name': 'exp',			'native': 'duk_builtin_math_object_exp',		'length': 1 },
-		{ 'name': 'floor',			'native': 'duk_builtin_math_object_floor',		'length': 1 },
-		{ 'name': 'log',			'native': 'duk_builtin_math_object_log',		'length': 1 },
+		{ 'name': 'abs',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FABS_IDX } },
+		{ 'name': 'acos',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ACOS_IDX } },
+		{ 'name': 'asin',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ASIN_IDX } },
+		{ 'name': 'atan',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN_IDX } },
+		{ 'name': 'atan2',			'native': 'duk_builtin_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN2_IDX } },
+		{ 'name': 'ceil',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_CEIL_IDX } },
+		{ 'name': 'cos',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_COS_IDX } },
+		{ 'name': 'exp',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_EXP_IDX } },
+		{ 'name': 'floor',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FLOOR_IDX } },
+		{ 'name': 'log',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_LOG_IDX } },
 		{ 'name': 'max',			'native': 'duk_builtin_math_object_max',		'length': 2,	'varargs': True },
 		{ 'name': 'min',			'native': 'duk_builtin_math_object_min',		'length': 2,	'varargs': True },
-		{ 'name': 'pow',			'native': 'duk_builtin_math_object_pow',		'length': 2 },
+		{ 'name': 'pow',			'native': 'duk_builtin_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_POW_IDX } },
 		{ 'name': 'random',			'native': 'duk_builtin_math_object_random',		'length': 0 },
-		{ 'name': 'round',			'native': 'duk_builtin_math_object_round',		'length': 1 },
-		{ 'name': 'sin',			'native': 'duk_builtin_math_object_sin',		'length': 1 },
-		{ 'name': 'sqrt',			'native': 'duk_builtin_math_object_sqrt',		'length': 1 },
-		{ 'name': 'tan',			'native': 'duk_builtin_math_object_tan',		'length': 1 },
+		{ 'name': 'round',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ROUND_IDX } },
+		{ 'name': 'sin',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SIN_IDX } },
+		{ 'name': 'sqrt',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SQRT_IDX } },
+		{ 'name': 'tan',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_TAN_IDX } },
 	],
 }
 

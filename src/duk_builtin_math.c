@@ -13,16 +13,6 @@
 typedef double (*one_arg_func)(double);
 typedef double (*two_arg_func)(double, double);
 
-static int math_one_arg(duk_context *ctx, one_arg_func fun) {
-	duk_push_number(ctx, fun(duk_to_number(ctx, 0)));
-	return 1;
-}
-
-static int math_two_arg(duk_context *ctx, two_arg_func fun) {
-	duk_push_number(ctx, fun(duk_to_number(ctx, 0), duk_to_number(ctx, 1)));
-	return 1;
-}
-
 static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
 	int n = duk_get_top(ctx);
 	int i;
@@ -156,44 +146,47 @@ static double pow_fixed(double x, double y) {
 	return DUK_DOUBLE_NAN;
 }
 
-int duk_builtin_math_object_abs(duk_context *ctx) {
-	return math_one_arg(ctx, fabs);
+/* order must match constants in genbuiltins.py */
+static one_arg_func one_arg_funcs[] = {
+	fabs,
+	acos,
+	asin,
+	atan,
+	ceil,
+	cos,
+	exp,
+	floor,
+	log,
+	round_fixed,
+	sin,
+	sqrt,
+	tan
+};
+
+/* order must match constants in genbuiltins.py */
+static two_arg_func two_arg_funcs[] = {
+	atan2,
+	pow_fixed
+};
+
+int duk_builtin_math_object_onearg_shared(duk_context *ctx) {
+	int fun_idx = duk_get_magic(ctx);
+	one_arg_func fun;
+
+	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(one_arg_funcs) / sizeof(one_arg_func));
+	fun = one_arg_funcs[fun_idx];
+	duk_push_number(ctx, fun(duk_to_number(ctx, 0)));
+	return 1;
 }
 
-int duk_builtin_math_object_acos(duk_context *ctx) {
-	return math_one_arg(ctx, acos);
-}
+int duk_builtin_math_object_twoarg_shared(duk_context *ctx) {
+	int fun_idx = duk_get_magic(ctx);
+	two_arg_func fun;
 
-int duk_builtin_math_object_asin(duk_context *ctx) {
-	return math_one_arg(ctx, asin);
-}
-
-int duk_builtin_math_object_atan(duk_context *ctx) {
-	return math_one_arg(ctx, atan);
-}
-
-int duk_builtin_math_object_atan2(duk_context *ctx) {
-	return math_two_arg(ctx, atan2);
-}
-
-int duk_builtin_math_object_ceil(duk_context *ctx) {
-	return math_one_arg(ctx, ceil);
-}
-
-int duk_builtin_math_object_cos(duk_context *ctx) {
-	return math_one_arg(ctx, cos);
-}
-
-int duk_builtin_math_object_exp(duk_context *ctx) {
-	return math_one_arg(ctx, exp);
-}
-
-int duk_builtin_math_object_floor(duk_context *ctx) {
-	return math_one_arg(ctx, floor);
-}
-
-int duk_builtin_math_object_log(duk_context *ctx) {
-	return math_one_arg(ctx, log);
+	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(two_arg_funcs) / sizeof(two_arg_func));
+	fun = two_arg_funcs[fun_idx];
+	duk_push_number(ctx, fun(duk_to_number(ctx, 0), duk_to_number(ctx, 1)));
+	return 1;
 }
 
 int duk_builtin_math_object_max(duk_context *ctx) {
@@ -204,28 +197,7 @@ int duk_builtin_math_object_min(duk_context *ctx) {
 	return math_minmax(ctx, DUK_DOUBLE_INFINITY, fmin_fixed);
 }
 
-int duk_builtin_math_object_pow(duk_context *ctx) {
-	return math_two_arg(ctx, pow_fixed);
-}
-
 int duk_builtin_math_object_random(duk_context *ctx) {
 	duk_push_number(ctx, (double) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
 	return 1;
 }
-
-int duk_builtin_math_object_round(duk_context *ctx) {
-	return math_one_arg(ctx, round_fixed);
-}
-
-int duk_builtin_math_object_sin(duk_context *ctx) {
-	return math_one_arg(ctx, sin);
-}
-
-int duk_builtin_math_object_sqrt(duk_context *ctx) {
-	return math_one_arg(ctx, sqrt);
-}
-
-int duk_builtin_math_object_tan(duk_context *ctx) {
-	return math_one_arg(ctx, tan);
-}
-

@@ -96,24 +96,11 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
 int duk_builtin_json_object_parse(duk_context *ctx);
 int duk_builtin_json_object_stringify(duk_context *ctx);
 
-int duk_builtin_math_object_abs(duk_context *ctx);
-int duk_builtin_math_object_acos(duk_context *ctx);
-int duk_builtin_math_object_asin(duk_context *ctx);
-int duk_builtin_math_object_atan(duk_context *ctx);
-int duk_builtin_math_object_atan2(duk_context *ctx);
-int duk_builtin_math_object_ceil(duk_context *ctx);
-int duk_builtin_math_object_cos(duk_context *ctx);
-int duk_builtin_math_object_exp(duk_context *ctx);
-int duk_builtin_math_object_floor(duk_context *ctx);
-int duk_builtin_math_object_log(duk_context *ctx);
+int duk_builtin_math_object_onearg_shared(duk_context *ctx);
+int duk_builtin_math_object_twoarg_shared(duk_context *ctx);
 int duk_builtin_math_object_max(duk_context *ctx);
 int duk_builtin_math_object_min(duk_context *ctx);
-int duk_builtin_math_object_pow(duk_context *ctx);
 int duk_builtin_math_object_random(duk_context *ctx);
-int duk_builtin_math_object_round(duk_context *ctx);
-int duk_builtin_math_object_sin(duk_context *ctx);
-int duk_builtin_math_object_sqrt(duk_context *ctx);
-int duk_builtin_math_object_tan(duk_context *ctx);
 
 int duk_builtin_number_constructor(duk_context *ctx);
 int duk_builtin_number_prototype_to_string(duk_context *ctx);
