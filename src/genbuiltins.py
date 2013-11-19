@@ -523,8 +523,8 @@ bi_boolean_prototype = {
 		{ 'name': internal('value'),            'value': False,		'attributes': '' },
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_boolean_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_boolean_prototype_value_of',		'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_builtin_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = coerce_tostring
+		{ 'name': 'valueOf',			'native': 'duk_builtin_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = coerce_tostring
 	],
 }
 
@@ -626,14 +626,14 @@ bi_date_prototype = {
 		{ 'name': internal('value'),            'value': DBL_NAN,	'attributes': 'w' }
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toDateString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toTimeString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_to_string_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME } },
-		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_to_string_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_NAN_TO_RANGE_ERROR + BI_DATE_FLAG_SEP_T } },
+		{ 'name': 'toString',			'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toDateString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toTimeString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME } },
+		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_NAN_TO_RANGE_ERROR + BI_DATE_FLAG_SEP_T } },
 		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
 		{ 'name': 'valueOf',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },
 		{ 'name': 'getTime',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
@@ -1155,8 +1155,8 @@ bi_buffer_prototype = {
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_buffer_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_buffer_prototype_value_of',		'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_builtin_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
+		{ 'name': 'valueOf',			'native': 'duk_builtin_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
 	],
 }
 
@@ -1185,8 +1185,8 @@ bi_pointer_prototype = {
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_pointer_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_pointer_prototype_value_of',		'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_builtin_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
+		{ 'name': 'valueOf',			'native': 'duk_builtin_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
 	],
 }
 

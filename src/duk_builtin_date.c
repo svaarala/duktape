@@ -1418,7 +1418,7 @@ int duk_builtin_date_constructor_now(duk_context *ctx) {
  *      toISOString() requires a RangeError for invalid date values.
  */
 
-int duk_builtin_date_prototype_to_string_shared(duk_context *ctx) {
+int duk_builtin_date_prototype_tostring_shared(duk_context *ctx) {
 	int flags = (int) duk_get_magic(ctx);
 	return to_string_helper(ctx, flags);
 }

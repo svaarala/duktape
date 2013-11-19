@@ -4,12 +4,13 @@
 
 #include "duk_internal.h"
 
-/* Helper to check 'this', get the primitive value to stack top, and
- * optionally coerce with ToString().
+/* Shared helper to provide toString() and valueOf().  Checks 'this', gets
+ * the primitive value to stack top, and optionally coerces with ToString().
  */
-static int tostring_valueof_helper(duk_context *ctx, int coerce_tostring) {
+int duk_builtin_boolean_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	duk_hobject *h;
+	int coerce_tostring = duk_get_magic(ctx);
 
 	/* FIXME: there is room to use a shared helper here, many built-ins
 	 * check the 'this' type, and if it's an object, check its class,
@@ -61,13 +62,5 @@ int duk_builtin_boolean_constructor(duk_context *ctx) {
 	}  /* unbalanced stack */
 
 	return 1;
-}
-
-int duk_builtin_boolean_prototype_to_string(duk_context *ctx) {
-	return tostring_valueof_helper(ctx, 1 /*coerce_tostring*/);
-}
-
-int duk_builtin_boolean_prototype_value_of(duk_context *ctx) {
-	return tostring_valueof_helper(ctx, 0 /*coerce_tostring*/);
 }
 
