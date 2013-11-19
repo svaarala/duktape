@@ -405,9 +405,9 @@ bi_array_prototype = {
 	'values': [],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_array_prototype_to_string',		'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_array_prototype_to_locale_string',	'length': 0 },
+		{ 'name': 'toLocaleString',		'native': 'duk_builtin_array_prototype_join_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: to_locale_string, here 1
 		{ 'name': 'concat',			'native': 'duk_builtin_array_prototype_concat',			'length': 1,	'varargs': True },
-		{ 'name': 'join',			'native': 'duk_builtin_array_prototype_join',			'length': 1 },
+		{ 'name': 'join',			'native': 'duk_builtin_array_prototype_join_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },   # magic: to_locale_string, here 0
 		{ 'name': 'pop',			'native': 'duk_builtin_array_prototype_pop',			'length': 0 },
 		{ 'name': 'push',			'native': 'duk_builtin_array_prototype_push',			'length': 1,	'varargs': True },
 		{ 'name': 'reverse',			'native': 'duk_builtin_array_prototype_reverse',		'length': 0 },

@@ -8,9 +8,8 @@
 int duk_builtin_array_constructor(duk_context *ctx);
 int duk_builtin_array_constructor_is_array(duk_context *ctx);
 int duk_builtin_array_prototype_to_string(duk_context *ctx);
-int duk_builtin_array_prototype_to_locale_string(duk_context *ctx);
 int duk_builtin_array_prototype_concat(duk_context *ctx);
-int duk_builtin_array_prototype_join(duk_context *ctx);
+int duk_builtin_array_prototype_join_shared(duk_context *ctx);
 int duk_builtin_array_prototype_pop(duk_context *ctx);
 int duk_builtin_array_prototype_push(duk_context *ctx);
 int duk_builtin_array_prototype_reverse(duk_context *ctx);

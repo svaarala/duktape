@@ -184,11 +184,16 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
  * them here.
  */
 
-static int array_join_helper(duk_context *ctx, int to_locale_string) {
+int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t i;
+	int to_locale_string = duk_get_magic(ctx);
 
-	DUK_ASSERT_TOP(ctx, 1);
+	/* For join(), nargs is 1.  For toLocaleString(), nargs is 0 and
+	 * setting the top essentially pushes an undefined to the stack,
+	 * thus defaulting to a comma separator.
+	 */
+	duk_set_top(ctx, 1);
 	if (duk_is_undefined(ctx, 0)) {
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);
@@ -229,17 +234,6 @@ static int array_join_helper(duk_context *ctx, int to_locale_string) {
 
 	duk_join(ctx, len);
 	return 1;
-}
-
-int duk_builtin_array_prototype_join(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 1);  /* nargs is 1 */
-	return array_join_helper(ctx, 0 /*to_locale_string*/);
-}
-
-int duk_builtin_array_prototype_to_locale_string(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 0);  /* nargs is 0 */
-	duk_push_undefined(ctx);  /* array_join_helper() will default to a comma */
-	return array_join_helper(ctx, 1 /*to_locale_string*/);
 }
 
 /*
