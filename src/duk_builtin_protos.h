@@ -19,8 +19,7 @@ int duk_builtin_array_prototype_slice(duk_context *ctx);
 int duk_builtin_array_prototype_sort(duk_context *ctx);
 int duk_builtin_array_prototype_splice(duk_context *ctx);
 int duk_builtin_array_prototype_unshift(duk_context *ctx);
-int duk_builtin_array_prototype_index_of(duk_context *ctx);
-int duk_builtin_array_prototype_last_index_of(duk_context *ctx);
+int duk_builtin_array_prototype_indexof_shared(duk_context *ctx);
 int duk_builtin_array_prototype_iter_shared(duk_context *ctx);
 int duk_builtin_array_prototype_reduce_shared(duk_context *ctx);
 

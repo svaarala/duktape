@@ -416,8 +416,8 @@ bi_array_prototype = {
 		{ 'name': 'sort',			'native': 'duk_builtin_array_prototype_sort',			'length': 1 },
 		{ 'name': 'splice',			'native': 'duk_builtin_array_prototype_splice',			'length': 2,	'varargs': True },
 		{ 'name': 'unshift',			'native': 'duk_builtin_array_prototype_unshift',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_index_of',		'length': 1,	'varargs': True },
-		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_last_index_of',		'length': 1,	'varargs': True },
+		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },  # magic = 2 -> idx_step = 2 - 1 = +1
+		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> idx_step = 0 - 1 = -1
 		{ 'name': 'every',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
 		{ 'name': 'some',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
 		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },

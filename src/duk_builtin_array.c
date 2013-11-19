@@ -931,12 +931,13 @@ int duk_builtin_array_prototype_unshift(duk_context *ctx) {
  *  indexOf(), lastIndexOf()
  */
 
-/* idx_step == 1 is indexOf, idx_step == -1 is lastIndexOf */
-static int array_indexof_helper(duk_context *ctx, int idx_step) {
+int duk_builtin_array_prototype_indexof_shared(duk_context *ctx) {
 	/* FIXME: types, ensure loop below works when fixed (i must be able to go negative right now) */
 	int nargs;
 	int i, len;
 	int fromIndex;
+	int idx_step = duk_get_magic(ctx) - 1;  /* 0 -> -1, 2 -> +1 */
+	                                        /* idx_step is +1 for indexOf, -1 for lastIndexOf */
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
 	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
@@ -1017,14 +1018,6 @@ static int array_indexof_helper(duk_context *ctx, int idx_step) {
  not_found:
 	duk_push_int(ctx, -1);
 	return 1;
-}
-
-int duk_builtin_array_prototype_index_of(duk_context *ctx) {
-	return array_indexof_helper(ctx, 1 /*idx_step*/);
-}
-
-int duk_builtin_array_prototype_last_index_of(duk_context *ctx) {
-	return array_indexof_helper(ctx, -1 /*idx_step*/);
 }
 
 /*
