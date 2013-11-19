@@ -21,11 +21,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx);
 int duk_builtin_array_prototype_unshift(duk_context *ctx);
 int duk_builtin_array_prototype_index_of(duk_context *ctx);
 int duk_builtin_array_prototype_last_index_of(duk_context *ctx);
-int duk_builtin_array_prototype_every(duk_context *ctx);
-int duk_builtin_array_prototype_some(duk_context *ctx);
-int duk_builtin_array_prototype_for_each(duk_context *ctx);
-int duk_builtin_array_prototype_map(duk_context *ctx);
-int duk_builtin_array_prototype_filter(duk_context *ctx);
+int duk_builtin_array_prototype_iter_shared(duk_context *ctx);
 int duk_builtin_array_prototype_reduce_shared(duk_context *ctx);
 
 int duk_builtin_boolean_constructor(duk_context *ctx);

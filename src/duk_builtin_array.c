@@ -1042,11 +1042,12 @@ int duk_builtin_array_prototype_last_index_of(duk_context *ctx) {
  * 5 callers the net result is about 100 bytes / caller.
  */
 
-static int iter_helper(duk_context *ctx, int iter_type) {
+int duk_builtin_array_prototype_iter_shared(duk_context *ctx) {
 	int len;
 	int i;
 	int k;
 	int bval;
+	int iter_type = duk_get_magic(ctx);
 
 	/* each call this helper serves has nargs==2 */
 	DUK_ASSERT_TOP(ctx, 2);
@@ -1152,26 +1153,6 @@ static int iter_helper(duk_context *ctx, int iter_type) {
 
  type_error:
 	return DUK_RET_TYPE_ERROR;
-}
-
-int duk_builtin_array_prototype_every(duk_context *ctx) {
-	return iter_helper(ctx, ITER_EVERY);
-}
-
-int duk_builtin_array_prototype_some(duk_context *ctx) {
-	return iter_helper(ctx, ITER_SOME);
-}
-
-int duk_builtin_array_prototype_for_each(duk_context *ctx) {
-	return iter_helper(ctx, ITER_FOREACH);
-}
-
-int duk_builtin_array_prototype_map(duk_context *ctx) {
-	return iter_helper(ctx, ITER_MAP);
-}
-
-int duk_builtin_array_prototype_filter(duk_context *ctx) {
-	return iter_helper(ctx, ITER_FILTER);
 }
 
 /*

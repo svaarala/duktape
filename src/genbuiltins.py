@@ -154,6 +154,13 @@ BI_DATE_IDX_SECOND =         5
 BI_DATE_IDX_MILLISECOND =    6
 BI_DATE_IDX_WEEKDAY =        7
 
+# magic values for Array built-in
+BI_ARRAY_ITER_EVERY =    0
+BI_ARRAY_ITER_SOME =     1
+BI_ARRAY_ITER_FOREACH =  2
+BI_ARRAY_ITER_MAP =      3
+BI_ARRAY_ITER_FILTER =   4
+
 # numeric indices must match duk_hobject.h class numbers
 _classnames = [
 	'Unused',
@@ -411,11 +418,11 @@ bi_array_prototype = {
 		{ 'name': 'unshift',			'native': 'duk_builtin_array_prototype_unshift',		'length': 1,	'varargs': True },
 		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_index_of',		'length': 1,	'varargs': True },
 		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_last_index_of',		'length': 1,	'varargs': True },
-		{ 'name': 'every',			'native': 'duk_builtin_array_prototype_every',			'length': 1,	'nargs': 2 },
-		{ 'name': 'some',			'native': 'duk_builtin_array_prototype_some',			'length': 1,	'nargs': 2 },
-		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_for_each',		'length': 1,	'nargs': 2 },
-		{ 'name': 'map',			'native': 'duk_builtin_array_prototype_map',			'length': 1,	'nargs': 2 },
-		{ 'name': 'filter',			'native': 'duk_builtin_array_prototype_filter',			'length': 1,	'nargs': 2 },
+		{ 'name': 'every',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
+		{ 'name': 'some',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
+		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },
+		{ 'name': 'map',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_MAP } },
+		{ 'name': 'filter',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FILTER } },
 		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },  # magic = 2 -> idx_step = 2 - 1 = +1
 		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> idx_step = 0 - 1 = -1
 	],
