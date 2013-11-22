@@ -27,7 +27,7 @@ static size_t add_spare(size_t size) {
 }
 
 void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_size, size_t new_usable_size) {
-	size_t alloc_size;
+	size_t new_alloc_size;
 	void **ptr;
 	void *res;
 
@@ -43,30 +43,32 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 	 */
 
 	/* FIXME: maybe remove safety NUL term for buffers? */
-	alloc_size = new_usable_size + 1;  /* +1 for safety nul term */
+	new_alloc_size = new_usable_size + 1;  /* +1 for safety nul term */
 	ptr = &buf->curr_alloc;
-	res = DUK_REALLOC_INDIRECT(thr->heap, ptr, alloc_size);
+	res = DUK_REALLOC_INDIRECT(thr->heap, ptr, new_alloc_size);
 	if (res) {
 		DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
 		             buf->curr_alloc, buf->size, buf->usable_size,
 		             res, new_size, new_usable_size);
 
 		/*
-		 *  All data in [new_size,new_alloc_size[ should be zeroed.
-		 *
-		 *  The current memset could be optimized by taking advantage of
-		 *  the knowledge that the old "spare" area is already zeroed
-		 *  (an invariant which is maintained at all times).  So, this
-		 *  could be optimized to two smaller memsets, one to handle a
-		 *  size change, and another to handle an alloc size change.
-		 *  However, this would probably not be useful in practice, as
-		 *  the spare is usually very small.
+		 *  The entire allocated buffer area, regardless of actual used size,
+		 *  is kept zeroed in resizes for simplicity.  If the buffer is grown,
+		 *  zero the new part (the safety NUL byte is re-zeroed every time).
+		 *  Another policy would be to ensure data is zeroed as the used part
+		 *  is extended (with one safety NUL byte) this is much more simple,
+		 *  and not a big deal because the spart part is relatively small.
 		 */
 
-		DUK_ASSERT(new_usable_size + 1 > new_size);
-		DUK_MEMSET((void *) ((char *) res + new_size),
-		           0,
-		           new_usable_size + 1 - new_size);
+		if (new_alloc_size > buf->usable_size) {
+			/* When new_usable_size == old_usable_size, one byte will
+			 * be rezeroed (the safety NUL byte).
+			 */
+			DUK_ASSERT(new_alloc_size - buf->usable_size > 0);
+			DUK_MEMSET((void *) ((char *) res + buf->usable_size),
+			           0,
+			           new_alloc_size - buf->usable_size);
+		}
 
 		buf->size = new_size;
 		buf->usable_size = new_usable_size;
