@@ -17,13 +17,11 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 		alloc_size = sizeof(duk_hbuffer_fixed) + size + 1;  /* +1 for a safety nul term */
 	}
 
-	res = (duk_hbuffer *) DUK_ALLOC(heap, alloc_size);
+	/* zero everything */
+	res = (duk_hbuffer *) DUK_ALLOC_ZEROED(heap, alloc_size);
 	if (!res) {
 		goto error;
 	}
-
-	/* zero everything */
-	DUK_MEMSET(res, 0, alloc_size);
 
 	if (dynamic) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
@@ -31,11 +29,10 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 		if (size > 0) {
 			/* FIXME: maybe remove safety NUL term for buffers? */
 			DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer");
-			ptr = DUK_ALLOC(heap, size + 1);  /* +1 for a safety nul term */
+			ptr = DUK_ALLOC_ZEROED(heap, size + 1);  /* +1 for a safety nul term */
 			if (!ptr) {
 				goto error;
 			}
-			DUK_MEMSET(ptr, 0, size + 1);
 
 			h->curr_alloc = ptr;
 			h->usable_size = size;  /* snug */
