@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-08-06 13:56:14.881020 Z
 references: []
 
@@ -23,4 +23,12 @@ log_events:
 - - 2013-10-24 00:43:53.215222 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-11-22 21:49:38.520780 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Valgrind whine remaining in test-resize-buffer.c.
+- - 2013-11-22 21:49:42.263678 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""

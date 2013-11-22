@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check RegExp built-in for opportunities for shared native helpers
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-19 23:55:54.409085 Z
+references: []
+
+id: f7181827f7edb7f0cd9027ef9f2503c7ab52288e
+log_events: 
+- - 2013-11-19 23:55:54.621164 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

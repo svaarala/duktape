@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check global object built-in for opportunities for shared native helpers
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-19 23:54:15.979138 Z
+references: []
+
+id: 50ce8adff662c561384adb07eb8053802a950799
+log_events: 
+- - 2013-11-19 23:54:16.166545 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
