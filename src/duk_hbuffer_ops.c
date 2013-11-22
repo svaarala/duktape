@@ -28,7 +28,6 @@ static size_t add_spare(size_t size) {
 
 void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_size, size_t new_usable_size) {
 	size_t new_alloc_size;
-	void **ptr;
 	void *res;
 
 	DUK_ASSERT(thr != NULL);
@@ -44,8 +43,7 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 
 	/* FIXME: maybe remove safety NUL term for buffers? */
 	new_alloc_size = new_usable_size + 1;  /* +1 for safety nul term */
-	ptr = &buf->curr_alloc;
-	res = DUK_REALLOC_INDIRECT(thr->heap, ptr, new_alloc_size);
+	res = DUK_REALLOC_INDIRECT(thr->heap, duk_hbuffer_get_dynalloc_ptr, (void *) buf, new_alloc_size);
 	if (res) {
 		DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
 		             buf->curr_alloc, buf->size, buf->usable_size,
@@ -72,7 +70,7 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 
 		buf->size = new_size;
 		buf->usable_size = new_usable_size;
-		*ptr = res;
+		buf->curr_alloc = res;
 	} else {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to resize dynamic buffer from %d:%d to %d:%d",
 		          buf->size, buf->usable_size, new_size, new_usable_size);

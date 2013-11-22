@@ -240,6 +240,8 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top);
 
 duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
+void *duk_hthread_get_valstack_ptr(void *ud);  /* indirect allocs */
+void *duk_hthread_get_callstack_ptr(void *ud);  /* indirect allocs */
+void *duk_hthread_get_catchstack_ptr(void *ud);  /* indirect allocs */
 
 #endif  /* DUK_HTHREAD_H_INCLUDED */
-

@@ -101,6 +101,7 @@ struct duk_hbuffer_dynamic {
  */
 
 duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic);
+void *duk_hbuffer_get_dynalloc_ptr(void *ud);  /* indirect allocs */
 
 /* dynamic buffer ops */
 void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_size, size_t new_usable_size);

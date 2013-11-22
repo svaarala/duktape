@@ -61,3 +61,10 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	return NULL;
 }
 
+/* For indirect allocs. */
+
+void *duk_hbuffer_get_dynalloc_ptr(void *ud) {
+	duk_hbuffer_dynamic *buf = (duk_hbuffer_dynamic *) ud;
+	return (void *) buf->curr_alloc;
+}
+

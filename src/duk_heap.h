@@ -170,19 +170,21 @@
  *      by an allocation failure might invalidate the original 'ptr', thus
  *      causing a realloc retry to use an invalid pointer.  Example: we're
  *      reallocating the value stack and a finalizer resizes the same value
- *      stack during mark-and-sweep.  The indirect variant knows the storage
- *      location of the pointer being reallocated and looks it up on every
- *      attempt; the storage location must of course be stable, which is
- *      always the case for heap objects now.
- *
- *      Note: the pointer in the storage location ('iptr') is read but is
- *      NOT updated; caller must do that.
+ *      stack during mark-and-sweep.  The indirect variant requests for the
+ *      current location of the pointer being reallocated using a callback
+ *      right before every realloc attempt; this circuitous approach is used
+ *      to avoid strict aliasing issues in a more straightforward indirect
+ *      pointer (void **) approach.  Note: the pointer in the storage
+ *      location is read but is NOT updated; the caller must do that.
  */
+
+/* callback for indirect reallocs, request for current pointer */
+typedef void *(*duk_mem_getptr)(void *ud);
 
 #define  DUK_ALLOC(heap,size)                            duk_heap_mem_alloc((heap), (size))
 #define  DUK_ALLOC_ZEROED(heap,size)                     duk_heap_mem_alloc_zeroed((heap), (size))
 #define  DUK_REALLOC(heap,ptr,newsize)                   duk_heap_mem_realloc((heap), (ptr), (newsize))
-#define  DUK_REALLOC_INDIRECT(heap,iptr,newsize)         duk_heap_mem_realloc_indirect((heap), (iptr), (newsize))
+#define  DUK_REALLOC_INDIRECT(heap,cb,ud,newsize)        duk_heap_mem_realloc_indirect((heap), (cb), (ud), (newsize))
 #define  DUK_FREE(heap,ptr)                              duk_heap_mem_free((heap), (ptr))
 
 /*
@@ -195,13 +197,13 @@
 #define  DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
 #define  DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
 #define  DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
-#define  DUK_REALLOC_INDIRECT_CHECKED(thr,iptr,newsize)  duk_heap_mem_realloc_indirect_checked((thr), (iptr), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
+#define  DUK_REALLOC_INDIRECT_CHECKED(thr,cb,ud,newsize) duk_heap_mem_realloc_indirect_checked((thr), (cb), (ud), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
 #define  DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))  /* must not fail */
 #else
 #define  DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))
 #define  DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size))
 #define  DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize))
-#define  DUK_REALLOC_INDIRECT_CHECKED(thr,iptr,newsize)  duk_heap_mem_realloc_indirect_checked((thr), (iptr), (newsize))
+#define  DUK_REALLOC_INDIRECT_CHECKED(thr,cb,ud,newsize) duk_heap_mem_realloc_indirect_checked((thr), (cb), (ud), (newsize))
 #define  DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))  /* must not fail */
 #endif
 
@@ -370,19 +372,19 @@ void duk_default_free_function(void *udata, void *ptr);
 void *duk_heap_mem_alloc(duk_heap *heap, size_t size);
 void *duk_heap_mem_alloc_zeroed(duk_heap *heap, size_t size);
 void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize);
-void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize);
+void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, size_t newsize);
 void duk_heap_mem_free(duk_heap *heap, void *ptr);
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 void *duk_heap_mem_alloc_checked(duk_hthread *thr, size_t size, const char *filename, int line);
 void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, size_t size, const char *filename, int line);
 void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize, const char *filename, int line);
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, void **iptr, size_t newsize, const char *filename, int line);
+void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, size_t newsize, const char *filename, int line);
 #else
 void *duk_heap_mem_alloc_checked(duk_hthread *thr, size_t size);
 void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, size_t size);
 void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize);
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, void **iptr, size_t newsize);
+void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, size_t newsize);
 #endif
 
 #ifdef DUK_USE_REFERENCE_COUNTING

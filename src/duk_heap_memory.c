@@ -239,21 +239,18 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 
 /*
- *  Reallocate memory with garbage collection, using an indirect pointer
- *
- *  This variant is used when a mark-and-sweep (finalizers) might change
- *  the original pointer.  The indirect 'iptr' must have a stable location.
+ *  Reallocate memory with garbage collection, using a callback to provide
+ *  the current allocated pointer.  This variant is used when a mark-and-sweep
+ *  (e.g. finalizers) might change the original pointer.
  */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize) {
+void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, size_t newsize) {
 	void *res;
 	int rc;
 	int i;
 
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(iptr != NULL);
-	/* *iptr may be NULL */
 	DUK_ASSERT(newsize >= 0);
 
 	/*
@@ -275,7 +272,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize)
 		goto skip_attempt;
 	}
 #endif
-	res = heap->realloc_func(heap->alloc_udata, *iptr, newsize);
+	res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 	if (res || newsize == 0) {
 		/* for zero size allocations NULL is allowed */
 		return res;
@@ -306,10 +303,11 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize)
 
 #ifdef DUK_USE_ASSERTIONS
 		void *ptr_pre;  /* ptr before mark-and-sweep */
+		void *ptr_post;
 #endif
 
 #ifdef DUK_USE_ASSERTIONS
-		ptr_pre = *iptr;
+		ptr_pre = cb(ud);
 #endif
 		flags = 0;
 		if (i >= DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_EMERGENCY_LIMIT - 1) {
@@ -319,17 +317,18 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, void **iptr, size_t newsize)
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
 #ifdef DUK_USE_ASSERTIONS
-		if (ptr_pre != *iptr) {
+		ptr_post = cb(ud);
+		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
-			DUK_DDPRINT("note: *iptr changed by mark-and-sweep: %p -> %p", ptr_pre, *iptr);
+			DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p", ptr_pre, ptr_post);
 		}
 #endif
 	
-		/* Note: key issue here is to re-lookup *iptr on every attempt -- the
-		 * value behind iptr may change after every mark-and-sweep.
+		/* Note: key issue here is to re-lookup the base pointer on every attempt.
+		 * The pointer being reallocated may change after every mark-and-sweep.
 		 */
 
-		res = heap->realloc_func(heap->alloc_udata, *iptr, newsize);
+		res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 		if (res) {
 			DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %d), alloc size %d",
 			           i + 1, newsize);
@@ -438,16 +437,14 @@ void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize) 
 }
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, void **iptr, size_t newsize, const char *filename, int line) {
+void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, size_t newsize, const char *filename, int line) {
 #else
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, void **iptr, size_t newsize) {
+void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, size_t newsize) {
 #endif
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(iptr != NULL);
-	/* *iptr may be NULL */
 	DUK_ASSERT(newsize >= 0);
 
-	void *res = DUK_REALLOC_INDIRECT(thr->heap, iptr, newsize);
+	void *res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
 	}

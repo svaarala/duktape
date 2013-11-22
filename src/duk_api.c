@@ -281,7 +281,7 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 	 */
 
 	new_alloc_size = sizeof(duk_tval) * new_size;
-	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, (void **) &thr->valstack, new_alloc_size);
+	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (!new_valstack) {
 		DUK_DPRINT("failed to resize valstack to %d entries (%d bytes)",
 		           new_size, new_alloc_size);

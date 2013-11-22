@@ -50,7 +50,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 	 *  pointer may be changed by mark-and-sweep.
 	 */
 
-	thr->callstack = (duk_activation *) DUK_REALLOC_INDIRECT_CHECKED(thr, (void **) &thr->callstack, sizeof(duk_activation) * new_size);
+	thr->callstack = (duk_activation *) DUK_REALLOC_INDIRECT_CHECKED(thr, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
 	thr->callstack_size = new_size;
 
 	/* note: any entries above the callstack top are garbage and not zeroed */
@@ -79,7 +79,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	 */
 
 	/* shrink failure is not fatal */
-	p = (duk_activation *) DUK_REALLOC_INDIRECT(thr->heap, (void **) &thr->callstack, sizeof(duk_activation) * new_size);
+	p = (duk_activation *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
 	if (p) {
 		thr->callstack = p;
 		thr->callstack_size = new_size;
@@ -269,7 +269,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	 *  pointer may be changed by mark-and-sweep.
 	 */
 
-	thr->catchstack = (duk_catcher *) DUK_REALLOC_INDIRECT_CHECKED(thr, (void **) &thr->catchstack, sizeof(duk_catcher) * new_size);
+	thr->catchstack = (duk_catcher *) DUK_REALLOC_INDIRECT_CHECKED(thr, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
 	thr->catchstack_size = new_size;
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */
@@ -298,7 +298,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	 */
 
 	/* shrink failure is not fatal */
-	p = (duk_catcher *) DUK_REALLOC_INDIRECT(thr->heap, (void **) &thr->catchstack, sizeof(duk_catcher) * new_size);
+	p = (duk_catcher *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
 	if (p) {
 		thr->catchstack = p;
 		thr->catchstack_size = new_size;
