@@ -621,12 +621,28 @@ typedef double duk_double_t;
 #endif
 
 /*
+ *  Check whether or not a packed duk_tval representation is possible.
+ *  What's basically required is that pointers are 32-bit values
+ *  (sizeof(void *) == 4).
+ */
+
+/* best effort viability checks, not particularly accurate */
+#undef  DUK_USE_PACKED_TVAL_POSSIBLE
+#if (defined(UINTPTR_MAX) && (UINTPTR_MAX == 4294967295))
+/* strict C99 check */
+#define DUK_USE_PACKED_TVAL_POSSIBLE
+#elif defined(DUK_F_M68K)
+#define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/*
  *  Union to access IEEE double memory representation and indexes for double
  *  memory representation.
  *
- *  The double union is almost the same as a packed duk_tval, but only for
- *  accessing doubles e.g. for numconv and replacemenf functions, which are
- *  needed regardless of duk_tval representation.
+ *  Also used by packed duk_tval.  Use a union for bit manipulation to
+ *  minimize aliasing issues in practice.  The C99 standard does not
+ *  guarantee that this should work, but it's a very widely supported
+ *  practice for low level manipulation.
  */
 
 /* indexes of various types with respect to big endian (logical) layout */
@@ -702,6 +718,9 @@ union duk_double_union {
 	duk_uint32_t ui[2];
 	duk_uint16_t us[4];
 	duk_uint8_t uc[8];
+#ifdef DUK_USE_PACKED_TVAL_POSSIBLE
+	void *vp[2];  /* used by packed duk_tval, assumes sizeof(void *) == 4 */
+#endif
 };
 typedef union duk_double_union duk_double_union;
 
@@ -718,21 +737,6 @@ typedef union duk_double_union duk_double_union;
 #define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
 #define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
 #define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
-
-/*
- *  Check whether or not a packed duk_tval representation is possible.
- *  What's basically required is that pointers are 32-bit values
- *  (sizeof(void *) == 4).
- */
-
-/* best effort viability checks, not particularly accurate */
-#undef  DUK_USE_PACKED_TVAL_POSSIBLE
-#if (defined(UINTPTR_MAX) && (UINTPTR_MAX == 4294967295))
-/* strict C99 check */
-#define DUK_USE_PACKED_TVAL_POSSIBLE
-#elif defined(DUK_F_M68K)
-#define DUK_USE_PACKED_TVAL_POSSIBLE
-#endif
 
 /*
  *  Detection of double constants and math related functions.  Availability

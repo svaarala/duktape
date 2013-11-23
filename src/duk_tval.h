@@ -84,22 +84,8 @@
 #error packed representation not supported
 #endif
 
-/* Use a union for bit manipulation to minimize aliasing issues in practice.
- * The C99 standard does not guarantee that this should work, but it's a very
- * widely supported practice for low level manipulation.
- */
-union duk_tval {
-	double d;
-#ifdef USE__64BIT
-	duk_uint64_t ull[1];
-#endif
-	duk_uint32_t ui[2];
-	duk_uint16_t us[4];
-	duk_uint8_t uc[8];
-	void *vp[2];  /* assumes sizeof(void *) == 4 */
-};
-
-typedef union duk_tval duk_tval;
+/* use duk_double_union as duk_tval directly */
+typedef union duk_double_union duk_tval;
 
 /* tags */
 #define  DUK_TAG_NORMALIZED_NAN    0x7ff8UL   /* the NaN variant we use */
