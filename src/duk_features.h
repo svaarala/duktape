@@ -636,109 +636,6 @@ typedef double duk_double_t;
 #endif
 
 /*
- *  Union to access IEEE double memory representation and indexes for double
- *  memory representation.
- *
- *  Also used by packed duk_tval.  Use a union for bit manipulation to
- *  minimize aliasing issues in practice.  The C99 standard does not
- *  guarantee that this should work, but it's a very widely supported
- *  practice for low level manipulation.
- */
-
-/* indexes of various types with respect to big endian (logical) layout */
-#if defined(DUK_USE_DOUBLE_LE)
-#ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0
-#endif
-#define  DUK_DBL_IDX_UI0    1
-#define  DUK_DBL_IDX_UI1    0
-#define  DUK_DBL_IDX_US0    3
-#define  DUK_DBL_IDX_US1    2
-#define  DUK_DBL_IDX_US2    1
-#define  DUK_DBL_IDX_US3    0
-#define  DUK_DBL_IDX_UC0    7
-#define  DUK_DBL_IDX_UC1    6
-#define  DUK_DBL_IDX_UC2    5
-#define  DUK_DBL_IDX_UC3    4
-#define  DUK_DBL_IDX_UC4    3
-#define  DUK_DBL_IDX_UC5    2
-#define  DUK_DBL_IDX_UC6    1
-#define  DUK_DBL_IDX_UC7    0
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
-#elif defined(DUK_USE_DOUBLE_BE)
-#ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0
-#endif
-#define  DUK_DBL_IDX_UI0    0
-#define  DUK_DBL_IDX_UI1    1
-#define  DUK_DBL_IDX_US0    0
-#define  DUK_DBL_IDX_US1    1
-#define  DUK_DBL_IDX_US2    2
-#define  DUK_DBL_IDX_US3    3
-#define  DUK_DBL_IDX_UC0    0
-#define  DUK_DBL_IDX_UC1    1
-#define  DUK_DBL_IDX_UC2    2
-#define  DUK_DBL_IDX_UC3    3
-#define  DUK_DBL_IDX_UC4    4
-#define  DUK_DBL_IDX_UC5    5
-#define  DUK_DBL_IDX_UC6    6
-#define  DUK_DBL_IDX_UC7    7
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
-#elif defined(DUK_USE_DOUBLE_ME)
-#ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
-#endif
-#define  DUK_DBL_IDX_UI0    0
-#define  DUK_DBL_IDX_UI1    1
-#define  DUK_DBL_IDX_US0    1
-#define  DUK_DBL_IDX_US1    0
-#define  DUK_DBL_IDX_US2    3
-#define  DUK_DBL_IDX_US3    2
-#define  DUK_DBL_IDX_UC0    3
-#define  DUK_DBL_IDX_UC1    2
-#define  DUK_DBL_IDX_UC2    1
-#define  DUK_DBL_IDX_UC3    0
-#define  DUK_DBL_IDX_UC4    7
-#define  DUK_DBL_IDX_UC5    6
-#define  DUK_DBL_IDX_UC6    5
-#define  DUK_DBL_IDX_UC7    4
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
-#else
-#error internal error
-#endif
-
-union duk_double_union {
-	double d;
-#ifdef DUK_USE_64BIT_OPS
-	duk_uint64_t ull[1];
-#endif
-	duk_uint32_t ui[2];
-	duk_uint16_t us[4];
-	duk_uint8_t uc[8];
-#ifdef DUK_USE_PACKED_TVAL_POSSIBLE
-	void *vp[2];  /* used by packed duk_tval, assumes sizeof(void *) == 4 */
-#endif
-};
-typedef union duk_double_union duk_double_union;
-
-/* macros for duk_numconv.c */
-#define  DUK_DBLUNION_SET_DOUBLE(u,v)  do {  \
-		(u)->d = (v); \
-	} while (0)
-#define  DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
-		(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) (v); \
-	} while (0)
-#define  DUK_DBLUNION_SET_LOW32(u,v)  do {  \
-		(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (v); \
-	} while (0)
-#define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
-#define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
-#define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
-
-/*
  *  Detection of double constants and math related functions.  Availability
  *  of constants and math functions is a significant porting concern.
  *
@@ -1263,6 +1160,19 @@ extern double duk_computed_nan;
 #error platform not supported
 #endif
 
+#else  /* DUK_PROFILE > 0 */
+
+/*
+ *  All DUK_USE_ defines must be defined manually, no compiler
+ *  or platform feature detection.
+ */
+
+#endif  /* DUK_PROFILE > 0 */
+
+/*
+ *  Date includes
+ */
+
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 #include <sys/time.h>
 #endif
@@ -1277,15 +1187,6 @@ extern double duk_computed_nan;
 #endif
 #include <time.h>
 #endif
-
-#else  /* DUK_PROFILE > 0 */
-
-/*
- *  All DUK_USE_ defines must be defined manually, no compiler
- *  or platform feature detection.
- */
-
-#endif  /* DUK_PROFILE > 0 */
 
 /* FIXME: An alternative approach to customization would be to include
  * some user define file at this point.  The user file could then modify

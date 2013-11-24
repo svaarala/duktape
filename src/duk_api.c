@@ -832,29 +832,24 @@ int duk_require_boolean(duk_context *ctx, int index) {
 }
 
 double duk_get_number(duk_context *ctx, int index) {
-	double ret = DUK_DOUBLE_NAN;  /* default: NaN */
+	duk_double_union ret;
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
 
+	ret.d = DUK_DOUBLE_NAN;  /* default: NaN */
 	tv = duk_get_tval(ctx, index);
 	if (tv && DUK_TVAL_IS_NUMBER(tv)) {
-		ret = DUK_TVAL_GET_NUMBER(tv);
-
+		ret.d = DUK_TVAL_GET_NUMBER(tv);
 	}
 
 	/*
 	 *  Number should already be in NaN-normalized form,
 	 *  but let's normalize anyway.
-	 *
-	 *  XXX: NaN normalization for external API might be
-	 *  different from internal normalization?
 	 */
 
-	/* FIXME: breaks strict aliasing rules */
-	DUK_DOUBLE_NORMALIZE_NAN_CHECK(&ret);
-
-	return ret;
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&ret);
+	return ret.d;
 }
 
 double duk_require_number(duk_context *ctx, int index) {
@@ -865,17 +860,16 @@ double duk_require_number(duk_context *ctx, int index) {
 
 	tv = duk_get_tval(ctx, index);
 	if (tv && DUK_TVAL_IS_NUMBER(tv)) {
-		double ret = DUK_TVAL_GET_NUMBER(tv);
+		duk_double_union ret;
+		ret.d = DUK_TVAL_GET_NUMBER(tv);
 
 		/*
 		 *  Number should already be in NaN-normalized form,
 		 *  but let's normalize anyway.
-		 *
-		 *  XXX: NaN normalization for external API might be
-		 *  different from internal normalization?
 		 */
-		DUK_DOUBLE_NORMALIZE_NAN_CHECK(&ret);
-		return ret;
+
+		DUK_DBLUNION_NORMALIZE_NAN_CHECK(&ret);
+		return ret.d;
 	}
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not number");
@@ -2233,12 +2227,14 @@ void duk_push_false(duk_context *ctx) {
 
 void duk_push_number(duk_context *ctx, double val) {
 	duk_tval tv;
+	duk_double_union du;
 	DUK_ASSERT(ctx != NULL);
 
 	/* normalize NaN which may not match our canonical internal NaN */
-	DUK_DOUBLE_NORMALIZE_NAN_CHECK(&val);
+	du.d = val;
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 
-	DUK_TVAL_SET_NUMBER(&tv, val);
+	DUK_TVAL_SET_NUMBER(&tv, du.d);
 	duk_push_tval(ctx, &tv);
 }
 

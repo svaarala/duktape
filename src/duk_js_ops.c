@@ -167,10 +167,10 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
 		/* return a specific NaN (although not strictly necessary) */
-		double d;
-		DUK_DOUBLE_SET_NAN(&d);
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d));
-		return d;
+		duk_double_union du;
+		DUK_DBLUNION_SET_NAN(&du);
+		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
+		return du.d;
 	}
 	case DUK_TAG_NULL: {
 		/* +0.0 */

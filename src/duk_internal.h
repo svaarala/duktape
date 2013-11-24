@@ -18,6 +18,7 @@
 #include "duk_features.h"
 #include "duktape.h"
 #include "duk_features_sanity.h"
+#include "duk_dblunion.h"
 
 /*
  *  Duktape includes (other than duk_features.h)
