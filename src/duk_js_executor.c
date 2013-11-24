@@ -88,7 +88,7 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	 */
 
 	duk_context *ctx = (duk_context *) thr;
-	double val;
+	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -104,13 +104,13 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 		duk_tval tv_tmp;
 		duk_tval *tv_z;
 
-		val = DUK_TVAL_GET_NUMBER(tv_x) + DUK_TVAL_GET_NUMBER(tv_y);
-		DUK_DOUBLE_NORMALIZE_NAN_CHECK(&val);
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));
+		du.d = DUK_TVAL_GET_NUMBER(tv_x) + DUK_TVAL_GET_NUMBER(tv_y);
+		DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
 		tv_z = &thr->valstack_bottom[idx_z];
 		DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-		DUK_TVAL_SET_NUMBER(tv_z, val);
+		DUK_TVAL_SET_NUMBER(tv_z, du.d);
 		DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 		DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 		return;
@@ -142,15 +142,15 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 		d2 = duk_to_number(ctx, -1);
 		DUK_ASSERT(duk_is_number(ctx, -2));
 		DUK_ASSERT(duk_is_number(ctx, -1));
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d1));
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d2));
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
 
-		val = d1 + d2;
-		DUK_DOUBLE_NORMALIZE_NAN_CHECK(&val);
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));
+		du.d = d1 + d2;
+		DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
 		duk_pop_2(ctx);
-		duk_push_number(ctx, val);
+		duk_push_number(ctx, du.d);
 		duk_replace(ctx, idx_z);  /* side effects */
 	}
 }
@@ -167,7 +167,8 @@ static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	double d1, d2, val;
+	double d1, d2;
+	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -186,45 +187,44 @@ static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y
 		d2 = duk_to_number(ctx, -1);
 		DUK_ASSERT(duk_is_number(ctx, -2));
 		DUK_ASSERT(duk_is_number(ctx, -1));
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d1));
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d2));
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
 		duk_pop_2(ctx);
 	}
 
 	switch (opcode) {
 	case DUK_OP_SUB: {
-		val = d1 - d2;
+		du.d = d1 - d2;
 		break;
 	}
 	case DUK_OP_MUL: {
-		val = d1 * d2;
+		du.d = d1 * d2;
 		break;
 	}
 	case DUK_OP_DIV: {
-		val = d1 / d2;
+		du.d = d1 / d2;
 		break;
 	}
 	case DUK_OP_MOD: {
-		val = _compute_mod(d1, d2);
+		du.d = _compute_mod(d1, d2);
 		break;
 	}
 	default: {
-		val = DUK_DOUBLE_NAN;  /* should not happen */
+		du.d = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
 	}
 
 	/* important to use normalized NaN with 8-byte tagged types */
-	DUK_DOUBLE_NORMALIZE_NAN_CHECK(&val);
-	DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 	
 	tv_z = &thr->valstack_bottom[idx_z];
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, du.d);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
-
 
 static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
 	/*
@@ -310,8 +310,8 @@ static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	}
 	}
 
-	DUK_ASSERT(!DUK_DOUBLE_IS_NAN(&val));        /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));  /* always normalized */
+	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
 
 	tv_z = &thr->valstack_bottom[idx_z];
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
@@ -332,7 +332,8 @@ static void _vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int 
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	double d1, val;
+	double d1;
+	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -346,39 +347,39 @@ static void _vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int 
 		duk_push_tval(ctx, tv_x);
 		d1 = duk_to_number(ctx, -1);  /* side effects */
 		DUK_ASSERT(duk_is_number(ctx, -1));
-		DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&d1));
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
 		duk_pop(ctx);
 	}
 
 	switch (opcode) {
 	case DUK_OP_UNM: {
-		val = -d1;
+		du.d = -d1;
 		break;
 	}
 	case DUK_OP_UNP: {
-		val = d1;
+		du.d = d1;
 		break;
 	}
 	case DUK_OP_INC: {
-		val = d1 + 1.0;
+		du.d = d1 + 1.0;
 		break;
 	}
 	case DUK_OP_DEC: {
-		val = d1 - 1.0;
+		du.d = d1 - 1.0;
 		break;
 	}
 	default: {
-		val = DUK_DOUBLE_NAN;  /* should not happen */
+		du.d = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
 	}
 
-	DUK_DOUBLE_NORMALIZE_NAN_CHECK(&val);
-	DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
 	tv_z = &thr->valstack_bottom[idx_z];
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, du.d);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
@@ -406,8 +407,8 @@ static void _vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	i2 = ~i1;
 	val = (double) i2;
 
-	DUK_ASSERT(!DUK_DOUBLE_IS_NAN(&val));        /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT(DUK_DOUBLE_IS_NORMALIZED(&val));  /* always normalized */
+	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
 
 	tv_z = &thr->valstack_bottom[idx_z];
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
@@ -1557,9 +1558,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		/* FIXME: this is not needed by the current compiler
-		 * (no support for "spilling").
-		 */
 		case DUK_OP_STREG: {
 			int t;
 			duk_tval tv_tmp;
