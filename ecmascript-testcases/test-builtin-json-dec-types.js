@@ -497,7 +497,7 @@ json SyntaxError
 ===*/
 
 /* JSONString does not allow "unknown" backslash escapes.  These are handled
- * by the Ecmascript grammar as "no-ops", e.g. "\d" === "" but must be rejected
+ * by the Ecmascript grammar as "no-ops", e.g. "\d" === "d" but must be rejected
  * by JSON parsing.
  */
 
@@ -510,8 +510,8 @@ function testCharacterEscape(x) {
     print('cp', x, String.fromCharCode(x));
 
     // Escape chars 'b', 'f', 'n', 't', 'v' will decode to special characters.
-    // Escape chars 'x' and 'u' will be rejected as unterminated hex/unicode
-    // escapes.
+    // Unterminated hex/unicode escapes ('x' and 'u') are decoded as unknown
+    // escapes and *don't* cause a SyntaxError, e.g. "\\u" evals to "u".
     try {
         t = eval(lit);
         print('eval', t.length, t.charCodeAt(0));
