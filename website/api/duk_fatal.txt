@@ -2,7 +2,8 @@
 void duk_fatal(duk_context *ctx, int err_code);
 
 =summary
-<p>Call fatal error handler with a specified error code.</p>
+<p>Call fatal error handler with a specified error code.  The valid range
+for error codes is [1,16777215].</p>
 
 <p>A fatal error handler never returns and may e.g. exit the current
 process.  Error catching points (like <tt>try-catch</tt> statements
