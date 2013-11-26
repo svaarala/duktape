@@ -59,14 +59,10 @@ as the error handler index for now.</p>
 <h3>Coroutines are experimental</h3>
 
 <p>Coroutines are currently experimental.  Although they work for the most
-part, there are many limitations in the implementation.  For instance, one
-cannot yield if there are any of the following in the current call stack:</p>
-<ul>
-<li>Duktape/C function calls</li>
-<li>constructor calls (<tt>new Foo()</tt>)</li>
-<li>getter/setter calls</li>
-<li>finalizer calls</li>
-</ul>
+part, there are many limitations in the implementation.  Yielding is limited
+to coroutines with a call stack consisting purely of plain
+Ecmascript-to-Ecmascript calls.  These limitations will be relaxed in the
+future.</p>
 
 <h3>Unicode case conversion is not locale or context sensitive</h3>
 

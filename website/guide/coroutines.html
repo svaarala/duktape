@@ -36,8 +36,20 @@ to a yield with the error: the resume operation will rethrow that error in
 the resuming coroutine's context.  In either case the coroutine which has
 finished can no longer be resumed; attempt to do so will cause a TypeError.</p>
 
-<p>There are currently strict limitations on when resume/yield are possible.
-See <a href="#limitations">Limitations</a>.</p>
+<p>There are currently strict limitations on when a yield is possible.
+In short, a coroutine can only yield if its entire active call stack consists
+of plain Ecmascript-to-Ecmascript calls.  The following prevent a yield if
+they are present anywhere in the yielding coroutine's call stack:</p>
+<ul>
+<li>a Duktape/C function call</li>
+<li>a constructor call</li>
+<li>a getter/setter call</li>
+<li>an <tt>eval()</tt> call</li>
+<li><tt>Function.prototype.call()</tt> or <tt>Function.prototype.apply()</tt></li>
+<li>a finalizer call</li>
+</ul>
+
+<p>See <a href="#limitations">Limitations</a>.</p>
 
 <h3>Example</h3>
 
