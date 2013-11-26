@@ -438,3 +438,15 @@ duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
 
+<h3>Numeric error codes</h3>
+
+<p>When errors are created or thrown using the Duktape API, the caller
+must assign a numeric error code to the error.  Error codes are
+positive integers, with a range restricted to 24 bits at the
+moment: the allowed error number range is thus [1,16777215].  Built-in
+error codes are defined in <tt>duktape.h</tt>, e.g. <tt>DUK_ERR_TYPE_ERROR</tt>.</p>
+
+<p>The remaining high bits are used internally to carry e.g. additional
+flags.  Negative error values are used in the Duktape/C API as a
+shorthand to automatically throw an error.</p>
+
