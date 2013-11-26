@@ -5,7 +5,7 @@ desc: |-
   which should not be present when tracebacks are not enabled.
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2013-10-24 17:34:57.843701 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-11-26 22:06:08.365210 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

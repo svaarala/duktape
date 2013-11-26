@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: change bind() implementation from a chained bind() to a collapsed bind()
+desc: |-
+  In other words, a bound function always points to a non-bound target
+  function, and a bind() called on an already bound function collapses
+  the argument list during bind() to avoid chaining.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-26 22:08:55.061729 Z
+references: []
+
+id: c6ffe21403c54aed599a68e59ca11bc62531e22f
+log_events: 
+- - 2013-11-26 22:08:55.229676 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

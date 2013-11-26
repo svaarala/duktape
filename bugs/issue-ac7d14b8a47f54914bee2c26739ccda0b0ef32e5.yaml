@@ -3,7 +3,7 @@ title: check why duk.300 fails to complete a testcase run (two cases hang)
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -41,4 +41,8 @@ log_events:
 - - 2013-10-28 23:27:07.647729 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-11-26 22:06:08.256850 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""
