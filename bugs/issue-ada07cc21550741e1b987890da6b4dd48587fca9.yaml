@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-11-08 22:59:45.789407 Z
 references: []
 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-11-08 22:59:46.000818 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-11-26 21:31:25.366573 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""

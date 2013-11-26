@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix MIPS test env compilation complaints
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-11-24 22:54:40.614886 Z
+references: []
+
+id: 582f198ae65f34931f0760500cb637afc021a456
+log_events: 
+- - 2013-11-24 22:54:40.806805 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
