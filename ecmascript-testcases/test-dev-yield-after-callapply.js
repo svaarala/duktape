@@ -7,8 +7,8 @@ var res;
 123
 ===*/
 
-/* Calling via Function.prototype.call() or Function.prototype.apply() would
- * prevent a yield().
+/* Calling via Function.prototype.call() or Function.prototype.apply()
+ * currently prevents a yield.
  */
 
 function innerfunc() {
@@ -16,7 +16,7 @@ function innerfunc() {
 }
 
 function coroutine1() {
-    // This is a native call so naive handling would prevent a later yield
+    // This is a native call so the current (naive) handling prevents a later yield
     innerfunc.call();
 }
 
