@@ -170,8 +170,8 @@ function test() {\
         const968: 968, const969: 969, const970: 970, const971: 971, const972: 972, const973: 973, const974: 974, const975: 975,\
         const976: 976, const977: 977, const978: 978, const979: 979, const980: 980, const981: 981, const982: 982, const983: 983,\
         const984: 984, const985: 985, const986: 986, const987: 987, const988: 988, const989: 989, const990: 990, const991: 991,\
-        const992: 992, const993: 993, const994: 994, const995: 995, const996: 996, const997: 997, const998: 998, const999: 999,\
-    }\
+        const992: 992, const993: 993, const994: 994, const995: 995, const996: 996, const997: 997, const998: 998, const999: 999\
+    };\
 \
     print(obj.const111);\
     print(obj.const222);\
@@ -188,6 +188,6 @@ function test() {\
 try {
     eval(test_source + "; test();");
 } catch (e) {
-    print(e.name);
+    print(e);
 }
 
