@@ -1809,12 +1809,11 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 
 		/* borrow literal Infinity from builtin string */
 		q = (const unsigned char *) DUK_HSTRING_GET_DATA(DUK_HTHREAD_STRING_INFINITY(thr));
-		if (DUK_STRCMP((const char *) p, (const char *) q) == 0) {
+		if (DUK_STRNCMP((const char *) p, (const char *) q, 8) == 0) {
 			if (!allow_garbage && (p[8] != (unsigned char) 0)) {
 				DUK_DDDPRINT("parse failed: trailing garbage after matching 'Infinity' not allowed");
 				goto parse_fail;
 			} else {
-				/* FIXME: compile warning here on gcc-4.0, floating constant exceeds range of 'float' */
 				res = DUK_DOUBLE_INFINITY;
 				goto neg_and_ret;
 			}
