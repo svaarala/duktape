@@ -294,8 +294,8 @@ try {
 /*===
 whitespace strip test
 321.4
-NaN
-NaN
+123.4
+123.4
 ===*/
 
 /* White space trimming. */
@@ -319,7 +319,7 @@ function whiteSpaceStripTest() {
     txt = t.join('');
     print(g.parseFloat(txt));
 
-    // try with trailing garbage
+    // try with trailing garbage, should be allowed
     print(g.parseFloat(txt + 'xyz'));
 }
 
