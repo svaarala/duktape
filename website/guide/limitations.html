@@ -22,7 +22,7 @@ about 1.4G characters.</p>
 
 <h3>Property limits</h3>
 
-<p>An object can have at most <tt>DUK_HOBJECT_MAX_PROPERTIES</tt> (an
+<p>An object can have at most <code>DUK_HOBJECT_MAX_PROPERTIES</code> (an
 internal define).  Currently this limit is 0x7ffffffff.</p>
 
 <h3>Regexp infinite loop</h3>
@@ -39,21 +39,21 @@ Error: Error: regexp executor recursion limit reached (rc=1) [ignored]
 
 <h3>Regexp dollar escape</h3>
 
-<p>The Duktape RegExp syntax allows dollar escaping (e.g. <tt>/\$/</tt>)
+<p>The Duktape RegExp syntax allows dollar escaping (e.g. <code>/\$/</code>)
 even though it is not allowed by the E5.1 specification.  RegExp dollar
 escapes are used in existing Ecmascript code quite widely.</p>
 
 <h3>Invalid stack indices</h3>
 
 <p>The internal implementation for some stack operations (like
-<tt>duk_set_top()</tt> uses pointer arithmetic.  On 32-bit platforms
+<code>duk_set_top()</code> uses pointer arithmetic.  On 32-bit platforms
 the pointer arithmetic may wrap and work in unexpected ways if stack
 index values are large enough (e.g. 0x20000000 on a 32-bit platform
 with 8-byte packed value type).</p>
 
 <h3>Error handler model incomplete</h3>
 
-<p>The model for error handlers is incomplete.  Use <tt>DUK_INVALID_INDEX</tt>
+<p>The model for error handlers is incomplete.  Use <code>DUK_INVALID_INDEX</code>
 as the error handler index for now.</p>
 
 <h3>Coroutines are experimental</h3>
@@ -82,7 +82,7 @@ compliance concern, but degrades performance.</p>
 <h3>Compiler performance for inner functions</h3>
 
 <p>Compiler needs multiple passes over the same function.  Inner functions
-are scanned <tt>2**n</tt> times, where <tt>n</tt> is the function level
+are scanned <code>2**n</code> times, where <code>n</code> is the function level
 (0, 1, ...).</p>
 
 <h3>Compiler variable/constant limit</h3>

@@ -15,7 +15,7 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
 </thead>
 <tbody>
-<tr><td class="propname">name</td><td>standard</td><td>Name of error, e.g. <tt>TypeError</tt>, inherited</td></tr>
+<tr><td class="propname">name</td><td>standard</td><td>Name of error, e.g. <code>TypeError</code>, inherited</td></tr>
 <tr><td class="propname">message</td><td>standard</td><td>Optional message of error, own property, empty message inherited if absent</td></tr>
 <tr><td class="propname">fileName</td><td>Rhino</td><td>Filename related to error source, inherited accessor</td></tr>
 <tr><td class="propname">lineNumber</td><td>Rhino</td><td>Linenumber related to error source, inherited accessor</td></tr>
@@ -27,35 +27,35 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <p>If Duktape is compiled with traceback support:</p>
 
 <ul>
-<li><tt>stack</tt>, <tt>fileName</tt>, and <tt>lineNumber</tt> are accessor
-    properties inherited from <tt>Error.prototype</tt>.</li>
-<li><tt>tracedata</tt> is an own property of the Error instance which provides
+<li><code>stack</code>, <code>fileName</code>, and <code>lineNumber</code> are accessor
+    properties inherited from <code>Error.prototype</code>.</li>
+<li><code>tracedata</code> is an own property of the Error instance which provides
     the raw data (in an internal format) needed by the accessors.</li>
 </ul>
 
 <p>If Duktape is compiled without traceback support:</p>
 <ul>
-<li>The <tt>stack</tt> accessor will be equivalent to
-    <tt>Error.prototype.toString()</tt>, so that printing the stacktrace
+<li>The <code>stack</code> accessor will be equivalent to
+    <code>Error.prototype.toString()</code>, so that printing the stacktrace
     always produces a useful result.</li>
-<li><tt>fileName</tt> and <tt>lineNumber</tt> will be own properties of the
+<li><code>fileName</code> and <code>lineNumber</code> will be own properties of the
     Error object.</li>
 </ul>
 
 <p>When error objects are created using the Duktape API from C code and the
-caller does not give a format string for a <tt>message</tt>, the <tt>message</tt>
+caller does not give a format string for a <code>message</code>, the <code>message</code>
 property is set to a numeric error code given in the API call.  The type of
-<tt>message</tt> will be number in this case; normally error messages are
+<code>message</code> will be number in this case; normally error messages are
 strings.   In minimized Duktape builds all errors generated internally by
 Duktape use numeric error codes only.</p>
 
 <p>An object is considered an "error object" if its internal prototype
-chain contains the (original) <tt>Error.prototype</tt> object.  Only
+chain contains the (original) <code>Error.prototype</code> object.  Only
 objects matching this criteria get augmented with e.g. traceback data.</p>
 
 <h3>Traceback</h3>
 
-<p>The <tt>stack</tt> property is an accessor (setter/getter) property
+<p>The <code>stack</code> property is an accessor (setter/getter) property
 which provides a printable traceback related to an error.  The traceback
 reflects the call stack when the error object was created (not thrown).
 Traceback data is automatically collected and added to an object:</p>
@@ -65,9 +65,9 @@ Traceback data is automatically collected and added to an object:</p>
 <li>when an error is thrown from inside Duktape.</li>
 </ul>
 
-<p>The data used to create the traceback is stored in the <tt>tracedata</tt>
+<p>The data used to create the traceback is stored in the <code>tracedata</code>
 property in an internal and version-dependent format documented in the
-Duktape full distribution.  You shouldn't access the <tt>tracedata</tt>
+Duktape full distribution.  You shouldn't access the <code>tracedata</code>
 directly.</p>
 
 <p>The exact traceback format is still in flux (and you shouldn't rely on
@@ -89,9 +89,9 @@ URIError: invalid input
         global ecmascript-testcases/test-dev-traceback-example.js:3
 </pre>
 
-<p>In builds where tracebacks are disabled, the <tt>stack</tt> accessor
-will return the same value as calling <tt>toString()</tt> on the error
-would.  This means you can always print <tt>e.stack</tt> and get a useful
+<p>In builds where tracebacks are disabled, the <code>stack</code> accessor
+will return the same value as calling <code>toString()</code> on the error
+would.  This means you can always print <code>e.stack</code> and get a useful
 output.</p>
 
 <p>The most portable traceback printing approach is something like:</p>
@@ -105,11 +105,11 @@ try {
 }
 </pre>
 
-<p>Attempt to write to <tt>stack</tt> is silently ignored.  You can still
+<p>Attempt to write to <code>stack</code> is silently ignored.  You can still
 override the accessor by defining an own property of the same name explicitly
-with <tt>Object.defineProperty()</tt>.  This behavior differs from V8 where
-<tt>stack</tt> is an own property of the Error instance, and if you assign a
-value to <tt>stack</tt>, the value reads back as assigned.</p>
+with <code>Object.defineProperty()</code>.  This behavior differs from V8 where
+<code>stack</code> is an own property of the Error instance, and if you assign a
+value to <code>stack</code>, the value reads back as assigned.</p>
 
 <h3>Current limitations</h3>
 
@@ -119,10 +119,10 @@ value to <tt>stack</tt>, the value reads back as assigned.</p>
     standard for them.</li>
 <li>These is currently no way to access traceback elements programmatically.</li>
 <li>If an error is created with a non-constructor function call to a custom
-    error class (<tt>MyError('msg')</tt> instead of <tt>new MyError('msg')</tt>)
+    error class (<code>MyError('msg')</code> instead of <code>new MyError('msg')</code>)
     it won't get augmented with custom fields such as traceback data.  When
-    called as a constructor custom errors inheriting from <tt>Error</tt> get
-    augmented normally.  Built-in standard errors (like <tt>TypeError</tt>)
+    called as a constructor custom errors inheriting from <code>Error</code> get
+    augmented normally.  Built-in standard errors (like <code>TypeError</code>)
     always get augmented, even when created with a non-constructor function call
     (the tracebacks look slightly different depending on how the error is
     created, though).</li>

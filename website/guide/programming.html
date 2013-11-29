@@ -6,7 +6,7 @@
 
 <p>Programming with Duktape is quite straightforward:</p>
 <ul>
-<li>Add Duktape source (<tt>duktape.c</tt>) and header (<tt>duktape.h</tt>)
+<li>Add Duktape source (<code>duktape.c</code>) and header (<code>duktape.h</code>)
     to your build.</li>
 <li>Create a Duktape <b>heap</b> (a garbage collection region) and an initial
     <b>context</b> (essentially a thread handle) in your program.</li>
@@ -37,7 +37,7 @@ have multiple heaps, but objects in different heaps cannot reference each other
 directly; you need to use serialization to pass values between heaps.</p>
 
 <p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which lives
-in a certain Duktape heap.  A context is represented by a <tt>duk_context *</tt>
+in a certain Duktape heap.  A context is represented by a <code>duk_context *</code>
 in the Duktape API, and is associated with an internal Duktape coroutine (a form
 of a co-operative thread).  The context handle is given to almost every Duktape
 API call, and allows the caller to interact with the <b>value stack</b> of the
@@ -52,7 +52,7 @@ active <b>stack frame</b> for the most recent function call (when no function
 calls have been made, the active stack frame is the value stack as is).
 The Duktape API calls operate almost exclusively in the currently active
 stack frame.  A coroutine also has an internal <b>catch stack</b> which is used
-to track error catching sites established using e.g. <tt>try-catch-finally</tt>
+to track error catching sites established using e.g. <code>try-catch-finally</code>
 blocks.  This is not visible to the caller in any way at the moment.</p>
 
 <p>Multiple contexts can share the same Duktape <b>heap</b>.  In more concrete
@@ -94,7 +94,7 @@ new_ctx = duk_get_context(ctx, -1 /*index*/);
 </pre>
 
 <p>Contexts are automatically garbage collected when they become unreachable.
-This also means that if your C code holds a <tt>duk_context *</tt>, the
+This also means that if your C code holds a <code>duk_context *</code>, the
 corresponding Duktape coroutine MUST be reachable from a garbage collection
 point of view.</p>
 
@@ -121,7 +121,7 @@ for errors.</p>
 
 <p>Closely related to the call stack, Duktape also maintains a catch stack
 for keeping track of current error catching sites established using e.g.
-<tt>try-catch-finally</tt>.  The catch stack is even less visible to the
+<code>try-catch-finally</code>.  The catch stack is even less visible to the
 caller than the call stack.</p>
 
 <p>Because Duktape supports tail calls, the call stack does not always
@@ -134,7 +134,7 @@ together in the call stack.</p>
 
 <p>The value stack of a context is an array of tagged type values related
 to the current execution state of a coroutine.  The tagged types used are:
-<tt>undefined</tt>, <tt>null</tt>, boolean, number, string, object, buffer,
+<code>undefined</code>, <code>null</code>, boolean, number, string, object, buffer,
 and pointer.  For a detailed discussion of the available tagged types, see
 <a href="#types">Types</a>.</p>
 
@@ -195,7 +195,7 @@ current stack frame, relative to the frame bottom:</p>
 [ -6 -5 -4 -3 -2 -1! ]
 </pre>
 
-<p>The special constant <tt>DUK_INVALID_INDEX</tt> is a negative integer
+<p>The special constant <code>DUK_INVALID_INDEX</code> is a negative integer
 which denotes an invalid stack index.  It can be returned from API calls
 and can also be given to API calls to indicate a "no value".</p>
 
@@ -235,8 +235,8 @@ need to extend the value stack.  Only functions that need more space or
 perhaps need an input-dependent amount of space need to grow the value
 stack.</p>
 
-<p>You can extend the stack allocation explicitly with <tt>duk_check_stack()</tt>
-or (usually more preferably) <tt>duk_require_stack()</tt>.  Once successfully
+<p>You can extend the stack allocation explicitly with <code>duk_check_stack()</code>
+or (usually more preferably) <code>duk_require_stack()</code>.  Once successfully
 extended, you are again guaranteed that the specified number of elements can
 be pushed to the stack.  There is no way to shrink the allocation except by
 returning from a Duktape/C function.</p>
@@ -291,13 +291,13 @@ applies for Ecmascript code.</p>
 <h3>Duktape API</h3>
 
 <p>Duktape API is the collection of user callable API calls defined in
-<tt>duktape.h</tt> and documented in the
+<code>duktape.h</code> and documented in the
 <a href="api.html">API reference</a>.</p>
 
 <p>The Duktape API calls are generally error tolerant and will check all
-arguments for errors (such as <tt>NULL</tt> pointers).  However, to minimize
-footprint, the <tt>ctx</tt> argument is not checked, and the caller MUST NOT
-call any Duktape API calls with a <tt>NULL</tt> context.</p>
+arguments for errors (such as <code>NULL</code> pointers).  However, to minimize
+footprint, the <code>ctx</code> argument is not checked, and the caller MUST NOT
+call any Duktape API calls with a <code>NULL</code> context.</p>
 
 <h3>Duktape/C function</h3>
 
@@ -312,12 +312,12 @@ int my_func(duk_context *ctx) {
 </pre>
 
 <p>The function gets Ecmascript call argument in the value stack of
-<tt>ctx</tt>, with <tt>duk_get_top(ctx)</tt> indicating the number of
+<code>ctx</code>, with <code>duk_get_top(ctx)</code> indicating the number of
 arguments present on the value stack.  When creating an Ecmascript function
 object associated with a Duktape/C function, one can select the desired
 number of arguments.  Extra arguments are dropped and missing arguments
-are replaced with <tt>undefined</tt>.  A function can also be registered
-as a vararg function (by giving <tt>DUK_VARARGS</tt> as the argument count)
+are replaced with <code>undefined</code>.  A function can also be registered
+as a vararg function (by giving <code>DUK_VARARGS</code> as the argument count)
 in which case call arguments are not modified prior to C function entry.</p>
 
 <p>The function can return one of the following:</p>
@@ -325,10 +325,10 @@ in which case call arguments are not modified prior to C function entry.</p>
 <li>Return value 1 indicates that the value on the stack top is to be
     interpreted as a return value.</li>
 <li>Return value 0 indicates that there is no explicit return value on
-    the value stack; an <tt>undefined</tt> is returned to caller.</li>
+    the value stack; an <code>undefined</code> is returned to caller.</li>
 <li>A negative return value indicates that an error is to be automatically
-    thrown.  Error codes named <tt>DUK_RET_xxx</tt> map to specific kinds
-    of errors (do not confuse these with <tt>DUK_ERR_xxx</tt> which are
+    thrown.  Error codes named <code>DUK_RET_xxx</code> map to specific kinds
+    of errors (do not confuse these with <code>DUK_ERR_xxx</code> which are
     positive values).</li>
 <li>A return value higher than 1 is currently undefined, as Ecmascript
     doesn't support multiple return values in Edition 5.1.  (Values higher
@@ -353,7 +353,7 @@ int my_func(duk_context *ctx) {
 
 <p>All Duktape/C functions are considered <b>strict</b> in the
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">Ecmascript sense</a>.
-For instance, attempt to delete a non-configurable property using <tt>duk_del_prop()</tt>
+For instance, attempt to delete a non-configurable property using <code>duk_del_prop()</code>
 will cause an error to be thrown.  This is the case with a strict Ecmascript function too:</p>
 
 <pre class="ecmascript-code">
@@ -372,7 +372,7 @@ when API calls are made from outside a Duktape/C function (when the call stack
 is empty), all API calls obey Ecmascript <i>non-strict</i> semantics, as this
 is the Ecmascript default.</p>
 
-<p>Also as a consequence of Duktape/C function strictness, the <tt>this</tt>
+<p>Also as a consequence of Duktape/C function strictness, the <code>this</code>
 binding given to Duktape/C functions is not
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>
 as is normal for non-strict Ecmascript functions.  An example of how coercion
@@ -386,7 +386,7 @@ nonStrictFunc.call('foo');  // prints 'object' (coerced)
 </pre>
 
 <p>Duktape/C functions are currently always <b>constructable</b>, i.e. they
-can always be used in <tt>new Foo()</tt> expressions.  You can check whether
+can always be used in <code>new Foo()</code> expressions.  You can check whether
 a function was called in constructor mode as follows:</p>
 <pre class="c-code">
 static int my_func(duk_context *ctx) {
@@ -421,18 +421,18 @@ duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
 
 <p>Another alternative for storing state is to call the Duktape/C function
-as a method and then use the <tt>this</tt> binding for storing state.  For
+as a method and then use the <code>this</code> binding for storing state.  For
 instance, consider a Duktape/C function called as:</p>
 <pre class="ecmascript-code">
 foo.my_c_func()
 </pre>
 
-<p>When called, the Duktape/C function gets <tt>foo</tt> as its <tt>this</tt>
-binding, and one could store state directly in <tt>foo</tt>.  The difference
+<p>When called, the Duktape/C function gets <code>foo</code> as its <code>this</code>
+binding, and one could store state directly in <code>foo</code>.  The difference
 to using the Function object approach is that the same object is shared by all
 methods, which has both advantages and disadvantages.</p>
 
-<p>Accessing the <tt>this</tt> binding is easy:</p>
+<p>Accessing the <code>this</code> binding is easy:</p>
 <pre class="c-code">
 duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
@@ -444,7 +444,7 @@ duk_get_prop_string(ctx, -1, "my_state_variable");
 must assign a numeric error code to the error.  Error codes are
 positive integers, with a range restricted to 24 bits at the
 moment: the allowed error number range is thus [1,16777215].  Built-in
-error codes are defined in <tt>duktape.h</tt>, e.g. <tt>DUK_ERR_TYPE_ERROR</tt>.</p>
+error codes are defined in <code>duktape.h</code>, e.g. <code>DUK_ERR_TYPE_ERROR</code>.</p>
 
 <p>The remaining high bits are used internally to carry e.g. additional
 flags.  Negative error values are used in the Duktape/C API as a

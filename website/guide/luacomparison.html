@@ -9,7 +9,7 @@ already familiar with Lua.</p>
 <p>All array and stack indices are zero-based, not one-based as in Lua.  So,
 bottom of stack is 0, second element from bottom is 1, and top element is -1.
 Because 0 is no longer available to denote an invalid/non-existent element,
-the constant <tt>DUK_INVALID_INDEX</tt> is used instead in Duktape.</p>
+the constant <code>DUK_INVALID_INDEX</code> is used instead in Duktape.</p>
 
 <p>String indices are also zero-based, and slices are indicated with an
 inclusive start index and an exclusive end index (i.e. [start,end[).
@@ -24,7 +24,7 @@ have a mutable and extensible set of properties.</p>
 
 <h3>Lua userdata and lightuserdata</h3>
 
-<p>The concept closest to Lua <tt>userdata</tt> is the Duktape <tt>buffer</tt>
+<p>The concept closest to Lua <code>userdata</code> is the Duktape <code>buffer</code>
 type, with the following differences:</p>
 
 <ul>
@@ -35,7 +35,7 @@ type, with the following differences:</p>
     objects can store an environment reference.</li>
 </ul>
 
-<p>Lua <tt>lightuserdata</tt> and Duktape <tt>pointer</tt> are essentially
+<p>Lua <code>lightuserdata</code> and Duktape <code>pointer</code> are essentially
 the same.</p>
 
 <p>If you need to associate properties with a Duktape buffer, you can use
@@ -66,17 +66,17 @@ Lua 5.1 does not.</p>
 
 <h3>duk_safe_call() vs. lua_cpcall()</h3>
 
-<p><tt>duk_safe_call()</tt> is a protected C function call which
+<p><code>duk_safe_call()</code> is a protected C function call which
 operates in the existing value stack frame.  The function call is
 not visible on the call stack all.</p>
 
-<p><tt>lua_cpcall()</tt> creates a new stack frame.</p>
+<p><code>lua_cpcall()</code> creates a new stack frame.</p>
 
 <h3>Bytecode use</h3>
 
 <p>Duktape Ecmascript function bytecode is currently a purely internal
 matter.  Code cannot currently be loaded from an external pre-compiled
-bytecode file.  Similarly, there is no equivalent to e.g. <tt>lua_dump()</tt>.</p>
+bytecode file.  Similarly, there is no equivalent to e.g. <code>lua_dump()</code>.</p>
 
 <h3>Metatables</h3>
 
@@ -87,14 +87,14 @@ concept will most likely provide similar functionality at some point.</p>
 
 <h3>lua_next() vs. duk_next()</h3>
 
-<p><tt>lua_next()</tt> replaces the previous key and value with a new pair,
-while <tt>duk_next()</tt> does not; the caller needs to explicitly pop the
+<p><code>lua_next()</code> replaces the previous key and value with a new pair,
+while <code>duk_next()</code> does not; the caller needs to explicitly pop the
 key and/or value.</p>
 
 <h3>Raw accessors</h3>
 
 <p>There is no equivalent to Lua raw table access functions like
-<tt>lua_rawget</tt>.  One can use the following Ecmascript built-ins
+<code>lua_rawget</code>.  One can use the following Ecmascript built-ins
 for a similar effect (though not with respect to performance):
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.3">Object.getOwnPropertyDescriptor ( O, P )</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.6">Object.defineProperty ( O, P, Attributes )</a>.</p>
@@ -102,8 +102,8 @@ for a similar effect (though not with respect to performance):
 <h3>Coroutines</h3>
 
 <p>There are no primitives for coroutine control in the Duktape API
-(Lua API has e.g. <tt>lua_resume</tt>).  Coroutines can only be controlled
-using the functions exposed by the <tt>__duk__</tt> built-in.  Further,
+(Lua API has e.g. <code>lua_resume</code>).  Coroutines can only be controlled
+using the functions exposed by the <code>__duk__</code> built-in.  Further,
 Duktape has quite many coroutine yield restrictions now; for instance,
 coroutines cannot yield from inside constructor calls or getter/setter calls.</p>
 

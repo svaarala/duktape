@@ -9,12 +9,12 @@ coroutine A resumes or initiates coroutine B, coroutine B runs until it yields
 or finishes (either successfully or through an uncaught error), after which
 coroutine A continues execution with the yield result.</p>
 
-<p>Coroutines are created with <tt>new __duk__.Thread()</tt>, which gets as its
+<p>Coroutines are created with <code>new __duk__.Thread()</code>, which gets as its
 sole argument the initial function where the new coroutine begins execution on
 its first resume.  The resume argument becomes the initial function's first (and
 only) argument value.</p>
 
-<p>A coroutine is resumed using <tt>__duk__.Thread.resume()</tt> which takes the
+<p>A coroutine is resumed using <code>__duk__.Thread.resume()</code> which takes the
 following arguments: the coroutine to resume, the resume value, and (optionally)
 a flag indicating whether the resume value is an ordinary value or an error to
 be injected into the target coroutine.  Injecting an error means that the resume
@@ -22,7 +22,7 @@ value will be "thrown" at the site of the target coroutine's last yield operatio
 In other words, instead of returning with an ordinary value, the yield will
 seemingly throw an error.</p>
 
-<p>A coroutine yields its current execution using <tt>__duk__.Thread.yield()</tt>
+<p>A coroutine yields its current execution using <code>__duk__.Thread.yield()</code>
 which takes as its arguments: the value to yield, and (optionally) a flag indicating
 whether the yield value is an ordinary value or an error to be thrown in the
 context of the resuming coroutine.  In other words, an error value causes the
@@ -44,8 +44,8 @@ they are present anywhere in the yielding coroutine's call stack:</p>
 <li>a Duktape/C function call</li>
 <li>a constructor call</li>
 <li>a getter/setter call</li>
-<li>an <tt>eval()</tt> call</li>
-<li><tt>Function.prototype.call()</tt> or <tt>Function.prototype.apply()</tt></li>
+<li>an <code>eval()</code> call</li>
+<li><code>Function.prototype.call()</code> or <code>Function.prototype.apply()</code></li>
 <li>a finalizer call</li>
 </ul>
 
@@ -80,7 +80,7 @@ print('yielded with', __duk__.Thread.resume(t, 'baz'));
 print('finished');
 </pre>
 
-<p>When executed with the <tt>duk</tt> command line tool, this prints:</p>
+<p>When executed with the <code>duk</code> command line tool, this prints:</p>
 <pre>
 $ duk coroutine.js
 resume test

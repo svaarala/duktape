@@ -2,7 +2,7 @@
 
 <p>This section describes how type-related Ecmascript algorithms
 like comparisons and coercions are extended to Duktape custom types.
-Duktape specific type algorithms (<tt>ToBuffer()</tt> and <tt>ToPointer()</tt>)
+Duktape specific type algorithms (<code>ToBuffer()</code> and <code>ToPointer()</code>)
 are also discussed.</p>
 
 <h3>Notation</h3>
@@ -100,8 +100,8 @@ for standard types.  Custom type behavior is as follows:</p>
 
 <h3>SameValue</h3>
 
-<p>The <tt>SameValue</tt> algorithm is not easy to invoke from user code.
-It is used by e.g. <tt>Object.defineProperty()</tt> when checking whether
+<p>The <code>SameValue</code> algorithm is not easy to invoke from user code.
+It is used by e.g. <code>Object.defineProperty()</code> when checking whether
 a property value is about to change.  SameValue is even stricter than a
 strict equality comparison, and most notably differs in how numbers are compared.
 It is specified in
@@ -148,7 +148,7 @@ for standard types.  Custom type behavior is as follows:</p>
 <tr><th>ToInt32</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
 <tr><th>ToUint32</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
 <tr><th>ToUint16</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
-<tr><th>ToString</th><td>string with bytes from buffer data</td><td><tt>sprintf()</tt> with <tt>%p</tt> format (platform specific)</td></tr>
+<tr><th>ToString</th><td>string with bytes from buffer data</td><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td></tr>
 <tr><th>ToObject</th><td>Buffer object</td><td>Pointer object</td></tr>
 <tr><th>CheckObjectCoercible</th><td>allow (no error)</td><td>allow (no error)</td></tr>
 <tr><th>IsCallable</th><td>false</td><td>false</td></tr>
@@ -163,7 +163,7 @@ directly as string data.  The bytes will then be interpreted as CESU-8
 <h3>Custom coercions (ToBuffer, ToPointer)</h3>
 
 <p>ToBuffer() coercion is used when a value is forced into a buffer
-type e.g. with the <tt>duk_to_buffer()</tt> API call.  The coercion
+type e.g. with the <code>duk_to_buffer()</code> API call.  The coercion
 is as follows:</p>
 <ul>
 <li>A buffer coerces to itself (identity).  The same buffer value is
@@ -174,7 +174,7 @@ is as follows:</p>
     fixed-size buffer.</li>
 </ul>
 
-<p>ToPointer() coercion is used e.g. by the <tt>duk_to_pointer()</tt>
+<p>ToPointer() coercion is used e.g. by the <code>duk_to_pointer()</code>
 call.  The coercion is as follows:</p>
 <ul>
 <li>A pointer coerces to itself.</li>
@@ -200,7 +200,7 @@ call.  The coercion is as follows:</p>
 <tr><th>string</th><td>buffer with copy of string data</td><td>ptr to heap hdr</td></tr>
 <tr><th>object</th><td>buffer with ToString(value)</td><td>ptr to heap hdr</td></tr>
 <tr><th>buffer</th><td>identity</td><td>ptr to heap hdr</td></tr>
-<tr><th>pointer</th><td>sprintf()</tt> with <tt>%p</tt> format (platform specific)</td><td>identity</td></tr>
+<tr><th>pointer</th><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td><td>identity</td></tr>
 </tbody>
 </table>
 
@@ -212,14 +212,14 @@ Addition behaves specially if either argument is a string: the other argument
 is coerced to a string and the strings are then concatenated.  This behavior
 is extended to custom types as follows:</p>
 <ul>
-<li>As for standard types, object values are first coerced with <tt>ToPrimitive()</tt>,
-    e.g. a <tt>Buffer</tt> object is converted to a plain buffer value.</li>
+<li>As for standard types, object values are first coerced with <code>ToPrimitive()</code>,
+    e.g. a <code>Buffer</code> object is converted to a plain buffer value.</li>
 <li>The string concatenation rule is triggered if either argument is a string
     or a buffer.  The arguments are coerced to strings and then concatenated into
     the result string.  This means that adding two buffers currently results in a
     string, not a buffer.</li>
 <li>Pointer types fall into the default number addition case.  They are coerced
-    with <tt>ToNumber()</tt> and then added as numbers.  NULL pointers coerce to
+    with <code>ToNumber()</code> and then added as numbers.  NULL pointers coerce to
     0, non-NULL pointers to 1, so addition results may not be very intuitive.</li>
 </ul>
 
@@ -227,7 +227,7 @@ is extended to custom types as follows:</p>
 
 <p>If a plain buffer or pointer is used as a property access base value,
 properties are looked up from the (initial) built-in prototype object
-(<tt>__duk__.Buffer.prototype</tt> or <tt>__duk__.Pointer.prototype</tt>).
+(<code>__duk__.Buffer.prototype</code> or <code>__duk__.Pointer.prototype</code>).
 This mimics the behavior of standard types.</p>
 
 <p>For example:</p>

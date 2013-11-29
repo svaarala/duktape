@@ -18,7 +18,7 @@ $ tar xvfJ duktape-&lt;version&gt;.tar.xz
 </pre>
 
 <p>Compile the command line tool using the provided Makefile (your system
-needs to have <tt>readline</tt> and <tt>ncurses</tt> library and headers
+needs to have <code>readline</code> and <code>ncurses</code> library and headers
 installed):</p>
 <pre>
 # NOTE: ensure you have readline and curses library and headers installed
@@ -27,9 +27,9 @@ $ make -f Makefile.cmdline
 </pre>
 
 <div class="note">
-The command line tool requires <tt>readline</tt> by default.  If it's
+The command line tool requires <code>readline</code> by default.  If it's
 not available or there are other portability issues, try enabling the
-<tt>-DDUK_CMDLINE_BAREBONES</tt> compile option in the Makefile.  The
+<code>-DDUK_CMDLINE_BAREBONES</code> compile option in the Makefile.  The
 option minimizes any non-portable dependencies.
 </div>
 
@@ -44,7 +44,7 @@ Hello world!
 </pre>
 
 <p>You can also run Ecmascript code from a file which is useful for playing with
-features and algorithms.  As an example, create <tt>fib.js</tt>:</p>
+features and algorithms.  As an example, create <code>fib.js</code>:</p>
 <pre class="ecmascript-code" include="fib.js"></pre>
 
 <p>Test the script from the command line:</p>
@@ -58,10 +58,10 @@ Cleaning up...
 
 <p>The command line tool is simply an example of a program which embeds
 Duktape.  Embedding Duktape into your program is very simple: just add
-<tt>duktape.c</tt> and <tt>duktape.h</tt> to your build, and call the
+<code>duktape.c</code> and <code>duktape.h</code> to your build, and call the
 Duktape API from elsewhere in your program.</p>
 
-<p>The distributable contains a very simple example program, <tt>hello.c</tt>,
+<p>The distributable contains a very simple example program, <code>hello.c</code>,
 which illustrates this process.  Compile the test program e.g. as:</p>
 <pre>
 $ cd /tmp/duktape-&lt;version&gt;/
@@ -99,15 +99,15 @@ the transformed line.  The line processing function can take advantage of
 Ecmascript goodies like regular expressions, and can be easily modified
 without recompiling the C program.</p>
 
-<p>The script code will be placed in <tt>process.js</tt>.  The example
+<p>The script code will be placed in <code>process.js</code>.  The example
 line processing function converts a plain text line into HTML, and
 automatically bolds text between stars:</p>
 
 <pre class="ecmascript-code" include="process.js"></pre>
 
-<p>The C code, <tt>processlines.c</tt> initializes a Duktape context,
-compiles the script, then proceeds to process lines from <tt>stdin</tt>,
-calling <tt>processLine()</tt> for every line:</p>
+<p>The C code, <code>processlines.c</code> initializes a Duktape context,
+compiles the script, then proceeds to process lines from <code>stdin</code>,
+calling <code>processLine()</code> for every line:</p>
 <pre class="c-code" include="processlines.c"></pre>
 
 <p>Let's look at the Duktape specific parts of the example code line by line.
@@ -131,8 +131,8 @@ and examining values on the stack.</p>
 duk_eval_file(ctx, "process.js");
 duk_pop(ctx);  /* pop eval result */
 </pre>
-<p>The first call reads in <tt>process.js</tt> and evaluates its contents.
-The script registers the <tt>processLine()</tt> function into the Ecmascript
+<p>The first call reads in <code>process.js</code> and evaluates its contents.
+The script registers the <code>processLine()</code> function into the Ecmascript
 global object.  The result of the evaluation is pushed on top of the value
 stack.  Here we don't need the evaluation result, so we pop the value off
 the stack.</p>
@@ -144,11 +144,11 @@ duk_push_global_object(ctx);
 duk_get_prop_string(ctx, -1 /*index*/, "processLine");
 </pre>
 <p>The first call pushes the Ecmascript global object to the value stack.
-The second call looks up <tt>processLine</tt> property of the global object.
-The script in <tt>process.js</tt> has registered a function into the global
-object with this name.  The <tt>-1</tt> argument is an index to the value
+The second call looks up <code>processLine</code> property of the global object.
+The script in <code>process.js</code> has registered a function into the global
+object with this name.  The <code>-1</code> argument is an index to the value
 stack; negative values refer to stack elements starting from the top, so
-<tt>-1</tt> refers to the topmost element of the stack, the property
+<code>-1</code> refers to the topmost element of the stack, the property
 lookup result.</p>
 </li>
 
@@ -156,10 +156,10 @@ lookup result.</p>
 <pre class="c-code">
 duk_push_string(ctx, line);
 </pre>
-<p>Pushes the string pointed to by <tt>line</tt> to the value stack.  The
+<p>Pushes the string pointed to by <code>line</code> to the value stack.  The
 string length is automatically determined by scanning for a NUL terminator
-(same as <tt>strlen()</tt>).  Duktape makes a copy of the string when it is
-pushed to the stack, so the <tt>line</tt> buffer can be freely modified when
+(same as <code>strlen()</code>).  Duktape makes a copy of the string when it is
+pushed to the stack, so the <code>line</code> buffer can be freely modified when
 the call returns.</p>
 </li>
 
@@ -168,7 +168,7 @@ the call returns.</p>
 duk_call(ctx, 1 /*nargs*/);
 </pre>
 <p>At this point the value stack contains: the global object, the processLine
-function, and the <tt>line</tt> string.  This line calls an Ecmascript function
+function, and the <code>line</code> string.  This line calls an Ecmascript function
 with the specified number of arguments; here the argument count is 1.  The
 target function is expected to reside just before the argument list on the
 value stack.  After the API call returns, the arguments have been replaced with
@@ -181,9 +181,9 @@ result.</p>
 printf("%s\n", duk_to_string(ctx, -1));
 duk_pop(ctx);
 </pre>
-<p>The <tt>duk_to_string()</tt> call requests Duktape to convert the value stack
+<p>The <code>duk_to_string()</code> call requests Duktape to convert the value stack
 element at index -1 (the topmost value on the stack, which is the processLine
-function call result here) to a string, returning a <tt>const char *</tt> pointing
+function call result here) to a string, returning a <code>const char *</code> pointing
 to the result.  This return value is a read-only, NUL terminated UTF-8 value which
 C code can use directly as long as the value resides on the value stack.  Here we
 just print out the string.  After we've printed the string, we pop the value off
@@ -250,7 +250,7 @@ double arg = duk_require_number(ctx, 0 /*index*/);
 </pre>
 <p>Check that the number at value stack index 0 (bottom of the stack, first
 argument to function call) is a number; if not, throws an error and never
-returns.  If the value is a number, return it as a <tt>double</tt>.</p>
+returns.  If the value is a number, return it as a <code>double</code>.</p>
 </li>
 
 <li>
@@ -265,9 +265,9 @@ duk_push_number(ctx, arg * arg);
 return 1;
 </pre>
 <p>Return from the function call, indicating that there is a (single) return
-value on top of the value stack.  You could also return <tt>0</tt> to indicate
+value on top of the value stack.  You could also return <code>0</code> to indicate
 that no return value is given (in which case Duktape defaults to Ecmascript
-<tt>undefined</tt>).  A negative return value which causes an error to be
+<code>undefined</code>).  A negative return value which causes an error to be
 automatically thrown: this is a shorthand for throwing errors conveniently.
 Note that you don't need to pop any values off the stack, Duktape will do that
 for you automatically when the function returns.
@@ -290,9 +290,9 @@ helper is ported.  In this case the native helper detection happens when the
 script is loaded.  You can also detect it when the code is actually called
 which is more flexible.</p>
 
-<p>A native helper with functionality equivalent to <tt>primeCheckEcmascript</tt>
+<p>A native helper with functionality equivalent to <code>primeCheckEcmascript</code>
 is quite straightforward to implement.  Adding a program main we get
-<tt>primecheck.c</tt>:</p>
+<code>primecheck.c</code>:</p>
 <pre class="c-code" include="primecheck.c"></pre>
 
 <p>The new calls here are, line by line:</p>
@@ -306,7 +306,7 @@ int lim = duk_require_int(ctx, 1);
 <p>These two calls check the two argument values given to the native helper.
 If the values are not of the Ecmascript number type, an error is thrown.
 If they are numbers, their value is converted to an integer and assigned to
-the <tt>val</tt> and <tt>lim</tt> locals.  The index 0 refers to the first
+the <code>val</code> and <code>lim</code> locals.  The index 0 refers to the first
 function argument and index 1 to the second.</p>
 </li>
 
@@ -315,8 +315,8 @@ function argument and index 1 to the second.</p>
 duk_push_false(ctx);
 return 1;
 </pre>
-<p>Pushes an Ecmascript <tt>false</tt> to the value stack.  The C return value
-1 indicates that the <tt>false</tt> value is returned to the Ecmascript caller.</p>
+<p>Pushes an Ecmascript <code>false</code> to the value stack.  The C return value
+1 indicates that the <code>false</code> value is returned to the Ecmascript caller.</p>
 </li>
 
 <li>
@@ -326,16 +326,16 @@ duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
 duk_put_prop_string(ctx, -2, "primeCheckNative");
 </pre>
 <p>The first call, like before, pushes the Ecmascript global object to the
-value stack.  The second call creates an Ecmascript <tt>Function</tt> object
+value stack.  The second call creates an Ecmascript <code>Function</code> object
 and pushes it to the value stack.  The function object is bound to the
-Duktape/C function <tt>native_prime_check</tt>: when the Ecmascript function
+Duktape/C function <code>native_prime_check</code>: when the Ecmascript function
 created here is called from Ecmascript, the C function gets invoked.
-The second argument (<tt>2</tt>) to the call indicates how many arguments
+The second argument (<code>2</code>) to the call indicates how many arguments
 the C function gets on the value stack.  If the caller gives fewer arguments,
-the missing arguments are padded with <tt>undefined</tt>; if the caller gives
+the missing arguments are padded with <code>undefined</code>; if the caller gives
 more arguments, the extra arguments are dropped automatically.  Finally, the
 third call registers the function object into the global object with the
-name <tt>primeCheckNative</tt> and pops the function value off the stack.
+name <code>primeCheckNative</code> and pops the function value off the stack.
 </p>
 </li>
 
@@ -346,9 +346,9 @@ duk_call(ctx, 0);
 duk_pop(ctx);
 </pre>
 <p>When we come here the value stack already contains the global object
-at the stack top.  The first line looks up the <tt>primeTest</tt> function
+at the stack top.  The first line looks up the <code>primeTest</code> function
 from the global object (which was defined by the loaded script).  The
-second line calls the <tt>primeTest</tt> function with zero arguments.
+second line calls the <code>primeTest</code> function with zero arguments.
 The third line pops the call result off the stack; we don't need the return
 value here.</p>
 </li>
@@ -374,7 +374,7 @@ sys	0m0.000s
 
 <p>Because most execution time is spent in the prime check, the speed-up
 compared to plain Ecmascript is significant.  You can check this by editing
-<tt>prime.js</tt> and disabling the use of the native helper:</p>
+<code>prime.js</code> and disabling the use of the native helper:</p>
 <pre class="ecmascript-code">
 // Select available helper at load time
 var primeCheckHelper = primeCheckEcmascript;

@@ -26,7 +26,7 @@ equivalent, although Javascript and its variants are technically just one
 environment where the Ecmascript language is used.  The line between the
 two is not very clear in practice: even non-browser Ecmascript environments
 often provide some browser-specific built-ins.  Duktape is no exception,
-and provides the commonly used <tt>print()</tt> and <tt>alert()</tt>
+and provides the commonly used <code>print()</code> and <code>alert()</code>
 built-ins.  Even so, we use the term Ecmascript throughout to refer to the
 language implemented by Duktape.</p>
 
@@ -47,8 +47,8 @@ no support for its features.</p>
 <p>Besides standard Ecmascript features, Duktape has the following additional
 features (some are visible to applications, while others are internal):</p>
 <ul>
-<li>Additional built-ins: <tt>print()</tt> and <tt>alert()</tt> borrowed from
-    browsers, Duktape specific built-ins in the <tt>__duk__</tt> global object</li>
+<li>Additional built-ins: <code>print()</code> and <code>alert()</code> borrowed from
+    browsers, Duktape specific built-ins in the <code>__duk__</code> global object</li>
 <li>Extended types: custom "buffer" and "pointer" types, extended string type
     which supports arbitary binary strings and
     non-<a href="http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">BMP</a>
@@ -73,7 +73,7 @@ so Duktape depends on very few system libraries.  For example, number
 formatting and parsing, regular expressions, and Unicode are all implemented
 internally by Duktape.  One of the few dependencies that cannot be fully
 eliminated is system date/time integration.  This is confined to the
-implementation of the <tt>Date</tt> built-in.</p>
+implementation of the <code>Date</code> built-in.</p>
 
 <p><b>Easy C interface</b>.  The interface between Duktape and C programs
 should be natural and error-tolerant.  As a particular issue, string

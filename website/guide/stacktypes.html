@@ -6,9 +6,9 @@
 <table>
 <tr class="header"><th>Type</th><th>Type constant</th><th>Type mask constant</th><th>Description</th></tr>
 <tr><td>(none)</td><td>DUK_TYPE_NONE</td><td>DUK_TYPE_MASK_NONE</td><td>no type (missing value, invalid index, etc)</td></tr>
-<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><tt>undefined</tt></td></tr>
-<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><tt>null</tt></td></tr>
-<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><tt>true</tt> and <tt>false</tt></td></tr>
+<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><code>undefined</code></td></tr>
+<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><code>null</code></td></tr>
+<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><code>true</code> and <code>false</code></td></tr>
 <tr><td>number</td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
 <tr><td>string</td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable string</td></tr>
 <tr><td>object</td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
@@ -84,15 +84,15 @@ indicate that a value does not exist, a stack index is invalid, etc.</p>
 
 <h3>Undefined</h3>
 
-<p>The <b>undefined</b> type maps to Ecmascript <tt>undefined</tt>, which is
-distinguished from a <tt>null</tt>.</p>
+<p>The <b>undefined</b> type maps to Ecmascript <code>undefined</code>, which is
+distinguished from a <code>null</code>.</p>
 
 <p>Values read from outside the active value stack range read back as
 <b>undefined</b>.</p>
 
 <h3>Null</h3>
 
-<p>The <b>null</b> type maps to Ecmascript <tt>null</tt>.</p>
+<p>The <b>null</b> type maps to Ecmascript <code>null</code>.</p>
 
 <h3>Boolean</h3>
 
@@ -101,7 +101,7 @@ and non-zero for true.</p>
 
 <p>Whenever giving boolean values as arguments in API calls, any non-zero value is
 accepted as a "true" value.  Whenever API calls return boolean values, the value
-<tt>1</tt> is always used for a "true" value.  This allows certain C idioms to be
+<code>1</code> is always used for a "true" value.  This allows certain C idioms to be
 used.  For instance, a bitmask can be built directly based on API call return values,
 as follows:
 </p>
@@ -140,10 +140,10 @@ come out.  Don't rely on NaNs preserving their exact form.</p>
 <p>The <b>string</b> type is a raw byte sequence of a certain length which may
 contain internal NUL (0x00) values.  Strings are always automatically NUL
 terminated for C coding convenience.  The NUL terminator is not counted as part
-of the string length.  For instance, the string <tt>"foo"</tt> has byte length 3
-and is stored in memory as <tt>{ 'f', 'o', 'o', '\0' }</tt>.  Because of the
+of the string length.  For instance, the string <code>"foo"</code> has byte length 3
+and is stored in memory as <code>{ 'f', 'o', 'o', '\0' }</code>.  Because of the
 guaranteed NUL termination, strings can always be pointed to using a simple
-<tt>const char *</tt> as long as internal NULs are not an issue; if they are,
+<code>const char *</code> as long as internal NULs are not an issue; if they are,
 the explicit byte length of the string can be queried with the API.  Calling code
 can refer directly to the string data held by Duktape.  Such string data
 pointers are valid (and stable) for as long as a string is reachable in the
@@ -166,9 +166,9 @@ directly; these are prohibited in UTF-8.  CESU-8, like UTF-8, encodes all 7-bit
 ASCII characters as-is which is convenient for C code.  For example:</p>
 
 <ul>
-<li>U+0041 ("A") encodes to <tt>41</tt>.</li>
-<li>U+1234 (ETHIOPIC SYLLABLE SEE) encodes to <tt>e1 88 b4</tt>.</li>
-<li>U+D812 (high surrogate) encodes to <tt>ed a0 92</tt> (this would be
+<li>U+0041 ("A") encodes to <code>41</code>.</li>
+<li>U+1234 (ETHIOPIC SYLLABLE SEE) encodes to <code>e1 88 b4</code>.</li>
+<li>U+D812 (high surrogate) encodes to <code>ed a0 92</code> (this would be
     <a href="http://en.wikipedia.org/wiki/UTF-8#Invalid_code_points">invalid UTF-8</a>).</li>
 </ul>
 
@@ -188,11 +188,11 @@ stored in an internal finalizer property.  Such internal keys are kept separate
 from valid Ecmascript keys by using a byte sequence which can never occur in
 a valid CESU-8 string; consequently, standard Ecmascript code cannot accidentally
 reference such fields.  Internal properties are never enumerable, and are not
-returned by e.g. <tt>Object.getOwnPropertyNames()</tt>.  Currently, internal
-property names begin with an <tt>0xFF</tt> byte followed by the property name.
-For instance the finalizer property key consists of the byte <tt>0xFF</tt>
-followed by the ASCII string <tt>"finalizer"</tt>.  In internal documentation
-this property would usually be referred to as <tt>_finalizer</tt> for convenience.
+returned by e.g. <code>Object.getOwnPropertyNames()</code>.  Currently, internal
+property names begin with an <code>0xFF</code> byte followed by the property name.
+For instance the finalizer property key consists of the byte <code>0xFF</code>
+followed by the ASCII string <code>"finalizer"</code>.  In internal documentation
+this property would usually be referred to as <code>_finalizer</code> for convenience.
 You should never read or write internal properties directly.</p>
 
 <p>The "extended UTF-8" encoding used by Duktape is described in the table below.
@@ -216,7 +216,7 @@ continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</
 </table>
 
 <p>The downside of the encoding for codepoints above U+7FFFFFFF is that
-the leading byte will be <tt>0xFE</tt> which conflicts with Unicode byte order
+the leading byte will be <code>0xFE</code> which conflicts with Unicode byte order
 marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
 <h3>Object</h3>
@@ -250,7 +250,7 @@ These will be implemented on top of raw arrays, most likely.
 <h3>Pointer</h3>
 
 <p>The <b>pointer</b> type is a raw, uninterpreted C pointer, essentially
-a <tt>void *</tt>.  Pointers can be used to point to native objects (memory
+a <code>void *</code>.  Pointers can be used to point to native objects (memory
 allocations, handles, etc), but because Duktape doesn't know their use, they
 are not automatically garbage collected.  You can, however, put one or more
 pointers inside an object and use the object finalizer to free the

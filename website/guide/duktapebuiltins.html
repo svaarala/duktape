@@ -13,8 +13,8 @@ values.</p>
 </thead>
 <tbody>
 <tr><td class="propname">__duk__</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
-<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing entries to <tt>stdout</tt>.</td></tr>
-<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing entries to <tt>stderr</tt>.</td></tr>
+<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing entries to <code>stdout</code>.</td></tr>
+<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing entries to <code>stderr</code>.</td></tr>
 </tbody>
 </table>
 
@@ -28,13 +28,13 @@ values.</p>
 </thead>
 <tbody>
 <tr><td class="propname">build</td><td>Opaque build information string.  Describes when and how the Duktape distributable sources were built.</td></tr>
-<tr><td class="propname">version</td><td>Duktape version number: <tt>(major * 10000) + (minor * 100) + patch</tt>.</td></tr>
+<tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
 <tr><td class="propname">setFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">getFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">enc</td><td>Encode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before encoding.</td></tr>
 <tr><td class="propname">dec</td><td>Decode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before decoding.</td></tr>
-<tr><td class="propname">addr</td><td>Get heap address of a value as a string, <tt>undefined</tt> if not appropriate (debug use).</td></tr>
-<tr><td class="propname">refc</td><td>Get reference count of a value as a number, <tt>undefined</tt> if not appropriate (debug use).</td></tr>
+<tr><td class="propname">addr</td><td>Get heap address of a value as a string, <code>undefined</code> if not appropriate (debug use).</td></tr>
+<tr><td class="propname">refc</td><td>Get reference count of a value as a number, <code>undefined</code> if not appropriate (debug use).</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
@@ -44,7 +44,7 @@ values.</p>
 
 <h4>version</h4>
 
-<p>The <tt>version</tt> property allows version-based feature detection and
+<p>The <code>version</code> property allows version-based feature detection and
 behavior.  Version numbers can be compared directly: a logically higher version
 will also be numerically higher.  For example:</p>
 <pre class="ecmascript-code">
@@ -59,7 +59,7 @@ if (typeof __duk__ !== 'object') {
 }
 </pre>
 
-<p>Remember to check for existence of <tt>__duk__</tt> when doing feature
+<p>Remember to check for existence of <code>__duk__</code> when doing feature
 detection.  Your code should typically work on as many engines as possible.
 Avoid the common pitfall of using a direct identifier reference in the check:</p>
 <pre class="ecmascript-code">
@@ -111,13 +111,13 @@ __duk__.dec('base64', 'Zm9v')  // returns 'foo'
 ordinary function and as a constructor:</p>
 <ul>
 <li>When called as a function, coerces the first argument to a buffer using
-    the custom <tt>ToBuffer</tt> coercion.  The return value is a plain
+    the custom <code>ToBuffer</code> coercion.  The return value is a plain
     buffer (not a Buffer object).</li>
 <li>When called as a constructor, coerces the first argument to a buffer
-    using the custom <tt>ToBuffer</tt> coercion.  Returns a Buffer object
+    using the custom <code>ToBuffer</code> coercion.  Returns a Buffer object
     whose internal value is the buffer resulting from the coercion.  The
     internal prototype of the newly created Buffer will be the
-    <tt>__duk__.Buffer.prototype</tt> object.</li>
+    <code>__duk__.Buffer.prototype</code> object.</li>
 </ul>
 
 <h3>__duk__.Buffer.prototype</h3>
@@ -134,8 +134,8 @@ ordinary function and as a constructor:</p>
 </tbody>
 </table>
 
-<p><tt>toString()</tt> and <tt>valueOf</tt> accept both plain buffers and
-Buffer objects as their <tt>this</tt> binding.  This allows code such as:</p>
+<p><code>toString()</code> and <code>valueOf</code> accept both plain buffers and
+Buffer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
 print(plain_buf.toString());
 </pre>
@@ -157,13 +157,13 @@ print(plain_buf.toString());
 ordinary function and as a constructor:</p>
 <ul>
 <li>When called as a function, coerces the first argument to a pointer using
-    the custom <tt>ToPointer</tt> coercion.  The return value is a plain
+    the custom <code>ToPointer</code> coercion.  The return value is a plain
     pointer (not a Pointer object).</li>
 <li>When called as a constructor, coerces the first argument to a pointer
-    using the custom <tt>ToPointer</tt> coercion.  Returns a Pointer object
+    using the custom <code>ToPointer</code> coercion.  Returns a Pointer object
     whose internal value is the pointer resulting from the coercion.  The
     internal prototype of the newly created Pointer will be the
-    <tt>__duk__.Pointer.prototype</tt> object.</li>
+    <code>__duk__.Pointer.prototype</code> object.</li>
 </ul>
 
 <h3>__duk__.Pointer.prototype</h3>
@@ -180,8 +180,8 @@ ordinary function and as a constructor:</p>
 </tbody>
 </table>
 
-<p><tt>toString()</tt> and <tt>valueOf</tt> accept both plain pointers and
-Pointer objects as their <tt>this</tt> binding.  This allows code such as:</p>
+<p><code>toString()</code> and <code>valueOf</code> accept both plain pointers and
+Pointer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
 print(plain_ptr.toString());
 </pre>
@@ -207,11 +207,11 @@ Arguments: value, flag indicating whether value is to be thrown (optional, defau
 ordinary function and as a constructor.  The behavior is the same in both
 cases:</p>
 <ul>
-<li>The first argument is checked to be a function (if not, a <tt>TypeError</tt>
+<li>The first argument is checked to be a function (if not, a <code>TypeError</code>
     is thrown).  The return value is a new thread whose initial function is
     recorded to be the argument function (this function will start executing
     when the new thread is first resumed).  The internal prototype of the
-    newly created Thread will be the <tt>__duk__.Thread.prototype</tt> object.</li>
+    newly created Thread will be the <code>__duk__.Thread.prototype</code> object.</li>
 </ul>
 
 <h3>__duk__.Thread.prototype</h3>
