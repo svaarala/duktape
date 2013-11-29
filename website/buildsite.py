@@ -660,6 +660,7 @@ def main():
 	apitestdir = '../api-testcases'
 	guideincdir = '../examples/guide'
 	apiincdir = '../examples/api'
+	out_charset = 'utf-8'
 
 	print 'Generating style.css'
 	data = generateStyleCss()
@@ -670,22 +671,22 @@ def main():
 	print 'Generating api.html'
 	soup = generateApiDoc(apidocdir, apitestdir)
 	soup = postProcess(soup, apiincdir)
-	writeFile(os.path.join(outdir, 'api.html'), soup.encode('ascii'))
+	writeFile(os.path.join(outdir, 'api.html'), soup.encode(out_charset))
 
 	print 'Generating guide.html'
 	soup = generateGuide()
 	soup = postProcess(soup, guideincdir)
-	writeFile(os.path.join(outdir, 'guide.html'), soup.encode('ascii'))
+	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
 	soup = generateIndexPage()
 	soup = postProcess(soup, None)
-	writeFile(os.path.join(outdir, 'index.html'), soup.encode('ascii'))
+	writeFile(os.path.join(outdir, 'index.html'), soup.encode(out_charset))
 
 	print 'Generating download.html'
 	soup = generateDownloadPage()
 	soup = postProcess(soup, None)
-	writeFile(os.path.join(outdir, 'download.html'), soup.encode('ascii'))
+	writeFile(os.path.join(outdir, 'download.html'), soup.encode(out_charset))
 
 	print 'Copying misc files'
 	for i in [ 'favicon.ico',
