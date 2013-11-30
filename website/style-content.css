@@ -88,11 +88,15 @@
 	}
 }
 
-.content tt {
+.content tt,
+.content code,
+.content samp {
 	font-family: 'Droid Sans Mono', sans-serif;
 }
 @media print {
-	.content tt {
+	.content tt,
+	.content code,
+	.content samp {
 	}
 }
 
