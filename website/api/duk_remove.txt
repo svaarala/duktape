@@ -5,8 +5,8 @@ void duk_remove(duk_context *ctx, int index);
 [ ... val(index)! ... ] -> [ ... ... ]
 
 =summary
-<p>Remove value at <tt>index</tt>.  Elements above <tt>index</tt>
-are shifted down the stack by a step.  If <tt>to_index</tt> is
+<p>Remove value at <code>index</code>.  Elements above <code>index</code>
+are shifted down the stack by a step.  If <code>to_index</code> is
 an invalid index, throws an error.</p>
 
 =example

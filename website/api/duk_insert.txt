@@ -5,9 +5,9 @@ void duk_insert(duk_context *ctx, int to_index);
 [ ... old(to_index)! ... val! ] -> [ ... val(to_index)! old! ... ]
 
 =summary
-<p>Insert a value at <tt>to_index</tt> with a value popped from the
-stack top.  The previous value at <tt>to_index</tt> and any values
-above it are moved up the stack by a step.  If <tt>to_index</tt> is
+<p>Insert a value at <code>to_index</code> with a value popped from the
+stack top.  The previous value at <code>to_index</code> and any values
+above it are moved up the stack by a step.  If <code>to_index</code> is
 an invalid index, throws an error.</p>
 
 <div class="note">

@@ -5,12 +5,12 @@ const char *duk_push_string_file(duk_context *ctx, const char *path);
 [ ... ] -> [ ... data! ]
 
 =summary
-<p>Push the contents of a file <tt>path</tt> into the stack as string data.
+<p>Push the contents of a file <code>path</code> into the stack as string data.
 The file should be CESU-8 formatted if Ecmascript string compatibility is
 necessary.  A pointer to the interned string data is returned.  If the
 operation fails, throws an error.</p>
 
-<p>If <tt>path</tt> is NULL, throws an error.</p>
+<p>If <code>path</code> is NULL, throws an error.</p>
 
 =example
 duk_push_string_file(ctx, "test.js");

@@ -6,8 +6,8 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index);
 [ ... func! this! arg! ...! argN! ] -> [ ... err! ]  (if failure, return value != 0)
 
 =summary
-<p>Like <tt><a href="#duk_pcall">duk_pcall()</a></tt>, but the target function
-<tt>func</tt> is called with an explicit <tt>this</tt> binding given on the value
+<p>Like <code><a href="#duk_pcall">duk_pcall()</a></code>, but the target function
+<code>func</code> is called with an explicit <code>this</code> binding given on the value
 stack.</p>
 
 =example

@@ -40,7 +40,7 @@ current stack frame, relative to the frame bottom:</p>
 [ -6 -5 -4 -3 -2 -1! ]
 </pre>
 
-<p>The special constant <tt>DUK_INVALID_INDEX</tt> is a negative integer
+<p>The special constant <code>DUK_INVALID_INDEX</code> is a negative integer
 which denotes an invalid stack index.  It can be returned from API calls
 and can also be given to API calls to indicate a "no value".</p>
 
@@ -67,9 +67,9 @@ each other's values.</p>
 <table>
 <tr class="header"><th>Type</th><th>Type constant</th><th>Type mask constant</th><th>Description</th><th>Heap alloc</th></tr>
 <tr><td>(none)</td><td>DUK_TYPE_NONE</td><td>DUK_TYPE_MASK_NONE</td><td>no type (missing value, invalid index, etc)</td><td>no</td></tr>
-<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><tt>undefined</tt></td><td>no</td></tr>
-<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><tt>null</tt></td><td>no</td></tr>
-<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><tt>true</tt> and <tt>false</tt></td><td>no</td></tr>
+<tr><td>undefined</td><td>DUK_TYPE_UNDEFINED</td><td>DUK_TYPE_MASK_UNDEFINED</td><td><code>undefined</code></td><td>no</td></tr>
+<tr><td>null</td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><code>null</code></td><td>no</td></tr>
+<tr><td>boolean</td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><code>true</code> and <code>false</code></td><td>no</td></tr>
 <tr><td>number</td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td><td>no</td></tr>
 <tr><td>string</td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable string</td><td>yes</td></tr>
 <tr><td>object</td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td><td>yes</td></tr>
@@ -113,8 +113,8 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
 array indices (0, 1, 2, ...) which are expressed as canonical string
 representations ("0", "1", "2", ...) of the respective numbers for all
 integers in the range [0, 2**32-1].  Conceptually any key used in a
-property lookup is first coerced to a string, so that <tt>obj[123]</tt>
-is really just a shorthand for <tt>obj["123"]</tt>.</p>
+property lookup is first coerced to a string, so that <code>obj[123]</code>
+is really just a shorthand for <code>obj["123"]</code>.</p>
 
 <p>Duktape tries to avoid explicit number-to-string conversions for array
 accesses whenever possible, so it is preferable to use numeric array
@@ -134,18 +134,18 @@ int my_func(duk_context *ctx) {
 
 <p>Argument count given in value stack is specified when the corresponding
 Ecmascript function object is created: either a fixed number of arguments
-of <tt>DUK_VARARGS</tt> for getting arguments "as is".  Extra arguments
-are dropped and missing arguments padded with <tt>undefined</tt> as necessary.
-Use <tt><a href="#duk_get_top">duk_get_top()</a></tt> to determine number of
+of <code>DUK_VARARGS</code> for getting arguments "as is".  Extra arguments
+are dropped and missing arguments padded with <code>undefined</code> as necessary.
+Use <code><a href="#duk_get_top">duk_get_top()</a></code> to determine number of
 actual arguments.
 </p>
 
 <p>Function return values:</p>
 <ul>
 <li>Return value 1: stack top contains return value.</li>
-<li>Return value 0: return value is <tt>undefined</tt>.</li>
-<li>Return value &lt;0: shorthand for throwing errors, use <tt>DUK_RET_xxx</tt>
-    constants which are negative variants of <tt>DUK_ERR_xxx</tt>.</li>
+<li>Return value 0: return value is <code>undefined</code>.</li>
+<li>Return value &lt;0: shorthand for throwing errors, use <code>DUK_RET_xxx</code>
+    constants which are negative variants of <code>DUK_ERR_xxx</code>.</li>
 <li>Return value &gt;1: reserved, currently invalid.</li>
 </ul>
 

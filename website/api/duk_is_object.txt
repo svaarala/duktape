@@ -5,8 +5,8 @@ int duk_is_object(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is an object, otherwise
-returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+<p>Returns 1 if value at <code>index</code> is an object, otherwise
+returns 0.  If <code>index</code> is invalid, also returns 0.</p>
 
 <p>Note that many values are considered to be an object, e.g.:</p>
 
@@ -19,7 +19,7 @@ returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
 </ul>
 
 <p>Specific object types can be checked with separate API calls,
-e.g. <tt><a href="#duk_is_array">duk_is_array()</a></tt>.</p>
+e.g. <code><a href="#duk_is_array">duk_is_array()</a></code>.</p>
 
 =example
 if (duk_is_object(ctx, -3)) {

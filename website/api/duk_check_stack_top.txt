@@ -2,20 +2,20 @@
 int duk_check_stack_top(duk_context *ctx, unsigned int top);
 
 =summary
-<p>Like <tt><a href="#duk_check_stack">duk_check_stack()</a></tt>,
-but ensures there is space up to <tt>top</tt> for caller's use.
+<p>Like <code><a href="#duk_check_stack">duk_check_stack()</a></code>,
+but ensures there is space up to <code>top</code> for caller's use.
 This is sometimes more convenient than specifying the number of
 additional elements (relative to current stack top) to reserve.</p>
 
 <div class="note">
 The caller specifies the maximum stack top ensured for caller's
 use, not the highest value stack index reserved for the caller.
-For instance, if <tt>top</tt> is 500, the maximum value stack
+For instance, if <code>top</code> is 500, the maximum value stack
 index reserved for the caller is 499.
 </div>
 
 <p>As a general rule
-<tt><a href="#duk_require_stack_top">duk_require_stack_top()</a></tt> should be
+<code><a href="#duk_require_stack_top">duk_require_stack_top()</a></code> should be
 used instead of this function to reserve more stack space.  If value stack
 cannot be extended, there is almost never a useful recovery strategy except
 to throw an error and unwind.</p>

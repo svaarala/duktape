@@ -6,8 +6,8 @@ void *duk_push_dynamic_buffer(duk_context *ctx, size_t size);
 
 =summary
 <p>Allocate a dynamic (resizable) buffer and push it to the value stack.
-Shortcut for <tt><a href="#duk_push_buffer">duk_push_buffer()</a></tt>
-with <tt>dynamic = 1</tt>.</p>
+Shortcut for <code><a href="#duk_push_buffer">duk_push_buffer()</a></code>
+with <code>dynamic = 1</code>.</p>
 
 =example
 void *p;

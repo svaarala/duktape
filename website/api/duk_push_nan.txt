@@ -5,7 +5,7 @@ void duk_push_nan(duk_context *ctx);
 [ ... ] -> [ ... NaN! ]
 
 =summary
-Pushes a <tt>NaN</tt> (not-a-number) to the stack.
+Pushes a <code>NaN</code> (not-a-number) to the stack.
 
 =example
 duk_push_nan(ctx);

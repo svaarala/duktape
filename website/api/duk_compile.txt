@@ -6,19 +6,19 @@ void duk_compile(duk_context *ctx, int flags);
 
 =summary
 <p>Compile Ecmascript source code and replace it with a compiled function
-object (the code is not executed).  The <tt>filename</tt> argument is stored
-as the <tt>fileName</tt> property of the resulting function, and is the name
-used in e.g. tracebacks to identify the function.  May throw a <tt>SyntaxError</tt>
+object (the code is not executed).  The <code>filename</code> argument is stored
+as the <code>fileName</code> property of the resulting function, and is the name
+used in e.g. tracebacks to identify the function.  May throw a <code>SyntaxError</code>
 for any compile-time errors (in addition to the usual internal errors like out-of-memory,
 internal limit errors, etc).</p>
 
 <p>The following flags may be given:</p>
 <ul>
-<li><tt>DUK_COMPILE_EVAL</tt>: compile the input as eval code instead of
+<li><code>DUK_COMPILE_EVAL</code>: compile the input as eval code instead of
     as an Ecmascript program</li>
-<li><tt>DUK_COMPILE_FUNCTION</tt>: compile the input as a function instead
+<li><code>DUK_COMPILE_FUNCTION</code>: compile the input as a function instead
     of as an Ecmascript program</li>
-<li><tt>DUK_COMPILE_STRICT</tt>: force the input to be compiled in strict
+<li><code>DUK_COMPILE_STRICT</code>: force the input to be compiled in strict
     mode</li>
 </ul>
 
@@ -28,10 +28,10 @@ internal limit errors, etc).</p>
 <li>Program code: compiles into a function with zero arguments, which
     executes like a top level Ecmascript program (default)</li>
 <li>Eval code: compiles into a function with zero arguments, which
-    executes like an Ecmascript <tt>eval</tt> call
-    (flag <tt>DUK_COMPILE_EVAL</tt>)</li>
+    executes like an Ecmascript <code>eval</code> call
+    (flag <code>DUK_COMPILE_EVAL</code>)</li>
 <li>Function code: compiles into a function with zero or more arguments
-    (flag <tt>DUK_COMPILE_FUNCTION</tt>)</li>
+    (flag <code>DUK_COMPILE_FUNCTION</code>)</li>
 </ul>
 
 <p>All of these have slightly different semantics in Ecmascript.  See
@@ -43,7 +43,7 @@ return value for the program or eval code, whereas functions don't have
 an automatic return value.
 </p>
 
-<p>Program and eval code don't have an explicit <tt>function</tt> syntax.
+<p>Program and eval code don't have an explicit <code>function</code> syntax.
 For instance, the following can be compiled both as a program and as an
 eval expression:</p>
 <pre class="ecmascript-code">
@@ -51,7 +51,7 @@ print("Hello world!");
 123;  // implicit return value
 </pre>
 
-<p>Function code follows the Ecmascript <tt>function</tt> syntax
+<p>Function code follows the Ecmascript <code>function</code> syntax
 (the function name is optional):</p>
 <pre class="ecmascript-code">
 function adder(x,y) {

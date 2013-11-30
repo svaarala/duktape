@@ -7,7 +7,7 @@ to the heap.  All resources related to the heap are freed and must not be
 referenced after the call completes.  These resources include all contexts
 linked to the heap, and also all string and buffer pointers within the heap.</p>
 
-<p>If <tt>ctx</tt> is <tt>NULL</tt>, the call is a no-op.</p>
+<p>If <code>ctx</code> is <code>NULL</code>, the call is a no-op.</p>
 
 =example
 duk_destroy_heap(ctx);

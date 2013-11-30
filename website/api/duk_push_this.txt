@@ -5,7 +5,7 @@ void duk_push_this(duk_context *ctx);
 [ ... ] -> [ ... this! ]
 
 =summary
-<p>Push the <tt>this</tt> binding of the currently running C function to
+<p>Push the <code>this</code> binding of the currently running C function to
 the stack.</p>
 
 =example

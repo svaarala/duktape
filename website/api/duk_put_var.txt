@@ -7,7 +7,7 @@ void duk_put_var(duk_context *ctx);
 =summary
 
 <!--FIXME-->
-<p>Write <tt>val</tt> to the identifier <tt>varname</tt>.  Possible outcomes:</p>
+<p>Write <code>val</code> to the identifier <code>varname</code>.  Possible outcomes:</p>
 <ul>
 <li>If identifier is found and write succeeds: XXX.</li>
 <li>If identifier is found and write fails (e.g. write-protected property): XXX.</li>

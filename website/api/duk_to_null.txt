@@ -5,11 +5,11 @@ void duk_to_null(duk_context *ctx, int index);
 [ ... val! ... ] -> [ ... null! ... ]
 
 =summary
-<p>Replace the value at <tt>index</tt> with <tt>null</tt>, regardless
+<p>Replace the value at <code>index</code> with <code>null</code>, regardless
 of the previous value.  Throws an error if index is invalid.</p>
 
 <div class="note">
-Equivalent to <tt>duk_push_null()</tt> followed by <tt>duk_replace()</tt>
+Equivalent to <code>duk_push_null()</code> followed by <code>duk_replace()</code>
 to target index.
 </div>
 

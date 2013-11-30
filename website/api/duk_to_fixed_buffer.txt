@@ -5,9 +5,9 @@ void duk_to_fixed_buffer(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Convert buffer at <tt>index</tt> to a fixed buffer.  If the buffer is
-already fixed, does nothing.  If conversion fails, the value at <tt>index</tt>
-is not a buffer, or <tt>index</tt> is invalid, throws an error.</p>
+<p>Convert buffer at <code>index</code> to a fixed buffer.  If the buffer is
+already fixed, does nothing.  If conversion fails, the value at <code>index</code>
+is not a buffer, or <code>index</code> is invalid, throws an error.</p>
 
 =example
 duk_to_fixed_buffer(ctx, -3);

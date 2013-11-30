@@ -5,8 +5,8 @@ void duk_dup(duk_context *ctx, int from_index);
 [ ... val! ... ] -> [ ... val! ... val! ]
 
 =summary
-<p>Push a duplicate of value at <tt>from_index</tt> to the stack.
-If <tt>from_index</tt> is invalid, throws an error.</p>
+<p>Push a duplicate of value at <code>from_index</code> to the stack.
+If <code>from_index</code> is invalid, throws an error.</p>
 
 =example
 duk_push_int(ctx, 123);  /* -> [ ... 123 ] */

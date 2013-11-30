@@ -5,8 +5,8 @@ double duk_get_number(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get the number value at <tt>index</tt> without modifying or coercing
-the value.  Returns <tt>NaN</tt> if the value is not a number or the
+<p>Get the number value at <code>index</code> without modifying or coercing
+the value.  Returns <code>NaN</code> if the value is not a number or the
 index is invalid.</p>
 
 =example

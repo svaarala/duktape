@@ -5,12 +5,12 @@ int duk_get_type_mask(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns type mask of value at <tt>index</tt>.  The return value is one of
-<tt>DUK_TYPE_MASK_xxx</tt> or <tt>DUK_TYPE_MASK_NONE</tt> if <tt>index</tt>
+<p>Returns type mask of value at <code>index</code>.  The return value is one of
+<code>DUK_TYPE_MASK_xxx</code> or <code>DUK_TYPE_MASK_NONE</code> if <code>index</code>
 is invalid.</p>
 
 <p>Type masks allow e.g. for a convenient comparison for multiple types at once
-(the <tt><a href="#duk_check_type_mask">duk_check_type_mask()</a></tt> call is
+(the <code><a href="#duk_check_type_mask">duk_check_type_mask()</a></code> call is
 even more convenient for this purpose).</p>
 
 =example

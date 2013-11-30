@@ -5,10 +5,10 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size);
 [ ... val! ... ] -> [ ... buffer(val)! ... ]
 
 =summary
-<p>Replace the value at <tt>index</tt> with a buffer-coerced value.  Returns
-a pointer to the buffer data (may be <tt>NULL</tt> for a zero-size buffer),
-and writes the size of the buffer into <tt>*out_size</tt> (if <tt>out_size</tt>
-is non-<tt>NULL</tt>).  If <tt>index</tt> is invalid, throws an error.</p>
+<p>Replace the value at <code>index</code> with a buffer-coerced value.  Returns
+a pointer to the buffer data (may be <code>NULL</code> for a zero-size buffer),
+and writes the size of the buffer into <code>*out_size</code> (if <code>out_size</code>
+is non-<code>NULL</code>).  If <code>index</code> is invalid, throws an error.</p>
 
 <p>Coercion rules:</p>
 <ul>

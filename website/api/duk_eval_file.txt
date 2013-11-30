@@ -6,9 +6,9 @@ void duk_eval_file(duk_context *ctx, const char *path);
 
 =summary
 <p>Like
-<tt><a href="#duk_eval">duk_eval()</a></tt>, but the eval input
+<code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
 is given as a filename.  The filename associated with the temporary
-function created for the eval code is <tt>path</tt> as is.</p>
+function created for the eval code is <code>path</code> as is.</p>
 
 =example
 duk_eval_string(ctx, "test.js");

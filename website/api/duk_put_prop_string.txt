@@ -5,9 +5,9 @@ int duk_put_prop_string(duk_context *ctx, int obj_index, const char *key);
 [ ... obj! ... val! ] -> [ ... obj! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_put_prop">duk_put_prop()</a></tt>,
+<p>Like <code><a href="#duk_put_prop">duk_put_prop()</a></code>,
 but the property name is given as a NUL-terminated C string
-<tt>key</tt>.</p>
+<code>key</code>.</p>
 
 =example
 duk_push_string(ctx, "value");

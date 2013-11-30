@@ -5,17 +5,17 @@ const char *duk_get_string(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get character data pointer for a string at <tt>index</tt> without
-modifying or coercing the value.  Returns a non-<tt>NULL</tt> pointer to
-the read-only, NUL-terminated string data.  Returns <tt>NULL</tt> if the
+<p>Get character data pointer for a string at <code>index</code> without
+modifying or coercing the value.  Returns a non-<code>NULL</code> pointer to
+the read-only, NUL-terminated string data.  Returns <code>NULL</code> if the
 value is not a string or the index is invalid.</p>
 
 <p>To get the string byte length explicitly (which is useful if the string
 contains embedded NUL characters), use
-<tt><a href="#duk_get_lstring">duk_get_lstring()</a></tt>.</p>
+<code><a href="#duk_get_lstring">duk_get_lstring()</a></code>.</p>
 
 <div class="note">
-A non-<tt>NULL</tt> return value is guaranteed even for zero length strings;
+A non-<code>NULL</code> return value is guaranteed even for zero length strings;
 this differs from how buffer data pointers are handled (for technical reasons).
 </div>
 

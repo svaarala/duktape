@@ -5,11 +5,11 @@ void duk_require_undefined(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Throw an error if the value at <tt>index</tt> is not <tt>undefined</tt>
+<p>Throw an error if the value at <code>index</code> is not <code>undefined</code>
 or if the index is invalid.</p>
 
 <div class="note">
-There is no "get" primitive (<tt>duk_get_undefined()</tt>) because such a
+There is no "get" primitive (<code>duk_get_undefined()</code>) because such a
 function would be a no-op.
 </div>
 

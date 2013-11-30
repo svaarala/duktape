@@ -5,17 +5,17 @@ const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
 [ ... ] -> [ ... str! ]
 
 =summary
-<p>Format a string like <tt>sprintf()</tt> (but safely) and push the result
-to the value stack.  Returns a non-<tt>NULL</tt> pointer to the resulting
+<p>Format a string like <code>sprintf()</code> (but safely) and push the result
+to the value stack.  Returns a non-<code>NULL</code> pointer to the resulting
 string.</p>
 
-<p>If <tt>fmt</tt> is <tt>NULL</tt>, an empty string is pushed to the stack
-and a non-<tt>NULL</tt> pointer to an empty string is returned (this
-behavior mimics what <tt>sprintf()</tt> does for a <tt>NULL</tt> format
+<p>If <code>fmt</code> is <code>NULL</code>, an empty string is pushed to the stack
+and a non-<code>NULL</code> pointer to an empty string is returned (this
+behavior mimics what <code>sprintf()</code> does for a <code>NULL</code> format
 string, at least on Linux).  The returned pointer can be dereferenced and a
 NUL terminator character is guaranteed.</p>
 
-<p>Unlike <tt>sprintf()</tt> the string formatting is safe.  Concretely,
+<p>Unlike <code>sprintf()</code> the string formatting is safe.  Concretely,
 the implementation will try increasing temporary buffer sizes until a
 large enough buffer is found for the temporary formatted value.</p>
 

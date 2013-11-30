@@ -5,9 +5,9 @@ int duk_del_prop_string(duk_context *ctx, int obj_index, const char *key);
 [ ... obj! ... ] -> [ ... obj! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_del_prop">duk_del_prop()</a></tt>,
+<p>Like <code><a href="#duk_del_prop">duk_del_prop()</a></code>,
 but the property name is given as a NUL-terminated C string
-<tt>key</tt>.</p>
+<code>key</code>.</p>
 
 =example
 int rc;

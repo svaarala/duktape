@@ -2,14 +2,14 @@
 void *duk_alloc(duk_context *ctx, size_t size);
 
 =summary
-<p>Like <tt><a href="#duk_alloc_raw">duk_alloc_raw()</a></tt> but may trigger
+<p>Like <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code> but may trigger
 a garbage collection to satisfy the request.  However, the allocated memory
 itself is not automatically garbage collected.  The allocation request may
-fail even after garbage collection, in which case a <tt>NULL</tt> is returned.</p>
+fail even after garbage collection, in which case a <code>NULL</code> is returned.</p>
 
-<p>Memory allocated with <tt>duk_alloc()</tt> can be freed with either
-<tt><a href="#duk_free">duk_free()</a></tt> or
-<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+<p>Memory allocated with <code>duk_alloc()</code> can be freed with either
+<code><a href="#duk_free">duk_free()</a></code> or
+<code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
 
 =example
 /* Although duk_alloc() triggers a GC if necessary, it can still fail to

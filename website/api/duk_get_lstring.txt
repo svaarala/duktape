@@ -5,19 +5,19 @@ const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len);
 [ ... val! ... ]
 
 =summary
-<p>Get character data pointer and length for a string at <tt>index</tt>
-without modifying or coercing the value.  Returns a non-<tt>NULL</tt>
+<p>Get character data pointer and length for a string at <code>index</code>
+without modifying or coercing the value.  Returns a non-<code>NULL</code>
 pointer to the read-only, NUL-terminated string data, and writes the
-string byte length to <tt>*out_len</tt> (if <tt>out_len</tt> is
-non-<tt>NULL</tt>).  Returns <tt>NULL</tt> and writes zero to <tt>*out_len</tt>
-(if <tt>out_len</tt> is non-<tt>NULL</tt>) if the value is not a string or
+string byte length to <code>*out_len</code> (if <code>out_len</code> is
+non-<code>NULL</code>).  Returns <code>NULL</code> and writes zero to <code>*out_len</code>
+(if <code>out_len</code> is non-<code>NULL</code>) if the value is not a string or
 the index is invalid.</p>
 
 <p>To get the string character length (instead of byte length), use
-<tt><a href="#duk_get_length">duk_get_length()</a></tt>.</p>
+<code><a href="#duk_get_length">duk_get_length()</a></code>.</p>
 
 <div class="note">
-A non-<tt>NULL</tt> return value is guaranteed even for zero length strings;
+A non-<code>NULL</code> return value is guaranteed even for zero length strings;
 this differs from how buffer data pointers are handled (for technical reasons).
 </div>
 

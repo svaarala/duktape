@@ -5,8 +5,8 @@ void *duk_to_pointer(duk_context *ctx, int index);
 [ ... val! ... ] -> [ ... pointer(val)! ... ]
 
 =summary
-<p>Replaces the value at <tt>index</tt> with a pointer-coerced value.  Returns
-the resulting <tt>void *</tt> value.  If <tt>index</tt> is invalid, throws an
+<p>Replaces the value at <code>index</code> with a pointer-coerced value.  Returns
+the resulting <code>void *</code> value.  If <code>index</code> is invalid, throws an
 error.</p>
 
 <p>Coercion rules:</p>
@@ -22,8 +22,8 @@ error.</p>
 This API call is really only useful for debugging.  Note in particular that
 the pointer returned must not be accessed, as it points to an internal heap
 header.  This is the case even for string/buffer values: the returned pointer
-differs from the one returned by <tt>duk_get_string()</tt> and
-<tt>duk_get_buffer()</tt>.
+differs from the one returned by <code>duk_get_string()</code> and
+<code>duk_get_buffer()</code>.
 </div>
 
 =example

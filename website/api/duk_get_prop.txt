@@ -6,19 +6,19 @@ int duk_get_prop(duk_context *ctx, int obj_index);
 [ ... obj! ... key! ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
 
 =summary
-<p>Get the property <tt>key</tt> of a value at <tt>obj_index</tt>.
+<p>Get the property <code>key</code> of a value at <code>obj_index</code>.
 Return code and error throwing behavior:</p>
 <ul>
-<li>If the property exists, a non-zero value is returned and <tt>key</tt>
+<li>If the property exists, a non-zero value is returned and <code>key</code>
     is replaced by the property value on the value stack.  However,
     if the property is an accessor, the "getter" function may throw
     an error.</li>
-<li>If the property does not exist, 0 is returned and <tt>key</tt>
-    is replaced by <tt>undefined</tt> on the value stack.</li>
-<li>If the value at <tt>obj_index</tt> is not
+<li>If the property does not exist, 0 is returned and <code>key</code>
+    is replaced by <code>undefined</code> on the value stack.</li>
+<li>If the value at <code>obj_index</code> is not
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
     throws an error.</li>
-<li>If <tt>obj_index</tt> is invalid, throws an error.</li>
+<li>If <code>obj_index</code> is invalid, throws an error.</li>
 </ul>
 
 <p>The property read is equivalent to the Ecmascript expression:</p>
@@ -30,20 +30,20 @@ obj[key]
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue (V)</a>,
 and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.3">[[Get]] (P)</a>.
-Both the target value and the <tt>key</tt> are coerced:</p>
+Both the target value and the <code>key</code> are coerced:</p>
 <ul>
 <li>The target value is automatically coerced to an object.  For instance,
-    a string is converted to a <tt>String</tt> and you can access its
-    <tt>"length"</tt> property.</li>
-<li>The <tt>key</tt> argument is internally coerced to a string.  There is
+    a string is converted to a <code>String</code> and you can access its
+    <code>"length"</code> property.</li>
+<li>The <code>key</code> argument is internally coerced to a string.  There is
     an internal fast path for arrays and numeric indices which avoids an
-    explicit string coercion, so use a numeric <tt>key</tt> when applicable.</p>
+    explicit string coercion, so use a numeric <code>key</code> when applicable.</p>
 </ul>
 
 <p>If the key is a fixed string you can avoid one API call and use the
-<tt><a href="#duk_get_prop_string">duk_get_prop_string()</a></tt> variant.
+<code><a href="#duk_get_prop_string">duk_get_prop_string()</a></code> variant.
 Similarly, if the key is an array index, you can use the
-<tt><a href="#duk_get_prop_index">duk_get_prop_index()</a></tt> variant.</p>
+<code><a href="#duk_get_prop_index">duk_get_prop_index()</a></code> variant.</p>
 
 =example
 /* reading [global object].Math.PI */

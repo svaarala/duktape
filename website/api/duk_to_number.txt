@@ -5,15 +5,15 @@ double duk_to_number(duk_context *ctx, int index);
 [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
 
 =summary
-<p>Replace the value at <tt>index</tt> with an Ecmascript
+<p>Replace the value at <code>index</code> with an Ecmascript
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.3">ToNumber()</a>
-coerced value.  Returns the coerced value.  If <tt>index</tt> is invalid, throws
+coerced value.  Returns the coerced value.  If <code>index</code> is invalid, throws
 an error.</p>
 
 <p>Custom type coercion:</p>
 <ul>
-<li>Buffer: <tt>0</tt> for zero-size buffer, <tt>1</tt> otherwise</li>
-<li>Pointer: <tt>0</tt> for <tt>NULL</tt> pointer, <tt>1</tt> otherwise</li>
+<li>Buffer: <code>0</code> for zero-size buffer, <code>1</code> otherwise</li>
+<li>Pointer: <code>0</code> for <code>NULL</code> pointer, <code>1</code> otherwise</li>
 </ul>
 
 =example

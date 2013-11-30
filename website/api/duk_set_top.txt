@@ -5,10 +5,10 @@ void duk_set_top(duk_context *ctx, int index);
 [ ...! ] -> [ ...! ]
 
 =summary
-<p>Set stack top (stack size) to match the argument <tt>index</tt>,
+<p>Set stack top (stack size) to match the argument <code>index</code>,
 normalizing negative index values.  If the value stack shrinks,
 values above the new stack top are dropped; if the value stack grows,
-<tt>undefined</tt> values are pushed to the new stack slots.</p>
+<code>undefined</code> values are pushed to the new stack slots.</p>
 
 <p>Negative index values are interpreted relative to the current
 stack top as in other API calls.  For example, index -1 would

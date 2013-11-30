@@ -5,8 +5,8 @@ void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback,
 [ ... val! ... ] -> [ ... val! ... ]
 
 =summary
-<p>Process string at <tt>index</tt>, calling <tt>callback</tt> for each codepoint
-of the string.  The callback is given the <tt>udata</tt> argument and a codepoint
+<p>Process string at <code>index</code>, calling <code>callback</code> for each codepoint
+of the string.  The callback is given the <code>udata</code> argument and a codepoint
 and returns a replacement codepoint.  If successful, a new string consisting of
 the replacement codepoints replaces the original.  If the value is not a string or
 the index is invalid, throws an error.</p>

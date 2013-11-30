@@ -5,22 +5,22 @@ void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_
 [ ... str! ... ] -> [ ... substr! ... ]
 
 =summary
-<p>Replace a string at <tt>index</tt> with a substring [<tt>start_offset</tt>,
-<tt>end_offset</tt>[ of the string itself.  If the value at <tt>index</tt> is
+<p>Replace a string at <code>index</code> with a substring [<code>start_offset</code>,
+<code>end_offset</code>[ of the string itself.  If the value at <code>index</code> is
 not a string or the index is invalid, throws an error.</p>
 
 <p>The substring operation works with characters, not bytes, and the offsets
 are character offsets.  The semantics of this call are similar to
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.5.4.15">String.prototype.substring (start, end)</a>.
 Offset values are clamped to string length (there is no need to clamp negative
-values because <tt>size_t</tt> is unsigned) and if start offset is larger than
+values because <code>size_t</code> is unsigned) and if start offset is larger than
 end offset, the result is an empty string.</p>
 
 <div class="note">
 To get a byte-oriented substring, use
-<tt><a href="#duk_get_lstring">duk_get_lstring()</a></tt> to get a string data
+<code><a href="#duk_get_lstring">duk_get_lstring()</a></code> to get a string data
 pointer and length, and
-<tt><a href="#duk_push_lstring">duk_push_lstring()</a></tt> to push a slice of
+<code><a href="#duk_push_lstring">duk_push_lstring()</a></code> to push a slice of
 bytes.
 </div>
 

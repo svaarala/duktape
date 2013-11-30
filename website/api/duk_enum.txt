@@ -5,22 +5,22 @@ void duk_enum(duk_context *ctx, int obj_index, int enum_flags);
 [ ... obj! ... ] -> [ ... obj! ... enum! ]
 
 =summary
-<p>Create an enumerator for object at <tt>obj_index</tt>.  Enumeration
-details can be controlled with <tt>enum_flags</tt>.  If the target value
+<p>Create an enumerator for object at <code>obj_index</code>.  Enumeration
+details can be controlled with <code>enum_flags</code>.  If the target value
 is not an object, throws an error.</p>
 
 <p>Enumeration flags:</p>
 <ul>
-<li><tt>DUK_ENUM_INCLUDE_NONENUMERABLE</tt>: enumerate also non-enumerable
+<li><code>DUK_ENUM_INCLUDE_NONENUMERABLE</code>: enumerate also non-enumerable
     properties (by default only enumerable properties are enumerated)</li>
-<li><tt>DUK_ENUM_INCLUDE_INTERNAL</tt>: enumerate also internal properties
+<li><code>DUK_ENUM_INCLUDE_INTERNAL</code>: enumerate also internal properties
     (by default internal properties are not enumerated)</li>
-<li><tt>DUK_ENUM_OWN_PROPERTIES_ONLY</tt>: enumerate only an object's "own"
+<li><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code>: enumerate only an object's "own"
     properties (by default also inherited properties are enumerated) </li>
-<li><tt>DUK_ENUM_ARRAY_INDICES_ONLY</tt>: enumerate only array indices,
+<li><code>DUK_ENUM_ARRAY_INDICES_ONLY</code>: enumerate only array indices,
     i.e. property names of the form "0", "1", "2", etc.</li>
-<li><tt>DUK_ENUM_SORT_ARRAY_INDICES</tt>: sort array indices by their numeric
-    value, only use with <tt>DUK_ENUM_ARRAY_INDICES_ONLY</tt>; this is quite
+<li><code>DUK_ENUM_SORT_ARRAY_INDICES</code>: sort array indices by their numeric
+    value, only use with <code>DUK_ENUM_ARRAY_INDICES_ONLY</code>; this is quite
     slow</li>
 </ul>
 
@@ -33,7 +33,7 @@ for (key in obj) {
 </pre>
 
 <p>Once the enumerator has been created, use
-<tt><a href="#duk_next">duk_next()</a></tt> to extract keys (or key/value
+<code><a href="#duk_next">duk_next()</a></code> to extract keys (or key/value
 pairs) from the enumerator.</p>
 
 =example

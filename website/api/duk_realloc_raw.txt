@@ -3,39 +3,39 @@ void *duk_realloc_raw(duk_context *ctx, void *ptr, size_t size);
 
 =summary
 <p>Resize a previous allocation made with the allocation functions
-registered to the context.  The <tt>ptr</tt> argument points to the
-previous allocation while <tt>size</tt> is the new allocation size.
+registered to the context.  The <code>ptr</code> argument points to the
+previous allocation while <code>size</code> is the new allocation size.
 The call returns a pointer to the new allocation which may have a
 different pointer than the previous one.  If the reallocation fails,
-a <tt>NULL</tt> is returned and the previous allocation is still valid.
+a <code>NULL</code> is returned and the previous allocation is still valid.
 Relocation failure should only be possible when the new size is larger
 than the previous size (i.e. caller tries to grow the allocation).
 The attempt to reallocate cannot trigger a garbage collection,
 and the allocated memory is not automatically garbage collected.</p>
 
-<p>The exact behavior depends on the <tt>ptr</tt> and <tt>size</tt>
+<p>The exact behavior depends on the <code>ptr</code> and <code>size</code>
 arguments as follows:</p>
 
 <ul>
-<li>If <tt>ptr</tt> is non-<tt>NULL</tt> and <tt>size</tt> is greater
+<li>If <code>ptr</code> is non-<code>NULL</code> and <code>size</code> is greater
     than zero, previous allocation is resized.</li>
-<li>If <tt>ptr</tt> is non-<tt>NULL</tt> and <tt>size</tt> is zero,
+<li>If <code>ptr</code> is non-<code>NULL</code> and <code>size</code> is zero,
     the call is equivalent to a
-    <tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</li>
-<li>If <tt>ptr</tt> is <tt>NULL</tt>, and <tt>size</tt> is greater than
+    <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</li>
+<li>If <code>ptr</code> is <code>NULL</code>, and <code>size</code> is greater than
     zero, the call is equivalent to a
-    <tt><a href="#duk_alloc_raw">duk_alloc_raw()</a></tt>.</li>
-<li>If <tt>ptr</tt> is <tt>NULL</tt>, and <tt>size</tt> is zero, the
+    <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>.</li>
+<li>If <code>ptr</code> is <code>NULL</code>, and <code>size</code> is zero, the
     call is equivalent to a
-    <tt><a href="#duk_alloc_raw">duk_alloc_raw()</a></tt> with a zero
-    size argument; the call may return <tt>NULL</tt> or some other value
+    <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code> with a zero
+    size argument; the call may return <code>NULL</code> or some other value
     which is safe to give to
-    <tt><a href="#duk_free_raw()">duk_free_raw()</a></tt>.</li>
+    <code><a href="#duk_free_raw()">duk_free_raw()</a></code>.</li>
 </ul>
 
-<p>Memory reallocated with <tt>duk_realloc_raw()</tt> can be freed with either
-<tt><a href="#duk_free">duk_free()</a></tt> or
-<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+<p>Memory reallocated with <code>duk_realloc_raw()</code> can be freed with either
+<code><a href="#duk_free">duk_free()</a></code> or
+<code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
 
 =example
 void *buf = duk_alloc_raw(ctx, 1024);

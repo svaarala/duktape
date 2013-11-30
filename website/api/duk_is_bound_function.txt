@@ -5,12 +5,12 @@ int duk_is_bound_function(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is a Function object which has
-been created with Ecmascript <tt>Function.prototype.bind()</tt>,
-otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+<p>Returns 1 if value at <code>index</code> is a Function object which has
+been created with Ecmascript <code>Function.prototype.bind()</code>,
+otherwise returns 0.  If <code>index</code> is invalid, also returns 0.</p>
 
 <p>Bound functions are an Ecmascript concept: they point to a target
-function and supply a <tt>this</tt> binding and zero or more argument
+function and supply a <code>this</code> binding and zero or more argument
 bindings.  See
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.3.4.5">Function.prototype.bind (thisArg [, arg1 [, arg2, ...]])</a>.
 </p>

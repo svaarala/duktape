@@ -5,18 +5,18 @@ int duk_put_prop(duk_context *ctx, int obj_index);
 [ ... obj! ... key! val! ] -> [ ... obj! ... ]
 
 =summary
-<p>Write <tt>val</tt> to the property <tt>key</tt> of a value at
-<tt>obj_index</tt>.  <tt>key</tt> and <tt>val</tt> are removed
+<p>Write <code>val</code> to the property <code>key</code> of a value at
+<code>obj_index</code>.  <code>key</code> and <code>val</code> are removed
 from the stack.  Return code and error throwing behavior:</p>
 <ul>
 <li>If the property write succeeds, returns non-zero.</li>
 <li>If the property write fails, throws an error if current function is
     strict, returns 0 otherwise.  However, errors thrown by the "setter"
     function of an accessor property are unconditional.</li>
-<li>If the value at <tt>obj_index</tt> is not
+<li>If the value at <code>obj_index</code> is not
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
     throws an error.</li>
-<li>If <tt>obj_index</tt> is invalid, throws an error.</li>
+<li>If <code>obj_index</code> is invalid, throws an error.</li>
 </ul>
 
 <p>The property write is equivalent to the Ecmascript expression:</p>
@@ -31,7 +31,7 @@ as for Ecmascript code making the above assignment.</p>
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.2">PutValue (V, W)</a>,
 and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.5">[[Put]] (P, V, Throw)</a>.
-Both the target value and the <tt>key</tt> are coerced:</p>
+Both the target value and the <code>key</code> are coerced:</p>
 <ul>
 <li>The target value is automatically coerced to an object.  However, the object
     is transitory so writing its properties is not very useful.  Moreover,
@@ -39,9 +39,9 @@ Both the target value and the <tt>key</tt> are coerced:</p>
     transitory objects (see
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.2">PutValue (V, W)</a>,
     step 7 of the special [[Put]] variant).</li>
-<li>The <tt>key</tt> argument is internally coerced to a string.  There is
+<li>The <code>key</code> argument is internally coerced to a string.  There is
     an internal fast path for arrays and numeric indices which avoids an
-    explicit string coercion, so use a numeric <tt>key</tt> when applicable.</p>
+    explicit string coercion, so use a numeric <code>key</code> when applicable.</p>
 </ul>
 
 <div class="note">
@@ -54,9 +54,9 @@ strict code).
 </div>
 
 <p>If the key is a fixed string you can avoid one API call and use the
-<tt><a href="#duk_put_prop_string">duk_put_prop_string()</a></tt> variant.
+<code><a href="#duk_put_prop_string">duk_put_prop_string()</a></code> variant.
 Similarly, if the key is an array index, you can use the
-<tt><a href="#duk_put_prop_index">duk_put_prop_index()</a></tt> variant.</p>
+<code><a href="#duk_put_prop_index">duk_put_prop_index()</a></code> variant.</p>
 
 =example
 duk_push_string(ctx, "key");

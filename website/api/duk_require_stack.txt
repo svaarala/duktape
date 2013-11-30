@@ -2,7 +2,7 @@
 void duk_require_stack(duk_context *ctx, unsigned int extra);
 
 =summary
-<p>Like <tt><a href="#duk_check_stack">duk_check_stack()</a></tt> but an
+<p>Like <code><a href="#duk_check_stack">duk_check_stack()</a></code> but an
 error is thrown if the value stack needs to be reallocated and that
 reallocation fails.</p>
 

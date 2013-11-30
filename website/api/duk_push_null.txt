@@ -5,7 +5,7 @@ void duk_push_null(duk_context *ctx);
 [ ... ] -> [ ... null! ]
 
 =summary
-<p>Push <tt>null</tt> to the stack.</p>
+<p>Push <code>null</code> to the stack.</p>
 
 =example
 duk_push_null(ctx);

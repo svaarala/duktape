@@ -5,8 +5,8 @@ int duk_is_dynamic(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is a dynamic buffer,
-otherwise returns 0.  If <tt>index</tt> is invalid, also
+<p>Returns 1 if value at <code>index</code> is a dynamic buffer,
+otherwise returns 0.  If <code>index</code> is invalid, also
 returns 0.</p>
 
 =example

@@ -6,9 +6,9 @@ int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_in
 [ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... err! ]  (if failure, return value != 0)
 
 =summary
-<p>Like <tt><a href="#duk_pcall">duk_pcall()</a></tt>, but the target function
-is looked up from <tt>obj.key</tt> and <tt>obj</tt> is used as the function's
-<tt>this</tt> binding.</p>
+<p>Like <code><a href="#duk_pcall">duk_pcall()</a></code>, but the target function
+is looked up from <code>obj.key</code> and <code>obj</code> is used as the function's
+<code>this</code> binding.</p>
 
 =example
 /* obj.myAdderMethod(2,3) -> 5 */

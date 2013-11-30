@@ -8,7 +8,7 @@ void duk_push_current_function(duk_context *ctx);
 =summary
 <p>Push the currently running function to the stack.  The value pushed is
 an Ecmascript Function object.  If there is no current function,
-<tt>undefined</tt> is pushed instead.</p>
+<code>undefined</code> is pushed instead.</p>
 
 <p>This function allows a C function to gain access to its function object.
 Since multiple function objects can internally point to the same C function,

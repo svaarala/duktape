@@ -6,7 +6,7 @@ void duk_push_boolean(duk_context *ctx, int val);
 [ ... ] -> [ ... false! ] (if val == 0)
 
 =summary
-<p>Push <tt>true</tt> (if val != 0) or <tt>false</tt> (if val == 0) to the stack.</p>
+<p>Push <code>true</code> (if val != 0) or <code>false</code> (if val == 0) to the stack.</p>
 
 =example
 duk_push_boolean(ctx, 0);  /* -> [ ... false ] */

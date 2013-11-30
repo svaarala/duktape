@@ -5,13 +5,13 @@ int duk_is_nan(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is a <tt>NaN</tt> (a special
-number value), otherwise returns 0.  If <tt>index</tt> is invalid,
+<p>Returns 1 if value at <code>index</code> is a <code>NaN</code> (a special
+number value), otherwise returns 0.  If <code>index</code> is invalid,
 also returns 0.</p>
 
-<p>IEEE has a large number of different <tt>NaN</tt> values.  Duktape
-normalizes <tt>NaN</tt> values internally.  This function returns 1
-for any kind of a <tt>NaN</tt>.</p>
+<p>IEEE has a large number of different <code>NaN</code> values.  Duktape
+normalizes <code>NaN</code> values internally.  This function returns 1
+for any kind of a <code>NaN</code>.</p>
 
 =example
 if (duk_is_nan(ctx, -3)) {

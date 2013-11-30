@@ -5,12 +5,12 @@ int duk_is_object_coercible(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is object coercible, as defined in
+<p>Returns 1 if value at <code>index</code> is object coercible, as defined in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">CheckObjectCoercible</a>,
-otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+otherwise returns 0.  If <code>index</code> is invalid, also returns 0.</p>
 
-<p>All Ecmascript types are object coercible except <tt>undefined</tt> and
-<tt>null</tt>.  The custom buffer and pointer types are currently not object
+<p>All Ecmascript types are object coercible except <code>undefined</code> and
+<code>null</code>.  The custom buffer and pointer types are currently not object
 coercible.</p>
 
 =example

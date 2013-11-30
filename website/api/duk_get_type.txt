@@ -5,8 +5,8 @@ int duk_get_type(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns type of value at <tt>index</tt>.  The return value is one of
-<tt>DUK_TYPE_xxx</tt> or <tt>DUK_TYPE_NONE</tt> if <tt>index</tt> is
+<p>Returns type of value at <code>index</code>.  The return value is one of
+<code>DUK_TYPE_xxx</code> or <code>DUK_TYPE_NONE</code> if <code>index</code> is
 invalid.</p>
 
 =example

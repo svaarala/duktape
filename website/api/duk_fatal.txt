@@ -6,7 +6,7 @@ void duk_fatal(duk_context *ctx, int err_code);
 for error codes is [1,16777215].</p>
 
 <p>A fatal error handler never returns and may e.g. exit the current
-process.  Error catching points (like <tt>try-catch</tt> statements
+process.  Error catching points (like <code>try-catch</code> statements
 and error catching API calls) are bypassed.  You should only call
 this function when a truly fatal, unrecoverable error has occurred.</p>
 

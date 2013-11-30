@@ -5,7 +5,7 @@ void duk_swap(duk_context *ctx, int index1, int index2);
 [ ... val1! ... val2! ... ] -> [ ... val2! ... val1! ... ]
 
 =summary
-<p>Swap values at indices <tt>index1</tt> and <tt>index2</tt>.  If the
+<p>Swap values at indices <code>index1</code> and <code>index2</code>.  If the
 indices are the same, the call is a no-op.  If either index is invalid,
 throws an error.</p>
 

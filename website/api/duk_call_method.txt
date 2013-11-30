@@ -5,9 +5,9 @@ void duk_call_method(duk_context *ctx, int nargs);
 [ ... func! this! arg! ...! argN! ] -> [ ... retval! ]
 
 =summary
-<p>Call target function <tt>func</tt> with an explicit <tt>this</tt>
-binding and <tt>nargs</tt> arguments (not counting the function and
-the <tt>this</tt> binding value).  The function object, the <tt>this</tt>
+<p>Call target function <code>func</code> with an explicit <code>this</code>
+binding and <code>nargs</code> arguments (not counting the function and
+the <code>this</code> binding value).  The function object, the <code>this</code>
 binding value, and the function arguments are replaced by a single
 return value.  An error thrown during the function call is not
 automatically caught.</p>

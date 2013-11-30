@@ -5,8 +5,8 @@ const char *duk_require_string(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_get_string">duk_get_string()</a></tt>,
-but throws an error if the value at <tt>index</tt> is not a string
+<p>Like <code><a href="#duk_get_string">duk_get_string()</a></code>,
+but throws an error if the value at <code>index</code> is not a string
 or if the index is invalid.</p>
 
 =example

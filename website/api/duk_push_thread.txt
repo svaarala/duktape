@@ -8,10 +8,10 @@ int duk_push_thread(duk_context *ctx);
 <p>Push a new Duktape thread (context, coroutine) to the stack.  Returns
 non-negative index (relative to stack bottom) of the pushed thread.
 The new thread will be associated with the same Duktape heap as the
-argument <tt>ctx</tt>.</p>
+argument <code>ctx</code>.</p>
 
 <p>To interact with the new thread with the Duktape API, use
-<tt><a href="#duk_get_context">duk_get_context()</a></tt> to get
+<code><a href="#duk_get_context">duk_get_context()</a></code> to get
 a context pointer for API calls.</p>
 
 =example

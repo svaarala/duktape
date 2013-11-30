@@ -5,8 +5,8 @@ void duk_call_prop(duk_context *ctx, int obj_index, int nargs);
 [ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... retval! ]
 
 =summary
-<p>Call <tt>obj.key</tt> with <tt>nargs</tt> arguments, with <tt>this</tt>
-binding set to <tt>obj</tt>.  The property name and the function arguments
+<p>Call <code>obj.key</code> with <code>nargs</code> arguments, with <code>this</code>
+binding set to <code>obj</code>.  The property name and the function arguments
 are replaced by a single return value; the target object is not touched.
 An error during the function call is not automatically caught.</p>
 

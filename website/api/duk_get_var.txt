@@ -5,11 +5,11 @@ void duk_get_var(duk_context *ctx);
 [ ... varname! ] -> [ ... val! ]
 
 =summary
-<p>Look up identifier <tt>varname</tt>.  Possible outcomes:</p>
+<p>Look up identifier <code>varname</code>.  Possible outcomes:</p>
 <ul>
-<li>If identifier is found, replaces <tt>varname</tt> with its value on the
+<li>If identifier is found, replaces <code>varname</code> with its value on the
     value stack and returns.</li>
-<li>If identifier is not found, throws a <tt>ReferenceError</tt> (this applies
+<li>If identifier is not found, throws a <code>ReferenceError</code> (this applies
     to both strict and non-strict code).</li>
 <li>If the input stack is empty (or some other internal error occurs),
     throws an error.</li>
@@ -25,7 +25,7 @@ varname
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.2.2.1">GetIdentifierReference (lex, name, strict)</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.1.2">Identifier Reference</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue (V)</a>.
-Ecmascript semantics require that a <tt>ReferenceError</tt> be thrown if the identifier
+Ecmascript semantics require that a <code>ReferenceError</code> be thrown if the identifier
 cannot be resolved (this is the case even in non-strict mode).
 </p>
 

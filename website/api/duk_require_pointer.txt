@@ -5,8 +5,8 @@ void *duk_require_pointer(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_get_pointer">duk_get_pointer()</a></tt>,
-but throws an error if the value at <tt>index</tt> is not a pointer
+<p>Like <code><a href="#duk_get_pointer">duk_get_pointer()</a></code>,
+but throws an error if the value at <code>index</code> is not a pointer
 or if the index is invalid.</p>
 
 =example

@@ -5,15 +5,15 @@ int duk_to_boolean(duk_context *ctx, int index);
 [ ... val! ... ] -> [ ... ToBoolean(val)! ... ]
 
 =summary
-<p>Replace the value at <tt>index</tt> with an Ecmascript
+<p>Replace the value at <code>index</code> with an Ecmascript
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.2">ToBoolean()</a>
-coerced value.  Returns 1 if the result of the coercion <tt>true</tt>, 0 otherwise.
-If <tt>index</tt> is invalid, throws an error.</p>
+coerced value.  Returns 1 if the result of the coercion <code>true</code>, 0 otherwise.
+If <code>index</code> is invalid, throws an error.</p>
 
 <p>Custom type coercion:</p>
 <ul>
-<li>Buffer: <tt>false</tt> for zero-size buffer, <tt>true</tt> otherwise</li>
-<li>Pointer: <tt>false</tt> for <tt>NULL</tt> pointer, <tt>true</tt> otherwise</li>
+<li>Buffer: <code>false</code> for zero-size buffer, <code>true</code> otherwise</li>
+<li>Pointer: <code>false</code> for <code>NULL</code> pointer, <code>true</code> otherwise</li>
 </ul>
 
 =example

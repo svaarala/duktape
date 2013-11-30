@@ -7,30 +7,30 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
 
 =summary
 <p>Create a new Duktape heap and return an initial context (thread).
-If heap initialization fails, a <tt>NULL</tt> is returned.  There is
+If heap initialization fails, a <code>NULL</code> is returned.  There is
 currently no way to obtain more detailed error information.</p>
 
 <p>The caller may provide custom memory management functions in
-<tt>alloc_func</tt>, <tt>realloc_func</tt>, and <tt>free_func</tt>;
-the pointers must either all be <tt>NULL</tt> or all be
-non-<tt>NULL</tt>.  If the pointers are <tt>NULL</tt>, default
-memory management functions (ANSI C <tt>malloc()</tt>, <tt>realloc()</tt>
-, and <tt>free()</tt>) are used.  The memory management functions
-share the same opaque userdata pointer, <tt>alloc_udata</tt>.</p>
+<code>alloc_func</code>, <code>realloc_func</code>, and <code>free_func</code>;
+the pointers must either all be <code>NULL</code> or all be
+non-<code>NULL</code>.  If the pointers are <code>NULL</code>, default
+memory management functions (ANSI C <code>malloc()</code>, <code>realloc()</code>
+, and <code>free()</code>) are used.  The memory management functions
+share the same opaque userdata pointer, <code>alloc_udata</code>.</p>
 
-<p>A fatal error handler is provided in <tt>fatal_handler</tt>.  This
+<p>A fatal error handler is provided in <code>fatal_handler</code>.  This
 handler is called in unrecoverable error situations such as uncaught
 errors, out-of-memory errors not resolved by garbage collection, etc.
 A caller SHOULD implement a fatal error handler in most applications.
 If not given, a default fatal error handler is used.  The default
-handler ultimately calls ANSI C <tt>exit()</tt>, which may not always
+handler ultimately calls ANSI C <code>exit()</code>, which may not always
 be the preferred action.</p>
 
 <p>To create a Duktape heap with default settings, use
-<tt><a href="#duk_create_heap_default">duk_create_heap_default()</a></tt>.</p>
+<code><a href="#duk_create_heap_default">duk_create_heap_default()</a></code>.</p>
 
 <p>New contexts linked to the same heap can be created with
-<tt><a href="#duk_push_thread">duk_push_thread()</a></tt>.</p>
+<code><a href="#duk_push_thread">duk_push_thread()</a></code>.</p>
 
 =example
 /*

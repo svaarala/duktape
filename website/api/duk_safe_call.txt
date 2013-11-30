@@ -6,20 +6,20 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 
 =summary
 <p>Perform a protected pure C function call inside the current value stack frame
-(the call is not visible on the call stack).  <tt>nargs</tt> topmost values in the
-current value stack frame are identified as call arguments, and <tt>nrets</tt>
-return values are provided after the call returns.  <tt>errhandler_index</tt> points
+(the call is not visible on the call stack).  <code>nargs</code> topmost values in the
+current value stack frame are identified as call arguments, and <code>nrets</code>
+return values are provided after the call returns.  <code>errhandler_index</code> points
 to an error handler function in the current stack frame (below call arguments) which
 can modify an error value before it is thrown; to use the default error handler,
-set <tt>errhandler_index</tt> to <tt>DUK_INVALID_INDEX</tt>.</p>
+set <code>errhandler_index</code> to <code>DUK_INVALID_INDEX</code>.</p>
 
 <p>The return value is one of:</p>
 <ul>
-<li><tt>DUK_EXEC_SUCCESS</tt> (0): call succeeded, <tt>nargs</tt> arguments are replaced
-    with <tt>nrets</tt> return values.  (This return code constant is guaranteed to be
+<li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
+    with <code>nrets</code> return values.  (This return code constant is guaranteed to be
     zero, so that one can check for success with a "zero or non-zero" check.)</li>
-<li><tt>DUK_EXEC_ERROR</tt>: call failed, <tt>nargs</tt> arguments are replaced with
-    <tt>nrets</tt> values, first of which is an error value and the rest are <tt>undefined</tt>.
+<li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with
+    <code>nrets</code> values, first of which is an error value and the rest are <code>undefined</code>.
     (In exceptional cases, e.g. when there are too few arguments on the value stack, the call
     returns non-zero but may leave the stack in an inconsistent state.)</li>
 </ul>
@@ -33,29 +33,29 @@ multiple error codes to be defined later.
 differs a bit from other call types.  Although the target function signature
 matches Duktape/C functions, value stack and return code policies are different.</p>
 
-<p>The top <tt>nargs</tt> elements of the stack top are identified as arguments to
-<tt>func</tt> establishing a "base index" for the return stack as:</p>
+<p>The top <code>nargs</code> elements of the stack top are identified as arguments to
+<code>func</code> establishing a "base index" for the return stack as:</p>
 <pre>
 (duk_get_top() - nargs)
 </pre>
 
-<p>When <tt>func</tt> returns, it indicates with its return value the number of
+<p>When <code>func</code> returns, it indicates with its return value the number of
 return values it has pushed on top of the stack; multiple or zero return
 values possible.  The stack is then manipulated so that there are exactly
-<tt>nrets</tt> values starting at the "base index" established before the call.</p>
+<code>nrets</code> values starting at the "base index" established before the call.</p>
 
-<p>Note that since <tt>func</tt> has full access to the value stack, it may modify
+<p>Note that since <code>func</code> has full access to the value stack, it may modify
 the stack below the indended arguments and even pop elements below the "base index"
-off the stack.  Such elements are restored with <tt>undefined</tt> values before
+off the stack.  Such elements are restored with <code>undefined</code> values before
 returning, to ensure that the stack is always in a consistent state upon returning.</p>
 
-<p>If an error occurs, the stack will still have <tt>nrets</tt> values at "base index";
-the first of such values is the error, and the remaining values are <tt>undefined</tt>.
-If <tt>nrets</tt> is zero, the error will not be present on the stack (the return stack
-top will equal the "base index"), so calling this function with <tt>nrets</tt> as 0
+<p>If an error occurs, the stack will still have <code>nrets</code> values at "base index";
+the first of such values is the error, and the remaining values are <code>undefined</code>.
+If <code>nrets</code> is zero, the error will not be present on the stack (the return stack
+top will equal the "base index"), so calling this function with <code>nrets</code> as 0
 is not very useful.</p>
 
-<p>Example with <tt>nargs = 3</tt>, <tt>nrets = 2</tt>, <tt>func</tt> returns 4.
+<p>Example with <code>nargs = 3</code>, <code>nrets = 2</code>, <code>func</code> returns 4.
 Pipe chars indicate logical boundaries:</p>
 
 <pre>
@@ -75,7 +75,7 @@ Pipe chars indicate logical boundaries:</p>
 </pre>
 
 <div class="note">
-Note that <tt>func</tt> uses caller stack frame, so bottom-based references
+Note that <code>func</code> uses caller stack frame, so bottom-based references
 are dangerous within 'func'.
 </div>
 

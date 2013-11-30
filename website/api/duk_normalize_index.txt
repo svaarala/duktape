@@ -9,9 +9,9 @@ int duk_normalize_index(duk_context *ctx, int index);
 Normalize argument index relative to the bottom of the current frame.
 The resulting index will be 0 or greater and will be independent of
 later stack modifications.  If the input index is invalid, returns
-<tt>DUK_INVALID_INDEX</tt>.  If you prefer that an error be thrown for
+<code>DUK_INVALID_INDEX</code>.  If you prefer that an error be thrown for
 an invalid index, use
-<tt><a href="#duk_require_normalize_index">duk_require_normalize_index()</a></tt>.
+<code><a href="#duk_require_normalize_index">duk_require_normalize_index()</a></code>.
 </p>
 
 =example

@@ -1,11 +1,11 @@
 <h2 id="introduction">Introduction</h2>
 
-<p>Version: 0.7.0 (2013-10-30)</p>
+<p>Version: 0.8.0 (2013-11-XX)</p>
 <p><b>Work in progress</b></p>
 
 <h3>Document scope</h3>
 
-<p>The Duktape API (defined in <tt>duktape.h</tt>) is a set of constants
+<p>The Duktape API (defined in <code>duktape.h</code>) is a set of constants
 and API calls which allows C/C++ programs to interface with Ecmascript
 code and shields them from internal details like value representation.
 </p>
@@ -22,18 +22,18 @@ The API will be in flux until 1.0 release.
 
 <p>You can use browser search (typically CTRL-F) to search for
 function definitions by prepending a dot to the search term.  For instance,
-use ".duk_example_func" to look for <tt>duk_example_func()</tt>.  In most
+use ".duk_example_func" to look for <code>duk_example_func()</code>.  In most
 browsers only the actual section defining the function should be found.</p>
 
 <h3>API safety</h3>
 
 <p>As a general rule, API calls check all their parameters and tolerate
-<tt>NULL</tt> arguments and invalid value stack indices without unsafe
+<code>NULL</code> arguments and invalid value stack indices without unsafe
 behavior (crashes).</p>
 
-<p>One major exception is the Duktape context argument, <tt>ctx</tt>.
+<p>One major exception is the Duktape context argument, <code>ctx</code>.
 Unless stated otherwise, it is not checked and is required to be
-non-<tt>NULL</tt> or unsafe behavior may occur.  This is the case
+non-<code>NULL</code> or unsafe behavior may occur.  This is the case
 because explicit checks for the argument would increase code footprint
 for little practical gain.</p>
 

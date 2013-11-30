@@ -5,7 +5,7 @@ void duk_push_undefined(duk_context *ctx);
 [ ... ] -> [ ... undefined! ]
 
 =summary
-<p>Push <tt>undefined</tt> to the stack.</p>
+<p>Push <code>undefined</code> to the stack.</p>
 
 =example
 duk_push_undefined(ctx);

@@ -5,10 +5,10 @@ void duk_push_number(duk_context *ctx, double val);
 [ ... ] -> [ ... val! ]
 
 =summary
-<p>Push number (IEEE double) <tt>val</tt> to the stack.</p>
+<p>Push number (IEEE double) <code>val</code> to the stack.</p>
 
-<p>If <tt>val</tt> is a <tt>NaN</tt> it may be normalized into another
-<tt>NaN</tt> form.</p>
+<p>If <code>val</code> is a <code>NaN</code> it may be normalized into another
+<code>NaN</code> form.</p>
 
 =example
 duk_push_number(ctx, 123.0);

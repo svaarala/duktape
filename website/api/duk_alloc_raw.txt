@@ -2,16 +2,16 @@
 void *duk_alloc_raw(duk_context *ctx, size_t size);
 
 =summary
-<p>Allocate <tt>size</tt> bytes using the raw allocation function registered
-to the context.  If allocation fails, returns <tt>NULL</tt>.  If <tt>size</tt>
-is zero, the call may either return a <tt>NULL</tt> or some non-<tt>NULL</tt>
-value which may be safely given to e.g. <tt>duk_free_raw()</tt>.  The allocation
+<p>Allocate <code>size</code> bytes using the raw allocation function registered
+to the context.  If allocation fails, returns <code>NULL</code>.  If <code>size</code>
+is zero, the call may either return a <code>NULL</code> or some non-<code>NULL</code>
+value which may be safely given to e.g. <code>duk_free_raw()</code>.  The allocation
 cannot trigger a garbage collection, and the allocated memory is not automatically
 garbage collected.</p>
 
-<p>Memory allocated with <tt>duk_alloc_raw()</tt> can be freed with either
-<tt><a href="#duk_free">duk_free()</a></tt> or
-<tt><a href="#duk_free_raw">duk_free_raw()</a></tt>.</p>
+<p>Memory allocated with <code>duk_alloc_raw()</code> can be freed with either
+<code><a href="#duk_free">duk_free()</a></code> or
+<code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
 
 =example
 void *buf = duk_alloc_raw(ctx, 1024);

@@ -5,9 +5,9 @@ int duk_is_primitive(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is a primitive type, as defined in
+<p>Returns 1 if value at <code>index</code> is a primitive type, as defined in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.1">ToPrimitive</a>,
-otherwise returns 0.  If <tt>index</tt> is invalid, also returns 0.</p>
+otherwise returns 0.  If <code>index</code> is invalid, also returns 0.</p>
 
 <p>Anything other than an object is a primitive type at the moment, including
 custom buffer and pointer types.</p>

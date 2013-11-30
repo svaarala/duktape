@@ -5,11 +5,11 @@ void duk_to_undefined(duk_context *ctx, int index);
 [ ... val! ... ] -> [ ... undefined! ... ]
 
 =summary
-<p>Replace the value at <tt>index</tt> with <tt>undefined</tt>, regardless
+<p>Replace the value at <code>index</code> with <code>undefined</code>, regardless
 of the previous value.  Throws an error if index is invalid.</p>
 
 <div class="note">
-Equivalent to <tt>duk_push_undefined()</tt> followed by <tt>duk_replace()</tt>
+Equivalent to <code>duk_push_undefined()</code> followed by <code>duk_replace()</code>
 to target index.
 </div>
 

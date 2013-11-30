@@ -3,7 +3,7 @@ duk_context *duk_create_heap_default(void);
 
 =summary
 <p>Create a new Duktape heap and return an initial context (thread).
-If heap initialization fails, a <tt>NULL</tt> is returned.  There is
+If heap initialization fails, a <code>NULL</code> is returned.  There is
 currently no way to obtain more detailed error information.</p>
 
 <p>The created heap will use default memory management and fatal error

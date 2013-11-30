@@ -5,9 +5,9 @@ int duk_is_ecmascript_function(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Returns 1 if value at <tt>index</tt> is a Function object which has
+<p>Returns 1 if value at <code>index</code> is a Function object which has
 been compiled from Ecmascript source code, otherwise returns 0.
-If <tt>index</tt> is invalid, also returns 0.</p>
+If <code>index</code> is invalid, also returns 0.</p>
 
 <p>Internally Ecmascript functions are compiled into bytecode and executed
 with the Ecmascript bytecode interpreter.</p>

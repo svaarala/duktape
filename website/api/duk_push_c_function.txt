@@ -6,21 +6,21 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);
 
 =summary
 <p>Push a new function object, associated with a C function, to the stack.
-The function object is an Ecmascript function object; when called, <tt>func</tt>
+The function object is an Ecmascript function object; when called, <code>func</code>
 will be called using the Duktape/C function interface.  Returns non-negative index
 (relative to stack bottom) of the pushed function.</p>
 
-<p>The <tt>nargs</tt> argument controls how the value stack looks like when
-<tt>func</tt> is entered:</p>
+<p>The <code>nargs</code> argument controls how the value stack looks like when
+<code>func</code> is entered:</p>
 
 <ul>
-<li>If <tt>nargs</tt> is >= 0, it indicates the exact number of arguments the
+<li>If <code>nargs</code> is >= 0, it indicates the exact number of arguments the
     function expects to see; extra arguments are discarded and missing arguments
-    are filled in with <tt>undefined</tt> values.  Upon entry to the function, value
-    stack top will always match <tt>nargs</tt>.</li>
-<li>If <tt>nargs</tt> is set to <tt>DUK_VARARGS</tt>, the value stack will contain
+    are filled in with <code>undefined</code> values.  Upon entry to the function, value
+    stack top will always match <code>nargs</code>.</li>
+<li>If <code>nargs</code> is set to <code>DUK_VARARGS</code>, the value stack will contain
     actual (variable) call arguments and the function needs to check actual argument
-    count with <tt><a href="#duk_get_top">duk_get_top()</a></tt>.</li>
+    count with <code><a href="#duk_get_top">duk_get_top()</a></code>.</li>
 </ul>
 
 =example

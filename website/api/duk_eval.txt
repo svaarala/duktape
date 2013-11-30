@@ -8,7 +8,7 @@ void duk_eval(duk_context *ctx);
 <p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
 return value on top of the stack.  May throw an error, errors are not caught
 automatically.  The filename associated with the temporary eval function is
-automatically provided from the <tt>__FILE__</tt> preprocessor define
+automatically provided from the <code>__FILE__</code> preprocessor define
 of the caller.</p>
 
 <p>This is essentially a shortcut for:</p>
@@ -23,7 +23,7 @@ duk_call(ctx, 0);
 </pre>
 
 <p>If the eval input is a fixed string, you can also use
-<tt><a href="#duk_eval_string">duk_eval_string()</a></tt>.</p>
+<code><a href="#duk_eval_string">duk_eval_string()</a></code>.</p>
 
 =example
 /* Eval result in Ecmascript is the last non-empty statement; here, the

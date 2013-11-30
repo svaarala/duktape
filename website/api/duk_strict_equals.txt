@@ -5,10 +5,10 @@ int duk_strict_equals(duk_context *ctx, int index1, int index2);
 [ ... val1! ... val2! ... ]
 
 =summary
-<p>Compare values at <tt>index1</tt> and <tt>index2</tt> for equality.
+<p>Compare values at <code>index1</code> and <code>index2</code> for equality.
 Returns 1 if values are considered equal using Ecmascript
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4">Strict Equals</a>
-operator (<tt>===</tt>) semantics, otherwise returns 0.  Also returns 0 if either index
+operator (<code>===</code>) semantics, otherwise returns 0.  Also returns 0 if either index
 is invalid.</p>
 
 <p>Because

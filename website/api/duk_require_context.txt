@@ -5,8 +5,8 @@ duk_context *duk_require_context(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_get_context">duk_get_context()</a></tt>,
-but throws an error if the value at <tt>index</tt> is not a Duktape
+<p>Like <code><a href="#duk_get_context">duk_get_context()</a></code>,
+but throws an error if the value at <code>index</code> is not a Duktape
 thread or if the index is invalid.</p>
 
 =example

@@ -2,13 +2,13 @@
 int duk_check_stack(duk_context *ctx, unsigned int extra);
 
 =summary
-<p>Ensure that the value stack has at least <tt>extra</tt> reserved
+<p>Ensure that the value stack has at least <code>extra</code> reserved
 (allocated) elements for caller's use.  Returns 1 if successful, 0
 otherwise.  If the call is successful, the caller is guaranteed that
-<tt>extra</tt> elements can be pushed to the value stack without a
+<code>extra</code> elements can be pushed to the value stack without a
 value stack related error (other errors like out-of-memory can still
 occur).  The caller MUST NOT rely on being able to push more than
-<tt>extra</tt> values; although this is possible, such elements are
+<code>extra</code> values; although this is possible, such elements are
 reserved for Duktape's internal use.</p>
 
 <!--FIXME-->
@@ -27,12 +27,12 @@ internal value stack reserve to ensure all API calls have enough
 value stack space to work without further allocations.  The value stack
 is also extended in somewhat large steps to minimize memory reallocation
 activity.  As a result the internal number of value stack elements
-available beyond the caller specified <tt>extra</tt> varies considerably.
+available beyond the caller specified <code>extra</code> varies considerably.
 The caller does not need to take this into account and should never
 rely on any additional elements being available.</p>
 
 <p>As a general rule
-<tt><a href="#duk_require_stack">duk_require_stack()</a></tt> should be
+<code><a href="#duk_require_stack">duk_require_stack()</a></code> should be
 used instead of this function to reserve more stack space.  If value stack
 cannot be extended, there is almost never a useful recovery strategy except
 to throw an error and unwind.</p>

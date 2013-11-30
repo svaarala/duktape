@@ -5,9 +5,9 @@ void duk_swap_top(duk_context *ctx, int index);
 [ ... val1! ... val2! ] -> [ ... val2! ... val1! ]
 
 =summary
-<p>Swap stack top with value at <tt>index</tt>.  If <tt>index</tt> refers
+<p>Swap stack top with value at <code>index</code>.  If <code>index</code> refers
 to the stack top, the call is a no-op.  If the value stack is empty or
-<tt>index</tt> is invalid, throws an error.</p>
+<code>index</code> is invalid, throws an error.</p>
 
 =example
 duk_swap_top(ctx, -3);

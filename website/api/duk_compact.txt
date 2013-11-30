@@ -4,7 +4,7 @@ void duk_compact(duk_context *ctx, int obj_index);
 =summary
 <p>
 Resizes an object's internal memory allocation to minimize memory usage.
-If the value at <tt>obj_index</tt> is not an object, does nothing.
+If the value at <code>obj_index</code> is not an object, does nothing.
 Although compaction is normally safe, it can fail due to an internal error
 (such as out-of-memory error).
 </p>
@@ -28,8 +28,8 @@ to enough many objects to make a significant difference.
 </p>
 
 <p>
-If <tt>Object.seal()</tt>, <tt>Object.freeze()</tt>, or
-<tt>Object.preventExtensions()</tt> is called, an object is automatically
+If <code>Object.seal()</code>, <code>Object.freeze()</code>, or
+<code>Object.preventExtensions()</code> is called, an object is automatically
 compacted.
 </p>
 

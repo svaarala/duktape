@@ -5,7 +5,7 @@ int duk_check_type(duk_context *ctx, int index, int type);
 [ ... val! ... ]
 
 =summary
-<p>Matches the type of the value at <tt>index</tt> against <tt>type</tt>.
+<p>Matches the type of the value at <code>index</code> against <code>type</code>.
 Returns 1 if the type matches, zero otherwise.</p>
 
 =example

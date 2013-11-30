@@ -5,7 +5,7 @@ int duk_get_int(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get the number at <tt>index</tt> and convert it to a C <tt>int</tt>
+<p>Get the number at <code>index</code> and convert it to a C <code>int</code>
 by first clamping the value between [INT_MIN, INT_MAX] and then
 truncating towards zero.  The value on the stack is not modified.
 If the value is a NaN, is not a number, or the index is invalid,
@@ -24,12 +24,12 @@ returns 0.</p>
 </ul>
 
 <div class="note">
-The coercion is different from a basic C cast from <tt>double</tt> to
-<tt>int</tt>, which may have counterintuitive behavior like coercing
+The coercion is different from a basic C cast from <code>double</code> to
+<code>int</code>, which may have counterintuitive behavior like coercing
 NaN to INT_MIN.  The coercion is also different from Ecmascript
-<tt>ToInt32()</tt> coercion because the full range of the native
-<tt>int</tt> is allowed, which is useful on platforms with a 64-bit
-<tt>int</tt> type.
+<code>ToInt32()</code> coercion because the full range of the native
+<code>int</code> is allowed, which is useful on platforms with a 64-bit
+<code>int</code> type.
 </div>
 
 =example

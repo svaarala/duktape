@@ -5,15 +5,15 @@ void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic);
 [ ... ] -> [ ... buf! ]
 
 =summary
-<p>Allocate a new buffer of <tt>size</tt> bytes and push it to the value stack.
-Returns a non-<tt>NULL</tt> pointer to the buffer data area; for a zero-size buffer,
-may return either <tt>NULL</tt> or <tt>non-NULL</tt>.  The buffer data area is
-automatically zeroed.  If <tt>dynamic</tt> is non-zero, the buffer will be resizable,
+<p>Allocate a new buffer of <code>size</code> bytes and push it to the value stack.
+Returns a non-<code>NULL</code> pointer to the buffer data area; for a zero-size buffer,
+may return either <code>NULL</code> or <code>non-NULL</code>.  The buffer data area is
+automatically zeroed.  If <code>dynamic</code> is non-zero, the buffer will be resizable,
 otherwise the buffer will have a fixed size.  Throws an error if allocation fails.</p>
 
 <p>There are also shortcut variants
-<tt><a href="#duk_push_fixed_buffer">duk_push_fixed_buffer()</a></tt> and
-<tt><a href="#duk_push_dynamic_buffer">duk_push_dynamic_buffer()</a></tt>.</p>
+<code><a href="#duk_push_fixed_buffer">duk_push_fixed_buffer()</a></code> and
+<code><a href="#duk_push_dynamic_buffer">duk_push_dynamic_buffer()</a></code>.</p>
 
 <div class="note">
 A dynamic buffer requires two memory allocations internally: one for the buffer

@@ -5,14 +5,14 @@ int duk_del_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
 [ ... obj! ... ] -> [ ... obj! ... ]
 
 =summary
-<p>Like <tt><a href="#duk_del_prop">duk_del_prop()</a></tt>,
+<p>Like <code><a href="#duk_del_prop">duk_del_prop()</a></code>,
 but the property name is given as an unsigned integer
-<tt>arr_index</tt>.  This is especially useful for deleting
+<code>arr_index</code>.  This is especially useful for deleting
 array elements (but is not limited to that).</p>
 
 <p>Conceptually the number is coerced to a string for the
-property deletion, e.g. <tt>123</tt> would be equivalent to a property
-name <tt>"123"</tt>.  Duktape avoids an explicit coercion whenever
+property deletion, e.g. <code>123</code> would be equivalent to a property
+name <code>"123"</code>.  Duktape avoids an explicit coercion whenever
 possible.</p>
 
 =example

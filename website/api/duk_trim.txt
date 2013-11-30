@@ -5,7 +5,7 @@ void duk_trim(duk_context *ctx, int index);
 [ ... str! ... ] -> [ ... trimmed_str! ... ]
 
 =summary
-<p>Trim string at <tt>index</tt>.  If the value at <tt>index</tt> is not a
+<p>Trim string at <code>index</code>.  If the value at <code>index</code> is not a
 string or the index is invalid, throws an error.</p>
 
 <p>Trimming removes white space characters from the beginning and

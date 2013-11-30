@@ -5,20 +5,20 @@ void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
 [ ... val! ... ] -> [ ... DefaultValue(val)! ... ]
 
 =summary
-<p>Replace the object at <tt>index</tt> with an Ecmascript
+<p>Replace the object at <code>index</code> with an Ecmascript
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.8">[[DefaultValue]]</a>
-coerced value.  The <tt>hint</tt> argument indicates preference for a string
-(<tt>DUK_HINT_STRING</tt>), a number (<tt>DUK_HINT_NUMBER</tt>), or neither
-(<tt>DUK_HINT_NONE</tt>).  <tt>DUK_HINT_NONE</tt> causes a preference to a number, unless
-the input value is a <tt>Date</tt> instance, in which case a string is preferred
+coerced value.  The <code>hint</code> argument indicates preference for a string
+(<code>DUK_HINT_STRING</code>), a number (<code>DUK_HINT_NUMBER</code>), or neither
+(<code>DUK_HINT_NONE</code>).  <code>DUK_HINT_NONE</code> causes a preference to a number, unless
+the input value is a <code>Date</code> instance, in which case a string is preferred
 (the exact coercion behavior is described in the Ecmascript specification).
-If the value is not an object or <tt>index</tt> is invalid, throws an error.</p>
+If the value is not an object or <code>index</code> is invalid, throws an error.</p>
 
 <p>Custom type coercion: both buffer and pointer are non-object values, so they
 cause an error to be thrown.</p>
 
 <div class="note">
-<tt>[[DefaultValue]]</tt> is a rather technical coercion, not usually needed by
+<code>[[DefaultValue]]</code> is a rather technical coercion, not usually needed by
 calling code.
 </div>
 

@@ -5,8 +5,8 @@ int duk_check_type_mask(duk_context *ctx, int index, int mask);
 [ ... val! ... ]
 
 =summary
-<p>Matches the type of the value at <tt>index</tt> against the type
-mask bits given in <tt>mask</tt>.  Returns 1 if the value type matches
+<p>Matches the type of the value at <code>index</code> against the type
+mask bits given in <code>mask</code>.  Returns 1 if the value type matches
 one of the type mask bits and zero otherwise.</p>
 
 =example

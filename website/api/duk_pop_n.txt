@@ -5,8 +5,8 @@ void duk_pop_n(duk_context *ctx, unsigned int count);
 [ ... val1! ...! valN! ] -> [ ... ]
 
 =summary
-<p>Pop <tt>count</tt> elements off the stack.  If the stack has fewer than
-<tt>count</tt> elements, throws an error.  If <tt>count</tt> is zero, the
+<p>Pop <code>count</code> elements off the stack.  If the stack has fewer than
+<code>count</code> elements, throws an error.  If <code>count</code> is zero, the
 call is a no-op.</p>
 
 =example

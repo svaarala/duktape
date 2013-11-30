@@ -5,17 +5,17 @@ size_t duk_get_length(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get a type-specific "length" for value at <tt>index</tt>:</p>
+<p>Get a type-specific "length" for value at <code>index</code>:</p>
 <ul>
 <li>String: character length of string (<i>not</i> byte length)</li>
-<li>Object: <tt>Math.floor(ToNumber(obj.length))</tt> if result within
+<li>Object: <code>Math.floor(ToNumber(obj.length))</code> if result within
             32-bit unsigned range; otherwise 0</li>
 <li>Buffer: byte length of buffer</li>
 <li>Other type or invalid stack index: 0</li>
 </ul>
 
 <p>To get the byte length of a string, use
-<tt><a href="#duk_get_lstring">duk_get_lstring()</a></tt>.
+<code><a href="#duk_get_lstring">duk_get_lstring()</a></code>.
 </p>
 
 =example

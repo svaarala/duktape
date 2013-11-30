@@ -5,8 +5,8 @@ void *duk_get_pointer(duk_context *ctx, int index);
 [ ... val! ... ]
 
 =summary
-<p>Get the pointer value at <tt>index</tt> as <tt>void *</tt> without
-modifying or coercing the value.  Returns <tt>NULL</tt> if the value is
+<p>Get the pointer value at <code>index</code> as <code>void *</code> without
+modifying or coercing the value.  Returns <code>NULL</code> if the value is
 not a pointer or the index is invalid.</p>
 
 =example

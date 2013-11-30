@@ -8,10 +8,10 @@ int duk_next(duk_context *ctx, int enum_index, int get_value);
 
 =summary
 <p>Get the next key (and optionally value) from an enumerator created with
-<tt><a href="#duk_enum">duk_enum()</a></tt>.  If the enumeration has been
+<code><a href="#duk_enum">duk_enum()</a></code>.  If the enumeration has been
 exhausted, nothing is pushed to the stack and the function returns zero.
 Otherwise the key is pushed to the stack, followed by the value if
-<tt>get_value</tt> is non-zero, and the function returns non-zero.
+<code>get_value</code> is non-zero, and the function returns non-zero.
 </p>
 
 <p>Note that getting the value may invoke a getter which may have arbitrary

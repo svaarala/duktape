@@ -3,7 +3,7 @@ int duk_get_top_index(duk_context *ctx);
 
 =summary
 <p>Get the absolute index (>= 0) of the topmost value on the stack.
-If the stack is empty, returns <tt>DUK_INVALID_INDEX</tt>.</p>
+If the stack is empty, returns <code>DUK_INVALID_INDEX</code>.</p>
 
 =example
 int idx_top;
