@@ -566,6 +566,7 @@ def generateGuide():
 	navlinks.append(['#portability', 'Portability'])
 	navlinks.append(['#limitations', 'Limitations'])
 	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
+	res.append('<ul>')
 	for nav in navlinks:
 		res.append('<li><a href="' + htmlEscape(nav[0]) + '">' + htmlEscape(nav[1]) + '</a></li>')
 	res.append('</ul>')
