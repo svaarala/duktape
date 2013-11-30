@@ -1,28 +1,15 @@
 
-/*---
-{
-    "custom": true
-}
----*/
-
 /*===
-Error
+111
+222
+333
+444
+555
+666
+777
+888
+999
 ===*/
-
-/* Actual desired output would be:
- *
- *   111
- *   222
- *   333
- *   444
- *   555
- *   666
- *   777
- *   888
- *   999
- *
- * Currently test that getconst() limit works and Errors out.
- */
 
 /* With enough constants, constant numbers emitted for e.g. GETPROP will no
  * longer fit into the short 9-bit arguments and will cause problems.
