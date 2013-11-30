@@ -134,6 +134,13 @@ all browsers.  For now, use::
   <table>...</table>
   </div>
 
+Obsolete elements
+-----------------
+
+Instead of ``<tt>`` use ``<code>`` as a general replacement.  Validators
+will complain about ``<tt>`` because it's an obsolete "representational"
+element.
+
 Favicon
 -------
 
@@ -220,6 +227,15 @@ Browser testing is ad hoc now.  Current browser set:
 * W3m
 
 * Elinks
+
+Validation
+==========
+
+Validate pages against:
+
+* http://validator.w3.org/
+
+* http://html5.validator.nu/
 
 Credits
 =======
