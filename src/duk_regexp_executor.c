@@ -134,7 +134,7 @@ static int inp_getprev(duk_re_matcher_ctx *re_ctx, duk_uint8_t *sp) {
 
 static duk_uint8_t *match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
-		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp executor recursion limit reached");
+		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, "regexp executor recursion limit");
 	}
 	re_ctx->recursion_depth++;
 
@@ -142,7 +142,7 @@ static duk_uint8_t *match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, du
 		int op;
 
 		if (re_ctx->steps_count >= re_ctx->steps_limit) {
-			DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp step limit reached");
+			DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, "regexp step limit");
 		}
 		re_ctx->steps_count++;
 

@@ -40,7 +40,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->callstack_max) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "callstack limit reached");
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "callstack limit");
 	}
 
 	DUK_DDPRINT("growing callstack %d -> %d", old_size, new_size);
@@ -259,7 +259,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->catchstack_max) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "catchstack limit reached");
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "catchstack limit");
 	}
 
 	DUK_DDPRINT("growing catchstack %d -> %d", old_size, new_size);

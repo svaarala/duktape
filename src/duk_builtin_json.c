@@ -317,7 +317,7 @@ static void json_dec_objarr_shared_entry(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_INTERNAL_ERROR, "recursion limit");
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, "json decode recursion limit");
 	}
 	js_ctx->recursion_depth++;
 }
@@ -813,7 +813,7 @@ static void json_enc_objarr_shared_entry(duk_json_enc_ctx *js_ctx, duk_hstring *
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_INTERNAL_ERROR, "recursion limit");
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, "json encode recursion limit");
 	}
 	js_ctx->recursion_depth++;
 

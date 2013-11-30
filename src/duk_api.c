@@ -420,7 +420,7 @@ static int check_valstack_resize_helper(duk_context *ctx,
 		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account.
 		 */
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "valstack limit reached");
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "valstack limit");
 		} else {
 			return 0;
 		}

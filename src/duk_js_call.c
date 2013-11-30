@@ -798,7 +798,7 @@ int duk_handle_call(duk_hthread *thr,
 		DUK_DDPRINT("ignoring reclimit for this call (probably an errhandler call)");
 	} else {	
 		if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "maximum C call stack depth reached");
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "C call stack depth limit");
 		}
 		thr->heap->call_recursion_depth++;
 	}
@@ -1533,7 +1533,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(thr->heap->call_recursion_depth >= 0);
 	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
 	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "maximum C call stack depth reached");
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "C call stack depth limit");
 	}
 	thr->heap->call_recursion_depth++;
 
