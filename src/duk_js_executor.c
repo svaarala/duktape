@@ -2481,6 +2481,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				                NULL);       /* errhandler (ignored because not protected) */
 
 				/* FIXME: who should restore? */
+				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, fun->nregs);
 
 				if (flag_tailcall) {
