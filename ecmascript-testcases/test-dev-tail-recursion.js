@@ -61,7 +61,7 @@ print(count);
 
 /*===
 25
-Error
+RangeError
 ===*/
 
 /* FIXME: Change limit errors to RangeError? */

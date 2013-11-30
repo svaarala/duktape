@@ -11,7 +11,7 @@ var t;
 
 /*===
 1
-Error
+RangeError
 ===*/
 
 /* Parenthesis; expression recursion */
@@ -31,7 +31,7 @@ try {
     /* a reasonable nest count should of course compile */
     print(eval(buildParenExpr(25)));
 } catch (e) {
-    print(e.name);
+    print(e);
 }
 
 try {
@@ -43,7 +43,7 @@ try {
 
 /*===
 innermost block
-Error
+RangeError
 ===*/
 
 /* Statement recursion */
@@ -63,7 +63,7 @@ try {
     // reasonable count
     print(eval(buildBlockExpr(15)));
 } catch (e) {
-    print(e.name);
+    print(e);
 }
 
 try {
@@ -74,7 +74,7 @@ try {
 
 /*===
 innermost func
-Error
+RangeError
 ===*/
 
 /* Function recursion */
@@ -96,7 +96,7 @@ try {
     // reasonable
     eval(buildFuncExpr(10));
 } catch (e) {
-    print(e.name);
+    print(e);
 }
 
 try {

@@ -7,17 +7,20 @@
 /*===
 {"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":"bar"}}}}}}}}}}
 {"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":{"foo":"bar"}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
-Error
+RangeError
 [[[[[[[[[["bar"]]]]]]]]]]
 [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[["bar"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
-Error
+RangeError
 {"foo":[{"foo":[{"foo":[{"foo":[{"foo":["bar"]}]}]}]}]}
 {"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":[{"foo":["bar"]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}]}
-Error
+RangeError
 ===*/
 
 /* JSON stringify() recursion limit is hit if C recursion through object
  * and/or array traversal becomes too deep.
+ *
+ * With shallow stacks a depth of >100 causes a problem, with deep stacks
+ * it takes >1000.  Use a much larger value in the testcase.
  */
 
 function objectRecursionTest(n) {
@@ -60,7 +63,7 @@ function objectAndArrayRecursionTest(n) {
 try {
     objectRecursionTest(10);
     objectRecursionTest(80);
-    objectRecursionTest(200);
+    objectRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }
@@ -68,7 +71,7 @@ try {
 try {
     arrayRecursionTest(10);
     arrayRecursionTest(80);
-    arrayRecursionTest(200);
+    arrayRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }
@@ -76,7 +79,7 @@ try {
 try {
     objectAndArrayRecursionTest(10);
     objectAndArrayRecursionTest(80);
-    objectAndArrayRecursionTest(200);
+    objectAndArrayRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }

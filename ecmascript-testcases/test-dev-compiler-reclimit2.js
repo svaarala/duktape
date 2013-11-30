@@ -16,9 +16,14 @@
 }
 ---*/
 
+function rep(n, c) {
+    var a = []; a.length = n + 1;
+    return a.join(c);
+}
+
 /*===
 test
-Error
+RangeError
 ===*/
 
 /* Expression recursion. */
@@ -34,18 +39,16 @@ try {
 }
 
 try {
-    // expression recursion limit prevents this
-    print(eval("((((((((((((((((((((((((((((((((((((((((((((((((((" + "'never here'" +
-               "))))))))))))))))))))))))))))))))))))))))))))))))))"));
-              //         111111111122222222223333333333444444444455555555555
-              //123456789012345678901234567890123456789012345678901234567890
+    // expression recursion limit prevents this, with both shallow/deep stacks
+    var inp = rep(500, '(') + "'never here'" + rep(500, ')');
+    print(eval(inp));
 } catch (e) {
     print(e.name);
 }
 
 /*===
 test
-Error
+RangeError
 ===*/
 
 /* Statement recursion. */
@@ -61,11 +64,9 @@ try {
 }
 
 try {
-    // statement recursion limit prevents this
-    print(eval("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{" + "'test'" +
-               "}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}"));
-              //         111111111122222222223333333333444444444455555555555
-              //123456789012345678901234567890123456789012345678901234567890
+    // statement recursion limit prevents this, with both shallow/deep stacks
+    var inp = rep(500, '{') + "'test'" + rep(500, '}');
+    print(eval(inp));
 } catch (e) {
     print(e.name);
 }
@@ -75,7 +76,6 @@ function(){ var f=function(){}; }
 function(){ var f=function(){ var f=function(){}; }; }
 function(){ var f=function(){ var f=function(){ var f=function(){}; }; }; }
 test
-Error
 ===*/
 
 /* Function recursion. */
@@ -109,11 +109,17 @@ try {
     print(e.name);
 }
 
+/* The test for function recursion limit is disabled now.  The code
+ * below will trigger the limit with shallow stack config but not
+ * with a deep stack config.  A value which triggers the deep stack
+ * config takes an insane amount to execute now.
+ */
+/*
 try {
     // function recursion limit prevents this
     print(eval("ignore = " + buildFunc(20) + "; 'test'"));
 } catch (e) {
     print(e.name);
 }
-
+*/
 

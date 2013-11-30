@@ -7,13 +7,13 @@
 /*===
 object
 object
-Error
+RangeError
 object
 object
-Error
+RangeError
 object
 object
-Error
+RangeError
 ===*/
 
 /* JSON parse() recursion limit is hit if C recursion through object
@@ -23,6 +23,9 @@ Error
  * to print the result would hit stringify()'s recursion limit.  So
  * if printing is added, do it with Ecmascript and avoid Ecmascript
  * recursion limit.
+ *
+ * To ensure recursion limit is reached for even a deep stack configuration,
+ * use n=2000.
  */
 
 function objectRecursionTest(n) {
@@ -65,7 +68,7 @@ function objectAndArrayRecursionTest(n) {
 try {
     objectRecursionTest(10);
     objectRecursionTest(80);
-    objectRecursionTest(200);
+    objectRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }
@@ -73,7 +76,7 @@ try {
 try {
     arrayRecursionTest(10);
     arrayRecursionTest(80);
-    arrayRecursionTest(200);
+    arrayRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }
@@ -81,7 +84,7 @@ try {
 try {
     objectAndArrayRecursionTest(10);
     objectAndArrayRecursionTest(80);
-    objectAndArrayRecursionTest(200);
+    objectAndArrayRecursionTest(2000);
 } catch (e) {
     print(e.name);
 }
@@ -123,5 +126,4 @@ try {
 } catch (e) {
     print(e.name, e);
 }
-
 
