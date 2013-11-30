@@ -131,10 +131,21 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define  DUK_F_M68K
 #endif
 
+/* Linux */
+#if defined(__linux)
+#define  DUK_F_LINUX
+#endif
+
 /* BSD variant */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
 #define  DUK_F_BSD
+#endif
+
+/* Windows (32-bit or above) */
+#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || \
+    defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#define  DUK_F_WINDOWS
 #endif
 
 /* Atari ST TOS. __TOS__ defined by PureC (which doesn't work as a target now
@@ -183,7 +194,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  specify byte order explicitly on more exotic platforms.
  */
 
-#if defined(__linux)
+#if defined(DUK_F_LINUX)
 #ifndef  _POSIX_C_SOURCE
 #define  _POSIX_C_SOURCE  200809L
 #endif
@@ -910,6 +921,19 @@ extern double duk_computed_nan;
 #define  DUK_FUNC_MACRO  __func__
 #else
 #define  DUK_FUNC_MACRO  "unknown"
+#endif
+
+/*
+ *  Deep vs. shallow stack.
+ *
+ *  Some embedded platforms have very shallow stack (e.g. 64kB); default to
+ *  a shallow stack on unknown platforms or known embedded platforms.
+ */
+
+#if defined(DUK_F_LINUX) || defined(DUK_F_BSD) || defined(DUK_F_WINDOWS)
+#define  DUK_USE_DEEP_C_STACK
+#else
+#undef  DUK_USE_DEEP_C_STACK
 #endif
 
 /* 

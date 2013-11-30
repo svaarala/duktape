@@ -9,7 +9,11 @@
 #define  DUK_RE_MAX_ATOM_COPIES             1000
 
 /* regexp compilation limits */
+#if defined(DUK_USE_DEEP_C_STACK)
+#define  DUK_RE_COMPILE_RECURSION_LIMIT     1000
+#else
 #define  DUK_RE_COMPILE_RECURSION_LIMIT     100
+#endif
 
 /* regexp execution limits */
 #define  DUK_RE_EXECUTE_RECURSION_LIMIT     100

@@ -77,14 +77,20 @@
  * There is a separate callstack depth limit for threads.
  */
 
-#define  DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60  /* assuming 0.5 kB between calls, about 30kB of stack */ 
+#if defined(DUK_USE_DEEP_C_STACK)
+#define  DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             1000  /* assuming 0.5 kB between calls, about 500kB of stack */ 
+#else
+#define  DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */ 
+#endif
 
 /* mark-and-sweep C recursion depth for marking phase; if reached,
  * mark object as a TEMPROOT and use multi-pass marking.
  */
-#ifdef  DUK_USE_MARK_AND_SWEEP
-#ifdef  DUK_USE_GC_TORTURE
+#if defined(DUK_USE_MARK_AND_SWEEP)
+#if defined(DUK_USE_GC_TORTURE)
 #define  DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   3
+#elif defined(DUK_USE_DEEP_C_STACK)
+#define  DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   256
 #else
 #define  DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   32
 #endif
