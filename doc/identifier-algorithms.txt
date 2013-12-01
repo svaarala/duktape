@@ -13,8 +13,8 @@ The goal of the compiler is to convert almost all identifier related
 accesses to register accesses and to avoid the explicit creation of
 environment record objects whenever possible.  For full compliance, a "slow
 path" is needed, and is provided by the environment record objects and the
-identifier algorithms described here.  The goal for implementation is to
-make these slow path algorithms compact, not fast.
+identifier algorithms described here.  The slow path is optimized for a
+compact code footprint, not speed.
 
 Identifier handling encompasses a large part of the E5 specification and
 the implementation:
@@ -230,7 +230,7 @@ New object environment records are created for: [#newobjrecord]_
 Establishing an execution context (= calling)
 ---------------------------------------------
 
-Different cases for establishing execution context (= calling):
+Different cases for calling:
 
 +------------------------+----------------------+----------------------+-----------------------+-----------------------------+
 | Call type              | Lexical environment  | Variable environment | This binding          | Notes                       |
@@ -352,11 +352,10 @@ Internal representation
 -----------------------
 
 The current implementation makes no distinction between a lexical
-environment and the environment record it refers to.
-
-Instead, a combination of a lexical environment, its environment record,
-and a possible outer lexical environment reference is implemented as a
-single internal object which is not directly visible to program code.
+environment and the environment record it refers to.  Instead, a combination
+of a lexical environment, its environment record, and a possible outer
+lexical environment reference is implemented as a single internal object
+which is not directly visible to program code.
 
 An outer lexical environment reference (the "parent record") is
 identified using the internal prototype field of the object.
