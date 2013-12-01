@@ -84,6 +84,7 @@ for i in	\
 	duk_builtin_string.c	\
 	duk_builtin_thread.c	\
 	duk_builtin_thrower.c	\
+	duk_dblunion.h		\
 	duk_debug_fixedbuffer.c	\
 	duk_debug.h		\
 	duk_debug_heap.c	\
