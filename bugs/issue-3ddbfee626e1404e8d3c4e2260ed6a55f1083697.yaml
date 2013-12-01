@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add function _source property handling
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-01 20:56:34.164645 Z
+references: []
+
+id: 3ddbfee626e1404e8d3c4e2260ed6a55f1083697
+log_events: 
+- - 2013-12-01 20:56:34.332525 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
