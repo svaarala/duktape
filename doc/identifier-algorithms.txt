@@ -2,14 +2,619 @@
 Identifier algorithms
 =====================
 
-This document discusses the exposed algorithms for identifier handling,
-taking into account the internal representation of the lexical environment.
+Introduction
+============
+
+This document discusses the internal representation of lexical environments
+and the exposed algorithms for identifier handling, taking into account the
+internal representation.
 
 The goal of the compiler is to convert almost all identifier related
-accesses to register accesses.  For full compliance, a "slow path" is
-needed, and is provided by the identifier algorithms described here.
-The goal for implementation is to make these slow path algorithms
-compact, not fast.
+accesses to register accesses and to avoid the explicit creation of
+environment record objects whenever possible.  For full compliance, a "slow
+path" is needed, and is provided by the environment record objects and the
+identifier algorithms described here.  The goal for implementation is to
+make these slow path algorithms compact, not fast.
+
+Identifier handling encompasses a large part of the E5 specification and
+the implementation:
+
+* Variable and function declarations in global code, eval code, and function
+  code (compile time)
+
+* Function argument list declarations (compile time)
+
+* Establishing execution contexts (calls to global code, eval code, and
+  function code; run time)
+
+* Establishing other lexical environments (``catch`` blocks, ``with`` blocks;
+  run time)
+
+* Reading identifier values and ``typeof`` (run time)
+
+* Assigning values to identifiers (run time)
+
+* Deleting identifier bindings using ``delete`` (run time)
+
+* Special argument name bindings for the ``arguments`` object (run time)
+
+These have many complications from an implementation point of view:
+
+* Many things are processed during compile time (and are, in fact, required
+  to be processed compile time)
+
+* Identifiers may be bound to compiled function registers (preferred) or to
+  explicit environment record objects (fallback)
+
+* Register-bound identifiers need to be moved to an explicit environment
+  record object if they may be referred to later (closure)
+
+* Establishing execution contexts is rather tricky and varies between call
+  types
+
+Specification notes
+===================
+
+Key parts
+---------
+
+Key parts of Ecmascript E5 discussion identifier handling include Section 10
+(Executable Code and Execution Contexts):
+
+  + Sections 10.2.2.1 and 10.3.1 cover identifier lookup
+    (``GetIdentifierReference``)
+  + Sections 10.4 and 10.5 cover execution context initialization for global
+    code, eval code, and function calls
+  + Section 10.6 covers the ``arguments`` object initialization (for function
+    calls)
+
+Other relevant sections include:
+
+  + Section 11.4.1: the ``delete`` operator, which is used for variable
+    deletion (and property deletion)
+  + Section 11.4.3: the ``typeof`` operator
+  + Section 12.10: the ``with`` statement
+  + Section 12.14: the ``try`` statement, special handling of ``catch``
+  + Section 13: function declarations and function expressions
+  + Section 15.1.2.1: ``eval (x)``, defines the concept of a *direct call
+    to eval*
+
+Key concepts
+------------
+
+Lexical environment
+  Consists of an *environment record* and a reference to an *outer lexical
+  environment*.
+
+  The current implementation makes no distinction between a lexical
+  environment and the environment record contained in it: they are
+  represented by the same object.  Hence, the term "environment record"
+  is used loosely below to refer to the lexical environment and/or its
+  environment record.
+
+  The *outer lexical environment* is also referred to as the environment
+  record's *parent* below.
+
+Environment record
+  An environment record is either a *declarative environment record* or an
+  *object environment record*.
+
+  Declarative environment records hold variable bindings in an internal map
+  not accessible from user code.
+
+  Object environment records hold variable bindings in an Ecmascript object.
+  They are used for handling global program execution for ``with`` statements.
+
+Execution context
+  Consists of (note the confusing names and terminology here):
+
+      1. ``LexicalEnvironment``, a lexical environment (an environment
+         record) for processing variable lookups,
+      2. ``VariableEnvironment``, a lexical environment (an environment
+         record) for processing variable and function declarations, and
+      3. a ``this`` binding
+
+  The two lexical environments are usually the same, except for:
+
+    + ``with``, which establishes an object environment record for variable
+      lookups, but keeps the previous one for declarations
+    + ``catch``, which establishes a single-variable declarative environment
+      record for the variable containing the error
+
+  Note the confusing terminology, especially the use of "lexical environment"
+  as a general term and ``LexicalEnvironment`` as a component of an execution
+  context.  Below, we refer to these loosely as "lexical environment" (for
+  ``LexicalEnvironment``) and "variable environment" (for
+  ``VariableEnvironment``).
+
+Immutable binding
+  A binding whose value cannot be changed after initialization.
+  An immutable binding cannot be deleted.
+
+Mutable binding
+  A binding whose value can be changed.  A mutable binding may be deletable
+  or non-deletable.
+
+Implicit ``this`` value
+  A binding may be associated with an implicit ``this`` value.
+  If the value is not provided, ``undefined`` is used in its place.
+
+  Declarative environment records never provide an implicit
+  ``this value``.  Object environment records for which the
+  ``provideThis`` internal flag is set provide an implicit
+  ``this`` value.
+
+Unsorted notes
+--------------
+
+Almost all bindings in the E5 specification are non-deletable mutable
+bindings, except: [#specialbindings]_
+
+* *declaration in eval*: function and variable declarations in eval code are
+  deletable mutable bindings
+* *"arguments" binding*: the ``arguments`` binding for strict mode function is
+  an immutable binding
+* *function name in a function expression*: in a function expression
+  ``function f(args) { body }``, the identifier ``f`` is an immutable binding
+  for the function body; this is not true of function declarations
+
+There are no practical cases where an immutable binding would be accessed in
+an uninitialized state: [#uninitializedimmutable]_
+
+* Immutable bindings are created with ``CreateImmutableBinding`` and
+  initialized with ``InitializeImmutableBinding``
+* For ``arguments``, creation and initialization are consecutive, there is
+  little chance of failure (except "out of memory" like conditions); even
+  in failure cases, the intermediate uninitialized binding is not accessible
+  to program code
+* For function name in a function expression, creation and initialization
+  are not consecutive but the same applies as for ``arguments``: an
+  uninitialized binding is never exposed to program code (the function
+  expression is not "returned" until its initialization is complete)
+* As a result, the implementation does not need to handle lookups for
+  uninitialized immutable bindings, implied for declarative environment
+  records in E5 Section 10.2.1.1.4, step 3
+
+Implicit ``this`` value is relevant only for: [#implicitthis]_
+
+* Object environment records initialized in a ``with`` statement.
+
+* Function call using an identifier reference: a possible implicit
+  ``this`` value is used for the ``this`` binding (similarly to
+  how a function call using a property reference binds ``this``
+  to the property base object).
+
+New declarative environment records are created for: [#newdecrecord]_
+
+* Entering strict eval code (with a direct eval call)
+* Entering function code
+* Entering ``catch`` clause
+* Evaluating a named function expression
+
+New object environment records are created for: [#newobjrecord]_
+
+* Entering ``with`` statement body
+* Implicitly for the global object environment record
+
+.. [#specialbindings] See the following E5 sections:
+
+  * Section 10.5 steps 2, 5.d, 8.c (eval code)
+  * Section 10.5 step 7.b (``arguments`` binding)
+  * Section 13 (function expression)
+
+.. [#uninitializedimmutable] See the following E5 sections:
+
+  * Section 10.5, steps 7.b.i and 7.b.ii (``arguments`` for a strict function)
+  * Section 13, named function expression algorithm, steps 3-5 (named
+    function expressions)
+
+.. [#implicitthis] See the following E5 sections:
+
+  * Sections 10.2.1.1.6, 10.2.1.2.6: when implicit ``this`` is provided
+  * Section 11.2.3 step 6.b: function call handling
+  * Sections 10.2.1.2, 12.10: object environment records which have
+    ``provideThis`` set (``with`` statement only)
+
+.. [#newdecrecord] See the following E5 sections:
+
+  * Section 10.4.2, step 3: strict eval code
+  * Section 10.4.3: function call
+  * Section 12.14: ``catch`` clause, step 3
+  * Section 13.1: function expression
+
+.. [#newobjrecord] See the following E5 sections:
+
+  * Section 10.2.3: global environment record
+  * Section 12.10: ``with`` statement, step 4
+
+Establishing an execution context (= calling)
+---------------------------------------------
+
+Different cases for establishing execution context (= calling):
+
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Call type              | Lexical environment  | Variable environment | This binding          | Notes                       |
++========================+======================+======================+=======================+=============================+
+| Executing strict       | Global environment   | Global environment   | Global object         |                             |
+| global code            | (object environment) | (object environment) |                       |                             |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing non-strict   | Global environment   | Global environment   | Global object         |                             |
+| global code            | (object environment) | (object environment) |                       |                             |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing strict       | Global environment   | Global environment   | Global object         | Non-direct eval code, or    |
+| non-direct eval code   | (object environment) | (object environment) |                       | eval code without a calling |
+|                        |                      |                      |                       | context (when in practice?) |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing non-strict   | Global environment   | Global environment   | Global object         | Non-direct eval code, or    |
+| non-direct eval code   | (object environment) | (object environment) |                       | eval code without a calling |
+|                        |                      |                      |                       | context (when in practice?) |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing strict       | New declarative      | Same as lexical      | Use calling context's | The parent of the new       |
+| direct eval code       | environment          | environment          | ``this`` binding      | declarative environment     |
+|                        |                      |                      |                       | record is the calling       |
+|                        |                      |                      |                       | context's lexical           |
+|                        |                      |                      |                       | environment.                |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing non-strict   | Use calling context's| Use calling context's| Use calling context's |                             |
+| direct eval code       | lexical environment  | variable environment | ``this`` binding      |                             |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing non-strict   | New declarative      | Same as lexical      | Coerced ``thisArg``:  | The parent of the new       |
+| function code          | environment          | environment          |                       | declarative environment     |
+|                        |                      |                      | If ``null`` or        | record is the called        |
+|                        |                      |                      | ``undefined``, use    | function's ``[[Scope]]``    |
+|                        |                      |                      | global object.        | internal property           |
+|                        |                      |                      |                       | (see below).                |
+|                        |                      |                      | If non-Object, use    |                             |
+|                        |                      |                      | ``ToObject``          |                             |
+|                        |                      |                      | ``(thisArg)``.        | ``thisArg`` is supplied by  |
+|                        |                      |                      |                       | caller in the function call |
+|                        |                      |                      | If Object, use        | algorithm.                  |
+|                        |                      |                      | ``thisArg`` directly. |                             |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+| Executing strict       | New declarative      | Same as lexical      | ``thisArg`` without   | The parent of the new       |
+| function code          | environment          | environment          | any coercion          | declarative environment     |
+|                        |                      |                      |                       | record is the called        |
+|                        |                      |                      |                       | function's ``[[Scope]]``    |
+|                        |                      |                      |                       | internal property           |
+|                        |                      |                      |                       | (see below).                |
+|                        |                      |                      |                       |                             |
+|                        |                      |                      |                       | ``thisArg`` is supplied by  |
+|                        |                      |                      |                       | caller in the function call |
+|                        |                      |                      |                       | algorithm.                  |
++------------------------+----------------------+----------------------+-----------------------+-----------------------------+
+
+Function ``[[Scope]]`` initialization is described in E5 Section 13:
+
+* For function declarations,
+  the ``[[Scope]]`` internal property is initialized to the variable environment
+  of the execution context containing the declaration.  This is the same as
+  initializing ``[[Scope]]`` to the lexical environment of the containing context,
+  because function declarations are only allowed at the top level.
+  If function declarations are allowed in other places (than the top level), it
+  makes more sense to initialize ``[[Scope]]`` to the current lexical environment.
+
+* For anonymous function expressions,
+  the ``[[Scope]]`` internal property is initialized to the lexical environment
+  of the execution context containing the expression.
+
+* For named function expressions,
+  a new declarative environment is created whose parent is the lexical environment
+  of the execution context containing the expression.  The new environment will be
+  initialized with an immutable binding for the name of the function, and will then
+  be used as the ``[[Scope]]`` of the function object.
+
+Environment record implementation
+=================================
+
+Specification
+-------------
+
+Environment records are described in E5 Section 10.2.1.  They define how
+identifiers are bound to values in an Ecmascript execution context.
+Bindings can be established in several ways:
+
+#. variable and function declarations in the global scope
+#. variable and function declarations in eval code
+#. variable and function declarations in functions
+#. ``catch`` clauses
+#. ``with`` statements
+
+An environment record maintains bindings to a certain set of identifiers,
+and may have (at most one) parent record (called *outer environment
+reference*) with further bindings.
+
+There are two types of environment records:
+
+#. *declarative environment record*: binds identifiers to values directly
+#. *object environment record*: refers to an external Ecmascript object
+   which contains the variable bindings
+
+Declarative environment records are the ordinary way of binding identifiers.
+The underlying map of identifiers to values is only visible to the program
+through variable accesses.  For object environment records, the identifiers
+are bound through an ordinary Ecmascript object (referred to by the object
+environment record); object environment records are used e.g. in the global
+propgram scope and in the ``with`` statement.
+
+An Ecmascript E5 execution environment maintains two environment record
+references (E5 Section 10.3):
+
+* A *variable environment* refers to an environment record which is used
+  for function and variable declarations
+* A *lexical environment* refers to an environment record which is used
+  for variable lookups (including deletes)
+
+Very often these two refer to the same environment record.  A new, nested
+lexical environment can be created e.g. through a ``with``, a ``catch``,
+a nested function, etc.
+
+Internal representation
+-----------------------
+
+The current implementation makes no distinction between a lexical
+environment and the environment record it refers to.
+
+Instead, a combination of a lexical environment, its environment record,
+and a possible outer lexical environment reference is implemented as a
+single internal object which is not directly visible to program code.
+
+An outer lexical environment reference (the "parent record") is
+identified using the internal prototype field of the object.
+This does *not* mean that ordinary property lookups (with automatic
+prototype walking) are used for variable lookups: the internal prototype
+is simply a convenient place to maintain the parent relationship, having
+an easily accessible slot, being already visible to garbage collection etc.
+
+Declarative environment record
+------------------------------
+
+A *declarative environment record* object maintains identifier mappings
+in two ways:
+
+#. directly as properties of the environment record
+#. by identifying an active activation record ("open scope") and a set
+   of identifiers bound to the registers of that activation record
+
+In the latter case, the environment record identifies the thread, the
+function, and the "register base" of the activation record in the thread's
+value stack.  These allow an identifier to be mapped to a value stack
+entry as follows:
+
+#. The function's variable map (if it exists) is consulted to find the
+   identifiers register number, relative to the bottom of the activation.
+   (Of course, the identifier might not be mapped.)
+#. The "register base" of the environment record identifies the absolute
+   value stack index of the activation record's frame bottom, and is added
+   to the relative register number to get an absolute value stack index.
+
+Note that the actual activation record does not need to be identified,
+we just need the register base to resolve absolute value stack index of
+a variable.  However, this approach does not allow validation of the
+resulting value stack index (e.g. to verify that it is indeed inside the
+activation record's frame).
+
+The internal object is initialized with:
+
+* Object class set to ``DUK_HOBJECT_CLASS_DECENV``
+* Object flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` cleared (assuming the
+  environment is open)
+* Internal prototype referring to outer environment record
+* Internal control properties: ``_callee``, ``_thread``, ``_regbase``
+
+When a declarative environment is "closed", identifiers bound to
+activation registers are copied  to the internal environment record
+object as plain properties (with the help of the callee's ``_varmap``)
+and the environment record's internal control properties are deleted.
+The flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` is set to allow open scope
+lookups to be skipped in later lookups.
+
+The variables mapped as properties have their attributes set as follows:
+
+* ``[[Enumerable]]``: does not matter as the properties are not visible
+  to the program (currently set to ``true``)
+* ``[[Writable]]``: set to ``true`` for mutable bindings, ``false`` for
+  immutable bindings
+* ``[[Configurable]]``: set to ``true`` for mutable bindings which are
+  also deletable, ``false`` for non-deletable mutable bindings and
+  immutable bindings
+
+Register-bound identifiers are assumed to be non-deletable mutable
+bindings: register bindings cannot be easily deleted (the bytecode
+may refer to them directly), and protecting register bound identifiers
+from being modified would require some control information we don't
+have.  As a result, other types of bindings cannot be mapped to registers
+(i.e. declarations inside eval, ``arguments`` binding, and the name
+binding of a named function expression) and require an explicit environment
+record object.
+
+Object environment record
+-------------------------
+
+An *object environment record* refers to an external Ecmascript object
+(visible to the program) "backing" the identifier bindings.  The target
+object is identified with an internal control property.
+
+The internal object is initialized with:
+
+* Object class set to ``DUK_HOBJECT_CLASS_OBJENV``
+* Internal prototype referring to outer environment record
+* Internal control property: ``_target``
+
+Identifier lookups proceed to the ``_target`` object while the parent
+environment record is identified by the prototype of the environment
+record (not of ``_target``).
+
+Example internal environment record objects
+===========================================
+
+Let's consider an environment with:
+
+#. the global object (outermost)
+#. a declarative environment (of a function, scope is open)
+#. an object environment (e.g. of a ``with`` clause)
+
+This could happen in this example::
+
+  // global scope: a variable lookup here would use 'record1'
+
+  var with_object = { "xyz": "zy" };
+
+  function func() {
+    var foo = 'my foo';
+    var bar = 'my bar';
+
+    // in the example below, we assume this variable was not mapped
+    // to a register for some reason (wouldn't ordinarily happen)
+    var quux = "a non-register binding";
+
+    // variable lookup here would use 'record2'
+
+    with (with_object) {
+      // variable lookup here would use 'record3'
+    }
+  }
+
+The objects could be roughly as follows (leading underscore indicates
+an internal value not visible to the program)::
+
+  global_object = {
+    "NaN": NaN,
+    "Infinity": Infinity,
+    "undefined": undefined,
+    "eval": [function],
+    "parseInt": [function],
+    ...
+  }
+
+  func = {
+    // "foo" maps to reg 0, "bar" to reg 1, "quux" not register mapped
+    "_varmap": { "foo": 0, "bar": 1 },
+    ...
+  }
+
+  with_object = {
+    "xyz": "zy"
+  }
+
+  record1 = {
+    // Flag DUK_HOBJECT_CLASS_OBJENV set
+    "_prototype": null,
+    "_target": global_object,    // identifies binding target
+  }
+
+  record2 = {
+    // Flag DUK_HOBJECT_CLASS_DECENV set
+    // Flag DUK_HOBJECT_CLASS_ENVRECCLOSED not set (still open)
+    "_prototype": record1,
+    "_callee": func,     // provides access to _varmap (name-to-reg)
+    "_thread": thread,   // identifies valstack
+    "_regbase": 100,     // identifies valstack base for regs
+    "quux": "a non-register binding"
+
+    // var "foo" resides in value stack absolute index 100 + 0 = 100,
+    // var "bar" in absolute index 100 + 1 = 101
+  }
+
+  record3 = {
+    // Flag DUK_HOBJECT_CLASS_OBJENV set
+    "_prototype": record2,
+    "_target": with_object
+  }
+
+Once again, the compiler strives to avoid creating explicit environment
+records whenever possible.  In the example above the compiler won't be
+successful: the object environment required by ``with`` also causes the
+declarative environment (record2) to be created.
+
+Functions and environment records
+---------------------------------
+
+A function object (``duk_hcompiledfunction``) records the following
+conceptual variable access related information:
+
+* A variable map, which maps an identifier to a register number.  Ideally
+  all function variables / functions are register mapped, but this is not
+  always possible.
+
+* Control data for initializing the lexical and variable environments
+  of new invocations.
+
+There are separate function template objects (which are essentially functions
+without an outer environment) and concrete function instance objects.  The
+detailed properties vary a bit between the two.
+
+More concretely:
+
+* The ``DUK_HOBJECT_FLAG_NEWENV`` object level flag, and the internal
+  properties ``_lexenv`` and ``_varenv`` control activation record
+  lexical and variable environment initialization as described below.
+
+* The internal property ``_varmap`` contains a mapping from an
+  identifier name to a register number relative to the activation
+  record frame bottom.
+
+* The internal property ``_formals`` contains a list of formal argument
+  names.
+
+* Template function objects, used for creating concrete function instances,
+  use ``DUK_HOBJECT_FLAG_NAMEBINDING`` flag to indicate that the template
+  represents a named function expression.  For such functions, the function
+  name (stored in ``_name``) needs to be bound in an environment record just
+  outside a function activation's environment record.
+
+To minimize book-keeping in common cases, the following short cuts
+are supported:
+
+* If both scope references are missing:
+
+  - Assume that the function has an empty declarative environment record,
+    whose parent is the global environment record.
+  - For variable lookups this means that we proceed directly to the global
+    environment record.
+  - For variable declarations this means that a declarative environment
+    record needs to be created on demand.
+
+* If ``_varenv`` is missing:
+
+  - Assume that ``_varenv`` has the same value as ``_lexenv``.
+  - This is very common, and saves one (unnecessary) reference.
+  - Note: it would be more logical to allow ``_lexenv`` to be missing
+    and default it to ``_varenv``; however, dynamic variable
+    declarations are comparatively rare so the defaulting is more
+    useful this way around
+
+* If ``_varmap`` is missing:
+
+  - Assume that the function has no register-mapped variables.
+
+* The compiler attempts to drop any fields not required from compiled
+  objects.  In many common cases (even when dynamic variables accesses
+  cannot be ruled out) no control fields are required.
+
+The detailed handling of these is documented as part of the source for:
+
+* Creating function templates in the compiler
+* Instantiating function instances from templates (closures)
+
+Notes:
+
+* Environment record initialization is done only when (if) it is actually
+  needed (e.g. for a function declaration).  It is not created
+  unnecessarily when a function is called.
+
+* The default behavior for ``_lexenv`` and ``_varenv`` allows them to
+  be omitted in a large number of cases (for instance, many functions
+  are declared in the global scope, and for many compiled eval
+  functions the values are the same).
+
+* The ``DUK_HOBJECT_FLAG_NEWENV`` is set for ordinary functions, which
+  always get a new environment record for variable declaration and
+  lookup.  The flag is cleared for global code and eval code; or rather
+  functions compiled from global code and eval code.
+
+* Unlike Duktape, Ecmascript does not separate the compilation and
+  execution of global code and eval code.  Hence the handling is
+  seemingly a bit different although the outcome should be the same.
 
 Preliminary work
 ================
@@ -960,3 +1565,28 @@ Notes:
 
 * If a function is redeclared, it must have its binding value updated.
 
+Fast path
+=========
+
+As a general rule, the compiler uses static analysis in an attempt
+to allocate variables to registers and convert variable accesses to
+direct register read/write operations.  Only a minority of variable
+accesses thus happen using the slow identifier lookup described above.
+
+If the compiler can determine that *all* variable accesses can be
+handled this way (and no dynamic accesses are possible e.g. through
+a direct ``eval`` call), the control information does not need to be
+recorded in the compiled function at all.  However, if the compiler
+cannot rule out the possibility of arbitrary dynamic variable lookups,
+the control information needs to be stored.
+
+Future work
+===========
+
+* A declarative environment record now records ``_callee`` to get
+  access to its ``_varmap`` property.  Instead, the record could
+  store a ``_varmap`` reference directly, which would drop one step
+  from lookup of a register mapped variable.  Also, if the function
+  itself is freed, only the varmap needs to survive in the heap.
+  The downside would be that there would be no access to function
+  metadata, should that be useful (e.g. for debugging).
