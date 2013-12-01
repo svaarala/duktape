@@ -13,9 +13,9 @@
  *  convenient field).  The prototype chain is not followed in the ordinary
  *  sense for variable lookups.
  *
- *  See identifier-handling.txt and identifier-algorithms.txt for more details
- *  on identifier handling, and function-objects.txt for details on what
- *  function instances are expected to look like.
+ *  See identifier-handling.txt for more details on the identifier algorithms
+ *  and the internal representation.  See function-objects.txt for details on
+ *  what function templates and instances are expected to look like.
  *
  *  Care must be taken to avoid duk_tval pointer invalidation caused by
  *  e.g. value stack or object resizing.
