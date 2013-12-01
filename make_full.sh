@@ -38,6 +38,7 @@ for i in \
 	doc/code-issues.txt \
 	doc/unicode-support.txt \
 	doc/identifier-handling.txt \
+	doc/function-objects.txt \
 	; do
 	cp --parents $i $FULL/
 done
