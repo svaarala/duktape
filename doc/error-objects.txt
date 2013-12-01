@@ -1,0 +1,358 @@
+=============
+Error objects
+=============
+
+Ecmascript allows throwing of arbitrary values, although most user code
+throws objects inheriting from the ``Error`` constructor.  Ecmascript
+``Error`` instances are quite barebones: they only contain a ``name``
+and a ``message``.  Most Ecmascript implementations provide additional
+error properties like file name, line number, and traceback.
+
+This document describes how Duktape creates ``Error`` objects and what
+properties such objects have.  The internal traceback data format and
+the mechanism for providing human readable tracebacks is also covered.
+Also see the user documentation which covers the exposed features in a
+more approachable way.
+
+Error object creation
+=====================
+
+Duktape "augments" any errors at their creation.  Throwing, catching,
+and re-throwing have no impact on the error object.  Only error values
+which are instances of ``Error`` are augmented, other kinds of values
+(even objects) are left alone.
+
+Errors can be created in multiple ways:
+
+* From Ecmascript code by creating an error, usually (but not always) tied
+  to a ``throw`` statement, e.g.::
+
+    throw new Error('my error');
+
+  In this case the Error object should capture the file and line of the
+  file creating the Error object (with ``new Error(...)``).
+
+* From C code using the Duktape API, e.g.::
+
+    duk_error(ctx, DUK_ERR_RANGE_ERROR, "invalid argument: %d", argvalue);
+
+  In these cases the ``__FILE__`` and ``__LINE__`` of the throw site are
+  very useful.  API calls which create an error object are implemented as
+  macros to capture ``__FILE__`` and ``__LINE__`` conveniently.  This is
+  very important to create useful tracebacks.
+
+* From inside the Duktape implementation, usually with the ``DUK_ERROR()``
+  macro, e.g.::
+
+    DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid argument");
+
+  In this case the Duktape internal file and line is useful and must be
+  captured.  However, it is not "blamed" as the source of the error as far
+  as filename and line number of the error are concerned (after all, the
+  user doesn't usually care about the internal line numbers).
+
+When errors are thrown using the Duktape API or from inside the Duktape
+implementation, the value thrown is always an instance of ``Error`` and
+is therefore augmented.  Error creation and throwing happens at the same
+time.
+
+When errors are thrown from Ecmascript code the situation is different.
+There is nothing preventing user code from separating the error creation
+and error throwing from each other::
+
+  var err = new Error('value too large');
+  if (arg >= 100) {
+    throw err;
+  }
+
+In fact, the user may never intend to throw the error but may still want
+to access the traceback::
+
+  var err = new Error('currently here');
+  print('debug: reached this point\n' + err.stack);
+
+Augmenting an error when it is thrown has several complications; for instance,
+the error might accidentally be augmented again (overwriting previous values)
+when it is rethrown.  Some error values may never even be thrown, but would
+still benefit from having traceback information.
+
+Duktape augments an error object *when it is created*.  In more concrete terms,
+when a constructor call is made (i.e. ``new Foo()``) the final result which is
+about to be returned to calling code is inspected.  This is a change to the
+standard handling of constructor calls and applies uniformly whenever any
+object is created (and unfortunately carries some overhead).  The value gets
+augmented with error information (e.g. tracedata) if it fulfills the following
+criteria:
+
+  1. The value is an extensible object.
+
+  2. The value is an instance of ``Error``, i.e. ``Error.prototype`` is in its
+     internal prototype chain.
+
+Duktape refuses to add additional fields to the object if it already contains
+fields of the same name.  For instance, if the created object has a ``tracedata``
+field, it won't get overwritten by the augmentation process.
+
+Since a particular object is never constructed twice, the error object is not
+changed by catching, re-throwing, etc.  The downside of augmenting during
+creation is that the error information may not accurately reflect the actual
+``throw`` statement which throws the error.  In particular, user code may
+create an error value in a completely different place at a completely different
+time than where and when the error is actually thrown.  User code may even throw
+the same error value multiple times.
+
+Error objects can also be created by calling the ``Error`` constructor (or a
+constructor of a subclass) as a normal function.  In the standard this is
+semantically equivalent to a constructor call.  Duktape will also augment an
+error created by calling a built-in error constructor with a normal function
+call.  However, any Error sub-classes created by the user don't exhibit this
+behavior.  For instance::
+
+  MyError = function(msg) { this.message = msg; this.name = 'MyError'; return this; }
+  MyError.prototype = Error.prototype;
+
+  var e1 = new Error('test 1');    // augmented, constructor call
+  var e2 = Error('test 2');        // augmented, special handling
+  var e3 = new MyError('test 3');  // augmented, constructor call
+  var e4 = MyError('test 4');      // not augmented
+
+  print(e1.stack);
+  print(e2.stack);
+  print(e3.stack);
+  print(e4.stack);
+
+Prints out::
+
+  Error: test 1
+          global test.js:4 preventsyield
+  Error: test 2
+          Error (null) native strict preventsyield
+          global test.js:5 preventsyield
+  MyError: test 3
+          global test.js:6 preventsyield
+  undefined
+
+Note that because of internal details, the traceback is different for the
+``Error`` constructor when it is called as a normal function.
+
+Fixing this behavior so that even user errors get augmented when called with
+a non-constructor call seems difficult.  It would be difficult to detect
+when augmentation is appropriate and it would also add overhead to every
+normal function call.
+
+Error object properties
+=======================
+
+The following table summarizes properties of ``Error`` objects constructed
+within the control of the implementation:
+
++-----------------+----------+--------------------------------------------+
+| Property        | Standard | Description                                |
++=================+==========+============================================+
+| name            | yes      | e.g. ``TypeError`` for a TypeError         |
+|                 |          | (usually inherited)                        |
++-----------------+----------+--------------------------------------------+
+| message         | yes      | message given when constructing (or empty) |
+|                 |          | (own property)                             |
++-----------------+----------+--------------------------------------------+
+| fileName        | no       | name of the file where constructed         |
+|                 |          | (inherited accessor)                       |
++-----------------+----------+--------------------------------------------+
+| lineNumber      | no       | line of the file where constructed         |
+|                 |          | (inherited accessor)                       |
++-----------------+----------+--------------------------------------------+
+| stack           | no       | printable stack traceback string           |
+|                 |          | (inherited accessor)                       |
++-----------------+----------+--------------------------------------------+
+| tracedata       | no       | stack traceback data, internal raw format  |
+|                 |          | (own property)                             |
++-----------------+----------+--------------------------------------------+
+
+The ``Error.prototype`` contains the following non-standard properties:
+
++-----------------+----------+--------------------------------------------+
+| Property        | Standard | Description                                |
++=================+==========+============================================+
+| stack           | no       | Accessor property for getting a printable  |
+|                 |          | traceback based on tracedata.              |
++-----------------+----------+--------------------------------------------+
+| fileName        | no       | Accessor property for getting a filename   |
+|                 |          | based on tracedata.                        |
++-----------------+----------+--------------------------------------------+
+| lineNumber      | no       | Accessor property for getting a linenumber |
+|                 |          | based on tracedata.                        |
++-----------------+----------+--------------------------------------------+
+
+All of the accessors are in the prototype in case the object instance does
+not have an "own" property of the same name.  This allows for flexibility
+in minimizing the property count of error instances while still making it
+possible to provide instance-specific values when appropriate.  Note that
+the setters allow user code to write an instance-specific value as an "own
+property" of the error object, thus shadowing the accessors in later reads.
+
+Notes:
+
+* The ``stack`` property name is from V8 and behavior is close to V8.
+  V8 allows user code to write to the ``stack`` property but does not
+  create an own property of the same name.  The written value is still
+  visible when ``stack`` is read back later.
+
+* The ``fileName`` and ``lineNumber`` property names are from Rhino.
+
+* The ``tracedata`` has an internal format which may change from version
+  to version (even build to build).  It should never be serialized or
+  used outside the life cycle of a Duktape heap.
+
+* In size-optimized builds traceback information may be omitted.  In such
+  cases ``fileName`` and ``lineNumber`` are concrete own properties.
+
+* In size-optimized builds errors created by the Duktape implementation
+  will not have a useful ``message`` field.  Instead, ``message`` is set
+  to a string representation of the error ``code``.  Exceptions thrown
+  from user code will carry ``message`` normally.
+
+Cause chains
+============
+
+There is currently no support for cause chains: Ecmascript doesn't have a
+cause chain concept nor does there seem to be an unofficial standard for
+them either.
+
+A custom cause chain could be easily supported by allowing a ``cause``
+property to be set on an error, and making the traceback formatter obey it.
+
+A custom mechanism for setting an error cause would need to be used.
+A very non-invasive approach would be something like::
+
+  try {
+    f();
+  } catch (e) {
+    var e2 = new Error("something went wrong");  // line N
+    e2.cause = e;                                // line N+1
+    throw e2;                                    // line N+2
+  }
+
+This is quite awkward and error line information is easily distorted.
+The line number issue can be mitigated by putting the error creation
+on a single line, at the cost of readability::
+
+  try {
+    f();
+  } catch (e) {
+    var e2 = new Error("something went wrong"); e2.cause = e; throw e2;
+  }
+
+One could also extend the error constructor to allow a cause to be specified
+in a constructor call.  This would mimic how Java works and would be nice to
+use, but would have more potential to interfere with standard semantics::
+
+  try {
+    f();
+  } catch (e) {
+    throw new Error("something went wrong", e);
+  }
+
+Using a setter method inherited from ``Error.prototype`` would be a very bad
+idea as any such calls would be non-portable and cause errors to be thrown
+when used in other Ecmascript engines::
+
+  try {
+    f();
+  } catch (e) {
+    var e2 = new Error("something went wrong", e);
+    e2.setCause(e);  // throws error if setCause is undefined!
+    throw e2;
+  }
+
+Since errors are also created (and thrown) from C code using the Duktape
+API and from inside the Duktape implementation, cause handling would need
+to be considered for these too.
+
+Because the ``cause`` property can be set to anything, the implementation
+would need to tolerate e.g.::
+
+  // non-Error causes (print reasonably in a traceback)
+  e.cause = 1;
+
+  // cause loops (detect or sanity depth limit traceback)
+  e1.cause = e2;
+  e2.cause = e1;
+
+Traceback format (tracedata)
+============================
+
+The purpose of the ``tracedata`` value is to capture the relevant call stack
+information very quickly before the call stack is unwound by error handling.
+In many cases the traceback information is not used at all, so it should be
+recorded in a compact and cheap manner.
+
+To fulfill these requirements, the current format, described below, is a bit
+arcane.  The format is version dependent, and is not intended to be accessed
+directly by user code.  The implementation should provide stable helpers for
+getting e.g. readable tracebacks or inspecting the traceback entries.
+
+The ``tracedata`` value is a flat array, populated with values describing
+the contents of the call stack, starting from the call stack top and working
+downwards until either the call stack bottom or the maximum traceback depth
+is reached.
+
+If a call has a related C ``__FILE__`` and ``__LINE__`` those are first
+pushed to ``tracedata``:
+
+* The ``__FILE__`` value as a string.
+
+* A number (double) containing the expression::
+
+    (flags << 32) + (__LINE__)
+
+  The only current flag indicates whether or not the ``__FILE__`` /
+  ``__LINE__`` pair should be "blamed" as the error location when the user
+  requests for a ``fileName`` or ``lineNumber`` related to the error.
+
+After that, for each call stack element, the array entries appended to
+``tracedata`` are pairs consisting of:
+
+* The function object of the activation.  The function object contains the
+  function type and name.  It also contains the filename (or equivalent, like
+  "global" or "eval") and possibly PC-to-line debug information.  These are
+  needed to create a printable traceback.
+
+* A number (double) containing the expression::
+
+    (activation_flags << 32) + (activation_pc)
+
+  For C functions, the program counter value is zero.  Activation flag
+  values are defined in ``duk_hthread.h``.  The PC value can be converted
+  to a line number with debug information in the function object.  The
+  flags allow e.g. tailcalls to be noted in the traceback.
+
+The default ``Error.prototype.stack`` accessor knows how to convert this
+internal format into a human readable, printable traceback string.  It is
+currently the only function processing the tracedata, although it would be
+useful to provide user functions to access or decode elements of the
+traceback individually.
+
+Notes:
+
+* An IEEE double can hold a 53-bit integer accurately so there is space
+  for plenty of flags in the current representation.  Flags must be in
+  the low end of the flags field though (bit 20 or lower)
+
+* The number of elements appended to the ``tracedata`` array for each
+  activation does not need to constant, as long as the value can be decoded
+  starting from the beginning of the array (in other words, random access is
+  not important at the moment).
+
+* The ``this`` binding, if any, is not currently recorded.
+
+* The variable values of activation records are not recorded.  They would
+  actually be available because the call stack can be inspected and register
+  maps (if defined) would provide a way to map identifier names to registers.
+  This is definitely future work and may be needed for better debugging
+  support.
+
+* The ``tracedata`` value is currently an array, but it may later be changed
+  into an internal type of its own right to optimize memory usage and
+  performance.  The internal type would then basically be a typed buffer
+  which garbage collection would know how to visit.
+
