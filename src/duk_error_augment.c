@@ -61,7 +61,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	/* traceback depth doesn't take into account the filename/line
 	 * special handling above (intentional)
 	 */
-	depth = DUK_OPT_TRACEBACK_DEPTH;
+	depth = DUK_USE_TRACEBACK_DEPTH;
 	i_min = (thr_callstack->callstack_top > depth ? thr_callstack->callstack_top - depth : 0);
 	DUK_ASSERT(i_min >= 0);
 

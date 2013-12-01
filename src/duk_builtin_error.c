@@ -247,7 +247,7 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 			}
 		}
 
-		if (i >= DUK_OPT_TRACEBACK_DEPTH * 2) {
+		if (i >= DUK_USE_TRACEBACK_DEPTH * 2) {
 			/* Possibly truncated; there is no explicit truncation
 			 * marker so this is the best we can do.
 			 */

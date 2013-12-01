@@ -1071,9 +1071,12 @@ extern double duk_computed_nan;
 #error unknown DUK_PROFILE
 #endif
 
-/* FIXME: how to handle constants like these? */
-#if defined(DUK_USE_TRACEBACKS) && !defined(DUK_OPT_TRACEBACK_DEPTH)
-#define  DUK_OPT_TRACEBACK_DEPTH  10
+#if defined(DUK_USE_TRACEBACKS)
+#if defined(DUK_OPT_TRACEBACK_DEPTH)
+#define  DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
+#else
+#define  DUK_USE_TRACEBACK_DEPTH  10
+#endif
 #endif
 
 /*
