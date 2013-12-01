@@ -5,7 +5,7 @@ desc: |-
   current exit() call does not.
 type: :task
 component: duk
-release: 
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2013-05-10 21:07:51.674321 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-12-01 00:33:10.555840 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from unassigned
   - ""

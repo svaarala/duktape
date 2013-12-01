@@ -3,7 +3,7 @@ title: go through FIXMEs in defineProperty() implementation
 desc: Fix and add corner case test cases.
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -35,4 +35,8 @@ log_events:
 - - 2013-09-29 10:05:51.960412 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-12-01 00:35:12.315031 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""
