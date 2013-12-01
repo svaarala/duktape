@@ -40,7 +40,7 @@ try {
 
 try {
     // expression recursion limit prevents this, with both shallow/deep stacks
-    var inp = rep(500, '(') + "'never here'" + rep(500, ')');
+    var inp = rep(2500, '(') + "'never here'" + rep(2500, ')');
     print(eval(inp));
 } catch (e) {
     print(e.name);
@@ -65,7 +65,7 @@ try {
 
 try {
     // statement recursion limit prevents this, with both shallow/deep stacks
-    var inp = rep(500, '{') + "'test'" + rep(500, '}');
+    var inp = rep(2500, '{') + "'test'" + rep(2500, '}');
     print(eval(inp));
 } catch (e) {
     print(e.name);

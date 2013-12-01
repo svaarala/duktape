@@ -35,8 +35,8 @@ try {
 }
 
 try {
-    /* an internal error without other trouble should happen */
-    print(eval(buildParenExpr(1000)));
+    /* a RangeError without other trouble should happen */
+    print(eval(buildParenExpr(5000)));
 } catch (e) {
     print(e.name);
 }
@@ -67,7 +67,7 @@ try {
 }
 
 try {
-    print(eval(buildBlockExpr(1000)));
+    print(eval(buildBlockExpr(5000)));
 } catch (e) {
     print(e.name);
 }
