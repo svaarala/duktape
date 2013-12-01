@@ -293,6 +293,8 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/*
 	 *  Copy some internal properties directly
+	 *
+	 *  The properties will be writable and configurable, but not enumerable.
 	 */
 
 	/* [ ... closure template ] */
