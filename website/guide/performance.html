@@ -1,0 +1,314 @@
+<h2 id="performance">Performance</h2>
+
+<p>This section discussed Duktape specific performance characteristics and
+provides some hints to avoid Duktape specific performance pitfalls.</p>
+
+<h3>Duktape performance characteristics</h3>
+
+<h4>String interning</h4>
+
+<p>Strings are
+<a href="http://en.wikipedia.org/wiki/String_interning">interned</a>: only
+a single copy of a certain string exists at any point in time.  Interning
+a string involves hashing the string and looking up a global string table
+to see whether the string is already present.  If so, a pointer to the
+existing string is returned; if not, the string is inserted into the string
+table, potentially involving a string table resize.  While a string remains
+reachable, it has a unique and a stable pointer which allows byte-by-byte
+string comparisons to be converted to simple pointer comparisons.  Also,
+string hashes are computed during interning which makes the use of string
+keys in internal hash tables efficient.</p>
+
+<p>There are many downsides also.  Strings cannot be modified in-place but
+a copy needs to be made for every modification.  For instance, repeated
+string concatenation creates a temporary value for each intermediate string
+which is especially bad if a result string is built one character at a time.
+Duktape internal primitives, such as string case conversion and array
+<code>join()</code>, try to avoid these downsides by minimizing the number
+of temporary strings created.</p>
+
+<h4>String memory representation and the string cache</h4>
+
+<p>The internal memory representation for strings is extended UTF-8, which
+represents each ASCII character with a single byte but uses two or more
+bytes to represent non-ASCII characters.  This reduces memory footprint for
+most strings and makes strings easy to interact with in C code.  However,
+it makes random access expensive for non-ASCII strings.  Random access is
+needed for operations such as extracting a substring or looking up a
+character at a certain character index.</p>
+
+<p>Duktape automatically detects pure ASCII strings (based on the fact that
+their character and byte length are identical) and provides efficient random
+access to such strings.</p>
+
+<p>However, when a string contains non-ASCII characters a <b>string cache</b>
+is used to resolve a character index to an internal byte index.  Duktape
+maintains a few (internal define <code>DUK_HEAP_STRCACHE_SIZE</code>,
+currently 4) string cache entries which remember the last byte offset and
+character offset for recently accessed strings.  Character index lookups
+near a cached character/byte offset can be efficiently handled by scanning
+backwards or forwards from the cached location.  When a string access cannot
+be resolved using the cache, the string is scanned either from the beginning
+or the end, which is obviously very expensive for large strings.  The cache
+is maintained with a very simple LRU mechanism and is transparent to both
+Ecmascript and C code.</p>
+
+<p>The string cache makes simple loops like the following efficient:</p>
+<pre class="ecmascript-code">
+var i;
+var n = inp.length;
+for (i = 0; i &lt; n; i++) {
+    print(inp.charCodeAt(i));
+}
+</pre>
+
+<p>When random accesses are made from here and there to multiple strings,
+the strings may very easily fall out of the cache and become expensive
+at least for longer strings.</p>
+
+<p>Note that the cache never maintains more than one entry for each
+string, so the following would be very inefficient:</p>
+<pre class="ecmascript-code">
+var i;
+var n = inp.length;
+for (i = 0; i &lt; n; i++) {
+    // Accessing the string alternatively from beginning and end will
+    // have a major performance impact.
+    print(inp.charCodeAt(i));
+    print(inp.charCodeAt(n - 1 - i));
+}
+</pre>
+
+<p>As mentioned above, these performance issues are avoided entirely for
+ASCII strings which behave as one would expect.  More generally, Duktape
+provides fast paths for ASCII characters and pure ASCII strings in internal
+algorithms whenever applicable.  This applies to algorithms such as case
+conversion, regexp matching, etc.</p>
+
+<h4>Object/array storage</h4>
+
+<p>Object properties are stored in a linear key/value list which provides
+stable ordering (insertion order).  When an object has enough properties
+(internal define <code>DUK_HOBJECT_E_USE_HASH_LIMIT</code>, currently 32),
+a hash lookup table is also allocated to speed up property lookups.  Even
+in this case the key ordering is retained which is a practical requirement
+for an Ecmascript implementation.  The hash part is avoided for most objects
+because it increases memory footprint and doesn't significantly speed up
+property lookups for very small objects.</p>
+
+<p>For most objects property lookup thus involves a linear comparison
+against the object's property table.  Because properties are kept in the
+property table in their insertion order, properties added earlier are
+slightly faster to access than those added later.  When the object grows
+large enough to gain a hash table this effect disappears.</p>
+
+<p>Array elements are stored in a special "array part" to reduce memory
+footprint and to speed up access.  Accessing an array with a numeric index
+officially first coerces the number to a string (e.g. <code>x[123]</code>
+to <code>x["123"]</code>) and then does a string key lookup; when an object
+has an array part no temporary string is actually created in most cases.</p>
+
+<p>The array part can be "sparse", i.e. contain unmapped entries.  Duktape
+occasionally rechecks the density of the array part, and it it becomes too
+sparse the array part is abandoned.  The array entries are then converted
+to ordinary object properties, with every mapped array index converted to
+an explicit string key (such as <code>"123"</code>), which is relatively
+expensive.  If an array part has once been abandoned, it is never recreated
+even if the object would be dense enough to warrant an array part.</p>
+
+<h4>Identifier access</h4>
+
+<p>Duktape has two modes for storing and accessing identifiers (function
+arguments, local variables, function declarations): a fast path and a slow
+path.  The fast path is used when an identifier can be bound to a virtual
+machine register, i.e., a fixed index in a virtual stack frame allocated
+for a function.  Identifier access is then simply an array lookup.  The
+slow path is used when the fast path cannot be safely used; identifier
+accesses are then converted to explicit property lookups on either
+external or internal objects, which is more than an order of magnitude
+slower.</p>
+
+<p>To keep identifier accesses in the fast path:</p>
+<ul>
+<li>Execute (almost all) inside Ecmascript functions, not in the top-level
+    program or eval code: global/eval code never uses fast path identifier
+    accesses (however, function code inside global/eval does)</li>
+<li>Store frequently accessed values in local variables instead of looking
+    them up from the global object or other objects</li>
+</ul>
+
+<h4>Function features</h4>
+
+<p>Ecmascript has a lot of features which make function entry and execution
+quite expensive.  The general goal of the Duktape Ecmascript compiler is to
+avoid all the troublesome features for most functions while providing full
+compatibility for the rest.</p>
+
+<p>An ideal compiled function has all its variables and functions bound to
+virtual machine registers to allow fast path identifier access, avoids
+creation of the <code>arguments</code> object on entry, avoids creation of
+explicit lexical environment records upon entry and during execution, and
+avoids storing any lexical environment related control information such as
+internal identifier-to-register binding tables.</p>
+
+<p>The following features have a significant impact on execution performance:</p>
+<ul>
+<li>access to the <code>arguments</code> object: requires creation of an
+    expensive object upon function entry in case it is accessed</li>
+<li>a direct call to <code>eval()</code>: requires initialization of
+    the <code>arguments</code> and full identifier binding information
+    needs to be retained in case evaluated code needs it</li>
+<li>global and eval code in general: identifiers are never bound to
+    virtual machine registers but use explicit property lookups instead</li>
+</ul>
+
+<p>The following features have a more moderate impact:</p>
+<ul>
+<li><code>try-catch-finally</code> statement: the dynamic binding required
+    by the catch variable is relatively expensive</li>
+<li><code>with</code> statement: the object binding required is relatively
+    expensive</li>
+<li>use of bound functions, i.e. functions created with
+    <code>Function.prototype.bind()</code>: function invocation is slowed
+    down by handling of bound function objects and argument shuffling</li>
+<li>more than about 250 formal arguments, literals, and active temporaries:
+    causes bytecode to use register shuffling</li>
+</ul>
+
+<p>To avoid these, isolate performance critical parts into separate minimal
+functions which avoid using the features mentioned above.</p>
+
+<p>There is currently also a compilation time penalty for having deeply
+nested inner functions.  The compiler needs multiple passes over the same
+function.  At the moment, inner functions are scanned <code>2**n</code>
+times, where <code>n</code> is the function level (0, 1, ...).  This only
+slows down compilation, not execution.</p>
+
+<h3>Minimize use of temporary strings</h3>
+
+<p>All temporary strings are interned.  It is particularly bad to accumulate
+strings in a loop:</p>
+<pre class="ecmascript-code">
+var t = '';
+for (var i = 0; i &lt; 1024; i++) {
+    t += 'x';
+}
+</pre>
+
+<p>This will intern 1025 strings.  Execution time is <code>O(n^2)</code>
+where <code>n</code> is the loop limit.  It is better to use a temporary
+array instead:</p>
+<pre class="ecmascript-code">
+var t = [];
+for (var i = 0; i &lt; 1024; i++) {
+    t[i] = 'x';
+}
+t = t.join('');
+</pre>
+
+<p>Here, <code>x</code> will be interned once into a function constant, and
+each array entry simply refers to the same string, typically costing only 8
+bytes per array entry.  The final <code>Array.prototype.join()</code> avoids
+unnecessary interning and creates the final string in one go.</p>
+
+<h3>Avoid large non-ASCII strings if possible</h3>
+
+<p>Avoid operations which require access to a random character offset inside
+a large string containing one or more non-ASCII characters.  Such accesses
+require use of the internal "string cache" and may, in the worst case, require
+a brute force scanning of the string to find the correct byte offset
+corresponding to the character offset.</p>
+
+<p>Case conversion and other Unicode related operations have fast paths for
+ASCII codepoints but fall back to a slow path for non-ASCII codepoints.  The
+slow path is size optimized, not speed optimized, and often involve linear
+range matching.</p>
+
+<h3>Minimize top-level global/eval code</h3>
+
+<p>Identifier accesses in global and eval code always use slow path instructions
+to ensure correctness.  This is at least a few orders of magnitude slower than
+the fast path where identifiers are mapped to registers of a function
+activation.</p>
+
+<p>So, this is slow:</p>
+<pre class="ecmascript-code">
+for (var i = 0; i &lt; 100; i++) {
+    print(i);
+}
+</pre>
+
+<p>Each read and write of <code>i</code> will be an explicit environment
+record lookup, essentially a property lookup from an internal environment
+record object, with the string key <code>i</code>.</p>
+
+<p>Optimize by putting most code into a function:</p>
+<pre class="ecmascript-code">
+function main() {
+    for (var i = 0; i &lt; 100; i++) {
+        print(i);
+    }
+}
+main();
+</pre>
+
+<p>Here, <code>i</code> will be mapped to a function register, and each
+access will be a simple register reference (basically a pointer to a
+tagged value), which is much faster than the slow path.</p>
+
+<p>If you don't want to name an explicit function, use:</p>
+<pre class="ecmascript-code">
+(function() {
+    var i;
+
+    for (i = 0; i &lt; 100; i++) {
+      print(i);
+    }
+})();
+</pre>
+
+<p>Eval code provides an implicit return value which also has a performance
+impact.  Consider, for instance, the following:</p>
+<pre class="ecmascript-code">
+var res = eval("if (4 &gt; 3) { 'foo'; } else { 'bar'; }");
+print(res);  // prints 'foo'
+</pre>
+
+<p>To support such code the compiler emits bytecode to store a statement's
+implicit return value to a temporary register in case it is needed.  These
+instructions slow down execution and increase bytecode size unnecessarily.</p>
+
+<h3>Prefer local variables over external ones</h3>
+
+<p>When variables are bound to virtual machine registers, identifier lookups
+are much faster than using explicit property lookups on the global object or
+on other objects.</p>
+
+<p>When an external value or function is required multiple times, copy it to
+a local variable instead:</p>
+<pre class="ecmascript-code">
+function slow(x) {
+    var i;
+
+    // 'x.length' is an explicit property lookup and happens on every loop
+    for (i = 0; i &lt; x.length; i++) {
+        // 'print' causes a property lookup to the global object
+        print(x[i]);
+    }
+}
+
+function fast(x) {
+    var i;
+    var n = x.length;
+    var p = print;
+
+    // every access in the loop now happens through register-bound identifiers
+    for (i = 0; i &lt; n; i++) {
+        p(x[i]);
+    }
+}
+</pre>
+
+<p>Use such optimizations only where it matters, because they often reduce
+code readability.</p>
+

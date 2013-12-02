@@ -563,6 +563,7 @@ def generateGuide():
 	navlinks.append(['#functionobjects', 'Function objects'])
 	navlinks.append(['#finalization', 'Finalization'])
 	navlinks.append(['#coroutines', 'Coroutines'])
+	navlinks.append(['#performance', 'Performance'])
 	navlinks.append(['#portability', 'Portability'])
 	navlinks.append(['#limitations', 'Limitations'])
 	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
@@ -582,7 +583,6 @@ def generateGuide():
 	res = []
 	res += [ '<h1 class="main-title">Duktape Programmer\'s Guide</h1>' ]
 
-	# FIXME
 	res += processRawDoc('guide/intro.html')
 	res += processRawDoc('guide/gettingstarted.html')
 	res += processRawDoc('guide/programming.html')
@@ -593,6 +593,7 @@ def generateGuide():
 	res += processRawDoc('guide/functionobjects.html')
 	res += processRawDoc('guide/finalization.html')
 	res += processRawDoc('guide/coroutines.html')
+	res += processRawDoc('guide/performance.html')
 	res += processRawDoc('guide/portability.html')
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
