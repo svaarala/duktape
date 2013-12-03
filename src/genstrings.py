@@ -525,7 +525,7 @@ duk_string_list = [
 	mkstr("callee", internal=True, custom=True),
 
 	# internal properties for general objects
-	mkstr("metatable", internal=True, custom=True),
+	#mkstr("metatable", internal=True, custom=True),
 	mkstr("finalizer", internal=True, custom=True),
 
 	# internal properties for declarative environment records
