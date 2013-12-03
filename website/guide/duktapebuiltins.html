@@ -13,10 +13,32 @@ values.</p>
 </thead>
 <tbody>
 <tr><td class="propname">__duk__</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
-<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing entries to <code>stdout</code>.</td></tr>
-<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing entries to <code>stderr</code>.</td></tr>
+<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
+<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
 </tbody>
 </table>
+
+<h4>print and alert</h4>
+
+<p><code>print()</code> writes to <code>stdout</code> with an automatic
+flush afterwards.  The bytes written depend on the arguments:</p>
+<ul>
+<li>If given a single buffer argument, the contents of that buffer are
+    written to <code>stdout</code> as is.  This allows raw byte streams
+    to be reliably written.</li>
+<li>Otherwise arguments are string coerced, joined with a single space
+    character, a newline (0x0a) is appended, and the result is written
+    to <code>stdout</code>.  For instance, <code>print('foo', 'bar')</code>
+    would write the bytes <code>66 6f 6f 20 62 61 72 0a</code>.  Non-ASCII
+    characters are written directly in their internal extended UTF-8
+    representation; for most strings this means that output data is
+    properly UTF-8 encoded.  Terminal encoding, locale, platform newline
+    conventions etc. have no effect on the output.</li>
+</ul>
+
+<p><code>alert()</code> behaves the same way, but writes to
+<code>stderr</code>.  Unlike a browser <code>alert()</code>, the call
+does not block.</p>
 
 <h3>The __duk__ object</h3>
 
@@ -31,8 +53,8 @@ values.</p>
 <tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
 <tr><td class="propname">setFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">getFinalizer</td><td>Set finalizer of an object.</td></tr>
-<tr><td class="propname">enc</td><td>Encode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before encoding.</td></tr>
-<tr><td class="propname">dec</td><td>Decode a value.  First argument is format ("hex" or "base64"), second argument is value which is coerced to string before decoding.</td></tr>
+<tr><td class="propname">enc</td><td>Encode a value: <code>__duk__.enc('hex', 'foo')</code>.</td></tr>
+<tr><td class="propname">dec</td><td>Decode a value: <code>__duk__.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">addr</td><td>Get heap address of a value as a string, <code>undefined</code> if not appropriate (debug use).</td></tr>
 <tr><td class="propname">refc</td><td>Get reference count of a value as a number, <code>undefined</code> if not appropriate (debug use).</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
@@ -81,17 +103,30 @@ if (typeof __duk__ !== 'object') {
 
 <h4>enc() and dec()</h4>
 
-<p>To encode a string into base64:</p>
+<p><code>enc()</code> encodes its argument value into chosen format.
+The first argument is a format (currently supported are "hex" and "base64"),
+second argument is the value to encode.  Buffer values are encoded as is,
+other values are string coerced and the internal byte representation
+(extended UTF-8) is then encoded.  The result is a string.</p>
+
+<p>For example, to encode a string into base64:</p>
 <pre class="ecmascript-code">
-__duk__.enc('base64', 'foo')  // returns 'Zm9v'
+var result = __duk__.enc('base64', 'foo');
+print(result);  // prints 'Zm9v'
 </pre>
 
-<p>The input value is automatically coerced to a string and the internal byte
-representation (CESU-8 for Ecmascript strings) is then base64 encoded.</p>
-
-<p>Decoding is similar:</p>
+<p><code>dec()</code> provides the reverse function.  The input value is
+first string coerced (it only really makes sense to decode strings), and
+the result is always a buffer.  For example:</p>
 <pre class="ecmascript-code">
-__duk__.dec('base64', 'Zm9v')  // returns 'foo'
+var result = __duk__.dec('base64', 'Zm9v');
+print(typeof result, result);  // prints 'buffer foo'
+</pre>
+
+<p>If you wish to get back a string value, you can simply:</p>
+<pre class="ecmascript-code">
+var result = String(__duk__.dec('base64', 'Zm9v'));
+print(typeof result, result);  // prints 'string foo'
 </pre>
 
 <h3>__duk__.Buffer (constructor)</h3>
@@ -137,6 +172,7 @@ ordinary function and as a constructor:</p>
 <p><code>toString()</code> and <code>valueOf</code> accept both plain buffers and
 Buffer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
+var plain_buf = __duk__.Buffer('test');
 print(plain_buf.toString());
 </pre>
 
@@ -183,6 +219,7 @@ ordinary function and as a constructor:</p>
 <p><code>toString()</code> and <code>valueOf</code> accept both plain pointers and
 Pointer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
+var plain_ptr = __duk__.Pointer({ test: 'object' });
 print(plain_ptr.toString());
 </pre>
 
