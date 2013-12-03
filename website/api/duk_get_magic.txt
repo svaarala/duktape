@@ -12,9 +12,11 @@ properties in the function object as normal properties.</p>
 
 =example
 unsigned int my_flags = duk_get_magic(ctx);
-if (my_flsgs & 0x01) {
+if (my_flags & 0x01) {
     printf("flag set\n");
 } else {
     printf("flag not set\n");
 }
 
+=tags
+omit
