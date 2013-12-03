@@ -110,11 +110,18 @@ has an array part no temporary string is actually created in most cases.</p>
 
 <p>The array part can be "sparse", i.e. contain unmapped entries.  Duktape
 occasionally rechecks the density of the array part, and it it becomes too
-sparse the array part is abandoned.  The array entries are then converted
-to ordinary object properties, with every mapped array index converted to
-an explicit string key (such as <code>"123"</code>), which is relatively
-expensive.  If an array part has once been abandoned, it is never recreated
-even if the object would be dense enough to warrant an array part.</p>
+sparse the array part is abandoned (current limit is roughly: if fewer than
+25% of array part elements are mapped, the array part is abandoned).  The
+array entries are then converted to ordinary object properties, with every
+mapped array index converted to an explicit string key (such as
+<code>"123"</code>), which is relatively expensive.  If an array part has
+once been abandoned, it is never recreated even if the object would be dense
+enough to warrant an array part.</p>
+
+<p>Elements in the array part are required to be plain properties (not
+accessors) and have default property attributes (writable, enumerable,
+and configurable).  If any element deviates from this, the array part is
+again abandoned and array elements converted to ordinary properties.</p>
 
 <h4>Identifier access</h4>
 
@@ -223,6 +230,48 @@ corresponding to the character offset.</p>
 ASCII codepoints but fall back to a slow path for non-ASCII codepoints.  The
 slow path is size optimized, not speed optimized, and often involve linear
 range matching.</p>
+
+<h3>Avoid sparse arrays when possible</h3>
+
+<p>If an array becomes too sparse at any point, Duktape will abandon the
+array part permanently and convert array properties to explicit string keyed
+properties.  This may happen for instance if an array is initialized with a
+descending index:</p>
+<pre class="ecmascript-code">
+var arr = [];
+for (var i = 1000; i &gt;= 0; i--) {
+    // bad: first write will abandon array part permanently
+    arr[i] = i * i;
+}
+</pre>
+
+<p>Right after the first array write the array part would contain 1001
+entries with only one mapped array element.  The density of the array would
+thus be less than 0.1%.  This is way below the density limit for abandoning
+the array part, so the array part is abandoned immediately.  At the end the
+array part would be 100% dense but will never be restored.  Using an ascending
+index fixes the issue:</p>
+<pre class="ecmascript-code">
+var arr = [];
+for (var i = 0; i &lt;= 1000; i++) {
+    arr[i] = i * i;
+}
+</pre>
+
+<p>Setting the <code>length</code> property of an array manually does not,
+by itself, cause an array part to be abandoned.  To simplify a bit, the array
+density check compares the number of mapped elements relative to the highest
+used element (actually allocated size).  The <code>length</code> property does
+not affect the check.  Although setting an array length beforehand may
+effectively pre-allocate an array in some implementations, it has no such
+effect in Duktape, at least at the moment.  For example:</p>
+<pre class="ecmascript-code">
+var arr = [];
+arr.length = 1001;  // array part not abandoned, but no speedup in Duktape
+for (var i = 0; i &lt;= 1000; i++) {
+    arr[i] = i * i;
+}
+</pre>
 
 <h3>Minimize top-level global/eval code</h3>
 
