@@ -37,6 +37,34 @@
 type in Ecmascript, they are a heap allocated type from a memory allocation
 viewpoint.</p>
 
+<h3>Pointer stability</h3>
+
+<p>Heap objects allocated by Duktape have stable pointers: the objects are
+not relocated in memory while they are reachable from a garbage collection
+point of view.  This is the case for the main heap object, but not
+necessarily for any additional allocations related to the object, such as
+dynamic property tables or dynamic buffer data area.  A heap object is
+reachable e.g. when it resides on the value stack of a reachable thread or
+is reachable through the global object.  Once a heap object becomes
+unreachable any pointers held by user C code referring to the object are
+unsafe and should no longer be dereferenced.</p>
+
+<p>In practice the only heap allocated data directly referenced by user code
+are strings, fixed buffers, and dynamic buffers.  The data area of strings
+and fixed buffers is stable; it is safe to keep a C pointer referring to the
+data even after a Duktape/C function returns as long the string or fixed
+buffer remains reachable from a garbage collection point of view at all times.
+Note that this is not usually <i>not</i> the case for Duktape/C value stack
+arguments, for instance, unless specific arrangements are made.</p>
+
+<p>The data area of a dynamic buffer does <b>not</b> have a stable pointer.
+The buffer itself has a heap header with a stable address but the current
+buffer is allocated separately and potentially relocated when the buffer
+is resized.  It is thus unsafe to hold a pointer to a dynamic buffer's data
+area across a buffer resize, and it's probably best not to hold a pointer
+after a Duktape/C function returns (how would you reliably know when the
+buffer is resized?).</p>
+
 <h3>Type masks</h3>
 
 <p>Type masks allows calling code to easily check whether a type belongs to
