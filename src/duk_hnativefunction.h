@@ -20,7 +20,9 @@ struct duk_hnativefunction {
 	 * Duktape/C function.  This allows, for instance, the same native function
 	 * to be used for a set of very similar functions, with the 'magic' field
 	 * providing the necessary non-argument flags / values to guide the behavior
-	 * of the native function.
+	 * of the native function.  The value is signed on purpose: it is easier to
+	 * convert a signed value to unsigned (simply AND with 0xffff) than vice
+	 * versa.
 	 *
 	 * Note: cannot place nargs/magic into the heaphdr flags, because
 	 * duk_hobject takes almost all flags already (and needs the spare).

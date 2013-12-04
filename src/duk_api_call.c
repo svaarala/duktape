@@ -473,7 +473,7 @@ int duk_is_strict_call(duk_context *ctx) {
  *  Duktape/C function magic
  */
 
-unsigned int duk_get_magic(duk_context *ctx) {
+int duk_get_magic(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *func;
