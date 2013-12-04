@@ -930,8 +930,7 @@ int duk_builtin_array_prototype_indexof_shared(duk_context *ctx) {
 	int nargs;
 	int i, len;
 	int fromIndex;
-	int idx_step = duk_get_magic(ctx) - 1;  /* 0 -> -1, 2 -> +1 */
-	                                        /* idx_step is +1 for indexOf, -1 for lastIndexOf */
+	int idx_step = duk_get_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
 	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
@@ -1150,8 +1149,7 @@ int duk_builtin_array_prototype_reduce_shared(duk_context *ctx) {
 	int nargs;
 	int have_acc;
 	int i, len;
-	int idx_step = duk_get_magic(ctx) - 1;  /* 0 -> -1, 2 -> +1 */
-	                                        /* idx_step is +1 for reduce, -1 for reduceRight */
+	int idx_step = duk_get_magic(ctx);  /* idx_step is +1 for reduce, -1 for reduceRight */
 
 	/* We're a varargs function because we need to detect whether
 	 * initialValue was given or not.

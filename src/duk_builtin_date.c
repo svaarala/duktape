@@ -1419,7 +1419,7 @@ int duk_builtin_date_constructor_now(duk_context *ctx) {
  */
 
 int duk_builtin_date_prototype_tostring_shared(duk_context *ctx) {
-	int flags = (int) duk_get_magic(ctx);
+	int flags = duk_get_magic(ctx);
 	return to_string_helper(ctx, flags);
 }
 
@@ -1501,7 +1501,7 @@ int duk_builtin_date_prototype_to_json(duk_context *ctx) {
  */
 
 int duk_builtin_date_prototype_get_shared(duk_context *ctx) {
-	int flags_and_idx = (int) duk_get_magic(ctx);
+	int flags_and_idx = duk_get_magic(ctx);
 	return get_part_helper(ctx, flags_and_idx);
 }
 
@@ -1586,7 +1586,7 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
  */
 
 int duk_builtin_date_prototype_set_shared(duk_context *ctx) {
-	int flags_and_maxnargs = (int) duk_get_magic(ctx);
+	int flags_and_maxnargs = duk_get_magic(ctx);
 	return set_part_helper(ctx, flags_and_maxnargs);
 }
 

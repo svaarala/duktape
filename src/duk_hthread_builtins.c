@@ -90,7 +90,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			int stridx;
 			int c_nargs;
 			duk_c_function c_func;
-			duk_uint16_t magic;
+			duk_int16_t magic;
 
 			DUK_DDDPRINT("len=%d", len);
 			DUK_ASSERT(len >= 0);
@@ -129,7 +129,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				DUK_HOBJECT_SET_CONSTRUCTABLE(h);
 			}
 
-			magic = (duk_uint16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0 /*def_value*/);
+			/* Cast converts magic to 16-bit signed value */
+			magic = (duk_int16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0 /*def_value*/);
 			((duk_hnativefunction *) h)->magic = magic;
 		} else {
 			/* FIXME: ARRAY_PART for Array prototype? */
@@ -379,7 +380,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			int natidx;
 			int c_nargs;
 			int c_length;
-			duk_uint16_t magic;
+			duk_int16_t magic;
 			duk_c_function c_func;
 			duk_hnativefunction *h_func;
 
@@ -414,7 +415,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* FIXME: any way to avoid decoding magic bit; there are quite
 			 * many function properties and relatively few with magic values.
 			 */
-			magic = (duk_uint16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0);
+			/* Cast converts magic to 16-bit signed value */
+			magic = (duk_int16_t) duk_bd_decode_flagged(bd, MAGIC_BITS, 0);
 			h_func->magic = magic;
 
 			/* [ (builtin objects) func ] */

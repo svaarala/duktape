@@ -434,15 +434,15 @@ bi_array_prototype = {
 		{ 'name': 'sort',			'native': 'duk_builtin_array_prototype_sort',			'length': 1 },
 		{ 'name': 'splice',			'native': 'duk_builtin_array_prototype_splice',			'length': 2,	'varargs': True },
 		{ 'name': 'unshift',			'native': 'duk_builtin_array_prototype_unshift',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },  # magic = 2 -> idx_step = 2 - 1 = +1
-		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> idx_step = 0 - 1 = -1
+		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
+		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
 		{ 'name': 'every',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
 		{ 'name': 'some',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
 		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },
 		{ 'name': 'map',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_MAP } },
 		{ 'name': 'filter',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FILTER } },
-		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },  # magic = 2 -> idx_step = 2 - 1 = +1
-		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> idx_step = 0 - 1 = -1
+		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
+		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
 	],
 }
 
@@ -1405,10 +1405,12 @@ class GenBuiltins:
 			raise Exception('invalid builtin index for magic: ' % repr(v))
 		elif elem['type'] == 'plain':
 			v = elem['value']
-			if not (v >= 0 and v < (1 << MAGIC_BITS)):
+			if not (v >= -0x8000 and v <= 0x7fff):
 				raise Exception('invalid plain value for magic: %s' % repr(v))
 			#print('MAGIC', v)
-			return v
+			# Magic is a 16-bit signed value, but convert to 16-bit signed
+			# for encoding
+			return v & 0xffff
 		else:
 			raise Exception('invalid magic type: %s' % repr(elem['type']))
 
