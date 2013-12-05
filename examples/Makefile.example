@@ -17,10 +17,11 @@ CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./src  # for combined sources
 CCLIBS	= -lm
+DEFINES =
 
 # These should not be needed but you might consider them
 #CCOPTS += -m32                              # force 32-bit compilation on a 64-bit host
-#DEFINES = -DDUK_PROFILE=100                 # if omitted, profile defaults to 100 on a
+#DEFINES += -DDUK_PROFILE=100                # if omitted, profile defaults to 100 on a
 #                                            # 32-bit platform, and 400 otherwise
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer

@@ -16,6 +16,10 @@ CCLIBS	= -lm
 # For the command line tool
 CCLIBS += -lreadline
 
+# On some platforms -lreadline also requires -lncurses (e.g. RHEL), so it is
+# added by default (you may be able to remove it)
+CCLIBS += -lncurses
+
 # If you don't have readline, or something else fails to compile
 #CCOPTS += -DDUK_CMDLINE_BAREBONES
 

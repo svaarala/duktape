@@ -143,11 +143,11 @@ CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
-CCOPTS_SHARED += -I/usr/include/ncurses            # for cmdline tool
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCLIBS	= -lm
-CCLIBS += -lreadline -lncurses                     # for cmdline tool
+CCLIBS += -lreadline
+CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
 .PHONY: default all clean test install
 
 default:	all64
@@ -203,7 +203,7 @@ qtest:	npminst duk.400
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 vgtest:	npminst duk.400
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --num-threads 1 --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.400 --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
 apitest:	npminst libduktape400.so.1.0.0
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
