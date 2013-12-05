@@ -438,6 +438,37 @@ duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
 
+<h3>Duktape version specific code</h3>
+
+<p>The Duktape version is available through the <code>DUK_VERSION</code> define,
+with the numeric value <code>(major * 10000) + (minor * 100) + patch</code>.
+The same value is available to Ecmascript code through <code>__duk__.version</code>.
+Calling code can use this define for Duktape version specific code.</p>
+
+<p>For C code:</p>
+<pre class="c-code">
+#if (DUK_VERSION &gt;= 10203)
+/* Duktape 1.2.3 or later */
+#elif (DUK_VERSION &gt;= 800)
+/* Duktape 0.8.0 or later */
+#else
+/* Duktape lower than 0.8.0 */
+#endif
+</pre>
+
+<p>For Ecmascript code (also see <a href="#duktapebuiltins">Duktape built-ins</a>):</p>
+<pre class="ecmascript-code">
+if (typeof __duk__ !== 'object') {
+    print('not Duktape');
+} else if (__duk__.version &gt;= 10203) {
+    print('Duktape 1.2.3 or higher');
+} else if (__duk__.version &gt;= 800) {
+    print('Duktape 0.8.0 or higher (but lower than 1.2.3)');
+} else {
+    print('Duktape lower than 0.8.0');
+}
+</pre>
+
 <h3>Numeric error codes</h3>
 
 <p>When errors are created or thrown using the Duktape API, the caller

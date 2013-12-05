@@ -1,5 +1,13 @@
 <h2 id="defines">Header definitions</h2>
 
+<h3>Duktape version</h3>
+
+<p>The Duktape version is available through the <code>DUK_VERSION</code> define,
+with the numeric value <code>(major * 10000) + (minor * 100) + patch</code>.
+The same value is available to Ecmascript code through <code>__duk__.version</code>.
+For example, version 1.2.3 would have <code>DUK_VERSION</code> and
+<code>__duk__.version</code> set to 10203.</p>
+
 <h3>Structs and typedefs</h3>
 <pre class="c-code">
 struct duk_memory_functions;
