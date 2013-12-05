@@ -60,7 +60,7 @@ typedef duk_uint32_t duk_instr;
 #define  DUK_BC_EXTRAOP_MAX          DUK_BC_A_MAX
 
 #define  DUK_OP_LDREG                0 
-#define  DUK_OP_STREG                1  /* FIXME: UNUSED */
+#define  DUK_OP_STREG                1
 #define  DUK_OP_LDCONST              2
 #define  DUK_OP_LDINT                3
 #define  DUK_OP_LDINTX               4  /* FIXME: UNUSED */

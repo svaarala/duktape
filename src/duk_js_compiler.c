@@ -33,9 +33,9 @@
 #define  GETCONST_MAX_CONSTS_CHECK    256
 
 /* these limits are based on bytecode limits */
-#define  MAX_CONSTS       (DUK_BC_BC_MAX + 1)
-#define  MAX_FUNCS        (DUK_BC_BC_MAX + 1)
-#define  MAX_TEMPS        (DUK_BC_BC_MAX + 1)
+#define  MAX_CONSTS                   (DUK_BC_BC_MAX + 1)
+#define  MAX_FUNCS                    (DUK_BC_BC_MAX + 1)
+#define  MAX_TEMPS                    (DUK_BC_BC_MAX + 1)
 
 #define  RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
@@ -55,6 +55,7 @@
 #define  FUNCTION_INIT_REQUIRE_SLOTS  16
 #define  FUNCTION_BODY_REQUIRE_SLOTS  16
 #define  PARSE_STATEMENTS_SLOTS       16
+#define  PARSE_EXPR_SLOTS             16
 
 /*
  *  Prototypes
@@ -78,7 +79,7 @@ static void emit(duk_compiler_ctx *comp_ctx, duk_instr ins);
 #if 0  /* unused */
 static void emit_op_only(duk_compiler_ctx *comp_ctx, int op);
 #endif
-static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op, int a, int b, int c);
+static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, int c);
 static void emit_a_b(duk_compiler_ctx *comp_ctx, int op, int a, int b);
 #if 0  /* unused */
 static void emit_a(duk_compiler_ctx *comp_ctx, int op, int a);
@@ -354,7 +355,7 @@ static void recursion_increase(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(comp_ctx->recursion_depth >= 0);
 	if (comp_ctx->recursion_depth >= comp_ctx->recursion_limit) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "compiler recursion limit reached");
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, "compiler recursion limit");
 	}
 	comp_ctx->recursion_depth++;
 }
@@ -791,6 +792,10 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 * compression of 20-30% is quite easy to achieve even with a trivial
 		 * compressor (RLE + backwards lookup).
 		 */
+		/* FIXME: Debugging needs source code to be useful: sometimes input
+		 * code is not found in files as it may be generated and then eval()'d,
+		 * given by dynamic C code, etc.
+		 */
 
 		/*
 		 *  For global or eval code this is straightforward.  For functions
@@ -890,7 +895,20 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 
 /*
  *  Code emission helpers
+ *
+ *  Some emission helpers understand the range of target and source reg/const
+ *  values and automatically emit shuffling code if necessary.  This only
+ *  makes sense if the slot in question (A, B, C) is used in the standard
+ *  register/constant meaning.  If slot A is used in a non-standard way the
+ *  caller simply needs to ensure that the raw value fits into A so as to not
+ *  trigger shuffling.  For slots B and C the raw slot size is 9 bits but one
+ *  bit is reserved for the reg/const indicator.  To use the full 9-bit range
+ *  for a raw value, shuffling is disabled with the EMIT_FLAG_NO_SHUFFLE flag
+ *  (which fits into the 'op' field).  Shuffling is only done for A, B, and C
+ *  slots, not the larger BC or ABC slots.
  */
+
+#define  EMIT_FLAG_NO_SHUFFLE  (1 << 8)
 
 /* FIXME: clarify on when and where CONST_MARKER is allowed */
 /* FIXME: opcode specific assertions on when consts are allowed */
@@ -924,6 +942,9 @@ static void emit(duk_compiler_ctx *comp_ctx, duk_instr ins) {
 	int line;
 	duk_compiler_instr instr;
 
+	DUK_DDDPRINT("emit: 0x%08x line=%d pc=%d --> %!I",
+	             ins, comp_ctx->curr_token.start_line, get_current_pc(comp_ctx), ins);
+
 	h = comp_ctx->curr_func.h_code;
 	line = comp_ctx->curr_token.start_line;  /* approximation, close enough */
 
@@ -939,26 +960,94 @@ static void emit_op_only(duk_compiler_ctx *comp_ctx, int op) {
 }
 #endif
 
-static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op, int a, int b, int c) {
-	duk_instr ins;
+static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, int c) {
+	duk_instr ins = 0;
+	duk_int_t tmp;
 
-	DUK_ASSERT(op >= DUK_BC_OP_MIN && op <= DUK_BC_OP_MAX);
+	/* FIXME: rely on max temp/const checks; if they don't exceed BC
+	 * limit, then nothing here can too (i.e. just assert for it)?
+	 */
+
+	DUK_ASSERT((op_flags & 0xff) >= DUK_BC_OP_MIN && (op_flags & 0xff) <= DUK_BC_OP_MAX);
+
 	if (b & CONST_MARKER) {
-		b = (b & ~CONST_MARKER) + 256;
-		DUK_ASSERT(b >= DUK_BC_B_MIN + 256 && b <= DUK_BC_B_MAX);
+		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE) == 0);
+		b = b & ~CONST_MARKER;
+		if (b < 0x100) {
+			ins |= DUK_ENC_OP_A_B_C(0, 0, 0x100, 0);  /* const flag for B */
+		} else if (b <= DUK_BC_BC_MAX) {
+			comp_ctx->curr_func.needs_shuffle = 1;
+			tmp = comp_ctx->curr_func.shuffle1;
+			emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDCONST, tmp, b));
+			b = tmp;
+		} else {
+			goto error_outofregs;
+		}
+	} else {
+		if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+			if (b >= DUK_BC_B_MAX) {
+				goto error_outofregs;
+			}
+		} else if (b < 0x100) {
+			;
+		} else if (b <= DUK_BC_BC_MAX) {
+			comp_ctx->curr_func.needs_shuffle = 1;
+			tmp = comp_ctx->curr_func.shuffle1;
+			emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
+			b = tmp;
+		} else {
+			goto error_outofregs;
+		}
 	}
-	if (c & CONST_MARKER) {
-		c = (c & ~CONST_MARKER) + 256;
-		DUK_ASSERT(c >= DUK_BC_C_MIN + 256 && c <= DUK_BC_C_MAX);
-	}
-	DUK_ASSERT(a >= DUK_BC_A_MIN && a <= DUK_BC_A_MAX);
-	DUK_ASSERT(b >= DUK_BC_B_MIN && b <= DUK_BC_B_MAX);
-	DUK_ASSERT(c >= DUK_BC_C_MIN && c <= DUK_BC_C_MAX);
 
-	ins = DUK_ENC_OP_A_B_C(op, a, b, c);
-	DUK_DDDPRINT("emit: 0x%08x line=%d pc=%d op=%d (%!C) a=%d b=%d c=%d (%!I)",
-	             ins, comp_ctx->curr_token.start_line, get_current_pc(comp_ctx), op, op, a, b, c, ins);
-	emit(comp_ctx, ins);
+	if (c & CONST_MARKER) {
+		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE) == 0);
+		c = c & ~CONST_MARKER;
+		if (c < 0x100) {
+			ins |= DUK_ENC_OP_A_B_C(0, 0, 0, 0x100);  /* const flag for C */
+		} else if (c <= DUK_BC_BC_MAX) {
+			comp_ctx->curr_func.needs_shuffle = 1;
+			tmp = comp_ctx->curr_func.shuffle2;
+			emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDCONST, tmp, c));
+			c = tmp;
+		} else {
+			goto error_outofregs;
+		}
+	} else {
+		if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+			if (c >= DUK_BC_C_MAX) {
+				goto error_outofregs;
+			}
+		} else if (c < 0x100) {
+			;
+		} else if (b <= DUK_BC_BC_MAX) {
+			comp_ctx->curr_func.needs_shuffle = 1;
+			tmp = comp_ctx->curr_func.shuffle2;
+			emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, c));
+			c = tmp;
+		} else {
+			goto error_outofregs;
+		}
+	}
+
+	if (a <= DUK_BC_A_MAX) {
+		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
+		emit(comp_ctx, ins);
+	} else if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+		goto error_outofregs;
+	} else if (a <= DUK_BC_BC_MAX) {
+		comp_ctx->curr_func.needs_shuffle = 1;
+		tmp = comp_ctx->curr_func.shuffle3;
+		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, tmp, b, c);
+		emit(comp_ctx, ins);
+		emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+	} else {
+		goto error_outofregs;
+	}
+	return;
+
+ error_outofregs:
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, "out of regs");
 }
 
 static void emit_a_b(duk_compiler_ctx *comp_ctx, int op, int a, int b) {
@@ -973,19 +1062,33 @@ static void emit_a(duk_compiler_ctx *comp_ctx, int op, int a) {
 
 static void emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc) {
 	duk_instr ins;
+	duk_int_t tmp;
 
 	/* allow caller to give a const number with the CONST_MARKER */
 	bc = bc & (~CONST_MARKER);
 
 	DUK_ASSERT(op >= DUK_BC_OP_MIN && op <= DUK_BC_OP_MAX);
-	DUK_ASSERT(a >= DUK_BC_A_MIN && a <= DUK_BC_A_MAX);
 	DUK_ASSERT(bc >= DUK_BC_BC_MIN && bc <= DUK_BC_BC_MAX);
 	DUK_ASSERT((bc & CONST_MARKER) == 0);
 
-	ins = DUK_ENC_OP_A_BC(op, a, bc);
-	DUK_DDDPRINT("emit: 0x%08x line=%d pc=%d op=%d (%!C) a=%d bc=%d (%!I)",
-	             ins, comp_ctx->curr_token.start_line, get_current_pc(comp_ctx), op, op, a, bc, ins);
-	emit(comp_ctx, ins);
+	/* FIXME: no check for 'bc' range now, inconsistent with emit_a_b_c */
+
+	if (a <= DUK_BC_A_MAX) {
+		ins = DUK_ENC_OP_A_BC(op, a, bc);
+		emit(comp_ctx, ins);
+	} else if (a <= DUK_BC_BC_MAX) {
+		comp_ctx->curr_func.needs_shuffle = 1;
+		tmp = comp_ctx->curr_func.shuffle3;
+		ins = DUK_ENC_OP_A_BC(op, tmp, bc);
+		emit(comp_ctx, ins);
+		emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+	} else {
+		goto error_outofregs;
+	}
+	return;
+
+ error_outofregs:
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, "out of regs");
 }
 
 static void emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc) {
@@ -1260,16 +1363,10 @@ static int alloctemps(duk_compiler_ctx *comp_ctx, int num) {
 	res = comp_ctx->curr_func.temp_next;
 	comp_ctx->curr_func.temp_next += num;
 
-	/* FIXME: placeholder, catches most cases */
-#if 1
-	if (comp_ctx->curr_func.temp_next > 256) { /* 256 is OK */
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of temps");
-	}
-#else
 	if (comp_ctx->curr_func.temp_next > MAX_TEMPS) {  /* == MAX_TEMPS is OK */
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of temps");
 	}
-#endif
+
 	/* maintain highest 'used' temporary, needed to figure out nregs of function */
 	if (comp_ctx->curr_func.temp_next > comp_ctx->curr_func.temp_max) {
 		comp_ctx->curr_func.temp_max = comp_ctx->curr_func.temp_next;
@@ -1320,16 +1417,9 @@ static int getconst(duk_compiler_ctx *comp_ctx) {
 		}
 	}
 
-	/* FIXME: placeholder, catches most cases */
-#if 1
-	if (n > 255) { /* 255 is OK */
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of consts");
-	}
-#else
 	if (n >= MAX_CONSTS) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of consts");
 	}
-#endif
 
 	DUK_DDDPRINT("allocating new constant for %!T -> const index %d", tv1, n);
 	(void) duk_put_prop_index(ctx, f->consts_idx, n);  /* invalidates tv1, tv2 */
@@ -1571,6 +1661,11 @@ static void ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, int fo
 				}
 
 				if (accept) {
+					duk_double_union du;
+					du.d = d3;
+					DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+					d3 = du.d;
+
 					x->t = DUK_IVAL_PLAIN;
 					DUK_ASSERT(x->x1.t == DUK_ISPEC_VALUE);
 					DUK_TVAL_SET_NUMBER(tv1, d3);  /* old value is number: no refcount */
@@ -2137,7 +2232,14 @@ static void nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		}
 
 		if (num_values > 0) {
-			emit_a_b_c(comp_ctx, DUK_OP_MPUTARR, reg_obj, temp_start, num_values);
+			/* B and C have a non-register/const meaning, so shuffling
+			 * is not allowed.
+			 */	
+			emit_a_b_c(comp_ctx,
+			           DUK_OP_MPUTARR | EMIT_FLAG_NO_SHUFFLE,
+			           reg_obj,
+			           temp_start,
+			           num_values);
 			init_idx = start_idx + num_values;
 #if 0  /* these are not necessary, as they're done at the top of the loop */
 			num_values = 0;
@@ -2346,7 +2448,14 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				reg_key = getconst(comp_ctx);
 
 				if (num_pairs > 0) {
-					emit_a_b_c(comp_ctx, DUK_OP_MPUTOBJ, reg_obj, temp_start, num_pairs);
+					/* B and C have a non-register/const meaning, so shuffling
+					 * is not allowed.
+					 */
+					emit_a_b_c(comp_ctx,
+					           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE,
+					           reg_obj,
+					           temp_start,
+					           num_pairs);
 					num_pairs = 0;
 					SETTEMP(comp_ctx, temp_start);
 				}
@@ -2399,7 +2508,14 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		}
 
 		if (num_pairs > 0) {
-			emit_a_b_c(comp_ctx, DUK_OP_MPUTOBJ, reg_obj, temp_start, num_pairs);
+			/* B and C have a non-register/const meaning, so shuffling
+			 * is not allowed.
+			 */	
+			emit_a_b_c(comp_ctx,
+			           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE,
+			           reg_obj,
+			           temp_start,
+			           num_pairs);
 #if 0  /* these are not necessary, as they're done at the top of the loop */
 			num_pairs = 0;
 			SETTEMP(comp_ctx, temp_start);
@@ -2642,7 +2758,14 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			nargs = 0;
 		}
 
-		emit_a_b_c(comp_ctx, DUK_OP_NEW, reg_target /*target*/, reg_target /*start*/, nargs /*num_args*/);
+		/* Opcode slots are used in a non-standard way, so shuffling is
+		 * not allowed.
+		 */
+		emit_a_b_c(comp_ctx,
+		           DUK_OP_NEW | EMIT_FLAG_NO_SHUFFLE,
+		           reg_target /*target*/,
+		           reg_target /*start*/,
+		           nargs /*num_args*/);
 
 		DUK_DDDPRINT("end parsing new expression");
 
@@ -3051,21 +3174,21 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 
 			duk_dup(ctx, left->x1.valstack_idx);
 			if (lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
-				emit_a_b(comp_ctx, DUK_OP_CSREG, reg_cs + 0, reg_varbind);
+				emit_a_b(comp_ctx, DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_varbind);
 			} else {
-				emit_a_b(comp_ctx, DUK_OP_CSVAR, reg_cs + 0, reg_varname);
+				emit_a_b(comp_ctx, DUK_OP_CSVAR | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_varname);
 			}
 		} else if (left->t == DUK_IVAL_PROP) {
 			DUK_DDDPRINT("function call with property base");
 			
 			ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 0);  /* base */
 			ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 1);  /* key */
-			emit_a_b_c(comp_ctx, DUK_OP_CSPROP, reg_cs + 0, reg_cs + 0, reg_cs + 1);  /* in-place setup */
+			emit_a_b_c(comp_ctx, DUK_OP_CSPROP | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_cs + 0, reg_cs + 1);  /* in-place setup */
 		} else {
 			DUK_DDDPRINT("function call with register base");
 
 			ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);
-			emit_a_b(comp_ctx, DUK_OP_CSREG, reg_cs + 0, reg_cs + 0);  /* in-place setup */
+			emit_a_b(comp_ctx, DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_cs + 0);  /* in-place setup */
 		}
 
 		SETTEMP(comp_ctx, reg_cs + 2);
@@ -3075,9 +3198,15 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 
 		/* Tailcalls are handled by back-patching the TAILCALL flag to the
 		 * already emitted instruction later (in return statement parser).
+		 * Since B and C have a special meaning here, they cannot be "shuffled"
+		 * (if reg_cs or nargs don't fit in B/C, function cannot be compiled).
 		 */
 
-		emit_a_b_c(comp_ctx, DUK_OP_CALL, call_flags /*flags*/, reg_cs /*basereg*/, nargs /*numargs*/);
+		emit_a_b_c(comp_ctx,
+		           DUK_OP_CALL | EMIT_FLAG_NO_SHUFFLE,
+		           call_flags /*flags*/,
+		           reg_cs /*basereg*/,
+		           nargs /*numargs*/);
 		SETTEMP(comp_ctx, reg_cs + 1);    /* result in csreg */
 
 		res->t = DUK_IVAL_PLAIN;
@@ -3696,6 +3825,8 @@ static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
 	int rbp;
 
 	RECURSION_INCREASE(comp_ctx, thr);
+
+	duk_require_stack(ctx, PARSE_EXPR_SLOTS);
 
 	/* filter out flags from exprtop rbp_flags here to save space */
 	rbp = rbp_flags & EXPR_RBP_MASK;
@@ -4523,8 +4654,8 @@ static void parse_do_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int 
 	advance(comp_ctx);  /* eat 'do' */
 
 	pc_start = get_current_pc(comp_ctx);
-	patch_jump_here(comp_ctx, pc_label_site + 2);  /* continue jump */
 	parse_statement(comp_ctx, res, 0 /*allow_source_elem*/);
+	patch_jump_here(comp_ctx, pc_label_site + 2);  /* continue jump */
 
 	advance_expect(comp_ctx, DUK_TOK_WHILE);
 	advance_expect(comp_ctx, DUK_TOK_LPAREN);
@@ -5623,8 +5754,26 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 	/* use temp_next for tracking register allocations */
 	SETTEMP_CHECKMAX(comp_ctx, num_args);
 
+	/*
+	 *  After arguments, allocate special registers (like shuffling temps)
+	 */
+
 	if (out_stmt_value_reg) {
 		*out_stmt_value_reg = ALLOCTEMP(comp_ctx);
+	}
+	if (comp_ctx->curr_func.needs_shuffle) {
+		int shuffle_base = ALLOCTEMPS(comp_ctx, 3);
+		comp_ctx->curr_func.shuffle1 = shuffle_base;
+		comp_ctx->curr_func.shuffle2 = shuffle_base + 1;
+		comp_ctx->curr_func.shuffle3 = shuffle_base + 2;
+		DUK_DPRINT("shuffle registers needed by function, allocated: %d %d %d",
+		           (int) comp_ctx->curr_func.shuffle1,
+		           (int) comp_ctx->curr_func.shuffle2,
+		           (int) comp_ctx->curr_func.shuffle3);
+	}
+	if (comp_ctx->curr_func.temp_next > 0x100) {
+		DUK_DPRINT("not enough 8-bit regs: temp_next=%d", (int) comp_ctx->curr_func.temp_next);
+		goto error_outofregs;
 	}
 
 	/*
@@ -5786,8 +5935,15 @@ static void init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, int *
 	DUK_ASSERT_TOP(ctx, entry_top);
 	return;
 
+ error_outofregs:
+	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "out of regs");
+	DUK_UNREACHABLE();
+	return;
+
  error_argname:
 	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "invalid arg name");
+	DUK_UNREACHABLE();
+	return;
 }
 
 /*

@@ -5,8 +5,12 @@
 #ifndef DUK_JS_COMPILER_H_INCLUDED
 #define DUK_JS_COMPILER_H_INCLUDED
 
-/* regexp compilation limits */
+/* ecmascript compiler limits */
+#if defined(DUK_USE_DEEP_C_STACK)
+#define  DUK_COMPILER_RECURSION_LIMIT       2500
+#else
 #define  DUK_COMPILER_RECURSION_LIMIT       50
+#endif
 
 /* maximum loopcount for peephole optimization */
 #define  DUK_COMPILER_PEEPHOLE_MAXITER      3
@@ -110,6 +114,7 @@ struct duk_compiler_func {
 	int id_access_arguments;            /* function refers to 'arguments' identifier */
 	int id_access_slow;                 /* function makes one or more slow path accesses */
 	int is_arguments_shadowed;          /* argument/function declaration shadows 'arguments' */
+	int needs_shuffle;                  /* function needs shuffle registers */
 	int num_formals;                    /* number of formal arguments */
 	int reg_stmt_value;                 /* register for writing value of 'non-empty' statements (global or eval code) */
 
@@ -150,6 +155,11 @@ struct duk_compiler_func {
 	int temp_first;                     /* first register that is a temporary (below: variables) */
 	int temp_next;                      /* next temporary register to allocate */
 	int temp_max;                       /* highest value of temp_reg (temp_max - 1 is highest used reg) */
+
+	/* shuffle registers if large number of regs/consts */
+	int shuffle1;
+	int shuffle2;
+	int shuffle3;
 
 	/* statement id allocation (running counter) */
 	int stmt_next;
