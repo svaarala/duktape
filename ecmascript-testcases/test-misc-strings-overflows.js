@@ -20,7 +20,6 @@ print(oneMeg.length);
 /*===
 RangeError
 RangeError
-RangeError
 ===*/
 
 function arrayJoinSepOverflow() {
