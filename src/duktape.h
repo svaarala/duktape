@@ -57,6 +57,12 @@ struct duk_memory_functions {
  *  Constants
  */
 
+/* Duktape version, (major * 10000) + (minor * 100) + patch.  Allows C code
+ * to #ifdef against Duktape API version.  The same value is also available
+ * to Ecmascript code in __duk__.version.
+ */
+#define  DUK_VERSION                       800
+
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
  * API calls as a marker to denote "no value".

@@ -29,7 +29,10 @@ if [ -d .git ]; then
 else
 	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; exported"
 fi
-DUK_VERSION=800   # major*10000 + minor*100 + patch
+
+# DUK_VERSION is grepped from duktape.h: it is needed for the public API
+# and we want to avoid defining it in two places.
+DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3`
 
 echo "BUILDINFO: $BUILDINFO"
 echo "DUK_VERSION: $DUK_VERSION"
