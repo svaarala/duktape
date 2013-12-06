@@ -14,7 +14,7 @@
  */
 
 struct duk_bitdecoder_ctx {
-	duk_uint8_t *data;
+	const duk_uint8_t *data;
 	duk_size_t offset;
 	duk_size_t length;
 	duk_uint32_t currval;

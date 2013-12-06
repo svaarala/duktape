@@ -279,7 +279,7 @@ static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	}
 }
 
-static duk_small_int_t uni_range_match(duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
+static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
 	duk_bitdecoder_ctx bd_ctx;
 
 	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));

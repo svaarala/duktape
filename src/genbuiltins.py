@@ -1359,7 +1359,7 @@ class GenBuiltins:
 
 	def writeNativeFuncArray(self, genc):
 		genc.emitLine('/* native functions: %d */' % len(self.native_func_list))
-		genc.emitLine('duk_c_function duk_builtin_native_functions[] = {')
+		genc.emitLine('const duk_c_function duk_builtin_native_functions[] = {')
 		for i in self.native_func_list:
 			genc.emitLine('\t(duk_c_function) %s,' % i)
 		genc.emitLine('};')
@@ -1689,15 +1689,15 @@ class GenBuiltins:
 		genc.emitLine('')
 		self.writeNativeFuncArray(genc)
 		genc.emitLine('')
-		genc.emitArray(self.init_data, 'duk_builtins_data', typename='duk_uint8_t', intvalues=True)
+		genc.emitArray(self.init_data, 'duk_builtins_data', typename='duk_uint8_t', intvalues=True, const=True)
 
 	def emitHeader(self, genc):
 		self.gs.emitStringsHeader(genc)
 
 		genc.emitLine('')
-		genc.emitLine('extern duk_c_function duk_builtin_native_functions[];')
+		genc.emitLine('extern const duk_c_function duk_builtin_native_functions[];')
 		genc.emitLine('')
-		genc.emitLine('extern duk_uint8_t duk_builtins_data[];')
+		genc.emitLine('extern const duk_uint8_t duk_builtins_data[];')
 		genc.emitLine('')
 		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
 		genc.emitLine('')

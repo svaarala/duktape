@@ -147,7 +147,7 @@ static double pow_fixed(double x, double y) {
 }
 
 /* order must match constants in genbuiltins.py */
-static one_arg_func one_arg_funcs[] = {
+static const one_arg_func one_arg_funcs[] = {
 	fabs,
 	acos,
 	asin,
@@ -164,7 +164,7 @@ static one_arg_func one_arg_funcs[] = {
 };
 
 /* order must match constants in genbuiltins.py */
-static two_arg_func two_arg_funcs[] = {
+static const two_arg_func two_arg_funcs[] = {
 	atan2,
 	pow_fixed
 };

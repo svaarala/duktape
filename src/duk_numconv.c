@@ -32,7 +32,7 @@
  *  bounded.
  */
 
-static unsigned char str2num_digits_for_radix[] = {
+static const unsigned char str2num_digits_for_radix[] = {
 	69, 44, 35, 30, 27, 25, 23, 22, 20, 20,    /* 2 to 11 */
 	20, 19, 19, 18, 18, 17, 17, 17, 16, 16,    /* 12 to 21 */
 	16, 16, 16, 15, 15, 15, 15, 15, 15, 14,    /* 22 to 31 */
@@ -44,7 +44,7 @@ typedef struct {
 	duk_int16_t lower;
 } duk_exp_limits;
 
-static duk_exp_limits str2num_exp_limits[] = {
+static const duk_exp_limits str2num_exp_limits[] = {
 	{ 957, -1147 }, { 605, -725 },  { 479, -575 },  { 414, -496 },
 	{ 372, -446 },  { 342, -411 },  { 321, -384 },  { 304, -364 },
 	{ 291, -346 },  { 279, -334 },  { 268, -323 },  { 260, -312 },
@@ -1727,7 +1727,7 @@ void duk_numconv_parse(duk_context *ctx, int radix, int flags) {
 	int dig_frac;
 	int dig_exp;
 	int dig_prec;
-	duk_exp_limits *explim;
+	const duk_exp_limits *explim;
 	const unsigned char *p;
 	int ch;
 

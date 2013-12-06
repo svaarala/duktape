@@ -106,18 +106,23 @@ static void increase_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunctio
  * outer_lex_env matters (outer_var_env is ignored and may or
  * may not be same as outer_lex_env).
  */
+
+static const duk_uint16_t duk_closure_copy_proplist[] = {
+	/* order: most frequent to least frequent */
+	DUK_STRIDX_INT_VARMAP,
+	DUK_STRIDX_INT_FORMALS,
+	DUK_STRIDX_NAME,
+	DUK_STRIDX_INT_PC2LINE,
+	DUK_STRIDX_FILE_NAME,
+	DUK_STRIDX_INT_SOURCE
+};
+	
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
                          duk_hobject *outer_lex_env) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hcompiledfunction *fun_clos;
-	duk_uint16_t proplist[] = { DUK_STRIDX_INT_VARMAP,
-	                            DUK_STRIDX_INT_FORMALS,
-	                            DUK_STRIDX_NAME,
-	                            DUK_STRIDX_INT_PC2LINE,
-	                            DUK_STRIDX_FILE_NAME,
-	                            DUK_STRIDX_INT_SOURCE };  /* order: most frequent to least frequent */
 	int i;
 	duk_uint32_t len_value;
 
@@ -301,8 +306,8 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	DUK_DDDPRINT("copying properties: closure=%!iT, template=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
-	for (i = 0; i < sizeof(proplist) / sizeof(duk_uint16_t); i++) {
-		int stridx = (int) proplist[i];
+	for (i = 0; i < sizeof(duk_closure_copy_proplist) / sizeof(duk_uint16_t); i++) {
+		int stridx = (int) duk_closure_copy_proplist[i];
 		if (duk_get_prop_stridx(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
 			DUK_DDDPRINT("copying property, stridx=%d -> found", stridx);

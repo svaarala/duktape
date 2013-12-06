@@ -17,7 +17,7 @@
 #define  HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
 
 /* prediction corrections for prime list (see genhashsizes.py) */
-static duk_int8_t hash_size_corrections[] = {
+static const duk_int8_t hash_size_corrections[] = {
 	17,  /* minimum prime */
 	4, 3, 4, 1, 4, 1, 1, 2, 2, 2, 2, 1, 6, 6, 9, 5, 1, 2, 2, 5, 1, 3, 3, 3,
 	5, 4, 4, 2, 4, 8, 3, 4, 23, 2, 4, 7, 8, 11, 2, 12, 15, 10, 1, 1, 5, 1, 5,
@@ -38,7 +38,7 @@ duk_uint8_t duk_util_probe_steps[32] = {
 };
 
 duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
-	duk_int8_t *p = hash_size_corrections;
+	const duk_int8_t *p = hash_size_corrections;
 	duk_uint32_t curr;
 
 	curr = (duk_uint32_t) *p++;

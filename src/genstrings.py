@@ -996,14 +996,14 @@ class GenStrings:
 		return self.define_to_index.has_key(x)
 
 	def emitStringsData(self, genc):
-		genc.emitArray(self.strdata, 'duk_strings_data', typename='duk_uint8_t', intvalues=True)
+		genc.emitArray(self.strdata, 'duk_strings_data', typename='duk_uint8_t', intvalues=True, const=True)
 		genc.emitLine('')
 		genc.emitLine('/* to convert a heap stridx to a token number, subtract')
 		genc.emitLine(' * DUK_STRIDX_START_RESERVED and add DUK_TOK_START_RESERVED.')
 		genc.emitLine(' */')
 
 	def emitStringsHeader(self, genc):
-		genc.emitLine('extern duk_uint8_t duk_strings_data[];')
+		genc.emitLine('extern const duk_uint8_t duk_strings_data[];')
 		genc.emitLine('')
 		genc.emitDefine('DUK_STRDATA_DATA_LENGTH', len(self.strdata))
 		genc.emitDefine('DUK_STRDATA_MAX_STRLEN', self.maxlen)

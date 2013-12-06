@@ -73,7 +73,7 @@
 #define  LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-static char *bc_optab[] = {
+static const char *bc_optab[] = {
 	"LDREG", "STREG", "LDCONST", "LDINT", "LDINTX", "MPUTOBJ", "MPUTARR", "NEW", "REGEXP", "CSREG",
 	"GETVAR", "PUTVAR", "DECLVAR", "DELVAR", "CSVAR", "CLOSURE", "GETPROP", "PUTPROP", "DELPROP", "CSPROP",
 	"ADD", "SUB", "MUL", "DIV", "MOD", "UNM", "UNP", "INC", "DEC", "BAND",
@@ -84,7 +84,7 @@ static char *bc_optab[] = {
 	"OP60", "EXTRA", "DEBUG", "INVALID",
 };
 
-static char *bc_extraoptab[] = {
+static const char *bc_extraoptab[] = {
 	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
 	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITGET", "ENDTRY", "ENDCATCH", "ENDFIN", "THROW",
 	"INVLHS", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",

@@ -242,7 +242,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 #define  MK_LBP(bp)                ((bp) >> 1)    /* bp is assumed to be even */
 #define  MK_LBP_FLAGS(bp,flags)    (((bp) >> 1) | (flags))
 
-static duk_int8_t token_lbp[] = {
+static const duk_int8_t token_lbp[] = {
 	MK_LBP(BP_EOF),                                 /* DUK_TOK_EOF */
 	MK_LBP(BP_INVALID),                             /* DUK_TOK_LINETERM */
 	MK_LBP(BP_INVALID),                             /* DUK_TOK_COMMENT */
