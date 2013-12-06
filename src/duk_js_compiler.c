@@ -80,9 +80,9 @@ static void emit(duk_compiler_ctx *comp_ctx, duk_instr ins);
 static void emit_op_only(duk_compiler_ctx *comp_ctx, int op);
 #endif
 static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, int c);
-static void emit_a_b(duk_compiler_ctx *comp_ctx, int op, int a, int b);
+static void emit_a_b(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b);
 #if 0  /* unused */
-static void emit_a(duk_compiler_ctx *comp_ctx, int op, int a);
+static void emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a);
 #endif
 static void emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc);
 static void emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc);
@@ -901,14 +901,18 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
  *  makes sense if the slot in question (A, B, C) is used in the standard
  *  register/constant meaning.  If slot A is used in a non-standard way the
  *  caller simply needs to ensure that the raw value fits into A so as to not
- *  trigger shuffling.  For slots B and C the raw slot size is 9 bits but one
- *  bit is reserved for the reg/const indicator.  To use the full 9-bit range
- *  for a raw value, shuffling is disabled with the EMIT_FLAG_NO_SHUFFLE flag
- *  (which fits into the 'op' field).  Shuffling is only done for A, B, and C
- *  slots, not the larger BC or ABC slots.
+ *  trigger shuffling.  The flag EMIT_FLAG_NO_SHUFFLE_A can be set to ensure
+ *  compilation fails if the value does not fit into A.  For slots B and C
+ *  the raw slot size is 9 bits but one bit is reserved for the reg/const
+ *  indicator.  To use the full 9-bit range for a raw value, shuffling is
+ *  disabled with the EMIT_FLAG_NO_SHUFFLE_{B,C} flag.  Shuffling is only
+ *  done for A, B, and C slots, not the larger BC or ABC slots.
  */
 
-#define  EMIT_FLAG_NO_SHUFFLE  (1 << 8)
+/* Code emission flags, passed in the 'opcode' field */
+#define  EMIT_FLAG_NO_SHUFFLE_A  (1 << 8)
+#define  EMIT_FLAG_NO_SHUFFLE_B  (1 << 9)
+#define  EMIT_FLAG_NO_SHUFFLE_C  (1 << 10)
 
 /* FIXME: clarify on when and where CONST_MARKER is allowed */
 /* FIXME: opcode specific assertions on when consts are allowed */
@@ -971,7 +975,7 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 	DUK_ASSERT((op_flags & 0xff) >= DUK_BC_OP_MIN && (op_flags & 0xff) <= DUK_BC_OP_MAX);
 
 	if (b & CONST_MARKER) {
-		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE) == 0);
+		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE_B) == 0);
 		b = b & ~CONST_MARKER;
 		if (b < 0x100) {
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0x100, 0);  /* const flag for B */
@@ -984,7 +988,7 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 			goto error_outofregs;
 		}
 	} else {
-		if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+		if (op_flags & EMIT_FLAG_NO_SHUFFLE_B) {
 			if (b >= DUK_BC_B_MAX) {
 				goto error_outofregs;
 			}
@@ -1001,7 +1005,7 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 	}
 
 	if (c & CONST_MARKER) {
-		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE) == 0);
+		DUK_ASSERT((op_flags & EMIT_FLAG_NO_SHUFFLE_C) == 0);
 		c = c & ~CONST_MARKER;
 		if (c < 0x100) {
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0, 0x100);  /* const flag for C */
@@ -1014,7 +1018,7 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 			goto error_outofregs;
 		}
 	} else {
-		if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+		if (op_flags & EMIT_FLAG_NO_SHUFFLE_C) {
 			if (c >= DUK_BC_C_MAX) {
 				goto error_outofregs;
 			}
@@ -1033,7 +1037,7 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 	if (a <= DUK_BC_A_MAX) {
 		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
 		emit(comp_ctx, ins);
-	} else if (op_flags & EMIT_FLAG_NO_SHUFFLE) {
+	} else if (op_flags & EMIT_FLAG_NO_SHUFFLE_A) {
 		goto error_outofregs;
 	} else if (a <= DUK_BC_BC_MAX) {
 		comp_ctx->curr_func.needs_shuffle = 1;
@@ -1050,13 +1054,13 @@ static void emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, i
 	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, "out of regs");
 }
 
-static void emit_a_b(duk_compiler_ctx *comp_ctx, int op, int a, int b) {
-	emit_a_b_c(comp_ctx, op, a, b, 0);
+static void emit_a_b(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b) {
+	emit_a_b_c(comp_ctx, op_flags, a, b, 0);
 }
 
 #if 0  /* unused */
-static void emit_a(duk_compiler_ctx *comp_ctx, int op, int a) {
-	emit_a_b_c(comp_ctx, op, a, 0, 0);
+static void emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a) {
+	emit_a_b_c(comp_ctx, op_flags, a, 0, 0);
 }
 #endif
 
@@ -2236,7 +2240,7 @@ static void nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			 * is not allowed.
 			 */	
 			emit_a_b_c(comp_ctx,
-			           DUK_OP_MPUTARR | EMIT_FLAG_NO_SHUFFLE,
+			           DUK_OP_MPUTARR | EMIT_FLAG_NO_SHUFFLE_B | EMIT_FLAG_NO_SHUFFLE_C,
 			           reg_obj,
 			           temp_start,
 			           num_values);
@@ -2452,7 +2456,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 					 * is not allowed.
 					 */
 					emit_a_b_c(comp_ctx,
-					           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE,
+					           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE_B | EMIT_FLAG_NO_SHUFFLE_C,
 					           reg_obj,
 					           temp_start,
 					           num_pairs);
@@ -2512,7 +2516,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			 * is not allowed.
 			 */	
 			emit_a_b_c(comp_ctx,
-			           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE,
+			           DUK_OP_MPUTOBJ | EMIT_FLAG_NO_SHUFFLE_B | EMIT_FLAG_NO_SHUFFLE_C,
 			           reg_obj,
 			           temp_start,
 			           num_pairs);
@@ -2762,7 +2766,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * not allowed.
 		 */
 		emit_a_b_c(comp_ctx,
-		           DUK_OP_NEW | EMIT_FLAG_NO_SHUFFLE,
+		           DUK_OP_NEW | EMIT_FLAG_NO_SHUFFLE_B | EMIT_FLAG_NO_SHUFFLE_C,
 		           reg_target /*target*/,
 		           reg_target /*start*/,
 		           nargs /*num_args*/);
@@ -3174,21 +3178,34 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 
 			duk_dup(ctx, left->x1.valstack_idx);
 			if (lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
-				emit_a_b(comp_ctx, DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_varbind);
+				emit_a_b(comp_ctx,
+				         DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE_A,
+				         reg_cs + 0,
+				         reg_varbind);
 			} else {
-				emit_a_b(comp_ctx, DUK_OP_CSVAR | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_varname);
+				emit_a_b(comp_ctx,
+				         DUK_OP_CSVAR | EMIT_FLAG_NO_SHUFFLE_A,
+				         reg_cs + 0,
+				         reg_varname);
 			}
 		} else if (left->t == DUK_IVAL_PROP) {
 			DUK_DDDPRINT("function call with property base");
 			
 			ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 0);  /* base */
 			ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 1);  /* key */
-			emit_a_b_c(comp_ctx, DUK_OP_CSPROP | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_cs + 0, reg_cs + 1);  /* in-place setup */
+			emit_a_b_c(comp_ctx,
+			           DUK_OP_CSPROP | EMIT_FLAG_NO_SHUFFLE_A,
+			           reg_cs + 0,
+			           reg_cs + 0,
+			           reg_cs + 1);  /* in-place setup */
 		} else {
 			DUK_DDDPRINT("function call with register base");
 
 			ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);
-			emit_a_b(comp_ctx, DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE, reg_cs + 0, reg_cs + 0);  /* in-place setup */
+			emit_a_b(comp_ctx,
+			         DUK_OP_CSREG | EMIT_FLAG_NO_SHUFFLE_A,
+			         reg_cs + 0,
+			         reg_cs + 0);  /* in-place setup */
 		}
 
 		SETTEMP(comp_ctx, reg_cs + 2);
@@ -3198,12 +3215,12 @@ static void expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ivalue *r
 
 		/* Tailcalls are handled by back-patching the TAILCALL flag to the
 		 * already emitted instruction later (in return statement parser).
-		 * Since B and C have a special meaning here, they cannot be "shuffled"
+		 * Since A, B, and C have a special meaning here, they cannot be "shuffled"
 		 * (if reg_cs or nargs don't fit in B/C, function cannot be compiled).
 		 */
 
 		emit_a_b_c(comp_ctx,
-		           DUK_OP_CALL | EMIT_FLAG_NO_SHUFFLE,
+		           DUK_OP_CALL | EMIT_FLAG_NO_SHUFFLE_A | EMIT_FLAG_NO_SHUFFLE_B | EMIT_FLAG_NO_SHUFFLE_C,
 		           call_flags /*flags*/,
 		           reg_cs /*basereg*/,
 		           nargs /*numargs*/);
