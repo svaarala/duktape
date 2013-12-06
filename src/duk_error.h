@@ -143,7 +143,11 @@
 #elif defined(DUK_USE_PANIC_EXIT)
 #define DUK_PANIC_EXIT()  exit(-1)
 #elif defined(DUK_USE_PANIC_SEGFAULT)
-#define DUK_PANIC_EXIT()  DUK_CAUSE_SEGFAULT()
+#define DUK_PANIC_EXIT()  do { \
+		/* exit() afterwards to satisfy "noreturn" */ \
+		DUK_CAUSE_SEGFAULT(); \
+		exit(-1); \
+	} while (0)
 #else
 #error no DUK_USE_PANIC_xxx macro defined
 #endif
