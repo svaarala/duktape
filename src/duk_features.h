@@ -3,7 +3,7 @@
  *  (e.g. _XOPEN_SOURCE), include system headers, and define DUK_USE_XXX
  *  defines which are (only) checked in Duktape internal code for
  *  activated features.  Duktape feature selection is based on DUK_PROFILE,
- *  other user supplied defines, and automatic feature detection.
+ *  user supplied DUK_OPT_xxx defines, and automatic feature detection.
  *
  *  This file is included by duk_internal.h before anything else is
  *  included.  Feature selection defines (e.g. _XOPEN_SOURCE) are defined
@@ -934,6 +934,32 @@ extern double duk_computed_nan;
 #define  DUK_USE_DEEP_C_STACK
 #else
 #undef  DUK_USE_DEEP_C_STACK
+#endif
+
+/*
+ *  Cause segfault macro.
+ *
+ *  This is optionally used by panic handling to cause the program to segfault
+ *  (instead of e.g. abort()) on panic.  Valgrind will then indicate the C
+ *  call stack leading to the panic.
+ */
+
+#define  DUK_CAUSE_SEGFAULT()  do { \
+		*((int32_t *) NULL) = (int32_t) 0xdeadbeefUL; \
+	} while (0)
+
+/*
+ *  Panic exit behavior (for default panic handler)
+ */
+
+#undef DUK_USE_PANIC_ABORT
+#undef DUK_USE_PANIC_EXIT
+#undef DUK_USE_PANIC_SEGFAULT
+
+#if defined(DUK_OPT_SEGFAULT_ON_PANIC)
+#define  DUK_USE_PANIC_SEGFAULT
+#else
+#define  DUK_USE_PANIC_ABORT
 #endif
 
 /* 
