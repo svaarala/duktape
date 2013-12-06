@@ -12,25 +12,25 @@
 #ifndef DUK_HBUFFER_H_INCLUDED
 #define DUK_HBUFFER_H_INCLUDED
 
-#define  DUK_HBUFFER_FLAG_DYNAMIC        DUK_HEAPHDR_USER_FLAG(0)  /* buffer is resizable */
+#define DUK_HBUFFER_FLAG_DYNAMIC        DUK_HEAPHDR_USER_FLAG(0)  /* buffer is resizable */
 
-#define  DUK_HBUFFER_HAS_DYNAMIC(x)      DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_HAS_DYNAMIC(x)      DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
 
-#define  DUK_HBUFFER_SET_DYNAMIC(x)      DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_SET_DYNAMIC(x)      DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
 
-#define  DUK_HBUFFER_CLEAR_DYNAMIC(x)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_CLEAR_DYNAMIC(x)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
 
-#define  DUK_HBUFFER_FIXED_GET_DATA_PTR(x)         ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
+#define DUK_HBUFFER_FIXED_GET_DATA_PTR(x)         ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
 
-#define  DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)     ((x)->usable_size + 1)
-#define  DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(x)    ((x)->usable_size)
-#define  DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(x)     ((x)->usable_size - (x)->size)
-#define  DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(x)  ((x)->curr_alloc)
+#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)     ((x)->usable_size + 1)
+#define DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(x)    ((x)->usable_size)
+#define DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(x)     ((x)->usable_size - (x)->size)
+#define DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(x)  ((x)->curr_alloc)
 
 /* gets the actual buffer contents which matches the current allocation size
  * (may be NULL for zero size dynamic buffer)
  */
-#define  DUK_HBUFFER_GET_DATA_PTR(x)  ( \
+#define DUK_HBUFFER_GET_DATA_PTR(x)  ( \
 	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
 		DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR((duk_hbuffer_dynamic *) (x)) : \
 		DUK_HBUFFER_FIXED_GET_DATA_PTR((duk_hbuffer_fixed *) (x)) \
@@ -39,15 +39,15 @@
 /* gets the current user visible size, without accounting for a dynamic
  * buffer's "spare" (= usable size).
  */
-#define  DUK_HBUFFER_GET_SIZE(x)         ((x)->size)
+#define DUK_HBUFFER_GET_SIZE(x)         ((x)->size)
 
-#define  DUK_HBUFFER_SET_SIZE(x,val)  do { \
+#define DUK_HBUFFER_SET_SIZE(x,val)  do { \
 		(x)->size = (val); \
 	} while (0)
 
 /* growth parameters */
-#define  DUK_HBUFFER_SPARE_ADD      16
-#define  DUK_HBUFFER_SPARE_DIVISOR  16   /* 2^4 -> 1/16 = 6.25% spare */
+#define DUK_HBUFFER_SPARE_ADD      16
+#define DUK_HBUFFER_SPARE_DIVISOR  16   /* 2^4 -> 1/16 = 6.25% spare */
 
 struct duk_hbuffer {
 	duk_heaphdr hdr;

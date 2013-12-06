@@ -5,8 +5,8 @@
 #ifndef DUK_HNATIVEFUNCTION_H_INCLUDED
 #define DUK_HNATIVEFUNCTION_H_INCLUDED
 
-#define  DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_int16_t) -1)
-#define  DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_int16_t) 0x7fff)
+#define DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_int16_t) -1)
+#define DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_int16_t) 0x7fff)
 
 struct duk_hnativefunction {
 	/* shared object part */

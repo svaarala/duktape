@@ -24,52 +24,52 @@
  * 64-bit platforms and indeed E5.1 makes provisions to support strings
  * longer than 4G characters.
  */
-#define  DUK_HSTRING_MAX_BYTELEN                     (0xffffffffUL)
+#define DUK_HSTRING_MAX_BYTELEN                     (0xffffffffUL)
 
-#define  DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(0)  /* string is a valid array index */
-#define  DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(1)  /* string is internal */
-#define  DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(2)  /* string is a reserved word (non-strict) */
-#define  DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(3)  /* string is a reserved word (strict) */
-#define  DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(4)  /* string is 'eval' or 'arguments' */
+#define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(0)  /* string is a valid array index */
+#define DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(1)  /* string is internal */
+#define DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(2)  /* string is a reserved word (non-strict) */
+#define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(3)  /* string is a reserved word (strict) */
+#define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(4)  /* string is 'eval' or 'arguments' */
 
-#define  DUK_HSTRING_HAS_ARRIDX(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define  DUK_HSTRING_HAS_INTERNAL(x)                 DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
-#define  DUK_HSTRING_HAS_RESERVED_WORD(x)            DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define  DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define  DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_HAS_ARRIDX(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_HAS_INTERNAL(x)                 DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_HAS_RESERVED_WORD(x)            DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
 
-#define  DUK_HSTRING_SET_ARRIDX(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define  DUK_HSTRING_SET_INTERNAL(x)                 DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
-#define  DUK_HSTRING_SET_RESERVED_WORD(x)            DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define  DUK_HSTRING_SET_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define  DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_SET_ARRIDX(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_SET_INTERNAL(x)                 DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_SET_RESERVED_WORD(x)            DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_SET_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
 
-#define  DUK_HSTRING_CLEAR_ARRIDX(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define  DUK_HSTRING_CLEAR_INTERNAL(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
-#define  DUK_HSTRING_CLEAR_RESERVED_WORD(x)          DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define  DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define  DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_CLEAR_ARRIDX(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_CLEAR_INTERNAL(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_CLEAR_RESERVED_WORD(x)          DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
 
-#define  DUK_HSTRING_IS_ASCII(x)                     ((x)->blen == (x)->clen)
-#define  DUK_HSTRING_IS_EMPTY(x)                     ((x)->blen == 0)
+#define DUK_HSTRING_IS_ASCII(x)                     ((x)->blen == (x)->clen)
+#define DUK_HSTRING_IS_EMPTY(x)                     ((x)->blen == 0)
 
-#define  DUK_HSTRING_GET_HASH(x)                     ((x)->hash)
-#define  DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
-#define  DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
-#define  DUK_HSTRING_GET_DATA(x)                     ((duk_uint8_t *) ((x) + 1))
-#define  DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
+#define DUK_HSTRING_GET_HASH(x)                     ((x)->hash)
+#define DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
+#define DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
+#define DUK_HSTRING_GET_DATA(x)                     ((duk_uint8_t *) ((x) + 1))
+#define DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
 
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
-#define  DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
+#define DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
 
 /* get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
  * avoids helper call if string has no array index value.
  */
-#define  DUK_HSTRING_GET_ARRIDX_FAST(h)  \
+#define DUK_HSTRING_GET_ARRIDX_FAST(h)  \
 	(DUK_HSTRING_HAS_ARRIDX((h)) ? duk_js_to_arrayindex_string_helper((h)) : DUK_HSTRING_NO_ARRAY_INDEX)
 
 /* slower but more compact variant */
-#define  DUK_HSTRING_GET_ARRIDX_SLOW(h)  \
+#define DUK_HSTRING_GET_ARRIDX_SLOW(h)  \
 	(duk_js_to_arrayindex_string_helper((h)))
 
 /*

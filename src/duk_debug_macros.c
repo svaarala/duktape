@@ -18,7 +18,7 @@
 char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 int duk_debug_summary_idx;
 
-#define  DUK_DEBUG_BUFSIZE  65536
+#define DUK_DEBUG_BUFSIZE  65536
 static char buf[DUK_DEBUG_BUFSIZE];
 
 static const char *get_level_string(int level) {
@@ -36,11 +36,11 @@ static const char *get_level_string(int level) {
 #ifdef DUK_USE_DPRINT_COLORS
 
 /* http://en.wikipedia.org/wiki/ANSI_escape_code */
-#define  TERM_REVERSE  "\x1b[7m"
-#define  TERM_BRIGHT   "\x1b[1m"
-#define  TERM_RESET    "\x1b[0m"
-#define  TERM_BLUE     "\x1b[34m"
-#define  TERM_RED      "\x1b[31m"
+#define TERM_REVERSE  "\x1b[7m"
+#define TERM_BRIGHT   "\x1b[1m"
+#define TERM_RESET    "\x1b[0m"
+#define TERM_BLUE     "\x1b[34m"
+#define TERM_RED      "\x1b[31m"
 
 static const char *get_term_1(int level) {
 	return (const char *) TERM_RED;

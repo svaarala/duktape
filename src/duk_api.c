@@ -2410,9 +2410,9 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 	va_end(ap);
 }
 
-#define  PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
-#define  PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
-#define  PUSH_THIS_FLAG_TO_STRING    (1 << 2)
+#define PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
+#define PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
+#define PUSH_THIS_FLAG_TO_STRING    (1 << 2)
 
 static void push_this_helper(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;

@@ -12,95 +12,95 @@
  *  Stack constants
  */
 
-#define  DUK_VALSTACK_GROW_STEP          128     /* roughly 1 kiB */
-#define  DUK_VALSTACK_SHRINK_THRESHOLD   256     /* roughly 2 kiB */
-#define  DUK_VALSTACK_SHRINK_SPARE       64      /* roughly 0.5 kiB */
-#define  DUK_VALSTACK_INITIAL_SIZE       64      /* roughly 0.5 kiB -> but rounds up to DUK_VALSTACK_GROW_STEP in practice */
-#define  DUK_VALSTACK_INTERNAL_EXTRA     64      /* internal extra elements assumed on function entry,
-                                                  * always added to user-defined 'extra' for e.g. the
-                                                  * duk_check_stack() call.
-                                                  */
-#define  DUK_VALSTACK_DEFAULT_MAX        1000000
+#define DUK_VALSTACK_GROW_STEP          128     /* roughly 1 kiB */
+#define DUK_VALSTACK_SHRINK_THRESHOLD   256     /* roughly 2 kiB */
+#define DUK_VALSTACK_SHRINK_SPARE       64      /* roughly 0.5 kiB */
+#define DUK_VALSTACK_INITIAL_SIZE       64      /* roughly 0.5 kiB -> but rounds up to DUK_VALSTACK_GROW_STEP in practice */
+#define DUK_VALSTACK_INTERNAL_EXTRA     64      /* internal extra elements assumed on function entry,
+                                                 * always added to user-defined 'extra' for e.g. the
+                                                 * duk_check_stack() call.
+                                                 */
+#define DUK_VALSTACK_DEFAULT_MAX        1000000
 
-#define  DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */
-#define  DUK_CALLSTACK_SHRINK_THRESHOLD  16      /* roughly 512 bytes */
-#define  DUK_CALLSTACK_SHRINK_SPARE      8       /* roughly 256 bytes */
-#define  DUK_CALLSTACK_INITIAL_SIZE      8
-#define  DUK_CALLSTACK_DEFAULT_MAX       10000
+#define DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */
+#define DUK_CALLSTACK_SHRINK_THRESHOLD  16      /* roughly 512 bytes */
+#define DUK_CALLSTACK_SHRINK_SPARE      8       /* roughly 256 bytes */
+#define DUK_CALLSTACK_INITIAL_SIZE      8
+#define DUK_CALLSTACK_DEFAULT_MAX       10000
 
-#define  DUK_CATCHSTACK_GROW_STEP         4      /* roughly 64 bytes */
-#define  DUK_CATCHSTACK_SHRINK_THRESHOLD  8      /* roughly 128 bytes */
-#define  DUK_CATCHSTACK_SHRINK_SPARE      4      /* roughly 64 bytes */
-#define  DUK_CATCHSTACK_INITIAL_SIZE      4
-#define  DUK_CATCHSTACK_DEFAULT_MAX       10000
+#define DUK_CATCHSTACK_GROW_STEP         4      /* roughly 64 bytes */
+#define DUK_CATCHSTACK_SHRINK_THRESHOLD  8      /* roughly 128 bytes */
+#define DUK_CATCHSTACK_SHRINK_SPARE      4      /* roughly 64 bytes */
+#define DUK_CATCHSTACK_INITIAL_SIZE      4
+#define DUK_CATCHSTACK_DEFAULT_MAX       10000
 
 /*
  *  Activation defines
  */
 
-#define  DUK_ACT_FLAG_STRICT          (1 << 0)  /* function executes in strict mode */
-#define  DUK_ACT_FLAG_TAILCALLED      (1 << 1)  /* activation has tailcalled one or more times */
-#define  DUK_ACT_FLAG_CONSTRUCT       (1 << 2)  /* function executes as a constructor (called via "new") */
-#define  DUK_ACT_FLAG_PREVENT_YIELD   (1 << 3)  /* activation prevents yield (native call or "new") */
-#define  DUK_ACT_FLAG_DIRECT_EVAL     (1 << 4)  /* activation is a direct eval call */
+#define DUK_ACT_FLAG_STRICT          (1 << 0)  /* function executes in strict mode */
+#define DUK_ACT_FLAG_TAILCALLED      (1 << 1)  /* activation has tailcalled one or more times */
+#define DUK_ACT_FLAG_CONSTRUCT       (1 << 2)  /* function executes as a constructor (called via "new") */
+#define DUK_ACT_FLAG_PREVENT_YIELD   (1 << 3)  /* activation prevents yield (native call or "new") */
+#define DUK_ACT_FLAG_DIRECT_EVAL     (1 << 4)  /* activation is a direct eval call */
 
 /*
  *  Flags for __FILE__ / __LINE__ registered into tracedata
  */
 
-#define  DUK_TB_FLAG_NOBLAME_FILELINE   (1 << 0)  /* don't report __FILE__ / __LINE__ as fileName/lineNumber */
+#define DUK_TB_FLAG_NOBLAME_FILELINE   (1 << 0)  /* don't report __FILE__ / __LINE__ as fileName/lineNumber */
 
 /*
  *  Catcher defines
  */
 
 /* flags field: LLLLLLFT, L = label (24 bits), F = flags (4 bits), T = type (4 bits) */
-#define  DUK_CAT_TYPE_MASK            0x0000000fUL
-#define  DUK_CAT_TYPE_BITS            4
-#define  DUK_CAT_LABEL_MASK           0xffffff00UL
-#define  DUK_CAT_LABEL_BITS           24
-#define  DUK_CAT_LABEL_SHIFT          8
+#define DUK_CAT_TYPE_MASK            0x0000000fUL
+#define DUK_CAT_TYPE_BITS            4
+#define DUK_CAT_LABEL_MASK           0xffffff00UL
+#define DUK_CAT_LABEL_BITS           24
+#define DUK_CAT_LABEL_SHIFT          8
 
-#define  DUK_CAT_FLAG_CATCH_ENABLED          (1 << 4)   /* catch part will catch */
-#define  DUK_CAT_FLAG_FINALLY_ENABLED        (1 << 5)   /* finally part will catch */
-#define  DUK_CAT_FLAG_CATCH_BINDING_ENABLED  (1 << 6)   /* request to create catch binding */
-#define  DUK_CAT_FLAG_LEXENV_ACTIVE          (1 << 7)   /* catch or with binding is currently active */
+#define DUK_CAT_FLAG_CATCH_ENABLED          (1 << 4)   /* catch part will catch */
+#define DUK_CAT_FLAG_FINALLY_ENABLED        (1 << 5)   /* finally part will catch */
+#define DUK_CAT_FLAG_CATCH_BINDING_ENABLED  (1 << 6)   /* request to create catch binding */
+#define DUK_CAT_FLAG_LEXENV_ACTIVE          (1 << 7)   /* catch or with binding is currently active */
 
-#define  DUK_CAT_TYPE_UNKNOWN         0
-#define  DUK_CAT_TYPE_TCF             1
-#define  DUK_CAT_TYPE_LABEL           2
+#define DUK_CAT_TYPE_UNKNOWN         0
+#define DUK_CAT_TYPE_TCF             1
+#define DUK_CAT_TYPE_LABEL           2
 
-#define  DUK_CAT_GET_TYPE(c)          ((c)->flags & DUK_CAT_TYPE_MASK)
-#define  DUK_CAT_GET_LABEL(c)         (((c)->flags & DUK_CAT_LABEL_MASK) >> DUK_CAT_LABEL_SHIFT)
+#define DUK_CAT_GET_TYPE(c)          ((c)->flags & DUK_CAT_TYPE_MASK)
+#define DUK_CAT_GET_LABEL(c)         (((c)->flags & DUK_CAT_LABEL_MASK) >> DUK_CAT_LABEL_SHIFT)
 
-#define  DUK_CAT_HAS_CATCH_ENABLED(c)           ((c)->flags & DUK_CAT_FLAG_CATCH_ENABLED)
-#define  DUK_CAT_HAS_FINALLY_ENABLED(c)         ((c)->flags & DUK_CAT_FLAG_FINALLY_ENABLED)
-#define  DUK_CAT_HAS_CATCH_BINDING_ENABLED(c)   ((c)->flags & DUK_CAT_FLAG_CATCH_BINDING_ENABLED)
-#define  DUK_CAT_HAS_LEXENV_ACTIVE(c)           ((c)->flags & DUK_CAT_FLAG_LEXENV_ACTIVE)
+#define DUK_CAT_HAS_CATCH_ENABLED(c)           ((c)->flags & DUK_CAT_FLAG_CATCH_ENABLED)
+#define DUK_CAT_HAS_FINALLY_ENABLED(c)         ((c)->flags & DUK_CAT_FLAG_FINALLY_ENABLED)
+#define DUK_CAT_HAS_CATCH_BINDING_ENABLED(c)   ((c)->flags & DUK_CAT_FLAG_CATCH_BINDING_ENABLED)
+#define DUK_CAT_HAS_LEXENV_ACTIVE(c)           ((c)->flags & DUK_CAT_FLAG_LEXENV_ACTIVE)
 
-#define  DUK_CAT_SET_CATCH_ENABLED(c)    do { \
+#define DUK_CAT_SET_CATCH_ENABLED(c)    do { \
 		(c)->flags |= DUK_CAT_FLAG_CATCH_ENABLED; \
 	} while (0)
-#define  DUK_CAT_SET_FINALLY_ENABLED(c)  do { \
+#define DUK_CAT_SET_FINALLY_ENABLED(c)  do { \
 		(c)->flags |= DUK_CAT_FLAG_FINALLY_ENABLED; \
 	} while (0)
-#define  DUK_CAT_SET_CATCH_BINDING_ENABLED(c)    do { \
+#define DUK_CAT_SET_CATCH_BINDING_ENABLED(c)    do { \
 		(c)->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED; \
 	} while (0)
-#define  DUK_CAT_SET_LEXENV_ACTIVE(c)    do { \
+#define DUK_CAT_SET_LEXENV_ACTIVE(c)    do { \
 		(c)->flags |= DUK_CAT_FLAG_LEXENV_ACTIVE; \
 	} while (0)
 
-#define  DUK_CAT_CLEAR_CATCH_ENABLED(c)    do { \
+#define DUK_CAT_CLEAR_CATCH_ENABLED(c)    do { \
 		(c)->flags &= ~DUK_CAT_FLAG_CATCH_ENABLED; \
 	} while (0)
-#define  DUK_CAT_CLEAR_FINALLY_ENABLED(c)  do { \
+#define DUK_CAT_CLEAR_FINALLY_ENABLED(c)  do { \
 		(c)->flags &= ~DUK_CAT_FLAG_FINALLY_ENABLED; \
 	} while (0)
-#define  DUK_CAT_CLEAR_CATCH_BINDING_ENABLED(c)    do { \
+#define DUK_CAT_CLEAR_CATCH_BINDING_ENABLED(c)    do { \
 		(c)->flags &= ~DUK_CAT_FLAG_CATCH_BINDING_ENABLED; \
 	} while (0)
-#define  DUK_CAT_CLEAR_LEXENV_ACTIVE(c)    do { \
+#define DUK_CAT_CLEAR_LEXENV_ACTIVE(c)    do { \
 		(c)->flags &= ~DUK_CAT_FLAG_LEXENV_ACTIVE; \
 	} while (0)
 
@@ -108,16 +108,16 @@
  *  Thread defines
  */
 
-#define  DUK_HTHREAD_GET_STRING(thr,idx)          ((thr)->strs[(idx)])
+#define DUK_HTHREAD_GET_STRING(thr,idx)          ((thr)->strs[(idx)])
 
-#define  DUK_HTHREAD_GET_CURRENT_ACTIVATION(thr)  (&(thr)->callstack[(thr)->callstack_top - 1])
+#define DUK_HTHREAD_GET_CURRENT_ACTIVATION(thr)  (&(thr)->callstack[(thr)->callstack_top - 1])
 
 /* values for the state field */
-#define  DUK_HTHREAD_STATE_INACTIVE     1   /* thread not currently running */
-#define  DUK_HTHREAD_STATE_RUNNING      2   /* thread currently running (only one at a time) */
-#define  DUK_HTHREAD_STATE_RESUMED      3   /* thread resumed another thread (active but not running) */
-#define  DUK_HTHREAD_STATE_YIELDED      4   /* thread has yielded */
-#define  DUK_HTHREAD_STATE_TERMINATED   5   /* thread has terminated */
+#define DUK_HTHREAD_STATE_INACTIVE     1   /* thread not currently running */
+#define DUK_HTHREAD_STATE_RUNNING      2   /* thread currently running (only one at a time) */
+#define DUK_HTHREAD_STATE_RESUMED      3   /* thread resumed another thread (active but not running) */
+#define DUK_HTHREAD_STATE_YIELDED      4   /* thread has yielded */
+#define DUK_HTHREAD_STATE_TERMINATED   5   /* thread has terminated */
 
 /*
  *  Struct defines

@@ -22,7 +22,7 @@
 /* FIXME: identify enumeration target with an object index (not top of stack) */
 
 /* must match exactly the number of internal properties inserted to enumerator */
-#define  ENUM_START_INDEX  2
+#define ENUM_START_INDEX  2
 
 /*
  *  Helper to sort array index keys.  The keys are in the enumeration object

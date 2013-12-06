@@ -12,7 +12,7 @@
  *  inlined in size optimized builds).
  */
 
-#define  VOLUNTARY_PERIODIC_GC(heap)  do { \
+#define VOLUNTARY_PERIODIC_GC(heap)  do { \
 		(heap)->mark_and_sweep_trigger_counter--; \
 		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
 			run_voluntary_gc(heap); \

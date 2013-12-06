@@ -5,9 +5,9 @@
 #include "duk_internal.h"
 
 /* constants for duk_hashstring() */
-#define  STRING_HASH_SHORTSTRING   4096
-#define  STRING_HASH_MEDIUMSTRING  (256 * 1024)
-#define  STRING_HASH_BLOCKSIZE     256
+#define STRING_HASH_SHORTSTRING   4096
+#define STRING_HASH_MEDIUMSTRING  (256 * 1024)
+#define STRING_HASH_BLOCKSIZE     256
 
 duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len) {
 	/*

@@ -26,152 +26,152 @@ typedef void (*duk_re_range_callback)(void *user, duk_uint32_t r1, duk_uint32_t 
  *  in a continuous range and in a particular order.  See genstrings.py.
  */
 
-#define  DUK_LEXER_INITCTX(ctx)        duk_lexer_initctx((ctx))
+#define DUK_LEXER_INITCTX(ctx)        duk_lexer_initctx((ctx))
 
-#define  DUK_LEXER_SETPOINT(ctx,pt)    duk_lexer_setpoint((ctx), (pt))
+#define DUK_LEXER_SETPOINT(ctx,pt)    duk_lexer_setpoint((ctx), (pt))
 
-#define  DUK_LEXER_GETPOINT(ctx,pt)    do { (pt)->offset = (ctx)->offsets[0]; \
-                                            (pt)->line = (ctx)->lines[0]; } while(0)
+#define DUK_LEXER_GETPOINT(ctx,pt)    do { (pt)->offset = (ctx)->offsets[0]; \
+                                           (pt)->line = (ctx)->lines[0]; } while(0)
 
 /* currently 6 characters of lookup are actually needed (duk_lexer.c) */
-#define  DUK_LEXER_WINDOW_SIZE			8
+#define DUK_LEXER_WINDOW_SIZE                     8
 
-#define  DUK_TOK_MINVAL				0
+#define DUK_TOK_MINVAL                            0
 
 /* returned after EOF (infinite amount) */
-#define  DUK_TOK_EOF				0
+#define DUK_TOK_EOF                               0
 
 /* line terminator or multi-line comment with internal lineterm (E5 Sections 7.3, 7.4) */
-#define  DUK_TOK_LINETERM			1
+#define DUK_TOK_LINETERM                          1
 
 /* single-line comment or multi-line comment without internal lineterm (E5 Section 7.4) */
-#define  DUK_TOK_COMMENT			2
+#define DUK_TOK_COMMENT                           2
 
 /* identifier names (E5 Section 7.6) */
-#define  DUK_TOK_IDENTIFIER			3
+#define DUK_TOK_IDENTIFIER                        3
 
 /* reserved words: keywords */
-#define  DUK_TOK_START_RESERVED			4
-#define  DUK_TOK_BREAK				4
-#define  DUK_TOK_CASE				5
-#define  DUK_TOK_CATCH				6
-#define  DUK_TOK_CONTINUE			7
-#define  DUK_TOK_DEBUGGER			8
-#define  DUK_TOK_DEFAULT			9
-#define  DUK_TOK_DELETE				10
-#define  DUK_TOK_DO				11
-#define  DUK_TOK_ELSE				12
-#define  DUK_TOK_FINALLY			13
-#define  DUK_TOK_FOR				14
-#define  DUK_TOK_FUNCTION			15
-#define  DUK_TOK_IF				16
-#define  DUK_TOK_IN				17
-#define  DUK_TOK_INSTANCEOF			18
-#define  DUK_TOK_NEW				19
-#define  DUK_TOK_RETURN				20
-#define  DUK_TOK_SWITCH				21
-#define  DUK_TOK_THIS				22
-#define  DUK_TOK_THROW				23
-#define  DUK_TOK_TRY				24
-#define  DUK_TOK_TYPEOF				25
-#define  DUK_TOK_VAR				26
-#define  DUK_TOK_VOID				27
-#define  DUK_TOK_WHILE				28
-#define  DUK_TOK_WITH				29
+#define DUK_TOK_START_RESERVED                    4
+#define DUK_TOK_BREAK                             4
+#define DUK_TOK_CASE                              5
+#define DUK_TOK_CATCH                             6
+#define DUK_TOK_CONTINUE                          7
+#define DUK_TOK_DEBUGGER                          8
+#define DUK_TOK_DEFAULT                           9
+#define DUK_TOK_DELETE                            10
+#define DUK_TOK_DO                                11
+#define DUK_TOK_ELSE                              12
+#define DUK_TOK_FINALLY                           13
+#define DUK_TOK_FOR                               14
+#define DUK_TOK_FUNCTION                          15
+#define DUK_TOK_IF                                16
+#define DUK_TOK_IN                                17
+#define DUK_TOK_INSTANCEOF                        18
+#define DUK_TOK_NEW                               19
+#define DUK_TOK_RETURN                            20
+#define DUK_TOK_SWITCH                            21
+#define DUK_TOK_THIS                              22
+#define DUK_TOK_THROW                             23
+#define DUK_TOK_TRY                               24
+#define DUK_TOK_TYPEOF                            25
+#define DUK_TOK_VAR                               26
+#define DUK_TOK_VOID                              27
+#define DUK_TOK_WHILE                             28
+#define DUK_TOK_WITH                              29
 
 /* reserved words: future reserved words */
-#define  DUK_TOK_CLASS				30
-#define  DUK_TOK_CONST				31
-#define  DUK_TOK_ENUM				32
-#define  DUK_TOK_EXPORT				33
-#define  DUK_TOK_EXTENDS			34
-#define  DUK_TOK_IMPORT				35
-#define  DUK_TOK_SUPER				36
+#define DUK_TOK_CLASS                             30
+#define DUK_TOK_CONST                             31
+#define DUK_TOK_ENUM                              32
+#define DUK_TOK_EXPORT                            33
+#define DUK_TOK_EXTENDS                           34
+#define DUK_TOK_IMPORT                            35
+#define DUK_TOK_SUPER                             36
 
 /* "get" and "set" are not reserved words in the spec, but behave like
  * reserved words, so we treat them as such.
 */
-#define  DUK_TOK_NULL				37
-#define  DUK_TOK_TRUE				38
-#define  DUK_TOK_FALSE				39
-#define  DUK_TOK_GET				40
-#define  DUK_TOK_SET				41
+#define DUK_TOK_NULL                              37
+#define DUK_TOK_TRUE                              38
+#define DUK_TOK_FALSE                             39
+#define DUK_TOK_GET                               40
+#define DUK_TOK_SET                               41
 
 /* reserved words: additional future reserved words in strict mode */
-#define  DUK_TOK_START_STRICT_RESERVED		42  /* inclusive */
-#define  DUK_TOK_IMPLEMENTS			42
-#define  DUK_TOK_INTERFACE			43
-#define  DUK_TOK_LET				44
-#define  DUK_TOK_PACKAGE			45
-#define  DUK_TOK_PRIVATE			46
-#define  DUK_TOK_PROTECTED			47
-#define  DUK_TOK_PUBLIC				48
-#define  DUK_TOK_STATIC				49
-#define  DUK_TOK_YIELD				50
+#define DUK_TOK_START_STRICT_RESERVED             42  /* inclusive */
+#define DUK_TOK_IMPLEMENTS                        42
+#define DUK_TOK_INTERFACE                         43
+#define DUK_TOK_LET                               44
+#define DUK_TOK_PACKAGE                           45
+#define DUK_TOK_PRIVATE                           46
+#define DUK_TOK_PROTECTED                         47
+#define DUK_TOK_PUBLIC                            48
+#define DUK_TOK_STATIC                            49
+#define DUK_TOK_YIELD                             50
 
-#define	 DUK_TOK_END_RESERVED			51  /* exclusive */
+#define DUK_TOK_END_RESERVED                      51  /* exclusive */
 
 /* punctuators (unlike the spec, also includes "/" and "/=") */
-#define  DUK_TOK_LCURLY				51
-#define  DUK_TOK_RCURLY				52
-#define  DUK_TOK_LBRACKET			53
-#define  DUK_TOK_RBRACKET			54
-#define  DUK_TOK_LPAREN				55
-#define  DUK_TOK_RPAREN				56
-#define  DUK_TOK_PERIOD				57
-#define  DUK_TOK_SEMICOLON			58
-#define  DUK_TOK_COMMA				59
-#define  DUK_TOK_LT				60
-#define  DUK_TOK_GT				61
-#define  DUK_TOK_LE				62
-#define  DUK_TOK_GE				63
-#define  DUK_TOK_EQ				64
-#define  DUK_TOK_NEQ				65
-#define  DUK_TOK_SEQ				66
-#define  DUK_TOK_SNEQ				67
-#define  DUK_TOK_ADD				68
-#define  DUK_TOK_SUB				69
-#define  DUK_TOK_MUL				70
-#define  DUK_TOK_DIV				71
-#define  DUK_TOK_MOD				72
-#define  DUK_TOK_INCREMENT			73
-#define  DUK_TOK_DECREMENT			74
-#define  DUK_TOK_ALSHIFT			75  /* named "arithmetic" because result is signed */
-#define  DUK_TOK_ARSHIFT			76
-#define  DUK_TOK_RSHIFT				77
-#define  DUK_TOK_BAND				78
-#define  DUK_TOK_BOR				79
-#define  DUK_TOK_BXOR				80
-#define  DUK_TOK_LNOT				81
-#define  DUK_TOK_BNOT				82
-#define  DUK_TOK_LAND				83
-#define  DUK_TOK_LOR				84
-#define  DUK_TOK_QUESTION			85
-#define  DUK_TOK_COLON				86
-#define  DUK_TOK_EQUALSIGN			87
-#define  DUK_TOK_ADD_EQ				88
-#define  DUK_TOK_SUB_EQ				89
-#define  DUK_TOK_MUL_EQ				90
-#define  DUK_TOK_DIV_EQ				91
-#define  DUK_TOK_MOD_EQ				92
-#define  DUK_TOK_ALSHIFT_EQ			93
-#define  DUK_TOK_ARSHIFT_EQ			94
-#define  DUK_TOK_RSHIFT_EQ			95
-#define  DUK_TOK_BAND_EQ			96
-#define  DUK_TOK_BOR_EQ				97
-#define  DUK_TOK_BXOR_EQ			98
+#define DUK_TOK_LCURLY                            51
+#define DUK_TOK_RCURLY                            52
+#define DUK_TOK_LBRACKET                          53
+#define DUK_TOK_RBRACKET                          54
+#define DUK_TOK_LPAREN                            55
+#define DUK_TOK_RPAREN                            56
+#define DUK_TOK_PERIOD                            57
+#define DUK_TOK_SEMICOLON                         58
+#define DUK_TOK_COMMA                             59
+#define DUK_TOK_LT                                60
+#define DUK_TOK_GT                                61
+#define DUK_TOK_LE                                62
+#define DUK_TOK_GE                                63
+#define DUK_TOK_EQ                                64
+#define DUK_TOK_NEQ                               65
+#define DUK_TOK_SEQ                               66
+#define DUK_TOK_SNEQ                              67
+#define DUK_TOK_ADD                               68
+#define DUK_TOK_SUB                               69
+#define DUK_TOK_MUL                               70
+#define DUK_TOK_DIV                               71
+#define DUK_TOK_MOD                               72
+#define DUK_TOK_INCREMENT                         73
+#define DUK_TOK_DECREMENT                         74
+#define DUK_TOK_ALSHIFT                           75  /* named "arithmetic" because result is signed */
+#define DUK_TOK_ARSHIFT                           76
+#define DUK_TOK_RSHIFT                            77
+#define DUK_TOK_BAND                              78
+#define DUK_TOK_BOR                               79
+#define DUK_TOK_BXOR                              80
+#define DUK_TOK_LNOT                              81
+#define DUK_TOK_BNOT                              82
+#define DUK_TOK_LAND                              83
+#define DUK_TOK_LOR                               84
+#define DUK_TOK_QUESTION                          85
+#define DUK_TOK_COLON                             86
+#define DUK_TOK_EQUALSIGN                         87
+#define DUK_TOK_ADD_EQ                            88
+#define DUK_TOK_SUB_EQ                            89
+#define DUK_TOK_MUL_EQ                            90
+#define DUK_TOK_DIV_EQ                            91
+#define DUK_TOK_MOD_EQ                            92
+#define DUK_TOK_ALSHIFT_EQ                        93
+#define DUK_TOK_ARSHIFT_EQ                        94
+#define DUK_TOK_RSHIFT_EQ                         95
+#define DUK_TOK_BAND_EQ                           96
+#define DUK_TOK_BOR_EQ                            97
+#define DUK_TOK_BXOR_EQ                           98
 
 /* literals (E5 Section 7.8), except null, true, false, which are treated
  * like reserved words (above).
  */
-#define  DUK_TOK_NUMBER				99
-#define  DUK_TOK_STRING				100
-#define  DUK_TOK_REGEXP				101
+#define DUK_TOK_NUMBER                            99
+#define DUK_TOK_STRING                            100
+#define DUK_TOK_REGEXP                            101
 
-#define  DUK_TOK_MAXVAL				101  /* inclusive */
+#define DUK_TOK_MAXVAL                            101  /* inclusive */
 
 /* Convert heap string index to a token (reserved words) */
-#define  DUK_STRIDX_TO_TOK(x)			((x) - DUK_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)
+#define DUK_STRIDX_TO_TOK(x)                        ((x) - DUK_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)
 
 /* Sanity check */
 #if (DUK_TOK_MAXVAL > 255)
@@ -322,81 +322,81 @@ typedef void (*duk_re_range_callback)(void *user, duk_uint32_t r1, duk_uint32_t 
 #endif
 
 /* Regexp tokens */
-#define  DUK_RETOK_EOF                              0
-#define  DUK_RETOK_DISJUNCTION                      1
-#define  DUK_RETOK_QUANTIFIER                       2
-#define  DUK_RETOK_ASSERT_START                     3
-#define  DUK_RETOK_ASSERT_END                       4
-#define  DUK_RETOK_ASSERT_WORD_BOUNDARY             5
-#define  DUK_RETOK_ASSERT_NOT_WORD_BOUNDARY         6
-#define  DUK_RETOK_ASSERT_START_POS_LOOKAHEAD       7
-#define  DUK_RETOK_ASSERT_START_NEG_LOOKAHEAD       8
-#define  DUK_RETOK_ATOM_PERIOD                      9
-#define  DUK_RETOK_ATOM_CHAR                        10
-#define  DUK_RETOK_ATOM_DIGIT                       11
-#define  DUK_RETOK_ATOM_NOT_DIGIT                   12
-#define  DUK_RETOK_ATOM_WHITE                       13
-#define  DUK_RETOK_ATOM_NOT_WHITE                   14
-#define  DUK_RETOK_ATOM_WORD_CHAR                   15
-#define  DUK_RETOK_ATOM_NOT_WORD_CHAR               16
-#define  DUK_RETOK_ATOM_BACKREFERENCE               17
-#define  DUK_RETOK_ATOM_START_CAPTURE_GROUP         18
-#define  DUK_RETOK_ATOM_START_NONCAPTURE_GROUP      19
-#define  DUK_RETOK_ATOM_START_CHARCLASS             20
-#define  DUK_RETOK_ATOM_START_CHARCLASS_INVERTED    21
-#define  DUK_RETOK_ATOM_END_GROUP                   22
+#define DUK_RETOK_EOF                              0
+#define DUK_RETOK_DISJUNCTION                      1
+#define DUK_RETOK_QUANTIFIER                       2
+#define DUK_RETOK_ASSERT_START                     3
+#define DUK_RETOK_ASSERT_END                       4
+#define DUK_RETOK_ASSERT_WORD_BOUNDARY             5
+#define DUK_RETOK_ASSERT_NOT_WORD_BOUNDARY         6
+#define DUK_RETOK_ASSERT_START_POS_LOOKAHEAD       7
+#define DUK_RETOK_ASSERT_START_NEG_LOOKAHEAD       8
+#define DUK_RETOK_ATOM_PERIOD                      9
+#define DUK_RETOK_ATOM_CHAR                        10
+#define DUK_RETOK_ATOM_DIGIT                       11
+#define DUK_RETOK_ATOM_NOT_DIGIT                   12
+#define DUK_RETOK_ATOM_WHITE                       13
+#define DUK_RETOK_ATOM_NOT_WHITE                   14
+#define DUK_RETOK_ATOM_WORD_CHAR                   15
+#define DUK_RETOK_ATOM_NOT_WORD_CHAR               16
+#define DUK_RETOK_ATOM_BACKREFERENCE               17
+#define DUK_RETOK_ATOM_START_CAPTURE_GROUP         18
+#define DUK_RETOK_ATOM_START_NONCAPTURE_GROUP      19
+#define DUK_RETOK_ATOM_START_CHARCLASS             20
+#define DUK_RETOK_ATOM_START_CHARCLASS_INVERTED    21
+#define DUK_RETOK_ATOM_END_GROUP                   22
 
 /* constants for duk_lexer_ctx.buf */
-#define  DUK_LEXER_TEMP_BUF_INITIAL                 64
-#define  DUK_LEXER_TEMP_BUF_LIMIT                   256
+#define DUK_LEXER_TEMP_BUF_INITIAL                 64
+#define DUK_LEXER_TEMP_BUF_LIMIT                   256
 
 /* A token value.  Can be memcpy()'d, but note that slot1/slot2 values are on the valstack. */
 struct duk_token {
-	int t;			/* token type (with reserved word identification) */
-	int t_nores;		/* token type (with reserved words as DUK_TOK_IDENTIFER) */
-	double num;		/* numeric value of token */
-	duk_hstring *str1;      /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
-	duk_hstring *str2;      /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
-	int num_escapes;	/* number of escapes and line continuations (for directive prologue) */
-	int start_line;		/* start line of token (first char) */
-	int end_line;		/* end line of token (char after last token char) */
-	int lineterm;		/* token was preceded by a lineterm */
-	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
+        int t;                  /* token type (with reserved word identification) */
+        int t_nores;            /* token type (with reserved words as DUK_TOK_IDENTIFER) */
+        double num;             /* numeric value of token */
+        duk_hstring *str1;      /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
+        duk_hstring *str2;      /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
+        int num_escapes;        /* number of escapes and line continuations (for directive prologue) */
+        int start_line;         /* start line of token (first char) */
+        int end_line;           /* end line of token (char after last token char) */
+        int lineterm;           /* token was preceded by a lineterm */
+        int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
 
-#define  DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffUL)
+#define DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffUL)
 
 /* A regexp token value. */
 struct duk_re_token {
-	int t;			/* token type */
-	duk_uint32_t num;	/* numeric value (character, count) */
-	duk_uint32_t qmin;
-	duk_uint32_t qmax;
-	int greedy;
+        int t;                  /* token type */
+        duk_uint32_t num;       /* numeric value (character, count) */
+        duk_uint32_t qmin;
+        duk_uint32_t qmax;
+        int greedy;
 };
 
 /* A structure for 'snapshotting' a point for rewinding */
 struct duk_lexer_point {
-	int offset;
-	int line;
+        int offset;
+        int line;
 };
 
 /* Lexer context.  Same context is used for Ecmascript and Regexp parsing. */
 struct duk_lexer_ctx {
-	duk_hthread *thr;                       /* thread; minimizes argument passing */
+        duk_hthread *thr;                       /* thread; minimizes argument passing */
 
-	duk_uint8_t *input;
-	int input_length;
-	int window[DUK_LEXER_WINDOW_SIZE];	/* window of unicode code points */
-	int offsets[DUK_LEXER_WINDOW_SIZE];	/* input offset for each char */
-	int lines[DUK_LEXER_WINDOW_SIZE];	/* input lines for each char */
-	int input_offset;			/* input offset for window leading edge (not window[0]) */
-	int input_line;				/* input linenumber at input_offset (not window[0]), init to 1 */
+        duk_uint8_t *input;
+        int input_length;
+        int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
+        int offsets[DUK_LEXER_WINDOW_SIZE];     /* input offset for each char */
+        int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
+        int input_offset;                       /* input offset for window leading edge (not window[0]) */
+        int input_line;                         /* input linenumber at input_offset (not window[0]), init to 1 */
 
-	int slot1_idx;                          /* valstack slot for 1st token value */
-	int slot2_idx;                          /* valstack slot for 2nd token value */
-	int buf_idx;                            /* valstack slot for temp buffer */
-	duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
+        int slot1_idx;                          /* valstack slot for 1st token value */
+        int slot2_idx;                          /* valstack slot for 2nd token value */
+        int buf_idx;                            /* valstack slot for temp buffer */
+        duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
 };
 
 /*

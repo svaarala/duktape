@@ -16,9 +16,9 @@ extern "C" {
  */
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-#define  DUK_API_VARIADIC_MACROS
+#define DUK_API_VARIADIC_MACROS
 #else
-#undef  DUK_API_VARIADIC_MACROS
+#undef DUK_API_VARIADIC_MACROS
 #endif
 
 #include <limits.h>  /* INT_MIN */
@@ -61,97 +61,97 @@ struct duk_memory_functions {
  * to #ifdef against Duktape API version.  The same value is also available
  * to Ecmascript code in __duk__.version.
  */
-#define  DUK_VERSION                       800
+#define DUK_VERSION                       800
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
  * API calls as a marker to denote "no value".
  */
-#define  DUK_INVALID_INDEX                 INT_MIN 
+#define DUK_INVALID_INDEX                 INT_MIN 
 
 /* Indicates that a native function does not have a fixed number of args,
  * and the argument stack should not be capped/extended at all.
  */
-#define  DUK_VARARGS                       (-1)
+#define DUK_VARARGS                       (-1)
 
 /* Value types, used by e.g. duk_get_type() */
-#define  DUK_TYPE_NONE                     0    /* no value, e.g. invalid index */
-#define  DUK_TYPE_UNDEFINED                1    /* Ecmascript undefined */
-#define  DUK_TYPE_NULL                     2    /* Ecmascript null */
-#define  DUK_TYPE_BOOLEAN                  3    /* Ecmascript boolean: 0 or 1 */
-#define  DUK_TYPE_NUMBER                   4    /* Ecmascript number: double */
-#define  DUK_TYPE_STRING                   5    /* Ecmascript string: CESU-8 / extended UTF-8 encoded */
-#define  DUK_TYPE_OBJECT                   6    /* Ecmascript object: includes objects, arrays, functions, threads */
-#define  DUK_TYPE_BUFFER                   7    /* fixed or dynamic, garbage collected byte buffer */
-#define  DUK_TYPE_POINTER                  8    /* raw void pointer */
+#define DUK_TYPE_NONE                     0    /* no value, e.g. invalid index */
+#define DUK_TYPE_UNDEFINED                1    /* Ecmascript undefined */
+#define DUK_TYPE_NULL                     2    /* Ecmascript null */
+#define DUK_TYPE_BOOLEAN                  3    /* Ecmascript boolean: 0 or 1 */
+#define DUK_TYPE_NUMBER                   4    /* Ecmascript number: double */
+#define DUK_TYPE_STRING                   5    /* Ecmascript string: CESU-8 / extended UTF-8 encoded */
+#define DUK_TYPE_OBJECT                   6    /* Ecmascript object: includes objects, arrays, functions, threads */
+#define DUK_TYPE_BUFFER                   7    /* fixed or dynamic, garbage collected byte buffer */
+#define DUK_TYPE_POINTER                  8    /* raw void pointer */
 
 /* Value mask types, used by e.g. duk_get_type_mask() */
-#define  DUK_TYPE_MASK_NONE                (1 << DUK_TYPE_NONE)
-#define  DUK_TYPE_MASK_UNDEFINED           (1 << DUK_TYPE_UNDEFINED)
-#define  DUK_TYPE_MASK_NULL                (1 << DUK_TYPE_NULL)
-#define  DUK_TYPE_MASK_BOOLEAN             (1 << DUK_TYPE_BOOLEAN)
-#define  DUK_TYPE_MASK_NUMBER              (1 << DUK_TYPE_NUMBER)
-#define  DUK_TYPE_MASK_STRING              (1 << DUK_TYPE_STRING)
-#define  DUK_TYPE_MASK_OBJECT              (1 << DUK_TYPE_OBJECT)
-#define  DUK_TYPE_MASK_BUFFER              (1 << DUK_TYPE_BUFFER)
-#define  DUK_TYPE_MASK_POINTER             (1 << DUK_TYPE_POINTER)
+#define DUK_TYPE_MASK_NONE                (1 << DUK_TYPE_NONE)
+#define DUK_TYPE_MASK_UNDEFINED           (1 << DUK_TYPE_UNDEFINED)
+#define DUK_TYPE_MASK_NULL                (1 << DUK_TYPE_NULL)
+#define DUK_TYPE_MASK_BOOLEAN             (1 << DUK_TYPE_BOOLEAN)
+#define DUK_TYPE_MASK_NUMBER              (1 << DUK_TYPE_NUMBER)
+#define DUK_TYPE_MASK_STRING              (1 << DUK_TYPE_STRING)
+#define DUK_TYPE_MASK_OBJECT              (1 << DUK_TYPE_OBJECT)
+#define DUK_TYPE_MASK_BUFFER              (1 << DUK_TYPE_BUFFER)
+#define DUK_TYPE_MASK_POINTER             (1 << DUK_TYPE_POINTER)
 
 /* Coercion hints */
-#define  DUK_HINT_NONE                     0    /* prefer number, unless input is a Date, in which
-                                                 * case prefer string (E5 Section 8.12.8)
-                                                 */
-#define  DUK_HINT_STRING                   1    /* prefer string */
-#define  DUK_HINT_NUMBER                   2    /* prefer number */
+#define DUK_HINT_NONE                     0    /* prefer number, unless input is a Date, in which
+                                                * case prefer string (E5 Section 8.12.8)
+                                                */
+#define DUK_HINT_STRING                   1    /* prefer string */
+#define DUK_HINT_NUMBER                   2    /* prefer number */
 
 /* Enumeration flags for duk_enum() */
-#define  DUK_ENUM_INCLUDE_NONENUMERABLE    (1 << 0)    /* enumerate non-numerable properties in addition to enumerable */
-#define  DUK_ENUM_INCLUDE_INTERNAL         (1 << 1)    /* enumerate internal properties (regardless of enumerability) */
-#define  DUK_ENUM_OWN_PROPERTIES_ONLY      (1 << 2)    /* don't walk prototype chain, only check own properties */
-#define  DUK_ENUM_ARRAY_INDICES_ONLY       (1 << 3)    /* only enumerate array indices */
-#define  DUK_ENUM_SORT_ARRAY_INDICES       (1 << 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
+#define DUK_ENUM_INCLUDE_NONENUMERABLE    (1 << 0)    /* enumerate non-numerable properties in addition to enumerable */
+#define DUK_ENUM_INCLUDE_INTERNAL         (1 << 1)    /* enumerate internal properties (regardless of enumerability) */
+#define DUK_ENUM_OWN_PROPERTIES_ONLY      (1 << 2)    /* don't walk prototype chain, only check own properties */
+#define DUK_ENUM_ARRAY_INDICES_ONLY       (1 << 3)    /* only enumerate array indices */
+#define DUK_ENUM_SORT_ARRAY_INDICES       (1 << 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
 
 /* Compilation flags for duk_compile() */
-#define  DUK_COMPILE_EVAL                  (1 << 0)    /* compile eval code (instead of program) */
-#define  DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
-#define  DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
+#define DUK_COMPILE_EVAL                  (1 << 0)    /* compile eval code (instead of program) */
+#define DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
+#define DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
 
 /* Duktape specific error codes */
-#define  DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
-#define  DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */
-#define  DUK_ERR_INTERNAL_ERROR            52   /* InternalError */
-#define  DUK_ERR_ALLOC_ERROR               53   /* AllocError */
-#define  DUK_ERR_ASSERTION_ERROR           54   /* AssertionError */
-#define  DUK_ERR_API_ERROR                 55   /* APIError */
-#define  DUK_ERR_UNCAUGHT_ERROR            56   /* UncaughtError */
+#define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
+#define DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */
+#define DUK_ERR_INTERNAL_ERROR            52   /* InternalError */
+#define DUK_ERR_ALLOC_ERROR               53   /* AllocError */
+#define DUK_ERR_ASSERTION_ERROR           54   /* AssertionError */
+#define DUK_ERR_API_ERROR                 55   /* APIError */
+#define DUK_ERR_UNCAUGHT_ERROR            56   /* UncaughtError */
 
 /* Ecmascript E5 specification error codes */
-#define  DUK_ERR_ERROR                     100  /* Error */
-#define  DUK_ERR_EVAL_ERROR                101  /* EvalError */
-#define  DUK_ERR_RANGE_ERROR               102  /* RangeError */
-#define  DUK_ERR_REFERENCE_ERROR           103  /* ReferenceError */
-#define  DUK_ERR_SYNTAX_ERROR              104  /* SyntaxError */
-#define  DUK_ERR_TYPE_ERROR                105  /* TypeError */
-#define  DUK_ERR_URI_ERROR                 106  /* URIError */
+#define DUK_ERR_ERROR                     100  /* Error */
+#define DUK_ERR_EVAL_ERROR                101  /* EvalError */
+#define DUK_ERR_RANGE_ERROR               102  /* RangeError */
+#define DUK_ERR_REFERENCE_ERROR           103  /* ReferenceError */
+#define DUK_ERR_SYNTAX_ERROR              104  /* SyntaxError */
+#define DUK_ERR_TYPE_ERROR                105  /* TypeError */
+#define DUK_ERR_URI_ERROR                 106  /* URIError */
 
 /* Return codes for C functions (shortcut for throwing an error) */
-#define  DUK_RET_UNIMPLEMENTED_ERROR       (-DUK_ERR_UNIMPLEMENTED_ERROR)
-#define  DUK_RET_UNSUPPORTED_ERROR         (-DUK_ERR_UNSUPPORTED_ERROR)
-#define  DUK_RET_INTERNAL_ERROR            (-DUK_ERR_INTERNAL_ERROR)
-#define  DUK_RET_ALLOC_ERROR               (-DUK_ERR_ALLOC_ERROR)
-#define  DUK_RET_ASSERTION_ERROR           (-DUK_ERR_ASSERTION_ERROR)
-#define  DUK_RET_API_ERROR                 (-DUK_ERR_API_ERROR)
-#define  DUK_RET_UNCAUGHT_ERROR            (-DUK_ERR_UNCAUGHT_ERROR)
-#define  DUK_RET_ERROR                     (-DUK_ERR_ERROR)
-#define  DUK_RET_EVAL_ERROR                (-DUK_ERR_EVAL_ERROR)
-#define  DUK_RET_RANGE_ERROR               (-DUK_ERR_RANGE_ERROR)
-#define  DUK_RET_REFERENCE_ERROR           (-DUK_ERR_REFERENCE_ERROR)
-#define  DUK_RET_SYNTAX_ERROR              (-DUK_ERR_SYNTAX_ERROR)
-#define  DUK_RET_TYPE_ERROR                (-DUK_ERR_TYPE_ERROR)
-#define  DUK_RET_URI_ERROR                 (-DUK_ERR_URI_ERROR)
+#define DUK_RET_UNIMPLEMENTED_ERROR       (-DUK_ERR_UNIMPLEMENTED_ERROR)
+#define DUK_RET_UNSUPPORTED_ERROR         (-DUK_ERR_UNSUPPORTED_ERROR)
+#define DUK_RET_INTERNAL_ERROR            (-DUK_ERR_INTERNAL_ERROR)
+#define DUK_RET_ALLOC_ERROR               (-DUK_ERR_ALLOC_ERROR)
+#define DUK_RET_ASSERTION_ERROR           (-DUK_ERR_ASSERTION_ERROR)
+#define DUK_RET_API_ERROR                 (-DUK_ERR_API_ERROR)
+#define DUK_RET_UNCAUGHT_ERROR            (-DUK_ERR_UNCAUGHT_ERROR)
+#define DUK_RET_ERROR                     (-DUK_ERR_ERROR)
+#define DUK_RET_EVAL_ERROR                (-DUK_ERR_EVAL_ERROR)
+#define DUK_RET_RANGE_ERROR               (-DUK_ERR_RANGE_ERROR)
+#define DUK_RET_REFERENCE_ERROR           (-DUK_ERR_REFERENCE_ERROR)
+#define DUK_RET_SYNTAX_ERROR              (-DUK_ERR_SYNTAX_ERROR)
+#define DUK_RET_TYPE_ERROR                (-DUK_ERR_TYPE_ERROR)
+#define DUK_RET_URI_ERROR                 (-DUK_ERR_URI_ERROR)
 
 /* Return codes for protected calls (duk_safe_call(), duk_pcall()). */
-#define  DUK_EXEC_SUCCESS                  0
-#define  DUK_EXEC_ERROR                    1
+#define DUK_EXEC_SUCCESS                  0
+#define DUK_EXEC_ERROR                    1
 /* FIXME: these codes will be refined later (separate code for a fatal API error,
  * distinct from normal error).  These must now match internal DUK_ERR_EXEC_xxx
  * defines.  The internal codes should be removed.
@@ -178,7 +178,7 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_fatal_function fatal_handler);
 void duk_destroy_heap(duk_context *ctx);
 
-#define  duk_create_heap_default()  (duk_create_heap(NULL, NULL, NULL, NULL, NULL))
+#define duk_create_heap_default()  (duk_create_heap(NULL, NULL, NULL, NULL, NULL))
 
 /*
  *  Memory management
@@ -202,11 +202,11 @@ void duk_throw(duk_context *ctx);
 
 void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
 #ifdef DUK_API_VARIADIC_MACROS
-#define  duk_error(ctx,err_code,...)  \
+#define duk_error(ctx,err_code,...)  \
 	duk_error_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
 void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...);
-#define  duk_error  \
+#define duk_error  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \
 	duk_error_stash  /* arguments follow */
@@ -290,11 +290,11 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);
 
 int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
 #ifdef DUK_API_VARIADIC_MACROS
-#define  duk_push_error_object(ctx,err_code,...)  \
+#define duk_push_error_object(ctx,err_code,...)  \
 	duk_push_error_object_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
 int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt, ...);
-#define  duk_push_error_object  \
+#define duk_push_error_object  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \
 	duk_push_error_object_stash  /* arguments follow */
@@ -516,34 +516,34 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 void duk_eval_raw(duk_context *ctx);
 void duk_compile(duk_context *ctx, int flags);
 
-#define  duk_eval(ctx)  \
+#define duk_eval(ctx)  \
 	do { \
 		(void) duk_push_string((ctx),__FILE__); \
 		duk_eval_raw((ctx)); \
 	} while (0)
 
-#define  duk_eval_string(ctx,src)  \
+#define duk_eval_string(ctx,src)  \
 	do { \
 		(void) duk_push_string((ctx),(src)); \
 		(void) duk_push_string((ctx),__FILE__); \
 		duk_eval_raw((ctx)); \
 	} while (0)
 
-#define  duk_compile_string(ctx,flags,src)  \
+#define duk_compile_string(ctx,flags,src)  \
 	do { \
 		(void) duk_push_string((ctx),(src)); \
 		(void) duk_push_string((ctx),__FILE__); \
 		duk_compile((ctx), (flags)); \
 	} while (0)
 
-#define  duk_eval_file(ctx,path)  \
+#define duk_eval_file(ctx,path)  \
 	do { \
 		(void) duk_push_string_file((ctx),(path)); \
 		(void) duk_push_string((ctx),(path)); \
 		duk_eval((ctx)); \
 	} while (0)
 
-#define  duk_compile_file(ctx,flags,path)  \
+#define duk_compile_file(ctx,flags,path)  \
 	do { \
 		(void) duk_push_string_file((ctx),(path)); \
 		(void) duk_push_string((ctx),(path)); \

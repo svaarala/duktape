@@ -5,9 +5,9 @@
 #ifndef DUK_UTIL_H_INCLUDED
 #define DUK_UTIL_H_INCLUDED
 
-#define  DUK_UTIL_MIN_HASH_PRIME  17  /* must match genhashsizes.py */
+#define DUK_UTIL_MIN_HASH_PRIME  17  /* must match genhashsizes.py */
 
-#define  DUK_UTIL_GET_HASH_PROBE_STEP(hash)  (duk_util_probe_steps[(hash) & 0x1f])
+#define DUK_UTIL_GET_HASH_PROBE_STEP(hash)  (duk_util_probe_steps[(hash) & 0x1f])
 
 /*
  *  Bitstream decoder

@@ -12,10 +12,10 @@
 
 #include "duk_internal.h"
 
-#define  IEEE_DOUBLE_EXP_BIAS  1023
-#define  IEEE_DOUBLE_EXP_MIN   (-1022)   /* biased exp == 0 -> denormal, exp -1022 */
+#define IEEE_DOUBLE_EXP_BIAS  1023
+#define IEEE_DOUBLE_EXP_MIN   (-1022)   /* biased exp == 0 -> denormal, exp -1022 */
 
-#define  DIGITCHAR(x)  duk_lc_digits[(x)]
+#define DIGITCHAR(x)  duk_lc_digits[(x)]
 
 /*
  *  Tables generated with src/gennumdigits.py.
@@ -71,12 +71,12 @@ static const duk_exp_limits str2num_exp_limits[] = {
 /* This upper value has been experimentally determined; debug build will check
  * bigint size with assertions.
  */
-#define  BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
+#define BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
 
 #ifdef DUK_USE_DDDEBUG
-#define  BI_PRINT(name,x)  bi_print((name),(x))
+#define BI_PRINT(name,x)  bi_print((name),(x))
 #else
-#define  BI_PRINT(name,x)
+#define BI_PRINT(name,x)
 #endif
 
 /* Current size is about 152 bytes. */
@@ -623,14 +623,14 @@ static void bi_exp_small(duk_bigint *x, int b, int y, duk_bigint *t1, duk_bigint
  */
 
 /* Maximum number of digits generated. */
-#define  MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
+#define MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
 
 /* Maximum number of characters in formatted value. */
-#define  MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
+#define MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
 
 /* Number and (minimum) size of bigints in the nc_ctx structure. */
-#define  NUMCONV_CTX_NUM_BIGINTS    7
-#define  NUMCONV_CTX_BIGINTS_SIZE   (sizeof(duk_bigint) * NUMCONV_CTX_NUM_BIGINTS)
+#define NUMCONV_CTX_NUM_BIGINTS    7
+#define NUMCONV_CTX_BIGINTS_SIZE   (sizeof(duk_bigint) * NUMCONV_CTX_NUM_BIGINTS)
 
 typedef struct {
 	/* Currently about 7*152 = 1064 bytes.  The space for these
@@ -661,7 +661,7 @@ typedef struct {
  * 'idx' is preincremented, i.e. '1' on first call, because it
  * is more convenient for the caller.
  */
-#define  DRAGON4_OUTPUT(nc_ctx,preinc_idx,x)  do { \
+#define DRAGON4_OUTPUT(nc_ctx,preinc_idx,x)  do { \
 		DUK_ASSERT((preinc_idx) - 1 >= 0); \
 		DUK_ASSERT((preinc_idx) - 1 < MAX_OUTPUT_DIGITS); \
 		((nc_ctx)->digits[(preinc_idx) - 1]) = (x); \
@@ -1181,7 +1181,7 @@ static int dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_ctx, int rou
 	return ret;
 }
 
-#define  NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
+#define NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
 
 static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_context *ctx, int radix, int digits, int flags, int neg) {
 	int k;

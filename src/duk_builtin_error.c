@@ -108,9 +108,9 @@ int duk_builtin_error_prototype_to_string(duk_context *ctx) {
  */
 
 /* constants arbitrary, chosen for small loads */
-#define  DUK__OUTPUT_TYPE_TRACEBACK   -1
-#define  DUK__OUTPUT_TYPE_FILENAME    0
-#define  DUK__OUTPUT_TYPE_LINENUMBER  1
+#define DUK__OUTPUT_TYPE_TRACEBACK   (-1)
+#define DUK__OUTPUT_TYPE_FILENAME    0
+#define DUK__OUTPUT_TYPE_LINENUMBER  1
 
 static int traceback_getter_helper(duk_context *ctx, int output_type) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -282,9 +282,9 @@ int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
 	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
-#undef  DUK__OUTPUT_TYPE_TRACEBACK
-#undef  DUK__OUTPUT_TYPE_FILENAME
-#undef  DUK__OUTPUT_TYPE_LINENUMBER
+#undef DUK__OUTPUT_TYPE_TRACEBACK
+#undef DUK__OUTPUT_TYPE_FILENAME
+#undef DUK__OUTPUT_TYPE_LINENUMBER
 
 #else  /* DUK_USE_TRACEBACKS */
 

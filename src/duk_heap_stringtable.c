@@ -4,9 +4,9 @@
 
 #include "duk_internal.h"
 
-#define  HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
-#define  HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
-#define  DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
+#define HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
+#define HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
+#define DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
 
 /*
  *  Create a hstring and insert into the heap.  The created object
@@ -414,7 +414,7 @@ void duk_heap_force_stringtable_resize(duk_heap *heap) {
 }
 
 /* Undefine local defines */
-#undef  HASH_INITIAL
-#undef  HASH_PROBE_STEP
-#undef  DELETED_MARKER
+#undef HASH_INITIAL
+#undef HASH_PROBE_STEP
+#undef DELETED_MARKER
 

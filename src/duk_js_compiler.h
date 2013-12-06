@@ -7,13 +7,13 @@
 
 /* ecmascript compiler limits */
 #if defined(DUK_USE_DEEP_C_STACK)
-#define  DUK_COMPILER_RECURSION_LIMIT       2500
+#define DUK_COMPILER_RECURSION_LIMIT       2500
 #else
-#define  DUK_COMPILER_RECURSION_LIMIT       50
+#define DUK_COMPILER_RECURSION_LIMIT       50
 #endif
 
 /* maximum loopcount for peephole optimization */
-#define  DUK_COMPILER_PEEPHOLE_MAXITER      3
+#define DUK_COMPILER_PEEPHOLE_MAXITER      3
 
 /*
  *  Compiler intermediate values
@@ -23,18 +23,18 @@
  *  either a left-hand-side or right-hand-side role (e.g. object property).
  */
 
-#define  DUK_IVAL_NONE          0   /* no value */
-#define  DUK_IVAL_PLAIN         1   /* register, constant, or value */
-#define  DUK_IVAL_ARITH         2   /* binary arithmetic; DUK_OP_ADD, DUK_OP_EQ, other binary ops */
-#define  DUK_IVAL_PROP          3   /* property access */
-#define  DUK_IVAL_VAR           4   /* variable access */
+#define DUK_IVAL_NONE          0   /* no value */
+#define DUK_IVAL_PLAIN         1   /* register, constant, or value */
+#define DUK_IVAL_ARITH         2   /* binary arithmetic; DUK_OP_ADD, DUK_OP_EQ, other binary ops */
+#define DUK_IVAL_PROP          3   /* property access */
+#define DUK_IVAL_VAR           4   /* variable access */
 
-#define  DUK_ISPEC_NONE         0   /* no value */
-#define  DUK_ISPEC_VALUE        1   /* value resides in 'valstack_idx' */
-#define  DUK_ISPEC_REGCONST     2   /* value resides in a register or constant */
+#define DUK_ISPEC_NONE         0   /* no value */
+#define DUK_ISPEC_VALUE        1   /* value resides in 'valstack_idx' */
+#define DUK_ISPEC_REGCONST     2   /* value resides in a register or constant */
 
 /* bit mask which indicates that a regconst is a constant instead of a register */
-#define  DUK_JS_CONST_MARKER    0x80000000
+#define DUK_JS_CONST_MARKER    0x80000000
 
 typedef struct {
 	int t;                      /* DUK_ISPEC_XXX */
@@ -73,14 +73,14 @@ struct duk_compiler_instr {
  *  Compiler state
  */
 
-#define  MAX_MAPPED_REGS                  128  /* max regs mapped to arguments and variables */
-#define  MAX_ACTIVE_LABELS                64
+#define MAX_MAPPED_REGS                  128  /* max regs mapped to arguments and variables */
+#define MAX_ACTIVE_LABELS                64
 
-#define  DUK_LABEL_FLAG_ALLOW_BREAK       (1 << 0)
-#define  DUK_LABEL_FLAG_ALLOW_CONTINUE    (1 << 1)
+#define DUK_LABEL_FLAG_ALLOW_BREAK       (1 << 0)
+#define DUK_LABEL_FLAG_ALLOW_CONTINUE    (1 << 1)
 
-#define  DUK_DECL_TYPE_VAR                1
-#define  DUK_DECL_TYPE_FUNC               2
+#define DUK_DECL_TYPE_VAR                1
+#define DUK_DECL_TYPE_FUNC               2
 
 /* FIXME: optimize to 16 bytes */
 typedef struct {
@@ -210,9 +210,9 @@ struct duk_compiler_ctx {
  *  Prototypes
  */
 
-#define  DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not program) */
-#define  DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
-#define  DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
+#define DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not program) */
+#define DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
+#define DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
 
 void duk_js_compile(duk_hthread *thr, int flags);
 

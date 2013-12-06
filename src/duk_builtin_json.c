@@ -610,14 +610,14 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
  *  Stringify implementation.
  */
 
-#define  EMIT_1(js_ctx,ch)       json_emit_1((js_ctx),(ch))
-#define  EMIT_2(js_ctx,ch1,ch2)  json_emit_2((js_ctx),(((int)(ch1)) << 8) + (int)(ch2))
-#define  EMIT_ESC16(js_ctx,cp)   json_emit_esc16((js_ctx),(cp))
-#define  EMIT_ESC32(js_ctx,cp)   json_emit_esc32((js_ctx),(cp))
-#define  EMIT_XUTF8(js_ctx,cp)   json_emit_xutf8((js_ctx),(cp))
-#define  EMIT_HSTR(js_ctx,h)     json_emit_hstring((js_ctx),(h))
-#define  EMIT_CSTR(js_ctx,p)     json_emit_cstring((js_ctx),(p))
-#define  EMIT_STRIDX(js_ctx,i)   json_emit_stridx((js_ctx),(i))
+#define EMIT_1(js_ctx,ch)       json_emit_1((js_ctx),(ch))
+#define EMIT_2(js_ctx,ch1,ch2)  json_emit_2((js_ctx),(((int)(ch1)) << 8) + (int)(ch2))
+#define EMIT_ESC16(js_ctx,cp)   json_emit_esc16((js_ctx),(cp))
+#define EMIT_ESC32(js_ctx,cp)   json_emit_esc32((js_ctx),(cp))
+#define EMIT_XUTF8(js_ctx,cp)   json_emit_xutf8((js_ctx),(cp))
+#define EMIT_HSTR(js_ctx,h)     json_emit_hstring((js_ctx),(h))
+#define EMIT_CSTR(js_ctx,p)     json_emit_cstring((js_ctx),(p))
+#define EMIT_STRIDX(js_ctx,i)   json_emit_stridx((js_ctx),(i))
 
 static void json_emit_1(duk_json_enc_ctx *js_ctx, char ch) {
 	duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, (duk_uint8_t) ch);

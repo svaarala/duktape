@@ -7,7 +7,7 @@
 
 #include "duk_internal.h"
 
-#ifdef  DUK_USE_REGEXP_SUPPORT
+#ifdef DUK_USE_REGEXP_SUPPORT
 
 /*
  *  Helper macros
@@ -17,7 +17,7 @@
 #undef BUFLEN
 #endif
 
-#define  BUFLEN(re_ctx)   DUK_HBUFFER_GET_SIZE((duk_hbuffer *) re_ctx->buf)
+#define BUFLEN(re_ctx)   DUK_HBUFFER_GET_SIZE((duk_hbuffer *) re_ctx->buf)
 
 /*
  *  Encoding helpers

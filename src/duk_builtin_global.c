@@ -11,11 +11,11 @@
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
-#define  MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
+#define MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
 	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
 	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
 	))
-#define  CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
+#define CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
 static unsigned char encode_uri_unescaped_table[16] = {

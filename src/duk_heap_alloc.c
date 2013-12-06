@@ -5,12 +5,12 @@
 #include "duk_internal.h"
 
 /* constants for built-in string data depacking */
-#define  BITPACK_LETTER_LIMIT  26
-#define  BITPACK_UNDERSCORE    26
-#define  BITPACK_FF            27
-#define  BITPACK_SWITCH1       29
-#define  BITPACK_SWITCH        30
-#define  BITPACK_SEVENBIT      31
+#define BITPACK_LETTER_LIMIT  26
+#define BITPACK_UNDERSCORE    26
+#define BITPACK_FF            27
+#define BITPACK_SWITCH1       29
+#define BITPACK_SWITCH        30
+#define BITPACK_SEVENBIT      31
 
 /*
  *  Free a heap object.

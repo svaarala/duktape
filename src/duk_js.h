@@ -6,12 +6,12 @@
 #define DUK_JS_H_INCLUDED
 
 /* call flags */
-#define  DUK_CALL_FLAG_PROTECTED              (1 << 0)  /* duk_handle_call: call is protected */
-#define  DUK_CALL_FLAG_IGNORE_RECLIMIT        (1 << 1)  /* duk_handle_call: call ignores C recursion limit (for errhandler calls) */
-#define  DUK_CALL_FLAG_CONSTRUCTOR_CALL       (1 << 2)  /* duk_handle_call: constructor call (i.e. called as 'new Foo()') */
-#define  DUK_CALL_FLAG_IS_RESUME              (1 << 3)  /* duk_handle_ecma_call_setup: setup for a resume() */
-#define  DUK_CALL_FLAG_IS_TAILCALL            (1 << 4)  /* duk_handle_ecma_call_setup: setup for a tailcall */
-#define  DUK_CALL_FLAG_DIRECT_EVAL            (1 << 5)  /* call is a direct eval call */
+#define DUK_CALL_FLAG_PROTECTED              (1 << 0)  /* duk_handle_call: call is protected */
+#define DUK_CALL_FLAG_IGNORE_RECLIMIT        (1 << 1)  /* duk_handle_call: call ignores C recursion limit (for errhandler calls) */
+#define DUK_CALL_FLAG_CONSTRUCTOR_CALL       (1 << 2)  /* duk_handle_call: constructor call (i.e. called as 'new Foo()') */
+#define DUK_CALL_FLAG_IS_RESUME              (1 << 3)  /* duk_handle_ecma_call_setup: setup for a resume() */
+#define DUK_CALL_FLAG_IS_TAILCALL            (1 << 4)  /* duk_handle_ecma_call_setup: setup for a tailcall */
+#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 5)  /* call is a direct eval call */
 
 /* conversions, coercions, comparison, etc */
 int duk_js_toboolean(duk_tval *tv);

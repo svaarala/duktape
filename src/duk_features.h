@@ -54,9 +54,9 @@
  */
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-#define  DUK_F_C99
+#define DUK_F_C99
 #else
-#undef   DUK_F_C99
+#undef DUK_F_C99
 #endif
 
 /*
@@ -75,7 +75,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;
 }
-#define  DUK_RDTSC_AVAILABLE 1
+#define DUK_RDTSC_AVAILABLE 1
 #elif defined(__GNUC__) && defined(__x86_64__) && \
     !defined(__cplusplus) /* unsigned long long not standard */
 static __inline__ unsigned long long duk_rdtsc(void) {
@@ -83,10 +83,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
 	return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
 }
-#define  DUK_RDTSC_AVAILABLE 1
+#define DUK_RDTSC_AVAILABLE 1
 #else
 /* not available */
-#undef  DUK_RDTSC_AVAILABLE
+#undef DUK_RDTSC_AVAILABLE
 #endif
 
 /*
@@ -103,14 +103,14 @@ static __inline__ unsigned long long duk_rdtsc(void) {
     defined(__i486__) || defined(__i586__) || defined(__i686__) || \
     defined(__IA32__) || defined(_M_IX86) || defined(__X86__) || \
     defined(_X86_) || defined(__THW_INTEL__) || defined(__I86__)
-#define  DUK_F_X86
+#define DUK_F_X86
 #endif
 
 /* AMD64 (64-bit) */
 #if defined(__amd64__) || defined(__amd64) || \
     defined(__x86_64__) || defined(__x86_64) || \
     defined(_M_X64) || defined(_M_AMD64)
-#define  DUK_F_X64
+#define DUK_F_X64
 #endif
 
 /* FIXME: X32: pointers are 32-bit so packed format can be used */
@@ -121,31 +121,31 @@ static __inline__ unsigned long long duk_rdtsc(void) {
     defined(_MIPS_ISA_MIPS1) || defined(_MIPS_ISA_MIPS2) || \
     defined(_MIPS_ISA_MIPS3) || defined(_MIPS_ISA_MIPS4) || \
     defined(__mips) || defined(__MIPS__)
-#define  DUK_F_MIPS
+#define DUK_F_MIPS
 #endif
 
 /* Motorola 68K.  Not defined by VBCC, so user must define one of these
  * manually when using VBCC.
  */
 #if defined(__m68k__) || defined(M68000) || defined(__MC68K__)
-#define  DUK_F_M68K
+#define DUK_F_M68K
 #endif
 
 /* Linux */
 #if defined(__linux)
-#define  DUK_F_LINUX
+#define DUK_F_LINUX
 #endif
 
 /* BSD variant */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
-#define  DUK_F_BSD
+#define DUK_F_BSD
 #endif
 
 /* Windows (32-bit or above) */
 #if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || \
     defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-#define  DUK_F_WINDOWS
+#define DUK_F_WINDOWS
 #endif
 
 /* Atari ST TOS. __TOS__ defined by PureC (which doesn't work as a target now
@@ -153,27 +153,27 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * so to use with VBCC, user must define '__TOS__' manually.
   */
 #if defined(__TOS__)
-#define  DUK_F_TOS
+#define DUK_F_TOS
 #endif
 
 /* AmigaOS.  Neither AMIGA nor __amigaos__ is defined on VBCC, so user must
  * define 'AMIGA' manually.
  */
 #if defined(AMIGA) || defined(__amigaos__)
-#define  DUK_F_AMIGAOS
+#define DUK_F_AMIGAOS
 #endif
 
 /* FreeBSD. */
 #if defined(__FreeBSD__)
-#define  DUK_F_FREEBSD
+#define DUK_F_FREEBSD
 #endif
 
 /* GCC and GCC version convenience define. */
 #if defined(__GNUC__)
-#define  DUK_F_GCC
+#define DUK_F_GCC
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
 /* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
-#define  DUK_F_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#define DUK_F_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #else
 #error cannot figure out gcc version
 #endif
@@ -181,7 +181,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 /* Clang. */
 #if defined(__clang__)
-#define  DUK_F_CLANG
+#define DUK_F_CLANG
 #endif
 
 /*
@@ -195,44 +195,44 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  */
 
 #if defined(DUK_F_LINUX)
-#ifndef  _POSIX_C_SOURCE
-#define  _POSIX_C_SOURCE  200809L
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE  200809L
 #endif
-#ifndef  _GNU_SOURCE
-#define  _GNU_SOURCE      /* e.g. getdate_r */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE      /* e.g. getdate_r */
 #endif
-#ifndef  _XOPEN_SOURCE
-#define  _XOPEN_SOURCE    /* e.g. strptime */
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE    /* e.g. strptime */
 #endif
 #endif
 
 #if defined(__APPLE__)
 /* Apple OSX */
-#define  DUK_F_STD_BYTEORDER_DETECT
+#define DUK_F_STD_BYTEORDER_DETECT
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
 #elif defined(DUK_F_BSD)
 /* BSD */
-#define  DUK_F_STD_BYTEORDER_DETECT
+#define DUK_F_STD_BYTEORDER_DETECT
 #include <sys/endian.h>
 #include <limits.h>
 #include <sys/param.h>
 #elif defined(DUK_F_TOS)
 /* Atari ST TOS */
-#define  DUK_USE_DOUBLE_BE
+#define DUK_USE_DOUBLE_BE
 #include <limits.h>
 #elif defined(DUK_F_AMIGAOS)
 #if defined(DUK_F_M68K)
 /* AmigaOS on M68k */
-#define  DUK_USE_DOUBLE_BE
+#define DUK_USE_DOUBLE_BE
 #include <limits.h>
 #else
 #error AmigaOS but not M68K, not supported now
 #endif
 #else
 /* Linux and hopefully others */
-#define  DUK_F_STD_BYTEORDER_DETECT
+#define DUK_F_STD_BYTEORDER_DETECT
 #include <endian.h>
 #include <limits.h>
 #include <sys/param.h>
@@ -562,9 +562,9 @@ typedef double duk_double_t;
  * detection?).
  */
 #if defined(DUK_F_HAVE_64BIT) && !defined(__VBCC__)
-#define  DUK_USE_64BIT_OPS
+#define DUK_USE_64BIT_OPS
 #else
-#undef  DUK_USE_64BIT_OPS
+#undef DUK_USE_64BIT_OPS
 #endif
 
 /*
@@ -579,13 +579,13 @@ typedef double duk_double_t;
  */
 
 #if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
-#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #elif defined(DUK_F_MIPS)
-#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #elif defined(DUK_F_X86) || defined(DUK_F_X64)
-#define  DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
-#undef   DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #endif
 
 /*
@@ -638,7 +638,7 @@ typedef double duk_double_t;
  */
 
 /* best effort viability checks, not particularly accurate */
-#undef  DUK_USE_PACKED_TVAL_POSSIBLE
+#undef DUK_USE_PACKED_TVAL_POSSIBLE
 #if (defined(UINTPTR_MAX) && (UINTPTR_MAX == 4294967295))
 /* strict C99 check */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
@@ -655,95 +655,95 @@ typedef double duk_double_t;
  *  avoids this problem for some reason.
  */
 
-#define  DUK_DOUBLE_2TO32     4294967296.0
-#define  DUK_DOUBLE_2TO31     2147483648.0
+#define DUK_DOUBLE_2TO32     4294967296.0
+#define DUK_DOUBLE_2TO31     2147483648.0
 
-#undef  DUK_USE_COMPUTED_INFINITY
+#undef DUK_USE_COMPUTED_INFINITY
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION < 40600)
 /* GCC older than 4.6: avoid overflow warnings related to using INFINITY */
-#define  DUK_DOUBLE_INFINITY  (__builtin_inf())
+#define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
-#define  DUK_DOUBLE_INFINITY  ((double) INFINITY)
+#define DUK_DOUBLE_INFINITY  ((double) INFINITY)
 #elif !defined(__VBCC__)
-#define  DUK_DOUBLE_INFINITY  (1.0 / 0.0)
+#define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
  * Use a computed infinity(initialized when a heap is created at the
  * latest).
  */
 extern double duk_computed_infinity;
-#define  DUK_USE_COMPUTED_INFINITY
-#define  DUK_DOUBLE_INFINITY  duk_computed_infinity
+#define DUK_USE_COMPUTED_INFINITY
+#define DUK_DOUBLE_INFINITY  duk_computed_infinity
 #endif
 
-#undef  DUK_USE_COMPUTED_NAN
+#undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
-#define  DUK_DOUBLE_NAN       NAN
+#define DUK_DOUBLE_NAN       NAN
 #elif !defined(__VBCC__)
-#define  DUK_DOUBLE_NAN       (0.0 / 0.0)
+#define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
  * Use a computed NaN (initialized when a heap is created at the
  * latest).
  */
 extern double duk_computed_nan;
-#define  DUK_USE_COMPUTED_NAN
-#define  DUK_DOUBLE_NAN       duk_computed_nan
+#define DUK_USE_COMPUTED_NAN
+#define DUK_DOUBLE_NAN       duk_computed_nan
 #endif
 
 /* Many platforms are missing fpclassify() and friends, so use replacements
  * if necessary.  The replacement constants (FP_NAN etc) can be anything but
  * match Linux constants now.
  */
-#undef  DUK_USE_REPL_FPCLASSIFY
-#undef  DUK_USE_REPL_SIGNBIT
-#undef  DUK_USE_REPL_ISFINITE
-#undef  DUK_USE_REPL_ISNAN
+#undef DUK_USE_REPL_FPCLASSIFY
+#undef DUK_USE_REPL_SIGNBIT
+#undef DUK_USE_REPL_ISFINITE
+#undef DUK_USE_REPL_ISNAN
 
 /* complex condition broken into separate parts */
-#undef  DUK_F_USE_REPL_ALL
+#undef DUK_F_USE_REPL_ALL
 #if !(defined(FP_NAN) && defined(FP_INFINITE) && defined(FP_ZERO) && \
       defined(FP_SUBNORMAL) && defined(FP_NORMAL))
 /* missing some obvious constants */
-#define  DUK_F_USE_REPL_ALL
+#define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_AMIGAOS) && defined(__VBCC__)
 /* VBCC is missing the built-ins even in C99 mode (perhaps a header issue) */
-#define  DUK_F_USE_REPL_ALL
+#define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_FREEBSD) && defined(DUK_F_CLANG)
 /* Placeholder fix for (detection is wider than necessary):
  * http://llvm.org/bugs/show_bug.cgi?id=17788
  */
-#define  DUK_F_USE_REPL_ALL
+#define DUK_F_USE_REPL_ALL
 #endif
 
 #if defined(DUK_F_USE_REPL_ALL)
-#define  DUK_USE_REPL_FPCLASSIFY
-#define  DUK_USE_REPL_SIGNBIT
-#define  DUK_USE_REPL_ISFINITE
-#define  DUK_USE_REPL_ISNAN
-#define  DUK_FPCLASSIFY       duk_repl_fpclassify
-#define  DUK_SIGNBIT          duk_repl_signbit
-#define  DUK_ISFINITE         duk_repl_isfinite
-#define  DUK_ISNAN            duk_repl_isnan
-#define  DUK_FP_NAN           0
-#define  DUK_FP_INFINITE      1
-#define  DUK_FP_ZERO          2
-#define  DUK_FP_SUBNORMAL     3
-#define  DUK_FP_NORMAL        4
+#define DUK_USE_REPL_FPCLASSIFY
+#define DUK_USE_REPL_SIGNBIT
+#define DUK_USE_REPL_ISFINITE
+#define DUK_USE_REPL_ISNAN
+#define DUK_FPCLASSIFY       duk_repl_fpclassify
+#define DUK_SIGNBIT          duk_repl_signbit
+#define DUK_ISFINITE         duk_repl_isfinite
+#define DUK_ISNAN            duk_repl_isnan
+#define DUK_FP_NAN           0
+#define DUK_FP_INFINITE      1
+#define DUK_FP_ZERO          2
+#define DUK_FP_SUBNORMAL     3
+#define DUK_FP_NORMAL        4
 #else
-#define  DUK_FPCLASSIFY       fpclassify
-#define  DUK_SIGNBIT          signbit
-#define  DUK_ISFINITE         isfinite
-#define  DUK_ISNAN            isnan
-#define  DUK_FP_NAN           FP_NAN
-#define  DUK_FP_INFINITE      FP_INFINITE
-#define  DUK_FP_ZERO          FP_ZERO
-#define  DUK_FP_SUBNORMAL     FP_SUBNORMAL
-#define  DUK_FP_NORMAL        FP_NORMAL
+#define DUK_FPCLASSIFY       fpclassify
+#define DUK_SIGNBIT          signbit
+#define DUK_ISFINITE         isfinite
+#define DUK_ISNAN            isnan
+#define DUK_FP_NAN           FP_NAN
+#define DUK_FP_INFINITE      FP_INFINITE
+#define DUK_FP_ZERO          FP_ZERO
+#define DUK_FP_SUBNORMAL     FP_SUBNORMAL
+#define DUK_FP_NORMAL        FP_NORMAL
 #endif
 
 #if defined(DUK_F_USE_REPL_ALL)
-#undef  DUK_F_USE_REPL_ALL
+#undef DUK_F_USE_REPL_ALL
 #endif
 
 /* Some math functions are C99 only.  This is also an issue with some
@@ -754,13 +754,13 @@ extern double duk_computed_nan;
 #if defined(DUK_F_C99) && \
     !defined(__UCLIBC__) /* uclibc may be missing these */ && \
     !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS may be missing these */
-#define  DUK_USE_MATH_FMIN
-#define  DUK_USE_MATH_FMAX
-#define  DUK_USE_MATH_ROUND
+#define DUK_USE_MATH_FMIN
+#define DUK_USE_MATH_FMAX
+#define DUK_USE_MATH_ROUND
 #else
-#undef  DUK_USE_MATH_FMIN
-#undef  DUK_USE_MATH_FMAX
-#undef  DUK_USE_MATH_ROUND
+#undef DUK_USE_MATH_FMIN
+#undef DUK_USE_MATH_FMAX
+#undef DUK_USE_MATH_ROUND
 #endif
 
 /*
@@ -776,28 +776,28 @@ extern double duk_computed_nan;
  * http://lists.uclibc.org/pipermail/uclibc-cvs/2008-October/025511.html
  */
 #if defined(__UCLIBC__)
-#define  DUK_MEMCPY       memmove
+#define DUK_MEMCPY       memmove
 #else
-#define  DUK_MEMCPY       memcpy
+#define DUK_MEMCPY       memcpy
 #endif
 
-#define  DUK_MEMMOVE      memmove
-#define  DUK_MEMCMP       memcmp
-#define  DUK_MEMSET       memset
-#define  DUK_STRCMP       strcmp
-#define  DUK_STRNCMP      strncmp
-#define  DUK_SPRINTF      sprintf
-#define  DUK_SNPRINTF     snprintf
-#define  DUK_VSPRINTF     vsprintf
-#define  DUK_VSNPRINTF    vsnprintf
+#define DUK_MEMMOVE      memmove
+#define DUK_MEMCMP       memcmp
+#define DUK_MEMSET       memset
+#define DUK_STRCMP       strcmp
+#define DUK_STRNCMP      strncmp
+#define DUK_SPRINTF      sprintf
+#define DUK_SNPRINTF     snprintf
+#define DUK_VSPRINTF     vsprintf
+#define DUK_VSNPRINTF    vsnprintf
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
  *  see: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string
  */
 
-#define  DUK_F_STRINGIFY_HELPER(x)  #x
-#define  DUK_MACRO_STRINGIFY(x)  DUK_F_STRINGIFY_HELPER(x)
+#define DUK_F_STRINGIFY_HELPER(x)  #x
+#define DUK_MACRO_STRINGIFY(x)  DUK_F_STRINGIFY_HELPER(x)
 
 /*
  *  Macro for suppressing warnings for potentially unreferenced variables.
@@ -808,7 +808,7 @@ extern double duk_computed_nan;
  *  (Introduced here because it's potentially compiler specific.)
  */
 
-#define  DUK_UNREF(x)  do { \
+#define DUK_UNREF(x)  do { \
 		(void) (x); \
 	} while (0)
 
@@ -823,18 +823,18 @@ extern double duk_computed_nan;
 
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
 /* since gcc-2.5 */
-#define  DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(__clang__)
 /* syntax same as gcc */
-#define  DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(_MSC_VER)
-#define  DUK_NORETURN(decl)  decl __declspec((noreturn))
+#define DUK_NORETURN(decl)  decl __declspec((noreturn))
 #else
 /* Don't know how to declare a noreturn function, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
  * uninitialized").
  */
-#define  DUK_NORETURN(decl)  decl
+#define DUK_NORETURN(decl)  decl
 #endif
 
 /*
@@ -846,17 +846,17 @@ extern double duk_computed_nan;
 
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500)
 /* since gcc-4.5 */
-#define  DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
+#define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
 #elif defined(__clang__)
 /* XXX: __has_builtin(__builtin_unreachable) */
 /* same as gcc */
-#define  DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
+#define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
 #else
 /* Don't know how to declare unreachable point, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
  * uninitialized").
  */
-#define  DUK_UNREACHABLE()  /* unreachable */
+#define DUK_UNREACHABLE()  /* unreachable */
 #endif
 
 /*
@@ -880,11 +880,11 @@ extern double duk_computed_nan;
 
 /* pretty much a placeholder now */
 #if defined(DUK_F_GCC)
-#define  DUK_USE_BRANCH_HINTS
+#define DUK_USE_BRANCH_HINTS
 #elif defined(DUK_F_CLANG)
-#define  DUK_USE_BRANCH_HINTS
+#define DUK_USE_BRANCH_HINTS
 #else
-#undef  DUK_USE_BRANCH_HINTS
+#undef DUK_USE_BRANCH_HINTS
 #endif
 
 #if defined(DUK_USE_BRANCH_HINTS)
@@ -892,19 +892,19 @@ extern double duk_computed_nan;
 /* GCC: test not very accurate; enable only in relatively recent builds
  * because of bugs in gcc-4.4 (http://lists.debian.org/debian-gcc/2010/04/msg00000.html)
  */
-#define  DUK_LIKELY(x)    __builtin_expect((x), 1)
-#define  DUK_UNLIKELY(x)  __builtin_expect((x), 0)
+#define DUK_LIKELY(x)    __builtin_expect((x), 1)
+#define DUK_UNLIKELY(x)  __builtin_expect((x), 0)
 #elif defined(DUK_F_CLANG)
-#define  DUK_LIKELY(x)    __builtin_expect((x), 1)
-#define  DUK_UNLIKELY(x)  __builtin_expect((x), 0)
+#define DUK_LIKELY(x)    __builtin_expect((x), 1)
+#define DUK_UNLIKELY(x)  __builtin_expect((x), 0)
 #endif
 #endif  /* DUK_USE_BRANCH_HINTS */
 
 #if !defined(DUK_LIKELY)
-#define  DUK_LIKELY(x)    (x)
+#define DUK_LIKELY(x)    (x)
 #endif
 #if !defined(DUK_UNLIKELY)
-#define  DUK_UNLIKELY(x)  (x)
+#define DUK_UNLIKELY(x)  (x)
 #endif
 
 /*
@@ -913,14 +913,14 @@ extern double duk_computed_nan;
  *  to be C99 compatible (e.g. VBCC with -c99 option).
  */
 
-#define  DUK_FILE_MACRO  __FILE__
+#define DUK_FILE_MACRO  __FILE__
 
-#define  DUK_LINE_MACRO  __LINE__
+#define DUK_LINE_MACRO  __LINE__
 
 #if !defined(__VBCC__)
-#define  DUK_FUNC_MACRO  __func__
+#define DUK_FUNC_MACRO  __func__
 #else
-#define  DUK_FUNC_MACRO  "unknown"
+#define DUK_FUNC_MACRO  "unknown"
 #endif
 
 /*
@@ -931,9 +931,9 @@ extern double duk_computed_nan;
  */
 
 #if defined(DUK_F_LINUX) || defined(DUK_F_BSD) || defined(DUK_F_WINDOWS)
-#define  DUK_USE_DEEP_C_STACK
+#define DUK_USE_DEEP_C_STACK
 #else
-#undef  DUK_USE_DEEP_C_STACK
+#undef DUK_USE_DEEP_C_STACK
 #endif
 
 /*
@@ -944,7 +944,7 @@ extern double duk_computed_nan;
  *  call stack leading to the panic.
  */
 
-#define  DUK_CAUSE_SEGFAULT()  do { \
+#define DUK_CAUSE_SEGFAULT()  do { \
 		*((int32_t *) NULL) = (int32_t) 0xdeadbeefUL; \
 	} while (0)
 
@@ -957,9 +957,9 @@ extern double duk_computed_nan;
 #undef DUK_USE_PANIC_SEGFAULT
 
 #if defined(DUK_OPT_SEGFAULT_ON_PANIC)
-#define  DUK_USE_PANIC_SEGFAULT
+#define DUK_USE_PANIC_SEGFAULT
 #else
-#define  DUK_USE_PANIC_ABORT
+#define DUK_USE_PANIC_ABORT
 #endif
 
 /* 
@@ -981,9 +981,9 @@ extern double duk_computed_nan;
 
 #if !defined(DUK_PROFILE)
 #if defined(DUK_USE_PACKED_TVAL_POSSIBLE)
-#define  DUK_PROFILE  100
+#define DUK_PROFILE  100
 #else
-#define  DUK_PROFILE  400
+#define DUK_PROFILE  400
 #endif
 #endif
 
@@ -991,39 +991,39 @@ extern double duk_computed_nan;
 
 /* start with the settings for the FULL profile */
 
-#define  DUK_USE_SELF_TEST_TVAL
-#define  DUK_USE_PACKED_TVAL
-#undef   DUK_USE_FULL_TVAL
-#define  DUK_USE_REFERENCE_COUNTING
-#define  DUK_USE_DOUBLE_LINKED_HEAP
-#define  DUK_USE_MARK_AND_SWEEP
-#define  DUK_USE_AUGMENT_ERRORS
-#define  DUK_USE_TRACEBACKS
-#undef   DUK_USE_GC_TORTURE
-#undef   DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#undef   DUK_USE_DPRINT_RDTSC                       /* feature determination below */
-#define  DUK_USE_VERBOSE_ERRORS
-#undef   DUK_USE_ASSERTIONS
-#undef   DUK_USE_VARIADIC_MACROS                    /* feature determination below */
-#define  DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
-#undef   DUK_USE_EXPLICIT_NULL_INIT
-#define  DUK_USE_REGEXP_SUPPORT
-#define  DUK_USE_STRICT_UTF8_SOURCE
-#define  DUK_USE_OCTAL_SUPPORT
-#define  DUK_USE_SOURCE_NONBMP
-#define  DUK_USE_DPRINT_COLORS
-#define  DUK_USE_BROWSER_LIKE
-#define  DUK_USE_SECTION_B
+#define DUK_USE_SELF_TEST_TVAL
+#define DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#define DUK_USE_REFERENCE_COUNTING
+#define DUK_USE_DOUBLE_LINKED_HEAP
+#define DUK_USE_MARK_AND_SWEEP
+#define DUK_USE_AUGMENT_ERRORS
+#define DUK_USE_TRACEBACKS
+#undef DUK_USE_GC_TORTURE
+#undef DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#undef DUK_USE_DPRINT_RDTSC                       /* feature determination below */
+#define DUK_USE_VERBOSE_ERRORS
+#undef DUK_USE_ASSERTIONS
+#undef DUK_USE_VARIADIC_MACROS                    /* feature determination below */
+#define DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
+#undef DUK_USE_EXPLICIT_NULL_INIT
+#define DUK_USE_REGEXP_SUPPORT
+#define DUK_USE_STRICT_UTF8_SOURCE
+#define DUK_USE_OCTAL_SUPPORT
+#define DUK_USE_SOURCE_NONBMP
+#define DUK_USE_DPRINT_COLORS
+#define DUK_USE_BROWSER_LIKE
+#define DUK_USE_SECTION_B
 
 /* unaligned accesses */
 #ifdef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#define  DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-#define  DUK_USE_HOBJECT_UNALIGNED_LAYOUT
+#define DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#define DUK_USE_HOBJECT_UNALIGNED_LAYOUT
 #else
-#undef   DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-#undef   DUK_USE_HOBJECT_UNALIGNED_LAYOUT
+#undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#undef DUK_USE_HOBJECT_UNALIGNED_LAYOUT
 #endif
 
 /* profile specific modifications */
@@ -1032,76 +1032,76 @@ extern double duk_computed_nan;
 /* FULL */
 #elif (DUK_PROFILE == 101)
 /* FULL_DEBUG */
-#define  DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#define  DUK_USE_ASSERTIONS
+#define DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#define DUK_USE_ASSERTIONS
 #elif (DUK_PROFILE == 200)
 /* MINIMAL */
-#undef   DUK_USE_TRACEBACKS
+#undef DUK_USE_TRACEBACKS
 #elif (DUK_PROFILE == 201)
 /* MINIMAL_DEBUG */
-#undef   DUK_USE_TRACEBACKS
-#define  DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#define  DUK_USE_ASSERTIONS
+#undef DUK_USE_TRACEBACKS
+#define DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#define DUK_USE_ASSERTIONS
 #elif (DUK_PROFILE == 300)
 /* TINY */
-#undef   DUK_USE_SELF_TEST_TVAL
-#undef   DUK_USE_REFERENCE_COUNTING
-#undef   DUK_USE_DOUBLE_LINKED_HEAP
-#define  DUK_USE_MARK_AND_SWEEP
-#undef   DUK_USE_AUGMENT_ERRORS
-#undef   DUK_USE_TRACEBACKS
-#undef   DUK_USE_VERBOSE_ERRORS
+#undef DUK_USE_SELF_TEST_TVAL
+#undef DUK_USE_REFERENCE_COUNTING
+#undef DUK_USE_DOUBLE_LINKED_HEAP
+#define DUK_USE_MARK_AND_SWEEP
+#undef DUK_USE_AUGMENT_ERRORS
+#undef DUK_USE_TRACEBACKS
+#undef DUK_USE_VERBOSE_ERRORS
 #elif (DUK_PROFILE == 301)
 /* TINY_DEBUG */
-#undef   DUK_USE_SELF_TEST_TVAL
-#undef   DUK_USE_REFERENCE_COUNTING
-#undef   DUK_USE_DOUBLE_LINKED_HEAP
-#define  DUK_USE_MARK_AND_SWEEP
-#undef   DUK_USE_AUGMENT_ERRORS
-#undef   DUK_USE_TRACEBACKS
-#undef   DUK_USE_VERBOSE_ERRORS
-#define  DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#define  DUK_USE_ASSERTIONS
+#undef DUK_USE_SELF_TEST_TVAL
+#undef DUK_USE_REFERENCE_COUNTING
+#undef DUK_USE_DOUBLE_LINKED_HEAP
+#define DUK_USE_MARK_AND_SWEEP
+#undef DUK_USE_AUGMENT_ERRORS
+#undef DUK_USE_TRACEBACKS
+#undef DUK_USE_VERBOSE_ERRORS
+#define DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#define DUK_USE_ASSERTIONS
 #elif (DUK_PROFILE == 400)
-#undef   DUK_USE_PACKED_TVAL
-#undef   DUK_USE_FULL_TVAL
-#define  DUK_USE_EXPLICIT_NULL_INIT
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#define DUK_USE_EXPLICIT_NULL_INIT
 #elif (DUK_PROFILE == 401)
-#undef   DUK_USE_PACKED_TVAL
-#undef   DUK_USE_FULL_TVAL
-#define  DUK_USE_EXPLICIT_NULL_INIT
-#undef   DUK_USE_GC_TORTURE
-#define  DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#define  DUK_USE_ASSERTIONS
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#define DUK_USE_EXPLICIT_NULL_INIT
+#undef DUK_USE_GC_TORTURE
+#define DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#define DUK_USE_ASSERTIONS
 #elif (DUK_PROFILE == 500)
-#undef   DUK_USE_PACKED_TVAL
-#undef   DUK_USE_FULL_TVAL
-#define  DUK_USE_GC_TORTURE
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#define DUK_USE_GC_TORTURE
 #elif (DUK_PROFILE == 501)
-#undef   DUK_USE_PACKED_TVAL
-#undef   DUK_USE_FULL_TVAL
-#define  DUK_USE_GC_TORTURE
-#define  DUK_USE_DEBUG
-#undef   DUK_USE_DDEBUG
-#undef   DUK_USE_DDDEBUG
-#undef   DUK_USE_ASSERTIONS
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#define DUK_USE_GC_TORTURE
+#define DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#undef DUK_USE_ASSERTIONS
 #else
 #error unknown DUK_PROFILE
 #endif
 
 #if defined(DUK_USE_TRACEBACKS)
 #if defined(DUK_OPT_TRACEBACK_DEPTH)
-#define  DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
+#define DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
 #else
-#define  DUK_USE_TRACEBACK_DEPTH  10
+#define DUK_USE_TRACEBACK_DEPTH  10
 #endif
 #endif
 
@@ -1110,15 +1110,15 @@ extern double duk_computed_nan;
  */
 
 #if defined(DUK_RDTSC_AVAILABLE) && defined(DUK_OPT_DPRINT_RDTSC)
-#define  DUK_USE_DPRINT_RDTSC
+#define DUK_USE_DPRINT_RDTSC
 #else
-#undef  DUK_USE_DPRINT_RDTSC
+#undef DUK_USE_DPRINT_RDTSC
 #endif
 
 #ifdef DUK_F_C99
-#define  DUK_USE_VARIADIC_MACROS
+#define DUK_USE_VARIADIC_MACROS
 #else
-#undef  DUK_USE_VARIADIC_MACROS
+#undef DUK_USE_VARIADIC_MACROS
 #endif
 
 /* Variable size array at the end of a structure is nonportable.  There are
@@ -1128,15 +1128,15 @@ extern double duk_computed_nan;
  *  3) Portable but wastes memory / complicates allocation: char buf[1]
  */
 /* FIXME: Currently unused, only hbuffer.h needed this at some point. */
-#undef  DUK_USE_FLEX_C99
-#undef  DUK_USE_FLEX_ZEROSIZE
-#undef  DUK_USE_FLEX_ONESIZE
+#undef DUK_USE_FLEX_C99
+#undef DUK_USE_FLEX_ZEROSIZE
+#undef DUK_USE_FLEX_ONESIZE
 #if defined(DUK_F_C99)
-#define  DUK_USE_FLEX_C99
+#define DUK_USE_FLEX_C99
 #elif defined(__GNUC__)
-#define  DUK_USE_FLEX_ZEROSIZE
+#define DUK_USE_FLEX_ZEROSIZE
 #else
-#define  DUK_USE_FLEX_ONESIZE
+#define DUK_USE_FLEX_ONESIZE
 #endif
 
 /* FIXME: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
@@ -1144,9 +1144,9 @@ extern double duk_computed_nan;
  */
 /* http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)
-#define  DUK_USE_GCC_PRAGMAS
+#define DUK_USE_GCC_PRAGMAS
 #else
-#undef  DUK_USE_GCC_PRAGMAS
+#undef DUK_USE_GCC_PRAGMAS
 #endif
 
 /*
@@ -1175,40 +1175,40 @@ extern double duk_computed_nan;
 #error WIN32 not supported
 #elif defined(__APPLE__)
 /* Mac OSX, iPhone, Darwin */
-#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME_R
-#define  DUK_USE_DATE_PRS_STRPTIME
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__linux)
 /* Linux (__unix also defined) */
-#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME_R
-#define  DUK_USE_DATE_PRS_STRPTIME
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__unix)
 /* Other Unix */
-#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME_R
-#define  DUK_USE_DATE_PRS_STRPTIME
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #elif defined(__posix)
 /* POSIX */
-#define  DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define  DUK_USE_DATE_TZO_GMTIME_R
-#define  DUK_USE_DATE_PRS_STRPTIME
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_TOS)
 /* Atari ST TOS */
-#define  DUK_USE_DATE_NOW_TIME
-#define  DUK_USE_DATE_TZO_GMTIME
+#define DUK_USE_DATE_NOW_TIME
+#define DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #elif defined(DUK_F_AMIGAOS)
 /* AmigaOS */
-#define  DUK_USE_DATE_NOW_TIME
-#define  DUK_USE_DATE_TZO_GMTIME
+#define DUK_USE_DATE_NOW_TIME
+#define DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */
-#define  DUK_USE_DATE_FMT_STRFTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #else
 #error platform not supported
 #endif

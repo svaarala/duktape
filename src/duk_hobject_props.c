@@ -45,20 +45,20 @@
  *  Local defines
  */
 
-#define  NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
+#define NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
 
 /* hash probe sequence */
-#define  HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
-#define  HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
+#define HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
+#define HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
 
 /* marker values for hash part */
-#define  HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
-#define  HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
+#define HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
+#define HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
 
 /* assert value that suffices for all local calls, including recursion of
  * other than Duktape calls (getters etc)
  */
-#define  VALSTACK_SPACE             10
+#define VALSTACK_SPACE             10
 
 /*
  *  Local prototypes
@@ -4636,10 +4636,10 @@ int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) 
 
 /* Undefine local defines */
 
-#undef  NO_ARRAY_INDEX
-#undef  HASH_INITIAL
-#undef  HASH_PROBE_STEP
-#undef  HASH_UNUSED
-#undef  HASH_DELETED
-#undef  VALSTACK_SPACE
+#undef NO_ARRAY_INDEX
+#undef HASH_INITIAL
+#undef HASH_PROBE_STEP
+#undef HASH_UNUSED
+#undef HASH_DELETED
+#undef VALSTACK_SPACE
 

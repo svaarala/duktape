@@ -17,14 +17,14 @@
  */
 
 /* for function return codes */
-#define  DUK_ERR_OK                   0     /* call successful */
-#define  DUK_ERR_FAIL                 1     /* call failed */
+#define DUK_ERR_OK                   0     /* call successful */
+#define DUK_ERR_FAIL                 1     /* call failed */
 
 /* duk_executor results */
 /* FIXME: these need to be in the public API too */
-#define  DUK_ERR_EXEC_SUCCESS         0     /* thread returned to entry level with success */
-#define  DUK_ERR_EXEC_ERROR           1     /* thread encountered a so far uncaught error */
-#define  DUK_ERR_EXEC_TERM            2     /* thread was terminated due to an unrecoverable error */
+#define DUK_ERR_EXEC_SUCCESS         0     /* thread returned to entry level with success */
+#define DUK_ERR_EXEC_ERROR           1     /* thread encountered a so far uncaught error */
+#define DUK_ERR_EXEC_TERM            2     /* thread was terminated due to an unrecoverable error */
 
 /*
  *  Normal error is thrown with a longjmp() through the current setjmp()
@@ -54,10 +54,10 @@
 #ifdef DUK_USE_VARIADIC_MACROS
 
 /* __VA_ARGS__ has comma issues for empty lists, so we mandate at least 1 argument for '...' (format string) */
-#define  DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (int) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
-#define  DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((file), (line), (thr), (err), __VA_ARGS__)
-#define  DUK_PANIC(err,...)                        duk_err_handle_panic(DUK_FILE_MACRO, DUK_LINE_MACRO, (err), __VA_ARGS__)
-#define  DUK_PANIC_RAW(file,line,err,...)          duk_err_handle_panic((file), (line), (err), __VA_ARGS__)
+#define DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (int) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
+#define DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((file), (line), (thr), (err), __VA_ARGS__)
+#define DUK_PANIC(err,...)                        duk_err_handle_panic(DUK_FILE_MACRO, DUK_LINE_MACRO, (err), __VA_ARGS__)
+#define DUK_PANIC_RAW(file,line,err,...)          duk_err_handle_panic((file), (line), (err), __VA_ARGS__)
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
@@ -65,16 +65,16 @@
  * pointer being a constant which can be passed through a global.
  */
 
-#define  DUK_ERROR  \
+#define DUK_ERROR  \
 	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
 	duk_err_line_stash = (int) DUK_LINE_MACRO, \
 	(void) duk_err_handle_error_stash  /* arguments follow */
-#define  DUK_ERROR_RAW                             duk_err_handle_error
-#define  DUK_PANIC  \
+#define DUK_ERROR_RAW                             duk_err_handle_error
+#define DUK_PANIC  \
 	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
 	duk_err_line_stash = (int) DUK_LINE_MACRO, \
 	(void) duk_err_handle_panic_stash  /* arguments follow */
-#define  DUK_PANIC_RAW                             duk_err_handle_panic
+#define DUK_PANIC_RAW                             duk_err_handle_panic
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
@@ -82,10 +82,10 @@
 
 #ifdef DUK_USE_VARIADIC_MACROS
 
-#define  DUK_ERROR(thr,err,...)                    duk_err_handle_error((thr), (err))
-#define  DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((thr), (err))
-#define  DUK_PANIC(err,...)                        duk_err_handle_panic((err))
-#define  DUK_PANIC_RAW(err,...)                    duk_err_handle_panic((err))
+#define DUK_ERROR(thr,err,...)                    duk_err_handle_error((thr), (err))
+#define DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((thr), (err))
+#define DUK_PANIC(err,...)                        duk_err_handle_panic((err))
+#define DUK_PANIC_RAW(err,...)                    duk_err_handle_panic((err))
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
@@ -93,10 +93,10 @@
  * will go into the object file.  Can't think of how to do this portably and still
  * relatively conveniently.
  */
-#define  DUK_ERROR                                 duk_err_handle_error_nonverbose1
-#define  DUK_ERROR_RAW                             duk_err_handle_error_nonverbose2
-#define  DUK_PANIC                                 duk_err_handle_panic_nonverbose1
-#define  DUK_PANIC_RAW                             duk_err_handle_panic_nonverbose2
+#define DUK_ERROR                                 duk_err_handle_error_nonverbose1
+#define DUK_ERROR_RAW                             duk_err_handle_error_nonverbose2
+#define DUK_PANIC                                 duk_err_handle_panic_nonverbose1
+#define DUK_PANIC_RAW                             duk_err_handle_panic_nonverbose2
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
@@ -112,7 +112,7 @@
  * we don't care about assertion text size because they're not used in production
  * builds.
  */
-#define  DUK_ASSERT(x)  do { \
+#define DUK_ASSERT(x)  do { \
 	if (!(x)) { \
 		DUK_PANIC(DUK_ERR_ASSERTION_ERROR, \
 			"assertion failed: " #x \
@@ -122,7 +122,7 @@
 
 #else  /* DUK_USE_ASSERTIONS */
 
-#define  DUK_ASSERT(x)  do { /* assertion omitted */ } while(0)
+#define DUK_ASSERT(x)  do { /* assertion omitted */ } while(0)
 
 #endif  /* DUK_USE_ASSERTIONS */
 
@@ -135,16 +135,21 @@
  * In any case, panics should map do fatal error handler in the public API.
  */
 
-#ifdef DUK_PANIC_HANDLER
+#if defined(DUK_PANIC_HANDLER)
 /* already defined, good */
 #else
-#if 1
-#define  DUK_PANIC_EXIT()  abort()
+#if defined(DUK_USE_PANIC_ABORT)
+#define DUK_PANIC_EXIT()  abort()
+#elif defined(DUK_USE_PANIC_EXIT)
+#define DUK_PANIC_EXIT()  exit(-1)
+#elif defined(DUK_USE_PANIC_SEGFAULT)
+#define DUK_PANIC_EXIT()  DUK_CAUSE_SEGFAULT()
 #else
-#define  DUK_PANIC_EXIT()  exit(-1)
+#error no DUK_USE_PANIC_xxx macro defined
 #endif
+
 #ifdef DUK_USE_GCC_PRAGMAS
-#define  DUK_PANIC_HANDLER(code,msg)  do { \
+#define DUK_PANIC_HANDLER(code,msg)  do { \
 		/* GCC pragmas to suppress: warning: the address of 'xxx' will always evaluate as 'true' [-Waddress]' */ \
 		_Pragma("GCC diagnostic push"); \
 		_Pragma("GCC diagnostic ignored \"-Waddress\""); \
@@ -154,7 +159,7 @@
 		_Pragma("GCC diagnostic pop"); \
 	} while (0)
 #else
-#define  DUK_PANIC_HANDLER(code,msg)  do { \
+#define DUK_PANIC_HANDLER(code,msg)  do { \
 		/* No pragmas to suppress warning, causes unclean build */ \
 		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \
 		fflush(stderr); \
@@ -168,29 +173,29 @@
  */
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
-#define  DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(h)  do { \
+#define DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(h)  do { \
 		DUK_ASSERT((h) == NULL || DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) (h)) > 0); \
 	} while (0)
-#define  DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)  do { \
+#define DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)  do { \
 		if ((tv) != NULL && DUK_TVAL_IS_HEAP_ALLOCATED((tv))) { \
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(DUK_TVAL_GET_HEAPHDR((tv))) > 0); \
 		} \
 	} while (0)
 #else
-#define  DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(h)  /* no refcount check */
-#define  DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)    /* no refcount check */
+#define DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(h)  /* no refcount check */
+#define DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)    /* no refcount check */
 #endif
 
-#define  DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT(duk_get_top((ctx)) == (n))
+#define DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT(duk_get_top((ctx)) == (n))
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_PACKED_TVAL)
-#define  DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  do { \
+#define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  do { \
 		duk_double_union assert_tmp_du; \
 		assert_tmp_du.d = (dval); \
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&assert_tmp_du)); \
 	} while (0)
 #else
-#define  DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  /* nop */
+#define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  /* nop */
 #endif
 
 /*
@@ -201,16 +206,16 @@
  *  or (b) Duktape calls which involve extending the valstack (e.g. getter call).
  */
 
-#define  DUK_VALSTACK_ASSERT_EXTRA  5  /* this is added to checks to allow for Duktape
+#define DUK_VALSTACK_ASSERT_EXTRA  5  /* this is added to checks to allow for Duktape
                                         * API calls in addition to function's own use
                                         */
 #if defined(DUK_USE_ASSERTIONS)
-#define  ASSERT_VALSTACK_SPACE(thr,n)   do { \
+#define ASSERT_VALSTACK_SPACE(thr,n)   do { \
 		DUK_ASSERT((thr) != NULL); \
 		DUK_ASSERT((thr)->valstack_end - (thr)->valstack_top >= (n) + DUK_VALSTACK_ASSERT_EXTRA); \
 	} while (0)
 #else
-#define  ASSERT_VALSTACK_SPACE(thr,n)   /* no valstack space check */
+#define ASSERT_VALSTACK_SPACE(thr,n)   /* no valstack space check */
 #endif
 
 /*

@@ -19,33 +19,33 @@ typedef union {
  *  Encoding constants, must match genbuiltins.py
  */
 
-#define  CLASS_BITS                  5
-#define  BIDX_BITS                   6
-#define  STRIDX_BITS                 9  /* FIXME: try to optimize to 8 */
-#define  NATIDX_BITS                 8
-#define  NUM_NORMAL_PROPS_BITS       6
-#define  NUM_FUNC_PROPS_BITS         6
-#define  PROP_FLAGS_BITS             3
-#define  STRING_LENGTH_BITS          8
-#define  STRING_CHAR_BITS            7
-#define  LENGTH_PROP_BITS            3
-#define  NARGS_BITS                  3
-#define  PROP_TYPE_BITS              3
-#define  MAGIC_BITS                  16
+#define CLASS_BITS                  5
+#define BIDX_BITS                   6
+#define STRIDX_BITS                 9  /* FIXME: try to optimize to 8 */
+#define NATIDX_BITS                 8
+#define NUM_NORMAL_PROPS_BITS       6
+#define NUM_FUNC_PROPS_BITS         6
+#define PROP_FLAGS_BITS             3
+#define STRING_LENGTH_BITS          8
+#define STRING_CHAR_BITS            7
+#define LENGTH_PROP_BITS            3
+#define NARGS_BITS                  3
+#define PROP_TYPE_BITS              3
+#define MAGIC_BITS                  16
 
-#define  NARGS_VARARGS_MARKER        0x07
-#define  NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */
-#define  NO_BIDX_MARKER              0x3f
-#define  NO_STRIDX_MARKER            0xff
+#define NARGS_VARARGS_MARKER        0x07
+#define NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */
+#define NO_BIDX_MARKER              0x3f
+#define NO_STRIDX_MARKER            0xff
 
-#define  PROP_TYPE_DOUBLE            0
-#define  PROP_TYPE_STRING            1
-#define  PROP_TYPE_STRIDX            2
-#define  PROP_TYPE_BUILTIN           3
-#define  PROP_TYPE_UNDEFINED         4
-#define  PROP_TYPE_BOOLEAN_TRUE      5
-#define  PROP_TYPE_BOOLEAN_FALSE     6
-#define  PROP_TYPE_ACCESSOR          7
+#define PROP_TYPE_DOUBLE            0
+#define PROP_TYPE_STRING            1
+#define PROP_TYPE_STRIDX            2
+#define PROP_TYPE_BUILTIN           3
+#define PROP_TYPE_UNDEFINED         4
+#define PROP_TYPE_BOOLEAN_TRUE      5
+#define PROP_TYPE_BOOLEAN_FALSE     6
+#define PROP_TYPE_ACCESSOR          7
 
 /*
  *  Create built-in objects by parsing an init bitstream generated

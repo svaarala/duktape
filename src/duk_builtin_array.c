@@ -1017,11 +1017,11 @@ int duk_builtin_array_prototype_indexof_shared(duk_context *ctx) {
  *  every(), some(), forEach(), map(), filter()
  */
 
-#define  ITER_EVERY    0
-#define  ITER_SOME     1
-#define  ITER_FOREACH  2
-#define  ITER_MAP      3
-#define  ITER_FILTER   4
+#define ITER_EVERY    0
+#define ITER_SOME     1
+#define ITER_FOREACH  2
+#define ITER_MAP      3
+#define ITER_FILTER   4
 
 /* FIXME: This helper is a bit awkward because the handling for the different iteration
  * callers is quite different.  This now compiles to a bit less than 500 bytes, so with

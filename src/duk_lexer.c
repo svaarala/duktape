@@ -82,31 +82,31 @@
  *  Various defines and file specific helper macros
  */
 
-#define  MAX_REGEXP_DECIMAL_ESCAPE_DIGITS  9
-#define  MAX_REGEXP_QUANTIFIER_DIGITS      9   /* FIXME: does not allow e.g. 2**31-1, but one more would allow overflows of u32 */
+#define MAX_REGEXP_DECIMAL_ESCAPE_DIGITS  9
+#define MAX_REGEXP_QUANTIFIER_DIGITS      9   /* FIXME: does not allow e.g. 2**31-1, but one more would allow overflows of u32 */
 
-#define  LOOKUP(lex_ctx,index)    ((lex_ctx)->window[(index)])
-#define  ADVANCE(lex_ctx,count)   advance_chars((lex_ctx), (count))
-#define  INITBUFFER(lex_ctx)      initbuffer((lex_ctx))
-#define  APPENDBUFFER(lex_ctx,x)  appendbuffer((lex_ctx), (int) (x))
+#define LOOKUP(lex_ctx,index)    ((lex_ctx)->window[(index)])
+#define ADVANCE(lex_ctx,count)   advance_chars((lex_ctx), (count))
+#define INITBUFFER(lex_ctx)      initbuffer((lex_ctx))
+#define APPENDBUFFER(lex_ctx,x)  appendbuffer((lex_ctx), (int) (x))
 
 /* whether to use macros or helper function depends on call count */
-#define  ISDIGIT(x)          ((x) >= '0' && (x) <= '9')
-#define  ISHEXDIGIT(x)       is_hex_digit((x))
-#define  ISOCTDIGIT(x)       ((x) >= '0' && (x) <= '7')
-#define  ISDIGIT03(x)        ((x) >= '0' && (x) <= '3')
-#define  ISDIGIT47(x)        ((x) >= '4' && (x) <= '7')
+#define ISDIGIT(x)          ((x) >= '0' && (x) <= '9')
+#define ISHEXDIGIT(x)       is_hex_digit((x))
+#define ISOCTDIGIT(x)       ((x) >= '0' && (x) <= '7')
+#define ISDIGIT03(x)        ((x) >= '0' && (x) <= '3')
+#define ISDIGIT47(x)        ((x) >= '4' && (x) <= '7')
 
 /* lookup shorthands (note: assume context variable is named 'lex_ctx') */
-#define  L0()  LOOKUP(lex_ctx, 0)
-#define  L1()  LOOKUP(lex_ctx, 1)
-#define  L2()  LOOKUP(lex_ctx, 2)
-#define  L3()  LOOKUP(lex_ctx, 3)
-#define  L4()  LOOKUP(lex_ctx, 4)
-#define  L5()  LOOKUP(lex_ctx, 5)
+#define L0()  LOOKUP(lex_ctx, 0)
+#define L1()  LOOKUP(lex_ctx, 1)
+#define L2()  LOOKUP(lex_ctx, 2)
+#define L3()  LOOKUP(lex_ctx, 3)
+#define L4()  LOOKUP(lex_ctx, 4)
+#define L5()  LOOKUP(lex_ctx, 5)
 
 /* packed advance/token number macro used by multiple functions */
-#define  ADVTOK(adv,tok)  (((adv) << 8) + (tok))
+#define ADVTOK(adv,tok)  (((adv) << 8) + (tok))
 
 /*
  *  Read a character from the window leading edge and update the line counter.

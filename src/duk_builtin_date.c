@@ -20,15 +20,15 @@
  */
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-#define  GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
+#define GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
 #elif defined(DUK_USE_DATE_NOW_TIME)
-#define  GET_NOW_TIMEVAL      get_now_timeval_time
+#define GET_NOW_TIMEVAL      get_now_timeval_time
 #else
 #error no function to get current time
 #endif
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
-#define  GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
+#define GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
 #else
 #error no function to get local tzoffset
 #endif
@@ -36,8 +36,8 @@
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
  * to avoid Valgrind errors.
  */
-#define  STRPTIME_BUF_SIZE  64
-#define  STRFTIME_BUF_SIZE  64
+#define STRPTIME_BUF_SIZE  64
+#define STRFTIME_BUF_SIZE  64
 
 /*
  *  Other file level defines
@@ -51,10 +51,10 @@ static double get_timeval_from_dparts(double *dparts, int flags);
 static void twodigit_year_fixup(duk_context *ctx, int idx_val);
 
 /* Millisecond count constants. */
-#define  MS_SECOND          1000
-#define  MS_MINUTE          (60 * 1000)
-#define  MS_HOUR            (60 * 60 * 1000)
-#define  MS_DAY             (24 * 60 * 60 * 1000)
+#define MS_SECOND          1000
+#define MS_MINUTE          (60 * 1000)
+#define MS_HOUR            (60 * 60 * 1000)
+#define MS_DAY             (24 * 60 * 60 * 1000)
 
 /* Part indices for internal breakdowns.  Part order from IDX_YEAR to
  * IDX_MILLISECOND matches argument ordering of Ecmascript API calls
@@ -63,15 +63,15 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
  *
  * (Must be in-sync with genbuiltins.py.)
  */
-#define  IDX_YEAR           0  /* year */
-#define  IDX_MONTH          1  /* month: 0 to 11 */
-#define  IDX_DAY            2  /* day within month: 0 to 30 */
-#define  IDX_HOUR           3
-#define  IDX_MINUTE         4
-#define  IDX_SECOND         5
-#define  IDX_MILLISECOND    6
-#define  IDX_WEEKDAY        7  /* weekday: 0 to 6, 0=sunday, 1=monday, etc */
-#define  NUM_PARTS          8
+#define IDX_YEAR           0  /* year */
+#define IDX_MONTH          1  /* month: 0 to 11 */
+#define IDX_DAY            2  /* day within month: 0 to 30 */
+#define IDX_HOUR           3
+#define IDX_MINUTE         4
+#define IDX_SECOND         5
+#define IDX_MILLISECOND    6
+#define IDX_WEEKDAY        7  /* weekday: 0 to 6, 0=sunday, 1=monday, etc */
+#define NUM_PARTS          8
 
 /* Internal API call flags, used for various functions in this file.
  * Certain flags are used by only certain functions, but since the flags
@@ -83,17 +83,17 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
  *
  * (Must be in-sync with genbuiltins.py.)
  */
-#define  FLAG_NAN_TO_ZERO          (1 << 0)  /* timeval breakdown: internal time value NaN -> zero */
-#define  FLAG_NAN_TO_RANGE_ERROR   (1 << 1)  /* timeval breakdown: internal time value NaN -> RangeError (toISOString) */
-#define  FLAG_ONEBASED             (1 << 2)  /* timeval breakdown: convert month and day-of-month parts to one-based (default is zero-based) */
-#define  FLAG_LOCALTIME            (1 << 3)  /* convert time value to local time */
-#define  FLAG_SUB1900              (1 << 4)  /* getter: subtract 1900 from year when getting year part */
-#define  FLAG_TOSTRING_DATE        (1 << 5)  /* include date part in string conversion result */
-#define  FLAG_TOSTRING_TIME        (1 << 6)  /* include time part in string conversion result */
-#define  FLAG_TOSTRING_LOCALE      (1 << 7)  /* use locale specific formatting if available */
-#define  FLAG_TIMESETTER           (1 << 8)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
-#define  FLAG_YEAR_FIXUP           (1 << 9)  /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
-#define  FLAG_SEP_T                (1 << 10) /* string conversion: use 'T' instead of ' ' as a separator */
+#define FLAG_NAN_TO_ZERO          (1 << 0)  /* timeval breakdown: internal time value NaN -> zero */
+#define FLAG_NAN_TO_RANGE_ERROR   (1 << 1)  /* timeval breakdown: internal time value NaN -> RangeError (toISOString) */
+#define FLAG_ONEBASED             (1 << 2)  /* timeval breakdown: convert month and day-of-month parts to one-based (default is zero-based) */
+#define FLAG_LOCALTIME            (1 << 3)  /* convert time value to local time */
+#define FLAG_SUB1900              (1 << 4)  /* getter: subtract 1900 from year when getting year part */
+#define FLAG_TOSTRING_DATE        (1 << 5)  /* include date part in string conversion result */
+#define FLAG_TOSTRING_TIME        (1 << 6)  /* include time part in string conversion result */
+#define FLAG_TOSTRING_LOCALE      (1 << 7)  /* use locale specific formatting if available */
+#define FLAG_TIMESETTER           (1 << 8)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
+#define FLAG_YEAR_FIXUP           (1 << 9)  /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
+#define FLAG_SEP_T                (1 << 10) /* string conversion: use 'T' instead of ' ' as a separator */
 
 /*
  *  Platform specific helpers
@@ -347,64 +347,64 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
  */
 
 /* Parser part count. */
-#define  NUM_ISO8601_PARSER_PARTS  9
+#define NUM_ISO8601_PARSER_PARTS  9
 
 /* Parser part indices. */
-#define  PI_YEAR         0
-#define  PI_MONTH        1
-#define  PI_DAY          2
-#define  PI_HOUR         3
-#define  PI_MINUTE       4
-#define  PI_SECOND       5
-#define  PI_MILLISECOND  6
-#define  PI_TZHOUR       7
-#define  PI_TZMINUTE     8
+#define PI_YEAR         0
+#define PI_MONTH        1
+#define PI_DAY          2
+#define PI_HOUR         3
+#define PI_MINUTE       4
+#define PI_SECOND       5
+#define PI_MILLISECOND  6
+#define PI_TZHOUR       7
+#define PI_TZMINUTE     8
 
 /* Parser part masks. */
-#define  PM_YEAR         (1 << PI_YEAR)
-#define  PM_MONTH        (1 << PI_MONTH)
-#define  PM_DAY          (1 << PI_DAY)
-#define  PM_HOUR         (1 << PI_HOUR)
-#define  PM_MINUTE       (1 << PI_MINUTE)
-#define  PM_SECOND       (1 << PI_SECOND)
-#define  PM_MILLISECOND  (1 << PI_MILLISECOND)
-#define  PM_TZHOUR       (1 << PI_TZHOUR)
-#define  PM_TZMINUTE     (1 << PI_TZMINUTE)
+#define PM_YEAR         (1 << PI_YEAR)
+#define PM_MONTH        (1 << PI_MONTH)
+#define PM_DAY          (1 << PI_DAY)
+#define PM_HOUR         (1 << PI_HOUR)
+#define PM_MINUTE       (1 << PI_MINUTE)
+#define PM_SECOND       (1 << PI_SECOND)
+#define PM_MILLISECOND  (1 << PI_MILLISECOND)
+#define PM_TZHOUR       (1 << PI_TZHOUR)
+#define PM_TZMINUTE     (1 << PI_TZMINUTE)
 
 /* Parser separator indices. */
-#define  SI_PLUS         0
-#define  SI_MINUS        1
-#define  SI_T            2
-#define  SI_SPACE        3
-#define  SI_COLON        4
-#define  SI_PERIOD       5
-#define  SI_Z            6
-#define  SI_NUL          7
+#define SI_PLUS         0
+#define SI_MINUS        1
+#define SI_T            2
+#define SI_SPACE        3
+#define SI_COLON        4
+#define SI_PERIOD       5
+#define SI_Z            6
+#define SI_NUL          7
 
 /* Parser separator masks. */
-#define  SM_PLUS         (1 << SI_PLUS)
-#define  SM_MINUS        (1 << SI_MINUS)
-#define  SM_T            (1 << SI_T)
-#define  SM_SPACE        (1 << SI_SPACE)
-#define  SM_COLON        (1 << SI_COLON)
-#define  SM_PERIOD       (1 << SI_PERIOD)
-#define  SM_Z            (1 << SI_Z)
-#define  SM_NUL          (1 << SI_NUL)
+#define SM_PLUS         (1 << SI_PLUS)
+#define SM_MINUS        (1 << SI_MINUS)
+#define SM_T            (1 << SI_T)
+#define SM_SPACE        (1 << SI_SPACE)
+#define SM_COLON        (1 << SI_COLON)
+#define SM_PERIOD       (1 << SI_PERIOD)
+#define SM_Z            (1 << SI_Z)
+#define SM_NUL          (1 << SI_NUL)
 
 /* Rule control flags. */
-#define  CF_NEG          (1 << 0)  /* continue matching, set neg_tzoffset flag */
-#define  CF_ACCEPT       (1 << 1)  /* accept string */
-#define  CF_ACCEPT_NUL   (1 << 2)  /* accept string if next char is NUL (otherwise reject) */
+#define CF_NEG          (1 << 0)  /* continue matching, set neg_tzoffset flag */
+#define CF_ACCEPT       (1 << 1)  /* accept string */
+#define CF_ACCEPT_NUL   (1 << 2)  /* accept string if next char is NUL (otherwise reject) */
 
-#define  PACK_RULE(partmask,sepmask,nextpart,flags)  \
+#define PACK_RULE(partmask,sepmask,nextpart,flags)  \
 	((partmask) + ((sepmask) << 9) + ((nextpart) << 17) + ((flags) << 21))
 
-#define  UNPACK_RULE(rule,var_nextidx,var_flags)  do { \
+#define UNPACK_RULE(rule,var_nextidx,var_flags)  do { \
 		(var_nextidx) = ((rule) >> 17) & 0x0f; \
 		(var_flags) = (rule) >> 21; \
 	} while (0)
 
-#define  RULE_MASK_PART_SEP  0x1ffff
+#define RULE_MASK_PART_SEP  0x1ffff
 
 /* Matching separator index is used in the control table */
 static const char parse_iso8601_seps[] = {

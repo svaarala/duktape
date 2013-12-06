@@ -61,16 +61,16 @@
 /* list of conversion specifiers that terminate a format tag;
  * this is unfortunately guesswork.
  */
-#define  ALLOWED_STANDARD_CONVERSION_SPECIFIERS  "diouxXeEfFgGaAcsCSpnm"
+#define ALLOWED_STANDARD_CONVERSION_SPECIFIERS  "diouxXeEfFgGaAcsCSpnm"
 
 /* maximum length of standard format tag that we support */
-#define  MAX_FORMAT_TAG_LENGTH  32
+#define MAX_FORMAT_TAG_LENGTH  32
 
 /* heapobj recursion depth when deep printing is selected */
-#define  DEEP_DEPTH_LIMIT  8
+#define DEEP_DEPTH_LIMIT  8
 
 /* maximum recursion depth for loop detection stacks */
-#define  LOOP_STACK_DEPTH  256
+#define LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
 static const char *bc_optab[] = {
@@ -304,7 +304,7 @@ static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
 #ifdef _COMMA
 #undef _COMMA
 #endif
-#define  _COMMA()  do { \
+#define _COMMA()  do { \
 		if (first) { \
 			first = 0; \
 		} else { \

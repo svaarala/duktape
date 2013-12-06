@@ -456,9 +456,9 @@ static void _vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 /* FIXME: duk_api operations for cross-thread reg manipulation? */
 /* FIXME: post-condition: value stack must be correct; for ecmascript functions, clamped to 'nregs' */
 
-#define  LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
-#define  LONGJMP_FINISHED  1  /* exit bytecode executor with return value */
-#define  LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
+#define LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
+#define LONGJMP_FINISHED  1  /* exit bytecode executor with return value */
+#define LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
 
 /* only called when act_idx points to an Ecmascript function */
 static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
@@ -1270,22 +1270,22 @@ static int handle_longjmp(duk_hthread *thr,
  *  call are not guaranteed to keep their value.
  */
 
-#define  STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
-#define  REG(x)         (thr->valstack_bottom[(x)])
-#define  REGP(x)        (&thr->valstack_bottom[(x)])
-#define  CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
-#define  CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
-#define  REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? REG((x)) : CONST((x) - DUK_BC_REGLIMIT))
-#define  REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? REGP((x)) : CONSTP((x) - DUK_BC_REGLIMIT))
+#define STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
+#define REG(x)         (thr->valstack_bottom[(x)])
+#define REGP(x)        (&thr->valstack_bottom[(x)])
+#define CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
+#define CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
+#define REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? REG((x)) : CONST((x) - DUK_BC_REGLIMIT))
+#define REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? REGP((x)) : CONSTP((x) - DUK_BC_REGLIMIT))
 
 #undef _COMPACT_ERRORS  /* FIXME: make this configurable */
                        
 #ifdef _COMPACT_ERRORS
-#define  INTERNAL_ERROR(msg)  do { \
+#define INTERNAL_ERROR(msg)  do { \
 		goto internal_error; \
 	} while (0)
 #else
-#define  INTERNAL_ERROR(msg)  do { \
+#define INTERNAL_ERROR(msg)  do { \
 		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, (msg)); \
 	} while (0)
 #endif

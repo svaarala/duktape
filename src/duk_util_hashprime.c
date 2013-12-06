@@ -14,7 +14,7 @@
 #include "duk_internal.h"
 
 /* hash size ratio goal, must match genhashsizes.py */
-#define  HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
+#define HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
 
 /* prediction corrections for prime list (see genhashsizes.py) */
 static const duk_int8_t hash_size_corrections[] = {

@@ -7,24 +7,24 @@
 
 /* Object/array recursion limit (to protect C stack) */
 #if defined(DUK_USE_DEEP_C_STACK)
-#define  DUK_JSON_ENC_RECURSION_LIMIT          1000
-#define  DUK_JSON_DEC_RECURSION_LIMIT          1000
+#define DUK_JSON_ENC_RECURSION_LIMIT          1000
+#define DUK_JSON_DEC_RECURSION_LIMIT          1000
 #else
-#define  DUK_JSON_ENC_RECURSION_LIMIT          100
-#define  DUK_JSON_DEC_RECURSION_LIMIT          100
+#define DUK_JSON_ENC_RECURSION_LIMIT          100
+#define DUK_JSON_DEC_RECURSION_LIMIT          100
 #endif
 
 /* Encoding flags */
-#define  DUK_JSON_ENC_FLAG_ASCII_ONLY          (1 << 0)  /* escape any non-ASCII characters */
-#define  DUK_JSON_ENC_FLAG_AVOID_KEY_QUOTES    (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
-#define  DUK_JSON_ENC_FLAG_EXT_CUSTOM          (1 << 2)  /* extended types: custom encoding */
-#define  DUK_JSON_ENC_FLAG_EXT_COMPATIBLE      (1 << 3)  /* extended types: compatible encoding */
+#define DUK_JSON_ENC_FLAG_ASCII_ONLY          (1 << 0)  /* escape any non-ASCII characters */
+#define DUK_JSON_ENC_FLAG_AVOID_KEY_QUOTES    (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
+#define DUK_JSON_ENC_FLAG_EXT_CUSTOM          (1 << 2)  /* extended types: custom encoding */
+#define DUK_JSON_ENC_FLAG_EXT_COMPATIBLE      (1 << 3)  /* extended types: compatible encoding */
 
 /* How much stack to require on entry to object/array encode */
-#define  DUK_JSON_ENC_REQSTACK                 32
+#define DUK_JSON_ENC_REQSTACK                 32
 
 /* How much stack to require on entry to object/array decode */
-#define  DUK_JSON_DEC_REQSTACK                 32
+#define DUK_JSON_DEC_REQSTACK                 32
 
 /* Encoding state.  Heap object references are all borrowed. */
 typedef struct {

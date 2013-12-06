@@ -6,7 +6,7 @@
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 
-#define  BUFSIZE  256  /* size for formatting buffers */
+#define BUFSIZE  256  /* size for formatting buffers */
 
 #ifdef DUK_USE_VARIADIC_MACROS
 void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...) {

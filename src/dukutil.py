@@ -130,9 +130,9 @@ class GenerateC:
 
 		# XXX: there is no escaping right now (for comment or value)
 		if comment is not None:
-			self.emitLine('#define  %-60s  %-30s /* %s */' % (name, value, comment))
+			self.emitLine('#define %-60s  %-30s /* %s */' % (name, value, comment))
 		else:
-			self.emitLine('#define  %-60s  %s' % (name, value))
+			self.emitLine('#define %-60s  %s' % (name, value))
 
 	def getString(self):
 		"Get the entire file as a string."

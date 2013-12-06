@@ -23,26 +23,26 @@
 #include "duk_internal.h"
 
 /* if highest bit of a register number is set, it refers to a constant instead */
-#define  CONST_MARKER                 DUK_JS_CONST_MARKER
+#define CONST_MARKER                 DUK_JS_CONST_MARKER
 
 /* for array and object literals */
-#define  MAX_ARRAY_INIT_VALUES        20
-#define  MAX_OBJECT_INIT_PAIRS        10
+#define MAX_ARRAY_INIT_VALUES        20
+#define MAX_OBJECT_INIT_PAIRS        10
 
 /* FIXME: hack, remove when const lookup is not O(n) */
-#define  GETCONST_MAX_CONSTS_CHECK    256
+#define GETCONST_MAX_CONSTS_CHECK    256
 
 /* these limits are based on bytecode limits */
-#define  MAX_CONSTS                   (DUK_BC_BC_MAX + 1)
-#define  MAX_FUNCS                    (DUK_BC_BC_MAX + 1)
-#define  MAX_TEMPS                    (DUK_BC_BC_MAX + 1)
+#define MAX_CONSTS                   (DUK_BC_BC_MAX + 1)
+#define MAX_FUNCS                    (DUK_BC_BC_MAX + 1)
+#define MAX_TEMPS                    (DUK_BC_BC_MAX + 1)
 
-#define  RECURSION_INCREASE(comp_ctx,thr)  do { \
+#define RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		recursion_increase((comp_ctx)); \
 	} while(0)
 
-#define  RECURSION_DECREASE(comp_ctx,thr)  do { \
+#define RECURSION_DECREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION DECREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		recursion_decrease((comp_ctx)); \
 	} while(0)
@@ -51,11 +51,11 @@
  * overlap (in control flow), some can be eliminated.
  */
 
-#define  COMPILE_ENTRY_SLOTS          8
-#define  FUNCTION_INIT_REQUIRE_SLOTS  16
-#define  FUNCTION_BODY_REQUIRE_SLOTS  16
-#define  PARSE_STATEMENTS_SLOTS       16
-#define  PARSE_EXPR_SLOTS             16
+#define COMPILE_ENTRY_SLOTS          8
+#define FUNCTION_INIT_REQUIRE_SLOTS  16
+#define FUNCTION_BODY_REQUIRE_SLOTS  16
+#define PARSE_STATEMENTS_SLOTS       16
+#define PARSE_EXPR_SLOTS             16
 
 /*
  *  Prototypes
@@ -211,36 +211,36 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 /* FIXME: actually single step levels would work just fine, clean up */
 
 /* binding power "levels" (see doc/compiler.txt) */
-#define  BP_INVALID                0             /* always terminates led() */
-#define  BP_EOF                    2
-#define  BP_CLOSING                4             /* token closes expression, e.g. ')', ']' */
-#define  BP_FOR_EXPR               BP_CLOSING    /* bp to use when parsing a top level Expression */
-#define  BP_COMMA                  6
-#define  BP_ASSIGNMENT             8
-#define  BP_CONDITIONAL            10
-#define  BP_LOR                    12
-#define  BP_LAND                   14
-#define  BP_BOR                    16
-#define  BP_BXOR                   18
-#define  BP_BAND                   20
-#define  BP_EQUALITY               22
-#define  BP_RELATIONAL             24
-#define  BP_SHIFT                  26
-#define  BP_ADDITIVE               28
-#define  BP_MULTIPLICATIVE         30
-#define  BP_POSTFIX                32
-#define  BP_CALL                   34
-#define  BP_MEMBER                 36
+#define BP_INVALID                0             /* always terminates led() */
+#define BP_EOF                    2
+#define BP_CLOSING                4             /* token closes expression, e.g. ')', ']' */
+#define BP_FOR_EXPR               BP_CLOSING    /* bp to use when parsing a top level Expression */
+#define BP_COMMA                  6
+#define BP_ASSIGNMENT             8
+#define BP_CONDITIONAL            10
+#define BP_LOR                    12
+#define BP_LAND                   14
+#define BP_BOR                    16
+#define BP_BXOR                   18
+#define BP_BAND                   20
+#define BP_EQUALITY               22
+#define BP_RELATIONAL             24
+#define BP_SHIFT                  26
+#define BP_ADDITIVE               28
+#define BP_MULTIPLICATIVE         30
+#define BP_POSTFIX                32
+#define BP_CALL                   34
+#define BP_MEMBER                 36
 
-#define  TOKEN_LBP_BP_MASK         0x1f
-#define  TOKEN_LBP_FLAG_NO_REGEXP  (1 << 5)   /* regexp literal must not follow this token */
-#define  TOKEN_LBP_FLAG_TERMINATES (1 << 6)   /* FIXME: terminates expression; e.g. post-increment/-decrement */
-#define  TOKEN_LBP_FLAG_UNUSED     (1 << 7)   /* spare */
+#define TOKEN_LBP_BP_MASK         0x1f
+#define TOKEN_LBP_FLAG_NO_REGEXP  (1 << 5)   /* regexp literal must not follow this token */
+#define TOKEN_LBP_FLAG_TERMINATES (1 << 6)   /* FIXME: terminates expression; e.g. post-increment/-decrement */
+#define TOKEN_LBP_FLAG_UNUSED     (1 << 7)   /* spare */
 
-#define  TOKEN_LBP_GET_BP(x)       ((int) (((x) & TOKEN_LBP_BP_MASK) * 2))
+#define TOKEN_LBP_GET_BP(x)       ((int) (((x) & TOKEN_LBP_BP_MASK) * 2))
 
-#define  MK_LBP(bp)                ((bp) >> 1)    /* bp is assumed to be even */
-#define  MK_LBP_FLAGS(bp,flags)    (((bp) >> 1) | (flags))
+#define MK_LBP(bp)                ((bp) >> 1)    /* bp is assumed to be even */
+#define MK_LBP_FLAGS(bp,flags)    (((bp) >> 1) | (flags))
 
 static const duk_int8_t token_lbp[] = {
 	MK_LBP(BP_EOF),                                 /* DUK_TOK_EOF */
@@ -910,9 +910,9 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
  */
 
 /* Code emission flags, passed in the 'opcode' field */
-#define  EMIT_FLAG_NO_SHUFFLE_A  (1 << 8)
-#define  EMIT_FLAG_NO_SHUFFLE_B  (1 << 9)
-#define  EMIT_FLAG_NO_SHUFFLE_C  (1 << 10)
+#define EMIT_FLAG_NO_SHUFFLE_A  (1 << 8)
+#define EMIT_FLAG_NO_SHUFFLE_B  (1 << 9)
+#define EMIT_FLAG_NO_SHUFFLE_C  (1 << 10)
 
 /* FIXME: clarify on when and where CONST_MARKER is allowed */
 /* FIXME: opcode specific assertions on when consts are allowed */
@@ -1299,22 +1299,22 @@ static void peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  *  Intermediate value helpers
  */
 
-#define  ISREG(comp_ctx,x)              (((x) & CONST_MARKER) == 0)
-#define  ISCONST(comp_ctx,x)            (((x) & CONST_MARKER) != 0)
-#define  ISTEMP(comp_ctx,x)             (ISREG((comp_ctx), (x)) && (x) >= ((comp_ctx)->curr_func.temp_first))
-#define  GETTEMP(comp_ctx)              ((comp_ctx)->curr_func.temp_next)
-#define  SETTEMP(comp_ctx,x)            ((comp_ctx)->curr_func.temp_next = (x))  /* dangerous: must only lower (temp_max not updated) */
-#define  SETTEMP_CHECKMAX(comp_ctx,x)   settemp_checkmax((comp_ctx),(x))
-#define  ALLOCTEMP(comp_ctx)            alloctemp((comp_ctx))
-#define  ALLOCTEMPS(comp_ctx,count)     alloctemps((comp_ctx),(count))
+#define ISREG(comp_ctx,x)              (((x) & CONST_MARKER) == 0)
+#define ISCONST(comp_ctx,x)            (((x) & CONST_MARKER) != 0)
+#define ISTEMP(comp_ctx,x)             (ISREG((comp_ctx), (x)) && (x) >= ((comp_ctx)->curr_func.temp_first))
+#define GETTEMP(comp_ctx)              ((comp_ctx)->curr_func.temp_next)
+#define SETTEMP(comp_ctx,x)            ((comp_ctx)->curr_func.temp_next = (x))  /* dangerous: must only lower (temp_max not updated) */
+#define SETTEMP_CHECKMAX(comp_ctx,x)   settemp_checkmax((comp_ctx),(x))
+#define ALLOCTEMP(comp_ctx)            alloctemp((comp_ctx))
+#define ALLOCTEMPS(comp_ctx,count)     alloctemps((comp_ctx),(count))
 
 /* Flags for intermediate value coercions.  A flag for using a forced reg
  * is not needed, the forced_reg argument suffices and generates better
  * code (it is checked as it is used).
  */
-#define  IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
-#define  IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
-#define  IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
+#define IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
+#define IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
+#define IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
 
 /* FIXME: some code might benefit from SETTEMP_IFTEMP(ctx,x) */
 
@@ -2136,9 +2136,9 @@ static void reset_labels_to_length(duk_compiler_ctx *comp_ctx, int len) {
  */
 
 /* object literal key tracking flags */
-#define  OBJ_LIT_KEY_PLAIN  (1 << 0)  /* key encountered as a plain property */
-#define  OBJ_LIT_KEY_GET    (1 << 1)  /* key encountered as a getter */
-#define  OBJ_LIT_KEY_SET    (1 << 2)  /* key encountered as a setter */
+#define OBJ_LIT_KEY_PLAIN  (1 << 0)  /* key encountered as a plain property */
+#define OBJ_LIT_KEY_GET    (1 << 1)  /* key encountered as a getter */
+#define OBJ_LIT_KEY_SET    (1 << 2)  /* key encountered as a setter */
 
 static void nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	duk_hthread *thr = comp_ctx->thr;
@@ -3829,9 +3829,9 @@ static int expr_lbp(duk_compiler_ctx *comp_ctx) {
  *  statement).
  */
 
-#define  EXPR_RBP_MASK           0xff
-#define  EXPR_FLAG_REJECT_IN     (1 << 8)
-#define  EXPR_FLAG_ALLOW_EMPTY   (1 << 9)
+#define EXPR_RBP_MASK           0xff
+#define EXPR_FLAG_REJECT_IN     (1 << 8)
+#define EXPR_FLAG_ALLOW_EMPTY   (1 << 9)
 
 /* main expression parser function */
 static void expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags) {
@@ -4011,11 +4011,11 @@ static void exprtop_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 #undef IS_TERMINAL
 #endif
 
-#define  HAS_VAL                  (1 << 0)  /* stmt has non-empty value */
-#define  HAS_TERM                 (1 << 1)  /* stmt has explicit/implicit semicolon terminator */
-#define  ALLOW_AUTO_SEMI_ALWAYS   (1 << 2)  /* allow automatic semicolon even without lineterm (compatibility) */
-#define  STILL_PROLOGUE           (1 << 3)  /* statement does not terminate directive prologue */
-#define  IS_TERMINAL              (1 << 4)  /* statement is guaranteed to be terminal (control doesn't flow to next statement) */
+#define HAS_VAL                  (1 << 0)  /* stmt has non-empty value */
+#define HAS_TERM                 (1 << 1)  /* stmt has explicit/implicit semicolon terminator */
+#define ALLOW_AUTO_SEMI_ALWAYS   (1 << 2)  /* allow automatic semicolon even without lineterm (compatibility) */
+#define STILL_PROLOGUE           (1 << 3)  /* statement does not terminate directive prologue */
+#define IS_TERMINAL              (1 << 4)  /* statement is guaranteed to be terminal (control doesn't flow to next statement) */
 
 /* Parse a single variable declaration (e.g. "i" or "i=10").  A leading 'var'
  * has already been eaten.  These is no return value in 'res', it is used only

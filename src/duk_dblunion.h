@@ -67,64 +67,64 @@ typedef union duk_double_union duk_double_union;
 
 #if defined(DUK_USE_DOUBLE_LE)
 #ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0
+#define DUK_DBL_IDX_ULL0   0
 #endif
-#define  DUK_DBL_IDX_UI0    1
-#define  DUK_DBL_IDX_UI1    0
-#define  DUK_DBL_IDX_US0    3
-#define  DUK_DBL_IDX_US1    2
-#define  DUK_DBL_IDX_US2    1
-#define  DUK_DBL_IDX_US3    0
-#define  DUK_DBL_IDX_UC0    7
-#define  DUK_DBL_IDX_UC1    6
-#define  DUK_DBL_IDX_UC2    5
-#define  DUK_DBL_IDX_UC3    4
-#define  DUK_DBL_IDX_UC4    3
-#define  DUK_DBL_IDX_UC5    2
-#define  DUK_DBL_IDX_UC6    1
-#define  DUK_DBL_IDX_UC7    0
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
+#define DUK_DBL_IDX_UI0    1
+#define DUK_DBL_IDX_UI1    0
+#define DUK_DBL_IDX_US0    3
+#define DUK_DBL_IDX_US1    2
+#define DUK_DBL_IDX_US2    1
+#define DUK_DBL_IDX_US3    0
+#define DUK_DBL_IDX_UC0    7
+#define DUK_DBL_IDX_UC1    6
+#define DUK_DBL_IDX_UC2    5
+#define DUK_DBL_IDX_UC3    4
+#define DUK_DBL_IDX_UC4    3
+#define DUK_DBL_IDX_UC5    2
+#define DUK_DBL_IDX_UC6    1
+#define DUK_DBL_IDX_UC7    0
+#define DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_BE)
 #ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0
+#define DUK_DBL_IDX_ULL0   0
 #endif
-#define  DUK_DBL_IDX_UI0    0
-#define  DUK_DBL_IDX_UI1    1
-#define  DUK_DBL_IDX_US0    0
-#define  DUK_DBL_IDX_US1    1
-#define  DUK_DBL_IDX_US2    2
-#define  DUK_DBL_IDX_US3    3
-#define  DUK_DBL_IDX_UC0    0
-#define  DUK_DBL_IDX_UC1    1
-#define  DUK_DBL_IDX_UC2    2
-#define  DUK_DBL_IDX_UC3    3
-#define  DUK_DBL_IDX_UC4    4
-#define  DUK_DBL_IDX_UC5    5
-#define  DUK_DBL_IDX_UC6    6
-#define  DUK_DBL_IDX_UC7    7
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
+#define DUK_DBL_IDX_UI0    0
+#define DUK_DBL_IDX_UI1    1
+#define DUK_DBL_IDX_US0    0
+#define DUK_DBL_IDX_US1    1
+#define DUK_DBL_IDX_US2    2
+#define DUK_DBL_IDX_US3    3
+#define DUK_DBL_IDX_UC0    0
+#define DUK_DBL_IDX_UC1    1
+#define DUK_DBL_IDX_UC2    2
+#define DUK_DBL_IDX_UC3    3
+#define DUK_DBL_IDX_UC4    4
+#define DUK_DBL_IDX_UC5    5
+#define DUK_DBL_IDX_UC6    6
+#define DUK_DBL_IDX_UC7    7
+#define DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #elif defined(DUK_USE_DOUBLE_ME)
 #ifdef DUK_USE_64BIT_OPS
-#define  DUK_DBL_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
+#define DUK_DBL_IDX_ULL0   0  /* not directly applicable, byte order differs from a double */
 #endif
-#define  DUK_DBL_IDX_UI0    0
-#define  DUK_DBL_IDX_UI1    1
-#define  DUK_DBL_IDX_US0    1
-#define  DUK_DBL_IDX_US1    0
-#define  DUK_DBL_IDX_US2    3
-#define  DUK_DBL_IDX_US3    2
-#define  DUK_DBL_IDX_UC0    3
-#define  DUK_DBL_IDX_UC1    2
-#define  DUK_DBL_IDX_UC2    1
-#define  DUK_DBL_IDX_UC3    0
-#define  DUK_DBL_IDX_UC4    7
-#define  DUK_DBL_IDX_UC5    6
-#define  DUK_DBL_IDX_UC6    5
-#define  DUK_DBL_IDX_UC7    4
-#define  DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
-#define  DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
+#define DUK_DBL_IDX_UI0    0
+#define DUK_DBL_IDX_UI1    1
+#define DUK_DBL_IDX_US0    1
+#define DUK_DBL_IDX_US1    0
+#define DUK_DBL_IDX_US2    3
+#define DUK_DBL_IDX_US3    2
+#define DUK_DBL_IDX_UC0    3
+#define DUK_DBL_IDX_UC1    2
+#define DUK_DBL_IDX_UC2    1
+#define DUK_DBL_IDX_UC3    0
+#define DUK_DBL_IDX_UC4    7
+#define DUK_DBL_IDX_UC5    6
+#define DUK_DBL_IDX_UC6    5
+#define DUK_DBL_IDX_UC7    4
+#define DUK_DBL_IDX_VP0    DUK_DBL_IDX_UI0  /* packed tval */
+#define DUK_DBL_IDX_VP1    DUK_DBL_IDX_UI1  /* packed tval */
 #else
 #error internal error
 #endif
@@ -134,38 +134,38 @@ typedef union duk_double_union duk_double_union;
  *  by duk_numconv.c and duk_tval.h.
  */
 
-#define  DUK_DBLUNION_SET_DOUBLE(u,v)  do {  \
+#define DUK_DBLUNION_SET_DOUBLE(u,v)  do {  \
 		(u)->d = (v); \
 	} while (0)
 
-#define  DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
+#define DUK_DBLUNION_SET_HIGH32(u,v)  do {  \
 		(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) (v); \
 	} while (0)
 
 #ifdef DUK_USE_64BIT_OPS
 #ifdef DUK_USE_DOUBLE_ME
-#define  DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
+#define DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
 		(u)->ull[DUK_DBL_IDX_ULL0] = (duk_uint64_t) (v); \
 	} while (0)
 #else
-#define  DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
+#define DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
 		(u)->ull[DUK_DBL_IDX_ULL0] = ((duk_uint64_t) (v)) << 32; \
 	} while (0)
 #endif
 #else  /* DUK_USE_64BIT_OPS */
-#define  DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
+#define DUK_DBLUNION_SET_HIGH32_ZERO_LOW32(u,v)  do { \
 		(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) (v); \
 		(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) 0; \
 	} while (0)
 #endif  /* DUK_USE_64BIT_OPS */
 
-#define  DUK_DBLUNION_SET_LOW32(u,v)  do {  \
+#define DUK_DBLUNION_SET_LOW32(u,v)  do {  \
 		(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (v); \
 	} while (0)
 
-#define  DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
-#define  DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
-#define  DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
+#define DUK_DBLUNION_GET_DOUBLE(u)  ((u)->d)
+#define DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
+#define DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
 
 /*
  *  Double NaN manipulation macros related to NaN normalization needed when
@@ -194,75 +194,75 @@ typedef union duk_double_union duk_double_union;
 
 #ifdef DUK_USE_64BIT_OPS
 #ifdef DUK_USE_DOUBLE_ME
-#define  DUK__DBLUNION_SET_NAN_FULL(u)  do { \
+#define DUK__DBLUNION_SET_NAN_FULL(u)  do { \
 		(u)->ull[DUK_DBL_IDX_ULL0] = 0x000000007ff80000ULL; \
 	} while (0)
 #else
-#define  DUK__DBLUNION_SET_NAN_FULL(u)  do { \
+#define DUK__DBLUNION_SET_NAN_FULL(u)  do { \
 		(u)->ull[DUK_DBL_IDX_ULL0] = 0x7ff8000000000000ULL; \
 	} while (0)
 #endif
 #else  /* DUK_USE_64BIT_OPS */
-#define  DUK__DBLUNION_SET_NAN_FULL(u)  do { \
+#define DUK__DBLUNION_SET_NAN_FULL(u)  do { \
 		(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) 0x7ff80000UL; \
 		(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) 0x00000000UL; \
 	} while (0)
 #endif  /* DUK_USE_64BIT_OPS */
 
-#define  DUK__DBLUNION_SET_NAN_NOTFULL(u)  do { \
+#define DUK__DBLUNION_SET_NAN_NOTFULL(u)  do { \
 		(u)->us[DUK_DBL_IDX_US0] = 0x7ff8UL; \
 	} while (0)
 
 #ifdef DUK_USE_64BIT_OPS
 #ifdef DUK_USE_DOUBLE_ME
-#define  DUK__DBLUNION_IS_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NAN_FULL(u) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	((((u)->us[DUK_DBL_IDX_US0] & 0x7ff0UL) == 0x7ff0UL) && \
 	 ((((u)->ull[DUK_DBL_IDX_ULL0]) & 0xffffffff000fffffULL) != 0))
 #else
-#define  DUK__DBLUNION_IS_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NAN_FULL(u) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	((((u)->us[DUK_DBL_IDX_US0] & 0x7ff0UL) == 0x7ff0UL) && \
 	 ((((u)->ull[DUK_DBL_IDX_ULL0]) & 0x000fffffffffffffULL) != 0))
 #endif
 #else  /* DUK_USE_64BIT_OPS */
-#define  DUK__DBLUNION_IS_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NAN_FULL(u) \
 	/* E == 0x7ff, F != 0 => NaN */ \
 	((((u)->ui[DUK_DBL_IDX_UI0] & 0x7ff00000UL) == 0x7ff00000UL) && \
 	 (((u)->ui[DUK_DBL_IDX_UI0] & 0x000fffffUL) != 0 || \
           (u)->ui[DUK_DBL_IDX_UI1] != 0))
 #endif  /* DUK_USE_64BIT_OPS */
 
-#define  DUK__DBLUNION_IS_NAN_NOTFULL(u) \
+#define DUK__DBLUNION_IS_NAN_NOTFULL(u) \
 	/* E == 0x7ff, topmost four bits of F != 0 => assume NaN */ \
 	((((u)->us[DUK_DBL_IDX_US0] & 0x7ff0UL) == 0x7ff0UL) && \
 	 (((u)->us[DUK_DBL_IDX_US0] & 0x000fUL) != 0x0000UL))
 
 #ifdef DUK_USE_64BIT_OPS
 #ifdef DUK_USE_DOUBLE_ME
-#define  DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
 	((u)->ull[DUK_DBL_IDX_ULL0] == 0x000000007ff80000ULL)
 #else
-#define  DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
 	((u)->ull[DUK_DBL_IDX_ULL0] == 0x7ff8000000000000ULL)
 #endif
 #else  /* DUK_USE_64BIT_OPS */
-#define  DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
+#define DUK__DBLUNION_IS_NORMALIZED_NAN_FULL(u) \
 	(((u)->ui[DUK_DBL_IDX_UI0] == 0x7ff80000UL) && \
 	 ((u)->ui[DUK_DBL_IDX_UI1] == 0x00000000UL))
 #endif  /* DUK_USE_64BIT_OPS */
 
-#define  DUK__DBLUNION_IS_NORMALIZED_NAN_NOTFULL(u) \
+#define DUK__DBLUNION_IS_NORMALIZED_NAN_NOTFULL(u) \
 	/* E == 0x7ff, F == 8 => normalized NaN */ \
 	((u)->us[DUK_DBL_IDX_US0] == 0x7ff8UL)
 
-#define  DUK__DBLUNION_NORMALIZE_NAN_CHECK_FULL(u)  do { \
+#define DUK__DBLUNION_NORMALIZE_NAN_CHECK_FULL(u)  do { \
 		if (DUK__DBLUNION_IS_NAN_FULL((u))) { \
 			DUK__DBLUNION_SET_NAN_FULL((u)); \
 		} \
 	} while (0)
 
-#define  DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL(u)  do { \
+#define DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL(u)  do { \
 		if (DUK__DBLUNION_IS_NAN_NOTFULL((u))) { \
 			DUK__DBLUNION_SET_NAN_NOTFULL((u)); \
 		} \
@@ -276,25 +276,25 @@ typedef union duk_double_union duk_double_union;
 
 #if defined(DUK_USE_PACKED_TVAL)
 #if defined(DUK_USE_FULL_TVAL)
-#define  DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_FULL((u))
-#define  DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_FULL((u))
-#define  DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_FULL((u))
-#define  DUK_DBLUNION_SET_NAN(d)              DUK__DBLUNION_SET_NAN_FULL((d))
+#define DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_FULL((u))
+#define DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_FULL((u))
+#define DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_FULL((u))
+#define DUK_DBLUNION_SET_NAN(d)              DUK__DBLUNION_SET_NAN_FULL((d))
 #else
-#define  DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL((u))
-#define  DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_NOTFULL((u))
-#define  DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_NOTFULL((u))
-#define  DUK_DBLUNION_SET_NAN(d)              DUK__DBLUNION_SET_NAN_NOTFULL((d))
+#define DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL((u))
+#define DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_NOTFULL((u))
+#define DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_NOTFULL((u))
+#define DUK_DBLUNION_SET_NAN(d)              DUK__DBLUNION_SET_NAN_NOTFULL((d))
 #endif
-#define  DUK_DBLUNION_IS_NORMALIZED(u) \
+#define DUK_DBLUNION_IS_NORMALIZED(u) \
 	(!DUK_DBLUNION_IS_NAN((u)) ||  /* either not a NaN */ \
 	 DUK_DBLUNION_IS_NORMALIZED_NAN((u)))  /* or is a normalized NaN */
 #else  /* DUK_USE_PACKED_TVAL */
-#define  DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  /* nop: no need to normalize */
-#define  DUK_DBLUNION_IS_NAN(u)               (DUK_ISNAN((u)->d))
-#define  DUK_DBLUNION_IS_NORMALIZED_NAN(u)    (DUK_ISNAN((u)->d))
-#define  DUK_DBLUNION_IS_NORMALIZED(u)        1  /* all doubles are considered normalized */
-#define  DUK_DBLUNION_SET_NAN(u)  do { \
+#define DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  /* nop: no need to normalize */
+#define DUK_DBLUNION_IS_NAN(u)               (DUK_ISNAN((u)->d))
+#define DUK_DBLUNION_IS_NORMALIZED_NAN(u)    (DUK_ISNAN((u)->d))
+#define DUK_DBLUNION_IS_NORMALIZED(u)        1  /* all doubles are considered normalized */
+#define DUK_DBLUNION_SET_NAN(u)  do { \
 		/* in non-packed representation we don't care about which NaN is used */ \
 		(u)->d = DUK_DOUBLE_NAN; \
 	} while (0)

@@ -8,12 +8,12 @@
 
 #include "duk_internal.h"
 
-#define  UPDATE_RND(rnd) do { \
+#define UPDATE_RND(rnd) do { \
 		(rnd) += ((rnd) * (rnd)) | 0x05; \
 		(rnd) = ((rnd) & 0xffffffffU);       /* if duk_uint32_t is exactly 32 bits, this is a NOP */ \
 	} while (0)
 
-#define  RND_BIT(rnd)  ((rnd) >> 31)  /* only use the highest bit */
+#define RND_BIT(rnd)  ((rnd) >> 31)  /* only use the highest bit */
 
 duk_uint32_t duk_util_tinyrandom_get_bits(duk_hthread *thr, duk_small_int_t n) {
 	duk_small_int_t i;
