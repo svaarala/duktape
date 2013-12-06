@@ -143,6 +143,7 @@ CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
+CCOPTS_SHARED += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCLIBS	= -lm
