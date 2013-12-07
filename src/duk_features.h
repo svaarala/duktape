@@ -962,6 +962,15 @@ extern double duk_computed_nan;
 #define DUK_USE_PANIC_ABORT
 #endif
 
+/*
+ *  Colored debug printing.
+ */
+
+#undef DUK_USE_DPRINT_COLORS
+#if defined(DUK_OPT_DPRINT_COLORS)
+#define DUK_USE_DPRINT_COLORS
+#endif
+
 /* 
  *  Profile processing
  *
@@ -1013,7 +1022,6 @@ extern double duk_computed_nan;
 #define DUK_USE_STRICT_UTF8_SOURCE
 #define DUK_USE_OCTAL_SUPPORT
 #define DUK_USE_SOURCE_NONBMP
-#define DUK_USE_DPRINT_COLORS
 #define DUK_USE_BROWSER_LIKE
 #define DUK_USE_SECTION_B
 
