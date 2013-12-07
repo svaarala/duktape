@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: 16-bit clen, blen, flags, e_idx, h_idx, a_idx
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-06 21:04:09.019006 Z
+references: []
+
+id: b7341c84d06f710295a1ff0d816744018e123a54
+log_events: 
+- - 2013-12-06 21:04:09.183984 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

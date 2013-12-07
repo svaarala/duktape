@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: better alignment solution for hobject props
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-06 21:01:03.001087 Z
+references: []
+
+id: 9ab7b6c9e5800e65057112043974cc2520f8332e
+log_events: 
+- - 2013-12-06 21:01:03.174067 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

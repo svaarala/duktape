@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_force_string_table_resize(), use recheck_hash_size() with resize_hash() at least for small builds
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-06 21:09:48.575657 Z
+references: []
+
+id: 08518fcd5599fbaa450342ba1e095c7b5a360441
+log_events: 
+- - 2013-12-06 21:09:48.778702 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
