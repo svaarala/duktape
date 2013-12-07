@@ -1,3 +1,22 @@
+/*
+ *  Bug testcase for a stringtable memory leak in Duktape 0.7.0, reported
+ *  by Greg Burns.
+ *
+ *  In Duktape 0.7.0 the mark-and-sweep handling of strings, specifically
+ *  the sweeping of strings, would mark a string reachable and never clear
+ *  the reachable flag.  As a result, strings were never garbage collected
+ *  if they had once been marked reachable.  This doesn't easily show any
+ *  symptoms when reference counting is in use (circular references are
+ *  needed).  When only mark-and-sweep is used, the problem is easy to
+ *  reproduce.
+ *
+ *  The test1() variant below works when reference counting is enabled,
+ *  even when the bug is present.  test2() uses circular references to
+ *  cause the bug to manifest itself even with reference counting.
+ *
+ *  This testcase can also be run manually with valgrind massif to see that
+ *  the memory behavior is correct.
+ */
 
 /*---
 {
@@ -40,22 +59,6 @@
 14
 15
 ===*/
-
-/* In Duktape 0.7.0 the mark-and-sweep handling of strings, specifically
- * the sweeping of strings, would mark a string reachable and never clear
- * the reachable flag.  As a result, strings were never garbage collected
- * if they had once been marked reachable.  This doesn't easily show any
- * symptoms when reference counting is in use (circular references are
- * needed).  When only mark-and-sweep is used, the problem is easy to
- * reproduce.
- *
- * The test1() variant below works when reference counting is enabled,
- * even when the bug is present.  test2() uses circular references to
- * cause the bug to manifest itself even with reference counting.
- *
- * This testcase can also be run manually with valgrind massif to see that
- * the memory behavior is correct.
- */
 
 var count = 0;
 var kilo = Array.prototype.join.call({ length: 1024 + 1 }, 'x');
