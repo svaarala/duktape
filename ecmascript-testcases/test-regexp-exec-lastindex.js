@@ -361,18 +361,22 @@ try {
 
 /*===
 0 number
-null
-0 number
+foo
+4294967297 number
 0 number
 null
 0 number
 ===*/
 
 try {
+    /* Non-global regexp: lastIndex is ignored (matching starts from char
+     * index 0) -> match.  lastIndex is not updated for non-global regexps
+     * when a match happens.
+     */
     r = /foo/;
     print(r.lastIndex, typeof r.lastIndex);
     r.lastIndex = 4294967297.0;   /* 0x100000001 */
-    t = r.exec('foofoofoo');   /* no match, lastIndex is reset to zero */
+    t = r.exec('foofoofoo');
     print(t);
     print(r.lastIndex, typeof r.lastIndex);
 } catch (e) {
@@ -380,6 +384,9 @@ try {
 }
 
 try {
+    /* Global regexp: respects lastIndex -> no match.  On a non-match
+     * lastIndex is zeroed.
+     */
     r = /foo/g;
     print(r.lastIndex, typeof r.lastIndex);
     r.lastIndex = 4294967297.0;   /* 0x100000001 */
