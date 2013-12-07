@@ -454,6 +454,7 @@ static void sweep_stringtable(duk_heap *heap) {
 		if (h == NULL || h == DUK_STRTAB_DELETED_MARKER(heap)) {
 			continue;
 		} else if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
+			DUK_HEAPHDR_CLEAR_REACHABLE((duk_heaphdr *) h);
 #ifdef DUK_USE_DEBUG
 			count_keep++;
 #endif
