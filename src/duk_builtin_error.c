@@ -15,6 +15,8 @@ int duk_builtin_error_constructor_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int bidx_prototype = duk_get_magic(ctx);
 
+	DUK_UNREF(thr);
+
 	/* same for both error and each subclass like TypeError */
 	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                      DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);

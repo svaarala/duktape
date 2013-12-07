@@ -2813,13 +2813,17 @@ static int duk_push_error_object_vsprintf(duk_context *ctx, int err_code, const 
 	int retval;
 	duk_hobject *errobj;
 	duk_hobject *proto;
+#ifdef DUK_USE_AUGMENT_ERRORS
 	int noblame_fileline;
+#endif
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
 
 	/* Error code also packs a tracedata related flag. */
+#ifdef DUK_USE_AUGMENT_ERRORS
 	noblame_fileline = err_code & DUK_ERRCODE_FLAG_NOBLAME_FILELINE;
+#endif
 	err_code = err_code & (~DUK_ERRCODE_FLAG_NOBLAME_FILELINE);
 
 	retval = duk_push_object_helper(ctx,
