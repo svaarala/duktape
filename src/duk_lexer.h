@@ -5,7 +5,7 @@
 #ifndef DUK_LEXER_H_INCLUDED
 #define DUK_LEXER_H_INCLUDED
 
-typedef void (*duk_re_range_callback)(void *user, duk_uint32_t r1, duk_uint32_t r2, int direct);
+typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepoint_t r2, int direct);
 
 /*
  *  A token is interpreted as any possible production of InputElementDiv

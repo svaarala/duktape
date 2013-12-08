@@ -1628,7 +1628,7 @@ static void emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
 	duk_uint16_t *ranges_end = ranges + num;
 	while (ranges < ranges_end) {
 		/* mark range 'direct', bypass canonicalization (see Wiki) */
-		gen_range(userdata, ranges[0], ranges[1], 1);
+		gen_range(userdata, (duk_codepoint_t) ranges[0], (duk_codepoint_t) ranges[1], 1);
 		ranges += 2;
 	}
 }
@@ -1654,7 +1654,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 		} else if (x == ']') {
 			DUK_ASSERT(!dash);	/* lookup should prevent this */
 			if (start >= 0) {
-				gen_range(userdata, start, start, 0);
+				gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
 			}
 			break;
 		} else if (x == '-') {
@@ -1788,7 +1788,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid range");
 				} else {
-					gen_range(userdata, start, start, 0);
+					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
 					start = -1;
 					/* dash is already 0 */
 				}
@@ -1800,11 +1800,11 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 						          "invalid range");
 					}
-					gen_range(userdata, start, ch, 0);
+					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) ch, 0);
 					start = -1;
 					dash = 0;
 				} else {
-					gen_range(userdata, start, start, 0);
+					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
 					start = ch;
 					/* dash is already 0 */
 				}
