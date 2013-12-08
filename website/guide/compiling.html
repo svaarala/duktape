@@ -1,0 +1,107 @@
+<h2 id="compiling">Compiling</h2>
+
+<h3>Automatic defaults</h3>
+
+<p>If you compile Duktape with no compiler options, Duktape will detect the
+compiler and the platform automatically and select defaults appropriate in
+most cases.  The default features are, at a high level:</p>
+
+<ul>
+<li>Full Ecmascript compliance</li>
+<li>Packed value representation (8 bytes per value) when available,
+    unpacked value representation (12-16 bytes per value) when not</li>
+<li>Reference counting and mark-and-sweep garbage collection</li>
+<li>Full error messages and tracebacks</li>
+<li>No debug printing, no asserts, etc</li>
+</ul>
+
+<h3>Feature options (DUK_OPT_xxx)</h3>
+
+<p>If you wish to modify the defaults, you can provide feature options in the
+form of <code>DUK_OPT_xxx</code> compiler defines.  These will be taken into
+account by the internal <code>duk_features.h</code> file, which resolves the
+final internal features based on feature requests, compiler features, and
+platform features.</p>
+
+<p>The available feature options can be found in <code>duk_features.h</code>.
+The table below summarizes the available options (in no particular order):</p>
+
+<table>
+<thead>
+<tr>
+<th>Define</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="definename">DUK_OPT_TRACEBACK_DEPTH</td>
+<td>Override default traceback collection depth.  The default is currently 10.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_FILE_IO</td>
+<td>Disable use of ANSI C file I/O which might be a portability issue on some
+    platforms.  Causes e.g. <code>duk_eval_file()</code> to throw an error.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_SEGFAULT_ON_PANIC</td>
+<td>Cause the default panic handler to cause a segfault instead of using
+    <code>abort()</code> or <code>exit()</code>.  This is useful when debugging
+    with valgrind, as a segfault provides a nice C traceback in valgrind.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_DPRINT_COLORS</td>
+<td>Enable coloring of debug prints with 
+    <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape codes</a>.
+    The behavior is not sensitive to terminal settings.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_DPRINT_RDTSC</td>
+<td>Print RDTSC cycle count in debug prints if available.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>DUK_PANIC_HANDLER</h3>
+
+<p>The default panic handler will print an error message to stdout
+(unless I/O is disabled by DUK_OPT_NO_FILE_IO).  It will then call
+<code>abort()</code> (or cause a segfault if
+<code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined).</p>
+
+<p>You can override the entire panic handler by defining
+<code>DUK_PANIC_HANDLER</code> on your own.  You could add the
+following to your compiler options:</p>
+<pre>
+'-DDUK_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
+</pre>
+
+<p>Or perhaps:</p>
+<pre>
+'-DDUK_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg))}'
+</pre>
+
+<p>which calls your custom handler:</p>
+<pre class="c-code">
+void my_panic_handler(int code, const char *msg) {
+    /* Your panic handling.  Must not return. */
+}
+</pre>
+
+<h3>Adding new feature options</h3>
+
+<p>This section only applies if you customize Duktape internals and wish
+to submit a patch to be included in the mainline distribution:</p>
+
+<ul>
+<li>Add a descriptive <code>DUK_OPT_xxx</code> for the custom feature.
+    The custom feature should only be enabled if the feature option is
+    explicitly given.</li>
+<li>Modify <code>duk_features.h</code> to detect your custom feature
+    option and define appropriate internal <code>DUK_USE_xxx</code>
+    define(s).  Conflicts with other features should be detected.
+    Code outside <code>duk_features.h</code> should only listen
+    to <code>DUK_USE_xxx</code> defines so that the resolution process
+    is fully contained in <code>duk_features.h</code>.</li>
+</ul>
+
