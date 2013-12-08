@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: 16-bit clen, blen, flags, e_idx, h_idx, a_idx
+title: 16-bit object property / hash sizes
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
-creation_time: 2013-12-06 21:04:09.019006 Z
+creation_time: 2013-12-07 18:58:09.654263 Z
 references: []
 
-id: b7341c84d06f710295a1ff0d816744018e123a54
+id: 2aeecb6ede59d442f04a33e2756e00198dd083dc
 log_events: 
-- - 2013-12-06 21:04:09.183984 Z
+- - 2013-12-07 18:58:09.822266 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-12-07 18:58:53.237997 Z
+- - 2013-12-07 18:58:58.285796 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
   - ""

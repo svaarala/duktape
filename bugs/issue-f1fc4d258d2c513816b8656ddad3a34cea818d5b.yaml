@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: memory instrumentation
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-07 16:58:52.879335 Z
+references: []
+
+id: f1fc4d258d2c513816b8656ddad3a34cea818d5b
+log_events: 
+- - 2013-12-07 16:58:53.071391 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
