@@ -971,6 +971,17 @@ extern double duk_computed_nan;
 #define DUK_USE_DPRINT_COLORS
 #endif
 
+/*
+ *  File I/O support.  This is now used in a few API calls to e.g. push
+ *  a string from file contents or eval a file.  For portability it must
+ *  be possible to disable I/O altogether.
+ */
+
+#undef DUK_USE_FILE_IO
+#if !defined(DUK_OPT_NO_FILE_IO)
+#define DUK_USE_FILE_IO
+#endif
+
 /* 
  *  Profile processing
  *

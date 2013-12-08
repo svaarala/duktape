@@ -2289,6 +2289,7 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
 	}
 }
 
+#ifdef DUK_USE_FILE_IO
 /* This is a bit clunky because it is ANSI C portable.  Should perhaps
  * relocate to another file because this is potentially platform
  * dependent.
@@ -2333,6 +2334,14 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "failed to read file");
 	return NULL;
 }
+#else
+const char *duk_push_string_file(duk_context *ctx, const char *path) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	DUK_ASSERT(ctx != NULL);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "file I/O disabled");
+	return NULL;
+}
+#endif  /* DUK_USE_FILE_IO */
 
 void duk_push_pointer(duk_context *ctx, void *val) {
 	duk_tval tv;
