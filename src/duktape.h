@@ -540,7 +540,7 @@ void duk_compile(duk_context *ctx, int flags);
 	do { \
 		(void) duk_push_string_file((ctx),(path)); \
 		(void) duk_push_string((ctx),(path)); \
-		duk_eval((ctx)); \
+		duk_eval_raw((ctx)); \
 	} while (0)
 
 #define duk_compile_file(ctx,flags,path)  \
