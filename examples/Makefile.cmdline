@@ -23,6 +23,11 @@ CCLIBS += -lncurses
 # If you don't have readline, or something else fails to compile
 #CCOPTS += -DDUK_CMDLINE_BAREBONES
 
+# Optional feature defines, see: http://www.duktape.org/guide.html#compiling
+CCOPTS += -DDUK_OPT_SELF_TESTS
+#CCOPTS += -DDUK_OPT_DEBUG
+# ...
+
 duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
