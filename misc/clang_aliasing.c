@@ -34,6 +34,12 @@
  *    804865f:       89 04 24                mov    %eax,(%esp)
  *    8048662:       e8 61 ff ff ff          call   80485c8 <dump>
  *
+ *  Apparently an FLD + FSTP sequence causes a signaling NaN (with mantissa
+ *  highest bit cleared) to be converted into a quiet NaN (with mantissa 
+ *  highest bit set) so the generated code is incorrect.  See for instance:
+ *
+ *    http://caml.inria.fr/mantis/view.php?id=5038
+ *
  *  The COPY_WORKS case looks like:
  *
  *    8048667:       c7 44 24 04 00 00 00    movl   $0x0,0x4(%esp)
