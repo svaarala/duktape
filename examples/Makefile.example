@@ -19,10 +19,14 @@ CCOPTS += -I./src  # for combined sources
 CCLIBS	= -lm
 DEFINES =
 
-# These should not be needed but you might consider them
-#CCOPTS += -m32                              # force 32-bit compilation on a 64-bit host
-#DEFINES += -DDUK_PROFILE=100                # if omitted, profile defaults to 100 on a
-#                                            # 32-bit platform, and 400 otherwise
+# If you want a 32-bit build on a 64-bit host
+#CCOPTS += -m32
+
+# You can provide a lot of feature options as DUK_OPT_xxx, see:
+# http://www.duktape.org/guide.html#compiling
+#DEFINES += -DDUK_OPT_DEBUG
+#DEFINES += -DDUK_OPT_NO_TRACEBACKS
+#...
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 

@@ -11,7 +11,7 @@
 #
 #    2. Add the Duktape header files to their include path.
 #
-#    3. Optionally define a DUK_PROFILE (default profile is used otherwise).
+#    3. Optionally define some DUK_OPT_xxx feature options.
 #
 #    4. Compile their program (which uses Duktape API).
 #
