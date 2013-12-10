@@ -2,8 +2,9 @@
  *  Determine platform features, select feature selection defines
  *  (e.g. _XOPEN_SOURCE), include system headers, and define DUK_USE_XXX
  *  defines which are (only) checked in Duktape internal code for
- *  activated features.  Duktape feature selection is based on DUK_PROFILE,
- *  user supplied DUK_OPT_xxx defines, and automatic feature detection.
+ *  activated features.  Duktape feature selection is based on automatic
+ *  feature detection, user supplied DUK_OPT_xxx defines, and optionally
+ *  a "duk_custom.h" user header (if DUK_OPT_HAVE_CUSTOM_H is defined).
  *
  *  This file is included by duk_internal.h before anything else is
  *  included.  Feature selection defines (e.g. _XOPEN_SOURCE) are defined
@@ -861,6 +862,18 @@ extern double duk_computed_nan;
 #define DUK_MACRO_STRINGIFY(x)  DUK_F_STRINGIFY_HELPER(x)
 
 /*
+ *  Cause segfault macro.
+ *
+ *  This is optionally used by panic handling to cause the program to segfault
+ *  (instead of e.g. abort()) on panic.  Valgrind will then indicate the C
+ *  call stack leading to the panic.
+ */
+
+#define DUK_CAUSE_SEGFAULT()  do { \
+		*((int32_t *) NULL) = (int32_t) 0xdeadbeefUL; \
+	} while (0)
+
+/*
  *  Macro for suppressing warnings for potentially unreferenced variables.
  *  The variables can be actually unreferenced or unreferenced in some
  *  specific cases only; for instance, if a variable is only debug printed,
@@ -984,6 +997,105 @@ extern double duk_computed_nan;
 #define DUK_FUNC_MACRO  "unknown"
 #endif
 
+/* 
+ *  Tagged type representation (duk_tval)
+ */
+
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && !defined(DUK_OPT_NO_PACKED_TVAL)
+#define DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+#endif
+
+/*
+ *  Memory management options
+ */
+
+#define DUK_USE_REFERENCE_COUNTING
+#define DUK_USE_DOUBLE_LINKED_HEAP
+#define DUK_USE_MARK_AND_SWEEP
+#undef DUK_USE_GC_TORTURE
+
+#if defined(DUK_OPT_NO_REFERENCE_COUNTING)
+#undef DUK_USE_REFERENCE_COUNTING
+#undef DUK_USE_DOUBLE_LINKED_HEAP
+#endif
+
+/*
+ *  Error handling options
+ */
+
+#define DUK_USE_AUGMENT_ERRORS
+#define DUK_USE_TRACEBACKS
+#define DUK_USE_VERBOSE_ERRORS
+
+#if defined(DUK_OPT_NO_AUGMENT_ERRORS)
+#undef DUK_USE_AUGMENT_ERRORS
+#undef DUK_USE_TRACEBACKS
+#elif defined(DUK_OPT_NO_TRACEBACKS)
+#undef DUK_USE_TRACEBACKS
+#endif
+
+#if defined(DUK_OPT_NO_VERBOSE_ERRORS)
+#undef DUK_USE_VERBOSE_ERRORS
+#endif
+
+#if defined(DUK_USE_TRACEBACKS)
+#if defined(DUK_OPT_TRACEBACK_DEPTH)
+#define DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
+#else
+#define DUK_USE_TRACEBACK_DEPTH  10
+#endif
+#endif
+
+/*
+ *  Debug printing and assertion options
+ */
+
+#undef DUK_USE_DEBUG
+#undef DUK_USE_DDEBUG
+#undef DUK_USE_DDDEBUG
+#undef DUK_USE_DPRINT_RDTSC
+#undef DUK_USE_ASSERTIONS
+
+#if defined(DUK_OPT_DEBUG)
+#define DUK_USE_DEBUG
+#endif
+#if defined(DUK_OPT_DDEBUG)
+#define DUK_USE_DDEBUG
+#endif
+#if defined(DUK_OPT_DDDEBUG)
+#define DUK_USE_DDDEBUG
+#endif
+
+#undef DUK_USE_DPRINT_COLORS
+#if defined(DUK_OPT_DPRINT_COLORS)
+#define DUK_USE_DPRINT_COLORS
+#endif
+
+#if defined(DUK_RDTSC_AVAILABLE) && defined(DUK_OPT_DPRINT_RDTSC)
+#define DUK_USE_DPRINT_RDTSC
+#else
+#undef DUK_USE_DPRINT_RDTSC
+#endif
+
+#if defined(DUK_OPT_ASSERTIONS)
+#define DUK_USE_ASSERTIONS
+#endif
+
+/*
+ *  Ecmascript features / compliance options
+ */
+
+#define DUK_USE_REGEXP_SUPPORT
+#define DUK_USE_STRICT_UTF8_SOURCE
+#define DUK_USE_OCTAL_SUPPORT
+#define DUK_USE_SOURCE_NONBMP
+#define DUK_USE_BROWSER_LIKE
+#define DUK_USE_SECTION_B
+
 /*
  *  Deep vs. shallow stack.
  *
@@ -998,18 +1110,6 @@ extern double duk_computed_nan;
 #endif
 
 /*
- *  Cause segfault macro.
- *
- *  This is optionally used by panic handling to cause the program to segfault
- *  (instead of e.g. abort()) on panic.  Valgrind will then indicate the C
- *  call stack leading to the panic.
- */
-
-#define DUK_CAUSE_SEGFAULT()  do { \
-		*((int32_t *) NULL) = (int32_t) 0xdeadbeefUL; \
-	} while (0)
-
-/*
  *  Panic exit behavior (for default panic handler)
  */
 
@@ -1021,15 +1121,6 @@ extern double duk_computed_nan;
 #define DUK_USE_PANIC_SEGFAULT
 #else
 #define DUK_USE_PANIC_ABORT
-#endif
-
-/*
- *  Colored debug printing.
- */
-
-#undef DUK_USE_DPRINT_COLORS
-#if defined(DUK_OPT_DPRINT_COLORS)
-#define DUK_USE_DPRINT_COLORS
 #endif
 
 /*
@@ -1054,61 +1145,10 @@ extern double duk_computed_nan;
 #define DUK_USE_SELF_TESTS
 #endif
 
-/* 
- *  Profile processing
- *
- *  DUK_PROFILE values:
- *    0      custom
- *    100    FULL
- *    101    FULL_DEBUG
- *    200    MINIMAL
- *    201    MINIMAL_DEBUG
- *    300    TINY
- *    301    TINY_DEBUG
- *    400    PORTABLE        [tagged types]
- *    401    PORTABLE_DEBUG  [tagged types]
- *    500    TORTURE         [tagged types + torture]
- *    501    TORTURE_DEBUG   [tagged types + torture]
+/*
+ *  Unaligned accesses
  */
 
-#if !defined(DUK_PROFILE)
-#if defined(DUK_USE_PACKED_TVAL_POSSIBLE)
-#define DUK_PROFILE  100
-#else
-#define DUK_PROFILE  400
-#endif
-#endif
-
-#if (DUK_PROFILE > 0)
-
-/* start with the settings for the FULL profile */
-
-#define DUK_USE_SELF_TEST_TVAL
-#define DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
-#define DUK_USE_REFERENCE_COUNTING
-#define DUK_USE_DOUBLE_LINKED_HEAP
-#define DUK_USE_MARK_AND_SWEEP
-#define DUK_USE_AUGMENT_ERRORS
-#define DUK_USE_TRACEBACKS
-#undef DUK_USE_GC_TORTURE
-#undef DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#undef DUK_USE_DPRINT_RDTSC                       /* feature determination below */
-#define DUK_USE_VERBOSE_ERRORS
-#undef DUK_USE_ASSERTIONS
-#undef DUK_USE_VARIADIC_MACROS                    /* feature determination below */
-#define DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
-#undef DUK_USE_EXPLICIT_NULL_INIT
-#define DUK_USE_REGEXP_SUPPORT
-#define DUK_USE_STRICT_UTF8_SOURCE
-#define DUK_USE_OCTAL_SUPPORT
-#define DUK_USE_SOURCE_NONBMP
-#define DUK_USE_BROWSER_LIKE
-#define DUK_USE_SECTION_B
-
-/* unaligned accesses */
 #ifdef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #define DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
 #define DUK_USE_HOBJECT_UNALIGNED_LAYOUT
@@ -1117,93 +1157,17 @@ extern double duk_computed_nan;
 #undef DUK_USE_HOBJECT_UNALIGNED_LAYOUT
 #endif
 
-/* profile specific modifications */
-
-#if (DUK_PROFILE == 100)
-/* FULL */
-#elif (DUK_PROFILE == 101)
-/* FULL_DEBUG */
-#define DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#define DUK_USE_ASSERTIONS
-#elif (DUK_PROFILE == 200)
-/* MINIMAL */
-#undef DUK_USE_TRACEBACKS
-#elif (DUK_PROFILE == 201)
-/* MINIMAL_DEBUG */
-#undef DUK_USE_TRACEBACKS
-#define DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#define DUK_USE_ASSERTIONS
-#elif (DUK_PROFILE == 300)
-/* TINY */
-#undef DUK_USE_SELF_TEST_TVAL
-#undef DUK_USE_REFERENCE_COUNTING
-#undef DUK_USE_DOUBLE_LINKED_HEAP
-#define DUK_USE_MARK_AND_SWEEP
-#undef DUK_USE_AUGMENT_ERRORS
-#undef DUK_USE_TRACEBACKS
-#undef DUK_USE_VERBOSE_ERRORS
-#elif (DUK_PROFILE == 301)
-/* TINY_DEBUG */
-#undef DUK_USE_SELF_TEST_TVAL
-#undef DUK_USE_REFERENCE_COUNTING
-#undef DUK_USE_DOUBLE_LINKED_HEAP
-#define DUK_USE_MARK_AND_SWEEP
-#undef DUK_USE_AUGMENT_ERRORS
-#undef DUK_USE_TRACEBACKS
-#undef DUK_USE_VERBOSE_ERRORS
-#define DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#define DUK_USE_ASSERTIONS
-#elif (DUK_PROFILE == 400)
-#undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
-#define DUK_USE_EXPLICIT_NULL_INIT
-#elif (DUK_PROFILE == 401)
-#undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
-#define DUK_USE_EXPLICIT_NULL_INIT
-#undef DUK_USE_GC_TORTURE
-#define DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#define DUK_USE_ASSERTIONS
-#elif (DUK_PROFILE == 500)
-#undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
-#define DUK_USE_GC_TORTURE
-#elif (DUK_PROFILE == 501)
-#undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
-#define DUK_USE_GC_TORTURE
-#define DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
-#undef DUK_USE_ASSERTIONS
-#else
-#error unknown DUK_PROFILE
-#endif
-
-#if defined(DUK_USE_TRACEBACKS)
-#if defined(DUK_OPT_TRACEBACK_DEPTH)
-#define DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
-#else
-#define DUK_USE_TRACEBACK_DEPTH  10
-#endif
-#endif
+/* FIXME: force alignment requirement */
 
 /*
- *  Dynamically detected features
+ *  Miscellaneous
  */
 
-#if defined(DUK_RDTSC_AVAILABLE) && defined(DUK_OPT_DPRINT_RDTSC)
-#define DUK_USE_DPRINT_RDTSC
-#else
-#undef DUK_USE_DPRINT_RDTSC
+#define DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
+#undef DUK_USE_EXPLICIT_NULL_INIT
+
+#if !defined(DUK_USE_PACKED_TVAL)
+#define DUK_USE_EXPLICIT_NULL_INIT
 #endif
 
 #ifdef DUK_F_C99
@@ -1212,12 +1176,17 @@ extern double duk_computed_nan;
 #undef DUK_USE_VARIADIC_MACROS
 #endif
 
-/* Variable size array at the end of a structure is nonportable.  There are
- * three alternatives:
- *  1) C99 (flexible array member): char buf[]
- *  2) Compiler specific (e.g. GCC): char buf[0]
- *  3) Portable but wastes memory / complicates allocation: char buf[1]
+/*
+ *  Variable size array initialization.
+ *
+ *  Variable size array at the end of a structure is nonportable. 
+ *  There are three alternatives:
+ *
+ *    1) C99 (flexible array member): char buf[]
+ *    2) Compiler specific (e.g. GCC): char buf[0]
+ *    3) Portable but wastes memory / complicates allocation: char buf[1]
  */
+
 /* FIXME: Currently unused, only hbuffer.h needed this at some point. */
 #undef DUK_USE_FLEX_C99
 #undef DUK_USE_FLEX_ZEROSIZE
@@ -1229,6 +1198,10 @@ extern double duk_computed_nan;
 #else
 #define DUK_USE_FLEX_ONESIZE
 #endif
+
+/*
+ *  GCC pragmas
+ */
 
 /* FIXME: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
  * This is very approximate but allows clean builds for development right now.
@@ -1304,15 +1277,6 @@ extern double duk_computed_nan;
 #error platform not supported
 #endif
 
-#else  /* DUK_PROFILE > 0 */
-
-/*
- *  All DUK_USE_ defines must be defined manually, no compiler
- *  or platform feature detection.
- */
-
-#endif  /* DUK_PROFILE > 0 */
-
 /*
  *  Date includes
  */
@@ -1332,13 +1296,17 @@ extern double duk_computed_nan;
 #include <time.h>
 #endif
 
-/* FIXME: An alternative approach to customization would be to include
- * some user define file at this point.  The user file could then modify
- * the base settings.  Something like:
- * #ifdef DUK_CUSTOM_HEADER
- * #include "duk_custom.h"
- * #endif
+/*
+ *  Alternative customization header
+ *
+ *  If you want to modify the final DUK_USE_xxx flags directly (without
+ *  using the available DUK_OPT_Xxx flags), define DUK_OPT_HAVE_CUSTOM_H
+ *  and tweak the final flags there.
  */
+
+#if defined(DUK_OPT_HAVE_CUSTOM_H)
+#include "duk_custom.h"
+#endif
 
 #endif  /* DUK_FEATURES_H_INCLUDED */
 

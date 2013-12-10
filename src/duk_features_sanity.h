@@ -3,6 +3,8 @@
  *  because we also check for consistency between duktape.h and
  *  duk_features.h defines.  Duktape.h cannot be included first
  *  because feature selection macros would then be incorrect.
+ *  This file can also double check user tweaks made by an optional
+ *  duk_custom.h header.
  */
 
 #ifndef DUK_FEATURES_SANITY_H_INCLUDED
