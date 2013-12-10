@@ -162,6 +162,8 @@ for i in	\
 	duk_util_hashprime.c	\
 	duk_util_misc.c		\
 	duk_util_tinyrandom.c	\
+	duk_selftest.c		\
+	duk_selftest.h		\
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do

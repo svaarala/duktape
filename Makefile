@@ -99,10 +99,12 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_builtin_regexp.c \
 	$(DISTSRCSEP)/duk_builtin_string.c \
 	$(DISTSRCSEP)/duk_builtin_buffer.c \
-	$(DISTSRCSEP)/duk_builtin_pointer.c
+	$(DISTSRCSEP)/duk_builtin_pointer.c \
+	$(DISTSRCSEP)/duk_selftest.c
 
 # Use combined sources for testing etc.
 DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
+#DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_SEPARATE)
 
 # Duktape command line tool - example of a main() program, used
 # for unit testing
@@ -147,6 +149,7 @@ CCOPTS_SHARED += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows va
 CCOPTS_SHARED += -DDUK_OPT_DPRINT_COLORS
 #CCOPTS_SHARED += -DDUK_OPT_NO_FILE_IO
 #CCOPTS_SHARED += '-DDUK_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
+CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCLIBS	= -lm
