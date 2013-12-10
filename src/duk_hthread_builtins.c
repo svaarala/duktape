@@ -7,15 +7,6 @@
 #include "duk_internal.h"
 
 /*
- *  Helper union to convert between raw bytes and a double portably.
- */
-
-typedef union {
-	unsigned char b[8];
-	double d;
-} duk_double_and_bytes;
-
-/*
  *  Encoding constants, must match genbuiltins.py
  */
 
@@ -275,17 +266,17 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			switch (t) {
 			case PROP_TYPE_DOUBLE: {
-				duk_double_and_bytes tmp;
+				duk_double_union du;
 				int k;
 
 				for (k = 0; k < 8; k++) {
 					/* Encoding endianness must match target memory layout,
 					 * build scripts and genbuiltins.py must ensure this.
 					 */
-					tmp.b[k] = duk_bd_decode(bd, 8);
+					du.uc[k] = (duk_uint8_t) duk_bd_decode(bd, 8);
 				}
 
-				duk_push_number(ctx, tmp.d);  /* push operation normalizes NaNs */
+				duk_push_number(ctx, du.d);  /* push operation normalizes NaNs */
 				break;
 			}
 			case PROP_TYPE_STRING: {
