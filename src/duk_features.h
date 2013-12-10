@@ -24,7 +24,7 @@
  *    - Intermediate platform detection (-> easier platform defines)
  *    - Platform detection, system includes, byte order detection, etc
  *    - ANSI C wrappers (e.g. DUK_MEMCMP), wrappers for constants, etc
- *    - Duktape profile handling, DUK_USE_xxx constants are set
+ *    - DUK_USE_xxx defines are resolved based on input defines
  *    - Duktape Date provider settings
  *    - Final sanity checks
  *
@@ -37,9 +37,6 @@
  *    http://sourceforge.net/p/predef/wiki/Architectures/
  *    http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
  *    http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
- *
- *  FIXME: at the moment there is no direct way of configuring
- *  or overriding individual settings.
  */
 
 #ifndef DUK_FEATURES_H_INCLUDED
@@ -53,10 +50,14 @@
  *  Compiler features
  */
 
+#undef DUK_F_C99
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #define DUK_F_C99
-#else
-#undef DUK_F_C99
+#endif
+
+#undef DUK_F_CPP
+#if defined(__cplusplus)
+#define DUK_F_CPP
 #endif
 
 /*
@@ -113,7 +114,9 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_X64
 #endif
 
-/* FIXME: X32: pointers are 32-bit so packed format can be used */
+/* FIXME: X32: pointers are 32-bit so packed format can be used, but X32
+ * support is not yet mature.
+ */
 
 /* MIPS */
 #if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
@@ -249,28 +252,34 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #ifdef DUK_F_TOS
 /*FIXME*/
 #else
+/* XXX: technically C99 (C++11) but found in many systems */
 #include <stdint.h>
 #endif
 
 #include <math.h>
 
 /*
- *  Wrapper typedefs and constants for integer types (also sanity check
- *  types)
+ *  Wrapper typedefs and constants for integer types, also sanity check types.
  *
  *  C99 typedefs are quite good but not always available, and we want to avoid
- *  forcibly redefining the C99 typedefs.  So, there are Duktape wrappers for all
- *  C99 typedefs and Duktape code should only use these typedefs.  The Duktape
- *  public API is problematic from type detection perspective and must be taken
- *  into account here.
+ *  forcibly redefining the C99 typedefs.  So, there are Duktape wrappers for
+ *  all C99 typedefs and Duktape code should only use these typedefs.  The
+ *  Duktape public API is problematic from type detection perspective and must
+ *  be taken into account here.
  *
  *  Type detection when C99 is not supported is quite simplistic now and will
  *  only work on 32-bit platforms (64-bit platforms are OK with C99 types).
  *
+ *  Pointer sizes are a portability problem: pointers to different types may
+ *  have a different size and function pointers are very difficult to manage
+ *  portably.
+ *
  *  http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
  *
- *  Note: don't typecast integer constants in macros as they can then no longer
- *  be used in macro relational expressions (e.g. #if DUK_SIZE_MAX < 0xffffffffUL).
+ *  Note: avoid typecasts and computations in macro integer constants as they
+ *  can then no longer be used in macro relational expressions (such as
+ *  #if DUK_SIZE_MAX < 0xffffffffUL).  There is internal code which relies on
+ *  being able to compare DUK_SIZE_MAX against a limit.
  */
 
 /* FIXME: How to do reasonable automatic detection on older compilers,
@@ -281,7 +290,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * used anywhere, including the public Duktape API.  Also all printf()
  * format characters need to be changed.
  */
-#ifdef INT_MAX
+#if defined(INT_MAX)
 #if INT_MAX < 2147483647
 #error INT_MAX too small, expected int to be 32 bits at least
 #endif
@@ -300,8 +309,21 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error cannot check complement of two
 #endif
 
+/* Intermediate define for 'have inttypes.h' */
+#undef DUK_F_HAVE_INTTYPES
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
-    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS has C99 but no inttypes.h */
+    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__))
+/* vbcc + AmigaOS has C99 but no inttypes.h */
+#define DUK_F_HAVE_INTTYPES
+#elif defined(__cplusplus) && (__cplusplus >= 201103L)
+/* C++11 apparently ratified stdint.h */
+#define DUK_F_HAVE_INTTYPES
+#endif
+
+/* Basic integer typedefs and limits, preferably from inttypes.h, otherwise
+ * through automatic detection.
+ */
+#if defined(DUK_F_HAVE_INTTYPES)
 /* C99 */
 #define DUK_F_HAVE_64BIT
 #include <inttypes.h>
@@ -400,9 +422,12 @@ typedef size_t duk_size_t;
 /* When C99 types are not available, we use simplistic detection to get
  * the basic 8, 16, and 32 bit types.  The fast/least types are then
  * assumed to be exactly the same for now: these could be improved per
- * platform but C99 types are very often now available.
+ * platform but C99 types are very often now available.  64-bit types
+ * are not defined at all now (duk_uint64_t etc).
  *
- * 64-bit types are not defined at all now (duk_uint64_t etc).
+ * This detection code is necessarily a bit hacky and can provide typedefs
+ * and defines that won't work correctly on some exotic platform.  It only
+ * really works on 32-bit platforms.
  */
 
 #undef DUK_F_HAVE_64BIT
@@ -520,6 +545,13 @@ typedef duk_size_t size_t;
 #define DUK_UINTMAX_MAX       0xffffffffUL
 #define DUK_INTMAX_MIN        (-0x80000000L
 #define DUK_INTMAX_MAX        0x7fffffffL
+
+/* SIZE_MAX may be missing so use an approximate value for it. */
+#undef DUK_SIZE_MAX_COMPUTED
+#if !defined(SIZE_MAX)
+#define DUK_SIZE_MAX_COMPUTED
+#define SIZE_MAX              ((size_t) (-1))
+#endif
 #define DUK_SIZE_MIN          0
 #define DUK_SIZE_MAX          SIZE_MAX
 
@@ -547,9 +579,20 @@ typedef duk_int_fast32_t duk_signed_codepoint_t;
 /* IEEE double typedef. */
 typedef double duk_double_t;
 
-/* Size_t must be at least 32 bits currently. */
+/* We're generally assuming that we're working on a platform with a 32-bit
+ * address space.  If DUK_SIZE_MAX is a typecast value (which is necessary
+ * if SIZE_MAX is missing), the check must be avoided because the
+ * preprocessor can't do a comparison.
+ */
+#if !defined(DUK_SIZE_MAX)
+#error DUK_SIZE_MAX is undefined, probably missing SIZE_MAX
+#elif !defined(DUK_SIZE_MAX_COMPUTED)
 #if DUK_SIZE_MAX < 0xffffffffUL
-#error size_t is too small (must be 32 bits or more)
+/* XXX: compare against a lower value; can SIZE_MAX realistically be
+ * e.g. 0x7fffffffUL on a 32-bit system?
+ */
+#error size_t is too small
+#endif
 #endif
 
 /*
@@ -634,16 +677,30 @@ typedef double duk_double_t;
 /*
  *  Check whether or not a packed duk_tval representation is possible.
  *  What's basically required is that pointers are 32-bit values
- *  (sizeof(void *) == 4).
+ *  (sizeof(void *) == 4).  Best effort check, not always accurate.
  */
 
-/* best effort viability checks, not particularly accurate */
 #undef DUK_USE_PACKED_TVAL_POSSIBLE
-#if (defined(UINTPTR_MAX) && (UINTPTR_MAX == 4294967295))
+#if defined(UINTPTR_MAX) && (UINTPTR_MAX == 0xffffffffUL)
 /* strict C99 check */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
-#elif defined(DUK_F_M68K)
+#endif
+
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_SIZE_MAX) && !defined(DUK_SIZE_MAX_COMPUTED)
+#if DUK_SIZE_MAX <= 0xffffffffUL
 #define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+#endif
+
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_M68K)
+#define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/* GCC/clang inaccurate math would break compliance and probably duk_tval,
+ * so refuse to compile.  Relax this if -ffast-math is tested to work.
+ */
+#if defined(__FAST_MATH__)
+#error __FAST_MATH__ defined, refusing to compile
 #endif
 
 /*
@@ -699,6 +756,7 @@ extern double duk_computed_nan;
 #undef DUK_USE_REPL_SIGNBIT
 #undef DUK_USE_REPL_ISFINITE
 #undef DUK_USE_REPL_ISNAN
+#undef DUK_USE_REPL_ISINF
 
 /* complex condition broken into separate parts */
 #undef DUK_F_USE_REPL_ALL
@@ -721,10 +779,12 @@ extern double duk_computed_nan;
 #define DUK_USE_REPL_SIGNBIT
 #define DUK_USE_REPL_ISFINITE
 #define DUK_USE_REPL_ISNAN
+#define DUK_USE_REPL_ISINF
 #define DUK_FPCLASSIFY       duk_repl_fpclassify
 #define DUK_SIGNBIT          duk_repl_signbit
 #define DUK_ISFINITE         duk_repl_isfinite
 #define DUK_ISNAN            duk_repl_isnan
+#define DUK_ISINF            duk_repl_isinf
 #define DUK_FP_NAN           0
 #define DUK_FP_INFINITE      1
 #define DUK_FP_ZERO          2
@@ -735,6 +795,7 @@ extern double duk_computed_nan;
 #define DUK_SIGNBIT          signbit
 #define DUK_ISFINITE         isfinite
 #define DUK_ISNAN            isnan
+#define DUK_ISINF            isinf
 #define DUK_FP_NAN           FP_NAN
 #define DUK_FP_INFINITE      FP_INFINITE
 #define DUK_FP_ZERO          FP_ZERO

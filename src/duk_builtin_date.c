@@ -984,7 +984,7 @@ static double push_this_and_get_timeval_tzoffset(duk_context *ctx, int flags, in
 		}
 	}
 	/* if no NaN handling flag, may still be NaN here, but not Inf */
-	DUK_ASSERT(!isinf(d));
+	DUK_ASSERT(!DUK_ISINF(d));
 
 	if (flags & FLAG_LOCALTIME) {
 		/* Note: DST adjustment is determined using UTC time.

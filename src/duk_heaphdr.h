@@ -44,7 +44,7 @@ struct duk_heaphdr_string {
 #endif
 };
 
-#define DUK_HEAPHDR_FLAGS_TYPE_MASK      0x0000000fU
+#define DUK_HEAPHDR_FLAGS_TYPE_MASK      0x0000000fUL
 #define DUK_HEAPHDR_FLAGS_FLAG_MASK      (~DUK_HEAPHDR_FLAGS_TYPE_MASK)
 
                                              /* 4 bits for heap type */

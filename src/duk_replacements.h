@@ -16,5 +16,9 @@ int duk_repl_isfinite(double x);
 #ifdef DUK_USE_REPL_ISNAN
 int duk_repl_isnan(double x);
 #endif
-	
+
+#ifdef DUK_USE_REPL_ISINF
+int duk_repl_isinf(double x);
+#endif
+
 #endif  /* DUK_REPLACEMENTS_H_INCLUDED */

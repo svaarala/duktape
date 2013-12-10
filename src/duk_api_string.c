@@ -45,7 +45,10 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 		/* Impose a string maximum length; overflow check if size_t is
 		 * 32 bits, straight compare if larger.
 		 */
-#if DUK_SIZE_MAX == 0xffffffffUL
+#if DUK_SIZE_MAX <= 0xffffffffUL
+		/* FIXME: check assumes DUK_SIZE_MAX is a plain value, convert to
+		 * actual code which will get optimized.
+		 */
 		if (new_len < len) {
 			goto error_overflow;
 		}

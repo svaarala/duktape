@@ -72,3 +72,10 @@ int duk_repl_isnan(double x) {
 }
 #endif
 
+#ifdef DUK_USE_REPL_ISINF
+int duk_repl_isinf(double x) {
+	int c = DUK_FPCLASSIFY(x);
+	return (c == DUK_FP_INFINITE);
+}
+#endif
+
