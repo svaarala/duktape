@@ -108,7 +108,7 @@ desc: |-
   loop counter.
 type: :bugfix
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -183,3 +183,7 @@ log_events:
     This may be impossible to catch at compile time, so perhaps add a few self
     tests and/or add an assert to DUK_TVAL_SET_TVAL.  There is no telling what
     other code might be affected though.
+- - 2013-12-10 21:35:38.936057 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
+  - ""

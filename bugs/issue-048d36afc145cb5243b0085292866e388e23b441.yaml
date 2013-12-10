@@ -16,3 +16,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2013-12-10 21:02:49.037757 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    End of buffer (-1) gets cast to unsigned duk_codepoint_t which then fails to
+    match the ASCII fast path.
