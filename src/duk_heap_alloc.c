@@ -320,6 +320,13 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_DPRINT("allocate heap");
 
+	/* If selftests enabled, run them as early as possible. */
+#ifdef DUK_USE_SELF_TESTS
+	DUK_DPRINT("running self tests");
+	duk_selftest_run_tests();
+	DUK_DPRINT("self tests passed");
+#endif
+
 #ifdef DUK_USE_COMPUTED_NAN
 	do {
 		/* Workaround for some exotic platforms where NAN is missing

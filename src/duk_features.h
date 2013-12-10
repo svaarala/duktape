@@ -1043,6 +1043,17 @@ extern double duk_computed_nan;
 #define DUK_USE_FILE_IO
 #endif
 
+/*
+ *  Optional run-time self tests executed when a heap is created.  Some
+ *  platform/compiler issues cannot be determined at compile time.  One
+ *  particular example is the bug described in misc/clang_aliasing.c.
+ */
+
+#undef DUK_USE_SELF_TESTS
+#if defined(DUK_OPT_SELF_TESTS)
+#define DUK_USE_SELF_TESTS
+#endif
+
 /* 
  *  Profile processing
  *
