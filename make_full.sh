@@ -89,6 +89,14 @@ for i in api-testcases/*.c; do
 done
 
 for i in \
+	misc/clang_aliasing.c \
+	misc/c_overflow_test.py \
+	misc/tcc_zerosign1.c \
+	misc/tcc_zerosign2.c; do
+	cp --parents $i $FULL/
+done
+
+for i in \
 	README.txt.dist \
 	README.txt.full \
 	LICENSE.txt \
