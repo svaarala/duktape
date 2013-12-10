@@ -621,6 +621,7 @@ int duk_builtin_global_object_unescape(duk_context *ctx) {
 #endif
 
 #ifdef DUK_USE_BROWSER_LIKE
+#ifdef DUK_USE_FILE_IO
 static int print_alert_helper(duk_context *ctx, FILE *f_out) {
 	int nargs;
 	int i;
@@ -669,7 +670,6 @@ static int print_alert_helper(duk_context *ctx, FILE *f_out) {
  flush:
 	fflush(f_out);
 	return 0;
-
 }
 
 int duk_builtin_global_object_print(duk_context *ctx) {
@@ -679,6 +679,15 @@ int duk_builtin_global_object_print(duk_context *ctx) {
 int duk_builtin_global_object_alert(duk_context *ctx) {
 	return print_alert_helper(ctx, stderr);
 }
+#else  /* DUK_USE_FILE_IO */
+int duk_builtin_global_object_print(duk_context *ctx) {
+	return 0;
+}
+
+int duk_builtin_global_object_alert(duk_context *ctx) {
+	return 0;
+}
+#endif  /* DUK_USE_FILE_IO */
 #endif  /* DUK_USE_BROWSER_LIKE */
 
 
