@@ -111,11 +111,6 @@ DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 DUKTAPE_CMDLINE_SOURCES = \
 	$(DISTCMD)/duk_cmdline.c
 
-DUK_SHARED_LIBS_NONDEBUG = libduktape.so.1.0.0 libduktapep.so.1.0.0
-DUK_SHARED_LIBS_DEBUG = libduktaped.so.1.0.0 libduktapepd.so.1.0.0
-DUK_CMDLINE_TOOLS_NONDEBUG = duk dukp
-DUK_CMDLINE_TOOLS_DEBUG = dukd dukpd
-
 # Compiler setup for Linux
 CC	= gcc
 CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
@@ -130,45 +125,44 @@ CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 #CCOPTS_SHARED += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_SHARED += -DDUK_OPT_NO_VERBOSE_ERRORS
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
+CCOPTS_NONDEBUG += -g -ggdb
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
+CCOPTS_DEBUG += -DDUK_OPT_DEBUG
 CCLIBS	= -lm
 CCLIBS += -lreadline
 CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
 .PHONY: default all clean test install
 
-all:	$(DUK_CMDLINE_TOOLS_NONDEBUG) \
-	$(DUK_CMDLINE_TOOLS_DEBUG) \
-	$(DUK_SHARED_LIBS_NONDEBUG) \
-	$(DUK_SHARED_LIBS_DEBUG)
+all:	duk \
+	dukd \
+	libduktape.so.1.0.0 \
+	libduktaped.so.1.0.0
 
 clean:
 	-@rm -rf dist/
 	-@rm -rf full/
 	-@rm -rf site/
-	-@rm -f $(DUK_CMDLINE_TOOLS_NONDEBUG)
-	-@rm -f $(DUK_CMDLINE_TOOLS_DEBUG)
-	-@rm -f $(DUK_SHARED_LIBS_NONDEBUG)
-	-@rm -f $(DUK_SHARED_LIBS_DEBUG)
+	-@rm -f duk dukd
 	-@rm -f libduktape*.so*
 	-@rm -f doc/*.html
 	-@rm -f src/*.pyc
 
-$(DUK_SHARED_LIBS_NONDEBUG): dist
+libduktape.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-$(DUK_SHARED_LIBS_DEBUG): dist
+libduktaped.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-$(DUK_CMDLINE_TOOLS_NONDEBUG): dist
+duk:	dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
-$(DUK_CMDLINE_TOOLS_DEBUG): dist
+dukd:	dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 test:	npminst duk
