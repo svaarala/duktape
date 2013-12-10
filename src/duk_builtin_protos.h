@@ -134,10 +134,12 @@ int duk_builtin_object_prototype_property_is_enumerable(duk_context *ctx);
 int duk_builtin_pointer_constructor(duk_context *ctx);
 int duk_builtin_pointer_prototype_tostring_shared(duk_context *ctx);
 
+int duk_builtin_regexp_constructor(duk_context *ctx);
 int duk_builtin_regexp_prototype_exec(duk_context *ctx);
 int duk_builtin_regexp_prototype_test(duk_context *ctx);
 int duk_builtin_regexp_prototype_to_string(duk_context *ctx);
 
+int duk_builtin_string_constructor(duk_context *ctx);
 int duk_builtin_string_constructor_from_char_code(duk_context *ctx);
 int duk_builtin_string_prototype_to_string(duk_context *ctx);
 int duk_builtin_string_prototype_value_of(duk_context *ctx);
