@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "consistency of duk_double_union and volatile use: perhaps DUK_DBLUNION_VOLATILE or DUK_DBLUNION_DECL macro?"
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-10 01:43:59.984241 Z
+references: []
+
+id: ddb5b0e0847790378462a4849ad0d42599e281a6
+log_events: 
+- - 2013-12-10 01:44:00.152200 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

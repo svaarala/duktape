@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: allow compilation with g++
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-09 20:35:52.016254 Z
+references: []
+
+id: 6c851506a7b78794983d69454d112a4c8e6e5551
+log_events: 
+- - 2013-12-09 20:35:52.215975 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2013-12-10 01:57:11.659597 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.8
+  - ""
