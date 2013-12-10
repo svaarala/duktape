@@ -152,25 +152,32 @@
 #error no DUK_USE_PANIC_xxx macro defined
 #endif
 
+#ifdef DUK_USE_FILE_IO
+#define DUK_PANIC_PRINTMSG(code,msg)  do { \
+		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \
+		fflush(stderr); \
+	} while (0)
+#else
+#define DUK_PANIC_PRINTMSG(code,msg)
+#endif
+
 #ifdef DUK_USE_GCC_PRAGMAS
 #define DUK_PANIC_HANDLER(code,msg)  do { \
 		/* GCC pragmas to suppress: warning: the address of 'xxx' will always evaluate as 'true' [-Waddress]' */ \
 		_Pragma("GCC diagnostic push"); \
 		_Pragma("GCC diagnostic ignored \"-Waddress\""); \
-		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \
-		fflush(stderr); \
+		DUK_PANIC_PRINTMSG((code),(msg)); \
 		DUK_PANIC_EXIT(); \
 		_Pragma("GCC diagnostic pop"); \
 	} while (0)
 #else
 #define DUK_PANIC_HANDLER(code,msg)  do { \
 		/* No pragmas to suppress warning, causes unclean build */ \
-		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \
-		fflush(stderr); \
+		DUK_PANIC_PRINTMSG((code),(msg)); \
 		DUK_PANIC_EXIT(); \
 	} while (0)
-#endif
-#endif
+#endif  /* DUK_USE_GCC_PRAGMAS */
+#endif  /* DUK_PANIC_HANDLER */
 
 /*
  *  Assertion helpers
