@@ -73,7 +73,11 @@ The table below summarizes the available options (in no particular order):</p>
 <tr>
 <td class="definename">DUK_OPT_NO_FILE_IO</td>
 <td>Disable use of ANSI C file I/O which might be a portability issue on some
-    platforms.  Causes e.g. <code>duk_eval_file()</code> to throw an error.</td>
+    platforms.  Causes <code>duk_eval_file()</code> to throw an error,
+    makes built-in <code>print()</code> and <code>alert()</code> no-ops,
+    and suppresses writing of a panic message to <code>stderr</code> on panic.
+    This option does not suppress debug printing so don't enable debug printing
+    if you wish to avoid I/O.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_SEGFAULT_ON_PANIC</td>
