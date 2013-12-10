@@ -3,8 +3,10 @@
 <h3>Platforms and compilers</h3>
 
 <p>The table below summarizes the platforms and compilers which Duktape is known
-to work on, with portability notes where appropriate.  This is not a list of
-supported platforms, rather a list of what is known to work.</p>
+to work on, with portability notes where appropriate.  This is not an exhaustive
+list of supported/unsupported platforms, rather a list of what is known to work
+(and not to work).  Platform and compiler specific issues are discussed in more
+detail below the table.</p>
 
 <table>
 <thead>
@@ -20,39 +22,86 @@ supported platforms, rather a list of what is known to work.</p>
 <td>Linux</td>
 <td>GCC</td>
 <td>x86, x86-64, ARM, MIPS</td>
-<td></td>
+<td>No known issues.</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>Clang</td>
+<td>x86, x86-64, ARM, MIPS</td>
+<td>No known issues.</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>TCC</td>
+<td>x86-64</td>
+<td>Zero sign issues (see below).</td>
+</tr>
+<tr>
+<td>FreeBSD</td>
+<td>Clang</td>
+<td>x86-64</td>
+<td>Aliasing issues with clang 3.3 on FreeBSD, with <code>-m32</code> and packed <code>duk_tval</code>.</td>
 </tr>
 <tr>
 <td>AmigaOS</td>
 <td>VBCC</td>
 <td>M68K</td>
-<td>Must define <tt>AMIGA</tt> and <tt>__MC68K__</tt> manually (no platform
-    or processor defines available).</td>
+<td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
 </tr>
 <tr>
 <td>TOS (Atari ST)</td>
 <td>VBCC</td>
 <td>M68K</td>
-<td>Must define <tt>__TOS__</tt> and <tt>__MC68K__</tt> manually (no platform
-    or processor defines available).</td>
+<td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
 </tr>
 </tbody>
 </table>
 
-<h3>Using C++ instead of C</h3>
+<h4>Clang</h4>
 
-<p>There are two ways to use Duktape in a C++ program:</p>
+<p>Clang 3.3 on FreeBSD has some aliasing issues (at least) when using
+<code>-m32</code> and when Duktape ends up using a packed <code>duk_tval</code>
+value representation type.</p>
+
+<p>The problem does not appear in older (and perhaps newer) clang versions.</p>
+
+<h4>TCC</h4>
+
+<p>TCC has zero sign handling issues; Duktape mostly works but zero sign is
+not handled correctly.  This results in Ecmascript non-compliance, for
+instance <code>1/-0</code> evaluates to <code>Infinity</code>, not <code>-Infinity</code>
+as it should.</p>
+
+<h4>VBCC (AmigaOS / TOS)</h4>
+
+<p>VBCC doesn't appear to provide OS or processor defines.  To compile for
+M68K AmigaOS or TOS you must:</p>
 <ul>
-<li>Compile Duktape in plain C, and use it from a C++ program.  The
-    <tt>duktape.h</tt> header provides the necessary glue to avoid name
-    mangling issues.</li>
-<li>Compile both Duktape and your program as C++..</li>
+<li>Define <code>__MC68K__</code> manually.</li>
+<li>Define either <code>AMIGA</code> or <code>__TOS__</code>.</li>
 </ul>
+
+<p>Datetime resolution is limited to full seconds only when using VBCC on
+AmigaOS or TOS.</p>
+
+<h3>Using Duktape from a C++ program</h3>
+
+<p>To use Duktape from a C++ program, simply compile Duktape in plain C and use
+<code>duktape.h</code> normally in your C++ program; <code>duktape.h</code>
+contains the necessary glue to make this work.  Specifically, it contains
+<code>extern "C" { ... }</code> to avoid name mangling issues.</p>
+
+<p>Currently Duktape itself cannot be compiled in C++ mode.  This is under
+work but is not a trivial issue because many of the compiler defines and
+headers are different (especially for pre C99/C++11).</p>
 
 <h3>Limitations</h3>
 
 <ul>
-<li>The <tt>int</tt> type is assumed to be 32 bits.  This is incorrect even
-    on some platforms which provide a 32-bit type.</li>
+<li>The <code>int</code> type is assumed to be at least 32 bits.  This is
+    incorrect even on some platforms which provide a 32-bit type.</li>
+<li>On platforms requiring aligned accesses, Duktape guarantees 4-byte
+    alignment.  In particular, 64-bit integers and IEEE double values are
+    not guaranteed to be 8-byte aligned.  This is not always correct.</li>
 </ul>
 
