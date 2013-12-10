@@ -681,7 +681,7 @@ typedef double duk_double_t;
  */
 
 #undef DUK_USE_PACKED_TVAL_POSSIBLE
-#if defined(UINTPTR_MAX) && (UINTPTR_MAX == 0xffffffffUL)
+#if defined(UINTPTR_MAX) && (UINTPTR_MAX <= 0xffffffffUL)
 /* strict C99 check */
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
