@@ -50,6 +50,12 @@ The table below summarizes the available options (in no particular order):</p>
     with valgrind, as a segfault provides a nice C traceback in valgrind.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_SELF_TESTS</td>
+<td>Perform run-time self tests when a Duktape heap is created.  Catches
+    platform/compiler problems which cannot be reliably detected during
+    compile time.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_DPRINT_COLORS</td>
 <td>Enable coloring of debug prints with 
     <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape codes</a>.
