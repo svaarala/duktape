@@ -85,14 +85,6 @@ compliance concern, but degrades performance.</p>
 are scanned <code>2**n</code> times, where <code>n</code> is the function level
 (0, 1, ...).</p>
 
-<h3>Compiler variable/constant limit</h3>
-
-<p>The compiler currently has internal limitations dealing with functions
-with more than about 128 variables or constants.  This is a concrete issue
-with object and array literals which may become too large to compile even
-in quite normal situations.  This will be fixed soon.  The limitation is in
-the compiler, the bytecode supports a large constant set.</p>
-
 <h3>Global/eval code is slower than function code</h3>
 
 <p>Bytecode generated for global and eval code cannot assign variables
