@@ -18,6 +18,10 @@
  *
  *  See http://en.wikipedia.org/wiki/Double_precision_floating-point_format.
  *
+ *  NaNs are represented as exponent 0x7ff and mantissa != 0.  The NaN is a
+ *  signaling NaN when the highest bit of the mantissa is zero, and a quiet
+ *  NaN when the highest bit is set.
+ *
  *  At least three memory layouts are relevant here:
  *
  *    A B C D E F G H    Big endian (e.g. 68k)           DUK_USE_DOUBLE_BE
@@ -37,6 +41,11 @@
  *    BE             01234567         0123               01
  *    LE             76543210         3210               10
  *    ME (ARM)       32107654         1032               01
+ *
+ *  Some processors may alter NaN values in a floating point load+store.
+ *  For instance, on X86 a FLD + FSTP may convert a signaling NaN to a
+ *  quiet one.  This is catastrophic when NaN space is used in packed
+ *  duk_tval values.  See: misc/clang_aliasing.c.
  */
 
 #ifndef DUK_DBLUNION_H_INCLUDED
