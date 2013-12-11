@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-22 18:30:43.784073 Z
 references: []
 
@@ -30,3 +30,7 @@ log_events:
   - |-
     Add an end user versions / change log, which is a sanitized version of the ditz issues
     closed and git commits made.
+- - 2013-12-11 18:18:43.471506 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

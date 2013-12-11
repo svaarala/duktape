@@ -5,7 +5,7 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2013-12-09 23:15:11.950551 Z
 references: []
@@ -22,3 +22,7 @@ log_events:
   - |-
     End of buffer (-1) gets cast to unsigned duk_codepoint_t which then fails to
     match the ASCII fast path.
+- - 2013-12-10 23:44:12.659192 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
