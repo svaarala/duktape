@@ -63,10 +63,15 @@ Released
 
 * Various DUK_OPT_xxx flags added for tuning the build (see web docs)
 
+* Register shuffling added to compiler to mostly eliminate constant and
+  temporary register limits
+
 * Ecmascript E5.1 test cases and fixes
 
 * Mark-and-sweep stringtable leak fixed, affected mostly builds without
   reference counting
+
+* Coroutine yield fixes
 
 * Portability fixes
 
