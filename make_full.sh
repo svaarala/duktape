@@ -100,6 +100,7 @@ for i in \
 	README.txt.dist \
 	README.txt.full \
 	LICENSE.txt \
+	RELEASES.txt \
 	Makefile \
 	make_dist.sh \
 	combine_src.py \
