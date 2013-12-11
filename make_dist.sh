@@ -211,6 +211,7 @@ done
 
 cp README.txt.dist $DIST/README.txt
 cp LICENSE.txt $DIST/LICENSE.txt
+cp RELEASES.txt $DIST/RELEASES.txt
 
 for i in \
 	murmurhash2.txt \

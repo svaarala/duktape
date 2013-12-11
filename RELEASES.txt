@@ -54,17 +54,29 @@ Released
 
 * Clean up and document error object properties
 
-* Portability fixes
+* Add prototype objects for buffer and pointer values, and make them object
+  coercible
+
+* Proper support for big, little, and "middle endian" environments
+
+* Single file combined source distributable
+
+* Portability and bug fixes
 
 0.8.0 (2013-12-XX)
 ------------------
 
-* Remove DUK_PROFILE model, use explicit DUK_OPT_xxx feature options
+* Remove DUK_PROFILE model, explicit DUK_OPT_xxx feature options added for
+  tuning the build (see web docs)
 
-* Various DUK_OPT_xxx flags added for tuning the build (see web docs)
-
-* Register shuffling added to compiler to mostly eliminate constant and
+* Register shuffling added to compiler which mostly eliminates constant and
   temporary register limits
+
+* Reduce code footprint, make built-in data 'const' so that it compiles
+  into the 'text' section
+
+* Augment errors created when a built-in error constructor is called as
+  a normal function (e.g. "var e = Error('test')")
 
 * Ecmascript E5.1 test cases and fixes
 
@@ -73,7 +85,7 @@ Released
 
 * Coroutine yield fixes
 
-* Portability fixes
+* Portability and bug fixes
 
 Planned
 =======
@@ -87,5 +99,5 @@ Planned
 1.0.0 (2014-XX-XX)
 -------------------
 
-* First stable version
+* Feature complete baseline release
 
