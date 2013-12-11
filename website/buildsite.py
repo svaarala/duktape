@@ -524,7 +524,7 @@ def generateIndexPage():
 
 	return templ_soup
 
-def generateDownloadPage():
+def generateDownloadPage(releases_filename):
 	templ_soup = validateAndParseHtml(readFile('template.html'))
 	down_soup = validateAndParseHtml(readFile('download/download.html'))
 	setNavSelected(templ_soup, 'Download')
@@ -532,6 +532,11 @@ def generateDownloadPage():
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
 	title_elem.string = 'Downloads'
+
+	releaselog_elem = down_soup.select('#releaselog')[0]
+	f = open(releases_filename, 'rb')
+	releaselog_elem.string = f.read().decode('utf-8')
+	f.close()
 
 	tmp_soup = templ_soup.select('#site-middle')[0]
 	tmp_soup.clear()
@@ -665,6 +670,7 @@ def main():
 	guideincdir = '../examples/guide'
 	apiincdir = '../examples/api'
 	out_charset = 'utf-8'
+	releases_filename = '../RELEASES.txt'
 
 	print 'Generating style.css'
 	data = generateStyleCss()
@@ -688,7 +694,7 @@ def main():
 	writeFile(os.path.join(outdir, 'index.html'), soup.encode(out_charset))
 
 	print 'Generating download.html'
-	soup = generateDownloadPage()
+	soup = generateDownloadPage(releases_filename)
 	soup = postProcess(soup, None)
 	writeFile(os.path.join(outdir, 'download.html'), soup.encode(out_charset))
 
