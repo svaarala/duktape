@@ -1,0 +1,86 @@
+=================
+Duktape changelog
+=================
+
+Releases
+========
+
+0.1.0 (2013-02-14)
+------------------
+
+* Initial alpha release
+
+* Core features work: compiler, executor, regexps, garbage collection
+
+* Most built-ins incomplete or missing
+
+0.2.0 (2013-02-27)
+------------------
+
+* Built-ins implemented: Boolean, Date, JSON
+
+* Date built-in has initial, minimal local time / locale support
+
+* Initial internal documentation: regexp, datetime, json
+
+0.3.0 (2013-03-16)
+------------------
+
+* Built-ins implemented: global object, Object, String
+
+0.4.0 (2013-03-31)
+------------------
+
+* Built-ins: Array, Number, completing built-ins
+
+0.5.0 (2013-05-17)
+------------------
+
+* Built-in number conversion primitives
+
+* Cleanup built-ins, improve test cases for built-ins
+
+0.6.0 (2013-09-21)
+------------------
+
+* First round of public API cleanup, and add basic API documentation
+
+* First version of duktape.org website
+
+0.7.0 (2013-10-30)
+------------------
+
+* Traceback support improved
+
+* Clean up and document error object properties
+
+* Portability fixes
+
+0.8.0 (2013-12-XX)
+------------------
+
+* Remove DUK_PROFILE model, use explicit DUK_OPT_xxx feature options
+
+* Various DUK_OPT_xxx flags added for tuning the build (see web docs)
+
+* Ecmascript E5.1 test cases and fixes
+
+* Mark-and-sweep stringtable leak fixed, affected mostly builds without
+  reference counting
+
+* Portability fixes
+
+Planned
+=======
+
+0.9.0 (2014-XX-XX)
+-------------------
+
+0.10.0 (2014-XX-XX)
+-------------------
+
+1.0.0 (2014-XX-XX)
+-------------------
+
+* First stable version
+
