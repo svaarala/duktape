@@ -1325,7 +1325,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx, duk_cont
  */
 
 static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
-	volatile duk_double_union u;
+	duk_double_union u;
 	duk_uint32_t tmp;
 	int exp;
 
@@ -1370,7 +1370,7 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, double x) {
 }
 
 void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
-	volatile duk_double_union u;
+	duk_double_union u;
 	int exp;
 	int i;
 	int bitstart;

@@ -16,7 +16,7 @@ double duk_computed_infinity;
 
 #ifdef DUK_USE_REPL_FPCLASSIFY
 int duk_repl_fpclassify(double x) {
-	volatile duk_double_union u;
+	duk_double_union u;
 	duk_uint_fast16_t exp;
 	duk_small_int_t mzero;
 
@@ -48,7 +48,7 @@ int duk_repl_fpclassify(double x) {
 
 #ifdef DUK_USE_REPL_SIGNBIT
 int duk_repl_signbit(double x) {
-	volatile duk_double_union u;
+	duk_double_union u;
 	u.d = x;
 	return (int) (u.uc[DUK_DBL_IDX_UC0] & 0x80UL);
 }
