@@ -48,6 +48,12 @@ The table below summarizes the available options (in no particular order):</p>
     more fluctuation in memory usage.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_MS_STRINGTABLE_RESIZE</td>
+<td>Disable forced string intern table resize during mark-and-sweep garbage
+    collection.  This may be useful when reference counting is disabled, as
+    mark-and-sweep collections will be more frequent and thus more expensive.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_AUGMENT_ERRORS</td>
 <td>Don't augment Ecmascript error objects with custom fields like
     <code>fileName</code>, <code>lineNumber</code>, and traceback data.
