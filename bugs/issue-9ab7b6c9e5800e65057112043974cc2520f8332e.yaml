@@ -3,7 +3,7 @@ title: better alignment solution for hobject props
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-12-06 21:01:03.174067 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-12-11 20:19:34.453573 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""

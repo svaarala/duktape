@@ -3,7 +3,7 @@ title: add introduction of duktape specific features to guide
 desc: ""
 type: :task
 component: duk
-release: v0.8
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-10-24 00:43:53.496279 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.8 from v0.7
+  - ""
+- - 2013-12-11 20:19:57.525258 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.8
   - ""
