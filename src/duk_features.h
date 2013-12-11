@@ -1016,11 +1016,19 @@ extern double duk_computed_nan;
 #define DUK_USE_REFERENCE_COUNTING
 #define DUK_USE_DOUBLE_LINKED_HEAP
 #define DUK_USE_MARK_AND_SWEEP
+#define DUK_USE_MS_STRINGTABLE_RESIZE
 #undef DUK_USE_GC_TORTURE
 
 #if defined(DUK_OPT_NO_REFERENCE_COUNTING)
 #undef DUK_USE_REFERENCE_COUNTING
 #undef DUK_USE_DOUBLE_LINKED_HEAP
+/* XXX: undef DUK_USE_MS_STRINGTABLE_RESIZE as it is more expensive
+ * with more frequent mark-and-sweeps?
+ */
+#endif
+
+#if defined(DUK_OPT_NO_MS_STRINGTABLE_RESIZE)
+#undef DUK_USE_MS_STRINGTABLE_RESIZE
 #endif
 
 /*

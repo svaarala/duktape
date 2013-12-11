@@ -799,15 +799,6 @@ static void compact_objects(duk_heap *heap) {
 }
 
 /*
- *  Resize stringtable.
- */
-
-static void resize_stringtable(duk_heap *heap) {
-	DUK_DDPRINT("resize_stringtable: %p", (void *) heap);
-	duk_heap_force_stringtable_resize(heap);
-}
-
-/*
  *  Assertion helpers.
  */
 
@@ -993,13 +984,16 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 *  DUK_MS_FLAG_NO_STRINGTABLE_RESIZE in heap->mark_and_sweep_base_flags.
 	 */
 
-	/* FIXME: stringtable emergency compaction? */
+	/* XXX: stringtable emergency compaction? */
 
+#if defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 	if (!(flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE)) {
-		resize_stringtable(heap);
+		DUK_DDPRINT("resize stringtable: %p", (void *) heap);
+		duk_heap_force_stringtable_resize(heap);
 	} else {
 		DUK_DPRINT("stringtable resize skipped because DUK_MS_FLAG_NO_STRINGTABLE_RESIZE is set");
 	}
+#endif
 
 	/*
 	 *  Finalize objects in the finalization work list.  Finalized

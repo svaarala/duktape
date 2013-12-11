@@ -364,7 +364,9 @@ duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
 duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
 duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
 void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
+#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 void duk_heap_force_stringtable_resize(duk_heap *heap);
+#endif
 
 void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
 duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint32_t char_offset);

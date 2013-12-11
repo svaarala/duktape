@@ -407,11 +407,16 @@ void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 	remove_matching_hstring(heap, heap->st, heap->st_size, h);
 }
 
-/* essentially shrink check after gc */
+#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 void duk_heap_force_stringtable_resize(duk_heap *heap) {
-	/* force resize so that DELETED entries are eliminated */
+	/* Force a resize so that DELETED entries are eliminated.
+	 * Another option would be recheck_hash_size(); but since
+	 * that happens on every intern anyway, this whole check
+	 * can now be disabled.
+	 */
 	resize_hash(heap);
 }
+#endif
 
 /* Undefine local defines */
 #undef HASH_INITIAL
