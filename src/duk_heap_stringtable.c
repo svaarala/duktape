@@ -364,6 +364,9 @@ duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32
 	duk_hstring *res;
 	duk_uint32_t strhash;
 
+	/* caller is responsible for ensuring this */
+	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN);
+
 	res = do_lookup(heap, str, blen, &strhash);
 	if (res) {
 		return res;

@@ -152,6 +152,7 @@ void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_
 
 	DUK_ASSERT(end_byte_offset >= start_byte_offset);
 
+	/* no size check is necessary */
 	res = duk_heap_string_intern_checked(thr,
 	                                     DUK_HSTRING_GET_DATA(h) + start_byte_offset,
 	                                     end_byte_offset - start_byte_offset);
