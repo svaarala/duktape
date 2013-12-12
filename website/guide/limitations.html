@@ -13,12 +13,14 @@ is <b>not re-entrant</b>.  Only one C/C++ thread can call Duktape APIs
 at a time for a particular Duktape heap (although the calling thread
 can change over time).</p>
 
-<h3>String limits</h3>
+<h3>String and buffer limits</h3>
 
-<p>The internal representation allows a maximum length of 2**32-1 <i>bytes</i>
-(not characters) for strings.  16-bit codepoints encode into 3 bytes of UTF-8
-in the worst case, so the maximum string length which is guaranteed to work is
-about 1.4G characters.</p>
+<p>The internal representation allows a maximum length of 2**31-1 (0x7fffffff)
+<i>bytes</i> (not characters) for strings.  16-bit codepoints encode into 3
+bytes of UTF-8 in the worst case, so the maximum string length which is
+guaranteed to work is about 0.7G characters.</p>
+
+<p>Buffer values are also limited to 2**31-1 (0x7fffffff) bytes.</p>
 
 <h3>Property limits</h3>
 
