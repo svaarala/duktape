@@ -156,7 +156,7 @@ Duktape internals to know what defines to tweak.</p>
 <h3>DUK_PANIC_HANDLER</h3>
 
 <p>The default panic handler will print an error message to stdout
-unless I/O is disabled by DUK_OPT_NO_FILE_IO.  It will then call
+unless I/O is disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call
 <code>abort()</code> or cause a segfault if
 <code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined.</p>
 
