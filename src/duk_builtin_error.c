@@ -239,7 +239,7 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 				}
 
 				duk_push_sprintf(ctx, "%s:%d",
-				                      duk_get_string(ctx, -2), pc);
+				                 duk_get_string(ctx, -2), pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
 			} else {

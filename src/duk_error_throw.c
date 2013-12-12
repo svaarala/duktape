@@ -227,6 +227,6 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 	 *  code, and having the file/line of this function isn't very useful.
 	 */
 
-	duk_error_raw(ctx, code, NULL, 0, "%s (rc %d)", msg, rc);
+	duk_error_raw(ctx, code, NULL, 0, "%s (rc %d)", (msg ? msg : "null"), rc);
 	DUK_UNREACHABLE();
 }

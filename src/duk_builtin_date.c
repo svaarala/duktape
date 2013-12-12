@@ -242,6 +242,7 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 	char buf[STRPTIME_BUF_SIZE];
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
+	DUK_ASSERT(str != NULL);
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
@@ -632,6 +633,7 @@ static int parse_string(duk_context *ctx, const char *str) {
 	 * would be better parsed with a platform specific parser.
 	 */
 
+	DUK_ASSERT(str != NULL);
 	DUK_DDDPRINT("parse datetime from string '%s'", str);
 
 	if (parse_string_iso8601_subset(ctx, str) > 0) {
