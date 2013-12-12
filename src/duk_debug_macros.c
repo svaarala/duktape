@@ -18,7 +18,7 @@
 char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 int duk_debug_summary_idx;
 
-#define DUK_DEBUG_BUFSIZE  65536
+#define DUK_DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
 static char buf[DUK_DEBUG_BUFSIZE];
 
 static const char *get_level_string(int level) {

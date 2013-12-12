@@ -1093,6 +1093,15 @@ extern double duk_computed_nan;
 #define DUK_USE_ASSERTIONS
 #endif
 
+/* The static buffer for debug printing is quite large by default, so there
+ * is an option to shrink it manually for constrained builds.
+ */
+#if defined(DUK_OPT_DEBUG_BUFSIZE)
+#define DUK_USE_DEBUG_BUFSIZE  DUK_OPT_DEBUG_BUFSIZE
+#else
+#define DUK_USE_DEBUG_BUFSIZE  65536
+#endif
+
 /*
  *  Ecmascript features / compliance options
  */
