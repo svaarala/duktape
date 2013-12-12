@@ -242,8 +242,8 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 	char buf[STRPTIME_BUF_SIZE];
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
-	DUK_MEMSET(buf, 0, sizeof(buf));
-	DUK_SNPRINTF(buf, sizeof(buf) - 1, "%s", str);
+	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
+	buf[sizeof(buf) - 1] = (char) 0;
 
 	DUK_DDDPRINT("parsing: '%s'", buf);
 
@@ -1030,24 +1030,28 @@ static int format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset, int 
 
 	DUK_ASSERT(parts[IDX_MONTH] >= 1 && parts[IDX_MONTH] <= 12);
 	DUK_ASSERT(parts[IDX_DAY] >= 1 && parts[IDX_DAY] <= 31);
+	DUK_ASSERT(parts[IDX_YEAR] >= -999999 && parts[IDX_YEAR] <= 999999);
 
-	/* Note: %06d for positive value, %07d for negative value to include sign and
-	 * 6 digits.
+	/* Note: %06d for positive value, %07d for negative value to include
+	 * sign and 6 digits.
 	 */
-	DUK_SPRINTF(yearstr,
-	            (parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999) ? "%04d" :
+	DUK_SNPRINTF(yearstr,
+	             sizeof(yearstr),
+	             (parts[IDX_YEAR] >= 0 && parts[IDX_YEAR] <= 9999) ? "%04d" :
 	                    ((parts[IDX_YEAR] >= 0) ? "+%06d" : "%07d"),
-	            parts[IDX_YEAR]);
+	             parts[IDX_YEAR]);
+	yearstr[sizeof(yearstr) - 1] = (char) 0;
 
 	if (flags & FLAG_LOCALTIME) {
 		/* tzoffset seconds are dropped */
 		if (tzoffset >= 0) {
 			int tmp = tzoffset / 60;
-			DUK_SPRINTF(tzstr, "+%02d:%02d", tmp / 60, tmp % 60);
+			DUK_SNPRINTF(tzstr, sizeof(tzstr), "+%02d:%02d", tmp / 60, tmp % 60);
 		} else {
 			int tmp = -tzoffset / 60;
-			DUK_SPRINTF(tzstr, "-%02d:%02d", tmp / 60, tmp % 60);
+			DUK_SNPRINTF(tzstr, sizeof(tzstr), "-%02d:%02d", tmp / 60, tmp % 60);
 		}
+		tzstr[sizeof(tzstr) - 1] = (char) 0;
 	} else {
 		tzstr[0] = 'Z';
 		tzstr[1] = (char) 0;
