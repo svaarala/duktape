@@ -903,5 +903,34 @@ int duk_debug_snprintf(char *str, size_t size, const char *format, ...) {
 	return retval;
 }
 
+/* Formatting function pointers is tricky: there is no standard pointer for
+ * function pointers and the size of a function pointer may depend on the
+ * specific pointer type.  This helper formats a function pointer based on
+ * its memory layout to get something useful on most platforms.
+ */
+void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int fptr_size) {
+	int i;
+	char *p = buf;
+	char *p_end = buf + buf_size - 1;
+
+	DUK_MEMSET(buf, 0, buf_size);
+
+	for (i = 0; i < fptr_size; i++) {
+		int left = p_end - p;
+		unsigned char ch;
+		if (left <= 0) {
+			break;
+		}
+
+		/* Quite approximate but should be useful for little and big endian. */
+#ifdef DUK_USE_BIG_ENDIAN
+		ch = fptr[i];
+#else
+		ch = fptr[fptr_size - 1 - i];
+#endif
+		p += DUK_SNPRINTF(p, left, "%02x", (int) ch);
+	}	
+}
+
 #endif  /* DUK_USE_DEBUG */
 

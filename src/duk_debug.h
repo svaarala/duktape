@@ -158,6 +158,7 @@ struct duk_fixedbuffer {
 #ifdef DUK_USE_DEBUG
 int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 int duk_debug_snprintf(char *str, size_t size, const char *format, ...);
+void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int fptr_size);
 
 #ifdef DUK_USE_VARIADIC_MACROS
 void duk_debug_log(int level, const char *file, int line, const char *func, char *fmt, ...);

@@ -652,9 +652,11 @@ typedef double duk_double_t;
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
     (defined(__GNUC__) && !defined(__arm__))
 #define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
 #elif (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
       (defined(__GNUC__) && defined(__arm__))
 #define DUK_USE_DOUBLE_ME
+#define DUK_USE_MIDDLE_ENDIAN
 #else
 #error unsupported: byte order is little endian but cannot determine IEEE double word order
 #endif
@@ -663,6 +665,7 @@ typedef double duk_double_t;
 #if (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
     (defined(__GNUC__) && !defined(__arm__))
 #define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
 #else
 #error unsupported: byte order is big endian but cannot determine IEEE double word order
 #endif
@@ -673,6 +676,10 @@ typedef double duk_double_t;
 
 #if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
 #error unsupported: cannot determine IEEE double byte order variant
+#endif
+
+#if !defined(DUK_USE_LITTLE_ENDIAN) && !defined(DUK_USE_MIDDLE_ENDIAN) && !defined(DUK_USE_BIG_ENDIAN)
+#error unsupported: cannot determine byte order variant
 #endif
 
 /*

@@ -26,22 +26,6 @@ static void sanitize_snippet(char *buf, int buf_size, duk_hstring *str) {
 	}
 }
 
-static void format_func_ptr(char *buf, int buf_size, unsigned char *fptr, int fptr_size) {
-	int i;
-	char *p = buf;
-	char *p_end = buf + buf_size - 1;
-
-	DUK_MEMSET(buf, 0, buf_size);
-
-	for (i = 0; i < fptr_size; i++) {
-		int left = p_end - p;
-		if (left <= 0) {
-			break;
-		}
-		p += DUK_SNPRINTF(p, left, "%02x", (int) fptr[i]);
-	}	
-}
-
 static const char *get_heap_type_string(duk_heaphdr *hdr) {
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
@@ -176,11 +160,11 @@ void duk_debug_dump_heap(duk_heap *heap) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-pedantic"
 #endif
-	format_func_ptr(buf, sizeof(buf), (unsigned char *) &heap->alloc_func, sizeof(heap->alloc_func));
-	DUK_DPRINT("  alloc_func: %s (func ptrs may be little endian)", buf);
-	format_func_ptr(buf, sizeof(buf), (unsigned char *) &heap->realloc_func, sizeof(heap->realloc_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->alloc_func, sizeof(heap->alloc_func));
+	DUK_DPRINT("  alloc_func: %s", buf);
+	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->realloc_func, sizeof(heap->realloc_func));
 	DUK_DPRINT("  realloc_func: %s", buf);
-	format_func_ptr(buf, sizeof(buf), (unsigned char *) &heap->free_func, sizeof(heap->free_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->free_func, sizeof(heap->free_func));
 	DUK_DPRINT("  free_func: %s", buf);
 #ifdef DUK_USE_GCC_PRAGMAS
 #pragma GCC diagnostic pop
