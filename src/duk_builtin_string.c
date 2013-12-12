@@ -986,7 +986,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 				prev_match_end_coff++;
 				continue;
 			}
-		}
+		}  /* if (is_regexp) */
 
 		/* stack[0] = separator (string or regexp)
 		 * stack[1] = limit
@@ -1031,13 +1031,11 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 		prev_match_end_boff = match_end_boff;
 		prev_match_end_coff = match_end_coff;
 		continue;
-	}
+	}  /* for */
 
 	/* Combined step 11 (empty string special case) and 14-15. */
 
-	DUK_DDDPRINT("split trailer; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
-	             (int) match_start_boff, (int) match_start_coff,
-	             (int) match_end_boff, (int) match_end_coff,
+	DUK_DDDPRINT("split trailer; prev_end b=%d,c=%d",
 	             (int) prev_match_end_boff, (int) prev_match_end_coff);
 
 	if (DUK_HSTRING_GET_CHARLEN(h_input) > 0 || !matched) {
