@@ -20,11 +20,15 @@
 /* FIXME: flag for 'valid extended utf-8' (internal strings are not, regexp bytecode is)? */
 /* FIXME: flag for 'contains non-bmp chars'? */
 
-/* Impose a maximum string byte length for now.  This can be relaxed for
- * 64-bit platforms and indeed E5.1 makes provisions to support strings
- * longer than 4G characters.
+/* Impose a maximum string length for now.  Restricted artificially to
+ * ensure adding a heap header length won't overflow size_t.  The limit
+ * should be synchronized with DUK_HBUFFER_MAX_BYTELEN.
+ *
+ * E5.1 makes provisions to support strings longer than 4G characters.
+ * This limit should be eliminated on 64-bit platforms (and increased
+ * closer to maximum support on 32-bit platforms).
  */
-#define DUK_HSTRING_MAX_BYTELEN                     (0xffffffffUL)
+#define DUK_HSTRING_MAX_BYTELEN                     (0x7fffffffUL)
 
 #define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(0)  /* string is a valid array index */
 #define DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(1)  /* string is internal */

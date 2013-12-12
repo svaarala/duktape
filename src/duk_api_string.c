@@ -29,6 +29,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 		t2 = (size_t) (count - 1);
 		limit = (size_t) DUK_HSTRING_MAX_BYTELEN;
 		if (DUK_UNLIKELY(t2 != 0 && t1 > limit / t2)) {
+			/* Combined size of separators already overflows */
 			goto error_overflow;
 		}
 		len = (size_t) (t1 * t2);
@@ -42,22 +43,13 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 		h = duk_require_hstring(ctx, -i);
 		new_len = len + (size_t) DUK_HSTRING_GET_BYTELEN(h);
 
-		/* Impose a string maximum length; overflow check if size_t is
-		 * 32 bits, straight compare if larger.
+		/* Impose a string maximum length, need to handle overflow
+		 * correctly.
 		 */
-#if DUK_SIZE_MAX <= 0xffffffffUL
-		/* FIXME: check assumes DUK_SIZE_MAX is a plain value, convert to
-		 * actual code which will get optimized.
-		 */
-		if (new_len < len) {
+		if (new_len < len ||  /* wrapped */
+		    new_len > (size_t) DUK_HSTRING_MAX_BYTELEN) {
 			goto error_overflow;
 		}
-#else
-		if (new_len > (size_t) DUK_HSTRING_MAX_BYTELEN) {
-			goto error_overflow;
-		}
-#endif
-
 		len = new_len;
 	}
 

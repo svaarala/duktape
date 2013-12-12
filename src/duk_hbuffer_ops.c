@@ -36,6 +36,16 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
 
 	/*
+	 *  Maximum size check
+	 *
+	 *  XXX: check against usable size?
+	 */
+
+	if (new_size > DUK_HBUFFER_MAX_BYTELEN) {
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "buffer too long");
+	}
+
+	/*
 	 *  Note: use indirect realloc variant just in case mark-and-sweep
 	 *  (finalizers) might resize this same buffer during garbage
 	 *  collection.
@@ -72,7 +82,7 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 		buf->usable_size = new_usable_size;
 		buf->curr_alloc = res;
 	} else {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to resize dynamic buffer from %d:%d to %d:%d",
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to resize buffer from %d:%d to %d:%d",
 		          buf->size, buf->usable_size, new_size, new_usable_size);
 	}
 

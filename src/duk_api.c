@@ -2267,6 +2267,11 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 		len = 0;
 	}
 
+	/* Check for maximum string length */
+	if (len > DUK_HSTRING_MAX_BYTELEN) {
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "string too long");
+	}
+
 	h = duk_heap_string_intern_checked(thr, (duk_uint8_t *) str, (duk_uint32_t) len);
 	DUK_ASSERT(h != NULL);
 
@@ -2282,7 +2287,7 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
 	DUK_ASSERT(ctx != NULL);
 
 	if (str) {
-		return duk_push_lstring(ctx, str, (unsigned int) strlen(str));
+		return duk_push_lstring(ctx, str, strlen(str));
 	} else {
 		duk_push_null(ctx);
 		return NULL;
@@ -2919,6 +2924,11 @@ void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic) {
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+	}
+
+	/* Check for maximum buffer length. */
+	if (size > DUK_HBUFFER_MAX_BYTELEN) {
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "buffer too long");
 	}
 
 	h = duk_hbuffer_alloc(thr->heap, size, dynamic);
