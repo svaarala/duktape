@@ -40,10 +40,10 @@ void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 		if (res < 0) {
 			/* error */
 		} else if (res >= avail) {
-			/* truncated */
+			/* (maybe) truncated */
 			fb->offset += avail;
 			if (res > avail) {
-				/* actual chars dropped (not just null term) */
+				/* actual chars dropped (not just NUL term) */
 				fb->truncated = 1;
 			}
 		} else {

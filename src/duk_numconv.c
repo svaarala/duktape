@@ -87,10 +87,12 @@ typedef struct {
 
 #ifdef DUK_USE_DDDEBUG
 static void bi_print(const char *name, duk_bigint *x) {
-	char buf[1024];
+	/* Overestimate required size; debug code so not critical to be tight. */
+	char buf[BI_MAX_PARTS * 9 + 64];
 	char *p = buf;
 	int i;
 
+	/* No NUL term checks in this debug code. */
 	p += DUK_SPRINTF(p, "%p n=%d", (void *) x, x->n);
 	if (x->n == 0) {
 		p += DUK_SPRINTF(p, " 0");

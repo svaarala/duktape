@@ -42,12 +42,12 @@
 #else  /* DUK_USE_VARIADIC_MACROS */
 
 #define DUK__DEBUG_STASH(lev)    \
-	(void) DUK_MEMSET((void *) duk_debug_file_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) DUK_MEMSET((void *) duk_debug_line_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) DUK_MEMSET((void *) duk_debug_func_stash, 0, (size_t) DUK_DEBUG_STASH_SIZE), \
-	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", DUK_FILE_MACRO), \
-	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE - 1, "%d", (int) DUK_LINE_MACRO), \
-	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE - 1, "%s", DUK_FUNC_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FILE_MACRO), \
+	duk_debug_file_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
+	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE, "%d", (int) DUK_LINE_MACRO), \
+	duk_debug_line_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
+	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FUNC_MACRO), \
+	duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
 	(void) (duk_debug_level_stash = (lev))
 
 #ifdef DUK_USE_DEBUG
@@ -163,7 +163,7 @@ int duk_debug_snprintf(char *str, size_t size, const char *format, ...);
 void duk_debug_log(int level, const char *file, int line, const char *func, char *fmt, ...);
 #else
 /* parameter passing, not thread safe */
-#define DUK_DEBUG_STASH_SIZE  256
+#define DUK_DEBUG_STASH_SIZE  128
 extern char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
 extern char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 extern char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
