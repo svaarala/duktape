@@ -78,6 +78,9 @@ Released
 * Augment errors created when a built-in error constructor is called as
   a normal function (e.g. "var e = Error('test')")
 
+* Enforce string/buffer length limits to avoid corner cases with strings
+  and buffers close to size_t limit
+
 * Ecmascript E5.1 test cases and fixes
 
 * Mark-and-sweep stringtable leak fixed, affected mostly builds without
