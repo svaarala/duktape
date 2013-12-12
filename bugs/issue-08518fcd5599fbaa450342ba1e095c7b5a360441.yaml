@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-12-06 21:09:48.575657 Z
 references: []
 
@@ -20,3 +20,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
+- - 2013-12-11 21:14:46.118626 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Fixed by adding DUK_OPT_NO_MS_STRINGTABLE_RESIZE.  Just calling recheck_hash_size()
+    is not that useful: it is called on every string intern anyway, and the stringtable
+    resize happens almost at the end of mark-and-sweep so doing it earlier than the next
+    intern is probably not that useful.

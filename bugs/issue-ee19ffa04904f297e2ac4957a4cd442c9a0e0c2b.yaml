@@ -19,8 +19,8 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-19 07:09:07.951148 Z
 references: []
 
@@ -38,3 +38,11 @@ log_events:
     implementations when the string is truncated.  This is mostly the case with
     old environments.  Document that snprintf return value is not to be trusted
     without care.
+- - 2013-12-12 08:23:11.030120 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2013-12-12 20:37:57.789001 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

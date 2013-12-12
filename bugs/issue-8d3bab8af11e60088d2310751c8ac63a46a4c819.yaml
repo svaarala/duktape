@@ -17,8 +17,8 @@ type: :task
 component: duk
 release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-03-12 22:15:03.269558 Z
 references: []
 
@@ -40,3 +40,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - Also need to ensure that concatenation results don't overflow length.
+- - 2013-12-12 23:30:20.237127 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
