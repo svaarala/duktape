@@ -89,17 +89,7 @@ static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
 
 	/* [... buf] */
 
-	/*
-	 *  FIXME: just allow C code to call duk_to_string() on buffers.
-	 *  This allows C code to manufacture internal keys, but since we
-	 *  trust C code anyway, this is not a big issue.
-	 */
-
-	duk_push_lstring(ctx, (const char *) buf, len);
-
-	/* [... buf res] */
-
-	duk_remove(ctx, -2);
+	(void) duk_to_string(ctx, -1);
 
 	/* [... res] */
 	return;

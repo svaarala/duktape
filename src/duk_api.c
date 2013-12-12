@@ -1707,7 +1707,7 @@ const char *duk_to_string(duk_context *ctx, int index) {
 	case DUK_TAG_BUFFER: {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 
-		/* Note: this currently allows creation of internal strings. */
+		/* Note: this allows creation of internal strings. */
 
 		DUK_ASSERT(h != NULL);
 		duk_push_lstring(ctx,
@@ -2554,7 +2554,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 
 	/* initial estimate based on format string */
-	sz = strlen(fmt) + 10;  /* XXX: plus something to avoid just missing */
+	sz = strlen(fmt) + 16;  /* XXX: plus something to avoid just missing */
 	if (sz < DUK_PUSH_SPRINTF_INITIAL_SIZE) {
 		sz = DUK_PUSH_SPRINTF_INITIAL_SIZE;
 	}
@@ -2578,7 +2578,9 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 		DUK_ASSERT(buf != NULL);
 	}
 
-	/* FIXME: buffer to string */
+	/* Cannot use duk_to_string() on the buffer because it is usually
+	 * larger than 'len'.
+	 */
 	res = duk_push_lstring(ctx, (const char *) buf, (size_t) len);  /* [buf res] */
 	duk_remove(ctx, -2);
 	return res;
