@@ -124,6 +124,8 @@ CCOPTS_SHARED += -DDUK_OPT_DPRINT_COLORS
 CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 #CCOPTS_SHARED += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_SHARED += -DDUK_OPT_NO_VERBOSE_ERRORS
+CCOPTS_SHARED += -DDUK_OPT_NO_MS_RESIZE_STRINGTABLE
+CCOPTS_SHARED += -DDUK_OPT_DEBUG_BUFSIZE=80
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_NONDEBUG += -g -ggdb
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
@@ -168,8 +170,14 @@ dukd:	dist
 test:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
+testd:	npminst dukd
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+
 qtest:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+
+qtestd:	npminst dukd
+	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 vgtest:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
