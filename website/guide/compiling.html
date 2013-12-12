@@ -126,6 +126,14 @@ The table below summarizes the available options (in no particular order):</p>
 <td>Print RDTSC cycle count in debug prints if available.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_DEBUG_BUFSIZE</td>
+<td>Debug code uses a static buffer as a formatting temporary to avoid side
+    effects in debug prints.  The static buffer is large by default, which may
+    be an issue in constrained environments.  You can set the buffer size
+    manually with this option.  Example:
+    <code>-DDUK_OPT_DEBUG_BUFSIZE=2048</code>.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_HAVE_CUSTOM_H</td>
 <td>Enable user-provided <code>duk_custom.h</code> customization header
     (see below for details).  Not recommended unless really necessary.</td>
