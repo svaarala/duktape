@@ -88,7 +88,7 @@ typedef struct {
 	duk_uint8_t *p_end;
 } duk_transform_context;
 
-typedef void (*transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
+typedef void (*duk_transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
 
 /* FIXME: refactor and share with other code */
 static duk_small_int_t decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
@@ -112,7 +112,7 @@ static duk_small_int_t decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
 	return t;
 }
 
-static int transform_helper(duk_context *ctx, transform_callback callback, void *udata) {
+static int transform_helper(duk_context *ctx, duk_transform_callback callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_transform_context tfm_ctx_alloc;
 	duk_transform_context *tfm_ctx = &tfm_ctx_alloc;
@@ -141,7 +141,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	return 1;
 }
 
-static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk_transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	duk_uint8_t buf[3];
 	duk_small_int_t len;
@@ -195,7 +195,7 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
 }
 
-static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk_transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
 	duk_small_int_t utf8_blen;
 	duk_codepoint_t min_cp;
@@ -319,7 +319,7 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 }
 
 #ifdef DUK_USE_SECTION_B
-static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk_transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t buf[6];
 	duk_small_int_t len;
 
@@ -357,7 +357,7 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
 }
 
-static void transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk_transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_small_int_t t;
 
 	if (cp == (duk_codepoint_t) '%') {
@@ -599,28 +599,28 @@ int duk_builtin_global_object_is_finite(duk_context *ctx) {
  */
 
 int duk_builtin_global_object_decode_uri(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_decode_uri, (void *) decode_uri_reserved_table);
+	return transform_helper(ctx, duk_transform_callback_decode_uri, (void *) decode_uri_reserved_table);
 }
 
 int duk_builtin_global_object_decode_uri_component(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_decode_uri, (void *) decode_uri_component_reserved_table);
+	return transform_helper(ctx, duk_transform_callback_decode_uri, (void *) decode_uri_component_reserved_table);
 }
 
 int duk_builtin_global_object_encode_uri(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_encode_uri, (void *) encode_uri_unescaped_table);
+	return transform_helper(ctx, duk_transform_callback_encode_uri, (void *) encode_uri_unescaped_table);
 }
 
 int duk_builtin_global_object_encode_uri_component(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_encode_uri, (void *) encode_uri_component_unescaped_table);
+	return transform_helper(ctx, duk_transform_callback_encode_uri, (void *) encode_uri_component_unescaped_table);
 }
 
 #ifdef DUK_USE_SECTION_B
 int duk_builtin_global_object_escape(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_escape, (void *) NULL);
+	return transform_helper(ctx, duk_transform_callback_escape, (void *) NULL);
 }
 
 int duk_builtin_global_object_unescape(duk_context *ctx) {
-	return transform_helper(ctx, transform_callback_unescape, (void *) NULL);
+	return transform_helper(ctx, duk_transform_callback_unescape, (void *) NULL);
 }
 #endif
 
