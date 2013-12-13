@@ -243,6 +243,7 @@ static int parse_string_strptime(duk_context *ctx, const char *str) {
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
 	DUK_ASSERT(str != NULL);
+	DUK_MEMSET(buf, 0, sizeof(buf));  /* valgrind whine without this */
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
