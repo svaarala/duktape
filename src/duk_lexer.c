@@ -51,15 +51,15 @@
  *    * Add a feature flag for disabling UTF-8 decoding of input, as most
  *      source code is ASCII.  Because of Unicode escapes written in ASCII,
  *      this does not allow Unicode support to be removed from e.g.
- *      duk_is_identifier_start() nor does it allow removal of CESU-8
+ *      duk_unicode_is_identifier_start() nor does it allow removal of CESU-8
  *      encoding of e.g. string literals.
  *
  *    * Add a feature flag for disabling Unicode compliance of e.g. identifier
  *      names.  This allows for a build more than a kilobyte smaller, because
- *      Unicode ranges needed by duk_is_identifier_start() and
- *      duk_is_identifier_part() can be dropped.  String literals should still
- *      be allowed to contain escaped Unicode, so this still does not allow
- *      removal of CESU-8 encoding of e.g. string literals.
+ *      Unicode ranges needed by duk_unicode_is_identifier_start() and
+ *      duk_unicode_is_identifier_part() can be dropped.  String literals
+ *      should still be allowed to contain escaped Unicode, so this still does
+ *      not allow removal of CESU-8 encoding of e.g. string literals.
  *
  *    * Character lookup tables for codepoints above BMP could be stripped.
  *
