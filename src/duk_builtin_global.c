@@ -245,17 +245,17 @@ static void duk_transform_callback_decode_uri(duk_transform_context *tfm_ctx, vo
 		} else if (t < 0xe0) {
 			/* 110x xxxx; 2 bytes */
 			utf8_blen = 2;
-			min_cp = 0x80UL;
+			min_cp = 0x80L;
 			cp = t & 0x1f;
 		} else if (t < 0xf0) {
 			/* 1110 xxxx; 3 bytes */
 			utf8_blen = 3;
-			min_cp = 0x800UL;
+			min_cp = 0x800L;
 			cp = t & 0x0f;
 		} else if (t < 0xf8) {
 			/* 1111 0xxx; 4 bytes */
 			utf8_blen = 4;
-			min_cp = 0x10000UL;
+			min_cp = 0x10000L;
 			cp = t & 0x07;
 		} else {
 			/* extended utf-8 not allowed for URIs */
@@ -303,7 +303,7 @@ static void duk_transform_callback_decode_uri(duk_transform_context *tfm_ctx, vo
 
 		if (cp >= 0x10000L) {
 			cp -= 0x10000L;
-			DUK_ASSERT(cp < 0x100000UL);
+			DUK_ASSERT(cp < 0x100000L);
 			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp >> 10) + 0xd800L));
 			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp & 0x03ffUL) + 0xdc00L));
 		} else {

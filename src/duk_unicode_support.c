@@ -26,7 +26,7 @@ duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp) {
 	} else if (x < 0x4000000UL) {
 		/* 26 bits */
 		return 5;
-	} else if (x < (duk_codepoint_t) 0x80000000UL) {
+	} else if (x < (duk_ucodepoint_t) 0x80000000UL) {
 		/* 31 bits */
 		return 6;
 	} else {
@@ -263,19 +263,19 @@ static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	duk_uint32_t t;
 
 	t = duk_bd_decode(bd_ctx, 4);
-	if (t <= 0x0e) {
+	if (t <= 0x0eU) {
 		return t;
 	}
 	t = duk_bd_decode(bd_ctx, 8);
-	if (t <= 0xfd) {
+	if (t <= 0xfdU) {
 		return t + 0x0f;
 	}
-	if (t == 0xfe) {
+	if (t == 0xfeU) {
 		t = duk_bd_decode(bd_ctx, 12);
-		return t + 0x0f + 0xfe;
+		return t + 0x0fU + 0xfeU;
 	} else {
 		t = duk_bd_decode(bd_ctx, 24);
-		return t + 0x0f + 0xfe + 0x1000UL;
+		return t + 0x0fU + 0xfeU + 0x1000UL;
 	}
 }
 
@@ -379,17 +379,17 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	hi = (duk_uint_fast32_t) (cp >> 8);  /* does not fit into an uchar */
 
 	if (hi == 0x0000UL) {
-		if (lo == 0x09 || lo == 0x0b || lo == 0x0c ||
-		    lo == 0x20 || lo == 0xa0) {
+		if (lo == 0x09U || lo == 0x0bU || lo == 0x0cU ||
+		    lo == 0x20U || lo == 0xa0U) {
 			return 1;
 		}
 	} else if (hi == 0x0020UL) {
-		if (lo <= 0x0a || lo == 0x28 || lo == 0x29 ||
-		    lo == 0x2f || lo == 0x5f) {
+		if (lo <= 0x0aU || lo == 0x28U || lo == 0x29U ||
+		    lo == 0x2fU || lo == 0x5fU) {
 			return 1;
 		}
-	} else if (cp == 0x1680UL || cp == 0x180eUL || cp == 0x3000UL ||
-	           cp == 0xfeffUL) {
+	} else if (cp == 0x1680L || cp == 0x180eL || cp == 0x3000L ||
+	           cp == 0xfeffL) {
 		return 1;
 	}
 
@@ -714,7 +714,7 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 	duk_bitdecoder_ctx bd_ctx;
 
 	/* fast path for ASCII */
-	if (cp < 0x80UL) {
+	if (cp < 0x80L) {
 		/* FIXME: context sensitive rules exist for ASCII range too.
 		 * Need to add them here.
 		 */
@@ -738,17 +738,17 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 		/* FIXME: turkish / azeri */
 	} else {
 		/* final sigma context specific rule */
-		if (cp == 0x03a3UL &&   /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
+		if (cp == 0x03a3L &&   /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
 		    prev >= 0 &&        /* prev is letter */
 		    next < 0) {         /* next is not letter */
 			/* FIXME: fix conditions */
-			cp = 0x03c2UL;
+			cp = 0x03c2L;
 			goto singlechar;
 		}
 
 		/* FIXME: lithuanian */
 		if (0 /* language == 'lt' */ &&
-		    cp == 0x0307UL) {               /* U+0307 = COMBINING DOT ABOVE */
+		    cp == 0x0307L) {               /* U+0307 = COMBINING DOT ABOVE */
 			goto nochar;
 		}
 

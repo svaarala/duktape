@@ -492,59 +492,59 @@ typedef duk_size_t size_t;
 
 #define DUK_UINT8_MIN         0UL
 #define DUK_UINT8_MAX         0xffUL
-#define DUK_INT8_MIN          (-0x80L
+#define DUK_INT8_MIN          (-0x80L)
 #define DUK_INT8_MAX          0x7fL
 #define DUK_UINT_LEAST8_MIN   0UL
 #define DUK_UINT_LEAST8_MAX   0xffUL
-#define DUK_INT_LEAST8_MIN    (-0x80L
+#define DUK_INT_LEAST8_MIN    (-0x80L)
 #define DUK_INT_LEAST8_MAX    0x7fL
 #define DUK_UINT_FAST8_MIN    0UL
 #define DUK_UINT_FAST8_MAX    0xffUL
-#define DUK_INT_FAST8_MIN     (-0x80L
+#define DUK_INT_FAST8_MIN     (-0x80L)
 #define DUK_INT_FAST8_MAX     0x7fL
 #define DUK_UINT16_MIN        0UL
 #define DUK_UINT16_MAX        0xffffUL
-#define DUK_INT16_MIN         (-0x8000L
+#define DUK_INT16_MIN         (-0x8000L)
 #define DUK_INT16_MAX         0x7fffL
 #define DUK_UINT_LEAST16_MIN  0UL
 #define DUK_UINT_LEAST16_MAX  0xffffUL
-#define DUK_INT_LEAST16_MIN   (-0x8000L
+#define DUK_INT_LEAST16_MIN   (-0x8000L)
 #define DUK_INT_LEAST16_MAX   0x7fffL
 #define DUK_UINT_FAST16_MIN   0UL
 #define DUK_UINT_FAST16_MAX   0xffffUL
-#define DUK_INT_FAST16_MIN    (-0x8000L
+#define DUK_INT_FAST16_MIN    (-0x8000L)
 #define DUK_INT_FAST16_MAX    0x7fffL
 #define DUK_UINT32_MIN        0UL
 #define DUK_UINT32_MAX        0xffffffffUL
-#define DUK_INT32_MIN         (-0x80000000L
+#define DUK_INT32_MIN         (-0x80000000L)
 #define DUK_INT32_MAX         0x7fffffffL
 #define DUK_UINT_LEAST32_MIN  0UL
 #define DUK_UINT_LEAST32_MAX  0xffffffffUL
-#define DUK_INT_LEAST32_MIN   (-0x80000000L
+#define DUK_INT_LEAST32_MIN   (-0x80000000L)
 #define DUK_INT_LEAST32_MAX   0x7fffffffL
 #define DUK_UINT_FAST32_MIN   0UL
 #define DUK_UINT_FAST32_MAX   0xffffffffUL
-#define DUK_INT_FAST32_MIN    (-0x80000000L
+#define DUK_INT_FAST32_MIN    (-0x80000000L)
 #define DUK_INT_FAST32_MAX    0x7fffffffL
 #define DUK_UINT64_MIN        0ULL
 #define DUK_UINT64_MAX        0xffffffffffffffffULL
-#define DUK_INT64_MIN         (-0x8000000000000000LL
+#define DUK_INT64_MIN         (-0x8000000000000000LL)
 #define DUK_INT64_MAX         0x7fffffffffffffffULL
 #define DUK_UINT_LEAST64_MIN  0ULL
 #define DUK_UINT_LEAST64_MAX  0xffffffffffffffffULL
-#define DUK_INT_LEAST64_MIN   (-0x8000000000000000LL
+#define DUK_INT_LEAST64_MIN   (-0x8000000000000000LL)
 #define DUK_INT_LEAST64_MAX   0x7fffffffffffffffULL
 #define DUK_UINT_FAST64_MIN   0ULL
 #define DUK_UINT_FAST64_MAX   0xffffffffffffffffULL
-#define DUK_INT_FAST64_MIN    (-0x8000000000000000LL
+#define DUK_INT_FAST64_MIN    (-0x8000000000000000LL)
 #define DUK_INT_FAST64_MAX    0x7fffffffffffffffULL
 #define DUK_UINTPTR_MIN       0UL
 #define DUK_UINTPTR_MAX       0xffffffffUL
-#define DUK_INTPTR_MIN        (-0x80000000L
+#define DUK_INTPTR_MIN        (-0x80000000L)
 #define DUK_INTPTR_MAX        0x7fffffffL
 #define DUK_UINTMAX_MIN       0UL
 #define DUK_UINTMAX_MAX       0xffffffffUL
-#define DUK_INTMAX_MIN        (-0x80000000L
+#define DUK_INTMAX_MIN        (-0x80000000L)
 #define DUK_INTMAX_MAX        0x7fffffffL
 
 /* SIZE_MAX may be missing so use an approximate value for it. */
@@ -880,7 +880,7 @@ extern double duk_computed_nan;
  */
 
 #define DUK_CAUSE_SEGFAULT()  do { \
-		*((int32_t *) NULL) = (int32_t) 0xdeadbeefUL; \
+		*((uint32_t *) NULL) = (uint32_t) 0xdeadbeefUL; \
 	} while (0)
 
 /*
