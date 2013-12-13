@@ -26,7 +26,7 @@ duk_small_int_t duk_unicode_get_xutf8_length(duk_codepoint_t cp) {
 	} else if (x < 0x4000000UL) {
 		/* 26 bits */
 		return 5;
-	} else if (x < (duk_uint32_t) 0x80000000UL) {
+	} else if (x < (duk_codepoint_t) 0x80000000UL) {
 		/* 31 bits */
 		return 6;
 	} else {
