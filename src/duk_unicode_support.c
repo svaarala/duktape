@@ -9,7 +9,7 @@
  *  XUTF-8 and CESU-8 encoding/decoding
  */
 
-duk_small_int_t duk_unicode_get_xutf8_length(duk_codepoint_t cp) {
+duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp) {
 	duk_uint_fast32_t x = (duk_uint_fast32_t) cp;
 	if (x < 0x80UL) {
 		/* 7 bits */
@@ -43,7 +43,7 @@ duk_uint8_t duk_unicode_xutf8_markers[7] = {
  * DUK_UNICODE_MAX_XUTF8_LENGTH bytes.  Allows encoding of any
  * 32-bit (unsigned) codepoint.
  */
-duk_small_int_t duk_unicode_encode_xutf8(duk_codepoint_t cp, duk_uint8_t *out) {
+duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_uint8_t *out) {
 	duk_uint_fast32_t x = (duk_uint_fast32_t) cp;
 	duk_small_int_t len;
 	duk_uint8_t marker;
@@ -77,7 +77,7 @@ duk_small_int_t duk_unicode_encode_xutf8(duk_codepoint_t cp, duk_uint8_t *out) {
  * DUK_UNICODE_MAX_CESU8_LENGTH bytes; codepoints above U+10FFFF
  * will encode to garbage but won't overwrite the output buffer.
  */
-duk_small_int_t duk_unicode_encode_cesu8(duk_codepoint_t cp, duk_uint8_t *out) {
+duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_uint8_t *out) {
 	duk_uint_fast32_t x = (duk_uint_fast32_t) cp;
 	duk_small_int_t len;
 
@@ -137,7 +137,7 @@ duk_small_int_t duk_unicode_encode_cesu8(duk_codepoint_t cp, duk_uint8_t *out) {
 }
 
 /* Decode helper.  Return zero on error. */
-duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_codepoint_t *out_cp) {
+duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp) {
 	duk_uint8_t *p;
 	duk_uint32_t res;
 	duk_uint_fast8_t ch;
@@ -219,8 +219,8 @@ duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, du
 }
 
 /* used by e.g. duk_regexp_executor.c, string built-ins */
-duk_codepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end) {
-	duk_codepoint_t cp;
+duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end) {
+	duk_ucodepoint_t cp;
 
 	if (duk_unicode_decode_xutf8(thr, ptr, ptr_start, ptr_end, &cp)) {
 		return cp;
@@ -314,7 +314,7 @@ static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t uni
  *  "WhiteSpace" production check.
  */
 
-duk_small_int_t duk_unicode_is_whitespace(duk_signed_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.2 specifies six characters specifically as
 	 *  white space:
@@ -400,7 +400,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_signed_codepoint_t cp) {
  *  "LineTerminator" production check.
  */
 
-duk_small_int_t duk_unicode_is_line_terminator(duk_signed_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.3
 	 *
@@ -420,7 +420,7 @@ duk_small_int_t duk_unicode_is_line_terminator(duk_signed_codepoint_t cp) {
  *  "IdentifierStart" production check.
  */
 
-duk_small_int_t duk_unicode_is_identifier_start(duk_signed_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.6:
 	 *
@@ -495,7 +495,7 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_signed_codepoint_t cp) {
  *  "IdentifierPart" production check.
  */
 
-duk_small_int_t duk_unicode_is_identifier_part(duk_signed_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.6:
 	 *
@@ -704,13 +704,13 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
  *  locale/language.
  */
 
-static duk_signed_codepoint_t case_transform_helper(duk_hthread *thr,
-                                                    duk_hbuffer_dynamic *buf,
-                                                    duk_codepoint_t cp,
-                                                    duk_signed_codepoint_t prev,
-                                                    duk_signed_codepoint_t next,
-                                                    duk_small_int_t uppercase,
-                                                    duk_small_int_t language) {
+static duk_codepoint_t case_transform_helper(duk_hthread *thr,
+                                             duk_hbuffer_dynamic *buf,
+                                             duk_codepoint_t cp,
+                                             duk_codepoint_t prev,
+                                             duk_codepoint_t next,
+                                             duk_small_int_t uppercase,
+                                             duk_small_int_t language) {
 	duk_bitdecoder_ctx bd_ctx;
 
 	/* fast path for ASCII */
@@ -786,7 +786,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 	duk_hstring *h_input;
 	duk_hbuffer_dynamic *h_buf;
 	duk_uint8_t *p, *p_start, *p_end;
-	duk_signed_codepoint_t prev, curr, next;  /* need signed type here */
+	duk_codepoint_t prev, curr, next;
 
 	h_input = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
@@ -846,7 +846,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
  */
 
 duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp) {
-	duk_signed_codepoint_t y;
+	duk_codepoint_t y;
 
 	y = case_transform_helper(thr,
 	                          NULL,    /* buf */

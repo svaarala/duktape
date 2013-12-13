@@ -133,7 +133,7 @@ static int transform_helper(duk_context *ctx, transform_callback callback, void 
 	tfm_ctx->p = tfm_ctx->p_start;
 
 	while (tfm_ctx->p < tfm_ctx->p_end) {
-		cp = duk_unicode_decode_xutf8_checked(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
+		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end);
 		callback(tfm_ctx, udata, cp);
 	}
 
@@ -149,22 +149,24 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 	duk_small_int_t i, t;
 	duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
 
-	if ((cp < 128) && CHECK_BITMASK(unescaped_table, cp)) {
+	if (cp < 0) {
+		goto uri_error;
+	} else if ((cp < 0x80L) && CHECK_BITMASK(unescaped_table, cp)) {
 		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) cp);
 		return;
-	} else if (cp >= 0xdc00UL && cp <= 0xdfffUL) {
+	} else if (cp >= 0xdc00L && cp <= 0xdfffL) {
 		goto uri_error;
-	} else if (cp >= 0xd800UL && cp <= 0xdbffUL) {
+	} else if (cp >= 0xd800L && cp <= 0xdbffL) {
 		/* Needs lookahead */
-		if (duk_unicode_decode_xutf8(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, &cp2) == 0) {
+		if (duk_unicode_decode_xutf8(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, (duk_ucodepoint_t *) &cp2) == 0) {
 			goto uri_error;
 		}
-		if (!(cp2 >= 0xdc00UL && cp2 <= 0xdfffUL)) {
+		if (!(cp2 >= 0xdc00L && cp2 <= 0xdfffL)) {
 			goto uri_error;
 		}
 		cp1 = cp;
-		cp = ((cp1 - 0xd800UL) << 10) + (cp2 - 0xdc00UL) + 0x10000UL;
-	} else if (cp > 0x10ffffUL) {
+		cp = ((cp1 - 0xd800L) << 10) + (cp2 - 0xdc00L) + 0x10000L;
+	} else if (cp > 0x10ffffL) {
 		/* Although we can allow non-BMP characters (they'll decode
 		 * back into surrogate pairs), we don't allow extended UTF-8
 		 * characters; they would encode to URIs which won't decode
@@ -179,7 +181,7 @@ static void transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *
 		;
 	}
 
-	len = duk_unicode_encode_xutf8(cp, xutf8_buf);
+	len = duk_unicode_encode_xutf8((duk_ucodepoint_t) cp, xutf8_buf);
 	buf[0] = (duk_uint8_t) '%';
 	for (i = 0; i < len; i++) {
 		t = (int) xutf8_buf[i];
@@ -284,7 +286,7 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 
 		DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp);
 
-		if (cp < min_cp || cp > 0x10ffffUL || (cp >= 0xd800UL && cp <= 0xdfffUL)) {
+		if (cp < min_cp || cp > 0x10ffffL || (cp >= 0xd800L && cp <= 0xdfffL)) {
 			goto uri_error;
 		}
 
@@ -297,18 +299,18 @@ static void transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *
 		 */
 
 		/* utf-8 validation ensures these */
-		DUK_ASSERT(cp >= 0x80UL && cp <= 0x10ffffUL);
+		DUK_ASSERT(cp >= 0x80L && cp <= 0x10ffffL);
 
-		if (cp >= 0x10000UL) {
-			cp -= 0x10000UL;
+		if (cp >= 0x10000L) {
+			cp -= 0x10000L;
 			DUK_ASSERT(cp < 0x100000UL);
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp >> 10) + 0xd800UL);
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (cp & 0x03ffUL) + 0xdc00UL);
+			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp >> 10) + 0xd800L));
+			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp & 0x03ffUL) + 0xdc00L));
 		} else {
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, cp);
+			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) cp);
 		}
 	} else {
-		duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, cp);
+		duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) cp);
 	}
 	return;
 
@@ -321,15 +323,17 @@ static void transform_callback_escape(duk_transform_context *tfm_ctx, void *udat
 	duk_uint8_t buf[6];
 	duk_small_int_t len;
 
-	if ((cp < 0x80UL) && CHECK_BITMASK(escape_unescaped_table, cp)) {
+	if (cp < 0) {
+		goto esc_error;
+	} else if ((cp < 0x80L) && CHECK_BITMASK(escape_unescaped_table, cp)) {
 		buf[0] = (duk_uint8_t) cp;
 		len = 1;
-	} else if (cp < 0x100UL) {
+	} else if (cp < 0x100L) {
 		buf[0] = (duk_uint8_t) '%';
 		buf[1] = (duk_uint8_t) duk_uc_nybbles[cp >> 4];
 		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
 		len = 3;
-	} else if (cp < 0x10000UL) {
+	} else if (cp < 0x10000L) {
 		buf[0] = (duk_uint8_t) '%';
 		buf[1] = (duk_uint8_t) 'u';
 		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp >> 12];

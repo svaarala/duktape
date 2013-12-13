@@ -159,7 +159,7 @@ void duk_trim(duk_context *ctx, int index) {
 	duk_hstring *h;
 	duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
 	duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
-	duk_uint32_t cp;
+	duk_codepoint_t cp;
 
 	index = duk_require_normalize_index(ctx, index);
 	h = duk_require_hstring(ctx, index);
@@ -171,8 +171,7 @@ void duk_trim(duk_context *ctx, int index) {
 	p = p_start;
 	while (p < p_end) {
 		p_tmp1 = p;
-		/* FIXME: duk_codepoint_t */
-		cp = (duk_uint32_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp1, p_start, p_end);
+		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp1, p_start, p_end);
 		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
 			break;
 		}
@@ -196,8 +195,7 @@ void duk_trim(duk_context *ctx, int index) {
 		}
 		p_tmp2 = p;
 
-		/* FIXME: duk_codepoint_t */
-		cp = (duk_uint32_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp2, p_start, p_end);
+		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p_tmp2, p_start, p_end);
 		if (!(duk_unicode_is_whitespace(cp) || duk_unicode_is_line_terminator(cp))) {
 			p = p_tmp1;
 			break;

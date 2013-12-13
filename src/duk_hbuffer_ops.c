@@ -200,7 +200,7 @@ size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size
 	/* Intentionally no fast path: insertion is not that central */
 
 	/* FIXME: cp -> duk_codepoint_t */
-	len = (size_t) duk_unicode_encode_xutf8(codepoint, tmp);
+	len = (size_t) duk_unicode_encode_xutf8((duk_ucodepoint_t) codepoint, tmp);
 	duk_hbuffer_insert_bytes(thr, buf, offset, tmp, len);
 	return len;
 }
@@ -223,7 +223,7 @@ size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size
 	/* Intentionally no fast path: insertion is not that central */
 
 	/* FIXME: cp -> duk_codepoint_t */
-	len = (size_t) duk_unicode_encode_cesu8(codepoint, tmp);
+	len = (size_t) duk_unicode_encode_cesu8((duk_ucodepoint_t) codepoint, tmp);
 	duk_hbuffer_insert_bytes(thr, buf, offset, tmp, len);
 	return len;
 }
@@ -305,7 +305,7 @@ size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_
 	}
 
 	/* FIXME: cp -> duk_codepoint_t */
-	len = (size_t) duk_unicode_encode_xutf8(codepoint, tmp);
+	len = (size_t) duk_unicode_encode_xutf8((duk_ucodepoint_t) codepoint, tmp);
 	duk_hbuffer_insert_bytes(thr, buf, DUK_HBUFFER_GET_SIZE(buf), tmp, len);
 	return len;
 }
@@ -334,7 +334,7 @@ size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_
 	}
 
 	/* FIXME: cp -> duk_codepoint_t */
-	len = (size_t) duk_unicode_encode_cesu8(codepoint, tmp);
+	len = (size_t) duk_unicode_encode_cesu8((duk_ucodepoint_t) codepoint, tmp);
 	duk_hbuffer_insert_bytes(thr, buf, DUK_HBUFFER_GET_SIZE(buf), tmp, len);
 	return len;
 }
