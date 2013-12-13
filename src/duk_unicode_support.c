@@ -301,7 +301,7 @@ static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t uni
 
 		/* [r1,r2] is the range */
 
-		DUK_DDDPRINT("uni_range_match: range=[0x%06x,0x%06x]", r1, r2);
+		DUK_DDDPRINT("uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2);
 		if (cp >= r1 && cp <= r2) {
 			return 1;
 		}
@@ -314,7 +314,7 @@ static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t uni
  *  "WhiteSpace" production check.
  */
 
-duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_whitespace(duk_signed_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.2 specifies six characters specifically as
 	 *  white space:
@@ -373,6 +373,8 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	duk_uint_fast8_t lo;
 	duk_uint_fast32_t hi;
 
+	/* cp == -1 (EOF) never matches and causes return value 0 */
+
 	lo = (duk_uint_fast8_t) (cp & 0xff);
 	hi = (duk_uint_fast32_t) (cp >> 8);  /* does not fit into an uchar */
 
@@ -398,7 +400,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
  *  "LineTerminator" production check.
  */
 
-duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_line_terminator(duk_signed_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.3
 	 *
@@ -406,8 +408,8 @@ duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp) {
 	 *  into a single line terminator.  This must be handled by the caller.
 	 */
 
-	if (cp == 0x000aUL || cp == 0x000dUL || cp == 0x2028UL ||
-	    cp == 0x2029UL) {
+	if (cp == 0x000aL || cp == 0x000dL || cp == 0x2028L ||
+	    cp == 0x2029L) {
 		return 1;
 	}
 
@@ -418,7 +420,7 @@ duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp) {
  *  "IdentifierStart" production check.
  */
 
-duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_identifier_start(duk_signed_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.6:
 	 *
@@ -453,8 +455,8 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 	 *    0x005f			['_']
 	 */
 
-	/* ASCII fast path -- quick accept and reject */
-	if (cp <= 0x7fUL) {
+	/* ASCII (and EOF) fast path -- quick accept and reject */
+	if (cp <= 0x7fL) {
 		if ((cp >= 'a' && cp <= 'z') ||
 		    (cp >= 'A' && cp <= 'Z') ||
 		    cp == '_' || cp == '$') {
@@ -468,15 +470,15 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 #ifdef DUK_USE_SOURCE_NONBMP
 	if (uni_range_match(duk_unicode_identifier_start_noascii,
 	                    (duk_size_t) sizeof(duk_unicode_identifier_start_noascii),
-	                    cp)) {
+	                    (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
-	if (cp < 0x10000UL) {
+	if (cp < 0x10000L) {
 		if (uni_range_match(duk_unicode_identifier_start_noascii_bmponly,
 		            sizeof(duk_unicode_identifier_start_noascii_bmponly),
-		            cp)) {
+		            (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -493,7 +495,7 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
  *  "IdentifierPart" production check.
  */
 
-duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
+duk_small_int_t duk_unicode_is_identifier_part(duk_signed_codepoint_t cp) {
 	/*
 	 *  E5 Section 7.6:
 	 *
@@ -539,8 +541,8 @@ duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 	 *  UnicodeConnectorPunctuation -> categories Pc
 	 */
 
-	/* ASCII fast path -- quick accept and reject */
-	if (cp <= 0x7fUL) {
+	/* ASCII (and EOF) fast path -- quick accept and reject */
+	if (cp <= 0x7fL) {
 		if ((cp >= 'a' && cp <= 'z') ||
 		    (cp >= 'A' && cp <= 'Z') ||
 		    (cp >= '0' && cp <= '9') ||
@@ -555,21 +557,21 @@ duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 #ifdef DUK_USE_SOURCE_NONBMP
 	if (uni_range_match(duk_unicode_identifier_start_noascii,
 	                    sizeof(duk_unicode_identifier_start_noascii),
-	                    cp) ||
+	                    (duk_codepoint_t) cp) ||
 	    uni_range_match(duk_unicode_identifier_part_minus_identifier_start_noascii,
 	                    sizeof(duk_unicode_identifier_part_minus_identifier_start_noascii),
-	                    cp)) {
+	                    (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
-	if (x < 0x10000UL) {
+	if (cp < 0x10000L) {
 		if (uni_range_match(duk_unicode_identifier_start_noascii_bmponly,
 		                    sizeof(duk_unicode_identifier_start_noascii_bmponly),
-		                    cp) ||
+		                    (duk_codepoint_t) cp) ||
 		    uni_range_match(duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly,
 		                    sizeof(duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly),
-		                    cp)) {
+		                    (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
