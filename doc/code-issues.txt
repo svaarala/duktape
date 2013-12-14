@@ -33,17 +33,22 @@ Names are lowercase, underscore separated::
 
 Macros are uppercase, underscore separated::
 
-  #define  DUK_MACRO(x)  /* ... */
+  #define DUK_MACRO(x)  /* ... */
 
 Macro names must not begin with an underscore.  Macros which are of local
 interest only can have a local name or have a double underscore after "DUK"::
 
   /* 'foo' alternatives, not to be used directly */
-  #define  DUK__FOO_ALT1  /* ... */
-  #define  DUK__FOO_ALT2  /* ... */
+  #define DUK__FOO_ALT1  /* ... */
+  #define DUK__FOO_ALT2  /* ... */
 
   /* select DUK_FOO provider */
-  #define  DUK_FOO  DUK_FOO_ALT2
+  #define DUK_FOO  DUK_FOO_ALT2
+
+There is only one space after a ``#define``, ``#ifdef``, etc, but there
+may be multiple spaces between the a macro name and its definition.  There
+is no strict rule on the alignment of a macro value; successive definitions
+usually keep values in the same column.
 
 Comments are always traditional C comments, never ``//``::
 
@@ -108,8 +113,8 @@ Multi-statement macros should use a ``do-while(0)`` construct::
 Include guards
 --------------
 
-There are multiple include guard conventions.  Leading underscores are
-reserved and should be avoided in user code.  The current include guard
+There are several popular include guard conventions.  Leading underscores
+are reserved and should be avoided in user code.  The current include guard
 convention is::
 
   /* duk_foo.h */
@@ -142,6 +147,48 @@ This seems to work with both GCC and Clang.  The form::
 
 works with GCC but not with Clang.
 
+Unreachable code and "noreturn" functions
+-----------------------------------------
+
+Noreturn functions must have a void return type and are declared as::
+
+  DUK_NORETURN(void myfunc(void));
+
+The macro style is awkward but is not easy to implement in another way.
+
+Unreachable points in code are declared as::
+
+  DUK_UNREACHABLE();
+
+Likely/unlikely comparisons
+---------------------------
+
+Providing "branch hints" may provide benefits on some platforms but not on
+others.  ``DUK_LIKELY()`` and ``DUK_UNLIKELY()`` can always be used in code,
+and will be defined as a no-op if using branch hints on the target platform
+is not possible or useful.
+
+``DUK_UNLIKELY()`` should be used at least for conditions which are almost
+never true, like invalid API call arguments, string size overflows, etc::
+
+  if (DUK_UNLIKELY(ptr == NULL)) {
+      /* ... */
+  }
+
+Similarly, ``DUK_LIKELY()`` should be used for conditions which are almost
+always true::
+
+  if (DUK_LIKELY(ptr != NULL)) {
+      /* ... */
+  }
+
+The argument to these macros must be an integer, so don't do this::
+
+  /* use DUK_LIKELY(ptr != NULL) instead */
+  if (DUK_LIKELY(ptr)) {
+      /* ... */
+  }
+
 C++ compatibility
 -----------------
 
@@ -158,20 +205,125 @@ To achieve this:
 
 * Use explicit casts for all pointer conversions.
 
+(Compiling Duktape as a C++ program doesn't currently work fully due to
+feature detection issues.)
+
 Portability concerns
 ====================
 
-Types
------
+Strict aliasing rules
+---------------------
 
-* Availability of C99 types varies
+Strict aliasing rules and prohibition of dereferencing type-punned pointers
+are good for portability so the implementation should adhere to the common
+rules, e.g. use a union to convert between types.  Sometimes this is not
+straightforward.  For instance, the indirect realloc approach currently in
+use needs a getter callback to avoid type-punning.
 
-* Currently we also need exact 32-bit types (e.g. number conversion
-  32-bit arithmetic relies on exact unsigned overflows / underflows)
+Current goal is to compile and work without warnings even with strict
+aliasing rules enforced.
 
-**FIXME: C type usage is not consistent right now, and "int" is expected
-to be 32 bits which is not necessarily true even on platforms which support
-a 32-bit type.**
+Numeric types
+-------------
+
+C data types, especially integer types, are a bit of a hassle: the best choice
+of types depends on the platform and the compiler, and also the C specification
+version.  Types also affect e.g. printf() and scanf() format specifiers which are,
+of course, potentially compiler specific.  To remain portable, almost all use
+of C datatypes would require a wrapper typedef; to make matters simple, all
+types inside the implementation are wrapped by default unless explicitly noted
+below.  External APIs and the public Duktape API may need exceptions to this
+rule.
+
+One complication is that the public Duktape API (``duktape.h``) needs integer
+types for various purposes, and these types also need to be portable and also
+need compiler, platform, standard version etc detection.  On the other hand
+the API needs to be clean and custom type wrappers are a hassle for the caller.
+The current approach is that ``duktape.h`` performs whatever feature detection
+is necessary to define types needed in the public API.  ``duk_features.h`` then
+completes the process for the remaining types.
+
+Basic rules in implementation:
+
+* ``duktape.h`` and ``duk_features.h`` perform all the detection needed and
+  provide typedefs for almost all types used internally.
+
+* C99 types are **not** used directly, wrapper types are used instead.  For
+  instance, use ``duk_uint32_t`` instead of ``uint32_t``.  Wrapper types are
+  used because we don't want to rely on C99 types or define them if they are
+  missing.
+
+* Only use ``duk_XXX_t`` typedefs for integer types unless there is a special
+  reason not to.
+
+* Use ``duk_size_t`` for internal uses of ``size_t``.  Coerce it explicitly
+  to ``size_t`` for library API calls.
+
+* Use ``duk_double_t`` for IEEE double precision float.
+
+* The ``void`` type is used as is, cannot imagine a reason why it would need
+  to be reassigned for portability.
+
+* Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
+  unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
+  ``duk_uint_t`` should be used as an ``unsigned int`` replacement.
+
+* The ``duk_small_int_t`` should be used in internal code e.g. for flags.
+  It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
+  It's also used for boolean values.
+
+* ``duk_uint8_t`` should be used as a replacement for ``unsigned char`` and
+  often for ``char`` too.  Since ``char`` may be signed, it is often a
+  problematic type when comparing ranges, indexing lookup tables, etc, so
+  a ``char`` or a ``signed char`` is often not the best type.  Note that
+  proper string comparison of UTF-8 character strings, for instance, relies
+  on unsigned byte comparisons.
+
+* Integer constants should generally use ``L`` or ``UL`` suffix, i.e.
+  makes them ``long int`` or ``unsigned long int``, and they are
+  guaranteed to be 32 bits or more.  Without a suffix integer constants
+  may be only 16 bits.  64-bit constants need ``LL`` or ``ULL`` suffix.
+  Small constants (16 bits or less) don't need a suffix and are still
+  portable.  This is convenient for codepoint constants and such.
+
+* Integer constant sign should match the type the constant is related to.
+  For instance, ``duk_codepoint_t`` is a signed type, so a signed constant
+  should be used.  This is more than a style issue: suppose signed codepoint
+  ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
+  the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
+
+* **Format specifiers: under work**
+
+Random notes:
+
+* The public API uses types at least for these (example type in parentheses):
+
+  - allocation size, entry count, etc (size_t)
+  - Unicode codepoint (int_fast32_t)
+  - value stack index (int_fast32_t, ssize_t)
+  - value stack count (uint_fast32_t, size_t)
+  - flag field (uint_fast32_t)
+  - boolean flag (int)
+  - Ecmascript array index (uint_fast32_t)
+  - Ecmascript number (double)
+  - Void and char pointers; easy, but sign of ``char`` varies:
+    explicit use of ``unsigned char`` is more portable but
+    more verbose
+
+* A large amount of code needs an integer type which is fastest on the platform
+  but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
+  choice because it may be 16 bits even on platforms with a 32-bit type and
+  even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
+  good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
+  long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
+  ``duk_uint_t``.  For small integers, like flags, there are typedefs
+  ``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
+  a small integer (16 bits or more) suffices.
+
+* Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
+  Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
+  exact unsigned overflows / underflows.  The wrapped C99 types are used in
+  these cases.
 
 Alignment
 ---------
@@ -215,6 +367,136 @@ Signed integer overflows are undefined behavior:
 
 At least unsigned overflow handling is important, as it is needed to make
 "add with carry" etc convenient.
+
+Detecting overflow in simple addition is straightforward when unsigned
+integer type bit size is exact::
+
+  duk_uint32_t x, y, z;
+  /* ... */
+  z = x + y;
+  if (z < x) {
+    /* Overflow: (z < x) or equivalently (z < y) cannot be true unless
+     * overflow occurs.  This relies on unsigned overflow behavior and
+     * an exact bit size for the type.
+     */
+  }
+
+Detecting overflow in multiplication is a bit trickier.  This comes up
+e.g. in array join/concat helper when it computes the combined size of
+separators (separator_size times separator_count).  The check is easy
+if a larger type is available::
+
+  duk_uint32_t x, y, z;
+  duk_uint64_t t;
+
+  t = (duk_uint64_t) x * (duk_uint64_t) y;
+  if (t >= (duk_uint64_t) LIMIT) {
+    /* Overflow. */
+  }
+  z = (duk_uint32_t) t;
+
+However, for portability a 64-bit type cannot (for instance) be assumed.
+The following approach works without a larger temporary type, but is
+conservative and may indicate overflow even when one wouldn't occur::
+
+  /*
+   * Basic idea:
+   *
+   *      x * y > limit     // limit is e.g. 2**32-1
+   * <=>  x > limit / y    (or equivalently)  y > limit / x    // x,y != 0
+   *
+   * When a truncating division is used on the right size, the result
+   * is no longer equivalent:
+   *
+   *      x > floor(limit / y)  <==  x > limit / y   // not ==>
+   *
+   * Limit must fit into the integer type.
+   */
+
+  duk_uint32_t x, y, z;
+
+  if (y != 0 && x > (duk_uint32_t) 0xffffffffU / y) {
+    /* Probable overflow. */
+  }
+  z = x * y;
+
+For 32-bit types the check is actually exact, see test in::
+
+  misc/c_overflow_test.py 
+
+String handling
+---------------
+
+snprintf buffer size
+::::::::::::::::::::
+
+NUL terminator behavior for snprintf() (and its friends) is inconsistent
+across implementations.  Some ensure a NUL terminator added when truncated
+(unless of course the buffer size is zero) while others do not.
+The most portable way seems to be to::
+  
+  char buf[256];
+  snprintf(buf, sizeof(buf), "format", args);
+  buf[sizeof(buf) - 1] = (char) 0;
+  
+Using sizeof(buf) - 1 for size may cause a NUL terminator to appear at
+the second to last character of buf in some implementations.
+
+s(n)printf %s and NULL value
+::::::::::::::::::::::::::::
+
+Giving a NULL argument to ``%s`` format string may cause a segfault in some
+old compilers.  Avoid NULL values for ``%s``.
+
+Use of sprintf vs. snprintf
+:::::::::::::::::::::::::::
+
+Use snprintf instead of sprintf by default, even when legal output size is
+known beforehand.  There can always be bugs in the underlying standard library
+implementation.  Sometimes the output size is known to be limited because
+input values are known to be constrained (e.g. year values are kept between
+[-999999,999999]).  However, if there is a bug, it's better to corrupt a
+printed output value than to cause a memory error.
+
+Other considerations
+====================
+
+Const qualifiers for tables
+---------------------------
+
+Using ``const`` for tables allows tables to compiled into the text section.
+This is important on some embedded platforms where RAM is tight but there
+is more space for code and fixed data.
+
+Feature defines
+===============
+
+Almost all feature detection is concentrated into ``duk_features.h`` which
+considers inputs from various sources:
+
+* ``DUK_OPT_xxx`` defines, which allow a user to request a specific feature
+  or provide a specific value (such as traceback depth)
+
+* Compiler and platform specific defines and features
+
+As a result, ``duk_features.h`` defines ``DUK_USE_xxx`` macros which enable
+and disable specific features and provide parameter values (such as traceback
+depth).  These are the **only** feature defines which should be used in
+internal Duktape code.
+
+The only exception so far is ``DUK_PANIC_HANDLER()`` in ``duk_error.h`` which
+can be directly overridden by the user if necessary.
+
+This basic approach is complicated a bit by the fact that ``duktape.h`` must
+do some minimal platform feature detection to ensure that the public API uses
+the correct types, etc.  These are coordinated with ``duk_features.h``;
+``duk_features.h`` either uses whatever ``duktape.h`` ended up using, or does
+its own checking and ensures the two are consistent.
+
+When adding specific hacks and workarounds which might not be of interest
+to all users, add a ``DUK_OPT_xxx`` flag for them and translate it to a
+``DUK_USE_xxx`` flag in ``duk_features.h``.  If the ``DUK_OPT_xxx`` flag
+is absent, the custom behavior MUST NOT be enabled.
 
 Platforms and compilers
 =======================
@@ -271,3 +553,23 @@ replacing the result with zero.  So something like this is probably safest::
   volatile double b = 0.0;
   double t = a / b;  /* -> NaN */
 
+tcc
+---
+
+Tcc has trouble with negative zeroes.  See ``misc/tcc_zerosign1.c``.  For
+instance:
+
+* Assign d = 0.0
+
+* Assign d = -d
+
+* Now d should be a negative zero, but in tcc (with default options) it
+  has not changed sign: the memory dump verified this, signbit() returns
+  zero, etc.
+
+This happens at least in tcc versions 0.9.25, 0.9.26.
+
+clang
+-----
+
+Clang has some issues with union aliasing.  See ``misc/clang_aliasing.c``.
