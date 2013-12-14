@@ -2,7 +2,7 @@
 Code issues
 ===========
 
-This documents covers C coding issues related to Duktape implementation
+This document covers C coding issues related to Duktape implementation
 such as:
 
 * Conventions
@@ -110,6 +110,16 @@ Multi-statement macros should use a ``do-while(0)`` construct::
                   y = y * y; \
           } while (0)
 
+Use parentheses when referring to macro arguments and the final macro
+result to minimize error proneness::
+
+  #define  MULTIPLY(a,b)  ((a)*(b))
+
+  /* Now MULTIPLY(1+2,3) expands to ((1+2)*(3)) == 9, not
+   * 1+2*3 == 7.  Parentheses are used around macro result for
+   * similar reasons.
+   */
+
 Include guards
 --------------
 
@@ -126,7 +136,9 @@ convention is::
 
   #endif  /* DUK_FOO_H_INCLUDED */
 
-http://en.wikipedia.org/wiki/Include_guard
+See:
+
+* http://en.wikipedia.org/wiki/Include_guard
 
 ``#pragma once`` is not portable, and is not used.
 
@@ -182,9 +194,14 @@ always true::
       /* ... */
   }
 
-The argument to these macros must be an integer, so don't do this::
+The argument to these macros must be an integer::
 
-  /* use DUK_LIKELY(ptr != NULL) instead */
+  /* correct */
+  if (DUK_LIKELY(ptr != NULL)) {
+      /* ... */
+  }
+
+  /* incorrect */
   if (DUK_LIKELY(ptr)) {
       /* ... */
   }
@@ -228,25 +245,18 @@ Numeric types
 
 C data types, especially integer types, are a bit of a hassle: the best choice
 of types depends on the platform and the compiler, and also the C specification
-version.  Types also affect e.g. printf() and scanf() format specifiers which are,
-of course, potentially compiler specific.  To remain portable, almost all use
-of C datatypes would require a wrapper typedef; to make matters simple, all
-types inside the implementation are wrapped by default unless explicitly noted
-below.  External APIs and the public Duktape API may need exceptions to this
-rule.
-
-One complication is that the public Duktape API (``duktape.h``) needs integer
-types for various purposes, and these types also need to be portable and also
-need compiler, platform, standard version etc detection.  On the other hand
-the API needs to be clean and custom type wrappers are a hassle for the caller.
-The current approach is that ``duktape.h`` performs whatever feature detection
-is necessary to define types needed in the public API.  ``duk_features.h`` then
-completes the process for the remaining types.
+version.  Types also affect e.g. printf() and scanf() format specifiers which
+are, of course, potentially compiler specific.  To remain portable, (almost)
+all C types are wrapped behind a typedef.  Because both Duktape internals and
+the public ``duktape.h`` header need type wrappers, the current approach is that
+``duktape.h`` performs whatever feature detection is necessary to define types
+needed in the public API.  ``duk_features.h`` then completes the process for the
+remaining internal types.
 
 Basic rules in implementation:
 
 * ``duktape.h`` and ``duk_features.h`` perform all the detection needed and
-  provide typedefs for almost all types used internally.
+  provide typedefs for types used in the public API and inside Duktape.
 
 * C99 types are **not** used directly, wrapper types are used instead.  For
   instance, use ``duk_uint32_t`` instead of ``uint32_t``.  Wrapper types are
@@ -254,12 +264,14 @@ Basic rules in implementation:
   missing.
 
 * Only use ``duk_XXX_t`` typedefs for integer types unless there is a special
-  reason not to.
+  reason not to.  For instance, if a platform API requires a specific type,
+  that type must of course be used (or casted to).
 
 * Use ``duk_size_t`` for internal uses of ``size_t``.  Coerce it explicitly
   to ``size_t`` for library API calls.
 
-* Use ``duk_double_t`` for IEEE double precision float.
+* Use ``duk_double_t`` for IEEE double precision float.  This is slight
+  paranoia but may be handy if e.g. built-in soft float library is introduced.
 
 * The ``void`` type is used as is, cannot imagine a reason why it would need
   to be reassigned for portability.
@@ -292,7 +304,7 @@ Basic rules in implementation:
   ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
   the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
 
-* **Format specifiers: under work**
+* **FIXME:** Format specifiers are under work.
 
 Random notes:
 
@@ -355,8 +367,8 @@ Some compilers on 32-bit platforms may have 64-bit arithmetic problems
 (this seems to be the case with VBCC for example).  There are also older
 compiles with no 64-bit support at all.
 
-Duktape must compile with only 32-bit operations, so replacements are
-needed in the few places where 32 bits are not enough.
+Duktape must compile with only 32-bit operations if necessary, so
+replacements are needed in the few places where 32 bits are not enough.
 
 Integer overflows
 -----------------
@@ -403,7 +415,8 @@ conservative and may indicate overflow even when one wouldn't occur::
    * Basic idea:
    *
    *      x * y > limit     // limit is e.g. 2**32-1
-   * <=>  x > limit / y    (or equivalently)  y > limit / x    // x,y != 0
+   * <=>  x > limit / y     // y != 0
+   * <=>  y > limit / x     // equivalent, x != 0
    *
    * When a truncating division is used on the right size, the result
    * is no longer equivalent:
