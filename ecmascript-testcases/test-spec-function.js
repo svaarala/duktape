@@ -1,6 +1,5 @@
 /*
  *  Function compilation and execution (E5 Sections 13, 10.4.3).
- *  Also covers the arguments object.
  *
  *  There is a separate test for tail recursion, arguments object.
  */
