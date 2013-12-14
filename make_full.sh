@@ -40,6 +40,7 @@ for i in \
 	doc/identifier-handling.txt \
 	doc/function-objects.txt \
 	doc/error-objects.txt \
+	doc/arguments-object.txt \
 	; do
 	cp --parents $i $FULL/
 done
