@@ -7,7 +7,7 @@
  *  and uses a minimum number of digits.  The big number arithmetic has a
  *  fixed maximum size and does not require dynamic allocations.
  *
- *  See: doc/number_conversion.txt.
+ *  See: doc/number-conversion.txt.
  */
 
 #include "duk_internal.h"
@@ -621,7 +621,7 @@ static void bi_exp_small(duk_bigint *x, int b, int y, duk_bigint *t1, duk_bigint
  *  The same algorithm is used for number parsing (with b=10 and B=2)
  *  by generating one extra digit and doing rounding manually.
  *
- *  See doc/number_conversion.txt for limitations.
+ *  See doc/number-conversion.txt for limitations.
  */
 
 /* Maximum number of digits generated. */

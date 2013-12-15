@@ -30,7 +30,7 @@ for i in \
 	doc/rst-conventions.txt \
 	doc/json.txt \
 	doc/datetime.txt \
-	doc/number_conversion.txt \
+	doc/number-conversion.txt \
 	doc/regexp.txt \
 	doc/sorting.txt \
 	doc/uri.txt \
