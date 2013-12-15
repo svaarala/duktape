@@ -41,6 +41,7 @@ for i in \
 	doc/function-objects.txt \
 	doc/error-objects.txt \
 	doc/arguments-object.txt \
+	doc/memory-management.txt \
 	; do
 	cp --parents $i $FULL/
 done
