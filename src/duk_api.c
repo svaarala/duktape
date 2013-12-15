@@ -3239,6 +3239,15 @@ void duk_destroy_heap(duk_context *ctx) {
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 
+	/* If using mark-and-sweep, run a few passes to ensure finalizers
+	 * get a chance to run at least once.
+	 */
+#ifdef DUK_USE_MARK_AND_SWEEP
+	DUK_DPRINT("run a few mark-and-sweeps for finalizer execution");
+	duk_heap_mark_and_sweep(heap, 0);
+	duk_heap_mark_and_sweep(heap, 0);
+#endif
+
 	duk_heap_free(heap);
 }
 
