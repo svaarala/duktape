@@ -170,7 +170,7 @@ Current implementation uses the same functions as on Linux.
 Windows
 -------
 
-FIXME
+**FIXME**
 
 See also:
 
