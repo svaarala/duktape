@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a note on function instances being reference loops
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-15 23:16:34.557331 Z
+references: []
+
+id: c6227c22ff80e3077947be050093b6c90051a300
+log_events: 
+- - 2013-12-15 23:16:34.709040 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
