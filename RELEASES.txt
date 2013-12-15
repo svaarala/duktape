@@ -86,6 +86,9 @@ Released
 * Mark-and-sweep stringtable leak fixed, affected mostly builds without
   reference counting
 
+* Run a few mark-and-sweep passes in duk_destroy_heap() to give finalizers
+  a chance to run in most (but not all) cases
+
 * Coroutine yield fixes
 
 * Portability and bug fixes
