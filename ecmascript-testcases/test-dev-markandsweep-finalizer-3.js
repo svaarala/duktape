@@ -10,6 +10,7 @@
 removing references
 obj1 and obj2 unreachable now
 forced gc
+finalizer obj1
 bar
 forced gc
 bar
@@ -34,7 +35,7 @@ obj2 = null;
 print('obj1 and obj2 unreachable now');
 
 print('forced gc');
-__duk__.gc();  // finalizer creates 'newobj'
+__duk__.gc();  // finalizer executes and creates 'newobj'
 print(newobj.foo);
 
 print('forced gc');
