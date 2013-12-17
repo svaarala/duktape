@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add internal doc on objects
+title: performance note on enumeration vs. looping array indices
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.8
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-12-13 23:48:58.893865 Z
+creation_time: 2013-12-17 11:19:44.519810 Z
 references: []
 
-id: d44cbaa5b815598c1b60f699b62b92b622628111
+id: 84bc49e3a940f70896f13de4244e2795c2428491
 log_events: 
-- - 2013-12-13 23:48:59.062180 Z
+- - 2013-12-17 11:19:44.679779 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2013-12-17 16:55:43.172105 Z
+- - 2013-12-17 14:57:39.859993 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "function instance optimization: prototype object, often not needed but mandatory"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-17 13:43:21.717741 Z
+references: []
+
+id: 6e20016d7d9985d8e7bf8481d38be083787e6447
+log_events: 
+- - 2013-12-17 13:43:21.921805 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

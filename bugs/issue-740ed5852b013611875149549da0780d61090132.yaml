@@ -5,7 +5,7 @@ desc: |-
   reverse, sort?).
 type: :task
 component: duk
-release: 
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2013-03-21 18:02:26.254562 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-12-17 11:03:46.144583 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from unassigned
   - ""
