@@ -63,7 +63,7 @@ Released
 
 * Portability and bug fixes
 
-0.8.0 (2013-12-XX)
+0.8.0 (2013-12-18)
 ------------------
 
 * Remove DUK_PROFILE model, explicit DUK_OPT_xxx feature options added for
