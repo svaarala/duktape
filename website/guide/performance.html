@@ -144,6 +144,23 @@ slower.</p>
     them up from the global object or other objects</li>
 </ul>
 
+<h4>Enumeration</h4>
+
+<p>When an object is enumerated, with either the <code>for-in</code> statement
+or <code>Object.keys()</code>, Duktape first traverses the target object and its
+prototype chain and forms an internal enumeration object, which contains all
+the enumeration keys as strings.
+In particular, all array indices (or character indices in case of
+strings) are converted and interned into string values before enumeration and
+they remain interned until the enumeration completes.  This can be memory
+intensive especially if large arrays or strings are enumerated.</p>
+
+<p>Note, however, that iterating a string or an array with <code>for-in</code>
+and expecting the array elements or string indices to be enumerated in an
+ascending order is non-portable.  Such behavior, while guaranteed by many
+implementations including Duktape, is not guaranteed by the Ecmascript
+standard.</p>
+
 <h4>Function features</h4>
 
 <p>Ecmascript has a lot of features which make function entry and execution
@@ -270,6 +287,41 @@ var arr = [];
 arr.length = 1001;  // array part not abandoned, but no speedup in Duktape
 for (var i = 0; i &lt;= 1000; i++) {
     arr[i] = i * i;
+}
+</pre>
+
+<h3>Iterate arrays with explicit indices, not a "for-in"</h3>
+
+<p>Because the internal enumeration object contains all (used) array
+indices converted to string values, avoid <code>for-in</code> enumeration
+of at least large arrays.  As a concrete example, consider:</p>
+<pre class="ecmascript-code">
+var a = [];
+for (var i = 0; i &lt; 1000000; i++) {
+  a[i] = i;
+}
+for (var i in a) {
+  // Before this loop is first entered, a million strings ("0", "1",
+  // ..., "999999") will be interned.
+  print(i, a[i]);
+}
+// The million strings become garbage collectable only here.
+</pre>
+
+<p>The internal enumeration object created in this example would contain a
+million interned string keys for "0", "1", ..., "999999".  All of these keys
+would remain reachable for the entire duration of the enumeration.  The
+following code would perform much better (and would be more portable, as it
+makes no assumptions on enumeration order):</p>
+
+<pre class="ecmascript-code">
+var a = [];
+for (var i = 0; i &lt; 1000000; i++) {
+  a[i] = i;
+}
+var n = a.length;
+for (var i = 0; i &lt; n; i++) {
+  print(i, a[i]);
 }
 </pre>
 
