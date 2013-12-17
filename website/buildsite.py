@@ -16,6 +16,7 @@ fancy_stack = True
 remove_fixme = True
 testcase_refs = False
 list_tags = False
+fancy_releaselog = True
 
 def readFile(x):
 	f = open(x, 'rb')
@@ -54,6 +55,19 @@ def sourceHighlight(x, sourceLang):
 	          (sourceLang, tmp1, tmp2))
 
 	f = open(tmp2, 'rb')
+	res = f.read()
+	f.close()
+
+	return res
+
+def rst2Html(filename):
+	tmp1 = getAutodeleteTempname()
+
+	# FIXME: safer execution
+	os.system('rst2html "%s" >"%s"' % \
+	          (filename, tmp1))
+
+	f = open(tmp1, 'rb')
 	res = f.read()
 	f.close()
 
@@ -347,6 +361,57 @@ def transformAddHrBeforeH2(soup):
 	for elem in soup.select('h2'):
 		elem.insert_before(soup.new_tag('hr'))
 
+def transformAddAutoAnchors(soup):
+	hdr_tags = [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ]
+
+	ids = {}
+
+	# FIXME: under work
+	def findAutoName(txt):
+		# simple name sanitation, not very well thought out; goal is to get
+		# nice web-like anchor names from whatever titles are present
+		txt = txt.strip().lower()
+		if len(txt) > 1 and txt[0] == '.':
+			txt = txt[1:]  # leading dot convention for API section names
+		txt = txt.replace('c++', 'cpp')
+		txt = txt.replace('. ', ' ')  # e.g. 'vs.' -> 'vs'
+		txt = txt.replace(', ', ' ')  # e.g. 'foo, bar' -> 'foo bar'
+		txt = txt.replace(' ', '_')
+		res = ''
+		for i,c in enumerate(txt):
+			if (ord(c) >= ord('a') and ord(c) <= ord('z')) or \
+			   (ord(c) >= ord('A') and ord(c) <= ord('Z')) or \
+			   (ord(c) >= ord('0') and ord(c) <= ord('9') and i > 0) or \
+			   c in '_':
+				res += c
+			elif c in '()[]{}?\'"':
+				pass  # eat
+			else:
+				res += '_'
+		return res
+
+	for elem in soup.select('*'):
+		if not elem.has_key('id'):
+			continue
+		e_id = elem['id']
+		if ids.has_key(e_id):
+			print('WARNING: duplicate id %s' % e_id)
+		ids[e_id] = True
+
+	# add automatic anchors for every other heading, with priority in
+	# naming for higher level sections (e.g. h2 over h3)
+	for hdr in hdr_tags:
+		for elem in soup.select(hdr):
+			if elem.has_key('id'):
+				continue  # already has an id anchor
+			e_name = elem.text
+			a_name = findAutoName(e_name)
+			if ids.has_key(a_name):
+				print('WARNING: cannot generate automatic anchor name for %s (already exists)' % e_name)
+				continue
+			ids[a_name] = True
+			elem['id'] = a_name
+
 def setNavSelected(soup, pagename):
 	# pagename must match <li><a> content
 	for elem in soup.select('#site-top-nav li'):
@@ -533,10 +598,26 @@ def generateDownloadPage(releases_filename):
 	del title_elem['id']
 	title_elem.string = 'Downloads'
 
-	releaselog_elem = down_soup.select('#releaselog')[0]
-	f = open(releases_filename, 'rb')
-	releaselog_elem.string = f.read().decode('utf-8')
-	f.close()
+	if fancy_releaselog:
+		# fancy releaselog
+		rel_data = rst2Html(os.path.abspath(os.path.join('..', 'RELEASES.txt')))
+		rel_soup = BeautifulSoup(rel_data)
+		released = rel_soup.select('#released')[0]
+		# massage the rst2html generated HTML to be more suitable
+		for elem in released.select('h1'):
+			elem.extract()
+		for elem in released.select('h2'):
+			elem.name = 'h3'
+		releaselog_elem = down_soup.select('#releaselog')[0]
+		releaselog_elem.insert_after(released)
+	else:
+		# plaintext releaselog
+		releaselog_elem = down_soup.select('#releaselog')[0]
+		pre_elem = down_soup.new_tag('pre')
+		releaselog_elem.append(pre_elem)
+		f = open(releases_filename, 'rb')
+		pre_elem.string = f.read().decode('utf-8')
+		f.close()
 
 	tmp_soup = templ_soup.select('#site-middle')[0]
 	tmp_soup.clear()
@@ -636,7 +717,7 @@ def generateStyleCss():
 
 	return style
 
-def postProcess(soup, includeDir):
+def postProcess(soup, includeDir, autoAnchors=False):
 	# read in source snippets from include files
 	if True:
 		transformReadIncludes(soup, includeDir)
@@ -645,6 +726,11 @@ def postProcess(soup, includeDir):
 	# in text browsers
 	if True:
 		transformAddHrBeforeH2(soup)
+
+	# add automatic anchors to all headings (as long as they don't conflict
+	# with any manually assigned "long term" ids)
+	if autoAnchors:
+		transformAddAutoAnchors(soup)
 
 	if colorize:
 		transformColorizeCode(soup, 'c-code', 'c')
@@ -685,7 +771,7 @@ def main():
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup, guideincdir)
+	soup = postProcess(soup, guideincdir, autoAnchors=False)  # FIXME: auto anchors
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
