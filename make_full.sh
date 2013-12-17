@@ -42,6 +42,7 @@ for i in \
 	doc/error-objects.txt \
 	doc/arguments-object.txt \
 	doc/memory-management.txt \
+	doc/hobject-design.txt \
 	; do
 	cp --parents $i $FULL/
 done
