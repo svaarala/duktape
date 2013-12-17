@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: HTML styling of internal RST documentation, perhaps adding internal docs to website format?
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-17 21:51:47.470236 Z
+references: []
+
+id: 9341153c7733a5f54da7ab65e86a1fa463b2f0e4
+log_events: 
+- - 2013-12-17 21:51:47.622042 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: html header layout glitch (float vs. font loading or something)
+desc: ""
+type: :task
+component: duk
+release: v0.8
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-17 22:32:05.792529 Z
+references: []
+
+id: 805093d6b887f2e2502be8000a36953e8f2a855e
+log_events: 
+- - 2013-12-17 22:32:05.977018 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
