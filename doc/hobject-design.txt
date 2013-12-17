@@ -49,7 +49,7 @@ See also the following documentation:
 
 * ``hobject-algorithms.txt``: detailed derivation of object algorithms
 
-* ``hobject-enumeration.txt``: detailed discussion on enumeration
+* ``hobject-enumeration.txt``: more discussion on enumeration
 
 * ``error-objects.txt``: error object properties
 
@@ -1224,7 +1224,7 @@ in the order they were inserted.  See, for instance:
   this the Chrome team has deemed this to be a bug and will be fixing it."
 
 * ``hobject-enumeration.txt`` for practical testing results with
-  various implementations.
+  actual implementations.
 
 We impose the following additional requirements for compatibility:
 
