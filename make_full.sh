@@ -44,6 +44,7 @@ for i in \
 	doc/memory-management.txt \
 	doc/hobject-design.txt \
 	doc/hobject-algorithms.txt \
+	doc/hobject-enumeration.txt \
 	; do
 	cp --parents $i $FULL/
 done
