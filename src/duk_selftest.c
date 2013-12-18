@@ -3,9 +3,9 @@
  *  compiler/platform problems which cannot be detected at compile time.
  */
 
-#if defined(DUK_USE_SELF_TESTS)
-
 #include "duk_internal.h"
+
+#if defined(DUK_USE_SELF_TESTS)
 
 /*
  *  Self test for union aliasing, see misc/clang_aliasing.c.
