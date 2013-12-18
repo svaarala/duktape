@@ -148,6 +148,10 @@ clean:
 	-@rm -f libduktape*.so*
 	-@rm -f doc/*.html
 	-@rm -f src/*.pyc
+	-@rm -rf duktape-0.*
+	-@rm -rf duktape-full-0.*
+	-@rm -rf duktape-site-0.*
+	-@rm -rf massif.out.*
 
 libduktape.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
