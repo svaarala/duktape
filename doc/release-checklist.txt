@@ -1,0 +1,81 @@
+=================
+Release checklist
+=================
+
+* Ensure git commits are up-to-date
+
+* Version bump DUK_VERSION
+
+  - Verify by running Duktape cmdline and evaluating ``__duk__.version``
+
+* Build candidate tar.xz files
+
+  - These should remain the same so that their hash values are known
+
+* Check full dist contents
+
+  - Check file list
+  - Grep for FIXME and XXX
+  - Ensure you can create an end-user dist and compile it
+
+* Check end user dist contents
+
+  - Check file list
+  - Grep for FIXME and XXX
+  - Trivial compile test for combined source
+  - Trivial compile test for separate sources (important because
+    it's easy to forget to add files in make_dist.sh)
+
+* Compilation tests (clean compile)
+
+  - **FIXME: automate**
+  - Linux x86-64 gcc
+  - Linux x86-64 gcc + DUK_OPT_DEBUG
+  - Linux x86-64 gcc + -m32
+  - Linux x86-64 gcc + -m32 + DUK_OPT_DEBUG
+  - Linux x86-64 clang
+  - Linux x86-64 clang + DUK_OPT_DEBUG
+  - Linux x86-64 clang + -m32
+  - Linux x86-64 clang + -m32 + DUK_OPT_DEBUG
+  - FreeBSD clang
+  - FreeBSD clang + DUK_OPT_DEBUG
+  - FreeBSD clang + -m32
+  - FreeBSD clang + -m32 + DUK_OPT_DEBUG
+
+* Ecmascript testcases
+
+  - On x86-64:
+
+    - make qtest   # quick test
+    - make vgtest  # valgrind test
+
+  - Run testcases on all endianness targets
+
+* API testcases
+
+  - On x86-64
+
+* Version bump website
+
+  - API
+  - Guide
+
+* Ensure RELEASES.txt is up-to-date
+
+  - New release is in place, chech hash
+  - Release log entries match ditz issues
+  - Release date is in place
+
+* Store binaries and update website downloads page
+
+  - Release date
+  - Link
+  - Date
+  - "latest" class
+
+* Ditz release
+
+* Git release and tag
+
+* Build website, upload and test
+
