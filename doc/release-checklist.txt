@@ -73,9 +73,11 @@ Release checklist
   - Date
   - "latest" class
 
+* Build website, readthrough
+
 * Ditz release
 
 * Git release and tag
 
-* Build website, upload and test
+* Upload and test
 
