@@ -9,6 +9,7 @@ import shutil
 import re
 import tempfile
 import atexit
+import md5
 from bs4 import BeautifulSoup
 
 colorize = True
@@ -72,6 +73,14 @@ def rst2Html(filename):
 	f.close()
 
 	return res
+
+def getFileMd5(filename):
+	if not os.path.exists(filename):
+		return None
+	f = open(filename, 'rb')
+	d = f.read()
+	f.close()
+	return md5.md5(d).digest().encode('hex')
 
 def stripNewline(x):
 	if len(x) > 0 and x[-1] == '\n':
@@ -618,6 +627,20 @@ def generateDownloadPage(releases_filename):
 		f = open(releases_filename, 'rb')
 		pre_elem.string = f.read().decode('utf-8')
 		f.close()
+
+	# automatic md5sums for downloadable files
+	# <tr><td class="reldate">2013-09-21</td>
+	#     <td class="filename"><a href="duktape-0.6.0.tar.xz">duktape-0.6.0.tar.xz</a></td>
+	#     <td class="description">alpha, first round of work on public API</td>
+	#     <td class="hash">fa384a42a27d996313e0192c51c50b4a</td></tr>
+
+	for tr in down_soup.select('tr'):
+		tmp = tr.select('.filename')
+		if len(tmp) != 1:
+			continue
+		href = tmp[0].select('a')[0]['href']
+		hash_elem = tr.select('.hash')[0]
+		hash_elem.string = getFileMd5(os.path.abspath(os.path.join('binaries', href))) or '???'
 
 	tmp_soup = templ_soup.select('#site-middle')[0]
 	tmp_soup.clear()
