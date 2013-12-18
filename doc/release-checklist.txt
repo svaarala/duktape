@@ -4,7 +4,7 @@ Release checklist
 
 * Ensure git commits are up-to-date
 
-* Version bump DUK_VERSION
+* Check DUK_VERSION
 
   - Verify by running Duktape cmdline and evaluating ``__duk__.version``
 
@@ -77,7 +77,16 @@ Release checklist
 
 * Ditz release
 
+  - ``ditz release vN.N``
+  - git add and commit ditz issues
+
 * Git release and tag
+
+  - ``git tag -l -n1`` to list current tags
+  - ``git tag -s -m "<one line release description>" vN.N.N``
 
 * Upload and test
 
+* Bump Duktape version for next release and testing
+
+  - ``duktape.h``
