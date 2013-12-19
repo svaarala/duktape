@@ -78,3 +78,21 @@ void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs)
 	out_funcs->udata = heap->alloc_udata;
 }
 
+void duk_gc(duk_context *ctx, int flags) {
+#ifdef DUK_USE_MARK_AND_SWEEP
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_heap *heap;
+
+	if (!ctx) {
+		return;
+	}
+	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
+
+	DUK_DPRINT("mark-and-sweep requested by application");
+	duk_heap_mark_and_sweep(heap, 0);
+#else
+	DUK_DPRINT("mark-and-sweep requested by application but mark-and-sweep not enabled, ignoring");
+#endif
+}
+

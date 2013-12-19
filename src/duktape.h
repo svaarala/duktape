@@ -193,6 +193,7 @@ void *duk_alloc(duk_context *ctx, size_t size);
 void duk_free(duk_context *ctx, void *ptr);
 void *duk_realloc(duk_context *ctx, void *ptr, size_t size);
 void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
+void duk_gc(duk_context *ctx, int flags);
 
 /*
  *  Error handling
