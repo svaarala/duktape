@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2013-09-22 20:24:18.001157 Z
 references: []
 
@@ -28,3 +28,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
+- - 2013-12-19 22:53:47.330798 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - Profiles were removed in favor of DUK_OPT_xxx feature options.
