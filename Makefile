@@ -114,6 +114,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 # Compiler setup for Linux
 CC	= gcc
 CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
+CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
