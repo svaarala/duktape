@@ -408,3 +408,14 @@ ul.breakdown li {
 	font-weight: 700;
 }
 
+/*
+ *  Section sign link
+ */
+
+.content .sectiontitle a.sectionlink {
+	color: #ffffff;
+}
+.content .sectiontitle:hover a.sectionlink {
+	color: #4444ff;
+}
+

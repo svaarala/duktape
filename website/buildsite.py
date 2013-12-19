@@ -487,6 +487,32 @@ def transformAddAutoAnchorsNamed(soup):
 			ids[a_name] = True
 			elem['id'] = a_name
 
+def transformAddHeadingLinks(soup):
+	hdr_tags = [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ]
+	changes = []
+
+	for elem in soup.select('*'):
+		if elem.name not in hdr_tags or not elem.has_key('id'):
+			continue
+		if elem.name == 'h1':
+			continue  # skip h1 for now (page title)
+
+		new_elem = soup.new_tag('a')
+		new_elem['href'] = '#' + elem['id']
+		new_elem['class'] = 'sectionlink'
+		new_elem.string = u'\u00a7'  # section sign
+
+		# avoid mutation while iterating
+		changes.append((elem, new_elem))
+
+	for elem, new_elem in changes:
+		if elem.has_key('class'):
+			elem['class'] = elem['class'] + ' sectiontitle'
+		else:
+			elem['class'] = 'sectiontitle'
+		elem.append(' ')
+		elem.append(new_elem)
+
 def setNavSelected(soup, pagename):
 	# pagename must match <li><a> content
 	for elem in soup.select('#site-top-nav li'):
@@ -806,7 +832,7 @@ def generateStyleCss():
 
 	return style
 
-def postProcess(soup, includeDir, autoAnchors=False):
+def postProcess(soup, includeDir, autoAnchors=False, headingLinks=False):
 	# read in source snippets from include files
 	if True:
 		transformReadIncludes(soup, includeDir)
@@ -820,6 +846,9 @@ def postProcess(soup, includeDir, autoAnchors=False):
 	# with any manually assigned "long term" ids)
 	if autoAnchors:
 		transformAddAutoAnchorsNumbered(soup)
+
+	if headingLinks:
+		transformAddHeadingLinks(soup)
 
 	if colorize:
 		transformColorizeCode(soup, 'c-code', 'c')
@@ -855,12 +884,12 @@ def main():
 
 	print 'Generating api.html'
 	soup = generateApiDoc(apidocdir, apitestdir)
-	soup = postProcess(soup, apiincdir)
+	soup = postProcess(soup, apiincdir, autoAnchors=True, headingLinks=True)
 	writeFile(os.path.join(outdir, 'api.html'), soup.encode(out_charset))
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup, guideincdir, autoAnchors=True)
+	soup = postProcess(soup, guideincdir, autoAnchors=True, headingLinks=True)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
