@@ -10,7 +10,7 @@ import re
 import tempfile
 import atexit
 import md5
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 colorize = True
 fancy_stack = True
@@ -370,12 +370,78 @@ def transformAddHrBeforeH2(soup):
 	for elem in soup.select('h2'):
 		elem.insert_before(soup.new_tag('hr'))
 
-def transformAddAutoAnchors(soup):
+# Add automatic anchors so that a basename from an element with an explicit
+# ID is appended with dotted number(s).  Note that headings do not actually
+# nest in the document, so this is now based on document order traversal and
+# keeping track of counts of headings at different levels, and the active
+# explicit IDs at each level.
+def transformAddAutoAnchorsNumbered(soup):
+	level_counts = [ 0, 0, 0, 0, 0, 0 ]                    # h1, h2, h3, h4, h5, h6
+	level_ids = [ None, None, None, None, None, None ]     # explicit IDs
+	hdr_tags = { 'h1': 0, 'h2': 1, 'h3': 2, 'h4': 3, 'h5': 4, 'h6': 5 }
+
+	changes = []
+
+	def _proc(root, state):
+		idx = hdr_tags.get(root.name, None)
+		if idx is None:
+			return
+
+		# bump count at matching level and zero lower levels
+		level_counts[idx] += 1
+		for i in xrange(idx + 1, 6):
+			level_counts[i] = 0
+
+		# set explicit ID for current level
+		if root.has_key('id'):
+			level_ids[idx] = root['id']
+			return
+
+		# no explicit ID at current level, clear it
+		level_ids[idx] = None
+
+		# figure out an automatic ID: closest explicit ID + dotted
+		# numbers to current level
+
+		parts = []
+		for i in xrange(idx, -1, -1):  # idx, idx-1, ..., 0
+			if level_ids[i] is not None:
+				parts.append(level_ids[i])
+				break
+			parts.append(str(level_counts[i]))
+			if i == 0:
+				parts.append('doc')  # if no ID in path, use e.g. 'doc.1.2'
+		parts.reverse()
+		auto_id = '.'.join(parts)
+
+		# avoid mutation: record changes to be made first
+		# (adding 'id' would be OK, but this is more flexible
+		# if explicit anchors are added instead / in addition
+		# to 'id' attributes)
+		changes.append((root, auto_id))
+
+	def _rec(root, state):
+		if not isinstance(root, Tag):
+			return
+		_proc(root, state)
+		for elem in root.children:
+			_rec(elem, state)
+
+	_rec(soup.select('body')[0], {})
+
+	for elem, auto_id in changes:
+		elem['id'] = auto_id
+
+# Add automatic anchors where section headings are used to autogenerate
+# suitable names.  This does not work very well: there are many subsections
+# with the name "Example" or "Limitations", for instance.  Prepending the
+# parent name (or rather names of all the parents) would create very long
+# names.
+def transformAddAutoAnchorsNamed(soup):
 	hdr_tags = [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ]
 
 	ids = {}
 
-	# FIXME: under work
 	def findAutoName(txt):
 		# simple name sanitation, not very well thought out; goal is to get
 		# nice web-like anchor names from whatever titles are present
@@ -753,7 +819,7 @@ def postProcess(soup, includeDir, autoAnchors=False):
 	# add automatic anchors to all headings (as long as they don't conflict
 	# with any manually assigned "long term" ids)
 	if autoAnchors:
-		transformAddAutoAnchors(soup)
+		transformAddAutoAnchorsNumbered(soup)
 
 	if colorize:
 		transformColorizeCode(soup, 'c-code', 'c')
@@ -794,7 +860,7 @@ def main():
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup, guideincdir, autoAnchors=False)  # FIXME: auto anchors
+	soup = postProcess(soup, guideincdir, autoAnchors=True)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
