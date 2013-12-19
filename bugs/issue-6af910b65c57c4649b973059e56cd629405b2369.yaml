@@ -5,7 +5,7 @@ desc: |-
   bytes (it doesn't check the high bits).
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2013-11-13 12:34:29.115521 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2013-12-19 00:58:14.712021 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

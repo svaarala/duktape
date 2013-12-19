@@ -9,7 +9,7 @@ desc: |-
   chunk as the enumeration finishes.
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -39,3 +39,7 @@ log_events:
     soon as it was enumerated.  This would create duplicate keys in the entry
     part, however, something that is not normally allowed so it would need
     careful consideration.
+- - 2013-12-19 00:58:14.586414 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
+  - ""

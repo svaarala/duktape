@@ -3,7 +3,7 @@ title: HTML styling of internal RST documentation, perhaps adding internal docs 
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-12-17 21:51:47.622042 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-12-19 00:58:14.464603 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check compilation errors with -Wextra
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-19 18:05:19.889280 Z
+references: []
+
+id: 9cdb1d959df93736e24f25b3d748a4e194d664a9
+log_events: 
+- - 2013-12-19 18:05:20.025207 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

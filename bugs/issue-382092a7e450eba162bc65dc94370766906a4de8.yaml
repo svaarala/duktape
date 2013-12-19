@@ -7,7 +7,7 @@ desc: |-
   void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count);
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2013-10-31 00:04:10.733377 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2013-12-19 00:58:15.546192 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

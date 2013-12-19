@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make it possible to compile code from user buffer instead of pushing a string
+desc: On memory-starved devices this may be useful.
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-19 00:52:20.188772 Z
+references: []
+
+id: d2e39176a39c4d9bd9c89cc0d3a7bda3e7a0e236
+log_events: 
+- - 2013-12-19 00:52:20.356770 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

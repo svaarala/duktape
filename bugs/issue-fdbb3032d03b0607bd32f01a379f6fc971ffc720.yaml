@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check filename/line parameter for checked alloc functions - remove or keep?
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-19 18:51:08.662335 Z
+references: []
+
+id: fdbb3032d03b0607bd32f01a379f6fc971ffc720
+log_events: 
+- - 2013-12-19 18:51:08.798390 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
