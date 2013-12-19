@@ -197,9 +197,10 @@ static void duk_transform_callback_encode_uri(duk_transform_context *tfm_ctx, vo
 
 static void duk_transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
-	duk_small_int_t utf8_blen;
+	duk_small_uint_t utf8_blen;
 	duk_codepoint_t min_cp;
-	duk_small_int_t t, i;
+	duk_small_int_t t;  /* must be signed */
+	duk_small_uint_t i;
 
 	if (cp == (duk_codepoint_t) '%') {
 		duk_uint8_t *p = tfm_ctx->p;
@@ -323,6 +324,8 @@ static void duk_transform_callback_escape(duk_transform_context *tfm_ctx, void *
 	duk_uint8_t buf[6];
 	duk_small_int_t len;
 
+	DUK_UNREF(udata);
+
 	if (cp < 0) {
 		goto esc_error;
 	} else if ((cp < 0x80L) && CHECK_BITMASK(escape_unescaped_table, cp)) {
@@ -359,6 +362,8 @@ static void duk_transform_callback_escape(duk_transform_context *tfm_ctx, void *
 
 static void duk_transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_small_int_t t;
+
+	DUK_UNREF(udata);
 
 	if (cp == (duk_codepoint_t) '%') {
 		duk_uint8_t *p = tfm_ctx->p;

@@ -1625,7 +1625,11 @@ static void emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
                                    void *userdata,
                                    duk_uint16_t *ranges,
                                    int num) {
-	duk_uint16_t *ranges_end = ranges + num;
+	duk_uint16_t *ranges_end;
+
+	DUK_UNREF(lex_ctx);
+
+	ranges_end = ranges + num;
 	while (ranges < ranges_end) {
 		/* mark range 'direct', bypass canonicalization (see Wiki) */
 		gen_range(userdata, (duk_codepoint_t) ranges[0], (duk_codepoint_t) ranges[1], 1);

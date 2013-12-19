@@ -74,6 +74,7 @@ int duk_builtin_function_constructor(duk_context *ctx) {
 
 int duk_builtin_function_prototype(duk_context *ctx) {
 	/* ignore arguments, return undefined (E5 Section 15.3.4) */
+	DUK_UNREF(ctx);
 	return 0;
 }
 

@@ -83,6 +83,7 @@ static void increase_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunctio
 	duk_hobject **funcs, **funcs_end;
 
 	DUK_ASSERT(f->data != NULL);  /* compiled functions must be created 'atomically' */
+	DUK_UNREF(thr);
 
 	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
 	tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(f);
@@ -123,7 +124,7 @@ void duk_js_push_closure(duk_hthread *thr,
                          duk_hobject *outer_lex_env) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hcompiledfunction *fun_clos;
-	int i;
+	duk_small_uint_t i;
 	duk_uint32_t len_value;
 
 	DUK_ASSERT(fun_temp != NULL);
@@ -306,7 +307,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	DUK_DDDPRINT("copying properties: closure=%!iT, template=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
-	for (i = 0; i < sizeof(duk_closure_copy_proplist) / sizeof(duk_uint16_t); i++) {
+	for (i = 0; i < (duk_small_uint_t) (sizeof(duk_closure_copy_proplist) / sizeof(duk_uint16_t)); i++) {
 		int stridx = (int) duk_closure_copy_proplist[i];
 		if (duk_get_prop_stridx(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
@@ -543,7 +544,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 
 void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, int regbase) {
 	duk_context *ctx = (duk_context *) thr;
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(env != NULL);
@@ -630,7 +631,7 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 
 		DUK_DDDPRINT("copying bound register values, %d bound regs", varmap->e_used);
 
-		for (i = 0; i < varmap->e_used; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) varmap->e_used; i++) {
 			key = DUK_HOBJECT_E_GET_KEY(varmap, i);
 			DUK_ASSERT(key != NULL);   /* assume keys are compacted */
 

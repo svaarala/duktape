@@ -324,5 +324,6 @@ int duk_builtin_error_prototype_nop_setter(duk_context *ctx) {
 	 * User can use Object.defineProperty() to override this behavior.
 	 */
 	DUK_ASSERT_TOP(ctx, 1);  /* fixed arg count */
+	DUK_UNREF(ctx);
 	return 0;
 }

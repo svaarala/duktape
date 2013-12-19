@@ -16,16 +16,19 @@
 
 void *duk_torture_alloc_function(void *udata, size_t size) {
 	DUK_DDDPRINT("torture alloc function: %d", size);
+	DUK_UNREF(udata);
 	return malloc(size);
 }
 
 void *duk_torture_realloc_function(void *udata, void *ptr, size_t newsize) {
 	DUK_DDDPRINT("torture realloc function: %p %d", ptr, newsize);
+	DUK_UNREF(udata);
 	return realloc(ptr, newsize);
 }
 
 void duk_torture_free_function(void *udata, void *ptr) {
 	DUK_DDDPRINT("torture free function: %p", ptr);
+	DUK_UNREF(udata);
 	free(ptr);
 }
 

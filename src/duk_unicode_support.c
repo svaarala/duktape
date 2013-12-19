@@ -143,6 +143,8 @@ duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, du
 	duk_uint_fast8_t ch;
 	duk_small_int_t n;
 
+	DUK_UNREF(thr);
+
 	p = *ptr;
 	if (p < ptr_start || p >= ptr_end) {
 		goto fail;
@@ -712,6 +714,8 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
                                              duk_small_int_t uppercase,
                                              duk_small_int_t language) {
 	duk_bitdecoder_ctx bd_ctx;
+
+	DUK_UNREF(language);
 
 	/* fast path for ASCII */
 	if (cp < 0x80L) {
