@@ -748,7 +748,7 @@ def generateGuide():
 
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
-	title_elem.string = 'Duktape Guide'
+	title_elem.string = 'Duktape Programmer\'s Guide'
 
 	# nav
 
