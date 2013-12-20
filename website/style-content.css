@@ -25,64 +25,49 @@
 }
 
 .content h1 {
-	font-size: 24pt;
-	margin: 4ex 0 2ex 0;
-	color: #000000;
-	text-shadow: 1px 1px 1px #777777;
-	filter: dropshadow(color=#777777, offx=1, offy=1);
-}
-@media print {
-	.content h1 {
-		font-size: 21pt;
-		text-shadow: none;
-		filter: none;
-	}
-}
-
-.content h2 {
 	font-size: 21pt;
 	margin: 4ex 0 1ex 0;
 	padding: 0 0 1ex; 0;
 	border-bottom: 1px solid #eeeeee;
 }
 @media print {
-	.content h2 {
+	.content h1 {
 		font-size: 16pt;
 	}
 }
 
-.content h2 a {
+.content h1 a {
 	color: #000000;
 	text-decoration: none;
 }
-.content h2 a:visited {
+.content h1 a:visited {
 	color: #000000;
 	text-decoration: none;
 }
-.content h2 a:hover {
+.content h1 a:hover {
 	color: #222266;
 	text-decoration: none;
 }
 
-.content h3 {
+.content h2 {
 	font-size: 18pt;
 	margin: 2ex 0 1ex 0;
 	color: #6666ff;
 }
 @media print {
-	.content h3 {
+	.content h2 {
 		font-size: 13pt;
 	}
 }
 
-.content h4 {
+.content h3 {
 	font-size: 14pt;
 	font-weight: bold;
 	margin: 2.5ex 0 0.5ex 0;
 	color: #000000;
 }
 @media print {
-	.content h4 {
+	.content h3 {
 		font-size: 12pt;
 	}
 }
@@ -443,7 +428,7 @@ ul.breakdown li {
 	color: #ffffff;
 }
 .content .sectiontitle:hover a.sectionlink {
-	color: #4444ff;
+	color: #8888ff;
 }
 @media print {
 	.content .sectiontitle .sectionlink {

@@ -1,4 +1,4 @@
-<h2 id="limitations">Limitations</h2>
+<h1 id="limitations">Limitations</h1>
 
 <p>The following is a list of known limitations of the current implementation.
 Limitations include shortcomings from a semantics perspective, performance
@@ -6,14 +6,14 @@ limitations, and implementation limits (which are inevitable).</p>
 
 <p>Trivial bugs are not listed unless they are "long term bugs".</p>
 
-<h3>No re-entrancy</h3>
+<h2>No re-entrancy</h2>
 
 <p>A single Duktape heap, i.e. contexts sharing the same garbage collector,
 is <b>not re-entrant</b>.  Only one C/C++ thread can call Duktape APIs
 at a time for a particular Duktape heap (although the calling thread
 can change over time).</p>
 
-<h3>String and buffer limits</h3>
+<h2>String and buffer limits</h2>
 
 <p>The internal representation allows a maximum length of 2**31-1 (0x7fffffff)
 <i>bytes</i> (not characters) for strings.  16-bit codepoints encode into 3
@@ -22,12 +22,12 @@ guaranteed to work is about 0.7G characters.</p>
 
 <p>Buffer values are also limited to 2**31-1 (0x7fffffff) bytes.</p>
 
-<h3>Property limits</h3>
+<h2>Property limits</h2>
 
 <p>An object can have at most <code>DUK_HOBJECT_MAX_PROPERTIES</code> (an
 internal define).  Currently this limit is 0x7ffffffff.</p>
 
-<h3>Regexp infinite loop</h3>
+<h2>Regexp infinite loop</h2>
 
 <p>The regexp engine gets stuck when a quantifier is used over an
 empty match.  For instance, the following should produce a "no match"
@@ -39,13 +39,13 @@ duk&gt; t = /(x*)*/.exec('y');
 Error: Error: regexp executor recursion limit reached (rc=1) [ignored]
 </pre>
 
-<h3>Regexp dollar escape</h3>
+<h2>Regexp dollar escape</h2>
 
 <p>The Duktape RegExp syntax allows dollar escaping (e.g. <code>/\$/</code>)
 even though it is not allowed by the E5.1 specification.  RegExp dollar
 escapes are used in existing Ecmascript code quite widely.</p>
 
-<h3>Invalid stack indices</h3>
+<h2>Invalid stack indices</h2>
 
 <p>The internal implementation for some stack operations (like
 <code>duk_set_top()</code> uses pointer arithmetic.  On 32-bit platforms
@@ -53,12 +53,12 @@ the pointer arithmetic may wrap and work in unexpected ways if stack
 index values are large enough (e.g. 0x20000000 on a 32-bit platform
 with 8-byte packed value type).</p>
 
-<h3>Error handler model incomplete</h3>
+<h2>Error handler model incomplete</h2>
 
 <p>The model for error handlers is incomplete.  Use <code>DUK_INVALID_INDEX</code>
 as the error handler index for now.</p>
 
-<h3>Coroutines are experimental</h3>
+<h2>Coroutines are experimental</h2>
 
 <p>Coroutines are currently experimental.  Although they work for the most
 part, there are many limitations in the implementation.  Yielding is limited
@@ -66,13 +66,13 @@ to coroutines with a call stack consisting purely of plain
 Ecmascript-to-Ecmascript calls.  These limitations will be relaxed in the
 future.</p>
 
-<h3>Unicode case conversion is not locale or context sensitive</h3>
+<h2>Unicode case conversion is not locale or context sensitive</h2>
 
 <p>E5 Sections 15.5.4.16 to 15.5.4.19 require context and locale processing
 of Unicode SpecialCasing.txt.  However, we don't currently have a notion
 of "current locale".</p>
 
-<h3>Array performance when using non-default property attributes</h3>
+<h2>Array performance when using non-default property attributes</h2>
 
 <p>All array elements are expected to be writable, enumerable, and configurable
 (default property attributes for new properties).  If this assumption is violated,
@@ -81,13 +81,13 @@ and array entries are moved to the "entry part".  This involves interning all us
 array indices as explicit string keys (e.g. "0", "1", etc).  This is not a
 compliance concern, but degrades performance.</p>
 
-<h3>Compiler performance for inner functions</h3>
+<h2>Compiler performance for inner functions</h2>
 
 <p>Compiler needs multiple passes over the same function.  Inner functions
 are scanned <code>2**n</code> times, where <code>n</code> is the function level
 (0, 1, ...).</p>
 
-<h3>Global/eval code is slower than function code</h3>
+<h2>Global/eval code is slower than function code</h2>
 
 <p>Bytecode generated for global and eval code cannot assign variables
 statically to registers, and will use explicit name-based variable
@@ -113,7 +113,7 @@ purpose:</p>
 })();
 </pre>
 
-<h3>Function temporaries may be live for garbage collection longer than expected</h3>
+<h2>Function temporaries may be live for garbage collection longer than expected</h2>
 
 <p>Ecmascript functions are compiled into bytecode with a fixed set of
 registers.  Some registers are reserved for arguments and variable

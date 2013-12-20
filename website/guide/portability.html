@@ -1,6 +1,6 @@
-<h2 id="portability">Portability</h2>
+<h1 id="portability">Portability</h1>
 
-<h3>Platforms and compilers</h3>
+<h2>Platforms and compilers</h2>
 
 <p>The table below summarizes the platforms and compilers which Duktape is known
 to work on, with portability notes where appropriate.  This is not an exhaustive
@@ -57,7 +57,7 @@ detail below the table.</p>
 </tbody>
 </table>
 
-<h4>Clang</h4>
+<h3>Clang</h3>
 
 <p>Clang 3.3 on FreeBSD has some aliasing issues (at least) when using
 <code>-m32</code> and when Duktape ends up using a packed <code>duk_tval</code>
@@ -65,14 +65,14 @@ value representation type.  The problem does not appear in all clang versions.
 Duktape self tests cover this issue (define <code>DUK_OPT_SELF_TESTS</code>
 when compiling).  See internal test file <code>misc/clang_aliasing.c</code>.</p>
 
-<h4>TCC</h4>
+<h3>TCC</h3>
 
 <p>TCC has zero sign handling issues; Duktape mostly works but zero sign is
 not handled correctly.  This results in Ecmascript non-compliance, for
 instance <code>1/-0</code> evaluates to <code>Infinity</code>, not <code>-Infinity</code>
 as it should.</p>
 
-<h4>VBCC (AmigaOS / TOS)</h4>
+<h3>VBCC (AmigaOS / TOS)</h3>
 
 <p>VBCC doesn't appear to provide OS or processor defines.  To compile for
 M68K AmigaOS or TOS you must:</p>
@@ -84,7 +84,7 @@ M68K AmigaOS or TOS you must:</p>
 <p>Datetime resolution is limited to full seconds only when using VBCC on
 AmigaOS or TOS.</p>
 
-<h3>Using Duktape from a C++ program</h3>
+<h2>Using Duktape from a C++ program</h2>
 
 <p>To use Duktape from a C++ program, simply compile Duktape in plain C and use
 <code>duktape.h</code> normally in your C++ program; <code>duktape.h</code>
@@ -95,7 +95,7 @@ contains the necessary glue to make this work.  Specifically, it contains
 work but is not a trivial issue because many of the compiler defines and
 headers are different (especially for pre C99/C++11).</p>
 
-<h3>Limitations</h3>
+<h2>Limitations</h2>
 
 <ul>
 <li>The <code>int</code> type is assumed to be at least 32 bits.  This is

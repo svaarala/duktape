@@ -1,6 +1,6 @@
-<h2 id="errorobjects">Error objects</h2>
+<h1 id="errorobjects">Error objects</h1>
 
-<h3>Property summary</h3>
+<h2>Property summary</h2>
 
 <p>Ecmascript Error objects have very few standard properties, so many
 Ecmascript implementations have added quite a few custom properties.
@@ -53,7 +53,7 @@ Duktape use numeric error codes only.</p>
 chain contains the (original) <code>Error.prototype</code> object.  Only
 objects matching this criteria get augmented with e.g. traceback data.</p>
 
-<h3>Traceback</h3>
+<h2>Traceback</h2>
 
 <p>The <code>stack</code> property is an accessor (setter/getter) property
 which provides a printable traceback related to an error.  The traceback
@@ -111,7 +111,7 @@ with <code>Object.defineProperty()</code>.  This behavior differs from V8 where
 <code>stack</code> is an own property of the Error instance, and if you assign a
 value to <code>stack</code>, the value reads back as assigned.</p>
 
-<h3>Current limitations</h3>
+<h2>Current limitations</h2>
 
 <ul>
 <li>There is no cause chain support.  Cause chains would be useful but there

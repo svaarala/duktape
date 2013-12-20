@@ -1,8 +1,8 @@
-<h2 id="programming">Programming model</h2>
+<h1 id="programming">Programming model</h1>
 
 <p><b>(This section is under work.)</b></p>
 
-<h3>Overview</h3>
+<h2>Overview</h2>
 
 <p>Programming with Duktape is quite straightforward:</p>
 <ul>
@@ -23,7 +23,7 @@
 
 <p>Let's look at all the steps and their related concepts in more detail.</p>
 
-<h3>Heap and context</h3>
+<h2>Heap and context</h2>
 
 <p>A Duktape <b>heap</b> is a single region for garbage collection.  A heap
 is used to allocate storage for strings, Ecmascript objects, and other
@@ -109,7 +109,7 @@ to values which resided on the value stack of a context associated with the
 heap, such pointers are invalidated and must never be dereferenced after
 the heap destruction call returns.</p>
 
-<h3>Call stack and catch stack (of a context)</h3>
+<h2>Call stack and catch stack (of a context)</h2>
 
 <p>The call stack of a context is not directly visible to the caller.
 It keeps track of the chain of function calls, either C or Ecmascript,
@@ -130,7 +130,7 @@ together in the call stack.</p>
 
 <div class="note">Don't confuse with the C stack.</div>
 
-<h3>Value stack (of a context) and value stack index</h3>
+<h2>Value stack (of a context) and value stack index</h2>
 
 <p>The value stack of a context is an array of tagged type values related
 to the current execution state of a coroutine.  The tagged types used are:
@@ -218,7 +218,7 @@ each other's values.</p>
 
 <div class="note">Don't confuse with the C stack.</div>
 
-<h3>Growing the value stack</h3>
+<h2>Growing the value stack</h2>
 
 <p>At any time, the value stack of a context is allocated for a certain
 maximum number of entries.  An attempt to push values beyond the allocated
@@ -257,7 +257,7 @@ the internal number of value stack elements available beyond the caller
 specified extra varies considerably.  The caller does not need to take this
 into account and should never rely on any additional elements being available.</p>
 
-<h3>Ecmascript array index</h3>
+<h2>Ecmascript array index</h2>
 
 <p>Ecmascript object and array keys can only be strings.  Array indices
 (e.g. 0, 1, 2) are represented as canonical string representations of the
@@ -288,7 +288,7 @@ when they are relevant.  Similarly, when writing Ecmascript code it is
 preferable to use numeric rather than string indices, as the same fast path
 applies for Ecmascript code.</p>
 
-<h3>Duktape API</h3>
+<h2>Duktape API</h2>
 
 <p>Duktape API is the collection of user callable API calls defined in
 <code>duktape.h</code> and documented in the
@@ -299,7 +299,7 @@ arguments for errors (such as <code>NULL</code> pointers).  However, to minimize
 footprint, the <code>ctx</code> argument is not checked, and the caller MUST NOT
 call any Duktape API calls with a <code>NULL</code> context.</p>
 
-<h3>Duktape/C function</h3>
+<h2>Duktape/C function</h2>
 
 <p>A C function with a Duktape/C API signature can be associated with an
 Ecmascript function object, and gets called when the Ecmascript function
@@ -398,7 +398,7 @@ static int my_func(duk_context *ctx) {
 }
 </pre>
 
-<h3>Storing state for a Duktape/C function</h3>
+<h2>Storing state for a Duktape/C function</h2>
 
 <p>Sometimes it would be nice to provide parameters or additional state
 to a Duktape/C function out-of-band, i.e. outside explicit call arguments.
@@ -438,7 +438,7 @@ duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
 
-<h3>Duktape version specific code</h3>
+<h2>Duktape version specific code</h2>
 
 <p>The Duktape version is available through the <code>DUK_VERSION</code> define,
 with the numeric value <code>(major * 10000) + (minor * 100) + patch</code>.
@@ -469,7 +469,7 @@ if (typeof __duk__ !== 'object') {
 }
 </pre>
 
-<h3>Numeric error codes</h3>
+<h2>Numeric error codes</h2>
 
 <p>When errors are created or thrown using the Duktape API, the caller
 must assign a numeric error code to the error.  Error codes are

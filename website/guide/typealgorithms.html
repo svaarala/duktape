@@ -1,11 +1,11 @@
-<h2 id="typealgorithms">Type algorithms</h2>
+<h1 id="typealgorithms">Type algorithms</h1>
 
 <p>This section describes how type-related Ecmascript algorithms
 like comparisons and coercions are extended to Duktape custom types.
 Duktape specific type algorithms (<code>ToBuffer()</code> and <code>ToPointer()</code>)
 are also discussed.</p>
 
-<h3>Notation</h3>
+<h2>Notation</h2>
 
 <p>The following shorthand is used to indicate how values are compared:</p>
 
@@ -28,7 +28,7 @@ are also discussed.</p>
 </tbody>
 </table>
 
-<h3>Equality (non-strict)</h3>
+<h2>Equality (non-strict)</h2>
 
 <p>Non-strict equality comparison is specified in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3">The Abstract Equality Comparison Algorithm</a>
@@ -64,7 +64,7 @@ for standard types.  Custom type behavior is as follows:</p>
 </tbody>
 </table>
 
-<h3>Strict equality</h3>
+<h2>Strict equality</h2>
 
 <p>Strict equality is much more straightforward and preferable whenever
 possible for simplicity and performance.  It is described in
@@ -98,7 +98,7 @@ for standard types.  Custom type behavior is as follows:</p>
 </tbody>
 </table>
 
-<h3>SameValue</h3>
+<h2>SameValue</h2>
 
 <p>The <code>SameValue</code> algorithm is not easy to invoke from user code.
 It is used by e.g. <code>Object.defineProperty()</code> when checking whether
@@ -130,7 +130,7 @@ for standard types.  Custom type behavior is as follows:</p>
 </tbody>
 </table>
 
-<h3>Type conversion and testing</h3>
+<h2>Type conversion and testing</h2>
 
 <p>The custom types behave as follows for Ecmascript coercions described
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9">Type Conversion and Testing</a>
@@ -160,7 +160,7 @@ for standard types.  Custom type behavior is as follows:</p>
 directly as string data.  The bytes will then be interpreted as CESU-8
 (or extended UTF-8) from Ecmascript point of view.</p>
 
-<h3>Custom coercions (ToBuffer, ToPointer)</h3>
+<h2>Custom coercions (ToBuffer, ToPointer)</h2>
 
 <p>ToBuffer() coercion is used when a value is forced into a buffer
 type e.g. with the <code>duk_to_buffer()</code> API call.  The coercion
@@ -204,7 +204,7 @@ call.  The coercion is as follows:</p>
 </tbody>
 </table>
 
-<h3>Addition</h3>
+<h2>Addition</h2>
 
 <p>The Ecmascript addition operator is specified in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.6.1">The Addition operator (+)</a>.
@@ -223,7 +223,7 @@ is extended to custom types as follows:</p>
     0, non-NULL pointers to 1, so addition results may not be very intuitive.</li>
 </ul>
 
-<h3>Property access</h3>
+<h2>Property access</h2>
 
 <p>If a plain buffer or pointer is used as a property access base value,
 properties are looked up from the (initial) built-in prototype object

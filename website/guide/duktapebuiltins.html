@@ -1,9 +1,9 @@
-<h2 id="duktapebuiltins">Duktape built-ins</h2>
+<h1 id="duktapebuiltins">Duktape built-ins</h1>
 
 <p>This section describes Duktape-specific built-in objects, methods, and
 values.</p>
 
-<h3>Additional global object properties</h3>
+<h2>Additional global object properties</h2>
 
 <table>
 <thead>
@@ -18,7 +18,7 @@ values.</p>
 </tbody>
 </table>
 
-<h4>print and alert</h4>
+<h3>print and alert</h3>
 
 <p><code>print()</code> writes to <code>stdout</code> with an automatic
 flush afterwards.  The bytes written depend on the arguments:</p>
@@ -40,7 +40,7 @@ flush afterwards.  The bytes written depend on the arguments:</p>
 <code>stderr</code>.  Unlike a browser <code>alert()</code>, the call
 does not block.</p>
 
-<h3>The __duk__ object</h3>
+<h2>The __duk__ object</h2>
 
 <table>
 <thead>
@@ -64,7 +64,7 @@ does not block.</p>
 </tbody>
 </table>
 
-<h4>version</h4>
+<h3>version</h3>
 
 <p>The <code>version</code> property allows version-based feature detection and
 behavior.  Version numbers can be compared directly: a logically higher version
@@ -101,7 +101,7 @@ if (typeof __duk__ !== 'object') {
 }
 </pre>
 
-<h4>enc() and dec()</h4>
+<h3>enc() and dec()</h3>
 
 <p><code>enc()</code> encodes its argument value into chosen format.
 The first argument is a format (currently supported are "hex" and "base64"),
@@ -129,7 +129,7 @@ var result = String(__duk__.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
 
-<h3>__duk__.Buffer (constructor)</h3>
+<h2>__duk__.Buffer (constructor)</h2>
 
 <table>
 <thead>
@@ -155,7 +155,7 @@ ordinary function and as a constructor:</p>
     <code>__duk__.Buffer.prototype</code> object.</li>
 </ul>
 
-<h3>__duk__.Buffer.prototype</h3>
+<h2>__duk__.Buffer.prototype</h2>
 
 <table>
 <thead>
@@ -176,7 +176,7 @@ var plain_buf = __duk__.Buffer('test');
 print(plain_buf.toString());
 </pre>
 
-<h3>__duk__.Pointer (constructor)</h3>
+<h2>__duk__.Pointer (constructor)</h2>
 
 <table>
 <thead>
@@ -202,7 +202,7 @@ ordinary function and as a constructor:</p>
     <code>__duk__.Pointer.prototype</code> object.</li>
 </ul>
 
-<h3>__duk__.Pointer.prototype</h3>
+<h2>__duk__.Pointer.prototype</h2>
 
 <table>
 <thead>
@@ -223,7 +223,7 @@ var plain_ptr = __duk__.Pointer({ test: 'object' });
 print(plain_ptr.toString());
 </pre>
 
-<h3>__duk__.Thread (constructor)</h3>
+<h2>__duk__.Thread (constructor)</h2>
 
 <table>
 <thead>
@@ -251,7 +251,7 @@ cases:</p>
     newly created Thread will be the <code>__duk__.Thread.prototype</code> object.</li>
 </ul>
 
-<h3>__duk__.Thread.prototype</h3>
+<h2>__duk__.Thread.prototype</h2>
 
 <table>
 <thead>

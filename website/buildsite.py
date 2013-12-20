@@ -215,11 +215,11 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	res = []
 
 	# the 'hidechar' span is to allow browser search without showing the char
-	res.append('<h2 id="%s"><a href="#%s"><span class="hidechar">.</span>%s()</a></h2>' % (funcname, funcname, funcname))
+	res.append('<h1 id="%s"><a href="#%s"><span class="hidechar">.</span>%s()</a></h1>' % (funcname, funcname, funcname))
 
 	if parts.has_key('proto'):
 		p = parts['proto']
-		res.append('<h3>Prototype</h3>')
+		res.append('<h2>Prototype</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
@@ -230,20 +230,20 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('stack'):
 		p = parts['stack']
-		res.append('<h3>Stack</h3>')
+		res.append('<h2>Stack</h2>')
 		for line in p:
 			res.append('<pre class="stack">' + \
 			           '%s' % htmlEscape(line) + \
 			           '</pre>')
 		res.append('')
 	else:
-		res.append('<h3>Stack</h3>')
+		res.append('<h2>Stack</h2>')
 		res.append('<p>No effect.</p>')
 		res.append('')
 
 	if parts.has_key('summary'):
 		p = parts['summary']
-		res.append('<h3>Summary</h3>')
+		res.append('<h2>Summary</h2>')
 
 		# If text contains a '<p>', assume it is raw HTML; otherwise
 		# assume it is a single paragraph (with no markup) and generate
@@ -266,7 +266,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('example'):
 		p = parts['example']
-		res.append('<h3>Example</h3>')
+		res.append('<h2>Example</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
@@ -275,14 +275,14 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('seealso'):
 		p = parts['seealso']
-		res.append('<h3>See also</h3>')
+		res.append('<h2>See also</h2>')
 		res.append('<ul>')
 		for i in p:
 			res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(i), htmlEscape(i)))
 		res.append('</ul>')
 
 	if testcase_refs:
-		res.append('<h3>Related test cases</h3>')
+		res.append('<h2>Related test cases</h2>')
 		if testrefs.has_key(funcname):
 			res.append('<ul>')
 			for i in testrefs[funcname]:
@@ -296,7 +296,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		
 	if list_tags and parts.has_key('tags'):
 		# FIXME: placeholder
-		res.append('<h3>Tags</h3>')
+		res.append('<h2>Tags</h2>')
 		res.append('<p>')
 		p = parts['tags']
 		for idx, val in enumerate(p):
@@ -366,8 +366,8 @@ def transformReadIncludes(soup, includeDir):
 		elem.string = f.read()
 		f.close()
 
-def transformAddHrBeforeH2(soup):
-	for elem in soup.select('h2'):
+def transformAddHrBeforeH1(soup):
+	for elem in soup.select('h1'):
 		elem.insert_before(soup.new_tag('hr'))
 
 # Add automatic anchors so that a basename from an element with an explicit
@@ -494,8 +494,6 @@ def transformAddHeadingLinks(soup):
 	for elem in soup.select('*'):
 		if elem.name not in hdr_tags or not elem.has_key('id'):
 			continue
-		if elem.name == 'h1':
-			continue  # skip h1 for now (page title)
 
 		new_elem = soup.new_tag('a')
 		new_elem['href'] = '#' + elem['id']
@@ -549,10 +547,10 @@ def scanApiCalls(apitestdir):
 
 def createTagIndex(api_docs, used_tags):
 	res = []
-	res.append('<h2 id="bytag">API calls by tag</h2>')
+	res.append('<h1 id="bytag">API calls by tag</h1>')
 
 	for tag in used_tags:
-		res.append('<h3>' + htmlEscape(tag) + '</h3>')
+		res.append('<h2>' + htmlEscape(tag) + '</h2>')
 		res.append('<ul class="taglist">')
 		for doc in api_docs:
 			if not doc['parts'].has_key('tags'):
@@ -707,8 +705,6 @@ def generateDownloadPage(releases_filename):
 		# massage the rst2html generated HTML to be more suitable
 		for elem in released.select('h1'):
 			elem.extract()
-		for elem in released.select('h2'):
-			elem.name = 'h3'
 		releaselog_elem = down_soup.select('#releaselog')[0]
 		releaselog_elem.insert_after(released)
 	else:
@@ -837,10 +833,10 @@ def postProcess(soup, includeDir, autoAnchors=False, headingLinks=False):
 	if True:
 		transformReadIncludes(soup, includeDir)
 
-	# add <hr> elements before all <h2> elements to improve readability
+	# add <hr> elements before all <h1> elements to improve readability
 	# in text browsers
 	if True:
-		transformAddHrBeforeH2(soup)
+		transformAddHrBeforeH1(soup)
 
 	# add automatic anchors to all headings (as long as they don't conflict
 	# with any manually assigned "long term" ids)

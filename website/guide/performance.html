@@ -1,11 +1,11 @@
-<h2 id="performance">Performance</h2>
+<h1 id="performance">Performance</h1>
 
 <p>This section discussed Duktape specific performance characteristics and
 provides some hints to avoid Duktape specific performance pitfalls.</p>
 
-<h3>Duktape performance characteristics</h3>
+<h2>Duktape performance characteristics</h2>
 
-<h4>String interning</h4>
+<h3>String interning</h3>
 
 <p>Strings are
 <a href="http://en.wikipedia.org/wiki/String_interning">interned</a>: only
@@ -27,7 +27,7 @@ Duktape internal primitives, such as string case conversion and array
 <code>join()</code>, try to avoid these downsides by minimizing the number
 of temporary strings created.</p>
 
-<h4>String memory representation and the string cache</h4>
+<h3>String memory representation and the string cache</h3>
 
 <p>The internal memory representation for strings is extended UTF-8, which
 represents each ASCII character with a single byte but uses two or more
@@ -85,7 +85,7 @@ provides fast paths for ASCII characters and pure ASCII strings in internal
 algorithms whenever applicable.  This applies to algorithms such as case
 conversion, regexp matching, etc.</p>
 
-<h4>Object/array storage</h4>
+<h3>Object/array storage</h3>
 
 <p>Object properties are stored in a linear key/value list which provides
 stable ordering (insertion order).  When an object has enough properties
@@ -123,7 +123,7 @@ accessors) and have default property attributes (writable, enumerable,
 and configurable).  If any element deviates from this, the array part is
 again abandoned and array elements converted to ordinary properties.</p>
 
-<h4>Identifier access</h4>
+<h3>Identifier access</h3>
 
 <p>Duktape has two modes for storing and accessing identifiers (function
 arguments, local variables, function declarations): a fast path and a slow
@@ -144,7 +144,7 @@ slower.</p>
     them up from the global object or other objects</li>
 </ul>
 
-<h4>Enumeration</h4>
+<h3>Enumeration</h3>
 
 <p>When an object is enumerated, with either the <code>for-in</code> statement
 or <code>Object.keys()</code>, Duktape first traverses the target object and its
@@ -161,7 +161,7 @@ ascending order is non-portable.  Such behavior, while guaranteed by many
 implementations including Duktape, is not guaranteed by the Ecmascript
 standard.</p>
 
-<h4>Function features</h4>
+<h3>Function features</h3>
 
 <p>Ecmascript has a lot of features which make function entry and execution
 quite expensive.  The general goal of the Duktape Ecmascript compiler is to
@@ -208,7 +208,7 @@ function.  At the moment, inner functions are scanned <code>2**n</code>
 times, where <code>n</code> is the function level (0, 1, ...).  This only
 slows down compilation, not execution.</p>
 
-<h3>Minimize use of temporary strings</h3>
+<h2>Minimize use of temporary strings</h2>
 
 <p>All temporary strings are interned.  It is particularly bad to accumulate
 strings in a loop:</p>
@@ -235,7 +235,7 @@ each array entry simply refers to the same string, typically costing only 8
 bytes per array entry.  The final <code>Array.prototype.join()</code> avoids
 unnecessary interning and creates the final string in one go.</p>
 
-<h3>Avoid large non-ASCII strings if possible</h3>
+<h2>Avoid large non-ASCII strings if possible</h2>
 
 <p>Avoid operations which require access to a random character offset inside
 a large string containing one or more non-ASCII characters.  Such accesses
@@ -248,7 +248,7 @@ ASCII codepoints but fall back to a slow path for non-ASCII codepoints.  The
 slow path is size optimized, not speed optimized, and often involve linear
 range matching.</p>
 
-<h3>Avoid sparse arrays when possible</h3>
+<h2>Avoid sparse arrays when possible</h2>
 
 <p>If an array becomes too sparse at any point, Duktape will abandon the
 array part permanently and convert array properties to explicit string keyed
@@ -290,7 +290,7 @@ for (var i = 0; i &lt;= 1000; i++) {
 }
 </pre>
 
-<h3>Iterate arrays with explicit indices, not a "for-in"</h3>
+<h2>Iterate arrays with explicit indices, not a "for-in"</h2>
 
 <p>Because the internal enumeration object contains all (used) array
 indices converted to string values, avoid <code>for-in</code> enumeration
@@ -325,7 +325,7 @@ for (var i = 0; i &lt; n; i++) {
 }
 </pre>
 
-<h3>Minimize top-level global/eval code</h3>
+<h2>Minimize top-level global/eval code</h2>
 
 <p>Identifier accesses in global and eval code always use slow path instructions
 to ensure correctness.  This is at least a few orders of magnitude slower than
@@ -379,7 +379,7 @@ print(res);  // prints 'foo'
 implicit return value to a temporary register in case it is needed.  These
 instructions slow down execution and increase bytecode size unnecessarily.</p>
 
-<h3>Prefer local variables over external ones</h3>
+<h2>Prefer local variables over external ones</h2>
 
 <p>When variables are bound to virtual machine registers, identifier lookups
 are much faster than using explicit property lookups on the global object or

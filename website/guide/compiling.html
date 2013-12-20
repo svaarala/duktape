@@ -1,6 +1,6 @@
-<h2 id="compiling">Compiling</h2>
+<h1 id="compiling">Compiling</h1>
 
-<h3>Automatic defaults</h3>
+<h2>Automatic defaults</h2>
 
 <p>If you compile Duktape with no compiler options, Duktape will detect the
 compiler and the platform automatically and select defaults appropriate in
@@ -16,7 +16,7 @@ most cases.</p>
 <li>No debug printing, no asserts, etc</li>
 </ul>
 
-<h3>Feature options (DUK_OPT_xxx)</h3>
+<h2>Feature options (DUK_OPT_xxx)</h2>
 
 <p>If you wish to modify the defaults, you can provide feature options in the
 form of <code>DUK_OPT_xxx</code> compiler defines.  These will be taken into
@@ -141,7 +141,7 @@ The table below summarizes the available options (in no particular order):</p>
 </tbody>
 </table>
 
-<h3>DUK_OPT_HAVE_CUSTOM_H and duk_custom.h</h3>
+<h2>DUK_OPT_HAVE_CUSTOM_H and duk_custom.h</h2>
 
 <p>Normally you define <code>DUK_OPT_xxx</code> feature options and the
 internal <code>duk_features.h</code> header resolves these with platform/compiler
@@ -161,7 +161,7 @@ you can easily create inconsistent <code>DUK_USE_xxx</code> flags, the
 customization header will be version specific, and you need to peek into
 Duktape internals to know what defines to tweak.</p>
 
-<h3>DUK_PANIC_HANDLER</h3>
+<h2>DUK_PANIC_HANDLER</h2>
 
 <p>The default panic handler will print an error message to stdout
 unless I/O is disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call
@@ -187,7 +187,7 @@ void my_panic_handler(int code, const char *msg) {
 }
 </pre>
 
-<h3>Adding new feature options</h3>
+<h2>Adding new feature options</h2>
 
 <p>This section only applies if you customize Duktape internals and wish
 to submit a patch to be included in the mainline distribution:</p>

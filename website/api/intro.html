@@ -1,9 +1,9 @@
-<h2 id="introduction">Introduction</h2>
+<h1 id="introduction">Introduction</h1>
 
-<p>Version: 0.8.0 (2013-12-18)</p>
+<p>Version: 0.9.0 (2014-XX-XX)</p>
 <p><b>Work in progress</b></p>
 
-<h3>Document scope</h3>
+<h2>Document scope</h2>
 
 <p>The Duktape API (defined in <code>duktape.h</code>) is a set of constants
 and API calls which allows C/C++ programs to interface with Ecmascript
@@ -18,14 +18,14 @@ its core concepts.  If you're new to Duktape, please read the
 The API will be in flux until 1.0 release.
 </div>
 
-<h3>Searching for functions using browser search</h3>
+<h2>Searching for functions using browser search</h2>
 
 <p>You can use browser search (typically CTRL-F) to search for
 function definitions by prepending a dot to the search term.  For instance,
 use ".duk_example_func" to look for <code>duk_example_func()</code>.  In most
 browsers only the actual section defining the function should be found.</p>
 
-<h3>API safety</h3>
+<h2>API safety</h2>
 
 <p>As a general rule, API calls check all their parameters and tolerate
 <code>NULL</code> arguments and invalid value stack indices without unsafe
@@ -37,7 +37,7 @@ non-<code>NULL</code> or unsafe behavior may occur.  This is the case
 because explicit checks for the argument would increase code footprint
 for little practical gain.</p>
 
-<h3>Minimal Duktape program</h3>
+<h2>Minimal Duktape program</h2>
 
 <pre class="c-code">
 #include "duktape.h"

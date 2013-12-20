@@ -1,4 +1,4 @@
-<h2 id="types">Stack types</h2>
+<h1 id="types">Stack types</h1>
 
 <p>Duktape stack types are:</p>
 
@@ -17,7 +17,7 @@
 </table>
 </div>
 
-<h3>Memory allocations</h3>
+<h2>Memory allocations</h2>
 
 <p>The following stack types involve additional heap allocations:</p>
 
@@ -37,7 +37,7 @@
 type in Ecmascript, they are a heap allocated type from a memory allocation
 viewpoint.</p>
 
-<h3>Pointer stability</h3>
+<h2>Pointer stability</h2>
 
 <p>Heap objects allocated by Duktape have stable pointers: the objects are
 not relocated in memory while they are reachable from a garbage collection
@@ -65,7 +65,7 @@ area across a buffer resize, and it's probably best not to hold a pointer
 after a Duktape/C function returns (how would you reliably know when the
 buffer is resized?).</p>
 
-<h3>Type masks</h3>
+<h2>Type masks</h2>
 
 <p>Type masks allows calling code to easily check whether a type belongs to
 a certain type set.  For instance, to check that a certain stack value is
@@ -105,12 +105,12 @@ if (t == DUK_TYPE_NUMBER || t == DUK_TYPE_STRING || t == DUK_TYPE_OBJECT) {
 }
 </pre>
 
-<h3>None</h3>
+<h2>None</h2>
 
 <p>The <b>none</b> type is not actually a type but is used in the API to
 indicate that a value does not exist, a stack index is invalid, etc.</p>
 
-<h3>Undefined</h3>
+<h2>Undefined</h2>
 
 <p>The <b>undefined</b> type maps to Ecmascript <code>undefined</code>, which is
 distinguished from a <code>null</code>.</p>
@@ -118,11 +118,11 @@ distinguished from a <code>null</code>.</p>
 <p>Values read from outside the active value stack range read back as
 <b>undefined</b>.</p>
 
-<h3>Null</h3>
+<h2>Null</h2>
 
 <p>The <b>null</b> type maps to Ecmascript <code>null</code>.</p>
 
-<h3>Boolean</h3>
+<h2>Boolean</h2>
 
 <p>The <b>boolean</b> type is represented in the C API as an integer: zero for false,
 and non-zero for true.</p>
@@ -151,7 +151,7 @@ int bitmask = (duk_get_boolean(ctx, -3) ? (1 &lt;&lt; 2) : 0) |
               (duk_get_boolean(ctx, -1) ? 1 : 0);
 </pre>
 
-<h3>Number</h3>
+<h2>Number</h2>
 
 <p>The <b>number</b> type is an IEEE double, including +/- Infinity and NaN values.
 Zero sign is also preserved.  An IEEE double represents all integers up to 53 bits
@@ -163,7 +163,7 @@ packed values), NaN values in the Duktape API are normalized.  Concretely, if yo
 push a certain NaN value to the value stack, another (normalized) NaN value may
 come out.  Don't rely on NaNs preserving their exact form.</p>
 
-<h3>String</h3>
+<h2>String</h2>
 
 <p>The <b>string</b> type is a raw byte sequence of a certain length which may
 contain internal NUL (0x00) values.  Strings are always automatically NUL
@@ -247,7 +247,7 @@ continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</
 the leading byte will be <code>0xFE</code> which conflicts with Unicode byte order
 marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
-<h3>Object</h3>
+<h2>Object</h2>
 
 <p>The <b>object</b> type includes Ecmascript objects and arrays, functions, and
 threads (coroutines).  In other words, anything with properties is an object.
@@ -256,7 +256,7 @@ Properties are key-value pairs with a string key and an arbitrary value
 
 <p>Objects may participate in garbage collection finalization.</p>
 
-<h3>Buffer</h3>
+<h2>Buffer</h2>
 
 <p>The <b>buffer</b> type is a raw buffer for user data of either fixed or dynamic
 size.  The size of a fixed buffer is given at its creation, and fixed buffers
@@ -275,7 +275,7 @@ different Ecmascript typed array specifications, though, see e.g.
 These will be implemented on top of raw arrays, most likely.
 </p>
 
-<h3>Pointer</h3>
+<h2>Pointer</h2>
 
 <p>The <b>pointer</b> type is a raw, uninterpreted C pointer, essentially
 a <code>void *</code>.  Pointers can be used to point to native objects (memory

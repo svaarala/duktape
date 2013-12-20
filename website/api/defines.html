@@ -1,6 +1,6 @@
-<h2 id="defines">Header definitions</h2>
+<h1 id="defines">Header definitions</h1>
 
-<h3>Duktape version</h3>
+<h2>Duktape version</h2>
 
 <p>The Duktape version is available through the <code>DUK_VERSION</code> define,
 with the numeric value <code>(major * 10000) + (minor * 100) + patch</code>.
@@ -8,7 +8,7 @@ The same value is available to Ecmascript code through <code>__duk__.version</co
 For example, version 1.2.3 would have <code>DUK_VERSION</code> and
 <code>__duk__.version</code> set to 10203.</p>
 
-<h3>Structs and typedefs</h3>
+<h2>Structs and typedefs</h2>
 <pre class="c-code">
 struct duk_memory_functions;
 
@@ -32,7 +32,7 @@ struct duk_memory_functions {
 };
 </pre>
 
-<h3>Error codes</h3>
+<h2>Error codes</h2>
 <pre class="c-code">
 /* Internal error codes */
 #define  DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */
@@ -53,7 +53,7 @@ struct duk_memory_functions {
 #define  DUK_ERR_URI_ERROR            106  /* URIError */
 </pre>
 
-<h3>Return codes from Duktape/C functions</h3>
+<h2>Return codes from Duktape/C functions</h2>
 <pre class="c-code">
 /* Return codes for C functions */
 #define  DUK_RET_UNIMPLEMENTED_ERROR  (-DUK_ERR_UNIMPLEMENTED_ERROR)
@@ -72,14 +72,14 @@ struct duk_memory_functions {
 #define  DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
 </pre>
 
-<h3>Compilation flags for duk_compile()</h3>
+<h2>Compilation flags for duk_compile()</h2>
 <pre class="c-code">
 #define  DUK_COMPILE_EVAL                  (1 &lt;&lt; 0)    /* compile eval code (instead of program) */
 #define  DUK_COMPILE_FUNCTION              (1 &lt;&lt; 1)    /* compile function code (instead of program) */
 #define  DUK_COMPILE_STRICT                (1 &lt;&lt; 2)    /* use strict (outer) context for program, eval, or function */
 </pre>
 
-<h3>Enumeration flags for duk_enum()</h3>
+<h2>Enumeration flags for duk_enum()</h2>
 <pre class="c-code">
 /* Enumeration flags for duk_enum() */
 #define  DUK_ENUM_INCLUDE_NONENUMERABLE    (1 &lt;&lt; 0)    /* enumerate non-numerable properties in addition to enumerable */
@@ -89,7 +89,7 @@ struct duk_memory_functions {
 #define  DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
 </pre>
 
-<h3>Coercion hints</h3>
+<h2>Coercion hints</h2>
 <pre class="c-code">
 /* Coercion hints */
 #define  DUK_HINT_NONE         0    /* prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8) */
@@ -97,7 +97,7 @@ struct duk_memory_functions {
 #define  DUK_HINT_NUMBER       2    /* prefer number */
 </pre>
 
-<h3>Misc defines</h3>
+<h2>Misc defines</h2>
 <pre class="c-code">
 #define  DUK_INVALID_INDEX     INT_MIN 
 

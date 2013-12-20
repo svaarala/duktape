@@ -1,21 +1,21 @@
-<h2 id="concepts">Concepts</h2>
+<h1 id="concepts">Concepts</h1>
 
-<h3>Heap</h3>
+<h2>Heap</h2>
 
 <p>A single region for garbage collection.  Shared by one or more
 contexts.</p>
 
-<h3>Context</h3>
+<h2>Context</h2>
 
 <p>A handle used in the Duktape API, associated with a Duktape thread
 (coroutine) and its call and value stacks.</p>
 
-<h3>Call stack (of a context)</h3>
+<h2>Call stack (of a context)</h2>
 
 <p>Book-keeping of the active function call chain of a context.
 Includes both Ecmascript and Duktape/C function calls.</p>
 
-<h3>Value stack (of a context)</h3>
+<h2>Value stack (of a context)</h2>
 
 <p>Storage for tagged values belonging to current activations in a
 context's call stack.</p>
@@ -25,7 +25,7 @@ Stack entries are indexed either from the bottom (&gt;= 0) or from the top
 (&lt; 0) of the most recent function call.
 </p>
 
-<h3>Value stack index</h3>
+<h2>Value stack index</h2>
 
 <p>Non-negative (&gt;= 0) indices refer to stack entries in the
 current stack frame, relative to the frame bottom:</p>
@@ -61,7 +61,7 @@ is intentional, as it protects functions in the call stack from affecting
 each other's values.</p>
 </div>
 
-<h3 id="stack-type">Stack type</h3>
+<h2 id="stack-type">Stack type</h2>
 
 <div class="table-wrap">
 <table>
@@ -82,7 +82,7 @@ each other's values.</p>
 a heap allocated object with possibly additional allocations (like object
 property table).</p>
 
-<h3>Stack type mask</h3>
+<h2>Stack type mask</h2>
 
 <p>Each stack type has a bit index which allows a set of stack types to be
 represented as a bit mask.  Calling code can use such bit sets to e.g. check
@@ -107,7 +107,7 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
 }
 </pre>
 
-<h3>Array index</h3>
+<h2>Array index</h2>
 
 <p>Ecmascript object and array keys can only be strings; this includes
 array indices (0, 1, 2, ...) which are expressed as canonical string
@@ -120,7 +120,7 @@ is really just a shorthand for <code>obj["123"]</code>.</p>
 accesses whenever possible, so it is preferable to use numeric array
 indices in both Ecmascript code and C code using the Duktape API.</p>
 
-<h3>Duktape/C function</h3>
+<h2>Duktape/C function</h2>
 
 <p>A C function with a Duktape/C API signature can be associated with an
 Ecmascript function object, and gets called when the Ecmascript function
