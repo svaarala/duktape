@@ -107,10 +107,16 @@ void duk_join(duk_context *ctx, unsigned int count) {
 }
 
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata) {
+	DUK_UNREF(index);
+	DUK_UNREF(callback);
+	DUK_UNREF(udata);
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
 }
 
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata) {
+	DUK_UNREF(index);
+	DUK_UNREF(callback);
+	DUK_UNREF(udata);
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
 }
 

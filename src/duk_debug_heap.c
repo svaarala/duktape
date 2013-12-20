@@ -62,6 +62,8 @@ static void dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *nam
 	int count;
 	duk_heaphdr *curr;
 
+	DUK_UNREF(heap);
+
 	count = 0;
 	curr = root;
 	while (curr) {

@@ -139,7 +139,7 @@ static void free_markandsweep_finalize_list(duk_heap *heap) {
 #endif
 
 static void free_stringtable(duk_heap *heap) {
-	int i;
+	duk_uint_fast32_t i;
 
 	/* strings are only tracked by stringtable */
 	if (heap->st) {
@@ -428,7 +428,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->st_size = DUK_STRTAB_INITIAL_SIZE;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
-		int i;
+		duk_uint_fast32_t i;
 	        for (i = 0; i < res->st_size; i++) {
         	        res->st[i] = NULL;
 	        }

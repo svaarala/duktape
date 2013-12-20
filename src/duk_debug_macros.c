@@ -43,6 +43,7 @@ static const char *get_level_string(int level) {
 #define TERM_RED      "\x1b[31m"
 
 static const char *get_term_1(int level) {
+	DUK_UNREF(level);
 	return (const char *) TERM_RED;
 }
 
@@ -59,6 +60,7 @@ static const char *get_term_2(int level) {
 }
 
 static const char *get_term_3(int level) {
+	DUK_UNREF(level);
 	return (const char *) TERM_RESET;
 }
 

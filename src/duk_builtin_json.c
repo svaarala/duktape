@@ -848,6 +848,8 @@ static void json_enc_objarr_shared_exit(duk_json_enc_ctx *js_ctx, duk_hstring **
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
 
+	DUK_UNREF(h_indent);
+
 	if (js_ctx->h_gap != NULL) {
 		DUK_ASSERT(js_ctx->h_indent != NULL);
 		DUK_ASSERT(*h_stepback != NULL);
@@ -1361,6 +1363,7 @@ void duk_builtin_json_parse_helper(duk_context *ctx,
 #ifdef DUK_USE_ASSERTIONS
 	int top_at_entry = duk_get_top(ctx);
 #endif
+	DUK_UNREF(flags);  /* FIXME: for now, no flags */
 
 	DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08x, stack_top=%d",
 	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),

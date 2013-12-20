@@ -83,6 +83,8 @@ void duk_gc(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 
+	DUK_UNREF(flags);
+
 	if (!ctx) {
 		return;
 	}

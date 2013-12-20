@@ -364,6 +364,8 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	char *p;
 	size_t end_offset;
 
+	DUK_UNREF(thr);
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));

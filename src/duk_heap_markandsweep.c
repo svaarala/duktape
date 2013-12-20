@@ -28,8 +28,10 @@ static duk_hthread *get_temp_hthread(duk_heap *heap) {
  */
 
 static void mark_hstring(duk_heap *heap, duk_hstring *h) {
-	DUK_DDDPRINT("mark_hstring: %p", (void *) h);
+	DUK_UNREF(heap);
+	DUK_UNREF(h);
 
+	DUK_DDDPRINT("mark_hstring: %p", (void *) h);
 	DUK_ASSERT(h);
 
 	/* nothing to process */
@@ -513,6 +515,7 @@ static void sweep_heap(duk_heap *heap, int flags) {
 	int count_rescue = 0;
 #endif
 
+	DUK_UNREF(flags);
 	DUK_DDPRINT("sweep_heap: %p", (void *) heap);
 
 	prev = NULL;
@@ -729,6 +732,8 @@ static void compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaphdr *s
 	size_t old_size, new_size;
 #endif
 	duk_hobject *obj;
+
+	DUK_UNREF(heap);
 
 	curr = start;
 	while (curr) {

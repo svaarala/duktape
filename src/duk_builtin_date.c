@@ -304,6 +304,8 @@ static int format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int
 	struct tm tm;
 	const char *fmt;
 
+	DUK_UNREF(tzoffset);
+
 	/* If platform doesn't support the entire Ecmascript range, we need to
 	 * return 0 so that the caller can fall back to the default formatter.
 	 *

@@ -367,6 +367,7 @@ static void recursion_decrease(duk_compiler_ctx *comp_ctx) {
 }
 
 static int hstring_is_eval_or_arguments(duk_compiler_ctx *comp_ctx, duk_hstring *h) {
+	DUK_UNREF(comp_ctx);
 	DUK_ASSERT(h != NULL);
 	return DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(h);
 }
@@ -4730,6 +4731,8 @@ static void parse_break_or_continue_statement(duk_compiler_ctx *comp_ctx, duk_iv
 	int label_pc;  /* points to LABEL; pc+1 = jump site for break; pc+2 = jump site for continue */
 	int label_is_closest;
 
+	DUK_UNREF(res);
+
 	advance(comp_ctx);  /* eat 'break' or 'continue' */
 
 	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON ||  /* explicit semi follows */
@@ -4879,6 +4882,8 @@ static void parse_try_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	int pc_trycatch = -1;
 	int pc_catch = -1;
 	int pc_finally = -1;
+
+	DUK_UNREF(res);
 
 	/*
 	 *  See the following documentation for discussion:

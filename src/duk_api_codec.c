@@ -12,6 +12,8 @@ static void base64_encode_helper(const unsigned char *src, const unsigned char *
 	unsigned int i, snip;
 	unsigned int x, y, t;
 
+	DUK_UNREF(dst_end);
+
 	while (src < src_end) {
 		/* read 3 bytes into 't', padded by zero */
 		snip = 4;
@@ -66,6 +68,8 @@ static int base64_decode_helper(const unsigned char *src, const unsigned char *s
 	unsigned int t;
 	unsigned int x, y;
 	int group_idx;
+
+	DUK_UNREF(dst_end);
 
 	t = 0;
 	group_idx = 0;

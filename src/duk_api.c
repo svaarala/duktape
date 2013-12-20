@@ -2528,6 +2528,8 @@ void duk_push_global_object(duk_context *ctx) {
 static int try_push_vsprintf(duk_context *ctx, void *buf, size_t sz, const char *fmt, va_list ap) {
 	int len;
 
+	DUK_UNREF(ctx);
+
 	/* NUL terminator handling doesn't matter here */
 	len = DUK_VSNPRINTF((char *) buf, sz, fmt, ap);
 	if (len < sz) {

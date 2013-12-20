@@ -23,6 +23,8 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	int arr_idx;
 	double d;
 
+	DUK_UNREF(obj);  /* FIXME: remove entire argument (it's accessed through the stack)? */
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr_callstack != NULL);
 	DUK_ASSERT(obj != NULL);
