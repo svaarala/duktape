@@ -204,6 +204,17 @@ References:
 
 * https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
 
+Multicolumn layout and text-shadow/filter
+-----------------------------------------
+
+Multicolumn layout combined with ``text-shadow`` or ``filter`` on hover
+causes the multicolumn elements to reflow when hovering over elements.
+There is no such effects in e.g. paragraph inline text.
+
+Workaround is to avoid these CSS properties for multicolumn layouts.
+Link hovering can be highlighted with e.g. a darker color than normal
+and/or with a background color.
+
 Browser testing
 ===============
 
