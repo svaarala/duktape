@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement duk_map_string() and duk_decode_string()
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-20 12:25:43.433677 Z
+references: []
+
+id: eac0f58f3501c049f5b46e4b759490e42b1354ba
+log_events: 
+- - 2013-12-20 12:25:43.636669 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
