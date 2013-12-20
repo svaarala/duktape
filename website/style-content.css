@@ -445,4 +445,9 @@ ul.breakdown li {
 .content .sectiontitle:hover a.sectionlink {
 	color: #4444ff;
 }
+@media print {
+	.content .sectiontitle .sectionlink {
+		display: none;
+	}
+}
 
