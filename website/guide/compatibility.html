@@ -1,0 +1,52 @@
+<h1 id="compatibility">Compatibility</h1>
+
+<p>This section discussed Duktape compatibility with Ecmascript dialects,
+extensions, and frameworks.</p>
+
+<h2>Ecmascript E5 / E5.1</h2>
+
+<p>The main compatibility goal of Duktape is to be Ecmascript E5/E5.1
+compatible.  Current level of compatibility should be quite high.</p>
+
+<h2>Ecmascript E3</h2>
+
+<p>There is no effort to maintain
+<a href="http://www.mozilla.org/js/language/E262-3.pdf">Ecmascript E3</a>
+compatibility, other than required by the E5/E5.1 specification.</p>
+
+<h2>CoffeeScript</h2>
+
+<p><a href="http://coffeescript.org/">CoffeeScript</a> compiles to
+JavaScript which should be compatible with Duktape.  There are no known
+compatibility issues.</p>
+
+<p>Some CoffeeScript examples are included in the distributable.  Simply
+run <code>make</code> in <code>examples/coffee/</code>.  For instance,
+<code>hello.coffee</code>:</p>
+<pre class="coffeescript-code">
+print 'Hello world!'
+print 'build: ' + __duk__.build
+</pre>
+
+<p>compiles to:</p>
+<pre class="ecmascript-code">
+(function() {
+
+  print('Hello world!');
+
+  print('build: ' + __duk__.build);
+
+}).call(this);
+</pre>
+
+<h2>Asm.js</h2>
+
+<p><a href="http://asmjs.org/spec/latest/">asm.js</a> is a
+"strict subset of JavaScript that can be used as a low-level, efficient
+target language for compilers".  As a subset of JavaScript it should be
+fully compatible with Duktape.  However, Duktape has no specific support
+for asm.js and won't optimize asm.js code.  In fact, asm.js code will
+generate unnecessary bytecode and execute slower than normal Ecmascript
+code.  The <code>"use asm"</code> directive specified by asm.js is ignored
+by Duktape.</p>
+
