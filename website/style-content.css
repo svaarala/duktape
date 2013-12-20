@@ -9,6 +9,21 @@
  *  Common headings, text styles etc
  */
 
+.content .main-title {
+	font-size: 24pt;
+	margin: 0 0 2ex 0;
+	color: #000000;
+	text-shadow: 1px 1px 1px #777777;
+	filter: dropshadow(color=#777777, offx=1, offy=1);
+}
+@media print {
+	.content .main-title {
+		font-size: 21pt;
+		text-shadow: none;
+		filter: none;
+	}
+}
+
 .content h1 {
 	font-size: 24pt;
 	margin: 4ex 0 2ex 0;
@@ -22,11 +37,6 @@
 		text-shadow: none;
 		filter: none;
 	}
-}
-
-/* Main title of a page is special */
-.content h1.main-title {
-	margin-top: 0;
 }
 
 .content h2 {

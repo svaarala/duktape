@@ -618,7 +618,7 @@ def generateApiDoc(apidocdir, apitestdir):
 	# content
 
 	res = []
-	res += [ '<h1 class="main-title">Duktape API</h1>' ]
+	res += [ '<div class="main-title"><strong>Duktape API</strong></div>' ]
 
 	# FIXME: generate from the same list as nav links for these
 	res += processRawDoc('api/intro.html')
@@ -783,7 +783,7 @@ def generateGuide():
 	# content
 
 	res = []
-	res += [ '<h1 class="main-title">Duktape Programmer\'s Guide</h1>' ]
+	res += [ '<div class="main-title"><strong>Duktape Programmer\'s Guide</strong></div>' ]
 
 	res += processRawDoc('guide/intro.html')
 	res += processRawDoc('guide/gettingstarted.html')
