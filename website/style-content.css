@@ -121,7 +121,12 @@
 	line-height: 1.4;
 }
 
-/* special style for tag lists */
+/* Special style for tag lists.  Disable link text-shadow because it
+ * causes layout sizes when hovering over the links (apparently the
+ * shadow somehow changes the item's size at least from multi-column
+ * layout perspective).  Because of no text-shadow, the link hover is
+ * not as visible, so add a faint background and a darker color.
+ */
 ul.taglist {
 	-moz-column-count:4; /* Firefox */
 	-webkit-column-count:4; /* Safari and Chrome */
@@ -133,6 +138,18 @@ ul.taglist li {
 	list-style: none;
 	line-height: 1.2;
 }
+ul.taglist li a {
+	text-decoration: none;
+}
+ul.taglist li a:hover {
+	/* Remove text-shadow and filter from .content a:hover rule */
+	background-color: #eeeeff;
+	color: #000088;
+	text-decoration: underline;
+	text-shadow: none;
+	filter: none;
+}
+
 @media screen and (max-width:800px) {
 	.taglist {
 		-moz-column-count:1; /* Firefox */
