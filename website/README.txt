@@ -123,6 +123,21 @@ minimize load time.  Currently done manually, see ``buildimages.py``.
 Misc issues
 ===========
 
+Heading elements
+----------------
+
+Use the heading elements (``<h1>``, ``<h2>``, etc) only for those headings
+that are logically part of the document structure and should be displayed
+in a "table of contents".
+
+The Duktape logo and the page/document title are **not** such headings.
+They are represented as::
+
+  <div class="main-title"><strong>Duktape</strong></div>
+
+The ``div`` outside provides block formatting while ``strong`` ensures text
+browsers emphasize the text properly.
+
 Table overflows
 ---------------
 
