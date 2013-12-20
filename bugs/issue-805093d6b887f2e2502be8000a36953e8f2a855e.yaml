@@ -5,7 +5,7 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2013-12-17 22:32:05.792529 Z
 references: []
@@ -19,4 +19,8 @@ log_events:
 - - 2013-12-18 15:19:59.827890 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2013-12-20 21:45:58.811454 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
   - ""
