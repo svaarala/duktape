@@ -34,7 +34,8 @@
 }
 
 #site-top-logo {
-	display: inline;
+	display: block;
+	float: left;
 	margin: 0 0 0 0.5em;  /* logo font */
 }
 #logo {
