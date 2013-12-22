@@ -897,29 +897,10 @@ extern double duk_computed_nan;
 	} while (0)
 
 /*
- *  Macro for declaring a 'noreturn' function.  Unfortunately the noreturn
- *  declaration may appear in various places of a function declaration, so
- *  the solution is to wrap the entire declaration inside the macro.
- *
- *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
- *  http://clang.llvm.org/docs/LanguageExtensions.html
+ *  Macro for declaring a 'noreturn' function, detection in duktape.h.
  */
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
-/* since gcc-2.5 */
-#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(__clang__)
-/* syntax same as gcc */
-#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define DUK_NORETURN(decl)  decl __declspec((noreturn))
-#else
-/* Don't know how to declare a noreturn function, so don't do it; this
- * may cause some spurious compilation warnings (e.g. "variable used
- * uninitialized").
- */
-#define DUK_NORETURN(decl)  decl
-#endif
+#define DUK_NORETURN(decl) DUK_API_NORETURN(decl)
 
 /*
  *  Macro for stating that a certain line cannot be reached.
@@ -931,11 +912,16 @@ extern double duk_computed_nan;
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500)
 /* since gcc-4.5 */
 #define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
-#elif defined(__clang__)
-/* XXX: __has_builtin(__builtin_unreachable) */
+#elif defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_unreachable)
 /* same as gcc */
 #define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
+#endif
 #else
+/* unknown */
+#endif
+
+#if !defined(DUK_UNREACHABLE)
 /* Don't know how to declare unreachable point, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
  * uninitialized").

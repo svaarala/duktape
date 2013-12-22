@@ -12,14 +12,51 @@ extern "C" {
 #endif
 
 /*
- *  Includes and minimal feature detection required by the public API.
+ *  Feature detection needed by this public header
+ *
+ *  DUK_API_NORETURN: macro for declaring a 'noreturn' function.
+ *  Unfortunately the noreturn declaration may appear in various
+ *  places of a function declaration, so the solution is to wrap
+ *  the entire declaration inside the macro.
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
+ *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
+
+#if defined(__GNUC__)
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
+/* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
+#define DUK_API_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#else
+#error cannot figure out gcc version
+#endif
+#endif
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #define DUK_API_VARIADIC_MACROS
 #else
 #undef DUK_API_VARIADIC_MACROS
 #endif
+
+#if defined(DUK_API_GCC_VERSION) && (DUK_API_GCC_VERSION >= 20500)
+/* since gcc-2.5 */
+#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(__clang__)
+/* syntax same as gcc */
+#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define DUK_API_NORETURN(decl)  decl __declspec((noreturn))
+#else
+/* Don't know how to declare a noreturn function, so don't do it; this
+ * may cause some spurious compilation warnings (e.g. "variable used
+ * uninitialized").
+ */
+#define DUK_API_NORETURN(decl)  decl
+#endif
+
+/*
+ *  Includes
+ */
 
 #include <limits.h>  /* INT_MIN */
 #include <stdarg.h>  /* va_list etc */
@@ -199,21 +236,21 @@ void duk_gc(duk_context *ctx, int flags);
  *  Error handling
  */
 
-void duk_throw(duk_context *ctx);
+DUK_API_NORETURN(void duk_throw(duk_context *ctx));
 
-void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
+DUK_API_NORETURN(void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...));
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_error(ctx,err_code,...)  \
 	duk_error_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
-void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...);
+DUK_API_NORETURN(void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...));
 #define duk_error  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \
 	duk_error_stash  /* arguments follow */
 #endif
 
-void duk_fatal(duk_context *ctx, int err_code);
+DUK_API_NORETURN(void duk_fatal(duk_context *ctx, int err_code));
 
 /*
  *  Other state related functions
