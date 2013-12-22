@@ -3118,6 +3118,11 @@ void duk_fatal(duk_context *ctx, int err_code) {
 	DUK_DPRINT("fatal error occurred, code %d", err_code);
 
 	thr->heap->fatal_func(ctx, err_code);
+	/* FIXME: because fatal_func is not currently a 'noreturn' one,
+	 * throw an error here to ensure unreachability.
+	 */
+	duk_error(ctx, err_code, "");
+
 	DUK_UNREACHABLE();
 }
 

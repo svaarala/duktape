@@ -1384,6 +1384,13 @@ void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, double *x) {
 	DUK_ASSERT(nc_ctx->count == 53 + 1);
 	DUK_ASSERT(nc_ctx->digits[0] == 1);  /* zero handled by caller */
 
+	/* Should not be required because the code below always sets both high
+	 * and low parts, but at least gcc-4.4.5 fails to deduce this correctly
+	 * (perhaps because the low part is set conditionally in a loop), so
+	 * this is here to avoid the bogus warning.
+	 */
+	DUK_MEMSET((void *) &u, 0, sizeof(u));
+
 	/*
 	 *  Figure out how generated digits match up with the mantissa,
 	 *  and then perform rounding.  If mantissa overflows, need to
