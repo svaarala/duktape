@@ -23,12 +23,19 @@ void duk_err_handle_panic(const char *filename, int line, int code, const char *
 	va_list ap;
 	char msg1[BUFSIZE];
 	char msg2[BUFSIZE];
+	const char *tmp;
 	va_start(ap, fmt);
 	(void) DUK_VSNPRINTF(msg1, sizeof(msg1), fmt, ap);
 	msg1[sizeof(msg1) - 1] = (char) 0;
 	(void) DUK_SNPRINTF(msg2, sizeof(msg2), "(%s:%d): %s", filename ? filename : "null", line, msg1);
 	msg2[sizeof(msg2) - 1] = (char) 0;
-	DUK_PANIC_HANDLER(code, msg2);
+	/* Intermediate variable used to avoid: "warning: the address of ‘msg2’ will always
+	 * evaluate as ‘true’" when pragma suppression is not available.  For some reason
+	 * this variant does not trigger the warning (although the pointer is most certainly
+	 * always non-NULL).
+	 */
+	tmp = (const char *) msg2;
+	DUK_PANIC_HANDLER(code, tmp);
 	va_end(ap);  /* dead code */
 }
 #else  /* DUK_USE_VARIADIC_MACROS */

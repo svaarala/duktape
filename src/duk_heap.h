@@ -299,6 +299,7 @@ struct duk_heap {
 	/* fatal error handling, called e.g. when a longjmp() is needed but
 	 * lj.jmpbuf_ptr is NULL.  fatal_func must never return.
 	 */
+	/* FIXME: declaring a function typedef as noreturn? or this specific instance? */
 	duk_fatal_function fatal_func;
 
 	/* longjmp state */
