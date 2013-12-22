@@ -400,7 +400,7 @@ static int string_indexof_helper(duk_context *ctx, int is_lastindexof) {
 		 * initial UTF-8 bytes (not continuation bytes).
 		 */
 
-		if ((t == firstbyte) && ((p_end - p) >= q_blen)) {
+		if ((t == firstbyte) && ((size_t) (p_end - p) >= q_blen)) {
 			DUK_ASSERT(q_blen > 0);  /* no issues with memcmp() zero size, even if broken */
 			if (DUK_MEMCMP(p, q_start, q_blen) == 0) {
 				duk_push_int(ctx, cpos);
@@ -643,7 +643,7 @@ int duk_builtin_string_prototype_replace(duk_context *ctx) {
 		if (is_repl_func) {
 			int idx_args;
 			duk_hstring *h_repl;
-			duk_uint32_t idx;
+			int idx;
 
 			/* regexp res_obj is at index 4 */
 

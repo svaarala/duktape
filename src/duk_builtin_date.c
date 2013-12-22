@@ -503,12 +503,12 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 			accum = 0;
 			ndigits = 0;
 
-			for (i = 0; i < sizeof(parse_iso8601_seps); i++) {
+			for (i = 0; i < (int) sizeof(parse_iso8601_seps); i++) {
 				if (parse_iso8601_seps[i] == ch) {
 					break;
 				}
 			}
-			if (i == sizeof(parse_iso8601_seps)) {
+			if (i == (int) sizeof(parse_iso8601_seps)) {
 				DUK_DDDPRINT("separator character doesn't match -> reject");
 				goto reject;
 			}
@@ -516,7 +516,7 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 			sep_idx = i;
 			match_val = (1 << part_idx) + (1 << (sep_idx + 9));  /* match against rule part/sep bits */
 
-			for (i = 0; i < sizeof(parse_iso8601_control) / sizeof(int); i++) {
+			for (i = 0; i < (int) (sizeof(parse_iso8601_control) / sizeof(int)); i++) {
 				int rule = parse_iso8601_control[i];
 				int nextpart;
 				int cflags;
@@ -553,7 +553,7 @@ static int parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				break;
 			}  /* rule match */
 
-			if (i == sizeof(parse_iso8601_control) / sizeof(int)) {
+			if (i == (int) (sizeof(parse_iso8601_control) / sizeof(int))) {
 				DUK_DDDPRINT("no rule matches -> reject");
 				goto reject;
 			}

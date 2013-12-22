@@ -64,7 +64,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	 * special handling above (intentional)
 	 */
 	depth = DUK_USE_TRACEBACK_DEPTH;
-	i_min = (thr_callstack->callstack_top > depth ? thr_callstack->callstack_top - depth : 0);
+	i_min = (thr_callstack->callstack_top > (size_t) depth ? (int) (thr_callstack->callstack_top - depth) : 0);
 	DUK_ASSERT(i_min >= 0);
 
 	for (i = thr_callstack->callstack_top - 1; i >= i_min; i--) {

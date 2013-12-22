@@ -868,12 +868,13 @@ int duk_builtin_array_prototype_shift(duk_context *ctx) {
  */
 
 int duk_builtin_array_prototype_unshift(duk_context *ctx) {
-	int nargs;
+	unsigned int nargs;
 	unsigned int len;
 	unsigned int i;
 	double final_len;
 
-	nargs = duk_get_top(ctx);
+	/* FIXME: duk_get_top return type */
+	nargs = (unsigned int) duk_get_top(ctx);
 	len = push_this_obj_len_u32(ctx);
 
 	/* stack[0...nargs-1] = unshift args (vararg)

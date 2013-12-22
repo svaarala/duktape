@@ -389,7 +389,7 @@ static int check_valstack_resize_helper(duk_context *ctx,
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
-	old_size = (unsigned int) (thr->valstack_end - thr->valstack);
+	old_size = (size_t) (thr->valstack_end - thr->valstack);
 
 	if (min_new_size <= old_size) {
 		is_shrink = 1;
@@ -1087,7 +1087,7 @@ duk_hobject *duk_get_hobject(duk_context *ctx, int index) {
 /* internal */
 duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnum) {
 	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 1);
-	if (h != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
+	if (h != NULL && (int) DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
 		h = NULL;
 	}
 	return h;
@@ -1103,7 +1103,7 @@ duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int cla
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
 	DUK_ASSERT(h != NULL);
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
+	if ((int) DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected object with class number %d", classnum);
 	}
 	return h;
@@ -2323,9 +2323,9 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	if (fseek(f, 0, SEEK_SET) < 0) {
 		goto fail;
 	}
-	buf = (char *) duk_push_fixed_buffer(ctx, sz);
+	buf = (char *) duk_push_fixed_buffer(ctx, (size_t) sz);
 	DUK_ASSERT(buf != NULL);
-	if (fread(buf, 1, sz, f) != sz) {
+	if (fread(buf, 1, sz, f) != (size_t) sz) {
 		goto fail;
 	}
 	(void) fclose(f);  /* ignore fclose() error */
@@ -2532,7 +2532,7 @@ static int try_push_vsprintf(duk_context *ctx, void *buf, size_t sz, const char 
 
 	/* NUL terminator handling doesn't matter here */
 	len = DUK_VSNPRINTF((char *) buf, sz, fmt, ap);
-	if (len < sz) {
+	if ((size_t) len < sz) {
 		return len;
 	}
 	return -1;

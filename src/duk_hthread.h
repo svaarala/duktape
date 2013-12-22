@@ -184,9 +184,9 @@ struct duk_hthread {
 	duk_uint8_t unused2;
 
 	/* sanity limits */
-	int valstack_max;
-	int callstack_max;
-	int catchstack_max;
+	size_t valstack_max;
+	size_t callstack_max;
+	size_t catchstack_max;
 
 	/* XXX: valstack, callstack, and catchstack are currently assumed
 	 * to have non-NULL pointers.  Relaxing this would not lead to big
@@ -201,14 +201,14 @@ struct duk_hthread {
 
 	/* call stack */
 	duk_activation *callstack;
-	unsigned int callstack_size;		/* allocation size */
-	unsigned int callstack_top;		/* next to use, highest used is top - 1 */
-	unsigned int callstack_preventcount;	/* number of activation records in callstack preventing a yield */
+	size_t callstack_size;			/* allocation size */
+	size_t callstack_top;			/* next to use, highest used is top - 1 */
+	size_t callstack_preventcount;		/* number of activation records in callstack preventing a yield */
 
 	/* catch stack */
 	duk_catcher *catchstack;
-	unsigned int catchstack_size;		/* allocation size */
-	unsigned int catchstack_top;		/* next to use, highest used is top - 1 */
+	size_t catchstack_size;			/* allocation size */
+	size_t catchstack_top;			/* next to use, highest used is top - 1 */
 
 	/* yield/resume book-keeping */
 	duk_hthread *resumer;			/* who resumed us (if any) */

@@ -541,9 +541,11 @@ int duk_handle_call(duk_hthread *thr,
 	int entry_callstack_top;
 	int entry_catchstack_top;
 	int entry_call_recursion_depth;
-	int need_setjmp;
 	duk_hthread *entry_curr_thread;
 	duk_uint8_t entry_thread_state;
+	int need_setjmp;
+	duk_jmpbuf *old_jmpbuf_ptr = NULL;
+	duk_hobject *old_errhandler = NULL;
 	int idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
 	int idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	int nargs;            /* # argument registers target function wants (< 0 => "as is") */
@@ -551,8 +553,6 @@ int duk_handle_call(duk_hthread *thr,
 	duk_hobject *func;    /* 'func' on stack (borrowed reference) */
 	duk_activation *act;
 	duk_hobject *env;
-	duk_jmpbuf *old_jmpbuf_ptr = NULL;
-	duk_hobject *old_errhandler = NULL;
 	duk_jmpbuf our_jmpbuf;
 	duk_tval tv_tmp;
 	int retval = DUK_ERR_EXEC_ERROR;
