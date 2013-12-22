@@ -168,6 +168,7 @@
 		_Pragma("GCC diagnostic ignored \"-Waddress\""); \
 		DUK_PANIC_PRINTMSG((code),(msg)); \
 		DUK_PANIC_EXIT(); \
+		DUK_UNREACHABLE(); \
 		_Pragma("GCC diagnostic pop"); \
 	} while (0)
 #else
@@ -175,6 +176,7 @@
 		/* No pragmas to suppress warning, causes unclean build */ \
 		DUK_PANIC_PRINTMSG((code),(msg)); \
 		DUK_PANIC_EXIT(); \
+		DUK_UNREACHABLE(); \
 	} while (0)
 #endif  /* DUK_USE_GCC_PRAGMAS */
 #endif  /* DUK_PANIC_HANDLER */
