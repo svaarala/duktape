@@ -203,22 +203,22 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 	switch (rc) {
 	case DUK_RET_UNIMPLEMENTED_ERROR:  msg = "unimplemented"; break;
 	case DUK_RET_UNSUPPORTED_ERROR:    msg = "unsupported"; break;
-	case DUK_RET_INTERNAL_ERROR:       msg = "internal error"; break;
-	case DUK_RET_ALLOC_ERROR:          msg = "alloc error"; break;
-	case DUK_RET_ASSERTION_ERROR:      msg = "assertion error"; break;
-	case DUK_RET_API_ERROR:            msg = "api error"; break;
-	case DUK_RET_UNCAUGHT_ERROR:       msg = "uncaught error"; break;
+	case DUK_RET_INTERNAL_ERROR:       msg = "internal"; break;
+	case DUK_RET_ALLOC_ERROR:          msg = "alloc"; break;
+	case DUK_RET_ASSERTION_ERROR:      msg = "assertion"; break;
+	case DUK_RET_API_ERROR:            msg = "api"; break;
+	case DUK_RET_UNCAUGHT_ERROR:       msg = "uncaught"; break;
 	case DUK_RET_ERROR:                msg = "error"; break;
-	case DUK_RET_EVAL_ERROR:           msg = "eval error"; break;
-	case DUK_RET_RANGE_ERROR:          msg = "range error"; break;
-	case DUK_RET_REFERENCE_ERROR:      msg = "reference error"; break;
-	case DUK_RET_SYNTAX_ERROR:         msg = "syntax error"; break;
-	case DUK_RET_TYPE_ERROR:           msg = "type error"; break;
-	case DUK_RET_URI_ERROR:            msg = "uri error"; break;
-	default:                           msg = "unknown error"; break;
+	case DUK_RET_EVAL_ERROR:           msg = "eval"; break;
+	case DUK_RET_RANGE_ERROR:          msg = "range"; break;
+	case DUK_RET_REFERENCE_ERROR:      msg = "reference"; break;
+	case DUK_RET_SYNTAX_ERROR:         msg = "syntax"; break;
+	case DUK_RET_TYPE_ERROR:           msg = "type"; break;
+	case DUK_RET_URI_ERROR:            msg = "uri"; break;
+	default:                           msg = "unknown"; break;
 	}
 
-	DUK_UNREF(msg);
+	DUK_ASSERT(msg != NULL);
 
 	/*
 	 *  The __FILE__ and __LINE__ information is intentionally not used in the
@@ -227,6 +227,6 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
 	 *  code, and having the file/line of this function isn't very useful.
 	 */
 
-	duk_error_raw(ctx, code, NULL, 0, "%s (rc %d)", (msg ? msg : "null"), rc);
+	duk_error_raw(ctx, code, NULL, 0, "%s error (rc %d)", msg, rc);
 	DUK_UNREACHABLE();
 }
