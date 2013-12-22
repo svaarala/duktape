@@ -21,6 +21,7 @@ funcidx=3, argcount=3 -> result=6
 funcidx=3, argcount=4 -> result=10
 top after calling my_zero_ret: 1, retval='undefined'
 top after calling my_neg_ret: 1, rc=1, retval='Error: unknown error (rc -1)'
+top after calling my_type_error_ret: 1, rc=1, retval='TypeError: type error (rc -105)'
 ===*/
 
 int my_int_adder(duk_context *ctx) {
@@ -44,6 +45,11 @@ int my_zero_ret(duk_context *ctx) {
 int my_neg_ret(duk_context *ctx) {
 	duk_push_int(ctx, 123);  /* ignored */
 	return -1;
+}
+
+int my_type_error_ret(duk_context *ctx) {
+	duk_push_int(ctx, 123);  /* ignored */
+	return DUK_RET_TYPE_ERROR;
 }
 
 void test(duk_context *ctx) {
@@ -85,5 +91,11 @@ void test(duk_context *ctx) {
 	duk_push_c_function(ctx, my_neg_ret, 0);
 	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
 	printf("top after calling my_neg_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	duk_set_top(ctx, 0);
+	duk_push_c_function(ctx, my_type_error_ret, 0);
+	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
+	printf("top after calling my_type_error_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
