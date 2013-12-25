@@ -48,6 +48,16 @@ The table below summarizes the available options (in no particular order):</p>
     more fluctuation in memory usage.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_MARK_AND_SWEEP</td>
+<td>Disable mark-and-sweep and use only reference counting for garbage collection.
+    This reduces code footprint and eliminates garbage collection pauses, but
+    objects participating in unreachable reference cycles won't be collected until
+    the Duktape heap is destroyed.  In particular, function instances won't be
+    collected because they're always in a reference cycle with their default
+    prototype object.  Unreachable objects are collected if you break reference
+    cycles manually (and are always freed when a heap is destroyed).</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_MS_STRINGTABLE_RESIZE</td>
 <td>Disable forced string intern table resize during mark-and-sweep garbage
     collection.  This may be useful when reference counting is disabled, as
@@ -203,4 +213,68 @@ to submit a patch to be included in the mainline distribution:</p>
     to <code>DUK_USE_xxx</code> defines so that the resolution process
     is fully contained in <code>duk_features.h</code>.</li>
 </ul>
+
+<h2>Memory management alternatives</h2>
+
+<p>There are three supported memory management alternatives:</p>
+<ul>
+<li><b>Reference counting and mark-and-sweep (default)</b>: heap objects are
+    freed immediately when they become unreachable except for objects
+    participating in unreachable reference cycles.  Such objects are freed by
+    a periodic voluntary, stop the world mark-and-sweep collection.
+    Mark-and-sweep is also used as the emergency garbage collector if
+    memory allocation fails.</li>
+<li><b>Reference counting only</b>: reduces code footprint and eliminates
+    garbage collection pauses, but objects in unreachable reference cycles
+    are not collected until the Duktape heap is destroyed.  See note below
+    on function instances and reference cycles.</li>
+<li><b>Mark-and-sweep only</b>: reduces code footprint and memory footprint
+    (heap headers don't need to store a reference count), but there is more
+    memory usage variance than in the default case.  The frequency of voluntary,
+    stop the world mark-and-sweep collections is also higher than in the default
+    case where reference counting is expected to handle almost all memory
+    management.</li>
+</ul>
+
+<p>When using only reference counting it is important to avoid creating
+unreachable reference cycles.  Reference cycles are usually easy to avoid in
+application code e.g. by using only forward pointers in data structures.  Even
+if reference cycles are necessary, garbage collection can be allowed to work
+simply by breaking the cycles before deleting the final references to such objects.
+For example, if you have a tree structure where nodes maintain references to
+both children and parents (creating reference cycles for each node) you could
+walk the tree and set the parent reference to <code>null</code> before deleting
+the final reference to the tree.</p>
+
+<p>Unfortunately every Ecmascript function instance is, by default, in a
+reference loop with an automatic prototype object created for the object.
+The function instance's <code>prototype</code> property points to the prototype
+object, and the prototype's <code>constructor</code> property points back to the
+function instance.  Only mark-and-sweep is able to collect these reference
+loops at the moment.  If you build with reference counting only, function
+instances may appear to leak memory; the memory will be released when the
+relevant heap is destroyed.  You can also break the reference loops manually
+(although this is a bit cumbersome):</p>
+<pre class="ecmascript-code">
+var f = function() { };
+var g = function() { };
+var h = function() { };
+__duk__.setFinalizer(f, function() { print('finalizer for f'); });
+__duk__.setFinalizer(g, function() { print('finalizer for g'); });
+__duk__.setFinalizer(h, function() { print('finalizer for h'); });
+
+// not collected until heap destruction in a reference counting only build
+f = null;            // not collected immediately
+
+// break cycle by deleting 'prototype' reference (alternative 1)
+g.prototype = null;
+g = null;            // collected immediately, finalizer runs
+
+// break cycle by deleting 'constructor' reference (alternative 2)
+h.prototype.constructor = null;
+h = null;            // collected immediately, finalizer runs
+
+// no-op with refcount only, with mark-and-sweep finalizer for 'f' runs
+__duk__.gc();
+</pre>
 
