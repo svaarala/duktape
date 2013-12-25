@@ -19,6 +19,7 @@
 		} \
 	} while (0)
 
+#ifdef DUK_USE_MARK_AND_SWEEP
 static void run_voluntary_gc(duk_heap *heap) {
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now");
@@ -32,6 +33,7 @@ static void run_voluntary_gc(duk_heap *heap) {
 		DUK_UNREF(rc);
 	}
 }
+#endif
 
 /*
  *  Allocate memory with garbage collection
@@ -341,8 +343,8 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
-	return heap->realloc_func(heap->alloc_udata, ptr, newsize);
+void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, size_t newsize) {
+	return heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 

@@ -1023,6 +1023,14 @@ extern double duk_computed_nan;
  */
 #endif
 
+#if defined(DUK_OPT_NO_MARK_AND_SWEEP)
+#undef DUK_USE_MARK_AND_SWEEP
+#endif
+
+#if !defined(DUK_USE_MARK_AND_SWEEP) && !defined(DUK_USE_REFERENCE_COUNTING)
+#error must have either mark-and-sweep or reference counting enabled
+#endif
+
 #if defined(DUK_OPT_NO_MS_STRINGTABLE_RESIZE)
 #undef DUK_USE_MS_STRINGTABLE_RESIZE
 #endif
