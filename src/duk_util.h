@@ -48,7 +48,7 @@ duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t 
 
 duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 
-duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
+duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
 duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx);
 duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value);
 

@@ -264,19 +264,19 @@ duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t ble
 static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	duk_uint32_t t;
 
-	t = duk_bd_decode(bd_ctx, 4);
+	t = (duk_uint32_t) duk_bd_decode(bd_ctx, 4);
 	if (t <= 0x0eU) {
 		return t;
 	}
-	t = duk_bd_decode(bd_ctx, 8);
+	t = (duk_uint32_t) duk_bd_decode(bd_ctx, 8);
 	if (t <= 0xfdU) {
 		return t + 0x0f;
 	}
 	if (t == 0xfeU) {
-		t = duk_bd_decode(bd_ctx, 12);
+		t = (duk_uint32_t) duk_bd_decode(bd_ctx, 12);
 		return t + 0x0fU + 0xfeU;
 	} else {
-		t = duk_bd_decode(bd_ctx, 24);
+		t = (duk_uint32_t) duk_bd_decode(bd_ctx, 24);
 		return t + 0x0fU + 0xfeU + 0x1000UL;
 	}
 }
@@ -624,7 +624,7 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 	DUK_DDDPRINT("checking ranges");
 	for (;;) {
 		skip++;
-		n = duk_bd_decode(bd_ctx, 6);
+		n = (duk_small_int_t) duk_bd_decode(bd_ctx, 6);
 		if (n == 0x3f) {
 			/* end marker */
 			break;
@@ -634,7 +634,7 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 		while (n--) {
 			start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 			start_o = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
-			count = duk_bd_decode(bd_ctx, 7);
+			count = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
 			DUK_DDDPRINT("range: start_i=%d, start_o=%d, count=%d, skip=%d",
 			             (int) start_i, (int) start_o, (int) count, (int) skip);
 
@@ -651,7 +651,7 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 	}
 
 	/* 1:1 conversion */
-	n = duk_bd_decode(bd_ctx, 6);
+	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 6);
 	DUK_DDDPRINT("checking 1:1 conversions (count %d)", (int) n);
 	while (n--) {
 		start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
@@ -665,11 +665,11 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 	}
 
 	/* complex, multicharacter conversion */
-	n = duk_bd_decode(bd_ctx, 7);
+	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
 	DUK_DDDPRINT("checking 1:n conversions (count %d)", n);
 	while (n--) {
 		start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
-		t = duk_bd_decode(bd_ctx, 2);
+		t = (duk_small_int_t) duk_bd_decode(bd_ctx, 2);
 		DUK_DDDPRINT("1:n conversion %d -> %d chars", (int) start_i, (int) t);
 		if (cp == start_i) {
 			DUK_DDDPRINT("1:n matches input codepoint");

@@ -4,8 +4,11 @@
 
 #include "duk_internal.h"
 
-/* FIXME: change to duk_int32_t, since bits is limited to 24? */
-duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
+/* Decode 'bits' bits from the input stream (bits must be 1...24).
+ * When reading past bitstream end, zeroes are shifted in.  The result
+ * is signed to match duk_bd_decode_flagged.
+ */
+duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	duk_small_int_t shift;
 	duk_uint32_t mask;
 	duk_uint32_t tmp;
