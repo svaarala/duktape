@@ -118,6 +118,8 @@ CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparis
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
+#CCOPTS_SHARED += -DDUK_OPT_NO_REFERENCE_COUNTING
+#CCOPTS_SHARED += -DDUK_OPT_NO_MARK_AND_SWEEP
 CCOPTS_SHARED += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 CCOPTS_SHARED += -DDUK_OPT_DPRINT_COLORS
 #CCOPTS_SHARED += -DDUK_OPT_NO_FILE_IO
@@ -127,6 +129,7 @@ CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 #CCOPTS_SHARED += -DDUK_OPT_NO_VERBOSE_ERRORS
 CCOPTS_SHARED += -DDUK_OPT_NO_MS_RESIZE_STRINGTABLE
 CCOPTS_SHARED += -DDUK_OPT_DEBUG_BUFSIZE=80
+#CCOPTS_SHARED += -DDUK_CMDLINE_BAREBONES
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_NONDEBUG += -g -ggdb
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
