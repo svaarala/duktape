@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: investigate the remaining dragon4 issues
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-25 17:30:07.470426 Z
+references: []
+
+id: bf30738634c69998b7456e8cc857288436eb7d5b
+log_events: 
+- - 2013-12-25 17:30:07.635309 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

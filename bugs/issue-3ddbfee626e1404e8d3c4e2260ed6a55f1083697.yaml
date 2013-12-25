@@ -5,7 +5,7 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2013-12-01 20:56:34.164645 Z
 references: []
@@ -15,4 +15,14 @@ log_events:
 - - 2013-12-01 20:56:34.332525 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2013-12-25 18:32:19.263590 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Make storing source code optional, as it is very often totally pointless
+    and wastes a lot of memory.
+- - 2013-12-25 18:32:25.139847 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
   - ""

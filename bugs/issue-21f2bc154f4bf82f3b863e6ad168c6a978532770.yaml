@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: debian/ubuntu package
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-23 08:59:15.917049 Z
+references: []
+
+id: 21f2bc154f4bf82f3b863e6ad168c6a978532770
+log_events: 
+- - 2013-12-23 08:59:16.104122 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

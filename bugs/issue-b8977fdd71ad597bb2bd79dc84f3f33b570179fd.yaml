@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make heap->fatal_func noreturn
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-22 18:44:45.926389 Z
+references: []
+
+id: b8977fdd71ad597bb2bd79dc84f3f33b570179fd
+log_events: 
+- - 2013-12-22 18:44:46.146335 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

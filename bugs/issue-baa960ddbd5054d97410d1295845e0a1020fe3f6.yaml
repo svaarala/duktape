@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "portability: char constants guaranteed to be ASCII; if not, change to int constants"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-25 18:03:50.819422 Z
+references: []
+
+id: baa960ddbd5054d97410d1295845e0a1020fe3f6
+log_events: 
+- - 2013-12-25 18:03:50.992331 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

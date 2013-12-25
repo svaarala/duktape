@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: ssize_t type, needed for e.g. some loop constructs
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-21 16:23:06.675032 Z
+references: []
+
+id: 4a0efd0cf629dfbd898411bcae5887d8be405a4e
+log_events: 
+- - 2013-12-21 16:23:06.848152 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2013-12-21 16:23:18.863128 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - ssize_t is not fully portable though

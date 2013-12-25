@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make DUK_PANIC noreturn
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-22 18:44:53.832032 Z
+references: []
+
+id: 1936e467db6982c61b153667ec71c393a1c61951
+log_events: 
+- - 2013-12-22 18:44:54.034969 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
