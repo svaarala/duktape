@@ -178,7 +178,7 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
 				if (duk_is_buffer(ctx, -1)) {
 					pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(pc2line));
-					line = duk_hobject_pc2line_query(pc2line, pc);
+					line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
 				} else {
 					line = 0;
 				}

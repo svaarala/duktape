@@ -15,6 +15,9 @@
 /* maximum loopcount for peephole optimization */
 #define DUK_COMPILER_PEEPHOLE_MAXITER      3
 
+/* maximum bytecode length in instructions */
+#define DUK_COMPILER_MAX_BYTECODE_LENGTH   (256 * 1024 * 1024)  /* 1 GB */
+
 /*
  *  Compiler intermediate values
  *

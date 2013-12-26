@@ -228,7 +228,7 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 					pc2line = duk_get_hbuffer(ctx, -1);
 					DUK_ASSERT(pc2line != NULL);
 					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(pc2line));
-					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, pc);
+					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, (duk_uint_fast32_t) pc);
 					duk_push_number(ctx, (double) line);  /* FIXME: u32 */
 					duk_def_prop_stridx(ctx, err_index, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 				}

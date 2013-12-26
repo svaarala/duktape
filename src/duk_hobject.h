@@ -520,8 +520,8 @@ void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p)
 void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
 
 /* pc2line */
-void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, size_t length);
-duk_uint32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, int pc);
+void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
+duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc);
 
 /* misc */	
 int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);

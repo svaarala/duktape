@@ -833,7 +833,8 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		 *  Size-optimized pc->line mapping.
 		 */
 
-		duk_hobject_pc2line_pack(thr, q_instr, code_count);  /* -> pushes fixed buffer */
+		DUK_ASSERT(code_count <= DUK_COMPILER_MAX_BYTECODE_LENGTH);
+		duk_hobject_pc2line_pack(thr, q_instr, (duk_uint_fast32_t) code_count);  /* -> pushes fixed buffer */
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 
 		/* FIXME: if assertions enabled, walk through all valid PCs
