@@ -69,11 +69,12 @@ static duk_hstring *alloc_init_hstring(duk_heap *heap,
  *  Count actually used (non-NULL, non-DELETED) entries
  */
 
-static int count_used(duk_heap *heap) {
-	int i;
-	int res = 0;
+static duk_int_t count_used(duk_heap *heap) {
+	duk_int_t res = 0;
+	duk_uint_fast32_t i, n;
 
-	for (i = 0; i < heap->st_size; i++) {
+	n = (duk_uint_fast32_t) heap->st_size;
+	for (i = 0; i < n; i++) {
 		if (heap->st[i] != NULL && heap->st[i] != DELETED_MARKER(heap)) {
 			res++;
 		}
@@ -198,11 +199,11 @@ static int resize_hash_raw(duk_heap *heap, duk_uint32_t new_size) {
 	DUK_DDDPRINT("attempt to resize stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
 	             (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
 	             (int) (((double) old_used) / ((double) old_size) * 100.0),
-	             (int) new_size, (int) (sizeof(duk_hstring *) * new_size), count_used(heap),
+	             (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) count_used(heap),
 	             (int) (((double) count_used(heap)) / ((double) new_size) * 100.0));
 #endif
 
-	DUK_ASSERT(new_size > count_used(heap));  /* required for rehash to succeed, equality not that useful */
+	DUK_ASSERT(new_size > (duk_uint32_t) count_used(heap));  /* required for rehash to succeed, equality not that useful */
 	DUK_ASSERT(old_entries);
 	DUK_ASSERT((heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE) == 0);
 
@@ -275,7 +276,7 @@ static int resize_hash(duk_heap *heap) {
 	duk_uint32_t new_size;
 	int ret;
 
-	new_size = count_used(heap);
+	new_size = (duk_uint32_t) count_used(heap);
 	if (new_size >= 0x80000000U) {
 		new_size = DUK_STRTAB_HIGHEST_32BIT_PRIME;
 	} else {
