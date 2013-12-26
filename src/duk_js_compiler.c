@@ -1130,14 +1130,27 @@ static void emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop) {
 	emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, 0, 0);
 }
 
-static void emit_loadint(duk_compiler_ctx *comp_ctx, int reg, int val) {
+static void emit_loadint(duk_compiler_ctx *comp_ctx, int reg, duk_int32_t val) {
 	/* FIXME: typing */
-	/* FIXME: LDINTX support */
-	DUK_DDDPRINT("emit loadint: %d -> reg %d", val, reg);
+
+	/* XXX: Shuffling support could be implemented here so that LDINT+LDINTX
+	 * would only shuffle once (instead of twice).  The current code works
+	 * and has a smaller compiler footprint.
+	 */
+
 	DUK_ASSERT(reg >= DUK_BC_A_MIN && reg <= DUK_BC_A_MAX);
-	DUK_ASSERT(val + DUK_BC_LDINT_BIAS >= DUK_BC_BC_MIN);
-	DUK_ASSERT(val + DUK_BC_LDINT_BIAS <= DUK_BC_BC_MAX);
-	emit_a_bc(comp_ctx, DUK_OP_LDINT, reg, val + DUK_BC_LDINT_BIAS);
+	if ((val >= (duk_int32_t) DUK_BC_BC_MIN - (duk_int32_t) DUK_BC_LDINT_BIAS) &&
+	    (val <= (duk_int32_t) DUK_BC_BC_MAX - (duk_int32_t) DUK_BC_LDINT_BIAS)) {
+		DUK_DDDPRINT("emit LDINT to reg %d for %d", (int) reg, (int) val);
+		emit_a_bc(comp_ctx, DUK_OP_LDINT, reg, val + (duk_int32_t) DUK_BC_LDINT_BIAS);
+	} else {
+		duk_int32_t hi = val >> DUK_BC_LDINTX_SHIFT;
+		duk_int32_t lo = val & ((((duk_int32_t) 1) << DUK_BC_LDINTX_SHIFT) - 1);
+		DUK_DDDPRINT("emit LDINT+LDINTX to reg %d for %d -> hi %d, lo %d",
+		             (int) reg, (int) val, (int) hi, (int) lo);
+		emit_a_bc(comp_ctx, DUK_OP_LDINT, reg, hi + (duk_int32_t) DUK_BC_LDINT_BIAS);
+		emit_a_bc(comp_ctx, DUK_OP_LDINTX, reg, lo);
+	}
 }
 
 static void emit_jump(duk_compiler_ctx *comp_ctx, int target_pc) {
@@ -1544,22 +1557,16 @@ static int ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			dval = DUK_TVAL_GET_NUMBER(tv);
 
 			if (!(flags & IVAL_FLAG_ALLOW_CONST)) {
-				/* A number can be loaded either through a constant or
-				 * using LDINT+LDINTX.  Which is better depends on the
-				 * context and how many times a certain constant would
-				 * be reused.
-				 *
-				 * Currently, use LDINT if a constant is not allowed
-				 * and a LDINT would work.
+				/* A number can be loaded either through a constant, using
+				 * LDINT, or using LDINT+LDINTX.  LDINT is always a size win,
+				 * LDINT+LDINTX is not if the constant is used multiple times.
+				 * Currently always prefer LDINT+LDINTX over a double constant.
 				 */
 
-				if (is_whole_get_i32(dval, &ival)) {  /* FIXME: to util */
-					ival += DUK_BC_LDINT_BIAS;
-					if (ival >= DUK_BC_BC_MIN && ival <= DUK_BC_BC_MAX) {
-						dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
-						emit_a_bc(comp_ctx, DUK_OP_LDINT, dest, ival);
-						return dest;
-					}
+				if (is_whole_get_i32(dval, &ival)) {
+					dest = (forced_reg >= 0 ? forced_reg : ALLOCTEMP(comp_ctx));
+					emit_loadint(comp_ctx, dest, ival);
+					return dest;
 				}
 			}
 

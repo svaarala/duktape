@@ -44,18 +44,21 @@ typedef duk_uint32_t duk_instr;
 #define DUK_ENC_OP_A_B(op,a,b)      DUK_ENC_OP_A_B_C(op,a,b,0)
 #define DUK_ENC_OP_A(op,a)          DUK_ENC_OP_A_B_C(op,a,0,0)
 
+/* Constants should be signed so that signed arithmetic involving them
+ * won't cause values to be coerced accidentally to unsigned.
+ */
 #define DUK_BC_OP_MIN               0
-#define DUK_BC_OP_MAX               0x3fUL
+#define DUK_BC_OP_MAX               0x3fL
 #define DUK_BC_A_MIN                0
-#define DUK_BC_A_MAX                0xffUL
+#define DUK_BC_A_MAX                0xffL
 #define DUK_BC_B_MIN                0
-#define DUK_BC_B_MAX                0x1ffUL
+#define DUK_BC_B_MAX                0x1ffL
 #define DUK_BC_C_MIN                0
-#define DUK_BC_C_MAX                0x1ffUL
+#define DUK_BC_C_MAX                0x1ffL
 #define DUK_BC_BC_MIN               0
-#define DUK_BC_BC_MAX               0x3ffffUL
+#define DUK_BC_BC_MAX               0x3ffffL
 #define DUK_BC_ABC_MIN              0
-#define DUK_BC_ABC_MAX              0x3ffffffUL
+#define DUK_BC_ABC_MAX              0x3ffffffL
 #define DUK_BC_EXTRAOP_MIN          DUK_BC_A_MIN
 #define DUK_BC_EXTRAOP_MAX          DUK_BC_A_MAX
 
@@ -63,7 +66,7 @@ typedef duk_uint32_t duk_instr;
 #define DUK_OP_STREG                1
 #define DUK_OP_LDCONST              2
 #define DUK_OP_LDINT                3
-#define DUK_OP_LDINTX               4  /* FIXME: UNUSED */
+#define DUK_OP_LDINTX               4
 #define DUK_OP_MPUTOBJ              5
 #define DUK_OP_MPUTARR              6
 #define DUK_OP_NEW                  7
