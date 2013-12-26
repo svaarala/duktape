@@ -2031,7 +2031,9 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 						dig_lzero++;
 					}
 				} else {
-					/* FIXME: join these ops */
+					/* XXX: join these ops (multiply-accumulate), but only if
+					 * code footprint decreases.
+					 */
 					bi_mul_small(&nc_ctx->t1, &nc_ctx->f, radix);
 					bi_add_small(&nc_ctx->f, &nc_ctx->t1, dig);
 					dig_prec++;
