@@ -10,8 +10,6 @@
 #  When creating actual distributables, always clean first.
 #
 
-# FIXME: stripping and size reporting
-
 VERSION=0.8.0
 
 DISTSRCSEP = dist/src-separate
@@ -171,9 +169,11 @@ libduktaped.so.1.0.0:	dist
 
 duk:	dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	python src/genexesizereport.py $@ > /tmp/$@_sizes.html
 
 dukd:	dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	python src/genexesizereport.py $@ > /tmp/$@_sizes.html
 
 test:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
