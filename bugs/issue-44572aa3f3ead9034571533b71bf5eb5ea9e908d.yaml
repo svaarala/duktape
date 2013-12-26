@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2013-12-25 18:00:42.402509 Z
 references: []
 
@@ -20,3 +20,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
+- - 2013-12-26 19:47:39.948203 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - No impact on code size, at least in gcc.

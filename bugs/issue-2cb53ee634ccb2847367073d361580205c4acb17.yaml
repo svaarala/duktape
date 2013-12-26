@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: impose maximum line count
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-26 17:09:39.987805 Z
+references: []
+
+id: 2cb53ee634ccb2847367073d361580205c4acb17
+log_events: 
+- - 2013-12-26 17:09:40.198858 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

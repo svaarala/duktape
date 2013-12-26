@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: impose maximum bytecode length
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-26 16:40:26.293336 Z
+references: []
+
+id: 967c087238ff6750d68b6f0e7ede3469e6eb9108
+log_events: 
+- - 2013-12-26 16:40:26.466212 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
