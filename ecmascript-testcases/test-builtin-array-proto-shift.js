@@ -823,7 +823,7 @@ coercion
 0 1 undefined undefined
 0 1 post number nolength
 0 1 pre string 3 f,o,o
-0 1 string f
+0 1 TypeError
 0 1 post string 3 f,o,o
 0 1 pre object 2 1,2
 0 1 number 1
@@ -872,7 +872,10 @@ function coercionTest() {
     test(true);
     test(false);
     test(123);
-    test('foo');
+    test('foo');  // this should throw TypeError because Array.prototype.shift calls
+                  // [[Put]] with Throw=true, and string characters and 'length' are
+                  // not writable, causing [[CanPut]] to be false -> throws; Rhino and
+                  // V8 silently ignore this (and in fact return 'f').
     test([1,2]);
     test({ foo: 1, bar: 2 });
 
