@@ -105,6 +105,16 @@ def main():
 	f.write('<html>')
 	f.write('<head>')
 	f.write('<title>Size dump for %s</title>' % sys.argv[1])
+	f.write("""\
+<style type="text/css">
+tr:nth-child(2n) {
+	background: #eeeeee;
+}
+tr:nth-child(2n+1) {
+	background: #dddddd;
+}
+</style>
+""")
 	f.write('</head>')
 	f.write('<body>')
 
