@@ -284,7 +284,7 @@ static void bi_add_small(duk_bigint *x, duk_bigint *y, duk_uint32_t z) {
 
 	DUK_ASSERT(bi_is_valid(y));
 
-	/* FIXME: optimize, though only one caller now */
+	/* XXX: this could be optimized; there is only one call site now though */
 	bi_set_small(&tmp, z);
 	bi_add(x, y, &tmp);
 
@@ -380,7 +380,7 @@ static void bi_sub_small(duk_bigint *x, duk_bigint *y, duk_uint32_t z) {
 
 	DUK_ASSERT(bi_is_valid(y));
 
-	/* FIXME: optimize */
+	/* XXX: this could be optimized */
 	bi_set_small(&tmp, z);
 	bi_sub(x, y, &tmp);
 
@@ -514,7 +514,7 @@ static void bi_mul_small(duk_bigint *x, duk_bigint *y, duk_uint32_t z) {
 
 	DUK_ASSERT(bi_is_valid(y));
 
-	/* FIXME: optimize */
+	/* XXX: this could be optimized */
 	bi_set_small(&tmp, z);
 	bi_mul(x, y, &tmp);
 
