@@ -1758,7 +1758,10 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	DUK_DDDPRINT("parse number: %!T, radix=%d, flags=0x%08x",
 	             duk_get_tval(ctx, -1), (int) radix, (unsigned int) flags);
 
-	/* FIXME: macros or explicit flag checks - check impact on code size */
+	/* This seems to waste a lot of stack frame entries, but good compilers
+	 * will compute these as needed below.  Some of these initial flags are
+	 * also modified in the code below, so they can't all be removed.
+	 */
 	duk_small_int_t trim_white = (flags & DUK_S2N_FLAG_TRIM_WHITE);
 	duk_small_int_t allow_exp = (flags & DUK_S2N_FLAG_ALLOW_EXP);
 	duk_small_int_t allow_garbage = (flags & DUK_S2N_FLAG_ALLOW_GARBAGE);
