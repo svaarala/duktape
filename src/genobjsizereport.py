@@ -68,7 +68,7 @@ if __name__ == '__main__':
 	# Usage:
 	#
 	#   $ strip *.o
-	#   $ python gensizereport.py *.o
+	#   $ python genobjsizereport.py *.o
 
 	main()
 
