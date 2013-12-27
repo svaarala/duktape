@@ -38,11 +38,11 @@ function test(this_value, args, no_pre_post) {
         }
         t = Array.prototype.splice.apply(this_value, args);
         print('res', dumpValue(t));
-        if (!no_pre_post) {
-            print('post', dumpValue(this_value));
-        }
     } catch (e) {
         print(e.name);
+    }
+    if (!no_pre_post) {
+        print('post', dumpValue(this_value));
     }
 }
 
@@ -5457,8 +5457,10 @@ try {
 coercion
 pre undefined
 TypeError
+post undefined
 pre null
 TypeError
+post null
 pre boolean undefined 
 res object 0 
 post boolean undefined 
