@@ -48,11 +48,12 @@ function test(this_value, args, no_pre_post) {
         }
         t = Array.prototype.unshift.apply(this_value, args);
         print(typeof t, t);
-        if (!no_pre_post) {
-            print('post', dumpValue(this_value));
-        }
     } catch (e) {
         print(e.name);
+    }
+
+    if (!no_pre_post) {
+        print('post', dumpValue(this_value));
     }
 }
 
@@ -360,8 +361,10 @@ try {
 coercion
 pre undefined
 TypeError
+post undefined
 pre null
 TypeError
+post null
 pre boolean undefined 
 number 0
 post boolean undefined 
