@@ -1035,6 +1035,10 @@ extern double duk_computed_nan;
 #undef DUK_USE_MS_STRINGTABLE_RESIZE
 #endif
 
+#if defined(DUK_OPT_GC_TORTURE)
+#define DUK_USE_GC_TORTURE
+#endif
+
 /*
  *  Error handling options
  */
