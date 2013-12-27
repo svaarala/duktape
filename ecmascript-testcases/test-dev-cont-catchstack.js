@@ -3,7 +3,7 @@
  */
 
 /*===
-Error
+RangeError
 true
 ===*/
 
@@ -43,7 +43,7 @@ try {
 
 /*===
 6765
-===*
+===*/
 
 /* Test that we can continue normally.  Just a simple recursive call test here. */
 
