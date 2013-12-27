@@ -34,13 +34,16 @@ joining
 1000000
 ===*/
 
-/* This was broken at some point: joining happened through the valstack whose
- * size topped out for large joins.
+/* This was broken at some point: joining happened naively through the
+ * valstack whose size topped out for large joins.
  */
 
 tmp = [];
 
-/* FIXME: why is this so slow now? */
+/* The 'tmp' array build becomes sparse (array part abandoned) so this is
+ * very memory and CPU intensive now.  It shouldn't affect the join test
+ * though.
+ */
 
 print('building');
 for (i = 1000000; i; i -= 1) {  // funny syntax; current version does not support comparisons yet
