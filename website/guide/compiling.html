@@ -64,6 +64,10 @@ The table below summarizes the available options (in no particular order):</p>
     mark-and-sweep collections will be more frequent and thus more expensive.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_GC_TORTURE</td>
+<td>Development time option: force full mark-and-sweep on every allocation to
+    stress test memory management.</td>
+</tr>
 <td class="definename">DUK_OPT_NO_AUGMENT_ERRORS</td>
 <td>Don't augment Ecmascript error objects with custom fields like
     <code>fileName</code>, <code>lineNumber</code>, and traceback data.
