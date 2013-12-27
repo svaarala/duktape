@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: integer constants in preprocessor macros - document
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-27 22:43:14.931078 Z
+references: []
+
+id: bd48dc6450f6e9b823aa3c7c30b7700cb9d58bdd
+log_events: 
+- - 2013-12-27 22:43:15.095882 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
