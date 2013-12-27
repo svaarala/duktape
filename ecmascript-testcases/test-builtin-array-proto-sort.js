@@ -2617,10 +2617,6 @@ inherited
 1,2,3,4
 true true true true
 3 4
-4 ,,4,1
-1,4,nonexistent,nonexistent
-1,4,4,
-true true false false
 ===*/
 
 /* Behavior for inherited indices within the valid length range is implementation
@@ -2628,7 +2624,7 @@ true true false false
  *
  *   - a new property will be created into the inherited position if necessary
  *   - a [[Delete]] to the inherited position will be done but will be ineffective
- *     (the inherited property won't be deletd).
+ *     (the inherited property won't be deleted).
  */
 
 print('inherited');
@@ -2648,16 +2644,23 @@ function inheritedTest() {
     print(obj.hasOwnProperty(0), obj.hasOwnProperty(1), obj.hasOwnProperty(2), obj.hasOwnProperty(3));
     print(obj[2], Array.prototype[2]);
 
-    // attempt to delete '2' will fail silently (as [[Delete]] only
+    // Attempt to delete '2' will fail silently (as [[Delete]] only
     // deletes own properties and does not cause an error for a
-    // non-existent property even with Throw flag set)
+    // non-existent property even with Throw flag set).
+    //
+    // The sort result is not well specified.  Index '2' may either be
+    // non-existent (inherited '4') or '4' (own property) at the end
+    // (at least, perhaps something else too).  The test is now disabled.
+    //
 
+/*
     obj = [];
     obj[3] = '1';
     print(obj.length, obj);
     test(obj);  // 1,4,nonexistent,nonexistent because test() only prints own properties
     print(obj);
     print(obj.hasOwnProperty(0), obj.hasOwnProperty(1), obj.hasOwnProperty(2), obj.hasOwnProperty(3));
+*/
 
     delete Array.prototype['2'];
 }
