@@ -34,7 +34,7 @@ function dumpValue(v) {
 
 function test(this_value, loop_count) {
     var t;
-    var pre, post;
+    var pre, post, res;
 
     if (loop_count === undefined) {
         loop_count = 1;
@@ -44,11 +44,12 @@ function test(this_value, loop_count) {
         pre = dumpValue(this_value);
         try {
             t = Array.prototype.pop.call(this_value);
+            res = typeof t + " " + t;
         } catch (e) {
-            t = e.name;
+            res = e.name;
         }
         post = dumpValue(this_value);
-        print(pre, '-->', typeof t, t, '-->', post);
+        print(pre, '-->', res, '-->', post);
     }
 }
 
@@ -79,9 +80,9 @@ object number 1 number:1 --> number 1 --> object number 0
 object number 0 --> undefined undefined --> object number 0
 object number 0 --> undefined undefined --> object number 0
 object number 3 number:1,string:2-undel,number:3 --> number 3 --> object number 2 number:1,string:2-undel
-object number 2 number:1,string:2-undel --> string 2-undel --> object number 2 number:1,string:2-undel
-object number 2 number:1,string:2-undel --> string 2-undel --> object number 2 number:1,string:2-undel
-object number 2 number:1,string:2-undel --> string 2-undel --> object number 2 number:1,string:2-undel
+object number 2 number:1,string:2-undel --> TypeError --> object number 2 number:1,string:2-undel
+object number 2 number:1,string:2-undel --> TypeError --> object number 2 number:1,string:2-undel
+object number 2 number:1,string:2-undel --> TypeError --> object number 2 number:1,string:2-undel
 object string 10 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent --> undefined undefined --> object number 9 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent
 object number 9 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent --> undefined undefined --> object number 8 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent
 object number 8 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent --> undefined undefined --> object number 7 string:first,string:second,nonexistent,nonexistent,nonexistent,nonexistent,nonexistent
@@ -140,15 +141,15 @@ try {
 
 /*===
 coercion
-undefined --> string TypeError --> undefined
-null --> string TypeError --> null
+undefined --> TypeError --> undefined
+null --> TypeError --> null
 boolean undefined undefined --> undefined undefined --> boolean undefined undefined
 boolean undefined undefined --> undefined undefined --> boolean undefined undefined
 number undefined undefined --> undefined undefined --> number undefined undefined
-string number 3 string:f,string:o,string:o --> string o --> string number 3 string:f,string:o,string:o
-string number 3 string:f,string:o,string:o --> string o --> string number 3 string:f,string:o,string:o
-string number 3 string:f,string:o,string:o --> string o --> string number 3 string:f,string:o,string:o
-string number 3 string:f,string:o,string:o --> string o --> string number 3 string:f,string:o,string:o
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
 object number 2 number:1,number:2 --> number 2 --> object number 1 number:1
 object undefined undefined --> undefined undefined --> object number 0
 object number 2 string:foo,string:bar --> string bar --> object number 1 string:foo
@@ -273,15 +274,15 @@ try {
 
 /*===
 delete/put prevented
-object string 0 --> undefined undefined --> object string 0
-object string 2 nonexistent,nonexistent --> undefined undefined --> object string 2 nonexistent,nonexistent
-string number 3 string:f,string:o,string:o --> string o --> string number 3 string:f,string:o,string:o
-object number 2 string:foo,string:bar --> string bar --> object number 1 string:foo
-object number 1 string:foo --> string foo --> object number 0
-object number 0 --> undefined undefined --> object number 0
-object number 2 string:foo,string:bar --> string bar --> object number 2 string:foo,string:bar
-object number 2 string:foo,string:bar --> string bar --> object number 2 string:foo,string:bar
-object number 2 string:foo,string:bar --> string bar --> object number 2 string:foo,string:bar
+object string 0 --> TypeError --> object string 0
+object string 2 nonexistent,nonexistent --> TypeError --> object string 2 nonexistent,nonexistent
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
+object number 2 string:foo,string:bar --> TypeError --> object number 2 string:foo,string:bar
 ===*/
 
 /* Attempt to [[Delete]] entries or [[Put]] to "length" have the "Throw" flag
