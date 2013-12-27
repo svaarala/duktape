@@ -15,20 +15,25 @@
 /* FIXME: unimplemented */
 
 void *duk_torture_alloc_function(void *udata, size_t size) {
-	DUK_DDDPRINT("torture alloc function: %d", size);
+	void *res;
 	DUK_UNREF(udata);
-	return malloc(size);
+	res = malloc(size);
+	DUK_DDDPRINT("torture alloc function: %d -> %p",
+	             (int) size, (void *) res);
+	return res;
 }
 
 void *duk_torture_realloc_function(void *udata, void *ptr, size_t newsize) {
-	DUK_DDDPRINT("torture realloc function: %p %d", ptr, newsize);
+	void *res;
 	DUK_UNREF(udata);
-	return realloc(ptr, newsize);
+	res = realloc(ptr, newsize);
+	DUK_DDDPRINT("torture realloc function: %p %d -> %p", 
+	             (void *) ptr, (int) newsize, (void *) res);
+	return res;
 }
 
 void duk_torture_free_function(void *udata, void *ptr) {
-	DUK_DDDPRINT("torture free function: %p", ptr);
+	DUK_DDDPRINT("torture free function: %p", (void *) ptr);
 	DUK_UNREF(udata);
 	free(ptr);
 }
-

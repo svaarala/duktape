@@ -11,7 +11,8 @@ void *duk_default_alloc_function(void *udata, size_t size) {
 	void *res;
 	DUK_UNREF(udata);
 	res = malloc(size);
-	DUK_DDDPRINT("default alloc function: %d -> %p", size, res);
+	DUK_DDDPRINT("default alloc function: %d -> %p",
+	             (int) size, (void *) res);
 	return res;
 }
 
@@ -19,14 +20,13 @@ void *duk_default_realloc_function(void *udata, void *ptr, size_t newsize) {
 	void *res;
 	DUK_UNREF(udata);
 	res = realloc(ptr, newsize);
-	DUK_DDDPRINT("default realloc function: %p %d -> %p", ptr, newsize, res);
+	DUK_DDDPRINT("default realloc function: %p %d -> %p", 
+	             (void *) ptr, (int) newsize, (void *) res);
 	return res;
 }
 
 void duk_default_free_function(void *udata, void *ptr) {
-	DUK_DDDPRINT("default free function: %p", ptr);
+	DUK_DDDPRINT("default free function: %p", (void *) ptr);
 	DUK_UNREF(udata);
 	free(ptr);
 }
-
-
