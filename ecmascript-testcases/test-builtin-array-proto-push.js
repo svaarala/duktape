@@ -37,16 +37,17 @@ function dumpValue(v) {
 
 function test(this_value, args) {
     var t;
-    var pre, post;
+    var pre, post, res;
 
     pre = dumpValue(this_value);
     try {
         t = Array.prototype.push.apply(this_value, args);
+        res = typeof t + " " + t;
     } catch (e) {
-        t = e.name;
+        res = e.name;
     }
     post = dumpValue(this_value);
-    print(pre, '-->', typeof t, t, '-->', post);
+    print(pre, '-->', res, '-->', post);
 }
 
 /*===
@@ -66,8 +67,8 @@ length setter 8
 length getter
 object number 3 nonexistent,nonexistent,nonexistent --> number 8 --> object number 8 nonexistent,nonexistent,nonexistent,number:1,number:2,number:3,number:4,number:5
 8
-object number 1 string:foo --> number 6 --> object number 6 string:foo,number:1,number:2,string:baz,number:4,number:5
-object number 1 string:foo --> number 2 --> object number 2 string:foo,string:bar
+object number 1 string:foo --> TypeError --> object number 1 string:foo
+object number 1 string:foo --> TypeError --> object number 1 string:foo
 3 setter 3
 3 getter
 object number 1 string:foo --> number 6 --> object number 6 string:foo,number:1,number:2,string:setter-3,number:4,number:5
@@ -179,12 +180,12 @@ try {
 
 /*===
 coercion
-undefined --> string TypeError --> undefined
-null --> string TypeError --> null
+undefined --> TypeError --> undefined
+null --> TypeError --> null
 boolean undefined undefined --> number 0 --> boolean undefined undefined
 boolean undefined undefined --> number 0 --> boolean undefined undefined
 number undefined undefined --> number 0 --> number undefined undefined
-string number 3 string:f,string:o,string:o --> number 3 --> string number 3 string:f,string:o,string:o
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
 object number 2 number:1,number:2 --> number 2 --> object number 2 number:1,number:2
 object undefined undefined --> number 0 --> object number 0
 object number 2 string:foo,string:bar --> number 2 --> object number 2 string:foo,string:bar
@@ -214,8 +215,8 @@ try {
 
 /*===
 non-extensible
-object number 3 number:1,number:2,number:3 --> number 4 --> object number 4 number:1,number:2,number:3,nonexistent
-object number 3 string:foo,string:bar,string:quux --> number 4 --> object number 4 string:foo,string:bar,string:quux,nonexistent
+object number 3 number:1,number:2,number:3 --> TypeError --> object number 3 number:1,number:2,number:3
+object number 3 string:foo,string:bar,string:quux --> TypeError --> object number 3 string:foo,string:bar,string:quux
 ===*/
 
 print('non-extensible');
