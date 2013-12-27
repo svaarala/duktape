@@ -2487,7 +2487,6 @@ length value=2 writable=true enumerable=false configurable=false
 1 value=bar writable=true enumerable=false configurable=false
 length value=2 writable=true enumerable=false configurable=false
 TypeError
-0 value=bar writable=true enumerable=true configurable=true
 1 value=bar writable=true enumerable=false configurable=false
 length value=2 writable=true enumerable=false configurable=false
 ===*/
@@ -2537,8 +2536,8 @@ function attributeTest() {
     //
     // The final state of 'obj' is implementation defined: the specification doesn't
     // mandate whether or not the [[Put]] for '0' should precede the [[Delete]] for '1'.
-    // The current implementation will first [[Put]] and then [[Delete]], so we can
-    // test for the result reliably.
+    // The value '0' can either be non-existent or be 'bar' ([[Put]] before [[Delete]]),
+    // so we don't print '0' in the test.
 
     obj = [];
     Object.defineProperties(obj, {
@@ -2546,7 +2545,7 @@ function attributeTest() {
     });
     printDesc(obj, '0'); printDesc(obj, '1'); printDesc(obj, 'length');
     test(obj, undefined, true);
-    printDesc(obj, '0'); printDesc(obj, '1'); printDesc(obj, 'length');
+    printDesc(obj, '1'); printDesc(obj, 'length');
 }
 
 try {
