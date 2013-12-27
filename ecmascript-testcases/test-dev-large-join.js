@@ -39,11 +39,7 @@ joining
  */
 
 tmp = [];
-
-/* The 'tmp' array build becomes sparse (array part abandoned) so this is
- * very memory and CPU intensive now.  It shouldn't affect the join test
- * though.
- */
+var i;
 
 print('building');
 for (i = 1000000; i; i -= 1) {  // funny syntax; current version does not support comparisons yet
