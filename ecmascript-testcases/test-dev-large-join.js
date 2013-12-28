@@ -43,9 +43,10 @@ ok
 tmp = [];
 var i;
 var res;
+var limit = 1e6;
 
 print('building');
-for (i = 0; i < 1000000; i++) {
+for (i = 0; i < limit; i++) {
 	tmp[tmp.length] = String.fromCharCode(i % 65536);
 }
 print(tmp.length);
@@ -55,7 +56,7 @@ res = tmp.join('');
 print(res.length);
 
 print('checking');
-for (i = 0; i < 1000000; i++) {
+for (i = 0; i < limit; i++) {
     if (res.charCodeAt(i) !== (i % 65536)) {
         throw new Error('invalid char at offset ' + i);
     }
