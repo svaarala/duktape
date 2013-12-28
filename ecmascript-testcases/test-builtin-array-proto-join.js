@@ -212,3 +212,57 @@ try {
     print(e);
 }
 
+/*===
+join size test
+empty sep ok
+comma sep ok
+===*/
+
+/* The join() implementation performs intermediate joins to work around
+ * value stack limits.  Test that joins work correctly at least to 10000
+ * elements.
+ */
+
+print('join size test');
+
+function joinSizeTest(joinChar) {
+    var i, j, sz;
+    var arr;
+    var expect, joined;
+    var ch;
+
+    // The mid-join limit is 4096 now, test around the multiples.
+    var sizes = [ 0, 1, 2, 4094, 4095, 4096, 4097, 4098, 8089, 8090, 8091, 8092, 8093, 8094 ];
+
+    for (i = 0; i <= sizes.length; i++) {
+        sz = sizes[i];
+        arr = [];
+        expect = '';
+        for (j = 0; j < sz; j++) {
+            ch = String.fromCharCode(0x41 + (j % 26));
+            arr[j] = ch;
+            if (j > 0) { expect += joinChar; }
+            expect += ch;
+        }
+
+        joined = arr.join(joinChar);
+        if (expect !== joined) {
+            print('FAILED');
+            print(sz);
+            print(expect);
+            print(joined);
+            throw new Error('join size test failed for size ' + sz);
+        }
+    }
+
+}
+
+try {
+    joinSizeTest('');
+    print('empty sep ok');
+    joinSizeTest(',');
+    print('comma sep ok');
+} catch (e) {
+    print(e);
+}
+
