@@ -15,6 +15,11 @@
 
 #include "duk_internal.h"
 
+/* Perform an intermediate join when this many elements have been pushed
+ * on the value stack.
+ */
+#define  DUK_ARRAY_MID_JOIN_LIMIT  4096
+
 /* Shared entry code for many Array built-ins.  Note that length is left
  * on stack (it could be popped, but that's not necessary).
  */
@@ -175,19 +180,22 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
 
 /*
  *  join(), toLocaleString()
- */
-
-/* Note: checking valstack is necessary, but only in the per-element loop */
-
-/* FIXME: This placeholder does not work well for a large number of elements.
- * Provide proper hierarchical concat/join primitives in the API and use
- * them here.
+ *
+ *  Note: checking valstack is necessary, but only in the per-element loop.
+ *
+ *  Note: the trivial approach of pushing all the elements on the value stack
+ *  and then calling duk_join() fails when the array contains a large number
+ *  of elements.  This problem can't be offloaded to duk_join() because the
+ *  elements to join must be handled here and have special handling.  Current
+ *  approach is to do intermediate joins with very large number of elements.
+ *  There is no fancy handling; the prefix gets re-joined multiple times.
  */
 
 int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
-	duk_uint32_t len;
-	duk_uint32_t i;
-	int to_locale_string = duk_get_magic(ctx);
+	duk_uint32_t len, count;
+	duk_uint32_t idx;
+	duk_small_int_t to_locale_string = duk_get_magic(ctx);
+	duk_int_t valstack_required;
 
 	/* For join(), nargs is 1.  For toLocaleString(), nargs is 0 and
 	 * setting the top essentially pushes an undefined to the stack,
@@ -205,15 +213,37 @@ int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
 
 	/* [ sep ToObject(this) len ] */
 
-	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d", duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len);
+	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d",
+	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), (int) len);
 
-	duk_require_stack(ctx, len + 1);
+	valstack_required = (len >= DUK_ARRAY_MID_JOIN_LIMIT ?
+	                     DUK_ARRAY_MID_JOIN_LIMIT : len);
+	valstack_required++;
+	duk_require_stack(ctx, valstack_required);
+
 	duk_dup(ctx, 0);
 
 	/* [ sep ToObject(this) len sep ] */
 
-	for (i = 0; i < len; i++) {
-		duk_get_prop_index(ctx, 1, i);
+	count = 0;
+	idx = 0;
+	for (;;) {
+		if (count >= DUK_ARRAY_MID_JOIN_LIMIT ||   /* intermediate join to avoid valstack overflow */
+		    idx >= len) { /* end of loop (careful with len==0) */
+			/* [ sep ToObject(this) len sep str0 ... str(count-1) ] */
+			DUK_DDDPRINT("mid/final join, count=%d, idx=%d, len=%d",
+			             (int) count, (int) idx, (int) len);
+			duk_join(ctx, count);  /* -> [ sep ToObject(this) len str ] */
+			duk_dup(ctx, 0);       /* -> [ sep ToObject(this) len str sep ] */
+			duk_insert(ctx, -2);   /* -> [ sep ToObject(this) len sep str ] */
+			count = 1;
+		}
+		if (idx >= len) {
+			/* if true, the stack already contains the final result */
+			break;
+		}
+
+		duk_get_prop_index(ctx, 1, idx);
 		if (duk_is_null_or_undefined(ctx, -1)) {
 			duk_pop(ctx);
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
@@ -228,11 +258,13 @@ int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
 				duk_to_string(ctx, -1);
 			}
 		}
+
+		count++;
+		idx++;
 	}
 
-	/* [ sep ToObject(this) len sep str0 ... str(len-1) ] */
+	/* [ sep ToObject(this) len sep result ] */
 
-	duk_join(ctx, len);
 	return 1;
 }
 
