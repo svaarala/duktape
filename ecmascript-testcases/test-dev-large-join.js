@@ -25,13 +25,15 @@ tmp = [
 ];
 
 print(tmp.length);
-
 print(tmp.join(''));
 
 /*===
 building
+1000000
 joining
 1000000
+checking
+ok
 ===*/
 
 /* This was broken at some point: joining happened naively through the
@@ -40,12 +42,23 @@ joining
 
 tmp = [];
 var i;
+var res;
 
 print('building');
-for (i = 1000000; i; i -= 1) {  // funny syntax; current version does not support comparisons yet
-	tmp[tmp.length] = 'x';
+for (i = 0; i < 1000000; i++) {
+	tmp[tmp.length] = String.fromCharCode(i % 65536);
 }
+print(tmp.length);
 
 print('joining');
-print(tmp.join('').length);
+res = tmp.join('');
+print(res.length);
 
+print('checking');
+for (i = 0; i < 1000000; i++) {
+    if (res.charCodeAt(i) !== (i % 65536)) {
+        throw new Error('invalid char at offset ' + i);
+    }
+}
+
+print('ok'); 
