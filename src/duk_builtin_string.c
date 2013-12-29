@@ -300,7 +300,7 @@ duk_ret duk_builtin_string_prototype_caseconv_shared(duk_context *ctx) {
  *  indexOf() and lastIndexOf()
  */
 
-static duk_ret string_indexof_helper(duk_context *ctx, int is_lastindexof) {
+duk_ret duk_builtin_string_prototype_indexof_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_this;
 	duk_hstring *h_search;
@@ -312,6 +312,7 @@ static duk_ret string_indexof_helper(duk_context *ctx, int is_lastindexof) {
 	duk_size_t q_blen;  /* FIXME: type inconsistency (clen_this is duk_int_t) */
 	duk_uint8_t firstbyte;
 	duk_uint8_t t;
+	duk_small_int_t is_lastindexof = duk_get_magic(ctx);  /* 0=indexOf, 1=lastIndexOf */
 
 	h_this = duk_push_this_coercible_to_string(ctx);
 	DUK_ASSERT(h_this != NULL);
@@ -391,15 +392,6 @@ static duk_ret string_indexof_helper(duk_context *ctx, int is_lastindexof) {
 	/* Not found.  Empty string case is handled specially above. */
 	duk_push_int(ctx, -1);
 	return 1;
-}
-
-duk_ret duk_builtin_string_prototype_index_of(duk_context *ctx) {
-	return string_indexof_helper(ctx, 0 /*is_lastindexof*/);
-}
-
-duk_ret duk_builtin_string_prototype_last_index_of(duk_context *ctx) {
-	/* -1 is used because the generated x86 load is shorter than for 1 */
-	return string_indexof_helper(ctx, -1 /*is_lastindexof*/);
 }
 
 /*

@@ -492,8 +492,8 @@ bi_string_prototype = {
 		{ 'name': 'charAt',			'native': 'duk_builtin_string_prototype_char_at',		'length': 1 },
 		{ 'name': 'charCodeAt',			'native': 'duk_builtin_string_prototype_char_code_at',		'length': 1 },
 		{ 'name': 'concat',			'native': 'duk_builtin_string_prototype_concat',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_builtin_string_prototype_index_of',		'length': 1,	'nargs': 2 },
-		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_string_prototype_last_index_of',		'length': 1,	'nargs': 2 },
+		{ 'name': 'indexOf',			'native': 'duk_builtin_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> indexOf
+		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1 -> lastIndexOf
 		{ 'name': 'localeCompare',		'native': 'duk_builtin_string_prototype_locale_compare',	'length': 1 },
 		{ 'name': 'match',			'native': 'duk_builtin_string_prototype_match',			'length': 1 },
 		{ 'name': 'replace',			'native': 'duk_builtin_string_prototype_replace',		'length': 2 },
