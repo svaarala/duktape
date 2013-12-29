@@ -26,7 +26,7 @@
 static unsigned int push_this_obj_len_u32(duk_context *ctx) {
 	unsigned int len;
 
-	duk_push_this_coercible_to_object(ctx);
+	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(ctx, -1);
 
@@ -91,7 +91,7 @@ int duk_builtin_array_constructor_is_array(duk_context *ctx) {
  */
 
 int duk_builtin_array_prototype_to_string(duk_context *ctx) {
-	duk_push_this_coercible_to_object(ctx);
+	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_JOIN);
 
 	/* [ ... this func ] */
@@ -138,7 +138,7 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
 	 * (as the element is dup()'d anyway).
 	 */
 
-	duk_push_this_coercible_to_object(ctx);
+	(void) duk_push_this_coercible_to_object(ctx);
 	duk_insert(ctx, 0);
 	n = duk_get_top(ctx);
 	duk_push_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */

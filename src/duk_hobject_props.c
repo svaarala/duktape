@@ -4494,8 +4494,7 @@ int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags)
 	h_v = duk_to_hstring(ctx, 0);
 	DUK_ASSERT(h_v != NULL);
 
-	duk_push_this_coercible_to_object(ctx);
-	h_obj = duk_get_hobject(ctx, 1);
+	h_obj = duk_push_this_coercible_to_object(ctx);
 	DUK_ASSERT(h_obj != NULL);
 
 	ret = get_own_property_desc(thr, h_obj, h_v, &desc, 0 /*push_value*/);
