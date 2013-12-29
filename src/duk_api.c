@@ -2242,6 +2242,10 @@ void duk_push_int(duk_context *ctx, int val) {
 	duk_push_number(ctx, (double) val);
 }
 
+void duk_push_u32(duk_context *ctx, duk_uint32_t val) {
+	duk_push_number(ctx, (double) val);
+}
+
 void duk_push_nan(duk_context *ctx) {
 	duk_push_number(ctx, DUK_DOUBLE_NAN);
 }
@@ -2477,14 +2481,22 @@ void duk_push_this_check_object_coercible(duk_context *ctx) {
 	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
 }
 
-void duk_push_this_coercible_to_object(duk_context *ctx) {
+duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
+	duk_hobject *h;
 	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
 	                      PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
+	h = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	return h;
 }
 
-void duk_push_this_coercible_to_string(duk_context *ctx) {
+duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
+	duk_hstring *h;
 	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
 	                      PUSH_THIS_FLAG_TO_STRING /*flags*/);
+	h = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	return h;
 }
 
 void duk_push_current_function(duk_context *ctx) {

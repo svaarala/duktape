@@ -67,14 +67,20 @@ extern "C" {
  *  Typedefs; avoid all dependencies on internal types
  *
  *  (duk_context *) currently maps directly to internal type (duk_hthread *).
+ *  Internal typedefs have a '_t' suffix, exposed typedefs don't.  This is to
+ *  reduce clutter in user code.
  */
+
+/* FIXME: proper detection */
+typedef int duk_idx;
+typedef int duk_ret;
 
 struct duk_memory_functions;
 
 typedef void duk_context;
 typedef struct duk_memory_functions duk_memory_functions;
 
-typedef int (*duk_c_function)(duk_context *ctx);
+typedef duk_ret (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, size_t size);
 typedef void *(*duk_realloc_function) (void *udata, void *ptr, size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
