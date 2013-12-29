@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up string builtin
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-29 18:54:32.753885 Z
+references: []
+
+id: feedc3ddc2f06ef93252ca30b18a26cc97f37ee3
+log_events: 
+- - 2013-12-29 18:54:32.901832 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

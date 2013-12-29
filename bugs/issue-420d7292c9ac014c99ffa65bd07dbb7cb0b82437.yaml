@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: comment on portability without prototypes
+desc: |-
+  For example, internal code doesn't always cast arguments to proper types but relies
+  on compiler to do it (e.g. integer constant vs. duk_idx argument type).
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-29 11:14:51.892046 Z
+references: []
+
+id: 420d7292c9ac014c99ffa65bd07dbb7cb0b82437
+log_events: 
+- - 2013-12-29 11:14:52.048982 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

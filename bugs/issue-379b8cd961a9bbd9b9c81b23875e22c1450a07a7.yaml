@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: decide on types for e.g. DUK_HSTRING_GET_CHARLEN
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-29 11:33:45.071392 Z
+references: []
+
+id: 379b8cd961a9bbd9b9c81b23875e22c1450a07a7
+log_events: 
+- - 2013-12-29 11:33:45.274467 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

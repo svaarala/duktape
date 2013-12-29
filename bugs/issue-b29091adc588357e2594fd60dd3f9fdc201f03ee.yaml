@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: discuss user code typing for portability
+desc: |-
+  For example: if you're not targeting 16-bit platforms, you can use 'int' type
+  for stack indices etc.
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-29 11:12:00.429173 Z
+references: []
+
+id: b29091adc588357e2594fd60dd3f9fdc201f03ee
+log_events: 
+- - 2013-12-29 11:12:00.632472 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add mutation tests for all loop control structures
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-28 10:20:01.712152 Z
+references: []
+
+id: c42363566cbffe36d97866f5ae2d186131c0603d
+log_events: 
+- - 2013-12-28 10:20:01.900994 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

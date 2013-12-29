@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: move codepoint type to public header (or add a public codepoint type)
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :in_progress
+disposition: 
+creation_time: 2013-12-29 11:11:31.097365 Z
+references: []
+
+id: ffdc2eb81a3453d70c7324b8cd44a9cb52d9079e
+log_events: 
+- - 2013-12-29 11:11:31.276464 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2013-12-29 19:43:09.212227 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""

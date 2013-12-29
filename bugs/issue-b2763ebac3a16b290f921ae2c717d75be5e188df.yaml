@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_get_prop_stridx_boolean helper
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-29 17:44:11.746531 Z
+references: []
+
+id: b2763ebac3a16b290f921ae2c717d75be5e188df
+log_events: 
+- - 2013-12-29 17:44:11.943399 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
