@@ -1159,7 +1159,7 @@ duk_ret duk_builtin_string_prototype_match(duk_context *ctx) {
 duk_ret duk_builtin_string_prototype_concat(duk_context *ctx) {
 	/* duk_concat() coerces arguments with ToString() in correct order */
 	(void) duk_push_this_coercible_to_string(ctx);
-	duk_insert(ctx, 0);  /* FIXME: this is relatively expensive */
+	duk_insert(ctx, 0);  /* this is relatively expensive */
 	duk_concat(ctx, duk_get_top(ctx));
 	return 1;
 }
