@@ -488,7 +488,7 @@ bi_string_prototype = {
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_builtin_string_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_string_prototype_value_of',		'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_builtin_string_prototype_to_string',		'length': 0 },  # share native function, behavior is identical
 		{ 'name': 'charAt',			'native': 'duk_builtin_string_prototype_char_at',		'length': 1 },
 		{ 'name': 'charCodeAt',			'native': 'duk_builtin_string_prototype_char_code_at',		'length': 1 },
 		{ 'name': 'concat',			'native': 'duk_builtin_string_prototype_concat',		'length': 1,	'varargs': True },
