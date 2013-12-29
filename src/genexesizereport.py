@@ -101,6 +101,13 @@ def main():
 	funcs = objdump(sys.argv[1])
 	filterFuncs(funcs)
 
+	funcs_keys = funcs.keys()
+	funcs_keys.sort()
+	combined_size = 0
+	for k in funcs_keys:
+		fun = funcs[k]
+		combined_size += fun['length']
+
 	f = sys.stdout
 	f.write('<html>')
 	f.write('<head>')
@@ -117,6 +124,12 @@ tr:nth-child(2n+1) {
 """)
 	f.write('</head>')
 	f.write('<body>')
+
+	f.write('<h1>Summary</h1>')
+	f.write('<table>')
+	f.write('<tr><td>Entries</td><td>%d</td></tr>' % len(funcs_keys))
+	f.write('<tr><td>Combined size</td><td>%d</td></tr>' % combined_size)
+	f.write('</table>')
 
 	f.write('<h1>Sorted by function name</h1>')
 	f.write('<table>')
