@@ -501,10 +501,10 @@ bi_string_prototype = {
 		{ 'name': 'slice',			'native': 'duk_builtin_string_prototype_slice',			'length': 2 },
 		{ 'name': 'split',			'native': 'duk_builtin_string_prototype_split',			'length': 2 },
 		{ 'name': 'substring',			'native': 'duk_builtin_string_prototype_substring',		'length': 2 },
-		{ 'name': 'toLowerCase',		'native': 'duk_builtin_string_prototype_to_lower_case',		'length': 0 },
-		{ 'name': 'toLocaleLowerCase',		'native': 'duk_builtin_string_prototype_to_locale_lower_case',	'length': 0 },
-		{ 'name': 'toUpperCase',		'native': 'duk_builtin_string_prototype_to_upper_case',		'length': 0 },
-		{ 'name': 'toLocaleUpperCase',		'native': 'duk_builtin_string_prototype_to_locale_upper_case',	'length': 0 },
+		{ 'name': 'toLowerCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase
+		{ 'name': 'toLocaleLowerCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase; no locale specific conversion now
+		{ 'name': 'toUpperCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase
+		{ 'name': 'toLocaleUpperCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase; no locale specific conversion now
 		{ 'name': 'trim',			'native': 'duk_builtin_string_prototype_trim',			'length': 0 },
 
 		# Non-standard extension: E5 Section B.2.3

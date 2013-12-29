@@ -155,10 +155,7 @@ int duk_builtin_string_prototype_search(duk_context *ctx);
 int duk_builtin_string_prototype_slice(duk_context *ctx);
 int duk_builtin_string_prototype_split(duk_context *ctx);
 int duk_builtin_string_prototype_substring(duk_context *ctx);
-int duk_builtin_string_prototype_to_lower_case(duk_context *ctx);
-int duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx);
-int duk_builtin_string_prototype_to_upper_case(duk_context *ctx);
-int duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx);
+int duk_builtin_string_prototype_caseconv_shared(duk_context *ctx);
 int duk_builtin_string_prototype_trim(duk_context *ctx);
 #if 1  /* FIXME: section B */
 int duk_builtin_string_prototype_substr(duk_context *ctx);

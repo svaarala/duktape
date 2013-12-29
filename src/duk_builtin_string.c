@@ -287,32 +287,13 @@ duk_ret duk_builtin_string_prototype_slice(duk_context *ctx) {
  *  Case conversion
  */
 
-static duk_ret caseconv_helper(duk_context *ctx, duk_small_int_t uppercase) {
+duk_ret duk_builtin_string_prototype_caseconv_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_small_int_t uppercase = duk_get_magic(ctx);
 
 	(void) duk_push_this_coercible_to_string(ctx);
 	duk_unicode_case_convert_string(thr, uppercase);
 	return 1;
-}
-
-duk_ret duk_builtin_string_prototype_to_lower_case(duk_context *ctx) {
-	return caseconv_helper(ctx, 0 /*uppercase*/);
-}
-
-duk_ret duk_builtin_string_prototype_to_upper_case(duk_context *ctx) {
-	return caseconv_helper(ctx, 1 /*uppercase*/);
-}
-
-duk_ret duk_builtin_string_prototype_to_locale_lower_case(duk_context *ctx) {
-	/* Currently no locale specific case conversion */
-	/* FIXME: use same native function */
-	return duk_builtin_string_prototype_to_lower_case(ctx);
-}
-
-duk_ret duk_builtin_string_prototype_to_locale_upper_case(duk_context *ctx) {
-	/* Currently no locale specific case conversion */
-	/* FIXME: use same native function */
-	return duk_builtin_string_prototype_to_upper_case(ctx);
 }
 
 /*
