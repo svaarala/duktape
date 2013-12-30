@@ -221,7 +221,6 @@ int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
 	char *buffer = NULL;
 	int retval = 0;
-	int got_eof = 0;
 	int rc;
 
 	duk_eval_string(ctx, "print('((o) Duktape [no readline]'); print(__duk__.build);");
@@ -244,7 +243,6 @@ int handle_interactive(duk_context *ctx) {
 		for (;;) {
 			int c = fgetc(stdin);
 			if (c == EOF) {
-				got_eof = 1;
 				break;
 			} else if (c == '\n') {
 				break;
@@ -380,6 +378,8 @@ int main(int argc, char *argv[]) {
 
 #ifndef NO_RLIMIT
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
+#else
+	(void) memlimit_high;  /* suppress warning */
 #endif
 
 	ctx = duk_create_heap_default();
