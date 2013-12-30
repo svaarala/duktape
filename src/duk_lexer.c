@@ -1012,8 +1012,8 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			APPENDBUFFER(lex_ctx, x);
 			ADVANCE(lex_ctx, 1);
 			int_only = 1;
-		}
 #endif
+		}
 
 		st = 0;
 		for (;;) {
