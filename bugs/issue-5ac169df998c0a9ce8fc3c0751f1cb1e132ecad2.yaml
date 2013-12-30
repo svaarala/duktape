@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: go through 'strings duk' and minimize string data
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2013-12-30 22:08:53.977632 Z
+references: []
+
+id: 5ac169df998c0a9ce8fc3c0751f1cb1e132ecad2
+log_events: 
+- - 2013-12-30 22:08:54.134616 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
