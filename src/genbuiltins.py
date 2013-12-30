@@ -28,9 +28,6 @@
 # functions (like Object.toString).  These should be marked somehow here and
 # slots in thr->builtins should be allocated for them.
 
-# FIXME: Builtins are now introduced as variables.  They should be built on
-# the fly if profile specific built-in data needs to be supported.
-
 import os
 import sys
 import json
@@ -1073,7 +1070,7 @@ bi_json = {
 bi_type_error_thrower = {
 	'internal_prototype': 'bi_function_prototype',
 	'class': 'Function',
-	'name': 'ThrowTypeError',  # FIXME: matches V8
+	'name': 'ThrowTypeError',  # custom, matches V8
 
 	'length': 0,
 	'native': 'duk_builtin_type_error_thrower',
@@ -1650,9 +1647,6 @@ class GenBuiltins:
 
 	def processBuiltins(self):
 		# finalize built-in data
-		# FIXME: built-in data would actually need to be regenerated for each
-		# byte order / profile variant, fix later
-
 		build_new = self.build_info['build'] + '; ' + self.byte_order
 		bi_duk = self.findBuiltIn('bi_duk')['info']
 		bi_duk['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
