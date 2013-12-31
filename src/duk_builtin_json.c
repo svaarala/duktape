@@ -87,8 +87,8 @@ static int json_dec_peek(duk_json_dec_ctx *js_ctx) {
 }
 
 static int json_dec_get(duk_json_dec_ctx *js_ctx) {
-	/* FIXME: multiple EOFs will now be supplied to the caller.  This could also
-	 * be changed so that reading the second EOF would cause an error automatically.
+	/* Multiple EOFs will now be supplied to the caller.  This could also be
+	 * changed so that reading the second EOF would cause an error automatically.
 	 */
 	if (js_ctx->p >= js_ctx->p_end) {
 		return -1;
@@ -268,10 +268,8 @@ static void json_dec_number(duk_json_dec_ctx *js_ctx) {
 	js_ctx->p--;  /* safe */
 	p_start = js_ctx->p;
 
-	/* FIXME: this is an approximate parses and way too lenient
-	 * (will e.g. parse "1.2.3").  Fix when actual number parsing is
-	 * added, and ensure that the number parse can be made to obey
-	 * the JSON restrictions.
+	/* First pass parse is very lenient (e.g. allows '1.2.3') and extracts a
+	 * string for strict number parsing.
 	 */
 
 	for (;;) {
@@ -536,8 +534,8 @@ static void json_dec_value(duk_json_dec_ctx *js_ctx) {
 static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h;
-	unsigned int i;  /* FIXME: type */
-	unsigned int arr_len;  /* FIXME: type */
+	duk_uint_t i;
+	duk_uint_t arr_len;
 
 	DUK_DDDPRINT("walk: top=%d, holder=%!T, name=%!T",
 	             duk_get_top(ctx), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
@@ -1005,8 +1003,8 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 	int entry_top;
 	int idx_arr;
 	int undef;
-	unsigned int i;
-	unsigned int arr_len;  /* FIXME: type */
+	duk_uint_t i;
+	duk_uint_t arr_len;
 
 	DUK_DDDPRINT("json_enc_array: array=%!T", duk_get_tval(ctx, -1));
 
@@ -1085,7 +1083,7 @@ static int json_enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 	h = duk_get_hobject(ctx, -1);
 	if (h != NULL) {
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
-		h = duk_get_hobject(ctx, -1);  /* FIXME: duk_get_hobject_callable */
+		h = duk_get_hobject(ctx, -1);
 		if (h != NULL && DUK_HOBJECT_IS_CALLABLE(h)) {
 			DUK_DDDPRINT("value is object, has callable toJSON() -> call it");
 			duk_dup(ctx, -2);         /* -> [ ... key val toJSON val ] */
