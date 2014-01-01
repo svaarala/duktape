@@ -1115,11 +1115,34 @@ extern double duk_computed_nan;
  */
 
 #define DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_OPT_NO_REGEXP_SUPPORT)
+#undef DUK_USE_REGEXP_SUPPORT
+#endif
+
 #define DUK_USE_STRICT_UTF8_SOURCE
+#if defined(DUK_OPT_NO_STRICT_UTF8_SOURCE)
+#undef DUK_USE_STRICT_UTF8_SOURCE
+#endif
+
 #define DUK_USE_OCTAL_SUPPORT
+#if defined(DUK_OPT_NO_OCTAL_SUPPORT)
+#undef DUK_USE_OCTAL_SUPPORT
+#endif
+
 #define DUK_USE_SOURCE_NONBMP
+#if defined(DUK_OPT_NO_SOURCE_NONBMP)
+#undef DUK_USE_SOURCE_NONBMP
+#endif
+
 #define DUK_USE_BROWSER_LIKE
+#if defined(DUK_OPT_NO_BROWSER_LIKE)
+#undef DUK_USE_BROWSER_LIKE
+#endif
+
 #define DUK_USE_SECTION_B
+#if defined(DUK_OPT_NO_SECTION_B)
+#undef DUK_USE_SECTION_B
+#endif
 
 /*
  *  Deep vs. shallow stack.
