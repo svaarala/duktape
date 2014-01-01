@@ -980,5 +980,9 @@ void duk_regexp_create_instance(duk_hthread *thr) {
 
 #undef DUK_BUFLEN
 
+#else  /* DUK_USE_REGEXP_SUPPORT */
+
+/* regexp support disabled */
+
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 

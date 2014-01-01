@@ -926,5 +926,9 @@ void duk_regexp_match_force_global(duk_hthread *thr) {
 	regexp_match_helper(thr, 1 /*force_global*/);
 }
 
+#else  /* DUK_USE_REGEXP_SUPPORT */
+
+/* regexp support disabled */
+
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
