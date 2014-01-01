@@ -28,7 +28,7 @@ final internal features based on feature requests, compiler features, and
 platform features.</p>
 
 <p>The available feature options can be found in <code>duk_features.h</code>.
-The table below summarizes the available options (in no particular order):</p>
+The table below summarizes the available options, in no particular order:</p>
 
 <table>
 <thead>
@@ -92,6 +92,45 @@ The table below summarizes the available options (in no particular order):</p>
 <tr>
 <td class="definename">DUK_OPT_TRACEBACK_DEPTH</td>
 <td>Override default traceback collection depth.  The default is currently 10.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_REGEXP_SUPPORT</td>
+<td>Disable support for regular expressions.  Regexp literals are treated as a
+    <code>SyntaxError</code>, RegExp constructor and prototype functions throw
+    an error, <code>String.prototype.replace()</code> throws an error if given
+    a regexp search value, <code>String.prototype.split()</code> throws an error
+    if given a regexp separator value, <code>String.prototype.search()</code>
+    and <code>String.prototype.match()</code> throw an error unconditionally.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_STRICT_UTF8_SOURCE</td>
+<td>Disable strict UTF-8 parsing of source code.  When disabled, non-shortest
+    encodings (normally invalid UTF-8) are accepted as valid source code
+    characters.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_OCTAL_SUPPORT</td>
+<td>Disable optional octal number support (Ecmascript E5/E5.1
+    <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>).</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_SOURCE_NONBMP</td>
+<td>Disable accurate Unicode support for non-BMP characters in source code.
+    Non-BMP characters are then always accepted as identifier characters.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_BROWSER_LIKE</td>
+<td>Disable browser-like functions.  Makes <code>print()</code> and
+    <code>alert()</code> throw an error.  This option is confusing when
+    used with the Duktape command line tool, as the command like tool
+    will immediately panic.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_NO_SECTION_B</td>
+<td>Disable optional features in Ecmascript specification
+    <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>.
+    Causes <code>escape()</code>, <code>unescape()</code>, and
+    <code>String.prototype.substr()</code> to throw an error.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_FILE_IO</td>
