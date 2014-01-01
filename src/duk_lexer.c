@@ -718,7 +718,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 			advtok = ADVTOK(0, DUK_TOK_REGEXP);
 #else
-			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "regexp support not enabled");
+			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "regexp support disabled");
 #endif
 		} else if (y == '=') {
 			/* "/=" and not in regexp mode */

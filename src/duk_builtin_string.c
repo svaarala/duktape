@@ -245,6 +245,10 @@ duk_ret duk_builtin_string_prototype_substr(duk_context *ctx) {
 	duk_substring(ctx, -1, (size_t) start_pos, (size_t) end_pos);
 	return 1;
 }
+#else  /* DUK_USE_SECTION_B */
+duk_ret duk_builtin_string_prototype_substr(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
 #endif  /* DUK_USE_SECTION_B */
 
 duk_ret duk_builtin_string_prototype_slice(duk_context *ctx) {
@@ -417,13 +421,19 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_hstring *h_repl;
 	duk_hstring *h_match;
 	duk_hstring *h_search;
+#ifdef DUK_USE_REGEXP_SUPPORT
 	duk_hobject *h_re;
+#endif
 	duk_hbuffer_dynamic *h_buf;
+#ifdef DUK_USE_REGEXP_SUPPORT
 	duk_small_int_t is_regexp;
 	duk_small_int_t is_global;
+#endif
 	duk_small_int_t is_repl_func;
 	duk_uint32_t match_start_coff, match_start_boff;
+#ifdef DUK_USE_REGEXP_SUPPORT
 	duk_small_int_t match_caps;
+#endif
 	duk_uint32_t prev_match_end_boff;
 	duk_uint8_t *r_start, *r_end, *r;   /* repl string scan */
 
@@ -441,6 +451,7 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 	 * stack[3] = result buffer
 	 */
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 	h_re = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP);
 	if (h_re) {
 		/* FIXME: duk_get_prop_stridx_boolean, with index and stridx in one constant */
@@ -456,9 +467,14 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
 	} else {
+#else  /* DUK_USE_REGEXP_SUPPORT */
+	{  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 		duk_to_string(ctx, 0);
+#ifdef DUK_USE_REGEXP_SUPPORT
 		is_regexp = 0;
 		is_global = 0;
+#endif
 	}
 
 	if (duk_is_function(ctx, 1)) {
@@ -501,6 +517,7 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 
 		DUK_ASSERT_TOP(ctx, 4);
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 		if (is_regexp) {
 			duk_dup(ctx, 0);
 			duk_dup(ctx, 2);
@@ -537,11 +554,16 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 
 			match_caps = duk_get_length(ctx, -1);
 		} else {
+#else  /* DUK_USE_REGEXP_SUPPORT */
+		{  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 			duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
 			duk_uint8_t *q_start;               /* match string */
 			duk_size_t q_blen;
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 			DUK_ASSERT(!is_global);  /* single match always */
+#endif
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
@@ -562,7 +584,9 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 					duk_dup(ctx, 0);
 					h_match = duk_get_hstring(ctx, -1);
 					DUK_ASSERT(h_match != NULL);
+#ifdef DUK_USE_REGEXP_SUPPORT
 					match_caps = 0;
+#endif
 					goto found;
 				}
 
@@ -597,20 +621,24 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 		if (is_repl_func) {
 			duk_idx idx_args;
 			duk_hstring *h_repl;
-			duk_int_t idx;
 
 			/* regexp res_obj is at index 4 */
 
 			duk_dup(ctx, 1);
 			idx_args = duk_get_top(ctx);
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 			if (is_regexp) {
+				duk_int_t idx;
 				duk_require_stack(ctx, match_caps + 2);
 				for (idx = 0; idx < match_caps; idx++) {
 					/* match followed by capture(s) */
 					duk_get_prop_index(ctx, 4, idx);
 				}
 			} else {
+#else  /* DUK_USE_REGEXP_SUPPORT */
+			{  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 				/* match == search string, by definition */
 				duk_dup(ctx, 0);
 			}
@@ -628,8 +656,11 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 			r = r_start;
 
 			while (r < r_end) {
-				duk_int_t ch1, ch2, ch3;
-				duk_int_t capnum, captmp, capadv;
+				duk_int_t ch1;
+				duk_int_t ch2;
+#ifdef DUK_USE_REGEXP_SUPPORT
+				duk_int_t ch3;
+#endif
 				duk_size_t left;
 
 				ch1 = *r++;
@@ -679,9 +710,12 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 					continue;
 				}
 				default: {
+#ifdef DUK_USE_REGEXP_SUPPORT
+					duk_int_t capnum, captmp, capadv;
 					/* FIXME: optional check, match_caps is zero if no regexp,
 					 * so dollar will be interpreted literally anyway.
 					 */
+
 					if (!is_regexp) {
 						goto repl_write;
 					}
@@ -720,6 +754,9 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 					} else {
 						goto repl_write;
 					}
+#else  /* DUK_USE_REGEXP_SUPPORT */
+					goto repl_write;  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 				}  /* default case */
 				}  /* switch (ch2) */
 
@@ -728,11 +765,15 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 				duk_hbuffer_append_byte(thr, h_buf, (duk_uint8_t) (ch1 & 0xff));
 				r += ch1 >> 8;
 			}  /* while repl */
-		}
+		}  /* if (is_repl_func) */
 
 		duk_pop(ctx);  /* pop regexp res_obj or match string */
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 		if (!is_global) {
+#else
+		{  /* unconditionally; is_global==0 */
+#endif
 			break;
 		}
 	}
@@ -762,11 +803,15 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 	duk_hstring *h_sep;
 	duk_uint32_t limit;
 	duk_uint32_t arr_idx;
+#ifdef DUK_USE_REGEXP_SUPPORT
 	duk_small_int_t is_regexp;
+#endif
 	duk_small_int_t matched;  /* set to 1 if any match exists (needed for empty input special case) */
 	duk_uint32_t prev_match_end_coff, prev_match_end_boff;
 	duk_uint32_t match_start_boff, match_start_coff;
 	duk_uint32_t match_end_boff, match_end_coff;
+
+	DUK_UNREF(thr);
 
 	h_input = duk_push_this_coercible_to_string(ctx);
 	DUK_ASSERT(h_input != NULL);
@@ -798,15 +843,21 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 		duk_put_prop_index(ctx, 3, 0);
 		return 1;
 	} else if (duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
+#ifdef DUK_USE_REGEXP_SUPPORT
 		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_REGEXP_CONSTRUCTOR]);
 		duk_dup(ctx, 0);
 		duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
 		duk_replace(ctx, 0);
 		/* lastIndex is initialized to zero by new RegExp() */
 		is_regexp = 1;
+#else
+		return DUK_RET_UNSUPPORTED_ERROR;
+#endif
 	} else {
 		duk_to_string(ctx, 0);
+#ifdef DUK_USE_REGEXP_SUPPORT
 		is_regexp = 0;
+#endif
 	}
 
 	/* stack[0] = separator (string or regexp)
@@ -830,6 +881,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 
 		DUK_ASSERT_TOP(ctx, 4);
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 		if (is_regexp) {
 			duk_dup(ctx, 0);
 			duk_dup(ctx, 2);
@@ -866,6 +918,9 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 				continue;
 			}
 		} else {
+#else  /* DUK_USE_REGEXP_SUPPORT */
+		{  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 			duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
 			duk_uint8_t *q_start;               /* match string */
 			duk_size_t q_blen, q_clen;
@@ -961,6 +1016,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 			goto hit_limit;
 		}
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 		if (is_regexp) {
 			duk_size_t i, len;
 
@@ -977,6 +1033,9 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 			duk_pop(ctx);
 			/* lastIndex already set up for next match */
 		} else {
+#else  /* DUK_USE_REGEXP_SUPPORT */
+		{  /* unconditionally */
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 			/* no action */
 		}
 
@@ -1006,9 +1065,11 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
 	return 1;
 
  hit_limit:
+#ifdef DUK_USE_REGEXP_SUPPORT
 	if (is_regexp) {
 		duk_pop(ctx);
 	}
+#endif
 
 	return 1;
 }
@@ -1017,6 +1078,7 @@ int duk_builtin_string_prototype_split(duk_context *ctx) {
  *  Various
  */
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 static void to_regexp_helper(duk_context *ctx, duk_idx index, int force_new) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
@@ -1041,7 +1103,9 @@ static void to_regexp_helper(duk_context *ctx, duk_idx index, int force_new) {
 	duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
 	duk_replace(ctx, index);
 }
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 duk_ret duk_builtin_string_prototype_search(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
@@ -1080,7 +1144,13 @@ duk_ret duk_builtin_string_prototype_search(duk_context *ctx) {
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	return 1;
 }
+#else  /* DUK_USE_REGEXP_SUPPORT */
+duk_ret duk_builtin_string_prototype_search(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 
+#ifdef DUK_USE_REGEXP_SUPPORT
 duk_ret duk_builtin_string_prototype_match(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_int_t global;
@@ -1155,6 +1225,11 @@ duk_ret duk_builtin_string_prototype_match(duk_context *ctx) {
 
 	return 1;  /* return 'res_arr' or 'null' */
 }
+#else  /* DUK_USE_REGEXP_SUPPORT */
+duk_ret duk_builtin_string_prototype_match(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 
 duk_ret duk_builtin_string_prototype_concat(duk_context *ctx) {
 	/* duk_concat() coerces arguments with ToString() in correct order */

@@ -2675,6 +2675,7 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		goto plain_value;
 	}
 	case DUK_TOK_REGEXP: {
+#ifdef DUK_USE_REGEXP_SUPPORT
 		int reg_temp;
 		int reg_re_bytecode;  /* const */
 		int reg_re_source;    /* const */
@@ -2707,6 +2708,9 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		res->x1.t = DUK_ISPEC_REGCONST;
 		res->x1.regconst = reg_temp;
 		return;
+#else  /* DUK_USE_REGEXP_SUPPORT */
+		goto syntax_error;
+#endif  /* DUK_USE_REGEXP_SUPPORT */
 	}
 	case DUK_TOK_LBRACKET: {
 		DUK_DDDPRINT("parsing array literal");

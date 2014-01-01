@@ -153,6 +153,10 @@ int duk_builtin_regexp_prototype_to_string(duk_context *ctx) {
 
 #else  /* DUK_USE_REGEXP_SUPPORT */
 
+int duk_builtin_regexp_constructor(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+
 int duk_builtin_regexp_prototype_exec(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
