@@ -421,9 +421,7 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 	duk_hstring *h_repl;
 	duk_hstring *h_match;
 	duk_hstring *h_search;
-#ifdef DUK_USE_REGEXP_SUPPORT
 	duk_hobject *h_re;
-#endif
 	duk_hbuffer_dynamic *h_buf;
 #ifdef DUK_USE_REGEXP_SUPPORT
 	duk_small_int_t is_regexp;
@@ -451,9 +449,9 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 	 * stack[3] = result buffer
 	 */
 
-#ifdef DUK_USE_REGEXP_SUPPORT
 	h_re = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP);
 	if (h_re) {
+#ifdef DUK_USE_REGEXP_SUPPORT
 		/* FIXME: duk_get_prop_stridx_boolean, with index and stridx in one constant */
 		is_regexp = 1;
 		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_GLOBAL);
@@ -466,10 +464,10 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 			duk_push_int(ctx, 0);
 			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
-	} else {
 #else  /* DUK_USE_REGEXP_SUPPORT */
-	{  /* unconditionally */
+		return DUK_RET_UNSUPPORTED_ERROR;
 #endif  /* DUK_USE_REGEXP_SUPPORT */
+	} else {
 		duk_to_string(ctx, 0);
 #ifdef DUK_USE_REGEXP_SUPPORT
 		is_regexp = 0;
