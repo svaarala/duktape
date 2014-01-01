@@ -10,6 +10,16 @@
 #define NO_SIGNAL
 #endif
 
+#define  GREET_CODE(variant)  \
+	"print(" \
+	"'((o) Duktape" variant "'" \
+	", " \
+	"Math.floor(__duk__.version / 10000) + '.' + " \
+	"Math.floor(__duk__.version / 100) % 100 + '.' + " \
+	"__duk__.version % 100" \
+	"); " \
+	"print(__duk__.build);"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -223,7 +233,7 @@ int handle_interactive(duk_context *ctx) {
 	int retval = 0;
 	int rc;
 
-	duk_eval_string(ctx, "print('((o) Duktape [no readline]'); print(__duk__.build);");
+	duk_eval_string(ctx, GREET_CODE(" [no readline]"));
 	duk_pop(ctx);
 
 	buffer = malloc(LINEBUF_SIZE);
@@ -279,14 +289,14 @@ int handle_interactive(duk_context *ctx) {
 
 	return retval;
 }
-#else
+#else  /* NO_READLINE */
 int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
 	char *buffer = NULL;
 	int retval = 0;
 	int rc;
 
-	duk_eval_string(ctx, "print('((o) Duktape'); print(__duk__.build);");
+	duk_eval_string(ctx, GREET_CODE(""));
 	duk_pop(ctx);
 
 	/*
