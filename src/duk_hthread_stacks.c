@@ -93,6 +93,11 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 	int idx;
 
+	DUK_DDDPRINT("unwind callstack top of thread %p from %d to %d",
+	             (void *) thr,
+	             (int) (thr != NULL ? thr->callstack_top : -1),
+	             (int) new_top);
+
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
 	DUK_ASSERT(new_top >= 0);
@@ -312,6 +317,11 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 	int idx;
 
+	DUK_DDDPRINT("unwind catchstack top of thread %p from %d to %d",
+	             (void *) thr,
+	             (int) (thr != NULL ? thr->catchstack_top : -1),
+	             (int) new_top);
+
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
 	DUK_ASSERT(new_top >= 0);
@@ -336,7 +346,8 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 		p = &thr->catchstack[idx];
 
 		if (DUK_CAT_HAS_LEXENV_ACTIVE(p)) {
-			DUK_DDDPRINT("unwinding catchstack idx %d: lexical environment active", idx);
+			DUK_DDDPRINT("unwinding catchstack idx %d, callstack idx %d, callstack top %d: lexical environment active",
+			             idx, p->callstack_index, thr->callstack_top);
 
 			/* FIXME: Here we have a nasty dependency: the need to manipulate
 			 * the callstack means that catchstack must always be unwound by
@@ -344,16 +355,24 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 			 * later.
 			 */
 
+			/* Note that multiple catchstack entries may refer to the same
+			 * callstack entry.
+			 */
 			act = &thr->callstack[p->callstack_index];
 			DUK_ASSERT(act >= thr->callstack);
 			DUK_ASSERT(act < &thr->callstack[thr->callstack_top]);
-			DUK_ASSERT(act->lex_env != NULL);  /* must be, since env was created */
 
-			DUK_DDDPRINT("callstack_index=%d, lex_env=%!iO", p->callstack_index, act->lex_env);
+			DUK_DDDPRINT("catchstack_index=%d, callstack_index=%d, lex_env=%!iO",
+			             (int) idx, (int) p->callstack_index, act->lex_env);
 
-			env = act->lex_env;
-			act->lex_env = env->prototype;
+			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
+			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
+			act->lex_env = env->prototype;  /* prototype is lex_env before catcher created */
 			DUK_HOBJECT_DECREF(thr, env);
+
+			/* There is no need to decref anything else than 'env': if 'env'
+			 * becomes unreachable, refzero will handle decref'ing its prototype.
+			 */
 		}
 	}
 
