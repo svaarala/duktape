@@ -15,9 +15,9 @@ void duk_hthread_terminate(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 
-	duk_hthread_callstack_unwind(thr, 0);  /* side effects, possibly errors */
-
+	/* Order of unwinding is important */
 	duk_hthread_catchstack_unwind(thr, 0);
+	duk_hthread_callstack_unwind(thr, 0);  /* side effects, possibly errors */
 
 	thr->valstack_bottom = thr->valstack;
 	duk_set_top((duk_context *) thr, 0);  /* unwinds valstack, updating refcounts */
