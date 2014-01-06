@@ -2740,7 +2740,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			c = DUK_DEC_C(ins);
 
 			DUK_ASSERT(thr->callstack_top >= 1);
-			DUK_ASSERT(thr->catchstack_top + 1 <= thr->catchstack_size);
 
 			/* with target must be created first, in case we run out of memory */
 			/* FIXME: refactor out? */
@@ -2783,6 +2782,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			duk_hthread_catchstack_grow(thr);
 			cat = &thr->catchstack[thr->catchstack_top];
+			DUK_ASSERT(thr->catchstack_top + 1 <= thr->catchstack_size);
 			thr->catchstack_top++;
 
 			cat->flags = DUK_CAT_TYPE_TCF;
