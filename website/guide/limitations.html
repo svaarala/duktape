@@ -58,14 +58,6 @@ with 8-byte packed value type).</p>
 <p>The model for error handlers is incomplete.  Use <code>DUK_INVALID_INDEX</code>
 as the error handler index for now.</p>
 
-<h2>Coroutines are experimental</h2>
-
-<p>Coroutines are currently experimental.  Although they work for the most
-part, there are many limitations in the implementation.  Yielding is limited
-to coroutines with a call stack consisting purely of plain
-Ecmascript-to-Ecmascript calls.  These limitations will be relaxed in the
-future.</p>
-
 <h2>Unicode case conversion is not locale or context sensitive</h2>
 
 <p>E5 Sections 15.5.4.16 to 15.5.4.19 require context and locale processing
