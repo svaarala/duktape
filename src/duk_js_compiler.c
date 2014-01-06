@@ -1138,7 +1138,6 @@ static void emit_loadint(duk_compiler_ctx *comp_ctx, int reg, duk_int32_t val) {
 	 * and has a smaller compiler footprint.
 	 */
 
-	DUK_ASSERT(reg >= DUK_BC_A_MIN && reg <= DUK_BC_A_MAX);
 	if ((val >= (duk_int32_t) DUK_BC_BC_MIN - (duk_int32_t) DUK_BC_LDINT_BIAS) &&
 	    (val <= (duk_int32_t) DUK_BC_BC_MAX - (duk_int32_t) DUK_BC_LDINT_BIAS)) {
 		DUK_DDDPRINT("emit LDINT to reg %d for %d", (int) reg, (int) val);
