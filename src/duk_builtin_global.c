@@ -382,7 +382,6 @@ static void duk_transform_callback_unescape(duk_transform_context *tfm_ctx, void
 
 	duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, cp);
 }
-
 #endif  /* DUK_USE_SECTION_B */
 
 /*
@@ -437,6 +436,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
 	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {	
 		act = thr->callstack + thr->callstack_top - 2;  /* caller */
 		if (act->lex_env == NULL) {
+			DUK_ASSERT(act->var_env == NULL);
 			DUK_DDDPRINT("delayed environment initialization");
 
 			/* this may have side effects, so re-lookup act */
@@ -627,7 +627,15 @@ int duk_builtin_global_object_escape(duk_context *ctx) {
 int duk_builtin_global_object_unescape(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_unescape, (void *) NULL);
 }
-#endif
+#else  /* DUK_USE_SECTION_B */
+int duk_builtin_global_object_escape(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+
+int duk_builtin_global_object_unescape(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_SECTION_B */
 
 #ifdef DUK_USE_BROWSER_LIKE
 #ifdef DUK_USE_FILE_IO
@@ -689,6 +697,7 @@ int duk_builtin_global_object_alert(duk_context *ctx) {
 	return print_alert_helper(ctx, stderr);
 }
 #else  /* DUK_USE_FILE_IO */
+/* Supported but no file I/O -> silently ignore, no error */
 int duk_builtin_global_object_print(duk_context *ctx) {
 	return 0;
 }
@@ -697,6 +706,12 @@ int duk_builtin_global_object_alert(duk_context *ctx) {
 	return 0;
 }
 #endif  /* DUK_USE_FILE_IO */
+#else  /* DUK_USE_BROWSER_LIKE */
+int duk_builtin_global_object_print(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+
+int duk_builtin_global_object_alert(duk_context *ctx) {
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
 #endif  /* DUK_USE_BROWSER_LIKE */
-
-
