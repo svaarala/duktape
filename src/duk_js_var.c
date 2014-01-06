@@ -1722,6 +1722,9 @@ int duk_js_declvar_activation(duk_hthread *thr,
 		DUK_ASSERT(act->lex_env == NULL);
 		duk_js_init_activation_environment_records_delayed(thr, act);
 	}
+	DUK_ASSERT(act->lex_env != NULL);
+	DUK_ASSERT(act->var_env != NULL);
+
 	env = act->var_env;
 	DUK_ASSERT(env != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_ENV(env));
