@@ -38,3 +38,16 @@ void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	heap->heap_allocated = hdr;
 }
 
+#ifdef DUK_USE_INTERRUPT_COUNTER
+void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
+	/* Copy currently active interrupt counter from the active thread
+	 * back to the heap structure.  It doesn't need to be copied to
+	 * the target thread, as the bytecode executor does that when it
+	 * resumes execution for a new thread.
+	 */
+	if (heap->curr_thread != NULL) {
+		heap->interrupt_counter = heap->curr_thread->interrupt_counter;
+	}
+	heap->curr_thread = new_thr;  /* may be NULL */
+}
+#endif  /* DUK_USE_INTERRUPT_COUNTER */

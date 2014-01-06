@@ -570,6 +570,7 @@ static void handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finall
 		act = thr->callstack + thr->callstack_top - 1;
 
 		if (act->lex_env == NULL) {
+			DUK_ASSERT(act->var_env == NULL);
 			DUK_DDDPRINT("delayed environment initialization");
 
 			/* this may have side effects, so re-lookup act */
@@ -577,6 +578,7 @@ static void handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finall
 			act = thr->callstack + thr->callstack_top - 1;
 		}
 		DUK_ASSERT(act->lex_env != NULL);
+		DUK_ASSERT(act->var_env != NULL);
 		DUK_ASSERT(act->func != NULL);
 
 		(void) duk_push_object_helper(ctx,
@@ -627,6 +629,7 @@ static void handle_label(duk_hthread *thr, int cat_idx) {
 		thr->catchstack[cat_idx].pc_base + (thr->heap->lj.type == DUK_LJ_TYPE_CONTINUE ? 1 : 0);
 
 	duk_hthread_catchstack_unwind(thr, cat_idx + 1);  /* keep label catcher */
+	/* no need to unwind callstack */
 }
 
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
@@ -760,7 +763,7 @@ static int handle_longjmp(duk_hthread *thr,
 			resumee->resumer = thr;
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;	
-			thr->heap->curr_thread = resumee;
+			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
 			thr = resumee;
 
 			thr->heap->lj.type = DUK_LJ_TYPE_THROW;
@@ -793,7 +796,7 @@ static int handle_longjmp(duk_hthread *thr,
 			resumee->resumer = thr;
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;
-			thr->heap->curr_thread = resumee;
+			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
 #if 0
 			thr = resumee;  /* not needed, as we exit right away */
 #endif
@@ -820,7 +823,7 @@ static int handle_longjmp(duk_hthread *thr,
 			resumee->resumer = thr;
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;
-			thr->heap->curr_thread = resumee;
+			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
 #if 0
 			thr = resumee;  /* not needed, as we exit right away */
 #endif
@@ -870,11 +873,10 @@ static int handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT((resumer->callstack + resumer->callstack_top - 2)->idx_retval >= 0);                              /* waiting for a value */
 
 		if (thr->heap->lj.iserror) {
-
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
 			resumer->state = DUK_HTHREAD_STATE_RUNNING;
-			thr->heap->curr_thread = resumer;
+			DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 			thr = resumer;
 
 			thr->heap->lj.type = DUK_LJ_TYPE_THROW;
@@ -889,7 +891,7 @@ static int handle_longjmp(duk_hthread *thr,
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
 			resumer->state = DUK_HTHREAD_STATE_RUNNING;
-			thr->heap->curr_thread = resumer;
+			DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 #if 0
 			thr = resumer;  /* not needed, as we exit right away */
 #endif
@@ -954,6 +956,8 @@ static int handle_longjmp(duk_hthread *thr,
 		}
 		/* if out of catchstack, cat = &thr->catchstack[-1] */
 
+		DUK_DDPRINT("no catcher in catch stack, return to calling activation / yield");
+
 		/* return to calling activation (if any) */
 
 		if (thr == entry_thread &&
@@ -998,7 +1002,7 @@ static int handle_longjmp(duk_hthread *thr,
 			goto wipe_and_return;
 		}
 	
-		/* no calling activation, thread finishes (similar to yield) */
+		DUK_DDPRINT("no calling activation, thread finishes (similar to yield)");
 
 		DUK_ASSERT(thr->resumer != NULL);
 		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + __duk__.resume() activation */
@@ -1020,7 +1024,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 		thr->resumer = NULL;
 		resumer->state = DUK_HTHREAD_STATE_RUNNING;
-		thr->heap->curr_thread = resumer;
+		DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 #if 0
 		thr = resumer;  /* not needed */
 #endif
@@ -1164,11 +1168,13 @@ static int handle_longjmp(duk_hthread *thr,
 			duk_hthread_callstack_unwind(thr, entry_callstack_index + 1);
 
 #endif
-			DUK_DDPRINT("-> throw propagated up to entry level, rethrow and exit bytecode executor");
+			DUK_DPRINT("-> throw propagated up to entry level, rethrow and exit bytecode executor");
 			retval = LONGJMP_RETHROW;
 			goto just_return;
 			/* Note: MUST NOT wipe_and_return here, as heap->lj must remain intact */
 		}
+
+		DUK_DDPRINT("not caught by current thread, yield error to resumer");
 
 		/* not caught by current thread, thread terminates (yield error to resumer);
 		 * note that this may cause a cascade if the resumer terminates with an uncaught
@@ -1195,7 +1201,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 		thr->resumer = NULL;
 		resumer->state = DUK_HTHREAD_STATE_RUNNING;
-		thr->heap->curr_thread = resumer;
+		DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 		thr = resumer;
 		goto check_longjmp;
 	}
@@ -1241,6 +1247,87 @@ static int handle_longjmp(duk_hthread *thr,
 	DUK_UNREACHABLE();
 	return retval;
 }
+
+/*
+ *  Executor interrupt handling
+ *
+ *  The handler is called whenever the interrupt countdown reaches zero
+ *  (or below).  The handler must perform whatever checks are activated,
+ *  e.g. check for cumulative step count to impose an execution step
+ *  limit or check for breakpoints or other debugger interaction.
+ *
+ *  When the actions are done, the handler must reinit the interrupt
+ *  init and counter values.  The 'init' value must indicate how many
+ *  bytecode instructions are executed before the next interrupt.  The
+ *  counter must interface with the bytecode executor loop.  Concretely,
+ *  the new init value is normally one higher than the new counter value.
+ *  For instance, to execute exactly one bytecode instruction the init
+ *  value is set to 1 and the counter to 0.  If an error is thrown by the
+ *  interrupt handler, the counters are set to the same value (e.g. both
+ *  to 0 to cause an interrupt when the next bytecode instruction is about
+ *  to be executed after error handling).
+ *
+ *  Maintaining the init/counter value properly is important for accurate
+ *  behavior.  For instance, executor step limit needs a cumulative step
+ *  count which is simply computed as a sum of 'init' values.  This must
+ *  work accurately even when single stepping.
+ */
+
+#ifdef DUK_USE_INTERRUPT_COUNTER
+static void duk_executor_interrupt(duk_hthread *thr) {
+	duk_int_t ctr;
+	duk_activation *act;
+	duk_hcompiledfunction *fun;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->callstack != NULL);
+	DUK_ASSERT(thr->callstack_top > 0);
+
+	act = thr->callstack + thr->callstack_top - 1;
+	fun = (duk_hcompiledfunction *) act->func;
+	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION((duk_hobject *) fun));
+	DUK_UNREF(fun);
+
+	ctr = DUK_HEAP_INTCTR_DEFAULT;
+
+#if 0
+	/* FIXME: cumulative instruction count */
+	static int step_count = 0;
+	step_count += thr->heap->interrupt_init;
+	if (step_count >= 1000000) {
+		/* Keep throwing an error whenever we get here.  The unusual values
+		 * are set this way because no instruction is ever executed, we just
+		 * throw an error until all try/catch/finally and other catchpoints
+		 * have been exhausted.
+		 */
+		DUK_DPRINT("execution step limit reached, throwing a RangeError");
+		thr->heap->interrupt_init = 0;
+		thr->heap->interrupt_counter = 0;
+		thr->interrupt_counter = 0;
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "execution step limit");
+	}
+#endif
+
+#if 0
+	/* FIXME: debugger integration: single step, breakpoint checks, etc */
+	if (0) {
+		/* Cause an interrupt after executing one instruction. */
+		ctr = 1;
+	}
+#endif
+
+	DUK_DDDPRINT("executor interrupt finished, cstop=%d, pc=%d, nextctr=%d",
+	             (int) thr->callstack_top, (int) act->pc, (int) ctr);
+
+	/* The counter value is one less than the init value: init value should
+	 * indicate how many instructions are executed before interrupt.  To
+	 * execute 1 instruction, counter must be 0.
+	 */
+	thr->heap->interrupt_init = ctr;
+	thr->heap->interrupt_counter = ctr - 1;
+	thr->interrupt_counter = ctr - 1;
+}
+#endif  /* DUK_USE_INTERRUPT_COUNTER */
 
 /*
  *  Ecmascript bytecode executor.
@@ -1309,6 +1396,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 	/* jmpbuf */
 	duk_jmpbuf jmpbuf;
+
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	duk_int_t int_ctr;
+#endif
 
 #ifdef DUK_USE_ASSERTIONS
 	int valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
@@ -1442,6 +1533,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	 * though it is not the current thread (any thread will do).
 	 */
 	thr = thr->heap->curr_thread;
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	thr->interrupt_counter = thr->heap->interrupt_counter;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->callstack_top >= 1);
@@ -1519,6 +1613,22 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= fun->nregs);  /* FIXME == nregs? */
 		DUK_ASSERT((int) (thr->valstack_top - thr->valstack) == valstack_top_base);
+
+		/* Executor interrupt counter check, used to implement breakpoints,
+		 * debugging interface, execution timeouts, etc.  The counter is heap
+		 * specific but is maintained in the current thread to make the check
+		 * as fast as possible.  The counter is copied back to the heap struct
+		 * whenever a thread switch occurs by the DUK_HEAP_SWITCH_THREAD() macro.
+		 */
+#ifdef DUK_USE_INTERRUPT_COUNTER
+		int_ctr = thr->interrupt_counter;
+		if (DUK_LIKELY(int_ctr > 0)) {
+			thr->interrupt_counter = int_ctr - 1;
+		} else {
+			/* Trigger at zero or below */
+			duk_executor_interrupt(thr);
+		}
+#endif
 
 		/* Because ANY DECREF potentially invalidates 'act' now (through
 		 * finalization), we need to re-lookup 'act' in almost every case.
@@ -1972,10 +2082,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_DDDPRINT("CLOSURE: function template is: %p -> %!O", (void *) fun_temp, fun_temp);
 
 			if (act->lex_env == NULL) {
+				DUK_ASSERT(act->var_env == NULL);
 				duk_js_init_activation_environment_records_delayed(thr, act);
 			}
-			DUK_ASSERT(act->var_env != NULL);
 			DUK_ASSERT(act->lex_env != NULL);
+			DUK_ASSERT(act->var_env != NULL);
 
 			/* functions always have a NEWENV flag, i.e. they get a
 			 * new variable declaration environment, so only lex_env
@@ -2544,6 +2655,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_ASSERT(DUK_CAT_GET_LABEL(cat) == abc);
 
 			duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+			/* no need to unwind callstack */
 			break;
 		}
 
@@ -2637,6 +2749,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_DDDPRINT("need to initialize a with binding object");
 
 				if (act->lex_env == NULL) {
+					DUK_ASSERT(act->var_env == NULL);
 					DUK_DDDPRINT("delayed environment initialization");
 
 					/* must relookup act in case of side effects */
@@ -2644,6 +2757,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					act = thr->callstack + thr->callstack_top - 1;
 				}
 				DUK_ASSERT(act->lex_env != NULL);
+				DUK_ASSERT(act->var_env != NULL);
 
 				(void) duk_push_object_helper(ctx,
 				                              DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -3023,6 +3137,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				} else {
 					DUK_DDDPRINT("ENDTRY: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)");
 					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+					/* no need to unwind callstack */
 				}
 
 				act->pc = cat->pc_base + 1;
@@ -3078,6 +3193,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				} else {
 					DUK_DDDPRINT("ENDCATCH: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)");
 					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+					/* no need to unwind callstack */
 				}
 
 				act->pc = cat->pc_base + 1;
@@ -3111,6 +3227,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					DUK_DDDPRINT("ENDFIN: finally part finishing with 'normal' (non-abrupt) completion -> "
 					             "dismantle catcher, resume execution after ENDFIN");
 					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+					/* no need to unwind callstack */
 				} else {
 					DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%d -> "
 					             "dismantle catcher, re-throw error",

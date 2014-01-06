@@ -213,6 +213,17 @@ struct duk_hthread {
 	/* yield/resume book-keeping */
 	duk_hthread *resumer;			/* who resumed us (if any) */
 
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	/* Interrupt counter for triggering a slow path check for execution
+	 * timeout, debugger interaction such as breakpoints, etc.  This is
+	 * actually a value copied from the heap structure into the current
+	 * thread to be more convenient for the bytecode executor inner loop.
+	 * The final value is copied back to the heap structure on a thread
+	 * switch by DUK_HEAP_SWITCH_THREAD().
+	 */
+	duk_int_t interrupt_counter;
+#endif
+
 	/* Builtin-objects; may be shared with other threads, copies of
 	 * pointers in duk_heap.  This is rather expensive, currently
 	 * 38x4 = 152 bytes.

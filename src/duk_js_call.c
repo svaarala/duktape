@@ -710,7 +710,7 @@ int duk_handle_call(duk_hthread *thr,
 		DUK_DDDPRINT("call is not protected -> clean up and rethrow");
 
 #if 0  /*FIXME*/
-		thr->heap->curr_thread = entry_curr_thread;  /* may be NULL */
+		DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 		thr->state = entry_thread_state;
 
 		DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */
@@ -774,7 +774,7 @@ int duk_handle_call(duk_hthread *thr,
 		if (thr->state != DUK_HTHREAD_STATE_INACTIVE) {
 			goto thread_state_error;
 		}
-		thr->heap->curr_thread = thr;
+		DUK_HEAP_SWITCH_THREAD(thr->heap, thr);
 		thr->state = DUK_HTHREAD_STATE_RUNNING;
 
 		/* Note: multiple threads may be simultaneously in the RUNNING
@@ -1244,7 +1244,7 @@ int duk_handle_call(duk_hthread *thr,
 		DUK_DDDPRINT("setjmp catchpoint torn down");
 	}
 
-	thr->heap->curr_thread = entry_curr_thread;  /* may be NULL */
+	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 	thr->state = entry_thread_state;
 
 	DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */
@@ -1512,7 +1512,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 		if (thr->state != DUK_HTHREAD_STATE_INACTIVE) {
 			goto thread_state_error;
 		}
-		thr->heap->curr_thread = thr;
+		DUK_HEAP_SWITCH_THREAD(thr->heap, thr);
 		thr->state = DUK_HTHREAD_STATE_RUNNING;
 
 		/* Note: multiple threads may be simultaneously in the RUNNING
@@ -1607,7 +1607,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	DUK_DDDPRINT("setjmp catchpoint torn down");
 
-	thr->heap->curr_thread = entry_curr_thread;  /* may be NULL */
+	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 	thr->state = entry_thread_state;
 
 	DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */

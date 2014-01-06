@@ -68,6 +68,22 @@
 #define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 3)   /* don't compact objects; needed during object property allocation resize */
 
 /*
+ *  Thread switching
+ *
+ *  To switch heap->curr_thread, use the macro below so that interrupt counters
+ *  get updated correctly.  The macro allows a NULL target thread because that
+ *  happens e.g. in call handling.
+ */
+
+#ifdef DUK_USE_INTERRUPT_COUNTER
+#define DUK_HEAP_SWITCH_THREAD(heap,newthr)  duk_heap_switch_thread((heap), (newthr))
+#else
+#define DUK_HEAP_SWITCH_THREAD(heap,newthr)  do { \
+		(heap)->curr_thread = (newthr); \
+	} while (0)
+#endif
+
+/*
  *  Other heap related defines
  */
 
@@ -83,7 +99,7 @@
 #define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */ 
 #endif
 
-/* mark-and-sweep C recursion depth for marking phase; if reached,
+/* Mark-and-sweep C recursion depth for marking phase; if reached,
  * mark object as a TEMPROOT and use multi-pass marking.
  */
 #if defined(DUK_USE_MARK_AND_SWEEP)
@@ -96,7 +112,7 @@
 #endif
 #endif
 
-/* mark-and-sweep interval can be much lower with reference counting */
+/* Mark-and-sweep interval can be much lower with reference counting. */
 #if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_TRIGGER_LIMIT     10000
@@ -105,14 +121,22 @@
 #endif
 #endif
 
-/* stringcache is used for speeding up char-offset-to-byte-offset
- * translations for non-ASCII strings
+/* Stringcache is used for speeding up char-offset-to-byte-offset
+ * translations for non-ASCII strings.
  */
 #define DUK_HEAP_STRCACHE_SIZE                            4
 #define DUK_HEAP_STRINGCACHE_NOCACHE_LIMIT                16  /* strings up to the this length are not cached */
 
 /* helper to insert a (non-string) heap object into heap allocated list */
 #define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap,hdr)     duk_heap_insert_into_heap_allocated((heap),(hdr))
+
+/* Executor interrupt default interval when nothing else requires a
+ * smaller value.  The default interval must be small enough to allow
+ * for reasonable execution timeout checking.
+ */
+#ifdef DUK_USE_INTERRUPT_COUNTER
+#define DUK_HEAP_INTCTR_DEFAULT                           (256L * 1024L)
+#endif
 
 /*
  *  Stringtable
@@ -327,6 +351,12 @@ struct duk_heap {
 	/* rnd_state for duk_util_tinyrandom.c */
 	duk_uint32_t rnd_state;
 
+	/* interrupt counter */
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	duk_int_t interrupt_init;     /* start value for current countdown */
+	duk_int_t interrupt_counter;  /* countdown state (mirrored in current thread state) */
+#endif
+
 	/* string intern table (weak refs) */
 	duk_hstring **st;
 	duk_uint32_t st_size;     /* alloc size in elements */
@@ -356,6 +386,9 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr);
 void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_REFERENCE_COUNTING)
 void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
+#endif
+#ifdef DUK_USE_INTERRUPT_COUNTER
+void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
 #endif
 
 duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);

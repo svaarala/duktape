@@ -409,6 +409,12 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
 	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	/* zero value causes an interrupt before executing first instruction */
+	DUK_ASSERT(res->interrupt_counter == 0);
+	DUK_ASSERT(res->interrupt_init == 0);
+#endif
+
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->lj.jmpbuf_ptr = NULL;
 #endif

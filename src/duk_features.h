@@ -1067,6 +1067,15 @@ extern double duk_computed_nan;
 #endif
 
 /*
+ *  Execution and debugger options
+ */
+
+#define DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_OPT_NO_INTERRUPT_COUNTER)
+#undef DUK_USE_INTERRUPT_COUNTER
+#endif
+
+/*
  *  Debug printing and assertion options
  */
 
