@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up thread callstack, catchstack, and value stack handling, perhaps fewer merged helpers?
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-05 22:45:32.613640 Z
+references: []
+
+id: 1a325a811fc58ac227e8584b06dc79f78faefb16
+log_events: 
+- - 2014-01-05 22:45:32.789498 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

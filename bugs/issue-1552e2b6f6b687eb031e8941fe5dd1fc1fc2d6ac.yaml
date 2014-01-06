@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: guide documentation on executor interrupts, step limiting, etc
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-06 20:30:11.698462 Z
+references: []
+
+id: 1552e2b6f6b687eb031e8941fe5dd1fc1fc2d6ac
+log_events: 
+- - 2014-01-06 20:30:11.850068 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

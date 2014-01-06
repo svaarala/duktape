@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: more effective way to limit execution step count - take regexps and other hugely expensive native calls into account? uptime?
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-06 20:18:02.608016 Z
+references: []
+
+id: 5441c8d0aeed1f9efcbcf38dfc84bfeea0dab271
+log_events: 
+- - 2014-01-06 20:18:02.751748 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: internal execution document
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-06 13:30:23.428132 Z
+references: []
+
+id: 121322d4ec150442b1c165dbddd233eafa7234b8
+log_events: 
+- - 2014-01-06 13:30:23.631331 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

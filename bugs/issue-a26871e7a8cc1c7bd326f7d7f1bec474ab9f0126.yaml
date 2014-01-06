@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: some mechanisms based on the executor interrupt - step limit (+ API), user callback for abort, profiling
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-06 20:31:38.161361 Z
+references: []
+
+id: a26871e7a8cc1c7bd326f7d7f1bec474ab9f0126
+log_events: 
+- - 2014-01-06 20:31:38.433303 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

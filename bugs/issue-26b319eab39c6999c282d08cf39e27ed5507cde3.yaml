@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up interrupt counter code stubs etc
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-06 20:52:15.641808 Z
+references: []
+
+id: 26b319eab39c6999c282d08cf39e27ed5507cde3
+log_events: 
+- - 2014-01-06 20:52:15.993604 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
