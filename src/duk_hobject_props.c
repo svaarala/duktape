@@ -1443,8 +1443,12 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 	    push_value) {
 		duk_propdesc temp_desc;
 
-		/* magically bound variable cannot be an accessor */
-		DUK_ASSERT((out_desc->flags & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
+		/* Magically bound variable cannot be an accessor.  However,
+		 * there may be an accessor property (or a plain property) in
+		 * place with magic behavior removed.  This happens e.g. when
+		 * a magic property is redefined with defineProperty().
+		 * Cannot assert for "not accessor" here.
+		 */
 
 		/* replaces top of stack with new value if necessary */
 		DUK_ASSERT(push_value != 0);
