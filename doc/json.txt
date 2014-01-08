@@ -2,7 +2,22 @@
 JSON built-in
 =============
 
-This document describes the Duktape ``JSON`` built-in implementation.
+This document describes the Duktape ``JSON`` built-in implementation which
+provides:
+
+* The standard, very strict JSON encoding and decoding required by the
+  Ecmascript standard.
+
+* An extended custom format (JSONX) which encodes all value types and is
+  optimized for readability.  The custom encodings parse back into proper
+  values (except for function values).  This format is most useful for
+  dumping values, logging, and the like.  The format is not JSON compatible
+  but rather JSON-like.
+
+* An extended compatible format (JSONC) which also encodes all value types
+  into standard JSON.  A standard JSON parser can parse the result but
+  special values need to be revived manually.  The result is not as
+  readable as JSONX, but can be parsed by other JSON implementations.
 
 Overview of JSON
 ================
@@ -40,10 +55,10 @@ Duktape also has custom types not supported by Ecmascript: buffers and
 pointers.  These are now skipped when encoding (just like function objects).
 There is currently no syntax for expressing them for parsing.
 
-Custom formatting will be added later and exposed through separate API
-entrypoints.  Separate entrypoints will be used because JSON.parse() and
-JSON.stringify() are intended to be strict interfaces.  Duktape 0.2.0 only
-has standard JSON API and syntax support.
+The custom JSONX and JSONC formats provide support for encoding and decoding
+"undefined" values, function values, special numbers like NaN, buffer values,
+and pointer values.  Separate API entrypoints are used for JSONX and JSONC
+because JSON.parse() and JSON.stringify() are intended to be strict interfaces.
 
 See also:
 
@@ -162,6 +177,35 @@ Further complications
   order to differ from an increasing array index order, mandated by the
   E5.1 specification for PropertyList.  Currently we just use the natural
   enumeration order which is correct for non-sparse arrays.
+
+Handling codepoints above U+FFFF
+--------------------------------
+
+Codepoints above U+FFFF don't occur in standard Ecmascript string values,
+so there is no mandatory behavior when they are encountered during JSON
+serialization.  The current solution is to encode them into plain string
+data (this matches JSONC behavior)::
+
+  "foo bar: U+12345678"
+
+Handling invalid UTF-8/CESU-8 data
+----------------------------------
+
+Standard Ecmascript values are always valid CESU-8 data internally, so
+handling invalid UTF-8/CESU-8 data has no mandatory behavior.  The current
+solution is:
+
+* If UTF-8/CESU-8 decoding fails, treat the initial byte as a codepoint
+  value directly (interpreting it as an 8-bit unsigned value) and advance
+  by one byte in the input stream.  The replacement codepoint is encoded
+  into the output value.
+
+* The current UTF-8/CESU-8 decoding is not strict, so this is mainly
+  triggered for invalid initial bytes (0xFF) or when a codepoint has been
+  truncated (end of buffer).
+
+This is by no means an optimal solution and produces quite interesting
+results at times.
 
 Miscellaneous
 -------------
@@ -394,8 +438,394 @@ JSONBooleanLiteral
 
 Trivially the same as BooleanLiteral.
 
-Custom features
-===============
+Extended custom encoding (JSONX)
+================================
 
-**FIXME**
+The extended custom encoding format (JSONX, controlled by the define
+``DUK_USE_JSONX``) extends the JSON syntax in an incompatible way, with
+the goal of serializing as many values as faithfully and readably as
+possible, with as many values as possible parsing back into an accurate
+representation of the original value.  All results are printable ASCII
+to be maximally useful in embedded environments.
+
+Undefined
+---------
+
+The ``undefined`` value is encoded as::
+
+  undefined
+
+String values
+-------------
+
+Unicode codepoints above U+FFFF are escaped with an escape format borrowed
+from Python::
+
+  "\U12345678"
+
+For codepoints between U+0080 and U+00FF a short escape format is used::
+
+  "\xfc"
+
+When encoding, the shortest escape format is used.  When decoding input
+values, any escape formats are allowed, i.e. all of the following are
+equivalent::
+
+  "\U000000fc"
+  "\u00fc"
+  "\xfc"
+
+Number values
+-------------
+
+Special numbers are serialized in their natural Ecmascript form::
+
+  NaN
+  Infinity
+  -Infinity
+
+Function values
+---------------
+
+Function values are serialized as::
+
+  {_func:true}
+
+Function values do not survive an encoding round trip.  The decode result
+will be an object which has a ``_func`` key.
+
+Buffer values
+-------------
+
+Plain buffer values and Buffer object values are serialized in hex form::
+
+  |deadbeef|
+
+Pointer values
+--------------
+
+Plain pointer values and Pointer object values are serialized in a platform
+specific form, using the format ``(%p)``, e.g.::
+
+  (0x1ff0e10)
+
+There is no guarantee that a pointer value can be parsed back correctly
+(e.g. if the recipient is running Duktape on a different architecture).
+If the pointer value doesn't parse back, with ``sscanf()`` and ``%p``
+format applied to the value between the parentheses, a NULL pointer is
+produced by the parser.
+
+``NULL`` pointers are serialized in a platform independent way as::
+
+  (null)
+
+ASCII only output
+-----------------
+
+The output for JSONX encoding is always ASCII only.  The standard
+Ecmascript JSON encoding retains Unicode characters outside the ASCII
+range as is (deviating from this would be non-compliant) which is often
+awkward in embedded environments.
+
+The codepoint U+007F, normally not escaped by Ecmascript JSON functions,
+is also escaped for better compatibility.
+
+Avoiding key quotes
+-------------------
+
+Key quotes are omitted for keys which are ASCII and match Ecmascript
+identifier requirements be encoded without quotes, e.g.::
+
+  { my_value: 123 }
+
+When the key doesn't fit the requirements, the key is quoted as
+usual::
+
+  { "my value": 123 }
+
+The empty string is intentionally not encoded or accepted without
+quotes (although the encoding would be unambiguous)::
+
+  { "": 123 }
+
+The ASCII identifier format (a subset of the Ecmascript identifier
+format which also allows non-ASCII characters) is::
+
+  [a-zA-Z$_][0-9a-zA-Z$_]*
+
+This matches almost all commonly used keys in data formats and such,
+improving readability a great deal.
+
+When parsing, keys matching the identifier format are of course accepted
+both with and without quotes.
+
+Compatible custom encoding (JSONC)
+==================================
+
+The compatible custom encoding format (JSONC, controlled by the define
+``DUK_USE_JSONC``) is intended to provide a JSON interface which is more
+useful than the standard Ecmascript one, while producing JSON values
+compatible with the Ecmascript and other JSON parsers.
+
+As a general rule, all values which are not ordinarily handled by standard
+Ecmascript JSON are encoded as object values with a special "marker" key
+beginning with underscore.  Such values decode back as objects and don't
+round trip in the strict sense, but are nevertheless detectable and even
+(manually) revivable to some extent.
+
+Undefined
+---------
+
+The ``undefined`` value is encoded as::
+
+  {"_undef":true}
+
+String values
+-------------
+
+Unicode codepoints above U+FFFF are escaped into plain text as follows::
+
+  "U+12345678"
+
+This is not ideal, but retains at least some of the original information
+and is Ecmascript compatible.
+
+BMP codepoints are encoded as in standard JSON.
+
+Number values
+-------------
+
+Special numbers are serialized as follows::
+
+  {"_nan":true}
+  {"_inf":true}
+  {"_ninf":true}
+
+Function values
+---------------
+
+Function values are serialized as::
+
+  {"_func":true}
+
+Like other special values, function values do not survive an encoding round trip.
+
+Buffer values
+-------------
+
+Plain buffer values and Buffer object values are serialized in hex form::
+
+  {"_buf":"deadbeef"}
+
+Pointer values
+--------------
+
+Plain pointer values and Pointer object values are serialized in a platform
+specific form, using the format ``%p``, but wrapped in a marker table::
+
+  {"_ptr":"0x1ff0e10"}
+
+``NULL`` pointers are serialized in a platform independent way as::
+
+  {"_ptr":"null"}
+
+Note that compared to JSONX, the difference is that there are no surrounding
+parentheses outside the pointer value.
+
+ASCII only output
+-----------------
+
+Like JSONX, the output for JSONC encoding is always ASCII only, and the
+codepoint U+007F is also escaped.
+
+Key quoting
+-----------
+
+Unlike JSONX, keys are always quoted to remain compatible with standard
+JSON.
+
+Custom formats used by other implementations
+============================================
+
+(This is quite incomplete.)
+
+Python
+------
+
+Python uses the following NaN and infinity serializations
+(http://docs.python.org/2/library/json.html)::
+
+  $ python
+  Python 2.7.3 (default, Aug  1 2012, 05:14:39) 
+  [GCC 4.6.3] on linux2
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> import numpy
+  >>> import json
+  >>> print(json.dumps({ 'k_nan': numpy.nan, 'k_posinf': numpy.inf, 'k_neginf': -numpy.inf }))
+  {"k_posinf": Infinity, "k_nan": NaN, "k_neginf": -Infinity}
+
+Proto buffer JSON serialization
+-------------------------------
+
+Protocol buffers have a JSON serialization; does not seem relevant:
+
+* http://code.google.com/p/protobuf-json/source/checkout
+
+Dojox/json/ref
+--------------
+
+Dojox/json/ref supports object graphs, and refers to objects using a marker
+object with a special key, ``$ref``.
+
+* http://dojotoolkit.org/reference-guide/1.8/dojox/json/ref.html
+
+Using keys starting with ``$`` may be a good candidate for custom types, as
+it is rarely used for property names.
+
+AWS CloudFormation
+------------------
+
+Base64 encoding through a "function" syntax:
+
+* http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+
+Rationale for custom formats
+============================
+
+Security and eval()
+-------------------
+
+One apparent goal of JSON is to produce string representations which can be
+safely parsed with ``eval()``.  When using custom syntax this property may
+be lost.  For instance, if one uses the custom Python encoding of using
+``NaN`` to represent a NaN, this ``eval()``\ s incorrectly if there is a
+conflicting definition for ``NaN`` in the current scope (note that e.g.
+"NaN" and "undefined" are *not* Ecmascript literals, but rather normal
+global identifiers).
+
+ASCII only serialization
+------------------------
+
+ASCII only serialization is a useful feature in many embedded applications,
+as ASCII is a very compatible subset.  Unfortunately there is no standard way
+of guaranteeing an ASCII-only result: the ``Quote()`` algorithm will encode
+all non-ASCII characters as-is.
+
+Further, the standard Ecmascript JSON interface does not escape U+007F, which
+is usually considered a "dangerous" character.
+
+Buffer representation
+---------------------
+
+Base64 would be a more compact and often used format for representing binary
+data.  However, base64 data does not allow a programmer to easily parse the
+binary data (which often represents some structured data, such as a C struct).
+
+Function representation
+-----------------------
+
+It would be possible to serialize a function into actual Ecmascript function
+syntax.  This has several problems.  First, sometimes the function source may
+not be available; perhaps the build strips source code from function instances
+to save space, or perhaps the function is a native one.  Second, the result is
+costly to parse back safely.  Third, although seemingly compatible with
+``eval()``\ ing the result, the function will not retain its lexical environment
+and will thus not always work properly.
+
+Future work
+===========
+
+Hex constants
+-------------
+
+Parse hex constants in JSONX::
+
+  { foo: 0x1234 }
+
+This is useful for e.g. config files containing binary flags, RGB color
+values, etc.
+
+Comments
+--------
+
+Allow ``//`` and/or ``/* */`` comment style.  This is very useful for
+config files and such and allowed by several other JSON parsers.
+
+Trailing commas in objects and arrays
+-------------------------------------
+
+Allow commas in objects and arrays.  Again, useful for config files and
+such, and also supported by other JSON parsers.
+
+Serialization depth limit
+-------------------------
+
+Allow caller to impose a serialization depth limit.  Attempt to go too
+deep into object structure needs some kind of marker in the output, e.g.::
+
+  // JSONX
+  { foo: { bar: { quux: ... } } }
+  { foo: { bar: { quux: {_limit:true} } } }
+
+  // JSONC
+  { foo: { bar: { quux: {"_limit":true} } } }
+
+Serialization size limit
+------------------------
+
+Imposing a maximum byte size for serialization output would be useful when
+dealing with untrusted data.
+
+Serializing ancestors and/or non-enumerable keys
+------------------------------------------------
+
+JSON serialization currently only considers enumerable own properties.  This
+is quite limiting for e.g. debugging.
+
+Sorting keys for canonical encoding
+-----------------------------------
+
+If object keys could be sorted, the compact JSON output would be canonical.
+This would often be useful.
+
+Circular reference support
+--------------------------
+
+Something along the lines of:
+
+* http://dojotoolkit.org/reference-guide/1.8/dojox/json/ref.html
+* http://dojotoolkit.org/api/1.5/dojox/json/ref
+
+Dojox/json/ref refers to objects using a marker object with a special
+key, ``$ref``.
+
+Better control over separators
+------------------------------
+
+E.g. Python JSON API allows caller to set separators in more detail
+than in the Ecmascript JSON API which only allows setting the "space"
+string.
+
+RegExp JSON serialization
+-------------------------
+
+Currently RegExps serialize quite poorly::
+
+  duk> JSON.stringify(/foo/)
+  = {}
+
+Expose encode/decode primitives in a more low level manner
+----------------------------------------------------------
+
+Allow more direct access to encoding/decoding flags and provide more
+extensibility with an argument convention better than the one used
+in Ecmascript JSON API.
+
+For instance, arguments could be given in a table::
+
+  __duk__.jsonDec(myValue, {
+    allowHex: true
+  });
+
+However, passing flags and arguments in objects has a large footprint.
 
