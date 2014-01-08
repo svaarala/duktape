@@ -862,6 +862,8 @@ extern double duk_computed_nan;
 #define DUK_SNPRINTF     snprintf
 #define DUK_VSPRINTF     vsprintf
 #define DUK_VSNPRINTF    vsnprintf
+#define DUK_SSCANF       sscanf
+#define DUK_VSSCANF      vsscanf
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
@@ -1215,6 +1217,20 @@ extern double duk_computed_nan;
 #endif
 
 /* FIXME: force alignment requirement */
+
+/*
+ *  Codecs
+ */
+
+#define DUK_USE_JSONX
+#if defined(DUK_OPT_NO_JSONX)
+#undef DUK_USE_JSONX
+#endif
+
+#define DUK_USE_JSONC
+#if defined(DUK_OPT_NO_JSONC)
+#undef DUK_USE_JSONC
+#endif
 
 /*
  *  Miscellaneous
