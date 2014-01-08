@@ -671,3 +671,54 @@ try {
 } catch (e) {
     print(e);
 }
+
+/*===
+invalid xutf-8
+e188
+json  22c3a1c28822
+jsonx "\xe1\x88"
+jsonc "\u00e1\u0088"
+ff41
+json  22c3bf4122
+jsonx "\xffA"
+jsonc "\u00ffA"
+c080
+json  220022
+jsonx "\x00"
+jsonc "\u0000"
+===*/
+
+/* Test invalid XUTF-8 handling in all modes, including standard JSON.  This
+ * behavior is always outside the scope of Ecmascript because all valid
+ * Ecmascript strings are valid CESU-8.
+ *
+ * Because the XUTF-8 decoding is now lenient (it does not, for instance,
+ * check continuation bytes at all), this test is now focused on testing
+ * invalid initial characters or end-of-buffer conditions.
+ */
+
+function invalidXutf8Test() {
+    var values = [
+        'e188',     // last byte missing from U+1234 encoding (e188b4)
+        'ff41',     // first byte is an invalid initial byte
+        'c080',     // non-shortest encoding for U+0000
+    ];
+
+    // Because standard JSON does not escape non-ASCII codepoints, hex
+    // encode its output
+    values.forEach(function (v) {
+        var t = String(__duk__.dec('hex', v));
+        print(v);
+        print('json ', __duk__.enc('hex', JSON.stringify(t)));
+        print('jsonx', encJsonx(t));
+        print('jsonc', encJsonc(t));
+    });
+}
+
+print('invalid xutf-8');
+try {
+    invalidXutf8Test();
+} catch (e) {
+    print(e);
+}
+
