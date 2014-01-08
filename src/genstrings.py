@@ -552,10 +552,12 @@ duk_string_list = [
 	mkstr("getFinalizer", custom=True),
 	mkstr("enc", custom=True),
 	mkstr("dec", custom=True),
+	mkstr("jsonxEnc", custom=True),
+	mkstr("jsonxDec", custom=True),
+	mkstr("jsoncEnc", custom=True),
+	mkstr("jsoncDec", custom=True),
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
-	#mkstr("time", custom=True),
-	#mkstr("sleep", custom=True),
 
 	# Buffer constructor
 
@@ -572,12 +574,13 @@ duk_string_list = [
 
 	# Thread prototype
 
-	# special literals for custom compatible json encoding
-	# FIXME: placeholders, change later
-	mkstr('{"_undefined":true}'),
+	# special literals for custom json encodings
+	mkstr('{"_undef":true}'),
 	mkstr('{"_nan":true}'),
 	mkstr('{"_inf":true}'),
 	mkstr('{"_ninf":true}'),
+	mkstr('{"_func":true}'),
+	mkstr('{_func:true}'),
 ]
 
 # Standard reserved words (non-strict mode + strict mode)
@@ -722,10 +725,12 @@ special_define_names = {
 	'\n\t': 'NEWLINE_TAB',
 	'[...]': 'BRACKETED_ELLIPSIS',
 
-	'{"_undefined":true}': 'JSON_EXT_UNDEFINED',
+	'{"_undef":true}': 'JSON_EXT_UNDEFINED',
 	'{"_nan":true}': 'JSON_EXT_NAN',
 	'{"_inf":true}': 'JSON_EXT_POSINF',
 	'{"_ninf":true}': 'JSON_EXT_NEGINF',
+	'{"_func":true}': 'JSON_EXT_FUNCTION1',
+	'{_func:true}': 'JSON_EXT_FUNCTION2',
 }
 
 #

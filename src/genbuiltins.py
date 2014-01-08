@@ -1100,8 +1100,10 @@ bi_duk = {
 		{ 'name': 'setFinalizer',		'native': 'duk_builtin_duk_object_set_finalizer',	'length': 2 },
 		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
 		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
-#		{ 'name': 'time',			'native': 'duk_builtin_duk_object_time',		'length': 0 },
-#		{ 'name': 'sleep',			'native': 'duk_builtin_duk_object_sleep',		'length': 1 },
+		{ 'name': 'jsonxEnc',			'native': 'duk_builtin_duk_object_jsonx_enc',		'length': 3 },
+		{ 'name': 'jsonxDec',			'native': 'duk_builtin_duk_object_jsonx_dec',		'length': 2 },
+		{ 'name': 'jsoncEnc',			'native': 'duk_builtin_duk_object_jsonc_enc',		'length': 3 },
+		{ 'name': 'jsoncDec',			'native': 'duk_builtin_duk_object_jsonc_dec',		'length': 2 },
 	],
 }
 
