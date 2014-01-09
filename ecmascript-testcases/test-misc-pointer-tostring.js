@@ -7,7 +7,7 @@
 /*===
 null
 true
-===/
+===*/
 
 /* Test pointer formatting.  NULL pointers are formatted consistenly and in
  * a platform independent manner.  Non-NULL pointers don't have a fixed format
