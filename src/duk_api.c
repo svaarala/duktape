@@ -1716,7 +1716,16 @@ const char *duk_to_string(duk_context *ctx, int index) {
 		break;
 	}
 	case DUK_TAG_POINTER: {
-		duk_push_sprintf(ctx, "%p", (void *) DUK_TVAL_GET_POINTER(tv));
+		void *ptr = DUK_TVAL_GET_POINTER(tv);
+		if (ptr != NULL) {
+			duk_push_sprintf(ctx, "%p", ptr);
+		} else {
+			/* Represent a null pointer as 'null' to be consistent with
+			 * the JSONX format variant.  Native '%p' format for a NULL
+			 * pointer may be e.g. '(nil)'.
+			 */
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_NULL);
+		}
 		break;
 	}
 	default: {
