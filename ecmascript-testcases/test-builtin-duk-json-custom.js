@@ -103,8 +103,8 @@ object functable
 function typeEncodeTest() {
     var tmp;
     var ptr;
-    var m_ptr_nonnull_jsonx = /^\([0-9a-fA-Fx]+\)$/;  // e.g. (0x1345890)
-    var m_ptr_nonnull_jsonc = /^\{\"_ptr\":\"[0-9a-fA-Fx]+\"\}$/;  // e.g. {"_ptr":"0x1345890"}
+    var m_ptr_nonnull_jsonx = /^\([0-9a-fA-Fx:]+\)$/;  // e.g. (0x1345890)
+    var m_ptr_nonnull_jsonc = /^\{\"_ptr\":\"[0-9a-fA-Fx:]+\"\}$/;  // e.g. {"_ptr":"0x1345890"}
     var func = function() { print('hello world'); };
 
     var values = [
