@@ -100,6 +100,9 @@ Released
 
 * Added extended JSON format variants: JSONX and JSONC
 
+* NULL pointer values string now coerce to "null" instead of e.g. "(nil)"
+  to match JSONX format
+
 * Removed array size limit for very large array joins
 
 * Internal support for periodic bytecode executor interrupts which can
