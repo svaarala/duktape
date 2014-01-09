@@ -782,6 +782,14 @@ Serializing ancestors and/or non-enumerable keys
 JSON serialization currently only considers enumerable own properties.  This
 is quite limiting for e.g. debugging.
 
+Serializing array properties
+----------------------------
+
+JSON serializes only array elements, but the format could be easily extended
+to also serialize enumerable properties, e.g. as::
+
+  [ 'foo', 'bar', name: 'todo list' ]
+
 Sorting keys for canonical encoding
 -----------------------------------
 
@@ -813,6 +821,13 @@ Currently RegExps serialize quite poorly::
 
   duk> JSON.stringify(/foo/)
   = {}
+
+Automatic revival of special values when parsing JSONC
+------------------------------------------------------
+
+It would be nice to have an option for reviving special values parsed
+from JSONC data.  With this, JSONC and JSONX formats would round trip
+equally well.
 
 Expose encode/decode primitives in a more low level manner
 ----------------------------------------------------------
