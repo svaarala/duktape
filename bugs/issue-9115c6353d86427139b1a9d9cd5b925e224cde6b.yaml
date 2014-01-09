@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: coroutines vs. generators
+desc: http://tobyho.com/2013/06/16/what-are-generators/
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-08 07:37:25.016941 Z
+references: []
+
+id: 9115c6353d86427139b1a9d9cd5b925e224cde6b
+log_events: 
+- - 2014-01-08 07:37:25.221818 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

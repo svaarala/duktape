@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up conditional JSONX/JSONC compilation (FIXMEs in duk_builtin_json.c)
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-09 00:05:40.747360 Z
+references: []
+
+id: 139c4fd2cc68a2bff2ca633b828488d610c3e2b7
+log_events: 
+- - 2014-01-09 00:05:40.883213 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
