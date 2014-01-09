@@ -98,6 +98,8 @@ Released
 
 * API addition: duk_gc()
 
+* Added extended JSON format variants: JSONX and JSONC
+
 * Removed array size limit for very large array joins
 
 * Internal support for periodic bytecode executor interrupts which can
