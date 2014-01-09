@@ -1,0 +1,240 @@
+<h2 id="customjson">Custom JSON formats</h2>
+
+<h3>Ecmascript JSON shortcomings</h3>
+
+<p>The standard JSON format has a number of shortcomings when used with
+Ecmascript:</p>
+<ul>
+<li><code>undefined</code> and function values are not supported</li>
+<li>NaN and infinity values are not supported</li>
+<li>Duktape custom types are, of course, not supported</li>
+<li>Codepoints above BMP cannot be represented except as surrogate pairs</li>
+<li>Codepoints above U+10FFFF cannot be represented even as surrogate pairs</li>
+<li>The output is not printable ASCII which is often inconvenient</li>
+</ul>
+
+<p>These limitations are part of the Ecmascript specification which
+explicitly prohibits more lenient behavior.  Duktape provides two more
+programmer friendly custom JSON format variants: <b>JSONX</b> and
+<b>JSONC</b>, described below.</p>
+
+<h3>Custom JSONX format</h3>
+
+<p>JSONX encodes all values in a very readable manner and parses back
+almost all values in a faithful manner (function values being the most
+important exception).  Output is pure printable ASCII, codepoints above
+U+FFFF are encoded with a custom escape format, and quotes around object
+keys are omitted in most cases.  JSONX is not JSON compatible but a very
+readable format, most suitable for debugging, logging, etc.</p>
+
+<p>JSONX is used as follows:</p>
+<pre class="ecmascript-code">
+var obj = { foo: 0/0, bar: [ 1, undefined, 3 ] };
+print(__duk__.jsonxEnc(obj));
+// prints out: {foo:NaN,bar:[1,undefined,3]}
+
+var dec = __duk__.jsonxDec('{ foo: 123, bar: undefined, quux: NaN }');
+print(dec.foo, dec.bar, dec.quux);
+// prints out: 123 undefined NaN
+</pre>
+
+<h3>Custom JSONC format</h3>
+
+<p>JSONC encodes all values into standard JSON.  Values not supported by
+standard JSON are encoded as objects with a marker key beginning with an
+underscore (e.g. <code>{"_ptr":"0xdeadbeef"}</code>).  Such values parse
+back as ordinary objects.  However, you can revive them manually more or
+less reliably.  Output is pure printable ASCII; codepoints above U+FFFF
+are encoded as plain string data with the format "U+nnnnnnnn"
+(e.g. <code>U+0010fedc</code>).</p>
+
+<p>JSONC is used as follows:</p>
+<pre class="ecmascript-code">
+var obj = { foo: 0/0, bar: [ 1, undefined, 3 ] };
+print(__duk__.jsoncEnc(obj));
+// prints out: {"foo":{"_nan":true},"bar":[1,{"_undef":true},3]}
+
+var dec = __duk__.jsoncDec('{ "foo": 123, "bar": {"_undef":true}, "quux": {"_nan":true} }');
+print(dec.foo, dec.bar, dec.quux);
+// prints out: 123 [object Object] [object Object]
+</pre>
+
+<p>The JSONC decoder is essentially the same as the standard JSON decoder
+at the moment: all JSONC outputs are valid JSON and no custom syntax is needed.
+As shown in the example, custom values (like <code>{"_undef":true}</code>)
+are <b>not</b> revived automatically.  They parse back as ordinary objects
+instead.</p>
+
+<h3>Codepoints above U+FFFF and invalid UTF-8 data</h3>
+
+<p>All standard Ecmascript strings are valid CESU-8 data internally, so
+behavior for codepoints above U+FFFF never poses compliance issues.  However,
+Duktape strings may contain extended UTF-8 codepoints and may even contain
+invalid UTF-8 data.</p>
+
+<p>The Duktape JSON implementation, including the standard Ecmascript JSON API,
+use replacement characters to deal with invalid UTF-8 data.  The resulting
+string may look a bit odd, but this behavior is preferable to throwing an
+error.</p>
+
+<h3>JSON format examples</h3>
+
+<p>The table below summarizes how different values encode in each
+encoding:</p>
+
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Standard JSON</th>
+<th>JSONX</th>
+<th>JSONC</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>undefined</td>
+<td>n/a</td>
+<td><code>undefined</code></td>
+<td><code>{"_undef":true}</code></td>
+<td>Standard JSON: encoded as <code>null</code> inside arrays, otherwise omitted</td>
+</tr>
+<tr>
+<td>null</td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td>standard JSON</td>
+</tr>
+<tr>
+<td>true</td>
+<td><code>true</code></td>
+<td><code>true</code></td>
+<td><code>true</code></td>
+<td>standard JSON</td>
+</tr>
+<tr>
+<td>false</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+<td>standard JSON</td>
+</tr>
+<tr>
+<td>123.4</td>
+<td><code>123.4</code></td>
+<td><code>123.4</code></td>
+<td><code>123.4</code></td>
+<td>standard JSON</td>
+</tr>
+<tr>
+<td>NaN</td>
+<td><code>null</code></td>
+<td><code>NaN</code></td>
+<td><code>{"_nan":true}</code></td>
+<td>Standard JSON: always encoded as <code>null</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Infinity</td>
+<td><code>null</code></td>
+<td><code>Infinity</code></td>
+<td><code>{"_inf":true}</code></td>
+<td>Standard JSON: always encoded as <code>null</code></td>
+</tr>
+<tr>
+<td>-Infinity</td>
+<td><code>null</code></td>
+<td><code>-Infinity</code></td>
+<td><code>{"_ninf":true}</code></td>
+<td>Standard JSON: always encoded as <code>null</code></td>
+</tr>
+<tr>
+<td>k&#xf6;h&#xe4;</td>
+<td><code>"k&#xf6;h&#xe4;"</code></td>
+<td><code>"k\xf6h\xe4"</code></td>
+<td><code>"k\u00f6h\u00e4"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>U+00FC</td>
+<td><code>"\u00fc"</code></td>
+<td><code>"\xfc"</code></td>
+<td><code>"\u00fc"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>U+ABCD</td>
+<td><code>"\uabcd"</code></td>
+<td><code>"\uabcd"</code></td>
+<td><code>"\uabcd"</code></td>
+<td></td>
+</tr>
+<tr>
+<td>U+1234ABCD</td>
+<td><code>"U+1234abcd"</code></td>
+<td><code>"\U1234abcd"</code></td>
+<td><code>"U+1234abcd"</code></td>
+<td>Non-BMP characters are not standard Ecmascript, JSONX format borrowed from Python</td>
+</tr>
+<tr>
+<td>object</td>
+<td><code>{"my_key":123}</code></td>
+<td><code>{my_key:123}</code></td>
+<td><code>{"my_key":123}</code></td>
+<td>ASCII keys matching identifer requirements encoded without quotes in JSONX</td>
+</tr>
+<tr>
+<td>array</td>
+<td><code>["foo","bar"]</code></td>
+<td><code>["foo","bar"]</code></td>
+<td><code>["foo","bar"]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>buffer</td>
+<td><code>n/a</code></td>
+<td><code>|deadbeef|</code></td>
+<td><code>{"_buf":"deadbeef"}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>pointer</td>
+<td><code>n/a</code></td>
+<td><code>(0xdeadbeef)</code></td>
+<td><code>{"_ptr":"0xdeadbeef"}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>NULL pointer</td>
+<td><code>n/a</code></td>
+<td><code>(null)</code></td>
+<td><code>{"_ptr":"null"}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>function</td>
+<td><code>n/a</code></td>
+<td><code>{_func:true}</code></td>
+<td><code>{"_func":true}</code></td>
+<td>Standard JSON: encoded as <code>null</code> inside arrays, otherwise omitted</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Limitations</h3>
+
+<p>Some limitations include:</p>
+
+<ul>
+<li>Only enumerable own properties are serialized in any of the formats.</li>
+<li>Array properties (other than the entries) are not serialized.  This would
+    be useful in e.g. logging, e.g. as <code>[1,2,3,"type":"point"]</code>.</li>
+<li>There is no automatic revival of special values when parsing JSONC data.</li>
+<li>There is no canonical encoding.  This would be easy to arrange with a simple
+    option to sort object keys during encoding.</li>
+</ul>
+
+<p>(See internal documentation for more future work issues.)</p>
+
