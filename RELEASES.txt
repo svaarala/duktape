@@ -96,6 +96,8 @@ Released
 0.9.0 (2014-01-XX)
 -------------------
 
+* Windows compatibility, tested with MinGW and VS2010 Express
+
 * API addition: duk_gc()
 
 * Added extended JSON format variants: JSONX and JSONC
@@ -123,6 +125,8 @@ Released
 * Fixed a coroutine termination bug which caused assertion errors and
   occasional segfaults when an uncaught error terminated a thread with
   a catch point active
+
+* Portability fixes for non-C99 platforms (like MSVC in VS2010)
 
 Planned
 =======
