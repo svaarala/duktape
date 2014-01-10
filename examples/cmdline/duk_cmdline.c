@@ -4,6 +4,14 @@
  *  For maximum portability, compile with -DDUK_CMDLINE_BAREBONES
  */
 
+#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || \
+    defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
+#ifndef DUK_CMDLINE_BAREBONES
+/* Force barebones mode on Windows. */
+#define DUK_CMDLINE_BAREBONES
+#endif
+#endif
+
 #ifdef DUK_CMDLINE_BAREBONES
 #define NO_READLINE
 #define NO_RLIMIT
