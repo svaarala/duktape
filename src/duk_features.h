@@ -897,6 +897,7 @@ extern double duk_computed_nan;
 #if defined(DUK_F_MSVC)
 /* _snprintf() does NOT NUL terminate on truncation, but Duktape code never
  * assumes that.
+ * http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
  */
 #define DUK_SNPRINTF     _snprintf
 #else
