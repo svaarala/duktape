@@ -188,6 +188,16 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_CLANG
 #endif
 
+/* MSVC. */
+#if defined(_MSC_VER)
+#define DUK_F_MSVC
+#endif
+
+/* MinGW. */
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#define DUK_F_MINGW
+#endif
+
 /*
  *  Platform detection and system includes
  *
@@ -234,6 +244,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #else
 #error AmigaOS but not M68K, not supported now
 #endif
+#elif defined(DUK_F_WINDOWS)
+#include <windows.h>
+#include <limits.h>
+#include <sys/param.h>
 #else
 /* Linux and hopefully others */
 #define DUK_F_STD_BYTEORDER_DETECT
@@ -676,6 +690,19 @@ typedef double duk_double_t;
 #error unsupported: cannot determine byte order
 #endif
 #endif  /* DUK_F_STD_BYTEORDER_DETECT */
+
+/* On Windows, assume we're little endian (check if possible) */
+#if defined(DUK_F_WINDOWS) && !defined(DUK_F_STD_BYTEORDER_DETECT)
+#if defined(DUK_F_MINGW) && !defined(_X86_)
+#error unsupported: cannot detect endianness on mingw, _X86_ define missing
+#endif
+#if defined(DUK_F_MSVC) && !defined(_M_IX86) && !defined(_M_X64)
+#error unsupported: cannot detect endianness on MSVC, _M_IX86 or _M_X64 define missing
+#endif
+/* If compiler is not MinGW or MSVC, no check now */
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#endif  /* Windows */
 
 #if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
 #error unsupported: cannot determine IEEE double byte order variant
@@ -1309,7 +1336,12 @@ extern double duk_computed_nan;
 #error WIN64 not supported
 #elif defined(_WIN32) || defined(WIN32)
 /* Windows 32-bit */
-#error WIN32 not supported
+#define DUK_USE_DATE_NOW_WIN32
+#define DUK_USE_DATE_TZO_WIN32
+/* Note: PRS and FMT are intentionally left undefined for now.  This means
+ * there is no platform specific date parsing/formatting but there is still
+ * the ISO 8601 standard format.
+ */
 #elif defined(__APPLE__)
 /* Mac OSX, iPhone, Darwin */
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
