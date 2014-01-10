@@ -6,6 +6,10 @@
  *  and formatting time values.
  *
  *  See doc/datetime.txt.
+ *
+ *  Platform specific links:
+ *
+ *    - http://msdn.microsoft.com/en-us/library/windows/desktop/ms725473(v=vs.85).aspx
  */
 
 #include "duk_internal.h"
@@ -23,12 +27,16 @@
 #define GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
 #elif defined(DUK_USE_DATE_NOW_TIME)
 #define GET_NOW_TIMEVAL      get_now_timeval_time
+#elif defined(DUK_USE_DATE_NOW_WIN32)
+#define GET_NOW_TIMEVAL      get_now_timeval_win32
 #else
 #error no function to get current time
 #endif
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 #define GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
+#elif defined(DUK_USE_DATE_TZO_WIN32)
+#define GET_LOCAL_TZOFFSET   get_local_tzoffset_win32
 #else
 #error no function to get local tzoffset
 #endif
@@ -125,6 +133,50 @@ static double get_now_timeval_time(duk_context *ctx) {
 	return ((double) t) * 1000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
+
+#if defined(DUK_USE_DATE_NOW_WIN32) || defined(DUK_USE_DATE_TZO_WIN32)
+/* Shared Windows helpers. */
+static void convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER *res) {
+	FILETIME ft;
+	if (SystemTimeToFileTime(st, &ft) == 0) {
+		DUK_DPRINT("SystemTimeToFileTime() failed, returning 0");
+		res->QuadPart = 0;
+	} else {
+		res->LowPart = ft.dwLowDateTime;
+		res->HighPart = ft.dwHighDateTime;
+	}
+}
+static void set_systime_jan1970(SYSTEMTIME *st) {
+	DUK_MEMSET((void *) st, 0, sizeof(*st));
+	st->wYear = 1970;
+	st->wMonth = 1;
+	st->wDayOfWeek = 4;  /* not sure whether or not needed; Thursday */
+	st->wDay = 1;
+	DUK_ASSERT(st->wHour == 0);
+	DUK_ASSERT(st->wMinute == 0);
+	DUK_ASSERT(st->wSecond == 0);
+	DUK_ASSERT(st->wMilliseconds == 0);
+}
+#endif  /* defined(DUK_USE_DATE_NOW_WIN32) || defined(DUK_USE_DATE_TZO_WIN32) */
+
+#ifdef DUK_USE_DATE_NOW_WIN32
+static double get_now_timeval_win32(duk_context *ctx) {
+	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
+	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
+	 */
+	SYSTEMTIME st1, st2;
+	ULARGE_INTEGER tmp1, tmp2;
+
+	GetSystemTime(&st1);
+	convert_systime_to_ularge((const SYSTEMTIME *) &st1, &tmp1);
+
+	set_systime_jan1970(&st2);
+	convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
+
+	/* Difference is in 100ns units, convert to milliseconds */
+	return (double) ((tmp1.QuadPart - tmp2.QuadPart) / 10000LL);
+}
+#endif  /* DUK_USE_DATE_NOW_WIN32 */
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
@@ -234,6 +286,39 @@ static int get_local_tzoffset_gmtime(double d) {
 	return 0;
 }
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
+
+#if defined(DUK_USE_DATE_TZO_WIN32)
+static int get_local_tzoffset_win32(double d) {
+	SYSTEMTIME st1;
+	SYSTEMTIME st2;
+	SYSTEMTIME st3;
+	ULARGE_INTEGER tmp1;
+	ULARGE_INTEGER tmp2;
+	ULARGE_INTEGER tmp3;
+	FILETIME ft1;
+
+	/* Use the approach described in "Remarks" of FileTimeToLocalFileTime:
+	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724277(v=vs.85).aspx
+	 */
+
+	set_systime_jan1970(&st1);
+	convert_systime_to_ularge((const SYSTEMTIME *) &st1, &tmp1);
+	tmp2.QuadPart = (ULONGLONG) (d * 10000.0);  /* millisec -> 100ns units since jan 1, 1970 */
+	tmp2.QuadPart += tmp1.QuadPart;             /* input 'd' in Windows UTC, 100ns units */
+
+	ft1.dwLowDateTime = tmp2.LowPart;
+	ft1.dwHighDateTime = tmp2.HighPart;
+	FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
+	if (SystemTimeToTzSpecificLocalTime((LPTIME_ZONE_INFORMATION) NULL, &st2, &st3) == 0) {
+		DUK_DPRINT("SystemTimeToTzSpecificLocalTime() failed, return tzoffset 0");
+		return 0;
+	}
+	convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
+
+	/* Positive if local time ahead of UTC. */
+	return (int) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000000LL);  /* seconds */
+}
+#endif  /* DUK_USE_DATE_TZO_WIN32 */
 
 #ifdef DUK_USE_DATE_PRS_STRPTIME
 static int parse_string_strptime(duk_context *ctx, const char *str) {
