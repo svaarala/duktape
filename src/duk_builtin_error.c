@@ -15,12 +15,12 @@ int duk_builtin_error_constructor_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int bidx_prototype = duk_get_magic(ctx);
 
-	DUK_UNREF(thr);
-
 	/* same for both error and each subclass like TypeError */
 	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                      DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
 	
+	DUK_UNREF(thr);
+
 	duk_push_object_helper(ctx, flags_and_class, bidx_prototype);
 
 	/* If message is undefined, the own property 'message' is not set at

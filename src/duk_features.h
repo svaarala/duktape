@@ -245,9 +245,9 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error AmigaOS but not M68K, not supported now
 #endif
 #elif defined(DUK_F_WINDOWS)
+/* MSVC does not have sys/param.h */
 #include <windows.h>
 #include <limits.h>
-#include <sys/param.h>
 #else
 /* Linux and hopefully others */
 #define DUK_F_STD_BYTEORDER_DETECT
@@ -491,18 +491,25 @@ typedef duk_uint32_t duk_uintmax_t;
 /* This detection is not very reliable, and only supports 32-bit platforms
  * now (64-bit platforms work if C99 types are available).
  */
-#if defined(__WORDSIZE) && (__WORDSIZE == 32)
+#if (defined(__WORDSIZE) && (__WORDSIZE == 32)) || \
+    (defined(DUK_F_MINGW) && defined(_X86_)) || \
+    (defined(DUK_F_MSVC) && defined(_M_IX86))
 typedef duk_int32_t duk_intptr_t;
 typedef duk_uint32_t duk_uintptr_t;
+#elif (defined(DUK_F_MINGW) && defined(_X86_)) || \
+      (defined(DUK_F_MSVC) && (defined(_M_X64) || defined(_M_AMD64)))
+/* Both MinGW and MSVC have a 64-bit type. */
+typedef long long duk_intptr_t;
+typedef unsigned long long duk_uintptr_t;
 #else
 #error cannot determine intptr type
 #endif
 
 /* Pretend that maximum int is 32 bits. */
-typedef duk_uintmax_t duk_uint32_t;
-typedef duk_intmax_t duk_int32_t;
+typedef duk_uint32_t duk_uintmax_t;
+typedef duk_int32_t duk_intmax_t;
 
-typedef duk_size_t size_t;
+typedef size_t duk_size_t;
 
 #define DUK_UINT8_MIN         0UL
 #define DUK_UINT8_MAX         0xffUL
@@ -696,7 +703,7 @@ typedef double duk_double_t;
 #if defined(DUK_F_MINGW) && !defined(_X86_)
 #error unsupported: cannot detect endianness on mingw, _X86_ define missing
 #endif
-#if defined(DUK_F_MSVC) && !defined(_M_IX86) && !defined(_M_X64)
+#if defined(DUK_F_MSVC) && !defined(_M_IX86) && !defined(_M_X64) && !defined(_M_AMD64)
 #error unsupported: cannot detect endianness on MSVC, _M_IX86 or _M_X64 define missing
 #endif
 /* If compiler is not MinGW or MSVC, no check now */
@@ -759,11 +766,11 @@ typedef double duk_double_t;
 #define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
 #define DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#elif !defined(__VBCC__)
+#elif !defined(__VBCC__) && !defined(_MSC_VER)
 #define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
- * Use a computed infinity(initialized when a heap is created at the
+ * Use a computed infinity (initialized when a heap is created at the
  * latest).
  */
 extern double duk_computed_infinity;
@@ -774,10 +781,11 @@ extern double duk_computed_infinity;
 #undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
 #define DUK_DOUBLE_NAN       NAN
-#elif !defined(__VBCC__)
+#elif !defined(__VBCC__) && !defined(_MSC_VER)
 #define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
+ * In MSVC (VS2010 Express) (0.0 / 0.0) results in a compile error.
  * Use a computed NaN (initialized when a heap is created at the
  * latest).
  */
@@ -886,7 +894,14 @@ extern double duk_computed_nan;
 #define DUK_STRCMP       strcmp
 #define DUK_STRNCMP      strncmp
 #define DUK_SPRINTF      sprintf
+#if defined(DUK_F_MSVC)
+/* _snprintf() does NOT NUL terminate on truncation, but Duktape code never
+ * assumes that.
+ */
+#define DUK_SNPRINTF     _snprintf
+#else
 #define DUK_SNPRINTF     snprintf
+#endif
 #define DUK_VSPRINTF     vsprintf
 #define DUK_VSNPRINTF    vsnprintf
 #define DUK_SSCANF       sscanf
@@ -1016,7 +1031,7 @@ extern double duk_computed_nan;
 
 #define DUK_LINE_MACRO  __LINE__
 
-#if !defined(__VBCC__)
+#if !defined(__VBCC__) && !defined(_MSC_VER)
 #define DUK_FUNC_MACRO  __func__
 #else
 #define DUK_FUNC_MACRO  "unknown"

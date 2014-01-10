@@ -45,7 +45,8 @@ extern "C" {
 /* syntax same as gcc */
 #define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(_MSC_VER)
-#define DUK_API_NORETURN(decl)  decl __declspec((noreturn))
+/* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
+#define DUK_API_NORETURN(decl)  __declspec(noreturn) decl
 #else
 /* Don't know how to declare a noreturn function, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used

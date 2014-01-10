@@ -427,11 +427,13 @@ void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize, 
 #else
 void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize) {
 #endif
+	void *res;
+
 	DUK_ASSERT(thr != NULL);
 	/* ptr may be NULL */
 	DUK_ASSERT(newsize >= 0);
 
-	void *res = DUK_REALLOC(thr->heap, ptr, newsize);
+	res = DUK_REALLOC(thr->heap, ptr, newsize);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
 	}
@@ -443,10 +445,11 @@ void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb,
 #else
 void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, size_t newsize) {
 #endif
+	void *res;
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(newsize >= 0);
 
-	void *res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
+	res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
 	}
@@ -456,5 +459,4 @@ void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb,
 /* Note: no need for duk_heap_mem_free_checked(), as free must not fail.
  * There is a DUK_FREE_CHECKED() macro just in case, though.
  */
-
 

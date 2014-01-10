@@ -1755,9 +1755,6 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	const duk_uint8_t *p;
 	duk_small_int_t ch;
 
-	DUK_DDDPRINT("parse number: %!T, radix=%d, flags=0x%08x",
-	             duk_get_tval(ctx, -1), (int) radix, (unsigned int) flags);
-
 	/* This seems to waste a lot of stack frame entries, but good compilers
 	 * will compute these as needed below.  Some of these initial flags are
 	 * also modified in the code below, so they can't all be removed.
@@ -1775,6 +1772,9 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	duk_small_int_t allow_leading_zero = (flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO);
 	duk_small_int_t allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
 	duk_small_int_t allow_auto_oct_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT);
+
+	DUK_DDDPRINT("parse number: %!T, radix=%d, flags=0x%08x",
+	             duk_get_tval(ctx, -1), (int) radix, (unsigned int) flags);
 
 	DUK_ASSERT(radix >= 2 && radix <= 36);
 	DUK_ASSERT(radix - 2 < sizeof(str2num_digits_for_radix));
