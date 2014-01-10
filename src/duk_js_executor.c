@@ -1357,13 +1357,13 @@ static void duk_executor_interrupt(duk_hthread *thr) {
  *  call are not guaranteed to keep their value.
  */
 
-#define STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
-#define REG(x)         (thr->valstack_bottom[(x)])
-#define REGP(x)        (&thr->valstack_bottom[(x)])
-#define CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
-#define CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
-#define REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? REG((x)) : CONST((x) - DUK_BC_REGLIMIT))
-#define REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? REGP((x)) : CONSTP((x) - DUK_BC_REGLIMIT))
+#define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
+#define DUK__REG(x)         (thr->valstack_bottom[(x)])
+#define DUK__REGP(x)        (&thr->valstack_bottom[(x)])
+#define DUK__CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
+#define DUK__CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
+#define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
+#define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
 
 #undef _COMPACT_ERRORS  /* FIXME: make this configurable */
                        
@@ -1659,8 +1659,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			t = DUK_DEC_BC(ins); tv2 = DUK__REGP(t);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_TVAL(tv1, tv2);
 			DUK_TVAL_INCREF(thr, tv1);
@@ -1673,8 +1673,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			t = DUK_DEC_BC(ins); tv2 = DUK__REGP(t);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 			DUK_TVAL_SET_TVAL(tv2, tv1);
 			DUK_TVAL_INCREF(thr, tv2);
@@ -1687,8 +1687,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = CONSTP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			t = DUK_DEC_BC(ins); tv2 = DUK__CONSTP(t);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_TVAL(tv1, tv2);
 			DUK_TVAL_INCREF(thr, tv2);  /* may be e.g. string */
@@ -1702,7 +1702,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval *tv1;
 			double val;
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			t = DUK_DEC_BC(ins); val = (double) (t - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_NUMBER(tv1, val);
@@ -1715,7 +1715,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval *tv1;
 			double val;
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
 				INTERNAL_ERROR("LDINTX target not a number");
 			}
@@ -1738,7 +1738,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> number of key/value pairs
 			 */
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
 				INTERNAL_ERROR("MPUTOBJ target not an object");
 			}
@@ -1759,11 +1759,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				/* FIXME: faster initialization (direct access or better primitives) */
 				/* FIXME: strictness for put? */
 
-				duk_push_tval(ctx, REGP(idx));
+				duk_push_tval(ctx, DUK__REGP(idx));
 				if (!duk_is_string(ctx, -1)) {
 					INTERNAL_ERROR("MPUTOBJ key not a string");
 				}
-				duk_push_tval(ctx, REGP(idx + 1));  /* -> [... obj key value] */
+				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
 				duk_put_prop(ctx, -3);  /* -> [... obj] */
 
 				count--;
@@ -1788,7 +1788,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> number of key/value pairs (N)
 			 */
 
-			t = DUK_DEC_A(ins); tv1 = REGP(t);
+			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
 				INTERNAL_ERROR("MPUTARR target not an object");
 			}
@@ -1803,7 +1803,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				INTERNAL_ERROR("MPUTARR out of bounds");
 			}
 
-			tv1 = REGP(idx);
+			tv1 = DUK__REGP(idx);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
 				INTERNAL_ERROR("MPUTARR start index not a number");
 			}
@@ -1820,7 +1820,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 				/* FIXME: strictness for put? */
 
-				duk_push_tval(ctx, REGP(idx));  /* -> [... obj value] */
+				duk_push_tval(ctx, DUK__REGP(idx));  /* -> [... obj value] */
 				duk_put_prop_index(ctx, -2, arr_idx);  /* -> [... obj] */
 
 				count--;
@@ -1853,9 +1853,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * b + c, and let the return handling fix up the stack frame?
 			 */
 
-			duk_push_tval(ctx, REGP(b));
+			duk_push_tval(ctx, DUK__REGP(b));
 			for (i = 0; i < c; i++) {
-				duk_push_tval(ctx, REGP(b + i + 1));
+				duk_push_tval(ctx, DUK__REGP(b + i + 1));
 			}
 			duk_new(ctx, c);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDDPRINT("NEW -> %!iT", duk_get_tval(ctx, -1));
@@ -1875,8 +1875,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> escaped source
 			 */
 
-			duk_push_tval(ctx, REGCONSTP(c));
-			duk_push_tval(ctx, REGCONSTP(b));  /* -> [ ... escaped_source bytecode ] */
+			duk_push_tval(ctx, DUK__REGCONSTP(c));
+			duk_push_tval(ctx, DUK__REGCONSTP(b));  /* -> [ ... escaped_source bytecode ] */
 			duk_regexp_create_instance(thr);   /* -> [ ... regexp_instance ] */
 			DUK_DDDPRINT("regexp instance: %!iT", duk_get_tval(ctx, -1));
 			duk_replace(ctx, a);
@@ -1907,11 +1907,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* FIXME: direct manipulation, or duk_replace_tval() */
 
-			/* Note: target registers a and a+1 may overlap with REGP(b).
+			/* Note: target registers a and a+1 may overlap with DUK__REGP(b).
 			 * Careful here.
 			 */
 
-			duk_push_tval(ctx, REGP(b));
+			duk_push_tval(ctx, DUK__REGP(b));
 			duk_replace(ctx, a);
 			duk_push_undefined(ctx);
 			duk_replace(ctx, a+1);
@@ -1925,7 +1925,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval *tv1;
 			duk_hstring *name;
 
-			tv1 = CONSTP(bc);
+			tv1 = DUK__CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				DUK_DDDPRINT("GETVAR not a string: %!T", tv1);
 				INTERNAL_ERROR("GETVAR name not a string");
@@ -1945,7 +1945,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval *tv1;
 			duk_hstring *name;
 
-			tv1 = CONSTP(bc);
+			tv1 = DUK__CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				INTERNAL_ERROR("PUTVAR name not a string");
 			}
@@ -1955,8 +1955,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * should be reworked.
 			 */
 
-			tv1 = REGP(a);  /* val */
-			duk_js_putvar_activation(thr, act, name, tv1, STRICT());
+			tv1 = DUK__REGP(a);  /* val */
+			duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			break;
 		}
 
@@ -1972,7 +1972,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int flag_undef_value;
 			int flag_func_decl;
 
-			tv1 = REGCONSTP(b);
+			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				INTERNAL_ERROR("DECLVAR name not a string");
 			}
@@ -1994,14 +1994,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			if (flag_undef_value) {
 				duk_push_undefined(ctx);
 			} else {
-				duk_push_tval(ctx, REGCONSTP(c));
+				duk_push_tval(ctx, DUK__REGCONSTP(c));
 			}
 			tv1 = duk_get_tval(ctx, -1);
 
 			if (duk_js_declvar_activation(thr, act, name, tv1, prop_flags, is_func_decl)) {
 				/* already declared, must update binding value */
 				tv1 = duk_get_tval(ctx, -1);
-				duk_js_putvar_activation(thr, act, name, tv1, STRICT());
+				duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			}
 
 			duk_pop(ctx);
@@ -2016,7 +2016,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_hstring *name;
 			int rc;
 
-			tv1 = REGCONSTP(b);
+			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				INTERNAL_ERROR("DELVAR name not a string");
 			}
@@ -2045,15 +2045,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_tval *tv1;
 			duk_hstring *name;
 
-			tv1 = REGCONSTP(b);
+			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				INTERNAL_ERROR("CSVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
 
-			/* Note: target registers a and a+1 may overlap with REGCONSTP(b)
-			 * and REGCONSTP(c).  Careful here.
+			/* Note: target registers a and a+1 may overlap with DUK__REGCONSTP(b)
+			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
 			duk_replace(ctx, a+1);  /* 'this' binding */
@@ -2115,9 +2115,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> key reg/const
 			 */
 
-			tv_obj = REGCONSTP(b);
-			tv_key = REGCONSTP(c);
-			DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", a, REGCONSTP(b), REGCONSTP(c));
+			tv_obj = DUK__REGCONSTP(b);
+			tv_key = DUK__REGCONSTP(c);
+			DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", a, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
 			DUK_UNREF(rc);  /* ignore */
 			DUK_DDDPRINT("GETPROP --> %!T", duk_get_tval(ctx, -1));
@@ -2145,13 +2145,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * of e.g. GETPROP; 'A' must contain a register-only value.
 			 */
 
-			tv_obj = REGP(a);
-			tv_key = REGCONSTP(b);
-			tv_val = REGCONSTP(c);
-			DUK_DDDPRINT("PUTPROP: obj=%!T, key=%!T, val=%!T", REGP(a), REGCONSTP(b), REGCONSTP(c));
-			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, STRICT());
+			tv_obj = DUK__REGP(a);
+			tv_key = DUK__REGCONSTP(b);
+			tv_val = DUK__REGCONSTP(c);
+			DUK_DDDPRINT("PUTPROP: obj=%!T, key=%!T, val=%!T", DUK__REGP(a), DUK__REGCONSTP(b), DUK__REGCONSTP(c));
+			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, DUK__STRICT());
 			DUK_UNREF(rc);  /* ignore */
-			DUK_DDDPRINT("PUTPROP --> obj=%!T, key=%!T, val=%!T", REGP(a), REGCONSTP(b), REGCONSTP(c));
+			DUK_DDDPRINT("PUTPROP --> obj=%!T, key=%!T, val=%!T", DUK__REGP(a), DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 			tv_val = NULL;  /* invalidated */
@@ -2173,9 +2173,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> key reg/const
 			 */
 
-			tv_obj = REGP(b);
-			tv_key = REGCONSTP(c);
-			rc = duk_hobject_delprop(thr, tv_obj, tv_key, STRICT());
+			tv_obj = DUK__REGP(b);
+			tv_key = DUK__REGCONSTP(c);
+			rc = duk_hobject_delprop(thr, tv_obj, tv_key, DUK__STRICT());
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 
@@ -2198,18 +2198,18 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* FIXME: allow object to be a const, e.g. in 'foo'.toString() */
 
-			tv_obj = REGP(b);
-			tv_key = REGCONSTP(c);
+			tv_obj = DUK__REGP(b);
+			tv_key = DUK__REGCONSTP(c);
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
 			DUK_UNREF(rc);  /* unused */
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 
-			/* Note: target registers a and a+1 may overlap with REGP(b)
-			 * and REGCONSTP(c).  Careful here.
+			/* Note: target registers a and a+1 may overlap with DUK__REGP(b)
+			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
-			duk_push_tval(ctx, REGP(b));  /* [ ... val obj ] */
+			duk_push_tval(ctx, DUK__REGP(b));  /* [ ... val obj ] */
 			duk_replace(ctx, a+1);        /* 'this' binding */
 			duk_replace(ctx, a);          /* val */
 			break;
@@ -2230,9 +2230,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 *  Handling DUK_OP_ADD this way is more compact (experimentally)
 				 *  than a separate case with separate argument decoding.
 				 */
-				_vm_arith_add(thr, REGCONSTP(b), REGCONSTP(c), a);
+				_vm_arith_add(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a);
 			} else {
-				_vm_arith_binary_op(thr, REGCONSTP(b), REGCONSTP(c), a, op);
+				_vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			}
 			break;
 		}
@@ -2246,7 +2246,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int b = DUK_DEC_B(ins);
 			int op = DUK_DEC_OP(ins);
 
-			_vm_arith_unary_op(thr, REGCONSTP(b), a, op);
+			_vm_arith_unary_op(thr, DUK__REGCONSTP(b), a, op);
 			break;
 		}
 
@@ -2261,7 +2261,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int c = DUK_DEC_C(ins);
 			int op = DUK_DEC_OP(ins);
 
-			_vm_bitwise_binary_op(thr, REGCONSTP(b), REGCONSTP(c), a, op);
+			_vm_bitwise_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			break;
 		}
 
@@ -2269,7 +2269,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 
-			_vm_bitwise_not(thr, REGCONSTP(b), a);
+			_vm_bitwise_not(thr, DUK__REGCONSTP(b), a);
 			break;
 		}
 
@@ -2277,7 +2277,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 
-			_vm_logical_not(thr, REGCONSTP(b), a);
+			_vm_logical_not(thr, DUK__REGCONSTP(b), a);
 			break;
 		}
 
@@ -2290,7 +2290,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int tmp;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
-			tmp = duk_js_equals(thr, REGCONSTP(b), REGCONSTP(c));
+			tmp = duk_js_equals(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			if (DUK_DEC_OP(ins) == DUK_OP_NEQ) {
 				tmp = !tmp;
 			}
@@ -2308,7 +2308,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int tmp;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
-			tmp = duk_js_strict_equals(REGCONSTP(b), REGCONSTP(c));
+			tmp = duk_js_strict_equals(DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			if (DUK_DEC_OP(ins) == DUK_OP_SNEQ) {
 				tmp = !tmp;
 			}
@@ -2336,10 +2336,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* x > y  -->  y < x */
 			tmp = duk_js_compare_helper(thr,
-			                            REGCONSTP(c),  /* y */
-			                            REGCONSTP(b),  /* x */
-			                            0,             /* eval_left_first */
-			                            0);            /* negate */
+			                            DUK__REGCONSTP(c),  /* y */
+			                            DUK__REGCONSTP(b),  /* x */
+			                            0,                  /* eval_left_first */
+			                            0);                 /* negate */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2355,10 +2355,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* x >= y  -->  not (x < y) */
 			tmp = duk_js_compare_helper(thr,
-			                            REGCONSTP(b),  /* x */
-			                            REGCONSTP(c),  /* y */
-			                            1,             /* eval_left_first */
-			                            1);            /* negate */
+			                            DUK__REGCONSTP(b),  /* x */
+			                            DUK__REGCONSTP(c),  /* y */
+			                            1,                  /* eval_left_first */
+			                            1);                 /* negate */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2374,10 +2374,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* x < y */
 			tmp = duk_js_compare_helper(thr,
-			                            REGCONSTP(b),  /* x */
-			                            REGCONSTP(c),  /* y */
-			                            1,             /* eval_left_first */
-			                            0);            /* negate */
+			                            DUK__REGCONSTP(b),  /* x */
+			                            DUK__REGCONSTP(c),  /* y */
+			                            1,                  /* eval_left_first */
+			                            0);                 /* negate */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2393,10 +2393,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* x <= y  -->  not (x > y)  -->  not (y < x) */
 			tmp = duk_js_compare_helper(thr,
-			                            REGCONSTP(c),  /* y */
-			                            REGCONSTP(b),  /* x */
-			                            0,             /* eval_left_first */
-			                            1);            /* negate */
+			                            DUK__REGCONSTP(c),  /* y */
+			                            DUK__REGCONSTP(b),  /* x */
+			                            0,                  /* eval_left_first */
+			                            1);                 /* negate */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2408,7 +2408,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int b = DUK_DEC_B(ins);
 			int tmp;
 
-			tmp = duk_js_toboolean(REGCONSTP(b));
+			tmp = duk_js_toboolean(DUK__REGCONSTP(b));
 			if (tmp == a) {
 				/* if boolean matches A, skip next inst */
 				act->pc++;
@@ -2425,7 +2425,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int c = DUK_DEC_C(ins);
 			int tmp;
 
-			tmp = duk_js_instanceof(thr, REGCONSTP(b), REGCONSTP(c));
+			tmp = duk_js_instanceof(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
 			break;
@@ -2438,7 +2438,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int c = DUK_DEC_C(ins);
 			int tmp;
 
-			tmp = duk_js_in(thr, REGCONSTP(b), REGCONSTP(c));
+			tmp = duk_js_in(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
 			break;
@@ -2472,7 +2472,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_DDDPRINT("SLOWRETURN a=%d b=%d", a, b);
 
 				if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
-					duk_push_tval(ctx, REGCONSTP(b));
+					duk_push_tval(ctx, DUK__REGCONSTP(b));
 				} else {
 					duk_push_undefined(ctx);
 				}
@@ -2507,7 +2507,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			flag_tailcall = (a & DUK_BC_CALL_FLAG_TAILCALL);
 			flag_evalcall = (a & DUK_BC_CALL_FLAG_EVALCALL);
 
-			tv_func = REGP(b);
+			tv_func = DUK__REGP(b);
 			if (!DUK_TVAL_IS_OBJECT(tv_func)) {
 				DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "call target not an object");
 			}
@@ -2763,7 +2763,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
 				                              -1);  /* no prototype, updated below */
 
-				duk_push_tval(ctx, REGCONSTP(c));
+				duk_push_tval(ctx, DUK__REGCONSTP(c));
 				duk_to_object(ctx, -1);
 				duk_dup(ctx, -1);
 
@@ -2797,7 +2797,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
 				DUK_DDDPRINT("catch binding flag set to catcher");
 				cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
-				tv1 = CONSTP(c);
+				tv1 = DUK__CONSTP(c);
 				DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 				cat->h_varname = DUK_TVAL_GET_STRING(tv1);
 			} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
@@ -2852,7 +2852,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_tval tv_tmp;
 				duk_tval *tv1, *tv2;
 
-				tv1 = REGP(b);
+				tv1 = DUK__REGP(b);
 				tv2 = thr->valstack_bottom - 1;  /* 'this binding' is just under bottom */
 				DUK_ASSERT(tv2 >= thr->valstack);
 
@@ -2870,7 +2870,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
-				tv1 = REGP(bc);
+				tv1 = DUK__REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
@@ -2882,7 +2882,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
-				tv1 = REGP(bc);
+				tv1 = DUK__REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_NULL(tv1);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
@@ -2896,7 +2896,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_tval *tv1;
 				int bval = (extraop == DUK_EXTRAOP_LDTRUE ? 1 : 0);
 
-				tv1 = REGP(bc);
+				tv1 = DUK__REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_BOOLEAN(tv1, bval);
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
@@ -2927,11 +2927,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_hobject *h;
 				duk_uint32_t len;
 
-				t = DUK_DEC_B(ins); tv1 = REGP(t);
+				t = DUK_DEC_B(ins); tv1 = DUK__REGP(t);
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 				h = DUK_TVAL_GET_OBJECT(tv1);
 
-				t = DUK_DEC_C(ins); tv1 = REGP(t);
+				t = DUK_DEC_C(ins); tv1 = DUK__REGP(t);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 				len = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 
@@ -2944,7 +2944,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_context *ctx = (duk_context *) thr;
 				int b = DUK_DEC_B(ins);
 				int c = DUK_DEC_C(ins);
-				duk_push_hstring(ctx, duk_js_typeof(thr, REGCONSTP(c)));
+				duk_push_hstring(ctx, duk_js_typeof(thr, DUK__REGCONSTP(c)));
 				duk_replace(ctx, b);
 				break;
 			}
@@ -2960,7 +2960,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * C -> constant index of identifier name
 				 */
 
-				tv = REGCONSTP(c);  /* FIXME: this could be a CONSTP instead */
+				tv = DUK__REGCONSTP(c);  /* FIXME: this could be a DUK__CONSTP instead */
 				DUK_ASSERT(DUK_TVAL_IS_STRING(tv));
 				name = DUK_TVAL_GET_STRING(tv);
 				if (duk_js_getvar_activation(thr, act, name, 0 /*throw*/)) {
