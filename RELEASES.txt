@@ -126,6 +126,12 @@ Released
   occasional segfaults when an uncaught error terminated a thread with
   a catch point active
 
+* Fixed a tailcall bug: the current activation was not closed which
+  caused variable lookups to fail if an inner function accessed
+  variables in the surrounding activation
+
+* Fixed a few bound constructor bugs
+
 * Portability fixes for non-C99 platforms (like MSVC in VS2010)
 
 Planned
