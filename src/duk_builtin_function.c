@@ -258,6 +258,7 @@ int duk_builtin_function_prototype_bind(duk_context *ctx) {
 	duk_push_object_helper(ctx,
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                       DUK_HOBJECT_FLAG_BOUND |
+	                       DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
 	                       DUK_BIDX_FUNCTION_PROTOTYPE);
 

@@ -301,7 +301,8 @@ static void handle_createargs_for_call(duk_hthread *thr,
  *  Follows the bound function chain until a non-bound function is found.
  *  Prepends the bound arguments to the value stack (at idx_func + 2),
  *  updating 'num_stack_args' in the process.  The 'this' binding is also
- *  updated if necessary (at idx_func + 1).
+ *  updated if necessary (at idx_func + 1).  Note that for constructor calls
+ *  the 'this' binding is never updated by [[BoundThis]].
  *
  *  FIXME: bound function chains could be collapsed at bound function creation
  *  time so that each bound function would point directly to a non-bound
@@ -311,7 +312,8 @@ static void handle_createargs_for_call(duk_hthread *thr,
 static void handle_bound_chain_for_call(duk_hthread *thr,
                                         int idx_func,
                                         int *p_num_stack_args,   /* may be changed by call */
-                                        duk_hobject **p_func) {  /* changed by call */
+                                        duk_hobject **p_func,    /* changed by call */
+                                        int is_constructor_call) {
 	duk_context *ctx = (duk_context *) thr;
 	int num_stack_args;
 	duk_hobject *func;
@@ -346,8 +348,13 @@ static void handle_bound_chain_for_call(duk_hthread *thr,
 
 		/* [ ... func this arg1 ... argN ] */
 
-		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);
-		duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
+		if (is_constructor_call) {
+			/* See: ecmascript-testcases/test-spec-bound-constructor.js */
+			DUK_DDDPRINT("constructor call: don't update this binding");
+		} else {
+			duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);
+			duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
+		}
 
 		/* [ ... func this arg1 ... argN ] */
 
@@ -824,7 +831,7 @@ int duk_handle_call(duk_hthread *thr,
 
 	if (DUK_HOBJECT_HAS_BOUND(func)) {
 		/* slow path for bound functions */
-		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func);
+		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 	}
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
@@ -1744,7 +1751,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (DUK_HOBJECT_HAS_BOUND(func)) {
 		/* slow path for bound functions */
-		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func);
+		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 	}
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func));  /* caller must ensure this */
@@ -1787,6 +1794,14 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		duk_tval tv_tmp;
 		int i;
 
+		/*
+		 *  Tailcall handling
+		 *
+		 *  We must essentially simulate a callstack unwind here.  In particular,
+		 *  the current activation must be closed, otherwise something like
+		 *  test-dev-bug-reduce-judofyr.js results.
+		 */
+
 		DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
 		             thr->callstack_top - 1);
 
@@ -1796,6 +1811,21 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
+
+		if (!DUK_HOBJECT_HAS_NEWENV(act->func)) {
+			DUK_DDDPRINT("skip closing environments, envs not owned by this activation");
+			goto skip_env_close;
+		}
+
+		DUK_ASSERT(act->lex_env == act->var_env);
+		if (act->var_env != NULL) {
+			DUK_DDDPRINT("closing var_env record %p -> %!O",
+			             (void *) act->var_env, (duk_heaphdr *) act->var_env);
+			duk_js_close_environment_record(thr, act->var_env, act->func, act->idx_bottom);
+			act = thr->callstack + thr->callstack_top - 1;  /* avoid side effect issues */
+		}
+	 skip_env_close:
 
 		/* Note: since activation is still reachable, refcount manipulation
 		 * must be very careful to avoid side effect issues.  Also, 'act'

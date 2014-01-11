@@ -143,6 +143,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 			goto skip_env_close;
 		}
 
+		DUK_ASSERT(p->lex_env == p->var_env);
 		if (p->var_env != NULL) {
 			DUK_DDDPRINT("closing var_env record %p -> %!O",
 			             (void *) p->var_env, (duk_heaphdr *) p->var_env);
