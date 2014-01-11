@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: document OSX compatibility
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-10 21:04:05.027912 Z
+references: []
+
+id: 671d9ca4da704398d04a29d1d4645d4994d39b7a
+log_events: 
+- - 2014-01-10 21:04:05.187883 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

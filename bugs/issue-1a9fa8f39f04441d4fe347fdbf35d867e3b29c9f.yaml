@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-12-15 23:34:40.453221 Z
 references: []
 
@@ -15,4 +15,16 @@ log_events:
 - - 2013-12-15 23:34:40.588989 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-10 20:30:02.912913 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2014-01-10 20:30:10.280795 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Start with MinGW on Windows XP.
+- - 2014-01-10 23:45:16.969418 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""

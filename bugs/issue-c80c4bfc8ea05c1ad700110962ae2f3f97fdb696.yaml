@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: document iOS compatibility
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-10 21:04:11.627976 Z
+references: []
+
+id: c80c4bfc8ea05c1ad700110962ae2f3f97fdb696
+log_events: 
+- - 2014-01-10 21:04:11.787899 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
