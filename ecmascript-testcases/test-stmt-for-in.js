@@ -2,6 +2,12 @@
  *  For-in statement (E5 Section 12.6.4).
  */
 
+/*---
+{
+    "knownbug": true
+}
+---*/
+
 /*===
 SyntaxError
 ===*/
