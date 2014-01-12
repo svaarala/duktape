@@ -96,6 +96,9 @@ metadata keys:
 * ``custom``: if true, some implementation dependent features are tested,
   and comparison to other Ecmascript engines is not relevant.
 
+* ``knownbug``: if true, the test is categorized as failure but is shown
+  as a known bug which does not need immediate fixing.
+
 Practices
 ---------
 
