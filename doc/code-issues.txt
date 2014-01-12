@@ -504,6 +504,10 @@ The most portable way seems to be to::
 Using sizeof(buf) - 1 for size may cause a NUL terminator to appear at
 the second to last character of buf in some implementations.
 
+Examples of snprintf() calls which don't NUL terminate on truncation:
+
+* Windows ``_snprintf()``: http://msdn.microsoft.com/en-us/library/2ts7cx93.aspx
+
 s(n)printf %s and NULL value
 ::::::::::::::::::::::::::::
 
