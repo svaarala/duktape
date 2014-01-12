@@ -24,7 +24,7 @@
 #front-steps .step {
 	font-weight: bold;
 	margin-right: 0.5em;
-	color: #ffffff;
+	color: #eeeeee;  /* off white to work in IE6 where dropshadow not recognized */
 	font-size: 24pt;
 
 	text-shadow: 0px 0px 6px #000000;
