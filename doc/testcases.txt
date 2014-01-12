@@ -97,7 +97,9 @@ metadata keys:
   and comparison to other Ecmascript engines is not relevant.
 
 * ``knownbug``: if true, the test is categorized as failure but is shown
-  as a known bug which does not need immediate fixing.
+  as a known bug which does not need immediate fixing (i.e. they are not
+  release blockers).  Bugs marked as known bugs may be difficult to fix
+  or may be low priority.
 
 Practices
 ---------
