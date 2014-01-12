@@ -3,8 +3,8 @@
 <h2>Platforms and compilers</h2>
 
 <p>The table below summarizes the platforms and compilers which Duktape is known
-to work on, with portability notes where appropriate.  This is not an exhaustive
-list of supported/unsupported platforms, rather a list of what is known to work
+to work on, with portability notes where appropriate.  This is <b>not an exhaustive
+list</b> of supported/unsupported platforms, rather a list of what is known to work
 (and not to work).  Platform and compiler specific issues are discussed in more
 detail below the table.</p>
 
@@ -21,26 +21,32 @@ detail below the table.</p>
 <tr>
 <td>Linux</td>
 <td>GCC</td>
-<td>x86, x86-64, ARM, MIPS</td>
+<td>x86, x64, ARM, MIPS</td>
 <td>No known issues.</td>
 </tr>
 <tr>
 <td>Linux</td>
 <td>Clang</td>
-<td>x86, x86-64, ARM, MIPS</td>
+<td>x86, x64, ARM, MIPS</td>
 <td>No known issues.</td>
 </tr>
 <tr>
 <td>Linux</td>
 <td>TCC</td>
-<td>x86-64</td>
+<td>x64</td>
 <td>Zero sign issues (see below).</td>
 </tr>
 <tr>
 <td>FreeBSD</td>
 <td>Clang</td>
-<td>x86-64</td>
-<td>Aliasing issues with clang 3.3 on FreeBSD, with <code>-m32</code> and packed <code>duk_tval</code>.</td>
+<td>x86</td>
+<td>Aliasing issues with clang 3.3 on 64-bit FreeBSD, <code>-m32</code>, and packed <code>duk_tval</code>.</td>
+</tr>
+<tr>
+<td>FreeBSD</td>
+<td>Clang</td>
+<td>x64</td>
+<td>No known issues.</td>
 </tr>
 <tr>
 <td>Windows</td>
@@ -56,9 +62,15 @@ detail below the table.</p>
 </tr>
 <tr>
 <td>Windows</td>
-<td>MSVC</td>
+<td>MSVC<br />(Visual Studio Express 2010)</td>
 <td>x86</td>
-<td>Tested with Visual Studio Express 2010, only ISO 8601 date format supported (no platform specific format)</td>
+<td>Only ISO 8601 date format supported (no platform specific format)</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>MSVC<br />(Visual Studio Express 2013 for Windows Desktop)</td>
+<td>x64</td>
+<td>Only ISO 8601 date format supported (no platform specific format)</td>
 </tr>
 <tr>
 <td>AmigaOS</td>
@@ -67,7 +79,7 @@ detail below the table.</p>
 <td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
 </tr>
 <tr>
-<td>TOS (Atari ST)</td>
+<td>TOS<br />(Atari ST)</td>
 <td>VBCC</td>
 <td>M68K</td>
 <td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
