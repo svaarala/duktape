@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: fix front page steps visibility in old IE
-desc: just change white color to a bit darker one?
+title: "add some env info to __duk__: endianness, packed, 32/64 bit, etc"
+desc: ""
 type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2014-01-10 20:25:14.394917 Z
+creation_time: 2014-01-12 00:41:30.672690 Z
 references: []
 
-id: f651484530ee639588bc4de26b0912cf8049daeb
+id: eab53f4b2d7e8f470d9bfe5f93adeead42995401
 log_events: 
-- - 2014-01-10 20:25:14.546856 Z
+- - 2014-01-12 00:41:30.840590 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-01-12 01:34:07.515158 Z
+- - 2014-01-12 01:18:41.753470 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add cpp warnings when compiled with a known compiler and suboptimal flags (like no -std=c99 with mingw)
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-12 12:40:08.605320 Z
+references: []
+
+id: 87a9d7aaec7e0111de4b35de114fc3c5c3889864
+log_events: 
+- - 2014-01-12 12:40:08.780938 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

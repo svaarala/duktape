@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: improve __duk__.env contents
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-12 01:18:55.897138 Z
+references: []
+
+id: 467f73cba308b04520d9815e4651b45f937bfe51
+log_events: 
+- - 2014-01-12 01:18:56.049241 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
