@@ -170,7 +170,11 @@ Current implementation uses the same functions as on Linux.
 Windows
 -------
 
-**FIXME**
+Current implementation uses time functions documented in:
+
+* http://msdn.microsoft.com/en-us/library/windows/desktop/ms725473(v=vs.85).aspx
+
+The same implementation works for WIN32 and WIN64.
 
 See also:
 
