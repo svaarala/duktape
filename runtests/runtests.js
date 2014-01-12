@@ -556,6 +556,9 @@ function testRunnerMain() {
             } else if (res.status === 'fail') {
                 countFail++;
                 parts.push(res.diff_expect.split('\n').length + ' diff lines');
+                if (res.testcase.meta.knownbug) {
+                    parts.push('known bug');
+                }
                 need = true;
             } else {
                 countPass++;
