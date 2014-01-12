@@ -49,8 +49,8 @@ does not block.</p>
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">build</td><td>Opaque build information string.  Describes when and how the Duktape distributable sources were built.</td></tr>
 <tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
+<tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
 <tr><td class="propname">setFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">getFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">enc</td><td>Encode a value: <code>__duk__.enc('hex', 'foo')</code>.</td></tr>
@@ -103,6 +103,19 @@ if (!this.__duk__) {
 if (typeof __duk__ !== 'object') {
     print('not Duktape');
 }
+</pre>
+
+<h3>env</h3>
+
+<p><code>env</code> summarizes the most important effective compile options
+in a version specific, quite cryptic manner.  The format is version specific
+and is not intended to be parsed programmatically.  This is mostly useful for
+developers (see <code>duk_hthread_builtins.c</code> for the code which sets
+the value).</p>
+
+<p>Example from Duktape 0.9.0:</p>
+<pre class="ecmascript-code">
+l u x64     // l|b|m endianness, p|u packed/unpacked tval, arch
 </pre>
 
 <h3>enc() and dec()</h3>
