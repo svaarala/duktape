@@ -844,7 +844,7 @@ in Ecmascript JSON API.
 
 For instance, arguments could be given in a table::
 
-  __duk__.jsonDec(myValue, {
+  Duktape.jsonDec(myValue, {
     allowHex: true
   });
 

@@ -6,7 +6,7 @@ Release checklist
 
 * Check DUK_VERSION
 
-  - Verify by running Duktape cmdline and evaluating ``__duk__.version``
+  - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
 * Build candidate tar.xz files
 
