@@ -116,6 +116,7 @@ Released
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+  **FIXME**
 
 * More self tests to detect obscure compiler bugs, two's complement
   arithmetic, etc (disabled by default)
