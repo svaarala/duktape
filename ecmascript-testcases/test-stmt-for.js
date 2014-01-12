@@ -26,3 +26,7 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/*FIXME:break*/
+/*FIXME:continue*/
+

@@ -16,3 +16,6 @@ try {
 
 /* FIXME: other tests */
 
+/*FIXME:break*/
+/*FIXME:continue*/
+
