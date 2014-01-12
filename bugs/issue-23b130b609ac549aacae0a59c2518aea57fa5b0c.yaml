@@ -5,7 +5,7 @@ desc: |-
   explicit function call which takes ~10 bytes.
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2013-11-19 12:15:27.305708 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-12 14:03:12.730684 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

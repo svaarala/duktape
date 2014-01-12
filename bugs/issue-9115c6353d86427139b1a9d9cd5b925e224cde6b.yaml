@@ -3,7 +3,7 @@ title: coroutines vs. generators
 desc: http://tobyho.com/2013/06/16/what-are-generators/
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-08 07:37:25.221818 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-12 14:03:11.014851 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

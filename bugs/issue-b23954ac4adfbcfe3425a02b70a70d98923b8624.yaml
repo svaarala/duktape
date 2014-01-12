@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-10-09 10:33:53.389136 Z
 references: []
 
@@ -24,3 +24,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
   - ""
+- - 2014-01-12 13:57:04.353994 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - Renamed to Duktape.

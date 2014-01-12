@@ -3,7 +3,7 @@ title: allocate all built-in strings from a single blob to reduce memory clutter
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -34,3 +34,7 @@ log_events:
     The forced refcount of 1 and forced reachability of the strings should be
     enough to keep the strings from ever being freed.  In any case, maybe assert
     for that when heap objects are freed.
+- - 2014-01-12 14:03:12.005805 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
+  - ""

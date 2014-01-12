@@ -29,7 +29,7 @@ desc: |-
   flag were to exist, should use functions also be able to use one?
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -41,4 +41,8 @@ log_events:
 - - 2013-11-11 23:00:13.481756 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-12 14:03:13.292205 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""
