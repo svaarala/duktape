@@ -130,7 +130,7 @@ undefined
 /* FIXME: other non-standard builtins */
 
 try {
-    print(__duk__.name);
+    print(Duktape.name);
 } catch (e) {
     print(e.name);
 }

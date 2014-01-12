@@ -17,8 +17,8 @@ function fin(o) {
 
 var obj1 = { name: 'obj1' };
 var obj2 = { name: 'obj2' };
-__duk__.setFinalizer(obj1, fin);
-__duk__.setFinalizer(obj2, fin);
+Duktape.setFinalizer(obj1, fin);
+Duktape.setFinalizer(obj2, fin);
 obj1.ref = obj2;  // use circular reference to prevent refcount collection
 obj2.ref = obj1;
 obj1 = null;

@@ -26,7 +26,7 @@ finished
 ===*/
 
 function yielder(x) {
-    var yield = __duk__.Thread.yield;
+    var yield = Duktape.Thread.yield;
 
     print('yielder starting');
     print('yielder arg:', x);
@@ -53,14 +53,14 @@ function yielder(x) {
     return 123;
 }
 
-var t = new __duk__.Thread(yielder);
+var t = new Duktape.Thread(yielder);
 
 try {
     print('resume tests');
-    print('yielded with', __duk__.Thread.resume(t, 'foo'));
-    print('yielded with', __duk__.Thread.resume(t, 'bar'));
-    print('yielded with', __duk__.Thread.resume(t, 'quux'));
-    print('yielded with', __duk__.Thread.resume(t, 'baz'));
+    print('yielded with', Duktape.Thread.resume(t, 'foo'));
+    print('yielded with', Duktape.Thread.resume(t, 'bar'));
+    print('yielded with', Duktape.Thread.resume(t, 'quux'));
+    print('yielded with', Duktape.Thread.resume(t, 'baz'));
 } catch (e) {
     print(e);
 }

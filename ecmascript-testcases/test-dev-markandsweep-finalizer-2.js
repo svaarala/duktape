@@ -65,8 +65,8 @@ function init() {
     a.ref = b;
     b.ref = a;
 
-    __duk__.setFinalizer(a, finalizer_a);
-    __duk__.setFinalizer(b, finalizer_b);
+    Duktape.setFinalizer(a, finalizer_a);
+    Duktape.setFinalizer(b, finalizer_b);
 }
 
 function delrefs() {
@@ -78,8 +78,8 @@ function testrefs() {
     print(typeof a);
     print(typeof b);
 
-    //print(__duk__.refc(a));
-    //print(__duk__.refc(b));
+    //print(Duktape.refc(a));
+    //print(Duktape.refc(b));
 }
 
 init();
@@ -88,8 +88,8 @@ testrefs();
 
 rescue = true;
 delrefs();
-__duk__.gc();  // both a and b should be unreachable and have their finalizers executed
-__duk__.gc();  // a second gc will rescue the objects, allowing their finalizer to run again
+Duktape.gc();  // both a and b should be unreachable and have their finalizers executed
+Duktape.gc();  // a second gc will rescue the objects, allowing their finalizer to run again
 testrefs();
 
 /* Note: a single gc above is NOT sufficient to ensure that the finalizer will run again.
@@ -111,12 +111,12 @@ testrefs();
 
 rescue = true;
 delrefs();
-__duk__.gc();  // again
-__duk__.gc();
+Duktape.gc();  // again
+Duktape.gc();
 testrefs();
 
 rescue = false;
 delrefs();
-__duk__.gc();  // swept immediately
+Duktape.gc();  // swept immediately
 testrefs();
 

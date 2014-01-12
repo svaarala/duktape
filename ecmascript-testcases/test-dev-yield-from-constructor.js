@@ -11,7 +11,7 @@ TypeError
 var thr;
 
 function Foo() {
-    __duk__.Thread.yield(123);
+    Duktape.Thread.yield(123);
 }
 
 function coroutine() {
@@ -21,9 +21,9 @@ function coroutine() {
 }
 
 try {
-    thr = new __duk__.Thread(coroutine);
-    print(__duk__.Thread.resume(thr));
-    print(__duk__.Thread.resume(thr));
+    thr = new Duktape.Thread(coroutine);
+    print(Duktape.Thread.resume(thr));
+    print(Duktape.Thread.resume(thr));
 } catch (e) {
     print(e.name);
 }

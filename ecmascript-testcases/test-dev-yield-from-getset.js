@@ -9,11 +9,11 @@ TypeError
 ===*/
 
 function getter() {
-    __duk__.Thread.yield('foo')
+    Duktape.Thread.yield('foo')
 }
 
 function setter() {
-    __duk__.Thread.yield('bar')
+    Duktape.Thread.yield('bar')
 }
 
 var obj = {
@@ -22,18 +22,18 @@ var obj = {
 }
 
 function test_get() {
-    var t = new __duk__.Thread(function() {
+    var t = new Duktape.Thread(function() {
         print(obj.a);
     });
-    __duk__.Thread.resume(t)
+    Duktape.Thread.resume(t)
 }
 
 function test_set() {
-    var t = new __duk__.Thread(function() {
+    var t = new Duktape.Thread(function() {
         obj.a = 1;
         print('setter ok');
     });
-    __duk__.Thread.resume(t)
+    Duktape.Thread.resume(t)
 }
 
 try {

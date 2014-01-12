@@ -1,5 +1,5 @@
 /*
- *  Simple tests for __duk__.Buffer and __duk__.Pointer and how these two
+ *  Simple tests for Duktape.Buffer and Duktape.Pointer and how these two
  *  custom types behave in coercions etc.  More detailed tests separately.
  */
 
@@ -21,14 +21,14 @@ foo
 ===*/
 
 function testBuffer1() {
-    var plain1 = __duk__.dec('hex', 'deadbeef');
-    var plain2 = __duk__.Buffer('foo');
-    var object1 = new __duk__.Buffer('bar');
+    var plain1 = Duktape.dec('hex', 'deadbeef');
+    var plain2 = Duktape.Buffer('foo');
+    var object1 = new Duktape.Buffer('bar');
 
     print(typeof plain1, dumpClass(plain1));
     print(typeof plain2, dumpClass(plain2));
     print(typeof object1, dumpClass(object1));
-    print(object1 instanceof __duk__.Buffer);
+    print(object1 instanceof Duktape.Buffer);
 
     print(typeof object1.toString());
     print(typeof object1.valueOf());
@@ -152,7 +152,7 @@ test buffer 2
 ===*/
 
 function testBuffer2() {
-    var B = __duk__.Buffer;
+    var B = Duktape.Buffer;
     var values1 = [
         undefined, null, true, false,
         0, 123, Number(0), Number(123),
@@ -194,12 +194,12 @@ pointer
 
 function testPointer1() {
     // XXX: these yield random heap pointers now, maybe changes later
-    var plain1 = __duk__.Pointer('foo');
-    var object1 = new __duk__.Pointer('bar');
+    var plain1 = Duktape.Pointer('foo');
+    var object1 = new Duktape.Pointer('bar');
 
     print(typeof plain1, dumpClass(plain1));
     print(typeof object1, dumpClass(object1));
-    print(object1 instanceof __duk__.Pointer);
+    print(object1 instanceof Duktape.Pointer);
 
     print(typeof object1.toString());
     print(typeof object1.valueOf());
@@ -208,8 +208,8 @@ function testPointer1() {
     print(typeof plain1.toString());
     print(typeof plain1.valueOf());
 
-    var ptr_null = __duk__.Pointer();
-    var ptr_nonnull = __duk__.Pointer('foo');
+    var ptr_null = Duktape.Pointer();
+    var ptr_nonnull = Duktape.Pointer('foo');
 
     // unary plus coercion is ToNumber()
     print(+ptr_null, +ptr_nonnull);
@@ -265,7 +265,7 @@ test pointer 2
 ===*/
 
 function testPointer2() {
-    var P = __duk__.Pointer;
+    var P = Duktape.Pointer;
     var p1 = P();  // NULL
     var p2 = P('foo');  // non-NULL
     var values1 = [

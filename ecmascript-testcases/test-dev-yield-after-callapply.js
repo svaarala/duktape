@@ -12,7 +12,7 @@ var res;
  */
 
 function innerfunc() {
-    __duk__.Thread.yield(123);
+    Duktape.Thread.yield(123);
 }
 
 function coroutine1() {
@@ -26,16 +26,16 @@ function coroutine2() {
 }
 
 try {
-    thread = new __duk__.Thread(coroutine1);
-    res = __duk__.Thread.resume(thread, 0);
+    thread = new Duktape.Thread(coroutine1);
+    res = Duktape.Thread.resume(thread, 0);
     print(res);
 } catch (e) {
     print(e.name);
 }
 
 try {
-    thread = new __duk__.Thread(coroutine2);
-    res = __duk__.Thread.resume(thread, 0);
+    thread = new Duktape.Thread(coroutine2);
+    res = Duktape.Thread.resume(thread, 0);
     print(res);
 } catch (e) {
     print(e.name);

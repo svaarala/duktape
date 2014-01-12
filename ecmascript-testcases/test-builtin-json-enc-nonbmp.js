@@ -62,19 +62,19 @@ function nonBmpTest() {
     // http://en.wikipedia.org/wiki/UTF-8#Description
     // http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range
     var buffers = [
-        __duk__.dec('hex', '41'),              // U+0041 (1 byte)
-        __duk__.dec('hex', 'cca4'),            // U+0324 (2 bytes)
-        __duk__.dec('hex', 'efbb9c'),          // U+FEDC (3 bytes)
-        __duk__.dec('hex', 'f48fbfbf'),        // U+0010FFFF (4 bytes)
-        __duk__.dec('hex', 'f7beb78b'),        // U+001FEDCB (4 bytes, above standard UTF-8)
-        __duk__.dec('hex', 'fbbfadb2ba'),      // U+3FEDCBA (5 bytes)
-        __duk__.dec('hex', 'fdbfbb9caea9'),    // U+7FEDCBA9 (6 bytes)
-        __duk__.dec('hex', 'fe83beb78baa98'),  // U+FEDCBA98 (7 bytes)
-        __duk__.dec('hex', 'fe83bfbfbfbfbf'),  // U+FFFFFFFF (7 bytes, max value that we actually support)
+        Duktape.dec('hex', '41'),              // U+0041 (1 byte)
+        Duktape.dec('hex', 'cca4'),            // U+0324 (2 bytes)
+        Duktape.dec('hex', 'efbb9c'),          // U+FEDC (3 bytes)
+        Duktape.dec('hex', 'f48fbfbf'),        // U+0010FFFF (4 bytes)
+        Duktape.dec('hex', 'f7beb78b'),        // U+001FEDCB (4 bytes, above standard UTF-8)
+        Duktape.dec('hex', 'fbbfadb2ba'),      // U+3FEDCBA (5 bytes)
+        Duktape.dec('hex', 'fdbfbb9caea9'),    // U+7FEDCBA9 (6 bytes)
+        Duktape.dec('hex', 'fe83beb78baa98'),  // U+FEDCBA98 (7 bytes)
+        Duktape.dec('hex', 'fe83bfbfbfbfbf'),  // U+FFFFFFFF (7 bytes, max value that we actually support)
 
         // This is skipped as we don't support 7-byte encodings above
         // unsigned 32 bit range.
-        //__duk__.dec('hex', 'febfbfbfbfbfbf'),  // U+FFFFFFFFF (7 bytes, max for 7-byte encoding)
+        //Duktape.dec('hex', 'febfbfbfbfbfbf'),  // U+FFFFFFFFF (7 bytes, max for 7-byte encoding)
     ];
 
     for (i = 0; i < buffers.length; i++) {

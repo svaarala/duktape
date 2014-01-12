@@ -26,7 +26,7 @@ function init() {
     a = { foo: 123 };
     b = {}
 
-    __duk__.setFinalizer(a, function (x) {
+    Duktape.setFinalizer(a, function (x) {
         print('finalizer, foo ->', x.foo);
     });
 
@@ -44,5 +44,5 @@ b = null;
 print('nulled')
 
 // mark-and-sweep finalizing happens here if refcount disabled
-__duk__.gc();
+Duktape.gc();
 

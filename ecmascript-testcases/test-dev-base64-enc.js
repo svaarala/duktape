@@ -1,8 +1,8 @@
 /*
  *  Some base-64 tests.
  *
- *  Note: __duk__.dec() results are coerced from buffer to string
- *  with "'' + __duk__.dec(...)" because print() won't add an
+ *  Note: Duktape.dec() results are coerced from buffer to string
+ *  with "'' + Duktape.dec(...)" because print() won't add an
  *  automatic newline if print() has only one argument which is
  *  a buffer.
  */
@@ -25,13 +25,13 @@ Zm9vYmE=
 Zm9vYmFy
 ===*/
 
-print(__duk__.enc('base64', ''));
-print(__duk__.enc('base64', 'f'));
-print(__duk__.enc('base64', 'fo'));
-print(__duk__.enc('base64', 'foo'));
-print(__duk__.enc('base64', 'foob'));
-print(__duk__.enc('base64', 'fooba'));
-print(__duk__.enc('base64', 'foobar'));
+print(Duktape.enc('base64', ''));
+print(Duktape.enc('base64', 'f'));
+print(Duktape.enc('base64', 'fo'));
+print(Duktape.enc('base64', 'foo'));
+print(Duktape.enc('base64', 'foob'));
+print(Duktape.enc('base64', 'fooba'));
+print(Duktape.enc('base64', 'foobar'));
 
 /*===
 
@@ -43,13 +43,13 @@ fooba
 foobar
 ===*/
 
-print('' + __duk__.dec('base64', ''));
-print('' + __duk__.dec('base64', 'Zg=='));
-print('' + __duk__.dec('base64', 'Zm8='));
-print('' + __duk__.dec('base64', 'Zm9v'));
-print('' + __duk__.dec('base64', 'Zm9vYg=='));
-print('' + __duk__.dec('base64', 'Zm9vYmE='));
-print('' + __duk__.dec('base64', 'Zm9vYmFy'));
+print('' + Duktape.dec('base64', ''));
+print('' + Duktape.dec('base64', 'Zg=='));
+print('' + Duktape.dec('base64', 'Zm8='));
+print('' + Duktape.dec('base64', 'Zm9v'));
+print('' + Duktape.dec('base64', 'Zm9vYg=='));
+print('' + Duktape.dec('base64', 'Zm9vYmE='));
+print('' + Duktape.dec('base64', 'Zm9vYmFy'));
 
 /*===
 Zm9v4Yi0
@@ -59,9 +59,9 @@ Zm9v4Yi0
 /* A string is UTF-8 encoded and then base-64 encoded. */
 
 // U+1234 -> 0xe1 0x88 0xb4
-print(__duk__.enc('base64', 'foo\u1234'));
+print(Duktape.enc('base64', 'foo\u1234'));
 
-t = '' + __duk__.dec('base64', 'Zm9v4Yi0');
+t = '' + Duktape.dec('base64', 'Zm9v4Yi0');
 print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3));
 
 /*===
@@ -75,13 +75,13 @@ foo
  * documents to be decoded (even when there is intervening padding).
  */
 
-t = __duk__.enc('base64', 'f') + __duk__.enc('base64', 'oo');
+t = Duktape.enc('base64', 'f') + Duktape.enc('base64', 'oo');
 print(t);
-print('' + __duk__.dec('base64', t));
+print('' + Duktape.dec('base64', t));
 
-t = __duk__.enc('base64', 'fo') + __duk__.enc('base64', 'o');
+t = Duktape.enc('base64', 'fo') + Duktape.enc('base64', 'o');
 print(t);
-print('' + __duk__.dec('base64', t));
+print('' + Duktape.dec('base64', t));
 
 /*===
 f
@@ -95,15 +95,15 @@ fo
  */
 
 try {
-    print('' + __duk__.dec('base64', 'Zg=='));  // standard
-    print('' + __duk__.dec('base64', 'Zh=='));  // non-zero unused bits
+    print('' + Duktape.dec('base64', 'Zg=='));  // standard
+    print('' + Duktape.dec('base64', 'Zh=='));  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print('' + __duk__.dec('base64', 'Zm8='));  // standard
-    print('' + __duk__.dec('base64', 'Zm9='));  // non-zero unused bits
+    print('' + Duktape.dec('base64', 'Zm8='));  // standard
+    print('' + Duktape.dec('base64', 'Zm9='));  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
@@ -120,13 +120,13 @@ TypeError
  */
 
 try {
-    print('' + __duk__.dec('base64', 'eHk='));
+    print('' + Duktape.dec('base64', 'eHk='));
 } catch(e) {
     print(e.name);
 }
 
 try {
-    print('' + __duk__.dec('base64', 'eHk'));
+    print('' + Duktape.dec('base64', 'eHk'));
 } catch(e) {
     print(e.name);
 }
@@ -140,9 +140,9 @@ foo
 
 /* The current decoder also allows ASCII whitespace characters */
 
-t = __duk__.enc('base64', 'f') + '\n' + __duk__.enc('base64', 'oo') + '\n';
+t = Duktape.enc('base64', 'f') + '\n' + Duktape.enc('base64', 'oo') + '\n';
 print(t);
-print('' + __duk__.dec('base64', t));
+print('' + Duktape.dec('base64', t));
 
 /*===
 TypeError
@@ -151,7 +151,7 @@ TypeError
 /* Non-base64 characters will not be accepted */
 
 try {
-    print('' + __duk__.dec('b28?'));
+    print('' + Duktape.dec('b28?'));
 } catch (e) {
     print(e.name);
 }

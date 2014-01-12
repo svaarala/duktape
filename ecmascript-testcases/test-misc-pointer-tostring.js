@@ -15,8 +15,8 @@ true
  */
 
 function pointerTostringTest() {
-    var ptr_null = __duk__.Pointer();
-    var ptr_nonnull = __duk__.Pointer('dummy');
+    var ptr_null = Duktape.Pointer();
+    var ptr_nonnull = Duktape.Pointer('dummy');
     var re_ptr_nonnull = /^[0-9a-fA-Fx:]+$/;
 
     print(ptr_null.toString());

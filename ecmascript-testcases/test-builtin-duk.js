@@ -1,5 +1,5 @@
 /*
- *  __duk__ builtin.
+ *  Duktape builtin.
  */
 
 /*---
@@ -13,7 +13,7 @@ global
 object
 function
 function
-__duk__
+Duktape
 string
 number
 function
@@ -46,33 +46,33 @@ function propsTest() {
         print(typeof this[name]);
     }
     function fduk(name) {
-        print(typeof __duk__[name]);
+        print(typeof Duktape[name]);
     }
     function fbuf(name) {
-        print(typeof __duk__.Buffer[name]);
+        print(typeof Duktape.Buffer[name]);
     }
     function fbufp(name) {
-        print(typeof __duk__.Buffer.prototype[name]);
+        print(typeof Duktape.Buffer.prototype[name]);
     }
     function fptr(name) {
-        print(typeof __duk__.Pointer[name]);
+        print(typeof Duktape.Pointer[name]);
     }
     function fptrp(name) {
-        print(typeof __duk__.Pointer.prototype[name]);
+        print(typeof Duktape.Pointer.prototype[name]);
     }
     function fthr(name) {
-        print(typeof __duk__.Thread[name]);
+        print(typeof Duktape.Thread[name]);
     }
     function fthrp(name) {
-        print(typeof __duk__.Thread.prototype[name]);
+        print(typeof Duktape.Thread.prototype[name]);
     }
 
     print('global');
-    fglob('__duk__');
+    fglob('Duktape');
     fglob('print');
     fglob('alert');
 
-    print('__duk__');
+    print('Duktape');
     fduk('env');
     fduk('version');
     fduk('setFinalizer');
@@ -145,17 +145,17 @@ function printDec(x) {
 }
 
 function encDecTest() {
-    printEnc(__duk__.enc('hex', 'foo'));
-    printEnc(__duk__.enc('hex', 'foo\u1234'));
+    printEnc(Duktape.enc('hex', 'foo'));
+    printEnc(Duktape.enc('hex', 'foo\u1234'));
 
-    printDec(__duk__.dec('hex', '666f6f'));
-    printDec(__duk__.dec('hex', '666f6fe188b4'));
+    printDec(Duktape.dec('hex', '666f6f'));
+    printDec(Duktape.dec('hex', '666f6fe188b4'));
 
-    printEnc(__duk__.enc('base64', 'foo'));
-    printEnc(__duk__.enc('base64', 'foo\u1234'));
+    printEnc(Duktape.enc('base64', 'foo'));
+    printEnc(Duktape.enc('base64', 'foo\u1234'));
 
-    printDec(__duk__.dec('base64', 'Zm9v'));
-    printDec(__duk__.dec('base64', 'Zm9v4Yi0'));
+    printDec(Duktape.dec('base64', 'Zm9v'));
+    printDec(Duktape.dec('base64', 'Zm9v4Yi0'));
 }
 
 print('encdec');

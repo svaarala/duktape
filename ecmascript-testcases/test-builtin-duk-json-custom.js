@@ -10,11 +10,11 @@
 ---*/
 
 function encJsonx(val) {
-    return __duk__.jsonxEnc(val);
+    return Duktape.jsonxEnc(val);
 }
 
 function decJsonx(val) {
-    return __duk__.jsonxDec(val);
+    return Duktape.jsonxDec(val);
 }
 
 function safedecJsonx(val) {
@@ -26,11 +26,11 @@ function safedecJsonx(val) {
 }
 
 function encJsonc(val) {
-    return __duk__.jsoncEnc(val);
+    return Duktape.jsoncEnc(val);
 }
 
 function decJsonc(val) {
-    return __duk__.jsoncDec(val);
+    return Duktape.jsoncDec(val);
 }
 
 function safedecJsonc(val) {
@@ -110,10 +110,10 @@ function typeEncodeTest() {
     var values = [
         undefined, null, true, false, 123.0, 0 / 0, -1 / 0, 1 / 0,
         'foo', [1,2,3], { test_key: 123, 'foo bar': 321 },
-        __duk__.dec('hex', 'deadbeef'),                      // plain buf
-        new __duk__.Buffer(__duk__.dec('hex', 'deadbeef')),  // object buf
-        __duk__.Pointer(),                                   // plain ptr; null pointer has a deterministic representation
-        new __duk__.Pointer(),                               // object ptr
+        Duktape.dec('hex', 'deadbeef'),                      // plain buf
+        new Duktape.Buffer(Duktape.dec('hex', 'deadbeef')),  // object buf
+        Duktape.Pointer(),                                   // plain ptr; null pointer has a deterministic representation
+        new Duktape.Pointer(),                               // object ptr
         function myfunc() {}
     ];
 
@@ -127,14 +127,14 @@ function typeEncodeTest() {
     // pointer: match against a pattern since the contents are otherwise
     // platform dependent
 
-    ptr = __duk__.Pointer('dummy');  // non-null plain ptr
+    ptr = Duktape.Pointer('dummy');  // non-null plain ptr
     print(typeof ptr);
     tmp = encJsonx(ptr);
     print('jsonx non-null ptr', m_ptr_nonnull_jsonx.test(tmp));
     tmp = encJsonc(ptr);
     print('jsonc non-null ptr', m_ptr_nonnull_jsonc.test(tmp));
 
-    ptr = new __duk__.Pointer('dummy');  // non-null object ptr
+    ptr = new Duktape.Pointer('dummy');  // non-null object ptr
     print(typeof ptr);
     tmp = encJsonx(ptr);
     print('jsonx non-null ptr', m_ptr_nonnull_jsonx.test(tmp));
@@ -145,9 +145,9 @@ function typeEncodeTest() {
 function typeDecodeTest(dec) {
     function dval(t) {
         if (typeof t == 'buffer') {
-            print(typeof t, __duk__.enc('hex', t));
+            print(typeof t, Duktape.enc('hex', t));
         } else if (typeof t == 'pointer') {
-            if (t === __duk__.Pointer()) {
+            if (t === Duktape.Pointer()) {
                 print(typeof t, 'null');
             } else {
                 print(typeof t, 'nonnull');
@@ -177,7 +177,7 @@ function typeDecodeTest(dec) {
         '[1,2,3]',
         '{test_key:"bar","foo bar":"quux"}',
         '|deadbeef|',
-        encJsonx(__duk__.Pointer('dummy')),  // pointer format is platform specific so use a pointer generated
+        encJsonx(Duktape.Pointer('dummy')),  // pointer format is platform specific so use a pointer generated
                                              // by Duktape; this is obviously not the best idea for testing
         '(null)',
         '{_func:true}'
@@ -260,7 +260,7 @@ SyntaxError
 
 function characterEscapeEncodeTest() {
     function mk(hex) {
-        return String(__duk__.dec('hex', hex));
+        return String(Duktape.dec('hex', hex));
     }
 
     var values = [
@@ -279,7 +279,7 @@ function characterEscapeEncodeTest() {
 
 function characterEscapeDecodeTest() {
     function dump(val) {
-        return String(__duk__.enc('hex', val));
+        return String(Duktape.enc('hex', val));
     }
 
     var values = [
@@ -590,7 +590,7 @@ non-default encoding options
 function nonDefaultEncodingTest() {
     var val = {
         foo: 'bar',
-        bar: __duk__.dec('hex', 'deadbeef'),
+        bar: Duktape.dec('hex', 'deadbeef'),
         quux: [
             123,
             0 / 0,
@@ -604,11 +604,11 @@ function nonDefaultEncodingTest() {
         if (typeof v === 'string') { return v.toUpperCase() } else { return v }
     }
 
-    print(__duk__.jsonxEnc(val, ucStrings /*replacer*/, 4 /*space*/));
-    print(__duk__.jsonxEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
+    print(Duktape.jsonxEnc(val, ucStrings /*replacer*/, 4 /*space*/));
+    print(Duktape.jsonxEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
 
-    print(__duk__.jsoncEnc(val, ucStrings /*replacer*/, 4 /*space*/));
-    print(__duk__.jsoncEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
+    print(Duktape.jsoncEnc(val, ucStrings /*replacer*/, 4 /*space*/));
+    print(Duktape.jsoncEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
 }
 
 print('non-default encoding options');
@@ -633,7 +633,7 @@ BAR
 function nonDefaultDecodingTest() {
     var val = {
         foo: 'bar',
-        bar: __duk__.dec('hex', 'deadbeef'),
+        bar: Duktape.dec('hex', 'deadbeef'),
         quux: [
             123,
             0 / 0,
@@ -655,12 +655,12 @@ function nonDefaultDecodingTest() {
     }
 
     enc = encJsonx(val);
-    dec = __duk__.jsonxDec(enc, revive);
+    dec = Duktape.jsonxDec(enc, revive);
     print(Object.getOwnPropertyNames(dec));
     print(dec.foo);
 
     enc = encJsonc(val);
-    dec = __duk__.jsoncDec(enc, revive);
+    dec = Duktape.jsoncDec(enc, revive);
     print(Object.getOwnPropertyNames(dec));
     print(dec.foo);
 }
@@ -707,9 +707,9 @@ function invalidXutf8Test() {
     // Because standard JSON does not escape non-ASCII codepoints, hex
     // encode its output
     values.forEach(function (v) {
-        var t = String(__duk__.dec('hex', v));
+        var t = String(Duktape.dec('hex', v));
         print(v);
-        print('json ', __duk__.enc('hex', JSON.stringify(t)));
+        print('json ', Duktape.enc('hex', JSON.stringify(t)));
         print('jsonx', encJsonx(t));
         print('jsonc', encJsonc(t));
     });

@@ -19,8 +19,8 @@ var func1 = function(x) { print("Finalizer's finalizer"); };
 var func2 = function(x) { print("Finalizer"); obj = x; /*rescue*/ };
 var obj = {};
 
-__duk__.setFinalizer(obj, func2);
-__duk__.setFinalizer(func2, func1);
+Duktape.setFinalizer(obj, func2);
+Duktape.setFinalizer(func2, func1);
 func1 = null;
 func2 = null;
 
@@ -37,11 +37,11 @@ print(typeof obj);
 // closure is by default participates in a reference loop through
 // its automatic prototype (e.g. f.prototype.constructor === f).
 
-__duk__.setFinalizer(obj, null);
+Duktape.setFinalizer(obj, null);
 
 // Explicit GC causes the finalizer's finalizer to run.
 
-__duk__.gc();
+Duktape.gc();
 
 obj = undefined;
 print(typeof obj);

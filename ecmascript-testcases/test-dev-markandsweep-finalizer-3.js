@@ -21,7 +21,7 @@ bar
 var newobj = null;
 
 var obj1 = { name: 'obj1' };
-__duk__.setFinalizer(obj1, function (o) {
+Duktape.setFinalizer(obj1, function (o) {
     print('finalizer', o.name);
     newobj = { foo: 'bar' };
 });
@@ -35,14 +35,14 @@ obj2 = null;
 print('obj1 and obj2 unreachable now');
 
 print('forced gc');
-__duk__.gc();  // finalizer executes and creates 'newobj'
+Duktape.gc();  // finalizer executes and creates 'newobj'
 print(newobj.foo);
 
 print('forced gc');
-__duk__.gc();  // 'newobj' survives collection
+Duktape.gc();  // 'newobj' survives collection
 print(newobj.foo);
 
 print('forced gc');
-__duk__.gc();
+Duktape.gc();
 print(newobj.foo);
 

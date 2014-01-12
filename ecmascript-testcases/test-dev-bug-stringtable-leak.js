@@ -75,7 +75,7 @@ function test1() {
         print(i);
         for (var j = 0; j < 1024; j++) {
             var ignore = createUniqueString();
-            __duk__.gc();
+            Duktape.gc();
         }
     }
 }
@@ -87,10 +87,10 @@ function test2() {
             var obj1 = {};
             var obj2 = { str: createUniqueString(), ref: obj1 };
             obj1.ref = obj2;   // circular reference, object contains string to collect
-            __duk__.gc();      // force collection once: string gets marked reachable
+            Duktape.gc();      // force collection once: string gets marked reachable
             obj1 = undefined;
             obj2 = undefined;  // unreachable but not collected when refcounts enabled
-            __duk__.gc();      // force collection: should be collected but isn't
+            Duktape.gc();      // force collection: should be collected but isn't
         }
     }
 }

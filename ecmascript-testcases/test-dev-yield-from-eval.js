@@ -8,10 +8,10 @@ TypeError
 ===*/
 
 function test_eval() {
-    var t = new __duk__.Thread(function() {
-        eval('__duk__.Thread.yield(1234)');
+    var t = new Duktape.Thread(function() {
+        eval('Duktape.Thread.yield(1234)');
     });
-    __duk__.Thread.resume(t)
+    Duktape.Thread.resume(t)
 }
 
 try {
