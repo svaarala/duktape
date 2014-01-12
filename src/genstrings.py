@@ -543,8 +543,8 @@ duk_string_list = [
 
 	# __duk__ object
 	mkstr("__duk__", custom=True),
+	mkstr("env", custom=True),
 	mkstr("version", custom=True),
-	mkstr("build", custom=True),
 	mkstr("addr", custom=True),
 	mkstr("refc", custom=True),
 	mkstr("gc", custom=True),

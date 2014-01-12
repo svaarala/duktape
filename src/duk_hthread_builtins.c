@@ -444,6 +444,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *    this, V8 does not (the Function objects are distinct).
 	 *
 	 *  - Make DoubleError non-extensible.
+	 *
+	 *  - Add info about most important effective compile options to __duk__.
 	 */
 
 	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
@@ -452,6 +454,26 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_ASSERT(h != NULL);
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
+
+	duk_push_string(ctx,
+#if defined(DUK_USE_LITTLE_ENDIAN)
+	                "l"
+#elif defined(DUK_USE_BIG_ENDIAN)
+	                "b"
+#elif defined(DUK_USE_MIDDLE_ENDIAN)
+	                "m"
+#else
+	                "?"
+#endif
+	                " "
+#if defined(DUK_USE_PACKED_TVAL)
+	                "p"
+#else
+	                "u"
+#endif
+	                " "
+	                DUK_USE_ARCH_STRING);
+	duk_put_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV);
 
 	/*
 	 *  Since built-ins are not often extended, compact them.

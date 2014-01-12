@@ -1086,7 +1086,7 @@ bi_duk = {
 	'class': 'Object',
 
 	'values': [
-		# Note: 'version' and 'build' are added from parameter file.
+		# Note: 'version' is added from parameter file.
 		# They are intentionally non-writable and non-configurable now.
 		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_buffer_constructor' } },
 		{ 'name': 'Pointer',			'value': { 'type': 'builtin', 'id': 'bi_pointer_constructor' } },
@@ -1649,10 +1649,8 @@ class GenBuiltins:
 
 	def processBuiltins(self):
 		# finalize built-in data
-		build_new = self.build_info['build'] + '; ' + self.byte_order
 		bi_duk = self.findBuiltIn('bi_duk')['info']
 		bi_duk['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
-		bi_duk['values'].insert(1, { 'name': 'build', 'value': build_new, 'attributes': '' })
 
 		# generate built-in strings
 		self.gs = genstrings.GenStrings()

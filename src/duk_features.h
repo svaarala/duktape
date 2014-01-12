@@ -119,6 +119,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * support is not yet mature.
  */
 
+/* ARM */
+#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
+#define DUK_F_ARM
+#endif
+
 /* MIPS */
 #if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
     defined(_R3000) || defined(_R4000) || defined(_R5900) || \
@@ -646,7 +651,7 @@ typedef double duk_double_t;
  * are not guaranteed to be aligned.
  */
 
-#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
+#if defined(DUK_F_ARM)
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #elif defined(DUK_F_MIPS)
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
@@ -1036,6 +1041,24 @@ extern double duk_computed_nan;
 #define DUK_FUNC_MACRO  __func__
 #else
 #define DUK_FUNC_MACRO  "unknown"
+#endif
+
+/*
+ *  Architecture string, human readable value exposed in __duk__.env
+ */
+
+#if defined(DUK_F_X86)
+#define DUK_USE_ARCH_STRING "x86"
+#elif defined(DUK_F_X64)
+#define DUK_USE_ARCH_STRING "x64"
+#elif defined(DUK_F_ARM)
+#define DUK_USE_ARCH_STRING "arm"
+#elif defined(DUK_F_MIPS)
+#define DUK_USE_ARCH_STRING "mips"
+#elif defined(DUK_F_M68K)
+#define DUK_USE_ARCH_STRING "m68k"
+#else
+#define DUK_USE_ARCH_STRING "unknown"
 #endif
 
 /* 
