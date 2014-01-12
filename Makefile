@@ -1,6 +1,13 @@
 #
 #  Makefile for the Duktape development
 #
+#  This Makefile is intended for Duktape development, such as running
+#  test cases etc.  It is intended to work mainly on Linux, not on
+#  multiple platforms.  The source distributable has example Makefiles
+#  for end-user projects.
+#
+#  YOU SHOULD NOT COMPILE DUKTAPE WITH THIS MAKEFILE IN YOUR PROJECT.
+#
 #  Duktape command line tools are built by first creating a source
 #  dist directory, and then using the sources from the dist directory
 #  for compilation.  This is as close as possible to sources used
@@ -147,10 +154,8 @@ CCLIBS += -lreadline
 CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
 .PHONY: default all clean test install
 
-all:	duk \
-	dukd \
-	libduktape.so.1.0.0 \
-	libduktaped.so.1.0.0
+# Compile 'duk' only by default
+all:	duk
 
 clean:
 	-@rm -rf dist/
