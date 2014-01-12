@@ -1636,7 +1636,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 /*
  *  Helper for handling an Ecmascript-to-Ecmascript call or an Ecmascript
- *  function (initial) __duk__.resume().
+ *  function (initial) Duktape.Thread.resume().
  *
  *  Compared to normal calls handled by duk_handle_call(), there are a
  *  bunch of differences:
@@ -1652,7 +1652,7 @@ int duk_handle_safe_call(duk_hthread *thr,
  *
  *  The callstack of the target contains an earlier Ecmascript call in case
  *  of an Ecmascript-to-Ecmascript call (whose idx_retval is updated), or
- *  is empty in case of an initial __duk__.resume().
+ *  is empty in case of an initial Duktape.Thread.resume().
  */
 
 void duk_handle_ecma_call_setup(duk_hthread *thr,

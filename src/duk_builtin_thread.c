@@ -54,7 +54,7 @@ int duk_builtin_thread_resume(duk_context *ctx) {
 	duk_hobject *func;
 	int is_error;
 
-	DUK_DDDPRINT("__duk__.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
+	DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
 	             duk_get_tval(ctx, 0),
 	             duk_get_tval(ctx, 1),
 	             duk_get_tval(ctx, 2));
@@ -70,7 +70,7 @@ int duk_builtin_thread_resume(duk_context *ctx) {
 	 */
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and __duk__.Thread.resume)");
+		DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)");
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -198,7 +198,7 @@ int duk_builtin_thread_yield(duk_context *ctx) {
 	duk_tval tv_tmp;
 	int is_error;
 
-	DUK_DDDPRINT("__duk__.Thread.yield(): value=%!T, is_error=%!T",
+	DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
 	             duk_get_tval(ctx, 0),
 	             duk_get_tval(ctx, 1));
 
@@ -218,7 +218,7 @@ int duk_builtin_thread_yield(duk_context *ctx) {
 	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and __duk__.Thread.yield)");
+		DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)");
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -230,9 +230,9 @@ int duk_builtin_thread_yield(duk_context *ctx) {
 		goto state_error;
 	}
 
-	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (__duk__.Thread.yield) are on the stack */
+	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
 	if (thr->callstack_preventcount != 1) {
-		/* Note: the only yield-preventing call is __duk__.Thread.yield(), hence check for 1, not 0 */
+		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
 		DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
 		            thr->callstack_preventcount);
 		goto state_error;

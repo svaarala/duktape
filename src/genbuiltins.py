@@ -256,7 +256,7 @@ bi_global = {
 		{ 'name': 'JSON',			'value': { 'type': 'builtin', 'id': 'bi_json' } },
 
 		# DUK specific
-		{ 'name': '__duk__',			'value': { 'type': 'builtin', 'id': 'bi_duk' } },
+		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duk' } },
 	],
 	'functions': [
 		{ 'name': 'eval',			'native': 'duk_builtin_global_object_eval', 			'length': 1 },

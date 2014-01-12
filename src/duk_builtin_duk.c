@@ -1,5 +1,5 @@
 /*
- *  __duk__ built-ins
+ *  Duktape built-ins
  */
 
 #include "duk_internal.h"

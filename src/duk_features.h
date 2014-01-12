@@ -1042,7 +1042,7 @@ extern double duk_computed_nan;
 #endif
 
 /*
- *  Architecture string, human readable value exposed in __duk__.env
+ *  Architecture string, human readable value exposed in Duktape.env
  */
 
 #if defined(DUK_F_X86)

@@ -649,7 +649,7 @@ static void handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
 	/* FIXME: api primitive */
 	DUK_DDDPRINT("resume idx_retval is %d", resumer->callstack[act_idx].idx_retval);
 
-	tv1 = &resumer->valstack[resumer->callstack[act_idx].idx_retval];  /* return value from __duk__.resume() */
+	tv1 = &resumer->valstack[resumer->callstack[act_idx].idx_retval];  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	DUK_TVAL_SET_TVAL(tv1, &thr->heap->lj.value1);
 	DUK_TVAL_INCREF(thr, tv1);
@@ -712,8 +712,8 @@ static int handle_longjmp(duk_hthread *thr,
 
 		/* duk_builtin_duk_object_yield() and duk_builtin_duk_object_resume() ensure all of these are met */
 
-		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);                                                         /* unchanged by __duk__.resume() */
-		DUK_ASSERT(thr->callstack_top >= 2);                                                                         /* Ecmascript activation + __duk__.resume() activation */
+		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);                                                         /* unchanged by Duktape.Thread.resume() */
+		DUK_ASSERT(thr->callstack_top >= 2);                                                                         /* Ecmascript activation + Duktape.Thread.resume() activation */
 		DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL &&
 		           DUK_HOBJECT_IS_NATIVEFUNCTION((thr->callstack + thr->callstack_top - 1)->func) &&
 		           ((duk_hnativefunction *) (thr->callstack + thr->callstack_top - 1)->func)->func == duk_builtin_thread_resume);
@@ -730,9 +730,9 @@ static int handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(resumee != NULL);
 		DUK_ASSERT(resumee->resumer == NULL);
 		DUK_ASSERT(resumee->state == DUK_HTHREAD_STATE_INACTIVE ||
-		           resumee->state == DUK_HTHREAD_STATE_YIELDED);                                                     /* checked by __duk__.resume() */
+		           resumee->state == DUK_HTHREAD_STATE_YIELDED);                                                     /* checked by Duktape.Thread.resume() */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
-		           resumee->callstack_top >= 2);                                                                     /* YIELDED: Ecmascript activation + __duk__.yield() activation */
+		           resumee->callstack_top >= 2);                                                                     /* YIELDED: Ecmascript activation + Duktape.Thread.yield() activation */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
 		           ((resumee->callstack + resumee->callstack_top - 1)->func != NULL &&
 		            DUK_HOBJECT_IS_NATIVEFUNCTION((resumee->callstack + resumee->callstack_top - 1)->func) &&
@@ -779,7 +779,7 @@ static int handle_longjmp(duk_hthread *thr,
 			act_idx = resumee->callstack_top - 2;  /* Ecmascript function */
 			DUK_ASSERT(resumee->callstack[act_idx].idx_retval >= 0);
 
-			tv = &resumee->valstack[resumee->callstack[act_idx].idx_retval];  /* return value from __duk__.yield() */
+			tv = &resumee->valstack[resumee->callstack[act_idx].idx_retval];  /* return value from Duktape.Thread.yield() */
 			DUK_ASSERT(tv >= resumee->valstack && tv < resumee->valstack_top);
 			tv2 = &thr->heap->lj.value1;
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
@@ -838,7 +838,7 @@ static int handle_longjmp(duk_hthread *thr,
 	case DUK_LJ_TYPE_YIELD: {
 		/*
 		 *  Currently only allowed only if yielding thread has only
-		 *  Ecmascript activations (except for the __duk__.yield()
+		 *  Ecmascript activations (except for the Duktape.Thread.yield()
 		 *  call at the callstack top) and none of them constructor
 		 *  calls.
 		 *
@@ -850,9 +850,9 @@ static int handle_longjmp(duk_hthread *thr,
 
 		/* duk_builtin_duk_object_yield() and duk_builtin_duk_object_resume() ensure all of these are met */
 
-		DUK_ASSERT(thr != entry_thread);                                                                             /* __duk__.yield() should prevent */
-		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);                                                         /* unchanged from __duk__.yield() */
-		DUK_ASSERT(thr->callstack_top >= 2);                                                                         /* Ecmascript activation + __duk__.yield() activation */
+		DUK_ASSERT(thr != entry_thread);                                                                             /* Duktape.Thread.yield() should prevent */
+		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);                                                         /* unchanged from Duktape.Thread.yield() */
+		DUK_ASSERT(thr->callstack_top >= 2);                                                                         /* Ecmascript activation + Duktape.Thread.yield() activation */
 		DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL &&
 		           DUK_HOBJECT_IS_NATIVEFUNCTION((thr->callstack + thr->callstack_top - 1)->func) &&
 		           ((duk_hnativefunction *) (thr->callstack + thr->callstack_top - 1)->func)->func == duk_builtin_thread_yield);
@@ -864,7 +864,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 		DUK_ASSERT(resumer != NULL);
 		DUK_ASSERT(resumer->state == DUK_HTHREAD_STATE_RESUMED);                                                     /* written by a previous RESUME handling */
-		DUK_ASSERT(resumer->callstack_top >= 2);                                                                     /* Ecmascript activation + __duk__.resume() activation */
+		DUK_ASSERT(resumer->callstack_top >= 2);                                                                     /* Ecmascript activation + Duktape.Thread.resume() activation */
 		DUK_ASSERT((resumer->callstack + resumer->callstack_top - 1)->func != NULL &&
 		           DUK_HOBJECT_IS_NATIVEFUNCTION((resumer->callstack + resumer->callstack_top - 1)->func) &&
 		           ((duk_hnativefunction *) (resumer->callstack + resumer->callstack_top - 1)->func)->func == duk_builtin_thread_resume);
@@ -1005,10 +1005,10 @@ static int handle_longjmp(duk_hthread *thr,
 		DUK_DDPRINT("no calling activation, thread finishes (similar to yield)");
 
 		DUK_ASSERT(thr->resumer != NULL);
-		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + __duk__.resume() activation */
+		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + Duktape.Thread.resume() activation */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 1)->func != NULL &&
 		           DUK_HOBJECT_IS_NATIVEFUNCTION((thr->resumer->callstack + thr->resumer->callstack_top - 1)->func) &&
-		           ((duk_hnativefunction *) (thr->resumer->callstack + thr->resumer->callstack_top - 1)->func)->func == duk_builtin_thread_resume);  /* __duk__.resume() */
+		           ((duk_hnativefunction *) (thr->resumer->callstack + thr->resumer->callstack_top - 1)->func)->func == duk_builtin_thread_resume);  /* Duktape.Thread.resume() */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func));  /* an Ecmascript function */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 2)->idx_retval >= 0);                        /* waiting for a value */
@@ -1182,10 +1182,10 @@ static int handle_longjmp(duk_hthread *thr,
 		 */
 
 		DUK_ASSERT(thr->resumer != NULL);
-		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + __duk__.resume() activation */
+		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + Duktape.Thread.resume() activation */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 1)->func != NULL &&
 		           DUK_HOBJECT_IS_NATIVEFUNCTION((thr->resumer->callstack + thr->resumer->callstack_top - 1)->func) &&
-		           ((duk_hnativefunction *) (thr->resumer->callstack + thr->resumer->callstack_top - 1)->func)->func == duk_builtin_thread_resume);  /* __duk__.resume() */
+		           ((duk_hnativefunction *) (thr->resumer->callstack + thr->resumer->callstack_top - 1)->func)->func == duk_builtin_thread_resume);  /* Duktape.Thread.resume() */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func));  /* an Ecmascript function */
 

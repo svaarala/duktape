@@ -103,7 +103,7 @@ struct duk_memory_functions {
 
 /* Duktape version, (major * 10000) + (minor * 100) + patch.  Allows C code
  * to #ifdef against Duktape API version.  The same value is also available
- * to Ecmascript code in __duk__.version.
+ * to Ecmascript code in Duktape.version.
  */
 #define DUK_VERSION                       900
 

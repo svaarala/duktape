@@ -541,8 +541,8 @@ duk_string_list = [
 	mkstr("compile", custom=True),                  # used as a filename for functions created with Function constructor
 	mkstr("input", custom=True),                    # used as a filename for eval temp function
 
-	# __duk__ object
-	mkstr("__duk__", custom=True),
+	# Duktape_ object
+	mkstr("Duktape", custom=True),
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
 	mkstr("addr", custom=True),
@@ -718,7 +718,7 @@ special_define_names = {
 	'toUTCString': 'TO_UTC_STRING',
 	'toGMTString': 'TO_GMT_STRING',
 	'URIError': 'URI_ERROR',
-	'__duk__': 'DUK',
+	'Duktape': 'DUK',
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
 	' ': 'SPACE',

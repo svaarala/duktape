@@ -445,7 +445,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *
 	 *  - Make DoubleError non-extensible.
 	 *
-	 *  - Add info about most important effective compile options to __duk__.
+	 *  - Add info about most important effective compile options to Duktape.
 	 */
 
 	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
