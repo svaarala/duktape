@@ -96,14 +96,14 @@ Released
 0.9.0 (2014-01-XX)
 -------------------
 
-* Windows compatibility, tested with MinGW and VS2010 Express
-
 * API addition: duk_gc()
 
 * Added extended JSON format variants: JSONX and JSONC
 
 * NULL pointer values string now coerce to "null" instead of e.g. "(nil)"
   to match JSONX format
+
+* Removed __duk__.build, replaced with __duk__.env
 
 * Removed array size limit for very large array joins
 
@@ -131,6 +131,9 @@ Released
   variables in the surrounding activation
 
 * Fixed a few bound constructor bugs
+
+* Windows compatibility, tested with MinGW and VS2010 Express for 32-bit
+  and MinGW-w64 for 64-bit
 
 * Portability fixes for non-C99 platforms (like MSVC in VS2010)
 
