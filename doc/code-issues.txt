@@ -120,6 +120,20 @@ result to minimize error proneness::
    * similar reasons.
    */
 
+Variable declarations
+---------------------
+
+C variables should only be declared in the beginning of the block.  Although
+this is usually not a portability concern but some older still compilers
+require it.  In particular, MSVC (at least Visual Studio 2010 Express) seems
+to require this.
+
+Be careful especially of assertions, debug prints, and other macros::
+
+  int x, y;
+  DUK_UNREF(y);
+  int flags = 0;  /* problem: DUK_UNREF() */
+
 Include guards
 --------------
 
@@ -141,6 +155,31 @@ See:
 * http://en.wikipedia.org/wiki/Include_guard
 
 ``#pragma once`` is not portable, and is not used.
+
+FIXME, TODO, XXX, NOTE markers
+------------------------------
+
+The following markers are used inside comments:
+
+FIXME:
+  Issue should be fixed before a stable release.  Does not block
+  an intermediate release.
+
+TODO:
+  Issue should be fixed but does not block a release (even a stable
+  one).
+
+XXX:
+  Like TODO, but it may be unclear what the proper fix is.
+
+NOTE:
+  Noteworthy issue important for e.g. maintenance, but no action needed.
+
+The markers must appear verbatim and be followed by a colon without
+any space in between.  This is important so that the markers can be
+grep'd.  Example::
+
+  /* FIXME: foo should have a different type */
 
 Unused variables
 ----------------
@@ -305,6 +344,16 @@ Basic rules in implementation:
   the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
 
 * **FIXME:** Format specifiers are under work.
+
+* **FIXME:** normal vs. fast variables: use tight values in structs,
+  "fast" values as e.g. loop counters in fast paths (character / byte
+  iteration loops etc)
+
+* **FIXME**: flags field type (storage vs. internal APIs)
+
+* **FIXME**: avoid casting when unnecessary
+
+* **FIXME**: type names, end in _t for internal types, no _t for public API
 
 Random notes:
 
