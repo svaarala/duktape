@@ -1,2 +1,2 @@
 print 'Hello world!'
-print 'version: ' + __duk__.version
+print 'version: ' + Duktape.version

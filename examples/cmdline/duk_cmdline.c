@@ -22,9 +22,9 @@
 	"print(" \
 	"'((o) Duktape" variant "'" \
 	", " \
-	"Math.floor(__duk__.version / 10000) + '.' + " \
-	"Math.floor(__duk__.version / 100) % 100 + '.' + " \
-	"__duk__.version % 100" \
+	"Math.floor(Duktape.version / 10000) + '.' + " \
+	"Math.floor(Duktape.version / 100) % 100 + '.' + " \
+	"Duktape.version % 100" \
 	");"
 
 #include <stdio.h>
