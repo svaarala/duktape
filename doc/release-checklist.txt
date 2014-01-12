@@ -28,7 +28,7 @@ Release checklist
 
 * Compilation tests (clean compile)
 
-  - **FIXME: automate**
+  - **FIXME: incomplete list, automate compilation tests**
   - Linux x86-64 gcc
   - Linux x86-64 gcc + DUK_OPT_DEBUG
   - Linux x86-64 gcc + -m32
@@ -41,8 +41,14 @@ Release checklist
   - FreeBSD clang + DUK_OPT_DEBUG
   - FreeBSD clang + -m32
   - FreeBSD clang + -m32 + DUK_OPT_DEBUG
+  - Windows MinGW
+  - Windows MinGW-w64
+  - Windows MSVC (cl) x32
+  - Windows MSVC (cl) x64
 
 * Ecmascript testcases
+
+  - **FIXME: semiautomate test running for various configurations**
 
   - On x86-64:
 
