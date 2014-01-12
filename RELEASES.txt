@@ -103,7 +103,9 @@ Released
 * NULL pointer values string now coerce to "null" instead of e.g. "(nil)"
   to match JSONX format
 
-* Removed __duk__.build, replaced with __duk__.env
+* Renamed __duk__ to Duktape for more consistency with Ecmascript conventions
+
+* Removed somewhat useless Duktape.build, replaced with Duktape.env
 
 * Removed array size limit for very large array joins
 
