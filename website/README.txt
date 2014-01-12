@@ -142,7 +142,7 @@ Table overflows
 ---------------
 
 Narrow layouts need table overflow handling.  The best solution would be to
-CSS style the table elemen itself, but that doesn't seem to work cleanly in
+CSS style the table element itself, but that doesn't seem to work cleanly in
 all browsers.  For now, use::
 
   <div class="table-wrap">
@@ -176,15 +176,14 @@ Without any document meta headers Nokia N9, for instance, attempts to get::
   GET /apple-touch-icon-precomposed.png
   GET /apple-touch-icon.png
 
-Various iPhone/iPad versions will have different automatic icon searches,
-like::
+iPhone/iPad versions will have different automatic icon searches, like::
 
   GET /apple-touch-icon-57x57-precomposed.png
   GET /apple-touch-icon-57x57.png
   GET /apple-touch-icon-precomposed.png
   GET /apple-touch-icon.png
 
-Various devices prefer different icon sizes.  You can specify multiple
+Different devices prefer different icon sizes.  You can specify multiple
 sizes in the document metadata; apparently devices will select first
 matching.  Older devices which don't understand a "sizes" specification
 will apparently use last entry::
@@ -249,6 +248,10 @@ Browser testing is ad hoc now.  Current browser set:
 
   - Graceful degradation test for CSS
   - http://www.ailis.de/~k/archives/75-Netscape-Navigator-4-on-Ubuntu-Linux-12.10.html
+
+* Internet Explorer 6
+
+  - Graceful degradation test for CSS
 
 * W3m
 
