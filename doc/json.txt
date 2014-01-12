@@ -505,22 +505,21 @@ Pointer values
 --------------
 
 Plain pointer values and Pointer object values are serialized in a platform
-specific form, using the format ``(%p)``, e.g. on Linux you might see
-something like::
+specific form, using the format ``(%p)``, e.g.::
 
-  (0x1ff0e10)
+  (0x1ff0e10)          // 32-bit Linux
+  (000FEFF8)           // 32-bit Windows
+  (000000000026A8A0)   // 64-bit Windows
 
-and on Windows (MSVC)::
-
-  (000FEFF8)
-
-There is no guarantee that a pointer value can be parsed back correctly
-across different Duktape builds.  Pointer representations may even differ
-on the same platform between compilers.
+A pointer value parses back correctly when serialized and parsed by the same
+program.  Other than that there is no guarantee that a pointer value can be
+parsed back across different Duktape builds.  Note that pointer format may
+differ between compilers even on the same platform.
 
 If the pointer value doesn't parse back, with ``sscanf()`` and ``%p``
-format applied to the value between the parentheses, a NULL pointer is
-produced by the parser.
+format applied to the value between the parentheses, the value is replaced by
+a NULL pointer during parsing.  This is probably more useful than throwing
+an error.
 
 ``NULL`` pointers are serialized in a platform independent way as::
 
