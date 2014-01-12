@@ -27,16 +27,16 @@
 #define GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
 #elif defined(DUK_USE_DATE_NOW_TIME)
 #define GET_NOW_TIMEVAL      get_now_timeval_time
-#elif defined(DUK_USE_DATE_NOW_WIN32)
-#define GET_NOW_TIMEVAL      get_now_timeval_win32
+#elif defined(DUK_USE_DATE_NOW_WINDOWS)
+#define GET_NOW_TIMEVAL      get_now_timeval_windows
 #else
 #error no function to get current time
 #endif
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 #define GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
-#elif defined(DUK_USE_DATE_TZO_WIN32)
-#define GET_LOCAL_TZOFFSET   get_local_tzoffset_win32
+#elif defined(DUK_USE_DATE_TZO_WINDOWS)
+#define GET_LOCAL_TZOFFSET   get_local_tzoffset_windows
 #else
 #error no function to get local tzoffset
 #endif
@@ -134,7 +134,7 @@ static double get_now_timeval_time(duk_context *ctx) {
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
 
-#if defined(DUK_USE_DATE_NOW_WIN32) || defined(DUK_USE_DATE_TZO_WIN32)
+#if defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS)
 /* Shared Windows helpers. */
 static void convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER *res) {
 	FILETIME ft;
@@ -157,10 +157,10 @@ static void set_systime_jan1970(SYSTEMTIME *st) {
 	DUK_ASSERT(st->wSecond == 0);
 	DUK_ASSERT(st->wMilliseconds == 0);
 }
-#endif  /* defined(DUK_USE_DATE_NOW_WIN32) || defined(DUK_USE_DATE_TZO_WIN32) */
+#endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
-#ifdef DUK_USE_DATE_NOW_WIN32
-static double get_now_timeval_win32(duk_context *ctx) {
+#ifdef DUK_USE_DATE_NOW_WINDOWS
+static double get_now_timeval_windows(duk_context *ctx) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
 	 */
@@ -176,7 +176,7 @@ static double get_now_timeval_win32(duk_context *ctx) {
 	/* Difference is in 100ns units, convert to milliseconds */
 	return (double) ((tmp1.QuadPart - tmp2.QuadPart) / 10000LL);
 }
-#endif  /* DUK_USE_DATE_NOW_WIN32 */
+#endif  /* DUK_USE_DATE_NOW_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
@@ -287,8 +287,8 @@ static int get_local_tzoffset_gmtime(double d) {
 }
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
-#if defined(DUK_USE_DATE_TZO_WIN32)
-static int get_local_tzoffset_win32(double d) {
+#if defined(DUK_USE_DATE_TZO_WINDOWS)
+static int get_local_tzoffset_windows(double d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
@@ -318,7 +318,7 @@ static int get_local_tzoffset_win32(double d) {
 	/* Positive if local time ahead of UTC. */
 	return (int) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000000LL);  /* seconds */
 }
-#endif  /* DUK_USE_DATE_TZO_WIN32 */
+#endif  /* DUK_USE_DATE_TZO_WINDOWS */
 
 #ifdef DUK_USE_DATE_PRS_STRPTIME
 static int parse_string_strptime(duk_context *ctx, const char *str) {

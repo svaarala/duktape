@@ -152,7 +152,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Windows (32-bit or above) */
-#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || \
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || \
     defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
 #define DUK_F_WINDOWS
 #endif
@@ -501,8 +501,8 @@ typedef duk_uint32_t duk_uintmax_t;
     (defined(DUK_F_MSVC) && defined(_M_IX86))
 typedef duk_int32_t duk_intptr_t;
 typedef duk_uint32_t duk_uintptr_t;
-#elif (defined(DUK_F_MINGW) && defined(_X86_)) || \
-      (defined(DUK_F_MSVC) && (defined(_M_X64) || defined(_M_AMD64)))
+#elif (defined(DUK_F_MINGW) && defined(_WIN64)) || \
+      (defined(DUK_F_MSVC) && defined(_WIN64))
 /* Both MinGW and MSVC have a 64-bit type. */
 typedef long long duk_intptr_t;
 typedef unsigned long long duk_uintptr_t;
@@ -703,15 +703,13 @@ typedef double duk_double_t;
 #endif
 #endif  /* DUK_F_STD_BYTEORDER_DETECT */
 
-/* On Windows, assume we're little endian (check if possible) */
+/* On Windows, assume we're little endian.  Even Itanium which has a
+ * configurable endianness runs little endian in Windows.
+ */
 #if defined(DUK_F_WINDOWS) && !defined(DUK_F_STD_BYTEORDER_DETECT)
-#if defined(DUK_F_MINGW) && !defined(_X86_)
-#error unsupported: cannot detect endianness on mingw, _X86_ define missing
-#endif
-#if defined(DUK_F_MSVC) && !defined(_M_IX86) && !defined(_M_X64) && !defined(_M_AMD64)
-#error unsupported: cannot detect endianness on MSVC, _M_IX86 or _M_X64 define missing
-#endif
-/* If compiler is not MinGW or MSVC, no check now */
+/* FIXME: verify that Windows on ARM is little endian for floating point
+ * values too.
+ */
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #endif  /* Windows */
@@ -1370,13 +1368,10 @@ extern double duk_computed_nan;
  * FMT = format datetime (optional)
  */
 
-#if defined(_WIN64)
-/* Windows 64-bit */
-#error WIN64 not supported
-#elif defined(_WIN32) || defined(WIN32)
-/* Windows 32-bit */
-#define DUK_USE_DATE_NOW_WIN32
-#define DUK_USE_DATE_TZO_WIN32
+#if defined(_WIN64) || defined(WIN64) || defined(_WIN32) || defined(WIN32)
+/* Windows 32-bit and 64-bit are currently the same. */
+#define DUK_USE_DATE_NOW_WINDOWS
+#define DUK_USE_DATE_TZO_WINDOWS
 /* Note: PRS and FMT are intentionally left undefined for now.  This means
  * there is no platform specific date parsing/formatting but there is still
  * the ISO 8601 standard format.
