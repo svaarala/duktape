@@ -1,2 +1,2 @@
 print 'Hello world!'
-print 'build: ' + __duk__.build
+print 'version: ' + __duk__.version

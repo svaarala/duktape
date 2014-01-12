@@ -23,18 +23,10 @@ DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
 
-# FIXME
-if [ -d .git ]; then
-	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; `git rev-parse HEAD`"
-else
-	BUILDINFO="`date +%Y-%m-%d`; `uname -a`; exported"
-fi
-
 # DUK_VERSION is grepped from duktape.h: it is needed for the public API
 # and we want to avoid defining it in two places.
 DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3`
 
-echo "BUILDINFO: $BUILDINFO"
 echo "DUK_VERSION: $DUK_VERSION"
 echo "Creating distributable sources to: $DIST"
 
@@ -228,7 +220,6 @@ done
 
 python src/genbuildparams.py \
 	--version=$DUK_VERSION \
-	--build="$BUILDINFO" \
 	--out-json=$DISTSRCSEP/buildparams.json.tmp \
 	--out-header=$DISTSRCSEP/duk_buildparams.h.tmp
 

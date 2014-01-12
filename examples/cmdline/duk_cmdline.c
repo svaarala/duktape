@@ -25,8 +25,7 @@
 	"Math.floor(__duk__.version / 10000) + '.' + " \
 	"Math.floor(__duk__.version / 100) % 100 + '.' + " \
 	"__duk__.version % 100" \
-	"); " \
-	"print(__duk__.build);"
+	");"
 
 #include <stdio.h>
 #include <stdlib.h>
