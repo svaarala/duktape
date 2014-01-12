@@ -73,7 +73,7 @@ function propsTest() {
     fglob('alert');
 
     print('__duk__');
-    fduk('build');
+    fduk('env');
     fduk('version');
     fduk('setFinalizer');
     fduk('getFinalizer');
