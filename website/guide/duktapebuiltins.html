@@ -12,7 +12,7 @@ values.</p>
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">__duk__</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
+<tr><td class="propname">Duktape</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
 <tr><td class="propname">print</td><td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
 <tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
 </tbody>
@@ -40,7 +40,7 @@ flush afterwards.  The bytes written depend on the arguments:</p>
 <code>stderr</code>.  Unlike a browser <code>alert()</code>, the call
 does not block.</p>
 
-<h2>The __duk__ object</h2>
+<h2>The Duktape object</h2>
 
 <table>
 <thead>
@@ -53,8 +53,8 @@ does not block.</p>
 <tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
 <tr><td class="propname">setFinalizer</td><td>Set finalizer of an object.</td></tr>
 <tr><td class="propname">getFinalizer</td><td>Set finalizer of an object.</td></tr>
-<tr><td class="propname">enc</td><td>Encode a value: <code>__duk__.enc('hex', 'foo')</code>.</td></tr>
-<tr><td class="propname">dec</td><td>Decode a value: <code>__duk__.dec('base64', 'Zm9v')</code>.</td></tr>
+<tr><td class="propname">enc</td><td>Encode a value: <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
+<tr><td class="propname">dec</td><td>Decode a value: <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">jsonxEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONX custom format.</td></tr>
 <tr><td class="propname">jsonxDec</td><td>Like <code>JSON.parse()</code> but decodes from JSONX custom format.</td></tr>
 <tr><td class="propname">jsoncEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONC custom format.</td></tr>
@@ -74,33 +74,33 @@ does not block.</p>
 behavior.  Version numbers can be compared directly: a logically higher version
 will also be numerically higher.  For example:</p>
 <pre class="ecmascript-code">
-if (typeof __duk__ !== 'object') {
+if (typeof Duktape !== 'object') {
     print('not Duktape');
-} else if (__duk__.version &gt;= 10203) {
+} else if (Duktape.version &gt;= 10203) {
     print('Duktape 1.2.3 or higher');
-} else if (__duk__.version &gt;= 800) {
+} else if (Duktape.version &gt;= 800) {
     print('Duktape 0.8.0 or higher (but lower than 1.2.3)');
 } else {
     print('Duktape lower than 0.8.0');
 }
 </pre>
 
-<p>Remember to check for existence of <code>__duk__</code> when doing feature
+<p>Remember to check for existence of <code>Duktape</code> when doing feature
 detection.  Your code should typically work on as many engines as possible.
 Avoid the common pitfall of using a direct identifier reference in the check:</p>
 <pre class="ecmascript-code">
 // Bad idea: ReferenceError if missing
-if (!__duk__) {
+if (!Duktape) {
     print('not Duktape');
 }
 
 // Better: check through 'this' (bound to global)
-if (!this.__duk__) {
+if (!this.Duktape) {
     print('not Duktape');
 }
 
 // Better: use typeof to check also type explicitly
-if (typeof __duk__ !== 'object') {
+if (typeof Duktape !== 'object') {
     print('not Duktape');
 }
 </pre>
@@ -128,7 +128,7 @@ other values are string coerced and the internal byte representation
 
 <p>For example, to encode a string into base64:</p>
 <pre class="ecmascript-code">
-var result = __duk__.enc('base64', 'foo');
+var result = Duktape.enc('base64', 'foo');
 print(result);  // prints 'Zm9v'
 </pre>
 
@@ -136,17 +136,17 @@ print(result);  // prints 'Zm9v'
 first string coerced (it only really makes sense to decode strings), and
 the result is always a buffer.  For example:</p>
 <pre class="ecmascript-code">
-var result = __duk__.dec('base64', 'Zm9v');
+var result = Duktape.dec('base64', 'Zm9v');
 print(typeof result, result);  // prints 'buffer foo'
 </pre>
 
 <p>If you wish to get back a string value, you can simply:</p>
 <pre class="ecmascript-code">
-var result = String(__duk__.dec('base64', 'Zm9v'));
+var result = String(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
 
-<h2>__duk__.Buffer (constructor)</h2>
+<h2>Duktape.Buffer (constructor)</h2>
 
 <table>
 <thead>
@@ -169,10 +169,10 @@ ordinary function and as a constructor:</p>
     using the custom <code>ToBuffer</code> coercion.  Returns a Buffer object
     whose internal value is the buffer resulting from the coercion.  The
     internal prototype of the newly created Buffer will be the
-    <code>__duk__.Buffer.prototype</code> object.</li>
+    <code>Duktape.Buffer.prototype</code> object.</li>
 </ul>
 
-<h2>__duk__.Buffer.prototype</h2>
+<h2>Duktape.Buffer.prototype</h2>
 
 <table>
 <thead>
@@ -189,11 +189,11 @@ ordinary function and as a constructor:</p>
 <p><code>toString()</code> and <code>valueOf</code> accept both plain buffers and
 Buffer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
-var plain_buf = __duk__.Buffer('test');
+var plain_buf = Duktape.Buffer('test');
 print(plain_buf.toString());
 </pre>
 
-<h2>__duk__.Pointer (constructor)</h2>
+<h2>Duktape.Pointer (constructor)</h2>
 
 <table>
 <thead>
@@ -216,10 +216,10 @@ ordinary function and as a constructor:</p>
     using the custom <code>ToPointer</code> coercion.  Returns a Pointer object
     whose internal value is the pointer resulting from the coercion.  The
     internal prototype of the newly created Pointer will be the
-    <code>__duk__.Pointer.prototype</code> object.</li>
+    <code>Duktape.Pointer.prototype</code> object.</li>
 </ul>
 
-<h2>__duk__.Pointer.prototype</h2>
+<h2>Duktape.Pointer.prototype</h2>
 
 <table>
 <thead>
@@ -236,11 +236,11 @@ ordinary function and as a constructor:</p>
 <p><code>toString()</code> and <code>valueOf</code> accept both plain pointers and
 Pointer objects as their <code>this</code> binding.  This allows code such as:</p>
 <pre class="ecmascript-code">
-var plain_ptr = __duk__.Pointer({ test: 'object' });
+var plain_ptr = Duktape.Pointer({ test: 'object' });
 print(plain_ptr.toString());
 </pre>
 
-<h2>__duk__.Thread (constructor)</h2>
+<h2>Duktape.Thread (constructor)</h2>
 
 <table>
 <thead>
@@ -266,10 +266,10 @@ cases:</p>
     is thrown).  The return value is a new thread whose initial function is
     recorded to be the argument function (this function will start executing
     when the new thread is first resumed).  The internal prototype of the
-    newly created Thread will be the <code>__duk__.Thread.prototype</code> object.</li>
+    newly created Thread will be the <code>Duktape.Thread.prototype</code> object.</li>
 </ul>
 
-<h2>__duk__.Thread.prototype</h2>
+<h2>Duktape.Thread.prototype</h2>
 
 <table>
 <thead>

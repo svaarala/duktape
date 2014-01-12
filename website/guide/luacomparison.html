@@ -103,7 +103,7 @@ for a similar effect (though not with respect to performance):
 
 <p>There are no primitives for coroutine control in the Duktape API
 (Lua API has e.g. <code>lua_resume</code>).  Coroutines can only be controlled
-using the functions exposed by the <code>__duk__</code> built-in.  Further,
+using the functions exposed by the <code>Duktape</code> built-in.  Further,
 Duktape has quite many coroutine yield restrictions now; for instance,
 coroutines cannot yield from inside constructor calls or getter/setter calls.</p>
 

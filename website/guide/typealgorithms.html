@@ -227,12 +227,12 @@ is extended to custom types as follows:</p>
 
 <p>If a plain buffer or pointer is used as a property access base value,
 properties are looked up from the (initial) built-in prototype object
-(<code>__duk__.Buffer.prototype</code> or <code>__duk__.Pointer.prototype</code>).
+(<code>Duktape.Buffer.prototype</code> or <code>Duktape.Pointer.prototype</code>).
 This mimics the behavior of standard types.</p>
 
 <p>For example:</p>
 <pre>
-duk&gt; buf = __duk__.dec('hex', '414243');  // plain buffer
+duk&gt; buf = Duktape.dec('hex', '414243');  // plain buffer
 = ABC
 duk&gt; buf.toString;
 = function toString() {/* native code */}

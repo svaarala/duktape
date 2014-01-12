@@ -6,7 +6,7 @@
 
 <p>An object which has an internal finalizer property in its prototype
 chain (or the object itself) is subject to finalization before being freed.
-The internal finalizer property is set using <code>__duk__.setFinalizer()</code>
+The internal finalizer property is set using <code>Duktape.setFinalizer()</code>
 method.  The finalizer may be triggered by either reference counting or
 mark-and-sweep.</p>
 
@@ -31,7 +31,7 @@ var a;
 function init() {
     a = { foo: 123 };
 
-    __duk__.setFinalizer(a, function (x) {
+    Duktape.setFinalizer(a, function (x) {
         print('finalizer, foo -&gt;', x.foo);
     });
 }
@@ -46,7 +46,7 @@ a = null;
 // mark-and-sweep finalizing happens here (at the latest) if
 // refcounting is disabled
 print('mark-and-sweep finalizer')
-__duk__.gc();
+Duktape.gc();
 </pre>
 
 <p>If you run this with the Duktape command line tool (with the default
