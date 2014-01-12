@@ -402,8 +402,8 @@ Function objects and argument creation
 The relevant ``duk_hobject`` flags for a function object are:
 
 * ``DUK_HOBJECT_FLAG_CREATEARGS``: indicates that an arguments object needs
-  to be created upon function call.  Must be set for non-strict functions
-  where the arguments object might be accessed.
+  to be created upon function call.  Must be set for functions where the
+  arguments object might be accessed.
 
 * ``DUK_HOBJECT_FLAG_NEWENV``: always set (for all functions).
 
