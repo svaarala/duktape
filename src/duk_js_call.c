@@ -1787,9 +1787,6 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	/* XXX: some overlapping code; cleanup */
 
 	if (call_flags & DUK_CALL_FLAG_IS_TAILCALL) {
-#ifdef DUK_USE_REFERENCE_COUNTING
-		duk_hobject *tmp;
-#endif
 		duk_tval *tv1, *tv2;
 		duk_tval tv_tmp;
 		int i;
@@ -1797,15 +1794,15 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		/*
 		 *  Tailcall handling
 		 *
-		 *  We must essentially simulate a callstack unwind here.  In particular,
-		 *  the current activation must be closed, otherwise something like
+		 *  Although the callstack entry is reused, we need to explicitly unwind
+		 *  the current activation (or simulate an unwind).  In particular, the
+		 *  current activation must be closed, otherwise something like
 		 *  test-dev-bug-reduce-judofyr.js results.
 		 */
 
 		DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
 		             thr->callstack_top - 1);
 
-		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 		act = thr->callstack + thr->callstack_top - 1;
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
@@ -1813,69 +1810,31 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 
-		if (!DUK_HOBJECT_HAS_NEWENV(act->func)) {
-			DUK_DDDPRINT("skip closing environments, envs not owned by this activation");
-			goto skip_env_close;
-		}
+		/* There's no catchstack to unwind (a tailcall instruction is not emitted if there is) */
+		DUK_ASSERT(thr->callstack_top > 0);
+		duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
 
-		DUK_ASSERT(act->lex_env == act->var_env);
-		if (act->var_env != NULL) {
-			DUK_DDDPRINT("closing var_env record %p -> %!O",
-			             (void *) act->var_env, (duk_heaphdr *) act->var_env);
-			duk_js_close_environment_record(thr, act->var_env, act->func, act->idx_bottom);
-			act = thr->callstack + thr->callstack_top - 1;  /* avoid side effect issues */
-		}
-	 skip_env_close:
-
-		/* Note: since activation is still reachable, refcount manipulation
-		 * must be very careful to avoid side effect issues.  Also, 'act'
-		 * must be looked up again (finalizer calls may reallocate).
-		 */
-
-		/* XXX: a 'raw' decref + explicit refzero check afterwards would be
-		 * very useful here.
-		 */
-
-#ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = act->var_env;
-#endif
-		act->var_env = NULL;
-#ifdef DUK_USE_REFERENCE_COUNTING
-		DUK_HOBJECT_DECREF(thr, tmp);  /* side effects */
+		/* Then reuse the unwound activation; callstack was not shrunk so there is always space */
+		thr->callstack_top++;
+		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 		act = thr->callstack + thr->callstack_top - 1;
-#endif
 
-#ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = act->lex_env;
-#endif
-		act->lex_env = NULL;
-#ifdef DUK_USE_REFERENCE_COUNTING
-		DUK_HOBJECT_DECREF(thr, tmp);  /* side effects */
-		act = thr->callstack + thr->callstack_top - 1;
-#endif
-
-		DUK_DDDPRINT("tailcall -> decref func");
-#ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = act->func;
-		DUK_ASSERT(tmp != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(tmp));
-#endif
+		/* Start filling in the activation */
 		act->func = func;  /* don't want an intermediate exposed state with func == NULL */
 		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_INCREF(thr, func);
-		DUK_HOBJECT_DECREF(thr, tmp);  /* side effects */
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack + thr->callstack_top - 1;  /* side effects (currently none though) */
 #endif
 
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
 		              DUK_ACT_FLAG_STRICT | DUK_ACT_FLAG_TAILCALLED :
 	        	      DUK_ACT_FLAG_TAILCALLED);
-	
-		/* act->func: already updated */
-		/* act->var_env: already NULLed */
-		/* act->lex_env: already NULLed */
-		/* act->pc: already zeroed */
+
+		DUK_ASSERT(act->func == func);      /* already updated */
+		DUK_ASSERT(act->var_env == NULL);   /* already NULLed (by unwind) */
+		DUK_ASSERT(act->lex_env == NULL);   /* already NULLed (by unwind) */
+		DUK_ASSERT(act->pc == 0);           /* already zeroed */
 		act->idx_bottom = entry_valstack_bottom_index;  /* tail call -> reuse current "frame" */
 		DUK_ASSERT(nregs >= 0);
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
