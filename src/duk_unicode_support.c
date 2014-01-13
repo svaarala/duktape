@@ -764,21 +764,23 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
  *  locale/language.
  */
 
+/* XXX: add 'language' argument when locale/language sensitive rule
+ * support added.
+ */
 static duk_codepoint_t case_transform_helper(duk_hthread *thr,
                                              duk_hbuffer_dynamic *buf,
                                              duk_codepoint_t cp,
                                              duk_codepoint_t prev,
                                              duk_codepoint_t next,
-                                             duk_small_int_t uppercase,
-                                             duk_small_int_t language) {
+                                             duk_small_int_t uppercase) {
 	duk_bitdecoder_ctx bd_ctx;
-
-	DUK_UNREF(language);
 
 	/* fast path for ASCII */
 	if (cp < 0x80L) {
-		/* FIXME: context sensitive rules exist for ASCII range too.
-		 * Need to add them here.
+		/* XXX: there are language sensitive rules for the ASCII range.
+		 * If/when language/locale support is implemented, they need to
+		 * be implemented here for the fast path.  There are no context
+		 * sensitive rules for ASCII range.
 		 */
 
 		if (uppercase) {
@@ -797,7 +799,7 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 	 * in the caseconv bitstream: hardcoded rules in C
 	 */
 	if (uppercase) {
-		/* FIXME: turkish / azeri */
+		/* XXX: turkish / azeri not implemented */
 	} else {
 		/*
 		 *  Final sigma context specific rule.  This is a rather tricky rule
@@ -816,14 +818,15 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 			goto singlechar;
 		}
 
-		/* FIXME: lithuanian */
+		/* XXX: lithuanian not implemented */
+		/* XXX: lithuanian, explicit dot rules */
+		/* XXX: turkish / azeri, lowercase rules */
+#if 0
 		if (0 /* language == 'lt' */ &&
 		    cp == 0x0307L) {               /* U+0307 = COMBINING DOT ABOVE */
 			goto nochar;
 		}
-
-		/* FIXME: lithuanian, explicit dot rules */
-		/* FIXME: turkish / azeri, lowercase rules */
+#endif
 	}
 
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
@@ -897,8 +900,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 			                      (duk_codepoint_t) curr,
 			                      prev,
 			                      next,
-			                      uppercase,
-			                      0);  /* FIXME: language */
+			                      uppercase);
 		}
 	}
 
@@ -923,8 +925,7 @@ duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint
 	                          cp,      /* curr char */
 	                          -1,      /* prev char */
 	                          -1,      /* next char */
-	                          1,       /* uppercase */
-	                          0);      /* FIXME: language */
+	                          1);      /* uppercase */
 
 	if ((y < 0) || (cp >= 0x80 && y < 0x80)) {
 		/* multiple codepoint conversion or non-ASCII mapped to ASCII
