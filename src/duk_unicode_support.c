@@ -799,7 +799,6 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 	if (uppercase) {
 		/* FIXME: turkish / azeri */
 	} else {
-DUK_DPRINT("cp=%d prev=%d next=%d", (int) cp, (int) prev, (int) next);
 		/* final sigma context specific rule */
 		if (cp == 0x03a3L &&    /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
 		    prev >= 0 &&        /* prev is letter */
