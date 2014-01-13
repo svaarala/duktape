@@ -18,22 +18,32 @@
 
 #ifdef DUK_USE_SOURCE_NONBMP
 /* IdentifierStart production with ASCII excluded */
-/* duk_unicode_identifier_start_noascii[] */
+/* duk_unicode_ids_noa[] */
 #include "duk_unicode_ids_noa.c"
 #else
 /* IdentifierStart production with ASCII and non-BMP excluded */
-/* duk_unicode_identifier_start_noascii_bmponly[] */
-#include "duk_unicode_ids_noa_bmpo.c"
+/* duk_unicode_ids_noabmp[] */
+#include "duk_unicode_ids_noabmp.c"
+#endif
+
+#ifdef DUK_USE_SOURCE_NONBMP
+/* IdentifierStart production with Letter and ASCII excluded */
+/* duk_unicode_ids_m_let_noa[] */
+#include "duk_unicode_ids_m_let_noa.c"
+#else
+/* IdentifierStart production with Letter, ASCII, and non-BMP excluded */
+/* duk_unicode_ids_m_let_noabmp[] */
+#include "duk_unicode_ids_m_let_noabmp.c"
 #endif
 
 #ifdef DUK_USE_SOURCE_NONBMP
 /* IdentifierPart production with IdentifierStart and ASCII excluded */
-/* duk_unicode_identifier_part_minus_identifier_start_noascii[] */
+/* duk_unicode_idp_m_ids_noa[] */
 #include "duk_unicode_idp_m_ids_noa.c"
 #else
 /* IdentifierPart production with IdentifierStart, ASCII, and non-BMP excluded */
-/* duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly[] */
-#include "duk_unicode_idp_m_ids_noa_bmpo.c"
+/* duk_unicode_idp_m_ids_noabmp[] */
+#include "duk_unicode_idp_m_ids_noabmp.c"
 #endif
 
 /*

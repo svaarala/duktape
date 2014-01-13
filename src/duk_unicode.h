@@ -18,13 +18,19 @@
 #ifdef DUK_USE_SOURCE_NONBMP
 #include "duk_unicode_ids_noa.h"
 #else
-#include "duk_unicode_ids_noa_bmpo.h"
+#include "duk_unicode_ids_noabmp.h"
+#endif
+
+#ifdef DUK_USE_SOURCE_NONBMP
+#include "duk_unicode_ids_m_let_noa.h"
+#else
+#include "duk_unicode_ids_m_let_noabmp.h"
 #endif
 
 #ifdef DUK_USE_SOURCE_NONBMP
 #include "duk_unicode_idp_m_ids_noa.h"
 #else
-#include "duk_unicode_idp_m_ids_noa_bmpo.h"
+#include "duk_unicode_idp_m_ids_noabmp.h"
 #endif
 
 #include "duk_unicode_caseconv.h"

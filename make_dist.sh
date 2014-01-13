@@ -239,36 +239,38 @@ python src/genbuiltins.py \
 #   UnicodeDigit -> categories Nd
 #   UnicodeConnectorPunctuation -> categories Pc
 
-# Whitespace
+# Whitespace (unused now)
 WHITESPACE_MINUS_Z_INCL='Z'
 WHITESPACE_MINUS_Z_EXCL='NONE'
 
-# Unicode letter (needed by case conversion, shared by identifier start/part)
-LETTER_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo'
-LETTER_NOASCII_EXCL='ASCII'
-LETTER_NOASCII_BMPONLY_INCL=$LETTER_NOASCII_INCL
-LETTER_NOASCII_BMPONLY_EXCL='ASCII,NONBMP'
+# Unicode letter (unused now)
+LETTER_NOA_INCL='Lu,Ll,Lt,Lm,Lo'
+LETTER_NOA_EXCL='ASCII'
+LETTER_NOABMP_INCL=$LETTER_NOA_INCL
+LETTER_NOABMP_EXCL='ASCII,NONBMP'
 
-# Identifier start (not used now)
+# Identifier start
 # E5 Section 7.6
-IDSTART_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
-IDSTART_NOASCII_EXCL='ASCII'
-IDSTART_NOASCII_BMPONLY_INCL=$IDSTART_NOASCII_INCL
-IDSTART_NOASCII_BMPONLY_EXCL='ASCII,NONBMP'
+IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
+IDSTART_NOA_EXCL='ASCII'
+IDSTART_NOABMP_INCL=$IDSTART_NOA_INCL
+IDSTART_NOABMP_EXCL='ASCII,NONBMP'
 
-# Identifier start - Unicode letter (more space efficient than full identifier start)
-# E5 Section 7.6
-IDSTART_MINUS_LETTER_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
-IDSTART_MINUS_LETTER_NOASCII_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII'
-IDSTART_MINUS_LETTER_NOASCII_BMPONLY_INCL=$IDSTART_MINUS_LETTER_NOASCII_INCL
-IDSTART_MINUS_LETTER_NOASCII_BMPONLY_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII,NONBMP'
+# Identifier start - Letter: allows matching of (rarely needed) 'Letter'
+# production space efficiently with the help of IdentifierStart.  The
+# 'Letter' production is only needed in case conversion of Greek final
+# sigma.
+IDSTART_MINUS_LETTER_NOA_INCL=$IDSTART_NOA_INCL
+IDSTART_MINUS_LETTER_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII'
+IDSTART_MINUS_LETTER_NOABMP_INCL=$IDSTART_NOA_INCL
+IDSTART_MINUS_LETTER_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII,NONBMP'
 
-# Identifier start - Identifier part (also excludes Unicode letter automatically)
+# Identifier start - Identifier part
 # E5 Section 7.6: IdentifierPart, but remove IdentifierStart (already above)
-IDPART_MINUS_IDSTART_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
-IDPART_MINUS_IDSTART_NOASCII_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
-IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL=$IDPART_MINUS_IDSTART_NOASCII_INCL
-IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
+IDPART_MINUS_IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
+IDPART_MINUS_IDSTART_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
+IDPART_MINUS_IDSTART_NOABMP_INCL=$IDPART_MINUS_IDSTART_NOA_INCL
+IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 
 extract_chars() {
 	python src/extract_chars.py \
@@ -277,8 +279,8 @@ extract_chars() {
 		--exclude-categories="$2" \
 		--out-source=$DISTSRCSEP/duk_unicode_$3.c.tmp \
 		--out-header=$DISTSRCSEP/duk_unicode_$3.h.tmp \
-		--table-name=duk_unicode_$4 \
-		> $DISTSRCSEP/$5.txt
+		--table-name=duk_unicode_$3 \
+		> $DISTSRCSEP/$3.txt
 }
 
 extract_caseconv() {
@@ -289,36 +291,18 @@ extract_caseconv() {
 		--out-header=$DISTSRCSEP/duk_unicode_caseconv.h.tmp \
 		--table-name-lc=duk_unicode_caseconv_lc \
 		--table-name-uc=duk_unicode_caseconv_uc \
-		> $DISTSRCSEP/CaseConversion.txt
+		> $DISTSRCSEP/caseconv.txt
 }
 
-extract_chars $WHITESPACE_MINUS_Z_INCL $WHITESPACE_MINUS_Z_EXCL \
-	ws_m_z whitespace_minus_z WhiteSpace-Z
-
-extract_chars $LETTER_NOASCII_INCL $LETTER_NOASCII_EXCL \
-	let_noa letter_noascii Letter-noascii
-
-extract_chars $LETTER_NOASCII_BMPONLY_INCL $LETTER_NOASCII_BMPONLY_EXCL \
-	let_noa_bmpo letter_noascii_bmponly Letter-noascii-bmponly
-
-extract_chars $IDSTART_NOASCII_INCL $IDSTART_NOASCII_EXCL \
-	ids_noa identifier_start_noascii IdentifierStart-noascii
-
-extract_chars $IDSTART_NOASCII_BMPONLY_INCL $IDSTART_NOASCII_BMPONLY_EXCL \
-	ids_noa_bmpo identifier_start_noascii_bmponly IdentifierStart-noascii-bmponly
-
-extract_chars $IDSTART_MINUS_LETTER_NOASCII_INCL $IDSTART_MINUS_LETTER_NOASCII_EXCL \
-	ids_m_let_noa identifier_start_minus_letter_noascii IdentifierStart-minus-Letter-noascii
-
-extract_chars $IDSTART_MINUS_LETTER_NOASCII_BMPONLY_INCL $IDSTART_MINUS_LETTER_NOASCII_BMPONLY_EXCL \
-	ids_m_let_noa_bmpo identifier_start_minus_letter_noascii_bmponly IdentifierStart-minus-Letter-noascii-bmponly
-
-extract_chars $IDPART_MINUS_IDSTART_NOASCII_INCL $IDPART_MINUS_IDSTART_NOASCII_EXCL \
-	idp_m_ids_noa identifier_part_minus_identifier_start_noascii IdentifierPart-minus-IdentifierStart-noascii
-
-extract_chars $IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL $IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL \
-	idp_m_ids_noa_bmpo identifier_part_minus_identifier_start_noascii_bmponly IdentifierPart-minus-IdentifierStart-noascii-bmponly
-
+extract_chars $WHITESPACE_MINUS_Z_INCL $WHITESPACE_MINUS_Z_EXCL ws_m_z
+extract_chars $LETTER_NOA_INCL $LETTER_NOA_EXCL let_noa
+extract_chars $LETTER_NOABMP_INCL $LETTER_NOABMP_EXCL let_noabmp
+extract_chars $IDSTART_NOA_INCL $IDSTART_NOA_EXCL ids_noa
+extract_chars $IDSTART_NOABMP_INCL $IDSTART_NOABMP_EXCL ids_noabmp
+extract_chars $IDSTART_MINUS_LETTER_NOA_INCL $IDSTART_MINUS_LETTER_NOA_EXCL ids_m_let_noa
+extract_chars $IDSTART_MINUS_LETTER_NOABMP_INCL $IDSTART_MINUS_LETTER_NOABMP_EXCL ids_m_let_noabmp
+extract_chars $IDPART_MINUS_IDSTART_NOA_INCL $IDPART_MINUS_IDSTART_NOA_EXCL idp_m_ids_noa
+extract_chars $IDPART_MINUS_IDSTART_NOABMP_INCL $IDPART_MINUS_IDSTART_NOABMP_EXCL idp_m_ids_noabmp
 extract_caseconv
 
 # Inject autogenerated files into source and header files so that they are
@@ -332,16 +316,24 @@ cat > $DISTSRCSEP/sed.tmp <<EOF
 	r $DISTSRCSEP/duk_unicode_ids_noa.h.tmp
 	d
 }
-/#include "duk_unicode_ids_noa_bmpo.h"/ {
-	r $DISTSRCSEP/duk_unicode_ids_noa_bmpo.h.tmp
+/#include "duk_unicode_ids_noabmp.h"/ {
+	r $DISTSRCSEP/duk_unicode_ids_noabmp.h.tmp
+	d
+}
+/#include "duk_unicode_ids_m_let_noa.h"/ {
+	r $DISTSRCSEP/duk_unicode_ids_m_let_noa.h.tmp
+	d
+}
+/#include "duk_unicode_ids_m_let_noabmp.h"/ {
+	r $DISTSRCSEP/duk_unicode_ids_m_let_noabmp.h.tmp
 	d
 }
 /#include "duk_unicode_idp_m_ids_noa.h"/ {
 	r $DISTSRCSEP/duk_unicode_idp_m_ids_noa.h.tmp
 	d
 }
-/#include "duk_unicode_idp_m_ids_noa_bmpo.h"/ {
-	r $DISTSRCSEP/duk_unicode_idp_m_ids_noa_bmpo.h.tmp
+/#include "duk_unicode_idp_m_ids_noabmp.h"/ {
+	r $DISTSRCSEP/duk_unicode_idp_m_ids_noabmp.h.tmp
 	d
 }
 /#include "duk_unicode_caseconv.h"/ {
@@ -360,16 +352,24 @@ cat > $DISTSRCSEP/sed.tmp <<EOF
 	r $DISTSRCSEP/duk_unicode_ids_noa.c.tmp
 	d
 }
-/#include "duk_unicode_ids_noa_bmpo.c"/ {
-	r $DISTSRCSEP/duk_unicode_ids_noa_bmpo.c.tmp
+/#include "duk_unicode_ids_noabmp.c"/ {
+	r $DISTSRCSEP/duk_unicode_ids_noabmp.c.tmp
+	d
+}
+/#include "duk_unicode_ids_m_let_noa.c"/ {
+	r $DISTSRCSEP/duk_unicode_ids_m_let_noa.c.tmp
+	d
+}
+/#include "duk_unicode_ids_m_let_noabmp.c"/ {
+	r $DISTSRCSEP/duk_unicode_ids_m_let_noabmp.c.tmp
 	d
 }
 /#include "duk_unicode_idp_m_ids_noa.c"/ {
 	r $DISTSRCSEP/duk_unicode_idp_m_ids_noa.c.tmp
 	d
 }
-/#include "duk_unicode_idp_m_ids_noa_bmpo.c"/ {
-	r $DISTSRCSEP/duk_unicode_idp_m_ids_noa_bmpo.c.tmp
+/#include "duk_unicode_idp_m_ids_noabmp.c"/ {
+	r $DISTSRCSEP/duk_unicode_idp_m_ids_noabmp.c.tmp
 	d
 }
 /#include "duk_unicode_caseconv.c"/ {
@@ -386,16 +386,15 @@ rm $DISTSRCSEP/duk_unicode_tables.c.tmp
 # Clean up sources: after this step only relevant files should remain
 
 rm $DISTSRCSEP/*.tmp
-rm $DISTSRCSEP/WhiteSpace-Z.txt
-rm $DISTSRCSEP/Letter-noascii.txt
-rm $DISTSRCSEP/Letter-noascii-bmponly.txt
-rm $DISTSRCSEP/IdentifierStart-noascii.txt
-rm $DISTSRCSEP/IdentifierStart-noascii-bmponly.txt
-rm $DISTSRCSEP/IdentifierStart-minus-Letter-noascii.txt
-rm $DISTSRCSEP/IdentifierStart-minus-Letter-noascii-bmponly.txt
-rm $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii.txt
-rm $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii-bmponly.txt
-rm $DISTSRCSEP/CaseConversion.txt
+for i in \
+	ws_m_z \
+	let_noa let_noabmp \
+	ids_noa ids_noabmp \
+	ids_m_let_noa ids_m_let_noabmp \
+	idp_m_ids_noa idp_m_ids_noabmp; do
+	rm $DISTSRCSEP/$i.txt
+done
+rm $DISTSRCSEP/caseconv.txt
 
 # Create a combined source file, duktape.c, into a separate combined source
 # directory.  This allows user to just include "duktape.c" and "duktape.h"
