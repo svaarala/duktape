@@ -799,11 +799,19 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 	if (uppercase) {
 		/* FIXME: turkish / azeri */
 	} else {
-		/* final sigma context specific rule */
+		/*
+		 *  Final sigma context specific rule.  This is a rather tricky rule
+		 *  and this handling is probably not 100% correct now.
+		 */
+
 		if (cp == 0x03a3L &&    /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
-		    prev >= 0 &&        /* prev is letter */
-		    next < 0) {         /* next is not letter */
-			/* FIXME: fix conditions */
+		    duk_unicode_is_letter(prev) &&        /* prev exists and is not a letter */
+		    !duk_unicode_is_letter(next)) {       /* next does not exist or next is not a letter */
+			/* Capital sigma occurred at "end of word", lowercase to
+			 * U+03C2 = GREEK SMALL LETTER FINAL SIGMA.  Otherwise
+			 * fall through and let the normal rules lowercase it to
+			 * U+03C3 = GREEK SMALL LETTER SIGMA.
+			 */
 			cp = 0x03c2L;
 			goto singlechar;
 		}
