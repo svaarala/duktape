@@ -61,6 +61,10 @@ Release checklist
 
   - On x86-64
 
+* Regfuzz
+
+  - On x86-64, with DUK_OPT_ASSERTIONS
+
 * Version bump website
 
   - API
