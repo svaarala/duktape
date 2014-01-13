@@ -244,6 +244,8 @@ WHITESPACE_MINUS_Z_INCL='Z'
 WHITESPACE_MINUS_Z_EXCL='NONE'
 
 # Unicode letter (unused now)
+LETTER_INCL='Lu,Ll,Lt,Lm,Lo'
+LETTER_EXCL='NONE'
 LETTER_NOA_INCL='Lu,Ll,Lt,Lm,Lo'
 LETTER_NOA_EXCL='ASCII'
 LETTER_NOABMP_INCL=$LETTER_NOA_INCL
@@ -251,6 +253,8 @@ LETTER_NOABMP_EXCL='ASCII,NONBMP'
 
 # Identifier start
 # E5 Section 7.6
+IDSTART_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
+IDSTART_EXCL='NONE'
 IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
 IDSTART_NOA_EXCL='ASCII'
 IDSTART_NOABMP_INCL=$IDSTART_NOA_INCL
@@ -260,6 +264,8 @@ IDSTART_NOABMP_EXCL='ASCII,NONBMP'
 # production space efficiently with the help of IdentifierStart.  The
 # 'Letter' production is only needed in case conversion of Greek final
 # sigma.
+IDSTART_MINUS_LETTER_INCL=$IDSTART_NOA_INCL
+IDSTART_MINUS_LETTER_EXCL='Lu,Ll,Lt,Lm,Lo'
 IDSTART_MINUS_LETTER_NOA_INCL=$IDSTART_NOA_INCL
 IDSTART_MINUS_LETTER_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII'
 IDSTART_MINUS_LETTER_NOABMP_INCL=$IDSTART_NOA_INCL
@@ -267,6 +273,8 @@ IDSTART_MINUS_LETTER_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII,NONBMP'
 
 # Identifier start - Identifier part
 # E5 Section 7.6: IdentifierPart, but remove IdentifierStart (already above)
+IDPART_MINUS_IDSTART_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
+IDPART_MINUS_IDSTART_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
 IDPART_MINUS_IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
 IDPART_MINUS_IDSTART_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
 IDPART_MINUS_IDSTART_NOABMP_INCL=$IDPART_MINUS_IDSTART_NOA_INCL
@@ -295,12 +303,16 @@ extract_caseconv() {
 }
 
 extract_chars $WHITESPACE_MINUS_Z_INCL $WHITESPACE_MINUS_Z_EXCL ws_m_z
+extract_chars $LETTER_INCL $LETTER_EXCL let
 extract_chars $LETTER_NOA_INCL $LETTER_NOA_EXCL let_noa
 extract_chars $LETTER_NOABMP_INCL $LETTER_NOABMP_EXCL let_noabmp
+extract_chars $IDSTART_INCL $IDSTART_EXCL ids
 extract_chars $IDSTART_NOA_INCL $IDSTART_NOA_EXCL ids_noa
 extract_chars $IDSTART_NOABMP_INCL $IDSTART_NOABMP_EXCL ids_noabmp
+extract_chars $IDSTART_MINUS_LETTER_INCL $IDSTART_MINUS_LETTER_EXCL ids_m_let
 extract_chars $IDSTART_MINUS_LETTER_NOA_INCL $IDSTART_MINUS_LETTER_NOA_EXCL ids_m_let_noa
 extract_chars $IDSTART_MINUS_LETTER_NOABMP_INCL $IDSTART_MINUS_LETTER_NOABMP_EXCL ids_m_let_noabmp
+extract_chars $IDPART_MINUS_IDSTART_INCL $IDPART_MINUS_IDSTART_EXCL idp_m_ids
 extract_chars $IDPART_MINUS_IDSTART_NOA_INCL $IDPART_MINUS_IDSTART_NOA_EXCL idp_m_ids_noa
 extract_chars $IDPART_MINUS_IDSTART_NOABMP_INCL $IDPART_MINUS_IDSTART_NOABMP_EXCL idp_m_ids_noabmp
 extract_caseconv
@@ -388,10 +400,10 @@ rm $DISTSRCSEP/duk_unicode_tables.c.tmp
 rm $DISTSRCSEP/*.tmp
 for i in \
 	ws_m_z \
-	let_noa let_noabmp \
-	ids_noa ids_noabmp \
-	ids_m_let_noa ids_m_let_noabmp \
-	idp_m_ids_noa idp_m_ids_noabmp; do
+	let let_noa let_noabmp \
+	ids ids_noa ids_noabmp \
+	ids_m_let ids_m_let_noa ids_m_let_noabmp \
+	idp_m_ids idp_m_ids_noa idp_m_ids_noabmp; do
 	rm $DISTSRCSEP/$i.txt
 done
 rm $DISTSRCSEP/caseconv.txt

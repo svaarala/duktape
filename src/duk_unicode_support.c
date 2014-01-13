@@ -281,7 +281,7 @@ static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	}
 }
 
-static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
+static duk_small_int_t duk_uni_range_match(const duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_codepoint_t prev_re;
 
@@ -304,7 +304,7 @@ static duk_small_int_t uni_range_match(const duk_uint8_t *unitab, duk_size_t uni
 
 		/* [r1,r2] is the range */
 
-		DUK_DDDPRINT("uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2);
+		DUK_DDDPRINT("duk_uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2);
 		if (cp >= r1 && cp <= r2) {
 			return 1;
 		}
@@ -330,8 +330,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *    FEFF;ZERO WIDTH NO-BREAK SPACE;Cf;0;BN;;;;;N;BYTE ORDER MARK;;;;
 	 *
 	 *  It also specifies any Unicode category 'Z' characters as white
-	 *  space.  These can be extracted with the "src/extract_chars.py" script,
-	 *  see src/SConscript t_uni_ws target.
+	 *  space.  These can be extracted with the "src/extract_chars.py" script.
 	 *
 	 *  Current result (built as WhiteSpace-Z.txt).
 	 *
@@ -443,7 +442,7 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 	 *
 	 *  The "UnicodeLetter" alternative of the production allows letters
 	 *  from various Unicode categories.  These can be extracted with the
-	 *  "src/extract_chars.py" script, see src/SConscript t_uni_idstart* targets.
+	 *  "src/extract_chars.py" script.
 	 *
 	 *  Because the result has hundreds of Unicode codepoint ranges, matching
 	 *  for any values >= 0x80 are done using a very slow range-by-range scan
@@ -471,17 +470,17 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #ifdef DUK_USE_SOURCE_NONBMP
-	if (uni_range_match(duk_unicode_identifier_start_noascii,
-	                    (duk_size_t) sizeof(duk_unicode_identifier_start_noascii),
-	                    (duk_codepoint_t) cp)) {
+	if (duk_uni_range_match(duk_unicode_ids_noa,
+	                        (duk_size_t) sizeof(duk_unicode_ids_noa),
+	                        (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (uni_range_match(duk_unicode_identifier_start_noascii_bmponly,
-		            sizeof(duk_unicode_identifier_start_noascii_bmponly),
-		            (duk_codepoint_t) cp)) {
+		if (duk_uni_range_match(duk_unicode_ids_noabmp,
+		                        sizeof(duk_unicode_ids_noabmp),
+		                        (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -536,8 +535,7 @@ duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 	 *  The matching code reuses the "identifier start" tables, and then
 	 *  consults a separate range set for characters in "identifier part"
 	 *  but not in "identifier start".  These can be extracted with the
-	 *  "src/extract_chars.py" script, see src/SConscript
-	 *  t_uni_idpart_minus_idstart* targets.
+	 *  "src/extract_chars.py" script.
 	 *
 	 *  UnicodeCombiningMark -> categories Mn, Mc
 	 *  UnicodeDigit -> categories Nd
@@ -558,29 +556,88 @@ duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #ifdef DUK_USE_SOURCE_NONBMP
-	if (uni_range_match(duk_unicode_identifier_start_noascii,
-	                    sizeof(duk_unicode_identifier_start_noascii),
-	                    (duk_codepoint_t) cp) ||
-	    uni_range_match(duk_unicode_identifier_part_minus_identifier_start_noascii,
-	                    sizeof(duk_unicode_identifier_part_minus_identifier_start_noascii),
-	                    (duk_codepoint_t) cp)) {
+	if (duk_uni_range_match(duk_unicode_ids_noa,
+	                        sizeof(duk_unicode_ids_noa),
+	                        (duk_codepoint_t) cp) ||
+	    duk_uni_range_match(duk_unicode_idp_m_ids_noa,
+	                        sizeof(duk_unicode_idp_m_ids_noa),
+	                        (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (uni_range_match(duk_unicode_identifier_start_noascii_bmponly,
-		                    sizeof(duk_unicode_identifier_start_noascii_bmponly),
-		                    (duk_codepoint_t) cp) ||
-		    uni_range_match(duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly,
-		                    sizeof(duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly),
-		                    (duk_codepoint_t) cp)) {
+		if (duk_uni_range_match(duk_unicode_ids_noabmp,
+		                        sizeof(duk_unicode_ids_noabmp),
+		                        (duk_codepoint_t) cp) ||
+		    duk_uni_range_match(duk_unicode_idp_m_ids_noabmp,
+		                        sizeof(duk_unicode_idp_m_ids_noabmp),
+		                        (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
 	} else {
 		/* without explicit non-BMP support, assume non-BMP characters
 		 * are always accepted as identifier characters.
+		 */
+		return 1;
+	}
+#endif
+}
+
+/*
+ *  Unicode letter check.
+ */
+
+duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
+	/*
+	 *  Unicode letter is now taken to be the categories:
+	 *
+	 *    Lu, Ll, Lt, Lm, Lo
+	 *
+	 *  (Not sure if this is exactly correct.)
+	 *
+	 *  The ASCII fast path consists of:
+	 *
+	 *    0x0041 ... 0x005a		['A' ... 'Z']
+	 *    0x0061 ... 0x007a		['a' ... 'z']
+	 */
+
+	/* ASCII (and EOF) fast path -- quick accept and reject */
+	if (cp <= 0x7fL) {
+		if ((cp >= 'a' && cp <= 'z') ||
+		    (cp >= 'A' && cp <= 'Z')) {
+			return 1;
+		}
+		return 0;
+	}
+
+	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
+
+#ifdef DUK_USE_SOURCE_NONBMP
+	if (duk_uni_range_match(duk_unicode_ids_noa,
+	                        sizeof(duk_unicode_ids_noa),
+	                        (duk_codepoint_t) cp) &&
+	    !duk_uni_range_match(duk_unicode_ids_m_let_noa,
+	                         sizeof(duk_unicode_ids_m_let_noa),
+	                         (duk_codepoint_t) cp)) {
+		return 1;
+	}
+	return 0;
+#else
+	if (cp < 0x10000L) {
+		if (duk_uni_range_match(duk_unicode_ids_noabmp,
+		                        sizeof(duk_unicode_ids_noabmp),
+		                        (duk_codepoint_t) cp) &&
+		    !duk_uni_range_match(duk_unicode_ids_m_let_noabmp,
+		                         sizeof(duk_unicode_ids_m_let_noabmp),
+		                         (duk_codepoint_t) cp)) {
+			return 1;
+		}
+		return 0;
+	} else {
+		/* without explicit non-BMP support, assume non-BMP characters
+		 * are always accepted as letters.
 		 */
 		return 1;
 	}
@@ -742,8 +799,9 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 	if (uppercase) {
 		/* FIXME: turkish / azeri */
 	} else {
+DUK_DPRINT("cp=%d prev=%d next=%d", (int) cp, (int) prev, (int) next);
 		/* final sigma context specific rule */
-		if (cp == 0x03a3L &&   /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
+		if (cp == 0x03a3L &&    /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
 		    prev >= 0 &&        /* prev is letter */
 		    next < 0) {         /* next is not letter */
 			/* FIXME: fix conditions */
