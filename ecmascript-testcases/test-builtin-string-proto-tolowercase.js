@@ -3,6 +3,14 @@
  *  in much more detail.
  */
 
+function dumpString(x) {
+    var tmp = [];
+    for (var i = 0; i < x.length; i++) {
+        tmp.push(x.charCodeAt(i));
+    }
+    print(typeof x, x.length, tmp.join(' '));
+}
+
 /*===
 abcd
 228
@@ -20,28 +28,54 @@ try {
 }
 
 /*===
+string 3 57 963 33
+string 2 963 33
 string 3 97 962 33
+string 2 97 962
 string 3 97 963 97
 ===*/
 
-/* Locale/language specific rules should NOT apply, but context specific
- * rules should. Test just a few basic rules.
+/* Context/language specific rules.  Currently locale/language specific
+ * rules don't apply (specific locales are not implemented), but general
+ * context sensitive rules do apply.
  */
+
+function greekSigmaTest() {
+    var str, t;
+
+    /* Context specific Greek sigma rule.  This is a rather difficult rule to
+     * implement (for example, it requires neighboring codepoints to be tested
+     * against 'Unicode letter' which is not needed elsewhere).
+     */
+
+    // Prev is not a letter, curr is U+03A3 (Greek capital letter sigma), next is not letter.
+    // Here the sigma occurs at the end but is the single letter in the "word", so the special
+    // rule does not apply.
+    dumpString(('9\u03a3!').toLowerCase());
+
+    // Prev does not exist, next is not a letter -> same case.
+    dumpString(('\u03a3!').toLowerCase());
+
+    // Prev is a letter, next is not a letter -> rule applies (end of word)
+    dumpString(('A\u03a3!').toLowerCase());
+
+    // Prev is a letter, next does not exist -> same case.
+    dumpString(('A\u03a3').toLowerCase());
+
+    // Prev is a letter, next is a letter -> in the middle of the word rule should no longer apply
+    dumpString(('A\u03a3A').toLowerCase());
+}
 
 function localeTest() {
     var str, t;
 
-    // context specific Greek sigma rule
-
-    str = 'A\u03a3!';  // prev is letter, curr is U+03A3 (Greek capital letter sigma), next is not letter
-    t = str.toLowerCase();
-    print(typeof t, t.length, t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2));
-
-    str = 'A\u03a3A';  // should no longer apply
-    t = str.toLowerCase();
-    print(typeof t, t.length, t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2));
-
     // FIXME: add locale specific test and ensure locale specific rules do not apply
+}
+
+try {
+    greekSigmaTest();
+} catch (e) {
+    print(e);
 }
 
 try {
