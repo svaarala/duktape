@@ -41,8 +41,8 @@ try {
 
 
 /*===
-string 15 [OBJECT GLOBAL]
-string 15 [OBJECT GLOBAL]
+TypeError
+TypeError
 string 4 TRUE
 string 5 FALSE
 string 3 123
