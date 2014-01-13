@@ -2,14 +2,20 @@
  *  Some invalid character class cases.
  */
 
+/*---
+{
+    "knownbug": true
+}
+---*/
+
 /*===
 SyntaxError
 ===*/
 
-/* should cause a SyntaxError, see E5 Section 15.10.2.15 ??? */
+/* Should cause a SyntaxError, see E5 Section 15.10.2.15. */
 try {
     /* '\d' contains [0-9], while 'z' is a single character.
-     *.CharacterRange() (E5 Section 15.10.2.15) should reject
+     * CharacterRange() (E5 Section 15.10.2.15) should reject
      * this with SyntaxError because both endpoints must be
      * single characters.
      */
@@ -28,11 +34,10 @@ try {
 SyntaxError
 ===*/
 
-/* should cause a SyntaxError, see E5 Section 15.10.2.15 */
+/* Should cause a SyntaxError, see E5 Section 15.10.2.15. */
 try {
     eval('t = /[z-x]/;');
 } catch(e) {
     print(e.name);
 }
-
 
