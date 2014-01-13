@@ -180,11 +180,17 @@ Other conversions (uppercase or titlecase conversions, or lowercase
 conversions of other sigma characters) are not context sensitive.
 In particular, codepoints U+03C2 and U+03C3 lowercase to themselves.
 
-.. note:: What is the formal definition of a "final sigma" context?
-   Based on the "Unicode demystified" link below, let p = previous
-   codepoint (if exists) and n = next codepoint; final_sigma = (p exists)
-   and (p is a letter) and (n exists) and (n is not a letter), for
-   some meaning of a "letter"?
+What is the definition for "Final_Sigma"?  Not quite sure, see:
+
+* http://www.unicode.org/faq/greek.html#5
+
+* "Unicode demystified" link below seems to indicate that:
+
+  - Let p = previous codepoint (if exists)
+  - Let n = next codepoint (if exists)
+  - Then final_sigma = (p exists) and (p is a letter) and
+    ((n does not exist) or (n is not a letter))
+  - The meaning of a "letter" is not clear
 
 See also:
 
