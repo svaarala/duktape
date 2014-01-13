@@ -208,6 +208,20 @@ vgtest:	npminst duk
 apitest:	npminst libduktape.so.1.0.0
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
+regfuzz-0.1.tar.gz:
+	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
+	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
+
+regfuzz: regfuzz-0.1.tar.gz duk
+	# Spidermonkey test is pretty close, just lacks 'arguments'
+	# Should run with assertions enabled in 'duk'
+	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
+	cp regfuzz-0.1.tar.gz duk /tmp/duktape-regfuzz
+	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
+	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
+	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
+	cd /tmp/duktape-regfuzz; valgrind duk regfuzz-test.js
+
 # FIXME: torturetest; torture + valgrind
 
 .PHONY:	npminst
