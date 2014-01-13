@@ -258,7 +258,7 @@ def main():
 	parser.add_option('--unicode-data', dest='unicode_data')      # UnicodeData.txt
 	parser.add_option('--special-casing', dest='special_casing')  # SpecialCasing.txt
 	parser.add_option('--include-categories', dest='include_categories')
-	parser.add_option('--exclude-categories', dest='exclude_categories', default='')
+	parser.add_option('--exclude-categories', dest='exclude_categories', default='NONE')
 	parser.add_option('--out-source', dest='out_source')
 	parser.add_option('--out-header', dest='out_header')
 	parser.add_option('--out-png', dest='out_png')
@@ -270,7 +270,7 @@ def main():
 	if opts.include_categories != '':
 		catsinc = opts.include_categories.split(',')
 	catsexc = []
-	if opts.exclude_categories != '':
+	if opts.exclude_categories != 'NONE':
 		catsexc = opts.exclude_categories.split(',')
 
 	print 'CATSEXC: %s' % repr(catsexc)

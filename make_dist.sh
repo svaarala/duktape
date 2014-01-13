@@ -239,92 +239,87 @@ python src/genbuiltins.py \
 #   UnicodeDigit -> categories Nd
 #   UnicodeConnectorPunctuation -> categories Pc
 
+# Whitespace
+WHITESPACE_MINUS_Z_INCL='Z'
+WHITESPACE_MINUS_Z_EXCL='NONE'
+
+# Unicode letter (needed by case conversion, shared by identifier start/part)
+LETTER_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo'
+LETTER_NOASCII_EXCL='ASCII'
+LETTER_NOASCII_BMPONLY_INCL=$LETTER_NOASCII_INCL
+LETTER_NOASCII_BMPONLY_EXCL='ASCII,NONBMP'
+
+# Identifier start (not used now)
+# E5 Section 7.6
 IDSTART_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
 IDSTART_NOASCII_EXCL='ASCII'
 IDSTART_NOASCII_BMPONLY_INCL=$IDSTART_NOASCII_INCL
 IDSTART_NOASCII_BMPONLY_EXCL='ASCII,NONBMP'
+
+# Identifier start - Unicode letter (more space efficient than full identifier start)
+# E5 Section 7.6
+IDSTART_MINUS_LETTER_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
+IDSTART_MINUS_LETTER_NOASCII_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII'
+IDSTART_MINUS_LETTER_NOASCII_BMPONLY_INCL=$IDSTART_MINUS_LETTER_NOASCII_INCL
+IDSTART_MINUS_LETTER_NOASCII_BMPONLY_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII,NONBMP'
+
+# Identifier start - Identifier part (also excludes Unicode letter automatically)
+# E5 Section 7.6: IdentifierPart, but remove IdentifierStart (already above)
 IDPART_MINUS_IDSTART_NOASCII_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
 IDPART_MINUS_IDSTART_NOASCII_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
 IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL=$IDPART_MINUS_IDSTART_NOASCII_INCL
 IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 
-# FIXME: name?
-python src/extract_chars.py \
-	--unicode-data=src/UnicodeData.txt \
-	--include-categories=Z \
-	--out-source=$DISTSRCSEP/duk_unicode_ws_m_z.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_ws_m_z.h.tmp \
-	--table-name=duk_unicode_whitespace_minus_z \
-	> $DISTSRCSEP/WhiteSpace-Z.txt
+extract_chars() {
+	python src/extract_chars.py \
+		--unicode-data=src/UnicodeData.txt \
+		--include-categories="$1" \
+		--exclude-categories="$2" \
+		--out-source=$DISTSRCSEP/duk_unicode_$3.c.tmp \
+		--out-header=$DISTSRCSEP/duk_unicode_$3.h.tmp \
+		--table-name=duk_unicode_$4 \
+		> $DISTSRCSEP/$5.txt
+}
 
-# E5 Section 7.6
-python src/extract_chars.py \
-	--unicode-data=src/UnicodeData.txt \
-	--include-categories=$IDSTART_NOASCII_INCL \
-	--exclude-categories=$IDSTART_NOASCII_EXCL \
-	--out-source=$DISTSRCSEP/duk_unicode_ids_noa.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_ids_noa.h.tmp \
-	--table-name=duk_unicode_identifier_start_noascii \
-	> $DISTSRCSEP/IdentifierStart-noascii.txt
+extract_caseconv() {
+	python src/extract_caseconv.py \
+		--unicode-data=src/UnicodeData.txt \
+		--special-casing=src/SpecialCasing.txt \
+		--out-source=$DISTSRCSEP/duk_unicode_caseconv.c.tmp \
+		--out-header=$DISTSRCSEP/duk_unicode_caseconv.h.tmp \
+		--table-name-lc=duk_unicode_caseconv_lc \
+		--table-name-uc=duk_unicode_caseconv_uc \
+		> $DISTSRCSEP/CaseConversion.txt
+}
 
-python src/extract_chars.py \
-	--unicode-data=src/UnicodeData.txt \
-	--include-categories=$IDSTART_NOASCII_BMPONLY_INCL \
-	--exclude-categories=$IDSTART_NOASCII_BMPONLY_EXCL \
-	--out-source=$DISTSRCSEP/duk_unicode_ids_noa_bmpo.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_ids_noa_bmpo.h.tmp \
-	--table-name=duk_unicode_identifier_start_noascii_bmponly \
-	> $DISTSRCSEP/IdentifierStart-noascii-bmponly.txt
+extract_chars $WHITESPACE_MINUS_Z_INCL $WHITESPACE_MINUS_Z_EXCL \
+	ws_m_z whitespace_minus_z WhiteSpace-Z
 
-#t_uni_idstart_noascii_png = \
-#	env.Command(['IdentifierStart-noascii.png'],
-#	            ['UnicodeData.txt'],
-#	            'python src/extract_chars.py --unicode-data=${SOURCES[0]} --include-categories=%s --exclude-categories=%s --out-png=${TARGETS[0]} > /dev/null' % \
-#	            (IDSTART_NOASCII_INCL, IDSTART_NOASCII_EXCL))
-#t_uni_idstart_noascii_bmponly_png = \
-#	env.Command(['IdentifierStart-noascii-bmponly.png'],
-#	            ['UnicodeData.txt'],
-#	            'python src/extract_chars.py --unicode-data=${SOURCES[0]} --include-categories=%s --exclude-categories=%s --out-png=${TARGETS[0]} > /dev/null' % \
-#	            (IDSTART_NOASCII_BMPONLY_INCL, IDSTART_NOASCII_BMPONLY_EXCL))
+extract_chars $LETTER_NOASCII_INCL $LETTER_NOASCII_EXCL \
+	let_noa letter_noascii Letter-noascii
 
-# E5 Section 7.6: IdentifierPart, but remove IdentifierStart (already above)
-python src/extract_chars.py \
-	--unicode-data=src/UnicodeData.txt \
-	--include-categories=$IDPART_MINUS_IDSTART_NOASCII_INCL \
-	--exclude-categories=$IDPART_MINUS_IDSTART_NOASCII_EXCL \
-	--out-source=$DISTSRCSEP/duk_unicode_idp_m_ids_noa.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_idp_m_ids_noa.h.tmp \
-	--table-name=duk_unicode_identifier_part_minus_identifier_start_noascii \
-	> $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii.txt
+extract_chars $LETTER_NOASCII_BMPONLY_INCL $LETTER_NOASCII_BMPONLY_EXCL \
+	let_noa_bmpo letter_noascii_bmponly Letter-noascii-bmponly
 
-python src/extract_chars.py \
-	--unicode-data=src/UnicodeData.txt \
-	--include-categories=$IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL \
-	--exclude-categories=$IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL \
-	--out-source=$DISTSRCSEP/duk_unicode_idp_m_ids_noa_bmpo.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_idp_m_ids_noa_bmpo.h.tmp \
-	--table-name=duk_unicode_identifier_part_minus_identifier_start_noascii_bmponly \
-	> $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii-bmponly.txt
+extract_chars $IDSTART_NOASCII_INCL $IDSTART_NOASCII_EXCL \
+	ids_noa identifier_start_noascii IdentifierStart-noascii
 
-#t_uni_idpart_minus_idstart_noascii_png = \
-#	env.Command(['IdentifierPart-minus-IdentifierStart-noascii.png'],
-#	            ['UnicodeData.txt'],
-#	            'python src/extract_chars.py --unicode-data=${SOURCES[0]} --include-categories=%s --exclude-categories=%s --out-png=${TARGETS[0]} > /dev/null' % \
-#	            (IDPART_MINUS_IDSTART_NOASCII_INCL, IDPART_MINUS_IDSTART_NOASCII_EXCL))
-#t_uni_idpart_minus_idstart_noascii_bmponly_png = \
-#	env.Command(['IdentifierPart-minus-IdentifierStart-noascii-bmponly.png'],
-#	            ['UnicodeData.txt'],
-#	            'python src/extract_chars.py --unicode-data=${SOURCES[0]} --include-categories=%s --exclude-categories=%s --out-png=${TARGETS[0]} > /dev/null' % \
-#	            (IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL, IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL))
+extract_chars $IDSTART_NOASCII_BMPONLY_INCL $IDSTART_NOASCII_BMPONLY_EXCL \
+	ids_noa_bmpo identifier_start_noascii_bmponly IdentifierStart-noascii-bmponly
 
-python src/extract_caseconv.py \
-	--unicode-data=src/UnicodeData.txt \
-	--special-casing=src/SpecialCasing.txt \
-	--out-source=$DISTSRCSEP/duk_unicode_caseconv.c.tmp \
-	--out-header=$DISTSRCSEP/duk_unicode_caseconv.h.tmp \
-	--table-name-lc=duk_unicode_caseconv_lc \
-	--table-name-uc=duk_unicode_caseconv_uc \
-	> $DISTSRCSEP/CaseConversion.txt
+extract_chars $IDSTART_MINUS_LETTER_NOASCII_INCL $IDSTART_MINUS_LETTER_NOASCII_EXCL \
+	ids_m_let_noa identifier_start_minus_letter_noascii IdentifierStart-minus-Letter-noascii
+
+extract_chars $IDSTART_MINUS_LETTER_NOASCII_BMPONLY_INCL $IDSTART_MINUS_LETTER_NOASCII_BMPONLY_EXCL \
+	ids_m_let_noa_bmpo identifier_start_minus_letter_noascii_bmponly IdentifierStart-minus-Letter-noascii-bmponly
+
+extract_chars $IDPART_MINUS_IDSTART_NOASCII_INCL $IDPART_MINUS_IDSTART_NOASCII_EXCL \
+	idp_m_ids_noa identifier_part_minus_identifier_start_noascii IdentifierPart-minus-IdentifierStart-noascii
+
+extract_chars $IDPART_MINUS_IDSTART_NOASCII_BMPONLY_INCL $IDPART_MINUS_IDSTART_NOASCII_BMPONLY_EXCL \
+	idp_m_ids_noa_bmpo identifier_part_minus_identifier_start_noascii_bmponly IdentifierPart-minus-IdentifierStart-noascii-bmponly
+
+extract_caseconv
 
 # Inject autogenerated files into source and header files so that they are
 # usable (for all profiles and define cases) directly.
@@ -392,8 +387,12 @@ rm $DISTSRCSEP/duk_unicode_tables.c.tmp
 
 rm $DISTSRCSEP/*.tmp
 rm $DISTSRCSEP/WhiteSpace-Z.txt
+rm $DISTSRCSEP/Letter-noascii.txt
+rm $DISTSRCSEP/Letter-noascii-bmponly.txt
 rm $DISTSRCSEP/IdentifierStart-noascii.txt
 rm $DISTSRCSEP/IdentifierStart-noascii-bmponly.txt
+rm $DISTSRCSEP/IdentifierStart-minus-Letter-noascii.txt
+rm $DISTSRCSEP/IdentifierStart-minus-Letter-noascii-bmponly.txt
 rm $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii.txt
 rm $DISTSRCSEP/IdentifierPart-minus-IdentifierStart-noascii-bmponly.txt
 rm $DISTSRCSEP/CaseConversion.txt
