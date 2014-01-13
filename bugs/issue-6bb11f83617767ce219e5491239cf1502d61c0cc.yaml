@@ -5,7 +5,7 @@ desc: |-
   them.  Naming could be something like 'util-checksum-string.js'.
 type: :task
 component: duk
-release: v0.10
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -41,4 +41,8 @@ log_events:
 - - 2014-01-12 13:33:37.343951 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
+  - ""
+- - 2014-01-13 23:14:42.259612 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.10
   - ""
