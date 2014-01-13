@@ -109,6 +109,8 @@ Released
 
 * Removed array size limit for very large array joins
 
+* Improve Unicode handling of Greek final sigma
+
 * Internal support for periodic bytecode executor interrupts which can
   be used to implement executor step limits, profiling, and debugging
 
