@@ -1,6 +1,9 @@
 Duktape
 =======
 
+Introduction
+------------
+
 [Duktape](http://www.duktape.org/) is an **embeddable Javascript** engine,
 with a focus on **portability** and **compact** footprint.
 
@@ -20,3 +23,49 @@ Main features:
 
 See [duktape.org](http://www.duktape.org/) for packaged end-user downloads
 and documentation.
+
+Have fun!
+
+About this repository
+---------------------
+
+This repository is **intended for Duktape developers only**, and contains
+Duktape internals: test cases, internal documentation, sources for the
+duktape.org web site, etc.
+
+Getting started: end user
+-------------------------
+
+When embedding Duktape in your application you should use the packaged source
+distributables available from [duktape.org/downloads](http://www.duktape.org/downloads.html).
+
+However, if you really want to use a bleeding edge version:
+
+    $ git clone https://github.com/svaarala/duktape.git
+    $ cd duktape
+    $ make dist-src
+
+Then use `duktape-<version>.tar.xz` like a normal source distributable.
+
+Getting started: developing Duktape
+-----------------------------------
+
+If you intend to change Duktape internals, run test cases, etc:
+
+    # Install NodeJS and npm
+    $ sudo apt-get install nodejs npm
+
+    # Compile the command line tool ('duk')
+    $ git clone https://github.com/svaarala/duktape.git
+    $ cd duktape
+    $ make
+
+    # Run Ecmascript and API testcases
+    $ make test
+    $ make apitest
+    $ make regfuzztest
+
+License
+-------
+
+See [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).
