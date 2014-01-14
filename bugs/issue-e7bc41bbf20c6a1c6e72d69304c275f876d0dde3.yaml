@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-01-10 22:44:47.498467 Z
 references: []
 
@@ -20,3 +20,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.10
   - ""
+- - 2014-01-14 14:25:05.949856 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Compiles without -std=c99 but produces a lot of warnings with -Wall.  This is very
+    difficult to fix.
