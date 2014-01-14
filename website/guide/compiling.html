@@ -342,3 +342,20 @@ h = null;            // collected immediately, finalizer runs
 Duktape.gc();
 </pre>
 
+<h2>Compiler warnings</h2>
+
+<p>Current goal is for the Duktape compile to be clean when:</p>
+<ul>
+<li>using a major compiler (e.g. gcc, clang, MSVC, mingw);</li>
+<li>the compiler is in C99 mode; and</li>
+<li>warnings are enabled (e.g. <code>-Wall</code> in gcc/clang).</li>
+</ul>
+
+<p>There are still some warnings present when you compile with
+<code>-Wextra</code> or equivalent option.</p>
+
+<p>When your compiler is not C99 compliant, Duktape uses an awkward
+replacement for variadic macros.  This may cause, as a side effect, a
+lot of harmless warnings if you set the compiler warning level too high.
+This is difficult to fix, so C99 compilation may not be clean at the
+moment.</p>
