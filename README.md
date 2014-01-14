@@ -37,7 +37,7 @@ Getting started: end user
 -------------------------
 
 When embedding Duktape in your application you should use the packaged source
-distributables available from [duktape.org/downloads](http://www.duktape.org/downloads.html).
+distributables available from [duktape.org/download.html](http://www.duktape.org/download.html).
 
 However, if you really want to use a bleeding edge version:
 
