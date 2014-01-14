@@ -142,6 +142,10 @@ Released
 
 * Portability fixes for non-C99 platforms (like MSVC in VS2010)
 
+* Drop 'full distributable' build, which is replaced by the public GitHub
+  repo; simplify Makefiles etc accordingly (this change is not visible in the
+  source distributable)
+
 Planned
 =======
 
