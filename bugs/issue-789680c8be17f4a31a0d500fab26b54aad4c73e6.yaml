@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2014-01-12 22:22:55.783670 Z
 references: []
 
@@ -16,3 +16,10 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-01-14 13:46:29.018311 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - |-
+    LICENSE.txt is just as acceptable as a LICENSE.md:
+    
+    https://help.github.com/articles/open-source-licensing
