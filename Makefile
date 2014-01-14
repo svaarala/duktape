@@ -1,21 +1,33 @@
 #
-#  Makefile for the Duktape development
+#  Makefile for the Duktape development repo
 #
-#  This Makefile is intended for Duktape development, such as running
-#  test cases etc.  It is intended to work mainly on Linux, not on
-#  multiple platforms.  The source distributable has example Makefiles
-#  for end-user projects.
+#  This Makefile is intended for ONLY internal Duktape development
+#  on Linux (or other UNIX-like operating systems), and covers:
 #
-#  YOU SHOULD NOT COMPILE DUKTAPE WITH THIS MAKEFILE IN YOUR PROJECT.
+#    - building the Duktape source distributable
+#    - running test cases
+#    - building the duktape.org website
 #
-#  Duktape command line tools are built by first creating a source
-#  dist directory, and then using the sources from the dist directory
-#  for compilation.  This is as close as possible to sources used
-#  by a developer, at the risk of polluting the dist directory
-#  (accidentally; we try to avoid that of course).
+#  The source distributable has more platform neutral example Makefiles
+#  for end user projects (though an end user should really just use their
+#  own Makefile).
+#
+#  YOU SHOULD NOT COMPILE DUKTAPE WITH THIS MAKEFILE IN YOUR PROJECT!
+#
+#  Duktape command line tools are built by first creating a source dist
+#  directory, and then using the sources from the dist directory for
+#  compilation.  This is as close as possible to the sources used by an
+#  end user, at the risk of accidentally polluting the dist directory.
 #
 #  When creating actual distributables, always clean first.
 #
+
+# Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
+DUK_VERSION=$(shell cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3)
+DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
+DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
+DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
+VERSION=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
@@ -159,15 +171,12 @@ all:	duk
 
 clean:
 	-@rm -rf dist/
-	-@rm -rf full/
 	-@rm -rf site/
 	-@rm -f duk dukd
 	-@rm -f libduktape*.so*
 	-@rm -f doc/*.html
 	-@rm -f src/*.pyc
-	-@rm -rf duktape-0.*
-	-@rm -rf duktape-full-0.*
-	-@rm -rf duktape-site-0.*
+	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.*
 
 libduktape.so.1.0.0:	dist
@@ -212,7 +221,7 @@ regfuzz-0.1.tar.gz:
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
 	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
 
-regfuzz: regfuzz-0.1.tar.gz duk
+regfuzztest: regfuzz-0.1.tar.gz duk
 	# Spidermonkey test is pretty close, just lacks 'arguments'
 	# Should run with assertions enabled in 'duk'
 	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
@@ -237,7 +246,33 @@ doc:	$(patsubst %.txt,%.html,$(wildcard doc/*.txt))
 doc/%.html: doc/%.txt
 	rst2html $< $@
 
-# Simulate end user distribution, creates dist/ directory
+# Source distributable for end users
 dist:
 	sh make_dist.sh
+
+dist-src:	dist
+	rm -rf duktape-$(VERSION)
+	rm -rf duktape-$(VERSION).tar*
+	mkdir duktape-$(VERSION)
+	cp -r dist/* duktape-$(VERSION)/
+	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)/
+	tar cvf duktape-$(VERSION).tar duktape-$(VERSION)/
+	xz -z -e -9 duktape-$(VERSION).tar
+	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
+
+# Website
+site:
+	rm -rf site
+	mkdir site
+	cd website/; python buildsite.py ../site/
+	-@rm -rf /tmp/site/
+	cp -r site /tmp/  # FIXME
+
+dist-site:	site
+	rm -rf duktape-site-$(VERSION)
+	rm -rf duktape-site-$(VERSION).tar*
+	mkdir duktape-site-$(VERSION)
+	cp -r site/* duktape-site-$(VERSION)/
+	tar cvf duktape-site-$(VERSION).tar duktape-site-$(VERSION)/
+	xz -z -e -9 duktape-site-$(VERSION).tar
 
