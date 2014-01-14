@@ -18,8 +18,7 @@ regular expressions.  Other feature highlights include:
 
   * Tail call support
 
-You can browse Duktape programmer's API using the off-line version included
-in this distributable, or at::
+You can browse Duktape programmer's API and other documentation at::
 
   http://www.duktape.org/
 
@@ -44,14 +43,6 @@ To build an example command line tool, use the following::
   duk> print('Hello world!');
   Hello world!
   = undefined
-
-The source code should currently compile cleanly on Linux, OSX (Darwin), and
-FreeBSD, for both x86 and ARM.  The goal is of course to compile on almost
-any reasonable platform.
-
-There is a separate tar ball ("full distribution") for developing Duktape.
-It contains internal documentation and unit tests which are not necessary
-to use Duktape.
 
 Duktape is (C) Sami Vaarala and licensed under the MIT license
 (see ``LICENSE.txt``).  MurmurHash2 is used internally; it is also
