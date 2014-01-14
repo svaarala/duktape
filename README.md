@@ -65,6 +65,13 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make apitest
     $ make regfuzztest
 
+**Note:** the repo Makefile is intended for Linux developer use, it is not a
+multi-platform "end user" Makefile.  In particular, the Makefile is not
+intended to work on e.g. OSX or Windows.  The source distributable has more
+user-friendly Makefile examples, but you should normally simply write your
+own Makefile when integrating Duktape to your program (Duktape is very easy
+to compile so this is easy).
+
 License
 -------
 
