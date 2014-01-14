@@ -69,7 +69,7 @@ If you intend to change Duktape internals, run test cases, etc:
 multi-platform "end user" Makefile.  In particular, the Makefile is not
 intended to work on e.g. OSX or Windows.  The source distributable has more
 user-friendly Makefile examples, but you should normally simply write your
-own Makefile when integrating Duktape to your program.
+own Makefile when integrating Duktape into your program.
 
 License
 -------
