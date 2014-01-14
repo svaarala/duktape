@@ -57,6 +57,15 @@
 #define PARSE_STATEMENTS_SLOTS       16
 #define PARSE_EXPR_SLOTS             16
 
+/* Temporary structure used to pass a stack allocated region through
+ * duk_safe_call().
+ */
+typedef struct {
+	int flags;
+	duk_compiler_ctx comp_ctx_alloc;
+	duk_lexer_point lex_pt_alloc;
+} duk_compiler_stkstate;
+
 /*
  *  Prototypes
  */
@@ -412,8 +421,8 @@ static void advance_helper(duk_compiler_ctx *comp_ctx, int expect) {
 	}
 
 	if (expect >= 0 && comp_ctx->curr_token.t != expect) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "parse error (expected token %d, got %d on line %d)",
-		          expect, comp_ctx->curr_token.t, comp_ctx->curr_token.start_line);
+		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "parse error (expected token %d, got %d)",
+		          expect, comp_ctx->curr_token.t);
 	}
 
 	/* make current token the previous; need to fiddle with valstack "backing store" */
@@ -6448,40 +6457,48 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 
 /* FIXME: source code property */
 
-void duk_js_compile(duk_hthread *thr, int flags) {
-	duk_context *ctx = (duk_context *) thr;
+static int duk_js_compile_raw(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
 	duk_hstring *h_filename;
-	duk_compiler_ctx comp_ctx_alloc;
-	duk_compiler_ctx *comp_ctx = &comp_ctx_alloc;
-	duk_lexer_point lex_pt_alloc;
-	duk_lexer_point *lex_pt = &lex_pt_alloc;
-	duk_compiler_func *func = &comp_ctx_alloc.curr_func;
+	duk_compiler_stkstate *comp_stk;
+	duk_compiler_ctx *comp_ctx;
+	duk_lexer_point *lex_pt;
+	duk_compiler_func *func;
 	int entry_top;
 	int is_strict;
 	int is_eval;
 	int is_funcexpr;
+	int flags;
 
 	DUK_ASSERT(thr != NULL);
-
-	is_eval = (flags & DUK_JS_COMPILE_FLAG_EVAL ? 1 : 0);
-	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
-	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
 
 	/*
 	 *  Arguments check
 	 */
 
 	entry_top = duk_get_top(ctx);
-	h_sourcecode = duk_require_hstring(ctx, -2);
-	h_filename = duk_get_hstring(ctx, -1);  /* may be undefined */
-	DUK_ASSERT(entry_top >= 2);
+	DUK_ASSERT(entry_top >= 3);
+
+	comp_stk = (void *) duk_require_pointer(ctx, -1);
+	comp_ctx = &comp_stk->comp_ctx_alloc;
+	lex_pt = &comp_stk->lex_pt_alloc;
+	DUK_ASSERT(comp_ctx != NULL);
+	DUK_ASSERT(lex_pt != NULL);
+
+	flags = comp_stk->flags;
+	is_eval = (flags & DUK_JS_COMPILE_FLAG_EVAL ? 1 : 0);
+	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
+	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
+
+	h_sourcecode = duk_require_hstring(ctx, -3);
+	h_filename = duk_get_hstring(ctx, -2);  /* may be undefined */
 
 	/*
 	 *  Init compiler and lexer contexts
 	 */
 
-	DUK_MEMSET(comp_ctx, 0, sizeof(*comp_ctx));
+	func = &comp_ctx->curr_func;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	comp_ctx->thr = NULL;
 	comp_ctx->h_filename = NULL;
@@ -6518,9 +6535,6 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	DUK_ASSERT(comp_ctx->lex.buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf));
 
-#if 0  /* not needed */
-	DUK_MEMSET(lex_pt, 0, sizeof(*lex_pt));
-#endif
 	lex_pt->offset = 0;
 	lex_pt->line = 1;
 	DUK_LEXER_SETPOINT(&comp_ctx->lex, lex_pt);    /* fills window */
@@ -6576,17 +6590,44 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	convert_to_function_template(comp_ctx);
 
 	/*
-	 *  Mangle stack for result
+	 *  Wrapping duk_safe_call() will mangle the stack, just return stack top
 	 */
 
 	/* [ ... sourcecode filename (temps) func ] */
 
-	DUK_ASSERT(entry_top - 2 >= 0);
-	duk_replace(ctx, entry_top - 2);  /* replace sourcecode with func */
-	duk_set_top(ctx, entry_top - 1);
-
-	/* [ ... func ] */
-
-	DUK_ASSERT_TOP(ctx, entry_top - 1);
+	return 1;
 }
 
+void duk_js_compile(duk_hthread *thr, int flags) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_compiler_stkstate comp_stk;
+
+	/* XXX: this illustrates that a C catchpoint implemented using duk_safe_call()
+	 * is a bit heavy at the moment.  The wrapper compiles to ~180 bytes on x64.
+	 * Alternatives would be nice.
+	 */
+
+	DUK_MEMSET(&comp_stk, 0, sizeof(comp_stk));
+	comp_stk.flags = flags;
+	duk_push_pointer(ctx, (void *) &comp_stk);
+
+	if (duk_safe_call(ctx, duk_js_compile_raw, 3 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX) != DUK_EXEC_SUCCESS) {
+		/* This now adds a line number to -any- error thrown during compilation.
+		 * Usually compilation errors are SyntaxErrors but they could also be
+		 * out-of-memory errors and the like.
+		 */
+
+		DUK_DDDPRINT("compile error, before adding line info: %!T", duk_get_tval(ctx, -1));
+		if (duk_is_object(ctx, -1)) {
+			if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_MESSAGE)) {
+				duk_push_sprintf(ctx, " (line %d)", (int) comp_stk.comp_ctx_alloc.curr_token.start_line);
+				duk_concat(ctx, 2);
+				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE);
+			} else {
+				duk_pop(ctx);
+			}
+		}
+		DUK_DDDPRINT("compile error, after adding line info: %!T", duk_get_tval(ctx, -1));
+		duk_throw(ctx);
+	}
+}
