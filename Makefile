@@ -164,11 +164,12 @@ CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 CCLIBS	= -lm
 CCLIBS += -lreadline
 CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
-.PHONY: default all clean test install
 
 # Compile 'duk' only by default
+.PHONY:	all
 all:	duk
 
+.PHONY:	clean
 clean:
 	-@rm -rf dist/
 	-@rm -rf site/
@@ -202,21 +203,27 @@ dukd:	dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	python src/genexesizereport.py $@ > /tmp/$@_sizes.html
 
+.PHONY:	test
 test:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
+.PHONY:	testd
 testd:	npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
+.PHONY:	qtest
 qtest:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
+.PHONY:	qtestd
 qtestd:	npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
+.PHONY:	vgtest
 vgtest:	npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
+.PHONY:	apitest
 apitest:	npminst libduktape.so.1.0.0
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
@@ -224,6 +231,7 @@ regfuzz-0.1.tar.gz:
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
 	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
 
+.PHONY:	regfuzztest
 regfuzztest: regfuzz-0.1.tar.gz duk
 	# Spidermonkey test is pretty close, just lacks 'arguments'
 	# Should run with assertions enabled in 'duk'
@@ -253,6 +261,7 @@ doc/%.html: doc/%.txt
 dist:
 	sh make_dist.sh
 
+.PHONY:	dist-src
 dist-src:	dist
 	rm -rf duktape-$(VERSION)
 	rm -rf duktape-$(VERSION).tar*
@@ -271,6 +280,7 @@ site:
 	-@rm -rf /tmp/site/
 	cp -r site /tmp/  # FIXME
 
+.PHONY:	dist-site
 dist-site:	site
 	rm -rf duktape-site-$(VERSION)
 	rm -rf duktape-site-$(VERSION).tar*
