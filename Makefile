@@ -178,6 +178,9 @@ clean:
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.*
+	-@rm -f regfuzz-*.tar.gz
+	-@rm -rf /tmp/duktape-regfuzz/
+	-@rm -f a.out
 
 libduktape.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
