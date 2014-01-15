@@ -289,6 +289,10 @@ CSS reset:
 
 * http://www.cssreset.com/
 
+GitHub ribbon:
+
+* https://github.com/blog/273-github-ribbons
+
 Random notes
 ============
 
