@@ -142,7 +142,7 @@ static void mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 	}
 	DUK_HEAPHDR_SET_REACHABLE(h);
 
-	if (heap->mark_and_sweep_recursion_depth >= heap->mark_and_sweep_recursion_limit) {
+	if (heap->mark_and_sweep_recursion_depth >= DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT) {
 		/* log this with a normal debug level because this should be relatively rare */
 		DUK_DPRINT("mark-and-sweep recursion limit reached, marking as temproot: %p", (void *) h);
 		DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap);
@@ -441,13 +441,13 @@ static void clear_refzero_list_flags(duk_heap *heap) {
  *  Sweep stringtable
  */
 
-static void sweep_stringtable(duk_heap *heap) {
+static void sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep) {
 	duk_hstring *h;
 	int i;
 #ifdef DUK_USE_DEBUG
-	int count_free = 0;
-	int count_keep = 0;
+	duk_size_t count_free = 0;
 #endif
+	duk_size_t count_keep = 0;
 
 	DUK_DDPRINT("sweep_stringtable: %p", (void *) heap);
 
@@ -457,9 +457,7 @@ static void sweep_stringtable(duk_heap *heap) {
 			continue;
 		} else if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
 			DUK_HEAPHDR_CLEAR_REACHABLE((duk_heaphdr *) h);
-#ifdef DUK_USE_DEBUG
 			count_keep++;
-#endif
 			continue;
 		}
 
@@ -496,24 +494,26 @@ static void sweep_stringtable(duk_heap *heap) {
 	}
 
 #ifdef DUK_USE_DEBUG
-	DUK_DPRINT("mark-and-sweep sweep stringtable: %d freed, %d kept", count_free, count_keep);
+	DUK_DPRINT("mark-and-sweep sweep stringtable: %d freed, %d kept",
+	           (int) count_free, (int) count_keep);
 #endif
+	*out_count_keep = count_keep;
 }
 
 /*
  *  Sweep heap
  */
 
-static void sweep_heap(duk_heap *heap, int flags) {
+static void sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_count_keep) {
 	duk_heaphdr *prev;  /* last element that was left in the heap */
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 #ifdef DUK_USE_DEBUG
-	int count_free = 0;
-	int count_keep = 0;
-	int count_finalize = 0;
-	int count_rescue = 0;
+	duk_size_t count_free = 0;
+	duk_size_t count_finalize = 0;
+	duk_size_t count_rescue = 0;
 #endif
+	duk_size_t count_keep = 0;
 
 	DUK_UNREF(flags);
 	DUK_DDPRINT("sweep_heap: %p", (void *) heap);
@@ -578,9 +578,7 @@ static void sweep_heap(duk_heap *heap, int flags) {
 					/*
 					 *  Plain, boring reachable object.
 					 */
-#ifdef DUK_USE_DEBUG
 					count_keep++;
-#endif
 				}
 
 				if (!heap->heap_allocated) {
@@ -649,8 +647,9 @@ static void sweep_heap(duk_heap *heap, int flags) {
 
 #ifdef DUK_USE_DEBUG
 	DUK_DPRINT("mark-and-sweep sweep objects (non-string): %d freed, %d kept, %d rescued, %d queued for finalization",
-	            count_free, count_keep, count_rescue, count_finalize);
+	            (int) count_free, (int) count_keep, (int) count_rescue, (int) count_finalize);
 #endif
+	*out_count_keep = count_keep;
 }
 
 /*
@@ -871,6 +870,10 @@ static void assert_valid_refcounts(duk_heap *heap) {
  */
 
 int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
+	duk_size_t count_keep_obj;
+	duk_size_t count_keep_str;
+	duk_size_t tmp;
+
 	/* FIXME: thread selection for mark-and-sweep is currently a hack.
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
@@ -879,7 +882,7 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 		DUK_DPRINT("temporary hack: gc skipped because we don't have a temp thread");
 
 		/* reset voluntary gc trigger count */
-		heap->mark_and_sweep_trigger_counter = heap->mark_and_sweep_trigger_limit;
+		heap->mark_and_sweep_trigger_counter = DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP;
 		return DUK_ERR_OK;
 	}
 
@@ -952,8 +955,8 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 	finalize_refcounts(heap);
 #endif
-	sweep_heap(heap, flags);
-	sweep_stringtable(heap);
+	sweep_heap(heap, flags, &count_keep_obj);
+	sweep_stringtable(heap, &count_keep_str);
 #ifdef DUK_USE_REFERENCE_COUNTING
 	clear_refzero_list_flags(heap);
 #endif
@@ -1059,11 +1062,13 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 *  Reset trigger counter
 	 */
 
-	/* very simplistic now, should be relative to heap size */
-	heap->mark_and_sweep_trigger_counter = heap->mark_and_sweep_trigger_limit;
+	tmp = (count_keep_obj + count_keep_str) / 256;
+	heap->mark_and_sweep_trigger_counter =
+	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +
+	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD;
 
-	DUK_DPRINT("garbage collect (mark-and-sweep) finished (trigger reset to %d)",
-	           heap->mark_and_sweep_trigger_counter);
+	DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, trigger reset to %d",
+	           (int) count_keep_obj, (int) count_keep_str, (int) heap->mark_and_sweep_trigger_counter);
 	return DUK_ERR_OK;
 }
 

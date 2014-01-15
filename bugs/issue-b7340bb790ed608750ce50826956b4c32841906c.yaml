@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a packed string to be evaluated in thread init to allow pure lua built-ins
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-15 18:12:58.065154 Z
+references: []
+
+id: b7340bb790ed608750ce50826956b4c32841906c
+log_events: 
+- - 2014-01-15 18:12:58.225114 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
