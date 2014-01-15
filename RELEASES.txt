@@ -142,6 +142,9 @@ Released
 
 * Fixed a few bound constructor bugs
 
+* Fixed handling of "get" and "set": they were handled as reserved words
+  which prevented valid statements like "var set = 1;"
+
 * Windows compatibility for both WIN32 and WIN64, tested with MinGW (x86),
   MINGW-w64 (x64), VS2010 Express (x32), VS2013 Express (x32 and x64)
 
