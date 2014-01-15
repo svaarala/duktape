@@ -179,9 +179,14 @@ clean:
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.*
-	-@rm -f regfuzz-*.tar.gz
 	-@rm -rf /tmp/duktape-regfuzz/
 	-@rm -f a.out
+
+cleanall:
+	# Don't delete these in 'clean' to avoid re-downloading them over and over
+	-@rm -f regfuzz-*.tar.gz
+	-@rm -f underscore.js
+	-@rm -f UglifyJS
 
 libduktape.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -197,11 +202,12 @@ libduktaped.so.1.0.0:	dist
 
 duk:	dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
-	python src/genexesizereport.py $@ > /tmp/$@_sizes.html
 
 dukd:	dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
-	python src/genexesizereport.py $@ > /tmp/$@_sizes.html
+
+duksizes:	duk
+	python src/genexesizereport.py duk > /tmp/duk_sizes.html
 
 .PHONY:	test
 test:	npminst duk
@@ -241,6 +247,19 @@ regfuzztest: regfuzz-0.1.tar.gz duk
 	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
 	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
 	cd /tmp/duktape-regfuzz; valgrind duk regfuzz-test.js
+
+underscore:
+	git clone https://github.com/jashkenas/underscore.git
+
+underscoretest:	underscore duk
+	echo "Test that underscore.js parses"
+	valgrind duk underscore/underscore.js
+	echo "Test that underscore-min.js parses"
+	valgrind duk underscore/underscore.js
+	echo "FIXME"
+
+UglifyJS:
+	git clone https://github.com/mishoo/UglifyJS.git
 
 # FIXME: torturetest; torture + valgrind
 
