@@ -113,6 +113,9 @@ Released
 
 * Improve Unicode handling of Greek final sigma
 
+* Make mark-and-sweep interval relative to current heap size (measured as
+  combined object and string count)
+
 * Internal support for periodic bytecode executor interrupts which can
   be used to implement executor step limits, profiling, and debugging
 
