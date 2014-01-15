@@ -176,9 +176,7 @@ void duk_debug_dump_heap(duk_heap *heap) {
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	DUK_DPRINT("  mark-and-sweep trig counter: %d", heap->mark_and_sweep_trigger_counter);
-	DUK_DPRINT("  mark-and-sweep trig limit: %d", heap->mark_and_sweep_trigger_limit);
 	DUK_DPRINT("  mark-and-sweep rec depth: %d", heap->mark_and_sweep_recursion_depth);
-	DUK_DPRINT("  mark-and-sweep rec limit: %d", heap->mark_and_sweep_recursion_limit);
 	DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", heap->mark_and_sweep_base_flags);
 #endif
 

@@ -289,6 +289,9 @@ static void refzero_free_pending(duk_hthread *thr) {
 	 */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
+	/* 'count' is more or less comparable to normal trigger counter update
+	 * which happens in memory block (re)allocation.
+	 */
 	heap->mark_and_sweep_trigger_counter -= count;
 	if (heap->mark_and_sweep_trigger_counter <= 0) {
 		int rc;

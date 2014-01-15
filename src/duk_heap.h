@@ -104,20 +104,33 @@
  */
 #if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_GC_TORTURE)
-#define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   3
+#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   3
 #elif defined(DUK_USE_DEEP_C_STACK)
-#define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   256
+#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   256
 #else
-#define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT   32
+#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   32
 #endif
 #endif
 
-/* Mark-and-sweep interval can be much lower with reference counting. */
+/* Mark-and-sweep interval is relative to combined count of objects and
+ * strings kept in the heap during the latest mark-and-sweep pass.
+ * Fixed point .8 multiplier and .0 adder.  Trigger count (interval) is
+ * decreased by each (re)allocation attempt (regardless of size), and each
+ * refzero processed object.
+ *
+ * 'SKIP' indicates how many (re)allocations to wait until a retry if
+ * GC is skipped because there is no thread do it with yet (happens
+ * only during init phases).
+ */
 #if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_TRIGGER_LIMIT     10000
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              2560  /* 10x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
 #else
-#define DUK_HEAP_DEFAULT_MARK_AND_SWEEP_TRIGGER_LIMIT     1000
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256   /* 1x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
 #endif
 #endif
 
@@ -309,9 +322,7 @@ struct duk_heap {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/* mark-and-sweep control */
 	int mark_and_sweep_trigger_counter;
-	int mark_and_sweep_trigger_limit;
 	int mark_and_sweep_recursion_depth;
-	int mark_and_sweep_recursion_limit;
 
 	/* mark-and-sweep flags automatically active (used for critical sections) */
 	int mark_and_sweep_base_flags;

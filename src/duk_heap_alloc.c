@@ -391,11 +391,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->alloc_udata = alloc_udata;
 	res->fatal_func = fatal_func;
 
-#ifdef DUK_USE_MARK_AND_SWEEP
-	res->mark_and_sweep_recursion_limit = DUK_HEAP_DEFAULT_MARK_AND_SWEEP_RECURSION_LIMIT;
-	res->mark_and_sweep_trigger_limit = DUK_HEAP_DEFAULT_MARK_AND_SWEEP_TRIGGER_LIMIT;
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
-#endif
 
 	res->call_recursion_depth = 0;
 	res->call_recursion_limit = DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT;
