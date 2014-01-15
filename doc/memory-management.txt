@@ -1243,7 +1243,7 @@ The mark-and-sweep algorithm is as follows:
   a. Clear the element's ``REACHABLE`` flag.
      (See notes below why this seemingly unnecessary step is in fact necessary.)
 
-6, If doing an emergency mark-and-sweep and object compaction is not
+6. If doing an emergency mark-and-sweep and object compaction is not
    explicitly prohibited by heap flags:
 
   a. Compact the object's property allocation in the hopes of freeing
@@ -1472,6 +1472,34 @@ approaches:
 * A heap-level dedicated finalizer thread has a similar problem: the finalizer
   will run in a different global context than where the finalized object was
   created.
+
+Voluntary mark-and-sweep interval
+=================================
+
+There are many ways to decide when to do a voluntary mark-and-sweep pass:
+byte count based, object count based, probabilistic, etc.
+
+The current approach is to count the number of heap objects and heap strings
+kept at the end of a mark-and-sweep pass, and initialize the voluntary sweep
+trigger count based on that as (the computation actually happens using fixed
+point arithmetic)::
+
+  trigger_count = ((kept_objects + kept_strings) * MULT) + ADD
+
+  // MULT and ADD are tuning parameters
+
+The trigger count is decreased on every memory (re)allocation, and for every
+object processed by the refzero algorithm.  If the trigger reaches zero when
+memory is about to be (re)allocated, a voluntary mark-and-sweep pass is done.
+When ``MULT`` is 1 and ``ADD`` is 0, a voluntary sweep is done when the number
+of "operations" matches the previous heap object/string count.
+
+When reference counting is enabled, ``MULT`` can be quite large (e.g. 10)
+because only circular references need to be swept.  When reference counting
+is not enabled, ``MULT`` should be closer to 1 (or even below).  The ``ADD``
+tuning parameter is not that important; its purpose is to avoid too frequent
+mark-and-sweep on very small heaps and to counteract some inaccuracy of fixed
+point arithmetic.
 
 Implementation issues
 =====================
