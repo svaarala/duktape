@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cat underscore-test-shim.js \
+    underscore/underscore.js \
+    $2 \
+    > /tmp/duk-underscore-test.js
+
+$1 /tmp/duk-underscore-test.js

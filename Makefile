@@ -252,11 +252,20 @@ underscore:
 	git clone https://github.com/jashkenas/underscore.git
 
 underscoretest:	underscore duk
-	echo "Test that underscore.js parses"
-	valgrind duk underscore/underscore.js
-	echo "Test that underscore-min.js parses"
-	valgrind duk underscore/underscore.js
-	echo "FIXME"
+	#echo "Test that underscore.js parses"
+	#valgrind duk underscore/underscore.js
+
+	#echo "Test that underscore-min.js parses"
+	#valgrind duk underscore/underscore.js
+
+	echo "Run underscore tests with underscore-test-shim.js"
+	./underscore_test ./duk underscore/test/arrays.js
+	./underscore_test ./duk underscore/test/chaining.js
+	./underscore_test ./duk underscore/test/collections.js
+	./underscore_test ./duk underscore/test/functions.js
+	./underscore_test ./duk underscore/test/objects.js
+	./underscore_test ./duk underscore/test/speed.js
+	./underscore_test ./duk underscore/test/utility.js
 
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
