@@ -871,7 +871,9 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  '\' character -- no other token can begin with a '\'.
 		 *
 		 *  Note that "get" and "set" are not reserved words in E5
-		 *  specification, but we treat them as such.
+		 *  specification so they are recognized as plain identifiers
+		 *  (the tokens DUK_TOK_GET and DUK_TOK_SET are actually not
+		 *  used now).  The compiler needs to work around this.
 		 *
 		 *  Strictly speaking, following Ecmascript longest match
 		 *  specification, an invalid escape for the first character
@@ -944,6 +946,11 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  keywords; e.g. "\u0069f = 1;" is a valid statement (assigns to
 		 *  identifier named "if").  This is not necessarily compliant,
 		 *  see test-dec-escaped-char-in-keyword.js.
+		 *
+		 *  Note: "get" and "set" are awkward.  They are not officially
+		 *  ReservedWords (and indeed e.g. "var set = 1;" is valid), and
+		 *  must come out as DUK_TOK_IDENTIFIER.  The compiler needs to
+		 *  work around this a bit.
 		 */
 
 		i_end = (strict_mode ? DUK_STRIDX_END_RESERVED : DUK_STRIDX_START_STRICT_RESERVED);

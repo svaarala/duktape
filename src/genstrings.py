@@ -464,6 +464,12 @@ standard_other_string_list = [
 	mkstr("arguments"),
 	mkstr("callee"),
 	mkstr("caller"),
+
+	# "set" and "get" are strings we need in object literals but they are not
+	# ReservedWords.
+
+	mkstr("get"),
+	mkstr("set"),
 ]
 
 # Duktape specific strings
@@ -633,8 +639,13 @@ standard_reserved_words_list = [
 	mkstr("null", special_literal=True),
 	mkstr("true", special_literal=True),
 	mkstr("false", special_literal=True),
-	mkstr("get", special_literal=True),
-	mkstr("set", special_literal=True),
+
+	# "set" and "get" are *NOT* reserved words and there is even code
+	# in the wild with statements like 'var set = 1;'.  They are thus
+	# treated as ordinary identifiers and recognized by the compiler
+	# as tokens in a special way.
+	#mkstr("get"),
+	#mkstr("set"),
 ]
 
 # Standard reserved words (strict mode only)

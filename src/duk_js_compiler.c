@@ -2361,6 +2361,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	int reg_key;            /* temp reg for key literal */
 	int reg_temp;           /* temp reg */
 	int first;		/* first value: comma must not precede the value */
+	int is_set, is_get;     /* temps */
 
 	DUK_ASSERT(comp_ctx->prev_token.t == DUK_TOK_LCURLY);
 
@@ -2442,10 +2443,18 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			/* advance to get one step of lookup */		
 			advance(comp_ctx);
 
-			if ((comp_ctx->prev_token.t == DUK_TOK_GET || comp_ctx->prev_token.t == DUK_TOK_SET) &&
-			     comp_ctx->curr_token.t != DUK_TOK_COLON) {
+			/* NOTE: "get" and "set" are not officially ReservedWords and the lexer
+			 * currently treats them always like ordinary identifiers (DUK_TOK_GET
+			 * and DUK_TOK_SET are unused).  They need to be detected based on the
+			 * identifier string content.
+			 */
+
+			is_get = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
+			          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_GET(thr));
+			is_set = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
+			          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_SET(thr));
+			if ((is_get || is_set) && comp_ctx->curr_token.t != DUK_TOK_COLON) {
 				/* getter/setter */
-				int is_getter = (comp_ctx->prev_token.t == DUK_TOK_GET);
 				int fnum;
 				int reg_temp;
 
@@ -2463,7 +2472,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 				DUK_ASSERT(duk_is_string(ctx, -1));
 				if (nud_object_literal_key_check(comp_ctx,
-				                                 (is_getter ? OBJ_LIT_KEY_GET : OBJ_LIT_KEY_SET))) {
+				                                 (is_get ? OBJ_LIT_KEY_GET : OBJ_LIT_KEY_SET))) {
 					goto syntax_error;
 				}
 				reg_key = getconst(comp_ctx);
@@ -2490,7 +2499,7 @@ static void nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				reg_temp = ALLOCTEMP(comp_ctx);
 				emit_a_bc(comp_ctx, DUK_OP_CLOSURE, reg_temp, fnum);
 				emit_extraop_b_c(comp_ctx,
-				                 (is_getter ? DUK_EXTRAOP_INITGET : DUK_EXTRAOP_INITSET),
+				                 (is_get ? DUK_EXTRAOP_INITGET : DUK_EXTRAOP_INITSET),
 				                 reg_obj,
 				                 temp_start);   /* temp_start+0 = key, temp_start+1 = closure */
 

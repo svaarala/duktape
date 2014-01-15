@@ -88,28 +88,32 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_TOK_IMPORT                            35
 #define DUK_TOK_SUPER                             36
 
-/* "get" and "set" are not reserved words in the spec, but behave like
- * reserved words, so we treat them as such.
-*/
+/* "null", "true", and "false" are always reserved words.
+ * Note that "get" and "set" are not!
+ */
 #define DUK_TOK_NULL                              37
 #define DUK_TOK_TRUE                              38
 #define DUK_TOK_FALSE                             39
-#define DUK_TOK_GET                               40
-#define DUK_TOK_SET                               41
 
 /* reserved words: additional future reserved words in strict mode */
-#define DUK_TOK_START_STRICT_RESERVED             42  /* inclusive */
-#define DUK_TOK_IMPLEMENTS                        42
-#define DUK_TOK_INTERFACE                         43
-#define DUK_TOK_LET                               44
-#define DUK_TOK_PACKAGE                           45
-#define DUK_TOK_PRIVATE                           46
-#define DUK_TOK_PROTECTED                         47
-#define DUK_TOK_PUBLIC                            48
-#define DUK_TOK_STATIC                            49
-#define DUK_TOK_YIELD                             50
+#define DUK_TOK_START_STRICT_RESERVED             40  /* inclusive */
+#define DUK_TOK_IMPLEMENTS                        40
+#define DUK_TOK_INTERFACE                         41
+#define DUK_TOK_LET                               42
+#define DUK_TOK_PACKAGE                           43
+#define DUK_TOK_PRIVATE                           44
+#define DUK_TOK_PROTECTED                         45
+#define DUK_TOK_PUBLIC                            46
+#define DUK_TOK_STATIC                            47
+#define DUK_TOK_YIELD                             48
 
-#define DUK_TOK_END_RESERVED                      51  /* exclusive */
+#define DUK_TOK_END_RESERVED                      49  /* exclusive */
+
+/* "get" and "set" are tokens but NOT ReservedWords.  They are currently
+ * parsed and identifiers and these defines are actually now unused.
+ */
+#define DUK_TOK_GET                               49
+#define DUK_TOK_SET                               50
 
 /* punctuators (unlike the spec, also includes "/" and "/=") */
 #define DUK_TOK_LCURLY                            51
@@ -285,12 +289,6 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #error mismatch in token defines
 #endif
 #if (DUK_STRIDX_TO_TOK(DUK_STRIDX_FALSE) != DUK_TOK_FALSE)
-#error mismatch in token defines
-#endif
-#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_GET) != DUK_TOK_GET)
-#error mismatch in token defines
-#endif
-#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_SET) != DUK_TOK_SET)
 #error mismatch in token defines
 #endif
 #if (DUK_STRIDX_TO_TOK(DUK_STRIDX_IMPLEMENTS) != DUK_TOK_IMPLEMENTS)
