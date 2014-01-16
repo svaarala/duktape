@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: clean up conditional JSONX/JSONC compilation (FIXMEs in duk_builtin_json.c)
+title: clean up conditional JSONX/JSONC compilation (FIXMEs in duk_bi_json.c)
 desc: ""
 type: :task
 component: duk

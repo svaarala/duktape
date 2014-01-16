@@ -28,5 +28,5 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - |-
-    There is a beginning of such a helper in duk_builtin_global.c,
+    There is a beginning of such a helper in duk_bi_global.c,
     transform_helper().

@@ -1,6 +1,6 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
 title: check Date built-in corner case handling for DST
-desc: See FIXMEs in duk_builtin_date.c.
+desc: See FIXMEs in duk_bi_date.c.
 type: :task
 component: duk
 release: 
