@@ -186,7 +186,8 @@ cleanall:
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
 	-@rm -f underscore.js
-	-@rm -f UglifyJS
+	-@rm -rf UglifyJS
+	-@rm -rf underscore
 
 libduktape.so.1.0.0:	dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
