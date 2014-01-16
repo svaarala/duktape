@@ -4519,12 +4519,19 @@ static void parse_switch_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	temp_at_loop = GETTEMP(comp_ctx);
 
 	for (;;) {
+		int num_stmts;
+		int tok;
+
 		/* sufficient for keeping temp reg numbers in check */
 		SETTEMP(comp_ctx, temp_at_loop);
 
 		if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
 			break;
 		}
+
+		/*
+		 *  Parse a case or default clause.
+		 */
 
 		if (comp_ctx->curr_token.t == DUK_TOK_CASE) {
 			/*
@@ -4564,49 +4571,55 @@ static void parse_switch_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 			/* default clause matches next statement list (if any) */
 			pc_default = -2;
 		} else {
-			/*
-			 *  Else must be a statement list, possible terminators are
-			 *  'case', 'default', and '}'.
-			 */
-
-			int num_stmts = 0;
-			int tok;
-
-			if (pc_default == -2) {
-				pc_default = get_current_pc(comp_ctx);
-			}
-
-			/* Note: this is correct even for default clause statements:
-			 * they participate in 'fall-through' behavior even if the
-			 * default clause is in the middle.
-			 */
-			patch_jump_here(comp_ctx, pc_prevstmt);  /* chain jumps for 'fall-through'
-			                                          * after a case matches.
-			                                          */
-
-			for (;;) {
-				tok = comp_ctx->curr_token.t;
-				if (tok == DUK_TOK_CASE || tok == DUK_TOK_DEFAULT ||
-				    tok == DUK_TOK_RCURLY) {
-					break;
-				}
-				num_stmts++;
-				parse_statement(comp_ctx, res, 0 /*allow_source_elem*/);
-			}
-
-			/* fall-through jump to next code of next case (backpatched) */
-			pc_prevstmt = emit_jump_empty(comp_ctx);
-
-			/* FIXME: would be nice to omit this jump when the jump is not
-			 * reachable, at least in the obvious cases (such as the case
-			 * ending with a 'break'.
-			 *
-			 * Perhaps parse_statement() could provide some info on whether
-			 * the statement is a "dead end"?
-			 *
-			 * If implemented, just set pc_prevstmt to -1 when not needed.
-			 */
+			/* Code is not accepted before the first case/default clause */
+			goto syntax_error;
 		}
+
+		/*
+		 *  Parse code after the clause.  Possible terminators are
+		 *  'case', 'default', and '}'.
+		 *
+		 *  Note that there may be no code at all, not even an empty statement,
+		 *  between case clauses.  This must be handled just like an empty statement
+		 *  (omitting seemingly pointless JUMPs), to avoid situations like
+		 *  test-dev-bug-case-fallthrough.js.
+		 */
+
+		num_stmts = 0;
+		if (pc_default == -2) {
+			pc_default = get_current_pc(comp_ctx);
+		}
+
+		/* Note: this is correct even for default clause statements:
+		 * they participate in 'fall-through' behavior even if the
+		 * default clause is in the middle.
+		 */
+		patch_jump_here(comp_ctx, pc_prevstmt);  /* chain jumps for 'fall-through'
+		                                          * after a case matches.
+		                                          */
+
+		for (;;) {
+			tok = comp_ctx->curr_token.t;
+			if (tok == DUK_TOK_CASE || tok == DUK_TOK_DEFAULT ||
+			    tok == DUK_TOK_RCURLY) {
+				break;
+			}
+			num_stmts++;
+			parse_statement(comp_ctx, res, 0 /*allow_source_elem*/);
+		}
+
+		/* fall-through jump to next code of next case (backpatched) */
+		pc_prevstmt = emit_jump_empty(comp_ctx);
+
+		/* FIXME: would be nice to omit this jump when the jump is not
+		 * reachable, at least in the obvious cases (such as the case
+		 * ending with a 'break'.
+		 *
+		 * Perhaps parse_statement() could provide some info on whether
+		 * the statement is a "dead end"?
+		 *
+		 * If implemented, just set pc_prevstmt to -1 when not needed.
+		 */
 	}
 
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RCURLY);
