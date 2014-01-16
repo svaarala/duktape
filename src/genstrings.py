@@ -814,7 +814,7 @@ def gen_strings_data_bitpacked(strlist):
 		mode = 'lowercase'
 
 		for idx, c in enumerate(s):
-			# FIXME: this is not an optimal encoder but good enough
+			# This encoder is not that optimal, but good enough for now.
 
 			islower = (ord(c) >= ord('a') and ord(c) <= ord('z'))
 			isupper = (ord(c) >= ord('A') and ord(c) <= ord('Z'))
@@ -1031,7 +1031,7 @@ class GenStrings:
 		genc.emitLine('')
 		idx = 0
 		for s, d in self.strlist:
-			defname = d.replace('_STRIDX','_HEAP_STRING')  # FIXME
+			defname = d.replace('_STRIDX','_HEAP_STRING')
 			genc.emitDefine(defname + '(heap)', 'DUK_HEAP_GET_STRING((heap),%s)' % d)
 			defname = d.replace('_STRIDX', '_HTHREAD_STRING')
 			genc.emitDefine(defname + '(thr)', 'DUK_HTHREAD_GET_STRING((thr),%s)' % d)

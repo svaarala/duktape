@@ -23,10 +23,10 @@
 #    - 'values' and 'functions' are intentionally ordered, so that the
 #      initialization order (and hence enumeration order) of keys can be
 #      controlled.
-
-# FIXME: Some algorithms need to refer to the original, unmodified built-in
-# functions (like Object.toString).  These should be marked somehow here and
-# slots in thr->builtins should be allocated for them.
+#
+#    - Some algorithms need to refer to the original, unmodified built-in
+#      functions (like Object.toString).  These should be marked somehow here
+#      and slots in thr->builtins should be allocated for them.
 
 import os
 import sys
@@ -98,7 +98,7 @@ DEFAULT_PROPERTY_ATTRIBUTES = "wc"
 # encoding constants (must match duk_hthread_builtins.c)
 CLASS_BITS = 5
 BIDX_BITS = 6
-STRIDX_BITS = 9   # FIXME: try to optimize to 8
+STRIDX_BITS = 9   # would be nice to optimize to 8
 NATIDX_BITS = 8
 NUM_NORMAL_PROPS_BITS = 6
 NUM_FUNC_PROPS_BITS = 6
@@ -370,7 +370,7 @@ bi_function_prototype = {
 	'internal_prototype': 'bi_object_prototype',
 	'external_constructor': 'bi_function_constructor',
 	'class': 'Function',
-	'name': '',  # FIXME: what does the spec say?
+	'name': '',
 
 	'length': 0,
 	'native': 'duk_bi_function_prototype',
@@ -1568,7 +1568,7 @@ class GenBuiltins:
 			else:
 				be.bits(0, 1)  # flag: default nargs OK
 
-			# FIXME: make this check conditional to minimize bit count
+			# XXX: make this check conditional to minimize bit count
 			# (there are quite a lot of function properties)
 			magic = self.resolveMagic(funspec.get('magic'))
 			if magic != 0:
