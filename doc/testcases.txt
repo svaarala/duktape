@@ -154,7 +154,7 @@ there is currently no tracking of specification coverage.
 Test cases starting with ``test-dev-`` are development time test cases
 which demonstrate a particular issue and may not be very well documented.
 
-Test cases starting with ``test-dev-bug-`` illustrate a particular
+Test cases starting with ``test-bug-`` illustrate a particular
 development time bug which has usually already been fixed.
 
 Duktape API test cases

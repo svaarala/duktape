@@ -1797,7 +1797,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		 *  Although the callstack entry is reused, we need to explicitly unwind
 		 *  the current activation (or simulate an unwind).  In particular, the
 		 *  current activation must be closed, otherwise something like
-		 *  test-dev-bug-reduce-judofyr.js results.
+		 *  test-bug-reduce-judofyr.js results.
 		 */
 
 		DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",

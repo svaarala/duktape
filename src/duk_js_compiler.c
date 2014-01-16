@@ -4582,7 +4582,7 @@ static void parse_switch_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 		 *  Note that there may be no code at all, not even an empty statement,
 		 *  between case clauses.  This must be handled just like an empty statement
 		 *  (omitting seemingly pointless JUMPs), to avoid situations like
-		 *  test-dev-bug-case-fallthrough.js.
+		 *  test-bug-case-fallthrough.js.
 		 */
 
 		num_stmts = 0;
@@ -4974,7 +4974,7 @@ static void parse_try_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 *  within the catch clause work correctly.  This restriction should
 		 *  be fixable (at least in common cases) later.
 		 *
-		 *  See: test-dev-bug-catch-binding-2.js.
+		 *  See: test-bug-catch-binding-2.js.
 		 *
 		 *  FIXME: improve to get fast path access to most catch clauses.
 		 */
