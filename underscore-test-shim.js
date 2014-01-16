@@ -137,7 +137,7 @@ var raises = function(fn, expect_err, msg) {
 // notation into a synchronous call, and to provide enough fake data and functions
 // to satisfy the tests (while not breaking the test intent).
 
-var doc_images = [];
+var doc_images = [ { id: 'chart_image' } ];
 var document = {
     images: doc_images
 };
@@ -147,15 +147,13 @@ var $ = function(arg) {
     if (arg === document) {
         return $;
     }
+
     if (arg === '#map-test') {
         return {
             children: function() {
                 return [ { id: 'id1' }, { id: 'id2' } ];
             }
         };
-    }
-    if (arg === doc_images) {
-        return [ { id: 'chart_image' } ];
     }
 
     // This is a bit tricky, the test is more or less bypassed.
@@ -177,9 +175,15 @@ var $ = function(arg) {
 
     throw Error('unexpected call to $: ' + arg);
 };
+
 $.ready = function(cb) {
     // just call directly
     cb();
+};
+
+// this disables some unwanted browser tests
+$.browser = {
+    msie: true
 };
 
 var jQuery = $;

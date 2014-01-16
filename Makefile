@@ -264,7 +264,8 @@ underscoretest:	underscore duk
 	-./underscore_test ./duk underscore/test/collections.js
 	-./underscore_test ./duk underscore/test/functions.js
 	-./underscore_test ./duk underscore/test/objects.js
-	-./underscore_test ./duk underscore/test/speed.js
+	# speed test disabled, requires JSLitmus
+	#-./underscore_test ./duk underscore/test/speed.js
 	-./underscore_test ./duk underscore/test/utility.js
 
 UglifyJS:
