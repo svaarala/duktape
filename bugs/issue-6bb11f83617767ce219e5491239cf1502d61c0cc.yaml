@@ -46,3 +46,10 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.10
   - ""
+- - 2014-01-15 22:34:39.081780 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    The include mechanism should probably be the module mechanism.  This would
+    make test cases still runnable from command line as long as there is a
+    compatible module mechanism.
