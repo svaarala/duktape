@@ -64,6 +64,7 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make test
     $ make apitest
     $ make regfuzztest
+    $ make underscoretest
 
 **Note: the repo Makefile is intended for Linux developer use**, it is not a
 multi-platform "end user" Makefile.  In particular, the Makefile is not
