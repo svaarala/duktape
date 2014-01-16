@@ -98,23 +98,23 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_js_compiler.c \
 	$(DISTSRCSEP)/duk_regexp_compiler.c \
 	$(DISTSRCSEP)/duk_regexp_executor.c \
-	$(DISTSRCSEP)/duk_builtin_duk.c \
-	$(DISTSRCSEP)/duk_builtin_thread.c \
-	$(DISTSRCSEP)/duk_builtin_thrower.c \
-	$(DISTSRCSEP)/duk_builtin_array.c \
-	$(DISTSRCSEP)/duk_builtin_boolean.c \
-	$(DISTSRCSEP)/duk_builtin_date.c \
-	$(DISTSRCSEP)/duk_builtin_error.c \
-	$(DISTSRCSEP)/duk_builtin_function.c \
-	$(DISTSRCSEP)/duk_builtin_global.c \
-	$(DISTSRCSEP)/duk_builtin_json.c \
-	$(DISTSRCSEP)/duk_builtin_math.c \
-	$(DISTSRCSEP)/duk_builtin_number.c \
-	$(DISTSRCSEP)/duk_builtin_object.c \
-	$(DISTSRCSEP)/duk_builtin_regexp.c \
-	$(DISTSRCSEP)/duk_builtin_string.c \
-	$(DISTSRCSEP)/duk_builtin_buffer.c \
-	$(DISTSRCSEP)/duk_builtin_pointer.c \
+	$(DISTSRCSEP)/duk_bi_duk.c \
+	$(DISTSRCSEP)/duk_bi_thread.c \
+	$(DISTSRCSEP)/duk_bi_thrower.c \
+	$(DISTSRCSEP)/duk_bi_array.c \
+	$(DISTSRCSEP)/duk_bi_boolean.c \
+	$(DISTSRCSEP)/duk_bi_date.c \
+	$(DISTSRCSEP)/duk_bi_error.c \
+	$(DISTSRCSEP)/duk_bi_function.c \
+	$(DISTSRCSEP)/duk_bi_global.c \
+	$(DISTSRCSEP)/duk_bi_json.c \
+	$(DISTSRCSEP)/duk_bi_math.c \
+	$(DISTSRCSEP)/duk_bi_number.c \
+	$(DISTSRCSEP)/duk_bi_object.c \
+	$(DISTSRCSEP)/duk_bi_regexp.c \
+	$(DISTSRCSEP)/duk_bi_string.c \
+	$(DISTSRCSEP)/duk_bi_buffer.c \
+	$(DISTSRCSEP)/duk_bi_pointer.c \
 	$(DISTSRCSEP)/duk_selftest.c
 
 # Use combined sources for testing etc.

@@ -61,24 +61,24 @@ for i in	\
 	duk_api_string.c	\
 	duk_api_thread.c	\
 	duk_api_var.c		\
-	duk_builtin_array.c	\
-	duk_builtin_boolean.c	\
-	duk_builtin_buffer.c	\
-	duk_builtin_date.c	\
-	duk_builtin_duk.c	\
-	duk_builtin_error.c	\
-	duk_builtin_function.c	\
-	duk_builtin_global.c	\
-	duk_builtin_json.c	\
-	duk_builtin_math.c	\
-	duk_builtin_number.c	\
-	duk_builtin_object.c	\
-	duk_builtin_pointer.c	\
-	duk_builtin_protos.h	\
-	duk_builtin_regexp.c	\
-	duk_builtin_string.c	\
-	duk_builtin_thread.c	\
-	duk_builtin_thrower.c	\
+	duk_bi_array.c		\
+	duk_bi_boolean.c	\
+	duk_bi_buffer.c		\
+	duk_bi_date.c		\
+	duk_bi_duk.c		\
+	duk_bi_error.c		\
+	duk_bi_function.c	\
+	duk_bi_global.c		\
+	duk_bi_json.c		\
+	duk_bi_math.c		\
+	duk_bi_number.c		\
+	duk_bi_object.c		\
+	duk_bi_pointer.c	\
+	duk_bi_protos.h		\
+	duk_bi_regexp.c		\
+	duk_bi_string.c		\
+	duk_bi_thread.c		\
+	duk_bi_thrower.c	\
 	duk_dblunion.h		\
 	duk_debug_fixedbuffer.c	\
 	duk_debug.h		\
