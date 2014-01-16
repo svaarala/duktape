@@ -188,51 +188,59 @@ cleanall:
 	-@rm -f underscore.js
 	-@rm -rf UglifyJS
 	-@rm -rf underscore
+	-@rm -rf test262-d067d2f0ca30
+	-@rm -f d067d2f0ca30.tar.bz2
 
-libduktape.so.1.0.0:	dist
+libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-libduktaped.so.1.0.0:	dist
+libduktaped.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-duk:	dist
+duk: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
-dukd:	dist
+dukd: dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
-duksizes:	duk
+duksizes: duk
 	python src/genexesizereport.py duk > /tmp/duk_sizes.html
 
 .PHONY:	test
-test:	npminst duk
+test: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	testd
-testd:	npminst dukd
+testd: npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qtest
-qtest:	npminst duk
+qtest: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qtestd
-qtestd:	npminst dukd
+qtestd: npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	vgtest
-vgtest:	npminst duk
+vgtest: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
 .PHONY:	apitest
-apitest:	npminst libduktape.so.1.0.0
+apitest: npminst libduktape.so.1.0.0
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+
+.PHONY: vgapitest
+vgapitest: npminst libduktape.so.1.0.0
+	node runtests/runtests.js --valgrind --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+
+# FIXME: torturetest; torture + valgrind
 
 regfuzz-0.1.tar.gz:
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
@@ -247,18 +255,22 @@ regfuzztest: regfuzz-0.1.tar.gz duk
 	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
 	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
 	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
-	cd /tmp/duktape-regfuzz; valgrind duk regfuzz-test.js
+	cd /tmp/duktape-regfuzz; ./duk regfuzz-test.js
+
+.PHONY: vgregfuzztest
+vgregfuzztest: regfuzz-0.1.tar.gz duk
+	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
+	cp regfuzz-0.1.tar.gz duk /tmp/duktape-regfuzz
+	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
+	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
+	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
+	cd /tmp/duktape-regfuzz; valgrind ./duk regfuzz-test.js
 
 underscore:
 	git clone https://github.com/jashkenas/underscore.git
 
+.PHONY: underscoretest
 underscoretest:	underscore duk
-	#echo "Test that underscore.js parses"
-	#valgrind duk underscore/underscore.js
-
-	#echo "Test that underscore-min.js parses"
-	#valgrind duk underscore/underscore.js
-
 	echo "Run underscore tests with underscore-test-shim.js"
 	-./underscore_test ./duk underscore/test/arrays.js
 	-./underscore_test ./duk underscore/test/chaining.js
@@ -269,20 +281,35 @@ underscoretest:	underscore duk
 	#-./underscore_test ./duk underscore/test/speed.js
 	-./underscore_test ./duk underscore/test/utility.js
 
+.PHONY: vgunderscoretest
+vgunderscoretest:
+	echo "Run underscore tests with underscore-test-shim.js, under valgrind"
+	-./underscore_test valgrind ./duk underscore/test/arrays.js
+	-./underscore_test valgrind ./duk underscore/test/chaining.js
+	-./underscore_test valgrind ./duk underscore/test/collections.js
+	-./underscore_test valgrind ./duk underscore/test/functions.js
+	-./underscore_test valgrind ./duk underscore/test/objects.js
+	# speed test disabled, requires JSLitmus
+	#-./underscore_test valgrind ./duk underscore/test/speed.js
+	-./underscore_test valgrind ./duk underscore/test/utility.js
+
 d067d2f0ca30.tar.bz2:
 	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
 
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
 	tar xvfj d067d2f0ca30.tar.bz2
 
+.PHONY: ecma262test
 ecma262test: test262-d067d2f0ca30 duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}"
 
+.PHONY: vgecma262test
+vgecma262test: test262-d067d2f0ca30 duk
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}"
+
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
-
-# FIXME: torturetest; torture + valgrind
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
