@@ -3,7 +3,7 @@ title: resolve "context separation" issue (esp. finalizers) or document limitati
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-12-15 23:14:47.710275 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-16 21:33:07.618229 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

@@ -3,10 +3,10 @@ title: check out test262
 desc: http://test262.ecmascript.org/
 type: :task
 component: duk
-release: 
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-03-21 09:52:03.643261 Z
 references: []
 
@@ -15,4 +15,12 @@ log_events:
 - - 2013-03-21 09:52:03.840577 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-16 20:31:25.773189 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from unassigned
+  - ""
+- - 2014-01-16 20:42:23.553141 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""

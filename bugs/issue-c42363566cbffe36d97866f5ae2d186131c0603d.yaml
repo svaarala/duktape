@@ -3,7 +3,7 @@ title: add mutation tests for all loop control structures
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-01-10 15:53:06.322830 Z
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
+  - ""
+- - 2014-01-16 21:33:04.795838 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

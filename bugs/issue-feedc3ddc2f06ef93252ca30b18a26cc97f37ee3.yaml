@@ -3,7 +3,7 @@ title: clean up string builtin
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-12-30 22:34:16.120334 Z
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
+  - ""
+- - 2014-01-16 21:33:05.286539 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

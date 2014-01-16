@@ -5,7 +5,7 @@ desc: |-
   suffice for doubles on some platforms.
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2013-10-31 00:12:39.156922 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2014-01-16 21:33:06.790813 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

@@ -3,7 +3,7 @@ title: 16-bit object property / hash sizes
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-12-07 18:58:58.285796 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2014-01-16 21:33:07.454499 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""
