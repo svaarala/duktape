@@ -510,7 +510,7 @@ duk_ret duk_builtin_string_prototype_replace(duk_context *ctx) {
 		 *  NOTE: the E5.1 specification is a bit vague how the RegExp should
 		 *  behave in the replacement process; e.g. is matching done first for
 		 *  all matches (in the global RegExp case) before any replacer calls
-		 *  are made?  See: test-builtin-string-proto-replace.js for discussion.
+		 *  are made?  See: test-bi-string-proto-replace.js for discussion.
 		 */
 
 		DUK_ASSERT_TOP(ctx, 4);

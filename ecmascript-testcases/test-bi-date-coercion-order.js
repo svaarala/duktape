@@ -144,7 +144,7 @@ function coercionSideEffectsTest() {
     d.setFullYear(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
     d.setYear(obj1, obj2, obj3, obj4, obj5, obj6, obj7, obj8);
 
-    // test-builtin-date-tojson-generic covers toJSON() coercion order
+    // test-bi-date-tojson-generic covers toJSON() coercion order
 }
 
 try {

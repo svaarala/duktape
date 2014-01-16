@@ -8,7 +8,7 @@ true number Infinity
 true undefined undefined
 ===*/
 
-/* This test overlaps with test-builtin-properties. */
+/* This test overlaps with test-bi-properties. */
 
 function testValue(name) {
     var v = g[name];

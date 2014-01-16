@@ -151,11 +151,16 @@ The first part of each test case is ``test``.  The second part indicates a
 major test category.  The test categories are not very strictly defined, and
 there is currently no tracking of specification coverage.
 
-Test cases starting with ``test-dev-`` are development time test cases
-which demonstrate a particular issue and may not be very well documented.
+For example, the following prefix are used:
 
-Test cases starting with ``test-bug-`` illustrate a particular
-development time bug which has usually already been fixed.
+* ``test-dev-``: development time test cases which demonstrate a particular
+  issue and may not be very well documented.
+
+* ``test-bug-``: illustrate a particular development time bug which has usually
+  already been fixed.
+
+* ``test-bi-xxx-``: builtin tests for "xxx", e.g. ``test-bi-string-`` prefix
+  is for String built-in tests.
 
 Duktape API test cases
 ======================
