@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: error line number mismatch when running underscore shim
+desc: |-
+  Run objects.js testcase.  Right after testing '*** isEmpty' it returns:
+  
+  TypeError: call target not an object
+  duk_js_executor.c:2512
+  anon /tmp/duk-underscore-test.js:1662
+  anon /tmp/duk-underscore-test.js:181
+  global /tmp/duk-underscore-test.js:1512 preventsyield
+  
+  However, the line number 1662 is nowhere near the 'isEmpty' test.
+type: :bugfix
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-16 00:45:44.257933 Z
+references: []
+
+id: a9ede55be64f0dac2e6a12c44de2c20dd2a04d7a
+log_events: 
+- - 2014-01-16 00:45:44.459227 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
