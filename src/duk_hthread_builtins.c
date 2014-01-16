@@ -473,7 +473,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 	                " "
 	                DUK_USE_ARCH_STRING);
-	duk_put_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV);
+	duk_def_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Since built-ins are not often extended, compact them.
