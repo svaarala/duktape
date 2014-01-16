@@ -40,6 +40,8 @@ duk_ret duk_builtin_date_prototype_get_time(duk_context *ctx);
 duk_ret duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx);
 duk_ret duk_builtin_date_prototype_set_shared(duk_context *ctx);
 duk_ret duk_builtin_date_prototype_set_time(duk_context *ctx);
+/* Helper exposed for internal use */
+duk_double_t duk_builtin_date_get_now(duk_context *ctx);
 
 duk_ret duk_builtin_duk_object_addr(duk_context *ctx);
 duk_ret duk_builtin_duk_object_refc(duk_context *ctx);

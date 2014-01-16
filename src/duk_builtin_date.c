@@ -23,23 +23,8 @@
  *  that clutter here.
  */
 
-#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-#define GET_NOW_TIMEVAL      get_now_timeval_gettimeofday
-#elif defined(DUK_USE_DATE_NOW_TIME)
-#define GET_NOW_TIMEVAL      get_now_timeval_time
-#elif defined(DUK_USE_DATE_NOW_WINDOWS)
-#define GET_NOW_TIMEVAL      get_now_timeval_windows
-#else
-#error no function to get current time
-#endif
-
-#if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
-#define GET_LOCAL_TZOFFSET   get_local_tzoffset_gmtime
-#elif defined(DUK_USE_DATE_TZO_WINDOWS)
-#define GET_LOCAL_TZOFFSET   get_local_tzoffset_windows
-#else
-#error no function to get local tzoffset
-#endif
+#define GET_NOW_TIMEVAL      duk_builtin_date_get_now
+#define GET_LOCAL_TZOFFSET   duk_builtin_date_get_local_tzoffset
 
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
  * to avoid Valgrind errors.
@@ -109,7 +94,7 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
 
 #ifdef DUK_USE_DATE_NOW_GETTIMEOFDAY
 /* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
-static double get_now_timeval_gettimeofday(duk_context *ctx) {
+duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
 	double d;
@@ -128,7 +113,7 @@ static double get_now_timeval_gettimeofday(duk_context *ctx) {
 
 #ifdef DUK_USE_DATE_NOW_TIME
 /* Not a very good provider: only full seconds are available. */
-static double get_now_timeval_time(duk_context *ctx) {
+duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
 	time_t t = time(NULL);
 	return ((double) t) * 1000.0;
 }
@@ -160,7 +145,7 @@ static void set_systime_jan1970(SYSTEMTIME *st) {
 #endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
 #ifdef DUK_USE_DATE_NOW_WINDOWS
-static double get_now_timeval_windows(duk_context *ctx) {
+duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
 	 */
@@ -180,7 +165,7 @@ static double get_now_timeval_windows(duk_context *ctx) {
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
-static int get_local_tzoffset_gmtime(double d) {
+static int duk_builtin_date_get_local_tzoffset(double d) {
 	time_t t, t1, t2;
 	int parts[NUM_PARTS];
 	double dparts[NUM_PARTS];
@@ -288,7 +273,7 @@ static int get_local_tzoffset_gmtime(double d) {
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
-static int get_local_tzoffset_windows(double d) {
+static int duk_builtin_date_get_local_tzoffset(double d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
