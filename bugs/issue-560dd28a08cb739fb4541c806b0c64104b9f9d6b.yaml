@@ -14,7 +14,7 @@ desc: |-
   may be more expensive to implement (larger code footprint of an already
   large function).
   
-  See: testcases/test-builtin-string-proto-replace.js.
+  See: testcases/test-bi-string-proto-replace.js.
 type: :task
 component: duk
 release: 

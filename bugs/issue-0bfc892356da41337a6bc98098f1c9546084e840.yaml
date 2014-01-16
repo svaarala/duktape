@@ -36,4 +36,4 @@ log_events:
 - - 2013-03-05 13:30:33.268995 Z
   - sva <sami.vaarala@iki.fi>
   - commented
-  - Update test-builtin-string-proto-tolowercase.js and other case conversion tests.
+  - Update test-bi-string-proto-tolowercase.js and other case conversion tests.
