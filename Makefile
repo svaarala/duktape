@@ -269,6 +269,16 @@ underscoretest:	underscore duk
 	#-./underscore_test ./duk underscore/test/speed.js
 	-./underscore_test ./duk underscore/test/utility.js
 
+d067d2f0ca30.tar.bz2:
+	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
+
+test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
+	tar xvfj d067d2f0ca30.tar.bz2
+
+ecma262test: test262-d067d2f0ca30 duk
+	# http://wiki.ecmascript.org/doku.php?id=test262:command
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}"
+
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
 
