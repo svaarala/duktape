@@ -1581,7 +1581,7 @@ static int json_enc_allow_into_proplist(duk_tval *tv) {
  *  Top level wrappers
  */
 
-void duk_builtin_json_parse_helper(duk_context *ctx,
+void duk_bi_json_parse_helper(duk_context *ctx,
                                    int idx_value,
                                    int idx_reviver,
                                    int flags) {
@@ -1664,7 +1664,7 @@ void duk_builtin_json_parse_helper(duk_context *ctx,
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry + 1);
 }
 
-void duk_builtin_json_stringify_helper(duk_context *ctx,
+void duk_bi_json_stringify_helper(duk_context *ctx,
                                        int idx_value,
                                        int idx_replacer,
                                        int idx_space,
@@ -1927,20 +1927,20 @@ void duk_builtin_json_stringify_helper(duk_context *ctx,
  *  Entry points
  */
 
-int duk_builtin_json_object_parse(duk_context *ctx) {
-	duk_builtin_json_parse_helper(ctx,
-	                              0 /*idx_value*/,
-	                              1 /*idx_replacer*/,
-	                              0 /*flags*/);
+int duk_bi_json_object_parse(duk_context *ctx) {
+	duk_bi_json_parse_helper(ctx,
+	                         0 /*idx_value*/,
+	                         1 /*idx_replacer*/,
+	                         0 /*flags*/);
 	return 1;
 }
 
-int duk_builtin_json_object_stringify(duk_context *ctx) {
-	duk_builtin_json_stringify_helper(ctx,
-	                                  0 /*idx_value*/,
-	                                  1 /*idx_replacer*/,
-	                                  2 /*idx_space*/,
-	                                  0 /*flags*/);
+int duk_bi_json_object_stringify(duk_context *ctx) {
+	duk_bi_json_stringify_helper(ctx,
+	                             0 /*idx_value*/,
+	                             1 /*idx_replacer*/,
+	                             2 /*idx_space*/,
+	                             0 /*flags*/);
 	return 1;
 }
 

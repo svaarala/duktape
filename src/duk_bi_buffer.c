@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-int duk_builtin_buffer_constructor(duk_context *ctx) {
+int duk_bi_buffer_constructor(duk_context *ctx) {
 	if (duk_get_top(ctx) == 0) {
 		(void) duk_push_fixed_buffer(ctx, 0);
 	} else {
@@ -36,7 +36,7 @@ int duk_builtin_buffer_constructor(duk_context *ctx) {
  *  toString(), valueOf()
  */
 
-int duk_builtin_buffer_prototype_tostring_shared(duk_context *ctx) {
+int duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	int to_string = duk_get_magic(ctx);
 

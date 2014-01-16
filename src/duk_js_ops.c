@@ -234,7 +234,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
  *  ToInteger()  (E5 Section 9.4)
  */
 
-/* exposed, used by e.g. duk_builtin_date.c */
+/* exposed, used by e.g. duk_bi_date.c */
 double duk_js_tointeger_number(double x) {
 	int c = DUK_FPCLASSIFY(x);
 

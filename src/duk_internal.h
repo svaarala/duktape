@@ -56,7 +56,7 @@
 #include "duk_json.h"
 #include "duk_js.h"
 #include "duk_numconv.h"
-#include "duk_builtin_protos.h"
+#include "duk_bi_protos.h"
 #include "duk_selftest.h"
 
 #endif  /* DUK_INTERNAL_H_INCLUDED */

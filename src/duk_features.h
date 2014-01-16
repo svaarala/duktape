@@ -1355,7 +1355,7 @@ extern double duk_computed_nan;
  *
  *  This is a direct platform dependency which is difficult to eliminate.
  *  Select provider through defines, and then include necessary system
- *  headers so that duk_builtin_date.c compiles.
+ *  headers so that duk_bi_date.c compiles.
  *
  *  FIXME: add a way to provide custom functions to provide the critical
  *  primitives; this would be convenient when porting to unknown platforms

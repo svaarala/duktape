@@ -1,5 +1,5 @@
 /*
- *  Defines for JSON, especially duk_builtin_json.c.
+ *  Defines for JSON, especially duk_bi_json.c.
  */
 
 #ifndef DUK_JSON_H_INCLUDED

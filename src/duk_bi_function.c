@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-int duk_builtin_function_constructor(duk_context *ctx) {
+int duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int num_args;
 	int i;
@@ -72,13 +72,13 @@ int duk_builtin_function_constructor(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_function_prototype(duk_context *ctx) {
+int duk_bi_function_prototype(duk_context *ctx) {
 	/* ignore arguments, return undefined (E5 Section 15.3.4) */
 	DUK_UNREF(ctx);
 	return 0;
 }
 
-int duk_builtin_function_prototype_to_string(duk_context *ctx) {
+int duk_bi_function_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
 	/*
@@ -141,7 +141,7 @@ int duk_builtin_function_prototype_to_string(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
-int duk_builtin_function_prototype_apply(duk_context *ctx) {
+int duk_bi_function_prototype_apply(duk_context *ctx) {
 	unsigned int len;
 	unsigned int i;
 
@@ -196,7 +196,7 @@ int duk_builtin_function_prototype_apply(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
-int duk_builtin_function_prototype_call(duk_context *ctx) {
+int duk_bi_function_prototype_call(duk_context *ctx) {
 	int nargs;
 
 	/* Step 1 is not necessary because duk_call_method() will take
@@ -230,7 +230,7 @@ int duk_builtin_function_prototype_call(duk_context *ctx) {
  * function) would require a "collapsing" implementation which
  * merges argument lists etc here.
  */
-int duk_builtin_function_prototype_bind(duk_context *ctx) {
+int duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_hobject *h_target;
 	int nargs;
 	int i;

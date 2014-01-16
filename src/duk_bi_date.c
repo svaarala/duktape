@@ -23,8 +23,8 @@
  *  that clutter here.
  */
 
-#define GET_NOW_TIMEVAL      duk_builtin_date_get_now
-#define GET_LOCAL_TZOFFSET   duk_builtin_date_get_local_tzoffset
+#define GET_NOW_TIMEVAL      duk_bi_date_get_now
+#define GET_LOCAL_TZOFFSET   duk_bi_date_get_local_tzoffset
 
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
  * to avoid Valgrind errors.
@@ -94,7 +94,7 @@ static void twodigit_year_fixup(duk_context *ctx, int idx_val);
 
 #ifdef DUK_USE_DATE_NOW_GETTIMEOFDAY
 /* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
-duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
+duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
 	double d;
@@ -113,7 +113,7 @@ duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
 
 #ifdef DUK_USE_DATE_NOW_TIME
 /* Not a very good provider: only full seconds are available. */
-duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
+duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	time_t t = time(NULL);
 	return ((double) t) * 1000.0;
 }
@@ -145,7 +145,7 @@ static void set_systime_jan1970(SYSTEMTIME *st) {
 #endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
 #ifdef DUK_USE_DATE_NOW_WINDOWS
-duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
+duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
 	 */
@@ -165,7 +165,7 @@ duk_double_t duk_builtin_date_get_now(duk_context *ctx) {
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
-static int duk_builtin_date_get_local_tzoffset(double d) {
+static int duk_bi_date_get_local_tzoffset(double d) {
 	time_t t, t1, t2;
 	int parts[NUM_PARTS];
 	double dparts[NUM_PARTS];
@@ -273,7 +273,7 @@ static int duk_builtin_date_get_local_tzoffset(double d) {
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
-static int duk_builtin_date_get_local_tzoffset(double d) {
+static int duk_bi_date_get_local_tzoffset(double d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
@@ -1384,7 +1384,7 @@ static void set_parts_from_args(duk_context *ctx, double *dparts, int nargs) {
  *  Constructor calls
  */
 
-int duk_builtin_date_constructor(duk_context *ctx) {
+int duk_bi_date_constructor(duk_context *ctx) {
 	int nargs = duk_get_top(ctx);
 	int is_cons = duk_is_constructor_call(ctx);
 	double dparts[NUM_PARTS];
@@ -1431,11 +1431,11 @@ int duk_builtin_date_constructor(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_date_constructor_parse(duk_context *ctx) {
+int duk_bi_date_constructor_parse(duk_context *ctx) {
 	return parse_string(ctx, duk_to_string(ctx, 0));
 }
 
-int duk_builtin_date_constructor_utc(duk_context *ctx) {
+int duk_bi_date_constructor_utc(duk_context *ctx) {
 	int nargs = duk_get_top(ctx);
 	double dparts[NUM_PARTS];
 	double d;
@@ -1454,7 +1454,7 @@ int duk_builtin_date_constructor_utc(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_date_constructor_now(duk_context *ctx) {
+int duk_bi_date_constructor_now(duk_context *ctx) {
 	double d;
 
 	d = GET_NOW_TIMEVAL(ctx);
@@ -1497,12 +1497,12 @@ int duk_builtin_date_constructor_now(duk_context *ctx) {
  *      toISOString() requires a RangeError for invalid date values.
  */
 
-int duk_builtin_date_prototype_tostring_shared(duk_context *ctx) {
+int duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
 	int flags = duk_get_magic(ctx);
 	return to_string_helper(ctx, flags);
 }
 
-int duk_builtin_date_prototype_value_of(duk_context *ctx) {
+int duk_bi_date_prototype_value_of(duk_context *ctx) {
 	/* This native function is also used for Date.prototype.getTime()
 	 * as their behavior is identical.
 	 */
@@ -1513,7 +1513,7 @@ int duk_builtin_date_prototype_value_of(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_date_prototype_to_json(duk_context *ctx) {
+int duk_bi_date_prototype_to_json(duk_context *ctx) {
 	/* Note: toJSON() is a generic function which works even if 'this'
 	 * is not a Date.  The sole argument is ignored.
 	 */
@@ -1576,15 +1576,15 @@ int duk_builtin_date_prototype_to_json(duk_context *ctx) {
  *
  *    - Date.prototype.getTime() and Date.prototype.valueOf() have identical
  *      behavior.  They have separate function objects, but share the same C
- *      function (duk_builtin_date_prototype_value_of).
+ *      function (duk_bi_date_prototype_value_of).
  */
 
-int duk_builtin_date_prototype_get_shared(duk_context *ctx) {
+int duk_bi_date_prototype_get_shared(duk_context *ctx) {
 	int flags_and_idx = duk_get_magic(ctx);
 	return get_part_helper(ctx, flags_and_idx);
 }
 
-int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
+int duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
 	/*
 	 *  Return (t - LocalTime(t)) in minutes:
 	 *
@@ -1664,12 +1664,12 @@ int duk_builtin_date_prototype_get_timezone_offset(duk_context *ctx) {
  *      the year will be set regardless of actual argument count.
  */
 
-int duk_builtin_date_prototype_set_shared(duk_context *ctx) {
+int duk_bi_date_prototype_set_shared(duk_context *ctx) {
 	int flags_and_maxnargs = duk_get_magic(ctx);
 	return set_part_helper(ctx, flags_and_maxnargs);
 }
 
-int duk_builtin_date_prototype_set_time(duk_context *ctx) {
+int duk_bi_date_prototype_set_time(duk_context *ctx) {
 	double d;
 
 	(void) push_this_and_get_timeval(ctx, 0 /*flags*/); /* -> [ timeval this ] */

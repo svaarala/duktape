@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-int duk_builtin_error_constructor_shared(duk_context *ctx) {
+int duk_bi_error_constructor_shared(duk_context *ctx) {
 	/* Behavior for constructor and non-constructor call is
 	 * the same except for augmenting the created error.  When
 	 * called as a constructor, the caller (duk_new()) will handle
@@ -45,7 +45,7 @@ int duk_builtin_error_constructor_shared(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_error_prototype_to_string(duk_context *ctx) {
+int duk_bi_error_prototype_to_string(duk_context *ctx) {
 	/* FIXME: optimize with more direct internal access */
 
 	duk_push_this(ctx);
@@ -272,15 +272,15 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
  * save space.
  */
 
-int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
+int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
 	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
 }
 
-int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
+int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
 	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
 }
 
-int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
+int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
 	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
@@ -302,24 +302,24 @@ int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
  *  of the error so this makes sense.
  */
 
-int duk_builtin_error_prototype_stack_getter(duk_context *ctx) {
+int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
 	/* FIXME: remove this native function and map 'stack' accessor
 	 * to the toString() implementation directly.
 	 */
-	return duk_builtin_error_prototype_to_string(ctx);
+	return duk_bi_error_prototype_to_string(ctx);
 }
 
-int duk_builtin_error_prototype_filename_getter(duk_context *ctx) {
+int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
 	return 0;
 }
 
-int duk_builtin_error_prototype_linenumber_getter(duk_context *ctx) {
+int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
 	return 0;
 }
 
 #endif  /* DUK_USE_TRACEBACKS */
 
-int duk_builtin_error_prototype_nop_setter(duk_context *ctx) {
+int duk_bi_error_prototype_nop_setter(duk_context *ctx) {
 	/* Attempt to write 'stack', 'fileName', 'lineNumber' is a silent no-op.
 	 * User can use Object.defineProperty() to override this behavior.
 	 */

@@ -130,7 +130,7 @@ PROPDESC_FLAG_ENUMERABLE =   (1 << 1)
 PROPDESC_FLAG_CONFIGURABLE = (1 << 2)
 PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
 
-# magic values for Date built-in, must match duk_builtin_date.c
+# magic values for Date built-in, must match duk_bi_date.c
 BI_DATE_FLAG_NAN_TO_ZERO =        (1 << 0)
 BI_DATE_FLAG_NAN_TO_RANGE_ERROR = (1 << 1)
 BI_DATE_FLAG_ONEBASED =           (1 << 2)
@@ -259,31 +259,31 @@ bi_global = {
 		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duk' } },
 	],
 	'functions': [
-		{ 'name': 'eval',			'native': 'duk_builtin_global_object_eval', 			'length': 1 },
-		{ 'name': 'parseInt',			'native': 'duk_builtin_global_object_parse_int',		'length': 2 },
-		{ 'name': 'parseFloat',			'native': 'duk_builtin_global_object_parse_float',		'length': 1 },
-		{ 'name': 'isNaN',			'native': 'duk_builtin_global_object_is_nan',			'length': 1 },
-		{ 'name': 'isFinite',			'native': 'duk_builtin_global_object_is_finite',		'length': 1 },
-		{ 'name': 'decodeURI',			'native': 'duk_builtin_global_object_decode_uri',		'length': 1 },
-		{ 'name': 'decodeURIComponent',		'native': 'duk_builtin_global_object_decode_uri_component',	'length': 1 },
-		{ 'name': 'encodeURI',			'native': 'duk_builtin_global_object_encode_uri',		'length': 1 },
-		{ 'name': 'encodeURIComponent',		'native': 'duk_builtin_global_object_encode_uri_component', 	'length': 1 },
+		{ 'name': 'eval',			'native': 'duk_bi_global_object_eval', 			'length': 1 },
+		{ 'name': 'parseInt',			'native': 'duk_bi_global_object_parse_int',		'length': 2 },
+		{ 'name': 'parseFloat',			'native': 'duk_bi_global_object_parse_float',		'length': 1 },
+		{ 'name': 'isNaN',			'native': 'duk_bi_global_object_is_nan',		'length': 1 },
+		{ 'name': 'isFinite',			'native': 'duk_bi_global_object_is_finite',		'length': 1 },
+		{ 'name': 'decodeURI',			'native': 'duk_bi_global_object_decode_uri',		'length': 1 },
+		{ 'name': 'decodeURIComponent',		'native': 'duk_bi_global_object_decode_uri_component',	'length': 1 },
+		{ 'name': 'encodeURI',			'native': 'duk_bi_global_object_encode_uri',		'length': 1 },
+		{ 'name': 'encodeURIComponent',		'native': 'duk_bi_global_object_encode_uri_component', 	'length': 1 },
 
 		# Non-standard extensions: E5 Sections B.2.1 and B.2.2
 		#
 		# 'length' is not specified explicitly in E5 but it follows the
 		# general argument count rule.  V8 also agrees on the lengths.
 
-		{ 'name': 'escape',			'native': 'duk_builtin_global_object_escape',			'length': 1,	'section_b': True },
-		{ 'name': 'unescape',			'native': 'duk_builtin_global_object_unescape',                 'length': 1,	'section_b': True },
+		{ 'name': 'escape',			'native': 'duk_bi_global_object_escape',		'length': 1,	'section_b': True },
+		{ 'name': 'unescape',			'native': 'duk_bi_global_object_unescape',              'length': 1,	'section_b': True },
 
 		# Non-standard extensions from the web (not comprehensive)
 		#
 		#   print:  common even outside browsers (smjs: length = 0)
 		#   alert:  common in browsers (Chromium: length = 0)
 
-		{ 'name': 'print',			'native': 'duk_builtin_global_object_print',			'length': 0,	'varargs': True,	'browser': True },
-		{ 'name': 'alert',			'native': 'duk_builtin_global_object_alert',			'length': 0,	'varargs': True,	'browser': True },
+		{ 'name': 'print',			'native': 'duk_bi_global_object_print',			'length': 0,	'varargs': True,	'browser': True },
+		{ 'name': 'alert',			'native': 'duk_bi_global_object_alert',			'length': 0,	'varargs': True,	'browser': True },
 
 		# XXX: built-ins which are nice for compatibility?  E.g. 'print'
 
@@ -308,25 +308,25 @@ bi_object_constructor = {
 	'name': 'Object',
 
 	'length': 1,
-	'native': 'duk_builtin_object_constructor',
+	'native': 'duk_bi_object_constructor',
 	'callable': True,
 	'constructable': True,
 
 	'values': [],
 	'functions': [
-		{ 'name': 'getPrototypeOf',		'native': 'duk_builtin_object_constructor_get_prototype_of',			'length': 1 },
-		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_builtin_object_constructor_get_own_property_descriptor',		'length': 2 },
-		{ 'name': 'getOwnPropertyNames',	'native': 'duk_builtin_object_constructor_get_own_property_names', 		'length': 1 },
-		{ 'name': 'create',			'native': 'duk_builtin_object_constructor_create',				'length': 2 },
-		{ 'name': 'defineProperty',		'native': 'duk_builtin_object_constructor_define_property',			'length': 3 },
-		{ 'name': 'defineProperties',		'native': 'duk_builtin_object_constructor_define_properties',			'length': 2 },
-		{ 'name': 'seal',			'native': 'duk_builtin_object_constructor_seal',				'length': 1 },
-		{ 'name': 'freeze',			'native': 'duk_builtin_object_constructor_freeze',				'length': 1 },
-		{ 'name': 'preventExtensions',		'native': 'duk_builtin_object_constructor_prevent_extensions',			'length': 1 },
-		{ 'name': 'isSealed',			'native': 'duk_builtin_object_constructor_is_sealed',				'length': 1 },
-		{ 'name': 'isFrozen',			'native': 'duk_builtin_object_constructor_is_frozen',				'length': 1 },
-		{ 'name': 'isExtensible',		'native': 'duk_builtin_object_constructor_is_extensible',			'length': 1 },
-		{ 'name': 'keys',			'native': 'duk_builtin_object_constructor_keys',				'length': 1 },
+		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_constructor_get_prototype_of',			'length': 1 },
+		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_bi_object_constructor_get_own_property_descriptor',	'length': 2 },
+		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_get_own_property_names', 		'length': 1 },
+		{ 'name': 'create',			'native': 'duk_bi_object_constructor_create',				'length': 2 },
+		{ 'name': 'defineProperty',		'native': 'duk_bi_object_constructor_define_property',			'length': 3 },
+		{ 'name': 'defineProperties',		'native': 'duk_bi_object_constructor_define_properties',		'length': 2 },
+		{ 'name': 'seal',			'native': 'duk_bi_object_constructor_seal',				'length': 1 },
+		{ 'name': 'freeze',			'native': 'duk_bi_object_constructor_freeze',				'length': 1 },
+		{ 'name': 'preventExtensions',		'native': 'duk_bi_object_constructor_prevent_extensions',		'length': 1 },
+		{ 'name': 'isSealed',			'native': 'duk_bi_object_constructor_is_sealed',			'length': 1 },
+		{ 'name': 'isFrozen',			'native': 'duk_bi_object_constructor_is_frozen',			'length': 1 },
+		{ 'name': 'isExtensible',		'native': 'duk_bi_object_constructor_is_extensible',			'length': 1 },
+		{ 'name': 'keys',			'native': 'duk_bi_object_constructor_keys',				'length': 1 },
 	],
 }
 
@@ -337,12 +337,12 @@ bi_object_prototype = {
 	'class': 'Object',
 
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_object_prototype_to_string',			'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_object_prototype_to_locale_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_object_prototype_value_of',			'length': 0 },
-		{ 'name': 'hasOwnProperty',		'native': 'duk_builtin_object_prototype_has_own_property',		'length': 1 },
-		{ 'name': 'isPrototypeOf',		'native': 'duk_builtin_object_prototype_is_prototype_of',		'length': 1 },
-		{ 'name': 'propertyIsEnumerable',	'native': 'duk_builtin_object_prototype_property_is_enumerable',	'length': 1 },
+		{ 'name': 'toString',			'native': 'duk_bi_object_prototype_to_string',			'length': 0 },
+		{ 'name': 'toLocaleString',		'native': 'duk_bi_object_prototype_to_locale_string',		'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_bi_object_prototype_value_of',			'length': 0 },
+		{ 'name': 'hasOwnProperty',		'native': 'duk_bi_object_prototype_has_own_property',		'length': 1 },
+		{ 'name': 'isPrototypeOf',		'native': 'duk_bi_object_prototype_is_prototype_of',		'length': 1 },
+		{ 'name': 'propertyIsEnumerable',	'native': 'duk_bi_object_prototype_property_is_enumerable',	'length': 1 },
 	],
 }
 
@@ -354,7 +354,7 @@ bi_function_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_function_constructor',
+	'native': 'duk_bi_function_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -373,16 +373,16 @@ bi_function_prototype = {
 	'name': '',  # FIXME: what does the spec say?
 
 	'length': 0,
-	'native': 'duk_builtin_function_prototype',
+	'native': 'duk_bi_function_prototype',
 	'callable': True,
 	'constructable': False,  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
 
 	'values': [],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_function_prototype_to_string',		'length': 1 },
-		{ 'name': 'apply',			'native': 'duk_builtin_function_prototype_apply',		'length': 2 },
-		{ 'name': 'call',			'native': 'duk_builtin_function_prototype_call',		'length': 1,	'varargs': True },
-		{ 'name': 'bind',			'native': 'duk_builtin_function_prototype_bind',		'length': 1,	'varargs': True },
+		{ 'name': 'toString',			'native': 'duk_bi_function_prototype_to_string',		'length': 1 },
+		{ 'name': 'apply',			'native': 'duk_bi_function_prototype_apply',		'length': 2 },
+		{ 'name': 'call',			'native': 'duk_bi_function_prototype_call',		'length': 1,	'varargs': True },
+		{ 'name': 'bind',			'native': 'duk_bi_function_prototype_bind',		'length': 1,	'varargs': True },
 	],
 }
 
@@ -394,13 +394,13 @@ bi_array_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_array_constructor',
+	'native': 'duk_bi_array_constructor',
 	'callable': True,
 	'constructable': True,
 
 	'values': [],
 	'functions': [
-		{ 'name': 'isArray',			'native': 'duk_builtin_array_constructor_is_array',		'length': 1 },
+		{ 'name': 'isArray',			'native': 'duk_bi_array_constructor_is_array',		'length': 1 },
 	],
 }
 
@@ -419,27 +419,27 @@ bi_array_prototype = {
 
 	'values': [],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_array_prototype_to_string',		'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_array_prototype_join_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: to_locale_string, here 1
-		{ 'name': 'concat',			'native': 'duk_builtin_array_prototype_concat',			'length': 1,	'varargs': True },
-		{ 'name': 'join',			'native': 'duk_builtin_array_prototype_join_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },   # magic: to_locale_string, here 0
-		{ 'name': 'pop',			'native': 'duk_builtin_array_prototype_pop',			'length': 0 },
-		{ 'name': 'push',			'native': 'duk_builtin_array_prototype_push',			'length': 1,	'varargs': True },
-		{ 'name': 'reverse',			'native': 'duk_builtin_array_prototype_reverse',		'length': 0 },
-		{ 'name': 'shift',			'native': 'duk_builtin_array_prototype_shift',			'length': 0 },
-		{ 'name': 'slice',			'native': 'duk_builtin_array_prototype_slice',			'length': 2 },
-		{ 'name': 'sort',			'native': 'duk_builtin_array_prototype_sort',			'length': 1 },
-		{ 'name': 'splice',			'native': 'duk_builtin_array_prototype_splice',			'length': 2,	'varargs': True },
-		{ 'name': 'unshift',			'native': 'duk_builtin_array_prototype_unshift',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
-		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_array_prototype_indexof_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
-		{ 'name': 'every',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
-		{ 'name': 'some',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
-		{ 'name': 'forEach',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },
-		{ 'name': 'map',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_MAP } },
-		{ 'name': 'filter',			'native': 'duk_builtin_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FILTER } },
-		{ 'name': 'reduce',			'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
-		{ 'name': 'reduceRight',		'native': 'duk_builtin_array_prototype_reduce_shared',		'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
+		{ 'name': 'toString',			'native': 'duk_bi_array_prototype_to_string',		'length': 0 },
+		{ 'name': 'toLocaleString',		'native': 'duk_bi_array_prototype_join_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: to_locale_string, here 1
+		{ 'name': 'concat',			'native': 'duk_bi_array_prototype_concat',		'length': 1,	'varargs': True },
+		{ 'name': 'join',			'native': 'duk_bi_array_prototype_join_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },   # magic: to_locale_string, here 0
+		{ 'name': 'pop',			'native': 'duk_bi_array_prototype_pop',			'length': 0 },
+		{ 'name': 'push',			'native': 'duk_bi_array_prototype_push',		'length': 1,	'varargs': True },
+		{ 'name': 'reverse',			'native': 'duk_bi_array_prototype_reverse',		'length': 0 },
+		{ 'name': 'shift',			'native': 'duk_bi_array_prototype_shift',		'length': 0 },
+		{ 'name': 'slice',			'native': 'duk_bi_array_prototype_slice',		'length': 2 },
+		{ 'name': 'sort',			'native': 'duk_bi_array_prototype_sort',		'length': 1 },
+		{ 'name': 'splice',			'native': 'duk_bi_array_prototype_splice',		'length': 2,	'varargs': True },
+		{ 'name': 'unshift',			'native': 'duk_bi_array_prototype_unshift',		'length': 1,	'varargs': True },
+		{ 'name': 'indexOf',			'native': 'duk_bi_array_prototype_indexof_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
+		{ 'name': 'lastIndexOf',		'native': 'duk_bi_array_prototype_indexof_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
+		{ 'name': 'every',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
+		{ 'name': 'some',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
+		{ 'name': 'forEach',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },
+		{ 'name': 'map',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_MAP } },
+		{ 'name': 'filter',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FILTER } },
+		{ 'name': 'reduce',			'native': 'duk_bi_array_prototype_reduce_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
+		{ 'name': 'reduceRight',		'native': 'duk_bi_array_prototype_reduce_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
 	],
 }
 
@@ -451,13 +451,13 @@ bi_string_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_string_constructor',
+	'native': 'duk_bi_string_constructor',
 	'callable': True,
 	'constructable': True,
 
 	'values': [],
 	'functions': [
-		{ 'name': 'fromCharCode',		'native': 'duk_builtin_string_constructor_from_char_code',	'length': 1,	'varargs': True },
+		{ 'name': 'fromCharCode',		'native': 'duk_bi_string_constructor_from_char_code',	'length': 1,	'varargs': True },
 	],
 }
 
@@ -484,29 +484,29 @@ bi_string_prototype = {
 		{ 'name': internal('value'),            'value': '',	'attributes': '' },
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_string_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_string_prototype_to_string',		'length': 0 },  # share native function, behavior is identical
-		{ 'name': 'charAt',			'native': 'duk_builtin_string_prototype_char_at',		'length': 1 },
-		{ 'name': 'charCodeAt',			'native': 'duk_builtin_string_prototype_char_code_at',		'length': 1 },
-		{ 'name': 'concat',			'native': 'duk_builtin_string_prototype_concat',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_builtin_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> indexOf
-		{ 'name': 'lastIndexOf',		'native': 'duk_builtin_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1 -> lastIndexOf
-		{ 'name': 'localeCompare',		'native': 'duk_builtin_string_prototype_locale_compare',	'length': 1 },
-		{ 'name': 'match',			'native': 'duk_builtin_string_prototype_match',			'length': 1 },
-		{ 'name': 'replace',			'native': 'duk_builtin_string_prototype_replace',		'length': 2 },
-		{ 'name': 'search',			'native': 'duk_builtin_string_prototype_search',		'length': 1 },
-		{ 'name': 'slice',			'native': 'duk_builtin_string_prototype_slice',			'length': 2 },
-		{ 'name': 'split',			'native': 'duk_builtin_string_prototype_split',			'length': 2 },
-		{ 'name': 'substring',			'native': 'duk_builtin_string_prototype_substring',		'length': 2 },
-		{ 'name': 'toLowerCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase
-		{ 'name': 'toLocaleLowerCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase; no locale specific conversion now
-		{ 'name': 'toUpperCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase
-		{ 'name': 'toLocaleUpperCase',		'native': 'duk_builtin_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase; no locale specific conversion now
-		{ 'name': 'trim',			'native': 'duk_builtin_string_prototype_trim',			'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_bi_string_prototype_to_string',		'length': 0 },
+		{ 'name': 'valueOf',			'native': 'duk_bi_string_prototype_to_string',		'length': 0 },  # share native function, behavior is identical
+		{ 'name': 'charAt',			'native': 'duk_bi_string_prototype_char_at',		'length': 1 },
+		{ 'name': 'charCodeAt',			'native': 'duk_bi_string_prototype_char_code_at',	'length': 1 },
+		{ 'name': 'concat',			'native': 'duk_bi_string_prototype_concat',		'length': 1,	'varargs': True },
+		{ 'name': 'indexOf',			'native': 'duk_bi_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> indexOf
+		{ 'name': 'lastIndexOf',		'native': 'duk_bi_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1 -> lastIndexOf
+		{ 'name': 'localeCompare',		'native': 'duk_bi_string_prototype_locale_compare',	'length': 1 },
+		{ 'name': 'match',			'native': 'duk_bi_string_prototype_match',		'length': 1 },
+		{ 'name': 'replace',			'native': 'duk_bi_string_prototype_replace',		'length': 2 },
+		{ 'name': 'search',			'native': 'duk_bi_string_prototype_search',		'length': 1 },
+		{ 'name': 'slice',			'native': 'duk_bi_string_prototype_slice',		'length': 2 },
+		{ 'name': 'split',			'native': 'duk_bi_string_prototype_split',		'length': 2 },
+		{ 'name': 'substring',			'native': 'duk_bi_string_prototype_substring',		'length': 2 },
+		{ 'name': 'toLowerCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase
+		{ 'name': 'toLocaleLowerCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase; no locale specific conversion now
+		{ 'name': 'toUpperCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase
+		{ 'name': 'toLocaleUpperCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase; no locale specific conversion now
+		{ 'name': 'trim',			'native': 'duk_bi_string_prototype_trim',		'length': 0 },
 
 		# Non-standard extension: E5 Section B.2.3
 
-		{ 'name': 'substr',			'native': 'duk_builtin_string_prototype_substr',		'length': 2,	'section_b': True },
+		{ 'name': 'substr',			'native': 'duk_bi_string_prototype_substr',		'length': 2,	'section_b': True },
 	],
 }
 
@@ -517,7 +517,7 @@ bi_boolean_constructor = {
 	'name': 'Boolean',
 
 	'length': 1,
-	'native': 'duk_builtin_boolean_constructor',
+	'native': 'duk_bi_boolean_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -538,8 +538,8 @@ bi_boolean_prototype = {
 		{ 'name': internal('value'),            'value': False,		'attributes': '' },
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = coerce_tostring
-		{ 'name': 'valueOf',			'native': 'duk_builtin_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = coerce_tostring
+		{ 'name': 'toString',			'native': 'duk_bi_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = coerce_tostring
+		{ 'name': 'valueOf',			'native': 'duk_bi_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = coerce_tostring
 	],
 }
 
@@ -551,7 +551,7 @@ bi_number_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_number_constructor',
+	'native': 'duk_bi_number_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -578,12 +578,12 @@ bi_number_prototype = {
 		{ 'name': internal('value'),            'value': 0.0,		'attributes': '' }
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_number_prototype_to_string',		'length': 1 },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_number_prototype_to_locale_string',	'length': 1 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_number_prototype_value_of',		'length': 0 },
-		{ 'name': 'toFixed',			'native': 'duk_builtin_number_prototype_to_fixed',		'length': 1 },
-		{ 'name': 'toExponential',		'native': 'duk_builtin_number_prototype_to_exponential',	'length': 1 },
-		{ 'name': 'toPrecision',		'native': 'duk_builtin_number_prototype_to_precision',		'length': 1 },
+		{ 'name': 'toString',			'native': 'duk_bi_number_prototype_to_string',		'length': 1 },
+		{ 'name': 'toLocaleString',		'native': 'duk_bi_number_prototype_to_locale_string',	'length': 1 },
+		{ 'name': 'valueOf',			'native': 'duk_bi_number_prototype_value_of',		'length': 0 },
+		{ 'name': 'toFixed',			'native': 'duk_bi_number_prototype_to_fixed',		'length': 1 },
+		{ 'name': 'toExponential',		'native': 'duk_bi_number_prototype_to_exponential',	'length': 1 },
+		{ 'name': 'toPrecision',		'native': 'duk_bi_number_prototype_to_precision',	'length': 1 },
 	],
 }
 
@@ -595,16 +595,16 @@ bi_date_constructor = {
 
 	'length': 7,
 	'varargs': True,
-	'native': 'duk_builtin_date_constructor',
+	'native': 'duk_bi_date_constructor',
 	'callable': True,
 	'constructable': True,
 
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'parse',			'native': 'duk_builtin_date_constructor_parse',			'length': 1 },
-		{ 'name': 'UTC',			'native': 'duk_builtin_date_constructor_utc',			'length': 7,	'varargs': True },
-		{ 'name': 'now',			'native': 'duk_builtin_date_constructor_now',			'length': 0 },
+		{ 'name': 'parse',			'native': 'duk_bi_date_constructor_parse',		'length': 1 },
+		{ 'name': 'UTC',			'native': 'duk_bi_date_constructor_utc',		'length': 7,	'varargs': True },
+		{ 'name': 'now',			'native': 'duk_bi_date_constructor_now',		'length': 0 },
 	],
 }
 
@@ -641,57 +641,57 @@ bi_date_prototype = {
 		{ 'name': internal('value'),            'value': DBL_NAN,	'attributes': 'w' }
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toDateString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toTimeString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleDateString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toLocaleTimeString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
-		{ 'name': 'toUTCString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME } },
-		{ 'name': 'toISOString',		'native': 'duk_builtin_date_prototype_tostring_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_NAN_TO_RANGE_ERROR + BI_DATE_FLAG_SEP_T } },
-		{ 'name': 'toJSON',			'native': 'duk_builtin_date_prototype_to_json',			'length': 1 },
-		{ 'name': 'valueOf',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },
-		{ 'name': 'getTime',			'native': 'duk_builtin_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
-		{ 'name': 'getFullYear',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'getUTCFullYear',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'getMonth',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MONTH << 12) } },
-		{ 'name': 'getUTCMonth',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MONTH << 12) } },
-		{ 'name': 'getDate',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_DAY << 12) } },
-		{ 'name': 'getUTCDate',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + (BI_DATE_IDX_DAY << 12) } },
-		{ 'name': 'getDay',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_WEEKDAY << 12) } },
-		{ 'name': 'getUTCDay',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_WEEKDAY << 12) } },
-		{ 'name': 'getHours',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_HOUR << 12) } },
-		{ 'name': 'getUTCHours',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_HOUR << 12) } },
-		{ 'name': 'getMinutes',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MINUTE << 12) } },
-		{ 'name': 'getUTCMinutes',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MINUTE << 12) } },
-		{ 'name': 'getSeconds',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_SECOND << 12) } },
-		{ 'name': 'getUTCSeconds',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_SECOND << 12) } },
-		{ 'name': 'getMilliseconds',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MILLISECOND << 12) } },
-		{ 'name': 'getUTCMilliseconds',		'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MILLISECOND << 12) } },
-		{ 'name': 'getTimezoneOffset',		'native': 'duk_builtin_date_prototype_get_timezone_offset',	'length': 0 },
-		{ 'name': 'setTime',			'native': 'duk_builtin_date_prototype_set_time',		'length': 1 },
-		{ 'name': 'setMilliseconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
-		{ 'name': 'setUTCMilliseconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (1 << 12) } },
-		{ 'name': 'setSeconds',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
-		{ 'name': 'setUTCSeconds',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (2 << 12) } },
-		{ 'name': 'setMinutes',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
-		{ 'name': 'setUTCMinutes',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (3 << 12) } },
-		{ 'name': 'setHours',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (4 << 12) } },
-		{ 'name': 'setUTCHours',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (4 << 12) } },
-		{ 'name': 'setDate',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
-		{ 'name': 'setUTCDate',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 0 + (1 << 12) } },
-		{ 'name': 'setMonth',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
-		{ 'name': 'setUTCMonth',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << 12) } },
-		{ 'name': 'setFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
-		{ 'name': 'setUTCFullYear',		'native': 'duk_builtin_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << 12) } },
+		{ 'name': 'toString',			'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toDateString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toTimeString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleDateString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toLocaleTimeString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_TOSTRING_LOCALE + BI_DATE_FLAG_LOCALTIME } },
+		{ 'name': 'toUTCString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME } },
+		{ 'name': 'toISOString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_NAN_TO_RANGE_ERROR + BI_DATE_FLAG_SEP_T } },
+		{ 'name': 'toJSON',			'native': 'duk_bi_date_prototype_to_json',		'length': 1 },
+		{ 'name': 'valueOf',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },
+		{ 'name': 'getTime',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
+		{ 'name': 'getFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_YEAR << 12) } },
+		{ 'name': 'getUTCFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_YEAR << 12) } },
+		{ 'name': 'getMonth',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MONTH << 12) } },
+		{ 'name': 'getUTCMonth',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MONTH << 12) } },
+		{ 'name': 'getDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_DAY << 12) } },
+		{ 'name': 'getUTCDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + (BI_DATE_IDX_DAY << 12) } },
+		{ 'name': 'getDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_WEEKDAY << 12) } },
+		{ 'name': 'getUTCDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_WEEKDAY << 12) } },
+		{ 'name': 'getHours',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_HOUR << 12) } },
+		{ 'name': 'getUTCHours',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_HOUR << 12) } },
+		{ 'name': 'getMinutes',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MINUTE << 12) } },
+		{ 'name': 'getUTCMinutes',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MINUTE << 12) } },
+		{ 'name': 'getSeconds',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_SECOND << 12) } },
+		{ 'name': 'getUTCSeconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_SECOND << 12) } },
+		{ 'name': 'getMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MILLISECOND << 12) } },
+		{ 'name': 'getUTCMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MILLISECOND << 12) } },
+		{ 'name': 'getTimezoneOffset',		'native': 'duk_bi_date_prototype_get_timezone_offset',	'length': 0 },
+		{ 'name': 'setTime',			'native': 'duk_bi_date_prototype_set_time',		'length': 1 },
+		{ 'name': 'setMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
+		{ 'name': 'setUTCMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (1 << 12) } },
+		{ 'name': 'setSeconds',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
+		{ 'name': 'setUTCSeconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (2 << 12) } },
+		{ 'name': 'setMinutes',			'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
+		{ 'name': 'setUTCMinutes',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (3 << 12) } },
+		{ 'name': 'setHours',			'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (4 << 12) } },
+		{ 'name': 'setUTCHours',		'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (4 << 12) } },
+		{ 'name': 'setDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
+		{ 'name': 'setUTCDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 0 + (1 << 12) } },
+		{ 'name': 'setMonth',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
+		{ 'name': 'setUTCMonth',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << 12) } },
+		{ 'name': 'setFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
+		{ 'name': 'setUTCFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << 12) } },
 
 		# Non-standard extensions: E5 Section B.2.4, B.2.5, B.2.6
 		#
 		# 'length' values are not given explicitly but follows the general rule.
 		# The lengths below agree with V8.
 
-		{ 'name': 'getYear',			'native': 'duk_builtin_date_prototype_get_shared',		'length': 0,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + BI_DATE_FLAG_SUB1900 + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'setYear',			'native': 'duk_builtin_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_YEAR_FIXUP + (3 << 12) } },
+		{ 'name': 'getYear',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + BI_DATE_FLAG_SUB1900 + (BI_DATE_IDX_YEAR << 12) } },
+		{ 'name': 'setYear',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_YEAR_FIXUP + (3 << 12) } },
 
 		# Note: toGMTString() is required to initially be the same Function object as the initial
 		# Date.prototype.toUTCString.  In other words: Date.prototype.toGMTString === Date.prototype.toUTCString --> true.
@@ -699,7 +699,7 @@ bi_date_prototype = {
 		#
 		# Note that while Smjs respects the requirement in E5 Section B.2.6, V8 does not.
 
-		#{ 'name': 'toGMTString',		'native': 'duk_builtin_date_prototype_to_gmt_string',		'length': 0,	'section_b': True },
+		#{ 'name': 'toGMTString',		'native': 'duk_bi_date_prototype_to_gmt_string',		'length': 0,	'section_b': True },
 
 	],
 }
@@ -711,7 +711,7 @@ bi_regexp_constructor = {
 	'name': 'RegExp',
 
 	'length': 2,
-	'native': 'duk_builtin_regexp_constructor',
+	'native': 'duk_bi_regexp_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -775,9 +775,9 @@ bi_regexp_prototype = {
 
 	],
 	'functions': [
-		{ 'name': 'exec',			'native': 'duk_builtin_regexp_prototype_exec',		'length': 1 },
-		{ 'name': 'test',			'native': 'duk_builtin_regexp_prototype_test',		'length': 1 },
-		{ 'name': 'toString',			'native': 'duk_builtin_regexp_prototype_to_string',	'length': 0 },
+		{ 'name': 'exec',			'native': 'duk_bi_regexp_prototype_exec',		'length': 1 },
+		{ 'name': 'test',			'native': 'duk_bi_regexp_prototype_test',		'length': 1 },
+		{ 'name': 'toString',			'native': 'duk_bi_regexp_prototype_to_string',		'length': 0 },
 	],
 }
 
@@ -788,7 +788,7 @@ bi_error_constructor = {
 	'name': 'Error',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_error_prototype' },
@@ -826,17 +826,17 @@ bi_error_prototype = {
 		# Custom properties
 
 		{ 'name': 'stack',
-		  'getter': 'duk_builtin_error_prototype_stack_getter',
-		  'setter': 'duk_builtin_error_prototype_nop_setter' },
+		  'getter': 'duk_bi_error_prototype_stack_getter',
+		  'setter': 'duk_bi_error_prototype_nop_setter' },
 		{ 'name': 'fileName',
-		  'getter': 'duk_builtin_error_prototype_filename_getter',
-		  'setter': 'duk_builtin_error_prototype_nop_setter' },
+		  'getter': 'duk_bi_error_prototype_filename_getter',
+		  'setter': 'duk_bi_error_prototype_nop_setter' },
 		{ 'name': 'lineNumber',
-		  'getter': 'duk_builtin_error_prototype_linenumber_getter',
-		  'setter': 'duk_builtin_error_prototype_nop_setter' },
+		  'getter': 'duk_bi_error_prototype_linenumber_getter',
+		  'setter': 'duk_bi_error_prototype_nop_setter' },
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_error_prototype_to_string',		'length': 0 },
+		{ 'name': 'toString',			'native': 'duk_bi_error_prototype_to_string',		'length': 0 },
 	],
 }
 
@@ -854,7 +854,7 @@ bi_eval_error_constructor = {
 	'name': 'EvalError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_eval_error_prototype' },
@@ -882,7 +882,7 @@ bi_range_error_constructor = {
 	'name': 'RangeError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_range_error_prototype' },
@@ -910,7 +910,7 @@ bi_reference_error_constructor = {
 	'name': 'ReferenceError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_reference_error_prototype' },
@@ -938,7 +938,7 @@ bi_syntax_error_constructor = {
 	'name': 'SyntaxError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_syntax_error_prototype' },
@@ -966,7 +966,7 @@ bi_type_error_constructor = {
 	'name': 'TypeError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_type_error_prototype' },
@@ -994,7 +994,7 @@ bi_uri_error_constructor = {
 	'name': 'URIError',
 
 	'length': 1,
-	'native': 'duk_builtin_error_constructor_shared',
+	'native': 'duk_bi_error_constructor_shared',
 	'callable': True,
 	'constructable': True,
 	'magic': { 'type': 'bidx', 'value': 'bi_uri_error_prototype' },
@@ -1032,24 +1032,24 @@ bi_math = {
 		{ 'name': 'SQRT2',			'value': DBL_SQRT2,		'attributes': '' },
 	],
 	'functions': [
-		{ 'name': 'abs',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FABS_IDX } },
-		{ 'name': 'acos',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ACOS_IDX } },
-		{ 'name': 'asin',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ASIN_IDX } },
-		{ 'name': 'atan',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN_IDX } },
-		{ 'name': 'atan2',			'native': 'duk_builtin_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN2_IDX } },
-		{ 'name': 'ceil',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_CEIL_IDX } },
-		{ 'name': 'cos',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_COS_IDX } },
-		{ 'name': 'exp',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_EXP_IDX } },
-		{ 'name': 'floor',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FLOOR_IDX } },
-		{ 'name': 'log',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_LOG_IDX } },
-		{ 'name': 'max',			'native': 'duk_builtin_math_object_max',		'length': 2,	'varargs': True },
-		{ 'name': 'min',			'native': 'duk_builtin_math_object_min',		'length': 2,	'varargs': True },
-		{ 'name': 'pow',			'native': 'duk_builtin_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_POW_IDX } },
-		{ 'name': 'random',			'native': 'duk_builtin_math_object_random',		'length': 0 },
-		{ 'name': 'round',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ROUND_IDX } },
-		{ 'name': 'sin',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SIN_IDX } },
-		{ 'name': 'sqrt',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SQRT_IDX } },
-		{ 'name': 'tan',			'native': 'duk_builtin_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_TAN_IDX } },
+		{ 'name': 'abs',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FABS_IDX } },
+		{ 'name': 'acos',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ACOS_IDX } },
+		{ 'name': 'asin',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ASIN_IDX } },
+		{ 'name': 'atan',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN_IDX } },
+		{ 'name': 'atan2',			'native': 'duk_bi_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN2_IDX } },
+		{ 'name': 'ceil',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_CEIL_IDX } },
+		{ 'name': 'cos',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_COS_IDX } },
+		{ 'name': 'exp',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_EXP_IDX } },
+		{ 'name': 'floor',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FLOOR_IDX } },
+		{ 'name': 'log',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_LOG_IDX } },
+		{ 'name': 'max',			'native': 'duk_bi_math_object_max',		'length': 2,	'varargs': True },
+		{ 'name': 'min',			'native': 'duk_bi_math_object_min',		'length': 2,	'varargs': True },
+		{ 'name': 'pow',			'native': 'duk_bi_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_POW_IDX } },
+		{ 'name': 'random',			'native': 'duk_bi_math_object_random',		'length': 0 },
+		{ 'name': 'round',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ROUND_IDX } },
+		{ 'name': 'sin',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SIN_IDX } },
+		{ 'name': 'sqrt',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SQRT_IDX } },
+		{ 'name': 'tan',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_TAN_IDX } },
 	],
 }
 
@@ -1061,8 +1061,8 @@ bi_json = {
 
 	'values': [],
 	'functions': [
-		{ 'name': 'parse',			'native': 'duk_builtin_json_object_parse',		'length': 2 },
-		{ 'name': 'stringify',			'native': 'duk_builtin_json_object_stringify',		'length': 3 },
+		{ 'name': 'parse',			'native': 'duk_bi_json_object_parse',		'length': 2 },
+		{ 'name': 'stringify',			'native': 'duk_bi_json_object_stringify',		'length': 3 },
 	],
 }
 
@@ -1073,7 +1073,7 @@ bi_type_error_thrower = {
 	'name': 'ThrowTypeError',  # custom, matches V8
 
 	'length': 0,
-	'native': 'duk_builtin_type_error_thrower',
+	'native': 'duk_bi_type_error_thrower',
 	'callable': True,
 	'constructable': False,  # This is not clearly specified, but [[Construct]] is not set in E5 Section 13.2.3.
 
@@ -1093,17 +1093,17 @@ bi_duk = {
 		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
 	],
 	'functions': [
-		{ 'name': 'addr',			'native': 'duk_builtin_duk_object_addr',                'length': 1 },
-		{ 'name': 'refc',			'native': 'duk_builtin_duk_object_refc',                'length': 1 },
-		{ 'name': 'gc',				'native': 'duk_builtin_duk_object_gc',			'length': 1 },
-		{ 'name': 'getFinalizer',		'native': 'duk_builtin_duk_object_get_finalizer',	'length': 1 },
-		{ 'name': 'setFinalizer',		'native': 'duk_builtin_duk_object_set_finalizer',	'length': 2 },
-		{ 'name': 'enc',			'native': 'duk_builtin_duk_object_enc',			'length': 2 },
-		{ 'name': 'dec',			'native': 'duk_builtin_duk_object_dec',			'length': 2 },
-		{ 'name': 'jsonxEnc',			'native': 'duk_builtin_duk_object_jsonx_enc',		'length': 3 },
-		{ 'name': 'jsonxDec',			'native': 'duk_builtin_duk_object_jsonx_dec',		'length': 2 },
-		{ 'name': 'jsoncEnc',			'native': 'duk_builtin_duk_object_jsonc_enc',		'length': 3 },
-		{ 'name': 'jsoncDec',			'native': 'duk_builtin_duk_object_jsonc_dec',		'length': 2 },
+		{ 'name': 'addr',			'native': 'duk_bi_duk_object_addr',             'length': 1 },
+		{ 'name': 'refc',			'native': 'duk_bi_duk_object_refc',             'length': 1 },
+		{ 'name': 'gc',				'native': 'duk_bi_duk_object_gc',		'length': 1 },
+		{ 'name': 'getFinalizer',		'native': 'duk_bi_duk_object_get_finalizer',	'length': 1 },
+		{ 'name': 'setFinalizer',		'native': 'duk_bi_duk_object_set_finalizer',	'length': 2 },
+		{ 'name': 'enc',			'native': 'duk_bi_duk_object_enc',		'length': 2 },
+		{ 'name': 'dec',			'native': 'duk_bi_duk_object_dec',		'length': 2 },
+		{ 'name': 'jsonxEnc',			'native': 'duk_bi_duk_object_jsonx_enc',	'length': 3 },
+		{ 'name': 'jsonxDec',			'native': 'duk_bi_duk_object_jsonx_dec',	'length': 2 },
+		{ 'name': 'jsoncEnc',			'native': 'duk_bi_duk_object_jsonc_enc',	'length': 3 },
+		{ 'name': 'jsoncDec',			'native': 'duk_bi_duk_object_jsonc_dec',	'length': 2 },
 	],
 }
 
@@ -1115,16 +1115,16 @@ bi_thread_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_thread_constructor',
+	'native': 'duk_bi_thread_constructor',
 	'callable': True,
 	'constructable': True,
 
 	'values': [],
 	'functions': [
 		# 'yield' is a reserved word but does not prevent its use as a property name
-		{ 'name': 'yield',			'native': 'duk_builtin_thread_yield',			'length': 2 },
-		{ 'name': 'resume',			'native': 'duk_builtin_thread_resume',			'length': 3 },
-		{ 'name': 'current',			'native': 'duk_builtin_thread_current',			'length': 0 },
+		{ 'name': 'yield',			'native': 'duk_bi_thread_yield',		'length': 2 },
+		{ 'name': 'resume',			'native': 'duk_bi_thread_resume',		'length': 3 },
+		{ 'name': 'current',			'native': 'duk_bi_thread_current',		'length': 0 },
 	]
 }
 
@@ -1155,7 +1155,7 @@ bi_buffer_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_buffer_constructor',
+	'native': 'duk_bi_buffer_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -1172,8 +1172,8 @@ bi_buffer_prototype = {
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
-		{ 'name': 'valueOf',			'native': 'duk_builtin_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
+		{ 'name': 'toString',			'native': 'duk_bi_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
+		{ 'name': 'valueOf',			'native': 'duk_bi_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
 	],
 }
 
@@ -1185,7 +1185,7 @@ bi_pointer_constructor = {
 
 	'length': 1,
 	'varargs': True,
-	'native': 'duk_builtin_pointer_constructor',
+	'native': 'duk_bi_pointer_constructor',
 	'callable': True,
 	'constructable': True,
 
@@ -1202,8 +1202,8 @@ bi_pointer_prototype = {
 	'values': [
 	],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_builtin_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
-		{ 'name': 'valueOf',			'native': 'duk_builtin_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
+		{ 'name': 'toString',			'native': 'duk_bi_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
+		{ 'name': 'valueOf',			'native': 'duk_bi_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
 	],
 }
 
@@ -1358,7 +1358,7 @@ class GenBuiltins:
 
 	def writeNativeFuncArray(self, genc):
 		genc.emitLine('/* native functions: %d */' % len(self.native_func_list))
-		genc.emitLine('const duk_c_function duk_builtin_native_functions[] = {')
+		genc.emitLine('const duk_c_function duk_bi_native_functions[] = {')
 		for i in self.native_func_list:
 			genc.emitLine('\t(duk_c_function) %s,' % i)
 		genc.emitLine('};')
@@ -1689,7 +1689,7 @@ class GenBuiltins:
 		self.gs.emitStringsHeader(genc)
 
 		genc.emitLine('')
-		genc.emitLine('extern const duk_c_function duk_builtin_native_functions[];')
+		genc.emitLine('extern const duk_c_function duk_bi_native_functions[];')
 		genc.emitLine('')
 		genc.emitLine('extern const duk_uint8_t duk_builtins_data[];')
 		genc.emitLine('')

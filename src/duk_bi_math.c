@@ -169,7 +169,7 @@ static const two_arg_func two_arg_funcs[] = {
 	pow_fixed
 };
 
-int duk_builtin_math_object_onearg_shared(duk_context *ctx) {
+int duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	int fun_idx = duk_get_magic(ctx);
 	one_arg_func fun;
 
@@ -179,7 +179,7 @@ int duk_builtin_math_object_onearg_shared(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_math_object_twoarg_shared(duk_context *ctx) {
+int duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	int fun_idx = duk_get_magic(ctx);
 	two_arg_func fun;
 
@@ -189,15 +189,15 @@ int duk_builtin_math_object_twoarg_shared(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_math_object_max(duk_context *ctx) {
+int duk_bi_math_object_max(duk_context *ctx) {
 	return math_minmax(ctx, -DUK_DOUBLE_INFINITY, fmax_fixed);
 }
 
-int duk_builtin_math_object_min(duk_context *ctx) {
+int duk_bi_math_object_min(duk_context *ctx) {
 	return math_minmax(ctx, DUK_DOUBLE_INFINITY, fmin_fixed);
 }
 
-int duk_builtin_math_object_random(duk_context *ctx) {
+int duk_bi_math_object_random(duk_context *ctx) {
 	duk_push_number(ctx, (double) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
 	return 1;
 }

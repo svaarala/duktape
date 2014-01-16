@@ -38,7 +38,7 @@ static unsigned int push_this_obj_len_u32(duk_context *ctx) {
  *  Constructor
  */
 
-int duk_builtin_array_constructor(duk_context *ctx) {
+int duk_bi_array_constructor(duk_context *ctx) {
 	int nargs;
 	double d;
 	duk_uint32_t len;
@@ -78,7 +78,7 @@ int duk_builtin_array_constructor(duk_context *ctx) {
  *  isArray()
  */
 
-int duk_builtin_array_constructor_is_array(duk_context *ctx) {
+int duk_bi_array_constructor_is_array(duk_context *ctx) {
 	duk_hobject *h;
 
 	h = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_ARRAY);
@@ -90,7 +90,7 @@ int duk_builtin_array_constructor_is_array(duk_context *ctx) {
  *  toString()
  */
 
-int duk_builtin_array_prototype_to_string(duk_context *ctx) {
+int duk_bi_array_prototype_to_string(duk_context *ctx) {
 	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_JOIN);
 
@@ -108,7 +108,7 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
 		 */
 		DUK_DDDPRINT("this.join is not callable, fall back to (original) Object.toString");
 		duk_set_top(ctx, 0);
-		return duk_builtin_object_prototype_to_string(ctx);
+		return duk_bi_object_prototype_to_string(ctx);
 	}
 
 	/* [ ... this func ] */
@@ -127,7 +127,7 @@ int duk_builtin_array_prototype_to_string(duk_context *ctx) {
  *  concat()
  */
 
-int duk_builtin_array_prototype_concat(duk_context *ctx) {
+int duk_bi_array_prototype_concat(duk_context *ctx) {
 	int i, n;
 	int j, len;
 	int idx;
@@ -191,7 +191,7 @@ int duk_builtin_array_prototype_concat(duk_context *ctx) {
  *  There is no fancy handling; the prefix gets re-joined multiple times.
  */
 
-int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
+int duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	duk_uint32_t len, count;
 	duk_uint32_t idx;
 	duk_small_int_t to_locale_string = duk_get_magic(ctx);
@@ -272,7 +272,7 @@ int duk_builtin_array_prototype_join_shared(duk_context *ctx) {
  *  pop(), push()
  */
 
-int duk_builtin_array_prototype_pop(duk_context *ctx) {
+int duk_bi_array_prototype_pop(duk_context *ctx) {
 	unsigned int len;
 	unsigned int idx;
 
@@ -292,7 +292,7 @@ int duk_builtin_array_prototype_pop(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_array_prototype_push(duk_context *ctx) {
+int duk_bi_array_prototype_push(duk_context *ctx) {
 	/* Note: 'this' is not necessarily an Array object.  The push()
 	 * algorithm is supposed to work for other kinds of objects too,
 	 * so the algorithm has e.g. an explicit update for the 'length'
@@ -600,7 +600,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 	array_qsort(ctx, r + 1, hi);
 }
 
-int duk_builtin_array_prototype_sort(duk_context *ctx) {
+int duk_bi_array_prototype_sort(duk_context *ctx) {
 	unsigned int len;
 
 	len = push_this_obj_len_u32(ctx);
@@ -630,7 +630,7 @@ int duk_builtin_array_prototype_sort(duk_context *ctx) {
  *   unshift is (close to?) <--> splice(0, 0, [items])?
  */
 
-int duk_builtin_array_prototype_splice(duk_context *ctx) {
+int duk_bi_array_prototype_splice(duk_context *ctx) {
 	int nargs;
 	int item_count;
 	int len;
@@ -758,7 +758,7 @@ int duk_builtin_array_prototype_splice(duk_context *ctx) {
  *  reverse()
  */
 
-int duk_builtin_array_prototype_reverse(duk_context *ctx) {
+int duk_bi_array_prototype_reverse(duk_context *ctx) {
 	unsigned int len;
 	unsigned int middle;
 	unsigned int lower, upper;
@@ -803,7 +803,7 @@ int duk_builtin_array_prototype_reverse(duk_context *ctx) {
  *  slice()
  */
 
-int duk_builtin_array_prototype_slice(duk_context *ctx) {
+int duk_bi_array_prototype_slice(duk_context *ctx) {
 	unsigned int len;
 	int start, end;
 	int idx;
@@ -857,7 +857,7 @@ int duk_builtin_array_prototype_slice(duk_context *ctx) {
  *  shift()
  */
 
-int duk_builtin_array_prototype_shift(duk_context *ctx) {
+int duk_bi_array_prototype_shift(duk_context *ctx) {
 	unsigned int len;
 	unsigned int i;
 
@@ -899,7 +899,7 @@ int duk_builtin_array_prototype_shift(duk_context *ctx) {
  *  unshift()
  */
 
-int duk_builtin_array_prototype_unshift(duk_context *ctx) {
+int duk_bi_array_prototype_unshift(duk_context *ctx) {
 	unsigned int nargs;
 	unsigned int len;
 	unsigned int i;
@@ -958,7 +958,7 @@ int duk_builtin_array_prototype_unshift(duk_context *ctx) {
  *  indexOf(), lastIndexOf()
  */
 
-int duk_builtin_array_prototype_indexof_shared(duk_context *ctx) {
+int duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	/* FIXME: types, ensure loop below works when fixed (i must be able to go negative right now) */
 	int nargs;
 	int i, len;
@@ -1061,7 +1061,7 @@ int duk_builtin_array_prototype_indexof_shared(duk_context *ctx) {
  * 5 callers the net result is about 100 bytes / caller.
  */
 
-int duk_builtin_array_prototype_iter_shared(duk_context *ctx) {
+int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	int len;
 	int i;
 	int k;
@@ -1178,7 +1178,7 @@ int duk_builtin_array_prototype_iter_shared(duk_context *ctx) {
  *  reduce(), reduceRight()
  */
 
-int duk_builtin_array_prototype_reduce_shared(duk_context *ctx) {
+int duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	int nargs;
 	int have_acc;
 	int i, len;

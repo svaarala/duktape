@@ -388,7 +388,7 @@ static void duk_transform_callback_unescape(duk_transform_context *tfm_ctx, void
  *  Eval
  */
 
-int duk_builtin_global_object_eval(duk_context *ctx) {
+int duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_activation *act;
@@ -521,7 +521,7 @@ int duk_builtin_global_object_eval(duk_context *ctx) {
  *  Parsing of ints and floats
  */
 
-int duk_builtin_global_object_parse_int(duk_context *ctx) {
+int duk_bi_global_object_parse_int(duk_context *ctx) {
 	int strip_prefix;
 	duk_int32_t radix;
 	int s2n_flags;
@@ -562,7 +562,7 @@ int duk_builtin_global_object_parse_int(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_global_object_parse_float(duk_context *ctx) {
+int duk_bi_global_object_parse_float(duk_context *ctx) {
 	int s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
@@ -587,13 +587,13 @@ int duk_builtin_global_object_parse_float(duk_context *ctx) {
 /*
  *  Number checkers
  */
-int duk_builtin_global_object_is_nan(duk_context *ctx) {
+int duk_bi_global_object_is_nan(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
 
-int duk_builtin_global_object_is_finite(duk_context *ctx) {
+int duk_bi_global_object_is_finite(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
@@ -603,36 +603,36 @@ int duk_builtin_global_object_is_finite(duk_context *ctx) {
  *  URI handling
  */
 
-int duk_builtin_global_object_decode_uri(duk_context *ctx) {
+int duk_bi_global_object_decode_uri(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_decode_uri, (void *) decode_uri_reserved_table);
 }
 
-int duk_builtin_global_object_decode_uri_component(duk_context *ctx) {
+int duk_bi_global_object_decode_uri_component(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_decode_uri, (void *) decode_uri_component_reserved_table);
 }
 
-int duk_builtin_global_object_encode_uri(duk_context *ctx) {
+int duk_bi_global_object_encode_uri(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_encode_uri, (void *) encode_uri_unescaped_table);
 }
 
-int duk_builtin_global_object_encode_uri_component(duk_context *ctx) {
+int duk_bi_global_object_encode_uri_component(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_encode_uri, (void *) encode_uri_component_unescaped_table);
 }
 
 #ifdef DUK_USE_SECTION_B
-int duk_builtin_global_object_escape(duk_context *ctx) {
+int duk_bi_global_object_escape(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_escape, (void *) NULL);
 }
 
-int duk_builtin_global_object_unescape(duk_context *ctx) {
+int duk_bi_global_object_unescape(duk_context *ctx) {
 	return transform_helper(ctx, duk_transform_callback_unescape, (void *) NULL);
 }
 #else  /* DUK_USE_SECTION_B */
-int duk_builtin_global_object_escape(duk_context *ctx) {
+int duk_bi_global_object_escape(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-int duk_builtin_global_object_unescape(duk_context *ctx) {
+int duk_bi_global_object_unescape(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */
@@ -689,29 +689,29 @@ static int print_alert_helper(duk_context *ctx, FILE *f_out) {
 	return 0;
 }
 
-int duk_builtin_global_object_print(duk_context *ctx) {
+int duk_bi_global_object_print(duk_context *ctx) {
 	return print_alert_helper(ctx, stdout);
 }
 
-int duk_builtin_global_object_alert(duk_context *ctx) {
+int duk_bi_global_object_alert(duk_context *ctx) {
 	return print_alert_helper(ctx, stderr);
 }
 #else  /* DUK_USE_FILE_IO */
 /* Supported but no file I/O -> silently ignore, no error */
-int duk_builtin_global_object_print(duk_context *ctx) {
+int duk_bi_global_object_print(duk_context *ctx) {
 	return 0;
 }
 
-int duk_builtin_global_object_alert(duk_context *ctx) {
+int duk_bi_global_object_alert(duk_context *ctx) {
 	return 0;
 }
 #endif  /* DUK_USE_FILE_IO */
 #else  /* DUK_USE_BROWSER_LIKE */
-int duk_builtin_global_object_print(duk_context *ctx) {
+int duk_bi_global_object_print(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-int duk_builtin_global_object_alert(duk_context *ctx) {
+int duk_bi_global_object_alert(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_BROWSER_LIKE */

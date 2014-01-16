@@ -35,7 +35,7 @@ static double push_this_number_plain(duk_context *ctx) {
 	return duk_get_number(ctx, -1);
 }
 
-int duk_builtin_number_constructor(duk_context *ctx) {
+int duk_bi_number_constructor(duk_context *ctx) {
 	int nargs;
 	duk_hobject *h_this;
 
@@ -86,12 +86,12 @@ int duk_builtin_number_constructor(duk_context *ctx) {
 	return 0;  /* no return value -> don't replace created value */
 }
 
-int duk_builtin_number_prototype_value_of(duk_context *ctx) {
+int duk_bi_number_prototype_value_of(duk_context *ctx) {
 	(void) push_this_number_plain(ctx);
 	return 1;
 }
 
-int duk_builtin_number_prototype_to_string(duk_context *ctx) {
+int duk_bi_number_prototype_to_string(duk_context *ctx) {
 	int radix;
 	int n2s_flags;
 
@@ -112,11 +112,11 @@ int duk_builtin_number_prototype_to_string(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
+int duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
 	/* FIXME: just use toString() for now; permitted although not recommended.
 	 * nargs==1, so radix is passed to toString().
 	 */
-	return duk_builtin_number_prototype_to_string(ctx);
+	return duk_bi_number_prototype_to_string(ctx);
 }
 
 /*
@@ -125,7 +125,7 @@ int duk_builtin_number_prototype_to_locale_string(duk_context *ctx) {
 
 /* FIXME: shared helper for toFixed(), toExponential(), toPrecision()? */
 
-int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
+int duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	int frac_digits;
 	double d;
 	int c;
@@ -158,7 +158,7 @@ int duk_builtin_number_prototype_to_fixed(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
+int duk_bi_number_prototype_to_exponential(duk_context *ctx) {
 	int frac_undefined;
 	int frac_digits;
 	double d;
@@ -192,7 +192,7 @@ int duk_builtin_number_prototype_to_exponential(duk_context *ctx) {
 	return 1;
 }
 
-int duk_builtin_number_prototype_to_precision(duk_context *ctx) {
+int duk_bi_number_prototype_to_precision(duk_context *ctx) {
 	/* The specification has quite awkward order of coercion and
 	 * checks for toPrecision().  The operations below are a bit
 	 * reordered, within constraints of observable side effects.

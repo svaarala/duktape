@@ -331,11 +331,11 @@ const char *duk_json_encode(duk_context *ctx, int index) {
 	const char *ret;
 
 	index = duk_require_normalize_index(ctx, index);
-	duk_builtin_json_stringify_helper(ctx,
-	                                  index /*idx_value*/,
-	                                  DUK_INVALID_INDEX /*idx_replacer*/,
-	                                  DUK_INVALID_INDEX /*idx_space*/,
-	                                  0 /*flags*/);
+	duk_bi_json_stringify_helper(ctx,
+	                             index /*idx_value*/,
+	                             DUK_INVALID_INDEX /*idx_replacer*/,
+	                             DUK_INVALID_INDEX /*idx_space*/,
+	                             0 /*flags*/);
 	DUK_ASSERT(duk_is_string(ctx, -1));
 	duk_replace(ctx, index);
 	ret = duk_get_string(ctx, index);
@@ -351,10 +351,10 @@ void duk_json_decode(duk_context *ctx, int index) {
 #endif
 
 	index = duk_require_normalize_index(ctx, index);
-	duk_builtin_json_parse_helper(ctx,
-	                              index /*idx_value*/,
-	                              DUK_INVALID_INDEX /*idx_reviver*/,
-	                              0 /*flags*/);
+	duk_bi_json_parse_helper(ctx,
+	                         index /*idx_value*/,
+	                         DUK_INVALID_INDEX /*idx_reviver*/,
+	                         0 /*flags*/);
 	duk_replace(ctx, index);
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);

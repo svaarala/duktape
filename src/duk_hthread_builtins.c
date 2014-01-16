@@ -88,7 +88,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			natidx = duk_bd_decode(bd, NATIDX_BITS);
 			stridx = duk_bd_decode(bd, STRIDX_BITS);
-			c_func = duk_builtin_native_functions[natidx];
+			c_func = duk_bi_native_functions[natidx];
 
 			c_nargs = duk_bd_decode_flagged(bd, NARGS_BITS, len /*def_value*/);
 			if (c_nargs == NARGS_VARARGS_MARKER) {
@@ -333,8 +333,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				DUK_DDDPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
 				             i, stridx, natidx_getter, natidx_setter, prop_flags);
 
-				c_func_getter = duk_builtin_native_functions[natidx_getter];
-				c_func_setter = duk_builtin_native_functions[natidx_setter];
+				c_func_getter = duk_bi_native_functions[natidx_getter];
+				c_func_setter = duk_bi_native_functions[natidx_setter];
 				duk_push_c_function(ctx, c_func_getter, 0);  /* always 0 args */
 				duk_push_c_function(ctx, c_func_setter, 1);  /* always 1 arg */
 
@@ -384,7 +384,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				c_nargs = DUK_VARARGS;
 			}
 
-			c_func = duk_builtin_native_functions[natidx];
+			c_func = duk_bi_native_functions[natidx];
 
 			DUK_DDDPRINT("built-in %d, function-valued property %d, stridx %d, natidx %d, length %d, nargs %d",
 			             i, j, stridx, natidx, c_length, (c_nargs == DUK_VARARGS ? -1 : c_nargs));
