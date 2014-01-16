@@ -899,7 +899,6 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
-	DUK_ASSERT(heap->mark_and_sweep_recursion_limit >= 1);
 	assert_heaphdr_flags(heap);
 #ifdef DUK_USE_REFERENCE_COUNTING
 	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
@@ -1048,7 +1047,6 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
-	DUK_ASSERT(heap->mark_and_sweep_recursion_limit > 1);
 	assert_heaphdr_flags(heap);
 #ifdef DUK_USE_REFERENCE_COUNTING
 	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
