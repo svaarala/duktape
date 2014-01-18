@@ -124,11 +124,11 @@
  */
 #if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              2560  /* 10x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              12800  /* 50x heap size */
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
 #else
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256   /* 1x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256    /* 1x heap size */
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
 #endif
