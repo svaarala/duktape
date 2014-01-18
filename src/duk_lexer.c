@@ -850,8 +850,9 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 *  token.
 			 */
 			advtok = ADVTOK(2, DUK_TOK_LINETERM);
+		} else {
+			advtok = ADVTOK(1, DUK_TOK_LINETERM);
 		}
-		advtok = ADVTOK(1, DUK_TOK_LINETERM);
 	} else if (duk_unicode_is_identifier_start(x) || x == '\\') {
 		/*
 		 *  Parse an identifier and then check whether it is:
@@ -933,7 +934,6 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 		str = out_token->str1;
 		DUK_ASSERT(str != NULL);
-
 		out_token->t_nores = DUK_TOK_IDENTIFIER;
 
 		INITBUFFER(lex_ctx);	/* free some memory */
