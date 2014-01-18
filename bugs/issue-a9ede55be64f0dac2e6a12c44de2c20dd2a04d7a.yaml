@@ -14,8 +14,8 @@ type: :bugfix
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-01-16 00:45:44.257933 Z
 references: []
 
@@ -25,3 +25,8 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-01-18 00:40:20.315590 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - "Actual cause was a bug in pc2line where a diff_line higher than 127 would use\n\
+    the full 32-bit (non-diff) encoding, whose value was set incorrectly.\n"

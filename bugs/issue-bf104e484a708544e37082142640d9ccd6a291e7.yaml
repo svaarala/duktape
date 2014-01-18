@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: runtests prologue should not break a "use strict" in the test case
+desc: ""
+type: :bugfix
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-17 23:33:27.554424 Z
+references: []
+
+id: bf104e484a708544e37082142640d9ccd6a291e7
+log_events: 
+- - 2014-01-17 23:33:27.730450 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

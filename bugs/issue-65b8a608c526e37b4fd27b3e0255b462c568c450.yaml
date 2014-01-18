@@ -1,0 +1,33 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: global code 'this' binding is undefined when global code is strict
+desc: |-
+  Currently the caller is expected to provide the proper binding, and the
+  call handling then coerces the 'this' binding is it would for a function.
+  
+  In the non-strict case this yields the correct result even if the caller
+  misbehaves and provides a null/undefined as the this binding (perhaps the
+  calling code uses duk_call() instead of duk_call_method(), for instance,
+  like duk_cmdline.c used to do).
+  
+  In the strict case the 'undefined' value stands and causes various problems.
+  There is no problem if the caller uses duk_call_method() and pushes the
+  global object as the 'this' binding, and this is actually as designed.
+  
+  But perhaps this is unnecessarily brittle, and global/eval code should get
+  their 'this' binding disregarding the 'this' binding provided on the
+  value stack?
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-18 00:44:39.705752 Z
+references: []
+
+id: 65b8a608c526e37b4fd27b3e0255b462c568c450
+log_events: 
+- - 2014-01-18 00:44:40.513830 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

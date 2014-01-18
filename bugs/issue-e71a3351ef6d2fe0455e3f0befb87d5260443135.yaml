@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: lineNumber (and fileName) of SyntaxErrors should probably reflect the source being compiled
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-17 22:01:49.236704 Z
+references: []
+
+id: e71a3351ef6d2fe0455e3f0befb87d5260443135
+log_events: 
+- - 2014-01-17 22:01:49.404640 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
