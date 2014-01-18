@@ -151,6 +151,8 @@ Released
 * Fixed a switch-case bug where successive case clauses with no code
   in-between was not handled correctly
 
+* Fixed a for statement control flow bug when continue was used
+
 * Fixed error lineNumber bug triggered when there was more than 127
   source lines between successive compiled statements
 
