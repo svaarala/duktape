@@ -1194,9 +1194,9 @@ extern double duk_computed_nan;
 #undef DUK_USE_REGEXP_SUPPORT
 #endif
 
-#define DUK_USE_STRICT_UTF8_SOURCE
-#if defined(DUK_OPT_NO_STRICT_UTF8_SOURCE)
 #undef DUK_USE_STRICT_UTF8_SOURCE
+#if defined(DUK_OPT_STRICT_UTF8_SOURCE)
+#define DUK_USE_STRICT_UTF8_SOURCE
 #endif
 
 #define DUK_USE_OCTAL_SUPPORT
