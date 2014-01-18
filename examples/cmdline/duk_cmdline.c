@@ -131,10 +131,10 @@ int wrapped_compile_execute(duk_context *ctx) {
 
 		if (f && DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) f)) {
 			fprintf(stdout, "[bytecode length %d opcodes, registers %d, constants %d, inner functions %d]\n",
-			        (int) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(f),
-			        (int) f->nregs,
-			        (int) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(f),
-			        (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(f));
+				(int) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(f),
+				(int) f->nregs,
+				(int) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(f),
+				(int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(f));
 			fflush(stdout);
 		} else {
 			fprintf(stdout, "[invalid compile result]\n");
@@ -143,9 +143,10 @@ int wrapped_compile_execute(duk_context *ctx) {
 	}
 #endif
 
-        duk_call(ctx, 0);
+	duk_push_global_object(ctx);  /* 'this' binding */
+	duk_call_method(ctx, 0);
 
-        duk_to_string(ctx, -1);
+	duk_to_string(ctx, -1);
 
 	if (interactive_mode) {
 		/* In interactive mode, write to stdout so output won't interleave as easily. */
@@ -155,7 +156,7 @@ int wrapped_compile_execute(duk_context *ctx) {
 		/* In non-interactive mode, success results are not written at all. */
 	}
 
-        duk_pop(ctx);
+	duk_pop(ctx);
 	return 0;
 }
 
