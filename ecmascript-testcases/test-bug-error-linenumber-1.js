@@ -32,10 +32,10 @@ function evalCheck(code) {
 }
 
 function test() {
-    /* This problem originally occurred in test262 testing.  Here 'this' is
-     * undefined and the TypeError (from getting a property from undefined)
-     * is attributed incorrectly if there are enough many empty lines in
-     * between.
+    /* This problem originally occurred in test262 testing (for 'this').
+     * The `null.foo` access causes a TypeError (from getting a property
+     * from undefined), but it is attributed incorrectly if there are
+     * enough many empty lines in between.
      */
 
     evalCheck("\nprint('line 2')\n" + "if (null.foo) {}");
