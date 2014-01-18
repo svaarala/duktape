@@ -157,6 +157,8 @@ Released
 * Fixed error lineNumber bug triggered when there was more than 127
   source lines between successive compiled statements
 
+* Fixed some line terminator handling issues
+
 * Windows compatibility for both WIN32 and WIN64, tested with MinGW (x86),
   MINGW-w64 (x64), VS2010 Express (x32), VS2013 Express (x32 and x64)
 
