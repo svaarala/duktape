@@ -4367,7 +4367,7 @@ static void parse_for_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 		patch_jump(comp_ctx, pc_jumpto_l3, pc_l3);
 		patch_jump(comp_ctx, pc_jumpto_l4, pc_l4);
 		patch_jump(comp_ctx, pc_label_site + 1, pc_l4);  /* break jump */
-		patch_jump(comp_ctx, pc_label_site + 2, pc_l2);  /* continue jump */
+		patch_jump(comp_ctx, pc_label_site + 2, pc_l1);  /* continue jump */
 	}
 	goto finished;
 
