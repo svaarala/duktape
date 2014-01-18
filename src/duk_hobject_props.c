@@ -1690,7 +1690,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL: {
 		/* Note: unconditional throw */
-		DUK_DDDPRINT("base object is undefined, null, buffer, or pointer -> reject");
+		DUK_DDDPRINT("base object is undefined or null -> reject");
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid base reference for property read");
 		return 0;
 	}
