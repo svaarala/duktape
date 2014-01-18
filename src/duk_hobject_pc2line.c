@@ -95,8 +95,8 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 				/* 1 1 1 <32 bits>
 				 * Encode in two parts to avoid bitencode 24-bit limitation
 				 */
-				duk_be_encode(be_ctx, (0x07 << 16) + ((curr_line >> 16) & 0xffffU), 19);
-				duk_be_encode(be_ctx, curr_line & 0xffffU, 16);
+				duk_be_encode(be_ctx, (0x07 << 16) + ((next_line >> 16) & 0xffffU), 19);
+				duk_be_encode(be_ctx, next_line & 0xffffU, 16);
 			}
 
 			curr_line = next_line;
