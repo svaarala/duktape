@@ -103,10 +103,11 @@ The table below summarizes the available options, in no particular order:</p>
     and <code>String.prototype.match()</code> throw an error unconditionally.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_NO_STRICT_UTF8_SOURCE</td>
-<td>Disable strict UTF-8 parsing of source code.  When disabled, non-shortest
-    encodings (normally invalid UTF-8) are accepted as valid source code
-    characters.</td>
+<td class="definename">DUK_OPT_STRICT_UTF8_SOURCE</td>
+<td>Enable strict UTF-8 parsing of source code.  When enabled, non-shortest
+    encodings (normally invalid UTF-8) and surrogate pair codepoints are accepted
+    as valid source code characters.  This option breaks compatibility with
+    some test262 tests.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_OCTAL_SUPPORT</td>
