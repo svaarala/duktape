@@ -240,8 +240,8 @@ python src/genbuiltins.py \
 #   UnicodeConnectorPunctuation -> categories Pc
 
 # Whitespace (unused now)
-WHITESPACE_MINUS_Z_INCL='Z'
-WHITESPACE_MINUS_Z_EXCL='NONE'
+WHITESPACE_INCL='Zs'  # USP = Any other Unicode space separator
+WHITESPACE_EXCL='NONE'
 
 # Unicode letter (unused now)
 LETTER_INCL='Lu,Ll,Lt,Lm,Lo'
@@ -302,7 +302,7 @@ extract_caseconv() {
 		> $DISTSRCSEP/caseconv.txt
 }
 
-extract_chars $WHITESPACE_MINUS_Z_INCL $WHITESPACE_MINUS_Z_EXCL ws_m_z
+extract_chars $WHITESPACE_INCL $WHITESPACE_EXCL ws
 extract_chars $LETTER_INCL $LETTER_EXCL let
 extract_chars $LETTER_NOA_INCL $LETTER_NOA_EXCL let_noa
 extract_chars $LETTER_NOABMP_INCL $LETTER_NOABMP_EXCL let_noabmp
@@ -399,7 +399,7 @@ rm $DISTSRCSEP/duk_unicode_tables.c.tmp
 
 rm $DISTSRCSEP/*.tmp
 for i in \
-	ws_m_z \
+	ws \
 	let let_noa let_noabmp \
 	ids ids_noa ids_noabmp \
 	ids_m_let ids_m_let_noa ids_m_let_noabmp \
