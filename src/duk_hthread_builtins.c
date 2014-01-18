@@ -117,7 +117,9 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * callable Function.
 			 */
 			if (duk_bd_decode_flag(bd)) {
-				DUK_HOBJECT_SET_CONSTRUCTABLE(h);
+				DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE(h));
+			} else {
+				DUK_HOBJECT_CLEAR_CONSTRUCTABLE(h);
 			}
 
 			/* Cast converts magic to 16-bit signed value */
@@ -335,8 +337,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
-				duk_push_c_function(ctx, c_func_getter, 0);  /* always 0 args */
-				duk_push_c_function(ctx, c_func_setter, 1);  /* always 1 arg */
+				duk_push_c_function_nonconstruct(ctx, c_func_getter, 0);  /* always 0 args */
+				duk_push_c_function_nonconstruct(ctx, c_func_setter, 1);  /* always 1 arg */
 
 				/* FIXME: magic for getter/setter? */
 
@@ -391,7 +393,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* [ (builtin objects) ] */
 
-			duk_push_c_function(ctx, c_func, c_nargs);
+			duk_push_c_function_nonconstruct(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
 			DUK_UNREF(h_func);
 
@@ -402,6 +404,11 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * not automatically coerced.
 			 */
 			DUK_HOBJECT_SET_STRICT((duk_hobject *) h_func);
+
+			/* No built-in functions are constructable except the top
+			 * level ones (Number, etc).
+			 */
+			DUK_ASSERT(!DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_func));
 
 			/* FIXME: any way to avoid decoding magic bit; there are quite
 			 * many function properties and relatively few with magic values.

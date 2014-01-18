@@ -2848,6 +2848,16 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	return 0;  /* not reached */
 }
 
+/* This is only used by built-in initialization now, so it can be clunky. */
+void duk_push_c_function_nonconstruct(duk_context *ctx, duk_c_function func, int nargs) {
+	duk_hobject *h;
+
+	(void) duk_push_c_function(ctx, func, nargs);
+	h = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	DUK_HOBJECT_CLEAR_CONSTRUCTABLE(h);
+}
+
 static int duk_push_error_object_vsprintf(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
