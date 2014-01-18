@@ -329,11 +329,10 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *    00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
 	 *    FEFF;ZERO WIDTH NO-BREAK SPACE;Cf;0;BN;;;;;N;BYTE ORDER MARK;;;;
 	 *
-	 *  It also specifies any Unicode category 'Z' characters as white
+	 *  It also specifies any Unicode category 'Zs' characters as white
 	 *  space.  These can be extracted with the "src/extract_chars.py" script.
-	 *
-	 *  Current result (built as WhiteSpace-Z.txt).
-	 *
+	 *  Current result:
+	 *  
 	 *    RAW OUTPUT:
 	 *    ===========
 	 *    0020;SPACE;Zs;0;WS;;;;;N;;;;;
@@ -351,12 +350,10 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *    2008;PUNCTUATION SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
 	 *    2009;THIN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
 	 *    200A;HAIR SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2028;LINE SEPARATOR;Zl;0;WS;;;;;N;;;;;
-	 *    2029;PARAGRAPH SEPARATOR;Zp;0;B;;;;;N;;;;;
 	 *    202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
 	 *    205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
 	 *    3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
-	 *    
+	 *  
 	 *    RANGES:
 	 *    =======
 	 *    0x0020
@@ -364,7 +361,6 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *    0x1680
 	 *    0x180e
 	 *    0x2000 ... 0x200a
-	 *    0x2028 ... 0x2029
 	 *    0x202f
 	 *    0x205f
 	 *    0x3000
@@ -386,8 +382,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 			return 1;
 		}
 	} else if (hi == 0x0020UL) {
-		if (lo <= 0x0aU || lo == 0x28U || lo == 0x29U ||
-		    lo == 0x2fU || lo == 0x5fU) {
+		if (lo <= 0x0aU || lo == 0x2fU || lo == 0x5fU) {
 			return 1;
 		}
 	} else if (cp == 0x1680L || cp == 0x180eL || cp == 0x3000L ||
