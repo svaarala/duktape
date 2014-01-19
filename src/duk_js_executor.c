@@ -1819,6 +1819,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * and only update 'length' at the end.
 				 */
 				/* FIXME: strictness for put? */
+				/* FIXME: this should actually use a simulated [[DefineOwnProperty]],
+				 * otherwise obscure cases don't work correctly:
+				 * test-bug-array-proto-protected-1.js
+				 */
 
 				duk_push_tval(ctx, DUK__REGP(idx));  /* -> [... obj value] */
 				duk_put_prop_index(ctx, -2, arr_idx);  /* -> [... obj] */
