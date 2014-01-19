@@ -395,6 +395,9 @@ struct duk_lexer_ctx {
         int slot2_idx;                          /* valstack slot for 2nd token value */
         int buf_idx;                            /* valstack slot for temp buffer */
         duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
+
+	duk_int_t token_count;                  /* number of tokens parsed */
+	duk_int_t token_limit;                  /* maximum token count before error (sanity backstop) */
 };
 
 /*

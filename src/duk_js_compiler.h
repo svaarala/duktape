@@ -11,6 +11,7 @@
 #else
 #define DUK_COMPILER_RECURSION_LIMIT       50
 #endif
+#define DUK_COMPILER_TOKEN_LIMIT           100000000  /* 1e8: protects against deeply nested inner functions */
 
 /* maximum loopcount for peephole optimization */
 #define DUK_COMPILER_PEEPHOLE_MAXITER      3

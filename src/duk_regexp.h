@@ -14,10 +14,11 @@
 #else
 #define DUK_RE_COMPILE_RECURSION_LIMIT     100
 #endif
+#define DUK_RE_COMPILE_TOKEN_LIMIT         100000000L   /* 1e8 */
 
 /* regexp execution limits */
 #define DUK_RE_EXECUTE_RECURSION_LIMIT     100
-#define DUK_RE_EXECUTE_STEPS_LIMIT         (1 * 1000 * 1000 * 1000)
+#define DUK_RE_EXECUTE_STEPS_LIMIT         1000000000L  /* 1e9 */
 
 /* regexp opcodes */
 #define DUK_REOP_MATCH                     1
@@ -55,8 +56,8 @@ struct duk_re_matcher_ctx {
 	duk_uint8_t **saved;		/* allocated from valstack (fixed buffer) */
 	duk_uint32_t nsaved;
 	duk_uint32_t recursion_depth;
-	duk_uint32_t steps_count;
 	duk_uint32_t recursion_limit;
+	duk_uint32_t steps_count;
 	duk_uint32_t steps_limit;
 };
 

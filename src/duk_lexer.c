@@ -511,6 +511,12 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	int advtok = 0;         /* (advance << 8) + token_type, updated at function end,
 	                         * init is unnecessary but suppresses "may be used uninitialized warnings
 	                         */
+
+	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
+		DUK_ERROR(lex_ctx->thr, DUK_ERR_RANGE_ERROR, "token limit");
+		return;  /* unreachable */
+	}
+
 	eat_whitespace(lex_ctx);
 
 	out_token->t = DUK_TOK_EOF;
@@ -1321,6 +1327,11 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	int advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
 	int x, y;
+
+	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
+		DUK_ERROR(lex_ctx->thr, DUK_ERR_RANGE_ERROR, "token limit");
+		return;  /* unreachable */
+	}
 
 	DUK_MEMSET(out_token, 0, sizeof(*out_token));
 

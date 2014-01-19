@@ -6560,6 +6560,7 @@ static int duk_js_compile_raw(duk_context *ctx) {
 	comp_ctx->lex.buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
 	DUK_ASSERT(comp_ctx->lex.buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf));
+	comp_ctx->lex.token_limit = DUK_COMPILER_TOKEN_LIMIT;
 
 	lex_pt->offset = 0;
 	lex_pt->line = 1;
