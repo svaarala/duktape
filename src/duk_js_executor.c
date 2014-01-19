@@ -1758,6 +1758,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			while (count > 0) {
 				/* FIXME: faster initialization (direct access or better primitives) */
 				/* FIXME: strictness for put? */
+				/* FIXME: this should actually use a simulated [[DefineOwnProperty]],
+				 * otherwise obscure cases don't work correctly:
+				 * test-bug-object-proto-protected-1.js
+				 */
 
 				duk_push_tval(ctx, DUK__REGP(idx));
 				if (!duk_is_string(ctx, -1)) {
