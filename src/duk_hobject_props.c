@@ -3443,6 +3443,9 @@ static void normalize_property_descriptor(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(duk_is_object(ctx, -1));
 
+	/* must be an object, otherwise TypeError (E5.1 Section 8.10.5, step 1) */
+	(void) duk_require_hobject(ctx, -1);
+
 	idx_in = duk_require_normalize_index(ctx, -1);
 	duk_push_object(ctx);  /* [... desc_in desc_out] */
 	idx_out = idx_in + 1;
@@ -3725,7 +3728,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		}
 
 		/* steps 3.h and 3.i */
-		if (has_writable || !is_writable) {
+		if (has_writable && !is_writable) {
 			DUK_DDDPRINT("desc writable is false, force it back to true, and flag pending write protect");
 			is_writable = 1;
 			pending_write_protect = 1;
