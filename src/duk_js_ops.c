@@ -812,8 +812,8 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
 		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
 	} else {
-		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
 		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
+		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
 	}
 
 	/* Note: reuse variables */
