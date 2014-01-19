@@ -3390,14 +3390,21 @@ int duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 	/* [obj key value desc] */
 
 	if (DUK_PROPDESC_IS_ACCESSOR(&pd)) {
+		/* If a setter/getter is missing (undefined), the descriptor must
+		 * still have the property present with the value 'undefined'.
+		 */
 		if (pd.get) {
 			duk_push_hobject(ctx, pd.get);
-			duk_put_prop_stridx(ctx, -2, DUK_STRIDX_GET);
+		} else {
+			duk_push_undefined(ctx);
 		}
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_GET);
 		if (pd.set) {
 			duk_push_hobject(ctx, pd.set);
-			duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
+		} else {
+			duk_push_undefined(ctx);
 		}
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
 	} else {
 		duk_dup(ctx, -2);  /* [obj key value desc value] */
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_VALUE);
