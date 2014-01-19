@@ -1018,7 +1018,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 			 *
 			 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
 			 */
-			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "instanceof rval does not support [[HasInstance]]");
+			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid instanceof rval");
 		}
 
 		if (!DUK_HOBJECT_HAS_BOUND(func)) {
