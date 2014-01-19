@@ -1757,18 +1757,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			while (count > 0) {
 				/* FIXME: faster initialization (direct access or better primitives) */
-				/* FIXME: strictness for put? */
-				/* FIXME: this should actually use a simulated [[DefineOwnProperty]],
-				 * otherwise obscure cases don't work correctly:
-				 * test-bug-object-proto-protected-1.js
-				 */
 
 				duk_push_tval(ctx, DUK__REGP(idx));
 				if (!duk_is_string(ctx, -1)) {
 					INTERNAL_ERROR("MPUTOBJ key not a string");
 				}
 				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
-				duk_put_prop(ctx, -3);  /* -> [... obj] */
+				duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_WEC);  /* -> [... obj] */
 
 				count--;
 				idx += 2;
@@ -1822,10 +1817,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * is invoked on every put.  It would be better to ignore array semantics
 				 * and only update 'length' at the end.
 				 */
-				/* FIXME: strictness for put? */
 				/* FIXME: this should actually use a simulated [[DefineOwnProperty]],
 				 * otherwise obscure cases don't work correctly:
 				 * test-bug-array-proto-protected-1.js
+				 *
+				 * Fixing this is not as easy as for MPUTOBJ because of the 'length'
+				 * special behavior and because we'd like to avoid interning the
+				 * array indices (there isn't a duk_def_prop_index now).  This might
+				 * best be fixed by always emitting an explicit SETALEN for every
+				 * array (or adding an explicit length into the MPUTARR "initdata")
+				 * and ignoring the array special behaviors here.
 				 */
 
 				duk_push_tval(ctx, DUK__REGP(idx));  /* -> [... obj value] */
