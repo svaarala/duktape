@@ -159,6 +159,14 @@ Released
 
 * Fixed some line terminator handling issues
 
+* Fixed relational operator ToPrimitive() coercion order, for some
+  operators coercion order was reversed
+
+* Fixed 'with' statement in strict mode (did not throw SyntaxError)
+
+* Various (somewhat obscure) fixes related to test262 and underscore.js
+  compatibility
+
 * Windows compatibility for both WIN32 and WIN64, tested with MinGW (x86),
   MINGW-w64 (x64), VS2010 Express (x32), VS2013 Express (x32 and x64)
 
