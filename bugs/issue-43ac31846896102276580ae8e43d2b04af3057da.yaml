@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: ecma262 test result summary
+title: test262 test result summary
 desc: ""
 type: :task
 component: duk

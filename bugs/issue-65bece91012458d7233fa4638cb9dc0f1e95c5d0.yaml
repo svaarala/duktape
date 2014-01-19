@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: fix the obvious ecma262 test issues
+title: fix the obvious test262 test issues
 desc: ""
 type: :task
 component: duk
