@@ -2,9 +2,9 @@
  *  If the Array.prototype contains numeric elements which are write protected
  *  (but configurable), it should be possible to create an array literal with
  *  an overriding value.  A normal property assignment would fail because the
- *  inherited property is not writable, but an array initializer is supposed
- *  to use [[DefineOwnProperty]] which allows an own property to be created if
- *  the property is configurable (bypassing the write protection).
+ *  inherited property is not writable.  An array initializer is supposed to
+ *  use [[DefineOwnProperty]] which allows an own property to be created even
+ *  if there is an inherited property which would normally prevent a write.
  */
 
 /*===
