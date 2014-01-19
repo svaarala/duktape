@@ -5132,6 +5132,10 @@ static void parse_with_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	int reg_target;
 	int trycatch_flags;
 
+	if (comp_ctx->curr_func.is_strict) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_SYNTAX_ERROR, "with stmt in strict mode");
+	}
+
 	advance(comp_ctx);  /* eat 'with' */
 
 	reg_catch = ALLOCTEMPS(comp_ctx, 2);
