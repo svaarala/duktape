@@ -302,10 +302,10 @@ struct duk_heap {
 	int flags;
 
 	/* allocator functions */
-        duk_alloc_function alloc_func;
-        duk_realloc_function realloc_func;
-        duk_free_function free_func;
-        void *alloc_udata;
+	duk_alloc_function alloc_func;
+	duk_realloc_function realloc_func;
+	duk_free_function free_func;
+	void *alloc_udata;
 
 	/* allocated heap objects */
 	duk_heaphdr *heap_allocated;
@@ -357,7 +357,7 @@ struct duk_heap {
 	int call_recursion_limit;
 
 	/* mix-in value for computing string hashes; should be reasonably unpredictable */
-        duk_uint32_t hash_seed;
+	duk_uint32_t hash_seed;
 
 	/* rnd_state for duk_util_tinyrandom.c */
 	duk_uint32_t rnd_state;

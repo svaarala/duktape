@@ -350,51 +350,51 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 
 /* A token value.  Can be memcpy()'d, but note that slot1/slot2 values are on the valstack. */
 struct duk_token {
-        int t;                  /* token type (with reserved word identification) */
-        int t_nores;            /* token type (with reserved words as DUK_TOK_IDENTIFER) */
-        double num;             /* numeric value of token */
-        duk_hstring *str1;      /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
-        duk_hstring *str2;      /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
-        int num_escapes;        /* number of escapes and line continuations (for directive prologue) */
-        int start_line;         /* start line of token (first char) */
-        int end_line;           /* end line of token (char after last token char) */
-        int lineterm;           /* token was preceded by a lineterm */
-        int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
+	int t;                  /* token type (with reserved word identification) */
+	int t_nores;            /* token type (with reserved words as DUK_TOK_IDENTIFER) */
+	double num;             /* numeric value of token */
+	duk_hstring *str1;      /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
+	duk_hstring *str2;      /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
+	int num_escapes;        /* number of escapes and line continuations (for directive prologue) */
+	int start_line;         /* start line of token (first char) */
+	int end_line;           /* end line of token (char after last token char) */
+	int lineterm;           /* token was preceded by a lineterm */
+	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
 
 #define DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffUL)
 
 /* A regexp token value. */
 struct duk_re_token {
-        int t;                  /* token type */
-        duk_uint32_t num;       /* numeric value (character, count) */
-        duk_uint32_t qmin;
-        duk_uint32_t qmax;
-        int greedy;
+	int t;                  /* token type */
+	duk_uint32_t num;       /* numeric value (character, count) */
+	duk_uint32_t qmin;
+	duk_uint32_t qmax;
+	int greedy;
 };
 
 /* A structure for 'snapshotting' a point for rewinding */
 struct duk_lexer_point {
-        int offset;
-        int line;
+	int offset;
+	int line;
 };
 
 /* Lexer context.  Same context is used for Ecmascript and Regexp parsing. */
 struct duk_lexer_ctx {
-        duk_hthread *thr;                       /* thread; minimizes argument passing */
+	duk_hthread *thr;                       /* thread; minimizes argument passing */
 
-        duk_uint8_t *input;
-        int input_length;
-        int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
-        int offsets[DUK_LEXER_WINDOW_SIZE];     /* input offset for each char */
-        int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
-        int input_offset;                       /* input offset for window leading edge (not window[0]) */
-        int input_line;                         /* input linenumber at input_offset (not window[0]), init to 1 */
+	duk_uint8_t *input;
+	int input_length;
+	int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
+	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input offset for each char */
+	int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
+	int input_offset;                       /* input offset for window leading edge (not window[0]) */
+	int input_line;                         /* input linenumber at input_offset (not window[0]), init to 1 */
 
-        int slot1_idx;                          /* valstack slot for 1st token value */
-        int slot2_idx;                          /* valstack slot for 2nd token value */
-        int buf_idx;                            /* valstack slot for temp buffer */
-        duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
+	int slot1_idx;                          /* valstack slot for 1st token value */
+	int slot2_idx;                          /* valstack slot for 2nd token value */
+	int buf_idx;                            /* valstack slot for temp buffer */
+	duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
 
 	duk_int_t token_count;                  /* number of tokens parsed */
 	duk_int_t token_limit;                  /* maximum token count before error (sanity backstop) */
