@@ -299,13 +299,13 @@ d067d2f0ca30.tar.bz2:
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
 	tar xvfj d067d2f0ca30.tar.bz2
 
-.PHONY: ecma262test
-ecma262test: test262-d067d2f0ca30 duk
+.PHONY: test262test
+test262test: test262-d067d2f0ca30 duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}"
 
-.PHONY: vgecma262test
-vgecma262test: test262-d067d2f0ca30 duk
+.PHONY: vgtest262test
+vgtest262test: test262-d067d2f0ca30 duk
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}"
 
 UglifyJS:
