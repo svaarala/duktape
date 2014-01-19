@@ -1812,30 +1812,36 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_push_hobject(ctx, obj);
 
 			while (count > 0) {
-				/* FIXME: faster initialization (direct access or better primitives);
-				 * this is particularly bad now because array 'length' special behavior
-				 * is invoked on every put.  It would be better to ignore array semantics
-				 * and only update 'length' at the end.
-				 */
-				/* FIXME: this should actually use a simulated [[DefineOwnProperty]],
-				 * otherwise obscure cases don't work correctly:
-				 * test-bug-array-proto-protected-1.js
-				 *
-				 * Fixing this is not as easy as for MPUTOBJ because of the 'length'
-				 * special behavior and because we'd like to avoid interning the
-				 * array indices (there isn't a duk_def_prop_index now).  This might
-				 * best be fixed by always emitting an explicit SETALEN for every
-				 * array (or adding an explicit length into the MPUTARR "initdata")
-				 * and ignoring the array special behaviors here.
+				/* duk_def_prop() will define an own property without any array
+				 * special behaviors.  We'll need to set the array length explicitly
+				 * in the end.  For arrays with elisions, the compiler will emit an
+				 * explicit SETALEN which will update the length.
 				 */
 
-				duk_push_tval(ctx, DUK__REGP(idx));  /* -> [... obj value] */
-				duk_put_prop_index(ctx, -2, arr_idx);  /* -> [... obj] */
+				/* FIXME: duk_def_prop() will currently coerce its argument to a string,
+				 * causing every array index to be interned, avoiding interning is quite
+				 * important to handle large array literals efficiently.
+				 *
+				 * FIXME: further, because we're dealing with 'own' properties of a fresh
+				 * array, the array initializer should just ensure that the array has a
+				 * large enough array part and write the values directly into array part,
+				 * and finally set 'length' manually in the end (as already happens now).
+				 */
+
+				duk_push_number(ctx, (double) arr_idx);           /* FIXME: duk_push_uint */
+				duk_push_tval(ctx, DUK__REGP(idx));               /* -> [... obj key value] */
+				duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_WEC);    /* -> [... obj] */
 
 				count--;
 				idx++;
 				arr_idx++;
 			}
+
+			/* XXX: E5.1 Section 11.1.4 coerces the final length through
+			 * ToUint32() which is odd but happens now as a side effect of
+			 * 'arr_idx' type.
+			 */
+			duk_hobject_set_length(thr, obj, arr_idx);
 
 			duk_pop(ctx);  /* [... obj] -> [...] */
 			break;
