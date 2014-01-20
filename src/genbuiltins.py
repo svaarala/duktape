@@ -379,7 +379,9 @@ bi_function_prototype = {
 
 	'values': [],
 	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_function_prototype_to_string',		'length': 1 },
+		# test262 ch15/15.3/15.3.4/15.3.4.2/S15.3.4.2_A11 checks that Function.prototype.toString.length
+		# is zero, cannot find specification support for that but 0 is a good value.
+		{ 'name': 'toString',			'native': 'duk_bi_function_prototype_to_string',	'length': 0 },
 		{ 'name': 'apply',			'native': 'duk_bi_function_prototype_apply',		'length': 2 },
 		{ 'name': 'call',			'native': 'duk_bi_function_prototype_call',		'length': 1,	'varargs': True },
 		{ 'name': 'bind',			'native': 'duk_bi_function_prototype_bind',		'length': 1,	'varargs': True },
