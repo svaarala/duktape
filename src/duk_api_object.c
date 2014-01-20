@@ -237,6 +237,15 @@ void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags) {
 	duk_pop(ctx);  /* pop key */
 }
 
+void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags) {
+	/* FIXME: interns arr_index and used from some fast path call sites (at least
+	 * duk_error_augment.c traceback creation.  Implement a fast path.
+	 */
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+	duk_push_number(ctx, (double) arr_index);  /* FIXME: push u32 */
+	duk_def_prop(ctx, obj_index, desc_flags);
+}
+
 void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
@@ -277,7 +286,7 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int s
 
 /* This is a rare property helper; it sets the global thrower (E5 Section 13.2.3)
  * setter/getter into an object property.  This is needed by the 'arguments'
- * object creation code and by function instance creation code.
+ * object creation code, function instance creation code, and Function.prototype.bind().
  */
 
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags) {
