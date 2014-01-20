@@ -391,6 +391,8 @@ static void duk_transform_callback_unescape(duk_transform_context *tfm_ctx, void
 int duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
+	duk_activation *act_caller;
+	duk_activation *act_eval;
 	duk_activation *act;
 	duk_hcompiledfunction *func;
 	duk_hobject *outer_lex_env;
@@ -419,10 +421,17 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 	/* FIXME: uses internal API */
 
 	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
-	act = thr->callstack + thr->callstack_top - 2;  /* caller */
-	if (act->flags & DUK_ACT_FLAG_STRICT) {
+	act_caller = thr->callstack + thr->callstack_top - 2;  /* caller */
+	act_eval = thr->callstack + thr->callstack_top - 1;    /* this function */
+	if ((act_caller->flags & DUK_ACT_FLAG_STRICT) &&
+	    (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
+		/* Only direct eval inherits strictness from calling code
+		 * (E5.1 Section 10.1.1).
+		 */
 		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 	}
+	act_caller = NULL;  /* avoid dereference after potential callstack realloc */
+	act_eval = NULL;
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_INPUT);  /* XXX: copy from caller? */
 	duk_js_compile(thr, comp_flags);
