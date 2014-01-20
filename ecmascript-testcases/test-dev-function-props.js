@@ -5,8 +5,8 @@
 /*===
 name: true, fileName: true, length: true, caller: false, arguments: false, callee: false, prototype: true
 name: true, fileName: true, length: true, caller: true, arguments: true, callee: false, prototype: true
-name: true, fileName: true, length: true, caller: false, arguments: false, callee: false, prototype: false
-name: true, fileName: true, length: true, caller: false, arguments: false, callee: false, prototype: false
+name: true, fileName: true, length: true, caller: true, arguments: true, callee: false, prototype: false
+name: true, fileName: true, length: true, caller: true, arguments: true, callee: false, prototype: false
 ===*/
 
 function test() {
