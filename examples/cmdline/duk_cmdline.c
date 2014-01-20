@@ -146,14 +146,31 @@ int wrapped_compile_execute(duk_context *ctx) {
 	duk_push_global_object(ctx);  /* 'this' binding */
 	duk_call_method(ctx, 0);
 
-	duk_to_string(ctx, -1);
-
 	if (interactive_mode) {
-		/* In interactive mode, write to stdout so output won't interleave as easily. */
+		/*
+		 *  In interactive mode, write to stdout so output won't interleave as easily.
+		 *
+		 *  NOTE: the ToString() coercion may fail in some cases; for instance,
+		 *  if you evaluate:
+		 *
+		 *    ( {valueOf: function() {return {}}, toString: function() {return {}}});
+		 *
+		 *  The error is:
+		 *
+		 *    TypeError: failed to coerce with [[DefaultValue]]
+		 *            duk_api.c:1420
+		 *
+		 *  This should be fixed at some point.
+		 */
+
+		duk_to_string(ctx, -1);
 		fprintf(stdout, "= %s\n", duk_get_string(ctx, -1));
 		fflush(stdout);
 	} else {
-		/* In non-interactive mode, success results are not written at all. */
+		/* In non-interactive mode, success results are not written at all.
+		 * It is important that the result value is not string coerced,
+		 * as the string coercion may cause an error in some cases.
+		 */
 	}
 
 	duk_pop(ctx);
