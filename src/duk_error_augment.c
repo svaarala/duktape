@@ -48,15 +48,29 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 	 * entry with a special format: (string, number).  The number contains
 	 * the line and flags.
 	 */
+
+	/* FIXME: optimize: allocate an array part to the necessary size (upwards
+	 * estimate) and fill in the values directly into the array part; finally
+	 * update 'length'.
+	 */
+
+	/* FIXME: using duk_put_prop_index() would cause obscure error cases when Array.prototype
+	 * has write-protected array index named properties.  This was seen as DoubleErrors
+	 * in e.g. some test262 test cases.  Using duk_def_prop_index() is better but currently
+	 * there is no fast path variant for that; the current implementation interns the array
+	 * index as a string.  This can be fixed directly, or perhaps the traceback can be fixed
+	 * altogether to fill in the tracedata directly into the array part.
+	 */
+
 	if (filename) {
 		duk_push_string(ctx, filename);
-		duk_put_prop_index(ctx, -2, arr_idx);
+		duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);
 		arr_idx++;
 
 		d = (noblame_fileline ? ((double) DUK_TB_FLAG_NOBLAME_FILELINE) * DUK_DOUBLE_2TO32 : 0.0) +
 		    (double) line;
 		duk_push_number(ctx, d);
-		duk_put_prop_index(ctx, -2, arr_idx);
+		duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);
 		arr_idx++;
 	}
 
@@ -85,7 +99,7 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 
 		/* add function */
 		duk_push_hobject(ctx, thr_callstack->callstack[i].func);  /* -> [... arr func] */
-		duk_put_prop_index(ctx, -2, arr_idx);
+		duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);
 		arr_idx++;
 
 		/* add a number containing: pc, activation flags */
@@ -102,12 +116,12 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 		DUK_ASSERT(pc >= 0 && (double) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 		d = ((double) thr_callstack->callstack[i].flags) * DUK_DOUBLE_2TO32 + (double) pc;
 		duk_push_number(ctx, d);  /* -> [... arr num] */
-		duk_put_prop_index(ctx, -2, arr_idx);
+		duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);
 		arr_idx++;
 	}
 
 	/* [... arr] */
-	duk_put_prop_stridx(ctx, err_index, DUK_STRIDX_TRACEDATA);  /* -> [...] */
+	duk_def_prop_stridx(ctx, err_index, DUK_STRIDX_TRACEDATA, DUK_PROPDESC_FLAGS_WEC);  /* -> [...] */
 }
 #endif  /* DUK_USE_TRACEBACKS */
 
