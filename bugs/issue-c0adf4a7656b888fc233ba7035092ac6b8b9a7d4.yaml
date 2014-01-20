@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: optimize duk_def_prop_index() to use a fast path (or convert call sites to do something more useful)
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-20 22:50:28.013476 Z
+references: []
+
+id: c0adf4a7656b888fc233ba7035092ac6b8b9a7d4
+log_events: 
+- - 2014-01-20 22:50:28.197427 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

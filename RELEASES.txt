@@ -98,16 +98,14 @@ Released
 
 * Added API call to force GC, duk_gc()
 
-* Added extended JSON format variants: JSONX and JSONC
+* Added extended JSON format variants: JSONX and JSONC; NULL pointer
+  values string now coerce to "null" instead of e.g. "(nil)" to match
+  JSONX format
 
 * Added input line number to compiler error messages (e.g. SyntaxErrors)
 
-* NULL pointer values string now coerce to "null" instead of e.g. "(nil)"
-  to match JSONX format
-
-* Renamed __duk__ to Duktape for more consistency with Ecmascript conventions
-
-* Removed somewhat useless Duktape.build, replaced with Duktape.env
+* Renamed __duk__ to Duktape for more consistency with Ecmascript conventions,
+  removed somewhat useless Duktape.build, added Duktape.env
 
 * Removed array size limit for very large array joins
 
@@ -167,8 +165,7 @@ Released
 * Fixed strictness handling of an indirect eval call from a strict
   function (eval incorrectly inherited strict mode)
 
-* Various (somewhat obscure) fixes related to test262 and underscore.js
-  compatibility
+* Several test262 and underscore.js test case fixes (other than above)
 
 * Windows compatibility for both WIN32 and WIN64, tested with MinGW (x86),
   MINGW-w64 (x64), VS2010 Express (x32), VS2013 Express (x32 and x64)
