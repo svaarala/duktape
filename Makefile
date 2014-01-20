@@ -308,6 +308,13 @@ test262test: test262-d067d2f0ca30 duk
 vgtest262test: test262-d067d2f0ca30 duk
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}"
 
+# Unholy helper to write out a testcase, the unholiness is that it reads
+# command line arguments and complains about missing targets etc:
+# http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
+.PHONY: test262cat
+test262cat: test262-d067d2f0ca30
+	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
 
