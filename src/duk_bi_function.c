@@ -297,6 +297,10 @@ int duk_bi_function_prototype_bind(duk_context *ctx) {
 	}
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
+	/* caller and arguments must use the same thrower, [[ThrowTypeError]] */
+	duk_def_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+	duk_def_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+
 	/* these non-standard properties are copied for convenience */
 	/* FIXME: 'copy properties' API call? */
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
