@@ -243,6 +243,7 @@ void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index,
 	 */
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_number(ctx, (double) arr_index);  /* FIXME: push u32 */
+	duk_insert(ctx, -2);  /* [ key value ] */
 	duk_def_prop(ctx, obj_index, desc_flags);
 }
 

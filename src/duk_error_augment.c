@@ -120,6 +120,10 @@ static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobj
 		arr_idx++;
 	}
 
+	/* FIXME: set with duk_hobject_set_length() when tracedata is filled directly */
+	duk_push_int(ctx, (int) arr_idx);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+
 	/* [... arr] */
 	duk_def_prop_stridx(ctx, err_index, DUK_STRIDX_TRACEDATA, DUK_PROPDESC_FLAGS_WEC);  /* -> [...] */
 }
