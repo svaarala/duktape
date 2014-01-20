@@ -164,6 +164,9 @@ Released
 
 * Fixed 'with' statement in strict mode (did not throw SyntaxError)
 
+* Fixed strictness handling of an indirect eval call from a strict
+  function (eval incorrectly inherited strict mode)
+
 * Various (somewhat obscure) fixes related to test262 and underscore.js
   compatibility
 
