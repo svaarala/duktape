@@ -144,7 +144,7 @@ CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 #CCOPTS_SHARED += -DDUK_OPT_NO_VERBOSE_ERRORS
 #CCOPTS_SHARED += -DDUK_OPT_GC_TORTURE
 #CCOPTS_SHARED += -DDUK_OPT_NO_MS_RESIZE_STRINGTABLE
-CCOPTS_SHARED += -DDUK_OPT_DEBUG_BUFSIZE=160
+CCOPTS_SHARED += -DDUK_OPT_DEBUG_BUFSIZE=512
 #CCOPTS_SHARED += -DDUK_OPT_NO_REGEXP_SUPPORT
 #CCOPTS_SHARED += -DDUK_OPT_NO_OCTAL_SUPPORT
 #CCOPTS_SHARED += -DDUK_OPT_NO_SOURCE_NONBMP
@@ -302,11 +302,11 @@ test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
 .PHONY: test262test
 test262test: test262-d067d2f0ca30 duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}"
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary
 
 .PHONY: vgtest262test
 vgtest262test: test262-d067d2f0ca30 duk
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}"
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary
 
 # Unholy helper to write out a testcase, the unholiness is that it reads
 # command line arguments and complains about missing targets etc:
