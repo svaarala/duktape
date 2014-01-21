@@ -20,3 +20,13 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
   - ""
+- - 2014-01-21 00:52:15.141118 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    The packed string could also provide the necessary compatibility
+    wrappers which are then easy to disable from build.
+- - 2014-01-21 00:57:24.770374 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Use same source compression as for internal source property.

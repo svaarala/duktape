@@ -3,7 +3,7 @@ title: execution timeout into duk cmdline, add it to test262 test too
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-17 20:22:54.977146 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-21 00:43:51.953682 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

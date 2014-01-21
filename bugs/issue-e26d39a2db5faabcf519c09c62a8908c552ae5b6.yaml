@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add Duktape function to get current line
+desc: |-
+  This would allow debug prints like:
+  
+  print('running line', Duktape.line())
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-21 00:54:45.899969 Z
+references: []
+
+id: e26d39a2db5faabcf519c09c62a8908c552ae5b6
+log_events: 
+- - 2014-01-21 00:54:46.067790 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
