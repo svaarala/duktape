@@ -219,6 +219,11 @@ int duk_has_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	return duk_has_prop(ctx, obj_index);
 }
 
+/* Define own property without inheritance looks and such.  This differs from
+ * [[DefineOwnProperty]] because special behaviors (like Array 'length') are
+ * not invoked by this method.  The caller must be careful to invoke any such
+ * behaviors if necessary.
+ */
 void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
