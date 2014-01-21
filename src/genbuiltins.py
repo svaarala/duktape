@@ -1294,6 +1294,7 @@ class GenBuiltins:
 	builtins = None
 	gs = None
 	init_data = None
+	initjs_data = None
 	native_func_hash = None
 	native_func_list = None
 	builtin_indexes = None
@@ -1302,7 +1303,7 @@ class GenBuiltins:
 	count_normal_props = None
 	count_function_props = None
 
-	def __init__(self, build_info = None, byte_order=None, ext_section_b=None, ext_browser_like=None):
+	def __init__(self, build_info=None, initjs_data=None, byte_order=None, ext_section_b=None, ext_browser_like=None):
 		self.build_info = build_info
 		self.byte_order = byte_order
 		self.ext_section_b = ext_section_b
@@ -1311,6 +1312,10 @@ class GenBuiltins:
 		self.builtins = copy.deepcopy(builtins_orig)
 		self.gs = None
 		self.init_data = None
+		self.initjs_data = initjs_data
+		if len(self.initjs_data) > 1 and self.initjs_data[-1] != '\0':
+			# force NUL termination, init code now expects that
+			self.initjs_data += '\0'
 		self.native_func_hash = {}
 		self.native_func_list = []
 		self.builtin_indexes = {}
@@ -1676,8 +1681,8 @@ class GenBuiltins:
 
 		self.init_data = be.getByteString()
 
-		print '%d bytes of built-in init data, %d built-in objects, %d normal props, %d func props' % \
-			(len(self.init_data), self.count_builtins, self.count_normal_props, self.count_function_props)
+		print '%d bytes of built-in init data, %d built-in objects, %d normal props, %d func props, %d initjs data bytes' % \
+			(len(self.init_data), self.count_builtins, self.count_normal_props, self.count_function_props, len(self.initjs_data))
 
 	def emitSource(self, genc):
 		self.gs.emitStringsData(genc)
@@ -1686,16 +1691,24 @@ class GenBuiltins:
 		self.writeNativeFuncArray(genc)
 		genc.emitLine('')
 		genc.emitArray(self.init_data, 'duk_builtins_data', typename='duk_uint8_t', intvalues=True, const=True)
+		genc.emitLine('#ifdef DUK_USE_INITJS')
+		genc.emitArray(self.initjs_data, 'duk_initjs_data', typename='duk_uint8_t', intvalues=True, const=True)
+		genc.emitLine('#endif  /* DUK_USE_INITJS */')
 
 	def emitHeader(self, genc):
 		self.gs.emitStringsHeader(genc)
 
 		genc.emitLine('')
 		genc.emitLine('extern const duk_c_function duk_bi_native_functions[];')
-		genc.emitLine('')
 		genc.emitLine('extern const duk_uint8_t duk_builtins_data[];')
+		genc.emitLine('#ifdef DUK_USE_INITJS')
+		genc.emitLine('extern const duk_uint8_t duk_initjs_data[];')
+		genc.emitLine('#endif  /* DUK_USE_INITJS */')
 		genc.emitLine('')
 		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
+		genc.emitLine('#ifdef DUK_USE_INITJS')
+		genc.emitDefine('DUK_INITJS_DATA_LENGTH', len(self.initjs_data))
+		genc.emitLine('#endif  /* DUK_USE_INITJS */')
 		genc.emitLine('')
 		for idx,t in enumerate(self.builtins):
 			def_name1, def_name2 = self.generateDefineNames(t['id'])
@@ -1711,6 +1724,7 @@ class GenBuiltins:
 if __name__ == '__main__':
 	parser = optparse.OptionParser()
 	parser.add_option('--buildinfo', dest='buildinfo')
+	parser.add_option('--initjs-data', dest='initjs_data')
 	parser.add_option('--out-header', dest='out_header')
 	parser.add_option('--out-source', dest='out_source')
 	(opts, args) = parser.parse_args()
@@ -1719,12 +1733,16 @@ if __name__ == '__main__':
 	build_info = dukutil.json_decode(f.read().strip())
 	f.close()
 
+	f = open(opts.initjs_data, 'rb')
+	initjs_data = f.read();
+	f.close()
+
 	# genbuiltins for different profiles
-	gb_little = GenBuiltins(build_info = build_info, byte_order='little', ext_section_b=True, ext_browser_like=True)
+	gb_little = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='little', ext_section_b=True, ext_browser_like=True)
 	gb_little.processBuiltins()
-	gb_big = GenBuiltins(build_info = build_info, byte_order='big', ext_section_b=True, ext_browser_like=True)
+	gb_big = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='big', ext_section_b=True, ext_browser_like=True)
 	gb_big.processBuiltins()
-	gb_middle = GenBuiltins(build_info = build_info, byte_order='middle', ext_section_b=True, ext_browser_like=True)
+	gb_middle = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='middle', ext_section_b=True, ext_browser_like=True)
 	gb_middle.processBuiltins()
 
 	# write C source file containing both strings and builtins

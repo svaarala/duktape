@@ -483,6 +483,22 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_def_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
+	 *  InitJS code - Ecmascript code evaluated from a built-in source
+	 *  which provides e.g. backward compatibility.  User can also provide
+	 *  JS code to be evaluated at startup.
+	 */
+
+#ifdef DUK_USE_INITJS
+	/* FIXME: compression */
+	duk_eval_string(ctx, duk_initjs_data);  /* initjs data is NUL terminated */
+#endif  /* DUK_USE_INITJS */
+
+#ifdef DUK_USE_USER_INITJS
+	/* FIXME: compression, at least as an option? */
+	duk_eval_string(ctx, DUK_USE_USER_INITJS);
+#endif  /* DUK_USE_USER_INITJS */
+
+	/*
 	 *  Since built-ins are not often extended, compact them.
 	 */
 

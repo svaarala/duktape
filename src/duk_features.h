@@ -1305,6 +1305,12 @@ extern double duk_computed_nan;
 #endif
 
 /*
+ *  InitJS code
+ */
+
+#define DUK_USE_INITJS
+
+/*
  *  Miscellaneous
  */
 
