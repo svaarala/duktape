@@ -59,7 +59,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 		 * the caller is likely to want a dense array.
 		 */
 		duk_dup(ctx, 0);
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
 		return 1;
 	}
 
@@ -69,8 +69,11 @@ int duk_bi_array_constructor(duk_context *ctx) {
 	 */
 	for (i = 0; i < nargs; i++) {
 		duk_dup(ctx, i);
-		duk_put_prop_index(ctx, -2, i);
+		duk_def_prop_index(ctx, -2, i, DUK_PROPDESC_FLAGS_WEC);
 	}
+
+	duk_push_number(ctx, (double) nargs);  /* FIXME: push_u32 */
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 	return 1;
 }
 
@@ -130,7 +133,7 @@ int duk_bi_array_prototype_to_string(duk_context *ctx) {
 int duk_bi_array_prototype_concat(duk_context *ctx) {
 	int i, n;
 	int j, len;
-	int idx;
+	int idx, idx_last;
 	duk_hobject *h;
 
 	/* FIXME: the insert here is a bit expensive if there are a lot of items.
@@ -143,7 +146,16 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	duk_push_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */
 
+	/* FIXME: the duk_def_prop_index() calls are currently slow as they intern
+	 * the index as a string.  Further, the Array special behaviors are NOT
+	 * invoked (which differs from the official algorithm).  If no error is
+	 * thrown, this doesn't matter as the length is updated at the end.  However,
+	 * if an error is thrown, the length will be unset.  That shouldn't matter
+	 * because the caller won't get a reference to the intermediate value.
+	 */
+
 	idx = 0;
+	idx_last = 0;
 	for (i = 0; i < n; i++) {
 		DUK_ASSERT_TOP(ctx, n + 1);
 
@@ -152,7 +164,8 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 		duk_dup(ctx, i);
 		h = duk_get_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_ARRAY);
 		if (!h) {
-			duk_put_prop_index(ctx, -2, idx++);
+			duk_def_prop_index(ctx, -2, idx++, DUK_PROPDESC_FLAGS_WEC);
+			idx_last = idx;
 			continue;
 		}
 
@@ -165,14 +178,22 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 		for (j = 0; j < len; j++) {
 			if (duk_get_prop_index(ctx, -1, j)) {
 				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
-				duk_put_prop_index(ctx, -3, idx++);
+				duk_def_prop_index(ctx, -3, idx++, DUK_PROPDESC_FLAGS_WEC);
+				idx_last = idx;
 			} else {
+				/* XXX: according to E5.1 Section 15.4.4.4 nonexistent trailing
+				 * elements do not affect 'length' but test262 disagrees.  Work
+				 * as E5.1 mandates for now and don't touch idx_last.
+				 */
 				idx++;
 				duk_pop(ctx);
 			}
 		}
 		duk_pop(ctx);
 	}
+
+	duk_push_number(ctx, (double) idx_last);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	DUK_ASSERT_TOP(ctx, n + 1);
 	return 1;
