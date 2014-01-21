@@ -589,12 +589,20 @@ typedef size_t duk_size_t;
  */
 typedef duk_int_fast32_t duk_int_t;
 typedef duk_uint_fast32_t duk_uint_t;
+#define DUK_INT_MIN           DUK_INT_FAST32_MIN
+#define DUK_INT_MAX           DUK_INT_FAST32_MAX
+#define DUK_UINT_MIN          DUK_UINT_FAST32_MIN
+#define DUK_UINT_MAX          DUK_UINT_FAST32_MAX
 
 /* Small integers (16 bits or more) can fall back to the 'int' type, but
  * have a typedef so they are marked "small" explicitly.
  */
 typedef int duk_small_int_t;
 typedef unsigned int duk_small_uint_t;
+#define DUK_SMALL_INT_MIN     INT_MIN
+#define DUK_SMALL_INT_MAX     INT_MAX
+#define DUK_SMALL_UINT_MIN    0
+#define DUK_SMALL_UINT_MAX    UINT_MAX
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
