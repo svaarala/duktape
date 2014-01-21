@@ -7,7 +7,7 @@
 
 /*---
 {
-    "knownbug": true
+    "knownissue": true
 }
 ---*/
 

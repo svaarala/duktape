@@ -1,6 +1,6 @@
 /*---
 {
-    "knownbug": true
+    "knownissue": true
 }
 ---*/
 

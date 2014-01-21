@@ -18,7 +18,7 @@
 
 /*---
 {
-    "knownbug": true
+    "knownissue": true
 }
 ---*/
 
