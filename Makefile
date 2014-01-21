@@ -190,6 +190,7 @@ cleanall:
 	-@rm -rf underscore
 	-@rm -rf test262-d067d2f0ca30
 	-@rm -f d067d2f0ca30.tar.bz2
+	-@rm -rf emscripten
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -318,6 +319,9 @@ test262cat: test262-d067d2f0ca30
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
 
+emscripten:
+	git clone https://github.com/kripken/emscripten.git
+
 .PHONY:	npminst
 npminst:	runtests/node_modules
 
@@ -332,7 +336,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:
+dist:	UglifyJS
 	sh make_dist.sh
 
 .PHONY:	dist-src
