@@ -178,6 +178,8 @@ function executeTest(options, callback) {
 		    return;
 		}
 
+		// FIXME: must respect 'use strict' and avoid putting any code before one
+		// (or prepend a new 'use strict')
 		if (options.engine.jsPrefix) {
 		    // doesn't work
 		    // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
@@ -471,7 +473,7 @@ function testRunnerMain() {
         }
 
         console.log('Executing ' + testcases.length + ' testcase(s) with ' +
-                    engines.length + ' engine(s) using ' + argv['num-threads'] + ' threads' +
+                    engines.length + ' engine(s) using ' + argv['num-threads'] + ' thread(s)' +
                     ', total ' + tasks.length + ' task(s)' +
                     (argv.valgrind ? ', valgrind enabled (for duk)' : ''));
 
@@ -556,8 +558,8 @@ function testRunnerMain() {
             } else if (res.status === 'fail') {
                 countFail++;
                 parts.push(res.diff_expect.split('\n').length + ' diff lines');
-                if (res.testcase.meta.knownbug) {
-                    parts.push('known bug');
+                if (res.testcase.meta.knownissue) {
+                    parts.push('known issue');
                 }
                 need = true;
             } else {
