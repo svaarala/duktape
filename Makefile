@@ -305,14 +305,14 @@ test262test: test262-d067d2f0ca30 duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	-rm -f /tmp/duk-test262-log.txt /tmp/duk-test262-filtered.txt
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262-log.txt
-	cat /tmp/duk-test262-log.txt | python filter262log.py doc/test262-known-bugs.json > /tmp/duk-test262-filtered.txt
+	cat /tmp/duk-test262-log.txt | python filter262log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.txt
 	cat /tmp/duk-test262-filtered.txt
 
 .PHONY: vgtest262test
 vgtest262test: test262-d067d2f0ca30 duk
 	-@rm -f /tmp/duk-vgtest262-log.txt /tmp/duk-vgtest262-filtered.txt
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary >/tmp/duk-vgtest262-log.txt
-	cat /tmp/duk-vgtest262-log.txt | python filter262log.py doc/test262-known-bugs.json > /tmp/duk-vgtest262-filtered.txt
+	cat /tmp/duk-vgtest262-log.txt | python filter262log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.txt
 	cat /tmp/duk-vgtest262-filtered.txt
 	
 
