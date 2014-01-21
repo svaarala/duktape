@@ -3,7 +3,7 @@ title: add a packed string to be evaluated in thread init to allow pure lua buil
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -30,3 +30,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - Use same source compression as for internal source property.
+- - 2014-01-21 17:58:26.664497 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.10
+  - ""
+- - 2014-01-21 17:59:25.879915 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - First draft of the mechanism implemented, but no source compression yet.
