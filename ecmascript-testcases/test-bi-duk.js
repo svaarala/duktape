@@ -26,6 +26,10 @@ function
 function
 function
 function
+function
+function
+function
+function
 Buffer
 object
 function
