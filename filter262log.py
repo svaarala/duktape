@@ -6,13 +6,7 @@ import json
 
 def main():
 	f = open(sys.argv[1], 'rb')
-	known = {}
-	diagnosed = {}
-	for o in json.loads(f.read()):
-		if o.has_key('test') and o.has_key('known'):
-			known[o['test']] = o['known']
-		if o.has_key('test') and o.has_key('diagnosed'):
-			diagnosed[o['test']] = o['diagnosed']
+	known_issues = json.loads(f.read())
 	f.close()
 
 	skipstrings = [
@@ -23,6 +17,8 @@ def main():
 	]
 
 	in_failed_tests = False
+
+	tofix_count = 0  # count of bugs that will be fixed (no uncertainty about proper behavior etc)
 
 	for line in sys.stdin:
 		if len(line) > 1 and line[-1] == '\n':
@@ -53,17 +49,44 @@ def main():
 			# "  intl402/ch12/12.2/12.2.3_c in non-strict mode"
 			tmp = line.strip().split(' ')
 			test = tmp[0]
-			if known.has_key(test):
-				print(line + '   // KNOWN: ' + known[test])
-			elif diagnosed.has_key(test):
-				print(line + '   // diagnosed: ' + diagnosed[test])
-			else:
-				print(line)
-			continue
+
+			matched = False
+			for kn in known_issues:
+				if kn.get('test', None) != test:
+					continue
+				if kn.has_key('diagnosed'):
+					tofix_count += 1
+					print(line + '   // diagnosed: ' + kn['diagnosed'])
+				elif kn.has_key('known'):
+					# don't bump tofix_count, as testcase expected result is not certain
+					print(line + '   // KNOWN: ' + kn['known'])
+				else:
+					tofix_count += 1
+					print(line + '   // ??? (rule matches))')
+				kn['used'] = True  # mark rule used
+				matched = True
+				break
+
+			if matched:
+				continue
+
+			# no match, to fix
+			tofix_count += 1
 
 		# Otherwise print normally
 
 		print(line)
+
+	print('')
+	print('TO-FIX COUNT: ' + str(tofix_count))
+	print('  = test case failures which need fixing (Duktape bugs, uninvestigated)')
+
+	# Check for unused rules (e.g. bugs fixed)
+
+	print('')
+	for kn in known_issues:
+		if not kn.has_key('used'):
+			print('WARNING: unused rule: ' + json.dumps(kn))
 
 if __name__ == '__main__':
 	main()
