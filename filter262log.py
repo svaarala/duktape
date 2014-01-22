@@ -7,8 +7,12 @@ import json
 def main():
 	f = open(sys.argv[1], 'rb')
 	known = {}
+	diagnosed = {}
 	for o in json.loads(f.read()):
-		known[o['test']] = o['reason']
+		if o.has_key('test') and o.has_key('known'):
+			known[o['test']] = o['known']
+		if o.has_key('test') and o.has_key('diagnosed'):
+			diagnosed[o['test']] = o['diagnosed']
 	f.close()
 
 	skipstrings = [
@@ -51,6 +55,8 @@ def main():
 			test = tmp[0]
 			if known.has_key(test):
 				print(line + '   // KNOWN: ' + known[test])
+			elif diagnosed.has_key(test):
+				print(line + '   // diagnosed: ' + diagnosed[test])
 			else:
 				print(line)
 			continue
