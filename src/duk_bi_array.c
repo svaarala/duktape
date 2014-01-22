@@ -839,6 +839,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	int start, end;
 	int idx;
 	int i;
+	duk_uint32_t res_length = 0;
 
 	len = push_this_obj_len_u32(ctx);
 	duk_push_array(ctx);
@@ -873,6 +874,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 		if (duk_get_prop_index(ctx, 2, i)) {
 			duk_def_prop_index(ctx, 4, idx, DUK_PROPDESC_FLAGS_WEC);
+			res_length = idx + 1;
 		} else {
 			duk_pop(ctx);
 		}
@@ -880,7 +882,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 	}
 
-	duk_push_int(ctx, idx);  /* FIXME */
+	duk_push_int(ctx, res_length);  /* FIXME */
 	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	DUK_ASSERT_TOP(ctx, 5);
