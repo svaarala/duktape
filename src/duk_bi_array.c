@@ -693,7 +693,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 
 	for (i = 0; i < del_count; i++) {
 		if (duk_get_prop_index(ctx, -3, act_start + i)) {
-			duk_put_prop_index(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
+			duk_def_prop_index(ctx, -2, i, DUK_PROPDESC_FLAGS_WEC);  /* throw flag irrelevant (false in std alg) */
 		} else {
 			duk_pop(ctx);
 		}
@@ -1150,13 +1150,13 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			break;
 		case ITER_MAP:
 			duk_dup(ctx, -1);
-			duk_put_prop_index(ctx, 4, i);  /* retval to result[i] */
+			duk_def_prop_index(ctx, 4, i, DUK_PROPDESC_FLAGS_WEC);  /* retval to result[i] */
 			break;
 		case ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				duk_dup(ctx, -2);  /* orig value */
-				duk_put_prop_index(ctx, 4, k);
+				duk_def_prop_index(ctx, 4, k, DUK_PROPDESC_FLAGS_WEC);
 				k++;
 			}
 			break;
