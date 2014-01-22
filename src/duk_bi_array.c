@@ -11,6 +11,14 @@
  *  is incorrect in several places, and array lengths above 2G won't work
  *  reliably.  Further, some valid array length values may be above 2**32-1,
  *  and this is not always correctly handled.
+ *
+ *  A note on using "put" property vs. "define" property: code below must be
+ *  careful to use the appropriate primitive as it matters for compliance.
+ *  When using "put" there may be inherited properties in Array.prototype
+ *  (or Object.prototype) which cause side effects when values are written.
+ *  When using "define" there are no such side effects, and many test262
+ *  test cases check for this.  For real world code such side effects are very
+ *  rare however.
  */
 
 #include "duk_internal.h"
