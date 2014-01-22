@@ -6,10 +6,10 @@ desc: |-
   jsoncEnc -> jcEnc?
 type: :task
 component: duk
-release: v0.10
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-01-21 00:51:22.341329 Z
 references: []
 
@@ -18,4 +18,12 @@ log_events:
 - - 2014-01-21 00:51:22.501169 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-22 21:55:02.437976 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.10
+  - ""
+- - 2014-01-22 22:03:30.346661 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""
