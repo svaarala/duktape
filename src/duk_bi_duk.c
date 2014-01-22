@@ -101,14 +101,14 @@ duk_ret duk_bi_duk_object_dec(duk_context *ctx) {
 }
 
 #ifdef DUK_USE_JSONX
-duk_ret duk_bi_duk_object_jsonx_dec(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx) {
 	duk_bi_json_parse_helper(ctx,
 	                         0 /*idx_value*/,
 	                         1 /*idx_replacer*/,
 	                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
 	return 1;
 }
-duk_ret duk_bi_duk_object_jsonx_enc(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
 	duk_bi_json_stringify_helper(ctx,
 	                             0 /*idx_value*/,
 	                             1 /*idx_replacer*/,
@@ -119,23 +119,23 @@ duk_ret duk_bi_duk_object_jsonx_enc(duk_context *ctx) {
 	return 1;
 }
 #else  /* DUK_USE_JSONX */
-duk_ret duk_bi_duk_object_jsonx_dec(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
-duk_ret duk_bi_duk_object_jsonx_enc(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_JSONX */
 
 #ifdef DUK_USE_JSONC
-duk_ret duk_bi_duk_object_jsonc_dec(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx) {
 	duk_bi_json_parse_helper(ctx,
 	                         0 /*idx_value*/,
 	                         1 /*idx_replacer*/,
 	                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
 	return 1;
 }
-duk_ret duk_bi_duk_object_jsonc_enc(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
 	duk_bi_json_stringify_helper(ctx,
 	                             0 /*idx_value*/,
 	                             1 /*idx_replacer*/,
@@ -145,10 +145,10 @@ duk_ret duk_bi_duk_object_jsonc_enc(duk_context *ctx) {
 	return 1;
 }
 #else  /* DUK_USE_JSONC */
-duk_ret duk_bi_duk_object_jsonc_dec(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
-duk_ret duk_bi_duk_object_jsonc_enc(duk_context *ctx) {
+duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_JSONC */

@@ -50,10 +50,10 @@ duk_ret duk_bi_duk_object_get_finalizer(duk_context *ctx);
 duk_ret duk_bi_duk_object_set_finalizer(duk_context *ctx);
 duk_ret duk_bi_duk_object_enc(duk_context *ctx);
 duk_ret duk_bi_duk_object_dec(duk_context *ctx);
-duk_ret duk_bi_duk_object_jsonx_dec(duk_context *ctx);
-duk_ret duk_bi_duk_object_jsonx_enc(duk_context *ctx);
-duk_ret duk_bi_duk_object_jsonc_dec(duk_context *ctx);
-duk_ret duk_bi_duk_object_jsonc_enc(duk_context *ctx);
+duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx);
+duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx);
+duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx);
+duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx);
 
 duk_ret duk_bi_error_constructor_shared(duk_context *ctx);
 duk_ret duk_bi_error_prototype_to_string(duk_context *ctx);

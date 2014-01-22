@@ -558,10 +558,10 @@ duk_string_list = [
 	mkstr("getFinalizer", custom=True),
 	mkstr("enc", custom=True),
 	mkstr("dec", custom=True),
-	mkstr("jsonxEnc", custom=True),
-	mkstr("jsonxDec", custom=True),
-	mkstr("jsoncEnc", custom=True),
-	mkstr("jsoncDec", custom=True),
+	mkstr("jxEnc", custom=True),
+	mkstr("jxDec", custom=True),
+	mkstr("jcEnc", custom=True),
+	mkstr("jcDec", custom=True),
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
 
