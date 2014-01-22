@@ -872,13 +872,16 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	for (i = start; i < end; i++) {
 		DUK_ASSERT_TOP(ctx, 5);
 		if (duk_get_prop_index(ctx, 2, i)) {
-			duk_put_prop_index(ctx, 4, idx);
+			duk_def_prop_index(ctx, 4, idx, DUK_PROPDESC_FLAGS_WEC);
 		} else {
 			duk_pop(ctx);
 		}
 		idx++;
 		DUK_ASSERT_TOP(ctx, 5);
 	}
+
+	duk_push_int(ctx, idx);  /* FIXME */
+	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
