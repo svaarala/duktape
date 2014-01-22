@@ -706,6 +706,8 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 			duk_pop(ctx);
 		}
 	}
+	duk_push_int(ctx, del_count);  /* FIXME: typing */
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
 
