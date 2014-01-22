@@ -192,6 +192,10 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 		duk_pop(ctx);
 	}
 
+	/* FIXME: this is only correct for Array objects, not when 'this' is something
+	 * else.  It would be easiest if the duk_def_prop_index() had a variant which
+	 * obeyed array special 'length' behavior.
+	 */
 	duk_push_number(ctx, (double) idx_last);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
