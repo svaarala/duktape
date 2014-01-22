@@ -1096,6 +1096,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	int k;
 	int bval;
 	int iter_type = duk_get_magic(ctx);
+	duk_uint32_t res_length = 0;
 
 	/* each call this helper serves has nargs==2 */
 	DUK_ASSERT_TOP(ctx, 2);
@@ -1144,12 +1145,14 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		case ITER_EVERY:
 			bval = duk_to_boolean(ctx, -1);
 			if (!bval) {
+				/* stack top contains 'false' */
 				return 1;
 			}
 			break;
 		case ITER_SOME:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
+				/* stack top contains 'true' */
 				return 1;
 			}
 			break;
@@ -1159,6 +1162,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		case ITER_MAP:
 			duk_dup(ctx, -1);
 			duk_def_prop_index(ctx, 4, i, DUK_PROPDESC_FLAGS_WEC);  /* retval to result[i] */
+			res_length = i + 1;
 			break;
 		case ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
@@ -1166,6 +1170,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 				duk_dup(ctx, -2);  /* orig value */
 				duk_def_prop_index(ctx, 4, k, DUK_PROPDESC_FLAGS_WEC);
 				k++;
+				res_length = k;
 			}
 			break;
 		default:
@@ -1191,6 +1196,8 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	case ITER_FILTER:
 		DUK_ASSERT_TOP(ctx, 5);
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
+		duk_push_number(ctx, (double) res_length);  /* FIXME */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 		break;
 	default:
 		DUK_UNREACHABLE();
