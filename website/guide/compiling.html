@@ -324,9 +324,9 @@ relevant heap is destroyed.  You can also break the reference loops manually
 var f = function() { };
 var g = function() { };
 var h = function() { };
-Duktape.setFinalizer(f, function() { print('finalizer for f'); });
-Duktape.setFinalizer(g, function() { print('finalizer for g'); });
-Duktape.setFinalizer(h, function() { print('finalizer for h'); });
+Duktape.setFin(f, function() { print('finalizer for f'); });
+Duktape.setFin(g, function() { print('finalizer for g'); });
+Duktape.setFin(h, function() { print('finalizer for h'); });
 
 // not collected until heap destruction in a reference counting only build
 f = null;            // not collected immediately

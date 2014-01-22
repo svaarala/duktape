@@ -6,7 +6,7 @@
 
 <p>An object which has an internal finalizer property in its prototype
 chain (or the object itself) is subject to finalization before being freed.
-The internal finalizer property is set using <code>Duktape.setFinalizer()</code>
+The internal finalizer property is set using <code>Duktape.setFin()</code>
 method.  The finalizer may be triggered by either reference counting or
 mark-and-sweep.</p>
 
@@ -31,7 +31,7 @@ var a;
 function init() {
     a = { foo: 123 };
 
-    Duktape.setFinalizer(a, function (x) {
+    Duktape.setFin(a, function (x) {
         print('finalizer, foo -&gt;', x.foo);
     });
 }
