@@ -12,13 +12,22 @@
  *  reliably.  Further, some valid array length values may be above 2**32-1,
  *  and this is not always correctly handled.
  *
- *  A note on using "put" property vs. "define" property: code below must be
- *  careful to use the appropriate primitive as it matters for compliance.
- *  When using "put" there may be inherited properties in Array.prototype
- *  (or Object.prototype) which cause side effects when values are written.
- *  When using "define" there are no such side effects, and many test262
- *  test cases check for this.  For real world code such side effects are very
- *  rare however.
+ *  On using "put" vs. "def" prop
+ *  =============================
+ *
+ *  Code below must be careful to use the appropriate primitive as it matters
+ *  for compliance.  When using "put" there may be inherited properties in
+ *  Array.prototype which cause side effects when values are written.  When
+ *  using "define" there are no such side effects, and many test262 test cases
+ *  check for this (for real world code, such side effects are very rare).
+ *  Both "put" and "define" are used in the E5.1 specification; as a rule,
+ *  "put" is used when modifying an existing array (or a non-array 'this'
+ *  binding) and "define" for setting values into a fresh result array.
+ *
+ *  Also note that Array instance 'length' should be writable, but not
+ *  enumerable and definitely not configurable: even Duktape code internally
+ *  assumes that an Array instance will always have a 'length' property.
+ *  Preventing deletion of the property is critical.
  */
 
 #include "duk_internal.h"
@@ -67,7 +76,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 		 * the caller is likely to want a dense array.
 		 */
 		duk_dup(ctx, 0);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
 		return 1;
 	}
 
@@ -81,7 +90,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 	}
 
 	duk_push_number(ctx, (double) nargs);  /* FIXME: push_u32 */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 	return 1;
 }
 
@@ -201,7 +210,7 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 	}
 
 	duk_push_number(ctx, (double) idx_last);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(ctx, n + 1);
 	return 1;
@@ -707,7 +716,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 		}
 	}
 	duk_push_int(ctx, del_count);  /* FIXME: typing */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
 
@@ -883,7 +892,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	}
 
 	duk_push_int(ctx, res_length);  /* FIXME */
-	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
@@ -1204,7 +1213,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
 		duk_push_number(ctx, (double) res_length);  /* FIXME */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 		break;
 	default:
 		DUK_UNREACHABLE();
