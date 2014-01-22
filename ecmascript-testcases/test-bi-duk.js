@@ -75,10 +75,14 @@ function propsTest() {
     print('Duktape');
     fduk('env');
     fduk('version');
-    fduk('setFinalizer');
-    fduk('getFinalizer');
+    fduk('setFin');
+    fduk('getFin');
     fduk('enc');
     fduk('dec');
+    fduk('jxEnc');
+    fduk('jxDec');
+    fduk('jcEnc');
+    fduk('jcDec');
     fduk('addr');
     fduk('refc');
     fduk('gc');
