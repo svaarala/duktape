@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add a packed string to be evaluated in thread init to allow pure lua built-ins
+title: add a packed string to be evaluated in thread init to allow pure js built-ins
 desc: ""
 type: :task
 component: duk
