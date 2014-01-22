@@ -15,5 +15,7 @@
             configurable: true
         });
     }
-    def('build', '');  // removed in Duktape 0.9.0
+    def('build', '');                 // removed in Duktape 0.9.0
+    def('setFinalizer', D.setFin);    // renamed in Duktape 0.9.0
+    def('getFinalizer', D.getFin);    // renamed in Duktape 0.9.0
 })(Duktape);
