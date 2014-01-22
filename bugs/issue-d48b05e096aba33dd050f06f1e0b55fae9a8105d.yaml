@@ -1,0 +1,30 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a duk_def_prop() variant with 'length' special behavior, would be useful for Array built-ins
+desc: |-
+  Array built-ins now need to set elements with raw duk_def_prop() calls, keep
+  track of desired result 'length' manually, and finally set the result 'length'
+  explicitly with a duk_def_prop() call.
+  
+  This is nice in that no special behaviors are invoked while iterating a
+  potentially large number of elements, but it's a bit awkward to keep track
+  of the desired length every step of the way.
+  
+  Another approach would be to have a duk_def_prop() variant with array
+  'length' special handling.  This would at least be an option in the built-in
+  code: faster primitives would keep track of 'length' manually, slower ones
+  would use the duk_def_prop() variant with special 'length' handling.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-22 21:15:05.895258 Z
+references: []
+
+id: d48b05e096aba33dd050f06f1e0b55fae9a8105d
+log_events: 
+- - 2014-01-22 21:15:06.063327 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
