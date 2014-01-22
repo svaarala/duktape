@@ -52,13 +52,13 @@ duk_ret duk_bi_duk_object_gc(duk_context *ctx) {
 #endif
 }
 
-duk_ret duk_bi_duk_object_get_finalizer(duk_context *ctx) {
+duk_ret duk_bi_duk_object_get_fin(duk_context *ctx) {
 	(void) duk_require_hobject(ctx, 0);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 	return 1;
 }
 
-duk_ret duk_bi_duk_object_set_finalizer(duk_context *ctx) {
+duk_ret duk_bi_duk_object_set_fin(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 2);
 	(void) duk_put_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);  /* XXX: check value? */
 	return 0;
