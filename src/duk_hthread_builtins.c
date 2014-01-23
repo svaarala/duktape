@@ -491,12 +491,14 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #ifdef DUK_USE_INITJS
 	/* FIXME: compression */
 	duk_eval_string(ctx, duk_initjs_data);  /* initjs data is NUL terminated */
+	duk_pop(ctx);
 #endif  /* DUK_USE_INITJS */
 
 #ifdef DUK_USE_USER_INITJS
 	/* FIXME: compression, at least as an option? */
 	/* FIXME: unused now */
 	duk_eval_string(ctx, DUK_USE_USER_INITJS);
+	duk_pop(ctx);
 #endif  /* DUK_USE_USER_INITJS */
 
 	/*
