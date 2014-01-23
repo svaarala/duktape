@@ -837,7 +837,8 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/* _pc2line */
-	if (1) {  /* FIXME: condition */
+#ifdef DUK_USE_PC2LINE
+	if (1) {
 		/*
 		 *  Size-optimized pc->line mapping.
 		 */
@@ -846,10 +847,11 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 		duk_hobject_pc2line_pack(thr, q_instr, (duk_uint_fast32_t) code_count);  /* -> pushes fixed buffer */
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 
-		/* FIXME: if assertions enabled, walk through all valid PCs
+		/* XXX: if assertions enabled, walk through all valid PCs
 		 * and check line mapping.
 		 */
 	}
+#endif  /* DUK_USE_PC2LINE */
 
 	/* fileName */
 	if (comp_ctx->h_filename) {

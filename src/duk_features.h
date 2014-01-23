@@ -1228,6 +1228,15 @@ extern double duk_computed_nan;
 #endif
 
 /*
+ *  Function instance features.
+ */
+
+#define DUK_USE_PC2LINE
+#if defined(DUK_OPT_NO_PC2LINE)
+#undef DUK_USE_PC2LINE
+#endif
+
+/*
  *  Deep vs. shallow stack.
  *
  *  Some embedded platforms have very shallow stack (e.g. 64kB); default to
