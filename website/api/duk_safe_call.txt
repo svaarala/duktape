@@ -13,7 +13,7 @@ to an error handler function in the current stack frame (below call arguments) w
 can modify an error value before it is thrown; to use the default error handler,
 set <code>errhandler_index</code> to <code>DUK_INVALID_INDEX</code>.</p>
 
-<p>The return value is one of:</p>
+<p>The return value is:</p>
 <ul>
 <li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
     with <code>nrets</code> return values.  (This return code constant is guaranteed to be
@@ -111,5 +111,4 @@ duk_pop_2(ctx);
 call
 
 =fixme
-Refine return codes.
 Error handler model to be cleaned up.

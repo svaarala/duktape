@@ -15,7 +15,7 @@ can modify an error value before it is thrown; to use the default error handler,
 set <code>errhandler_index</code> to <code>DUK_INVALID_INDEX</code>.</p>
 </p>
 
-<p>The return value is one of:</p>
+<p>The return value is:</p>
 <ul>
 <li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
     with a single return value.  (This return code constant is guaranteed to be zero, so
@@ -66,5 +66,4 @@ duk_pcall_method
 duk_pcall_prop
 
 =fixme
-Refine return codes.
 Error handler model to be cleaned up.
