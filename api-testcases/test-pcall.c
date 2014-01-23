@@ -1,6 +1,8 @@
 /*===
 rc=0, result='21'
+top after pop: 0
 rc=1, result='Error: my error'
+top after pop: 0
 final top: 0
 ===*/
 
@@ -14,6 +16,7 @@ void test(duk_context *ctx) {
 	rc = duk_pcall(ctx, 2, DUK_INVALID_INDEX);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
+	printf("top after pop: %d\n", duk_get_top(ctx));
 
 	/* basic error case */
 	duk_eval_string(ctx, "(function (x,y) { throw new Error('my error'); })");
@@ -22,6 +25,7 @@ void test(duk_context *ctx) {
 	rc = duk_pcall(ctx, 2, DUK_INVALID_INDEX);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
+	printf("top after pop: %d\n", duk_get_top(ctx));
 
 	/* FIXME: error handler tests */
 
