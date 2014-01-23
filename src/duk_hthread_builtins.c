@@ -495,6 +495,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 #ifdef DUK_USE_USER_INITJS
 	/* FIXME: compression, at least as an option? */
+	/* FIXME: unused now */
 	duk_eval_string(ctx, DUK_USE_USER_INITJS);
 #endif  /* DUK_USE_USER_INITJS */
 
