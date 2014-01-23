@@ -94,6 +94,13 @@ The table below summarizes the available options, in no particular order:</p>
 <td>Override default traceback collection depth.  The default is currently 10.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_PC2LINE</td>
+<td>Don't record a "pc2line" map into function instances.  Without this map,
+    exceptions won't have meaningful line numbers (virtual machine program
+    counter values cannot be translated to line numbers) but function instances
+    will have a smaller footprint.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_REGEXP_SUPPORT</td>
 <td>Disable support for regular expressions.  Regexp literals are treated as a
     <code>SyntaxError</code>, RegExp constructor and prototype functions throw
