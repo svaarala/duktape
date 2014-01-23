@@ -167,10 +167,18 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 
 	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
-		/* note that we can't reliably pop anything here */
+		/* We can't reliably pop anything here because the stack input
+		 * shape is incorrect.  So we throw an error; if the caller has
+		 * no catch point for this, a fatal error will occur.  Another
+		 * alternative would be to just return an error.  But then the
+		 * stack would be in an unknown state which might cause some
+		 * very hard to diagnose problems later on.  Also note that even
+		 * if we did not throw an error here, the underlying call handler
+		 * might STILL throw an out-of-memory error or some other internal
+		 * fatal error.
+		 */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
-		/* FIXME: actually terminate thread? */
-		return DUK_ERR_EXEC_TERM;
+		return DUK_ERR_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs + 1, errhandler_index, &errhandler)) {
@@ -204,9 +212,9 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
 
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
-		/* note that we can't reliably pop anything here */
-		/* FIXME: actually terminate thread? */
-		return DUK_ERR_EXEC_TERM;
+		/* See comments in duk_pcall(). */
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
+		return DUK_ERR_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs + 2, errhandler_index, &errhandler)) {
@@ -241,11 +249,9 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 	DUK_ASSERT(thr != NULL);
 
 	if (duk_get_top(ctx) < nargs || nrets < 0) {
-		/* also covers sanity for negative 'nargs'; note that we can't
-		 * reliably pop anything here
-		 */
-		/* FIXME: actually terminate thread? */
-		return DUK_ERR_EXEC_TERM;
+		/* See comments in duk_pcall(). */
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
+		return DUK_ERR_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs, errhandler_index, &errhandler)) {

@@ -24,7 +24,6 @@
 /* FIXME: these need to be in the public API too */
 #define DUK_ERR_EXEC_SUCCESS         0     /* thread returned to entry level with success */
 #define DUK_ERR_EXEC_ERROR           1     /* thread encountered a so far uncaught error */
-#define DUK_ERR_EXEC_TERM            2     /* thread was terminated due to an unrecoverable error */
 
 /*
  *  Normal error is thrown with a longjmp() through the current setjmp()

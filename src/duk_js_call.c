@@ -514,14 +514,13 @@ static void handle_coerce_effective_this_binding(duk_hthread *thr,
  *
  *    [ retval ]         (DUK_ERR_EXEC_SUCCESS)
  *    [ errobj ]         (DUK_ERR_EXEC_ERROR (normal error), protected call)
- *    [ (unspecified) ]  (DUK_ERR_EXEC_TERM (terminal error), protected call)
- *                       (if error and not a protected call --> longjmp)
  *
- *  Even when executing a protected call, if an error happens during error
- *  handling (e.g. we run out of memory while setting up the return stack),
- *  the error is propagated to the previous catchpoint).  If no catchpoint
- *  exists, the fatal error handler is called.  Also, API errors (such as
- *  invalid indices) are thrown directly.
+ *  Even when executing a protected call an error may be thrown in rare cases.
+ *  For instance, if we run out of memory when setting up the return stack
+ *  after a caught error, the out of memory is propagated to the caller.
+ *  Similarly, API errors (such as invalid input stack shape and invalid
+ *  indices) cause an error to propagate out of this function.  If there is
+ *  no catchpoint for this error, the fatal error handler is called.
  *
  *  See 'execution.txt'.
  *
