@@ -5,6 +5,8 @@
 
 import os
 import sys
+import time
+import datetime
 import shutil
 import re
 import tempfile
@@ -18,6 +20,8 @@ remove_fixme = True
 testcase_refs = False
 list_tags = False
 fancy_releaselog = True
+
+dt_now = datetime.datetime.utcnow()
 
 def readFile(x):
 	f = open(x, 'rb')
@@ -365,6 +369,15 @@ def transformReadIncludes(soup, includeDir):
 		f = open(os.path.join(includeDir, filename), 'rb')
 		elem.string = f.read()
 		f.close()
+
+def transformVersionNumber(soup, verstr):
+	for elem in soup.select('.duktape-version'):
+		elem.replaceWith(verstr)
+
+def transformCurrentDate(soup):
+	curr_date = '%04d-%02d-%02d' % (dt_now.year, dt_now.month, dt_now.day)
+	for elem in soup.select('.current-date'):
+		elem.replaceWith(curr_date)
 
 def transformAddHrBeforeH1(soup):
 	for elem in soup.select('h1'):
@@ -832,10 +845,18 @@ def generateStyleCss():
 
 	return style
 
-def postProcess(soup, includeDir, autoAnchors=False, headingLinks=False):
+def postProcess(soup, includeDir, autoAnchors=False, headingLinks=False, duktapeVersion=None):
 	# read in source snippets from include files
 	if True:
 		transformReadIncludes(soup, includeDir)
+
+	# version number
+	if True:
+		transformVersionNumber(soup, duktapeVersion)
+
+	# current date
+	if True:
+		transformCurrentDate(soup)
 
 	# add <hr> elements before all <h1> elements to improve readability
 	# in text browsers
@@ -867,6 +888,21 @@ def writeFile(name, data):
 	f.write(data)
 	f.close()
 
+def scrapeDuktapeVersion():
+	f = open(os.path.join('..', 'src', 'duktape.h'))
+	re_ver = re.compile(r'^#define DUK_VERSION\s+(\d+)\s*$')
+	for line in f:
+		line = line.strip()
+		m = re_ver.match(line)
+		if m is None:
+			continue
+		raw_ver = int(m.group(1))
+		str_ver = '%d.%d.%d' % ( raw_ver / 10000, raw_ver / 100 % 100, raw_ver % 100)
+	f.close()
+	if raw_ver is None:
+		raise Exception('cannot scrape Duktape version')
+	return str_ver, raw_ver
+
 def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
@@ -876,6 +912,9 @@ def main():
 	out_charset = 'utf-8'
 	releases_filename = '../RELEASES.txt'
 
+	duk_verstr, duk_verint = scrapeDuktapeVersion()
+	print 'Scraped version number: ' + duk_verstr
+
 	print 'Generating style.css'
 	data = generateStyleCss()
 	writeFile(os.path.join(outdir, 'style.css'), data)
@@ -884,22 +923,22 @@ def main():
 
 	print 'Generating api.html'
 	soup = generateApiDoc(apidocdir, apitestdir)
-	soup = postProcess(soup, apiincdir, autoAnchors=True, headingLinks=True)
+	soup = postProcess(soup, apiincdir, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'api.html'), soup.encode(out_charset))
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup, guideincdir, autoAnchors=True, headingLinks=True)
+	soup = postProcess(soup, guideincdir, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
 	soup = generateIndexPage()
-	soup = postProcess(soup, None)
+	soup = postProcess(soup, None, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'index.html'), soup.encode(out_charset))
 
 	print 'Generating download.html'
 	soup = generateDownloadPage(releases_filename)
-	soup = postProcess(soup, None)
+	soup = postProcess(soup, None, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'download.html'), soup.encode(out_charset))
 
 	print 'Copying misc files'
