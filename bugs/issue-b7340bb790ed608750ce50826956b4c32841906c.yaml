@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-01-15 18:12:58.065154 Z
 references: []
 
@@ -38,3 +38,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - First draft of the mechanism implemented, but no source compression yet.
+- - 2014-01-23 01:13:13.988854 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
