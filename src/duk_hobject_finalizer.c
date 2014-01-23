@@ -72,7 +72,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	rc = duk_safe_call(ctx, _finalize_helper, 0 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);  /* -> [... obj retval/error] */
 	DUK_ASSERT_TOP(ctx, entry_top + 2);  /* duk_safe_call discipline */
 
-	if (rc != DUK_ERR_EXEC_SUCCESS) {
+	if (rc != DUK_EXEC_SUCCESS) {
 		/* Note: we ask for one return value from duk_safe_call to get this
 		 * error debugging here.
 		 */

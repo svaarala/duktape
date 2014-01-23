@@ -512,8 +512,8 @@ static void handle_coerce_effective_this_binding(duk_hthread *thr,
  *
  *  Output stack:
  *
- *    [ retval ]         (DUK_ERR_EXEC_SUCCESS)
- *    [ errobj ]         (DUK_ERR_EXEC_ERROR (normal error), protected call)
+ *    [ retval ]         (DUK_EXEC_SUCCESS)
+ *    [ errobj ]         (DUK_EXEC_ERROR (normal error), protected call)
  *
  *  Even when executing a protected call an error may be thrown in rare cases.
  *  For instance, if we run out of memory when setting up the return stack
@@ -561,7 +561,7 @@ int duk_handle_call(duk_hthread *thr,
 	duk_hobject *env;
 	duk_jmpbuf our_jmpbuf;
 	duk_tval tv_tmp;
-	int retval = DUK_ERR_EXEC_ERROR;
+	int retval = DUK_EXEC_ERROR;
 	int rc;
 
 	DUK_ASSERT(thr != NULL);
@@ -759,7 +759,7 @@ int duk_handle_call(duk_hthread *thr,
 	/* Note: currently a second setjmp restoration is done at the target;
 	 * this is OK, but could be refactored away.
 	 */
-	retval = DUK_ERR_EXEC_ERROR;
+	retval = DUK_EXEC_ERROR;
 	goto shrink_and_finished;
 
  handle_call:
@@ -1132,7 +1132,7 @@ int duk_handle_call(duk_hthread *thr,
 	 *  Shrink checks and return with success.
 	 */
 
-	retval = DUK_ERR_EXEC_SUCCESS;
+	retval = DUK_EXEC_SUCCESS;
 	goto shrink_and_finished;	
 
 	/*
@@ -1209,7 +1209,7 @@ int duk_handle_call(duk_hthread *thr,
 	 *  Shrink checks and return with success.
 	 */
 
-	retval = DUK_ERR_EXEC_SUCCESS;
+	retval = DUK_EXEC_SUCCESS;
 	goto shrink_and_finished;	
 
  shrink_and_finished:
@@ -1264,7 +1264,7 @@ int duk_handle_call(duk_hthread *thr,
  thread_state_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for call (%d)", thr->state);
 	DUK_UNREACHABLE();
-	return DUK_ERR_EXEC_ERROR;  /* never executed */
+	return DUK_EXEC_ERROR;  /* never executed */
 }
 
 /*
@@ -1489,7 +1489,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	DUK_DEBUG_DUMP_HTHREAD(thr);
 #endif
 
-	retval = DUK_ERR_EXEC_ERROR;
+	retval = DUK_EXEC_ERROR;
 	goto shrink_and_finished;
 
 	/*
@@ -1581,7 +1581,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, rc);
 
 	/* Note: no need from callstack / catchstack shrink check */
-	retval = DUK_ERR_EXEC_SUCCESS;
+	retval = DUK_EXEC_SUCCESS;
 	goto finished;
 
  shrink_and_finished:
@@ -1630,7 +1630,7 @@ int duk_handle_safe_call(duk_hthread *thr,
  thread_state_error:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for safe_call (%d)", thr->state);
 	DUK_UNREACHABLE();
-	return DUK_ERR_EXEC_ERROR;  /* never executed */
+	return DUK_EXEC_ERROR;  /* never executed */
 }
 
 /*

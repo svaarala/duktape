@@ -196,10 +196,6 @@ struct duk_memory_functions {
 /* Return codes for protected calls (duk_safe_call(), duk_pcall()). */
 #define DUK_EXEC_SUCCESS                  0
 #define DUK_EXEC_ERROR                    1
-/* FIXME: these codes will be refined later (separate code for a fatal API error,
- * distinct from normal error).  These must now match internal DUK_ERR_EXEC_xxx
- * defines.  The internal codes should be removed.
- */
 
 /*
  *  If no variadic macros, __FILE__ and __LINE__ are passed through globals

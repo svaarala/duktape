@@ -178,12 +178,12 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 		 * fatal error.
 		 */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
-		return DUK_ERR_EXEC_ERROR;  /* unreachable */
+		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs + 1, errhandler_index, &errhandler)) {
 		/* error on top of stack */
-		return DUK_ERR_EXEC_ERROR;
+		return DUK_EXEC_ERROR;
 	}
 
 	/* awkward; we assume there is space for this */
@@ -214,12 +214,12 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
 	if (idx_func < 0 || nargs < 0) {
 		/* See comments in duk_pcall(). */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
-		return DUK_ERR_EXEC_ERROR;  /* unreachable */
+		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs + 2, errhandler_index, &errhandler)) {
 		/* error on top of stack */
-		return DUK_ERR_EXEC_ERROR;
+		return DUK_EXEC_ERROR;
 	}
 
 	call_flags = DUK_CALL_FLAG_PROTECTED;  /* protected, respect reclimit, not constructor */
@@ -251,12 +251,12 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 	if (duk_get_top(ctx) < nargs || nrets < 0) {
 		/* See comments in duk_pcall(). */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
-		return DUK_ERR_EXEC_ERROR;  /* unreachable */
+		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
 	if (!resolve_errhandler(ctx, nargs, errhandler_index, &errhandler)) {
 		/* error on top of stack (args popped) */
-		return DUK_ERR_EXEC_ERROR;
+		return DUK_EXEC_ERROR;
 	}
 
 	rc = duk_handle_safe_call(thr,           /* thread */

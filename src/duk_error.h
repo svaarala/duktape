@@ -20,11 +20,6 @@
 #define DUK_ERR_OK                   0     /* call successful */
 #define DUK_ERR_FAIL                 1     /* call failed */
 
-/* duk_executor results */
-/* FIXME: these need to be in the public API too */
-#define DUK_ERR_EXEC_SUCCESS         0     /* thread returned to entry level with success */
-#define DUK_ERR_EXEC_ERROR           1     /* thread encountered a so far uncaught error */
-
 /*
  *  Normal error is thrown with a longjmp() through the current setjmp()
  *  catchpoint record in the duk_heap.  The 'curr_thread' of the duk_heap
