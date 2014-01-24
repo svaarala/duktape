@@ -151,7 +151,7 @@ TypeError
 /* Non-base64 characters will not be accepted */
 
 try {
-    print('' + Duktape.dec('b28?'));
+    print('' + Duktape.dec('base64', 'b28?'));
 } catch (e) {
     print(e.name);
 }
