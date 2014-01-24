@@ -28,17 +28,13 @@ duk_ret duk_bi_duk_object_info(duk_context *ctx) {
 		h = DUK_TVAL_GET_HEAPHDR(tv);
 		duk_push_pointer(ctx, (void *) h);
 	} else {
-		h = NULL;
-		duk_push_undefined(ctx);
+		goto done;
 	}
+	DUK_ASSERT(h != NULL);
 
 	/* refcount */
 #ifdef DUK_USE_REFERENCE_COUNTING
-	if (h) {
-		duk_push_int(ctx, DUK_HEAPHDR_GET_REFCOUNT(h));
-	} else {
-		duk_push_undefined(ctx);
-	}
+	duk_push_int(ctx, DUK_HEAPHDR_GET_REFCOUNT(h));
 #else
 	duk_push_undefined(ctx);
 #endif
@@ -46,71 +42,58 @@ duk_ret duk_bi_duk_object_info(duk_context *ctx) {
 	/* heaphdr size and additional allocation size, followed by
 	 * type specific stuff (with varying value count)
 	 */
-	if (h) {
-		switch (DUK_HEAPHDR_GET_TYPE(h)) {
-		case DUK_HTYPE_STRING: {
-			duk_hstring *h_str = (duk_hstring *) h;
-			duk_push_int(ctx, (int) (sizeof(duk_hstring) + DUK_HSTRING_GET_BYTELEN(h_str) + 1));
-			duk_push_undefined(ctx);
-			break;
+	switch (DUK_HEAPHDR_GET_TYPE(h)) {
+	case DUK_HTYPE_STRING: {
+		duk_hstring *h_str = (duk_hstring *) h;
+		duk_push_int(ctx, (int) (sizeof(duk_hstring) + DUK_HSTRING_GET_BYTELEN(h_str) + 1));
+		break;
+	}
+	case DUK_HTYPE_OBJECT: {
+		duk_hobject *h_obj = (duk_hobject *) h;
+		duk_int_t hdr_size;
+		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
+			hdr_size = (duk_int_t) sizeof(duk_hcompiledfunction);
+		} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h_obj)) {
+			hdr_size = (duk_int_t) sizeof(duk_hnativefunction);
+		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
+			hdr_size = (duk_int_t) sizeof(duk_hthread);
+		} else {
+			hdr_size = (duk_int_t) sizeof(duk_hobject);
 		}
-		case DUK_HTYPE_OBJECT: {
-			duk_hobject *h_obj = (duk_hobject *) h;
-			duk_int_t hdr_size;
-			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-				hdr_size = (duk_int_t) sizeof(duk_hcompiledfunction);
-			} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h_obj)) {
-				hdr_size = (duk_int_t) sizeof(duk_hnativefunction);
-			} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
-				hdr_size = (duk_int_t) sizeof(duk_hthread);
-			} else {
-				hdr_size = (duk_int_t) sizeof(duk_hobject);
-			}
-			duk_push_int(ctx, (int) hdr_size);
-			duk_push_int(ctx, (int) DUK_HOBJECT_E_ALLOC_SIZE(h_obj));
-			duk_push_int(ctx, (int) h_obj->e_size);
-			duk_push_int(ctx, (int) h_obj->e_used);
-			duk_push_int(ctx, (int) h_obj->a_size);
-			duk_push_int(ctx, (int) h_obj->h_size);
-			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-				duk_hbuffer *h_data = ((duk_hcompiledfunction *) h_obj)->data;
-				if (h_data) {
-					duk_push_int(ctx, DUK_HBUFFER_GET_SIZE(h_data));
-				} else {
-					duk_push_int(ctx, 0);
-				}
+		duk_push_int(ctx, (int) hdr_size);
+		duk_push_int(ctx, (int) DUK_HOBJECT_E_ALLOC_SIZE(h_obj));
+		duk_push_int(ctx, (int) h_obj->e_size);
+		duk_push_int(ctx, (int) h_obj->e_used);
+		duk_push_int(ctx, (int) h_obj->a_size);
+		duk_push_int(ctx, (int) h_obj->h_size);
+		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
+			duk_hbuffer *h_data = ((duk_hcompiledfunction *) h_obj)->data;
+			if (h_data) {
+				duk_push_int(ctx, DUK_HBUFFER_GET_SIZE(h_data));
 			} else {
 				duk_push_int(ctx, 0);
 			}
-			break;
 		}
-		case DUK_HTYPE_BUFFER: {
-			duk_hbuffer *h_buf = (duk_hbuffer *) h;
-			if (DUK_HBUFFER_HAS_DYNAMIC(h_buf)) {
-				/* XXX: when usable_size == 0, dynamic buf ptr may now be NULL, in which case
-				 * the second allocation does not exist.
-				 */
-				duk_hbuffer_dynamic *h_dyn = (duk_hbuffer_dynamic *) h;
-				duk_push_int(ctx, (int) (sizeof(duk_hbuffer_dynamic)));
-				duk_push_int(ctx, (int) (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(h_dyn)));
-			} else {
-				duk_push_int(ctx, (int) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf) + 1));
-				duk_push_undefined(ctx);
-			}
-			break;
-	
+		break;
+	}
+	case DUK_HTYPE_BUFFER: {
+		duk_hbuffer *h_buf = (duk_hbuffer *) h;
+		if (DUK_HBUFFER_HAS_DYNAMIC(h_buf)) {
+			/* XXX: when usable_size == 0, dynamic buf ptr may now be NULL, in which case
+			 * the second allocation does not exist.
+			 */
+			duk_hbuffer_dynamic *h_dyn = (duk_hbuffer_dynamic *) h;
+			duk_push_int(ctx, (int) (sizeof(duk_hbuffer_dynamic)));
+			duk_push_int(ctx, (int) (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(h_dyn)));
+		} else {
+			duk_push_int(ctx, (int) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf) + 1));
 		}
-		default: {
-			duk_push_undefined(ctx);
-			duk_push_undefined(ctx);
-			break;
-		}
-		}
-	} else {
-		duk_push_undefined(ctx);
-		duk_push_undefined(ctx);
+		break;
+
+	}
 	}
 
+ done:
 	/* set values into ret array */
 	/* FIXME: primitive to make array from valstack slice */
 	n = duk_get_top(ctx);
