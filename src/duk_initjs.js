@@ -27,8 +27,8 @@
     if (true) {
         // removed in Duktape 0.9.0
         def('build', '');
-        def('setFinalizer', D.setFin);
-        def('getFinalizer', D.getFin);
+        def('setFinalizer', function(o,v) { Duktape.fin(o,v); });
+        def('getFinalizer', function(o) { return Duktape.fin(o); });
         def('addr', function(v) { return D.info(v)[1]; });
         def('refc', function(v) { return D.info(v)[2]; });
     }
