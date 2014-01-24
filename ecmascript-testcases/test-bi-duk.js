@@ -24,11 +24,6 @@ function
 function
 function
 function
-function
-function
-function
-function
-function
 Buffer
 object
 function
@@ -81,12 +76,7 @@ function propsTest() {
     fduk('fin');
     fduk('enc');
     fduk('dec');
-    fduk('jxEnc');
-    fduk('jxDec');
-    fduk('jcEnc');
-    fduk('jcDec');
-    fduk('addr');
-    fduk('refc');
+    fduk('info');
     fduk('gc');
     fduk('Buffer');
     fduk('Pointer');

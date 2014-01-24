@@ -10,11 +10,11 @@
 ---*/
 
 function encJsonx(val) {
-    return Duktape.jxEnc(val);
+    return Duktape.enc('jsonx', val);
 }
 
 function decJsonx(val) {
-    return Duktape.jxDec(val);
+    return Duktape.dec('jsonx', val);
 }
 
 function safedecJsonx(val) {
@@ -26,11 +26,11 @@ function safedecJsonx(val) {
 }
 
 function encJsonc(val) {
-    return Duktape.jcEnc(val);
+    return Duktape.enc('jsonc', val);
 }
 
 function decJsonc(val) {
-    return Duktape.jcDec(val);
+    return Duktape.dec('jsonc', val);
 }
 
 function safedecJsonc(val) {
@@ -604,11 +604,11 @@ function nonDefaultEncodingTest() {
         if (typeof v === 'string') { return v.toUpperCase() } else { return v }
     }
 
-    print(Duktape.jxEnc(val, ucStrings /*replacer*/, 4 /*space*/));
-    print(Duktape.jxEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
+    print(Duktape.enc('jsonx', val, ucStrings /*replacer*/, 4 /*space*/));
+    print(Duktape.enc('jsonx', val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
 
-    print(Duktape.jcEnc(val, ucStrings /*replacer*/, 4 /*space*/));
-    print(Duktape.jcEnc(val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
+    print(Duktape.enc('jsonc', val, ucStrings /*replacer*/, 4 /*space*/));
+    print(Duktape.enc('jsonc', val, [ 'foo', 'bar', 'quux' ] /*replacer*/, '->' /*space*/));  // drop 'baz', use weird space
 }
 
 print('non-default encoding options');
@@ -655,12 +655,12 @@ function nonDefaultDecodingTest() {
     }
 
     enc = encJsonx(val);
-    dec = Duktape.jxDec(enc, revive);
+    dec = Duktape.dec('jsonx', enc, revive);
     print(Object.getOwnPropertyNames(dec));
     print(dec.foo);
 
     enc = encJsonc(val);
-    dec = Duktape.jcDec(enc, revive);
+    dec = Duktape.dec('jsonc', enc, revive);
     print(Object.getOwnPropertyNames(dec));
     print(dec.foo);
 }
