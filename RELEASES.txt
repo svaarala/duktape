@@ -108,6 +108,9 @@ Released
   removed somewhat useless Duktape.build, added Duktape.env, renamed
   setFinalizer and getFinalizer to setFin and getFin for consistency
 
+* Replace Duktape.addr() and Duktape.refc() with Duktape.info(), which gives
+  much more internal detail for a given value
+
 * Removed array size limit for very large array joins
 
 * Improve Unicode handling of Greek final sigma
