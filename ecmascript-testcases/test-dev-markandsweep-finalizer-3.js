@@ -21,7 +21,7 @@ bar
 var newobj = null;
 
 var obj1 = { name: 'obj1' };
-Duktape.setFin(obj1, function (o) {
+Duktape.fin(obj1, function (o) {
     print('finalizer', o.name);
     newobj = { foo: 'bar' };
 });

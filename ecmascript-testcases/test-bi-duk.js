@@ -29,7 +29,6 @@ function
 function
 function
 function
-function
 Buffer
 object
 function
@@ -79,8 +78,7 @@ function propsTest() {
     print('Duktape');
     fduk('env');
     fduk('version');
-    fduk('setFin');
-    fduk('getFin');
+    fduk('fin');
     fduk('enc');
     fduk('dec');
     fduk('jxEnc');
@@ -170,6 +168,38 @@ print('encdec');
 
 try {
     encDecTest();
+} catch (e) {
+    print(e);
+}
+
+/*===
+finalizer
+undefined
+undefined
+function
+true
+undefined
+undefined
+===*/
+
+/* Just test that we can set and get a finalizer. */
+
+function finalizerTest() {
+    var obj = {};
+    function f(v) { print(typeof v); }
+    function fin(x) { print('finalizer'); }
+    f(Duktape.fin(obj));
+    f(Duktape.fin(obj, fin));
+    f(Duktape.fin(obj));
+    print(Duktape.fin(obj) === fin);
+    f(Duktape.fin(obj, undefined));
+    f(Duktape.fin(obj));
+}
+
+print('finalizer');
+
+try {
+    finalizerTest();
 } catch (e) {
     print(e);
 }

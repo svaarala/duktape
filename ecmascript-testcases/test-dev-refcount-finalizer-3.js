@@ -31,7 +31,7 @@ function finalizer(x) {
 	}
 }
 
-Duktape.setFin(o, finalizer);
+Duktape.fin(o, finalizer);
 
 rescue = true;
 o = undefined;  // refzero, finalize, gets rescued

@@ -65,8 +65,8 @@ function init() {
     a.ref = b;
     b.ref = a;
 
-    Duktape.setFin(a, finalizer_a);
-    Duktape.setFin(b, finalizer_b);
+    Duktape.fin(a, finalizer_a);
+    Duktape.fin(b, finalizer_b);
 }
 
 function delrefs() {

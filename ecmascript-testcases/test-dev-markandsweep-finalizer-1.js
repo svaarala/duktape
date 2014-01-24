@@ -26,7 +26,7 @@ function init() {
     a = { foo: 123 };
     b = {}
 
-    Duktape.setFin(a, function (x) {
+    Duktape.fin(a, function (x) {
         print('finalizer, foo ->', x.foo);
     });
 
