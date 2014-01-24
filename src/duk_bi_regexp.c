@@ -154,18 +154,22 @@ int duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 #else  /* DUK_USE_REGEXP_SUPPORT */
 
 int duk_bi_regexp_constructor(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
 int duk_bi_regexp_prototype_exec(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
 int duk_bi_regexp_prototype_test(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
 int duk_bi_regexp_prototype_to_string(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 

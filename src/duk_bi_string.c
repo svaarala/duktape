@@ -247,6 +247,7 @@ duk_ret duk_bi_string_prototype_substr(duk_context *ctx) {
 }
 #else  /* DUK_USE_SECTION_B */
 duk_ret duk_bi_string_prototype_substr(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */
@@ -1144,6 +1145,7 @@ duk_ret duk_bi_string_prototype_search(duk_context *ctx) {
 }
 #else  /* DUK_USE_REGEXP_SUPPORT */
 duk_ret duk_bi_string_prototype_search(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
@@ -1225,6 +1227,7 @@ duk_ret duk_bi_string_prototype_match(duk_context *ctx) {
 }
 #else  /* DUK_USE_REGEXP_SUPPORT */
 duk_ret duk_bi_string_prototype_match(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */

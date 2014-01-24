@@ -205,9 +205,11 @@ duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
 }
 #else  /* DUK_USE_JSONX */
 duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_JSONX */
@@ -231,9 +233,11 @@ duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
 }
 #else  /* DUK_USE_JSONC */
 duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_JSONC */

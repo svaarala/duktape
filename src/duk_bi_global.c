@@ -638,10 +638,12 @@ int duk_bi_global_object_unescape(duk_context *ctx) {
 }
 #else  /* DUK_USE_SECTION_B */
 int duk_bi_global_object_escape(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
 int duk_bi_global_object_unescape(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */
@@ -717,10 +719,12 @@ int duk_bi_global_object_alert(duk_context *ctx) {
 #endif  /* DUK_USE_FILE_IO */
 #else  /* DUK_USE_BROWSER_LIKE */
 int duk_bi_global_object_print(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
 int duk_bi_global_object_alert(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_BROWSER_LIKE */
