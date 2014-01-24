@@ -59,8 +59,7 @@ does not block.</p>
 <tr><td class="propname">jxDec</td><td>Like <code>JSON.parse()</code> but decodes from JSONX custom format.</td></tr>
 <tr><td class="propname">jcEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONC custom format.</td></tr>
 <tr><td class="propname">jcDec</td><td>Like <code>JSON.parse()</code> but decodes from JSONC custom format.</td></tr>
-<tr><td class="propname">addr</td><td>Get heap address of a value as a string, <code>undefined</code> if not appropriate (debug use).</td></tr>
-<tr><td class="propname">refc</td><td>Get reference count of a value as a number, <code>undefined</code> if not appropriate (debug use).</td></tr>
+<tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
@@ -145,6 +144,198 @@ print(typeof result, result);  // prints 'buffer foo'
 var result = String(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
+
+<h3>info()</h3>
+
+<p>When given an arbitrary input value, <code>Duktape.info()</code> returns an
+array of values with internal information related to the value.  The format of
+of the values in the array is version specific.  This is mainly useful for
+debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
+
+<p>The current result array format is described in the table below.  Notes:</p>
+<ul>
+<li>Memory sizes do not include any heap overhead (which may be 8-16 bytes or
+    more, depending on what kind of allocation algorithm is used).</li>
+<li>Reference counts are not adjusted in any way, and include references to
+    the value caused by the <code>info()</code> call.</li>
+<li>"type tag" is a number matching <code>DUK_TYPE_xxx</code> from <code>duktape.h</code>.</li>
+<li>The number of entries allocated for object properties is given by
+    "prop entry count", while "prop entry used" indicates how many of the
+    entries are in used.  If an array part is present, "prop array count"
+    indicates the number of entries currently allocated (there is no value
+    to indicate the number of used array part entries).  Finally, "prop hash count"
+    indicates the number of entries in a hash lookup table if present (it is
+    not present for typical, small objects).  These numbers are counts, not
+    byte sizes.</li>
+<li>Function data contains bytecode instructions, constants, etc.  It is
+    shared between all instances (closures) of a certain function template.</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Type</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>undefined</td>
+<td>type tag</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>null</td>
+<td>type tag</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>type tag</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>number</td>
+<td>type tag</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>string</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>object, Ecmascript function</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>prop alloc size</td>
+<td>prop entry count</td>
+<td>prop entry used</td>
+<td>prop array count</td>
+<td>prop hash count</td>
+<td>func data size</td>
+</tr>
+<tr>
+<td>object, Duktape/C function</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>prop alloc size</td>
+<td>prop entry count</td>
+<td>prop entry used</td>
+<td>prop array count</td>
+<td>prop hash count</td>
+<td>-</td>
+</tr>
+<tr>
+<td>object, thread</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>prop alloc size</td>
+<td>prop entry count</td>
+<td>prop entry used</td>
+<td>prop array count</td>
+<td>prop hash count</td>
+<td>-</td>
+</tr>
+<tr>
+<td>object, other</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>prop alloc size</td>
+<td>prop entry count</td>
+<td>prop entry used</td>
+<td>prop array count</td>
+<td>prop hash count</td>
+<td>-</td>
+</tr>
+<tr>
+<td>buffer, fixed</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>buffer, dynamic</td>
+<td>type tag</td>
+<td>heap ptr</td>
+<td>refcount</td>
+<td>heap hdr size</td>
+<td>curr buf size</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>pointer</td>
+<td>type tag</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</div>
 
 <h2>Duktape.Buffer (constructor)</h2>
 
