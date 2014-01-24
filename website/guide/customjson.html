@@ -30,10 +30,10 @@ readable format, most suitable for debugging, logging, etc.</p>
 <p>JSONX is used as follows:</p>
 <pre class="ecmascript-code">
 var obj = { foo: 0/0, bar: [ 1, undefined, 3 ] };
-print(Duktape.jxEnc(obj));
+print(Duktape.enc('jsonx', obj));
 // prints out: {foo:NaN,bar:[1,undefined,3]}
 
-var dec = Duktape.jxDec('{ foo: 123, bar: undefined, quux: NaN }');
+var dec = Duktape.dec('jsonx', '{ foo: 123, bar: undefined, quux: NaN }');
 print(dec.foo, dec.bar, dec.quux);
 // prints out: 123 undefined NaN
 </pre>
@@ -51,10 +51,10 @@ are encoded as plain string data with the format "U+nnnnnnnn"
 <p>JSONC is used as follows:</p>
 <pre class="ecmascript-code">
 var obj = { foo: 0/0, bar: [ 1, undefined, 3 ] };
-print(Duktape.jcEnc(obj));
+print(Duktape.enc('jsonc', obj));
 // prints out: {"foo":{"_nan":true},"bar":[1,{"_undef":true},3]}
 
-var dec = Duktape.jcDec('{ "foo": 123, "bar": {"_undef":true}, "quux": {"_nan":true} }');
+var dec = Duktape.dec('jsonc', '{ "foo": 123, "bar": {"_undef":true}, "quux": {"_nan":true} }');
 print(dec.foo, dec.bar, dec.quux);
 // prints out: 123 [object Object] [object Object]
 </pre>

@@ -52,12 +52,8 @@ does not block.</p>
 <tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
 <tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
 <tr><td class="propname">fin</td><td>Set or get finalizer of an object.</td></tr>
-<tr><td class="propname">enc</td><td>Encode a value: <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
-<tr><td class="propname">dec</td><td>Decode a value: <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
-<tr><td class="propname">jxEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONX custom format.</td></tr>
-<tr><td class="propname">jxDec</td><td>Like <code>JSON.parse()</code> but decodes from JSONX custom format.</td></tr>
-<tr><td class="propname">jcEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONC custom format.</td></tr>
-<tr><td class="propname">jcDec</td><td>Like <code>JSON.parse()</code> but decodes from JSONC custom format.</td></tr>
+<tr><td class="propname">enc</td><td>Encode a value (hex, base-64, JSONX, JSONC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
+<tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JSONX, JSONC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
@@ -129,23 +125,36 @@ Duktape.fin(o, function(x) { print('finalizer called'); });
 Duktape.fin(o, undefined);  // disable
 </pre>
 
-<h3>enc() and dec()</h3>
+<h3>enc()</h3>
 
 <p><code>enc()</code> encodes its argument value into chosen format.
-The first argument is a format (currently supported are "hex" and "base64"),
-second argument is the value to encode.  Buffer values are encoded as is,
-other values are string coerced and the internal byte representation
-(extended UTF-8) is then encoded.  The result is a string.</p>
+The first argument is a format (currently supported are "hex", "base64",
+"jsonx" and "jsonc"), second argument is the value to encode, and any
+further arguments are format specific.</p>
 
-<p>For example, to encode a string into base64:</p>
+<p>For "hex" and "base64", buffer values are encoded as is, other values
+are string coerced and the internal byte representation (extended UTF-8)
+is then encoded.  The result is a string.  For example, to encode a string
+into base64:</p>
 <pre class="ecmascript-code">
 var result = Duktape.enc('base64', 'foo');
 print(result);  // prints 'Zm9v'
 </pre>
 
-<p><code>dec()</code> provides the reverse function.  The input value is
-first string coerced (it only really makes sense to decode strings), and
-the result is always a buffer.  For example:</p>
+<p>For "jsonx" and "jsonc" the argument list following the format name is
+the same as for <code>JSON.stringify()</code>: value, replacer (optional),
+space (optional).  For example:</p>
+<pre class="ecmascript-code">
+var result = Duktape.enc('jsonx', { foo: 123 }, null, 4);
+print(result);  // prints JSONX encoded {foo:123} with 4-space indent
+</pre>
+
+<h3>dec()</h3>
+
+<p><code>dec()</code> provides the reverse function of <code>enc()</code>.</p>
+
+<p>For "hex" and "base64" the input value is first string coerced (it only
+really makes sense to decode strings).  The result is always a buffer.  For example:</p>
 <pre class="ecmascript-code">
 var result = Duktape.dec('base64', 'Zm9v');
 print(typeof result, result);  // prints 'buffer foo'
@@ -155,6 +164,14 @@ print(typeof result, result);  // prints 'buffer foo'
 <pre class="ecmascript-code">
 var result = String(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
+</pre>
+
+<p>For "jsonx" and "jsonc" the argument list following the format name is
+the same as for <code>JSON.parse()</code>: text, reviver (optional).
+For example:</p>
+<pre class="ecmascript-code">
+var result = Duktape.dec('jsonx', "{foo:123}");
+print(result.foo);  // prints 123
 </pre>
 
 <h3>info()</h3>
