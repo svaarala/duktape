@@ -37,6 +37,9 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 			h->curr_alloc = ptr;
 			h->usable_size = size;  /* snug */
 		} else {
+			/* FIXME: if safety NUL term IS included, having a NULL ptr
+			 * for the buffer area is inconsistent.
+			 */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 			h->curr_alloc = NULL;
 #endif
