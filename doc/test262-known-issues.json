@@ -23,7 +23,6 @@
   { "test": "ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A1_T16", "known": "uses invalid DecimalEscape inside a character class, '/[\\12-\\14]/'" },
   { "test": "ch15/15.10/15.10.2/15.10.2.6/S15.10.2.6_A4_T7", "known": "the test case has unescaped invalid PatternCharacters (^, ] {, }) which follow the escaped '\\['" },
   { "test": "ch15/15.10/15.10.2/15.10.2.9/S15.10.2.9_A1_T4", "known": "invalid backreference '\\2', RegExp only has one capture; in E5.1 this is a SyntaxError" },
-  { "test": "ch15/15.4/15.4.4/15.4.4.10/15.4.4.10-10-c-ii-1", "diagnosed": "Duktape bug: duk_put_prop_xxx() used instead of duk_def_prop_xxx()" },
   { "test": "ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-12", "diagnosed": "probably Duktape bug: long array corner cases (C typing?)" },
   { "test": "ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-16", "diagnosed": "probably Duktape bug: long array corner cases (C typing?)" },
   { "test": "ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-8-9", "diagnosed": "probably Duktape bug: long array corner cases (C typing?)" },
