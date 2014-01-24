@@ -123,13 +123,17 @@ duk_ret duk_bi_duk_object_gc(duk_context *ctx) {
 duk_ret duk_bi_duk_object_fin(duk_context *ctx) {
 	(void) duk_require_hobject(ctx, 0);
 	if (duk_get_top(ctx) >= 2) {
-		/* set */
+		/* Set: currently a finalizer is disabled by setting it to
+		 * undefined; this does not remove the property at the moment.
+		 * The value could be type checked to be either a function
+		 * or something else; if something else, the property could
+		 * be deleted.
+		 */
 		duk_set_top(ctx, 2);
-		/* FIXME: duk_require_function(ctx, 1) */
 		(void) duk_put_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 		return 0;
 	} else {
-		/* get */
+		/* Get. */
 		DUK_ASSERT(duk_get_top(ctx) == 1);
 		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 		return 1;
