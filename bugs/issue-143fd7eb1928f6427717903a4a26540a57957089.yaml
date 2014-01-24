@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: merge at least jx_enc/jc_enc and jx_dec/jc_dec into single native helper
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-23 23:16:01.177568 Z
+references: []
+
+id: 143fd7eb1928f6427717903a4a26540a57957089
+log_events: 
+- - 2014-01-23 23:16:01.361530 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

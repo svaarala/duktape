@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a primitive (internal?) to make an array out of values on the valstack
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-23 22:40:11.080579 Z
+references: []
+
+id: a5dc83c41067074e232c8d93e53b227120d44786
+log_events: 
+- - 2014-01-23 22:40:11.200744 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

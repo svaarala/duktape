@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_hbuffer_dynamic may have usable_size 0 and data ptr NULL; this is not compatible with a guaranteed NUL term
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-23 22:48:49.581072 Z
+references: []
+
+id: 33e279c79beaa37f7843a9dbcb1e2b3ef292f86f
+log_events: 
+- - 2014-01-23 22:48:49.860761 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
