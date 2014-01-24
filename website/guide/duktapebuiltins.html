@@ -51,8 +51,7 @@ does not block.</p>
 <tbody>
 <tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
 <tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
-<tr><td class="propname">setFin</td><td>Set finalizer of an object.</td></tr>
-<tr><td class="propname">getFin</td><td>Get finalizer of an object.</td></tr>
+<tr><td class="propname">fin</td><td>Set or get finalizer of an object.</td></tr>
 <tr><td class="propname">enc</td><td>Encode a value: <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
 <tr><td class="propname">dec</td><td>Decode a value: <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">jxEnc</td><td>Like <code>JSON.stringify()</code> but encodes to JSONX custom format.</td></tr>
@@ -115,6 +114,19 @@ the value).</p>
 <p>Example from Duktape 0.9.0:</p>
 <pre class="ecmascript-code">
 l u x64     // l|b|m endianness, p|u packed/unpacked tval, arch
+</pre>
+
+<h3>fin()</h3>
+
+<p>When called with a single argument, gets the current finalizer of an object:</p>
+<pre class="ecmascript-code">
+var currFin = Duktape.fin(o);
+</pre>
+
+<p>When called with two arguments, sets the finalizer of an object (returns undefined):</p>
+<pre class="ecmascript-code">
+Duktape.fin(o, function(x) { print('finalizer called'); });
+Duktape.fin(o, undefined);  // disable
 </pre>
 
 <h3>enc() and dec()</h3>

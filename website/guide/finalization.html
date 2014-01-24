@@ -5,15 +5,17 @@
 <h2>Overview of finalization</h2>
 
 <p>An object which has an internal finalizer property in its prototype
-chain (or the object itself) is subject to finalization before being freed.
-The internal finalizer property is set using <code>Duktape.setFin()</code>
-method.  The finalizer may be triggered by either reference counting or
-mark-and-sweep.</p>
+chain (or in the object itself) is subject to finalization before being freed.
+The internal finalizer property is set using <code>Duktape.fin()</code>
+method with the object and the finalizer function as call arguments.
+The current finalizer is read back by calling <code>Duktape.fin()</code>
+with only the object as a call argument.</p>
 
 <p>The finalizer method is called with the target object as its sole
 argument.  The method may rescue the object by creating a live reference
 to the object before returning.  The return value is ignored; similarly,
-any errors thrown by the finalizer are ignored.</p>
+any errors thrown by the finalizer are ignored.  The finalizer may be
+triggered by either reference counting or mark-and-sweep.</p>
 
 <p>Finalizers cannot currently yield.  The context executing the finalization
 can currently be any coroutine in the heap.  (This will be fixed in the future.)
@@ -31,7 +33,7 @@ var a;
 function init() {
     a = { foo: 123 };
 
-    Duktape.setFin(a, function (x) {
+    Duktape.fin(a, function (x) {
         print('finalizer, foo -&gt;', x.foo);
     });
 }
