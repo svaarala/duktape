@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: merge enc, dec, jxEnc, jxDec, jcEnc, jcDec (function footprint is 100+ bytes)
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-24 18:54:02.425224 Z
+references: []
+
+id: 5d733b866d661a5d459b779deb67650cffa2384c
+log_events: 
+- - 2014-01-24 18:54:02.568997 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

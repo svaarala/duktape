@@ -3,7 +3,7 @@ title: lineNumber (and fileName) of SyntaxErrors should probably reflect the sou
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-17 22:01:49.404640 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-24 16:34:30.671174 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""
