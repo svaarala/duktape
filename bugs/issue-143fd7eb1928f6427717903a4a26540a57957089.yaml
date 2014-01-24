@@ -3,7 +3,7 @@ title: merge at least jx_enc/jc_enc and jx_dec/jc_dec into single native helper
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,17 @@ log_events:
 - - 2014-01-23 23:16:01.361530 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-24 14:06:22.331300 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Currently JSONX and JSONC support can be compiled in (or leaved out) separately.
+    This makes a shared helper impossible for now.
+    
+    If JSONX/JSONC is changed to come as a package (both or neither) then this can
+    be fixed.
+- - 2014-01-24 16:18:41.800797 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

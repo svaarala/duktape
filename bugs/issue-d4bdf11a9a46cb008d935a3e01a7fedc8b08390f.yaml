@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "consistency: DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE() vs. DUK_HOBJECT_E_ALLOC_SIZE()"
+desc: There is not '_GET' usually in macros accessing fields.
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-24 12:19:51.738738 Z
+references: []
+
+id: d4bdf11a9a46cb008d935a3e01a7fedc8b08390f
+log_events: 
+- - 2014-01-24 12:19:51.911595 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
