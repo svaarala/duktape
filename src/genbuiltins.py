@@ -1098,12 +1098,8 @@ bi_duk = {
 		{ 'name': 'info',			'native': 'duk_bi_duk_object_info',             'length': 1 },
 		{ 'name': 'gc',				'native': 'duk_bi_duk_object_gc',		'length': 1 },
 		{ 'name': 'fin',			'native': 'duk_bi_duk_object_fin',		'length': 0,	'varargs': True },
-		{ 'name': 'enc',			'native': 'duk_bi_duk_object_enc',		'length': 2 },
-		{ 'name': 'dec',			'native': 'duk_bi_duk_object_dec',		'length': 2 },
-		{ 'name': 'jxEnc',			'native': 'duk_bi_duk_object_jx_enc',		'length': 3 },
-		{ 'name': 'jxDec',			'native': 'duk_bi_duk_object_jx_dec',		'length': 2 },
-		{ 'name': 'jcEnc',			'native': 'duk_bi_duk_object_jc_enc',		'length': 3 },
-		{ 'name': 'jcDec',			'native': 'duk_bi_duk_object_jc_dec',		'length': 2 },
+		{ 'name': 'enc',			'native': 'duk_bi_duk_object_enc',		'length': 0,	'varargs': True },
+		{ 'name': 'dec',			'native': 'duk_bi_duk_object_dec',		'length': 0,	'varargs': True },
 	],
 }
 

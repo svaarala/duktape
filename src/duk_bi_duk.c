@@ -1,5 +1,12 @@
 /*
  *  Duktape built-ins
+ *
+ *  Size optimization note: it might seem that vararg multipurpose functions
+ *  like fin(), enc(), and dec() are not very size optimal, but using a single
+ *  user-visible Ecmascript function saves a lot of run-time footprint; each
+ *  Function instance takes >100 bytes.  Using a shared native helper and a
+ *  'magic' value won't save much if there are multiple Function instances
+ *  anyway.
  */
 
 #include "duk_internal.h"
@@ -144,94 +151,86 @@ duk_ret duk_bi_duk_object_enc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
 
-	h_str = duk_to_hstring(ctx, 0);
+	/* Vararg function: must be careful to check/require arguments.
+	 * The JSON helpers accept invalid indices and treat them like
+	 * non-existent optional parameters.
+	 */
+
+	h_str = duk_require_hstring(ctx, 0);
+	duk_require_valid_index(ctx, 1);
+
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
+		duk_set_top(ctx, 2);
 		duk_hex_encode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-		return 1;
 	} else if (h_str == DUK_HTHREAD_STRING_BASE64(thr)) {
+		duk_set_top(ctx, 2);
 		duk_base64_encode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-		return 1;
+#ifdef DUK_USE_JSONX
+	} else if (h_str == DUK_HTHREAD_STRING_JSONX(thr)) {
+		duk_bi_json_stringify_helper(ctx,
+		                             1 /*idx_value*/,
+		                             2 /*idx_replacer*/,
+		                             3 /*idx_space*/,
+		                             DUK_JSON_FLAG_EXT_CUSTOM |
+		                             DUK_JSON_FLAG_ASCII_ONLY |
+		                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
+#endif
+#ifdef DUK_USE_JSONC
+	} else if (h_str == DUK_HTHREAD_STRING_JSONC(thr)) {
+		duk_bi_json_stringify_helper(ctx,
+		                             1 /*idx_value*/,
+		                             2 /*idx_replacer*/,
+		                             3 /*idx_space*/,
+		                             DUK_JSON_FLAG_EXT_COMPATIBLE |
+		                             DUK_JSON_FLAG_ASCII_ONLY /*flags*/);
+#endif
 	} else {
 		return DUK_RET_TYPE_ERROR;
 	}
+	return 1;
 }
 
 duk_ret duk_bi_duk_object_dec(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
 
-	h_str = duk_to_hstring(ctx, 0);
+	/* Vararg function: must be careful to check/require arguments.
+	 * The JSON helpers accept invalid indices and treat them like
+	 * non-existent optional parameters.
+	 */
+
+	h_str = duk_require_hstring(ctx, 0);
+	duk_require_valid_index(ctx, 1);
+
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
+		duk_set_top(ctx, 2);
 		duk_hex_decode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-		return 1;
 	} else if (h_str == DUK_HTHREAD_STRING_BASE64(thr)) {
+		duk_set_top(ctx, 2);
 		duk_base64_decode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-		return 1;
+#ifdef DUK_USE_JSONX
+	} else if (h_str == DUK_HTHREAD_STRING_JSONX(thr)) {
+		duk_bi_json_parse_helper(ctx,
+		                         1 /*idx_value*/,
+		                         2 /*idx_replacer*/,
+		                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
+#endif
+#ifdef DUK_USE_JSONC
+	} else if (h_str == DUK_HTHREAD_STRING_JSONC(thr)) {
+		duk_bi_json_parse_helper(ctx,
+		                         1 /*idx_value*/,
+		                         2 /*idx_replacer*/,
+		                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
+#endif
 	} else {
 		return DUK_RET_TYPE_ERROR;
 	}
-}
-
-#ifdef DUK_USE_JSONX
-duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx) {
-	duk_bi_json_parse_helper(ctx,
-	                         0 /*idx_value*/,
-	                         1 /*idx_replacer*/,
-	                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
 	return 1;
 }
-duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
-	duk_bi_json_stringify_helper(ctx,
-	                             0 /*idx_value*/,
-	                             1 /*idx_replacer*/,
-	                             2 /*idx_space*/,
-	                             DUK_JSON_FLAG_EXT_CUSTOM |
-	                             DUK_JSON_FLAG_ASCII_ONLY |
-	                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
-	return 1;
-}
-#else  /* DUK_USE_JSONX */
-duk_ret duk_bi_duk_object_jx_dec(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
-}
-duk_ret duk_bi_duk_object_jx_enc(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
-}
-#endif  /* DUK_USE_JSONX */
-
-#ifdef DUK_USE_JSONC
-duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx) {
-	duk_bi_json_parse_helper(ctx,
-	                         0 /*idx_value*/,
-	                         1 /*idx_replacer*/,
-	                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
-	return 1;
-}
-duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
-	duk_bi_json_stringify_helper(ctx,
-	                             0 /*idx_value*/,
-	                             1 /*idx_replacer*/,
-	                             2 /*idx_space*/,
-	                             DUK_JSON_FLAG_EXT_COMPATIBLE |
-	                             DUK_JSON_FLAG_ASCII_ONLY /*flags*/);
-	return 1;
-}
-#else  /* DUK_USE_JSONC */
-duk_ret duk_bi_duk_object_jc_dec(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
-}
-duk_ret duk_bi_duk_object_jc_enc(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
-}
-#endif  /* DUK_USE_JSONC */
 
 /*
  *  Logging support
