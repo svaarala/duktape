@@ -1,0 +1,36 @@
+==================================
+Status of Emscripten compatibility
+==================================
+
+Overview
+========
+
+Emscripten compatibility is more or less untested now.
+
+Quick hello world test::
+
+  $ ./emcc tests/hello_world.cpp 
+
+Failure 1: invalid RegExp::
+
+  $ duk a.out.js
+  SyntaxError: invalid regexp quantifier (unknown char) (line 181)
+          duk_lexer.c:1444
+
+The first problem is::
+
+  if (/<?{ ?[^}]* ?}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
+
+The fix is to escape the braces::
+
+  if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
+
+The next problem is::
+
+  $ duk a.out.js
+  SyntaxError: function declaration not allowed outside of top level (line 829)
+          duk_js_compiler.c:5342
+
+This occurs in so many places that before this non-standard syntax is
+supported, Emscripten looks difficult to support.
+
