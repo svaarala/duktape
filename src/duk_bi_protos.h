@@ -43,8 +43,7 @@ duk_ret duk_bi_date_prototype_set_time(duk_context *ctx);
 /* Helper exposed for internal use */
 duk_double_t duk_bi_date_get_now(duk_context *ctx);
 
-duk_ret duk_bi_duk_object_addr(duk_context *ctx);
-duk_ret duk_bi_duk_object_refc(duk_context *ctx);
+duk_ret duk_bi_duk_object_info(duk_context *ctx);
 duk_ret duk_bi_duk_object_gc(duk_context *ctx);
 duk_ret duk_bi_duk_object_get_fin(duk_context *ctx);
 duk_ret duk_bi_duk_object_set_fin(duk_context *ctx);

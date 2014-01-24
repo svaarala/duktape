@@ -296,6 +296,13 @@
 #define DUK_HOBJECT_HASHIDX_UNUSED              0xffffffffUL
 #define DUK_HOBJECT_HASHIDX_DELETED             0xfffffffeUL
 
+#define DUK_HOBJECT_E_ALLOC_SIZE(h) \
+	( \
+		(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+		(h)->a_size * sizeof(duk_tval) + \
+		(h)->h_size * sizeof(duk_uint32_t) \
+	)
+
 /*
  *  Misc
  */

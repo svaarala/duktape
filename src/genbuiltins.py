@@ -1095,8 +1095,7 @@ bi_duk = {
 		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
 	],
 	'functions': [
-		{ 'name': 'addr',			'native': 'duk_bi_duk_object_addr',             'length': 1 },
-		{ 'name': 'refc',			'native': 'duk_bi_duk_object_refc',             'length': 1 },
+		{ 'name': 'info',			'native': 'duk_bi_duk_object_info',             'length': 1 },
 		{ 'name': 'gc',				'native': 'duk_bi_duk_object_gc',		'length': 1 },
 		{ 'name': 'getFin',			'native': 'duk_bi_duk_object_get_fin',		'length': 1 },
 		{ 'name': 'setFin',			'native': 'duk_bi_duk_object_set_fin',		'length': 2 },
