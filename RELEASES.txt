@@ -105,11 +105,12 @@ Released
 * Added input line number to compiler error messages (e.g. SyntaxErrors)
 
 * Renamed __duk__ to Duktape for more consistency with Ecmascript conventions,
-  removed somewhat useless Duktape.build, added Duktape.env, renamed
-  setFinalizer and getFinalizer to setFin and getFin for consistency
+  and made the following cleanups:
 
-* Replace Duktape.addr() and Duktape.refc() with Duktape.info(), which gives
-  much more internal detail for a given value
+    - removed somewhat useless 'build'
+    - added 'env'
+    - replaced 'addr' and 'refc' with 'info' which gives more internal info
+    - merged 'setFinalizer' and 'getFinalizer' into a single 'fin' call
 
 * Removed array size limit for very large array joins
 
