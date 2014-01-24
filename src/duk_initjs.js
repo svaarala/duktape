@@ -33,6 +33,14 @@
         def('refc', function(v) { return D.info(v)[2]; });
     }
 
+    // JSONX/JSONC convenience
+    if (false) {
+        def('jxEnc', function(a,b,c) { return D.enc('jsonx', a, b, c); });
+        def('jxDec', function(a,b) { return D.dec('jsonx', a, b); });
+        def('jcEnc', function(a,b,c) { return D.enc('jsonc', a, b, c); });
+        def('jcDec', function(a,b) { return D.dec('jsonc', a, b); });
+    }
+
     // info convenience
     if (false) {
         def('infox', function (v) {
