@@ -1432,13 +1432,28 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		const char *fmt;
 		void *ptr = DUK_TVAL_GET_POINTER(tv);
 
-		/* FIXME: more refined ifdef */
 		DUK_MEMSET(buf, 0, sizeof(buf));
-		if (js_ctx->flag_ext_custom) {
+
+		/* The #ifdef clutter here needs to handle the three cases:
+		 * (1) JSONX+JSONC, (2) JSONX only, (3) JSONC only.
+		 */
+#if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
+		if (js_ctx->flag_ext_custom)
+#endif
+#if defined(DUK_USE_JSONX)
+		{
 			fmt = ptr ? "(%p)" : "(null)";
-		} else {
+		}
+#endif
+#if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
+		else
+#endif
+#if defined(DUK_USE_JSONC)
+		{
 			fmt = ptr ? "{\"_ptr\":\"%p\"}" : "{\"_ptr\":\"null\"}";
 		}
+#endif
+
 		/* When ptr == NULL, the format argument is unused. */
 		DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptr);  /* must not truncate */
 		EMIT_CSTR(js_ctx, buf);
@@ -1473,19 +1488,26 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 	/* When JSONX/JSONC not in use, json_enc_value1 will block buffer values. */
 	case DUK_TAG_BUFFER: {
-		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
-		DUK_ASSERT(h != NULL);
-
 		/* Buffer values are encoded in (lowercase) hex to make the
 		 * binary data readable.  Base64 or similar would be more
 		 * compact but less readable, and the point of JSONX/JSONC
 		 * variants is to be as useful to a programmer as possible.
 		 */
 
-		/* FIXME: more refined ifdef */
-		if (js_ctx->flag_ext_custom) {
+		/* The #ifdef clutter here needs to handle the three cases:
+		 * (1) JSONX+JSONC, (2) JSONX only, (3) JSONC only.
+		 */
+#if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
+		if (js_ctx->flag_ext_custom)
+#endif
+#if defined(DUK_USE_JSONX)
+		{
 			duk_uint8_t *p, *p_end;
 			int x;
+			duk_hbuffer *h;
+
+			h = DUK_TVAL_GET_BUFFER(tv);
+			DUK_ASSERT(h != NULL);
 			p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
 			p_end = p + DUK_HBUFFER_GET_SIZE(h);
 			EMIT_1(js_ctx, '|');
@@ -1495,13 +1517,20 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[x & 0x0f]);
 			}
 			EMIT_1(js_ctx, '|');
-		} else {
+		}
+#endif
+#if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
+		else
+#endif
+#if defined(DUK_USE_JSONC)
+		{
 			DUK_ASSERT(js_ctx->flag_ext_compatible);
 			duk_hex_encode(ctx, -1);
 			EMIT_CSTR(js_ctx, "{\"_buf\":");
 			json_enc_quote_string(js_ctx, duk_require_hstring(ctx, -1));
 			EMIT_1(js_ctx, '}');
 		}
+#endif
 		break;
 	}
 #endif  /* DUK_USE_JSONX || DUK_USE_JSONC */
@@ -1530,8 +1559,6 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 			EMIT_HSTR(js_ctx, h_str);
 			break;
 		}
-
-		/* FIXME: awkward check */
 
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 		if (!(js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
@@ -1711,8 +1738,11 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	js_ctx->flag_ext_compatible = flags & DUK_JSON_FLAG_EXT_COMPATIBLE;
 #endif
 
-	/* FIXME: conditional, proper refined condition */
+	/* The #ifdef clutter here handles the JSONX/JSONC enable/disable
+	 * combinations properly.
+	 */
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
+#if defined(DUK_USE_JSONX)
 	if (flags & DUK_JSON_FLAG_EXT_CUSTOM) {
 		js_ctx->stridx_custom_undefined = DUK_STRIDX_UNDEFINED;
 		js_ctx->stridx_custom_nan = DUK_STRIDX_NAN;
@@ -1722,20 +1752,30 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		        (flags & DUK_JSON_FLAG_AVOID_KEY_QUOTES) ?
 		                DUK_STRIDX_JSON_EXT_FUNCTION2 :
 		                DUK_STRIDX_JSON_EXT_FUNCTION1;
-	} else if (js_ctx->flags & DUK_JSON_FLAG_EXT_COMPATIBLE) {
+	}
+#endif  /* DUK_USE_JSONX */
+#if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
+	else
+#endif  /* DUK_USE_JSONX && DUK_USE_JSONC */
+#if defined(DUK_USE_JSONC)
+	if (js_ctx->flags & DUK_JSON_FLAG_EXT_COMPATIBLE) {
 		js_ctx->stridx_custom_undefined = DUK_STRIDX_JSON_EXT_UNDEFINED;
 		js_ctx->stridx_custom_nan = DUK_STRIDX_JSON_EXT_NAN;
 		js_ctx->stridx_custom_neginf = DUK_STRIDX_JSON_EXT_NEGINF;
 		js_ctx->stridx_custom_posinf = DUK_STRIDX_JSON_EXT_POSINF;
 		js_ctx->stridx_custom_function = DUK_STRIDX_JSON_EXT_FUNCTION1;
 	}
+#endif  /* DUK_USE_JSONC */
 #endif  /* DUK_USE_JSONX || DUK_USE_JSONC */
 
-	/* FIXME: conditional */
+#if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 	if (js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
 	                     DUK_JSON_FLAG_EXT_COMPATIBLE)) {
 		DUK_ASSERT(js_ctx->mask_for_undefined == 0);  /* already zero */
-	} else {
+	}
+	else
+#endif  /* DUK_USE_JSONX || DUK_USE_JSONC */
+	{
 		js_ctx->mask_for_undefined = DUK_TYPE_MASK_UNDEFINED |
 		                             DUK_TYPE_MASK_POINTER |
 		                             DUK_TYPE_MASK_BUFFER;
