@@ -216,7 +216,7 @@ done
 # not to obfuscate it (although that happens as an unwanted side effect).
 
 cat \
-	src/duk_initjs_legacy.js \
+	src/duk_initjs.js \
 	| UglifyJS/bin/uglifyjs --ascii --no-dead-code --no-copyright \
 	> $DISTSRCSEP/duk_initjs_min.js.tmp
 cp $DISTSRCSEP/duk_initjs_min.js.tmp $DISTSRCSEP/duk_initjs_min.js
