@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "guide: sandboxing"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-24 22:41:49.346428 Z
+references: []
+
+id: 3d3718ec6d5776bb3bcf60729b04782afe4ec4c4
+log_events: 
+- - 2014-01-24 22:41:49.490364 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

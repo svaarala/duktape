@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "guide: removing Duktape built-in to make the global environment standard"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-24 22:41:23.202523 Z
+references: []
+
+id: c06d8312905272bf5eb2f509a1c38b2fe1386859
+log_events: 
+- - 2014-01-24 22:41:23.370543 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
