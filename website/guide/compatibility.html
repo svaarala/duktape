@@ -71,9 +71,16 @@ by Duktape.</p>
 <p><a href="https://github.com/kripken/emscripten">Emscripten</a> compiles
 C/C++ into Javascript.  Because Duktape is not a high performance engine,
 running large Emscripten-compiled program is probably not a good idea.
-Currently Emscripten output is not compatible with Duktape.  Known issues
-include non-standard RegExp syntax and function declarations outside
-program or function body top level.  Support for these may be added in
-the future, see
+Duktape is currently Emscripten compatible except for:</p>
+<ul>
+<li>There is one non-standard RegExp in the Emscripten output, causing
+    a SyntaxError.  This is easy to fix manually.</li>
+<li>Duktape doesn't have typed arrays which need to be disabled with an
+    <code>emcc</code> option.  Without typed arrays Emscripten generated
+    code will run quite slowly and memory inefficiently.</li>
+<li>The default total memory and total stack sizes need to be adjusted
+    with an <code>emcc</code> option.</li>
+
+<p>See 
 <a href="https://github.com/svaarala/duktape/blob/master/doc/emscripten-status.txt">emscripten-status.txt</a>
 for current compatibility status.</p>
