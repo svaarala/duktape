@@ -141,6 +141,14 @@ The table below summarizes the available options, in no particular order:</p>
     <code>String.prototype.substr()</code> to throw an error.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_FUNC_STMT</td>
+<td>Disable support for function declarations outside program or function top
+    level (also known as "function statements").  Such declarations are
+    non-standard and the strictly compliant behavior is to treat them as a
+    SyntaxError.  Default behavior is to treat them like ordinary function
+    declarations ("hoist" them to function top) with V8-like semantics.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_JSONX</td>
 <td>Disable support for the JSONX format.  Reduces code footprint.  Causes
     JSONX calls to throw an error.</td>
