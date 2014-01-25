@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void *duk_resize_buffer(duk_context *ctx, int index, size_t new_size) {
+void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
 
@@ -23,10 +23,10 @@ void *duk_resize_buffer(duk_context *ctx, int index, size_t new_size) {
 	return DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h);
 }
 
-void duk_to_fixed_buffer(duk_context *ctx, int index) {
+void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 	duk_hbuffer_dynamic *h_src;
-	char *data;
-	size_t size;
+	duk_uint8_t *data;
+	duk_size_t size;
 
 	index = duk_require_normalize_index(ctx, index);
 
@@ -37,8 +37,8 @@ void duk_to_fixed_buffer(duk_context *ctx, int index) {
 	}
 
 	size = DUK_HBUFFER_GET_SIZE(h_src);
-	data = (char *) duk_push_fixed_buffer(ctx, size);
-	if (size > 0) {
+	data = (duk_uint8_t *) duk_push_fixed_buffer(ctx, size);
+	if (size > 0U) {
 		DUK_ASSERT(data != NULL);
 		DUK_MEMCPY(data, DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_src), size);
 	}
