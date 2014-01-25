@@ -3,10 +3,10 @@ title: merge at least jx_enc/jc_enc and jx_dec/jc_dec into single native helper
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :reorg
 creation_time: 2014-01-23 23:16:01.177568 Z
 references: []
 
@@ -29,3 +29,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
   - ""
+- - 2014-01-25 22:34:59.376787 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.10
+  - ""
+- - 2014-01-25 22:35:24.824143 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition reorg
+  - Now handled by Duktape.enc() and Duktape.dec(), issue is irrelevant now.

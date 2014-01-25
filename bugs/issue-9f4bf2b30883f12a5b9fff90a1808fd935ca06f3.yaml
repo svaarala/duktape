@@ -3,10 +3,10 @@ title: add semantics for function declaration outside top level for more compati
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :reorg
 creation_time: 2014-01-24 23:41:29.570499 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-01-25 22:34:11.049062 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.9 from v0.10
+  - ""
+- - 2014-01-25 22:34:21.784861 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition reorg
+  - duplicate
