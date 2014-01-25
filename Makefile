@@ -211,27 +211,31 @@ duk: dist
 dukd: dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
+.PHONY: duksizes
 duksizes: duk
 	python src/genexesizereport.py duk > /tmp/duk_sizes.html
 
-.PHONY:	test
-test: npminst duk
+.PHONY: test
+test: qecmatest apitest regfuzztest underscoretest test262test
+
+.PHONY:	ecmatest
+ecmatest: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-.PHONY:	testd
-testd: npminst dukd
+.PHONY:	ecmatestd
+ecmatestd: npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-.PHONY:	qtest
-qtest: npminst duk
+.PHONY:	qecmatest
+qecmatest: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-.PHONY:	qtestd
-qtestd: npminst dukd
+.PHONY:	qecmatestd
+qecmatestd: npminst dukd
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
-.PHONY:	vgtest
-vgtest: npminst duk
+.PHONY:	vgecmatest
+vgecmatest: npminst duk
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
 .PHONY:	apitest
@@ -284,7 +288,7 @@ underscoretest:	underscore duk
 	-./underscore_test ./duk underscore/test/utility.js
 
 .PHONY: vgunderscoretest
-vgunderscoretest:
+vgunderscoretest: underscore duk
 	echo "Run underscore tests with underscore-test-shim.js, under valgrind"
 	-./underscore_test valgrind ./duk underscore/test/arrays.js
 	-./underscore_test valgrind ./duk underscore/test/chaining.js
