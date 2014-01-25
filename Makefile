@@ -181,6 +181,10 @@ clean:
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.*
 	-@rm -rf /tmp/duktape-regfuzz/
+	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
+	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
+	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
+	-@rm -f /tmp/duk-emcc-test.js
 	-@rm -f a.out
 
 cleanall:
@@ -216,34 +220,41 @@ duksizes: duk
 	python src/genexesizereport.py duk > /tmp/duk_sizes.html
 
 .PHONY: test
-test: qecmatest apitest regfuzztest underscoretest test262test
+test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
 .PHONY:	ecmatest
 ecmatest: npminst duk
+	@echo "### ecmatest"
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	ecmatestd
 ecmatestd: npminst dukd
+	@echo "### ecmatestd"
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qecmatest
 qecmatest: npminst duk
+	@echo "### qecmatest"
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qecmatestd
 qecmatestd: npminst dukd
+	@echo "### qecmatestd"
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	vgecmatest
 vgecmatest: npminst duk
+	@echo "### vgecmatest"
 	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
 .PHONY:	apitest
 apitest: npminst libduktape.so.1.0.0
+	@echo "### apitest"
 	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
 .PHONY: vgapitest
 vgapitest: npminst libduktape.so.1.0.0
+	@echo "### vgapitest"
 	node runtests/runtests.js --valgrind --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
 # FIXME: torturetest; torture + valgrind
@@ -254,6 +265,7 @@ regfuzz-0.1.tar.gz:
 
 .PHONY:	regfuzztest
 regfuzztest: regfuzz-0.1.tar.gz duk
+	@echo "### regfuzztest"
 	# Spidermonkey test is pretty close, just lacks 'arguments'
 	# Should run with assertions enabled in 'duk'
 	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
@@ -265,6 +277,7 @@ regfuzztest: regfuzz-0.1.tar.gz duk
 
 .PHONY: vgregfuzztest
 vgregfuzztest: regfuzz-0.1.tar.gz duk
+	@echo "### vgregfuzztest"
 	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
 	cp regfuzz-0.1.tar.gz duk /tmp/duktape-regfuzz
 	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
@@ -277,7 +290,8 @@ underscore:
 
 .PHONY: underscoretest
 underscoretest:	underscore duk
-	echo "Run underscore tests with underscore-test-shim.js"
+	@echo "### underscoretest"
+	@echo "Run underscore tests with underscore-test-shim.js"
 	-./underscore_test ./duk underscore/test/arrays.js
 	-./underscore_test ./duk underscore/test/chaining.js
 	-./underscore_test ./duk underscore/test/collections.js
@@ -289,7 +303,8 @@ underscoretest:	underscore duk
 
 .PHONY: vgunderscoretest
 vgunderscoretest: underscore duk
-	echo "Run underscore tests with underscore-test-shim.js, under valgrind"
+	@echo "### vgunderscoretest"
+	@echo "Run underscore tests with underscore-test-shim.js, under valgrind"
 	-./underscore_test valgrind ./duk underscore/test/arrays.js
 	-./underscore_test valgrind ./duk underscore/test/chaining.js
 	-./underscore_test valgrind ./duk underscore/test/collections.js
@@ -307,33 +322,53 @@ test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
 
 .PHONY: test262test
 test262test: test262-d067d2f0ca30 duk
+	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
-	-rm -f /tmp/duk-test262-log.txt /tmp/duk-test262-filtered.txt
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262-log.txt
-	cat /tmp/duk-test262-log.txt | python filter262log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.txt
-	cat /tmp/duk-test262-filtered.txt
+	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
+	cat /tmp/duk-test262.log | python filter262log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
+	cat /tmp/duk-test262-filtered.log
 
 .PHONY: vgtest262test
 vgtest262test: test262-d067d2f0ca30 duk
-	-@rm -f /tmp/duk-vgtest262-log.txt /tmp/duk-vgtest262-filtered.txt
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary >/tmp/duk-vgtest262-log.txt
-	cat /tmp/duk-vgtest262-log.txt | python filter262log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.txt
-	cat /tmp/duk-vgtest262-filtered.txt
+	@echo "### vgtest262test"
+	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
+	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary >/tmp/duk-vgtest262.log
+	cat /tmp/duk-vgtest262.log | python filter262log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
+	cat /tmp/duk-vgtest262-filtered.log
 	
-
 # Unholy helper to write out a testcase, the unholiness is that it reads
 # command line arguments and complains about missing targets etc:
 # http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
 .PHONY: test262cat
 test262cat: test262-d067d2f0ca30
-	echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it"
+	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it"
 	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
-
-UglifyJS:
-	git clone https://github.com/mishoo/UglifyJS.git
 
 emscripten:
 	git clone https://github.com/kripken/emscripten.git
+	cd emscripten; ./emconfigure
+
+.PHONY: emscriptentest
+emscriptentest: duk
+	@echo "### emscriptentest"
+	-@rm -f /tmp/duk-emcc-test.js
+	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
+	emscripten/emcc emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	@ls -l /tmp/duk-emcc-test.js
+	./duk /tmp/duk-emcc-test.js
+
+.PHONY: vgemscriptentest
+vgemscriptentest: duk
+	@echo "### vgemscriptentest"
+	-@rm -f /tmp/duk-emcc-test.js
+	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
+	emscripten/emcc emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	@ls -l /tmp/duk-emcc-test.js
+	valgrind ./duk /tmp/duk-emcc-test.js
+
+UglifyJS:
+	git clone https://github.com/mishoo/UglifyJS.git
 
 .PHONY:	npminst
 npminst:	runtests/node_modules

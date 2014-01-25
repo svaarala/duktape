@@ -61,7 +61,7 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make
 
     # Run Ecmascript and API testcases
-    $ make test
+    $ make ecmatest
     $ make apitest
     $ make regfuzztest
     $ make underscoretest  # see doc/underscore-status.txt
