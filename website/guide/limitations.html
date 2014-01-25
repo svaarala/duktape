@@ -27,16 +27,20 @@ guaranteed to work is about 0.7G characters.</p>
 <p>An object can have at most <code>DUK_HOBJECT_MAX_PROPERTIES</code> (an
 internal define).  Currently this limit is 0x7ffffffff.</p>
 
-<h2>Regexp infinite loop</h2>
+<h2>Regexp quantifier over empty match</h2>
 
 <p>The regexp engine gets stuck when a quantifier is used over an
-empty match.  For instance, the following should produce a "no match"
-result but hits an internal recursion limit instead:</p>
+empty match but eventually bails out with an internal recursion
+(or execution step) limit.  For instance, the following should produce
+a "no match" result but hits an internal recursion limit instead:</p>
 
 <pre>
 $ duk
 duk&gt; t = /(x*)*/.exec('y');
-Error: Error: regexp executor recursion limit reached (rc=1) [ignored]
+RangeError: regexp executor recursion limit
+        duk_regexp_executor.c:145
+        exec (null) native strict preventsyield
+        global input:1 preventsyield
 </pre>
 
 <h2>Regexp dollar escape</h2>
@@ -78,6 +82,10 @@ compliance concern, but degrades performance.</p>
 <p>Compiler needs multiple passes over the same function.  Inner functions
 are scanned <code>2**n</code> times, where <code>n</code> is the function level
 (0, 1, ...).</p>
+
+<p>If function nesting level is very deep, the compiler may take very long to
+compile an input.  In pathological cases the compiler will eventually bail out
+with a <code>RangeError</code>.</p>
 
 <h2>Global/eval code is slower than function code</h2>
 
