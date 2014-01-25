@@ -17,7 +17,7 @@
  * 'data' buffer might be an issue).  Currently only counts and sizes and
  * such are given so there should not be a security impact.
  */
-duk_ret duk_bi_duk_object_info(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_info(duk_context *ctx) {
 	duk_tval *tv;
 	duk_heaphdr *h;
 	duk_int_t i, n;
@@ -112,7 +112,7 @@ duk_ret duk_bi_duk_object_info(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_duk_object_gc(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_gc(duk_context *ctx) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int flags;
@@ -127,7 +127,7 @@ duk_ret duk_bi_duk_object_gc(duk_context *ctx) {
 #endif
 }
 
-duk_ret duk_bi_duk_object_fin(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_fin(duk_context *ctx) {
 	(void) duk_require_hobject(ctx, 0);
 	if (duk_get_top(ctx) >= 2) {
 		/* Set: currently a finalizer is disabled by setting it to
@@ -147,7 +147,7 @@ duk_ret duk_bi_duk_object_fin(duk_context *ctx) {
 	}
 }
 
-duk_ret duk_bi_duk_object_enc(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_enc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
 
@@ -192,7 +192,7 @@ duk_ret duk_bi_duk_object_enc(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_duk_object_dec(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_dec(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
 
@@ -237,7 +237,7 @@ duk_ret duk_bi_duk_object_dec(duk_context *ctx) {
  */
 
 #if 0
-duk_ret duk_bi_duk_object_write_log(duk_context *ctx) {
+duk_ret_t duk_bi_duk_object_write_log(duk_context *ctx) {
 	duk_double_t now;
 	duk_int_t nargs;
 	duk_int_t logger_level;

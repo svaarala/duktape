@@ -12,7 +12,7 @@
  *  Constructor
  */
 
-duk_ret duk_bi_string_constructor(duk_context *ctx) {
+duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 	/* String constructor needs to distinguish between an argument not given at all
 	 * vs. given as 'undefined'.  We're a vararg function to handle this properly.
 	 */
@@ -41,10 +41,10 @@ duk_ret duk_bi_string_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_string_constructor_from_char_code(duk_context *ctx) {
+duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
-	duk_idx i, n;
+	duk_idx_t i, n;
 	duk_ucodepoint_t cp;
 
 	/* XXX: It would be nice to build the string directly but ToUint16()
@@ -70,7 +70,7 @@ duk_ret duk_bi_string_constructor_from_char_code(duk_context *ctx) {
  *  toString(), valueOf()
  */
 
-duk_ret duk_bi_string_prototype_to_string(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
 	duk_push_this(ctx);
@@ -109,7 +109,7 @@ duk_ret duk_bi_string_prototype_to_string(duk_context *ctx) {
 
 /* FIXME: charAt() and charCodeAt() could probably use a shared helper. */
 
-duk_ret duk_bi_string_prototype_char_at(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_char_at(duk_context *ctx) {
 	duk_int_t pos;  /* FIXME: type, duk_to_int() needs to be fixed */
 
 	/* FIXME: faster implementation */
@@ -123,7 +123,7 @@ duk_ret duk_bi_string_prototype_char_at(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_string_prototype_char_code_at(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t pos;  /* FIXME: type, duk_to_int() needs to be fixed */
 	duk_uint32_t boff;
@@ -170,7 +170,7 @@ duk_ret duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 
 /* FIXME: any chance of merging these three similar algorithms? */
 
-duk_ret duk_bi_string_prototype_substring(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_substring(duk_context *ctx) {
 	duk_hstring *h;
 	duk_int_t start_pos, end_pos;
 	duk_int_t len;
@@ -203,7 +203,7 @@ duk_ret duk_bi_string_prototype_substring(duk_context *ctx) {
 }
 
 #ifdef DUK_USE_SECTION_B
-duk_ret duk_bi_string_prototype_substr(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 	duk_hstring *h;
 	duk_int_t start_pos, end_pos;
 	duk_int_t len;
@@ -246,13 +246,13 @@ duk_ret duk_bi_string_prototype_substr(duk_context *ctx) {
 	return 1;
 }
 #else  /* DUK_USE_SECTION_B */
-duk_ret duk_bi_string_prototype_substr(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */
 
-duk_ret duk_bi_string_prototype_slice(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_slice(duk_context *ctx) {
 	duk_hstring *h;
 	duk_int_t start_pos, end_pos;
 	duk_int_t len;
@@ -292,7 +292,7 @@ duk_ret duk_bi_string_prototype_slice(duk_context *ctx) {
  *  Case conversion
  */
 
-duk_ret duk_bi_string_prototype_caseconv_shared(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_caseconv_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_int_t uppercase = duk_get_magic(ctx);
 
@@ -305,7 +305,7 @@ duk_ret duk_bi_string_prototype_caseconv_shared(duk_context *ctx) {
  *  indexOf() and lastIndexOf()
  */
 
-duk_ret duk_bi_string_prototype_indexof_shared(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_indexof_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_this;
 	duk_hstring *h_search;
@@ -416,7 +416,7 @@ duk_ret duk_bi_string_prototype_indexof_shared(duk_context *ctx) {
  * - API call to get_prop and to_boolean
  */
 
-duk_ret duk_bi_string_prototype_replace(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	duk_hstring *h_repl;
@@ -618,7 +618,7 @@ duk_ret duk_bi_string_prototype_replace(duk_context *ctx) {
 		prev_match_end_boff = match_start_boff + DUK_HSTRING_GET_BYTELEN(h_match);
 
 		if (is_repl_func) {
-			duk_idx idx_args;
+			duk_idx_t idx_args;
 			duk_hstring *h_repl;
 
 			/* regexp res_obj is at index 4 */
@@ -1078,7 +1078,7 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
  */
 
 #ifdef DUK_USE_REGEXP_SUPPORT
-static void to_regexp_helper(duk_context *ctx, duk_idx index, int force_new) {
+static void to_regexp_helper(duk_context *ctx, duk_idx_t index, int force_new) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
@@ -1105,7 +1105,7 @@ static void to_regexp_helper(duk_context *ctx, duk_idx index, int force_new) {
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
 #ifdef DUK_USE_REGEXP_SUPPORT
-duk_ret duk_bi_string_prototype_search(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	/* Easiest way to implement the search required by the specification
@@ -1144,14 +1144,14 @@ duk_ret duk_bi_string_prototype_search(duk_context *ctx) {
 	return 1;
 }
 #else  /* DUK_USE_REGEXP_SUPPORT */
-duk_ret duk_bi_string_prototype_search(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
 #ifdef DUK_USE_REGEXP_SUPPORT
-duk_ret duk_bi_string_prototype_match(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_int_t global;
 	duk_int_t prev_last_index;
@@ -1226,13 +1226,13 @@ duk_ret duk_bi_string_prototype_match(duk_context *ctx) {
 	return 1;  /* return 'res_arr' or 'null' */
 }
 #else  /* DUK_USE_REGEXP_SUPPORT */
-duk_ret duk_bi_string_prototype_match(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
-duk_ret duk_bi_string_prototype_concat(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_concat(duk_context *ctx) {
 	/* duk_concat() coerces arguments with ToString() in correct order */
 	(void) duk_push_this_coercible_to_string(ctx);
 	duk_insert(ctx, 0);  /* this is relatively expensive */
@@ -1240,7 +1240,7 @@ duk_ret duk_bi_string_prototype_concat(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_string_prototype_trim(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_trim(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_push_this_coercible_to_string(ctx);
 	duk_trim(ctx, 0);
@@ -1248,7 +1248,7 @@ duk_ret duk_bi_string_prototype_trim(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret duk_bi_string_prototype_locale_compare(duk_context *ctx) {
+duk_ret_t duk_bi_string_prototype_locale_compare(duk_context *ctx) {
 	duk_hstring *h1;
 	duk_hstring *h2;
 	duk_size_t h1_len, h2_len, prefix_len;
