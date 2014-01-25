@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static void concat_and_join_helper(duk_context *ctx, int count, int is_join) {
+static void concat_and_join_helper(duk_context *ctx, unsigned int count, int is_join) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	unsigned int i;
 	unsigned int idx;
