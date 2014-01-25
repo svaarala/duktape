@@ -4,24 +4,34 @@
  *  declaration cannot follow a label, nor can an expression statement
  *  begin with 'function'.
  *
- *  This is the E5 standards compliant behavior, which this test now
- *  looks for.  In practice, it makes sense to parse these as either
- *  function expressions, or as some form of 'function statements'.
- *  The test needs to be updated when decision on this is made.
+ *  This is the E5 standards compliant behavior.  However, this test
+ *  case tests for the default Duktape behavior (modelled after V8):
+ *  function declarations are allowed outside top level in non-strict
+ *  mode, and are treated like ordinary function declarations.  In
+ *  strict mode they are not allowed.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
-SyntaxError
+try finished
 SyntaxError
 try finished
 ===*/
 
 try {
     /* Function f2 declaration follows label which is not allowed.
-     * Also, an expression statement cannot begin with 'function',
-     * so this should result in SyntaxError.
+     * Also, an expression statement  cannot begin (directly) with
+     * 'function', so this should result in SyntaxError in a fully
+     * compliant implementation.
      *
-     * V8 allows this in non-strict mode (as function statement?).
+     * V8 allows this in non-strict mode (as function statement).
+     * This is also Duktape behavior now (unless DUK_OPT_NO_FUNC_STMT
+     * is used).
      */
 
     eval("function f1() { mylabel: function f2() {} }");
