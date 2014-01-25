@@ -57,33 +57,37 @@ extern "C" {
 
 /*
  *  Includes
+ *
+ *  Keep the set of includes minimal to serve tihs header only to avoid
+ *  portability issues.  For instance, we can't rely on any C99 here.
  */
 
-#include <limits.h>  /* INT_MIN */
-#include <stdarg.h>  /* va_list etc */
-#include <stdlib.h>
+#include <limits.h>  /* INT_MIN, INT_MAX */
+#include <stdarg.h>  /* va_list, etc */
+#include <stdlib.h>  /* size_t (defined by stdlib.h and stddef.h) */
 #include <stddef.h>
 
 /*
  *  Typedefs; avoid all dependencies on internal types
  *
  *  (duk_context *) currently maps directly to internal type (duk_hthread *).
- *  Internal typedefs have a '_t' suffix, exposed typedefs don't.  This is to
- *  reduce clutter in user code.
+ *  Currently only primitive typedefs have a '_t' suffix.
  */
 
 /* FIXME: proper detection */
-typedef int duk_idx;
-typedef int duk_ret;
+typedef int duk_idx_t;
+typedef int duk_ret_t;
+typedef int duk_bool_t;
+typedef size_t duk_size_t;
 
 struct duk_memory_functions;
 
 typedef void duk_context;
 typedef struct duk_memory_functions duk_memory_functions;
 
-typedef duk_ret (*duk_c_function)(duk_context *ctx);
-typedef void *(*duk_alloc_function) (void *udata, size_t size);
-typedef void *(*duk_realloc_function) (void *udata, void *ptr, size_t size);
+typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
+typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
+typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
 typedef void (*duk_fatal_function) (duk_context *ctx, int code);
 typedef void (*duk_decode_char_function) (void *udata, int codepoint);
@@ -226,12 +230,12 @@ void duk_destroy_heap(duk_context *ctx);
  *  Raw functions have no side effects (cannot trigger GC).
  */
 
-void *duk_alloc_raw(duk_context *ctx, size_t size);
+void *duk_alloc_raw(duk_context *ctx, duk_size_t size);
 void duk_free_raw(duk_context *ctx, void *ptr);
-void *duk_realloc_raw(duk_context *ctx, void *ptr, size_t size);
-void *duk_alloc(duk_context *ctx, size_t size);
+void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size);
+void *duk_alloc(duk_context *ctx, duk_size_t size);
 void duk_free(duk_context *ctx, void *ptr);
-void *duk_realloc(duk_context *ctx, void *ptr, size_t size);
+void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
 void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
 void duk_gc(duk_context *ctx, int flags);
 
@@ -314,7 +318,7 @@ void duk_push_nan(duk_context *ctx);
 void duk_push_int(duk_context *ctx, int val);
 const char *duk_push_string(duk_context *ctx, const char *str);
 const char *duk_push_string_file(duk_context *ctx, const char *path);
-const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len);
+const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
 void duk_push_pointer(duk_context *ctx, void *p);
 const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
 const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
@@ -341,9 +345,9 @@ int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt,
 	duk_push_error_object_stash  /* arguments follow */
 #endif
 
-void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic);
-void *duk_push_fixed_buffer(duk_context *ctx, size_t size);
-void *duk_push_dynamic_buffer(duk_context *ctx, size_t size);
+void *duk_push_buffer(duk_context *ctx, duk_size_t size, int dynamic);
+void *duk_push_fixed_buffer(duk_context *ctx, duk_size_t size);
+void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
 
 /*
  *  Pop operations
@@ -403,12 +407,12 @@ int duk_get_boolean(duk_context *ctx, int index);
 double duk_get_number(duk_context *ctx, int index);
 int duk_get_int(duk_context *ctx, int index);
 const char *duk_get_string(duk_context *ctx, int index);
-const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len);
-void *duk_get_buffer(duk_context *ctx, int index, size_t *out_size);
+const char *duk_get_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+void *duk_get_buffer(duk_context *ctx, int index, duk_size_t *out_size);
 void *duk_get_pointer(duk_context *ctx, int index);
 duk_c_function duk_get_c_function(duk_context *ctx, int index);
 duk_context *duk_get_context(duk_context *ctx, int index);
-size_t duk_get_length(duk_context *ctx, int index);
+duk_size_t duk_get_length(duk_context *ctx, int index);
 
 /*
  *  Require operations: no coercion, throw error if index or type
@@ -421,8 +425,8 @@ int duk_require_boolean(duk_context *ctx, int index);
 double duk_require_number(duk_context *ctx, int index);
 int duk_require_int(duk_context *ctx, int index);
 const char *duk_require_string(duk_context *ctx, int index);
-const char *duk_require_lstring(duk_context *ctx, int index, size_t *out_len);
-void *duk_require_buffer(duk_context *ctx, int index, size_t *out_size);
+const char *duk_require_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+void *duk_require_buffer(duk_context *ctx, int index, duk_size_t *out_size);
 void *duk_require_pointer(duk_context *ctx, int index);
 duk_c_function duk_require_c_function(duk_context *ctx, int index);
 duk_context *duk_require_context(duk_context *ctx, int index);
@@ -443,8 +447,8 @@ int duk_to_int32(duk_context *ctx, int index);
 unsigned int duk_to_uint32(duk_context *ctx, int index);
 unsigned int duk_to_uint16(duk_context *ctx, int index);
 const char *duk_to_string(duk_context *ctx, int index);
-const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len);
-void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size);
+const char *duk_to_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+void *duk_to_buffer(duk_context *ctx, int index, duk_size_t *out_size);
 void *duk_to_pointer(duk_context *ctx, int index);
 void duk_to_object(duk_context *ctx, int index);
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
@@ -465,7 +469,7 @@ void duk_json_decode(duk_context *ctx, int index);
  *  Buffer
  */
 
-void *duk_resize_buffer(duk_context *ctx, int index, size_t new_size);
+void *duk_resize_buffer(duk_context *ctx, int index, duk_size_t new_size);
 void duk_to_fixed_buffer(duk_context *ctx, int index);
 
 /*
@@ -496,8 +500,8 @@ int duk_has_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
 /* FIXME: incomplete, not usable now */
 void duk_get_var(duk_context *ctx);
 void duk_put_var(duk_context *ctx);
-int duk_del_var(duk_context *ctx);
-int duk_has_var(duk_context *ctx);
+duk_bool_t duk_del_var(duk_context *ctx);
+duk_bool_t duk_has_var(duk_context *ctx);
 
 /*
  *  Object operations
@@ -515,7 +519,7 @@ void duk_concat(duk_context *ctx, unsigned int count);
 void duk_join(duk_context *ctx, unsigned int count);
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
-void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_offset);
+void duk_substring(duk_context *ctx, int index, duk_size_t start_offset, duk_size_t end_offset);
 void duk_trim(duk_context *ctx, int index);
 
 /*

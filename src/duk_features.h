@@ -376,7 +376,6 @@ typedef uintptr_t duk_uintptr_t;
 typedef intptr_t duk_intptr_t;
 typedef uintmax_t duk_uintmax_t;
 typedef intmax_t duk_intmax_t;
-typedef size_t duk_size_t;
 
 #define DUK_UINT8_MIN         0
 #define DUK_UINT8_MAX         UINT8_MAX
@@ -513,8 +512,6 @@ typedef unsigned long long duk_uintptr_t;
 /* Pretend that maximum int is 32 bits. */
 typedef duk_uint32_t duk_uintmax_t;
 typedef duk_int32_t duk_intmax_t;
-
-typedef size_t duk_size_t;
 
 #define DUK_UINT8_MIN         0UL
 #define DUK_UINT8_MAX         0xffUL
