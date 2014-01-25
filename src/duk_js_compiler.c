@@ -5251,10 +5251,21 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 		 *  the top level (in "source elements").  An ExpressionStatement
 		 *  is explicitly not allowed to begin with a "function" keyword
 		 *  (E5 Section 12.4).  Hence any non-error semantics for such
-		 *  non-top-level statements are non-standard.
+		 *  non-top-level statements are non-standard.  Duktape semantics
+		 *  for function statements are modelled after V8, see
+		 *  test-dev-func-decl-outside-top.js.
 		 */
 
-		if (allow_source_elem) {
+#if defined(DUK_USE_FUNC_STMT)
+		/* Lenient: allow function declarations outside top level in
+		 * non-strict mode but reject them in strict mode.
+		 */
+		if (allow_source_elem || !comp_ctx->curr_func.is_strict)
+#else
+		/* Strict: never allow function declarations outside top level. */
+		if (allow_source_elem)
+#endif
+		{
 			/* FunctionDeclaration: not strictly a statement but handled as such */
 			int fnum;
 
@@ -5286,24 +5297,8 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 			stmt_flags = 0;
 			break;
 		} else {
-			/* FIXME: add support for non-standard function statements and/or
-			 * non-top-level function expressions.
-			 */
-
-			if (1) {
-				/* Standard behavior */
-				DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "function declaration not allowed outside of top level");
-			} else if (0) {
-				/* Non-standard: interpret as a function expression inside an ExpressionStatement */
-				DUK_DDDPRINT("function expression (inside an expression statement; non-standard)");
-				stmt_flags = (HAS_VAL);  /* FIXME -- e.g. HAS_TERM? */
-			} else if (0) {
-				/* Non-standard: interpret as a function statement */
-				DUK_DDDPRINT("function statement (non-standard)");
-				stmt_flags = 0;  /* FIXME */
-			}
+			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "function declaration outside top level");
 		}
-		DUK_ERROR(thr, DUK_ERR_UNIMPLEMENTED_ERROR, "non-standard function expression/statement unimplemented");
 		break;
 	}
 	case DUK_TOK_LCURLY: {

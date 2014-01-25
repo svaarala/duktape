@@ -1224,6 +1224,15 @@ extern double duk_computed_nan;
 #undef DUK_USE_SECTION_B
 #endif
 
+/* Treat function statements (function declarations outside top level of
+ * Program or FunctionBody) same as normal function declarations.  This is
+ * also V8 behavior.  See test-dev-func-decl-outside-top.js.
+ */ 
+#define DUK_USE_FUNC_STMT
+#if defined(DUK_OPT_NO_FUNC_STMT)
+#undef DUK_USE_FUNC_STMT
+#endif
+
 /*
  *  Function instance features.
  */
