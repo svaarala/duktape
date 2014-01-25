@@ -2,22 +2,36 @@
 Status of Emscripten compatibility
 ==================================
 
-Overview
-========
-
-Emscripten compatibility is more or less untested now.
+Hello world test
+================
 
 Quick hello world test::
 
-  $ ./emcc tests/hello_world.cpp 
+  $ ./emcc -s USE_TYPED_ARRAYS=0 \
+           -s TOTAL_MEMORY=2097152 \
+           -s TOTAL_STACK=524288 \
+           tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 
-Failure 1: invalid RegExp::
+The additional options are needed:
 
-  $ duk a.out.js
+* ``-s USE_TYPED_ARRAYS=0``: needed because Duktape does not yet support
+  Javascript typed arrays.  Without this the Emscripten won't be able to
+  create an array for simulating memory.  Note that without typed arrays,
+  Emscripten code will run very slow and be very memory inefficient.
+
+* ``-s TOTAL_MEMORY=2097152``: reduce total memory size to avoid running
+  out of memory.
+
+* ``-s TOTAL_STACK=524288``: reduce total stack size to fit it into the
+  reduced memory size.
+
+Trying to run the result, there is an error caused by an invalid RegExp::
+
+  $ ./duk /tmp/duk-emcc-test.js
   SyntaxError: invalid regexp quantifier (unknown char) (line 181)
           duk_lexer.c:1444
 
-The first problem is::
+This is caused by::
 
   if (/<?{ ?[^}]* ?}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
 
@@ -25,12 +39,21 @@ The fix is to escape the braces::
 
   if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
 
-The next problem is::
+After this the program works::
 
-  $ duk a.out.js
-  SyntaxError: function declaration not allowed outside of top level (line 829)
-          duk_js_compiler.c:5342
+  $ ./duk /tmp/duk-emcc-test.js
+  hello, world!
 
-This occurs in so many places that before this non-standard syntax is
-supported, Emscripten looks difficult to support.
+Full diff for the fix needed::
 
+  --- /tmp/duk-emcc-test.js	2014-01-26 00:28:30.180090902 +0200
+  +++ /tmp/duk-emcc-test-fixed.js	2014-01-26 00:22:35.932085587 +0200
+  @@ -178,7 +178,7 @@
+     isStructType: function isStructType(type) {
+     if (isPointerType(type)) return false;
+     if (isArrayType(type)) return true;
+  -  if (/<?{ ?[^}]* ?}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
+  +  if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
+     // See comment in isStructPointerType()
+     return type[0] == '%';
+   },
