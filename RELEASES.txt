@@ -104,6 +104,9 @@ Released
 
 * Added input line number to compiler error messages (e.g. SyntaxErrors)
 
+* Added support for function declarations outside function or program top
+  level (also known as "function statements"), with V8-like semantics
+
 * Renamed __duk__ to Duktape for more consistency with Ecmascript conventions,
   and made the following cleanups:
 
