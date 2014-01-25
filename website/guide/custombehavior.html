@@ -1,0 +1,78 @@
+<h1 id="custombehavior">Custom behavior</h1>
+
+<p>This section summarizes Duktape behavior which deviates from the E5.1
+specification.</p>
+
+<h2>Duktape built-in</h2>
+
+<p>The <code>Duktape</code> built-in is (of course) non-standard and provides
+access to Duktape specific features.</p>
+
+<h2>Additional Error and Function object properties</h2>
+
+<p>See
+<a href="#errorobjects">Error objects</a> and
+<a href="functionobjects">Function objects</a>.</p>
+
+<h2>Function statements</h2>
+
+<p>E5.1 does not allow a function declaration to appear outside program or
+function top level:</p>
+<pre class="ecmascript-code">
+function test() {
+    // point A
+    try {
+        throw new Error('test');
+    } catch (e) {
+        // This is a SyntaxError in E5.1
+        function func() {
+            print(typeof e);
+        }
+        // point B
+    }
+    // point C
+}
+</pre>
+
+<p>These declarations are also referred to as "function statements", and appear
+quite often in real world code (including the test262 test suite), so they are
+allowed by Duktape.  Unfortunately there are several semantics used by different
+Javascript engines.  Duktape follows the V8 behavior for function statements:</p>
+<ul>
+<li>Strict function: a SyntaxError is thrown (standard behavior).</li>
+<li>Non-strict function: treat a function statement like an ordinary function
+    declaration, conceptually "hoisting" it to the top of the function.</li>
+</ul>
+
+<p>As an illustration, the above example would behave as the following:</p>
+<pre class="ecmascript-code">
+function test() {
+    function func() {
+        print(typeof e);
+    }
+ 
+    try {
+        throw new Error('test');
+    } catch (e) {
+    }
+}
+</pre>
+
+<p><code>func()</code> in the above example would already be declared
+and callable in point A, and would not have access to the <code>e</code>
+binding in any of the points A, B, or C.</p>
+
+<h2>RegExp leniency</h2>
+
+<p>Although not allowed by E5.1, the following escape is allowed in RegExp
+syntax:</p>
+<pre>
+  /\$/       /* matches dollar literally, non-standard */
+  /\u0024/   /* same, standard */
+</pre>
+
+<p>This escape occurs in real world code so it is allowed.  (More leniency
+will be added in future versions to deal with real world RegExps; dollar
+escapes are not the only issue.)</p>
+
+
