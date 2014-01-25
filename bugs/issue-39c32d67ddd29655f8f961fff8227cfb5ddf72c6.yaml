@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update api doc and guide on typing and portability issues
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-25 09:20:45.102704 Z
+references: []
+
+id: 39c32d67ddd29655f8f961fff8227cfb5ddf72c6
+log_events: 
+- - 2014-01-25 09:20:45.259464 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

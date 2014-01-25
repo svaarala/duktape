@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: C API for setting/getting finalizer
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-25 17:17:19.604973 Z
+references: []
+
+id: 2fc1016146aee13c2f319c8473afe84cc49c7fb7
+log_events: 
+- - 2014-01-25 17:17:19.764941 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
