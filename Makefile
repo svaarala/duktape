@@ -350,12 +350,14 @@ emscripten:
 	git clone https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
-.PHONY: emscriptentest
+EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
+
+PHONY: emscriptentest
 emscriptentest: duk
 	@echo "### emscriptentest"
 	-@rm -f /tmp/duk-emcc-test.js
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	emscripten/emcc emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 	@ls -l /tmp/duk-emcc-test.js
 	./duk /tmp/duk-emcc-test.js
 
@@ -364,7 +366,7 @@ vgemscriptentest: duk
 	@echo "### vgemscriptentest"
 	-@rm -f /tmp/duk-emcc-test.js
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	emscripten/emcc emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 	@ls -l /tmp/duk-emcc-test.js
 	valgrind ./duk /tmp/duk-emcc-test.js
 
