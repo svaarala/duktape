@@ -1,20 +1,20 @@
 <h1 id="compatibility">Compatibility</h1>
 
 <p>This section discussed Duktape compatibility with Ecmascript dialects,
-extensions, and frameworks.</p>
+extensions, frameworks, and test suites.</p>
 
-<h2>Ecmascript E5 / E5.1</h2>
+<h2 id="compatibility-e5">Ecmascript E5 / E5.1</h2>
 
 <p>The main compatibility goal of Duktape is to be Ecmascript E5/E5.1
 compatible.  Current level of compatibility should be quite high.</p>
 
-<h2>Ecmascript E3</h2>
+<h2 id="compatibility-e3">Ecmascript E3</h2>
 
 <p>There is no effort to maintain
 <a href="http://www.mozilla.org/js/language/E262-3.pdf">Ecmascript E3</a>
 compatibility, other than required by the E5/E5.1 specification.</p>
 
-<h2>CoffeeScript</h2>
+<h2 id="compatibility-coffeescript">CoffeeScript</h2>
 
 <p><a href="http://coffeescript.org/">CoffeeScript</a> compiles to
 JavaScript which should be compatible with Duktape.  There are no known
@@ -39,7 +39,23 @@ print 'version: ' + Duktape.version
 }).call(this);
 </pre>
 
-<h2>Asm.js</h2>
+<h2 id="compatibility-underscorejs">Underscore.js</h2>
+
+<p><a href="http://underscorejs.org/">Underscore.js</a> provides a lot of
+useful utilities to plain Ecmascript.  Duktape passes almost all of Underscore's
+test cases, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/underscore-status.txt">underscore-status.txt</a>
+for current compatibility status.</p>
+
+<h2 id="compatibility-test262">Test262</h2>
+
+<p><a href="http://test262.ecmascript.org/">test262</a> is a test suite for
+testing E5.1 compatibility, although it includes also tests outside of standard E5.1.
+Duktape passes almost all of test262 cases, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/test262-status.txt">test262-status.txt</a>
+for current compatibility status.</p>
+
+<h2 id="compatibility-asmjs">Asm.js</h2>
 
 <p><a href="http://asmjs.org/spec/latest/">asm.js</a> is a
 "strict subset of JavaScript that can be used as a low-level, efficient
@@ -50,3 +66,14 @@ generate unnecessary bytecode and execute slower than normal Ecmascript
 code.  The <code>"use asm"</code> directive specified by asm.js is ignored
 by Duktape.</p>
 
+<h2 id="compatibility-emscripten">Emscripten</h2>
+
+<p><a href="https://github.com/kripken/emscripten">Emscripten</a> compiles
+C/C++ into Javascript.  Because Duktape is not a high performance engine,
+running large Emscripten-compiled program is probably not a good idea.
+Currently Emscripten output is not compatible with Duktape.  Known issues
+include non-standard RegExp syntax and function declarations outside
+program or function body top level.  Support for these may be added in
+the future, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/emscripten-status.txt">emscripten-status.txt</a>
+for current compatibility status.</p>
