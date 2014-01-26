@@ -180,7 +180,7 @@ clean:
 	-@rm -f doc/*.html
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
-	-@rm -rf massif.out.*
+	-@rm -rf massif.out.* ms_print.tmp.*
 	-@rm -rf /tmp/duktape-regfuzz/
 	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
