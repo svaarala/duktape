@@ -381,7 +381,7 @@ int main(int argc, char *argv[]) {
 	int retval = 0;
 	const char *filename = NULL;
 	int interactive = 0;
-	int memlimit_high = 0;
+	int memlimit_high = 1;
 	int i;
 
 #ifndef NO_SIGNAL
@@ -396,8 +396,8 @@ int main(int argc, char *argv[]) {
 		if (!arg) {
 			goto usage;
 		}
-		if (strcmp(arg, "-m") == 0) {
-			memlimit_high = 1;
+		if (strcmp(arg, "-r") == 0) {
+			memlimit_high = 0;
 		} else if (strlen(arg) > 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -459,9 +459,9 @@ int main(int argc, char *argv[]) {
 	return retval;
 
  usage:
-	fprintf(stderr, "Usage: duk [-m] <filename>\n");
+	fprintf(stderr, "Usage: duk [-r] <filename>\n");
 	fprintf(stderr, "where\n");
-	fprintf(stderr, "   -m      use high memory limit (useful for valgrind use)\n");
+	fprintf(stderr, "   -r      use lower memory limit\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
 	fprintf(stderr, "If <filename> is omitted, interactive mode is started.\n");
