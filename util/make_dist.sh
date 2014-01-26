@@ -424,7 +424,7 @@ rm $DISTSRCSEP/caseconv.txt
 # into a project and maximizes inlining and size optimization opportunities
 # even with older compilers.  The resulting duktape.c is quite ugly though.
 
-python combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c
+python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c
 cp $DISTSRCSEP/duktape.h $DISTSRCCOM/duktape.h
 
 # Final cleanup

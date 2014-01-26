@@ -203,6 +203,9 @@ def createCombined(files, extinc, intinc):
 	return '\n'.join(res) + '\n'
 
 def main():
+	if not os.path.exists('LICENSE.txt'):
+		raise Exception('CWD must be Duktape checkout top')
+
 	outname = sys.argv[2]
 	assert(outname)
 

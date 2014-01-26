@@ -1,4 +1,12 @@
 #!/bin/sh
+#
+#  Executed with 'cwd' in Duktape checkout top.
+#
+
+if [ ! -f LICENSE.txt ]; then
+	echo "CWD must be Duktape checkout top."
+	exit 1
+fi
 
 if [ "$1" = "valgrind" ]; then
 	VALGRIND=1
@@ -10,7 +18,7 @@ else
 	TEST=$2
 fi
 
-cat underscore-test-shim.js \
+cat util/underscore-test-shim.js \
     underscore/underscore.js \
     $TEST \
     > /tmp/duk-underscore-test.js
