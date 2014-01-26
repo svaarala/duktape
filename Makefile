@@ -185,7 +185,7 @@ clean:
 	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
-	-@rm -f /tmp/duk-emcc-test.js
+	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
 	-@rm -f a.out
 
 cleanall:
@@ -350,25 +350,30 @@ emscripten:
 	git clone https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
-EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
+# Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
+# Duktape cmdline with resource limits (i.e. "duk -r test.js").
+#EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
+EMCCOPTS=-s USE_TYPED_ARRAYS=0
 
 PHONY: emscriptentest
 emscriptentest: duk
 	@echo "### emscriptentest"
-	-@rm -f /tmp/duk-emcc-test.js
+	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	@ls -l /tmp/duk-emcc-test.js
-	./duk /tmp/duk-emcc-test.js
+	cat /tmp/duk-emcc-test.js | python fixemscripten.py > /tmp/duk-emcc-test-fixed.js
+	@ls -l /tmp/duk-emcc-test*
+	./duk /tmp/duk-emcc-test-fixed.js
 
 .PHONY: vgemscriptentest
 vgemscriptentest: duk
 	@echo "### vgemscriptentest"
-	-@rm -f /tmp/duk-emcc-test.js
+	-@rm -f /tmp/duk-emcc-vgtest*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	@ls -l /tmp/duk-emcc-test.js
-	valgrind ./duk /tmp/duk-emcc-test.js
+	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-vgtest.js
+	cat /tmp/duk-emcc-vgtest.js | python fixemscripten.py > /tmp/duk-emcc-vgtest-fixed.js
+	@ls -l /tmp/duk-emcc-vgtest*
+	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
