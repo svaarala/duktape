@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-int duk_bi_thread_constructor(duk_context *ctx) {
+duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	duk_hthread *new_thr;
 	duk_hobject *func;
 
@@ -46,13 +46,13 @@ int duk_bi_thread_constructor(duk_context *ctx) {
  *  Note: yield and resume handling is currently asymmetric.
  */
 
-int duk_bi_thread_resume(duk_context *ctx) {
+duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *thr_resume;
 	duk_tval tv_tmp;
 	duk_tval *tv;
 	duk_hobject *func;
-	int is_error;
+	duk_small_int_t is_error;
 
 	DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
 	             duk_get_tval(ctx, 0),
@@ -63,7 +63,7 @@ int duk_bi_thread_resume(duk_context *ctx) {
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
 	thr_resume = duk_require_hthread(ctx, 0);
-	is_error = duk_to_boolean(ctx, 2);
+	is_error = (duk_small_int_t) duk_to_boolean(ctx, 2);
 
 	/*
 	 *  Thread state and calling context checks
@@ -193,10 +193,10 @@ int duk_bi_thread_resume(duk_context *ctx) {
  *  Note: yield and resume handling is currently asymmetric.
  */
 
-int duk_bi_thread_yield(duk_context *ctx) {
+duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval tv_tmp;
-	int is_error;
+	duk_small_int_t is_error;
 
 	DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
 	             duk_get_tval(ctx, 0),
@@ -205,7 +205,7 @@ int duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
-	is_error = duk_to_boolean(ctx, 1);
+	is_error = (duk_small_int_t) duk_to_boolean(ctx, 1);
 
 	/*
 	 *  Thread state and calling context checks
@@ -234,7 +234,7 @@ int duk_bi_thread_yield(duk_context *ctx) {
 	if (thr->callstack_preventcount != 1) {
 		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
 		DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
-		            thr->callstack_preventcount);
+		            (int) thr->callstack_preventcount);
 		goto state_error;
 	}
 
@@ -280,7 +280,7 @@ int duk_bi_thread_yield(duk_context *ctx) {
 	return 0;  /* never here */
 }
 
-int duk_bi_thread_current(duk_context *ctx) {
+duk_ret_t duk_bi_thread_current(duk_context *ctx) {
 	duk_push_current_thread(ctx);
 	return 1;
 }

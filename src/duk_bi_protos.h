@@ -166,8 +166,6 @@ duk_ret_t duk_bi_thread_constructor(duk_context *ctx);
 duk_ret_t duk_bi_thread_resume(duk_context *ctx);
 duk_ret_t duk_bi_thread_yield(duk_context *ctx);
 duk_ret_t duk_bi_thread_current(duk_context *ctx);
-duk_ret_t duk_bi_thread_prototype_to_string(duk_context *ctx);
-duk_ret_t duk_bi_thread_prototype_value_of(duk_context *ctx);
 
 duk_ret_t duk_bi_type_error_thrower(duk_context *ctx);
 
