@@ -206,8 +206,8 @@ function executeTest(options, callback) {
 		    cmd.push(tempExe);
 		} else {
 		    cmd.push(options.engine.fullPath);
-		    if (options.valgrind && options.engine.name === 'duk') {
-			cmd.push('-m');  // higher memory limit
+		    if (!options.valgrind && options.engine.name === 'duk') {
+			cmd.push('-r');  // restricted memory
 		    }
 		    cmd.push(tempInput || options.testPath);
 		}
