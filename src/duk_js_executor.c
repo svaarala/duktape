@@ -1607,10 +1607,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 	for (;;) {
 		DUK_ASSERT(thr->callstack_top >= 1);
-		DUK_ASSERT(act == thr->callstack + thr->callstack_top - 1);  /* pointer stability */
-		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(fun));
-		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(fun));
-
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= fun->nregs);  /* FIXME == nregs? */
 		DUK_ASSERT((int) (thr->valstack_top - thr->valstack) == valstack_top_base);
 
@@ -1643,6 +1639,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		 */
 
 		act = thr->callstack + thr->callstack_top - 1;
+		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(fun));
+		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(fun));
 
 		DUK_DDDPRINT("executing bytecode: pc=%d ins=0x%08x, op=%d, valstack_top=%d/%d  -->  %!I",
 		             act->pc, bcode[act->pc], DUK_DEC_OP(bcode[act->pc]),
