@@ -293,27 +293,27 @@ underscore:
 underscoretest:	underscore duk
 	@echo "### underscoretest"
 	@echo "Run underscore tests with underscore-test-shim.js"
-	-util/underscore_test ./duk underscore/test/arrays.js
-	-util/underscore_test ./duk underscore/test/chaining.js
-	-util/underscore_test ./duk underscore/test/collections.js
-	-util/underscore_test ./duk underscore/test/functions.js
-	-util/underscore_test ./duk underscore/test/objects.js
+	-util/underscore_test.sh ./duk underscore/test/arrays.js
+	-util/underscore_test.sh ./duk underscore/test/chaining.js
+	-util/underscore_test.sh ./duk underscore/test/collections.js
+	-util/underscore_test.sh ./duk underscore/test/functions.js
+	-util/underscore_test.sh ./duk underscore/test/objects.js
 	# speed test disabled, requires JSLitmus
-	#-util/underscore_test ./duk underscore/test/speed.js
-	-util/underscore_test ./duk underscore/test/utility.js
+	#-util/underscore_test.sh ./duk underscore/test/speed.js
+	-util/underscore_test.sh ./duk underscore/test/utility.js
 
 .PHONY: vgunderscoretest
 vgunderscoretest: underscore duk
 	@echo "### vgunderscoretest"
 	@echo "Run underscore tests with underscore-test-shim.js, under valgrind"
-	-util/underscore_test valgrind ./duk underscore/test/arrays.js
-	-util/underscore_test valgrind ./duk underscore/test/chaining.js
-	-util/underscore_test valgrind ./duk underscore/test/collections.js
-	-util/underscore_test valgrind ./duk underscore/test/functions.js
-	-util/underscore_test valgrind ./duk underscore/test/objects.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/arrays.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/chaining.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/collections.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/functions.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/objects.js
 	# speed test disabled, requires JSLitmus
-	#-util/underscore_test valgrind ./duk underscore/test/speed.js
-	-util/underscore_test valgrind ./duk underscore/test/utility.js
+	#-util/underscore_test.sh valgrind ./duk underscore/test/speed.js
+	-util/underscore_test.sh valgrind ./duk underscore/test/utility.js
 
 d067d2f0ca30.tar.bz2:
 	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
@@ -327,7 +327,7 @@ test262test: test262-d067d2f0ca30 duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
-	cat /tmp/duk-test262.log | python util/filter262log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
+	cat /tmp/duk-test262.log | python util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
 .PHONY: vgtest262test
@@ -335,7 +335,7 @@ vgtest262test: test262-d067d2f0ca30 duk
 	@echo "### vgtest262test"
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
 	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary >/tmp/duk-vgtest262.log
-	cat /tmp/duk-vgtest262.log | python util/filter262log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
+	cat /tmp/duk-vgtest262.log | python util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
 	cat /tmp/duk-vgtest262-filtered.log
 	
 # Unholy helper to write out a testcase, the unholiness is that it reads
@@ -361,7 +361,7 @@ emscriptentest: duk
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	cat /tmp/duk-emcc-test.js | python util/fixemscripten.py > /tmp/duk-emcc-test-fixed.js
+	cat /tmp/duk-emcc-test.js | python util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	./duk /tmp/duk-emcc-test-fixed.js
 
@@ -371,7 +371,7 @@ vgemscriptentest: duk
 	-@rm -f /tmp/duk-emcc-vgtest*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-vgtest.js
-	cat /tmp/duk-emcc-vgtest.js | python util/fixemscripten.py > /tmp/duk-emcc-vgtest-fixed.js
+	cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
 	@ls -l /tmp/duk-emcc-vgtest*
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 
