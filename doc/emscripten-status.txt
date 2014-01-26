@@ -8,16 +8,19 @@ Hello world test
 Quick hello world test::
 
   $ ./emcc -s USE_TYPED_ARRAYS=0 \
-           -s TOTAL_MEMORY=2097152 \
-           -s TOTAL_STACK=524288 \
            tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 
-The additional options are needed:
+Options needed:
 
 * ``-s USE_TYPED_ARRAYS=0``: needed because Duktape does not yet support
   Javascript typed arrays.  Without this the Emscripten won't be able to
   create an array for simulating memory.  Note that without typed arrays,
   Emscripten code will run very slow and be very memory inefficient.
+
+Normally this suffices.  If you're running Duktape with a small amount of
+memory (e.g. when running the Duktape command line tool with the ``-r``
+option) you may need to reduce Emscription "virtual memory" size with the
+following additional options:
 
 * ``-s TOTAL_MEMORY=2097152``: reduce total memory size to avoid running
   out of memory.
@@ -57,3 +60,5 @@ Full diff for the fix needed::
      // See comment in isStructPointerType()
      return type[0] == '%';
    },
+
+This diff has been incorporated into ``fixemscripten.py``.
