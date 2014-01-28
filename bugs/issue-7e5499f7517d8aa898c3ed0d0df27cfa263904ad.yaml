@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: public API typing cleanup (should be high priority as it affects so many call sites)
+desc: ""
+type: :task
+component: duk
+release: v0.9
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-26 20:40:37.568478 Z
+references: []
+
+id: 7e5499f7517d8aa898c3ed0d0df27cfa263904ad
+log_events: 
+- - 2014-01-26 20:40:37.736252 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
