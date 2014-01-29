@@ -1176,6 +1176,7 @@ duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, int index) {
 	return (duk_hnativefunction *) h;
 }
 
+#if 0  /* FIXME: unused */
 /* about 300 bytes, worth it? */
 void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...) {
 	va_list ap;
@@ -1258,6 +1259,7 @@ void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...)
 
 	va_end(ap);
 }
+#endif  /* FIXME: unused */
 
 duk_c_function duk_get_c_function(duk_context *ctx, int index) {
 	duk_tval *tv;
@@ -2369,6 +2371,7 @@ void duk_push_pointer(duk_context *ctx, void *val) {
 	duk_push_tval(ctx, &tv);
 }
 
+#if 0  /* FIXME: unused */
 void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 	va_list ap;
 	duk_hthread *thr;
@@ -2436,6 +2439,7 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 
 	va_end(ap);
 }
+#endif  /* FIXME: unused */
 
 #define PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
 #define PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
