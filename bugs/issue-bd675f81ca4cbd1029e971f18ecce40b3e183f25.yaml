@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: change shared error message texts to explicit const char global strings
+desc: |-
+  This makes it more likely error messages will be properly reused, and will
+  also be more compatible with ancient compilers.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-01-29 21:07:57.177582 Z
+references: []
+
+id: bd675f81ca4cbd1029e971f18ecce40b3e183f25
+log_events: 
+- - 2014-01-29 21:07:57.337307 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
