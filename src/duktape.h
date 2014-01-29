@@ -122,6 +122,11 @@ struct duk_memory_functions {
  */
 #define DUK_VARARGS                       (-1)
 
+/* Number of value stack entries (in addition to actual call arguments)
+ * guaranteed to be allocated on entry to a Duktape/C function.
+ */
+#define DUK_API_ENTRY_STACK               64
+
 /* Value types, used by e.g. duk_get_type() */
 #define DUK_TYPE_NONE                     0    /* no value, e.g. invalid index */
 #define DUK_TYPE_UNDEFINED                1    /* Ecmascript undefined */

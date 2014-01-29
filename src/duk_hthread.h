@@ -20,6 +20,10 @@
                                                  * always added to user-defined 'extra' for e.g. the
                                                  * duk_check_stack() call.
                                                  */
+#define DUK_VALSTACK_API_ENTRY_MINIMUM  DUK_API_ENTRY_STACK
+                                                /* number of elements guaranteed to be user accessible
+                                                 * (in addition to call arguments) on Duktape/C function entry.
+                                                 */
 #define DUK_VALSTACK_DEFAULT_MAX        1000000
 
 #define DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */
