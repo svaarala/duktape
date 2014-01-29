@@ -3,7 +3,7 @@ title: duk_get_prop_stridx_boolean helper
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
@@ -26,3 +26,7 @@ log_events:
   - |-
     Should the helper pop also?  Some call sites benefit from this, others
     don't do that at the moment.
+- - 2014-01-29 18:27:08.143836 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
+  - ""

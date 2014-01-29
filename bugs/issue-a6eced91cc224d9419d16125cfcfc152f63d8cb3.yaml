@@ -19,7 +19,7 @@ desc: |-
   doesn't suffice)?
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
@@ -39,4 +39,8 @@ log_events:
 - - 2013-12-12 21:45:12.569377 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.9 from v0.8
+  - ""
+- - 2014-01-29 18:27:07.398728 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

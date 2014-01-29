@@ -3,7 +3,7 @@ title: public API typing cleanup (should be high priority as it affects so many 
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-26 20:40:37.736252 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-29 18:29:33.458046 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

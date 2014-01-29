@@ -3,7 +3,7 @@ title: add function _source property handling
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :in_progress
 disposition: 
@@ -25,4 +25,8 @@ log_events:
 - - 2013-12-25 18:32:25.139847 Z
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
+  - ""
+- - 2014-01-29 18:27:07.596394 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""
