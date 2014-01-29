@@ -8,14 +8,17 @@
  *  Use static helpers which can work with math.h functions matching
  *  the following signatures. This is not portable if any of these math
  *  functions is actually a macro.
+ *
+ *  Typing here is intentionally 'double' because that's what the standard
+ *  library APIs use.
  */
 
 typedef double (*one_arg_func)(double);
 typedef double (*two_arg_func)(double, double);
 
 static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
-	int n = duk_get_top(ctx);
-	int i;
+	duk_int_t n = duk_get_top(ctx);
+	duk_int_t i;
 	double res = initial;
 	double t;
 
@@ -169,35 +172,37 @@ static const two_arg_func two_arg_funcs[] = {
 	pow_fixed
 };
 
-int duk_bi_math_object_onearg_shared(duk_context *ctx) {
-	int fun_idx = duk_get_magic(ctx);
+duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
+	duk_small_int_t fun_idx = duk_get_magic(ctx);
 	one_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(one_arg_funcs) / sizeof(one_arg_func));
 	fun = one_arg_funcs[fun_idx];
-	duk_push_number(ctx, fun(duk_to_number(ctx, 0)));
+	/* FIXME: double typing here: double or duk_double_t? */
+	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0)));
 	return 1;
 }
 
-int duk_bi_math_object_twoarg_shared(duk_context *ctx) {
-	int fun_idx = duk_get_magic(ctx);
+duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
+	duk_small_int_t fun_idx = duk_get_magic(ctx);
 	two_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(two_arg_funcs) / sizeof(two_arg_func));
 	fun = two_arg_funcs[fun_idx];
-	duk_push_number(ctx, fun(duk_to_number(ctx, 0), duk_to_number(ctx, 1)));
+	/* FIXME: double typing here: double or duk_double_t? */
+	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));
 	return 1;
 }
 
-int duk_bi_math_object_max(duk_context *ctx) {
+duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
 	return math_minmax(ctx, -DUK_DOUBLE_INFINITY, fmax_fixed);
 }
 
-int duk_bi_math_object_min(duk_context *ctx) {
+duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
 	return math_minmax(ctx, DUK_DOUBLE_INFINITY, fmin_fixed);
 }
 
-int duk_bi_math_object_random(duk_context *ctx) {
-	duk_push_number(ctx, (double) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
+duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
+	duk_push_number(ctx, (duk_double_t) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
 	return 1;
 }
