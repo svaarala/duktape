@@ -356,7 +356,7 @@ emscripten:
 EMCCOPTS=-s USE_TYPED_ARRAYS=0
 
 PHONY: emscriptentest
-emscriptentest: duk
+emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
@@ -366,7 +366,7 @@ emscriptentest: duk
 	./duk /tmp/duk-emcc-test-fixed.js
 
 .PHONY: vgemscriptentest
-vgemscriptentest: duk
+vgemscriptentest: emscripten duk
 	@echo "### vgemscriptentest"
 	-@rm -f /tmp/duk-emcc-vgtest*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
