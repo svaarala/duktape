@@ -17,7 +17,7 @@ index 13, ToString(result): '', type: 7 -> 7
 index 14, ToString(result): '', type: 7 -> 7
 index 15, ToString(result): '', type: 7 -> 7
 index 16, ToString(result): '', type: 7 -> 7
-index 17, ToString(result): '(nil)', type: 8 -> 8
+index 17, ToString(result): 'null', type: 8 -> 8
 index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 rc=0, result=undefined
 rc=1, result=Error: invalid index: 3

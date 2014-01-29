@@ -28,9 +28,9 @@ index 24, int: INT_MAX, number before: nan, number after: inf
 index 25, int: 0, number before: nan, number after: 0.000000
 index 26, int: 0, number before: nan, number after: 0.000000
 index 27, int: 0, number before: nan, number after: 0.000000
-index 28, int: 1, number before: nan, number after: 1.000000
+index 28, int: 0, number before: nan, number after: 0.000000
 index 29, int: 0, number before: nan, number after: 0.000000
-index 30, int: 1, number before: nan, number after: 1.000000
+index 30, int: 0, number before: nan, number after: 0.000000
 index 31, int: 0, number before: nan, number after: 0.000000
 index 32, int: 1, number before: nan, number after: 1.000000
 rc=0, result=undefined
@@ -42,6 +42,7 @@ int test_1(duk_context *ctx) {
 	int i, n;
 
 	duk_set_top(ctx, 0);
+
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
 	duk_push_true(ctx);
@@ -52,6 +53,7 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, -123.456);
 	duk_push_number(ctx, 123.999);
 	duk_push_number(ctx, -123.999);
+
 	duk_push_nan(ctx);
 	duk_push_number(ctx, INFINITY);
 	duk_push_string(ctx, "");
@@ -62,6 +64,7 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "  -123.456e+3  ");
 	duk_push_string(ctx, "NaN");
 	duk_push_string(ctx, "-Infinity");
+
 	duk_push_string(ctx, "+Infinity");
 	duk_push_string(ctx, "Infinity");
 	duk_push_string(ctx, "Infinityx");
@@ -72,6 +75,7 @@ int test_1(duk_context *ctx) {
 	duk_push_fixed_buffer(ctx, 0);
 	duk_push_fixed_buffer(ctx, 1024);
 	duk_push_dynamic_buffer(ctx, 0);
+
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) NULL);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);

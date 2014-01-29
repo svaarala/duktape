@@ -17,17 +17,23 @@ index 9, type: 6, string coerced: [object Thread]
 *** test_2b (duk_safe_call)
 ==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
 *** test_2c (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_2d (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_2e (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_2f (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_2g (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_2h (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+index 0 OK
+==> rc=0, result='undefined'
 *** test_3 (duk_safe_call)
 ==> rc=1, result='Error: invalid index: 3'
 *** test_4 (duk_safe_call)

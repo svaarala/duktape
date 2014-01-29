@@ -36,8 +36,8 @@ index 16, string: '', length 0
 index 16, string: ''
 index 17, string: 'abcdefghijklmnop', length 16
 index 17, string: 'abcdefghijklmnop'
-index 18, string: '(nil)', length 5
-index 18, string: '(nil)'
+index 18, string: 'null', length 4
+index 18, string: 'null'
 index 19, string: '0xdeadbeef', length 10
 index 19, string: '0xdeadbeef'
 rc=0, result=undefined

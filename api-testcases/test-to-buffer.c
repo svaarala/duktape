@@ -34,8 +34,8 @@ index 15, type 7 -> 7, ptr-is-NULL -1, size 0
 buffer: dynamic=1, size=0: 
 index 16, type 7 -> 7, ptr-is-NULL 0, size 16
 buffer: dynamic=1, size=16: \x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f
-index 17, type 8 -> 7, ptr-is-NULL 0, size 5
-buffer: dynamic=0, size=5: (nil)
+index 17, type 8 -> 7, ptr-is-NULL 0, size 4
+buffer: dynamic=0, size=4: null
 index 18, type 8 -> 7, ptr-is-NULL 0, size 10
 buffer: dynamic=0, size=10: 0xdeadbeef
 rc=0, result=undefined
@@ -66,6 +66,7 @@ int test_1(duk_context *ctx) {
 	char *buf;
 
 	duk_set_top(ctx, 0);
+
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
 	duk_push_true(ctx);
@@ -76,6 +77,7 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, -0.0);
 	duk_push_number(ctx, +0.0);
 	duk_push_int(ctx, 123);
+
 	duk_push_string(ctx, "foo");
 	duk_push_lstring(ctx, "foo\0bar", 7);  /* internal NULs are kept */
 	duk_push_object(ctx);

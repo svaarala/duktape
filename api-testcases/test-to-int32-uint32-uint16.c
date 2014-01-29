@@ -114,15 +114,15 @@ index 36, uint16: 0, number before: nan, number after: 0.000000
 index 37, int32: 0, number before: nan, number after: 0.000000
 index 37, uint32: 0, number before: nan, number after: 0.000000
 index 37, uint16: 0, number before: nan, number after: 0.000000
-index 38, int32: 1, number before: nan, number after: 1.000000
-index 38, uint32: 1, number before: nan, number after: 1.000000
-index 38, uint16: 1, number before: nan, number after: 1.000000
+index 38, int32: 0, number before: nan, number after: 0.000000
+index 38, uint32: 0, number before: nan, number after: 0.000000
+index 38, uint16: 0, number before: nan, number after: 0.000000
 index 39, int32: 0, number before: nan, number after: 0.000000
 index 39, uint32: 0, number before: nan, number after: 0.000000
 index 39, uint16: 0, number before: nan, number after: 0.000000
-index 40, int32: 1, number before: nan, number after: 1.000000
-index 40, uint32: 1, number before: nan, number after: 1.000000
-index 40, uint16: 1, number before: nan, number after: 1.000000
+index 40, int32: 0, number before: nan, number after: 0.000000
+index 40, uint32: 0, number before: nan, number after: 0.000000
+index 40, uint16: 0, number before: nan, number after: 0.000000
 index 41, int32: 0, number before: nan, number after: 0.000000
 index 41, uint32: 0, number before: nan, number after: 0.000000
 index 41, uint16: 0, number before: nan, number after: 0.000000
@@ -142,6 +142,7 @@ int test_1(duk_context *ctx) {
 	int i, n;
 
 	duk_set_top(ctx, 0);
+
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
 	duk_push_true(ctx);
@@ -152,6 +153,7 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, 123.456);
 	duk_push_number(ctx, -123.456);
 	duk_push_number(ctx, 123.999);
+
 	duk_push_number(ctx, -123.999);
 	duk_push_number(ctx, -2147483649.0); /* min int32 - 1 */
 	duk_push_number(ctx, -2147483648.0); /* min int32 */
@@ -162,6 +164,7 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, 65535.0);       /* max uint16 */
 	duk_push_number(ctx, 65536.0);       /* max uint16 + 1 */
 	duk_push_number(ctx, 9999999999.0);
+
 	duk_push_nan(ctx);
 	duk_push_number(ctx, INFINITY);
 	duk_push_string(ctx, "");
@@ -172,6 +175,7 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "  -123.456e+3  ");
 	duk_push_string(ctx, "NaN");
 	duk_push_string(ctx, "-Infinity");
+
 	duk_push_string(ctx, "+Infinity");
 	duk_push_string(ctx, "Infinity");
 	duk_push_string(ctx, "Infinityx");
@@ -179,9 +183,10 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "  Infinity  ");
 	duk_push_object(ctx);
 	duk_push_thread(ctx);
-	duk_push_fixed_buffer(ctx, 0);
-	duk_push_fixed_buffer(ctx, 1024);
+	duk_push_fixed_buffer(ctx, 0);     /* ToNumber('') = 0 */
+	duk_push_fixed_buffer(ctx, 1024);  /* ToNumber('\u0000...') = NaN, converts into 0 when doing integer coercion */
 	duk_push_dynamic_buffer(ctx, 0);
+
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) NULL);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);

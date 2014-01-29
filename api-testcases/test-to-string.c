@@ -18,7 +18,7 @@ index 14, string: ''
 index 15, string: 'abcdefghijklmnop'
 index 16, string: ''
 index 17, string: 'abcdefghijklmnop'
-index 18, string: '(nil)'
+index 18, string: 'null'
 index 19, string: '0xdeadbeef'
 rc=0, result=undefined
 rc=1, result=Error: invalid index: 3

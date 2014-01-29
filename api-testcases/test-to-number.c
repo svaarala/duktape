@@ -24,9 +24,9 @@ index 20, number: inf
 index 21, number: nan
 index 22, number: nan
 index 23, number: 0.000000
-index 24, number: 1.000000
+index 24, number: nan
 index 25, number: 0.000000
-index 26, number: 1.000000
+index 26, number: nan
 index 27, number: 0.000000
 index 28, number: 1.000000
 rc=0, result=undefined
@@ -38,6 +38,7 @@ int test_1(duk_context *ctx) {
 	int i, n;
 
 	duk_set_top(ctx, 0);
+
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
 	duk_push_true(ctx);
@@ -48,6 +49,7 @@ int test_1(duk_context *ctx) {
 	duk_push_number(ctx, INFINITY);
 	duk_push_string(ctx, "");
 	duk_push_string(ctx, "foo");
+
 	duk_push_string(ctx, "123");
 	duk_push_string(ctx, "123.456");
 	duk_push_string(ctx, "123.456e3");
@@ -58,11 +60,12 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "Infinity");
 	duk_push_string(ctx, "Infinityx");
 	duk_push_string(ctx, "xInfinity");
+
 	duk_push_string(ctx, "  Infinity  ");
 	duk_push_object(ctx);
 	duk_push_thread(ctx);
-	duk_push_fixed_buffer(ctx, 0);
-	duk_push_fixed_buffer(ctx, 1024);
+	duk_push_fixed_buffer(ctx, 0);    /* coerces like string: ToNumber('') = 0 */
+	duk_push_fixed_buffer(ctx, 1024); /* coerces like string: ToNumber('\u0000\u0000...') = NaN */
 	duk_push_dynamic_buffer(ctx, 0);
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) NULL);

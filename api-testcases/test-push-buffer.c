@@ -35,10 +35,10 @@ final top: 4
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
 fixed size buffer, close to maximum size_t (should fail)
-==> rc=1, result='Error: failed to allocate buffer'
+==> rc=1, result='RangeError: buffer too long'
 *** test_3 (duk_safe_call)
 dynamic size buffer, close to maximum size_t (should fail)
-==> rc=1, result='Error: failed to allocate buffer'
+==> rc=1, result='RangeError: buffer too long'
 ===*/
 
 #ifndef  SIZE_MAX

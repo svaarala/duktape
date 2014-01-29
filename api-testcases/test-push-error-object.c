@@ -2,7 +2,7 @@
 err_idx: 2
 name: TypeError
 message: invalid argument: 234
-code: 105
+code: undefined
 final top: 3
 ===*/
 
@@ -24,6 +24,9 @@ void test(duk_context *ctx) {
 	printf("message: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
+	/* 'code' was a property which was once augmented to error instances,
+	 * but has since been removed.
+	 */
 	duk_get_prop_string(ctx, -1, "code");
 	printf("code: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
