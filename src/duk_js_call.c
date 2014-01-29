@@ -556,6 +556,7 @@ int duk_handle_call(duk_hthread *thr,
 	int idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	int nargs;            /* # argument registers target function wants (< 0 => "as is") */
 	int nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
+	unsigned int vs_min_size;  /* FIXME: type */
 	duk_hobject *func;    /* 'func' on stack (borrowed reference) */
 	duk_activation *act;
 	duk_hobject *env;
@@ -873,12 +874,15 @@ int duk_handle_call(duk_hthread *thr,
 	 * all args (= 'num_stack_args')
 	 */
 
-	duk_require_valstack_resize((duk_context *) thr,
-	                            (thr->valstack_bottom - thr->valstack) +         /* bottom of current func */
-	                                idx_args +                                   /* bottom of new func */
-	                                (nregs >= 0 ? nregs : num_stack_args) +      /* num entries of new func at entry */
-	                                DUK_VALSTACK_INTERNAL_EXTRA,                 /* + spare => min_new_size */
-	                            1);                                              /* allow_shrink */
+	vs_min_size = (thr->valstack_bottom - thr->valstack) +         /* bottom of current func */
+	              idx_args;                                        /* bottom of new func */
+	vs_min_size += (nregs >= 0 ? nregs : num_stack_args);          /* num entries of new func at entry */
+	if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
+		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;         /* Duktape/C API guaranteed entries (on top of args) */
+	}
+	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA,                    /* + spare */
+
+	duk_require_valstack_resize((duk_context *) thr, vs_min_size, 1 /*allow_shrink*/);
 
 	/*
 	 *  Update idx_retval of current activation.
