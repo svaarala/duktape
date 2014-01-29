@@ -39,7 +39,6 @@ To build an example command line tool, use the following::
   [...]
   $ ./duk
   ((o) Duktape
-  [... build info ...]
   duk> print('Hello world!');
   Hello world!
   = undefined
