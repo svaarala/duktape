@@ -229,11 +229,12 @@ when you know, beforehand, that a certain number of entries will be needed
 during a function.</p>
 
 <p>When a value stack is created or a Duktape/C function is entered, the
-value stack is always guaranteed up to size XXX.  In the typical case this
-is more than sufficient so that the majority of Duktape/C functions don't
-need to extend the value stack.  Only functions that need more space or
-perhaps need an input-dependent amount of space need to grow the value
-stack.</p>
+value stack is always guaranteed to have space for the call arguments and
+<code>DUK_API_ENTRY_STACK</code> (currently 64) elements.  In the typical
+case this is more than sufficient so that the majority of Duktape/C
+functions don't need to extend the value stack.  Only functions that need
+more space or perhaps need an input-dependent amount of space need to grow
+the value stack.</p>
 
 <p>You can extend the stack allocation explicitly with <code>duk_check_stack()</code>
 or (usually more preferably) <code>duk_require_stack()</code>.  Once successfully
