@@ -96,7 +96,8 @@ Released
 0.9.0 (2014-01-XX)
 -------------------
 
-* Added API call to force GC, duk_gc()
+* Added API call to force GC, duk_gc(); implemented duk_map_string() and
+  duk_decode_string()
 
 * Added extended JSON format variants: JSONX and JSONC; NULL pointer
   values string now coerce to "null" instead of e.g. "(nil)" to match
