@@ -19,7 +19,7 @@ final top: 1000
 final top: 1000
 ==> rc=0, result='undefined'
 *** require_3 (duk_safe_call)
-==> rc=1, result='Error: valstack limit reached'
+==> rc=1, result='RangeError: valstack limit'
 ===*/
 
 /* demonstrate how pushing too many elements causes an error */

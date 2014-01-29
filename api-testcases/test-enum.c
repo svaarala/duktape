@@ -1,3 +1,6 @@
+/*===
+FIXME
+===*/
 
 /* basic enum success cases */
 int test_1(duk_context *ctx) {

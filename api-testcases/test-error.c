@@ -4,27 +4,27 @@
 ToString(error): RangeError: range error: 123
 name: RangeError
 message: range error: 123
-code: 102
-fileName: undefined
-lineNumber: 0
+code: undefined
+fileName is a string: 1
+lineNumber: 36
 isNative: undefined
 *** test_2 (duk_pcall)
 ==> rc=1
 ToString(error): Error: arbitrary error code
 name: Error
 message: arbitrary error code
-code: 1234567
-fileName: undefined
-lineNumber: 0
+code: undefined
+fileName is a string: 1
+lineNumber: 45
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
-ToString(error): TypeError
+ToString(error): TypeError: 105
 name: TypeError
-message: 
-code: 105
-fileName: undefined
-lineNumber: 0
+message: 105
+code: undefined
+fileName is a string: 1
+lineNumber: 55
 isNative: undefined
 ===*/
 
@@ -51,6 +51,7 @@ int test_2(duk_context *ctx) {
 int test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
+	/* error code replaces message automatically now if message is NULL */
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, NULL);
 
 	printf("final top: %d\n", duk_get_top(ctx));
@@ -70,18 +71,20 @@ void dump_error(duk_context *ctx) {
 	printf("message: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
+	/* 'code' is no longer set, test that it reads back as 'undefined' */
 	duk_get_prop_string(ctx, -1, "code");
-	printf("code: %d\n", duk_get_int(ctx, -1));
+	printf("code: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_get_prop_string(ctx, -1, "fileName");
-	printf("fileName: %s\n", duk_to_string(ctx, -1));
+	printf("fileName is a string: %d\n", duk_is_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_get_prop_string(ctx, -1, "lineNumber");
 	printf("lineNumber: %d\n", duk_get_int(ctx, -1));
 	duk_pop(ctx);
 
+	/* 'isNative' has also been removed, check that it reads back as 'undefined' */
 	duk_get_prop_string(ctx, -1, "isNative");
 	printf("isNative: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
