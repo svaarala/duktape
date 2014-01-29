@@ -106,18 +106,65 @@ void duk_join(duk_context *ctx, unsigned int count) {
 	concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
+/* FIXME: could map/decode be unified with duk_unicode_support.c code?
+ * Case conversion needs also the character surroundings though.
+ */
+
 void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata) {
-	DUK_UNREF(index);
-	DUK_UNREF(callback);
-	DUK_UNREF(udata);
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_input;
+	duk_uint8_t *p, *p_start, *p_end;
+	duk_codepoint_t cp;
+
+	h_input = duk_require_hstring(ctx, index);
+	DUK_ASSERT(h_input != NULL);
+
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p = p_start;
+
+	for (;;) {
+		if (p >= p_end) {
+			break;
+		}
+		cp = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
+		callback(udata, cp);
+	}
 }
 
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata) {
-	DUK_UNREF(index);
-	DUK_UNREF(callback);
-	DUK_UNREF(udata);
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "FIXME");
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_input;
+	duk_hbuffer_dynamic *h_buf;
+	duk_uint8_t *p, *p_start, *p_end;
+	duk_codepoint_t cp;
+
+	index = duk_normalize_index(ctx, index);
+
+	h_input = duk_require_hstring(ctx, index);
+	DUK_ASSERT(h_input != NULL);
+
+	/* FIXME: should init with a spare of at least h_input->blen? */
+	duk_push_dynamic_buffer(ctx, 0);
+	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
+	DUK_ASSERT(h_buf != NULL);
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
+
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p = p_start;
+
+	for (;;) {
+		if (p >= p_end) {
+			break;
+		}
+		cp = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
+		cp = callback(udata, cp);
+		duk_hbuffer_append_xutf8(thr, h_buf, cp);
+	}
+
+	duk_to_string(ctx, -1);  /* invalidates h_buf pointer */
+	duk_replace(ctx, index);
 }
 
 void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_offset) {
