@@ -191,7 +191,6 @@ clean:
 cleanall:
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
-	-@rm -f underscore.js
 	-@rm -rf UglifyJS
 	-@rm -rf underscore
 	-@rm -rf test262-d067d2f0ca30
