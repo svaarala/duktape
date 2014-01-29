@@ -25,7 +25,7 @@ DISTSRCCOM=$DIST/src
 
 # DUK_VERSION is grepped from duktape.h: it is needed for the public API
 # and we want to avoid defining it in two places.
-DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3`
+DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
 
 echo "DUK_VERSION: $DUK_VERSION"
 echo "Creating distributable sources to: $DIST"
