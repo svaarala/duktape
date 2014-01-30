@@ -300,6 +300,8 @@ Random notes
 
 * overflow:auto is an alternative to the traditional "clearfix"
 
+* http://ajiprabowo.wordpress.com/2011/11/11/saying-goodbye-to-the-overflow-hidden-clearing-hack/
+
 * http://designshack.net/articles/css/whats-the-deal-with-display-inline-block/
 
 * http://coding.smashingmagazine.com/2011/09/19/css3-flexible-box-layout-explained/
