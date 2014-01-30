@@ -3,7 +3,7 @@ title: guide documentation on executor interrupts, step limiting, etc
 desc: ""
 type: :task
 component: duk
-release: v0.9
+release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-06 20:30:11.850068 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-01-30 20:57:10.898924 Z
+  - sva <sami.vaarala@iki.fi>
+  - assigned to release v0.10 from v0.9
   - ""

@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: code issues note about FIXME etc markers
+title: windows compile warning, CF_ACCEPT in duk_bi_date.c conflicts with Windows headers
 desc: ""
-type: :task
+type: :bugfix
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-12-25 19:50:35.995890 Z
+creation_time: 2014-01-30 21:25:50.820596 Z
 references: []
 
-id: 26363c42ff01ace6619ee60bfca26808a2aaf55c
+id: 7aa466cfff136debb7652f3d5e109918c75be242
 log_events: 
-- - 2013-12-25 19:50:36.175281 Z
+- - 2014-01-30 21:25:51.004282 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-01-30 20:57:46.874510 Z
+- - 2014-01-30 21:25:54.452399 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""
