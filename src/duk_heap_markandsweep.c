@@ -882,7 +882,9 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 		DUK_DPRINT("temporary hack: gc skipped because we don't have a temp thread");
 
 		/* reset voluntary gc trigger count */
+#ifdef DUK_USE_VOLUNTARY_GC
 		heap->mark_and_sweep_trigger_counter = DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP;
+#endif
 		return DUK_ERR_OK;
 	}
 
@@ -1060,17 +1062,21 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 *  Reset trigger counter
 	 */
 
+#ifdef DUK_USE_VOLUNTARY_GC
 	tmp = (count_keep_obj + count_keep_str) / 256;
 	heap->mark_and_sweep_trigger_counter =
 	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +
 	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD;
-
 	DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, trigger reset to %d",
 	           (int) count_keep_obj, (int) count_keep_str, (int) heap->mark_and_sweep_trigger_counter);
+#else
+	DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, no voluntary trigger",
+	           (int) count_keep_obj, (int) count_keep_str);
+#endif
 	return DUK_ERR_OK;
 }
 
-#else
+#else  /* DUK_USE_MARK_AND_SWEEP */
 
 /* no mark-and-sweep gc */
 

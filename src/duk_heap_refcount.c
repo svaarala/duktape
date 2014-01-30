@@ -288,7 +288,7 @@ static void refzero_free_pending(duk_hthread *thr) {
 	 *  a voluntary mark-and-sweep.
 	 */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
+#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_VOLUNTARY_GC)
 	/* 'count' is more or less comparable to normal trigger counter update
 	 * which happens in memory block (re)allocation.
 	 */
@@ -301,7 +301,7 @@ static void refzero_free_pending(duk_hthread *thr) {
 		DUK_UNREF(rc);
 		DUK_DPRINT("refcount triggered mark-and-sweep => rc %d", rc);
 	}
-#endif
+#endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
 }
 
 /*

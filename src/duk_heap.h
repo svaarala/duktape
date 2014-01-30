@@ -321,7 +321,9 @@ struct duk_heap {
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/* mark-and-sweep control */
+#ifdef DUK_USE_VOLUNTARY_GC
 	int mark_and_sweep_trigger_counter;
+#endif
 	int mark_and_sweep_recursion_depth;
 
 	/* mark-and-sweep flags automatically active (used for critical sections) */

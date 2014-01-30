@@ -12,6 +12,7 @@
  *  inlined in size optimized builds).
  */
 
+#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_VOLUNTARY_GC)
 #define VOLUNTARY_PERIODIC_GC(heap)  do { \
 		(heap)->mark_and_sweep_trigger_counter--; \
 		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
@@ -19,7 +20,6 @@
 		} \
 	} while (0)
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 static void run_voluntary_gc(duk_heap *heap) {
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now");
@@ -33,7 +33,9 @@ static void run_voluntary_gc(duk_heap *heap) {
 		DUK_UNREF(rc);
 	}
 }
-#endif
+#else
+#define VOLUNTARY_PERIODIC_GC(heap)  /* no voluntary gc */
+#endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
 
 /*
  *  Allocate memory with garbage collection
@@ -49,11 +51,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	DUK_ASSERT(size >= 0);
 
 	/*
-	 *  Voluntary periodic GC
-	 */
-
-	/* FIXME: additionally allocated bytes counter; this is especially
-	 * important for mark-and-sweep only mode.
+	 *  Voluntary periodic GC (if enabled)
 	 */
 
 	VOLUNTARY_PERIODIC_GC(heap);
@@ -163,7 +161,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 	DUK_ASSERT(newsize >= 0);
 
 	/*
-	 *  Voluntary periodic GC
+	 *  Voluntary periodic GC (if enabled)
 	 */
 
 	VOLUNTARY_PERIODIC_GC(heap);
@@ -256,7 +254,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 	DUK_ASSERT(newsize >= 0);
 
 	/*
-	 *  Voluntary periodic GC
+	 *  Voluntary periodic GC (if enabled)
 	 */
 
 	VOLUNTARY_PERIODIC_GC(heap);
@@ -367,7 +365,9 @@ void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	 * need to put in NULLs at every turn to ensure the object is always in
 	 * consistent state for a mark-and-sweep.
 	 */
+#ifdef DUK_USE_VOLUNTARY_GC
 	heap->mark_and_sweep_trigger_counter--;
+#endif
 }
 #else
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */

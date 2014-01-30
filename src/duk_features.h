@@ -1098,6 +1098,13 @@ extern double duk_computed_nan;
 #undef DUK_USE_MARK_AND_SWEEP
 #endif
 
+#if defined(DUK_USE_MARK_AND_SWEEP)
+#define DUK_USE_VOLUNTARY_GC
+#if defined(DUK_OPT_NO_VOLUNTARY_GC)
+#undef DUK_USE_VOLUNTARY_GC
+#endif
+#endif
+
 #if !defined(DUK_USE_MARK_AND_SWEEP) && !defined(DUK_USE_REFERENCE_COUNTING)
 #error must have either mark-and-sweep or reference counting enabled
 #endif
