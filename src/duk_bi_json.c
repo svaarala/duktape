@@ -764,15 +764,15 @@ static void json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
  *  Stringify implementation.
  */
 
-#define EMIT_1(js_ctx,ch)          json_emit_1((js_ctx),(ch))
-#define EMIT_2(js_ctx,ch1,ch2)     json_emit_2((js_ctx),(((int)(ch1)) << 8) + (int)(ch2))
-#define EMIT_ESC_AUTO(js_ctx,cp)   json_emit_esc_auto((js_ctx),(cp))
-#define EMIT_XUTF8(js_ctx,cp)      json_emit_xutf8((js_ctx),(cp))
-#define EMIT_HSTR(js_ctx,h)        json_emit_hstring((js_ctx),(h))
+#define DUK__EMIT_1(js_ctx,ch)          json_emit_1((js_ctx),(ch))
+#define DUK__EMIT_2(js_ctx,ch1,ch2)     json_emit_2((js_ctx),(((int)(ch1)) << 8) + (int)(ch2))
+#define DUK__EMIT_ESC_AUTO(js_ctx,cp)   json_emit_esc_auto((js_ctx),(cp))
+#define DUK__EMIT_XUTF8(js_ctx,cp)      json_emit_xutf8((js_ctx),(cp))
+#define DUK__EMIT_HSTR(js_ctx,h)        json_emit_hstring((js_ctx),(h))
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
-#define EMIT_CSTR(js_ctx,p)        json_emit_cstring((js_ctx),(p))
+#define DUK__EMIT_CSTR(js_ctx,p)        json_emit_cstring((js_ctx),(p))
 #endif
-#define EMIT_STRIDX(js_ctx,i)      json_emit_stridx((js_ctx),(i))
+#define DUK__EMIT_STRIDX(js_ctx,i)      json_emit_stridx((js_ctx),(i))
 
 static void json_emit_1(duk_json_enc_ctx *js_ctx, char ch) {
 	duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, (duk_uint8_t) ch);
@@ -785,7 +785,7 @@ static void json_emit_2(duk_json_enc_ctx *js_ctx, int chars) {
 	duk_hbuffer_append_bytes(js_ctx->thr, js_ctx->h_buf, (duk_uint8_t *) buf, 2);
 }
 
-#define MKESC(nybbles,esc1,esc2)  \
+#define DUK__MKESC(nybbles,esc1,esc2)  \
 	(((duk_int_t) (nybbles)) << 16) | \
 	(((duk_int_t) (esc1)) << 8) | \
 	((duk_int_t) (esc2))
@@ -804,18 +804,18 @@ static void json_emit_esc_auto(duk_json_enc_ctx *js_ctx, duk_uint32_t cp) {
 #ifdef DUK_USE_JSONX
 	if (DUK_LIKELY(cp < 0x100)) {
 		if (DUK_UNLIKELY(js_ctx->flag_ext_custom)) {
-			tmp = MKESC(2, '\\', 'x');
+			tmp = DUK__MKESC(2, '\\', 'x');
 		} else {
-			tmp = MKESC(4, '\\', 'u');
+			tmp = DUK__MKESC(4, '\\', 'u');
 		}
 	} else
 #endif
 	if (DUK_LIKELY(cp < 0x10000)) {
-		tmp = MKESC(4, '\\', 'u');
+		tmp = DUK__MKESC(4, '\\', 'u');
 	} else {
 #ifdef DUK_USE_JSONX
 		if (DUK_LIKELY(js_ctx->flag_ext_custom)) {
-			tmp = MKESC(8, '\\', 'U');
+			tmp = DUK__MKESC(8, '\\', 'U');
 		} else
 #endif
 		{
@@ -824,7 +824,7 @@ static void json_emit_esc_auto(duk_json_enc_ctx *js_ctx, duk_uint32_t cp) {
 			 * roundtrip but will still be more or less readable and
 			 * more useful than an error.
 			 */
-			tmp = MKESC(8, 'U', '+');
+			tmp = DUK__MKESC(8, 'U', '+');
 		}
 	}
 
@@ -928,7 +928,7 @@ static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) 
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
 	p = p_start;
 
-	EMIT_1(js_ctx, '"');
+	DUK__EMIT_1(js_ctx, '"');
 
 	while (p < p_end) {
 		cp = *p;
@@ -938,7 +938,7 @@ static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) 
 			p++;
 			if (cp == 0x22 || cp == 0x5c) {
 				/* double quote or backslash */
-				EMIT_2(js_ctx, '\\', (char) cp);
+				DUK__EMIT_2(js_ctx, '\\', (char) cp);
 			} else if (cp < 0x20) {
 				char esc_char;
 
@@ -947,15 +947,15 @@ static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) 
 				 */
 				if (cp < sizeof(quote_esc) &&
 				    (esc_char = quote_esc[cp]) != (char) 0) {
-					EMIT_2(js_ctx, '\\', esc_char);
+					DUK__EMIT_2(js_ctx, '\\', esc_char);
 				} else {
-					EMIT_ESC_AUTO(js_ctx, cp);
+					DUK__EMIT_ESC_AUTO(js_ctx, cp);
 				}
 			} else if (cp == 0x7f && js_ctx->flag_ascii_only) {
-				EMIT_ESC_AUTO(js_ctx, cp);
+				DUK__EMIT_ESC_AUTO(js_ctx, cp);
 			} else {
 				/* any other printable -> as is */
-				EMIT_1(js_ctx, (char) cp);
+				DUK__EMIT_1(js_ctx, (char) cp);
 			}
 		} else {
 			/* slow path decode */
@@ -981,15 +981,15 @@ static void json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) 
 			}
 
 			if (js_ctx->flag_ascii_only) {
-				EMIT_ESC_AUTO(js_ctx, cp);
+				DUK__EMIT_ESC_AUTO(js_ctx, cp);
 			} else {
 				/* as is */
-				EMIT_XUTF8(js_ctx, cp);
+				DUK__EMIT_XUTF8(js_ctx, cp);
 			}
 		}
 	}
 
-	EMIT_1(js_ctx, '"');
+	DUK__EMIT_1(js_ctx, '"');
 }
 
 /* Shared entry handling for object/array serialization: indent/stepback,
@@ -1132,7 +1132,7 @@ static void json_enc_object(duk_json_enc_ctx *js_ctx) {
 
 	/* Steps 8-10 have been merged to avoid a "partial" variable. */
 
-	EMIT_1(js_ctx, '{');
+	DUK__EMIT_1(js_ctx, '{');
 
 	/* FIXME: keys is an internal object with all keys to be processed
 	 * in its (gapless) array part.  Because nobody can touch the keys
@@ -1161,26 +1161,26 @@ static void json_enc_object(duk_json_enc_ctx *js_ctx) {
 		if (first) {
 			first = 0;
 		} else {
-			EMIT_1(js_ctx, (char) ',');
+			DUK__EMIT_1(js_ctx, (char) ',');
 		}
 		if (h_indent != NULL) {
-			EMIT_1(js_ctx, (char) 0x0a);
-			EMIT_HSTR(js_ctx, h_indent);
+			DUK__EMIT_1(js_ctx, (char) 0x0a);
+			DUK__EMIT_HSTR(js_ctx, h_indent);
 		}
 
 		h_key = duk_get_hstring(ctx, -2);
 		DUK_ASSERT(h_key != NULL);
 		if (js_ctx->flag_avoid_key_quotes && !json_enc_key_quotes_needed(h_key)) {
 			/* emit key as is */
-			EMIT_HSTR(js_ctx, h_key);
+			DUK__EMIT_HSTR(js_ctx, h_key);
 		} else {
 			json_enc_quote_string(js_ctx, h_key);
 		}
 
 		if (h_indent != NULL) {
-			EMIT_2(js_ctx, ':', ' ');
+			DUK__EMIT_2(js_ctx, ':', ' ');
 		} else {
-			EMIT_1(js_ctx, ':');
+			DUK__EMIT_1(js_ctx, ':');
 		}
 
 		/* [ ... key val ] */
@@ -1191,11 +1191,11 @@ static void json_enc_object(duk_json_enc_ctx *js_ctx) {
 	if (!first) {
 		if (h_stepback != NULL) {
 			DUK_ASSERT(h_indent != NULL);
-			EMIT_1(js_ctx, (char) 0x0a);
-			EMIT_HSTR(js_ctx, h_stepback);
+			DUK__EMIT_1(js_ctx, (char) 0x0a);
+			DUK__EMIT_HSTR(js_ctx, h_stepback);
 		}
 	}
-	EMIT_1(js_ctx, '}');
+	DUK__EMIT_1(js_ctx, '}');
 
 	json_enc_objarr_shared_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
 
@@ -1224,7 +1224,7 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 
 	/* Steps 8-10 have been merged to avoid a "partial" variable. */
 
-	EMIT_1(js_ctx, '[');
+	DUK__EMIT_1(js_ctx, '[');
 
 	arr_len = duk_get_length(ctx, idx_arr);
 	for (i = 0; i < arr_len; i++) {
@@ -1232,11 +1232,11 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 		             duk_get_tval(ctx, idx_arr), h_indent, h_stepback, i, arr_len);
 
 		if (i > 0) {
-			EMIT_1(js_ctx, ',');
+			DUK__EMIT_1(js_ctx, ',');
 		}
 		if (h_indent != NULL) {
-			EMIT_1(js_ctx, (char) 0x0a);
-			EMIT_HSTR(js_ctx, h_indent);
+			DUK__EMIT_1(js_ctx, (char) 0x0a);
+			DUK__EMIT_HSTR(js_ctx, h_indent);
 		}
 
 		/* FIXME: duk_push_uint_string() */
@@ -1245,7 +1245,7 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 		undef = json_enc_value1(js_ctx, idx_arr);
 
 		if (undef) {
-			EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
+			DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
 		} else {
 			/* [ ... key val ] */
 			json_enc_value2(js_ctx);
@@ -1255,11 +1255,11 @@ static void json_enc_array(duk_json_enc_ctx *js_ctx) {
 	if (arr_len > 0) {
 		if (h_stepback != NULL) {
 			DUK_ASSERT(h_indent != NULL);
-			EMIT_1(js_ctx, (char) 0x0a);
-			EMIT_HSTR(js_ctx, h_stepback);
+			DUK__EMIT_1(js_ctx, (char) 0x0a);
+			DUK__EMIT_HSTR(js_ctx, h_stepback);
 		}
 	}
-	EMIT_1(js_ctx, ']');
+	DUK__EMIT_1(js_ctx, ']');
 
 	json_enc_objarr_shared_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
 
@@ -1412,17 +1412,17 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 	/* When JSONX/JSONC not in use, json_enc_value1 will block undefined values. */
 	case DUK_TAG_UNDEFINED: {
-		EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_undefined);
+		DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_undefined);
 		break;
 	}
 #endif
 	case DUK_TAG_NULL: {
-		EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
+		DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
-		EMIT_STRIDX(js_ctx, DUK_TVAL_GET_BOOLEAN(tv) ?
-		            DUK_STRIDX_TRUE : DUK_STRIDX_FALSE);
+		DUK__EMIT_STRIDX(js_ctx, DUK_TVAL_GET_BOOLEAN(tv) ?
+		                 DUK_STRIDX_TRUE : DUK_STRIDX_FALSE);
 		break;
 	}
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
@@ -1456,7 +1456,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 
 		/* When ptr == NULL, the format argument is unused. */
 		DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptr);  /* must not truncate */
-		EMIT_CSTR(js_ctx, buf);
+		DUK__EMIT_CSTR(js_ctx, buf);
 		break;
 	}
 #endif  /* DUK_USE_JSONX || DUK_USE_JSONC */
@@ -1475,7 +1475,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			/* We only get here when doing non-standard JSON encoding */
 			DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);
-			EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
+			DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
 		} else  /* continues below */
 #endif
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY) {
@@ -1510,13 +1510,13 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 			DUK_ASSERT(h != NULL);
 			p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
 			p_end = p + DUK_HBUFFER_GET_SIZE(h);
-			EMIT_1(js_ctx, '|');
+			DUK__EMIT_1(js_ctx, '|');
 			while (p < p_end) {
 				x = (int) *p++;
 				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[(x >> 4) & 0x0f]);
 				duk_hbuffer_append_byte(js_ctx->thr, js_ctx->h_buf, duk_lc_digits[x & 0x0f]);
 			}
-			EMIT_1(js_ctx, '|');
+			DUK__EMIT_1(js_ctx, '|');
 		}
 #endif
 #if defined(DUK_USE_JSONX) && defined(DUK_USE_JSONC)
@@ -1526,9 +1526,9 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 		{
 			DUK_ASSERT(js_ctx->flag_ext_compatible);
 			duk_hex_encode(ctx, -1);
-			EMIT_CSTR(js_ctx, "{\"_buf\":");
+			DUK__EMIT_CSTR(js_ctx, "{\"_buf\":");
 			json_enc_quote_string(js_ctx, duk_require_hstring(ctx, -1));
-			EMIT_1(js_ctx, '}');
+			DUK__EMIT_1(js_ctx, '}');
 		}
 #endif
 		break;
@@ -1556,7 +1556,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
 			h_str = duk_to_hstring(ctx, -1);
 			DUK_ASSERT(h_str != NULL);
-			EMIT_HSTR(js_ctx, h_str);
+			DUK__EMIT_HSTR(js_ctx, h_str);
 			break;
 		}
 
@@ -1574,7 +1574,7 @@ static void json_enc_value2(duk_json_enc_ctx *js_ctx) {
 #else
 		stridx = DUK_STRIDX_NULL;
 #endif
-		EMIT_STRIDX(js_ctx, stridx);
+		DUK__EMIT_STRIDX(js_ctx, stridx);
 		break;
 	}
 	}

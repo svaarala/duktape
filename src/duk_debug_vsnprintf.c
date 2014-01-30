@@ -61,16 +61,16 @@
 /* list of conversion specifiers that terminate a format tag;
  * this is unfortunately guesswork.
  */
-#define ALLOWED_STANDARD_CONVERSION_SPECIFIERS  "diouxXeEfFgGaAcsCSpnm"
+#define DUK__ALLOWED_STANDARD_SPECIFIERS  "diouxXeEfFgGaAcsCSpnm"
 
 /* maximum length of standard format tag that we support */
-#define MAX_FORMAT_TAG_LENGTH  32
+#define DUK__MAX_FORMAT_TAG_LENGTH  32
 
 /* heapobj recursion depth when deep printing is selected */
-#define DEEP_DEPTH_LIMIT  8
+#define DUK__DEEP_DEPTH_LIMIT  8
 
 /* maximum recursion depth for loop detection stacks */
-#define LOOP_STACK_DEPTH  256
+#define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
 static const char *bc_optab[] = {
@@ -125,7 +125,7 @@ struct duk_dprint_state {
 	/* loop_stack_index could be perhaps be replaced by 'depth', but it's nice
 	 * to not couple these two mechanisms unnecessarily.
 	 */
-	duk_hobject *loop_stack[LOOP_STACK_DEPTH];
+	duk_hobject *loop_stack[DUK__LOOP_STACK_DEPTH];
 	int loop_stack_index;
 	int loop_stack_limit;
 
@@ -301,10 +301,10 @@ static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
 #endif
 }
 
-#ifdef _COMMA
-#undef _COMMA
+#ifdef DUK__COMMA
+#undef DUK__COMMA
 #endif
-#define _COMMA()  do { \
+#define DUK__COMMA()  do { \
 		if (first) { \
 			first = 0; \
 		} else { \
@@ -397,7 +397,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 
 		for (i = 0; i < a_limit; i++) {
 			tv = DUK_HOBJECT_A_GET_VALUE_PTR(h, i);
-			_COMMA();
+			DUK__COMMA();
 			print_tval(st, tv);
 		}
 		for (i = 0; i < h->e_used; i++) {
@@ -411,7 +411,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 				/* FIXME: cleanup to use DUK_HSTRING_FLAG_INTERNAL? */
 				continue;
 			}
-			_COMMA();
+			DUK__COMMA();
 			print_hstring(st, key, 0);
 			duk_fb_put_byte(fb, (duk_uint8_t) ':');
 			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
@@ -429,125 +429,125 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 	}
 	if (st->internal) {
 		if (DUK_HOBJECT_HAS_EXTENSIBLE(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__extensible:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__extensible:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__constructable:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__constructable:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_BOUND(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__bound:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__bound:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__compiledfunction:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__compiledfunction:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__nativefunction:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__nativefunction:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_THREAD(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__thread:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__thread:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_ARRAY_PART(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__array_part:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__array_part:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_STRICT(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__strict:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__strict:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_NEWENV(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__newenv:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__newenv:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_NAMEBINDING(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__namebinding:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__namebinding:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_CREATEARGS(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__createargs:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__createargs:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_ENVRECCLOSED(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__envrecclosed:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__envrecclosed:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__special_array:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_array:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__special_stringobj:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_stringobj:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(h)) {
-			_COMMA(); duk_fb_sprintf(fb, "__special_arguments:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_arguments:true");
 		} else {
 			;
 		}
 	}
 	if (st->internal && DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
-		_COMMA(); duk_fb_put_cstring(fb, "__data:"); print_hbuffer(st, f->data);
-		_COMMA(); duk_fb_sprintf(fb, "__nregs:%d", f->nregs);
-		_COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:"); print_hbuffer(st, f->data);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%d", f->nregs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 #if 0  /* FIXME: no portable way to print function pointers */
-		_COMMA(); duk_fb_sprintf(fb, "__func:%p", (void *) f->func);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__func:%p", (void *) f->func);
 #endif
-		_COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
 
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
-		_COMMA(); duk_fb_sprintf(fb, "__strict:%d", t->strict);
-		_COMMA(); duk_fb_sprintf(fb, "__state:%d", t->state);
-		_COMMA(); duk_fb_sprintf(fb, "__unused1:%d", t->unused1);
-		_COMMA(); duk_fb_sprintf(fb, "__unused2:%d", t->unused2);
-		_COMMA(); duk_fb_sprintf(fb, "__valstack_max:%d", t->valstack_max);
-		_COMMA(); duk_fb_sprintf(fb, "__callstack_max:%d", t->callstack_max);
-		_COMMA(); duk_fb_sprintf(fb, "__catchstack_max:%d", t->catchstack_max);
-		_COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
-		_COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%d", (void *) t->valstack_end, (int) (t->valstack_end - t->valstack));
-		_COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%d", (void *) t->valstack_bottom, (int) (t->valstack_bottom - t->valstack));
-		_COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%d", (void *) t->valstack_top, (int) (t->valstack_top - t->valstack));
-		_COMMA(); duk_fb_sprintf(fb, "__catchstack:%p", (void *) t->catchstack);
-		_COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", t->catchstack_size);
-		_COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", t->catchstack_top);
-		_COMMA(); duk_fb_sprintf(fb, "__resumer:"); print_hobject(st, (duk_hobject *) t->resumer);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%d", t->strict);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%d", t->state);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%d", t->unused1);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%d", t->unused2);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_max:%d", t->valstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_max:%d", t->callstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_max:%d", t->catchstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%d", (void *) t->valstack_end, (int) (t->valstack_end - t->valstack));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%d", (void *) t->valstack_bottom, (int) (t->valstack_bottom - t->valstack));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%d", (void *) t->valstack_top, (int) (t->valstack_top - t->valstack));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack:%p", (void *) t->catchstack);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", t->catchstack_size);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", t->catchstack_top);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); print_hobject(st, (duk_hobject *) t->resumer);
 		/* XXX: print built-ins array? */
 
 	}
 #ifdef DUK_USE_REFERENCE_COUNTING
 	if (st->internal) {
-		_COMMA(); duk_fb_sprintf(fb, "__refcount:%d", DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__refcount:%d", DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
 	}
 #endif
 	if (st->internal) {
-		_COMMA(); duk_fb_sprintf(fb, "__class:%d", DUK_HOBJECT_GET_CLASS_NUMBER(h));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__class:%d", DUK_HOBJECT_GET_CLASS_NUMBER(h));
 	}
 
 	/* prototype should be last, for readability */
 	if (st->follow_proto && h->prototype) {
-		_COMMA(); duk_fb_put_cstring(fb, "__prototype:"); print_hobject(st, h->prototype);
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); print_hobject(st, h->prototype);
 	}
 
 	duk_fb_put_cstring(fb, brace2);
@@ -578,7 +578,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 	}
 }
 
-#undef _COMMA
+#undef DUK__COMMA
 
 static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;
@@ -796,7 +796,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 		st.depth = 0;
 		st.depth_limit = 1;
 		st.loop_stack_index = 0;
-		st.loop_stack_limit = LOOP_STACK_DEPTH;
+		st.loop_stack_limit = DUK__LOOP_STACK_DEPTH;
 
 		p_begfmt = p - 1;
 		while (p < p_end) {
@@ -811,7 +811,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 			} else if (ch == '!') {
 				got_exclamation = 1;
 			} else if (got_exclamation && ch == 'd') {
-				st.depth_limit = DEEP_DEPTH_LIMIT;
+				st.depth_limit = DUK__DEEP_DEPTH_LIMIT;
 			} else if (got_exclamation && ch == 'p') {
 				st.follow_proto = 1;
 			} else if (got_exclamation && ch == 'i') {
@@ -846,8 +846,8 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				int t = va_arg(ap, int);
 				print_opcode(&st, t);
 				break;
-			} else if (!got_exclamation && strchr(ALLOWED_STANDARD_CONVERSION_SPECIFIERS, (int) ch)) {
-				char fmtbuf[MAX_FORMAT_TAG_LENGTH];
+			} else if (!got_exclamation && strchr(DUK__ALLOWED_STANDARD_SPECIFIERS, (int) ch)) {
+				char fmtbuf[DUK__MAX_FORMAT_TAG_LENGTH];
 				int fmtlen;
 
 				fmtlen = p - p_begfmt;

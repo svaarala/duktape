@@ -18,8 +18,8 @@
 char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 int duk_debug_summary_idx;
 
-#define DUK_DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
-static char buf[DUK_DEBUG_BUFSIZE];
+#define DUK__DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
+static char buf[DUK__DEBUG_BUFSIZE];
 
 static const char *get_level_string(int level) {
 	switch (level) {
@@ -36,32 +36,32 @@ static const char *get_level_string(int level) {
 #ifdef DUK_USE_DPRINT_COLORS
 
 /* http://en.wikipedia.org/wiki/ANSI_escape_code */
-#define TERM_REVERSE  "\x1b[7m"
-#define TERM_BRIGHT   "\x1b[1m"
-#define TERM_RESET    "\x1b[0m"
-#define TERM_BLUE     "\x1b[34m"
-#define TERM_RED      "\x1b[31m"
+#define DUK__TERM_REVERSE  "\x1b[7m"
+#define DUK__TERM_BRIGHT   "\x1b[1m"
+#define DUK__TERM_RESET    "\x1b[0m"
+#define DUK__TERM_BLUE     "\x1b[34m"
+#define DUK__TERM_RED      "\x1b[31m"
 
 static const char *get_term_1(int level) {
 	DUK_UNREF(level);
-	return (const char *) TERM_RED;
+	return (const char *) DUK__TERM_RED;
 }
 
 static const char *get_term_2(int level) {
 	switch (level) {
 	case DUK_LEVEL_DEBUG:
-		return (const char *) (TERM_RESET TERM_BRIGHT);
+		return (const char *) (DUK__TERM_RESET DUK__TERM_BRIGHT);
 	case DUK_LEVEL_DDEBUG:
-		return (const char *) (TERM_RESET);
+		return (const char *) (DUK__TERM_RESET);
 	case DUK_LEVEL_DDDEBUG:
-		return (const char *) (TERM_RESET TERM_BLUE);
+		return (const char *) (DUK__TERM_RESET DUK__TERM_BLUE);
 	}
-	return (const char *) TERM_RESET;
+	return (const char *) DUK__TERM_RESET;
 }
 
 static const char *get_term_3(int level) {
 	DUK_UNREF(level);
-	return (const char *) TERM_RESET;
+	return (const char *) DUK__TERM_RESET;
 }
 
 #else
@@ -87,8 +87,8 @@ void duk_debug_log(int level, const char *file, int line, const char *func, char
 
 	va_start(ap, fmt);
 
-	DUK_MEMSET((void *) buf, 0, (size_t) DUK_DEBUG_BUFSIZE);
-	duk_debug_vsnprintf(buf, DUK_DEBUG_BUFSIZE - 1, fmt, ap);
+	DUK_MEMSET((void *) buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	fprintf(stderr, "%s[%s] <%llu> %s:%d (%s):%s %s%s\n",
@@ -130,8 +130,8 @@ void duk_debug_log(char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	DUK_MEMSET((void *) buf, 0, (size_t) DUK_DEBUG_BUFSIZE);
-	duk_debug_vsnprintf(buf, DUK_DEBUG_BUFSIZE - 1, fmt, ap);
+	DUK_MEMSET((void *) buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	fprintf(stderr, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
