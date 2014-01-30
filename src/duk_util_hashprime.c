@@ -14,7 +14,7 @@
 #include "duk_internal.h"
 
 /* hash size ratio goal, must match genhashsizes.py */
-#define HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
+#define DUK__HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
 
 /* prediction corrections for prime list (see genhashsizes.py) */
 static const duk_int8_t hash_size_corrections[] = {
@@ -51,10 +51,10 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 
 		/* prediction: portable variant using doubles if 64-bit values not available */
 #ifdef DUK_USE_64BIT_OPS
-		curr = (duk_uint32_t) ((((duk_uint64_t) curr) * ((duk_uint64_t) HASH_SIZE_RATIO)) >> 10);
+		curr = (duk_uint32_t) ((((duk_uint64_t) curr) * ((duk_uint64_t) DUK__HASH_SIZE_RATIO)) >> 10);
 #else
 		/* 32-bit x 11-bit = 43-bit, fits accurately into a double */
-		curr = (duk_uint32_t) floor(((double) curr) * ((double) HASH_SIZE_RATIO) / 1024.0);
+		curr = (duk_uint32_t) floor(((double) curr) * ((double) DUK__HASH_SIZE_RATIO) / 1024.0);
 #endif
 
 		/* correction */

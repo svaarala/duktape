@@ -22,11 +22,11 @@
 /* FIXME: identify enumeration target with an object index (not top of stack) */
 
 /* must match exactly the number of internal properties inserted to enumerator */
-#define ENUM_START_INDEX  2
+#define DUK__ENUM_START_INDEX  2
 
 /*
  *  Helper to sort array index keys.  The keys are in the enumeration object
- *  entry part, starting from ENUM_START_INDEX, and the entry part is dense.
+ *  entry part, starting from DUK__ENUM_START_INDEX, and the entry part is dense.
  *
  *  We use insertion sort because it is simple (leading to compact code,)
  *  works nicely in-place, and minimizes operations if data is already sorted
@@ -56,13 +56,13 @@ static void sort_array_indices(duk_hobject *h_obj) {
 	DUK_ASSERT(h_obj != NULL);
 	DUK_ASSERT(h_obj->e_used >= 2);  /* control props */
 
-	if (h_obj->e_used <= 1 + ENUM_START_INDEX) {
+	if (h_obj->e_used <= 1 + DUK__ENUM_START_INDEX) {
 		return;
 	}
 
 	keys = DUK_HOBJECT_E_GET_KEY_BASE(h_obj);
 	p_end = keys + h_obj->e_used;
-	keys += ENUM_START_INDEX;
+	keys += DUK__ENUM_START_INDEX;
 
 	DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
 	             (void *) keys, (void *) p_end);
@@ -184,7 +184,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	/* initialize index so that we skip internal control keys */
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_INT_NEXT);
-	duk_push_int(ctx, ENUM_START_INDEX);
+	duk_push_int(ctx, DUK__ENUM_START_INDEX);
 	duk_put_prop(ctx, -3);
 
 	curr = target;
@@ -455,7 +455,7 @@ int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	DUK_ASSERT(e != NULL);
 
 	idx = 0;
-	for (i = ENUM_START_INDEX; i < e->e_used; i++) {
+	for (i = DUK__ENUM_START_INDEX; i < e->e_used; i++) {
 		duk_hstring *k;
 
 		k = DUK_HOBJECT_E_GET_KEY(e, i);

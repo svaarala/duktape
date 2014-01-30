@@ -10,8 +10,8 @@
 #include "duk_internal.h"
 
 /* 'magic' constants for Murmurhash2 */
-#define MAGIC_M  ((duk_uint32_t) 0x5bd1e995UL)
-#define MAGIC_R  24
+#define DUK__MAGIC_M  ((duk_uint32_t) 0x5bd1e995UL)
+#define DUK__MAGIC_R  24
 
 duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t seed) {
 	duk_uint32_t h = seed ^ len;
@@ -31,10 +31,10 @@ duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t 
 		                 (((duk_uint32_t) data[3]) << 24);
 #endif
 
-		k *= MAGIC_M;
-		k ^= k >> MAGIC_R;
-		k *= MAGIC_M;
-		h *= MAGIC_M;
+		k *= DUK__MAGIC_M;
+		k ^= k >> DUK__MAGIC_R;
+		k *= DUK__MAGIC_M;
+		h *= DUK__MAGIC_M;
 		h ^= k;
 		data += 4;
 		len -= 4;
@@ -44,11 +44,11 @@ duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t 
 		case 3:	h ^= data[2] << 16;
 		case 2:	h ^= data[1] << 8;
 		case 1:	h ^= data[0];
-			h *= MAGIC_M;
+			h *= DUK__MAGIC_M;
         }
 
 	h ^= h >> 13;
-	h *= MAGIC_M;
+	h *= DUK__MAGIC_M;
 	h ^= h >> 15;
 
 	return h;
