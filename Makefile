@@ -135,6 +135,7 @@ CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -DDUK_OPT_NO_REFERENCE_COUNTING
 #CCOPTS_SHARED += -DDUK_OPT_NO_MARK_AND_SWEEP
+#CCOPTS_SHARED += -DDUK_OPT_NO_VOLUNTARY_GC
 CCOPTS_SHARED += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 CCOPTS_SHARED += -DDUK_OPT_DPRINT_COLORS
 #CCOPTS_SHARED += -DDUK_OPT_NO_FILE_IO
