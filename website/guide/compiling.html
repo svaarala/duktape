@@ -61,6 +61,16 @@ The table below summarizes the available options, in no particular order:</p>
     cycles manually (and are always freed when a heap is destroyed).</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_VOLUNTARY_GC</td>
+<td>Disable voluntary periodic mark-and-sweep collection.  A mark-and-sweep
+    collection is still triggered in an out-of-memory condition.  This option
+    should usually be combined with reference counting, which collects all
+    non-cyclical garbage.  Application code should also request an explicit
+    garbage collection from time to time when appropriate.  When this option
+    is used, Duktape will have no garbage collection pauses in ordinary use,
+    which is useful for timing sensitive applications like games.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_MS_STRINGTABLE_RESIZE</td>
 <td>Disable forced string intern table resize during mark-and-sweep garbage
     collection.  This may be useful when reference counting is disabled, as
