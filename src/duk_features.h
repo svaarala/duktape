@@ -1144,6 +1144,9 @@ extern double duk_computed_nan;
 #endif
 #endif
 
+/* Include messages in executor internal errors. */
+#define DUK_USE_VERBOSE_EXECUTOR_ERRORS
+
 /*
  *  Execution and debugger options
  */

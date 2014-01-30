@@ -1365,15 +1365,13 @@ static void duk_executor_interrupt(duk_hthread *thr) {
 #define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
 #define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
 
-#undef DUK__COMPACT_ERRORS  /* FIXME: make this configurable */
-                       
-#ifdef DUK__COMPACT_ERRORS
+#ifdef DUK_USE_VERBOSE_EXECUTOR_ERRORS
 #define DUK__INTERNAL_ERROR(msg)  do { \
-		goto internal_error; \
+		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, (msg)); \
 	} while (0)
 #else
 #define DUK__INTERNAL_ERROR(msg)  do { \
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, (msg)); \
+		goto internal_error; \
 	} while (0)
 #endif
 
@@ -3357,7 +3355,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	}
 	DUK_UNREACHABLE();
 
-#ifdef DUK__COMPACT_ERRORS  /*FIXME*/
+#ifndef DUK_USE_VERBOSE_EXECUTOR_ERRORS
  internal_error:
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor");
 #endif
