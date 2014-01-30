@@ -5,12 +5,12 @@
 #include "duk_internal.h"
 
 /* constants for built-in string data depacking */
-#define BITPACK_LETTER_LIMIT  26
-#define BITPACK_UNDERSCORE    26
-#define BITPACK_FF            27
-#define BITPACK_SWITCH1       29
-#define BITPACK_SWITCH        30
-#define BITPACK_SEVENBIT      31
+#define DUK__BITPACK_LETTER_LIMIT  26
+#define DUK__BITPACK_UNDERSCORE    26
+#define DUK__BITPACK_FF            27
+#define DUK__BITPACK_SWITCH1       29
+#define DUK__BITPACK_SWITCH        30
+#define DUK__BITPACK_SEVENBIT      31
 
 /*
  *  Free a heap object.
@@ -217,25 +217,25 @@ static int init_heap_strings(duk_heap *heap) {
 		mode = 32;		/* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
 		for (j = 0; j < len; j++) {
 			t = duk_bd_decode(bd, 5);
-			if (t < BITPACK_LETTER_LIMIT) {
+			if (t < DUK__BITPACK_LETTER_LIMIT) {
 				t = t + 'A' + mode;
-			} else if (t == BITPACK_UNDERSCORE) {
+			} else if (t == DUK__BITPACK_UNDERSCORE) {
 				t = (int) '_';
-			} else if (t == BITPACK_FF) {
+			} else if (t == DUK__BITPACK_FF) {
 				/* Internal keys are prefixed with 0xFF in the stringtable
 				 * (which makes them invalid UTF-8 on purpose).
 				 */
 				t = (int) 0xff;
-			} else if (t == BITPACK_SWITCH1) {
+			} else if (t == DUK__BITPACK_SWITCH1) {
 				t = duk_bd_decode(bd, 5);
 				DUK_ASSERT(t >= 0 && t <= 25);
 				t = t + 'A' + (mode ^ 32);
-			} else if (t == BITPACK_SWITCH) {
+			} else if (t == DUK__BITPACK_SWITCH) {
 				mode = mode ^ 32;
 				t = duk_bd_decode(bd, 5);
 				DUK_ASSERT(t >= 0 && t <= 25);
 				t = t + 'A' + mode;
-			} else if (t == BITPACK_SEVENBIT) {
+			} else if (t == DUK__BITPACK_SEVENBIT) {
 				t = duk_bd_decode(bd, 7);
 			}
 			tmp[j] = (duk_uint8_t) t;

@@ -4,9 +4,9 @@
 
 #include "duk_internal.h"
 
-#define HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
-#define HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
-#define DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
+#define DUK__HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
+#define DUK__HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
+#define DUK__DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
 
 /*
  *  Create a hstring and insert into the heap.  The created object
@@ -75,7 +75,7 @@ static duk_int_t count_used(duk_heap *heap) {
 
 	n = (duk_uint_fast32_t) heap->st_size;
 	for (i = 0; i < n; i++) {
-		if (heap->st[i] != NULL && heap->st[i] != DELETED_MARKER(heap)) {
+		if (heap->st[i] != NULL && heap->st[i] != DUK__DELETED_MARKER(heap)) {
 			res++;
 		}
 	}
@@ -92,8 +92,8 @@ static void insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t s
 
 	DUK_ASSERT(size > 0);
 
-	i = HASH_INITIAL(DUK_HSTRING_GET_HASH(h), size);
-	step = HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(h)); 
+	i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(h), size);
+	step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(h)); 
 	for (;;) {
 		duk_hstring *e;
 		
@@ -103,7 +103,7 @@ static void insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t s
 			entries[i] = h;
 			(*p_used)++;
 			break;
-		} else if (e == DELETED_MARKER(heap)) {
+		} else if (e == DUK__DELETED_MARKER(heap)) {
 			/* st_used remains the same, DELETED is counted as used */
 			DUK_DDDPRINT("insert hit (deleted): %d", i);
 			entries[i] = h;
@@ -113,7 +113,7 @@ static void insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t s
 		i = (i + step) % size;
 
 		/* looping should never happen */
-		DUK_ASSERT(i != HASH_INITIAL(DUK_HSTRING_GET_HASH(h), size));
+		DUK_ASSERT(i != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(h), size));
 	}
 }
 
@@ -123,8 +123,8 @@ static duk_hstring *find_matching_string(duk_heap *heap, duk_hstring **entries, 
 
 	DUK_ASSERT(size > 0);
 
-	i = HASH_INITIAL(strhash, size);
-	step = HASH_PROBE_STEP(strhash);
+	i = DUK__HASH_INITIAL(strhash, size);
+	step = DUK__HASH_PROBE_STEP(strhash);
 	for (;;) {
 		duk_hstring *e;
 
@@ -132,7 +132,7 @@ static duk_hstring *find_matching_string(duk_heap *heap, duk_hstring **entries, 
 		if (!e) {
 			return NULL;
 		}
-		if (e != DELETED_MARKER(heap) && DUK_HSTRING_GET_BYTELEN(e) == blen) {
+		if (e != DUK__DELETED_MARKER(heap) && DUK_HSTRING_GET_BYTELEN(e) == blen) {
 			if (DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(e), blen) == 0) {
 				DUK_DDDPRINT("find matching hit: %d (step %d, size %d)", i, step, size);
 				return e;
@@ -142,7 +142,7 @@ static duk_hstring *find_matching_string(duk_heap *heap, duk_hstring **entries, 
 		i = (i + step) % size;
 
 		/* looping should never happen */
-		DUK_ASSERT(i != HASH_INITIAL(strhash, size));
+		DUK_ASSERT(i != DUK__HASH_INITIAL(strhash, size));
 	}
 	DUK_UNREACHABLE();
 }
@@ -153,8 +153,8 @@ static void remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_u
 
 	DUK_ASSERT(size > 0);
 
-	i = HASH_INITIAL(h->hash, size);
-	step = HASH_PROBE_STEP(h->hash);
+	i = DUK__HASH_INITIAL(h->hash, size);
+	step = DUK__HASH_PROBE_STEP(h->hash);
 	for (;;) {
 		duk_hstring *e;
 
@@ -166,7 +166,7 @@ static void remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_u
 		if (e == h) {
 			/* st_used remains the same, DELETED is counted as used */
 			DUK_DDDPRINT("free matching hit: %d", i);
-			entries[i] = DELETED_MARKER(heap);
+			entries[i] = DUK__DELETED_MARKER(heap);
 			break;
 		}
 
@@ -174,7 +174,7 @@ static void remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_u
 		i = (i + step) % size;
 
 		/* looping should never happen */
-		DUK_ASSERT(i != HASH_INITIAL(h->hash, size));
+		DUK_ASSERT(i != DUK__HASH_INITIAL(h->hash, size));
 	}
 }
 
@@ -245,10 +245,10 @@ static int resize_hash_raw(duk_heap *heap, duk_uint32_t new_size) {
 		duk_hstring *e;
 
 		e = old_entries[i];
-		if (e == NULL || e == DELETED_MARKER(heap)) {
+		if (e == NULL || e == DUK__DELETED_MARKER(heap)) {
 			continue;
 		}
-		/* checking for DELETED_MARKER is not necessary here, but helper does it now */
+		/* checking for DUK__DELETED_MARKER is not necessary here, but helper does it now */
 		insert_hstring(heap, new_entries, new_size, &new_used, e);
 	}
 
@@ -425,7 +425,7 @@ void duk_heap_force_stringtable_resize(duk_heap *heap) {
 #endif
 
 /* Undefine local defines */
-#undef HASH_INITIAL
-#undef HASH_PROBE_STEP
-#undef DELETED_MARKER
+#undef DUK__HASH_INITIAL
+#undef DUK__HASH_PROBE_STEP
+#undef DUK__DELETED_MARKER
 

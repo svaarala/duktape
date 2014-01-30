@@ -5,9 +5,9 @@
 #include "duk_internal.h"
 
 /* constants for duk_hashstring() */
-#define STRING_HASH_SHORTSTRING   4096
-#define STRING_HASH_MEDIUMSTRING  (256 * 1024)
-#define STRING_HASH_BLOCKSIZE     256
+#define DUK__STRHASH_SHORTSTRING   4096
+#define DUK__STRHASH_MEDIUMSTRING  (256 * 1024)
+#define DUK__STRHASH_BLOCKSIZE     256
 
 duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len) {
 	/*
@@ -34,26 +34,26 @@ duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t le
 	/* note: mixing len into seed improves hashing when skipping */
 	duk_uint32_t str_seed = heap->hash_seed ^ len;
 
-	if (len <= STRING_HASH_SHORTSTRING) {
+	if (len <= DUK__STRHASH_SHORTSTRING) {
 		return duk_util_hashbytes(str, len, str_seed);
 	} else {
 		duk_uint32_t hash;
 		duk_size_t off;
 		duk_size_t skip;
 
-		if (len <= STRING_HASH_MEDIUMSTRING) {
-			skip = (duk_size_t) (16 * STRING_HASH_BLOCKSIZE + STRING_HASH_BLOCKSIZE);
+		if (len <= DUK__STRHASH_MEDIUMSTRING) {
+			skip = (duk_size_t) (16 * DUK__STRHASH_BLOCKSIZE + DUK__STRHASH_BLOCKSIZE);
 		} else {
-			skip = (duk_size_t) (256 * STRING_HASH_BLOCKSIZE + STRING_HASH_BLOCKSIZE);
+			skip = (duk_size_t) (256 * DUK__STRHASH_BLOCKSIZE + DUK__STRHASH_BLOCKSIZE);
 		}
 
-		hash = duk_util_hashbytes(str, (duk_size_t) STRING_HASH_SHORTSTRING, str_seed);
-		off = STRING_HASH_SHORTSTRING + (skip * (hash % 256)) / 256;
+		hash = duk_util_hashbytes(str, (duk_size_t) DUK__STRHASH_SHORTSTRING, str_seed);
+		off = DUK__STRHASH_SHORTSTRING + (skip * (hash % 256)) / 256;
 
 		/* FIXME: inefficient loop */
 		while (off < len) {
 			duk_size_t left = len - off;
-			duk_size_t now = (duk_size_t) (left > STRING_HASH_BLOCKSIZE ? STRING_HASH_BLOCKSIZE : left);
+			duk_size_t now = (duk_size_t) (left > DUK__STRHASH_BLOCKSIZE ? DUK__STRHASH_BLOCKSIZE : left);
 			hash ^= duk_util_hashbytes(str + off, now, str_seed);
 			off += skip;
 		}

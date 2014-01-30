@@ -13,7 +13,7 @@
  */
 
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_VOLUNTARY_GC)
-#define VOLUNTARY_PERIODIC_GC(heap)  do { \
+#define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
 		(heap)->mark_and_sweep_trigger_counter--; \
 		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
 			run_voluntary_gc(heap); \
@@ -34,7 +34,7 @@ static void run_voluntary_gc(duk_heap *heap) {
 	}
 }
 #else
-#define VOLUNTARY_PERIODIC_GC(heap)  /* no voluntary gc */
+#define DUK__VOLUNTARY_PERIODIC_GC(heap)  /* no voluntary gc */
 #endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
 
 /*
@@ -54,7 +54,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	 *  Voluntary periodic GC (if enabled)
 	 */
 
-	VOLUNTARY_PERIODIC_GC(heap);
+	DUK__VOLUNTARY_PERIODIC_GC(heap);
 
 	/*
 	 *  First attempt
@@ -164,7 +164,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 	 *  Voluntary periodic GC (if enabled)
 	 */
 
-	VOLUNTARY_PERIODIC_GC(heap);
+	DUK__VOLUNTARY_PERIODIC_GC(heap);
 
 	/*
 	 *  First attempt
@@ -257,7 +257,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 	 *  Voluntary periodic GC (if enabled)
 	 */
 
-	VOLUNTARY_PERIODIC_GC(heap);
+	DUK__VOLUNTARY_PERIODIC_GC(heap);
 
 	/*
 	 *  First attempt
