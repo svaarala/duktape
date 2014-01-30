@@ -456,9 +456,9 @@ static void _vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 /* FIXME: duk_api operations for cross-thread reg manipulation? */
 /* FIXME: post-condition: value stack must be correct; for ecmascript functions, clamped to 'nregs' */
 
-#define LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
-#define LONGJMP_FINISHED  1  /* exit bytecode executor with return value */
-#define LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
+#define DUK__LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
+#define DUK__LONGJMP_FINISHED  1  /* exit bytecode executor with return value */
+#define DUK__LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
 
 /* only called when act_idx points to an Ecmascript function */
 static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
@@ -668,7 +668,7 @@ static int handle_longjmp(duk_hthread *thr,
                           int entry_callstack_top) {
 	duk_tval tv_tmp;
 	int entry_callstack_index;
-	int retval = LONGJMP_RESTART;
+	int retval = DUK__LONGJMP_RESTART;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(entry_thread != NULL);
@@ -801,7 +801,7 @@ static int handle_longjmp(duk_hthread *thr,
 			thr = resumee;  /* not needed, as we exit right away */
 #endif
 			DUK_DDPRINT("-> resume with a value, restart execution in resumee");	
-			retval = LONGJMP_RESTART;
+			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		} else {
 			int call_flags;
@@ -828,7 +828,7 @@ static int handle_longjmp(duk_hthread *thr,
 			thr = resumee;  /* not needed, as we exit right away */
 #endif
 			DUK_DDPRINT("-> resume with a value, restart execution in resumee");	
-			retval = LONGJMP_RESTART;
+			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
 		DUK_UNREACHABLE();
@@ -897,7 +897,7 @@ static int handle_longjmp(duk_hthread *thr,
 #endif
 
 			DUK_DDPRINT("-> yield a value, restart execution in resumer");
-			retval = LONGJMP_RESTART;
+			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
 		DUK_UNREACHABLE();
@@ -949,7 +949,7 @@ static int handle_longjmp(duk_hthread *thr,
 				                        1); /* is_finally */
 
 				DUK_DDPRINT("-> return caught by a finally (in the same function), restart execution");
-				retval = LONGJMP_RESTART;
+				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
 			}
 			cat--;
@@ -969,7 +969,7 @@ static int handle_longjmp(duk_hthread *thr,
 			/* [ ... retval ] */
 
 			DUK_DDPRINT("-> return propagated up to entry level, exit bytecode executor");
-			retval = LONGJMP_FINISHED;
+			retval = DUK__LONGJMP_FINISHED;
 			goto wipe_and_return;
 		}
 
@@ -998,7 +998,7 @@ static int handle_longjmp(duk_hthread *thr,
 			reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
 
 			DUK_DDPRINT("-> return not caught, restart execution in caller");
-			retval = LONGJMP_RESTART;
+			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
 	
@@ -1030,7 +1030,7 @@ static int handle_longjmp(duk_hthread *thr,
 #endif
 
 		DUK_DDPRINT("-> return not caught, thread terminated; handle like yield, restart execution in resumer");
-		retval = LONGJMP_RESTART;
+		retval = DUK__LONGJMP_RESTART;
 		goto wipe_and_return;
 	}
 
@@ -1075,7 +1075,7 @@ static int handle_longjmp(duk_hthread *thr,
 				                        1); /* is_finally */
 
 				DUK_DDPRINT("-> break/continue caught by a finally (in the same function), restart execution");
-				retval = LONGJMP_RESTART;
+				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
 			}
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL &&
@@ -1087,7 +1087,7 @@ static int handle_longjmp(duk_hthread *thr,
 				/* FIXME: reset valstack to 'nregs' (or assert it) */
 
 				DUK_DDPRINT("-> break/continue caught by a label catcher (in the same function), restart execution");	
-				retval = LONGJMP_RESTART;
+				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
 			}
 			cat--;
@@ -1137,7 +1137,7 @@ static int handle_longjmp(duk_hthread *thr,
 				                        0); /* is_finally */
 
 				DUK_DDPRINT("-> throw caught by a 'catch' clause, restart execution");
-				retval = LONGJMP_RESTART;
+				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
 			}
 
@@ -1152,7 +1152,7 @@ static int handle_longjmp(duk_hthread *thr,
 				/* FIXME: reset valstack to 'nregs' (or assert it) */
 
 				DUK_DDPRINT("-> throw caught by a 'finally' clause, restart execution");
-				retval = LONGJMP_RESTART;
+				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
 			}
 
@@ -1169,7 +1169,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 #endif
 			DUK_DPRINT("-> throw propagated up to entry level, rethrow and exit bytecode executor");
-			retval = LONGJMP_RETHROW;
+			retval = DUK__LONGJMP_RETHROW;
 			goto just_return;
 			/* Note: MUST NOT wipe_and_return here, as heap->lj must remain intact */
 		}
@@ -1365,14 +1365,14 @@ static void duk_executor_interrupt(duk_hthread *thr) {
 #define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
 #define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
 
-#undef _COMPACT_ERRORS  /* FIXME: make this configurable */
+#undef DUK__COMPACT_ERRORS  /* FIXME: make this configurable */
                        
-#ifdef _COMPACT_ERRORS
-#define INTERNAL_ERROR(msg)  do { \
+#ifdef DUK__COMPACT_ERRORS
+#define DUK__INTERNAL_ERROR(msg)  do { \
 		goto internal_error; \
 	} while (0)
 #else
-#define INTERNAL_ERROR(msg)  do { \
+#define DUK__INTERNAL_ERROR(msg)  do { \
 		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, (msg)); \
 	} while (0)
 #endif
@@ -1482,13 +1482,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		lj_ret = handle_longjmp(thr, entry_thread, entry_callstack_top);
 
-		if (lj_ret == LONGJMP_RESTART) {
+		if (lj_ret == DUK__LONGJMP_RESTART) {
 			/*
 			 *  Restart bytecode execution, possibly with a changed thread.
 			 */
 			thr = thr->heap->curr_thread;
 			goto reset_setjmp_catchpoint;
-		} else if (lj_ret == LONGJMP_RETHROW) {
+		} else if (lj_ret == DUK__LONGJMP_RETHROW) {
 			/*
 			 *  Rethrow error to calling state.
 			 */
@@ -1505,7 +1505,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/*
 			 *  Return from bytecode executor with a return value.
 			 */
-			DUK_ASSERT(lj_ret == LONGJMP_FINISHED);
+			DUK_ASSERT(lj_ret == DUK__LONGJMP_FINISHED);
 
 			/* FIXME: return assertions for valstack, callstack, catchstack */
 
@@ -1715,7 +1715,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
-				INTERNAL_ERROR("LDINTX target not a number");
+				DUK__INTERNAL_ERROR("LDINTX target not a number");
 			}
 			val = DUK_TVAL_GET_NUMBER(tv1) * ((double) (1 << DUK_BC_LDINTX_SHIFT)) +
 			      (double) DUK_DEC_BC(ins);
@@ -1738,7 +1738,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
-				INTERNAL_ERROR("MPUTOBJ target not an object");
+				DUK__INTERNAL_ERROR("MPUTOBJ target not an object");
 			}
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
@@ -1748,7 +1748,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			if (idx < 0 || idx + count * 2 > duk_get_top(ctx)) {
 				/* FIXME: improve check; check against nregs, not against top */
-				INTERNAL_ERROR("MPUTOBJ out of bounds");
+				DUK__INTERNAL_ERROR("MPUTOBJ out of bounds");
 			}
 
 			duk_push_hobject(ctx, obj);
@@ -1758,7 +1758,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 				duk_push_tval(ctx, DUK__REGP(idx));
 				if (!duk_is_string(ctx, -1)) {
-					INTERNAL_ERROR("MPUTOBJ key not a string");
+					DUK__INTERNAL_ERROR("MPUTOBJ key not a string");
 				}
 				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
 				duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_WEC);  /* -> [... obj] */
@@ -1787,7 +1787,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
-				INTERNAL_ERROR("MPUTARR target not an object");
+				DUK__INTERNAL_ERROR("MPUTARR target not an object");
 			}
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
@@ -1797,12 +1797,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			if (idx < 0 || idx + count + 1 > duk_get_top(ctx)) {
 				/* FIXME: improve check; check against nregs, not against top */
-				INTERNAL_ERROR("MPUTARR out of bounds");
+				DUK__INTERNAL_ERROR("MPUTARR out of bounds");
 			}
 
 			tv1 = DUK__REGP(idx);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
-				INTERNAL_ERROR("MPUTARR start index not a number");
+				DUK__INTERNAL_ERROR("MPUTARR start index not a number");
 			}
 			arr_idx = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 			idx++;
@@ -1897,7 +1897,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* The compiler should never emit DUK_OP_REGEXP if there is no
 			 * regexp support.
 			 */
-			INTERNAL_ERROR("no regexp support");
+			DUK__INTERNAL_ERROR("no regexp support");
 #endif
 
 			break;
@@ -1941,7 +1941,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tv1 = DUK__CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
 				DUK_DDDPRINT("GETVAR not a string: %!T", tv1);
-				INTERNAL_ERROR("GETVAR name not a string");
+				DUK__INTERNAL_ERROR("GETVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 			DUK_DDDPRINT("GETVAR: '%!O'", name);
@@ -1960,7 +1960,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv1 = DUK__CONSTP(bc);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
-				INTERNAL_ERROR("PUTVAR name not a string");
+				DUK__INTERNAL_ERROR("PUTVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 
@@ -1987,7 +1987,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
-				INTERNAL_ERROR("DECLVAR name not a string");
+				DUK__INTERNAL_ERROR("DECLVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 
@@ -2031,7 +2031,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
-				INTERNAL_ERROR("DELVAR name not a string");
+				DUK__INTERNAL_ERROR("DELVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 			DUK_DDDPRINT("DELVAR '%!O'", name);
@@ -2060,7 +2060,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
-				INTERNAL_ERROR("CSVAR name not a string");
+				DUK__INTERNAL_ERROR("CSVAR name not a string");
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
@@ -2478,7 +2478,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* FIXME: fast return not implemented, always do a slow return now */
 			if (a & DUK_BC_RETURN_FLAG_FAST && 0 /*FIXME*/) {
 				/* fast return: no TCF catchers (but may have e.g. labels) */
-				INTERNAL_ERROR("FIXME: fast return unimplemented");
+				DUK__INTERNAL_ERROR("FIXME: fast return unimplemented");
 			} else {
 				/* slow return */
 
@@ -3290,7 +3290,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			default: {
-				INTERNAL_ERROR("invalid extra opcode");
+				DUK__INTERNAL_ERROR("invalid extra opcode");
 			}
 
 			}  /* end switch */
@@ -3332,7 +3332,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			default: {
-				INTERNAL_ERROR("invalid debug opcode");
+				DUK__INTERNAL_ERROR("invalid debug opcode");
 			}
 
 			}  /* end switch */
@@ -3349,7 +3349,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* this should never be possible, because the switch-case is
 			 * comprehensive
 			 */
-			INTERNAL_ERROR("invalid opcode");
+			DUK__INTERNAL_ERROR("invalid opcode");
 			break;
 		}
 
@@ -3357,9 +3357,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	}
 	DUK_UNREACHABLE();
 
-#ifdef _COMPACT_ERRORS  /*FIXME*/
+#ifdef DUK__COMPACT_ERRORS  /*FIXME*/
  internal_error:
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor");
 #endif
 }
+
+#undef DUK__INTERNAL_ERROR
 
