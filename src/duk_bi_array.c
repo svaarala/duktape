@@ -35,7 +35,7 @@
 /* Perform an intermediate join when this many elements have been pushed
  * on the value stack.
  */
-#define  DUK_ARRAY_MID_JOIN_LIMIT  4096
+#define  DUK__ARRAY_MID_JOIN_LIMIT  4096
 
 /* Shared entry code for many Array built-ins.  Note that length is left
  * on stack (it could be popped, but that's not necessary).
@@ -254,8 +254,8 @@ int duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	DUK_DDDPRINT("sep=%!T, this=%!T, len=%d",
 	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), (int) len);
 
-	valstack_required = (len >= DUK_ARRAY_MID_JOIN_LIMIT ?
-	                     DUK_ARRAY_MID_JOIN_LIMIT : len);
+	valstack_required = (len >= DUK__ARRAY_MID_JOIN_LIMIT ?
+	                     DUK__ARRAY_MID_JOIN_LIMIT : len);
 	valstack_required++;
 	duk_require_stack(ctx, valstack_required);
 
@@ -266,7 +266,7 @@ int duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	count = 0;
 	idx = 0;
 	for (;;) {
-		if (count >= DUK_ARRAY_MID_JOIN_LIMIT ||   /* intermediate join to avoid valstack overflow */
+		if (count >= DUK__ARRAY_MID_JOIN_LIMIT ||   /* intermediate join to avoid valstack overflow */
 		    idx >= len) { /* end of loop (careful with len==0) */
 			/* [ sep ToObject(this) len sep str0 ... str(count-1) ] */
 			DUK_DDDPRINT("mid/final join, count=%d, idx=%d, len=%d",
@@ -1095,11 +1095,11 @@ int duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
  *  every(), some(), forEach(), map(), filter()
  */
 
-#define ITER_EVERY    0
-#define ITER_SOME     1
-#define ITER_FOREACH  2
-#define ITER_MAP      3
-#define ITER_FILTER   4
+#define DUK__ITER_EVERY    0
+#define DUK__ITER_SOME     1
+#define DUK__ITER_FOREACH  2
+#define DUK__ITER_MAP      3
+#define DUK__ITER_FILTER   4
 
 /* FIXME: This helper is a bit awkward because the handling for the different iteration
  * callers is quite different.  This now compiles to a bit less than 500 bytes, so with
@@ -1123,7 +1123,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	}
 	/* if thisArg not supplied, behave as if undefined was supplied */
 
-	if (iter_type == ITER_MAP || iter_type == ITER_FILTER) {
+	if (iter_type == DUK__ITER_MAP || iter_type == DUK__ITER_FILTER) {
 		duk_push_array(ctx);
 	} else {
 		duk_push_undefined(ctx);
@@ -1158,29 +1158,29 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		duk_call_method(ctx, 3); /* -> [ ... val retval ] */
 
 		switch (iter_type) {
-		case ITER_EVERY:
+		case DUK__ITER_EVERY:
 			bval = duk_to_boolean(ctx, -1);
 			if (!bval) {
 				/* stack top contains 'false' */
 				return 1;
 			}
 			break;
-		case ITER_SOME:
+		case DUK__ITER_SOME:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				/* stack top contains 'true' */
 				return 1;
 			}
 			break;
-		case ITER_FOREACH:
+		case DUK__ITER_FOREACH:
 			/* nop */
 			break;
-		case ITER_MAP:
+		case DUK__ITER_MAP:
 			duk_dup(ctx, -1);
 			duk_def_prop_index(ctx, 4, i, DUK_PROPDESC_FLAGS_WEC);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
-		case ITER_FILTER:
+		case DUK__ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				duk_dup(ctx, -2);  /* orig value */
@@ -1199,17 +1199,17 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	}
 
 	switch (iter_type) {
-	case ITER_EVERY:
+	case DUK__ITER_EVERY:
 		duk_push_true(ctx);
 		break;
-	case ITER_SOME:
+	case DUK__ITER_SOME:
 		duk_push_false(ctx);
 		break;
-	case ITER_FOREACH:
+	case DUK__ITER_FOREACH:
 		duk_push_undefined(ctx);
 		break;
-	case ITER_MAP:
-	case ITER_FILTER:
+	case DUK__ITER_MAP:
+	case DUK__ITER_FILTER:
 		DUK_ASSERT_TOP(ctx, 5);
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
 		duk_push_number(ctx, (double) res_length);  /* FIXME */

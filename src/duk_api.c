@@ -2441,9 +2441,9 @@ void duk_push_multiple(duk_context *ctx, const char *types, ...) {
 }
 #endif  /* FIXME: unused */
 
-#define PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
-#define PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
-#define PUSH_THIS_FLAG_TO_STRING    (1 << 2)
+#define DUK__PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
+#define DUK__PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
+#define DUK__PUSH_THIS_FLAG_TO_STRING    (1 << 2)
 
 static void push_this_helper(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -2453,7 +2453,7 @@ static void push_this_helper(duk_context *ctx, int flags) {
 	DUK_ASSERT(thr->callstack_top >= 0 && thr->callstack_top <= thr->callstack_size);
 
 	if (thr->callstack_top == 0) {
-		if (flags & PUSH_THIS_FLAG_CHECK_COERC) {
+		if (flags & DUK__PUSH_THIS_FLAG_CHECK_COERC) {
 			goto type_error;
 		}
 		duk_push_undefined(ctx);
@@ -2464,7 +2464,7 @@ static void push_this_helper(duk_context *ctx, int flags) {
 		/* 'this' binding is just before current activation's bottom */
 		DUK_ASSERT(thr->valstack_bottom > thr->valstack);
 		tv = thr->valstack_bottom - 1;
-		if (flags & PUSH_THIS_FLAG_CHECK_COERC) {
+		if (flags & DUK__PUSH_THIS_FLAG_CHECK_COERC) {
 			if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
 				goto type_error;
 			}
@@ -2474,9 +2474,9 @@ static void push_this_helper(duk_context *ctx, int flags) {
 		duk_push_tval(ctx, &tv_tmp);
 	}
 
-	if (flags & PUSH_THIS_FLAG_TO_OBJECT) {
+	if (flags & DUK__PUSH_THIS_FLAG_TO_OBJECT) {
 		duk_to_object(ctx, -1);
-	} else if (flags & PUSH_THIS_FLAG_TO_STRING) {
+	} else if (flags & DUK__PUSH_THIS_FLAG_TO_STRING) {
 		duk_to_string(ctx, -1);
 	}
 
@@ -2491,13 +2491,13 @@ void duk_push_this(duk_context *ctx) {
 }
 
 void duk_push_this_check_object_coercible(duk_context *ctx) {
-	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
+	push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
 }
 
 duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
 	duk_hobject *h;
-	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
-	                      PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
+	push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC |
+	                      DUK__PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	return h;
@@ -2505,8 +2505,8 @@ duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
 
 duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 	duk_hstring *h;
-	push_this_helper(ctx, PUSH_THIS_FLAG_CHECK_COERC |
-	                      PUSH_THIS_FLAG_TO_STRING /*flags*/);
+	push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC |
+	                      DUK__PUSH_THIS_FLAG_TO_STRING /*flags*/);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	return h;

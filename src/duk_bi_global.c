@@ -11,71 +11,71 @@
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
-#define MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
+#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
 	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
 	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
 	))
-#define CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
+#define DUK__CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
 static unsigned char encode_uri_unescaped_table[16] = {
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	MKBITS(0, 1, 0, 1, 1, 0, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	MKBITS(0, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.4: uriUnescaped */
 static unsigned char encode_uri_component_unescaped_table[16] = {
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	MKBITS(0, 1, 0, 0, 0, 0, 0, 1), MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	MKBITS(0, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	MKBITS(0, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.1: uriReserved + '#' */
 static unsigned char decode_uri_reserved_table[16] = {
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	MKBITS(0, 0, 0, 1, 1, 0, 1, 0), MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
-	MKBITS(1, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
+	DUK__MKBITS(1, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.2: empty */
 static unsigned char decode_uri_component_reserved_table[16] = {
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
 };
 
 #ifdef DUK_USE_SECTION_B
 /* E5.1 Section B.2.2, step 7. */
 static unsigned char escape_unescaped_table[16] = {
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	MKBITS(0, 0, 0, 0, 0, 0, 0, 0), MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	MKBITS(0, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	MKBITS(1, 1, 1, 1, 1, 1, 1, 1), MKBITS(1, 1, 1, 0, 0, 0, 0, 0)   /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 0)   /* 0x70-0x7f */
 };
 #endif  /* DUK_USE_SECTION_B */
 
@@ -151,7 +151,7 @@ static void duk_transform_callback_encode_uri(duk_transform_context *tfm_ctx, vo
 
 	if (cp < 0) {
 		goto uri_error;
-	} else if ((cp < 0x80L) && CHECK_BITMASK(unescaped_table, cp)) {
+	} else if ((cp < 0x80L) && DUK__CHECK_BITMASK(unescaped_table, cp)) {
 		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) cp);
 		return;
 	} else if (cp >= 0xdc00L && cp <= 0xdfffL) {
@@ -219,7 +219,7 @@ static void duk_transform_callback_decode_uri(duk_transform_context *tfm_ctx, vo
 		}
 
 		if (t < 128) {
-			if (CHECK_BITMASK(reserved_table, t)) {
+			if (DUK__CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
 				duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t *) (p - 1), 3);
@@ -328,7 +328,7 @@ static void duk_transform_callback_escape(duk_transform_context *tfm_ctx, void *
 
 	if (cp < 0) {
 		goto esc_error;
-	} else if ((cp < 0x80L) && CHECK_BITMASK(escape_unescaped_table, cp)) {
+	} else if ((cp < 0x80L) && DUK__CHECK_BITMASK(escape_unescaped_table, cp)) {
 		buf[0] = (duk_uint8_t) cp;
 		len = 1;
 	} else if (cp < 0x100L) {
