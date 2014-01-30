@@ -12,10 +12,10 @@
 
 #include "duk_internal.h"
 
-#define IEEE_DOUBLE_EXP_BIAS  1023
-#define IEEE_DOUBLE_EXP_MIN   (-1022)   /* biased exp == 0 -> denormal, exp -1022 */
+#define DUK__IEEE_DOUBLE_EXP_BIAS  1023
+#define DUK__IEEE_DOUBLE_EXP_MIN   (-1022)   /* biased exp == 0 -> denormal, exp -1022 */
 
-#define DIGITCHAR(x)  duk_lc_digits[(x)]
+#define DUK__DIGITCHAR(x)  duk_lc_digits[(x)]
 
 /*
  *  Tables generated with src/gennumdigits.py.
@@ -59,7 +59,7 @@ static const duk_exp_limits str2num_exp_limits[] = {
 /*
  *  Limited functionality bigint implementation.
  *
- *  Restricted to non-negative numbers with less than 32 * BI_MAX_PARTS bits,
+ *  Restricted to non-negative numbers with less than 32 * DUK__BI_MAX_PARTS bits,
  *  with the caller responsible for ensuring this is never exceeded.  No memory
  *  allocation (except stack) is needed for bigint computation.  Operations
  *  have been tailored for number conversion needs.
@@ -71,24 +71,24 @@ static const duk_exp_limits str2num_exp_limits[] = {
 /* This upper value has been experimentally determined; debug build will check
  * bigint size with assertions.
  */
-#define BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
+#define DUK__BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
 
 #ifdef DUK_USE_DDDEBUG
-#define BI_PRINT(name,x)  bi_print((name),(x))
+#define DUK__BI_PRINT(name,x)  bi_print((name),(x))
 #else
-#define BI_PRINT(name,x)
+#define DUK__BI_PRINT(name,x)
 #endif
 
 /* Current size is about 152 bytes. */
 typedef struct {
 	duk_small_int_t n;
-	duk_uint32_t v[BI_MAX_PARTS];  /* low to high */
+	duk_uint32_t v[DUK__BI_MAX_PARTS];  /* low to high */
 } duk_bigint;
 
 #ifdef DUK_USE_DDDEBUG
 static void bi_print(const char *name, duk_bigint *x) {
 	/* Overestimate required size; debug code so not critical to be tight. */
-	char buf[BI_MAX_PARTS * 9 + 64];
+	char buf[DUK__BI_MAX_PARTS * 9 + 64];
 	char *p = buf;
 	duk_small_int_t i;
 
@@ -108,7 +108,7 @@ static void bi_print(const char *name, duk_bigint *x) {
 #ifdef DUK_USE_ASSERTIONS
 static duk_small_int_t bi_is_valid(duk_bigint *x) {
 	return (duk_small_int_t) 
-	       ( ((x->n >= 0) && (x->n <= BI_MAX_PARTS)) /* is valid size */ &&
+	       ( ((x->n >= 0) && (x->n <= DUK__BI_MAX_PARTS)) /* is valid size */ &&
 	         ((x->n == 0) || (x->v[x->n - 1] != 0)) /* is normalized */ );
 }
 #endif
@@ -207,7 +207,7 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	ny = y->n; nz = z->n;
 	tmp = 0U;
 	for (i = 0; i < ny; i++) {
-		DUK_ASSERT(i < BI_MAX_PARTS);
+		DUK_ASSERT(i < DUK__BI_MAX_PARTS);
 		tmp += y->v[i];
 		if (i < nz) {
 			tmp += z->v[i];
@@ -216,11 +216,11 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		tmp = tmp >> 32;
 	}
 	if (tmp != 0U) {
-		DUK_ASSERT(i < BI_MAX_PARTS);
+		DUK_ASSERT(i < DUK__BI_MAX_PARTS);
 		x->v[i++] = (duk_uint32_t) tmp;
 	}
 	x->n = i;
-	DUK_ASSERT(x->n <= BI_MAX_PARTS);
+	DUK_ASSERT(x->n <= DUK__BI_MAX_PARTS);
 
 	/* no need to normalize */
 	DUK_ASSERT(bi_is_valid(x));
@@ -245,7 +245,7 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		/* Carry is detected based on wrapping which relies on exact 32-bit
 		 * types.
 		 */
-		DUK_ASSERT(i < BI_MAX_PARTS);
+		DUK_ASSERT(i < DUK__BI_MAX_PARTS);
 		tmp1 = y->v[i];
 		tmp2 = tmp1;
 		if (i < nz) {
@@ -266,12 +266,12 @@ static void bi_add(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		x->v[i] = tmp2;
 	}
 	if (carry) {
-		DUK_ASSERT(i < BI_MAX_PARTS);
+		DUK_ASSERT(i < DUK__BI_MAX_PARTS);
 		DUK_ASSERT(carry == 1U);
 		x->v[i++] = carry;
 	}
 	x->n = i;
-	DUK_ASSERT(x->n <= BI_MAX_PARTS);
+	DUK_ASSERT(x->n <= DUK__BI_MAX_PARTS);
 
 	/* no need to normalize */
 	DUK_ASSERT(bi_is_valid(x));
@@ -402,7 +402,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 	DUK_ASSERT(bi_is_valid(z));
 
 	nx = y->n + z->n;  /* max possible */
-	DUK_ASSERT(nx <= BI_MAX_PARTS);
+	DUK_ASSERT(nx <= DUK__BI_MAX_PARTS);
 
 	if (nx == 0) {
 		/* Both inputs are zero; cases where only one is zero can go
@@ -426,7 +426,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		}
 		if (tmp > 0) {
 			DUK_ASSERT(i + j < nx);
-			DUK_ASSERT(i + j < BI_MAX_PARTS);
+			DUK_ASSERT(i + j < DUK__BI_MAX_PARTS);
 			DUK_ASSERT(x->v[i+j] == 0U);
 			x->v[i+j] = (duk_uint32_t) tmp;
 		}
@@ -497,7 +497,7 @@ static void bi_mul(duk_bigint *x, duk_bigint *y, duk_bigint *z) {
 		}
 		if (f > 0U) {
 			DUK_ASSERT(i + j < nx);
-			DUK_ASSERT(i + j < BI_MAX_PARTS);
+			DUK_ASSERT(i + j < DUK__BI_MAX_PARTS);
 			DUK_ASSERT(x->v[i+j] == 0U);
 			x->v[i+j] = (duk_uint32_t) f;
 		}
@@ -589,7 +589,7 @@ static void bi_exp_small(duk_bigint *x, duk_small_int_t b, duk_small_int_t y, du
 	for (;;) {
 		/* Loop structure ensures that we don't compute t1^2 unnecessarily
 		 * on the final round, as that might create a bignum exceeding the
-		 * current BI_MAX_PARTS limit.
+		 * current DUK__BI_MAX_PARTS limit.
 		 */
 		if (y & 0x01) {
 			bi_mul_copy(x, t1, t2);
@@ -601,7 +601,7 @@ static void bi_exp_small(duk_bigint *x, duk_small_int_t b, duk_small_int_t y, du
 		bi_mul_copy(t1, t1, t2);
 	}
 
-	BI_PRINT("exp_small result", x);
+	DUK__BI_PRINT("exp_small result", x);
 }
 
 /*
@@ -626,14 +626,14 @@ static void bi_exp_small(duk_bigint *x, duk_small_int_t b, duk_small_int_t y, du
  */
 
 /* Maximum number of digits generated. */
-#define MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
+#define DUK__MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
 
 /* Maximum number of characters in formatted value. */
-#define MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
+#define DUK__MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
 
 /* Number and (minimum) size of bigints in the nc_ctx structure. */
-#define NUMCONV_CTX_NUM_BIGINTS    7
-#define NUMCONV_CTX_BIGINTS_SIZE   (sizeof(duk_bigint) * NUMCONV_CTX_NUM_BIGINTS)
+#define DUK__NUMCONV_CTX_NUM_BIGINTS    7
+#define DUK__NUMCONV_CTX_BIGINTS_SIZE   (sizeof(duk_bigint) * DUK__NUMCONV_CTX_NUM_BIGINTS)
 
 typedef struct {
 	/* Currently about 7*152 = 1064 bytes.  The space for these
@@ -656,7 +656,7 @@ typedef struct {
 	duk_small_int_t unequal_gaps;  /* m+ != m- (very rarely) */
 
 	/* Buffer used for generated digits, values are in the range [0,B-1]. */
-	duk_uint8_t digits[MAX_OUTPUT_DIGITS];
+	duk_uint8_t digits[DUK__MAX_OUTPUT_DIGITS];
 	duk_small_int_t count;  /* digit count */
 } duk_numconv_stringify_ctx;
 
@@ -664,9 +664,9 @@ typedef struct {
  * 'idx' is preincremented, i.e. '1' on first call, because it
  * is more convenient for the caller.
  */
-#define DRAGON4_OUTPUT_PREINC(nc_ctx,preinc_idx,x)  do { \
+#define DUK__DRAGON4_OUTPUT_PREINC(nc_ctx,preinc_idx,x)  do { \
 		DUK_ASSERT((preinc_idx) - 1 >= 0); \
-		DUK_ASSERT((preinc_idx) - 1 < MAX_OUTPUT_DIGITS); \
+		DUK_ASSERT((preinc_idx) - 1 < DUK__MAX_OUTPUT_DIGITS); \
 		((nc_ctx)->digits[(preinc_idx) - 1]) = (duk_uint8_t) (x); \
 	} while(0)
 
@@ -690,7 +690,7 @@ static duk_size_t dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, duk_sm
 		x = t;
 
 		DUK_ASSERT(dig >= 0 && dig < 36);
-		*(--p) = DIGITCHAR(dig);
+		*(--p) = DUK__DIGITCHAR(dig);
 
 		if (x == 0) {
 			break;
@@ -799,7 +799,7 @@ static void dragon4_prepare(duk_numconv_stringify_ctx *nc_ctx) {
 		/* When doing string-to-number, lowest_mantissa is always 0 so
 		 * the exponent check, while incorrect, won't matter.
 		 */
-		if (nc_ctx->e > IEEE_DOUBLE_EXP_MIN /*not minimum exponent*/ &&
+		if (nc_ctx->e > DUK__IEEE_DOUBLE_EXP_MIN /*not minimum exponent*/ &&
 		    lowest_mantissa /* lowest mantissa for this exponent*/) {
 			/* r <- (* f b 2)                                [if b==2 -> (* f 4)]
 			 * s <- (* (expt b (- 1 e)) 2) == b^(1-e) * 2    [if b==2 -> b^(2-e)]
@@ -872,17 +872,17 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 
 	DUK_DDDPRINT("scale: B=%d, low_ok=%d, high_ok=%d",
 	             (int) nc_ctx->B, (int) nc_ctx->low_ok, (int) nc_ctx->high_ok);
-	BI_PRINT("r(init)", &nc_ctx->r);
-	BI_PRINT("s(init)", &nc_ctx->s);
-	BI_PRINT("mp(init)", &nc_ctx->mp);
-	BI_PRINT("mm(init)", &nc_ctx->mm);
+	DUK__BI_PRINT("r(init)", &nc_ctx->r);
+	DUK__BI_PRINT("s(init)", &nc_ctx->s);
+	DUK__BI_PRINT("mp(init)", &nc_ctx->mp);
+	DUK__BI_PRINT("mm(init)", &nc_ctx->mm);
 
 	for (;;) {
 		DUK_DDDPRINT("scale loop (inc k), k=%d", (int) k);
-		BI_PRINT("r", &nc_ctx->r);
-		BI_PRINT("s", &nc_ctx->s);
-		BI_PRINT("m+", &nc_ctx->mp);
-		BI_PRINT("m-", &nc_ctx->mm);
+		DUK__BI_PRINT("r", &nc_ctx->r);
+		DUK__BI_PRINT("s", &nc_ctx->s);
+		DUK__BI_PRINT("m+", &nc_ctx->mp);
+		DUK__BI_PRINT("m-", &nc_ctx->mm);
 
 		bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 = (+ r m+) */
 		if (bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (nc_ctx->high_ok ? 0 : 1)) {
@@ -908,10 +908,10 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 
 	for (;;) {
 		DUK_DDDPRINT("scale loop (dec k), k=%d", (int) k);
-		BI_PRINT("r", &nc_ctx->r);
-		BI_PRINT("s", &nc_ctx->s);
-		BI_PRINT("m+", &nc_ctx->mp);
-		BI_PRINT("m-", &nc_ctx->mm);
+		DUK__BI_PRINT("r", &nc_ctx->r);
+		DUK__BI_PRINT("s", &nc_ctx->s);
+		DUK__BI_PRINT("m+", &nc_ctx->mp);
+		DUK__BI_PRINT("m-", &nc_ctx->mm);
 
 		bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 = (+ r m+) */
 		bi_mul_small(&nc_ctx->t2, &nc_ctx->t1, nc_ctx->B);   /* t2 = (* (+ r m+) B) */
@@ -944,10 +944,10 @@ static void dragon4_scale(duk_numconv_stringify_ctx *nc_ctx) {
 	nc_ctx->k = k;
 
 	DUK_DDDPRINT("final k: %d", (int) k);
-	BI_PRINT("r(final)", &nc_ctx->r);
-	BI_PRINT("s(final)", &nc_ctx->s);
-	BI_PRINT("mp(final)", &nc_ctx->mp);
-	BI_PRINT("mm(final)", &nc_ctx->mm);
+	DUK__BI_PRINT("r(final)", &nc_ctx->r);
+	DUK__BI_PRINT("s(final)", &nc_ctx->s);
+	DUK__BI_PRINT("mp(final)", &nc_ctx->mp);
+	DUK__BI_PRINT("mm(final)", &nc_ctx->mm);
 }
 
 static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
@@ -977,10 +977,10 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		DUK_DDDPRINT("generate loop, count=%d, k=%d, B=%d, low_ok=%d, high_ok=%d",
 		             (int) count, (int) nc_ctx->k, (int) nc_ctx->B,
 		             (int) nc_ctx->low_ok, (int) nc_ctx->high_ok);
-		BI_PRINT("r", &nc_ctx->r);
-		BI_PRINT("s", &nc_ctx->s);
-		BI_PRINT("m+", &nc_ctx->mp);
-		BI_PRINT("m-", &nc_ctx->mm);
+		DUK__BI_PRINT("r", &nc_ctx->r);
+		DUK__BI_PRINT("s", &nc_ctx->s);
+		DUK__BI_PRINT("m+", &nc_ctx->mp);
+		DUK__BI_PRINT("m-", &nc_ctx->mm);
 
 		/* (quotient-remainder (* r B) s) using a dummy subtraction loop */
 		bi_mul_small(&nc_ctx->t1, &nc_ctx->r, nc_ctx->B);       /* t1 <- (* r B) */
@@ -995,12 +995,12 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 		bi_copy(&nc_ctx->r, &nc_ctx->t1);  /* r <- (remainder (* r B) s) */
 		                                   /* d <- (quotient (* r B) s)   (in range 0...B-1) */
 		DUK_DDDPRINT("-> d(quot)=%d", (int) d);
-		BI_PRINT("r(rem)", &nc_ctx->r);
+		DUK__BI_PRINT("r(rem)", &nc_ctx->r);
 
 		bi_mul_small_copy(&nc_ctx->mp, nc_ctx->B, &nc_ctx->t2); /* m+ <- (* m+ B) */
 		bi_mul_small_copy(&nc_ctx->mm, nc_ctx->B, &nc_ctx->t2); /* m- <- (* m- B) */
-		BI_PRINT("mp(upd)", &nc_ctx->mp);
-		BI_PRINT("mm(upd)", &nc_ctx->mm);
+		DUK__BI_PRINT("mp(upd)", &nc_ctx->mp);
+		DUK__BI_PRINT("mm(upd)", &nc_ctx->mm);
 
 		/* Terminating conditions.  For fixed width output, we just ignore the
 		 * terminating conditions (and pretend that tc1 == tc2 == false).  The
@@ -1022,7 +1022,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 			tc2 = 0;
 		}
 
-		/* Count is incremented before DRAGON4_OUTPUT_PREINC() call
+		/* Count is incremented before DUK__DRAGON4_OUTPUT_PREINC() call
 		 * on purpose, which is taken into account by the macro.
 		 */
 		count++;
@@ -1034,18 +1034,18 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 				if (bi_compare(&nc_ctx->t1, &nc_ctx->s) < 0) {  /* (< (* r 2) s) */
 					DUK_DDDPRINT("tc1=true, tc2=true, 2r > s: output d --> %d (k=%d)",
 					             (int) d, (int) nc_ctx->k);
-					DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
+					DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 				} else {
 					DUK_DDDPRINT("tc1=true, tc2=true, 2r <= s: output d+1 --> %d (k=%d)",
 					             (int) (d + 1), (int) nc_ctx->k);
-					DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
+					DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
 				}
 				break;
 			} else {
 				/* tc1 = true, tc2 = false */
 				DUK_DDDPRINT("tc1=true, tc2=false: output d --> %d (k=%d)",
 				             (int) d, (int) nc_ctx->k);
-				DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
+				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 				break;
 			}
 		} else {
@@ -1053,13 +1053,13 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 				/* tc1 = false, tc2 = true */
 				DUK_DDDPRINT("tc1=false, tc2=true: output d+1 --> %d (k=%d)",
 				             (int) (d + 1), (int) nc_ctx->k);
-				DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
+				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
 				break;
 			} else {
 				/* tc1 = false, tc2 = false */
 				DUK_DDDPRINT("tc1=false, tc2=false: output d --> %d (k=%d)",
 				             (int) d, (int) nc_ctx->k);
-				DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
+				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 
 				/* r <- r    (updated above: r <- (remainder (* r B) s)
 				 * s <- s
@@ -1107,7 +1107,7 @@ static void dragon4_generate(duk_numconv_stringify_ctx *nc_ctx) {
 			if (t < 0 || t > 36) {
 				buf[i] = (duk_uint8_t) '?';
 			} else {
-				buf[i] = (duk_uint8_t) DIGITCHAR(t);
+				buf[i] = (duk_uint8_t) DUK__DIGITCHAR(t);
 			}
 		}
 		DUK_DDDPRINT("-> generated digits; k=%d, digits='%s'",
@@ -1194,7 +1194,7 @@ static duk_small_int_t dragon4_fixed_format_round(duk_numconv_stringify_ctx *nc_
 	return ret;
 }
 
-#define NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
+#define DUK__NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
 
 static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx,
                                      duk_context *ctx,
@@ -1233,7 +1233,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx,
 	 *  allocating even more stack.
 	 */
 
-	DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= MAX_FORMATTED_LENGTH);
+	DUK_ASSERT(DUK__NUMCONV_CTX_BIGINTS_SIZE >= DUK__MAX_FORMATTED_LENGTH);
 	DUK_ASSERT(nc_ctx->count >= 1);
 
 	k = nc_ctx->k;
@@ -1247,7 +1247,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx,
 	 * match the other API calls (toString(), toPrecision, etc).
 	 */
 
-	exp = NO_EXP;
+	exp = DUK__NO_EXP;
 	if (!nc_ctx->abs_pos /* toFixed() */) {
 		if ((flags & DUK_N2S_FLAG_FORCE_EXP) ||             /* exponential notation forced */
 		    ((flags & DUK_N2S_FLAG_NO_ZERO_PAD) &&          /* fixed precision and zero padding would be required */
@@ -1298,7 +1298,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx,
 		} else {
 			dig = nc_ctx->digits[k - pos];
 			DUK_ASSERT(dig >= 0 && dig < nc_ctx->B);
-			*q++ = (duk_uint8_t) DIGITCHAR(dig);
+			*q++ = (duk_uint8_t) DUK__DIGITCHAR(dig);
 		} 
 
 		pos--;
@@ -1306,7 +1306,7 @@ static void dragon4_convert_and_push(duk_numconv_stringify_ctx *nc_ctx,
 	DUK_ASSERT(pos <= 1);
 
 	/* Exponent */
-	if (exp != NO_EXP) {
+	if (exp != DUK__NO_EXP) {
 		/*
 		 *  Exponent notation for non-base-10 numbers isn't specified in Ecmascript
 		 *  specification, as it never explicitly turns up: non-decimal numbers can
@@ -1374,12 +1374,12 @@ static void dragon4_double_to_ctx(duk_numconv_stringify_ctx *nc_ctx, duk_double_
 
 	if (exp == 0) {
 		/* denormal */
-		exp = IEEE_DOUBLE_EXP_MIN - 52;
+		exp = DUK__IEEE_DOUBLE_EXP_MIN - 52;
 		bi_normalize(&nc_ctx->f);
 	} else {
 		/* normal: implicit leading 1-bit */
 		nc_ctx->f.v[1] |= 0x00100000UL;
-		exp = exp - IEEE_DOUBLE_EXP_BIAS - 52;
+		exp = exp - DUK__IEEE_DOUBLE_EXP_BIAS - 52;
 		DUK_ASSERT(bi_is_valid(&nc_ctx->f));  /* true, because v[1] has at least one bit set */
 	}
 
@@ -1456,7 +1456,7 @@ void dragon4_ctx_to_double(duk_numconv_stringify_ctx *nc_ctx, duk_double_t *x) {
 	} else if (exp >= -1022) {
 		/* normal */
 		bitstart = 1;  /* skip leading digit */
-		exp += IEEE_DOUBLE_EXP_BIAS;
+		exp += DUK__IEEE_DOUBLE_EXP_BIAS;
 		DUK_ASSERT(exp >= 1 && exp <= 2046);
 	} else {
 		/* denormal or zero */
@@ -1594,7 +1594,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 		duk_uint8_t *buf = (duk_uint8_t *) (&nc_ctx->f);
 		duk_uint8_t *p = buf;
 
-		DUK_ASSERT(NUMCONV_CTX_BIGINTS_SIZE >= 32 + 1);  /* max size: radix=2 + sign */
+		DUK_ASSERT(DUK__NUMCONV_CTX_BIGINTS_SIZE >= 32 + 1);  /* max size: radix=2 + sign */
 		if (neg && uval != 0) {
 			/* no negative sign for zero */
 			*p++ = (duk_uint8_t) '-';
@@ -1667,7 +1667,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 	}
 
 	dragon4_double_to_ctx(nc_ctx, x);   /* -> sets 'f' and 'e' */
-	BI_PRINT("f", &nc_ctx->f);
+	DUK__BI_PRINT("f", &nc_ctx->f);
 	DUK_DDDPRINT("e=%d", (int) nc_ctx->e);
 
 	/*
@@ -1677,18 +1677,18 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 	dragon4_prepare(nc_ctx);  /* setup many variables in nc_ctx */
 
 	DUK_DDDPRINT("after prepare:");
-	BI_PRINT("r", &nc_ctx->r);
-	BI_PRINT("s", &nc_ctx->s);
-	BI_PRINT("mp", &nc_ctx->mp);
-	BI_PRINT("mm", &nc_ctx->mm);
+	DUK__BI_PRINT("r", &nc_ctx->r);
+	DUK__BI_PRINT("s", &nc_ctx->s);
+	DUK__BI_PRINT("mp", &nc_ctx->mp);
+	DUK__BI_PRINT("mm", &nc_ctx->mm);
 
 	dragon4_scale(nc_ctx);
 
 	DUK_DDDPRINT("after scale; k=%d", (int) nc_ctx->k);
-	BI_PRINT("r", &nc_ctx->r);
-	BI_PRINT("s", &nc_ctx->s);
-	BI_PRINT("mp", &nc_ctx->mp);
-	BI_PRINT("mm", &nc_ctx->mm);
+	DUK__BI_PRINT("r", &nc_ctx->r);
+	DUK__BI_PRINT("s", &nc_ctx->s);
+	DUK__BI_PRINT("mp", &nc_ctx->mp);
+	DUK__BI_PRINT("mm", &nc_ctx->mm);
 
 	dragon4_generate(nc_ctx);
 
@@ -1934,7 +1934,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 		             (void *) p, (ch >= 0x20 && ch <= 0x7e) ? ch : '?', (int) ch,
 		             (int) exp, (int) exp_adj, (int) dig_whole, (int) dig_frac,
 		             (int) dig_exp, (int) dig_lzero, (int) dig_prec);
-		BI_PRINT("f", &nc_ctx->f);
+		DUK__BI_PRINT("f", &nc_ctx->f);
 
 		/* Most common cases first. */
 		if (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9') {
@@ -2158,7 +2158,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 		 */
 		DUK_DDDPRINT("dig_prec=%d, pad significand with zero", (int) dig_prec);
 		bi_mul_small_copy(&nc_ctx->f, radix, &nc_ctx->t1);
-		BI_PRINT("f", &nc_ctx->f);
+		DUK__BI_PRINT("f", &nc_ctx->f);
 		exp--;
 		dig_prec++;
 	}
@@ -2201,7 +2201,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	nc_ctx->abs_pos = 0;
 	nc_ctx->req_digits = 53 + 1;
 
-	BI_PRINT("f", &nc_ctx->f);
+	DUK__BI_PRINT("f", &nc_ctx->f);
 	DUK_DDDPRINT("e=%d", (int) nc_ctx->e);
 
 	/*
@@ -2212,18 +2212,18 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	dragon4_prepare(nc_ctx);  /* setup many variables in nc_ctx */
 
 	DUK_DDDPRINT("after prepare:");
-	BI_PRINT("r", &nc_ctx->r);
-	BI_PRINT("s", &nc_ctx->s);
-	BI_PRINT("mp", &nc_ctx->mp);
-	BI_PRINT("mm", &nc_ctx->mm);
+	DUK__BI_PRINT("r", &nc_ctx->r);
+	DUK__BI_PRINT("s", &nc_ctx->s);
+	DUK__BI_PRINT("mp", &nc_ctx->mp);
+	DUK__BI_PRINT("mm", &nc_ctx->mm);
 
 	dragon4_scale(nc_ctx);
 
 	DUK_DDDPRINT("after scale; k=%d", (int) nc_ctx->k);
-	BI_PRINT("r", &nc_ctx->r);
-	BI_PRINT("s", &nc_ctx->s);
-	BI_PRINT("mp", &nc_ctx->mp);
-	BI_PRINT("mm", &nc_ctx->mm);
+	DUK__BI_PRINT("r", &nc_ctx->r);
+	DUK__BI_PRINT("s", &nc_ctx->s);
+	DUK__BI_PRINT("mp", &nc_ctx->mp);
+	DUK__BI_PRINT("mm", &nc_ctx->mm);
 
 	dragon4_generate(nc_ctx);
 
