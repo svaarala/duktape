@@ -99,7 +99,7 @@ Released
 * Added API call to force GC, duk_gc(); implemented duk_map_string() and
   duk_decode_string()
 
-* Added extended JSON format variants: JSONX and JSONC; NULL pointer
+* Added extended JSON format variants JSONX and JSONC; NULL pointer
   values string now coerce to "null" instead of e.g. "(nil)" to match
   JSONX format
 
@@ -123,8 +123,12 @@ Released
 * Make mark-and-sweep interval relative to current heap size (measured as
   combined object and string count)
 
-* Internal support for periodic bytecode executor interrupts which can
-  be used to implement executor step limits, profiling, and debugging
+* Add DUK_OPT_NO_VOLUNTARY_GC to disable voluntary mark-and-sweep entirely;
+  this is useful in timing sensitive applications like games
+
+* Preliminary internal support for periodic bytecode executor interrupts
+  which can be used to implement executor step limits, profiling, and
+  debugging
 
 * More feature options for build tuning
 
