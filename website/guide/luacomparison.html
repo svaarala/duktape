@@ -47,13 +47,13 @@ been finalized.  To safeguard against this, the native C structure should
 have a flag indicating whether the data structure is open or closed.  This
 is good practice anyway for robust native code.</p>
 
-<h2>Reference counting</h2>
+<h2>Garbage collection</h2>
 
-<p>Duktape has a combined reference counting and non-incremental backup
-mark-and-sweep garbage collector (although compilation options can be used
-to change this).  Lua has an incremental collector but no reference counting.</p>
-
-<h2>Emergency garbage collection</h2>
+<p>Duktape has a combined reference counting and non-incremental mark-and-sweep
+garbage collector (mark-and-sweep is needed only for reference cycles).  Collection
+pauses can be avoided by disabling voluntary mark-and-sweep passes
+(<code>DUK_OPT_NO_VOLUNTARY_GC</code>).  Lua has an incremental collector with no
+pauses, but has no reference counting.</p>
 
 <p>Duktape has an emergency garbage collector.  Lua 5.2 has an emergency
 garbage collector while Lua 5.1 does not (there is an emergency GC patch
