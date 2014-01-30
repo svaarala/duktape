@@ -8,7 +8,7 @@ NaN
  * produce a NaN.
  *
  * A string containing just a U+0000 character is easily confused with an
- * empty string in C code, so this testcases ensures that doesn't happen.
+ * empty string in C code, so this testcase ensures that doesn't happen.
  */
 
 try {
