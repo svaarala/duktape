@@ -6,12 +6,12 @@
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 
-#define BUFSIZE  256  /* size for formatting buffers */
+#define DUK__FMT_BUFSIZE  256  /* size for formatting buffers */
 
 #ifdef DUK_USE_VARIADIC_MACROS
 void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...) {
 	va_list ap;
-	char msg[BUFSIZE];
+	char msg[DUK__FMT_BUFSIZE];
 	va_start(ap, fmt);
 	(void) DUK_VSNPRINTF(msg, sizeof(msg), fmt, ap);
 	msg[sizeof(msg) - 1] = (char) 0;
@@ -21,8 +21,8 @@ void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int 
 
 void duk_err_handle_panic(const char *filename, int line, int code, const char *fmt, ...) {
 	va_list ap;
-	char msg1[BUFSIZE];
-	char msg2[BUFSIZE];
+	char msg1[DUK__FMT_BUFSIZE];
+	char msg2[DUK__FMT_BUFSIZE];
 	const char *tmp;
 	va_start(ap, fmt);
 	(void) DUK_VSNPRINTF(msg1, sizeof(msg1), fmt, ap);
@@ -45,7 +45,7 @@ int duk_err_line_stash = 0;
 DUK_NORETURN(static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap));
 
 static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
-	char msg[BUFSIZE];
+	char msg[DUK__FMT_BUFSIZE];
 	(void) DUK_VSNPRINTF(msg, sizeof(msg), fmt, ap);
 	msg[sizeof(msg) - 1] = (char) 0;
 	duk_err_create_and_throw(thr, code, msg, filename, line);
@@ -54,8 +54,8 @@ static void _handle_error(const char *filename, int line, duk_hthread *thr, int 
 DUK_NORETURN(static void _handle_panic(const char *filename, int line, int code, const char *fmt, va_list ap));
 
 static void _handle_panic(const char *filename, int line, int code, const char *fmt, va_list ap) {
-	char msg1[BUFSIZE];
-	char msg2[BUFSIZE];
+	char msg1[DUK__FMT_BUFSIZE];
+	char msg2[DUK__FMT_BUFSIZE];
 	(void) DUK_VSNPRINTF(msg1, sizeof(msg1), fmt, ap);
 	msg1[sizeof(msg1) - 1] = (char) 0;
 	(void) DUK_SNPRINTF(msg2, sizeof(msg2), "(%s:%d): %s", filename ? filename : "null", line, msg1);

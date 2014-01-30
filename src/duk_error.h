@@ -208,7 +208,7 @@
 /*
  *  Helper for valstack space
  *
- *  Caller of ASSERT_VALSTACK_SPACE() estimates the number of free stack entries
+ *  Caller of DUK_ASSERT_VALSTACK_SPACE() estimates the number of free stack entries
  *  required for its own use, and any child calls which are not (a) Duktape API calls
  *  or (b) Duktape calls which involve extending the valstack (e.g. getter call).
  */
@@ -217,12 +217,12 @@
                                         * API calls in addition to function's own use
                                         */
 #if defined(DUK_USE_ASSERTIONS)
-#define ASSERT_VALSTACK_SPACE(thr,n)   do { \
+#define DUK_ASSERT_VALSTACK_SPACE(thr,n)   do { \
 		DUK_ASSERT((thr) != NULL); \
 		DUK_ASSERT((thr)->valstack_end - (thr)->valstack_top >= (n) + DUK_VALSTACK_ASSERT_EXTRA); \
 	} while (0)
 #else
-#define ASSERT_VALSTACK_SPACE(thr,n)   /* no valstack space check */
+#define DUK_ASSERT_VALSTACK_SPACE(thr,n)   /* no valstack space check */
 #endif
 
 /*

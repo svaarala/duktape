@@ -45,20 +45,20 @@
  *  Local defines
  */
 
-#define NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
+#define DUK__NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
 
 /* hash probe sequence */
-#define HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
-#define HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
+#define DUK__HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
+#define DUK__HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
 
 /* marker values for hash part */
-#define HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
-#define HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
+#define DUK__HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
+#define DUK__HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
 
 /* assert value that suffices for all local calls, including recursion of
  * other than Duktape calls (getters etc)
  */
-#define VALSTACK_SPACE             10
+#define DUK__VALSTACK_SPACE             10
 
 /*
  *  Local prototypes
@@ -272,7 +272,7 @@ static void realloc_props(duk_hthread *thr,
 	DUK_ASSERT(new_h_size == 0 || new_h_size >= new_e_size);  /* required to guarantee success of rehashing,
 	                                                           * intentionally use unadjusted new_e_size
 	                                                           */	
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
 	 *  Pre resize assertions.
@@ -450,7 +450,7 @@ static void realloc_props(duk_hthread *thr,
 			if (!duk_check_stack(ctx, 1)) {
 				goto abandon_error;
 			}
-			ASSERT_VALSTACK_SPACE(thr, 1);
+			DUK_ASSERT_VALSTACK_SPACE(thr, 1);
 			key = duk_heap_string_intern_u32(thr->heap, i);
 			if (!key) {
 				goto abandon_error;
@@ -544,7 +544,7 @@ static void realloc_props(duk_hthread *thr,
 	 *  Rebuild the hash part always from scratch (guaranteed to finish).
 	 *
 	 *  Any resize of hash part requires rehashing.  In addition, by rehashing
-	 *  get rid of any elements marked deleted (HASH_DELETED) which is critical
+	 *  get rid of any elements marked deleted (DUK__HASH_DELETED) which is critical
 	 *  to ensuring the hash part never fills up.
 	 */
 
@@ -561,12 +561,12 @@ static void realloc_props(duk_hthread *thr,
 			int step;
 
 			DUK_ASSERT(key != NULL);
-			j = HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size);
-			step = HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+			j = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size);
+			step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
 
 			for (;;) {
-				DUK_ASSERT(new_h[j] != HASH_DELETED);  /* should never happen */
-				if (new_h[j] == HASH_UNUSED) {
+				DUK_ASSERT(new_h[j] != DUK__HASH_DELETED);  /* should never happen */
+				if (new_h[j] == DUK__HASH_UNUSED) {
 					DUK_DDDPRINT("rebuild hit %d -> %d", j, i);
 					new_h[j] = i;
 					break;
@@ -575,7 +575,7 @@ static void realloc_props(duk_hthread *thr,
 				j = (j + step) % new_h_size;
 
 				/* guaranteed to finish */
-				DUK_ASSERT(j != HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size));
+				DUK_ASSERT(j != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size));
 			}
 		}
 	} else {
@@ -845,20 +845,20 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 
 		h_base = DUK_HOBJECT_H_GET_BASE(obj);
 		n = obj->h_size;
-		i = HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n);
-		step = HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+		i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n);
+		step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
 
 		for (;;) {
 			duk_uint32_t t;
 
 			DUK_ASSERT(i >= 0 && i < obj->h_size);
 			t = h_base[i];
-			DUK_ASSERT(t == HASH_UNUSED || t == HASH_DELETED ||
+			DUK_ASSERT(t == DUK__HASH_UNUSED || t == DUK__HASH_DELETED ||
 			           (t >= 0 && t < obj->e_size));
 
-			if (t == HASH_UNUSED) {
+			if (t == DUK__HASH_UNUSED) {
 				break;
-			} else if (t == HASH_DELETED) {
+			} else if (t == DUK__HASH_DELETED) {
 				DUK_DDDPRINT("lookup miss (deleted) i=%d, t=%d", i, t);
 			} else {
 				DUK_ASSERT(t < obj->e_size);
@@ -873,7 +873,7 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 			i = (i + step) % n;
 
 			/* guaranteed to finish, as hash is never full */
-			DUK_ASSERT(i != HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));
+			DUK_ASSERT(i != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));
 		}
 	} else {
 		/* linear scan */
@@ -990,13 +990,13 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 	DUK_HSTRING_INCREF(thr, key);
 
 	if (obj->h_size > 0) {
-		int i = HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size);
-		int step = HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+		int i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size);
+		int step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
 		duk_uint32_t *h_base = DUK_HOBJECT_H_GET_BASE(obj);
 
 		for (;;) {
 			duk_uint32_t t = h_base[i];
-			if (t == HASH_UNUSED || t == HASH_DELETED) {
+			if (t == DUK__HASH_UNUSED || t == DUK__HASH_DELETED) {
 				DUK_DDDPRINT("alloc_entry_checked() inserted key into hash part, %d -> %d", i, idx);
 				DUK_ASSERT(i >= 0 && i < obj->h_size);
 				DUK_ASSERT(idx >= 0 && idx < obj->e_size);
@@ -1007,7 +1007,7 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 			i = (i + step) % obj->h_size;
 
 			/* guaranteed to find an empty slot */
-			DUK_ASSERT(i != HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size));
+			DUK_ASSERT(i != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size));
 		}
 	}
 
@@ -1088,7 +1088,7 @@ static int lookup_arguments_map(duk_hthread *thr,
 	duk_hobject *varenv;
 	int rc;
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	DUK_DDDPRINT("arguments map lookup: thr=%p, obj=%p, key=%p, temp_desc=%p "
 	             "(obj -> %!O, key -> %!O)",
@@ -1140,7 +1140,7 @@ static int check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, duk_h
 	duk_hobject *varenv;
 	duk_hstring *varname;
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!lookup_arguments_map(thr, obj, key, temp_desc, &map, &varenv)) {
 		DUK_DDDPRINT("arguments: key not mapped, no special get behavior");
@@ -1178,7 +1178,7 @@ static void check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj, duk_
 	duk_hobject *varenv;
 	duk_hstring *varname;
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!lookup_arguments_map(thr, obj, key, temp_desc, &map, &varenv)) {
 		DUK_DDDPRINT("arguments: key not mapped, no special put behavior");
@@ -1220,7 +1220,7 @@ static void check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *obj, d
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *map;
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!get_own_property_desc(thr, obj, DUK_HTHREAD_STRING_INT_MAP(thr), temp_desc, 1)) {  /* push_value = 1 */
 		DUK_DDDPRINT("arguments: key not mapped, no special delete behavior");
@@ -1292,7 +1292,7 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(out_desc != NULL);
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/* FIXME: optimize this filling behavior later */
 	out_desc->flags = 0;
@@ -1306,7 +1306,7 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 	 *  Array part
 	 */
 
-	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) && arr_idx != NO_ARRAY_INDEX) {
+	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) && arr_idx != DUK__NO_ARRAY_INDEX) {
 		if (arr_idx < obj->a_size) {
 			tv = DUK_HOBJECT_A_GET_VALUE_PTR(obj, arr_idx);
 			if (!DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
@@ -1368,7 +1368,7 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 	if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) {
 		DUK_DDDPRINT("string object special property get for key: %!O, arr_idx: %d", key, arr_idx);
 
-		if (arr_idx != NO_ARRAY_INDEX) {
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
 			duk_hstring *h_val;
 
 			DUK_DDDPRINT("array index exists");
@@ -1439,7 +1439,7 @@ static int get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hst
 	 */
 
 	if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj) &&
-	    arr_idx != NO_ARRAY_INDEX &&
+	    arr_idx != DUK__NO_ARRAY_INDEX &&
 	    push_value) {
 		duk_propdesc temp_desc;
 
@@ -1469,7 +1469,7 @@ static int get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(out_desc != NULL);
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	return get_own_property_desc_raw(thr,
 	                                 obj,
@@ -1507,7 +1507,7 @@ static int get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *ke
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(out_desc != NULL);
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
@@ -1653,7 +1653,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_tval tv_key_copy;
 	duk_hobject *curr = NULL;
 	duk_hstring *key = NULL;
-	duk_uint32_t arr_idx = NO_ARRAY_INDEX;
+	duk_uint32_t arr_idx = DUK__NO_ARRAY_INDEX;
 	duk_propdesc desc;
 	duk_uint32_t sanity;
 
@@ -1666,7 +1666,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
@@ -1740,7 +1740,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			return 1;
 		}
 
-		if (arr_idx != NO_ARRAY_INDEX &&
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			duk_pop(ctx);  /* [key] -> [] */
 			duk_push_hstring(ctx, h);
@@ -1952,7 +1952,7 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/* No need to make a copy of the input duk_tvals here. */
 
@@ -1991,7 +1991,7 @@ int duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	return get_property_desc(thr, obj, key, &dummy, 0);  /* push_value = 0 */
 }
@@ -2010,7 +2010,7 @@ static duk_uint32_t get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk
 	duk_tval *tv;
 	duk_uint32_t res;
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/* FIXME: this assumption is actually invalid, because e.g. Array.prototype.push()
 	 * can create an array whose length is above 2**32.
@@ -2021,7 +2021,7 @@ static duk_uint32_t get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk
 	 * valid number value (in unsigned 32-bit range).
 	 */
 
-	rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, temp_desc, 0);
+	rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, temp_desc, 0);
 	DUK_UNREF(rc);
 	DUK_ASSERT(rc != 0);  /* arrays MUST have a 'length' property */
 	DUK_ASSERT(temp_desc->e_idx >= 0);
@@ -2094,7 +2094,7 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(new_len < old_len);
 	DUK_ASSERT(out_result_len != NULL);
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
 		/*
@@ -2150,7 +2150,7 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 
 			DUK_ASSERT(DUK_HSTRING_HAS_ARRIDX(key));  /* XXX: macro checks for array index flag, which is unnecessary here */
 			arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
-			DUK_ASSERT(arr_idx != NO_ARRAY_INDEX);
+			DUK_ASSERT(arr_idx != DUK__NO_ARRAY_INDEX);
 			DUK_ASSERT(arr_idx < old_len);  /* consistency requires this */
 
 			if (arr_idx < new_len) {
@@ -2192,7 +2192,7 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 
 			DUK_ASSERT(DUK_HSTRING_HAS_ARRIDX(key));  /* XXX: macro checks for array index flag, which is unnecessary here */
 			arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
-			DUK_ASSERT(arr_idx != NO_ARRAY_INDEX);
+			DUK_ASSERT(arr_idx != DUK__NO_ARRAY_INDEX);
 			DUK_ASSERT(arr_idx < old_len);  /* consistency requires this */
 
 			if (arr_idx < target_len) {
@@ -2251,7 +2251,7 @@ static int handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(obj != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	DUK_ASSERT(duk_is_valid_index(ctx, -1));
 
@@ -2375,7 +2375,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	DUK_ASSERT(tv_key != NULL);
 	DUK_ASSERT(tv_val != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
@@ -2433,7 +2433,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			goto fail_not_writable;
 		}
 
-		if (arr_idx != NO_ARRAY_INDEX &&
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			goto fail_not_writable;
 		}
@@ -2683,7 +2683,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	             key == DUK_HTHREAD_STRING_LENGTH(thr)));
 
 	if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(orig) &&
-	    arr_idx != NO_ARRAY_INDEX) {
+	    arr_idx != DUK__NO_ARRAY_INDEX) {
 		/* automatic length update */
 		duk_uint32_t old_len;
 
@@ -2725,7 +2725,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	 *  tv_obj, tv_key, and tv_val are copies of the original inputs.
 	 */
 
-	if (arr_idx != NO_ARRAY_INDEX &&
+	if (arr_idx != DUK__NO_ARRAY_INDEX &&
 	    DUK_HOBJECT_HAS_ARRAY_PART(orig)) {
 		if (arr_idx < orig->a_size) {
 			goto no_array_growth;
@@ -2854,7 +2854,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 		DUK_DDDPRINT("write successful, pending array length update to: %d", new_array_length);
 
-		rc = get_own_property_desc_raw(thr, orig, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, &desc, 0);
+		rc = get_own_property_desc_raw(thr, orig, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, &desc, 0);
 		DUK_UNREF(rc);
 		DUK_ASSERT(rc != 0);
 		DUK_ASSERT(desc.e_idx >= 0);
@@ -2888,7 +2888,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	 *  we end up in step 5.b.i.
 	 */
 
-	if (arr_idx != NO_ARRAY_INDEX &&
+	if (arr_idx != DUK__NO_ARRAY_INDEX &&
 	    DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(orig)) {
 		/* Note: only numbered indices are relevant, so arr_idx fast reject
 		 * is good (this is valid unless there are more than 4**32-1 arguments).
@@ -2974,7 +2974,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
@@ -3009,7 +3009,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 			DUK_DDDPRINT("removing hash entry at h_idx %d", desc.h_idx);
 			DUK_ASSERT(obj->h_size > 0);
 			DUK_ASSERT(desc.h_idx < obj->h_size);
-			h_base[desc.h_idx] = HASH_DELETED;
+			h_base[desc.h_idx] = DUK__HASH_DELETED;
 		} else {
 			DUK_ASSERT(obj->h_size == 0);
 		}
@@ -3065,7 +3065,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 
 	DUK_DDDPRINT("delete successful, check for arguments special behavior");
 
-	if (arr_idx != NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
+	if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
 		/* Note: only numbered indices are relevant, so arr_idx fast reject
 		 * is good (this is valid unless there are more than 4**32-1 arguments).
 		 */
@@ -3096,7 +3096,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, int throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *key = NULL;
-	duk_uint32_t arr_idx = NO_ARRAY_INDEX;
+	duk_uint32_t arr_idx = DUK__NO_ARRAY_INDEX;
 	int rc;
 
 	DUK_DDDPRINT("delprop: thr=%p, obj=%p, key=%p (obj -> %!T, key -> %!T)",
@@ -3108,7 +3108,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (DUK_TVAL_IS_UNDEFINED(tv_obj) ||
 	    DUK_TVAL_IS_NULL(tv_obj)) {
@@ -3146,7 +3146,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 
 		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
-		if (arr_idx != NO_ARRAY_INDEX &&
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			goto fail_not_configurable;
 		}
@@ -3200,7 +3200,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 	DUK_ASSERT(duk_is_valid_index(ctx, -1));  /* contains value */
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
@@ -3239,7 +3239,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	}
 
 	if (DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
-		if (arr_idx != NO_ARRAY_INDEX) {
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
 			DUK_DDDPRINT("property does not exist, object has array part -> possibly extend array part and write value (assert attributes)");
 			DUK_ASSERT(propflags == DUK_PROPDESC_FLAGS_WEC);
 
@@ -3301,7 +3301,7 @@ void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, du
 	DUK_ASSERT((propflags & ~DUK_PROPDESC_FLAGS_MASK) == 0);
 	/* setter and/or getter may be NULL */
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/* force the property to 'undefined' to create a slot for it */
 	duk_push_undefined(ctx);
@@ -3375,7 +3375,7 @@ int duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	rc = get_own_property_desc(thr, obj, key, &pd, 1);  /* push_value = 1 */
 	if (!rc) {
@@ -3571,7 +3571,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(ctx != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	obj = duk_require_hobject(ctx, 0);
 	(void) duk_to_string(ctx, 1);
@@ -3735,7 +3735,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		}
 
 		/* remaining actual steps are carried out if standard DefineOwnProperty succeeds */
-	} else if (arr_idx != NO_ARRAY_INDEX) {
+	} else if (arr_idx != DUK__NO_ARRAY_INDEX) {
 		/* FIXME: any chance of unifying this with the 'length' key handling? */
 
 		/* E5 Section 15.4.5.1, step 4 */
@@ -3807,7 +3807,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 				new_flags |= DUK_PROPDESC_FLAG_CONFIGURABLE;
 			}
 
-			if (arr_idx != NO_ARRAY_INDEX && DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
+			if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
 				DUK_DDDPRINT("accessor cannot go to array part, abandon array");
 				abandon_array_checked(thr, obj);
 			}
@@ -3849,7 +3849,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 				DUK_TVAL_SET_UNDEFINED_ACTUAL(&tv);  /* default value */
 			}
 
-			if (arr_idx != NO_ARRAY_INDEX && DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
+			if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
 				if (new_flags == DUK_PROPDESC_FLAGS_WEC) {
 #if 0
 					DUK_DDDPRINT("new data property attributes match array defaults, attempt to write to array part");
@@ -4263,7 +4263,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDDPRINT("defineProperty successful, pending array length update to: %d", arridx_new_array_length);
 
 			/* Note: reuse 'curr' */
-			rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), NO_ARRAY_INDEX, &curr, 0);
+			rc = get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, &curr, 0);
 			DUK_UNREF(rc);
 			DUK_ASSERT(rc != 0);
 			DUK_ASSERT(curr.e_idx >= 0);
@@ -4317,7 +4317,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 				goto fail_array_length_partial;
 			}
 		}
-	} else if (arr_idx != NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
+	} else if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
 		duk_hobject *map;
 		duk_hobject *varenv;
 
@@ -4541,7 +4541,7 @@ void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, i
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(obj != NULL);
 
-	ASSERT_VALSTACK_SPACE(thr, VALSTACK_SPACE);
+	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
 	 *  Abandon array part because all properties must become non-configurable.
@@ -4649,10 +4649,10 @@ int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) 
 
 /* Undefine local defines */
 
-#undef NO_ARRAY_INDEX
-#undef HASH_INITIAL
-#undef HASH_PROBE_STEP
-#undef HASH_UNUSED
-#undef HASH_DELETED
-#undef VALSTACK_SPACE
+#undef DUK__NO_ARRAY_INDEX
+#undef DUK__HASH_INITIAL
+#undef DUK__HASH_PROBE_STEP
+#undef DUK__HASH_UNUSED
+#undef DUK__HASH_DELETED
+#undef DUK__VALSTACK_SPACE
 
