@@ -398,7 +398,11 @@ void *duk_heap_mem_alloc_checked(duk_hthread *thr, size_t size) {
 
 	res = DUK_ALLOC(thr->heap, size);
 	if (!res) {
+#ifdef DUK_USE_VERBOSE_ERRORS
+		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory alloc failed");
+#else
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory alloc failed");
+#endif
 	}
 	return res;
 }
@@ -415,7 +419,11 @@ void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, size_t size) {
 
 	res = DUK_ALLOC(thr->heap, size);
 	if (!res) {
+#ifdef DUK_USE_VERBOSE_ERRORS
+		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory alloc failed");
+#else
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory alloc failed");
+#endif
 	}
 	/* assume memset with zero size is OK */
 	DUK_MEMSET(res, 0, size);
@@ -435,7 +443,11 @@ void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize) 
 
 	res = DUK_REALLOC(thr->heap, ptr, newsize);
 	if (!res) {
+#ifdef DUK_USE_VERBOSE_ERRORS
+		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
+#else
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
+#endif
 	}
 	return res;
 }
@@ -451,7 +463,11 @@ void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb,
 
 	res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
 	if (!res) {
+#ifdef DUK_USE_VERBOSE_ERRORS
+		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
+#else
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
+#endif
 	}
 	return res;
 }
