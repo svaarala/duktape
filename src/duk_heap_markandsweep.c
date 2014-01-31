@@ -443,7 +443,7 @@ static void clear_refzero_list_flags(duk_heap *heap) {
 
 static void sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep) {
 	duk_hstring *h;
-	int i;
+	duk_uint_fast32_t i;
 #ifdef DUK_USE_DEBUG
 	duk_size_t count_free = 0;
 #endif

@@ -121,7 +121,7 @@ static int get_min_grow_a(int a_size) {
 
 /* Count actually used entry part entries (non-NULL keys). */
 static int count_used_e_keys(duk_hobject *obj) {
-	int i;
+	duk_uint_fast32_t i;
 	int n = 0;
 	duk_hstring **e;
 
@@ -262,7 +262,7 @@ static void realloc_props(duk_hthread *thr,
 	duk_tval *new_a;
 	duk_uint32_t *new_h;
 	duk_uint32_t new_e_used;
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -4534,7 +4534,7 @@ int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags)
  */
 
 void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, int freeze) {
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -4588,7 +4588,7 @@ void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, i
  */
 
 int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) {
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_ASSERT(obj != NULL);
 
