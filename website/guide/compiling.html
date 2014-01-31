@@ -241,6 +241,37 @@ The table below summarizes the available options, in no particular order:</p>
 </tbody>
 </table>
 
+<h2>Suggested feature options for some environments</h2>
+
+<h3 id="timing-sensitive-options">Timing sensitive applications (e.g. games)</h3>
+
+<ul>
+<li>Use the default memory management settings (reference counting and
+    mark-and-sweep) but enable <code>DUK_OPT_NO_VOLUNTARY_GC</code> to
+    eliminate mark-and-sweep pauses.  Use explicit GC calls (either
+    <code>duk_gc()</code> from C or <code>Duktape.gc()</code> from
+    Ecmascript) when possible to collect circular references.</li>
+</ul>
+
+<h3 id="memory-constrained-options">Memory constrained applications</h3>
+
+<ul>
+<li>Use the default memory management settings: although reference counting
+    increases heap header size, it also reduces memory usage fluctuation
+    which is often more important than absolute footprint.</li>
+<li>Reduce error handling footprint with one or more of:
+    <code>DUK_OPT_NO_AUGMENT_ERRORS</code>,
+    <code>DUK_OPT_NO_TRACEBACKS</code>,
+    <code>DUK_OPT_NO_VERBOSE_ERRORS</code>,
+    <code>DUK_OPT_NO_PC2LINE</code>.</li>
+<li>If you don't need the Duktape-specific additional JSONX/JSONC formats,
+    use both <code>DUK_OPT_NO_JSONX</code> and <code>DUK_OPT_NO_JSONC</code>.</li>
+<li>If you don't need regexp support, use <code>DUK_OPT_NO_REGEXP_SUPPORT</code>.</li>
+<li>Duktape debug code uses a large, static temporary buffer for formatting debug
+    log lines.  Use e.g. <code class="nobreak">-DDUK_OPT_DEBUG_BUFSIZE=2048</code> to reduce
+    this overhead.</li>
+</ul>
+
 <h2>DUK_OPT_HAVE_CUSTOM_H and duk_custom.h</h2>
 
 <p>Normally you define <code>DUK_OPT_xxx</code> feature options and the

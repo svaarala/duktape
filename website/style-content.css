@@ -438,3 +438,13 @@ ul.breakdown li {
 	}
 }
 
+/*
+ *  Prevent breaking a span
+ */
+
+.nobreak {
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	hyphens: none;
+}
+
