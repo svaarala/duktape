@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.9
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-12-19 18:05:19.889280 Z
 references: []
 
@@ -20,3 +20,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
+- - 2014-01-31 22:53:19.077942 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - Now clean in gcc and clang, including assertions and debug logs.
