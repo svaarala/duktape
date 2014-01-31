@@ -55,7 +55,8 @@ int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, thr->strs[stridx]);
@@ -111,7 +112,8 @@ int duk_put_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, thr->strs[stridx]);
@@ -163,7 +165,8 @@ int duk_del_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, thr->strs[stridx]);
@@ -212,7 +215,8 @@ int duk_has_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, thr->strs[stridx]);
@@ -258,7 +262,8 @@ void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, i
 	duk_hstring *key;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj = duk_require_hobject(ctx, obj_index);
 	DUK_ASSERT(obj != NULL);
@@ -277,8 +282,10 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int s
 	duk_hstring *key;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
-	DUK_ASSERT(builtin_idx >= 0 && builtin_idx < DUK_NUM_BUILTINS);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_DISABLE(builtin_idx >= 0);
+	DUK_ASSERT(builtin_idx < DUK_NUM_BUILTINS);
 
 	obj = duk_require_hobject(ctx, obj_index);
 	DUK_ASSERT(obj != NULL);

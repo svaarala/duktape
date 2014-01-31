@@ -256,14 +256,14 @@ static int resize_valstack(duk_context *ctx, size_t new_size) {
 #endif
 	duk_tval *new_valstack;
 	duk_tval *p;
-	size_t new_alloc_size;
+	duk_size_t new_alloc_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
-	DUK_ASSERT(thr->valstack_top - thr->valstack <= new_size);  /* can't resize below 'top' */
+	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) <= new_size);  /* can't resize below 'top' */
 
 	/* get pointer offsets for tweaking below */
 	old_bottom_offset = (((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack));
@@ -2451,7 +2451,8 @@ static void push_this_helper(duk_context *ctx, int flags) {
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0 && thr->callstack_top <= thr->callstack_size);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
+	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
 	if (thr->callstack_top == 0) {
 		if (flags & DUK__PUSH_THIS_FLAG_CHECK_COERC) {
@@ -2518,7 +2519,8 @@ void duk_push_current_function(duk_context *ctx) {
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0 && thr->callstack_top <= thr->callstack_size);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
+	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
 	if (thr->callstack_top == 0) {
 		duk_push_undefined(ctx);

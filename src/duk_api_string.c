@@ -187,8 +187,10 @@ void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_
 		start_offset = end_offset;
 	}
 
-	DUK_ASSERT(start_offset >= 0 && start_offset <= end_offset && start_offset <= DUK_HSTRING_GET_CHARLEN(h));
-	DUK_ASSERT(end_offset >= 0 && end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
+	DUK_ASSERT_DISABLE(start_offset >= 0);
+	DUK_ASSERT(start_offset <= end_offset && start_offset <= DUK_HSTRING_GET_CHARLEN(h));
+	DUK_ASSERT_DISABLE(end_offset >= 0);
+	DUK_ASSERT(end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
 
 	start_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, start_offset);
 	end_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, end_offset);

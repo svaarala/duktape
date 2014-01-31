@@ -449,7 +449,7 @@ int duk_is_constructor_call(duk_context *ctx) {
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	if (thr->callstack_top <= 0) {
 		return 0;
@@ -465,7 +465,7 @@ int duk_is_strict_call(duk_context *ctx) {
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	if (thr->callstack_top <= 0) {
 		return 0;
@@ -486,7 +486,7 @@ int duk_get_magic(duk_context *ctx) {
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	if (thr->callstack_top <= 0) {
 		return 0;
