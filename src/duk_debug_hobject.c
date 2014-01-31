@@ -127,7 +127,7 @@ static char get_catcher_summary_char(duk_catcher *catcher) {
 }
 
 void duk_debug_dump_hobject(duk_hobject *obj) {
-	int i;
+	duk_uint_fast32_t i;
 	const char *str_empty = "";
 	const char *str_excl = "!";
 
@@ -267,10 +267,10 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		DUK_DEBUG_SUMMARY_CHAR('[');
 		p = thr->valstack;
 		while (p <= thr->valstack_end) {
-			i = (int) (p - thr->valstack);
+			i = (duk_uint_fast32_t) (p - thr->valstack);
 			if (thr->callstack &&
 			    thr->callstack_top > 0 &&
-			    i == (thr->callstack + thr->callstack_top - 1)->idx_bottom) {
+			    i == (duk_size_t) (thr->callstack + thr->callstack_top - 1)->idx_bottom) {
 				DUK_DEBUG_SUMMARY_CHAR('>');
 			}
 			if (p == thr->valstack_top) {
@@ -407,7 +407,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 }
 
 void duk_debug_dump_callstack(duk_hthread *thr) {
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_DPRINT("=== hthread %p callstack: %d entries ===",
 	           (void *) thr,

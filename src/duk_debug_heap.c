@@ -6,17 +6,17 @@
 
 #ifdef DUK_USE_DEBUG
 
-static void sanitize_snippet(char *buf, int buf_size, duk_hstring *str) {
-	int i;
-	int nchars;
-	int maxchars;
+static void sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
+	duk_size_t i;
+	duk_size_t nchars;
+	duk_size_t maxchars;
 	duk_uint8_t *data;
 
 	DUK_MEMSET(buf, 0, buf_size);
 
-	maxchars = buf_size - 1;
+	maxchars = (duk_size_t) (buf_size - 1);
 	data = DUK_HSTRING_GET_DATA(str);
-	nchars = (str->blen < maxchars ? str->blen : maxchars);
+	nchars = ((duk_size_t) str->blen < maxchars ? (duk_size_t) str->blen : maxchars);
 	for (i = 0; i < nchars; i++) {
 		char c = (char) data[i];
 		if (c < 0x20 || c > 0x7e) {

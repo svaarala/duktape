@@ -162,9 +162,9 @@ static void print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 	}
 
 	if (st->binary) {
-		int i;
+		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) '[');
-		for (i = 0; i < sizeof(*h); i++) {
+		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)h)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) ']');
@@ -209,9 +209,9 @@ static void print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string
 	}
 
 	if (st->binary) {
-		int i;
+		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) '[');
-		for (i = 0; i < sizeof(*h); i++) {
+		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)h)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) ']');
@@ -314,7 +314,7 @@ static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
 
 static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 	duk_fixedbuffer *fb = st->fb;
-	int i;
+	duk_uint_fast32_t i;
 	duk_tval *tv;
 	duk_hstring *key;
 	int first = 1;
@@ -351,7 +351,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 		return;
 	}
 
-	for (i = 0; i < st->loop_stack_index; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) st->loop_stack_index; i++) {
 		if (st->loop_stack[i] == h) {
 			duk_fb_sprintf(fb, "%sLOOP:%p%s", brace1, (void *) h, brace2);
 			return;
@@ -376,7 +376,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 	duk_fb_put_cstring(fb, brace1);
 
 	if (h->p) {
-		int a_limit;
+		duk_uint32_t a_limit;
 
 		a_limit = h->a_size;
 		if (st->internal) {
@@ -666,9 +666,9 @@ static void print_tval(duk_dprint_state *st, duk_tval *tv) {
 	}
 
 	if (st->binary) {
-		int i;
+		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) '[');
-		for (i = 0; i < sizeof(*tv); i++) {
+		for (i = 0; i < (duk_size_t) sizeof(*tv); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)tv)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) ']');
@@ -848,10 +848,11 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				break;
 			} else if (!got_exclamation && strchr(DUK__ALLOWED_STANDARD_SPECIFIERS, (int) ch)) {
 				char fmtbuf[DUK__MAX_FORMAT_TAG_LENGTH];
-				int fmtlen;
+				duk_size_t fmtlen;
 
-				fmtlen = p - p_begfmt;
-				if (fmtlen < 0 || fmtlen >= sizeof(fmtbuf)) {
+				DUK_ASSERT(p >= p_begfmt);
+				fmtlen = (duk_size_t) (p - p_begfmt);
+				if (fmtlen >= sizeof(fmtbuf)) {
 					/* format is too large, abort */
 					goto error;
 				}

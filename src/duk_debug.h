@@ -90,7 +90,7 @@
 
 #define DUK_DEBUG_SUMMARY_CHAR(ch)  do { \
 		duk_debug_summary_buf[duk_debug_summary_idx++] = (ch); \
-		if (duk_debug_summary_idx >= sizeof(duk_debug_summary_buf) - 1) { \
+		if ((duk_size_t) duk_debug_summary_idx >= (duk_size_t) (sizeof(duk_debug_summary_buf) - 1)) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
 			DUK_DPRINT("    %s", duk_debug_summary_buf); \
 			DUK_DEBUG_SUMMARY_INIT(); \

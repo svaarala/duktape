@@ -39,10 +39,10 @@ void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 		int res = DUK_VSNPRINTF((char *) (fb->buffer + fb->offset), avail, fmt, ap);
 		if (res < 0) {
 			/* error */
-		} else if (res >= avail) {
+		} else if ((duk_uint32_t) res >= avail) {
 			/* (maybe) truncated */
 			fb->offset += avail;
-			if (res > avail) {
+			if ((duk_uint32_t) res > avail) {
 				/* actual chars dropped (not just NUL term) */
 				fb->truncated = 1;
 			}
