@@ -176,7 +176,8 @@ duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_magic(ctx);
 	one_arg_func fun;
 
-	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(one_arg_funcs) / sizeof(one_arg_func));
+	DUK_ASSERT(fun_idx >= 0);
+	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(one_arg_funcs) / sizeof(one_arg_func)));
 	fun = one_arg_funcs[fun_idx];
 	/* FIXME: double typing here: double or duk_double_t? */
 	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0)));
@@ -187,7 +188,8 @@ duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_magic(ctx);
 	two_arg_func fun;
 
-	DUK_ASSERT(fun_idx >= 0 && fun_idx < sizeof(two_arg_funcs) / sizeof(two_arg_func));
+	DUK_ASSERT(fun_idx >= 0);
+	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(two_arg_funcs) / sizeof(two_arg_func)));
 	fun = two_arg_funcs[fun_idx];
 	/* FIXME: double typing here: double or duk_double_t? */
 	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));

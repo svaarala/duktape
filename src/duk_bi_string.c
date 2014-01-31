@@ -151,7 +151,8 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 
 	boff = duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
 	DUK_DDDPRINT("charCodeAt: pos=%d -> boff=%d, str=%!O", pos, boff, h);
-	DUK_ASSERT(boff >= 0 && boff < DUK_HSTRING_GET_BYTELEN(h));
+	DUK_ASSERT_DISABLE(boff >= 0);
+	DUK_ASSERT(boff < DUK_HSTRING_GET_BYTELEN(h));
 	p_start = DUK_HSTRING_GET_DATA(h);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h);
 	p = p_start + boff;

@@ -120,10 +120,10 @@ void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(offset >= 0);  /* unsigned, so always true */
+	DUK_ASSERT_DISABLE(offset >= 0);  /* unsigned, so always true */
 	DUK_ASSERT(offset <= DUK_HBUFFER_GET_SIZE(buf));  /* equality is OK (= append) */
 	DUK_ASSERT(data != NULL);
-	DUK_ASSERT(length >= 0);  /* unsigned, so always true */
+	DUK_ASSERT_DISABLE(length >= 0);  /* unsigned, so always true */
 
 	if (length == 0) {
 		return;
@@ -218,7 +218,8 @@ size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(codepoint >= 0 && codepoint <= 0x10ffff);  /* if not in this range, results are garbage (but no crash) */
+	DUK_ASSERT_DISABLE(codepoint >= 0);
+	DUK_ASSERT(codepoint <= 0x10ffff);  /* if not in this range, results are garbage (but no crash) */
 
 	/* Intentionally no fast path: insertion is not that central */
 
@@ -323,7 +324,8 @@ size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(codepoint >= 0 && codepoint <= 0x10ffff);  /* if not in this range, results are garbage (but no crash) */
+	DUK_ASSERT_DISABLE(codepoint >= 0);
+	DUK_ASSERT(codepoint <= 0x10ffff);  /* if not in this range, results are garbage (but no crash) */
 
 	if (codepoint < 0x80 && DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) > 0) {
 		/* fast path: ASCII and there is spare */
@@ -369,9 +371,9 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(offset >= 0);                                       /* always true */
+	DUK_ASSERT_DISABLE(offset >= 0);                               /* always true */
 	DUK_ASSERT(offset <= DUK_HBUFFER_GET_SIZE(buf));               /* allow equality */
-	DUK_ASSERT(length >= 0);                                       /* always true */
+	DUK_ASSERT_DISABLE(length >= 0);                               /* always true */
 	DUK_ASSERT(offset + length <= DUK_HBUFFER_GET_SIZE(buf));      /* allow equality */
 
 	if (length == 0) {
@@ -406,11 +408,11 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(dst_offset >= 0);                                   /* always true */
+	DUK_ASSERT_DISABLE(dst_offset >= 0);                           /* always true */
 	DUK_ASSERT(dst_offset <= DUK_HBUFFER_GET_SIZE(buf));           /* allow equality */
-	DUK_ASSERT(src_offset >= 0);                                   /* always true */
+	DUK_ASSERT_DISABLE(src_offset >= 0);                           /* always true */
 	DUK_ASSERT(src_offset <= DUK_HBUFFER_GET_SIZE(buf));           /* allow equality */
-	DUK_ASSERT(length >= 0);                                       /* always true */
+	DUK_ASSERT_DISABLE(length >= 0);                               /* always true */
 	DUK_ASSERT(src_offset + length <= DUK_HBUFFER_GET_SIZE(buf));  /* allow equality */
 
 	if (length == 0) {
@@ -477,9 +479,9 @@ void duk_hbuffer_append_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-	DUK_ASSERT(src_offset >= 0);                                   /* always true */
+	DUK_ASSERT_DISABLE(src_offset >= 0);                           /* always true */
 	DUK_ASSERT(src_offset <= DUK_HBUFFER_GET_SIZE(buf));           /* allow equality */
-	DUK_ASSERT(length >= 0);                                       /* always true */
+	DUK_ASSERT_DISABLE(length >= 0);                               /* always true */
 	DUK_ASSERT(src_offset + length <= DUK_HBUFFER_GET_SIZE(buf));  /* allow equality */
 
 	duk_hbuffer_insert_slice(thr,

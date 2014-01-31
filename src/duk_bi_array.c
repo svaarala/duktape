@@ -875,8 +875,8 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 			end = len + end;
 		}
 	}
-	DUK_ASSERT(start >= 0 && start <= len);
-	DUK_ASSERT(end >= 0 && end <= len);
+	DUK_ASSERT(start >= 0 && (duk_uint32_t) start <= len);
+	DUK_ASSERT(end >= 0 && (duk_uint32_t) end <= len);
 
 	idx = 0;
 	for (i = start; i < end; i++) {
