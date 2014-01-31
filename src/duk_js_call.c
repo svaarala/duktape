@@ -543,9 +543,9 @@ int duk_handle_call(duk_hthread *thr,
                     int call_flags,
                     duk_hobject *errhandler) {  /* borrowed */
 	duk_context *ctx = (duk_context *) thr;
-	int entry_valstack_bottom_index;
-	int entry_callstack_top;
-	int entry_catchstack_top;
+	duk_size_t entry_valstack_bottom_index;
+	duk_size_t entry_callstack_top;
+	duk_size_t entry_catchstack_top;
 	int entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint8_t entry_thread_state;
@@ -1375,9 +1375,9 @@ int duk_handle_safe_call(duk_hthread *thr,
                          int num_stack_rets,
                          duk_hobject *errhandler) {
 	duk_context *ctx = (duk_context *) thr;
-	int entry_valstack_bottom_index;
-	int entry_callstack_top;
-	int entry_catchstack_top;
+	duk_size_t entry_valstack_bottom_index;
+	duk_size_t entry_callstack_top;
+	duk_size_t entry_catchstack_top;
 	int entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint8_t entry_thread_state;
@@ -1568,8 +1568,8 @@ int duk_handle_safe_call(duk_hthread *thr,
 	/* we're running inside the caller's activation, so no change in call/catch stack or valstack bottom */
 	DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 	DUK_ASSERT(thr->catchstack_top == entry_catchstack_top);
-	DUK_ASSERT(thr->valstack_bottom - thr->valstack == entry_valstack_bottom_index);
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
+	DUK_ASSERT((duk_size_t) (thr->valstack_bottom - thr->valstack) == entry_valstack_bottom_index);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
@@ -1691,12 +1691,13 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 */
 #ifdef DUK_USE_ASSERTIONS
 	if (call_flags & DUK_CALL_FLAG_IS_TAILCALL) {
-		int our_callstack_index;
-		int i;
+		duk_size_t our_callstack_index;
+		duk_size_t i;
 
 		DUK_ASSERT(thr->callstack_top >= 1);
 		our_callstack_index = thr->callstack_top - 1;
-		DUK_ASSERT(our_callstack_index >= 0 && our_callstack_index < thr->callstack_size);
+		DUK_ASSERT_DISABLE(our_callstack_index >= 0);
+		DUK_ASSERT(our_callstack_index < thr->callstack_size);
 		DUK_ASSERT(thr->callstack[our_callstack_index].func != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(thr->callstack[our_callstack_index].func));
 
