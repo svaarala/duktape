@@ -549,9 +549,9 @@ int duk_handle_call(duk_hthread *thr,
 	int entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint8_t entry_thread_state;
-	int need_setjmp;
-	duk_jmpbuf *old_jmpbuf_ptr = NULL;
-	duk_hobject *old_errhandler = NULL;
+	volatile int need_setjmp;
+	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
+	duk_hobject * volatile old_errhandler = NULL;   /* ptr is volatile (not the target) */
 	int idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
 	int idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	int nargs;            /* # argument registers target function wants (< 0 => "as is") */
