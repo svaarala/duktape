@@ -665,13 +665,14 @@ static void handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
 
 static int handle_longjmp(duk_hthread *thr,
                           duk_hthread *entry_thread,
-                          int entry_callstack_top) {
+                          duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
-	int entry_callstack_index;
+	duk_size_t entry_callstack_index;
 	int retval = DUK__LONGJMP_RESTART;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(entry_thread != NULL);
+	DUK_ASSERT(entry_callstack_top > 0);  /* guarantees entry_callstack_top - 1 >= 0 */
 
 	entry_callstack_index = entry_callstack_top - 1;
 
@@ -925,7 +926,7 @@ static int handle_longjmp(duk_hthread *thr,
 		duk_tval *tv1;
 		duk_hthread *resumer;
 		duk_catcher *cat;
-		int orig_callstack_index;
+		duk_size_t orig_callstack_index;
 
 		DUK_ASSERT(thr != NULL);
 		DUK_ASSERT(thr->callstack_top >= 1);
@@ -935,6 +936,7 @@ static int handle_longjmp(duk_hthread *thr,
 		/* FIXME: does not work if thr->catchstack is allocated but lowest pointer */
 
 		cat = thr->catchstack + thr->catchstack_top - 1;  /* may be < thr->catchstack initially */
+		DUK_ASSERT(thr->callstack_top > 0);  /* ensures callstack_top - 1 >= 0 */
 		orig_callstack_index = thr->callstack_top - 1;
 
 		while (cat >= thr->catchstack) {
@@ -1047,17 +1049,17 @@ static int handle_longjmp(duk_hthread *thr,
 		 */
 
 		duk_catcher *cat;
-		int orig_callstack_index;
-		int lj_label;
+		duk_size_t orig_callstack_index;
+		duk_uint_t lj_label;
 
 		cat = thr->catchstack + thr->catchstack_top - 1;
 		orig_callstack_index = cat->callstack_index;
 
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(&thr->heap->lj.value1));
-		lj_label = DUK_TVAL_GET_NUMBER(&thr->heap->lj.value1);
+		lj_label = (duk_uint_t) DUK_TVAL_GET_NUMBER(&thr->heap->lj.value1);
 
 		DUK_DDDPRINT("handling break/continue with label=%d, callstack index=%d",
-		             lj_label, cat->callstack_index);
+		             (int) lj_label, (int) cat->callstack_index);
 
 		while (cat >= thr->catchstack) {
 			if (cat->callstack_index != orig_callstack_index) {
@@ -1079,7 +1081,7 @@ static int handle_longjmp(duk_hthread *thr,
 				goto wipe_and_return;
 			}
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL &&
-			    DUK_CAT_GET_LABEL(cat) == lj_label) {
+			    (duk_uint_t) DUK_CAT_GET_LABEL(cat) == lj_label) {
 				/* found label */
 				handle_label(thr,
 				             cat - thr->catchstack);
@@ -1377,7 +1379,7 @@ static void duk_executor_interrupt(duk_hthread *thr) {
 
 void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	/* entry level info */
-	int entry_callstack_top;
+	duk_size_t entry_callstack_top;
 	int entry_call_recursion_depth;
 	duk_jmpbuf *entry_jmpbuf_ptr;
 

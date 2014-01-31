@@ -166,12 +166,13 @@ struct duk_activation {
 
 /* Note: it's nice if size is 2^N (not 4x4 = 16 bytes on 32 bit) */
 struct duk_catcher {
-	int flags;               /* type and control flags */
-	int callstack_index;     /* callstack index of related activation */
-	int pc_base;             /* resume execution from pc_base or pc_base+1 */
-	int idx_base;            /* idx_base and idx_base+1 get completion value and type */
-	duk_hstring *h_varname;  /* borrowed reference to catch variable name (or NULL if none) */
-	                         /* (reference is valid as long activation exists) */
+	/* FIXME: typing */
+	duk_size_t callstack_index;     /* callstack index of related activation */
+	int flags;                      /* type and control flags */
+	int pc_base;                    /* resume execution from pc_base or pc_base+1 */
+	int idx_base;                   /* idx_base and idx_base+1 get completion value and type */
+	duk_hstring *h_varname;         /* borrowed reference to catch variable name (or NULL if none) */
+	                                /* (reference is valid as long activation exists) */
 };
 
 struct duk_hthread {
@@ -188,9 +189,9 @@ struct duk_hthread {
 	duk_uint8_t unused2;
 
 	/* sanity limits */
-	size_t valstack_max;
-	size_t callstack_max;
-	size_t catchstack_max;
+	duk_size_t valstack_max;
+	duk_size_t callstack_max;
+	duk_size_t catchstack_max;
 
 	/* XXX: valstack, callstack, and catchstack are currently assumed
 	 * to have non-NULL pointers.  Relaxing this would not lead to big
@@ -205,14 +206,14 @@ struct duk_hthread {
 
 	/* call stack */
 	duk_activation *callstack;
-	size_t callstack_size;			/* allocation size */
-	size_t callstack_top;			/* next to use, highest used is top - 1 */
-	size_t callstack_preventcount;		/* number of activation records in callstack preventing a yield */
+	duk_size_t callstack_size;		/* allocation size */
+	duk_size_t callstack_top;		/* next to use, highest used is top - 1 */
+	duk_size_t callstack_preventcount;	/* number of activation records in callstack preventing a yield */
 
 	/* catch stack */
 	duk_catcher *catchstack;
-	size_t catchstack_size;			/* allocation size */
-	size_t catchstack_top;			/* next to use, highest used is top - 1 */
+	duk_size_t catchstack_size;		/* allocation size */
+	duk_size_t catchstack_top;		/* next to use, highest used is top - 1 */
 
 	/* yield/resume book-keeping */
 	duk_hthread *resumer;			/* who resumed us (if any) */

@@ -24,12 +24,14 @@
 
 /* check that there is space for at least one new entry */
 void duk_hthread_callstack_grow(duk_hthread *thr) {
-	int old_size;
-	int new_size;
+	duk_size_t old_size;
+	duk_size_t new_size;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0 &&
-	           thr->callstack_size >= thr->callstack_top);
+#if 0
+	DUK_ASSERT(thr->callstack_top >= 0);   /* avoid warning (unsigned) */
+#endif
+	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
 
 	if (thr->callstack_top < thr->callstack_size) {
 		return;
@@ -57,12 +59,14 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 }
 
 void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
-	int new_size;
+	duk_size_t new_size;
 	duk_activation *p;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_top >= 0 &&
-	           thr->callstack_size >= thr->callstack_top);
+#if 0
+	DUK_ASSERT(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
+#endif
+	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
 
 	if (thr->callstack_size - thr->callstack_top < DUK_CALLSTACK_SHRINK_THRESHOLD) {
 		return;
@@ -91,7 +95,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 }
 
 void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
-	int idx;
+	int idx;  /* FIXME: typing of idx and new_top */
 
 	DUK_DDDPRINT("unwind callstack top of thread %p from %d to %d",
 	             (void *) thr,
@@ -249,12 +253,14 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 }
 
 void duk_hthread_catchstack_grow(duk_hthread *thr) {
-	int old_size;
-	int new_size;
+	duk_size_t old_size;
+	duk_size_t new_size;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->catchstack_top >= 0 &&
-	           thr->catchstack_size >= thr->catchstack_top);
+#if 0
+	DUK_ASSERT(thr->catchstack_top);  /* avoid warning (unsigned) */
+#endif
+	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
 
 	if (thr->catchstack_top < thr->catchstack_size) {
 		return;
@@ -282,12 +288,14 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 }
 
 void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
-	int new_size;
+	duk_size_t new_size;
 	duk_catcher *p;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->catchstack_top >= 0 &&
-	           thr->catchstack_size >= thr->catchstack_top);
+#if 0
+	DUK_ASSERT(thr->catchstack_top >= 0);  /* avoid warning (unsigned) */
+#endif
+	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
 
 	if (thr->catchstack_size - thr->catchstack_top < DUK_CATCHSTACK_SHRINK_THRESHOLD) {
 		return;
@@ -316,7 +324,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 }
 
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
-	int idx;
+	int idx;  /* FIXME: typing of 'new_top' and 'idx' */
 
 	DUK_DDDPRINT("unwind catchstack top of thread %p from %d to %d",
 	             (void *) thr,
