@@ -1665,8 +1665,6 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 
 		js_ctx->idx_reviver = idx_reviver;
 
-		DUK_ASSERT_TOP(ctx, 3);
-
 		duk_push_object(ctx);
 		duk_dup(ctx, -2);  /* -> [ ... val root val ] */
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */

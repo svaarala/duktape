@@ -3441,7 +3441,6 @@ static void normalize_property_descriptor(duk_context *ctx) {
 	int target_top;
 
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(duk_is_object(ctx, -1));
 
 	/* must be an object, otherwise TypeError (E5.1 Section 8.10.5, step 1) */
 	(void) duk_require_hobject(ctx, -1);
