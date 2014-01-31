@@ -120,6 +120,11 @@
 
 #endif  /* DUK_USE_ASSERTIONS */
 
+/* this variant is used when an assert would generate a compile warning by
+ * being always true (e.g. >= 0 comparison for an unsigned value
+ */
+#define DUK_ASSERT_DISABLE(x)  do { /* assertion disabled */ } while(0)
+
 /*
  *  Final panic handler macro (unless defined already)
  */
@@ -193,7 +198,8 @@
 #define DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)    /* no refcount check */
 #endif
 
-#define DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT(duk_get_top((ctx)) == (n))
+/* FIXME: fix typing to match duk_get_top() eventual return value type */
+#define DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT((duk_int_t) duk_get_top((ctx)) == (duk_int_t) (n))
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_PACKED_TVAL)
 #define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  do { \
