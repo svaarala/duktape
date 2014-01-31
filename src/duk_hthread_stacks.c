@@ -28,9 +28,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 	duk_size_t new_size;
 
 	DUK_ASSERT(thr != NULL);
-#if 0
-	DUK_ASSERT(thr->callstack_top >= 0);   /* avoid warning (unsigned) */
-#endif
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);   /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
 
 	if (thr->callstack_top < thr->callstack_size) {
@@ -63,9 +61,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	duk_activation *p;
 
 	DUK_ASSERT(thr != NULL);
-#if 0
-	DUK_ASSERT(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
-#endif
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
 
 	if (thr->callstack_size - thr->callstack_top < DUK_CALLSTACK_SHRINK_THRESHOLD) {
@@ -105,7 +101,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
 	DUK_ASSERT(new_top >= 0);
-	DUK_ASSERT(new_top <= thr->callstack_top);  /* cannot grow */
+	DUK_ASSERT((duk_size_t) new_top <= thr->callstack_top);  /* cannot grow */
 
 	/*
 	 *  The loop below must avoid issues with potential callstack
@@ -127,7 +123,8 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 #endif
 
 		idx--;
-		DUK_ASSERT(idx >= 0 && idx < thr->callstack_size);  /* true, despite side effect resizes */
+		DUK_ASSERT(idx >= 0);
+		DUK_ASSERT((duk_size_t) idx < thr->callstack_size);  /* true, despite side effect resizes */
 
 		p = &thr->callstack[idx];
 		DUK_ASSERT(p->func != NULL);
@@ -257,9 +254,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	duk_size_t new_size;
 
 	DUK_ASSERT(thr != NULL);
-#if 0
-	DUK_ASSERT(thr->catchstack_top);  /* avoid warning (unsigned) */
-#endif
+	DUK_ASSERT_DISABLE(thr->catchstack_top);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
 
 	if (thr->catchstack_top < thr->catchstack_size) {
@@ -292,9 +287,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	duk_catcher *p;
 
 	DUK_ASSERT(thr != NULL);
-#if 0
-	DUK_ASSERT(thr->catchstack_top >= 0);  /* avoid warning (unsigned) */
-#endif
+	DUK_ASSERT_DISABLE(thr->catchstack_top >= 0);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
 
 	if (thr->catchstack_size - thr->catchstack_top < DUK_CATCHSTACK_SHRINK_THRESHOLD) {
@@ -334,7 +327,7 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
 	DUK_ASSERT(new_top >= 0);
-	DUK_ASSERT(new_top <= thr->catchstack_top);  /* cannot grow */
+	DUK_ASSERT((duk_size_t) new_top <= thr->catchstack_top);  /* cannot grow */
 
 	/*
 	 *  Since there are no references in the catcher structure,
@@ -350,7 +343,8 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 		duk_hobject *env;
 
 		idx--;
-		DUK_ASSERT(idx >= 0 && idx < thr->catchstack_size);
+		DUK_ASSERT(idx >= 0);
+		DUK_ASSERT((duk_size_t) idx < thr->catchstack_size);
 
 		p = &thr->catchstack[idx];
 

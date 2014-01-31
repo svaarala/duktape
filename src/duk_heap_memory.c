@@ -48,7 +48,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	int i;
 
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(size >= 0);
+	DUK_ASSERT_DISABLE(size >= 0);
 
 	/*
 	 *  Voluntary periodic GC (if enabled)
@@ -136,7 +136,7 @@ void *duk_heap_mem_alloc_zeroed(duk_heap *heap, size_t size) {
 	void *res;
 
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(size >= 0);
+	DUK_ASSERT_DISABLE(size >= 0);
 
 	res = DUK_ALLOC(heap, size);
 	if (res) {
@@ -158,7 +158,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
-	DUK_ASSERT(newsize >= 0);
+	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	/*
 	 *  Voluntary periodic GC (if enabled)
@@ -251,7 +251,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 	int i;
 
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(newsize >= 0);
+	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	/*
 	 *  Voluntary periodic GC (if enabled)
@@ -394,7 +394,7 @@ void *duk_heap_mem_alloc_checked(duk_hthread *thr, size_t size) {
 	void *res;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(size >= 0);
+	DUK_ASSERT_DISABLE(size >= 0);
 
 	res = DUK_ALLOC(thr->heap, size);
 	if (!res) {
@@ -415,7 +415,7 @@ void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, size_t size) {
 	void *res;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(size >= 0);
+	DUK_ASSERT_DISABLE(size >= 0);
 
 	res = DUK_ALLOC(thr->heap, size);
 	if (!res) {
@@ -439,7 +439,7 @@ void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, size_t newsize) 
 
 	DUK_ASSERT(thr != NULL);
 	/* ptr may be NULL */
-	DUK_ASSERT(newsize >= 0);
+	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	res = DUK_REALLOC(thr->heap, ptr, newsize);
 	if (!res) {
@@ -459,7 +459,7 @@ void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb,
 #endif
 	void *res;
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(newsize >= 0);
+	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
 	if (!res) {

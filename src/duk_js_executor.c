@@ -2087,7 +2087,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			DUK_DDDPRINT("CLOSURE to target register %d, fnum %d (count %d)",
 			             a, bc, DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
 
-			DUK_ASSERT(bc >= 0 && bc < DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
+			DUK_ASSERT(bc >= 0);
+			DUK_ASSERT(bc < (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
 			fun_temp = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(fun)[bc];
 			DUK_ASSERT(fun_temp != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(fun_temp));
@@ -2665,7 +2666,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat = &thr->catchstack[thr->catchstack_top - 1];
 			DUK_UNREF(cat);
 			DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
-			DUK_ASSERT(DUK_CAT_GET_LABEL(cat) == abc);
+			DUK_ASSERT((int) DUK_CAT_GET_LABEL(cat) == abc);  /* FIXME: typing */
 
 			duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
 			/* no need to unwind callstack */

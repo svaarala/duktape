@@ -849,10 +849,12 @@ static void assert_valid_refcounts(duk_heap *heap) {
 			 * refzero_list and will thus appear here with refcount
 			 * zero.
 			 */
+#if 0  /* this case can no longer occur because refcount is unsigned */
 		} else if (DUK_HEAPHDR_GET_REFCOUNT(hdr) < 0) {
 			DUK_DPRINT("invalid refcount: %d, %p -> %!O",
 			           (hdr != NULL ? DUK_HEAPHDR_GET_REFCOUNT(hdr) : 0), (void *) hdr, hdr);
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(hdr) > 0);
+#endif
 		}
 		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
 	}

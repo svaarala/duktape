@@ -736,7 +736,8 @@ static void regexp_match_helper(duk_hthread *thr, duk_small_int_t force_global) 
 
 	for (;;) {
 		/* char offset in [0, h_input->clen] (both ends inclusive), checked before entry */
-		DUK_ASSERT(char_offset >= 0 && char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
+		DUK_ASSERT_DISABLE(char_offset >= 0);
+		DUK_ASSERT(char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
 
 		/* Note: ctx.steps is intentionally not reset, it applies to the entire unanchored match */
 		DUK_ASSERT(re_ctx.recursion_depth == 0);

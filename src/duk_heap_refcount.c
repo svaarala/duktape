@@ -230,7 +230,7 @@ static void refzero_free_pending(duk_hthread *thr) {
 			duk_hobject_run_finalizer(thr, obj);  /* must never longjmp */
 
 			h1->h_refcount--;  /* remove artificial bump */
-			DUK_ASSERT(h1->h_refcount >= 0);
+			DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
 
 			if (h1->h_refcount != 0) {
 				DUK_DDDPRINT("-> object refcount after finalization non-zero, object will be rescued");
@@ -329,7 +329,7 @@ void duk_heap_tval_incref(duk_tval *tv) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		if (h) {
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-			DUK_ASSERT(h->h_refcount >= 0);
+			DUK_ASSERT_DISABLE(h->h_refcount >= 0);
 			h->h_refcount++;
 		}
 	}
@@ -366,7 +366,7 @@ void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 		return;
 	}
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT(h->h_refcount >= 0);
+	DUK_ASSERT_DISABLE(h->h_refcount >= 0);
 
 	h->h_refcount++;
 }

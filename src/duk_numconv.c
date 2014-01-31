@@ -1777,7 +1777,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	             duk_get_tval(ctx, -1), (int) radix, (unsigned int) flags);
 
 	DUK_ASSERT(radix >= 2 && radix <= 36);
-	DUK_ASSERT(radix - 2 < sizeof(str2num_digits_for_radix));
+	DUK_ASSERT(radix - 2 < (duk_small_int_t) sizeof(str2num_digits_for_radix));
 
 	/*
 	 *  Preliminaries: trim, sign, Infinity check
