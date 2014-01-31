@@ -110,9 +110,10 @@ static duk_uint32_t get_min_grow_e(duk_uint32_t e_size) {
 
 /* Get minimum array part growth for a certain size. */
 static int get_min_grow_a(int a_size) {
+	/* FIXME: a_size typing */
 	duk_uint32_t res;
 
-	DUK_ASSERT(a_size <= DUK_HOBJECT_MAX_PROPERTIES);
+	DUK_ASSERT((duk_size_t) a_size <= DUK_HOBJECT_MAX_PROPERTIES);
 
 	res = (a_size + DUK_HOBJECT_A_MIN_GROW_ADD) / DUK_HOBJECT_A_MIN_GROW_DIVISOR;
 	DUK_ASSERT(res >= 1);  /* important for callers */
@@ -557,7 +558,7 @@ static void realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_e_used <= new_h_size);  /* equality not actually possible */
 		for (i = 0; i < new_e_used; i++) {
 			duk_hstring *key = new_e_k[i];
-			int j;
+			int j;  /* FIXME: typing */
 			int step;
 
 			DUK_ASSERT(key != NULL);
@@ -575,7 +576,7 @@ static void realloc_props(duk_hthread *thr,
 				j = (j + step) % new_h_size;
 
 				/* guaranteed to finish */
-				DUK_ASSERT(j != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size));
+				DUK_ASSERT(j != (int) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size));  /* FIXME: typing */
 			}
 		}
 	} else {
@@ -851,10 +852,11 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 		for (;;) {
 			duk_uint32_t t;
 
-			DUK_ASSERT(i >= 0 && i < obj->h_size);
+			DUK_ASSERT(i >= 0);
+			DUK_ASSERT((duk_size_t) i < obj->h_size);  /* FIXME: typing */
 			t = h_base[i];
 			DUK_ASSERT(t == DUK__HASH_UNUSED || t == DUK__HASH_DELETED ||
-			           (t >= 0 && t < obj->e_size));
+			           (t < obj->e_size));  /* t >= 0 always true, unsigned */
 
 			if (t == DUK__HASH_UNUSED) {
 				break;
@@ -873,7 +875,7 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 			i = (i + step) % n;
 
 			/* guaranteed to finish, as hash is never full */
-			DUK_ASSERT(i != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));
+			DUK_ASSERT(i != (int) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));  /* FIXME: typing */
 		}
 	} else {
 		/* linear scan */
@@ -970,7 +972,7 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 #ifdef DUK_USE_ASSERTIONS
 	/* key must not already exist in entry part */
 	{
-		int i;
+		duk_uint_fast32_t i;
 		for (i = 0; i < obj->e_used; i++) {
 			DUK_ASSERT(DUK_HOBJECT_E_GET_KEY(obj, i) != key);
 		}
@@ -998,8 +1000,10 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 			duk_uint32_t t = h_base[i];
 			if (t == DUK__HASH_UNUSED || t == DUK__HASH_DELETED) {
 				DUK_DDDPRINT("alloc_entry_checked() inserted key into hash part, %d -> %d", i, idx);
-				DUK_ASSERT(i >= 0 && i < obj->h_size);
-				DUK_ASSERT(idx >= 0 && idx < obj->e_size);
+				DUK_ASSERT(i >= 0);
+				DUK_ASSERT((duk_size_t) i < obj->h_size);  /* FIXME: typing */
+				DUK_ASSERT_DISABLE(idx >= 0);
+				DUK_ASSERT(idx < obj->e_size);
 				h_base[i] = idx;
 				break;
 			}
@@ -1007,7 +1011,7 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 			i = (i + step) % obj->h_size;
 
 			/* guaranteed to find an empty slot */
-			DUK_ASSERT(i != DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size));
+			DUK_ASSERT(i != (int) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size));  /* FIXME: typing */
 		}
 	}
 
@@ -1015,7 +1019,9 @@ static int alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *
 	 * needed right now.
 	 */
 
-	DUK_ASSERT(idx >= 0 && idx < obj->e_size && idx < obj->e_used);
+	DUK_ASSERT_DISABLE(idx >= 0);
+	DUK_ASSERT(idx < obj->e_size);
+	DUK_ASSERT(idx < obj->e_used);
 	return idx;
 }
 
@@ -1614,7 +1620,8 @@ static duk_tval *shallow_fast_path_array_check_tval(duk_hobject *obj, duk_tval *
 		idx = (duk_uint32_t) d;
 		if ((double) idx == d) {
 			/* Note: idx is not necessarily a valid array index (0xffffffffU is not valid) */
-			DUK_ASSERT(idx >= 0 && idx <= 0xffffffffU);
+			DUK_ASSERT_DISABLE(idx >= 0);
+			DUK_ASSERT(idx <= 0xffffffffU);
 
 			if (idx < obj->a_size) {
 				/* technically required to check, but obj->a_size check covers this */
@@ -3008,7 +3015,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 
 			DUK_DDDPRINT("removing hash entry at h_idx %d", desc.h_idx);
 			DUK_ASSERT(obj->h_size > 0);
-			DUK_ASSERT(desc.h_idx < obj->h_size);
+			DUK_ASSERT((duk_size_t) desc.h_idx < obj->h_size);  /* FIXME: h_idx typing */
 			h_base[desc.h_idx] = DUK__HASH_DELETED;
 		} else {
 			DUK_ASSERT(obj->h_size == 0);
@@ -3308,7 +3315,8 @@ void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, du
 	duk_hobject_define_property_internal(thr, obj, key, propflags);
 	duk_hobject_find_existing_entry(obj, key, &e_idx, &h_idx);
 	DUK_DDDPRINT("accessor slot: e_idx=%d, h_idx=%d", e_idx, h_idx);
-	DUK_ASSERT(e_idx >= 0 && e_idx < obj->e_used);
+	DUK_ASSERT(e_idx >= 0);
+	DUK_ASSERT(e_idx < (int) obj->e_used);  /* FIXME: e_idx typing */
 
 	/* no need to decref, as previous value is 'undefined' */
 	DUK_HOBJECT_E_SLOT_SET_ACCESSOR(obj, e_idx);
