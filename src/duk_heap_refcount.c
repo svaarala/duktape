@@ -52,7 +52,7 @@ static void queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
  */
 
 static void refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_ASSERT(h);
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h) == DUK_HTYPE_OBJECT);

@@ -38,7 +38,7 @@ static void mark_hstring(duk_heap *heap, duk_hstring *h) {
 }
 
 static void mark_hobject(duk_heap *heap, duk_hobject *h) {
-	int i;
+	duk_uint_fast32_t i;
 
 	DUK_DDDPRINT("mark_hobject: %p", (void *) h);
 

@@ -677,7 +677,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *from_thr = (duk_hthread *) from_ctx;
 	void *src;
-	size_t nbytes;
+	duk_size_t nbytes;
 	duk_tval *p;
 
 	DUK_ASSERT(ctx != NULL);
@@ -687,10 +687,11 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 	if (nbytes == 0) {
 		return;
 	}
-	if (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack_top) < nbytes) {
+	DUK_ASSERT(thr->valstack_top <= thr->valstack_end);
+	if ((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack_top) < nbytes) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
 	}
-	src = (void *) (((duk_uint8_t *) from_thr->valstack_top) - nbytes);
+	src = (void *) ((duk_uint8_t *) from_thr->valstack_top - nbytes);
 	if (src < (void *) thr->valstack_bottom) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "source stack does not contain enough elements");
 	}

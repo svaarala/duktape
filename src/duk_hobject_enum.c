@@ -435,8 +435,8 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 
 int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	duk_hobject *e;
-	int i;
-	int idx;
+	duk_uint32_t i;
+	duk_uint32_t idx;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(duk_get_hobject(ctx, -1) != NULL);
