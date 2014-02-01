@@ -139,9 +139,11 @@ detail below the table.</p>
 
 <p>Clang 3.3 on FreeBSD has some aliasing issues (at least) when using
 <code>-m32</code> and when Duktape ends up using a packed <code>duk_tval</code>
-value representation type.  The problem does not appear in all clang versions.
-Duktape self tests cover this issue (define <code>DUK_OPT_SELF_TESTS</code>
-when compiling).  See internal test file <code>misc/clang_aliasing.c</code>.</p>
+value representation type.  You can work around the problem by defining
+<code>DUK_OPT_NO_PACKED_TVAL</code> to disable packed value type.  The
+problem does not appear in all clang versions.  Duktape self tests cover
+this issue (define <code>DUK_OPT_SELF_TESTS</code> when compiling).
+See internal test file <code>misc/clang_aliasing.c</code>.</p>
 
 <h3>TCC</h3>
 
