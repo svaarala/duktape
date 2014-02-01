@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: improve non-C99 build, e.g. gcc without C99 doesn't work well now
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-01 22:57:56.280685 Z
+references: []
+
+id: ea01bf2bad0c31b2f75abe2cf4ea70a8bfd292c0
+log_events: 
+- - 2014-02-01 22:57:56.424489 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
