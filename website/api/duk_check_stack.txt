@@ -13,14 +13,15 @@ reserved for Duktape's internal use.</p>
 
 <!--FIXME-->
 <p>Upon entry to a Duktape/C function and when outside any call
-there is an automatic reserve (of XXX elements) allocated for the
-caller.  If more value stack space is needed, the caller must reserve
-more space explicitly either in the beginning of the function (e.g. if the
-number of elements required is known or can be computed based on arguments)
-or dynamically (e.g. inside a loop).  Note that an attempt to push a value
-beyond the currently allocated value stack causes an error: it does not
-cause the value stack to be automatically extended.  This simplifies the
-internal implementation.</p>
+there is an automatic reserve (of <code>DUK_API_ENTRY_STACK</code> elements)
+allocated for the caller in addition to call arguments on the value stack.
+If more value stack space is needed, the caller must reserve more space
+explicitly either in the beginning of the function (e.g. if the number of
+elements required is known or can be computed based on arguments) or
+dynamically (e.g. inside a loop).  Note that an attempt to push a value
+beyond the currently allocated value stack causes an error: it does not cause
+the value stack to be automatically extended.  This simplifies the internal
+implementation.</p>
 
 <p>In addition to user reserved elements, Duktape keeps an automatic
 internal value stack reserve to ensure all API calls have enough
