@@ -24,15 +24,17 @@
     }
 
     // __duk__, renamed to Duktape in 0.9.0
-    Object.defineProperty(G, '__duk__', {
-        value: D,
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
+    if (false) {
+        Object.defineProperty(G, '__duk__', {
+            value: D,
+            writable: true,
+            enumerable: false,
+            configurable: true
+        });
+    }
 
     // legacy properties
-    if (true) {
+    if (false) {
         // removed in Duktape 0.9.0
         def('build', '');
         def('setFinalizer', function(o,v) { Duktape.fin(o,v); });
