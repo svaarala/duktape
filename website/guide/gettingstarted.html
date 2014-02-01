@@ -60,7 +60,7 @@ Duktape API from elsewhere in your program.</p>
 which illustrates this process.  Compile the test program e.g. as:</p>
 <pre>
 $ cd /tmp/duktape-&lt;version&gt;/
-$ gcc -o hello -Isrc/ src/duktape.c examples/hello/hello.c -lm
+$ gcc -std=c99 -o hello -Isrc/ src/duktape.c examples/hello/hello.c -lm
 </pre>
 
 <p>The test program creates a Duktape context and uses it to run some
@@ -199,7 +199,7 @@ No memory leaks will occur even if the value stack is not empty.</p>
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o processlines -Isrc/ src/duktape.c processlines.c -lm
+$ gcc -std=c99 -o processlines -Isrc/ src/duktape.c processlines.c -lm
 </pre>
 
 <p>Test run:</p>
@@ -352,7 +352,7 @@ value here.</p>
 
 <p>Compile like above:</p>
 <pre>
-$ gcc -o primecheck -Isrc/ src/duktape.c primecheck.c -lm
+$ gcc -std=c99 -o primecheck -Isrc/ src/duktape.c primecheck.c -lm
 </pre>
 
 <p>Test run:</p>
