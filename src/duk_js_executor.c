@@ -1293,7 +1293,7 @@ static void duk_executor_interrupt(duk_hthread *thr) {
 	ctr = DUK_HEAP_INTCTR_DEFAULT;
 
 #if 0
-	/* FIXME: cumulative instruction count */
+	/* FIXME: cumulative instruction count example */
 	static int step_count = 0;
 	step_count += thr->heap->interrupt_init;
 	if (step_count >= 1000000) {
