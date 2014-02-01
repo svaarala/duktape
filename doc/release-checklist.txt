@@ -8,17 +8,24 @@ Release checklist
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
+* Check READMME.txt.dist
+
+* Ensure LICENSE.txt is up-to-date
+
+  - Check year range
+
+* Ensure RELEASES.txt is up-to-date (must be done before candidate tar.xz
+  build because dist package contains RELEASES.txt)
+
+  - New release is in place
+  - Release log entries match ditz issues
+  - Release date is in place
+
 * Build candidate tar.xz files
 
   - These should remain the same so that their hash values are known
 
-* Check full dist contents
-
-  - Check file list
-  - Grep for FIXME and XXX
-  - Ensure you can create an end-user dist and compile it
-
-* Check end user dist contents
+* Check source dist contents
 
   - Check file list
   - Grep for FIXME and XXX
@@ -52,29 +59,34 @@ Release checklist
 
   - On x86-64:
 
-    - make qtest   # quick test
-    - make vgtest  # valgrind test
+    - make qecmatest   # quick test
+    - make vgecmatest  # valgrind test
 
   - Run testcases on all endianness targets
 
 * API testcases
 
-  - On x86-64
+  - On x86-64:
+
+    - make apitest
 
 * Regfuzz
 
   - On x86-64, with DUK_OPT_ASSERTIONS
 
-* Version bump website
+    - make regfuzztest
 
-  - API
-  - Guide
+* test262
 
-* Ensure RELEASES.txt is up-to-date
+  - on x86-64
 
-  - New release is in place, chech hash
-  - Release log entries match ditz issues
-  - Release date is in place
+    - make test262test
+
+* emscripten
+
+  - on x86-64
+
+    - make emscriptentest
 
 * Store binaries and update website downloads page
 
