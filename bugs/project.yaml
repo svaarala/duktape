@@ -111,12 +111,16 @@ releases:
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v0.9
-  status: :unreleased
-  release_time: 
+  status: :released
+  release_time: 2014-02-01 23:42:10.578173 Z
   log_events: 
   - - 2013-10-28 22:54:11.773532 Z
     - sva <sami.vaarala@iki.fi>
     - created
+    - ""
+  - - 2014-02-01 23:42:10.578195 Z
+    - sva <sami.vaarala@iki.fi>
+    - released
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v0.10
