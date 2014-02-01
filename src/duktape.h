@@ -109,7 +109,7 @@ struct duk_memory_functions {
  * to #ifdef against Duktape API version.  The same value is also available
  * to Ecmascript code in Duktape.version.
  */
-#define DUK_VERSION                       900L
+#define DUK_VERSION                       1000L
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
