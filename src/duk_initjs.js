@@ -11,7 +11,7 @@
  *  code.
  */
 
-(function(D) {
+(function(G, D) {
     'use strict';
 
     function def(name, value) {
@@ -22,6 +22,14 @@
             configurable: true
         });
     }
+
+    // __duk__, renamed to Duktape in 0.9.0
+    Object.defineProperty(G, '__duk__', {
+        value: D,
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
 
     // legacy properties
     if (true) {
@@ -49,4 +57,4 @@
             return { type: t[0], addr: t[1], refc: t[2], hdrsize: t[3], addsize: t[4], bcsize: t[5] };
         });
     }
-})(Duktape);
+})(this, Duktape);
