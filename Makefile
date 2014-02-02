@@ -170,7 +170,11 @@ CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. 
 
 # Compile 'duk' only by default
 .PHONY:	all
-all:	duk
+all:	checksetup duk
+
+.PHONY: checksetup
+checksetup:
+	@util/check_setup.sh
 
 .PHONY:	clean
 clean:
