@@ -3118,17 +3118,6 @@ void duk_throw(duk_context *ctx) {
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
-	if (!thr->heap->lj.jmpbuf_ptr) {
-		/*
-		 *  No jmpbuf_ptr, so cannot longjmp.  Because we can't return
-		 *  either (that would violate caller expectations), there's no
-		 *  other option than to panic.  Caller should ensure this never
-		 *  happens.
-		 */
-		duk_fatal(ctx, DUK_ERR_UNCAUGHT_ERROR);
-		DUK_UNREACHABLE();
-	}
-
 	if (thr->valstack_top == thr->valstack_bottom) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "no value to throw");
 	}
@@ -3141,11 +3130,16 @@ void duk_throw(duk_context *ctx) {
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
+	/* thr->heap->lj.jmpbuf_ptr is checked by duk_err_longjmp() so we don't
+	 * need to check that here.  If the value is NULL, a panic occurs because
+	 * we can't return.
+	 */
+
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();
 }
 
-void duk_fatal(duk_context *ctx, int err_code) {
+void duk_fatal(duk_context *ctx, int err_code, const char *err_msg) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -3153,15 +3147,15 @@ void duk_fatal(duk_context *ctx, int err_code) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(thr->heap->fatal_func != NULL);
 
-	DUK_DPRINT("fatal error occurred, code %d", err_code);
+	DUK_DPRINT("fatal error occurred, code %d, message %s", err_code, err_msg);
 
-	thr->heap->fatal_func(ctx, err_code);
-	/* FIXME: because fatal_func is not currently a 'noreturn' one,
-	 * throw an error here to ensure unreachability.
+	/* fatal_func should be noreturn, but noreturn declarations on function
+	 * pointers has a very spotty support apparently so it's not currently
+	 * done.
 	 */
-	duk_error(ctx, err_code, "");
+	thr->heap->fatal_func(ctx, err_code, err_msg);
 
-	DUK_UNREACHABLE();
+	DUK_PANIC(DUK_ERR_API_ERROR, "fatal handler returned");
 }
 
 void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {

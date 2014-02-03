@@ -1,5 +1,15 @@
 /*
  *  Error handling macros, assertion macro, error codes.
+ *
+ *  There are three level of 'errors':
+ *
+ *    1. Ordinary errors, relative to a thread, cause a longjmp, catchable.
+ *    2. Fatal errors, relative to a heap, cause fatal handler to be called.
+ *    3. Panic errors, unrelated to a heap and cause a process exit.
+ *
+ *  Panics are used by the default fatal error handler and by debug code
+ *  such as assertions.  By providing a proper fatal error handler, user
+ *  code can avoid panics in non-debug builds.
  */
 
 #ifndef DUK_ERROR_H_INCLUDED
@@ -10,26 +20,23 @@
  *
  *  Error codes are used as a shorthand to throw exceptions from inside
  *  the implementation.  The appropriate Ecmascript object is constructed
- *  based on the code.  Ecmascript code throws objects directly.
- *
- *  The error codes are now defined in the public API header because they
- *  are also used by calling code.
+ *  based on the code.  Ecmascript code throws objects directly.  The error
+ *  codes are defined in the public API header because they are also used
+ *  by calling code.
  */
 
+/* FIXME: remove */
 /* for function return codes */
 #define DUK_ERR_OK                   0     /* call successful */
 #define DUK_ERR_FAIL                 1     /* call failed */
 
 /*
+ *  Normal error
+ *
  *  Normal error is thrown with a longjmp() through the current setjmp()
  *  catchpoint record in the duk_heap.  The 'curr_thread' of the duk_heap
  *  identifies the throwing thread.
- *
- *  Panic is thrown without a heap/thread context and cannot be caught.
- *  All bets are off, and the default implementation exits the process.
- *
- *  FIXME: panic should map to the fatal error handler.
- *
+ * 
  *  Error formatting is not always necessary but there are no separate calls
  *  (to minimize code size).  Error object creation will consume a considerable
  *  amount of time, compared to which formatting is probably trivial.  Note
@@ -50,8 +57,6 @@
 /* __VA_ARGS__ has comma issues for empty lists, so we mandate at least 1 argument for '...' (format string) */
 #define DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (int) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
 #define DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((file), (line), (thr), (err), __VA_ARGS__)
-#define DUK_PANIC(err,...)                        duk_err_handle_panic(DUK_FILE_MACRO, DUK_LINE_MACRO, (err), __VA_ARGS__)
-#define DUK_PANIC_RAW(file,line,err,...)          duk_err_handle_panic((file), (line), (err), __VA_ARGS__)
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
@@ -64,11 +69,6 @@
 	duk_err_line_stash = (int) DUK_LINE_MACRO, \
 	(void) duk_err_handle_error_stash  /* arguments follow */
 #define DUK_ERROR_RAW                             duk_err_handle_error
-#define DUK_PANIC  \
-	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
-	duk_err_line_stash = (int) DUK_LINE_MACRO, \
-	(void) duk_err_handle_panic_stash  /* arguments follow */
-#define DUK_PANIC_RAW                             duk_err_handle_panic
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
@@ -78,8 +78,6 @@
 
 #define DUK_ERROR(thr,err,...)                    duk_err_handle_error((thr), (err))
 #define DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((thr), (err))
-#define DUK_PANIC(err,...)                        duk_err_handle_panic((err))
-#define DUK_PANIC_RAW(err,...)                    duk_err_handle_panic((err))
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
@@ -89,15 +87,43 @@
  */
 #define DUK_ERROR                                 duk_err_handle_error_nonverbose1
 #define DUK_ERROR_RAW                             duk_err_handle_error_nonverbose2
-#define DUK_PANIC                                 duk_err_handle_panic_nonverbose1
-#define DUK_PANIC_RAW                             duk_err_handle_panic_nonverbose2
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 /*
- *  Assert macro: failure cause DUK_PANIC().
+ *  Fatal error
+ *
+ *  There are no fatal error macros at the moment.  There are so few call
+ *  sites that the fatal error handler is called directly.
+ */
+
+/*
+ *  Panic error
+ *
+ *  Panic errors are not relative to either a heap or a thread, and cause
+ *  DUK_PANIC() macro to be invoked.  Unlesa a user provides DUK_PANIC_HANDLER,
+ *  DUK_PANIC() calls a helper which prints out the error and causes a process
+ *  exit.
+ *
+ *  The user can override the macro to provide custom handling.  A macro is
+ *  used to allow the user to have inline panic handling if desired (without
+ *  causing a potentially risky function call).
+ *
+ *  Panics are only used in debug code such as assertions, and by the default
+ *  fatal error handler.
+ */
+
+#if defined(DUK_USE_PANIC_HANDLER)
+/* already defined, good */
+#define DUK_PANIC(code,msg)  DUK_USE_PANIC_HANDLER((code),(msg))
+#else
+#define DUK_PANIC(code,msg)  duk_default_panic_handler((code),(msg))
+#endif  /* DUK_USE_PANIC_HANDLER */
+
+/*
+ *  Assert macro: failure causes panic.
  */
 
 #ifdef DUK_USE_ASSERTIONS
@@ -124,61 +150,6 @@
  * being always true (e.g. >= 0 comparison for an unsigned value
  */
 #define DUK_ASSERT_DISABLE(x)  do { /* assertion disabled */ } while(0)
-
-/*
- *  Final panic handler macro (unless defined already)
- */
-
-/* FIXME: Change this is so that if DUK_USER_PANIC_HANDLER defined, map
- * DUK_PANIC_HANDLER to it? Cleaner than allowing user to define directly.
- * In any case, panics should map do fatal error handler in the public API.
- */
-
-#if defined(DUK_PANIC_HANDLER)
-/* already defined, good */
-#else
-#if defined(DUK_USE_PANIC_ABORT)
-#define DUK_PANIC_EXIT()  abort()
-#elif defined(DUK_USE_PANIC_EXIT)
-#define DUK_PANIC_EXIT()  exit(-1)
-#elif defined(DUK_USE_PANIC_SEGFAULT)
-#define DUK_PANIC_EXIT()  do { \
-		/* exit() afterwards to satisfy "noreturn" */ \
-		DUK_CAUSE_SEGFAULT(); \
-		exit(-1); \
-	} while (0)
-#else
-#error no DUK_USE_PANIC_xxx macro defined
-#endif
-
-#ifdef DUK_USE_FILE_IO
-#define DUK_PANIC_PRINTMSG(code,msg)  do { \
-		fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null"); \
-		fflush(stderr); \
-	} while (0)
-#else
-#define DUK_PANIC_PRINTMSG(code,msg)
-#endif
-
-#ifdef DUK_USE_GCC_PRAGMAS
-#define DUK_PANIC_HANDLER(code,msg)  do { \
-		/* GCC pragmas to suppress: warning: the address of 'xxx' will always evaluate as 'true' [-Waddress]' */ \
-		_Pragma("GCC diagnostic push"); \
-		_Pragma("GCC diagnostic ignored \"-Waddress\""); \
-		DUK_PANIC_PRINTMSG((code),(msg)); \
-		DUK_PANIC_EXIT(); \
-		DUK_UNREACHABLE(); \
-		_Pragma("GCC diagnostic pop"); \
-	} while (0)
-#else
-#define DUK_PANIC_HANDLER(code,msg)  do { \
-		/* No pragmas to suppress warning, causes unclean build */ \
-		DUK_PANIC_PRINTMSG((code),(msg)); \
-		DUK_PANIC_EXIT(); \
-		DUK_UNREACHABLE(); \
-	} while (0)
-#endif  /* DUK_USE_GCC_PRAGMAS */
-#endif  /* DUK_PANIC_HANDLER */
 
 /*
  *  Assertion helpers
@@ -238,24 +209,18 @@
 #ifdef DUK_USE_VERBOSE_ERRORS
 #ifdef DUK_USE_VARIADIC_MACROS
 DUK_NORETURN(void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_panic(const char *filename, int line, int code, const char *fmt, ...));
 #else  /* DUK_USE_VARIADIC_MACROS */
 extern const char *duk_err_file_stash;
 extern int duk_err_line_stash;
 DUK_NORETURN(void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
 DUK_NORETURN(void duk_err_handle_error_stash(duk_hthread *thr, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_panic(const char *filename, int line, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_panic_stash(int code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #else  /* DUK_USE_VERBOSE_ERRORS */
 #ifdef DUK_USE_VARIADIC_MACROS
 DUK_NORETURN(void duk_err_handle_error(duk_hthread *thr, int code));
-DUK_NORETURN(void duk_err_handle_panic(int code));
 #else  /* DUK_USE_VARIADIC_MACROS */
 DUK_NORETURN(void duk_err_handle_error_nonverbose1(duk_hthread *thr, int code, const char *fmt, ...));
 DUK_NORETURN(void duk_err_handle_error_nonverbose2(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_panic_nonverbose1(int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_panic_nonverbose2(const char *filename, int line, int code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
@@ -273,7 +238,9 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 
 DUK_NORETURN(void duk_err_longjmp(duk_hthread *thr));
 
-DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, int code));
+DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg));
+
+DUK_NORETURN(void duk_default_panic_handler(int code, const char *msg));
 
 void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type);
 

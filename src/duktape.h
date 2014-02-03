@@ -17,7 +17,9 @@ extern "C" {
  *  DUK_API_NORETURN: macro for declaring a 'noreturn' function.
  *  Unfortunately the noreturn declaration may appear in various
  *  places of a function declaration, so the solution is to wrap
- *  the entire declaration inside the macro.
+ *  the entire declaration inside the macro.  Compiler support
+ *  for using a noreturn declaration on function pointers varies;
+ *  this macro must only be used for actual function declarations.
  *
  *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
  *  http://clang.llvm.org/docs/LanguageExtensions.html
@@ -89,7 +91,7 @@ typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
 typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
-typedef void (*duk_fatal_function) (duk_context *ctx, int code);
+typedef void (*duk_fatal_function) (duk_context *ctx, int code, const char *msg);
 typedef void (*duk_decode_char_function) (void *udata, int codepoint);
 typedef int (*duk_map_char_function) (void *udata, int codepoint);
 typedef int (*duk_safe_call_function) (duk_context *ctx);
@@ -206,6 +208,14 @@ struct duk_memory_functions {
 #define DUK_EXEC_SUCCESS                  0
 #define DUK_EXEC_ERROR                    1
 
+/* Log levels */
+#define  DUK_LOG_TRACE                    0
+#define  DUK_LOG_DEBUG                    1
+#define  DUK_LOG_INFO                     2
+#define  DUK_LOG_WARN                     3
+#define  DUK_LOG_ERROR                    4
+#define  DUK_LOG_FATAL                    5
+
 /*
  *  If no variadic macros, __FILE__ and __LINE__ are passed through globals
  *  which is ugly and not thread safe.
@@ -262,7 +272,7 @@ DUK_API_NORETURN(void duk_error_stash(duk_context *ctx, int err_code, const char
 	duk_error_stash  /* arguments follow */
 #endif
 
-DUK_API_NORETURN(void duk_fatal(duk_context *ctx, int err_code));
+DUK_API_NORETURN(void duk_fatal(duk_context *ctx, int err_code, const char *err_msg));
 
 /*
  *  Other state related functions
@@ -603,6 +613,12 @@ void duk_compile(duk_context *ctx, int flags);
 #ifdef __cplusplus
 }
 #endif
+
+/*
+ *  Logging
+ */
+
+void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 
 #endif  /* DUKTAPE_H_INCLUDED */
 

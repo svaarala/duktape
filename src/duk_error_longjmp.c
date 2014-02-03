@@ -15,7 +15,7 @@ void duk_err_longjmp(duk_hthread *thr) {
 		 *  return.
 		 */
 
-		duk_fatal((duk_context *) thr, DUK_ERR_UNCAUGHT_ERROR);
+		duk_fatal((duk_context *) thr, DUK_ERR_UNCAUGHT_ERROR, "uncaught error");
 		DUK_UNREACHABLE();
 	}
 

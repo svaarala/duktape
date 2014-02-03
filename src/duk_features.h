@@ -1266,8 +1266,13 @@ extern double duk_computed_nan;
 #endif
 
 /*
- *  Panic exit behavior (for default panic handler)
+ *  User panic handler, panic exit behavior for default panic handler
  */
+
+#undef DUK_USE_PANIC_HANDLER
+#if defined(DUK_OPT_PANIC_HANDLER)
+#define DUK_USE_PANIC_HANDLER(code,msg) DUK_OPT_PANIC_HANDLER((code),(msg))
+#endif
 
 #undef DUK_USE_PANIC_ABORT
 #undef DUK_USE_PANIC_EXIT
