@@ -87,7 +87,6 @@ for i in	\
 	duk_debug_macros.c	\
 	duk_debug_vsnprintf.c	\
 	duk_error_augment.c	\
-	duk_error_fatal.c	\
 	duk_error.h		\
 	duk_error_longjmp.c	\
 	duk_error_macros.c	\
