@@ -1,8 +1,9 @@
 =proto
-void duk_fatal(duk_context *ctx, int err_code);
+void duk_fatal(duk_context *ctx, int err_code, const char *err_msg);
 
 =summary
-<p>Call fatal error handler with a specified error code.  The valid range
+<p>Call fatal error handler with a specified error code and an optional
+message (<code>err_msg</code> may be <code>NULL</code>).  The valid range
 for error codes is [1,16777215].</p>
 
 <p>A fatal error handler never returns and may e.g. exit the current
@@ -11,10 +12,10 @@ and error catching API calls) are bypassed.  You should only call
 this function when a truly fatal, unrecoverable error has occurred.</p>
 
 =example
-duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR);
+duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR, "assumption failed");
 
 =tags
 error
 
 =fixme
-Useful to expose?  No message.
+Useful to expose?
