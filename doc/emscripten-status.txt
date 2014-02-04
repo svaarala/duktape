@@ -61,4 +61,4 @@ Full diff for the fix needed::
      return type[0] == '%';
    },
 
-This diff has been incorporated into ``fixemscripten.py``.
+This diff has been incorporated into ``fix_emscripten.py``.
