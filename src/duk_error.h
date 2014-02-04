@@ -240,7 +240,9 @@ DUK_NORETURN(void duk_err_longjmp(duk_hthread *thr));
 
 DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg));
 
+#if !defined(DUK_USE_PANIC_HANDLER)
 DUK_NORETURN(void duk_default_panic_handler(int code, const char *msg));
+#endif
 
 void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type);
 

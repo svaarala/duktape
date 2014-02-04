@@ -86,9 +86,20 @@ void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg) {
  *  Default panic handler
  */
 
+#if !defined(DUK_USE_PANIC_HANDLER)
 void duk_default_panic_handler(int code, const char *msg) {
 #ifdef DUK_USE_FILE_IO
-	fprintf(stderr, "PANIC %d: %s\n", code, msg ? msg : "null");
+	fprintf(stderr, "PANIC %d: %s ("
+#if defined(DUK_USE_PANIC_ABORT)
+	        "calling abort"
+#elif defined(DUK_USE_PANIC_EXIT)
+	        "calling exit"
+#elif defined(DUK_USE_PANIC_SEGFAULT)
+	        "segfaulting on purpose"
+#else
+#error no DUK_USE_PANIC_xxx macro defined
+#endif	
+	        ")\n", code, msg ? msg : "null");
 	fflush(stderr);
 #else
 	/* omit print */
@@ -108,5 +119,6 @@ void duk_default_panic_handler(int code, const char *msg) {
 
 	DUK_UNREACHABLE();
 }
+#endif  /* !DUK_USE_PANIC_HANDLER */
 
 #undef DUK__ERRFMT_BUFSIZE
