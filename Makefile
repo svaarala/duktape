@@ -139,7 +139,7 @@ CCOPTS_SHARED += -I./dist/src
 CCOPTS_SHARED += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 CCOPTS_SHARED += -DDUK_OPT_DPRINT_COLORS
 #CCOPTS_SHARED += -DDUK_OPT_NO_FILE_IO
-#CCOPTS_SHARED += '-DDUK_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
+#CCOPTS_SHARED += '-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
 CCOPTS_SHARED += -DDUK_OPT_SELF_TESTS
 #CCOPTS_SHARED += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_SHARED += -DDUK_OPT_NO_PC2LINE
@@ -201,6 +201,7 @@ cleanall:
 	-@rm -rf test262-d067d2f0ca30
 	-@rm -f d067d2f0ca30.tar.bz2
 	-@rm -rf emscripten
+	-@rm -rf JS-Interpreter
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -378,6 +379,27 @@ vgemscriptentest: emscripten duk
 	cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
 	@ls -l /tmp/duk-emcc-vgtest*
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
+
+JS-Interpreter:
+	git clone https://github.com/NeilFraser/JS-Interpreter.git
+
+.PHONY: jsinterpretertest
+jsinterpretertest: JS-Interpreter duk
+	@echo "### jsinterpretertest"
+	-@rm -f /tmp/duk-jsint-test*
+	echo "window = {};" > /tmp/duk-jsint-test.js
+	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-test.js
+	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-test.js
+	./duk /tmp/duk-jsint-test.js
+
+.PHONY: vgjsinterpretertest
+vgjsinterpretertest: JS-Interpreter duk
+	@echo "### vgjsinterpretertest"
+	-@rm -f /tmp/duk-jsint-vgtest*
+	echo "window = {};" > /tmp/duk-jsint-vgtest.js
+	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-vgtest.js
+	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-vgtest.js
+	valgrind ./duk /tmp/duk-jsint-vgtest.js
 
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
