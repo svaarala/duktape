@@ -482,3 +482,37 @@ error codes are defined in <code>duktape.h</code>, e.g. <code>DUK_ERR_TYPE_ERROR
 flags.  Negative error values are used in the Duktape/C API as a
 shorthand to automatically throw an error.</p>
 
+<h2>Error, fatal, and panic</h2>
+
+<p>An <b>ordinary error</b> is caused by a <code>throw</code> statement,
+a <code>duk_throw()</code> API call (or similar), or by an internal,
+recoverable Duktape error.  Ordinary errors can be caught with a
+<code>try-catch</code> in Ecmascript code or e.g. <code>duk_pcall()</code>
+in C code.</p>
+
+<p>An uncaught error or an explicit call to <code>duk_fatal()</code> causes
+a <b>fatal error</b> handler to be called.  A fatal error handler is
+associated with every Duktape heap upon creation.  There is no reasonable way
+to resume execution after a fatal error, so the fatal error handler must not
+return.  The default fatal error handler writes an error message to <code>stderr</code>
+and then escalates the fatal error to a panic (which, by default,
+<code>abort()</code>s the process).  You can provide your own fatal error
+handler to deal with fatal errors.  The most appropriate recovery action is,
+of course, platform and application specific.  The handler could, for instance,
+write a diagnostic file detailing the situation and then restart the application
+to recover.</p>
+
+<p>A <b>panic</b> is caused by Duktape assertion code (if included in the build)
+or by the default fatal error handler.  There is no way to induce a panic from
+user code.  The default panic handler writes an error message to <code>stderr</code>
+and <code>abort()</code>s the process.  You can use the
+<code>DUK_OPT_SEGFAULT_ON_PANIC</code> feature option to cause a deliberate
+segfault instead of an <code>abort()</code>, which may be useful to get a stack
+trace from some debugging tools.  You can also override the default panic
+handler entirely with the feature option <code>DUK_OPT_PANIC_HANDLER</code>.
+The panic handler is decided during build, while the fatal error handler is
+decided at runtime by the calling application.</p>
+
+<p>If assertions are turned off and the application provides a fatal error
+handler, no panics will be caused by Duktape code.  All errors will then be
+either ordinary errors or fatal errors, both under application control.</p>
