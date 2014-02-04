@@ -66,6 +66,8 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make regfuzztest
     $ make underscoretest  # see doc/underscore-status.txt
     $ make test262test     # see doc/test262-status.txt
+    $ make emscriptentest
+    $ make jsinterpretertest
 
 **Note: the repo Makefile is intended for Linux developer use**, it is not a
 multi-platform "end user" Makefile.  In particular, the Makefile is not
