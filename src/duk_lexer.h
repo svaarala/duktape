@@ -358,6 +358,7 @@ struct duk_token {
 	int num_escapes;        /* number of escapes and line continuations (for directive prologue) */
 	int start_line;         /* start line of token (first char) */
 	int end_line;           /* end line of token (char after last token char) */
+	int start_offset;	/* start byte offset of token in lexer input */
 	int lineterm;           /* token was preceded by a lineterm */
 	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
@@ -386,7 +387,7 @@ struct duk_lexer_ctx {
 	duk_uint8_t *input;
 	int input_length;
 	int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
-	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input offset for each char */
+	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input byte offset for each char */
 	int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
 	int input_offset;                       /* input offset for window leading edge (not window[0]) */
 	int input_line;                         /* input linenumber at input_offset (not window[0]), init to 1 */

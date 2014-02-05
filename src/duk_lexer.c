@@ -526,6 +526,7 @@ static void parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	out_token->str2 = NULL;
 	out_token->num_escapes = 0;
 	out_token->start_line = lex_ctx->lines[0];
+	out_token->start_offset = lex_ctx->offsets[0];
 	/* out_token->end_line set at exit */
 	/* out_token->lineterm set by caller */
 
