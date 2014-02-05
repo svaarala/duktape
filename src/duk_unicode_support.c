@@ -844,9 +844,8 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
  /* unused now, not needed until Turkish/Azeri */
 #if 0
  nochar:
-#endif
-
 	return -1;
+#endif
 }
 
 /*
