@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: make DUK_PANIC noreturn
+title: clarify error, fatal, and panic in guide
 desc: ""
 type: :task
 component: duk
@@ -7,24 +7,20 @@ release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2013-12-22 18:44:53.832032 Z
+creation_time: 2014-02-02 22:59:05.209113 Z
 references: []
 
-id: 1936e467db6982c61b153667ec71c393a1c61951
+id: c60e417edbbbf13c7ae0d19837df12862247fe4a
 log_events: 
-- - 2013-12-22 18:44:54.034969 Z
+- - 2014-02-02 22:59:05.609036 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-01-29 18:29:31.996902 Z
-  - sva <sami.vaarala@iki.fi>
-  - assigned to release v0.10 from v0.9
-  - ""
-- - 2014-02-02 22:05:12.567556 Z
+- - 2014-02-02 22:59:08.537148 Z
   - sva <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
   - ""
-- - 2014-02-03 23:37:10.163533 Z
+- - 2014-02-04 22:11:15.381449 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

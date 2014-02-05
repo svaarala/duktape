@@ -20,3 +20,13 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
   - ""
+- - 2014-02-04 19:58:51.950472 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Perhaps add a virtual property 'length' based on 'nargs' value.  If a concrete
+    property is written, it could override the virtual property.  This is probably
+    needed by built-ins whose 'length' and 'nargs' don't always match.
+    
+    This would have the side effect that 'length' couldn't be deleted from Duktape/C
+    functions.
