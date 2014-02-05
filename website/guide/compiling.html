@@ -186,6 +186,10 @@ The table below summarizes the available options, in no particular order:</p>
     features depending on it.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_PANIC_HANDLER(code,msg)</td>
+<td>Provide a custom panic handler, see detailed description below.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_SEGFAULT_ON_PANIC</td>
 <td>Cause the default panic handler to cause a segfault instead of using
     <code>abort()</code> or <code>exit()</code>.  This is useful when debugging
@@ -292,7 +296,7 @@ you can easily create inconsistent <code>DUK_USE_xxx</code> flags, the
 customization header will be version specific, and you need to peek into
 Duktape internals to know what defines to tweak.</p>
 
-<h2>DUK_PANIC_HANDLER</h2>
+<h2>DUK_OPT_PANIC_HANDLER</h2>
 
 <p>The default panic handler will print an error message to stdout
 unless I/O is disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call
@@ -300,15 +304,15 @@ unless I/O is disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call
 <code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined.</p>
 
 <p>You can override the entire panic handler by defining
-<code>DUK_PANIC_HANDLER</code>.  For example, you could add the
+<code>DUK_OPT_PANIC_HANDLER</code>.  For example, you could add the
 following to your compiler options:</p>
 <pre>
-'-DDUK_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
+'-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
 </pre>
 
 <p>Or perhaps:</p>
 <pre>
-'-DDUK_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg))}'
+'-DDUK_OPT_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg))}'
 </pre>
 
 <p>which calls your custom handler:</p>
