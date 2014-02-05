@@ -84,8 +84,8 @@ struct duk_compiler_instr {
 #define DUK_LABEL_FLAG_ALLOW_BREAK       (1 << 0)
 #define DUK_LABEL_FLAG_ALLOW_CONTINUE    (1 << 1)
 
-#define DUK_DECL_TYPE_VAR                1
-#define DUK_DECL_TYPE_FUNC               2
+#define DUK_DECL_TYPE_VAR                0
+#define DUK_DECL_TYPE_FUNC               1
 
 /* FIXME: optimize to 16 bytes */
 typedef struct {
@@ -134,7 +134,10 @@ struct duk_compiler_func {
 	duk_hobject *h_consts;              /* array */
 
 	int funcs_idx;
-	duk_hobject *h_funcs;               /* array of function templates */
+	int fnum_next;
+	duk_hobject *h_funcs;               /* array of function templates: [func1, offset1, line1, func2, offset2, line2]
+	                                     * offset/line points to closing brace to allow skipping on pass 2
+	                                     */
 
 	/* record function and variable declarations in pass 1 */
 	int decls_idx;
@@ -149,6 +152,7 @@ struct duk_compiler_func {
 	int labelinfos_idx;
 	duk_hbuffer_dynamic *h_labelinfos;  /* C array of duk_labelinfo */
 
+	/* formal arguments */
 	int argnames_idx;                   /* array of formal argument names (-> _formals) */
 	duk_hobject *h_argnames;
 

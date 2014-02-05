@@ -511,6 +511,7 @@ static void init_function_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->funcs_idx = entry_top + 2;
 	func->h_funcs = duk_get_hobject(ctx, entry_top + 2);
 	DUK_ASSERT(func->h_funcs != NULL);
+	DUK_ASSERT(func->fnum_next == 0);
 
 	duk_push_array(ctx);
 	func->decls_idx = entry_top + 3;
@@ -548,7 +549,9 @@ static void reset_function_for_pass2(duk_compiler_ctx *comp_ctx) {
 
 	duk_hbuffer_reset(thr, func->h_code);
 	duk_hobject_set_length_zero(thr, func->h_consts);
-	duk_hobject_set_length_zero(thr, func->h_funcs);
+	/* keep func->h_funcs; inner functions are not reparsed to avoid O(depth^2) parsing */
+	func->fnum_next = 0;
+	/* duk_hobject_set_length_zero(thr, func->h_funcs); */
 	duk_hobject_set_length_zero(thr, func->h_labelnames);
 	duk_hbuffer_reset(thr, func->h_labelinfos);
 	/* keep func->h_argnames; it is fixed for all passes */
@@ -685,7 +688,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	 */
 
 	consts_count = duk_hobject_get_length(comp_ctx->thr, func->h_consts);
-	funcs_count = duk_hobject_get_length(comp_ctx->thr, func->h_funcs);
+	funcs_count = duk_hobject_get_length(comp_ctx->thr, func->h_funcs) / 3;
 	code_count = DUK_HBUFFER_GET_SIZE(func->h_code) / sizeof(duk_compiler_instr);
 	code_size = code_count * sizeof(duk_instr);
 
@@ -722,7 +725,7 @@ static void convert_to_function_template(duk_compiler_ctx *comp_ctx) {
 	h_res->funcs = p_func;
 	for (i = 0; i < funcs_count; i++) {
 		duk_hobject *h;
-		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_funcs, i);
+		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_funcs, i * 3);
 		DUK_ASSERT(tv != NULL);
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		h = DUK_TVAL_GET_OBJECT(tv);
@@ -2818,6 +2821,11 @@ static void expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * is handled by the statement parser as a function declaration, or a
 		 * non-standard function expression/statement (or a SyntaxError).  We only
 		 * handle actual function expressions (occurring inside an expression) here.
+		 *
+		 * O(depth^2) parse count for inner functions is handled by recording a
+		 * lexer offset on the first compilation pass, so that the function can
+		 * be efficiently skipped on the second pass.  This is encapsulated into
+		 * parse_function_like_fnum().
 		 */
 
 		int reg_temp;
@@ -5266,7 +5274,14 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 		if (allow_source_elem)
 #endif
 		{
-			/* FunctionDeclaration: not strictly a statement but handled as such */
+			/* FunctionDeclaration: not strictly a statement but handled as such.
+			 *
+		 	 * O(depth^2) parse count for inner functions is handled by recording a
+			 * lexer offset on the first compilation pass, so that the function can
+			 * be efficiently skipped on the second pass.  This is encapsulated into
+			 * parse_function_like_fnum().
+			 */
+
 			int fnum;
 
 			DUK_DDDPRINT("function declaration statement");
@@ -5278,7 +5293,7 @@ static void parse_statement(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				int n;
 				duk_hstring *h_funcname;
 
-				duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum);
+				duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum * 3);
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);  /* -> [ ... func name ] */
 				h_funcname = duk_get_hstring(ctx, -1);
 				DUK_ASSERT(h_funcname != NULL);
@@ -6408,20 +6423,59 @@ static void parse_function_like_raw(duk_compiler_ctx *comp_ctx, int is_decl, int
 
 /* Parse an inner function, adding the function template to the current function's
  * function table.  Return a function number to be used by the outer function.
+ *
+ * Avoiding O(depth^2) inner function parsing is handled here.  On the first pass,
+ * compile and register the function normally into the 'funcs' array, also recording
+ * a lexer point (offset/line) to the closing brace of the function.  On the second
+ * pass, skip the function and return the same 'fnum' as on the first pass by using
+ * a running counter.
+ *
+ * An unfortunate side effect of this is that when parsing the inner function, almost
+ * nothing is known of the outer function, i.e. the inner function's scope.  We don't
+ * need that information at the moment, but it would allow some optimizations if it
+ * were used.
  */
 static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int is_setget) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 	duk_compiler_func old_func;
 	int entry_top;
-	int n_funcs;
+	int fnum;
 
 	/*
-	 *  Preliminaries: remember valstack top on entry (to restore it later);
-	 *  switch to using a new function.
+	 *  On second pass, skip the function.
+	 */
+
+	if (!comp_ctx->curr_func.in_scanning) {
+		duk_lexer_point lex_pt;
+
+		fnum = comp_ctx->curr_func.fnum_next++;
+		duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum * 3 + 1);
+		lex_pt.offset = duk_to_int(ctx, -1);
+		duk_pop(ctx);
+		duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum * 3 + 2);
+		lex_pt.line = duk_to_int(ctx, -1);
+		duk_pop(ctx);
+
+		DUK_DDDPRINT("second pass of an inner func, skip the function, reparse closing brace; lex offset=%d, line=%d",
+		           lex_pt.offset, lex_pt.line);
+
+		DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
+		comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
+		advance(comp_ctx);
+		advance_expect(comp_ctx, DUK_TOK_RCURLY);
+
+		return fnum;
+	}
+
+	/*
+	 *  On first pass, perform actual parsing.  Remember valstack top on entry
+	 *  to restore it later, and switch to using a new function in comp_ctx.
 	 */
 
 	entry_top = duk_get_top(ctx);
+	DUK_DDDPRINT("before func: entry_top=%d, curr_tok.start_offset=%d", entry_top, comp_ctx->curr_token.start_offset);
+
 	DUK_MEMCPY(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
 
 	DUK_MEMSET(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
@@ -6437,16 +6491,33 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 	comp_ctx->curr_func.is_setget = is_setget;
 	comp_ctx->curr_func.is_decl = is_decl;
 
+	/*
+	 *  Parse inner function
+	 */
+
 	parse_function_like_raw(comp_ctx, is_decl, is_setget);  /* pushes function template */
 
-	/* FIXME: append primitive */
-	n_funcs = duk_get_length(ctx, old_func.funcs_idx);
+	/* prev_token.start_offset points to the closing brace here; when skipping
+	 * we're going to reparse the closing brace to ensure semicolon insertion
+	 * etc work as expected.
+	 */
+	DUK_DDDPRINT("after func: prev_tok.start_offset=%d, curr_tok.start_offset=%d",
+	           comp_ctx->prev_token.start_offset, comp_ctx->curr_token.start_offset);
+	DUK_ASSERT(comp_ctx->lex.input[comp_ctx->prev_token.start_offset] == (duk_uint8_t) '}');
 
-	if (n_funcs >= DUK__MAX_FUNCS) {
+	/* FIXME: append primitive */
+	DUK_ASSERT(duk_get_length(ctx, old_func.funcs_idx) == (duk_uint32_t) (old_func.fnum_next * 3));
+	fnum = old_func.fnum_next++;
+
+	if (fnum >= DUK__MAX_FUNCS) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, "out of funcs");
 	}
 
-	(void) duk_put_prop_index(ctx, old_func.funcs_idx, n_funcs);  /* autoincrements length */
+	(void) duk_put_prop_index(ctx, old_func.funcs_idx, fnum * 3);  /* autoincrements length */
+	duk_push_int(ctx, comp_ctx->prev_token.start_offset);
+	(void) duk_put_prop_index(ctx, old_func.funcs_idx, fnum * 3 + 1);
+	duk_push_int(ctx, comp_ctx->prev_token.start_line);
+	(void) duk_put_prop_index(ctx, old_func.funcs_idx, fnum * 3 + 2);
 
 	/*
 	 *  Cleanup: restore original function, restore valstack state.
@@ -6457,7 +6528,7 @@ static int parse_function_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, int
 
 	DUK_ASSERT_TOP(ctx, entry_top);
 
-	return n_funcs;
+	return fnum;
 }
 
 #if 0
