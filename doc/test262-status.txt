@@ -46,10 +46,6 @@ cases to fail:
   top level.  Such statements are not part of E5/E5.1.  (They are fairly common
   so perhaps this support will be added later.)
 
-* Highly nested functions currently require a ``O(2^N)`` parsing time (where
-  ``N`` is the nesting level).  Test cases with very highly nested functions
-  now error out with a ``RangeError``.
-
 * Duktape does not support specific locales, which affect e.g. case conversion
   and locale sensitive string comparison.  ``String.prototype.localeCompare()``
   is the same as an ordinary compare which breaks e.g.
@@ -203,20 +199,6 @@ ch12/12.6/12.6.2/S12.6.2_A4_T5
   ===
 
 Duktape bug.
-
-ch13/13.2/S13.2.1_A1_T1
------------------------
-
-::
-
-  === ch13/13.2/S13.2.1_A1_T1 failed in non-strict mode ===
-  --- errors ---
-  RangeError: token limit (line 2247)
-          duk_lexer.c:516
-  ===
-
-Very highly nested functions.  Duktape bails out with an internal error
-after a while.
 
 ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1
 -------------------------------------------

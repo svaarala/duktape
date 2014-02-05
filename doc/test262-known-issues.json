@@ -7,7 +7,6 @@
   { "test": "ch12/12.6/12.6.1/S12.6.1_A4_T5", "diagnosed": "INVALID opcode (0)" },
   { "test": "ch12/12.6/12.6.2/S12.6.2_A4_T5", "diagnosed": "INVALID opcode (0)" },
   { "test": "ch15/15.4/15.4.4/15.4.4.4/S15.4.4.4_A1_T4", "diagnosed": "E5.1 Section 15.4.4.4 (concat) algorithm does not update result length for trailing undefined elements, but testcase requires that" },
-  { "test": "ch13/13.2/S13.2.1_A1_T1", "known": "very highly nested functions (timeout -> RangeError), Duktape limitation" },
   { "test": "ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1", "known": "octal input to parseInt() accepted by Duktape" },
   { "test": "ch15/15.10/15.10.2/15.10.2.10/S15.10.2.10_A2.1_T3", "known": "uses invalid RegExp control escape '\\cX' where X is non-ASCII" },
   { "test": "ch15/15.10/15.10.2/15.10.2.10/S15.10.2.10_A5.1_T1", "known": "possible test case bug, compiles invalid RegExp '/\\undefined/'" },
