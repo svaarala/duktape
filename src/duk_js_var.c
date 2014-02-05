@@ -706,11 +706,11 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
                                              duk_id_lookup_result *out) {
 	duk_hthread *env_thr;
 	duk_hobject *env_func;
-	int env_regbase;
+	duk_int_t env_regbase;
 	duk_hobject *varmap;
 	duk_tval *tv;
-	int reg_rel;
-	int idx;
+	duk_int_t reg_rel;
+	duk_int_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -747,7 +747,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	reg_rel = DUK_TVAL_GET_NUMBER(tv);
+	reg_rel = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
 	DUK_ASSERT(reg_rel >= 0 && reg_rel < ((duk_hcompiledfunction *) env_func)->nregs);
 
 	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THREAD(thr));
@@ -765,7 +765,7 @@ static int get_identifier_open_decl_env_regs(duk_hthread *thr,
 	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_REGBASE(thr));
 	DUK_ASSERT(tv != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	env_regbase = DUK_TVAL_GET_NUMBER(tv);
+	env_regbase = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
 
 	idx = env_regbase + reg_rel;
 	tv = &env_thr->valstack[idx];
@@ -790,8 +790,8 @@ static int get_identifier_activation_regs(duk_hthread *thr,
 	duk_tval *tv;
 	duk_hobject *func;
 	duk_hobject *varmap;
-	int reg_rel;
-	int idx;
+	duk_int_t reg_rel;
+	duk_int_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -819,7 +819,7 @@ static int get_identifier_activation_regs(duk_hthread *thr,
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	reg_rel = DUK_TVAL_GET_NUMBER(tv);
+	reg_rel = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
 	DUK_ASSERT(reg_rel >= 0 && reg_rel < ((duk_hcompiledfunction *) func)->nregs);
 
 	idx = act->idx_bottom + reg_rel;

@@ -1620,8 +1620,8 @@ static duk_tval *shallow_fast_path_array_check_tval(duk_hobject *obj, duk_tval *
 		idx = (duk_uint32_t) d;
 		if ((double) idx == d) {
 			/* Note: idx is not necessarily a valid array index (0xffffffffU is not valid) */
-			DUK_ASSERT_DISABLE(idx >= 0);
-			DUK_ASSERT(idx <= 0xffffffffU);
+			DUK_ASSERT_DISABLE(idx >= 0);  /* disabled because idx is duk_uint32_t so always true */
+			DUK_ASSERT_DISABLE(idx <= 0xffffffffU);  /* same */
 
 			if (idx < obj->a_size) {
 				/* technically required to check, but obj->a_size check covers this */
@@ -2236,8 +2236,6 @@ static int handle_put_array_length_smaller(duk_hthread *thr,
 	}
 
 	DUK_UNREACHABLE();
-	*out_result_len = 0;
-	return 0;
 }
 
 /* FIXME: is valstack top best place for argument? */

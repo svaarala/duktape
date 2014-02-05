@@ -241,8 +241,13 @@ static int duk_bi_date_get_local_tzoffset(double d) {
 	(void) mktime(&tms[0]);
 	tms[1].tm_isdst = tms[0].tm_isdst;
 	t2 = mktime(&tms[1]);
-	DUK_ASSERT(t2 >= 0);
-	if (t2 < 0) {
+	DUK_ASSERT_DISABLE(t2 >= 0);  /* On some platforms time_t is unsigned and this would cause a warning */
+	if (t2 == (time_t) -1) {
+		/* This check used to be for (t2 < 0) but on some platforms
+		 * time_t is unsigned and apparently the proper way to detect
+		 * an mktime() error return is the cast above.  See e.g.:
+		 * http://pubs.opengroup.org/onlinepubs/009695299/functions/mktime.html
+		 */
 		goto error;
 	}
 

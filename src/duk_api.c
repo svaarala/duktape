@@ -1353,7 +1353,7 @@ size_t duk_get_length(duk_context *ctx, int index) {
 		return 0;
 	}
 
-	return 0;
+	DUK_UNREACHABLE();
 }
 
 /*
