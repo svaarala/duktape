@@ -187,14 +187,21 @@ Released
   repo; simplify Makefiles etc accordingly (this change is not visible in
   the source distributable)
 
-Planned
-=======
-
-0.10.0 (2014-XX-XX)
+0.10.0 (2014-03-XX)
 -------------------
+
+* Add a message argument to fatal handler function callback, simplify
+  internal fatal error and panic handling
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+
+* Fix O(depth^2) inner function parsing issue, inner functions are now
+  only parsed once and deeply nested inner functions are no longer a
+  performance issue
+
+Planned
+=======
 
 0.11.0 (2014-XX-XX)
 -------------------
@@ -203,4 +210,9 @@ Planned
 -------------------
 
 * Feature complete baseline release
+
+1.1.0 (2014-XX-XX)
+------------------
+
+* Debugger
 
