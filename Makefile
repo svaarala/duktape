@@ -348,7 +348,7 @@ vgtest262test: test262-d067d2f0ca30 duk
 # http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
 .PHONY: test262cat
 test262cat: test262-d067d2f0ca30
-	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it"
+	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
 	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
