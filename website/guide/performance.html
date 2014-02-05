@@ -202,12 +202,6 @@ internal identifier-to-register binding tables.</p>
 <p>To avoid these, isolate performance critical parts into separate minimal
 functions which avoid using the features mentioned above.</p>
 
-<p>There is currently also a compilation time penalty for having deeply
-nested inner functions.  The compiler needs multiple passes over the same
-function.  At the moment, inner functions are scanned <code>2**n</code>
-times, where <code>n</code> is the function level (0, 1, ...).  This only
-slows down compilation, not execution.</p>
-
 <h2>Minimize use of temporary strings</h2>
 
 <p>All temporary strings are interned.  It is particularly bad to accumulate

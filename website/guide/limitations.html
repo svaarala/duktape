@@ -77,16 +77,6 @@ and array entries are moved to the "entry part".  This involves interning all us
 array indices as explicit string keys (e.g. "0", "1", etc).  This is not a
 compliance concern, but degrades performance.</p>
 
-<h2>Compiler performance for inner functions</h2>
-
-<p>Compiler needs multiple passes over the same function.  Inner functions
-are scanned <code>2**n</code> times, where <code>n</code> is the function level
-(0, 1, ...).</p>
-
-<p>If function nesting level is very deep, the compiler may take very long to
-compile an input.  In pathological cases the compiler will eventually bail out
-with a <code>RangeError</code>.</p>
-
 <h2>Global/eval code is slower than function code</h2>
 
 <p>Bytecode generated for global and eval code cannot assign variables
