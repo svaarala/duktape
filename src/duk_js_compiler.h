@@ -107,6 +107,26 @@ typedef struct {
 
 /* Compiling state of one function, eventually converted to duk_hcompiledfunction */
 struct duk_compiler_func {
+	/* These pointers are at the start of the struct so that they pack
+	 * nicely.  Mixing pointers and integer values is bad on some
+	 * platforms (e.g. if int is 32 bits and pointers are 64 bits).
+	 */
+
+	duk_hstring *h_name;                /* function name (borrowed reference), ends up in _name */
+	duk_hbuffer_dynamic *h_code;        /* C array of duk_compiler_instr */
+	duk_hobject *h_consts;              /* array */
+	duk_hobject *h_funcs;               /* array of function templates: [func1, offset1, line1, func2, offset2, line2]
+	                                     * offset/line points to closing brace to allow skipping on pass 2
+	                                     */
+	duk_hobject *h_decls;               /* array of declarations: [ name1, val1, name2, val2, ... ]
+	                                     * valN = (typeN) | (fnum << 8), where fnum is inner func number (0 for vars)
+	                                     * record function and variable declarations in pass 1
+	                                     */
+	duk_hobject *h_labelnames;          /* array of active label names */
+	duk_hbuffer_dynamic *h_labelinfos;  /* C array of duk_labelinfo */
+	duk_hobject *h_argnames;            /* array of formal argument names (-> _formals) */
+	duk_hobject *h_varmap;              /* variable map for pass 2 (identifier -> register number or null (unmapped)) */
+
 	int is_function;                    /* is an actual function (not global/eval code) */
 	int is_eval;                        /* is eval code */
 	int is_global;                      /* is global code */
@@ -125,40 +145,15 @@ struct duk_compiler_func {
 
 	int reject_regexp_in_adv;           /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
 
-	duk_hstring *h_name;                /* function name (borrowed reference), ends up in _name */
-
 	int code_idx;
-	duk_hbuffer_dynamic *h_code;        /* C array of duk_compiler_instr */
-
 	int consts_idx;
-	duk_hobject *h_consts;              /* array */
-
 	int funcs_idx;
 	int fnum_next;
-	duk_hobject *h_funcs;               /* array of function templates: [func1, offset1, line1, func2, offset2, line2]
-	                                     * offset/line points to closing brace to allow skipping on pass 2
-	                                     */
-
-	/* record function and variable declarations in pass 1 */
 	int decls_idx;
-	duk_hobject *h_decls;               /* array of declarations: [ name1, val1, name2, val2, ... ]
-	                                     * valN = (typeN) | (fnum << 8), where fnum is inner func number (0 for vars)
-	                                     */
-
-	/* active labels */
 	int labelnames_idx;
-	duk_hobject *h_labelnames;          /* array of label names */
-
 	int labelinfos_idx;
-	duk_hbuffer_dynamic *h_labelinfos;  /* C array of duk_labelinfo */
-
-	/* formal arguments */
-	int argnames_idx;                   /* array of formal argument names (-> _formals) */
-	duk_hobject *h_argnames;
-
-	/* variable map for pass 2 (identifier -> register number or null (unmapped)) */
+	int argnames_idx;
 	int varmap_idx;
-	duk_hobject *h_varmap;
 
 	/* temp reg handling */
 	int temp_first;                     /* first register that is a temporary (below: variables) */
