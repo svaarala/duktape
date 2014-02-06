@@ -119,7 +119,7 @@ int duk_bi_object_constructor_define_properties(duk_context *ctx) {
 	return duk_hobject_object_define_properties(ctx);
 }
 
-static int seal_freeze_helper(duk_context *ctx, int is_freeze) {
+static int duk__seal_freeze_helper(duk_context *ctx, int is_freeze) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
@@ -137,11 +137,11 @@ static int seal_freeze_helper(duk_context *ctx, int is_freeze) {
 }
 
 int duk_bi_object_constructor_seal(duk_context *ctx) {
-	return seal_freeze_helper(ctx, 0);
+	return duk__seal_freeze_helper(ctx, 0);
 }
 
 int duk_bi_object_constructor_freeze(duk_context *ctx) {
-	return seal_freeze_helper(ctx, 1);
+	return duk__seal_freeze_helper(ctx, 1);
 }
 
 int duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {

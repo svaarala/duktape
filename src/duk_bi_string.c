@@ -1079,7 +1079,7 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
  */
 
 #ifdef DUK_USE_REGEXP_SUPPORT
-static void to_regexp_helper(duk_context *ctx, duk_idx_t index, int force_new) {
+static void duk__to_regexp_helper(duk_context *ctx, duk_idx_t index, int force_new) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
@@ -1121,7 +1121,7 @@ duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 	(void) duk_push_this_coercible_to_string(ctx);  /* at index 1 */
-	to_regexp_helper(ctx, 0 /*index*/, 1 /*force_new*/);
+	duk__to_regexp_helper(ctx, 0 /*index*/, 1 /*force_new*/);
 
 	/* stack[0] = regexp
 	 * stack[1] = string
@@ -1161,7 +1161,7 @@ duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 	(void) duk_push_this_coercible_to_string(ctx);
-	to_regexp_helper(ctx, 0 /*index*/, 0 /*force_new*/);
+	duk__to_regexp_helper(ctx, 0 /*index*/, 0 /*force_new*/);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_GLOBAL);  /* FIXME: duk_get_prop_stridx_boolean */
 	DUK_ASSERT(duk_is_boolean(ctx, -1));  /* 'global' is non-configurable and non-writable */
 	global = (duk_small_int_t) duk_get_boolean(ctx, -1);

@@ -16,11 +16,11 @@
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
 		(heap)->mark_and_sweep_trigger_counter--; \
 		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
-			run_voluntary_gc(heap); \
+			duk__run_voluntary_gc(heap); \
 		} \
 	} while (0)
 
-static void run_voluntary_gc(duk_heap *heap) {
+static void duk__run_voluntary_gc(duk_heap *heap) {
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now");
 	} else {

@@ -8,7 +8,7 @@
 
 #include "duk_internal.h"
 
-static void init_object_parts(duk_heap *heap, duk_hobject *obj, int hobject_flags) {
+static void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, int hobject_flags) {
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	obj->p = NULL;
 #endif
@@ -54,7 +54,7 @@ duk_hobject *duk_hobject_alloc(duk_heap *heap, int hobject_flags) {
 	}
 	DUK_MEMSET(res, 0, sizeof(duk_hobject));
 
-	init_object_parts(heap, res, hobject_flags);
+	duk__init_object_parts(heap, res, hobject_flags);
 
 	return res;
 }
@@ -68,7 +68,7 @@ duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, int hobject_f
 	}
 	DUK_MEMSET(res, 0, sizeof(duk_hcompiledfunction));
 
-	init_object_parts(heap, &res->obj, hobject_flags);
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->data = NULL;
@@ -88,7 +88,7 @@ duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, int hobject_flags
 	}
 	DUK_MEMSET(res, 0, sizeof(duk_hnativefunction));
 
-	init_object_parts(heap, &res->obj, hobject_flags);
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->func = NULL;
@@ -114,7 +114,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags) {
 	}
 	DUK_MEMSET(res, 0, sizeof(duk_hthread));
 
-	init_object_parts(heap, &res->obj, hobject_flags);
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->heap = NULL;

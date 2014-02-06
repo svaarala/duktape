@@ -22,9 +22,9 @@ void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int 
 const char *duk_err_file_stash = NULL;
 int duk_err_line_stash = 0;
 
-DUK_NORETURN(static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap));
+DUK_NORETURN(static void duk__handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap));
 
-static void _handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
+static void duk__handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, va_list ap) {
 	char msg[DUK__ERRFMT_BUFSIZE];
 	(void) DUK_VSNPRINTF(msg, sizeof(msg), fmt, ap);
 	msg[sizeof(msg) - 1] = (char) 0;
@@ -34,14 +34,14 @@ static void _handle_error(const char *filename, int line, duk_hthread *thr, int 
 void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	_handle_error(filename, line, thr, code, fmt, ap);
+	duk__handle_error(filename, line, thr, code, fmt, ap);
 	va_end(ap);  /* dead code */
 }
 
 void duk_err_handle_error_stash(duk_hthread *thr, int code, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	_handle_error(duk_err_file_stash, duk_err_line_stash, thr, code, fmt, ap);
+	duk__handle_error(duk_err_file_stash, duk_err_line_stash, thr, code, fmt, ap);
 	va_end(ap);  /* dead code */
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */

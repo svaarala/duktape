@@ -32,7 +32,7 @@ typedef union {
  *  Two's complement arithmetic.
  */
 
-static void duk_selftest_twos_complement(void) {
+static void duk__selftest_twos_complement(void) {
 	volatile int test;
 	test = -1;
 	if (((duk_uint8_t *) &test)[0] != (duk_uint8_t) 0xff) {
@@ -45,7 +45,7 @@ static void duk_selftest_twos_complement(void) {
  *  Basic double / byte union memory layout.
  */
 
-static void duk_selftest_union_size(void) {
+static void duk__selftest_union_size(void) {
 	if (sizeof(duk_test_union) != 8) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: invalid union size");
 	}
@@ -55,7 +55,7 @@ static void duk_selftest_union_size(void) {
  *  Union aliasing, see misc/clang_aliasing.c.
  */
 
-static void duk_selftest_double_aliasing(void) {
+static void duk__selftest_double_aliasing(void) {
 	duk_test_union a, b;
 
 	/* Test signaling NaN and alias assignment in all
@@ -85,7 +85,7 @@ static void duk_selftest_double_aliasing(void) {
  *  Zero sign, see misc/tcc_zerosign2.c.
  */
 
-static void duk_selftest_double_zero_sign(void) {
+static void duk__selftest_double_zero_sign(void) {
 	volatile duk_test_union a, b;
 
 	a.d = 0.0;
@@ -98,10 +98,10 @@ static void duk_selftest_double_zero_sign(void) {
  */
 
 void duk_selftest_run_tests(void) {
-	duk_selftest_twos_complement();
-	duk_selftest_union_size();
-	duk_selftest_double_aliasing();
-	duk_selftest_double_zero_sign();
+	duk__selftest_twos_complement();
+	duk__selftest_union_size();
+	duk__selftest_double_aliasing();
+	duk__selftest_double_zero_sign();
 }
 
 #undef DUK__UNION_CMP
