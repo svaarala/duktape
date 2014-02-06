@@ -7,7 +7,7 @@
  *  There are two packed type alternatives: an 8-byte representation
  *  based on an IEEE double (preferred for compactness), and a 12-byte
  *  representation (portability).  The latter is needed also in e.g.
- *  64-bit environments (it may pad to 16 bytes per value).
+ *  64-bit environments (it usually pads to 16 bytes per value).
  *
  *  Selecting the tagged type format involves many trade-offs (memory
  *  use, size and performance of generated code, portability, etc),
