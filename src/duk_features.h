@@ -608,8 +608,8 @@ typedef unsigned int duk_small_uint_t;
  * ensure duk_uint32_t casts back and forth nicely.  Almost everything
  * else uses the signed one.
  */
-typedef duk_int_fast32_t duk_codepoint_t;
-typedef duk_uint_fast32_t duk_ucodepoint_t;
+typedef duk_int32_t duk_codepoint_t;
+typedef duk_uint32_t duk_ucodepoint_t;
 
 /* IEEE double typedef. */
 typedef double duk_double_t;
