@@ -311,6 +311,98 @@ static int init_heap_thread(duk_heap *heap) {
 	return 1;
 }
 
+#ifdef DUK_USE_DEBUG
+#define DUK__DUMPSZ(t)  do { \
+		DUK_DPRINT("" #t "=%d", (int) sizeof(t)); \
+	} while(0)
+
+static void duk__dump_type_sizes(void) {
+	DUK_DPRINT("sizeofs()");
+
+	/* basic platform types */
+	DUK__DUMPSZ(char);
+	DUK__DUMPSZ(short);
+	DUK__DUMPSZ(int);
+	DUK__DUMPSZ(long);
+	DUK__DUMPSZ(double);
+	DUK__DUMPSZ(void *);
+	DUK__DUMPSZ(size_t);
+
+	/* basic types from duk_features.h */
+	DUK__DUMPSZ(uint8_t);
+	DUK__DUMPSZ(int8_t);
+	DUK__DUMPSZ(uint16_t);
+	DUK__DUMPSZ(int16_t);
+	DUK__DUMPSZ(uint32_t);
+	DUK__DUMPSZ(int32_t);
+	DUK__DUMPSZ(uint64_t);
+	DUK__DUMPSZ(int64_t);
+	DUK__DUMPSZ(uint_least8_t);
+	DUK__DUMPSZ(int_least8_t);
+	DUK__DUMPSZ(uint_least16_t);
+	DUK__DUMPSZ(int_least16_t);
+	DUK__DUMPSZ(uint_least32_t);
+	DUK__DUMPSZ(int_least32_t);
+	DUK__DUMPSZ(uint_least64_t);
+	DUK__DUMPSZ(int_least64_t);
+	DUK__DUMPSZ(uint_fast8_t);
+	DUK__DUMPSZ(int_fast8_t);
+	DUK__DUMPSZ(uint_fast16_t);
+	DUK__DUMPSZ(int_fast16_t);
+	DUK__DUMPSZ(uint_fast32_t);
+	DUK__DUMPSZ(int_fast32_t);
+	DUK__DUMPSZ(uint_fast64_t);
+	DUK__DUMPSZ(int_fast64_t);
+	DUK__DUMPSZ(uintptr_t);
+	DUK__DUMPSZ(intptr_t);
+	DUK__DUMPSZ(uintmax_t);
+	DUK__DUMPSZ(intmax_t);
+	DUK__DUMPSZ(duk_small_int_t);
+	DUK__DUMPSZ(duk_small_uint_t);
+	DUK__DUMPSZ(duk_codepoint_t);
+	DUK__DUMPSZ(duk_ucodepoint_t);
+	DUK__DUMPSZ(duk_double_t);
+
+	/* tval */
+	DUK__DUMPSZ(duk_double_union);
+	DUK__DUMPSZ(duk_tval);
+
+	/* structs from duk_forwdecl.h */
+	DUK__DUMPSZ(duk_jmpbuf);
+	DUK__DUMPSZ(duk_heaphdr);
+	DUK__DUMPSZ(duk_heaphdr_string);
+	DUK__DUMPSZ(duk_hstring);
+	DUK__DUMPSZ(duk_hobject);
+	DUK__DUMPSZ(duk_hcompiledfunction);
+	DUK__DUMPSZ(duk_hnativefunction);
+	DUK__DUMPSZ(duk_hthread);
+	DUK__DUMPSZ(duk_hbuffer);
+	DUK__DUMPSZ(duk_hbuffer_fixed);
+	DUK__DUMPSZ(duk_hbuffer_dynamic);
+	DUK__DUMPSZ(duk_propaccessor);
+	DUK__DUMPSZ(duk_propvalue);
+	DUK__DUMPSZ(duk_propdesc);
+	DUK__DUMPSZ(duk_heap);
+	DUK__DUMPSZ(duk_activation);
+	DUK__DUMPSZ(duk_catcher);
+	DUK__DUMPSZ(duk_strcache);
+	DUK__DUMPSZ(duk_ljstate);
+	DUK__DUMPSZ(duk_fixedbuffer);
+	DUK__DUMPSZ(duk_bitdecoder_ctx);
+	DUK__DUMPSZ(duk_bitencoder_ctx);
+	DUK__DUMPSZ(duk_token);
+	DUK__DUMPSZ(duk_re_token);
+	DUK__DUMPSZ(duk_lexer_point);
+	DUK__DUMPSZ(duk_lexer_ctx);
+	DUK__DUMPSZ(duk_compiler_instr);
+	DUK__DUMPSZ(duk_compiler_func);
+	DUK__DUMPSZ(duk_compiler_ctx);
+	DUK__DUMPSZ(duk_re_matcher_ctx);
+	DUK__DUMPSZ(duk_re_compiler_ctx);
+}
+#undef DUK__DUMPSZ
+#endif  /* DUK_USE_DEBUG */
+
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_realloc_function realloc_func,
                          duk_free_function free_func,
@@ -319,6 +411,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	duk_heap *res = NULL;
 
 	DUK_DPRINT("allocate heap");
+
+	/* Debug dump type sizes */
+#ifdef DUK_USE_DEBUG
+	duk__dump_type_sizes();
+#endif
 
 	/* If selftests enabled, run them as early as possible. */
 #ifdef DUK_USE_SELF_TESTS
