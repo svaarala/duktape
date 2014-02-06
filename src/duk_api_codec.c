@@ -7,8 +7,8 @@
 #include "duk_internal.h"
 
 /* dst length must be exactly ceil(len/3)*4 */
-static void base64_encode_helper(const unsigned char *src, const unsigned char *src_end,
-                                 unsigned char *dst, unsigned char *dst_end) {
+static void duk__base64_encode_helper(const unsigned char *src, const unsigned char *src_end,
+                                      unsigned char *dst, unsigned char *dst_end) {
 	unsigned int i, snip;
 	unsigned int x, y, t;
 
@@ -63,8 +63,8 @@ static void base64_encode_helper(const unsigned char *src, const unsigned char *
 	}
 }
 
-static int base64_decode_helper(const unsigned char *src, const unsigned char *src_end,
-                                unsigned char *dst, unsigned char *dst_end, unsigned char **out_dst_final) {
+static int duk__base64_decode_helper(const unsigned char *src, const unsigned char *src_end,
+                                     unsigned char *dst, unsigned char *dst_end, unsigned char **out_dst_final) {
 	unsigned int t;
 	unsigned int x, y;
 	int group_idx;
@@ -190,8 +190,8 @@ const char *duk_base64_encode(duk_context *ctx, int index) {
 	dstlen = (srclen + 2) / 3 * 4;
 	dst = (unsigned char *) duk_push_fixed_buffer(ctx, dstlen);
 
-	base64_encode_helper((const unsigned char *) src, (const unsigned char *) (src + srclen),
-	                     (unsigned char *) dst, (unsigned char *) (dst + dstlen));
+	duk__base64_encode_helper((const unsigned char *) src, (const unsigned char *) (src + srclen),
+	                          (unsigned char *) dst, (unsigned char *) (dst + dstlen));
 
 	ret = duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
@@ -230,8 +230,8 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	dst = (unsigned char *) duk_push_dynamic_buffer(ctx, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
-	retval = base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
-	                              dst, dst + dstlen, &dst_final);
+	retval = duk__base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
+	                                   dst, dst + dstlen, &dst_final);
 	if (!retval) {
 		goto type_error;
 	}

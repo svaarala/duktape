@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static void concat_and_join_helper(duk_context *ctx, unsigned int count, int is_join) {
+static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, int is_join) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	unsigned int i;
 	unsigned int idx;
@@ -99,11 +99,11 @@ static void concat_and_join_helper(duk_context *ctx, unsigned int count, int is_
 }
 
 void duk_concat(duk_context *ctx, unsigned int count) {
-	concat_and_join_helper(ctx, count, 0 /*is_join*/);
+	duk__concat_and_join_helper(ctx, count, 0 /*is_join*/);
 }
 
 void duk_join(duk_context *ctx, unsigned int count) {
-	concat_and_join_helper(ctx, count, 1 /*is_join*/);
+	duk__concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
 /* FIXME: could map/decode be unified with duk_unicode_support.c code?
