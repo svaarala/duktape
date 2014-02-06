@@ -40,7 +40,7 @@
 /* Shared entry code for many Array built-ins.  Note that length is left
  * on stack (it could be popped, but that's not necessary).
  */
-static unsigned int push_this_obj_len_u32(duk_context *ctx) {
+static unsigned int duk__push_this_obj_len_u32(duk_context *ctx) {
 	unsigned int len;
 
 	(void) duk_push_this_coercible_to_object(ctx);
@@ -247,7 +247,7 @@ int duk_bi_array_prototype_join_shared(duk_context *ctx) {
 		duk_to_string(ctx, 0);
 	}
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 
 	/* [ sep ToObject(this) len ] */
 
@@ -315,7 +315,7 @@ int duk_bi_array_prototype_pop(duk_context *ctx) {
 	unsigned int idx;
 
 	DUK_ASSERT_TOP(ctx, 0);
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		duk_push_int(ctx, 0);
 		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
@@ -341,7 +341,7 @@ int duk_bi_array_prototype_push(duk_context *ctx) {
 	int i, n;
 
 	n = duk_get_top(ctx);
-	len = (double) push_this_obj_len_u32(ctx);
+	len = (double) duk__push_this_obj_len_u32(ctx);
 
 	/* [ arg1 ... argN obj length ] */
 
@@ -372,7 +372,7 @@ int duk_bi_array_prototype_push(duk_context *ctx) {
  *  because there is no fast path for array parts.
  */
 
-static int array_sort_compare(duk_context *ctx, int idx1, int idx2) {
+static int duk__array_sort_compare(duk_context *ctx, int idx1, int idx2) {
 	int have1, have2;
 	int undef1, undef2;
 	int ret;
@@ -395,14 +395,14 @@ static int array_sort_compare(duk_context *ctx, int idx1, int idx2) {
 	 */
 
 	if (idx1 == idx2) {
-		DUK_DDDPRINT("array_sort_compare: idx1=%d, idx2=%d -> indices identical, quick exit", idx1, idx2);
+		DUK_DDDPRINT("duk__array_sort_compare: idx1=%d, idx2=%d -> indices identical, quick exit", idx1, idx2);
 		return 0;
 	}
 
 	have1 = duk_get_prop_index(ctx, idx_obj, idx1);
 	have2 = duk_get_prop_index(ctx, idx_obj, idx2);
 
-	DUK_DDDPRINT("array_sort_compare: idx1=%d, idx2=%d, have1=%d, have2=%d, val1=%!T, val2=%!T",
+	DUK_DDDPRINT("duk__array_sort_compare: idx1=%d, idx2=%d, have1=%d, have2=%d, val1=%!T, val2=%!T",
 	             idx1, idx2, have1, have2, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
 
 	if (have1) {
@@ -487,7 +487,7 @@ static int array_sort_compare(duk_context *ctx, int idx1, int idx2) {
 	return ret;
 }
 
-static void array_sort_swap(duk_context *ctx, int l, int r) {
+static void duk__array_sort_swap(duk_context *ctx, int l, int r) {
 	int have_l, have_r;
 	int idx_obj = 1;  /* fixed offsets in valstack */
 
@@ -517,7 +517,7 @@ static void array_sort_swap(duk_context *ctx, int l, int r) {
 
 #ifdef DUK_USE_DDDEBUG
 /* Debug print which visualizes the qsort partitioning process. */
-static void debuglog_qsort_state(duk_context *ctx, int lo, int hi, int pivot) {
+static void duk__debuglog_qsort_state(duk_context *ctx, int lo, int hi, int pivot) {
 	char buf[4096];
 	char *ptr = buf;
 	int i, n;
@@ -546,11 +546,11 @@ static void debuglog_qsort_state(duk_context *ctx, int lo, int hi, int pivot) {
 }
 #endif
 
-static void array_qsort(duk_context *ctx, int lo, int hi) {
+static void duk__array_qsort(duk_context *ctx, int lo, int hi) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int p, l, r;
 
-	DUK_DDDPRINT("array_qsort: lo=%d, hi=%d, obj=%!T", lo, hi, duk_get_tval(ctx, 1));
+	DUK_DDDPRINT("duk__array_qsort: lo=%d, hi=%d, obj=%!T", lo, hi, duk_get_tval(ctx, 1));
 
 	DUK_ASSERT_TOP(ctx, 3);
 
@@ -573,7 +573,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 	DUK_DDDPRINT("lo=%d, hi=%d, chose pivot p=%d", lo, hi, p);
 
 	/* move pivot out of the way */
-	array_sort_swap(ctx, p, lo);
+	duk__array_sort_swap(ctx, p, lo);
 	p = lo;
 	DUK_DDDPRINT("pivot moved out of the way: %!T", duk_get_tval(ctx, 1));
 
@@ -586,7 +586,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 			if (l >= hi) {
 				break;
 			}
-			if (array_sort_compare(ctx, l, p) >= 0) {  /* !(l < p) */
+			if (duk__array_sort_compare(ctx, l, p) >= 0) {  /* !(l < p) */
 				break;
 			}
 			l++;
@@ -596,7 +596,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 			if (r <= lo) {
 				break;
 			}
-			if (array_sort_compare(ctx, p, r) >= 0) {  /* !(p < r) */
+			if (duk__array_sort_compare(ctx, p, r) >= 0) {  /* !(p < r) */
 				break;
 			}
 			r--;
@@ -608,7 +608,7 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 
 		DUK_DDDPRINT("swap %d and %d", l, r);
 
-		array_sort_swap(ctx, l, r);
+		duk__array_sort_swap(ctx, l, r);
 
 		DUK_DDDPRINT("after swap: %!T", duk_get_tval(ctx, 1));
 		l++;
@@ -627,28 +627,28 @@ static void array_qsort(duk_context *ctx, int lo, int hi) {
 
 	/* move pivot to its final place */
 	DUK_DDDPRINT("before final pivot swap: %!T", duk_get_tval(ctx, 1));
-	array_sort_swap(ctx, lo, r);	
+	duk__array_sort_swap(ctx, lo, r);	
 
 #ifdef DUK_USE_DDDEBUG
-	debuglog_qsort_state(ctx, lo, hi, r);
+	duk__debuglog_qsort_state(ctx, lo, hi, r);
 #endif
 
 	DUK_DDDPRINT("recurse: pivot=%d, obj=%!T", r, duk_get_tval(ctx, 1));
-	array_qsort(ctx, lo, r - 1);
-	array_qsort(ctx, r + 1, hi);
+	duk__array_qsort(ctx, lo, r - 1);
+	duk__array_qsort(ctx, r + 1, hi);
 }
 
 int duk_bi_array_prototype_sort(duk_context *ctx) {
 	unsigned int len;
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 
 	/* stack[0] = compareFn
 	 * stack[1] = ToObject(this)
 	 * stack[2] = ToUint32(length)
 	 */
 
-	array_qsort(ctx, 0, len - 1);
+	duk__array_qsort(ctx, 0, len - 1);
 
 	DUK_ASSERT_TOP(ctx, 3);
 	duk_pop(ctx);
@@ -682,7 +682,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 		nargs = 2;
 	}
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 
 	act_start = duk_to_int_clamped(ctx, 0, -len, len);
 	if (act_start < 0) {
@@ -804,7 +804,7 @@ int duk_bi_array_prototype_reverse(duk_context *ctx) {
 	unsigned int lower, upper;
 	int have_lower, have_upper;
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	middle = len / 2;
 
 	for (lower = 0; lower < middle; lower++) {
@@ -850,7 +850,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	int i;
 	duk_uint32_t res_length = 0;
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	duk_push_array(ctx);
 
 	/* stack[0] = start
@@ -906,7 +906,7 @@ int duk_bi_array_prototype_shift(duk_context *ctx) {
 	unsigned int len;
 	unsigned int i;
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		duk_push_int(ctx, 0);
 		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
@@ -952,7 +952,7 @@ int duk_bi_array_prototype_unshift(duk_context *ctx) {
 
 	/* FIXME: duk_get_top return type */
 	nargs = (unsigned int) duk_get_top(ctx);
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 
 	/* stack[0...nargs-1] = unshift args (vararg)
 	 * stack[nargs] = ToObject(this)
@@ -1018,7 +1018,7 @@ int duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	nargs = duk_get_top(ctx);
 	duk_set_top(ctx, 2);
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		goto not_found;
 	}
@@ -1117,7 +1117,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	/* each call this helper serves has nargs==2 */
 	DUK_ASSERT_TOP(ctx, 2);
 
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	if (!duk_is_callable(ctx, 0)) {
 		goto type_error;
 	}
@@ -1243,7 +1243,7 @@ int duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	DUK_DPRINT("nargs=%d", nargs);
 
 	duk_set_top(ctx, 2);
-	len = push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(ctx);
 	if (!duk_is_callable(ctx, 0)) {
 		goto type_error;
 	}
