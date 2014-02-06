@@ -12,8 +12,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-02-03 00:57:50.471954 Z
 references: []
 
@@ -22,4 +22,8 @@ log_events:
 - - 2014-02-03 00:57:50.655897 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-02-06 18:24:40.754781 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""
