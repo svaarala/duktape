@@ -13,10 +13,10 @@
  *  library APIs use.
  */
 
-typedef double (*one_arg_func)(double);
-typedef double (*two_arg_func)(double, double);
+typedef double (*duk__one_arg_func)(double);
+typedef double (*duk__two_arg_func)(double, double);
 
-static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
+static int duk__math_minmax(duk_context *ctx, double initial, duk__two_arg_func min_max) {
 	duk_int_t n = duk_get_top(ctx);
 	duk_int_t i;
 	double res = initial;
@@ -47,7 +47,7 @@ static int math_minmax(duk_context *ctx, double initial, two_arg_func min_max) {
 	return 1;
 }
 
-static double fmin_fixed(double x, double y) {
+static double duk__fmin_fixed(double x, double y) {
 	/* fmin() with args -0 and +0 is not guaranteed to return
 	 * -0 as Ecmascript requires.
 	 */
@@ -66,7 +66,7 @@ static double fmin_fixed(double x, double y) {
 #endif
 }
 
-static double fmax_fixed(double x, double y) {
+static double duk__fmax_fixed(double x, double y) {
 	/* fmax() with args -0 and +0 is not guaranteed to return
 	 * +0 as Ecmascript requires.
 	 */
@@ -84,7 +84,7 @@ static double fmax_fixed(double x, double y) {
 #endif
 }
 
-static double round_fixed(double x) {
+static double duk__round_fixed(double x) {
 	/* Numbers half-way between integers must be rounded towards +Infinity,
 	 * e.g. -3.5 must be rounded to -3 (not -4).  When rounded to zero, zero
 	 * sign must be set appropriately.  E5.1 Section 15.8.2.15.
@@ -125,7 +125,7 @@ static double round_fixed(double x) {
 	return floor(x + 0.5);
 }
 
-static double pow_fixed(double x, double y) {
+static double duk__pow_fixed(double x, double y) {
 	/* The ANSI C pow() semantics differ from Ecmascript.
 	 *
 	 * E.g. when x==1 and y is +/- infinite, the Ecmascript required
@@ -150,7 +150,7 @@ static double pow_fixed(double x, double y) {
 }
 
 /* order must match constants in genbuiltins.py */
-static const one_arg_func one_arg_funcs[] = {
+static const duk__one_arg_func duk__one_arg_funcs[] = {
 	fabs,
 	acos,
 	asin,
@@ -160,25 +160,25 @@ static const one_arg_func one_arg_funcs[] = {
 	exp,
 	floor,
 	log,
-	round_fixed,
+	duk__round_fixed,
 	sin,
 	sqrt,
 	tan
 };
 
 /* order must match constants in genbuiltins.py */
-static const two_arg_func two_arg_funcs[] = {
+static const duk__two_arg_func duk__two_arg_funcs[] = {
 	atan2,
-	pow_fixed
+	duk__pow_fixed
 };
 
 duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_magic(ctx);
-	one_arg_func fun;
+	duk__one_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0);
-	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(one_arg_funcs) / sizeof(one_arg_func)));
-	fun = one_arg_funcs[fun_idx];
+	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__one_arg_funcs) / sizeof(duk__one_arg_func)));
+	fun = duk__one_arg_funcs[fun_idx];
 	/* FIXME: double typing here: double or duk_double_t? */
 	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0)));
 	return 1;
@@ -186,22 +186,22 @@ duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 
 duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_magic(ctx);
-	two_arg_func fun;
+	duk__two_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0);
-	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(two_arg_funcs) / sizeof(two_arg_func)));
-	fun = two_arg_funcs[fun_idx];
+	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__two_arg_funcs) / sizeof(duk__two_arg_func)));
+	fun = duk__two_arg_funcs[fun_idx];
 	/* FIXME: double typing here: double or duk_double_t? */
 	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));
 	return 1;
 }
 
 duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
-	return math_minmax(ctx, -DUK_DOUBLE_INFINITY, fmax_fixed);
+	return duk__math_minmax(ctx, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
 }
 
 duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
-	return math_minmax(ctx, DUK_DOUBLE_INFINITY, fmin_fixed);
+	return duk__math_minmax(ctx, DUK_DOUBLE_INFINITY, duk__fmin_fixed);
 }
 
 duk_ret_t duk_bi_math_object_random(duk_context *ctx) {

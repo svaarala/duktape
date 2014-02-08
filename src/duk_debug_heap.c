@@ -6,7 +6,7 @@
 
 #ifdef DUK_USE_DEBUG
 
-static void sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
+static void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
 	duk_size_t i;
 	duk_size_t nchars;
 	duk_size_t maxchars;
@@ -26,7 +26,7 @@ static void sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
 	}
 }
 
-static const char *get_heap_type_string(duk_heaphdr *hdr) {
+static const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
 		return "string";
@@ -39,12 +39,12 @@ static const char *get_heap_type_string(duk_heaphdr *hdr) {
 	}
 }
 
-static void dump_indented(duk_heaphdr *obj, int index) {
+static void duk__dump_indented(duk_heaphdr *obj, int index) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x, ref: %d) -> %!O",
 	           index,
 	           (void *) obj,
-	           get_heap_type_string(obj),
+	           duk__get_heap_type_string(obj),
 	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
 	           DUK_HEAPHDR_GET_REFCOUNT(obj),
 	           obj);
@@ -52,13 +52,13 @@ static void dump_indented(duk_heaphdr *obj, int index) {
 	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x) -> %!O",
 	           index,
 	           (void *) obj,
-	           get_heap_type_string(obj),
+	           duk__get_heap_type_string(obj),
 	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
 	           obj);
 #endif
 }
 
-static void dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
+static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
 	int count;
 	duk_heaphdr *curr;
 
@@ -77,12 +77,12 @@ static void dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *nam
 	curr = root;
 	while (curr) {
 		count++;
-		dump_indented(curr, count);
+		duk__dump_indented(curr, count);
 		curr = DUK_HEAPHDR_GET_NEXT(curr);
 	}
 }
 
-static void dump_stringtable(duk_heap *heap) {
+static void duk__dump_stringtable(duk_heap *heap) {
 	duk_uint32_t i;
 	char buf[64+1];
 
@@ -100,7 +100,7 @@ static void dump_stringtable(duk_heap *heap) {
 		} else if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
 			DUK_DPRINT("  [%d]: DELETED", i);
 		} else {
-			sanitize_snippet(buf, sizeof(buf), e);
+			duk__sanitize_snippet(buf, sizeof(buf), e);
 
 			/* FIXME: all string flags not printed now */
 
@@ -132,7 +132,7 @@ static void dump_stringtable(duk_heap *heap) {
 	}
 }
 
-static void dump_strcache(duk_heap *heap) {
+static void duk__dump_strcache(duk_heap *heap) {
 	duk_uint32_t i;
 	char buf[64+1];
 
@@ -144,7 +144,7 @@ static void dump_strcache(duk_heap *heap) {
 			DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
 			           i, c->bidx, c->cidx);
 		} else {
-			sanitize_snippet(buf, sizeof(buf), c->h);
+			duk__sanitize_snippet(buf, sizeof(buf), c->h);
 			DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
 			           i, c->bidx, c->cidx, buf);
 		}
@@ -203,19 +203,19 @@ void duk_debug_dump_heap(duk_heap *heap) {
 	DUK_DPRINT("  hash_seed: 0x%08x", (int) heap->hash_seed);
 	DUK_DPRINT("  rnd_state: 0x%08x", (int) heap->rnd_state);
 
-	dump_strcache(heap);
+	duk__dump_strcache(heap);
 
-	dump_heaphdr_list(heap, heap->heap_allocated, "heap allocated");
+	duk__dump_heaphdr_list(heap, heap->heap_allocated, "heap allocated");
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-	dump_heaphdr_list(heap, heap->refzero_list, "refcounting refzero list");
+	duk__dump_heaphdr_list(heap, heap->refzero_list, "refcounting refzero list");
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-	dump_heaphdr_list(heap, heap->finalize_list, "mark-and-sweep finalize list");
+	duk__dump_heaphdr_list(heap, heap->finalize_list, "mark-and-sweep finalize list");
 #endif
 
-	dump_stringtable(heap);
+	duk__dump_stringtable(heap);
 
 	/* heap->strs: not worth dumping */
 }
