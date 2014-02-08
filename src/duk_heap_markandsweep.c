@@ -131,7 +131,7 @@ static void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 static void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 	DUK_DDDPRINT("duk__mark_heaphdr %p, type %d",
 	             (void *) h,
-	             h ? DUK_HEAPHDR_GET_TYPE(h) : -1);
+	             h ? (int) DUK_HEAPHDR_GET_TYPE(h) : (int) -1);
 	if (!h) {
 		return;
 	}

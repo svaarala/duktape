@@ -69,10 +69,10 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 
 #ifdef DUK_USE_DDDEBUG
 	{
-		int i;
-		for (i = 0; i < h_obj->e_used; i++) {
+		duk_uint_fast32_t i;
+		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
 			DUK_DDDPRINT("initial: %d %p -> %!O",
-			             i,
+			             (int) i,
 			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
 			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
 		}
@@ -139,10 +139,10 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 
 #ifdef DUK_USE_DDDEBUG
 	{
-		int i;
-		for (i = 0; i < h_obj->e_used; i++) {
+		duk_uint_fast32_t i;
+		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
 			DUK_DDDPRINT("final: %d %p -> %!O",
-			             i,
+			             (int) i,
 			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
 			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
 		}

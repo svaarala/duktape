@@ -95,7 +95,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 
 	DUK_DDDPRINT("unwind callstack top of thread %p from %d to %d",
 	             (void *) thr,
-	             (int) (thr != NULL ? thr->callstack_top : -1),
+	             (thr != NULL ? (int) thr->callstack_top : (int) -1),
 	             (int) new_top);
 
 	DUK_ASSERT(thr);
@@ -321,7 +321,7 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 
 	DUK_DDDPRINT("unwind catchstack top of thread %p from %d to %d",
 	             (void *) thr,
-	             (int) (thr != NULL ? thr->catchstack_top : -1),
+	             (thr != NULL ? (int) thr->catchstack_top : (int) -1),
 	             (int) new_top);
 
 	DUK_ASSERT(thr);
