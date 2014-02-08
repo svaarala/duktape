@@ -19,9 +19,9 @@ char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 int duk_debug_summary_idx;
 
 #define DUK__DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
-static char buf[DUK__DEBUG_BUFSIZE];
+static char duk__debug_buf[DUK__DEBUG_BUFSIZE];
 
-static const char *get_level_string(int level) {
+static const char *duk__get_level_string(int level) {
 	switch (level) {
 	case DUK_LEVEL_DEBUG:
 		return "D";
@@ -42,12 +42,12 @@ static const char *get_level_string(int level) {
 #define DUK__TERM_BLUE     "\x1b[34m"
 #define DUK__TERM_RED      "\x1b[31m"
 
-static const char *get_term_1(int level) {
+static const char *duk__get_term_1(int level) {
 	DUK_UNREF(level);
 	return (const char *) DUK__TERM_RED;
 }
 
-static const char *get_term_2(int level) {
+static const char *duk__get_term_2(int level) {
 	switch (level) {
 	case DUK_LEVEL_DEBUG:
 		return (const char *) (DUK__TERM_RESET DUK__TERM_BRIGHT);
@@ -59,22 +59,22 @@ static const char *get_term_2(int level) {
 	return (const char *) DUK__TERM_RESET;
 }
 
-static const char *get_term_3(int level) {
+static const char *duk__get_term_3(int level) {
 	DUK_UNREF(level);
 	return (const char *) DUK__TERM_RESET;
 }
 
 #else
 
-static const char *get_term_1(int level) {
+static const char *duk__get_term_1(int level) {
 	return (const char *) "";
 }
 
-static const char *get_term_2(int level) {
+static const char *duk__get_term_2(int level) {
 	return (const char *) "";
 }
 
-static const char *get_term_3(int level) {
+static const char *duk__get_term_3(int level) {
 	return (const char *) "";
 }
 
@@ -87,30 +87,30 @@ void duk_debug_log(int level, const char *file, int line, const char *func, char
 
 	va_start(ap, fmt);
 
-	DUK_MEMSET((void *) buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
-	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
+	DUK_MEMSET((void *) duk__debug_buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	fprintf(stderr, "%s[%s] <%llu> %s:%d (%s):%s %s%s\n",
-		get_term_1(level),
-		get_level_string(level),
+		duk__get_term_1(level),
+		duk__get_level_string(level),
 		duk_rdtsc(),
 		file,
 		line,
 		func,
-		get_term_2(level),
-		buf,
-		get_term_3(level));
+		duk__get_term_2(level),
+		duk__debug_buf,
+		duk__get_term_3(level));
 #else
 	fprintf(stderr, "%s[%s] %s:%d (%s):%s %s%s\n",
-		get_term_1(level),
-		get_level_string(level),
+		duk__get_term_1(level),
+		duk__get_level_string(level),
 		file,
 		line,
 		func,
-		get_term_2(level),
-		buf,
-		get_term_3(level));
+		duk__get_term_2(level),
+		duk__debug_buf,
+		duk__get_term_3(level));
 #endif
 	fflush(stderr);
 
@@ -130,30 +130,30 @@ void duk_debug_log(char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	DUK_MEMSET((void *) buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
-	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
+	DUK_MEMSET((void *) duk__debug_buf, 0, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	fprintf(stderr, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
-		get_term_1(level),
-		get_level_string(duk_debug_level_stash),
+		duk__get_term_1(level),
+		duk__get_level_string(duk_debug_level_stash),
 		duk_rdtsc(),
 	        duk_debug_file_stash,
 	        duk_debug_line_stash,
 	        duk_debug_func_stash,
-		get_term_2(level),
-		buf,
-		get_term_3(level));
+		duk__get_term_2(level),
+		duk__debug_buf,
+		duk__get_term_3(level));
 #else
 	fprintf(stderr, "%s[%s] %s:%s (%s):%s %s%s\n",
-		get_term_1(level),
-		get_level_string(duk_debug_level_stash),
+		duk__get_term_1(level),
+		duk__get_level_string(duk_debug_level_stash),
 	        duk_debug_file_stash,
 	        duk_debug_line_stash,
 	        duk_debug_func_stash,
-		get_term_2(level),
-		buf,
-		get_term_3(level));
+		duk__get_term_2(level),
+		duk__debug_buf,
+		duk__get_term_3(level));
 #endif
 	fflush(stderr);
 

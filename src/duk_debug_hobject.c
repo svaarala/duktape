@@ -7,7 +7,7 @@
 #ifdef DUK_USE_DEBUG
 
 /* must match duk_hobject.h */
-static const char *class_names[32] = {
+static const char *duk__class_names[32] = {
 	"unused",
 	"Arguments",
 	"Array",
@@ -43,7 +43,7 @@ static const char *class_names[32] = {
 };
 
 /* for thread dumping */
-static char get_activation_summary_char(duk_activation *act) {
+static char duk__get_act_summary_char(duk_activation *act) {
 	if (act->func) {
 		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
 			return 'c';
@@ -60,7 +60,7 @@ static char get_activation_summary_char(duk_activation *act) {
 }
 
 /* for thread dumping */
-static char get_tval_summary_char(duk_tval *tv) {
+static char duk__get_tval_summary_char(duk_tval *tv) {
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
 		if (DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
@@ -102,7 +102,7 @@ static char get_tval_summary_char(duk_tval *tv) {
 }
 
 /* for thread dumping */
-static char get_catcher_summary_char(duk_catcher *catcher) {
+static char duk__get_cat_summary_char(duk_catcher *catcher) {
 	switch (DUK_CAT_GET_TYPE(catcher)) {
 	case DUK_CAT_TYPE_TCF:
 		if (DUK_CAT_HAS_CATCH_ENABLED(catcher)) {
@@ -156,7 +156,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 	DUK_DPRINT("  class: number %d -> %s",
 	           (int) DUK_HOBJECT_GET_CLASS_NUMBER(obj),
-	           class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)]);
+	           duk__class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)]);
 
 	DUK_DPRINT("  prototype: %p -> %!O",
 	           (void *) obj->prototype,
@@ -243,7 +243,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 					if (thr->callstack[i].flags & DUK_ACT_FLAG_TAILCALLED) {
 						DUK_DEBUG_SUMMARY_CHAR('/');
 					}
-					DUK_DEBUG_SUMMARY_CHAR(get_activation_summary_char(&thr->callstack[i]));
+					DUK_DEBUG_SUMMARY_CHAR(duk__get_act_summary_char(&thr->callstack[i]));
 				} else {
 					DUK_DEBUG_SUMMARY_CHAR('.');
 				}
@@ -280,7 +280,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 			}
 			if (p < thr->valstack_end) {
 				if (p < thr->valstack_top) {
-					DUK_DEBUG_SUMMARY_CHAR(get_tval_summary_char(p));
+					DUK_DEBUG_SUMMARY_CHAR(duk__get_tval_summary_char(p));
 				} else {
 					/* XXX: safe printer for these?  would be nice, because
 					 * we could visualize whether the values are in proper
@@ -313,7 +313,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 				DUK_DEBUG_SUMMARY_CHAR('@');
 			} else if (i < thr->catchstack_size) {
 				if (i < thr->catchstack_top) {
-					DUK_DEBUG_SUMMARY_CHAR(get_catcher_summary_char(&thr->catchstack[i]));
+					DUK_DEBUG_SUMMARY_CHAR(duk__get_cat_summary_char(&thr->catchstack[i]));
 				} else {
 					DUK_DEBUG_SUMMARY_CHAR('.');
 				}

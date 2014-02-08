@@ -261,7 +261,7 @@ duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t ble
  */
 
 /* Must match src/extract_chars.py, generate_match_table3(). */
-static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
+static duk_uint32_t duk__uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	duk_uint32_t t;
 
 	t = (duk_uint32_t) duk_bd_decode(bd_ctx, 4);
@@ -281,7 +281,7 @@ static duk_uint32_t uni_decode_value(duk_bitdecoder_ctx *bd_ctx) {
 	}
 }
 
-static duk_small_int_t duk_uni_range_match(const duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
+static duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_size_t unilen, duk_codepoint_t cp) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_codepoint_t prev_re;
 
@@ -292,11 +292,11 @@ static duk_small_int_t duk_uni_range_match(const duk_uint8_t *unitab, duk_size_t
 	prev_re = 0;
 	for (;;) {
 		duk_codepoint_t r1, r2;
-		r1 = (duk_codepoint_t) uni_decode_value(&bd_ctx);
+		r1 = (duk_codepoint_t) duk__uni_decode_value(&bd_ctx);
 		if (r1 == 0) {
 			break;
 		}
-		r2 = (duk_codepoint_t) uni_decode_value(&bd_ctx);
+		r2 = (duk_codepoint_t) duk__uni_decode_value(&bd_ctx);
 
 		r1 = prev_re + r1;
 		r2 = r1 + r2;
@@ -304,7 +304,7 @@ static duk_small_int_t duk_uni_range_match(const duk_uint8_t *unitab, duk_size_t
 
 		/* [r1,r2] is the range */
 
-		DUK_DDDPRINT("duk_uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2);
+		DUK_DDDPRINT("duk__uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2);
 		if (cp >= r1 && cp <= r2) {
 			return 1;
 		}
@@ -465,17 +465,17 @@ duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #ifdef DUK_USE_SOURCE_NONBMP
-	if (duk_uni_range_match(duk_unicode_ids_noa,
-	                        (duk_size_t) sizeof(duk_unicode_ids_noa),
-	                        (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa,
+	                         (duk_size_t) sizeof(duk_unicode_ids_noa),
+	                         (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk_uni_range_match(duk_unicode_ids_noabmp,
-		                        sizeof(duk_unicode_ids_noabmp),
-		                        (duk_codepoint_t) cp)) {
+		if (duk__uni_range_match(duk_unicode_ids_noabmp,
+		                         sizeof(duk_unicode_ids_noabmp),
+		                         (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -551,23 +551,23 @@ duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #ifdef DUK_USE_SOURCE_NONBMP
-	if (duk_uni_range_match(duk_unicode_ids_noa,
-	                        sizeof(duk_unicode_ids_noa),
-	                        (duk_codepoint_t) cp) ||
-	    duk_uni_range_match(duk_unicode_idp_m_ids_noa,
-	                        sizeof(duk_unicode_idp_m_ids_noa),
-	                        (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa,
+	                         sizeof(duk_unicode_ids_noa),
+	                         (duk_codepoint_t) cp) ||
+	    duk__uni_range_match(duk_unicode_idp_m_ids_noa,
+	                         sizeof(duk_unicode_idp_m_ids_noa),
+	                         (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk_uni_range_match(duk_unicode_ids_noabmp,
-		                        sizeof(duk_unicode_ids_noabmp),
-		                        (duk_codepoint_t) cp) ||
-		    duk_uni_range_match(duk_unicode_idp_m_ids_noabmp,
-		                        sizeof(duk_unicode_idp_m_ids_noabmp),
-		                        (duk_codepoint_t) cp)) {
+		if (duk__uni_range_match(duk_unicode_ids_noabmp,
+		                         sizeof(duk_unicode_ids_noabmp),
+		                         (duk_codepoint_t) cp) ||
+		    duk__uni_range_match(duk_unicode_idp_m_ids_noabmp,
+		                         sizeof(duk_unicode_idp_m_ids_noabmp),
+		                         (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -610,23 +610,23 @@ duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #ifdef DUK_USE_SOURCE_NONBMP
-	if (duk_uni_range_match(duk_unicode_ids_noa,
-	                        sizeof(duk_unicode_ids_noa),
-	                        (duk_codepoint_t) cp) &&
-	    !duk_uni_range_match(duk_unicode_ids_m_let_noa,
-	                         sizeof(duk_unicode_ids_m_let_noa),
-	                         (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa,
+	                         sizeof(duk_unicode_ids_noa),
+	                         (duk_codepoint_t) cp) &&
+	    !duk__uni_range_match(duk_unicode_ids_m_let_noa,
+	                          sizeof(duk_unicode_ids_m_let_noa),
+	                          (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk_uni_range_match(duk_unicode_ids_noabmp,
-		                        sizeof(duk_unicode_ids_noabmp),
-		                        (duk_codepoint_t) cp) &&
-		    !duk_uni_range_match(duk_unicode_ids_m_let_noabmp,
-		                         sizeof(duk_unicode_ids_m_let_noabmp),
-		                         (duk_codepoint_t) cp)) {
+		if (duk__uni_range_match(duk_unicode_ids_noabmp,
+		                         sizeof(duk_unicode_ids_noabmp),
+		                         (duk_codepoint_t) cp) &&
+		    !duk__uni_range_match(duk_unicode_ids_m_let_noabmp,
+		                          sizeof(duk_unicode_ids_m_let_noabmp),
+		                          (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -659,10 +659,10 @@ duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
  *  this function.
  */
 
-static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
-                                            duk_hbuffer_dynamic *buf,
-                                            duk_codepoint_t cp,
-                                            duk_bitdecoder_ctx *bd_ctx) {
+static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
+                                                 duk_hbuffer_dynamic *buf,
+                                                 duk_codepoint_t cp,
+                                                 duk_bitdecoder_ctx *bd_ctx) {
 	duk_small_int_t skip = 0;
 	duk_small_int_t n;
 	duk_small_int_t t;
@@ -762,12 +762,12 @@ static duk_codepoint_t slow_case_conversion(duk_hthread *thr,
 /* XXX: add 'language' argument when locale/language sensitive rule
  * support added.
  */
-static duk_codepoint_t case_transform_helper(duk_hthread *thr,
-                                             duk_hbuffer_dynamic *buf,
-                                             duk_codepoint_t cp,
-                                             duk_codepoint_t prev,
-                                             duk_codepoint_t next,
-                                             duk_small_int_t uppercase) {
+static duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
+                                                  duk_hbuffer_dynamic *buf,
+                                                  duk_codepoint_t cp,
+                                                  duk_codepoint_t prev,
+                                                  duk_codepoint_t next,
+                                                  duk_small_int_t uppercase) {
 	duk_bitdecoder_ctx bd_ctx;
 
 	/* fast path for ASCII */
@@ -833,7 +833,7 @@ static duk_codepoint_t case_transform_helper(duk_hthread *thr,
 		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_lc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_lc);
 	}
-	return slow_case_conversion(thr, buf, cp, &bd_ctx);
+	return duk__slow_case_conversion(thr, buf, cp, &bd_ctx);
 
  singlechar:
 	if (buf) {
@@ -893,12 +893,12 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 		/* on first round, skip */
 		if (curr >= 0) {
 			/* may generate any number of output codepoints */
-			case_transform_helper(thr,
-			                      h_buf,
-			                      (duk_codepoint_t) curr,
-			                      prev,
-			                      next,
-			                      uppercase);
+			duk__case_transform_helper(thr,
+			                           h_buf,
+			                           (duk_codepoint_t) curr,
+			                           prev,
+			                           next,
+			                           uppercase);
 		}
 	}
 
@@ -918,12 +918,12 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp) {
 	duk_codepoint_t y;
 
-	y = case_transform_helper(thr,
-	                          NULL,    /* buf */
-	                          cp,      /* curr char */
-	                          -1,      /* prev char */
-	                          -1,      /* next char */
-	                          1);      /* uppercase */
+	y = duk__case_transform_helper(thr,
+	                               NULL,    /* buf */
+	                               cp,      /* curr char */
+	                               -1,      /* prev char */
+	                               -1,      /* next char */
+	                               1);      /* uppercase */
 
 	if ((y < 0) || (cp >= 0x80 && y < 0x80)) {
 		/* multiple codepoint conversion or non-ASCII mapped to ASCII
