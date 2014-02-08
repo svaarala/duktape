@@ -6556,7 +6556,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 
 /* FIXME: source code property */
 
-static int duk_js_compile_raw(duk_context *ctx) {
+static int duk__js_compile_raw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
 	duk_hstring *h_filename;
@@ -6711,7 +6711,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	comp_stk.flags = flags;
 	duk_push_pointer(ctx, (void *) &comp_stk);
 
-	if (duk_safe_call(ctx, duk_js_compile_raw, 3 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX) != DUK_EXEC_SUCCESS) {
+	if (duk_safe_call(ctx, duk__js_compile_raw, 3 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX) != DUK_EXEC_SUCCESS) {
 		/* This now adds a line number to -any- error thrown during compilation.
 		 * Usually compilation errors are SyntaxErrors but they could also be
 		 * out-of-memory errors and the like.

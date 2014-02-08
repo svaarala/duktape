@@ -16,7 +16,7 @@ static void duk__mark_tval(duk_heap *heap, duk_tval *tv);
 /* Select a thread for mark-and-sweep use.  This needs to change
  * later.
  */
-static duk_hthread *get_temp_hthread(duk_heap *heap) {
+static duk_hthread *duk__get_temp_hthread(duk_heap *heap) {
 	if (heap->curr_thread) {
 		return heap->curr_thread;
 	}
@@ -251,7 +251,7 @@ static void duk__mark_finalizable(duk_heap *heap) {
 	DUK_DDPRINT("duk__mark_finalizable: %p", (void *) heap);
 
 	/* FIXME: placeholder */
-	thr = get_temp_hthread(heap);
+	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
 	hdr = heap->heap_allocated;
@@ -388,7 +388,7 @@ static void duk__finalize_refcounts(duk_heap *heap) {
 	duk_heaphdr *hdr;
 
 	/* FIXME: placeholder */
-	thr = get_temp_hthread(heap);
+	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
 	DUK_DDPRINT("duk__finalize_refcounts: heap=%p, hthread=%p",
@@ -667,7 +667,7 @@ static void duk__run_object_finalizers(duk_heap *heap) {
 	DUK_DDPRINT("duk__run_object_finalizers: %p", (void *) heap);
 
 	/* FIXME: placeholder */
-	thr = get_temp_hthread(heap);
+	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
 	curr = heap->finalize_list;
@@ -780,7 +780,7 @@ static void duk__compact_objects(duk_heap *heap) {
 	DUK_DDPRINT("duk__compact_objects: %p", (void *) heap);
 
 	/* FIXME: placeholder */
-	thr = get_temp_hthread(heap);
+	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
 #ifdef DUK_USE_DEBUG
@@ -880,7 +880,7 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
 	 */
-	if (get_temp_hthread(heap) == NULL) {
+	if (duk__get_temp_hthread(heap) == NULL) {
 		DUK_DPRINT("temporary hack: gc skipped because we don't have a temp thread");
 
 		/* reset voluntary gc trigger count */
