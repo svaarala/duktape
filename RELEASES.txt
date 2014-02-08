@@ -200,6 +200,8 @@ Released
   only parsed once and deeply nested inner functions are no longer a
   performance issue
 
+* Portability and compiler warnings fixes for a few exotic compilers
+
 Planned
 =======
 
