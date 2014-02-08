@@ -14,16 +14,16 @@
 typedef union {
 	double d;
 	unsigned char c[8];
-} duk_test_union;
+} duk__test_union;
 
 #define DUK__UNION_CMP_TRUE(a,b)  do { \
-		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk_test_union)) != 0) { \
+		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk__test_union)) != 0) { \
 			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares false (expected true)"); \
 		} \
 	} while (0)
 
 #define DUK__UNION_CMP_FALSE(a,b)  do { \
-		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk_test_union)) == 0) { \
+		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk__test_union)) == 0) { \
 			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares true (expected false)"); \
 		} \
 	} while (0)
@@ -46,7 +46,7 @@ static void duk__selftest_twos_complement(void) {
  */
 
 static void duk__selftest_union_size(void) {
-	if (sizeof(duk_test_union) != 8) {
+	if (sizeof(duk__test_union) != 8) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: invalid union size");
 	}
 }
@@ -56,7 +56,7 @@ static void duk__selftest_union_size(void) {
  */
 
 static void duk__selftest_double_aliasing(void) {
-	duk_test_union a, b;
+	duk__test_union a, b;
 
 	/* Test signaling NaN and alias assignment in all
 	 * endianness combinations.
@@ -86,7 +86,7 @@ static void duk__selftest_double_aliasing(void) {
  */
 
 static void duk__selftest_double_zero_sign(void) {
-	volatile duk_test_union a, b;
+	volatile duk__test_union a, b;
 
 	a.d = 0.0;
 	b.d = -a.d;

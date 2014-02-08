@@ -42,7 +42,7 @@ typedef struct {
 	duk_int_t attrs;          /* property attributes for identifier (relevant if value != NULL) */
 	duk_tval *this_binding;
 	duk_hobject *env;
-} duk_id_lookup_result;
+} duk__id_lookup_result;
 
 /*
  *  Create a new function object based on a "template function"
@@ -703,7 +703,7 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 static int duk__getid_open_decl_env_regs(duk_hthread *thr,
                                          duk_hstring *name,
                                          duk_hobject *env,
-                                         duk_id_lookup_result *out) {
+                                         duk__id_lookup_result *out) {
 	duk_hthread *env_thr;
 	duk_hobject *env_func;
 	duk_int_t env_regbase;
@@ -786,7 +786,7 @@ static int duk__getid_open_decl_env_regs(duk_hthread *thr,
 static int duk__getid_activation_regs(duk_hthread *thr,
                                       duk_hstring *name,
                                       duk_activation *act,
-                                      duk_id_lookup_result *out) {
+                                      duk__id_lookup_result *out) {
 	duk_tval *tv;
 	duk_hobject *func;
 	duk_hobject *varmap;
@@ -842,7 +842,7 @@ static int duk__get_identifier_reference(duk_hthread *thr,
                                          duk_hstring *name,
                                          duk_activation *act,
                                          int parents,
-                                         duk_id_lookup_result *out) {
+                                         duk__id_lookup_result *out) {
 	duk_tval *tv;
 	duk_uint32_t sanity;
 
@@ -1083,7 +1083,7 @@ static int duk__get_identifier_reference(duk_hthread *thr,
 int duk_js_hasvar_envrec(duk_hthread *thr,
                          duk_hobject *env,
                          duk_hstring *name) {
-	duk_id_lookup_result ref;
+	duk__id_lookup_result ref;
 	int parents;
 
 	DUK_DDDPRINT("hasvar: thr=%p, env=%p, name=%!O "
@@ -1138,7 +1138,7 @@ static int duk__getvar_helper(duk_hthread *thr,
                               duk_hstring *name,
                               int throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_id_lookup_result ref;
+	duk__id_lookup_result ref;
 	duk_tval tv_tmp_obj;
 	duk_tval tv_tmp_key;
 	int parents;
@@ -1231,7 +1231,7 @@ static void duk__putvar_helper(duk_hthread *thr,
                                duk_hstring *name,
                                duk_tval *val,
                                int strict) {
-	duk_id_lookup_result ref;
+	duk__id_lookup_result ref;
 	duk_tval tv_tmp_obj;
 	duk_tval tv_tmp_key;
 	int parents;
@@ -1365,7 +1365,7 @@ static int duk__delvar_helper(duk_hthread *thr,
                               duk_hobject *env,
                               duk_activation *act,
                               duk_hstring *name) {
-	duk_id_lookup_result ref;
+	duk__id_lookup_result ref;
 	int parents;
 
 	DUK_DDDPRINT("delvar: thr=%p, env=%p, act=%p, name=%!O "
@@ -1479,7 +1479,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *holder;
 	int parents;
-	duk_id_lookup_result ref;
+	duk__id_lookup_result ref;
 	duk_tval *tv;
 
 	DUK_DDDPRINT("declvar: thr=%p, env=%p, name=%!O, val=%!T, prop_flags=0x%08x, is_func_decl=%d "

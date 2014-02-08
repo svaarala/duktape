@@ -118,8 +118,8 @@ static const char *duk__bc_extraoptab[] = {
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 };
 
-typedef struct duk_dprint_state duk_dprint_state;
-struct duk_dprint_state {
+typedef struct duk__dprint_state duk__dprint_state;
+struct duk__dprint_state {
 	duk_fixedbuffer *fb;
 
 	/* loop_stack_index could be perhaps be replaced by 'depth', but it's nice
@@ -141,16 +141,16 @@ struct duk_dprint_state {
 };
 
 /* helpers */
-static void duk__print_hstring(duk_dprint_state *st, duk_hstring *k, int quotes);
-static void duk__print_hobject(duk_dprint_state *st, duk_hobject *h);
-static void duk__print_hbuffer(duk_dprint_state *st, duk_hbuffer *h);
-static void duk__print_tval(duk_dprint_state *st, duk_tval *tv);
-static void duk__print_instr(duk_dprint_state *st, duk_instr ins);
-static void duk__print_heaphdr(duk_dprint_state *st, duk_heaphdr *h);
-static void duk__print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h);
-static void duk__print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string *h);
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, int quotes);
+static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
+static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
+static void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
+static void duk__print_instr(duk__dprint_state *st, duk_instr ins);
+static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h);
 
-static void duk__print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
+static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -197,7 +197,7 @@ static void duk__print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 #endif
 }
 
-static void duk__print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string *h) {
+static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -241,7 +241,7 @@ static void duk__print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_s
 #endif
 }
 
-static void duk__print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
@@ -312,7 +312,7 @@ static void duk__print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes)
 		} \
 	} while (0)
 
-static void duk__print_hobject(duk_dprint_state *st, duk_hobject *h) {
+static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint_fast32_t i;
 	duk_tval *tv;
@@ -580,7 +580,7 @@ static void duk__print_hobject(duk_dprint_state *st, duk_hobject *h) {
 
 #undef DUK__COMMA
 
-static void duk__print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
+static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;
 	size_t i, n;
 	duk_uint8_t *p;
@@ -619,7 +619,7 @@ static void duk__print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
 	}
 }
 
-static void duk__print_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
+static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -647,7 +647,7 @@ static void duk__print_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 	}
 }
 
-static void duk__print_tval(duk_dprint_state *st, duk_tval *tv) {
+static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -723,7 +723,7 @@ static void duk__print_tval(duk_dprint_state *st, duk_tval *tv) {
 	}
 }
 
-static void duk__print_instr(duk_dprint_state *st, duk_instr ins) {
+static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
 	duk_fixedbuffer *fb = st->fb;
 	int op;
 	const char *op_name;
@@ -751,7 +751,7 @@ static void duk__print_instr(duk_dprint_state *st, duk_instr ins) {
 	}
 }
 
-static void duk__print_opcode(duk_dprint_state *st, int opcode) {
+static void duk__print_opcode(duk__dprint_state *st, int opcode) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (opcode < DUK_BC_OP_MIN || opcode > DUK_BC_OP_MAX) {
@@ -777,7 +777,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 		char ch = *p++;
 		const char *p_begfmt = NULL;
 		int got_exclamation = 0;
-		duk_dprint_state st;
+		duk__dprint_state st;
 
 		if (ch != '%') {
 			duk_fb_put_byte(&fb, (duk_uint8_t) ch);

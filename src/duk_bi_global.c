@@ -86,9 +86,9 @@ typedef struct {
 	duk_uint8_t *p;
 	duk_uint8_t *p_start;
 	duk_uint8_t *p_end;
-} duk_transform_context;
+} duk__transform_context;
 
-typedef void (*duk_transform_callback)(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
+typedef void (*duk__transform_callback)(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
 
 /* FIXME: refactor and share with other code */
 static duk_small_int_t duk__decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
@@ -112,10 +112,10 @@ static duk_small_int_t duk__decode_hex_escape(duk_uint8_t *p, duk_small_int_t n)
 	return t;
 }
 
-static int duk__transform_helper(duk_context *ctx, duk_transform_callback callback, void *udata) {
+static int duk__transform_helper(duk_context *ctx, duk__transform_callback callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_transform_context tfm_ctx_alloc;
-	duk_transform_context *tfm_ctx = &tfm_ctx_alloc;
+	duk__transform_context tfm_ctx_alloc;
+	duk__transform_context *tfm_ctx = &tfm_ctx_alloc;
 	duk_codepoint_t cp;
 
 	tfm_ctx->thr = thr;
@@ -141,7 +141,7 @@ static int duk__transform_helper(duk_context *ctx, duk_transform_callback callba
 	return 1;
 }
 
-static void duk__transform_callback_encode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk__transform_callback_encode_uri(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	duk_uint8_t buf[3];
 	duk_small_int_t len;
@@ -195,7 +195,7 @@ static void duk__transform_callback_encode_uri(duk_transform_context *tfm_ctx, v
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
 }
 
-static void duk__transform_callback_decode_uri(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
 	duk_small_uint_t utf8_blen;
 	duk_codepoint_t min_cp;
@@ -320,7 +320,7 @@ static void duk__transform_callback_decode_uri(duk_transform_context *tfm_ctx, v
 }
 
 #ifdef DUK_USE_SECTION_B
-static void duk__transform_callback_escape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk__transform_callback_escape(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t buf[6];
 	duk_small_int_t len;
 
@@ -360,7 +360,7 @@ static void duk__transform_callback_escape(duk_transform_context *tfm_ctx, void 
 	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
 }
 
-static void duk__transform_callback_unescape(duk_transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
+static void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_small_int_t t;
 
 	DUK_UNREF(udata);

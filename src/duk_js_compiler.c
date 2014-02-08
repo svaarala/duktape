@@ -64,7 +64,7 @@ typedef struct {
 	int flags;
 	duk_compiler_ctx comp_ctx_alloc;
 	duk_lexer_point lex_pt_alloc;
-} duk_compiler_stkstate;
+} duk__compiler_stkstate;
 
 /*
  *  Prototypes
@@ -6560,7 +6560,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
 	duk_hstring *h_filename;
-	duk_compiler_stkstate *comp_stk;
+	duk__compiler_stkstate *comp_stk;
 	duk_compiler_ctx *comp_ctx;
 	duk_lexer_point *lex_pt;
 	duk_compiler_func *func;
@@ -6700,7 +6700,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 
 void duk_js_compile(duk_hthread *thr, int flags) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_compiler_stkstate comp_stk;
+	duk__compiler_stkstate comp_stk;
 
 	/* XXX: this illustrates that a C catchpoint implemented using duk_safe_call()
 	 * is a bit heavy at the moment.  The wrapper compiles to ~180 bytes on x64.
