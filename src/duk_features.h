@@ -61,6 +61,11 @@
 #define DUK_F_CPP
 #endif
 
+#undef DUK_F_CPP11
+#if (__cplusplus >= 201103L)
+#define DUK_F_CPP11
+#endif
+
 /*
  *  Provides the duk_rdtsc() inline function (if available)
  *
@@ -1351,7 +1356,7 @@ extern double duk_computed_nan;
 #define DUK_USE_EXPLICIT_NULL_INIT
 #endif
 
-#ifdef DUK_F_C99
+#if defined(DUK_F_C99) || (defined(DUK_F_CPP11) && defined(__GNUC__))
 #define DUK_USE_VARIADIC_MACROS
 #else
 #undef DUK_USE_VARIADIC_MACROS
