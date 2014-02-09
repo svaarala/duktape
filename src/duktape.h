@@ -2,6 +2,8 @@
  *  Duktape public API.
  *
  *  See the API reference for documentation on call semantics.
+ *
+ *  See Duktape LICENSE.txt for copyright and licensing information.
  */
 
 #ifndef DUKTAPE_H_INCLUDED

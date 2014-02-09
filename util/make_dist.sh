@@ -444,7 +444,7 @@ rm $DISTSRCSEP/caseconv.txt
 # Whitespace and comments can be stripped as long as the other requirements
 # are met.
 
-python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c
+python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c $DUK_VERSION
 echo "CLOC report on combined duktape.c source file"
 perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
 
