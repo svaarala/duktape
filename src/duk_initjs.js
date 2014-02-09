@@ -5,10 +5,10 @@
  *  compatible for user code when core features are changed, without burdening
  *  the main C code with compatibility stuff.
  *
- *  This file goes through UglifyJS to minify it.  UglifyJS renames variables,
- *  removes comments, and is clever enough to drop any "if (false) { ... }"
- *  blocks altogether, so that's an effective way to disable currently unneeded
- *  code.
+ *  This file is minified with UglifyJS or the closure compiler.  Both will
+ *  rename variables, remove comments, and are clever enough to drop any
+ *  "if (false) { ... }" blocks altogether, so that's an effective way to
+ *  disable currently unneeded code.
  */
 
 (function(G, D) {
