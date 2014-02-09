@@ -438,9 +438,16 @@ rm $DISTSRCSEP/caseconv.txt
 # Create a combined source file, duktape.c, into a separate combined source
 # directory.  This allows user to just include "duktape.c" and "duktape.h"
 # into a project and maximizes inlining and size optimization opportunities
-# even with older compilers.  The resulting duktape.c is quite ugly though.
+# even with older compilers.  Because some projects include these files into
+# their repository, the result should be deterministic and diffable.  Also,
+# it must retain __FILE__/__LINE__ behavior through preprocessor directives.
+# Whitespace and comments can be stripped as long as the other requirements
+# are met.
 
 python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c
+echo "CLOC report on combined duktape.c source file"
+perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
+
 cp $DISTSRCSEP/duktape.h $DISTSRCCOM/duktape.h
 
 # Final cleanup

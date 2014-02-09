@@ -210,6 +210,7 @@ cleanall:
 	-@rm -rf emscripten
 	-@rm -rf JS-Interpreter
 	-@rm -f compiler-latest.zip
+	-@rm -f cloc-1.60.pl
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -434,6 +435,9 @@ vgclosuretest: compiler.jar duk
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
 
+cloc-1.60.pl:
+	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
+
 .PHONY:	npminst
 npminst:	runtests/node_modules
 
@@ -448,7 +452,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS compiler.jar
+dist:	UglifyJS compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
