@@ -163,6 +163,8 @@ CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
+#CCOPTS_DEBUG += -DDUK_OPT_DDEBUG
+#CCOPTS_DEBUG += -DDUK_OPT_DDDEBUG
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 CCLIBS	= -lm
 CCLIBS += -lreadline
@@ -186,22 +188,28 @@ clean:
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.* ms_print.tmp.*
+	-@rm -f /tmp/duk_sizes.html
+	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
 	-@rm -rf /tmp/duktape-regfuzz/
 	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
 	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
+	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
+	-@rm -f /tmp/duk-closure-test* /tmp/duk-closure-vgtest*
 	-@rm -f a.out
+	-@rm -rf test262-d067d2f0ca30
+	-@rm -f compiler.jar
 
 cleanall:
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
 	-@rm -rf UglifyJS
 	-@rm -rf underscore
-	-@rm -rf test262-d067d2f0ca30
 	-@rm -f d067d2f0ca30.tar.bz2
 	-@rm -rf emscripten
 	-@rm -rf JS-Interpreter
+	-@rm -f compiler-latest.zip
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -401,6 +409,28 @@ vgjsinterpretertest: JS-Interpreter duk
 	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-vgtest.js
 	valgrind ./duk /tmp/duk-jsint-vgtest.js
 
+# Closure
+compiler-latest.zip:
+	wget http://dl.google.com/closure-compiler/compiler-latest.zip
+
+compiler.jar: compiler-latest.zip
+	unzip compiler-latest.zip compiler.jar
+	touch compiler.jar  # ensure date is newer than compiler-latest.zip
+
+.PHONY: closuretest
+closuretest: compiler.jar duk
+	@echo "### closuretest"
+	-@rm -f /tmp/duk-closure-test*
+	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
+	./duk /tmp/duk-closure-test.js
+
+.PHONY: vgclosuretest
+vgclosuretest: compiler.jar duk
+	@echo "### vgclosuretest"
+	-@rm -f /tmp/duk-closure-vgtest*
+	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-vgtest.js
+	valgrind ./duk /tmp/duk-closure-vgtest.js
+
 UglifyJS:
 	git clone https://github.com/mishoo/UglifyJS.git
 
@@ -418,7 +448,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS
+dist:	UglifyJS compiler.jar
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
