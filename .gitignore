@@ -5,6 +5,7 @@
 build/
 doc/*.pdf
 UglifyJS/
+UglifyJS2/
 emscripten/
 underscore/
 test262-d067d2f0ca30/

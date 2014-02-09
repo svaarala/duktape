@@ -205,6 +205,7 @@ cleanall:
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
 	-@rm -rf UglifyJS
+	-@rm -rf UglifyJS2
 	-@rm -rf underscore
 	-@rm -f d067d2f0ca30.tar.bz2
 	-@rm -rf emscripten
@@ -302,6 +303,7 @@ vgregfuzztest: regfuzz-0.1.tar.gz duk
 
 underscore:
 	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
 	git clone --depth 1 https://github.com/jashkenas/underscore.git
 
 .PHONY: underscoretest
@@ -363,6 +365,7 @@ test262cat: test262-d067d2f0ca30
 
 emscripten:
 	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
 	git clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
@@ -392,7 +395,9 @@ vgemscriptentest: emscripten duk
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 
 JS-Interpreter:
-	git clone https://github.com/NeilFraser/JS-Interpreter.git
+	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
+	git clone --depth 1 https://github.com/NeilFraser/JS-Interpreter.git
 
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
@@ -435,9 +440,28 @@ vgclosuretest: compiler.jar duk
 	valgrind ./duk /tmp/duk-closure-vgtest.js
 
 UglifyJS:
+	# Use a specific release because UglifyJS is used in building Duktape
+	-@rm -f v1.3.5.tar.gz
+	wget https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
+	tar xfz v1.3.5.tar.gz
+	mv UglifyJS-1.3.5 UglifyJS
+	-@rm -f v1.3.5.tar.gz
+
 	# Use shallow clone to minimize disk use
-	git clone --depth 1 https://github.com/mishoo/UglifyJS.git
-	#wget https://github.com/kripken/emscripten/archive/1.8.2.tar.gz
+	# Don't use this because it's a moving critical dependency
+	#git clone --depth 1 https://github.com/mishoo/UglifyJS.git
+
+UglifyJS2:
+	# Use a specific release because UglifyJS2 is used in building Duktape
+	-@rm -f v2.4.12.tar.gz
+	wget https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
+	tar xfz v2.4.12.tar.gz
+	mv UglifyJS2-2.4.12 UglifyJS2
+	-@rm -f v2.4.12.tar.gz
+
+	# Use shallow clone to minimize disk use
+	# Don't use this because it's a moving critical dependency
+	#git clone --depth 1 https://github.com/mishoo/UglifyJS2.git
 
 cloc-1.60.pl:
 	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
