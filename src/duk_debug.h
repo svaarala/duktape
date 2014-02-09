@@ -50,10 +50,14 @@
 	duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
 	(void) (duk_debug_level_stash = (lev))
 
+/* Without variadic macros resort to comma expression trickery to handle debug
+ * prints.  This generates a lot of harmless warnings, unfortunately.
+ */
+
 #ifdef DUK_USE_DEBUG
 #define DUK_DPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
-#define DUK_DPRINT  0 && 
+#define DUK_DPRINT  0 && /* args go here as a comma expression in parens */
 #endif
 
 #ifdef DUK_USE_DDEBUG
@@ -119,7 +123,7 @@
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
-#define DUK_DPRINT    0 &&   /* args go here in parens */
+#define DUK_DPRINT    0 && /* args go here as a comma expression in parens */
 #define DUK_DDPRINT   0 && 
 #define DUK_DDDPRINT  0 && 
 
