@@ -301,7 +301,8 @@ vgregfuzztest: regfuzz-0.1.tar.gz duk
 	cd /tmp/duktape-regfuzz; valgrind ./duk regfuzz-test.js
 
 underscore:
-	git clone https://github.com/jashkenas/underscore.git
+	# Use shallow clone to minimize disk use
+	git clone --depth 1 https://github.com/jashkenas/underscore.git
 
 .PHONY: underscoretest
 underscoretest:	underscore duk
@@ -361,7 +362,8 @@ test262cat: test262-d067d2f0ca30
 	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
-	git clone https://github.com/kripken/emscripten.git
+	# Use shallow clone to minimize disk use
+	git clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
@@ -433,7 +435,9 @@ vgclosuretest: compiler.jar duk
 	valgrind ./duk /tmp/duk-closure-vgtest.js
 
 UglifyJS:
-	git clone https://github.com/mishoo/UglifyJS.git
+	# Use shallow clone to minimize disk use
+	git clone --depth 1 https://github.com/mishoo/UglifyJS.git
+	#wget https://github.com/kripken/emscripten/archive/1.8.2.tar.gz
 
 cloc-1.60.pl:
 	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
