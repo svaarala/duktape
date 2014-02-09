@@ -276,6 +276,7 @@ vgapitest: npminst libduktape.so.1.0.0
 # FIXME: torturetest; torture + valgrind
 
 regfuzz-0.1.tar.gz:
+	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
 	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
 
@@ -302,6 +303,8 @@ vgregfuzztest: regfuzz-0.1.tar.gz duk
 	cd /tmp/duktape-regfuzz; valgrind ./duk regfuzz-test.js
 
 underscore:
+	# http://underscorejs.org/
+	# https://github.com/jashkenas/underscore
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
 	git clone --depth 1 https://github.com/jashkenas/underscore.git
@@ -333,6 +336,7 @@ vgunderscoretest: underscore duk
 	-util/underscore_test.sh valgrind ./duk underscore/test/utility.js
 
 d067d2f0ca30.tar.bz2:
+	# http://test262.ecmascript.org/
 	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
 
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
@@ -364,6 +368,7 @@ test262cat: test262-d067d2f0ca30
 	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
+	# https://github.com/kripken/emscripten
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
 	git clone --depth 1 https://github.com/kripken/emscripten.git
@@ -395,6 +400,7 @@ vgemscriptentest: emscripten duk
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 
 JS-Interpreter:
+	# https://github.com/NeilFraser/JS-Interpreter
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
 	git clone --depth 1 https://github.com/NeilFraser/JS-Interpreter.git
@@ -419,6 +425,7 @@ vgjsinterpretertest: JS-Interpreter duk
 
 # Closure
 compiler-latest.zip:
+	# https://code.google.com/p/closure-compiler/
 	wget http://dl.google.com/closure-compiler/compiler-latest.zip
 
 compiler.jar: compiler-latest.zip
@@ -440,6 +447,7 @@ vgclosuretest: compiler.jar duk
 	valgrind ./duk /tmp/duk-closure-vgtest.js
 
 UglifyJS:
+	# https://github.com/mishoo/UglifyJS
 	# Use a specific release because UglifyJS is used in building Duktape
 	-@rm -f v1.3.5.tar.gz
 	wget https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
@@ -452,18 +460,23 @@ UglifyJS:
 	#git clone --depth 1 https://github.com/mishoo/UglifyJS.git
 
 UglifyJS2:
+	# https://github.com/mishoo/UglifyJS2
 	# Use a specific release because UglifyJS2 is used in building Duktape
+	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
+	# the NodeJS dependencies need to be controlled for this to really work.)
 	-@rm -f v2.4.12.tar.gz
 	wget https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
 	tar xfz v2.4.12.tar.gz
 	mv UglifyJS2-2.4.12 UglifyJS2
 	-@rm -f v2.4.12.tar.gz
+	cd UglifyJS2; npm install
 
 	# Use shallow clone to minimize disk use
 	# Don't use this because it's a moving critical dependency
 	#git clone --depth 1 https://github.com/mishoo/UglifyJS2.git
 
 cloc-1.60.pl:
+	# http://cloc.sourceforge.net/
 	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
 
 .PHONY:	npminst
