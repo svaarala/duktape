@@ -493,7 +493,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS compiler.jar cloc-1.60.pl
+dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
