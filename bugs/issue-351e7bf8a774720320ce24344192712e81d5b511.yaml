@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-02-01 03:07:41.966280 Z
 references: []
 
@@ -22,3 +22,7 @@ log_events:
   - |-
     The function names also appear in symbol tables, tracebacks, etc, so it's
     nice that they indicate they're from Duktape.
+- - 2014-02-09 19:34:37.517883 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
