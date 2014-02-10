@@ -233,6 +233,15 @@ duk_ret_t duk_bi_duk_object_dec(duk_context *ctx) {
 }
 
 /*
+ *  Compact an object
+ */
+
+duk_ret_t duk_bi_duk_object_compact(duk_context *ctx) {
+	duk_compact(ctx, 0);
+	return 1;  /* return the argument object */
+}
+
+/*
  *  Logging support
  */
 

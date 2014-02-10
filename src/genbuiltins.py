@@ -1100,6 +1100,7 @@ bi_duk = {
 		{ 'name': 'fin',			'native': 'duk_bi_duk_object_fin',		'length': 0,	'varargs': True },
 		{ 'name': 'enc',			'native': 'duk_bi_duk_object_enc',		'length': 0,	'varargs': True },
 		{ 'name': 'dec',			'native': 'duk_bi_duk_object_dec',		'length': 0,	'varargs': True },
+		{ 'name': 'compact',			'native': 'duk_bi_duk_object_compact',		'length': 1 },
 	],
 }
 

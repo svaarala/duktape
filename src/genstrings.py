@@ -560,6 +560,7 @@ duk_string_list = [
 	mkstr("base64", custom=True),   # enc/dec alg
 	mkstr("jsonx", custom=True),    # enc/dec alg
 	mkstr("jsonc", custom=True),    # enc/dec alg
+	mkstr("compact", custom=True),
 
 	# Buffer constructor
 
