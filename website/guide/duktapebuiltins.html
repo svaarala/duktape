@@ -56,6 +56,7 @@ does not block.</p>
 <tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JSONX, JSONC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
+<tr><td class="propname">compact</td><td>Compact the memory allocated for a value (object).</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
@@ -369,6 +370,26 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 </tbody>
 </table>
 </div>
+
+<h3>gc()</h3>
+
+<p>Trigger a forced mark-and-sweep collection.  If mark-and-sweep is disabled,
+this call is a no-op.</p>
+
+<h3>compact()</h3>
+
+<p>Minimize the memory allocated for a target object.  Same as the C API call
+<code>duk_compact()</code> but accessible from Ecmascript code.  If called with
+a non-object argument, this call is a no-op.  The argument value is returned by
+the function, which allows code such as:</p>
+<pre class="ecmascript-code">
+var obj = {
+    foo: Duktape.compact({ bar:123 })
+}
+</pre>
+
+<p>This call is useful when you know that an object is unlikely to gain new
+properties, but you don't want to seal or freeze the object in case it does.</p>
 
 <h2>Duktape.Buffer (constructor)</h2>
 
