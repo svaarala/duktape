@@ -38,6 +38,10 @@
  *    http://sourceforge.net/p/predef/wiki/Architectures/
  *    http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
  *    http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
+ *
+ *  Preprocessor defines available in a particular GCC:
+ *
+ *    gcc -dM -E - </dev/null   # http://www.brain-dump.org/blog/entry/107
  */
 
 #ifndef DUK_FEATURES_H_INCLUDED
@@ -177,6 +181,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_FREEBSD
 #endif
 
+/* Flash player (e.g. Crossbridge) */
+#if defined(__FLASHPLAYER__)
+#define DUK_F_FLASHPLAYER
+#endif
+
 /* GCC and GCC version convenience define. */
 #if defined(__GNUC__)
 #define DUK_F_GCC
@@ -253,6 +262,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* MSVC does not have sys/param.h */
 #include <windows.h>
 #include <limits.h>
+#elif defined(DUK_F_FLASHPLAYER)
+/* Crossbridge, uses custom byteorder detection */
+#include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
 #else
 /* Linux and hopefully others */
 #define DUK_F_STD_BYTEORDER_DETECT
@@ -671,6 +685,9 @@ typedef double duk_double_t;
  *
  *  This needs to be done before choosing a default profile, as it affects
  *  profile selection.
+ *
+ *  Underscore count varies between platforms, e.g. both __BYTE_ORDER and
+ *  _BYTE_ORDER are used (e.g. Crossbridge has a single underscore).
  */
 
 /* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
@@ -681,23 +698,28 @@ typedef double duk_double_t;
 
 #if defined(DUK_F_STD_BYTEORDER_DETECT)
 /* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
-#if (defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
-    (defined(__LITTLE_ENDIAN__))
+#if defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN) || \
+    defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && (_BYTE_ORDER == _LITTLE_ENDIAN) || \
+    defined(__LITTLE_ENDIAN__)
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
-    (defined(__GNUC__) && !defined(__arm__))
+    defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN) || \
+    defined(__GNUC__) && !defined(__arm__)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
-#elif (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
-      (defined(__GNUC__) && defined(__arm__))
+#elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
+      defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) || \
+      defined(__GNUC__) && defined(__arm__)
 #define DUK_USE_DOUBLE_ME
 #define DUK_USE_MIDDLE_ENDIAN
 #else
 #error unsupported: byte order is little endian but cannot determine IEEE double word order
 #endif
-#elif (defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN)) || \
-      (defined(__BIG_ENDIAN__))
-#if (defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN)) || \
-    (defined(__GNUC__) && !defined(__arm__))
+#elif defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN) || \
+      defined(_BYTE_ORDER) && defined(_BIG_ENDIAN) && (_BYTE_ORDER == _BIG_ENDIAN) || \
+      defined(__BIG_ENDIAN__)
+#if defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
+    defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) || \
+    defined(__GNUC__) && !defined(__arm__)
 #define DUK_USE_DOUBLE_BE
 #define DUK_USE_BIG_ENDIAN
 #else
@@ -718,6 +740,14 @@ typedef double duk_double_t;
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #endif  /* Windows */
+
+/* On crossbridge, assume we're little endian.  Crossbridge could almost
+ * use the standard byteorder detect #ifdefs, but it lacks _FLOAT_WORD_ORDER.
+ */
+#if defined(DUK_F_FLASHPLAYER) && !defined(DUK_F_STD_BYTEORDER_DETECT)
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#endif
 
 #if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
 #error unsupported: cannot determine IEEE double byte order variant
