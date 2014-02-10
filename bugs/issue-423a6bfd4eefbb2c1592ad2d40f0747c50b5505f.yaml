@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: reorganize README.txt.dist and examples/Makefile.xxx
+desc: |-
+  The current organization doesn't really make sense.  Perhaps move all dist
+  specific stuff (basically README.txt.dist and the Makefiles) into a separate
+  directory.  Or move README.txt.dist into examples too.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-10 00:43:48.822297 Z
+references: []
+
+id: 423a6bfd4eefbb2c1592ad2d40f0747c50b5505f
+log_events: 
+- - 2014-02-10 00:43:49.013987 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
