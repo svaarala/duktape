@@ -884,6 +884,16 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 
 	DUK_DDPRINT("converted function: %!ixT", duk_get_tval(ctx, -1));
 
+	/*
+	 *  Compact the function template.
+	 */
+
+	duk_compact(ctx, -1);
+
+	/*
+	 *  Debug dumping
+	 */
+
 #ifdef DUK_USE_DDDEBUG
 	{
 		duk_hcompiledfunction *h;

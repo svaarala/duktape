@@ -408,6 +408,17 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
 
 	/*
+	 *  Compact the closure, in most cases no properties will be added later.
+	 *  Also, without this the closures end up having unused property slots
+	 *  (e.g. in Duktape 0.9.0, 8 slots would be allocated and only 7 used).
+	 *  A better future solution would be to allocate the closure directly
+	 *  to correct size (and setup the properties directly without going
+	 *  through the API).
+	 */
+
+	duk_compact(ctx, -2);
+
+	/*
 	 *  Some assertions (E5 Section 13.2).
 	 */
 
