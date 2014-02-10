@@ -200,6 +200,9 @@ Planned
 
 * Compact function templates and instances to reduce memory footprint
 
+* Execute finalizers for all objects, even reachable ones, when a heap
+  is freed to allow native resources to be freed reliably
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
