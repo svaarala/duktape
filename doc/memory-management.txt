@@ -1425,18 +1425,22 @@ General notes:
 * If mark-and-sweep is used, finalizers are called only when mark-and-sweep
   wants to collect the object.
 
+* Regardless of whether reference counting or mark-and-sweep (or both) is
+  used, finalizers are executed for all objects (even reachable ones) when
+  a heap is freed.
+
 * Finalizer may reinstate a reference to the target object.  In this case the
   object is "rescued" and its finalizer may be called again if it becomes
   unreachable again.  Regardless of whether an object is rescued or not,
   it's a good practice to make the finalizer re-entrant, i.e. allow multiple
   finalizer calls even if the finalizer doesn't rescue the object.
 
-* Finalizers are guaranteed to run when objects are collected, unless a heap
+* Finalizers are guaranteed to run when objects are collected or when a heap
   is destroyed forcibly.  The Duktape API ``duk_destroy_heap()`` call runs a
-  few rounds of mark-and-sweep to allow finalizers a chance to run at least
-  once before the heap is forcibly freed.  This allows user code to e.g. free
-  any native resources more or less reliably, but note that there may also be
-  reachable objects with user-allocated resources not tracked by Duktape.
+  few rounds of mark-and-sweep to allow finalizers for unreachable objects to
+  run normally, and then runs finalizers for all objects on the heap_allocated
+  list regardless of their reachability status.  This allows user code to e.g.
+  free any native resources more or less reliably even for reachable objects.
 
 * The finalizer return value is ignored.  Also, if the finalizer throws an
   error, this is only debug logged but is considered to be a successful
