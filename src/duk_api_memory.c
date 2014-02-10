@@ -95,6 +95,8 @@ void duk_gc(duk_context *ctx, int flags) {
 	duk_heap_mark_and_sweep(heap, 0);
 #else
 	DUK_DPRINT("mark-and-sweep requested by application but mark-and-sweep not enabled, ignoring");
+	DUK_UNREF(ctx);
+	DUK_UNREF(flags);
 #endif
 }
 

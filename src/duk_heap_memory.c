@@ -126,7 +126,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
  */
 void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(size >= 0);
+	DUK_ASSERT_DISABLE(size >= 0);
 
 	return heap->alloc_func(heap->alloc_udata, size);
 }
@@ -232,7 +232,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
-	DUK_ASSERT(newsize >= 0);
+	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	return heap->realloc_func(heap->alloc_udata, ptr, newsize);
 }

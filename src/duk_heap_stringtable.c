@@ -205,7 +205,9 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 
 	DUK_ASSERT(new_size > (duk_uint32_t) duk__count_used(heap));  /* required for rehash to succeed, equality not that useful */
 	DUK_ASSERT(old_entries);
+#ifdef DUK_USE_MARK_AND_SWEEP
 	DUK_ASSERT((heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE) == 0);
+#endif
 
 	/*
 	 *  The attempt to allocate may cause a GC.  Such a GC must not attempt to resize

@@ -123,6 +123,7 @@ duk_ret_t duk_bi_duk_object_gc(duk_context *ctx) {
 	duk_push_int(ctx, rc);
 	return 1;
 #else
+	DUK_UNREF(ctx);
 	return 0;
 #endif
 }
