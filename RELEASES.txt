@@ -203,9 +203,13 @@ Planned
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
+* Improve self tests to include byte order validation
+
 * Fix O(depth^2) inner function parsing issue, inner functions are now
   only parsed once and deeply nested inner functions are no longer a
   performance issue
+
+* Portability fixes: Crossbridge (Flash)
 
 * Portability and compiler warnings fixes for a few exotic compilers
 
