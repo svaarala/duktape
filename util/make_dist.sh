@@ -62,7 +62,6 @@ for i in	\
 	duk_api_call.c		\
 	duk_api_codec.c		\
 	duk_api_compile.c	\
-	duktape.h		\
 	duk_api_internal.h	\
 	duk_api_memory.c	\
 	duk_api_object.c	\
@@ -169,6 +168,12 @@ for i in	\
 	cp src/$i $DISTSRCSEP/
 done
 
+cat src/duktape.h | sed \
+	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
+	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+	> $DISTSRCSEP/duktape.h
+
 for i in \
 	duk_cmdline.c \
 	; do
@@ -209,9 +214,9 @@ for i in \
 done
 
 cat README.txt.dist | sed \
-	-e "s/DUK_VERSION_FORMATTED/$DUK_VERSION_FORMATTED/" \
-	-e "s/GIT_COMMIT/$GIT_COMMIT/" \
-	-e "s/GIT_DESCRIBE/$GIT_DESCRIBE/" \
+	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
+	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
 	> $DIST/README.txt
 cp LICENSE.txt $DIST/LICENSE.txt
 cp RELEASES.txt $DIST/RELEASES.txt

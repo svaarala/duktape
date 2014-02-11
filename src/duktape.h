@@ -1,8 +1,9 @@
 /*
- *  Duktape public API.
+ *  Duktape public API for Duktape @DUK_VERSION_FORMATTED@.
+ *
+ *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
  *
  *  See the API reference for documentation on call semantics.
- *
  *  See Duktape LICENSE.txt for copyright and licensing information.
  */
 
