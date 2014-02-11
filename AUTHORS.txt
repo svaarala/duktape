@@ -1,0 +1,5 @@
+===============
+Duktape authors
+===============
+
+Placeholder.

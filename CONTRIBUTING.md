@@ -1,0 +1,4 @@
+Contributing to Duktape
+=======================
+
+Placeholder.
