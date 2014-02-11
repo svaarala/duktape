@@ -26,7 +26,8 @@ To make a contribution to Duktape:
   not already on the list.  By doing this you confirm that:
 
   - You own the rights to the contribution, or have the legal right to
-    agree to the Duktape `LICENSE.txt` on behalf of the copyright owner(s).
+    license the contribution under Duktape `LICENSE.txt` on behalf of
+    the copyright owner(s).
 
   - You, or the copyright owner(s), agree to irrevocably license your
     contribution under Duktape `LICENSE.txt`.
