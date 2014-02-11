@@ -195,3 +195,16 @@ headers are different (especially for pre C99/C++11).</p>
     not guaranteed to be 8-byte aligned.  This is not always correct.</li>
 </ul>
 
+<h2>Troubleshooting</h2>
+
+<ul>
+<li>Compile in C mode if possible.  Although C++ compilation now works,
+    it isn't as portable as C compilation.</li>
+<li>Enable C99 mode if possible.  Type detection without C99 is less
+    reliable than with C99.</li>
+<li>If Duktape compiles but doesn't seem to work correctly, enable
+    self tests with <code>DUK_OPT_SELF_TESTS</code>.  Self tests
+    detect some compiler and platform issues which cannot be caught
+    compile time.</li>
+</ul>
+
