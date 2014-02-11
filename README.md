@@ -75,7 +75,13 @@ intended to work on e.g. OSX or Windows.  The source distributable has more
 user-friendly Makefile examples, but you should normally simply write your
 own Makefile when integrating Duktape into your program.
 
-License
--------
+Contributing
+------------
 
-See [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).
+See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md)
+
+Copyright and license
+---------------------
+
+See [AUTHORS.txt](https://github.com/svaarala/duktape/blob/master/AUTHORS.txt)
+and [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).
