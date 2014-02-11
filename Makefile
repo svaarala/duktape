@@ -506,7 +506,7 @@ dist-src:	dist
 	tar cvf duktape-$(VERSION).tar duktape-$(VERSION)/
 	xz -z -e -9 duktape-$(VERSION).tar
 	zip -r duktape-$(VERSION).zip duktape-$(VERSION)/
-	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
+	mkisofs -input-charset utf-8 -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
 
 # Website
 site:
