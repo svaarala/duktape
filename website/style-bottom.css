@@ -24,15 +24,15 @@
 	text-align: center;
 }
 #site-bottom a {
-	color: #8888dd;
+	color: #6666ee;
 	text-decoration: none;
 }
 #site-bottom a:visited {
-	color: #8888dd;
+	color: #6666ee;
 	text-decoration: none;
 }
 #site-bottom a:hover {
-	color: #4444dd;
+	color: #222288;
 	text-decoration: underline;
 }
 
