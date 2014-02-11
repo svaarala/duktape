@@ -78,7 +78,7 @@ own Makefile when integrating Duktape into your program.
 Contributing
 ------------
 
-See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
 
 Copyright and license
 ---------------------
