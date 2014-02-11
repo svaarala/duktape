@@ -46,9 +46,9 @@ To build an example command line tool, use the following::
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 
-Duktape is (C) Sami Vaarala and licensed under the MIT license
-(see ``LICENSE.txt``).  MurmurHash2 is used internally; it is also
-under the MIT license.
+Duktape is copyrighted by its authors (see ``AUTHORS.txt``) and licensed
+under the MIT license (see ``LICENSE.txt``).  MurmurHash2 is used internally;
+it is also under the MIT license.
 
 Have fun!
 
