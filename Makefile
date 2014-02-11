@@ -27,7 +27,7 @@ DUK_VERSION=$(shell cat src/duktape.h | grep define | grep DUK_VERSION | tr -s '
 DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
-VERSION=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
@@ -498,15 +498,15 @@ dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
 
 .PHONY:	dist-src
 dist-src:	dist
-	rm -rf duktape-$(VERSION)
-	rm -rf duktape-$(VERSION).tar*
-	mkdir duktape-$(VERSION)
-	cp -r dist/* duktape-$(VERSION)/
-	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)/
-	tar cvf duktape-$(VERSION).tar duktape-$(VERSION)/
-	xz -z -e -9 duktape-$(VERSION).tar
-	zip -r duktape-$(VERSION).zip duktape-$(VERSION)/
-	mkisofs -input-charset utf-8 -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
+	rm -rf duktape-$(DUK_VERSION_FORMATTED)
+	rm -rf duktape-$(DUK_VERSION_FORMATTED).tar*
+	mkdir duktape-$(DUK_VERSION_FORMATTED)
+	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
+	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
+	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
+	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
+	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
+	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 
 # Website
 site:
@@ -518,10 +518,10 @@ site:
 
 .PHONY:	dist-site
 dist-site:	site
-	rm -rf duktape-site-$(VERSION)
-	rm -rf duktape-site-$(VERSION).tar*
-	mkdir duktape-site-$(VERSION)
-	cp -r site/* duktape-site-$(VERSION)/
-	tar cvf duktape-site-$(VERSION).tar duktape-site-$(VERSION)/
-	xz -z -e -9 duktape-site-$(VERSION).tar
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED).tar*
+	mkdir duktape-site-$(DUK_VERSION_FORMATTED)
+	cp -r site/* duktape-site-$(DUK_VERSION_FORMATTED)/
+	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
+	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
 

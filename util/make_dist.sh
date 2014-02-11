@@ -26,8 +26,16 @@ DISTSRCCOM=$DIST/src
 # DUK_VERSION is grepped from duktape.h: it is needed for the public API
 # and we want to avoid defining it in two places.
 DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
+DUK_MAJOR=`echo "$DUK_VERSION / 10000" | bc`
+DUK_MINOR=`echo "$DUK_VERSION % 10000 / 100" | bc`
+DUK_PATCH=`echo "$DUK_VERSION % 100" | bc`
+DUK_VERSION_FORMATTED=$DUK_MAJOR.$DUK_MINOR.$DUK_PATCH
+GIT_COMMIT=`git rev-parse HEAD`
+GIT_DESCRIBE=`git describe`
 
 echo "DUK_VERSION: $DUK_VERSION"
+echo "GIT_COMMIT: $GIT_COMMIT"
+echo "GIT_DESCRIBE: $GIT_DESCRIBE"
 echo "Creating distributable sources to: $DIST"
 
 # Create dist directory structure
@@ -200,7 +208,11 @@ for i in \
 	cp examples/$i $DIST/
 done
 
-cp README.txt.dist $DIST/README.txt
+cat README.txt.dist | sed \
+	-e "s/DUK_VERSION_FORMATTED/$DUK_VERSION_FORMATTED/" \
+	-e "s/GIT_COMMIT/$GIT_COMMIT/" \
+	-e "s/GIT_DESCRIBE/$GIT_DESCRIBE/" \
+	> $DIST/README.txt
 cp LICENSE.txt $DIST/LICENSE.txt
 cp RELEASES.txt $DIST/RELEASES.txt
 
@@ -453,7 +465,8 @@ rm $DISTSRCSEP/caseconv.txt
 # Whitespace and comments can be stripped as long as the other requirements
 # are met.
 
-python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c $DUK_VERSION
+python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
+	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE"
 echo "CLOC report on combined duktape.c source file"
 perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
 
