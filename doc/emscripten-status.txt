@@ -28,37 +28,8 @@ following additional options:
 * ``-s TOTAL_STACK=524288``: reduce total stack size to fit it into the
   reduced memory size.
 
-Trying to run the result, there is an error caused by an invalid RegExp::
-
-  $ ./duk /tmp/duk-emcc-test.js
-  SyntaxError: invalid regexp quantifier (unknown char) (line 181)
-          duk_lexer.c:1444
-
-This is caused by::
-
-  if (/<?{ ?[^}]* ?}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
-
-The fix is to escape the braces::
-
-  if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
-
-After this the program works::
-
-  $ ./duk /tmp/duk-emcc-test.js
-  hello, world!
-
-Full diff for the fix needed::
-
-  --- /tmp/duk-emcc-test.js	2014-01-26 00:28:30.180090902 +0200
-  +++ /tmp/duk-emcc-test-fixed.js	2014-01-26 00:22:35.932085587 +0200
-  @@ -178,7 +178,7 @@
-     isStructType: function isStructType(type) {
-     if (isPointerType(type)) return false;
-     if (isArrayType(type)) return true;
-  -  if (/<?{ ?[^}]* ?}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
-  +  if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true; // { i32, i8 } etc. - anonymous struct types
-     // See comment in isStructPointerType()
-     return type[0] == '%';
-   },
-
-This diff has been incorporated into ``fix_emscripten.py``.
+There used to be an invalid RegExp expression in the Emscripten output:
+a few curly braces were used as plain literals, which is technically a
+SyntaxError although it is accepted by several engines.  This has now been
+fixed in the Emscripten repository.  If you encounter this issue, see
+``fix_emscripten.py`` for details.

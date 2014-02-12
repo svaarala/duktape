@@ -73,8 +73,6 @@ support yet, no "heap object" can be provided.</p>
 C/C++ into Javascript.  Duktape is currently Emscripten compatible except
 for:</p>
 <ul>
-<li>There is one non-standard RegExp in the Emscripten output, causing
-    a SyntaxError.  This is easy to fix manually (see emscripen-status.txt).</li>
 <li>Duktape doesn't yet have typed arrays, so give <code>emcc</code> the
     option <code>-s USE_TYPED_ARRAYS=0</code> to disable their use.</li>
 </ul>
