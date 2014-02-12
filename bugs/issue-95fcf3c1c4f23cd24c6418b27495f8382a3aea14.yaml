@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: provide an optional 'console' module for compatibility
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-12 23:07:35.114717 Z
+references: []
+
+id: 95fcf3c1c4f23cd24c6418b27495f8382a3aea14
+log_events: 
+- - 2014-02-12 23:07:35.234794 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

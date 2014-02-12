@@ -7,8 +7,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-01-12 20:50:39.813721 Z
 references: []
 
@@ -18,3 +18,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-11 22:15:45.498979 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Use a model similar to emscripten: pull request authors add themselves to
+    AUTHORS.txt and confirm that they agree to license their contribution.
