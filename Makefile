@@ -197,11 +197,14 @@ clean:
 	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
 	-@rm -f /tmp/duk-emcc-luatest*
 	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
+	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
+	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
 	-@rm -f /tmp/duk-closure-test* /tmp/duk-closure-vgtest*
 	-@rm -f a.out
 	-@rm -rf test262-d067d2f0ca30
 	-@rm -f compiler.jar
 	-@rm -rf lua-5.2.3
+	-@rm -rf luajs
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -215,6 +218,7 @@ cleanall: clean
 	-@rm -f compiler-latest.zip
 	-@rm -f cloc-1.60.pl
 	-@rm -f lua-5.2.3.tar.gz
+	-@rm -f luajs.zip
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -388,9 +392,10 @@ emscriptentest: emscripten duk
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	cat /tmp/duk-emcc-test.js | python util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	#cat /tmp/duk-emcc-test.js | python util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
-	./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test-fixed.js
+	./duk /tmp/duk-emcc-test.js
 
 .PHONY: vgemscriptentest
 vgemscriptentest: emscripten duk
@@ -398,9 +403,10 @@ vgemscriptentest: emscripten duk
 	-@rm -f /tmp/duk-emcc-vgtest*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-vgtest.js
-	cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
+	#cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
 	@ls -l /tmp/duk-emcc-vgtest*
-	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
+	#valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
+	valgrind ./duk /tmp/duk-emcc-vgtest.js
 
 lua-5.2.3.tar.gz:
 	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
@@ -438,7 +444,7 @@ jsinterpretertest: JS-Interpreter duk
 	-@rm -f /tmp/duk-jsint-test*
 	echo "window = {};" > /tmp/duk-jsint-test.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-test.js
-	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-test.js
+	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-test.js
 	./duk /tmp/duk-jsint-test.js
 
 .PHONY: vgjsinterpretertest
@@ -447,8 +453,33 @@ vgjsinterpretertest: JS-Interpreter duk
 	-@rm -f /tmp/duk-jsint-vgtest*
 	echo "window = {};" > /tmp/duk-jsint-vgtest.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-vgtest.js
-	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-vgtest.js
+	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-vgtest.js
 	valgrind ./duk /tmp/duk-jsint-vgtest.js
+
+luajs.zip:
+	# https://github.com/mherkender/lua.js
+	wget https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
+
+luajs: luajs.zip
+	-@rm -rf luajs/
+	mkdir luajs
+	cd luajs; unzip ../luajs.zip
+
+.PHONY: luajstest
+luajstest: luajs
+	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
+	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-mandel.js
+	echo "console = {}; console.log = function() { print(Array.prototype.join.call(arguments, ' ')); };" > /tmp/duk-luajs-test.js
+	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
+	./duk /tmp/duk-luajs-test.js
+
+.PHONY: vgluajstest
+vgluajstest: luajs
+	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
+	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-vgmandel.js
+	echo "console = {}; console.log = function() { print(Array.prototype.join.call(arguments, ' ')); };" > /tmp/duk-luajs-vgtest.js
+	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-vgtest.js
+	valgrind ./duk /tmp/duk-luajs-vgtest.js
 
 # Closure
 compiler-latest.zip:
