@@ -59,12 +59,13 @@ for current compatibility status.</p>
 
 <p><a href="http://asmjs.org/spec/latest/">asm.js</a> is a
 "strict subset of JavaScript that can be used as a low-level, efficient
-target language for compilers".  As a subset of JavaScript it should be
-fully compatible with Duktape.  However, Duktape has no specific support
-for asm.js and won't optimize asm.js code.  In fact, asm.js code will
-generate unnecessary bytecode and execute slower than normal Ecmascript
-code.  The <code>"use asm"</code> directive specified by asm.js is ignored
-by Duktape.</p>
+target language for compilers".  As a subset of JavaScript, functions using
+asm.js type annotations should be fully compatible with Duktape.  However,
+Duktape has no specific support for asm.js and won't optimize asm.js code.
+In fact, asm.js code will generate unnecessary bytecode and execute slower
+than normal Ecmascript code.  The <code>"use asm"</code> directive specified
+by asm.js is ignored by Duktape.  Also, because there is not typed array
+support yet, no "heap object" can be provided.</p>
 
 <h2 id="compatibility-emscripten">Emscripten</h2>
 
