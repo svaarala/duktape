@@ -20,7 +20,7 @@ their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
 Other contributions
 ===================
 
-The following have contributed something other than code (e.g. reported
+The following people have contributed something other than code (e.g. reported
 bugs, provided ideas, etc; in order of appearance):
 
 * Greg Burns
