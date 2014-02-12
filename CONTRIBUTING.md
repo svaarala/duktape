@@ -32,6 +32,9 @@ To make a contribution to Duktape:
   - You, or the copyright owner(s), agree to irrevocably license your
     contribution under Duktape `LICENSE.txt`.
 
+  - Please include an e-mail address, a link to your GitHub profile, or
+    something similar to allow your contribution to be identified accurately.
+
 * Create a pull request in Github.  For now, the "base branch" should be
   "master", i.e. the pull requests are merged directly to the master branch.
   In the description:
