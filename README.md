@@ -68,6 +68,7 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make test262test       # see doc/test262-status.txt
     $ make emscriptentest    # see doc/emscripten-status.txt
     $ make jsinterpretertest
+    $ make luajstest
 
 **Note: the repo Makefile is intended for Linux developer use**, it is not a
 multi-platform "end user" Makefile.  In particular, the Makefile is not
