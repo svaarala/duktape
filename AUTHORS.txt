@@ -16,6 +16,7 @@ The following people have contributed code and agreed to irrevocably license
 their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
 
 * Sami Vaarala
+* Niki Dobrev
 
 Other contributions
 ===================
