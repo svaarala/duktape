@@ -195,11 +195,13 @@ clean:
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
 	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
+	-@rm -f /tmp/duk-emcc-luatest*
 	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
 	-@rm -f /tmp/duk-closure-test* /tmp/duk-closure-vgtest*
 	-@rm -f a.out
 	-@rm -rf test262-d067d2f0ca30
 	-@rm -f compiler.jar
+	-@rm -rf lua-5.2.3
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -212,6 +214,7 @@ cleanall: clean
 	-@rm -rf JS-Interpreter
 	-@rm -f compiler-latest.zip
 	-@rm -f cloc-1.60.pl
+	-@rm -f lua-5.2.3.tar.gz
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -398,6 +401,30 @@ vgemscriptentest: emscripten duk
 	cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
 	@ls -l /tmp/duk-emcc-vgtest*
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
+
+lua-5.2.3.tar.gz:
+	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
+
+lua-5.2.3:
+	tar xfz lua-5.2.3.tar.gz
+
+LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
+	ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c \
+	llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c \
+	lparser.c lstate.c lstring.c lstrlib.c ltable.c ltablib.c ltm.c \
+	lua.c lundump.c lvm.c lzio.c
+
+# This doesn't currently work: -s USE_TYPED_ARRAYS=0 causes compilation to
+# fail.  Even with typed arrays enabled, Duktape runs out of registers trying
+# to execute the result.
+.PHONY: emscriptenluatest
+emscriptenluatest: emscripten duk lua-5.2.3
+	@echo "### emscriptenluatest"
+	-@rm -f /tmp/duk-emcc-luatest*
+	emscripten/emcc -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	cat /tmp/duk-emcc-luatest.js | python util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
+	@ls -l /tmp/duk-emcc-luatest*
+	./duk /tmp/duk-emcc-luatest-fixed.js
 
 JS-Interpreter:
 	# https://github.com/NeilFraser/JS-Interpreter
