@@ -8,7 +8,7 @@
 
 #include "duk_internal.h"
 
-static double push_this_number_plain(duk_context *ctx) {
+static double duk__push_this_number_plain(duk_context *ctx) {
 	duk_hobject *h;
 
 	/* Number built-in accepts a plain number or a Number object (whose
@@ -87,7 +87,7 @@ int duk_bi_number_constructor(duk_context *ctx) {
 }
 
 int duk_bi_number_prototype_value_of(duk_context *ctx) {
-	(void) push_this_number_plain(ctx);
+	(void) duk__push_this_number_plain(ctx);
 	return 1;
 }
 
@@ -95,7 +95,7 @@ int duk_bi_number_prototype_to_string(duk_context *ctx) {
 	int radix;
 	int n2s_flags;
 
-	(void) push_this_number_plain(ctx);
+	(void) duk__push_this_number_plain(ctx);
 	if (duk_is_undefined(ctx, 0)) {
 		radix = 10;
 	} else {
@@ -132,7 +132,7 @@ int duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	int n2s_flags;
 
 	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
-	d = push_this_number_plain(ctx);
+	d = duk__push_this_number_plain(ctx);
 
 	c = DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
@@ -165,7 +165,7 @@ int duk_bi_number_prototype_to_exponential(duk_context *ctx) {
 	int c;
 	int n2s_flags;
 
-	d = push_this_number_plain(ctx);
+	d = duk__push_this_number_plain(ctx);
 
 	frac_undefined = duk_is_undefined(ctx, 0);
 	duk_to_int(ctx, 0);  /* for side effects */
@@ -205,7 +205,7 @@ int duk_bi_number_prototype_to_precision(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 
-	d = push_this_number_plain(ctx);
+	d = duk__push_this_number_plain(ctx);
 	if (duk_is_undefined(ctx, 0)) {
 		goto use_to_string;
 	}

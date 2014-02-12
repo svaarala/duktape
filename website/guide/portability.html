@@ -132,6 +132,14 @@ detail below the table.</p>
 <td>M68K</td>
 <td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
 </tr>
+<tr>
+<td>Adobe Flash Runtime</td>
+<td>CrossBridge<br />(GCC-4.2 with Flash backend)</td>
+<td>n/a</td>
+<td><code>-std=c99</code> recommended, may need <code>-jvmopt=-Xmx1G</code> if running
+    32-bit Java.  Tested with <a href="http://adobe-flash.github.io/crossbridge/">CrossBridge</a>
+    1.0.1 on 64-bit Windows 7.</td>
+</tr>
 </tbody>
 </table>
 
@@ -185,5 +193,18 @@ headers are different (especially for pre C99/C++11).</p>
 <li>On platforms requiring aligned accesses, Duktape guarantees 4-byte
     alignment.  In particular, 64-bit integers and IEEE double values are
     not guaranteed to be 8-byte aligned.  This is not always correct.</li>
+</ul>
+
+<h2>Troubleshooting</h2>
+
+<ul>
+<li>Compile in C mode if possible.  Although C++ compilation now works,
+    it isn't as portable as C compilation.</li>
+<li>Enable C99 mode if possible.  Type detection without C99 is less
+    reliable than with C99.</li>
+<li>If Duktape compiles but doesn't seem to work correctly, enable
+    self tests with <code>DUK_OPT_SELF_TESTS</code>.  Self tests
+    detect some compiler and platform issues which cannot be caught
+    compile time.</li>
 </ul>
 

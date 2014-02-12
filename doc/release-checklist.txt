@@ -4,7 +4,10 @@ Release checklist
 
 * Ensure git commits are up-to-date
 
-* Check DUK_VERSION
+* Finalize DUK_VERSION
+
+  - Change previous development version (with patch level 99) to release
+    version
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
@@ -110,5 +113,9 @@ Release checklist
 * Upload and test
 
 * Bump Duktape version for next release and testing
+
+  - Set patch level to 99, e.g. after 0.10.0 stable release, set DUK_VERSION
+    from 1000 to 1099.  This ensures that any forks off the trunk will have a
+    version number easy to distinguish as an unofficial release.
 
   - ``duktape.h``

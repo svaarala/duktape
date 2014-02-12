@@ -114,7 +114,7 @@ int duk_bi_error_prototype_to_string(duk_context *ctx) {
 #define DUK__OUTPUT_TYPE_FILENAME    0
 #define DUK__OUTPUT_TYPE_LINENUMBER  1
 
-static int traceback_getter_helper(duk_context *ctx, int output_type) {
+static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int idx_td;
 	int i;
@@ -273,15 +273,15 @@ static int traceback_getter_helper(duk_context *ctx, int output_type) {
  */
 
 int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
-	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
+	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
 }
 
 int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
-	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
+	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
 }
 
 int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
-	return traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
+	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
 #undef DUK__OUTPUT_TYPE_TRACEBACK

@@ -21,7 +21,7 @@
  *  been already dealt with.
  */
 
-static void free_hobject_inner(duk_heap *heap, duk_hobject *h) {
+static void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -44,7 +44,7 @@ static void free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	}
 }
 
-static void free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
+static void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -66,10 +66,10 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 		/* no inner refs to free */
 		break;
 	case DUK_HTYPE_OBJECT:
-		free_hobject_inner(heap, (duk_hobject *) hdr);
+		duk__free_hobject_inner(heap, (duk_hobject *) hdr);
 		break;
 	case DUK_HTYPE_BUFFER:
-		free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
+		duk__free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
 		break;
 	default:
 		DUK_UNREACHABLE();
@@ -91,7 +91,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
  *  after this call.
  */
 
-static void free_allocated(duk_heap *heap) {
+static void duk__free_allocated(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -109,7 +109,7 @@ static void free_allocated(duk_heap *heap) {
 }
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-static void free_refzero_list(duk_heap *heap) {
+static void duk__free_refzero_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -124,7 +124,7 @@ static void free_refzero_list(duk_heap *heap) {
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-static void free_markandsweep_finalize_list(duk_heap *heap) {
+static void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -138,7 +138,7 @@ static void free_markandsweep_finalize_list(duk_heap *heap) {
 }
 #endif
 
-static void free_stringtable(duk_heap *heap) {
+static void duk__free_stringtable(duk_heap *heap) {
 	duk_uint_fast32_t i;
 
 	/* strings are only tracked by stringtable */
@@ -163,28 +163,83 @@ static void free_stringtable(duk_heap *heap) {
 	}
 }
 
+static void duk__free_run_finalizers(duk_heap *heap) {
+	duk_heaphdr *curr;
+#ifdef DUK_USE_DEBUG
+	duk_size_t count_obj = 0;
+#endif
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
+#ifdef DUK_USE_REFERENCE_COUNTING
+	DUK_ASSERT(heap->refzero_list == NULL);  /* refzero not running -> must be empty */
+#endif
+#ifdef DUK_USE_MARK_AND_SWEEP
+	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep not running -> must be empty */
+#endif
+
+	/* FIXME: here again finalizer thread is the heap_thread which needs
+	 * to be coordinated with finalizer thread fixes.
+	 */
+
+	curr = heap->heap_allocated;
+	while (curr) {
+		if (DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT) {
+			/* Only objects in heap_allocated may have finalizers. */
+			DUK_ASSERT(heap->heap_thread != NULL);
+			DUK_ASSERT(curr != NULL);
+			duk_hobject_run_finalizer(heap->heap_thread, (duk_hobject *) curr);
+#ifdef DUK_USE_DEBUG
+			count_obj++;
+#endif
+		}
+		curr = DUK_HEAPHDR_GET_NEXT(curr);
+	}
+
+	/* Note: count includes all objects, not only those with an actual finalizer. */
+	DUK_DPRINT("checked %d objects for finalizers before freeing heap", (int) count_obj);
+}
+
 void duk_heap_free(duk_heap *heap) {
 	DUK_DPRINT("free heap: %p", heap);
+
+	/* Execute finalizers before freeing the heap, even for reachable
+	 * objects, and regardless of whether or not mark-and-sweep is
+	 * enabled.  This gives finalizers the chance to free any native
+	 * resources like file handles, allocations made outside Duktape,
+	 * etc.
+	 *
+	 * FIXME: this perhaps requires an execution time limit.
+	 */
+	DUK_DPRINT("execute finalizers before freeing heap");
+#ifdef DUK_USE_MARK_AND_SWEEP
+	/* run mark-and-sweep a few times just in case (unreachable
+	 * object finalizers run already here)
+	 */
+	duk_heap_mark_and_sweep(heap, 0);
+	duk_heap_mark_and_sweep(heap, 0);
+#endif
+	duk__free_run_finalizers(heap);
 
 	/* Note: heap->heap_thread, heap->curr_thread, heap->heap_object are
 	 * on the heap allocated list.
 	 */
 
 	DUK_DPRINT("freeing heap objects of heap: %p", heap);
-	free_allocated(heap);
+	duk__free_allocated(heap);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	DUK_DPRINT("freeing refzero list of heap: %p", heap);
-	free_refzero_list(heap);
+	duk__free_refzero_list(heap);
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", heap);
-	free_markandsweep_finalize_list(heap);
+	duk__free_markandsweep_finalize_list(heap);
 #endif
 
 	DUK_DPRINT("freeing string table of heap: %p", heap);
-	free_stringtable(heap);
+	duk__free_stringtable(heap);
 
 	DUK_DPRINT("freeing heap structure: %p", heap);
 	heap->free_func(heap->alloc_udata, heap);
@@ -197,7 +252,7 @@ void duk_heap_free(duk_heap *heap) {
  */
 
 /* intern built-in strings from precooked data (genstrings.py) */
-static int init_heap_strings(duk_heap *heap) {
+static int duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
 	int i, j;
@@ -278,7 +333,7 @@ static int init_heap_strings(duk_heap *heap) {
 	return 0;
 }
 
-static int init_heap_thread(duk_heap *heap) {
+static int duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 	
 	DUK_DDPRINT("heap init: alloc heap thread");
@@ -554,13 +609,13 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* built-in strings */
 	DUK_DDPRINT("HEAP: INIT STRINGS");
-	if (!init_heap_strings(res)) {
+	if (!duk__init_heap_strings(res)) {
 		goto error;
 	}
 
 	/* heap thread */
 	DUK_DDPRINT("HEAP: INIT HEAP THREAD");
-	if (!init_heap_thread(res)) {
+	if (!duk__init_heap_thread(res)) {
 		goto error;
 	}
 

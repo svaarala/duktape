@@ -15,7 +15,7 @@
  *  Resizing
  */
 
-static size_t add_spare(size_t size) {
+static size_t duk__add_spare(size_t size) {
 	size_t spare = (size / DUK_HBUFFER_SPARE_DIVISOR) + DUK_HBUFFER_SPARE_ADD;
 	size_t res;
 
@@ -133,7 +133,7 @@ void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 		duk_hbuffer_resize(thr,
 		                   buf,
 		                   DUK_HBUFFER_GET_SIZE(buf),
-		                   add_spare(DUK_HBUFFER_GET_SIZE(buf) + length));
+		                   duk__add_spare(DUK_HBUFFER_GET_SIZE(buf) + length));
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
@@ -423,7 +423,7 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 		duk_hbuffer_resize(thr,
 		                   buf,
 		                   DUK_HBUFFER_GET_SIZE(buf),
-		                   add_spare(DUK_HBUFFER_GET_SIZE(buf) + length));
+		                   duk__add_spare(DUK_HBUFFER_GET_SIZE(buf) + length));
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 

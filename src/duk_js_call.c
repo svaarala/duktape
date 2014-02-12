@@ -19,11 +19,11 @@
  *  DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS.
  */
 
-static void create_arguments_object(duk_hthread *thr,
-                                    duk_hobject *func,
-                                    duk_hobject *varenv,
-                                    int idx_argbase,            /* idx of first argument on stack */
-                                    int num_stack_args) {       /* num args starting from idx_argbase */
+static void duk__create_arguments_object(duk_hthread *thr,
+                                         duk_hobject *func,
+                                         duk_hobject *varenv,
+                                         int idx_argbase,            /* idx of first argument on stack */
+                                         int num_stack_args) {       /* num args starting from idx_argbase */
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *arg;          /* 'arguments' */
 	duk_hobject *formals;      /* formals for 'func' (may be NULL if func is a C function) */
@@ -263,10 +263,10 @@ static void create_arguments_object(duk_hthread *thr,
  * on top of the value stack.  This helper has a very strict dependency on
  * the shape of the input stack.
  */
-static void handle_createargs_for_call(duk_hthread *thr,
-                                       duk_hobject *func,
-                                       duk_hobject *env,
-                                       int num_stack_args) {
+static void duk__handle_createargs_for_call(duk_hthread *thr,
+                                            duk_hobject *func,
+                                            duk_hobject *env,
+                                            int num_stack_args) {
 	duk_context *ctx = (duk_context *) thr;
 
 	DUK_DDDPRINT("creating arguments object for function call");
@@ -279,11 +279,11 @@ static void handle_createargs_for_call(duk_hthread *thr,
 
 	/* [... arg1 ... argN envobj] */
 
-	create_arguments_object(thr,
-	                        func,
-	                        env,
-	                        duk_get_top(ctx) - num_stack_args - 1,    /* idx_argbase */
-	                        num_stack_args);
+	duk__create_arguments_object(thr,
+	                             func,
+	                             env,
+	                             duk_get_top(ctx) - num_stack_args - 1,    /* idx_argbase */
+	                             num_stack_args);
 
 	/* [... arg1 ... argN envobj argobj] */
 
@@ -309,11 +309,11 @@ static void handle_createargs_for_call(duk_hthread *thr,
  *  function.  This would make call time handling much easier.
  */
 
-static void handle_bound_chain_for_call(duk_hthread *thr,
-                                        int idx_func,
-                                        int *p_num_stack_args,   /* may be changed by call */
-                                        duk_hobject **p_func,    /* changed by call */
-                                        int is_constructor_call) {
+static void duk__handle_bound_chain_for_call(duk_hthread *thr,
+                                             int idx_func,
+                                             int *p_num_stack_args,   /* may be changed by call */
+                                             duk_hobject **p_func,    /* changed by call */
+                                             int is_constructor_call) {
 	duk_context *ctx = (duk_context *) thr;
 	int num_stack_args;
 	duk_hobject *func;
@@ -405,9 +405,9 @@ static void handle_bound_chain_for_call(duk_hthread *thr,
  *  assuming it does NOT have the DUK_HOBJECT_FLAG_NEWENV flag.
  */
 
-static void handle_oldenv_for_call(duk_hthread *thr,
-                                   duk_hobject *func,
-                                   duk_activation *act) {
+static void duk__handle_oldenv_for_call(duk_hthread *thr,
+                                        duk_hobject *func,
+                                        duk_activation *act) {
 	duk_tval *tv;
 
 	DUK_ASSERT(thr != NULL);
@@ -462,9 +462,9 @@ static void handle_oldenv_for_call(duk_hthread *thr,
  *  side effects, because ToObject() may be called.
  */
 
-static void handle_coerce_effective_this_binding(duk_hthread *thr,
-                                                 duk_hobject *func,
-                                                 int idx_this) {
+static void duk__coerce_effective_this_binding(duk_hthread *thr,
+                                               duk_hobject *func,
+                                               int idx_this) {
 	duk_context *ctx = (duk_context *) thr;
 
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
@@ -831,13 +831,13 @@ int duk_handle_call(duk_hthread *thr,
 
 	if (DUK_HOBJECT_HAS_BOUND(func)) {
 		/* slow path for bound functions */
-		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+		duk__handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 	}
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
 	           DUK_HOBJECT_IS_NATIVEFUNCTION(func));
 
-	handle_coerce_effective_this_binding(thr, func, idx_func + 1);
+	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1));
 
 	nargs = 0;
@@ -982,7 +982,7 @@ int duk_handle_call(duk_hthread *thr,
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(func));
 
-		handle_oldenv_for_call(thr, func, act);
+		duk__handle_oldenv_for_call(thr, func, act);
 
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_ASSERT(act->var_env != NULL);
@@ -1005,7 +1005,7 @@ int duk_handle_call(duk_hthread *thr,
 	/* [... func this arg1 ... argN envobj] */
 
 	DUK_ASSERT(DUK_HOBJECT_HAS_CREATEARGS(func));
-	handle_createargs_for_call(thr, func, env, num_stack_args);
+	duk__handle_createargs_for_call(thr, func, env, num_stack_args);
 
 	/* [... func this arg1 ... argN envobj] */
 
@@ -1281,7 +1281,7 @@ int duk_handle_call(duk_hthread *thr,
  *  empty (below idx_retbase).
  */
 
-static void safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, int num_stack_rets, int num_actual_rets) {
+static void duk__safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, int num_stack_rets, int num_actual_rets) {
 	duk_context *ctx = (duk_context *) thr;
 	int idx_rcbase;
 
@@ -1484,7 +1484,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	duk_require_stack_top(ctx, idx_retbase + num_stack_rets);  /* final configuration */
 	duk_require_stack(ctx, num_stack_rets);
 
-	safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, 1);  /* 1 = num actual 'return values' */
+	duk__safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, 1);  /* 1 = num actual 'return values' */
 
 	/* [ ... | ] or [ ... | errobj (M * undefined)] where M = num_stack_rets - 1 */
 
@@ -1582,7 +1582,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "not enough stack values for safe_call rc");
 	}
 
-	safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, rc);
+	duk__safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, rc);
 
 	/* Note: no need from callstack / catchstack shrink check */
 	retval = DUK_EXEC_SUCCESS;
@@ -1755,12 +1755,12 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (DUK_HOBJECT_HAS_BOUND(func)) {
 		/* slow path for bound functions */
-		handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+		duk__handle_bound_chain_for_call(thr, idx_func, &num_stack_args, &func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 	}
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func));  /* caller must ensure this */
 
-	handle_coerce_effective_this_binding(thr, func, idx_func + 1);
+	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1));
 
 	nargs = ((duk_hcompiledfunction *) func)->nargs;
@@ -1965,7 +1965,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		 * an own 'arguments' object (but can refer to the existing one)
 		 */
 
-		handle_oldenv_for_call(thr, func, act);
+		duk__handle_oldenv_for_call(thr, func, act);
 
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_ASSERT(act->var_env != NULL);
@@ -1988,7 +1988,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	/* [... arg1 ... argN envobj] */
 
 	DUK_ASSERT(DUK_HOBJECT_HAS_CREATEARGS(func));
-	handle_createargs_for_call(thr, func, env, num_stack_args);
+	duk__handle_createargs_for_call(thr, func, env, num_stack_args);
 
 	/* [... arg1 ... argN envobj] */
 

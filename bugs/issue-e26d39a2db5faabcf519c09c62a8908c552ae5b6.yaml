@@ -19,3 +19,10 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-10 00:45:28.813569 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    This can already be implemented by creating an error and inspecting the error object,
+    but since pc2line conversion is trivial and much faster, this might be a useful thing
+    to have.

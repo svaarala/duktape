@@ -131,7 +131,7 @@ int duk_js_toboolean(duk_tval *tv) {
  */	
 
 /* E5 Section 9.3.1 */
-static double tonumber_string_raw(duk_hthread *thr) {
+static double duk__tonumber_string_raw(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	int s2n_flags;
 	double d;
@@ -185,7 +185,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		duk_push_hstring(ctx, h);
-		return tonumber_string_raw(thr);
+		return duk__tonumber_string_raw(thr);
 	}
 	case DUK_TAG_OBJECT: {
 		/* Note: ToPrimitive(object,hint) == [[DefaultValue]](object,hint),
@@ -210,7 +210,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		duk_push_hbuffer(ctx, h);
 		duk_to_string(ctx, -1);  /* XXX: expensive, but numconv now expects to see a string */
-		return tonumber_string_raw(thr);
+		return duk__tonumber_string_raw(thr);
 	}
 	case DUK_TAG_POINTER: {
 		/* Coerce like boolean.  This allows code to do something like:
@@ -265,7 +265,7 @@ double duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
  */
 
 /* combined algorithm matching E5 Sections 9.5 and 9.6 */	
-static double toint32_or_touint32_helper(double x, int is_toint32) {
+static double duk__toint32_touint32_helper(double x, int is_toint32) {
 	int c = DUK_FPCLASSIFY(x);
 	int s;
 
@@ -305,7 +305,7 @@ static double toint32_or_touint32_helper(double x, int is_toint32) {
 
 duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
-	d = toint32_or_touint32_helper(d, 1);
+	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
 	DUK_ASSERT(d == ((double) ((duk_int32_t) d)));  /* whole, won't clip */
@@ -315,7 +315,7 @@ duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 
 duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
 	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
-	d = toint32_or_touint32_helper(d, 0);
+	d = duk__toint32_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */
 	DUK_ASSERT(d == ((double) ((duk_uint32_t) d)));  /* whole, won't clip */

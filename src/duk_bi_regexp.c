@@ -6,7 +6,7 @@
 
 #ifdef DUK_USE_REGEXP_SUPPORT
 
-static void get_this_regexp(duk_context *ctx) {
+static void duk__get_this_regexp(duk_context *ctx) {
 	duk_hobject *h;
 
 	duk_push_this(ctx);
@@ -97,7 +97,7 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
-	get_this_regexp(ctx);
+	duk__get_this_regexp(ctx);
 
 	/* [ regexp input ] */
 
@@ -109,7 +109,7 @@ duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
-	get_this_regexp(ctx);
+	duk__get_this_regexp(ctx);
 
 	/* [ regexp input ] */
 
@@ -150,7 +150,7 @@ duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 	DUK_ASSERT(DUK_RE_FLAG_MULTILINE == 4);
 #endif
 
-	get_this_regexp(ctx);
+	duk__get_this_regexp(ctx);
 
 	/* [ regexp ] */
 

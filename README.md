@@ -52,15 +52,15 @@ Getting started: developing Duktape
 
 If you intend to change Duktape internals, run test cases, etc:
 
-    # Install NodeJS and npm
-    $ sudo apt-get install nodejs npm
+    # Install required packages
+    $ sudo apt-get install nodejs npm perl openjdk-7-jre
 
     # Compile the command line tool ('duk')
     $ git clone https://github.com/svaarala/duktape.git
     $ cd duktape
     $ make
 
-    # Run Ecmascript and API testcases
+    # Run Ecmascript and API testcases, and some other tests
     $ make ecmatest
     $ make apitest
     $ make regfuzztest
@@ -75,7 +75,13 @@ intended to work on e.g. OSX or Windows.  The source distributable has more
 user-friendly Makefile examples, but you should normally simply write your
 own Makefile when integrating Duktape into your program.
 
-License
--------
+Contributing
+------------
 
-See [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).
+See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
+
+Copyright and license
+---------------------
+
+See [AUTHORS.txt](https://github.com/svaarala/duktape/blob/master/AUTHORS.txt)
+and [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).

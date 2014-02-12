@@ -38,7 +38,7 @@ void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
  *  String scanning helpers
  */
 
-static duk_uint8_t *scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
+static duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p++;
@@ -54,7 +54,7 @@ static duk_uint8_t *scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n
 	return p;
 }
 
-static duk_uint8_t *scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
+static duk_uint8_t *duk__scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p--;
@@ -166,12 +166,12 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 				DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
 				             "dist_start=%d, dist_end=%d, dist_sce=%d => "
 				             "scan forwards from sce",
-				             use_cache, (sce ? sce->h : NULL), (sce ? sce->cidx : -1),
-				             (sce ? sce->bidx : -1), dist_start, dist_end, dist_sce);
+				             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+				             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
 
-				p_found = scan_forwards(p_start + sce->bidx,
-				                        p_end,
-				                        dist_sce);
+				p_found = duk__scan_forwards(p_start + sce->bidx,
+				                             p_end,
+				                             dist_sce);
 				goto scan_done;
 			}
 		} else {
@@ -180,12 +180,12 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 				DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
 				             "dist_start=%d, dist_end=%d, dist_sce=%d => "
 				             "scan backwards from sce",
-				             use_cache, (sce ? sce->h : NULL), (sce ? sce->cidx : -1),
-				             (sce ? sce->bidx : -1), dist_start, dist_end, dist_sce);
+				             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+				             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
 
-				p_found = scan_backwards(p_start + sce->bidx,
-				                         p_start,
-				                         dist_sce);
+				p_found = duk__scan_backwards(p_start + sce->bidx,
+				                              p_start,
+				                              dist_sce);
 				goto scan_done;
 			}
 		}
@@ -197,22 +197,22 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 		DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
 		             "dist_start=%d, dist_end=%d, dist_sce=%d => "
 		             "scan forwards from string start",
-		             use_cache, (sce ? sce->h : NULL), (sce ? sce->cidx : -1),
-		             (sce ? sce->bidx : -1), dist_start, dist_end, dist_sce);
+		             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+		             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
 
-		p_found = scan_forwards(p_start,
-		                        p_end,
-		                        dist_start);
+		p_found = duk__scan_forwards(p_start,
+		                             p_end,
+		                             dist_start);
 	} else {
 		DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
 		             "dist_start=%d, dist_end=%d, dist_sce=%d => "
 		             "scan backwards from string end",
-		             use_cache, (sce ? sce->h : NULL), (sce ? sce->cidx : -1),
-		             (sce ? sce->bidx : -1), dist_start, dist_end, dist_sce);
+		             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+		             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
 
-		p_found = scan_backwards(p_end,
-		                         p_start,
-		                         dist_end);
+		p_found = duk__scan_backwards(p_end,
+		                              p_start,
+		                              dist_end);
 	}
 
  scan_done:

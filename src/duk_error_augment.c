@@ -16,7 +16,7 @@
 #ifdef DUK_USE_AUGMENT_ERRORS
 
 #ifdef DUK_USE_TRACEBACKS
-static void add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobject *obj, int err_index, const char *filename, int line, int noblame_fileline) {
+static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, duk_hobject *obj, int err_index, const char *filename, int line, int noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	int depth;
 	int i, i_min;
@@ -190,7 +190,7 @@ void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err
 	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_TRACEDATA(thr))) {
 		DUK_DDDPRINT("error value already has a 'traceback' property, not modifying it");
 	} else {
-		add_traceback(thr, thr_callstack, obj, err_index, filename, line, noblame_fileline);
+		duk__add_traceback(thr, thr_callstack, obj, err_index, filename, line, noblame_fileline);
 	}
 #else
 	/*

@@ -32,7 +32,7 @@
  *  written after the errhandler finishes.
  */
 
-static void call_errhandler(duk_hthread *thr) {
+static void duk__call_errhandler(duk_hthread *thr) {
 	int call_flags;
 	int rc;
 
@@ -164,7 +164,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
 		DUK_DPRINT("alloc or double error: skip calling errhandler to avoid further trouble");
 	} else {
-		call_errhandler(thr);
+		duk__call_errhandler(thr);
 	}
 
 	/*

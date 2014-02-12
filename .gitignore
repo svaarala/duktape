@@ -5,8 +5,12 @@
 build/
 doc/*.pdf
 UglifyJS/
+UglifyJS2/
 emscripten/
 underscore/
 test262-d067d2f0ca30/
 d067d2f0ca30.tar.bz2
 regfuzz-0.1.tar.gz
+compiler-latest.zip
+compiler.jar
+cloc-1.60.pl

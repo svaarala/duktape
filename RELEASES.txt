@@ -187,21 +187,34 @@ Released
   repo; simplify Makefiles etc accordingly (this change is not visible in
   the source distributable)
 
+Planned
+=======
+
 0.10.0 (2014-03-XX)
 -------------------
+
+* Add Duktape.compact()
 
 * Add a message argument to fatal handler function callback, simplify
   internal fatal error and panic handling
 
+* Compact function templates and instances to reduce memory footprint
+
+* Execute finalizers for all objects, even reachable ones, when a heap
+  is freed to allow native resources to be freed reliably
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+
+* Improve self tests to include byte order validation
 
 * Fix O(depth^2) inner function parsing issue, inner functions are now
   only parsed once and deeply nested inner functions are no longer a
   performance issue
 
-Planned
-=======
+* Portability fixes: Crossbridge (Flash)
+
+* Portability and compiler warnings fixes for a few exotic compilers
 
 0.11.0 (2014-XX-XX)
 -------------------
@@ -215,4 +228,10 @@ Planned
 ------------------
 
 * Debugger
+
+2.0.0 (XXXX-XX-XX)
+------------------
+
+* Ecmascript 6 features will be implemented in v2.x.x at the earliest
+  (some individual features may be cherry picked into v1.x.x)
 

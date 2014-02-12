@@ -123,6 +123,7 @@ duk_ret_t duk_bi_duk_object_gc(duk_context *ctx) {
 	duk_push_int(ctx, rc);
 	return 1;
 #else
+	DUK_UNREF(ctx);
 	return 0;
 #endif
 }
@@ -230,6 +231,15 @@ duk_ret_t duk_bi_duk_object_dec(duk_context *ctx) {
 		return DUK_RET_TYPE_ERROR;
 	}
 	return 1;
+}
+
+/*
+ *  Compact an object
+ */
+
+duk_ret_t duk_bi_duk_object_compact(duk_context *ctx) {
+	duk_compact(ctx, 0);
+	return 1;  /* return the argument object */
 }
 
 /*

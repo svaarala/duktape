@@ -6,7 +6,7 @@
 
 #include "duk_internal.h"
 
-static int resolve_errhandler(duk_context *ctx, int pop_count, int errhandler_index, duk_hobject **out_ptr) {
+static int duk__resolve_errhandler(duk_context *ctx, int pop_count, int errhandler_index, duk_hobject **out_ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(out_ptr != NULL);
@@ -58,8 +58,8 @@ static int resolve_errhandler(duk_context *ctx, int pop_count, int errhandler_in
 /* Prepare value stack for a method call through an object property.
  * May currently throw an error e.g. when getting the property.
  */
-static void call_prop_prep_stack(duk_context *ctx, int normalized_obj_index, int nargs) {
-	DUK_DDDPRINT("call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
+static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index, int nargs) {
+	DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
 	             normalized_obj_index, nargs, duk_get_top(ctx));
 
 	/* [... key arg1 ... argN] */
@@ -150,7 +150,7 @@ void duk_call_prop(duk_context *ctx, int obj_index, int nargs) {
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
 
-	call_prop_prep_stack(ctx, obj_index, nargs);
+	duk__call_prop_prep_stack(ctx, obj_index, nargs);
 
 	duk_call_method(ctx, nargs);
 }
@@ -181,7 +181,7 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!resolve_errhandler(ctx, nargs + 1, errhandler_index, &errhandler)) {
+	if (!duk__resolve_errhandler(ctx, nargs + 1, errhandler_index, &errhandler)) {
 		/* error on top of stack */
 		return DUK_EXEC_ERROR;
 	}
@@ -217,7 +217,7 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!resolve_errhandler(ctx, nargs + 2, errhandler_index, &errhandler)) {
+	if (!duk__resolve_errhandler(ctx, nargs + 2, errhandler_index, &errhandler)) {
 		/* error on top of stack */
 		return DUK_EXEC_ERROR;
 	}
@@ -235,7 +235,7 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
 int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_index) {
 	/* FIXME: these will throw errors now, so this is a bad idea */
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
-	call_prop_prep_stack(ctx, obj_index, nargs);
+	duk__call_prop_prep_stack(ctx, obj_index, nargs);
 
 	return duk_pcall_method(ctx, nargs, errhandler_index);
 }
@@ -254,7 +254,7 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!resolve_errhandler(ctx, nargs, errhandler_index, &errhandler)) {
+	if (!duk__resolve_errhandler(ctx, nargs, errhandler_index, &errhandler)) {
 		/* error on top of stack (args popped) */
 		return DUK_EXEC_ERROR;
 	}

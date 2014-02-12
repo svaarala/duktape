@@ -8,14 +8,14 @@
  *  Local forward declarations
  */
 
-static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count);
+static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count);
 
 /*
  *  Helper for finding the final non-bound function in a "bound function" chain.
  */
 
 /* FIXME: overlap with other helpers, rework */
-static duk_hobject *find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
+static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint32_t sanity;
 
@@ -58,7 +58,7 @@ static duk_hobject *find_nonbound_function(duk_hthread *thr, duk_hobject *func) 
  *  invalidated by any DECREF and almost any API call.
  */
 
-static double _compute_mod(double d1, double d2) {
+static double duk__compute_mod(double d1, double d2) {
 	/*
 	 *  Ecmascript modulus ('%') does not match IEEE 754 "remainder"
 	 *  operation (implemented by remainder() in C99) but does seem
@@ -70,7 +70,7 @@ static double _compute_mod(double d1, double d2) {
 	return fmod(d1, d2);
 }
 
-static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z) {
+static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z) {
 	/*
 	 *  Addition operator is different from other arithmetic
 	 *  operations in that it also provides string concatenation.
@@ -155,7 +155,7 @@ static void _vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	}
 }
 
-static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
+static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -206,7 +206,7 @@ static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y
 		break;
 	}
 	case DUK_OP_MOD: {
-		du.d = _compute_mod(d1, d2);
+		du.d = duk__compute_mod(d1, d2);
 		break;
 	}
 	default: {
@@ -226,7 +226,7 @@ static void _vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
+static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
 	/*
 	 *  Binary bitwise operations use different coercions (ToInt32, ToUint32)
 	 *  depending on the operation.  We coerce the arguments first using
@@ -320,7 +320,7 @@ static void _vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void _vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int opcode) {
+static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -384,7 +384,7 @@ static void _vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int 
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void _vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
+static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	/*
 	 *  E5 Section 11.4.8
 	 */
@@ -417,7 +417,7 @@ static void _vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void _vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
+static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	/*
 	 *  E5 Section 11.4.9
 	 */
@@ -461,7 +461,7 @@ static void _vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 #define DUK__LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
 
 /* only called when act_idx points to an Ecmascript function */
-static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
+static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(act_idx >= 0);
 	DUK_ASSERT(thr->callstack[act_idx].func != NULL);
@@ -489,7 +489,7 @@ static void reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
 	            ((duk_hcompiledfunction *) thr->callstack[act_idx].func)->nregs);
 }
 
-static void handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finally) {
+static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finally) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv1;
@@ -621,7 +621,7 @@ static void handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finall
 	}
 }
 
-static void handle_label(duk_hthread *thr, int cat_idx) {
+static void duk__handle_label(duk_hthread *thr, int cat_idx) {
 	/* no callstack changes, no value stack changes */
 
 	/* +0 = break, +1 = continue */
@@ -635,7 +635,7 @@ static void handle_label(duk_hthread *thr, int cat_idx) {
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
  * return terminates a thread and yields to the resumer.
  */
-static void handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
+static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
@@ -658,14 +658,14 @@ static void handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
 	duk_hthread_callstack_unwind(resumer, act_idx + 1);  /* unwind to 'resume' caller */
 
 	/* no need to unwind catchstack */
-	reconfig_valstack(resumer, act_idx, 1);  /* 1 = have retval */
+	duk__reconfig_valstack(resumer, act_idx, 1);  /* 1 = have retval */
 
 	/* caller must change active thread, and set thr->resumer to NULL */
 }
 
-static int handle_longjmp(duk_hthread *thr,
-                          duk_hthread *entry_thread,
-                          duk_size_t entry_callstack_top) {
+static int duk__handle_longjmp(duk_hthread *thr,
+                               duk_hthread *entry_thread,
+                               duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_size_t entry_callstack_index;
 	int retval = DUK__LONGJMP_RESTART;
@@ -792,7 +792,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 			/* no need to unwind catchstack */
 
-			reconfig_valstack(resumee, act_idx, 1);  /* 1 = have retval */
+			duk__reconfig_valstack(resumee, act_idx, 1);  /* 1 = have retval */
 
 			resumee->resumer = thr;
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
@@ -887,7 +887,7 @@ static int handle_longjmp(duk_hthread *thr,
 			DUK_DDPRINT("-> yield an error, converted to a throw in the resumer, propagate");
 			goto check_longjmp;
 		} else {
-			handle_yield(thr, resumer, resumer->callstack_top - 2);
+			duk__handle_yield(thr, resumer, resumer->callstack_top - 2);
 
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
@@ -946,9 +946,9 @@ static int handle_longjmp(duk_hthread *thr,
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF &&
 			    DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 				/* 'finally' catches */
-				handle_catch_or_finally(thr,
-				                        cat - thr->catchstack,
-				                        1); /* is_finally */
+				duk__handle_catch_or_finally(thr,
+				                             cat - thr->catchstack,
+				                             1); /* is_finally */
 
 				DUK_DDPRINT("-> return caught by a finally (in the same function), restart execution");
 				retval = DUK__LONGJMP_RESTART;
@@ -997,7 +997,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 			duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
 			duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
-			reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
+			duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
 
 			DUK_DDPRINT("-> return not caught, restart execution in caller");
 			retval = DUK__LONGJMP_RESTART;
@@ -1019,7 +1019,7 @@ static int handle_longjmp(duk_hthread *thr,
 
 		resumer = thr->resumer;
 
-		handle_yield(thr, resumer, resumer->callstack_top - 2);
+		duk__handle_yield(thr, resumer, resumer->callstack_top - 2);
 
 		duk_hthread_terminate(thr);  /* updates thread state, minimizes its allocations */
 		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
@@ -1072,9 +1072,9 @@ static int handle_longjmp(duk_hthread *thr,
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF &&
 			    DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 				/* finally catches */
-				handle_catch_or_finally(thr,
-				                        cat - thr->catchstack,
-				                        1); /* is_finally */
+				duk__handle_catch_or_finally(thr,
+				                             cat - thr->catchstack,
+				                             1); /* is_finally */
 
 				DUK_DDPRINT("-> break/continue caught by a finally (in the same function), restart execution");
 				retval = DUK__LONGJMP_RESTART;
@@ -1083,8 +1083,8 @@ static int handle_longjmp(duk_hthread *thr,
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL &&
 			    (duk_uint_t) DUK_CAT_GET_LABEL(cat) == lj_label) {
 				/* found label */
-				handle_label(thr,
-				             cat - thr->catchstack);
+				duk__handle_label(thr,
+				                  cat - thr->catchstack);
 
 				/* FIXME: reset valstack to 'nregs' (or assert it) */
 
@@ -1134,9 +1134,9 @@ static int handle_longjmp(duk_hthread *thr,
 				/* try catches */
 				DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF);
 
-				handle_catch_or_finally(thr,
-				                        cat - thr->catchstack,
-				                        0); /* is_finally */
+				duk__handle_catch_or_finally(thr,
+				                             cat - thr->catchstack,
+				                             0); /* is_finally */
 
 				DUK_DDPRINT("-> throw caught by a 'catch' clause, restart execution");
 				retval = DUK__LONGJMP_RESTART;
@@ -1147,9 +1147,9 @@ static int handle_longjmp(duk_hthread *thr,
 				DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF);
 				DUK_ASSERT(!DUK_CAT_HAS_CATCH_ENABLED(cat));
 
-				handle_catch_or_finally(thr,
-				                        cat - thr->catchstack,
-				                        1); /* is_finally */
+				duk__handle_catch_or_finally(thr,
+				                             cat - thr->catchstack,
+				                             1); /* is_finally */
 
 				/* FIXME: reset valstack to 'nregs' (or assert it) */
 
@@ -1276,7 +1276,7 @@ static int handle_longjmp(duk_hthread *thr,
  */
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
-static void duk_executor_interrupt(duk_hthread *thr) {
+static void duk__executor_interrupt(duk_hthread *thr) {
 	duk_int_t ctr;
 	duk_activation *act;
 	duk_hcompiledfunction *fun;
@@ -1480,7 +1480,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		thr->heap->lj.jmpbuf_ptr = entry_jmpbuf_ptr;
 		/* errhandler not changed, so no restore */
 
-		lj_ret = handle_longjmp(thr, entry_thread, entry_callstack_top);
+		lj_ret = duk__handle_longjmp(thr, entry_thread, entry_callstack_top);
 
 		if (lj_ret == DUK__LONGJMP_RESTART) {
 			/*
@@ -1622,7 +1622,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			thr->interrupt_counter = int_ctr - 1;
 		} else {
 			/* Trigger at zero or below */
-			duk_executor_interrupt(thr);
+			duk__executor_interrupt(thr);
 		}
 #endif
 
@@ -2244,9 +2244,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 *  Handling DUK_OP_ADD this way is more compact (experimentally)
 				 *  than a separate case with separate argument decoding.
 				 */
-				_vm_arith_add(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a);
+				duk__vm_arith_add(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a);
 			} else {
-				_vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
+				duk__vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			}
 			break;
 		}
@@ -2260,7 +2260,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int b = DUK_DEC_B(ins);
 			int op = DUK_DEC_OP(ins);
 
-			_vm_arith_unary_op(thr, DUK__REGCONSTP(b), a, op);
+			duk__vm_arith_unary_op(thr, DUK__REGCONSTP(b), a, op);
 			break;
 		}
 
@@ -2275,7 +2275,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int c = DUK_DEC_C(ins);
 			int op = DUK_DEC_OP(ins);
 
-			_vm_bitwise_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
+			duk__vm_bitwise_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			break;
 		}
 
@@ -2283,7 +2283,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 
-			_vm_bitwise_not(thr, DUK__REGCONSTP(b), a);
+			duk__vm_bitwise_not(thr, DUK__REGCONSTP(b), a);
 			break;
 		}
 
@@ -2291,7 +2291,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 
-			_vm_logical_not(thr, DUK__REGCONSTP(b), a);
+			duk__vm_logical_not(thr, DUK__REGCONSTP(b), a);
 			break;
 		}
 
@@ -2544,7 +2544,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 */
 
 			if (DUK_HOBJECT_HAS_BOUND(obj_func)) {
-				obj_final_func = find_nonbound_function(thr, obj_func);
+				obj_final_func = duk__find_nonbound_function(thr, obj_func);
 			} else {
 				obj_final_func = obj_func;
 			}

@@ -9,6 +9,7 @@ finalizer
 object
 finalizer
 object
+finalizer
 ===*/
 
 a={};
@@ -21,3 +22,5 @@ print(typeof a);
 a = null;
 print(typeof a);
 
+// At this point 'a' is reachable again, and when the heap is destroyed,
+// the finalizer runs once more.

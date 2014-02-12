@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an easy mechanism to pass args to eval'd code (perhaps eval a function and call it)
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-06 21:44:59.056316 Z
+references: []
+
+id: b61458149fbde2a5a8726efe0b1e000e0210fa13
+log_events: 
+- - 2014-02-06 21:44:59.208370 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

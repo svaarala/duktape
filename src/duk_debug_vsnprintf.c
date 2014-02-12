@@ -73,7 +73,7 @@
 #define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-static const char *bc_optab[] = {
+static const char *duk__bc_optab[] = {
 	"LDREG", "STREG", "LDCONST", "LDINT", "LDINTX", "MPUTOBJ", "MPUTARR", "NEW", "REGEXP", "CSREG",
 	"GETVAR", "PUTVAR", "DECLVAR", "DELVAR", "CSVAR", "CLOSURE", "GETPROP", "PUTPROP", "DELPROP", "CSPROP",
 	"ADD", "SUB", "MUL", "DIV", "MOD", "UNM", "UNP", "INC", "DEC", "BAND",
@@ -84,7 +84,7 @@ static const char *bc_optab[] = {
 	"OP60", "EXTRA", "DEBUG", "INVALID",
 };
 
-static const char *bc_extraoptab[] = {
+static const char *duk__bc_extraoptab[] = {
 	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
 	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITGET", "ENDTRY", "ENDCATCH", "ENDFIN", "THROW",
 	"INVLHS", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
@@ -118,8 +118,8 @@ static const char *bc_extraoptab[] = {
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 };
 
-typedef struct duk_dprint_state duk_dprint_state;
-struct duk_dprint_state {
+typedef struct duk__dprint_state duk__dprint_state;
+struct duk__dprint_state {
 	duk_fixedbuffer *fb;
 
 	/* loop_stack_index could be perhaps be replaced by 'depth', but it's nice
@@ -141,16 +141,16 @@ struct duk_dprint_state {
 };
 
 /* helpers */
-static void print_hstring(duk_dprint_state *st, duk_hstring *k, int quotes);
-static void print_hobject(duk_dprint_state *st, duk_hobject *h);
-static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h);
-static void print_tval(duk_dprint_state *st, duk_tval *tv);
-static void print_instr(duk_dprint_state *st, duk_instr ins);
-static void print_heaphdr(duk_dprint_state *st, duk_heaphdr *h);
-static void print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h);
-static void print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string *h);
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, int quotes);
+static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
+static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
+static void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
+static void duk__print_instr(duk__dprint_state *st, duk_instr ins);
+static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h);
 
-static void print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
+static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -197,7 +197,7 @@ static void print_shared_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 #endif
 }
 
-static void print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string *h) {
+static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -241,7 +241,7 @@ static void print_shared_heaphdr_string(duk_dprint_state *st, duk_heaphdr_string
 #endif
 }
 
-static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
@@ -252,7 +252,7 @@ static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
 		return;
 	}
 
-	print_shared_heaphdr_string(st, &h->hdr);
+	duk__print_shared_heaphdr_string(st, &h->hdr);
 
 	if (!h) {
 		duk_fb_put_cstring(fb, "NULL");
@@ -312,7 +312,7 @@ static void print_hstring(duk_dprint_state *st, duk_hstring *h, int quotes) {
 		} \
 	} while (0)
 
-static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
+static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint_fast32_t i;
 	duk_tval *tv;
@@ -326,7 +326,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 		return;
 	}
 
-	print_shared_heaphdr(st, &h->hdr);
+	duk__print_shared_heaphdr(st, &h->hdr);
 
 	if (h && DUK_HOBJECT_HAS_ARRAY_PART(h)) {
 		brace1 = "[";
@@ -398,7 +398,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 		for (i = 0; i < a_limit; i++) {
 			tv = DUK_HOBJECT_A_GET_VALUE_PTR(h, i);
 			DUK__COMMA();
-			print_tval(st, tv);
+			duk__print_tval(st, tv);
 		}
 		for (i = 0; i < h->e_used; i++) {
 			key = DUK_HOBJECT_E_GET_KEY(h, i);
@@ -412,7 +412,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 				continue;
 			}
 			DUK__COMMA();
-			print_hstring(st, key, 0);
+			duk__print_hstring(st, key, 0);
 			duk_fb_put_byte(fb, (duk_uint8_t) ':');
 			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
 				duk_fb_sprintf(fb, "[get:%p,set:%p]",
@@ -420,7 +420,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 				               DUK_HOBJECT_E_GET_VALUE(h, i).a.set);
 			} else {
 				tv = &DUK_HOBJECT_E_GET_VALUE(h, i).v;
-				print_tval(st, tv);
+				duk__print_tval(st, tv);
 			}
 			if (st->heavy) {
 				duk_fb_sprintf(fb, "<%02x>", (int) DUK_HOBJECT_E_GET_FLAGS(h, i));
@@ -506,7 +506,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 	}
 	if (st->internal && DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:"); print_hbuffer(st, f->data);
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:"); duk__print_hbuffer(st, f->data);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%d", f->nregs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
@@ -532,7 +532,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack:%p", (void *) t->catchstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", t->catchstack_size);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", t->catchstack_top);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); print_hobject(st, (duk_hobject *) t->resumer);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);
 		/* XXX: print built-ins array? */
 
 	}
@@ -547,7 +547,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 
 	/* prototype should be last, for readability */
 	if (st->follow_proto && h->prototype) {
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); print_hobject(st, h->prototype);
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, h->prototype);
 	}
 
 	duk_fb_put_cstring(fb, brace2);
@@ -580,7 +580,7 @@ static void print_hobject(duk_dprint_state *st, duk_hobject *h) {
 
 #undef DUK__COMMA
 
-static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
+static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;
 	size_t i, n;
 	duk_uint8_t *p;
@@ -619,7 +619,7 @@ static void print_hbuffer(duk_dprint_state *st, duk_hbuffer *h) {
 	}
 }
 
-static void print_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
+static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -633,13 +633,13 @@ static void print_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 
 	switch (DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING:
-		print_hstring(st, (duk_hstring *) h, 1);
+		duk__print_hstring(st, (duk_hstring *) h, 1);
 		break;
 	case DUK_HTYPE_OBJECT:
-		print_hobject(st, (duk_hobject *) h);
+		duk__print_hobject(st, (duk_hobject *) h);
 		break;
 	case DUK_HTYPE_BUFFER:
-		print_hbuffer(st, (duk_hbuffer *) h);
+		duk__print_hbuffer(st, (duk_hbuffer *) h);
 		break;
 	default:
 		duk_fb_sprintf(fb, "[unknown htype %d]", DUK_HEAPHDR_GET_TYPE(h));
@@ -647,7 +647,7 @@ static void print_heaphdr(duk_dprint_state *st, duk_heaphdr *h) {
 	}
 }
 
-static void print_tval(duk_dprint_state *st, duk_tval *tv) {
+static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -696,15 +696,15 @@ static void print_tval(duk_dprint_state *st, duk_tval *tv) {
 	}
 	case DUK_TAG_STRING: {
 		/* Note: string is a terminal heap object, so no depth check here */
-		print_hstring(st, DUK_TVAL_GET_STRING(tv), 1);
+		duk__print_hstring(st, DUK_TVAL_GET_STRING(tv), 1);
 		break;
 	}
 	case DUK_TAG_OBJECT: {
-		print_hobject(st, DUK_TVAL_GET_OBJECT(tv));
+		duk__print_hobject(st, DUK_TVAL_GET_OBJECT(tv));
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		print_hbuffer(st, DUK_TVAL_GET_BUFFER(tv));
+		duk__print_hbuffer(st, DUK_TVAL_GET_BUFFER(tv));
 		break;
 	}
 	case DUK_TAG_POINTER: {
@@ -723,19 +723,19 @@ static void print_tval(duk_dprint_state *st, duk_tval *tv) {
 	}
 }
 
-static void print_instr(duk_dprint_state *st, duk_instr ins) {
+static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
 	duk_fixedbuffer *fb = st->fb;
 	int op;
 	const char *op_name;
 	const char *extraop_name;
 
 	op = DUK_DEC_OP(ins);
-	op_name = bc_optab[op];
+	op_name = duk__bc_optab[op];
 
 	/* FIXME: option to fix opcode length so it lines up nicely */
 
 	if (op == DUK_OP_EXTRA) {
-		extraop_name = bc_extraoptab[DUK_DEC_A(ins)];
+		extraop_name = duk__bc_extraoptab[DUK_DEC_A(ins)];
 
 		duk_fb_sprintf(fb, "%s %d, %d",
 		               extraop_name, DUK_DEC_B(ins), DUK_DEC_C(ins));
@@ -751,13 +751,13 @@ static void print_instr(duk_dprint_state *st, duk_instr ins) {
 	}
 }
 
-static void print_opcode(duk_dprint_state *st, int opcode) {
+static void duk__print_opcode(duk__dprint_state *st, int opcode) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (opcode < DUK_BC_OP_MIN || opcode > DUK_BC_OP_MAX) {
 		duk_fb_sprintf(fb, "?(%d)", opcode);
 	} else {
-		duk_fb_sprintf(fb, "%s", bc_optab[opcode]);
+		duk_fb_sprintf(fb, "%s", duk__bc_optab[opcode]);
 	}
 }
 
@@ -777,7 +777,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 		char ch = *p++;
 		const char *p_begfmt = NULL;
 		int got_exclamation = 0;
-		duk_dprint_state st;
+		duk__dprint_state st;
 
 		if (ch != '%') {
 			duk_fb_put_byte(&fb, (duk_uint8_t) ch);
@@ -829,22 +829,22 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				if (st.pointer && !st.heavy) {
 					duk_fb_sprintf(&fb, "(%p)", (void *) t);
 				}
-				print_tval(&st, t);
+				duk__print_tval(&st, t);
 				break;
 			} else if (got_exclamation && ch == 'O') {
 				duk_heaphdr *t = va_arg(ap, duk_heaphdr *);
 				if (st.pointer && !st.heavy) {
 					duk_fb_sprintf(&fb, "(%p)", (void *) t);
 				}
-				print_heaphdr(&st, t);
+				duk__print_heaphdr(&st, t);
 				break;
 			} else if (got_exclamation && ch == 'I') {
 				duk_instr t = va_arg(ap, duk_instr);
-				print_instr(&st, t);
+				duk__print_instr(&st, t);
 				break;
 			} else if (got_exclamation && ch == 'C') {
 				int t = va_arg(ap, int);
-				print_opcode(&st, t);
+				duk__print_opcode(&st, t);
 				break;
 			} else if (!got_exclamation && strchr(DUK__ALLOWED_STANDARD_SPECIFIERS, (int) ch)) {
 				char fmtbuf[DUK__MAX_FORMAT_TAG_LENGTH];

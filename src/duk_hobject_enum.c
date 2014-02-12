@@ -47,7 +47,7 @@
  *  (Compiles to about 160 bytes now as a stand-alone function.)
  */
 
-static void sort_array_indices(duk_hobject *h_obj) {
+static void duk__sort_array_indices(duk_hobject *h_obj) {
 	duk_hstring **keys;
 	duk_hstring **p_curr, **p_insert, **p_end;
 	duk_hstring *h_curr;
@@ -69,10 +69,10 @@ static void sort_array_indices(duk_hobject *h_obj) {
 
 #ifdef DUK_USE_DDDEBUG
 	{
-		int i;
-		for (i = 0; i < h_obj->e_used; i++) {
+		duk_uint_fast32_t i;
+		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
 			DUK_DDDPRINT("initial: %d %p -> %!O",
-			             i,
+			             (int) i,
 			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
 			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
 		}
@@ -139,10 +139,10 @@ static void sort_array_indices(duk_hobject *h_obj) {
 
 #ifdef DUK_USE_DDDEBUG
 	{
-		int i;
-		for (i = 0; i < h_obj->e_used; i++) {
+		duk_uint_fast32_t i;
+		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
 			DUK_DDDPRINT("final: %d %p -> %!O",
-			             i,
+			             (int) i,
 			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
 			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
 		}
@@ -331,7 +331,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		/* FIXME: may need a 'length' filter for forEach()
 		 */
 		DUK_DDDPRINT("sort array indices by caller request");
-		sort_array_indices(res);
+		duk__sort_array_indices(res);
 	}
 
 	/* compact; no need to seal because object is internal */

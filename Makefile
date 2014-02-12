@@ -27,7 +27,7 @@ DUK_VERSION=$(shell cat src/duktape.h | grep define | grep DUK_VERSION | tr -s '
 DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
-VERSION=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
@@ -163,6 +163,8 @@ CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
+#CCOPTS_DEBUG += -DDUK_OPT_DDEBUG
+#CCOPTS_DEBUG += -DDUK_OPT_DDDEBUG
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 CCLIBS	= -lm
 CCLIBS += -lreadline
@@ -186,22 +188,30 @@ clean:
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.* ms_print.tmp.*
+	-@rm -f /tmp/duk_sizes.html
+	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
 	-@rm -rf /tmp/duktape-regfuzz/
 	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
 	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
+	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
+	-@rm -f /tmp/duk-closure-test* /tmp/duk-closure-vgtest*
 	-@rm -f a.out
+	-@rm -rf test262-d067d2f0ca30
+	-@rm -f compiler.jar
 
-cleanall:
+cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
 	-@rm -rf UglifyJS
+	-@rm -rf UglifyJS2
 	-@rm -rf underscore
-	-@rm -rf test262-d067d2f0ca30
 	-@rm -f d067d2f0ca30.tar.bz2
 	-@rm -rf emscripten
 	-@rm -rf JS-Interpreter
+	-@rm -f compiler-latest.zip
+	-@rm -f cloc-1.60.pl
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -266,6 +276,7 @@ vgapitest: npminst libduktape.so.1.0.0
 # FIXME: torturetest; torture + valgrind
 
 regfuzz-0.1.tar.gz:
+	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
 	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
 
@@ -292,7 +303,11 @@ vgregfuzztest: regfuzz-0.1.tar.gz duk
 	cd /tmp/duktape-regfuzz; valgrind ./duk regfuzz-test.js
 
 underscore:
-	git clone https://github.com/jashkenas/underscore.git
+	# http://underscorejs.org/
+	# https://github.com/jashkenas/underscore
+	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
+	git clone --depth 1 https://github.com/jashkenas/underscore.git
 
 .PHONY: underscoretest
 underscoretest:	underscore duk
@@ -321,6 +336,7 @@ vgunderscoretest: underscore duk
 	-util/underscore_test.sh valgrind ./duk underscore/test/utility.js
 
 d067d2f0ca30.tar.bz2:
+	# http://test262.ecmascript.org/
 	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
 
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
@@ -352,7 +368,10 @@ test262cat: test262-d067d2f0ca30
 	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
-	git clone https://github.com/kripken/emscripten.git
+	# https://github.com/kripken/emscripten
+	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
+	git clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
@@ -381,7 +400,10 @@ vgemscriptentest: emscripten duk
 	valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 
 JS-Interpreter:
-	git clone https://github.com/NeilFraser/JS-Interpreter.git
+	# https://github.com/NeilFraser/JS-Interpreter
+	# Use shallow clone to minimize disk use
+	# Master is OK because not a critical dependency
+	git clone --depth 1 https://github.com/NeilFraser/JS-Interpreter.git
 
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
@@ -401,8 +423,61 @@ vgjsinterpretertest: JS-Interpreter duk
 	echo "var interp = new Interpreter('1+2+3'); interp.run(); print(interp.value);" >> /tmp/duk-jsint-vgtest.js
 	valgrind ./duk /tmp/duk-jsint-vgtest.js
 
+# Closure
+compiler-latest.zip:
+	# https://code.google.com/p/closure-compiler/
+	wget http://dl.google.com/closure-compiler/compiler-latest.zip
+
+compiler.jar: compiler-latest.zip
+	unzip compiler-latest.zip compiler.jar
+	touch compiler.jar  # ensure date is newer than compiler-latest.zip
+
+.PHONY: closuretest
+closuretest: compiler.jar duk
+	@echo "### closuretest"
+	-@rm -f /tmp/duk-closure-test*
+	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
+	./duk /tmp/duk-closure-test.js
+
+.PHONY: vgclosuretest
+vgclosuretest: compiler.jar duk
+	@echo "### vgclosuretest"
+	-@rm -f /tmp/duk-closure-vgtest*
+	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-vgtest.js
+	valgrind ./duk /tmp/duk-closure-vgtest.js
+
 UglifyJS:
-	git clone https://github.com/mishoo/UglifyJS.git
+	# https://github.com/mishoo/UglifyJS
+	# Use a specific release because UglifyJS is used in building Duktape
+	-@rm -f v1.3.5.tar.gz
+	wget https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
+	tar xfz v1.3.5.tar.gz
+	mv UglifyJS-1.3.5 UglifyJS
+	-@rm -f v1.3.5.tar.gz
+
+	# Use shallow clone to minimize disk use
+	# Don't use this because it's a moving critical dependency
+	#git clone --depth 1 https://github.com/mishoo/UglifyJS.git
+
+UglifyJS2:
+	# https://github.com/mishoo/UglifyJS2
+	# Use a specific release because UglifyJS2 is used in building Duktape
+	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
+	# the NodeJS dependencies need to be controlled for this to really work.)
+	-@rm -f v2.4.12.tar.gz
+	wget https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
+	tar xfz v2.4.12.tar.gz
+	mv UglifyJS2-2.4.12 UglifyJS2
+	-@rm -f v2.4.12.tar.gz
+	cd UglifyJS2; npm install
+
+	# Use shallow clone to minimize disk use
+	# Don't use this because it's a moving critical dependency
+	#git clone --depth 1 https://github.com/mishoo/UglifyJS2.git
+
+cloc-1.60.pl:
+	# http://cloc.sourceforge.net/
+	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
@@ -418,19 +493,20 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS
+dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
 dist-src:	dist
-	rm -rf duktape-$(VERSION)
-	rm -rf duktape-$(VERSION).tar*
-	mkdir duktape-$(VERSION)
-	cp -r dist/* duktape-$(VERSION)/
-	tar cvfj duktape-$(VERSION).tar.bz2 duktape-$(VERSION)/
-	tar cvf duktape-$(VERSION).tar duktape-$(VERSION)/
-	xz -z -e -9 duktape-$(VERSION).tar
-	mkisofs -o duktape-$(VERSION).iso duktape-$(VERSION).tar.bz2
+	rm -rf duktape-$(DUK_VERSION_FORMATTED)
+	rm -rf duktape-$(DUK_VERSION_FORMATTED).tar*
+	mkdir duktape-$(DUK_VERSION_FORMATTED)
+	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
+	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
+	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
+	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
+	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
+	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 
 # Website
 site:
@@ -442,10 +518,10 @@ site:
 
 .PHONY:	dist-site
 dist-site:	site
-	rm -rf duktape-site-$(VERSION)
-	rm -rf duktape-site-$(VERSION).tar*
-	mkdir duktape-site-$(VERSION)
-	cp -r site/* duktape-site-$(VERSION)/
-	tar cvf duktape-site-$(VERSION).tar duktape-site-$(VERSION)/
-	xz -z -e -9 duktape-site-$(VERSION).tar
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED).tar*
+	mkdir duktape-site-$(DUK_VERSION_FORMATTED)
+	cp -r site/* duktape-site-$(DUK_VERSION_FORMATTED)/
+	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
+	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
 

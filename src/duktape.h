@@ -1,7 +1,11 @@
 /*
- *  Duktape public API.
- *
+ *  Duktape public API for Duktape @DUK_VERSION_FORMATTED@.
  *  See the API reference for documentation on call semantics.
+ *
+ *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
+ *
+ *  See Duktape AUTHORS.txt and LICENSE.txt for copyright and
+ *  licensing information.
  */
 
 #ifndef DUKTAPE_H_INCLUDED
@@ -109,9 +113,11 @@ struct duk_memory_functions {
 
 /* Duktape version, (major * 10000) + (minor * 100) + patch.  Allows C code
  * to #ifdef against Duktape API version.  The same value is also available
- * to Ecmascript code in Duktape.version.
+ * to Ecmascript code in Duktape.version.  Unofficial development snapshots
+ * have 99 for patch level (e.g. 0.10.99 would be a development version
+ * after 0.10.0 but before the next official release).
  */
-#define DUK_VERSION                       1000L
+#define DUK_VERSION                       999L
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some

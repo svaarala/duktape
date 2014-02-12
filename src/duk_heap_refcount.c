@@ -14,7 +14,7 @@
  *  Misc
  */
 
-static void queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
+static void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 	/* tail insert: don't disturb head in case refzero is running */
 
 	if (heap->refzero_list != NULL) {
@@ -51,7 +51,7 @@ static void queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
  *  later.  This eliminates C recursion.
  */
 
-static void refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
+static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(h);
@@ -143,7 +143,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_OBJECT:
-		refcount_finalize_hobject(thr, (duk_hobject *) hdr);
+		duk__refcount_finalize_hobject(thr, (duk_hobject *) hdr);
 		break;
 	case DUK_HTYPE_BUFFER:
 		/* nothing to finalize */
@@ -166,7 +166,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
  *  early and resume at a future alloc/decref/refzero.
  */
 
-static void refzero_free_pending(duk_hthread *thr) {
+static void duk__refzero_free_pending(duk_hthread *thr) {
 	duk_heaphdr *h1, *h2;
 	duk_heap *heap;
 	int count = 0;
@@ -273,7 +273,7 @@ static void refzero_free_pending(duk_hthread *thr) {
 			heap->heap_allocated = h1;
 		} else {
 			/* no -> decref members, then free */
-			refcount_finalize_hobject(thr, obj);
+			duk__refcount_finalize_hobject(thr, obj);
 			duk_heap_free_heaphdr_raw(heap, h1);
 		}
 
@@ -436,8 +436,8 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 		 */
 
 		duk_heap_remove_any_from_heap_allocated(heap, h);
-		queue_refzero(heap, h);
-		refzero_free_pending(thr);
+		duk__queue_refzero(heap, h);
+		duk__refzero_free_pending(thr);
 		break;
 
 	case DUK_HTYPE_BUFFER:

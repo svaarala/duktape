@@ -4,19 +4,7 @@
 #  and a useful error message for missing prerequisites.
 #
 
-NODE_VERSION=`node -v 2>/dev/null`
-if [ "x$NODE_VERSION" = "x" ]; then
-	echo "*** Missing NodeJS:"
-	echo "  $ sudo apt-get install nodejs npm"
-	exit 1
-fi
-
-GIT_VERSION=`git --version`
-if [ "x$GIT_VERSION" = "x" ]; then
-	echo "*** Missing git:"
-	echo "  $ sudo apt-get install git"
-	exit 1
-fi
+ERRORS=0
 
 uname -a | grep -ni linux >/dev/null
 RET=$?
@@ -26,3 +14,46 @@ if [ "x$RET" != "x0" ]; then
 	echo ""
 	sleep 1
 fi
+
+NODE_VERSION=`node -v 2>/dev/null`
+if [ $? != 0 ]; then
+	echo "*** Missing NodeJS:"
+	echo "  $ sudo apt-get install nodejs npm"
+	echo ""
+	ERRORS=1
+fi
+#echo "Node version: $NODE_VERSION"
+
+GIT_VERSION=`git --version 2>/dev/null`
+if [ $? != 0 ]; then
+	echo "*** Missing git:"
+	echo "  $ sudo apt-get install git"
+	echo ""
+	ERRORS=1
+fi
+#echo "Git version: $GIT_VERSION"
+
+PERL_VERSION=`perl -version 2>/dev/null`
+if [ $? != 0 ]; then
+	echo "*** Missing perl:"
+	echo "  $ sudo apt-get install perl"
+	echo ""
+	ERRORS=1
+fi
+#echo "PERL_VERSION: $PERL_VERSION"
+
+JAVA_VERSION=`java -version 2>&1`
+if [ $? != 0 ]; then
+	echo "*** Missing java:"
+	echo "  $ sudo apt-get install openjdk-7-jre"
+	echo ""
+	ERRORS=1
+fi
+#echo "JAVA_VERSION: $JAVA_VERSION"
+
+if [ "x$ERRORS" = "x0" ]; then
+	exit 0
+fi
+
+echo "*** Errors found in system setup, see error messages above!"
+exit 1

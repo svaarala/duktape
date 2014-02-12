@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: 
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-27 09:48:12.922026 Z
 references: []
 
@@ -16,3 +16,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-09 16:32:14.964363 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    JSONX and JSONC provide this now.  There is separate future work for
+    controlling their options.
