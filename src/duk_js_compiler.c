@@ -6589,7 +6589,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	entry_top = duk_get_top(ctx);
 	DUK_ASSERT(entry_top >= 3);
 
-	comp_stk = (duk_compiler_stkstate *) duk_require_pointer(ctx, -1);
+	comp_stk = (duk__compiler_stkstate *) duk_require_pointer(ctx, -1);
 	comp_ctx = &comp_stk->comp_ctx_alloc;
 	lex_pt = &comp_stk->lex_pt_alloc;
 	DUK_ASSERT(comp_ctx != NULL);

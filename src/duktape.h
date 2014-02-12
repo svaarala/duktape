@@ -38,7 +38,8 @@ extern "C" {
 #endif
 #endif
 
-#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || (defined(DUK_F_CPP11) && defined(__GNUC__))
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || \
+    (defined(__cplusplus) && (__cplusplus >= 201103L) && defined(__GNUC__))
 #define DUK_API_VARIADIC_MACROS
 #else
 #undef DUK_API_VARIADIC_MACROS

@@ -66,7 +66,7 @@
 #endif
 
 #undef DUK_F_CPP11
-#if (__cplusplus >= 201103L)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
 #define DUK_F_CPP11
 #endif
 
