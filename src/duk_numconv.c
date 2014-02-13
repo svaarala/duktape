@@ -1555,7 +1555,9 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 	} else {
 		neg = 0;
 	}
-	DUK_ASSERT(DUK_SIGNBIT((double) x) == 0);
+
+	/* NaN sign bit is platform specific with unpacked, un-normalized NaNs */
+	DUK_ASSERT(c == DUK_FP_NAN || DUK_SIGNBIT((double) x) == 0);
 
 	if (c == DUK_FP_NAN) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_NAN);
