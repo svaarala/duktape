@@ -48,6 +48,7 @@ mkdir $DIST/src
 mkdir $DIST/licenses
 mkdir $DIST/examples
 mkdir $DIST/examples/hello
+mkdir $DIST/examples/eval
 mkdir $DIST/examples/cmdline
 mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
@@ -185,6 +186,13 @@ for i in \
 	; do
 	cp examples/hello/$i $DIST/examples/hello/
 done
+
+for i in \
+	eval.c \
+	; do
+	cp examples/eval/$i $DIST/examples/eval/
+done
+
 
 for i in \
 	fib.js \
