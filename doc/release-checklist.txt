@@ -85,11 +85,29 @@ Release checklist
 
     - make test262test
 
-* emscripten
+* emscripten (run emscripten-generated code with Duktape)
 
   - on x86-64
 
     - make emscriptentest
+
+* emscripten (compile Duktape with emscripten, run with Node)
+
+  - on x86-64
+
+    - make emscriptenduktest
+
+* JS-Interpreter
+
+  - on x86-64
+
+    - make jsinterpretertest
+
+* lua.js
+
+  - on x86-64
+
+    - make luajstest
 
 * Store binaries and update website downloads page
 
@@ -98,7 +116,10 @@ Release checklist
   - Date
   - "latest" class
 
-* Build website, readthrough
+* Build website
+
+  - Readthrough
+  - Test that the Duktape REPL (Dukweb) works
 
 * Ditz release
 
