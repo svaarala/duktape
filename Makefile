@@ -208,7 +208,7 @@ clean:
 	-@rm -rf luajs
 	-@rm -f dukweb.js
 	-@rm -rf /tmp/dukweb-test/
-	-@rm jquery-1.11.0.js
+	-@rm -f jquery-1.11.0.js
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -453,8 +453,8 @@ dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "### dukwebtest"
 	-@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.0.js dukweb/dukweb_test.html dukweb/dukweb.css /tmp/dukweb-test/
-	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb_test.html"
+	cp dukweb.js jquery-1.11.0.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
+	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 jquery-1.11.0.js:
 	wget http://code.jquery.com/jquery-1.11.0.js
@@ -618,7 +618,7 @@ dist-src:	dist
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 
 # Website
-site:
+site: dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
 	cd website/; python buildsite.py ../site/

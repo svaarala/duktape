@@ -959,6 +959,13 @@ def main():
 	for i in os.listdir('binaries'):
 		shutil.copyfile(os.path.join('binaries', i), os.path.join(outdir, i))
 
+	print 'Copying dukweb.js files'
+	for i in [ '../dukweb.js',
+	           '../jquery-1.11.0.js',
+	           '../dukweb/dukweb.css',
+	           '../dukweb/dukweb.html' ]:
+		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
+
 if __name__ == '__main__':
 	main()
 

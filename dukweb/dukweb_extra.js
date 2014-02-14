@@ -147,7 +147,7 @@ Duktape.logOwnProperties();
 
 Duktape.eval('Dukweb = {};');
 Duktape.eval('Dukweb.userAgent = ' + (JSON.stringify(navigator.userAgent.toString()) || '"unknown"') + ';');
-Duktape.eval('Dukweb.emscripten_run_script = emscripten_run_script; delete this.emscripten_run_script;');
+Duktape.eval('Dukweb.emscripten_run_script = this.emscripten_run_script; delete this.emscripten_run_script;');
 Duktape.eval('Dukweb.eval = Dukweb.emscripten_run_script;')  // FIXME: better binding
 Duktape.eval('Dukweb.print = function() { Dukweb.eval("Duktape.printHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
 Duktape.eval('Dukweb.alert = function() { Dukweb.eval("Duktape.alertHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
