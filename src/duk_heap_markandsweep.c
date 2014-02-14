@@ -1013,7 +1013,9 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 *  Since finalizers may cause arbitrary side effects, they are
 	 *  prevented during string table and object property allocation
 	 *  resizing using the DUK_MS_FLAG_NO_FINALIZERS flag in
-	 *  heap->mark_and_sweep_base_flags.
+	 *  heap->mark_and_sweep_base_flags.  In this case the objects
+	 *  remain in the finalization work list after mark-and-sweep
+	 *  exits and they may be finalized on the next pass.
 	 *
 	 *  Finalization currently happens inside "MARKANDSWEEP_RUNNING"
 	 *  protection (no mark-and-sweep may be triggered by the
