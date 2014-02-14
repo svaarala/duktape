@@ -79,8 +79,32 @@ for:</p>
 
 <p>Performance is somewhat limited as Duktape is an interpreted engine.
 Lack of typed array support also forces Emscripten to use a much slower model
-for emulating application memory.</p>
-
-<p>See 
+for emulating application memory.  Large programs may fail due to Duktape
+compiler running out of virtual registers.  See 
 <a href="https://github.com/svaarala/duktape/blob/master/doc/emscripten-status.txt">emscripten-status.txt</a>
 for current compatibility status.</p>
+
+<p>Duktape itself compiles with Emscripten, and it is possible to run Duktape inside
+a web page for instance, see
+<a href="dukweb.html">Dukweb REPL</a>.</p>
+
+<h2 id="compatibility-luajs">Lua.js</h2>
+
+<p><a href="https://github.com/mherkender/lua.js">lua.js</a> translates Lua
+code to Javascript.  There are no known issues in running the generated
+Javascript, except that Duktape doesn't provide <code>console.log</code>
+which lua.js expects.  This is easy to remedy, e.g. by prepending the
+following:</p>
+<pre class="ecmascript-code">
+console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };
+</pre>
+
+<h2 id="compatibility-jsinterpreter">JS-Interpreter</h2>
+
+<p><a href="https://github.com/NeilFraser/JS-Interpreter">JS-Interpreter</a>
+interprets Javascript in Javascript.  JS-Interpreter works with Duktape,
+except that Duktape doesn't provide <code>window</code> which JS-Interpreter
+expects.  This can be fixed by prepending:</p>
+<pre class="ecmascript-code">
+window = {};
+</pre>
