@@ -1,51 +1,69 @@
 body {
-	margin: 20px;
+	padding: 20px;
 }
 
 h1 {
 	font-family: sans-serif;
+	margin: 0;
+	padding; 0;
 }
 
 #dukweb-intro {
-	width: 80%;
+	width: 100%;
 	color: #aaaaaa;
 	font-style: italic;
+	margin: 3ex 0 0 0;
+	padding: 0;
 }
 
-#dukweb-input {
-	width: 80%;
+#dukweb-input-wrapper {
 	height: 20em;
 	border: 2px solid #cccccc;
 	border-radius: 5px;
+	margin: 3ex 0 0 0;
 	padding: 6px;
+}
+#dukweb-input {
+	border: none;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
 }
 
 #dukweb-output {
-	width: 80%;
 	height: 20em;
 	border: 2px solid #cccccc;
 	border-radius: 5px;
+	margin: 0;
 	padding: 6px;
+	overflow: auto;
+}
+#dukweb-output.error {
+	color: #ff0000;
+	font-weight: bold;
 }
 
 #dukweb-evaluate-wrapper {
 	margin: 3ex 0 3ex 0;
-	width: 80%;
+	padding: 0;
+	width: 100%;
 	text-align: center;
 }
-
 #dukweb-evaluate {
 	color: #333333;
 	background: #eeeeff;
+	font-family: sans-serif;
 	font-size: 200%;
 	border: 2px solid #ccccff;
 	border-radius: 5px;
 	padding: 8px;
+	margin: 0;
 }
 #dukweb-evaluate:hover {
 	background: #f8f8ff;
 	cursor: pointer;
 }
-
 #dukweb-evaluate span {
 }

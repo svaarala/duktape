@@ -442,7 +442,7 @@ emscriptenduktest: dist
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
-EMCCOPTS_DUKVM_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_open","_dukweb_close","_dukweb_eval"]'
+EMCCOPTS_DUKVM_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
 
 dukweb.js: dist
 	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKVM_EXPORT) -DDUK_OPT_NO_PACKED_TVAL -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js

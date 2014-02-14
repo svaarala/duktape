@@ -14,6 +14,7 @@ for some reason at the moment.  There is much to improve in the Duktape/browser 
 errors are not handled nicely yet, so keep your Javascript Console open.  Also note that this
 page takes a few seconds to (re)load.</p>
 
+<div id="dukweb-input-wrapper">
 <textarea id="dukweb-input">
 // This code runs inside the Duktape VM, print() and alert() are bound
 // to more useful functions.
@@ -21,49 +22,70 @@ page takes a few seconds to (re)load.</p>
 print("Duktape version is " + Duktape.version);
 alert("alert from Duktape code");
 
-// The DukWeb object provides bindings to access the underlying web
-// environment.  Most importantly, you can use DukWeb.eval() to run
+// The Dukweb object provides bindings to access the underlying web
+// environment.  Most importantly, you can use Dukweb.eval() to run
 // code in the browser.
 
-DukWeb.eval('alert("your browser userAgent is: " + navigator.userAgent.toString())');
+Dukweb.eval('alert("your browser userAgent is: " + navigator.userAgent.toString())');
 </textarea>
+</div>
 
 <div id="dukweb-evaluate-wrapper">
 <span id="dukweb-evaluate"><span>Evaluate</span></span>
 </div>
 
+<div id="dukweb-output-wrapper">
 <pre id="dukweb-output">
 </pre>
+</div>
 
 <script type="text/javascript">
 //<![CDATA[
 
-// Override handlers for Duktape print() and alert() replacements, because
-// we want to redirect output in our own way.
-var dukWebOutput = [];
-function dukWebAppendOutput(txt) {
-    var oldtxt = $('#dukweb-output').text();
-    var newtxt = oldtxt + txt;  // find out a better way
-    $('#dukweb-output').text(newtxt);
-}
-Duktape.printHandler = function(msg) {
-    dukWebAppendOutput(msg + '\n');
-}
-Duktape.alertHandler = function(msg) {
-    dukWebAppendOutput(msg + '\n');
-}
-
-$('#dukweb-evaluate').click(function () {
-    $('#dukweb-output').text('');
-    dukWebOutput = [];
-    var code = $('#dukweb-input').val();
-    try {
-        var res = Duktape.eval(code);
-        dukWebAppendOutput('==> ' + res + '\n');
-    } catch (e) {
-        dukWebAppendOutput('==> ' + (e.stack || e) + '\n');
+function dukwebSetup() {
+    if (typeof Duktape !== 'object') {
+        throw new Error('initialization failed (Duktape is undefined)');
     }
-});
+    if (!Duktape.initSuccess) {
+        throw new Error('initialization failed (initSuccess is false)');
+    }
+
+    // Override handlers for Duktape print() and alert() replacements, because
+    // we want to redirect output in our own way.
+    var dukwebOutput = [];
+    function dukwebAppendOutput(txt) {
+        var oldtxt = $('#dukweb-output').text();
+        var newtxt = oldtxt + txt;  // find out a better way
+        $('#dukweb-output').text(newtxt);
+    }
+    Duktape.printHandler = function(msg) {
+        dukwebAppendOutput(msg + '\n');
+    }
+    Duktape.alertHandler = function(msg) {
+        dukwebAppendOutput(msg + '\n');
+    }
+
+    $('#dukweb-evaluate').click(function () {
+        $('#dukweb-output').text('');
+        dukwebOutput = [];
+        var code = $('#dukweb-input').val();
+        try {
+            var res = Duktape.eval(code);
+            dukwebAppendOutput('==> ' + res + '\n');
+        } catch (e) {
+            dukwebAppendOutput('==> ' + (e.stack || e) + '\n');
+        }
+    });
+}
+try {
+    dukwebSetup();
+} catch (e) {
+    $('#dukweb-output')
+        .addClass('error')
+        .text(
+            'Dukweb.js initialization failed (perhaps your browser is not compatible?):\n\n' +
+            String(e.stack || e) + '\n\n');
+}
 
 //]]>
 </script>

@@ -22,6 +22,13 @@ static int dukweb__emscripten_run_script(duk_context *ctx) {
 	return 0;
 }
 
+int dukweb_is_open(void) {
+	if (dukweb_ctx) {
+		return 1;
+	}
+	return 0;
+}
+
 void dukweb_open(void) {
 	if (dukweb_ctx) {
 		printf("dukweb_open: heap already exists, destroying previous heap first\n");
