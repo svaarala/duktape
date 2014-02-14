@@ -196,6 +196,7 @@ clean:
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
 	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
 	-@rm -f /tmp/duk-emcc-luatest*
+	-@rm -f /tmp/duk-emcc-duktest*
 	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
 	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
@@ -408,6 +409,19 @@ vgemscriptentest: emscripten duk
 	#valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
 	valgrind ./duk /tmp/duk-emcc-vgtest.js
 
+# Compile Duktape with Emscripten and execute it with NodeJS.
+# Current status: requires alignment fixes (alignment by 8).
+MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
+emscriptenduktest: dist
+	@echo "### emscriptenduktest"
+	-@rm -f /tmp/duk-emcc-duktest.js
+	emscripten/emcc -std=c99 -Wall -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
+	node /tmp/duk-emcc-duktest.js \
+		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
+		'print(Duktape.version, Duktape.env);' \
+		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
+	node /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
+
 lua-5.2.3.tar.gz:
 	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
 
@@ -466,18 +480,18 @@ luajs: luajs.zip
 	cd luajs; unzip ../luajs.zip
 
 .PHONY: luajstest
-luajstest: luajs
+luajstest: luajs duk
 	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-mandel.js
-	echo "console = {}; console.log = function() { print(Array.prototype.join.call(arguments, ' ')); };" > /tmp/duk-luajs-test.js
+	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-test.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
 	./duk /tmp/duk-luajs-test.js
 
 .PHONY: vgluajstest
-vgluajstest: luajs
+vgluajstest: luajs duk
 	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
 	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-vgmandel.js
-	echo "console = {}; console.log = function() { print(Array.prototype.join.call(arguments, ' ')); };" > /tmp/duk-luajs-vgtest.js
+	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-vgtest.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-vgtest.js
 	valgrind ./duk /tmp/duk-luajs-vgtest.js
 
