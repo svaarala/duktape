@@ -3,12 +3,40 @@
 <head>
 <title>Dukweb.js test</title>
 <script type="text/javascript" src="dukweb.js"></script>
+<script type="text/javascript" src="jquery-1.11.0.js"></script>
+<link href="style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <h1>Dukweb.js test</h1>
+
+<p id="dukweb-intro">Works in Chrome/Chromium.  On Firefox, a "double union" self test fails
+for some reason at the moment.</p>
+
+<textarea id="dukweb-input">
+"Duktape version is " + Duktape.version
+</textarea>
+
+<div id="dukweb-evaluate-wrapper">
+<span id="dukweb-evaluate"><span>Evaluate</span></span>
+</div>
+
+<pre id="dukweb-output">
+</pre>
+
 <script type="text/javascript">
-var res = Duktape.eval('"Duktape version is " + Duktape.version');
-alert(res);
+//<![CDATA[
+$('#dukweb-evaluate').click(function () {
+    var code = $('#dukweb-input').val();
+    try {
+        var res = Duktape.eval(code);
+        $('#dukweb-output').text(res);
+    } catch (e) {
+        $('#dukweb-output').text(e.stack || e);
+    }
+});
+//]]>
 </script>
+
+
 </body>
 </html>

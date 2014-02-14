@@ -208,6 +208,7 @@ clean:
 	-@rm -rf luajs
 	-@rm -f dukweb.js
 	-@rm -rf /tmp/dukweb-test/
+	-@rm jquery-1.11.0.js
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -448,12 +449,15 @@ dukweb.js: dist
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
 
-dukwebtest: dukweb.js
+dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "### dukwebtest"
 	-@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js dukweb/dukweb_test.html /tmp/dukweb-test/
+	cp dukweb.js jquery-1.11.0.js dukweb/dukweb_test.html dukweb/style.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb_test.html"
+
+jquery-1.11.0.js:
+	wget http://code.jquery.com/jquery-1.11.0.js
 
 lua-5.2.3.tar.gz:
 	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz

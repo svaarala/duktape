@@ -94,6 +94,7 @@ Duktape.logOwnProperties();
  *  Duktape.eval: run code inside Duktape, encode output value using JSON.
  */
 
+// FIXME: errors should probably be promoted to work better
 Duktape.eval = function(code) {
     // Code escape into a Javascript string
     var escapedString = JSON.stringify(String(code));

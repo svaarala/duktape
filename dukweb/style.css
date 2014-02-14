@@ -1,0 +1,36 @@
+body {
+	margin: 20px;
+}
+
+#dukweb-intro {
+	color: #aaaaaa;
+	font-style: italic;
+}
+
+#dukweb-input {
+	width: 80%;
+	height: 20em;
+	border: 1px solid #cccccc;
+}
+
+#dukweb-output {
+	width: 80%;
+	height: 20em;
+	border: 1px solid #cccccc;
+}
+
+#dukweb-evaluate-wrapper {
+	margin: 3ex 0 3ex 0;
+	width: 80%;
+	text-align: center;
+}
+
+#dukweb-evaluate {
+	color: #333333;
+	font-size: 200%;
+	border: 2px solid #ccccff;
+	border-radius: 5px;
+}
+
+#dukweb-evaluate span {
+}
