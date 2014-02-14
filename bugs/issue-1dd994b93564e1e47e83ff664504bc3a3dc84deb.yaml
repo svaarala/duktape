@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "improve Dukweb: fully typed eval() bindings, error handling, emscripten 'arch string'"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-14 16:14:14.532821 Z
+references: []
+
+id: 1dd994b93564e1e47e83ff664504bc3a3dc84deb
+log_events: 
+- - 2014-02-14 16:14:14.692411 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
