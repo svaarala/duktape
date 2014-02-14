@@ -212,9 +212,11 @@ Planned
   only parsed once and deeply nested inner functions are no longer a
   performance issue
 
-* Portability fixes: Crossbridge (Flash)
+* Portability fixes for Crossbridge (Flash)
 
-* Portability and compiler warnings fixes for a few exotic compilers
+* Warning fixes for non-default feature options and a few exotic compilers
+
+* FIXME: Duktape under Emscripten+NodeJS, needs 8-byte alignment fix
 
 0.11.0 (2014-XX-XX)
 -------------------
