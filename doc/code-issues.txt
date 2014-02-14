@@ -31,6 +31,19 @@ Names are lowercase, underscore separated::
           /* ... */
   }
 
+Local functions, arrays, structs, typedefs, etc have a double underscore
+after "duk"::
+
+  typedef int duk__temptype;
+
+  static void duk__frobnicate_helper(void) {
+          /* ... */
+  }
+
+The prefix is useful when looking at object files to clearly identify an
+internal symbol as originating from Duktape.  It will also show up in
+debugger tracebacks and such.
+
 Macros are uppercase, underscore separated::
 
   #define DUK_MACRO(x)  /* ... */
@@ -321,7 +334,9 @@ Basic rules in implementation:
 
 * The ``duk_small_int_t`` should be used in internal code e.g. for flags.
   It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
-  It's also used for boolean values.
+
+* The ``duk_bool_t`` should be used for boolean values.  (Currently some
+  internal code uses ``duk_small_int_t`` for that.)
 
 * ``duk_uint8_t`` should be used as a replacement for ``unsigned char`` and
   often for ``char`` too.  Since ``char`` may be signed, it is often a
@@ -408,6 +423,20 @@ for 32-bit integers but 8-byte alignment for doubles, etc.
 
 **FIXME: alignment is now guaranteed to 4 bytes on platforms where unaligned
 accesses are not allowed/preferable.**
+
+For platforms requiring 8-byte alignment there are two critical places:
+
+* Object property table must ensure that duk_tval values are 8-byte aligned.
+
+* Buffer data after the ``duk_hbuffer_fixed`` header must be 8-byte aligned,
+  because buffer data may contain duk_tval values (as is the case with function
+  'data' area for instance).  Since the ``duk_hbuffer_fixed`` may only contain
+  4-byte elements, the size of the struct may not be a multiple of 8 and data
+  may become unaligned (this is an issue in Duktape 0.9.0).
+
+The ``duk_hstring`` struct does not guarantee that string data will be
+8-byte aligned (it will be 4-byte aligned) but this is not required on
+any platform.
 
 64-bit arithmetic
 -----------------
