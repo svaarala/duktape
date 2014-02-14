@@ -16,8 +16,9 @@ page takes a few seconds to (re)load.</p>
 
 <div id="dukweb-input-wrapper">
 <textarea id="dukweb-input">
-// This code runs inside the Duktape VM, print() and alert() are bound
-// to more useful functions.
+// This code runs inside the Duktape VM, print() and alert() are bound so
+// that they integrate with the browser environment: output is written to
+// the text area below.
 
 print("Duktape version is " + Duktape.version);
 alert("alert from Duktape code");
