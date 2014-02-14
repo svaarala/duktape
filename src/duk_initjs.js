@@ -59,4 +59,18 @@
             return { type: t[0], addr: t[1], refc: t[2], hdrsize: t[3], addsize: t[4], bcsize: t[5] };
         });
     }
+
+    // anticipate new functions
+    if (false) {
+        def('line', function() { return 0; });
+    }
+
+    // console.log compatibility
+    if (false) {
+        console = {
+            log: function() {
+                print(Array.prototype.join.call(arguments, ' '));
+            }
+        };
+    }
 })(this, Duktape);
