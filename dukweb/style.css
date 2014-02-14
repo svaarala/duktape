@@ -3,6 +3,7 @@ body {
 }
 
 #dukweb-intro {
+	width: 80%;
 	color: #aaaaaa;
 	font-style: italic;
 }
@@ -10,13 +11,17 @@ body {
 #dukweb-input {
 	width: 80%;
 	height: 20em;
-	border: 1px solid #cccccc;
+	border: 2px solid #cccccc;
+	border-radius: 5px;
+	padding: 6px;
 }
 
 #dukweb-output {
 	width: 80%;
 	height: 20em;
-	border: 1px solid #cccccc;
+	border: 2px solid #cccccc;
+	border-radius: 5px;
+	padding: 6px;
 }
 
 #dukweb-evaluate-wrapper {
@@ -27,9 +32,15 @@ body {
 
 #dukweb-evaluate {
 	color: #333333;
+	background: #eeeeff;
 	font-size: 200%;
 	border: 2px solid #ccccff;
 	border-radius: 5px;
+	padding: 8px;
+}
+#dukweb-evaluate:hover {
+	background: #f8f8ff;
+	cursor: pointer;
 }
 
 #dukweb-evaluate span {

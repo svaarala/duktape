@@ -6,10 +6,21 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <emscripten.h>
 #include "duktape.h"
 
 static duk_context *dukweb_ctx = NULL;
 static char duk__evalbuf[1024 * 1024];
+
+static int dukweb__emscripten_run_script(duk_context *ctx) {
+	const char *code = duk_get_string(ctx, -1);
+	if (!code) {
+		return DUK_RET_TYPE_ERROR;
+	}
+	/* FIXME: return value */
+	emscripten_run_script(code);
+	return 0;
+}
 
 void dukweb_open(void) {
 	if (dukweb_ctx) {
@@ -19,6 +30,16 @@ void dukweb_open(void) {
 	}
 	printf("dukweb_open: creating heap\n");
 	dukweb_ctx = duk_create_heap_default();
+
+	/* add a binding to emscripten_run_script(), let init code move it
+	 * to a better place
+	 */
+
+	duk_push_global_object(dukweb_ctx);
+	duk_push_string(dukweb_ctx, "emscripten_run_script");
+	duk_push_c_function(dukweb_ctx, dukweb__emscripten_run_script, 1 /*nargs*/);
+	duk_put_prop(dukweb_ctx, -3);
+	duk_set_top(dukweb_ctx, 0);
 }
 
 void dukweb_close(void) {
@@ -44,6 +65,8 @@ static int dukweb__tostring_wrapper(duk_context *ctx) {
 /* A very limited eval facility: one string input (eval code), one string
  * output (eval result or error, coerced with ToString()).  Data marshalling
  * needs to be implemented on top of this.
+ *
+ * FIXME: proper return value model which identifies errors from success values
  */
 const char *dukweb_eval(const char *code) {
 	const char *res;

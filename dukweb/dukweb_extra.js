@@ -115,6 +115,20 @@ Duktape.eval = function(code) {
 };
 
 /*
+ *  Handlers for Duktape's print() and alert() replacements.
+ */
+
+// Expect web page to override this, e.g. to append to some buffer.
+Duktape.printHandler = function(msg) {
+    log(msg);
+}
+
+// Expect web page to override this, e.g. to use browser alert().
+Duktape.alertHandler = function(msg) {
+    log(msg);
+}
+
+/*
  *  Initialize Duktape heap automatically (not closed for now), and use
  *  Duktape.eval() to pull in some convenience properties like Duktape
  *  version.
@@ -124,5 +138,19 @@ Duktape.dukweb_open();
 Duktape.version = Duktape.eval('Duktape.version');
 Duktape.env = Duktape.eval('Duktape.env');
 Duktape.logOwnProperties();
+
+/*
+ *  Initialize a 'DukWeb' instance inside Duktape for interfacing with the
+ *  browser side.
+ */
+
+Duktape.eval('DukWeb = {};');
+Duktape.eval('DukWeb.userAgent = ' + (JSON.stringify(navigator.userAgent.toString()) || '"unknown"') + ';');
+Duktape.eval('DukWeb.emscripten_run_script = emscripten_run_script; delete this.emscripten_run_script;');
+Duktape.eval('DukWeb.eval = DukWeb.emscripten_run_script;')  // FIXME: better binding
+Duktape.eval('DukWeb.print = function() { DukWeb.eval("Duktape.printHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
+Duktape.eval('DukWeb.alert = function() { DukWeb.eval("Duktape.alertHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
+Duktape.eval('print = DukWeb.print;');
+Duktape.eval('alert = DukWeb.print;');  // intentionally bound to print()
 
 //console.log('=== ' + Duktape.eval('Duktape.enc("jsonx", { env: Duktape.env, version: Duktape.version })') + ' ===');

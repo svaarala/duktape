@@ -10,10 +10,22 @@
 <h1>Dukweb.js test</h1>
 
 <p id="dukweb-intro">Works in Chrome/Chromium.  On Firefox, a "double union" self test fails
-for some reason at the moment.</p>
+for some reason at the moment.  There is much to improve in the Duktape/browser bindings and
+errors are not handled nicely yet, so keep your Javascript Console open.  Also note that this
+page takes a few seconds to (re)load.</p>
 
 <textarea id="dukweb-input">
-"Duktape version is " + Duktape.version
+// This code runs inside the Duktape VM, print() and alert() are bound
+// to more useful functions.
+
+print("Duktape version is " + Duktape.version);
+alert("alert from Duktape code");
+
+// The DukWeb object provides bindings to access the underlying web
+// environment.  Most importantly, you can use DukWeb.eval() to run
+// code in the browser.
+
+DukWeb.eval('alert("your browser userAgent is: " + navigator.userAgent.toString())');
 </textarea>
 
 <div id="dukweb-evaluate-wrapper">
@@ -25,18 +37,36 @@ for some reason at the moment.</p>
 
 <script type="text/javascript">
 //<![CDATA[
+
+// Override handlers for Duktape print() and alert() replacements, because
+// we want to redirect output in our own way.
+var dukWebOutput = [];
+function dukWebAppendOutput(txt) {
+    var oldtxt = $('#dukweb-output').text();
+    var newtxt = oldtxt + txt;  // find out a better way
+    $('#dukweb-output').text(newtxt);
+}
+Duktape.printHandler = function(msg) {
+    dukWebAppendOutput(msg + '\n');
+}
+Duktape.alertHandler = function(msg) {
+    dukWebAppendOutput(msg + '\n');
+}
+
 $('#dukweb-evaluate').click(function () {
+    $('#dukweb-output').text('');
+    dukWebOutput = [];
     var code = $('#dukweb-input').val();
     try {
         var res = Duktape.eval(code);
-        $('#dukweb-output').text(res);
+        dukWebAppendOutput('==> ' + res + '\n');
     } catch (e) {
-        $('#dukweb-output').text(e.stack || e);
+        dukWebAppendOutput('==> ' + (e.stack || e) + '\n');
     }
 });
+
 //]]>
 </script>
-
 
 </body>
 </html>
