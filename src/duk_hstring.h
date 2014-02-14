@@ -96,7 +96,9 @@ struct duk_hstring {
 
 	/*
 	 *  String value of 'blen+1' bytes follows (+1 for NUL termination
-	 *  convenience for C API).
+	 *  convenience for C API).  No alignment needs to be guaranteed
+	 *  for strings, but fields above should guarantee alignment-by-4
+	 *  (but not alignment-by-8).
 	 */
 };
 
