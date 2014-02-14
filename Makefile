@@ -206,6 +206,8 @@ clean:
 	-@rm -f compiler.jar
 	-@rm -rf lua-5.2.3
 	-@rm -rf luajs
+	-@rm -f dukweb.js
+	-@rm -rf /tmp/dukweb-test/
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -410,17 +412,48 @@ vgemscriptentest: emscripten duk
 	valgrind ./duk /tmp/duk-emcc-vgtest.js
 
 # Compile Duktape with Emscripten and execute it with NodeJS.
-# Current status: requires alignment fixes (alignment by 8).
+# Current status: requires Duktape alignment fixes (alignment by 8).
+# With manual alignment hacks the result works.  Emscripten options
+# need to be chosen carefully:
+#   - Without DUK_OPT_NO_PACKED_TVAL some asserts fail, at least when
+#     -O2 (with asm.js) is used
+#   - -O1 and above triggers asm.js use, which has at least the following
+#     problem:
+#     "too many setjmps in a function call, build with a higher value for MAX_SETJMPS"
+#   - Using -O2 without asm.js for now.
+# https://github.com/kripken/emscripten/wiki/Optimizing-Code
+# http://mozakai.blogspot.fi/2013/08/outlining-workaround-for-jits-and-big.html
+EMCCOPTS_DUKVM=-O2 -std=c99 -Wall -s OUTLINING_LIMIT=20000 -s MAX_SETJMPS=1000 -s ASM_JS=0
+
 MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
+
+.PHONY: emscriptenduktest
 emscriptenduktest: dist
 	@echo "### emscriptenduktest"
 	-@rm -f /tmp/duk-emcc-duktest.js
-	emscripten/emcc -std=c99 -Wall -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
+	emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_NO_PACKED_TVAL -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
 	node /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
 	node /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
+
+# This is a prototype of running Duktape in a web environment with Emscripten,
+# and providing an eval() facility from both sides.  This is a placeholder now
+# and doesn't do anything useful yet.
+EMCCOPTS_DUKVM_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_open","_dukweb_close","_dukweb_eval"]'
+
+dukweb.js: dist
+	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKVM_EXPORT) -DDUK_OPT_NO_PACKED_TVAL -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js
+	cat dukweb/dukweb_extra.js >> dukweb.js
+	@wc dukweb.js
+
+dukwebtest: dukweb.js
+	@echo "### dukwebtest"
+	-@rm -rf /tmp/dukweb-test/
+	mkdir /tmp/dukweb-test/
+	cp dukweb.js dukweb/dukweb_test.html /tmp/dukweb-test/
+	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb_test.html"
 
 lua-5.2.3.tar.gz:
 	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
