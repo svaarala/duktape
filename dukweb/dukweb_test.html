@@ -63,7 +63,7 @@ function dukwebSetup() {
         dukwebAppendOutput(msg + '\n');
     }
     Duktape.alertHandler = function(msg) {
-        dukwebAppendOutput(msg + '\n');
+        alert(msg);
     }
 
     $('#dukweb-evaluate').click(function () {
