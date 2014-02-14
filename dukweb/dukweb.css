@@ -2,6 +2,10 @@ body {
 	margin: 20px;
 }
 
+h1 {
+	font-family: sans-serif;
+}
+
 #dukweb-intro {
 	width: 80%;
 	color: #aaaaaa;

@@ -453,7 +453,7 @@ dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "### dukwebtest"
 	-@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.0.js dukweb/dukweb_test.html dukweb/style.css /tmp/dukweb-test/
+	cp dukweb.js jquery-1.11.0.js dukweb/dukweb_test.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb_test.html"
 
 jquery-1.11.0.js:

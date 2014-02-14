@@ -69,6 +69,7 @@ If you intend to change Duktape internals, run test cases, etc:
     $ make emscriptentest    # see doc/emscripten-status.txt
     $ make jsinterpretertest
     $ make luajstest
+    $ make dukwebtest        # then browse to file:///tmp/dukweb/dukweb_test.html
 
 **Note: the repo Makefile is intended for Linux developer use**, it is not a
 multi-platform "end user" Makefile.  In particular, the Makefile is not
