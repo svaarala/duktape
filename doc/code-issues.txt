@@ -421,19 +421,35 @@ Alignment level may also vary, e.g. platform may require 4-byte alignment
 for both 32-bit integers and IEEE doubles, or it may require 4-byte alignment
 for 32-bit integers but 8-byte alignment for doubles, etc.
 
-For platforms requiring 8-byte alignment there are two critical places:
+The user provided allocation functions are required to return memory aligned
+in a way which matches platform requirements.  In particular, if the platform
+requires 8-byte alignment for doubles, returned memory is required to be 8-byte
+aligned (at least if the allocation size is 8 bytes or more).  This ensures
+that single allocated structures are properly allocated by default.  It also
+ensures that arrays of structures are properly aligned.  The C compiler will
+pad a structure to ensure that proper alignment is kept in arrays too.  For
+instance, if the platform requires 8-byte alignment and a struct contains a
+double (8 bytes) and a 32-bit integer (4 bytes), the struct will be padded
+from 12 bytes to 16 bytes to ensure that arrays of such structures work as
+expected.
 
-* Object property table must ensure that duk_tval values are 8-byte aligned.
+There are a few places in Duktape where alignment may still be broken.  They
+are related to "byte packing tricks" which are necessary to maintain a small
+footprint:
 
-* Buffer data after the ``duk_hbuffer_fixed`` header must be 8-byte aligned,
-  because buffer data may contain duk_tval values (as is the case with function
-  'data' area for instance).  Since the ``duk_hbuffer_fixed`` may only contain
-  4-byte elements, the size of the struct may not be a multiple of 8 and data
-  may become unaligned (this is an issue in Duktape 0.9.0).
+* Object property table must ensure that duk_tval values and pointer values
+  are properly aligned.   This is a particular issue with duk_tval values on
+  platforms which require 8-byte alignment.
 
-The ``duk_hstring`` struct does not guarantee that string data will be
-8-byte aligned (it will be 4-byte aligned) but this is not required on
-any platform.
+* Buffer data after the ``duk_hbuffer_fixed`` header must be properly aligned.
+  The ``duk_hbuffer_fixed`` structure always contains 4-byte elements but not
+  necessarily 8-byte elements, so data following the structure is 4-byte aligned
+  but not automatically 8-byte aligned.
+
+* The ``duk_hstring`` struct contains 4-byte values so it guarantees 4-byte
+  alignment for string data, but there is no guarantee of an 8-byte alignment.
+  This is not necessary, as strings don't need a specific alignment on any
+  known platform.
 
 Forcing a struct size to a multiple of 4 or 8 can be done in a compiler
 specific manner with pragmas or struct attributes.  The only somewhat
