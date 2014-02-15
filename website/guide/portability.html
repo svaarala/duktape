@@ -133,6 +133,11 @@ detail below the table.</p>
 <td>Requires some preprocessor defines, datetime resolution limited to full seconds.</td>
 </tr>
 <tr>
+<td>Emscripten</td>
+<td>Emscripten</td>
+<td>n/a</td>
+<td>Requires additional options, see below. At least V8/NodeJs works.</td>
+<tr>
 <td>Adobe Flash Runtime</td>
 <td>CrossBridge<br />(GCC-4.2 with Flash backend)</td>
 <td>n/a</td>
@@ -171,6 +176,25 @@ M68K AmigaOS or TOS you must:</p>
 
 <p>Datetime resolution is limited to full seconds only when using VBCC on
 AmigaOS or TOS.</p>
+
+<h3>Emscripten</h3>
+
+<p>Needs a set of <code>emcc</code> options.  When executed with
+V8, the following seem to work:</p>
+<ul>
+<li><code>-DEMSCRIPTEN</code>: <b>mandatory option</b>, needed by Duktape
+    to detect Emscripten.  Without this Duktape may use unaligned accesses
+    which Emscripten does not allow.  This results in odd and inconsistent
+    behavior, and is not necessarily caught by Duktape self tests.</li>
+<li><code>-std=c99</code></li>
+<li><code>-O2</code></li>
+<li><code>-s ASM_JS=0</code></li>
+<li><code>-s MAX_SETJMPS=1000</code></li>
+<li><code>-s OUTLINING_LIMIT=20000</li>
+</ul>
+
+<p>Dukweb is compiled using Emscripten, so you can also check out the Duktape
+git repository to see how Dukweb is compiled.</p>
 
 <h2>Using Duktape from a C++ program</h2>
 
