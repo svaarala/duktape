@@ -16,3 +16,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-15 23:20:38.356264 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Also, add a fatal error handler which console.log()s the error.
