@@ -284,19 +284,27 @@ static void duk__realloc_props(duk_hthread *thr,
 #endif
 
 	/*
-	 *  Tweak e_size to ensure that the whole e part (key + val + flags)
-	 *  is a suitable multiple for alignment (platform specific).
+	 *  For property layout 1, tweak e_size to ensure that the whole entry
+	 *  part (key + val + flags) is a suitable multiple for alignment
+	 *  (platform specific).
 	 *
-	 *  We could just pad the flags, but that would make the pointer
-	 *  computations to access the parts even more arcane.
+	 *  Property layout 2 does not require this tweaking and is preferred
+	 *  on low RAM platforms requiring alignment.
 	 */
 
-#if (DUK_HOBJECT_ALIGN_TARGET == 1)
-	/* no need to adjust new_e_size */
+#if defined(DUK_USE_HOBJECT_LAYOUT_2)
+	DUK_DDDPRINT("using layout 2, no need to pad e_size: %d", (int) new_e_size);
 	new_e_size_adjusted = new_e_size;
-#else
+#elif defined(DUK_USE_HOBJECT_LAYOUT_1) && (DUK_HOBJECT_ALIGN_TARGET == 1)
+	DUK_DDDPRINT("using layout 1, but no need to pad e_size: %d", (int) new_e_size);
+	new_e_size_adjusted = new_e_size;
+#elif defined(DUK_USE_HOBJECT_LAYOUT_1) && ((DUK_HOBJECT_ALIGN_TARGET == 4) || (DUK_HOBJECT_ALIGN_TARGET == 8))
 	new_e_size_adjusted = (new_e_size + DUK_HOBJECT_ALIGN_TARGET - 1) & (~(DUK_HOBJECT_ALIGN_TARGET - 1));
+	DUK_DDDPRINT("using layout 1, and alignment target is %d, adjusted e_size: %d -> %d",
+	             (int) DUK_HOBJECT_ALIGN_TARGET, (int) new_e_size, (int) new_e_size_adjusted);
 	DUK_ASSERT(new_e_size_adjusted >= new_e_size);
+#else
+#error invalid hobject layout defines
 #endif
 
 	/*
@@ -381,11 +389,21 @@ static void duk__realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_p != NULL);  /* since new_alloc_size > 0 */
 	}
 
+#if defined(DUK_USE_HOBJECT_LAYOUT_1)
 	new_e_k = (duk_hstring **) new_p;
 	new_e_pv = (duk_propvalue *) (new_e_k + new_e_size_adjusted);
 	new_e_f = (duk_uint8_t *) (new_e_pv + new_e_size_adjusted);
 	new_a = (duk_tval *) (new_e_f + new_e_size_adjusted);
 	new_h = (duk_uint32_t *) (new_a + new_a_size);
+#elif defined(DUK_USE_HOBJECT_LAYOUT_2)
+	new_e_pv = (duk_propvalue *) new_p;
+	new_a = (duk_tval *) (new_e_pv + new_e_size_adjusted);
+	new_e_k = (duk_hstring **) (new_a + new_a_size);
+	new_h = (duk_uint32_t *) (new_e_k + new_e_size_adjusted);
+	new_e_f = (duk_uint8_t *) (new_h + new_h_size);
+#else
+#error invalid hobject layout defines
+#endif
 	new_e_used = 0;
 
 	/* if new_p == NULL, all of these pointers are NULL */

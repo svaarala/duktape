@@ -479,6 +479,15 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	                "u"
 #endif
 	                " "
+#if defined(DUK_USE_HOBJECT_LAYOUT_1)
+			"p1"
+#elif defined(DUK_USE_HOBJECT_LAYOUT_2)
+			"p2"
+#else
+			"p?"
+#endif
+			" "
+
 	                DUK_USE_ARCH_STRING);
 	duk_def_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 

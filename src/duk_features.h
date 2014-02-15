@@ -733,6 +733,22 @@ typedef double duk_double_t;
 #undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
 #endif
 
+#undef DUK_USE_HOBJECT_LAYOUT_1
+#undef DUK_USE_HOBJECT_LAYOUT_2
+#if defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE) && \
+    !defined(DUK_USE_ALIGN4) && !defined(DUK_USE_ALIGN8)
+/* On platforms without any alignment issues, layout 1 is preferable
+ * because it compiles to slightly less code and provides direct access
+ * to property keys.
+ */
+#define DUK_USE_HOBJECT_LAYOUT_1
+#else
+/* Otherwise layout is used by default, as it is compact even on
+ * platforms with alignment requirements.
+ */
+#define DUK_USE_HOBJECT_LAYOUT_2
+#endif
+
 /*
  *  Byte order and double memory layout detection
  *

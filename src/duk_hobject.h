@@ -190,6 +190,7 @@
  *  Macros to access the 'p' allocation.
  */
 
+#if defined(DUK_USE_HOBJECT_LAYOUT_1)
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
 		(h)->p \
@@ -221,6 +222,47 @@
 		(n_arr) * sizeof(duk_tval) + \
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
+#elif defined(DUK_USE_HOBJECT_LAYOUT_2)
+#define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
+	((duk_hstring **) ( \
+		(h)->p + \
+			(h)->e_size * sizeof(duk_propvalue) + \
+			(h)->a_size * sizeof(duk_tval) \
+	))
+#define DUK_HOBJECT_E_GET_VALUE_BASE(h)         \
+	((duk_propvalue *) ( \
+		(h)->p \
+	))
+#define DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
+	((duk_uint8_t *) ( \
+		(h)->p + \
+			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
+			(h)->a_size * sizeof(duk_tval) + \
+			(h)->h_size * sizeof(duk_uint32_t) \
+	))
+#define DUK_HOBJECT_A_GET_BASE(h)               \
+	((duk_tval *) ( \
+		(h)->p + \
+			(h)->e_size * sizeof(duk_propvalue) \
+	))
+#define DUK_HOBJECT_H_GET_BASE(h)               \
+	((duk_uint32_t *) ( \
+		(h)->p + \
+			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
+			(h)->a_size * sizeof(duk_tval) \
+	))
+
+#define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
+	( \
+		(n_ent) * (sizeof(duk_propvalue) + sizeof(duk_hstring *) + sizeof(duk_uint8_t)) + \
+		(n_arr) * sizeof(duk_tval) + \
+		(n_hash) * sizeof(duk_uint32_t) \
+	)
+#else
+#error invalid hobject layout defines
+#endif  /* hobject property layout */
+
+#define DUK_HOBJECT_E_ALLOC_SIZE(h) DUK_HOBJECT_P_COMPUTE_SIZE((h)->e_size, (h)->a_size, (h)->h_size)
 
 #define DUK_HOBJECT_E_GET_KEY(h,i)              (DUK_HOBJECT_E_GET_KEY_BASE((h))[(i)])
 #define DUK_HOBJECT_E_GET_KEY_PTR(h,i)          (&DUK_HOBJECT_E_GET_KEY_BASE((h))[(i)])
@@ -295,13 +337,6 @@
 
 #define DUK_HOBJECT_HASHIDX_UNUSED              0xffffffffUL
 #define DUK_HOBJECT_HASHIDX_DELETED             0xfffffffeUL
-
-#define DUK_HOBJECT_E_ALLOC_SIZE(h) \
-	( \
-		(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
-		(h)->a_size * sizeof(duk_tval) + \
-		(h)->h_size * sizeof(duk_uint32_t) \
-	)
 
 /*
  *  Misc
@@ -433,7 +468,9 @@ struct duk_hobject {
 	/*
 	 *  'p' contains {key,value,flags} entries, optional array entries, and an
 	 *  optional hash lookup table for non-array entries in a single 'sliced'
-	 *  allocation:
+	 *  allocation.  There are two layout options.
+	 *
+	 *  Layout 1 (DUK_USE_HOBJECT_LAYOUT_1):
 	 *
 	 *    e_size * sizeof(duk_hstring *)   bytes of   entry keys (e_used gc reachable)
 	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
@@ -441,6 +478,26 @@ struct duk_hobject {
 	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)
 	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
+	 *
+	 *  Layout 2 (DUK_USE_HOBJECT_LAYOUT_2):
+	 *
+	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
+	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)
+	 *    e_size * sizeof(duk_hstring *)   bytes of   entry keys (e_used gc reachable)
+	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
+	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
+	 *    e_size * sizeof(duk_uint8_t)     bytes of   entry flags (e_used gc reachable)
+	 *
+	 *  In layout 1, the 'e_used' count is rounded to 4 or 8 on platforms
+	 *  requiring 4 or 8 byte alignment.  This ensures proper alignment
+	 *  for the entries, at the cost of memory footprint.
+	 *
+	 *  In layout 2, entry values and array values are always aligned properly,
+	 *  and assuming pointers are at most 8 bytes, so are the entry keys.  Hash
+	 *  indices will be properly aligned (assuming pointers are at least 4 bytes).
+	 *  Finally, flags don't need additional alignment.  This layout provides
+	 *  compact allocations (even on platforms with alignment requirements) at
+	 *  the cost of a bit slower lookups.
 	 *
 	 *  Objects with few keys don't have a hash index; keys are looked up linearly,
 	 *  which is cache efficient because the keys are consecutive.  Larger objects
