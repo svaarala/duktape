@@ -211,7 +211,6 @@ clean:
 	-@rm -rf luajs
 	-@rm -f dukweb.js
 	-@rm -rf /tmp/dukweb-test/
-	-@rm -f jquery-1.11.0.js
 
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -226,6 +225,7 @@ cleanall: clean
 	-@rm -f cloc-1.60.pl
 	-@rm -f lua-5.2.3.tar.gz
 	-@rm -f luajs.zip
+	-@rm -f jquery-1.11.0.js
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
