@@ -191,6 +191,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_FLASHPLAYER
 #endif
 
+/* Emscripten (provided explicitly by user), improve if possible */
+#if defined(EMSCRIPTEN)
+#define DUK_F_EMSCRIPTEN
+#endif
+
 /* GCC and GCC version convenience define. */
 #if defined(__GNUC__)
 #define DUK_F_GCC
@@ -665,24 +670,67 @@ typedef double duk_double_t;
 #endif
 
 /*
- *  Support for unaligned accesses
+ *  Alignment requirement and support for unaligned accesses
  *
  *  Assume unaligned accesses are not supported unless specifically allowed
- *  in the target platform.
+ *  in the target platform.  Some platforms may support unaligned accesses
+ *  but alignment to 4 or 8 may still be desirable.
  */
 
-/* FIXME: alignment is now only guaranteed to 4 bytes in any case, so doubles
- * are not guaranteed to be aligned.
- */
-
-#if defined(DUK_F_ARM)
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#undef DUK_USE_ALIGN4
+#undef DUK_USE_ALIGN8
+
+#if defined(DUK_F_EMSCRIPTEN)
+/* Required on at least some targets, so use whenever Emscripten used,
+ * regardless of compilation target.
+ */
+#define DUK_USE_ALIGN8
+#elif defined(DUK_F_ARM)
+#define DUK_USE_ALIGN4
 #elif defined(DUK_F_MIPS)
-#undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#define DUK_USE_ALIGN4
 #elif defined(DUK_F_X86) || defined(DUK_F_X64)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
+/* unknown, use safe default */
+#define DUK_USE_ALIGN8
+#endif
+
+/* User forced alignment to 4 or 8. */
+#if defined(DUK_OPT_FORCE_ALIGN)
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#undef DUK_USE_ALIGN4
+#undef DUK_USE_ALIGN8
+#if (DUK_OPT_FORCE_ALIGN == 4)
+#define DUK_USE_ALIGN4
+#elif (DUK_OPT_FORCE_ALIGN == 8)
+#define DUK_USE_ALIGN8
+#else
+#error invalid DUK_OPT_FORCE_ALIGN value
+#endif
+#endif
+
+/* Compiler specific hackery needed to force struct size to match aligment,
+ * see e.g. duk_hbuffer.h.
+ *
+ * http://stackoverflow.com/questions/11130109/c-struct-size-alignment
+ * http://stackoverflow.com/questions/10951039/specifying-64-bit-alignment
+ */
+#if defined(DUK_F_MSVC)
+#define DUK_USE_PACK_MSVC_PRAGMA
+#elif defined(DUK_F_GCC)
+#define DUK_USE_PACK_GCC_ATTR
+#elif defined(DUK_F_CLANG)
+#define DUK_USE_PACK_CLANG_ATTR
+#else
+#define DUK_USE_PACK_DUMMY_MEMBER
+#endif
+
+#ifdef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+#define DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#else
+#undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
 #endif
 
 /*
@@ -782,6 +830,11 @@ typedef double duk_double_t;
 
 #if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_M68K)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/* With Emscripten, force unpacked duk_tval just to be safe. */
+#if defined(DUK_F_EMSCRIPTEN) && defined(DUK_USE_PACKED_TVAL_POSSIBLE)
+#undef DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
 /* GCC/clang inaccurate math would break compliance and probably duk_tval,
@@ -1342,20 +1395,6 @@ extern double duk_computed_nan;
 #if defined(DUK_OPT_SELF_TESTS)
 #define DUK_USE_SELF_TESTS
 #endif
-
-/*
- *  Unaligned accesses
- */
-
-#ifdef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#define DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-#define DUK_USE_HOBJECT_UNALIGNED_LAYOUT
-#else
-#undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-#undef DUK_USE_HOBJECT_UNALIGNED_LAYOUT
-#endif
-
-/* FIXME: force alignment requirement */
 
 /*
  *  Codecs

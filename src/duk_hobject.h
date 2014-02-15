@@ -371,9 +371,14 @@
 /* limit is quite low: one array entry is 8 bytes, one normal entry is 4+1+8+4 = 17 bytes (with hash entry) */
 #define DUK_HOBJECT_A_ABANDON_LIMIT      2  /* 25%, i.e. less than 25% used -> abandon */
 
-/* FIXME: where to get align target (now fixed to 4)? */
 /* internal align target for props allocation, must be 2*n for some n */
+#if defined(DUK_USE_ALIGN4)
 #define DUK_HOBJECT_ALIGN_TARGET         4
+#elif defined(DUK_USE_ALIGN8)
+#define DUK_HOBJECT_ALIGN_TARGET         8
+#else
+#define DUK_HOBJECT_ALIGN_TARGET         1
+#endif
 
 /* controls for minimum entry part growth */
 #define DUK_HOBJECT_E_MIN_GROW_ADD       16

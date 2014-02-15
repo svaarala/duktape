@@ -81,17 +81,40 @@ struct duk_hbuffer {
 	 */
 };
 
+#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(push, 8)
+#endif
 struct duk_hbuffer_fixed {
 	duk_heaphdr hdr;
 	size_t size;
 
-	/* Data follows the struct header.  The struct size is padded by the
-	 * compiler so the buffer data area begins at an aligned address.
-	 * This potentially a few bytes but would be difficult to implement
-	 * portably (for instance, there is no portable way of figuring out
-	 * the packed struct size, since packed attributes are non-portable).
+	/*
+	 *  Data follows the struct header.  The struct size is padded by the
+	 *  compiler based on the struct members.  This guarantees that the
+	 *  buffer data will be aligned-by-4 but not necessarily aligned-by-8.
+	 *
+	 *  On platforms where alignment does not matter, the struct padding
+	 *  could be removed (if there is any).  On platforms where alignment
+	 *  by 8 is required, the struct size must be forced to be a multiple
+	 *  of 8 by some means.  Without it, some user code may break, and also
+	 *  Duktape itself breaks (e.g. the compiler stores duk_tvals in a
+	 *  dynamic buffer).
 	 */
-};
+
+#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_DUMMY_MEMBER)
+	/* Portable but very wasteful approach to ensuring alignment by 8. */
+	duk_uint64_t dummy_for_align8;
+#endif
+}
+#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_GCC_ATTR)
+__attribute__ ((aligned (8)))
+#elif defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_CLANG_ATTR)
+__attribute__ ((aligned (8)))
+#endif
+;
+#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(pop)
+#endif
 
 struct duk_hbuffer_dynamic {
 	duk_heaphdr hdr;
@@ -100,7 +123,11 @@ struct duk_hbuffer_dynamic {
 	void *curr_alloc;  /* may be NULL if usable_size == 0 */
 	size_t usable_size;
 
-	/* alloc size is usable_size + 1; a zero byte always follows the buffer */
+	/*
+	 *  Alloc size is usable_size + 1; a zero byte always follows the
+	 *  buffer.  curr_alloc is explicitly allocated and will have
+	 *  alignment suitable for e.g. duk_tval.
+	 */
 };
 
 /*
