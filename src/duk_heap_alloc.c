@@ -197,7 +197,9 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 	}
 
 	/* Note: count includes all objects, not only those with an actual finalizer. */
+#ifdef DUK_USE_DEBUG
 	DUK_DPRINT("checked %d objects for finalizers before freeing heap", (int) count_obj);
+#endif
 }
 
 void duk_heap_free(duk_heap *heap) {
