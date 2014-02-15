@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-02-13 22:30:57.472253 Z
 references: []
 
@@ -51,3 +51,7 @@ log_events:
     With these hacks, 'make emscriptenduktest' works as expected, as does the
     expression "0 % 4", etc.  These should be fixed automatically when alignment
     fixes are done in general.
+- - 2014-02-15 02:05:57.231921 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - Caused by lack of alignment (by 8).
