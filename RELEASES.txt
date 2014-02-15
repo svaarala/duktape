@@ -212,6 +212,9 @@ Planned
   only parsed once and deeply nested inner functions are no longer a
   performance issue
 
+* Use object property memory layout without padding on platforms requiring
+  a specific alignment, reducing memory footprint in such environments
+
 * Portability fixes for Crossbridge (Flash)
 
 * Warning fixes for non-default feature options and a few exotic compilers
