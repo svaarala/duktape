@@ -45,6 +45,12 @@ The table below summarizes the available options, in no particular order:</p>
     issues than the unpacked one.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_FORCE_ALIGN</td>
+<td>Use <code>-DDUK_OPT_FORCE_ALIGN=4</code> or <code>-DDUK_OPT_FORCE_ALIGN=8</code>
+    to force a specific struct/value alignment instead of relying on Duktape's
+    automatic detection.  This shouldn't normally be needed.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_REFERENCE_COUNTING</td>
 <td>Disable reference counting and use only mark-and-sweep for garbage collection.
     Although this reduces memory footprint of heap objects, the downside is much

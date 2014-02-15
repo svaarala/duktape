@@ -3052,7 +3052,8 @@ void duk_pop_n(duk_context *ctx, unsigned int count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
 
-	if (thr->valstack_top - thr->valstack_bottom < count) {
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	if ((size_t) (thr->valstack_top - thr->valstack_bottom) < (size_t) count) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to pop too many entries");
 	}
 

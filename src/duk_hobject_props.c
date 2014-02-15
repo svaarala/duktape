@@ -291,7 +291,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 *  computations to access the parts even more arcane.
 	 */
 
-#ifdef DUK_USE_HOBJECT_UNALIGNED_LAYOUT
+#if (DUK_HOBJECT_ALIGN_TARGET == 1)
 	/* no need to adjust new_e_size */
 	new_e_size_adjusted = new_e_size;
 #else
