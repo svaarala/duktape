@@ -421,9 +421,6 @@ Alignment level may also vary, e.g. platform may require 4-byte alignment
 for both 32-bit integers and IEEE doubles, or it may require 4-byte alignment
 for 32-bit integers but 8-byte alignment for doubles, etc.
 
-**FIXME: alignment is now guaranteed to 4 bytes on platforms where unaligned
-accesses are not allowed/preferable.**
-
 For platforms requiring 8-byte alignment there are two critical places:
 
 * Object property table must ensure that duk_tval values are 8-byte aligned.
@@ -437,6 +434,12 @@ For platforms requiring 8-byte alignment there are two critical places:
 The ``duk_hstring`` struct does not guarantee that string data will be
 8-byte aligned (it will be 4-byte aligned) but this is not required on
 any platform.
+
+Forcing a struct size to a multiple of 4 or 8 can be done in a compiler
+specific manner with pragmas or struct attributes.  The only somewhat
+portable solution is to add a suitably sized dummy member to the end of
+the struct (e.g. a ``duk_uint64_t`` to force the struct size to be a
+multiple of 8).  See ``duk_hbuffer.h`` for a concrete example.
 
 64-bit arithmetic
 -----------------
