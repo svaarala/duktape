@@ -205,6 +205,7 @@ Planned
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+  **FIXME: under work**
 
 * Improve self tests to include byte order validation
 
@@ -212,14 +213,17 @@ Planned
   only parsed once and deeply nested inner functions are no longer a
   performance issue
 
-* Use object property memory layout without padding on platforms requiring
-  a specific alignment, reducing memory footprint in such environments
+* On platforms requiring a specific alignment, use an alternate object
+  property table memory layout which requires no padding and thus reduces
+  memory footprint
 
 * Portability fixes for Crossbridge (Flash)
 
 * Warning fixes for non-default feature options and a few exotic compilers
 
-* FIXME: Duktape under Emscripten+NodeJS, needs 8-byte alignment fix
+* Duktape can now be compiled with Emscripten and executed with e.g. V8,
+  "Dukweb" provides an example where Duktape runs on a web page, with
+  Duktape and the browser Javascript environment interacting
 
 0.11.0 (2014-XX-XX)
 -------------------
