@@ -447,8 +447,9 @@ emscriptenduktest: emscripten dist
 # and doesn't do anything useful yet.
 EMCCOPTS_DUKVM_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
 
+# FIXME: need to be able to declare dukweb_panic_handler to avoid warnings
 dukweb.js: emscripten dist
-	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKVM_EXPORT) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js
+	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKVM_EXPORT) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));}' -Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
 
