@@ -1,6 +1,6 @@
-<h2 id="customjson">Custom JSON formats</h2>
+<h1 id="customjson">Custom JSON formats</h1>
 
-<h3>Ecmascript JSON shortcomings</h3>
+<h2>Ecmascript JSON shortcomings</h2>
 
 <p>The standard JSON format has a number of shortcomings when used with
 Ecmascript:</p>
@@ -18,7 +18,7 @@ explicitly prohibits more lenient behavior.  Duktape provides two more
 programmer friendly custom JSON format variants: <b>JSONX</b> and
 <b>JSONC</b>, described below.</p>
 
-<h3>Custom JSONX format</h3>
+<h2>Custom JSONX format</h2>
 
 <p>JSONX encodes all values in a very readable manner and parses back
 almost all values in a faithful manner (function values being the most
@@ -38,7 +38,7 @@ print(dec.foo, dec.bar, dec.quux);
 // prints out: 123 undefined NaN
 </pre>
 
-<h3>Custom JSONC format</h3>
+<h2>Custom JSONC format</h2>
 
 <p>JSONC encodes all values into standard JSON.  Values not supported by
 standard JSON are encoded as objects with a marker key beginning with an
@@ -65,7 +65,7 @@ As shown in the example, custom values (like <code>{"_undef":true}</code>)
 are <b>not</b> revived automatically.  They parse back as ordinary objects
 instead.</p>
 
-<h3>Codepoints above U+FFFF and invalid UTF-8 data</h3>
+<h2>Codepoints above U+FFFF and invalid UTF-8 data</h2>
 
 <p>All standard Ecmascript strings are valid CESU-8 data internally, so
 behavior for codepoints above U+FFFF never poses compliance issues.  However,
@@ -77,7 +77,7 @@ use replacement characters to deal with invalid UTF-8 data.  The resulting
 string may look a bit odd, but this behavior is preferable to throwing an
 error.</p>
 
-<h3>JSON format examples</h3>
+<h2>JSON format examples</h2>
 
 <p>The table below summarizes how different values encode in each
 encoding:</p>
@@ -223,7 +223,7 @@ encoding:</p>
 </tbody>
 </table>
 
-<h3>Limitations</h3>
+<h2>Limitations</h2>
 
 <p>Some limitations include:</p>
 
