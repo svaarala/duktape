@@ -1572,6 +1572,16 @@ extern double duk_computed_nan;
 #endif
 
 /*
+ *  User declarations
+ */
+
+#if defined(DUK_OPT_DECLARE)
+#define DUK_USE_USER_DECLARE() DUK_OPT_DECLARE
+#else
+#define DUK_USE_USER_DECLARE() /* no user declarations */
+#endif
+
+/*
  *  Alternative customization header
  *
  *  If you want to modify the final DUK_USE_xxx flags directly (without

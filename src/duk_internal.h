@@ -22,6 +22,15 @@
 #include "duk_dblunion.h"
 
 /*
+ *  User declarations, e.g. prototypes for user functions used by Duktape
+ *  macros.  Concretely, if DUK_OPT_PANIC_HANDLER is used and the macro
+ *  value calls a user function, it needs to be declared for Duktape
+ *  compilation to avoid warnings.
+ */
+
+DUK_USE_USER_DECLARE()
+
+/*
  *  Duktape includes (other than duk_features.h)
  *
  *  The header files expect to be included in an order which satisfies header
