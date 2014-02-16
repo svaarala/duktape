@@ -22,6 +22,26 @@ static int dukweb__emscripten_run_script(duk_context *ctx) {
 	return 0;
 }
 
+void dukweb_panic_handler(int code, const char *msg) {
+	printf("dukweb_panic_handler(), code=%d, msg=%s\n", code, msg);
+	fflush(stdout);
+	/* FIXME: add code/msg to alert */
+	EM_ASM(
+		alert('Duktape panic handler called');
+	);
+	abort();
+}
+
+void dukweb_fatal_handler(duk_context *ctx, int code, const char *msg) {
+	printf("dukweb_fatal_handler(), code=%d, msg=%s\n", code, msg);
+	fflush(stdout);
+	/* FIXME: add code/msg to alert */
+	EM_ASM(
+		alert('Duktape fatal handler called');
+	);
+	abort();
+}
+
 int dukweb_is_open(void) {
 	if (dukweb_ctx) {
 		return 1;
@@ -36,7 +56,7 @@ void dukweb_open(void) {
 		dukweb_ctx = NULL;
 	}
 	printf("dukweb_open: creating heap\n");
-	dukweb_ctx = duk_create_heap_default();
+	dukweb_ctx = duk_create_heap(NULL, NULL, NULL, NULL, dukweb_fatal_handler);
 
 	/* add a binding to emscripten_run_script(), let init code move it
 	 * to a better place

@@ -196,6 +196,14 @@ The table below summarizes the available options, in no particular order:</p>
 <td>Provide a custom panic handler, see detailed description below.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_DECLARE</td>
+<td>Provide declarations or additional #include directives to be used when
+    compiling Duktape.  You may need this if you set <code>DUK_OPT_PANIC_HANDLER</code>
+    to call your own panic handler function (see example below).  You can also
+    use this option to cause additional files to be included when compiling
+    Duktape.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_SEGFAULT_ON_PANIC</td>
 <td>Cause the default panic handler to cause a segfault instead of using
     <code>abort()</code> or <code>exit()</code>.  This is useful when debugging
@@ -316,7 +324,7 @@ following to your compiler options:</p>
 '-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
 </pre>
 
-<p>Or perhaps:</p>
+<p>You can also use:</p>
 <pre>
 '-DDUK_OPT_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg))}'
 </pre>
@@ -327,6 +335,28 @@ void my_panic_handler(int code, const char *msg) {
     /* Your panic handling.  Must not return. */
 }
 </pre>
+
+<p>The <code>DUK_OPT_PANIC_HANDLER</code> macro is used internally by Duktape,
+so your panic handler function needs to be declared for Duktape compilation to
+avoid compiler warnings about undeclared functions.  You can "inject" a declaration
+for your function into Duktape compilation with:</p>
+<pre>
+'-DDUK_OPT_DECLARE=extern void my_panic_handler(int code, const char *msg);'
+</pre>
+
+<p>After this you might still get a compilation warning like "a noreturn function
+must not return" as the compiler doesn't know your panic handler doesn't return.
+You can fix this by either using a (compiler specific) "noreturn" declaration,
+or by modifying the panic handler macro to something like:</p>
+
+<pre>
+'-DDUK_OPT_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg));abort()}'
+</pre>
+
+<p>As <code>abort()</code> is automatically a "noreturn" function the panic macro
+body can no longer return.  Duktape always includes <code>stdlib.h</code> which
+provides the <code>abort()</code> prototype so no additional include files are
+needed.</p>
 
 <h2>Adding new feature options</h2>
 

@@ -1166,6 +1166,8 @@ extern double duk_computed_nan;
 #define DUK_USE_ARCH_STRING "m68k"
 #elif defined(DUK_F_FLASHPLAYER)
 #define DUK_USE_ARCH_STRING "flashplayer"
+#elif defined(DUK_F_EMSCRIPTEN)
+#define DUK_USE_ARCH_STRING "emscripten"
 #else
 #define DUK_USE_ARCH_STRING "unknown"
 #endif
@@ -1569,6 +1571,16 @@ extern double duk_computed_nan;
 #error expected _XOPEN_SOURCE to be defined here
 #endif
 #include <time.h>
+#endif
+
+/*
+ *  User declarations
+ */
+
+#if defined(DUK_OPT_DECLARE)
+#define DUK_USE_USER_DECLARE() DUK_OPT_DECLARE
+#else
+#define DUK_USE_USER_DECLARE() /* no user declarations */
 #endif
 
 /*
