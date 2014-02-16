@@ -230,5 +230,10 @@ headers are different (especially for pre C99/C++11).</p>
     self tests with <code>DUK_OPT_SELF_TESTS</code>.  Self tests
     detect some compiler and platform issues which cannot be caught
     compile time.</li>
+<li>If the target platform has specific alignment requirements and Duktape
+    doesn't autodetect the platform correctly, you may need to provide
+    either <code>DUK_OPT_FORCE_ALIGN=4</code> or <code>DUK_OPT_FORCE_ALIGN=8</code>.
+    The alignment number should match whatever alignment is needed for IEEE
+    doubles and 64-bit integer values.</li>
 </ul>
 
