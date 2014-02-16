@@ -1166,6 +1166,8 @@ extern double duk_computed_nan;
 #define DUK_USE_ARCH_STRING "m68k"
 #elif defined(DUK_F_FLASHPLAYER)
 #define DUK_USE_ARCH_STRING "flashplayer"
+#elif defined(DUK_F_EMSCRIPTEN)
+#define DUK_USE_ARCH_STRING "emscripten"
 #else
 #define DUK_USE_ARCH_STRING "unknown"
 #endif
