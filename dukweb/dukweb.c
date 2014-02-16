@@ -22,6 +22,12 @@ static int dukweb__emscripten_run_script(duk_context *ctx) {
 	return 0;
 }
 
+void dukweb__fatal_handler(duk_context *ctx, int code, const char *msg) {
+	EM_ASM(
+		alert('Duktape fatal handler called\nCode: ' + code + '\nMessage: ' + msg);
+	);
+}
+
 int dukweb_is_open(void) {
 	if (dukweb_ctx) {
 		return 1;
@@ -36,7 +42,7 @@ void dukweb_open(void) {
 		dukweb_ctx = NULL;
 	}
 	printf("dukweb_open: creating heap\n");
-	dukweb_ctx = duk_create_heap_default();
+	dukweb_ctx = duk_create_heap(NULL, NULL, NULL, NULL, dukweb__fatal_handler);
 
 	/* add a binding to emscripten_run_script(), let init code move it
 	 * to a better place
