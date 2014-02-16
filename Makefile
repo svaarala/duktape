@@ -22,6 +22,16 @@
 #  When creating actual distributables, always clean first.
 #
 
+# A few commands which may need to be edited.  NodeJS is sometimes found
+# as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
+# so check 'nodejs' first.
+GIT=$(shell which git)
+NODE=$(shell which nodejs node | head -1)
+WGET=$(shell which wget)
+JAVA=$(shell which java)
+VALGRIND=$(shell which valgrind)
+PYTHON=$(shell which python)
+
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
 DUK_VERSION=$(shell cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
 DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
@@ -247,7 +257,7 @@ dukd: dist
 
 .PHONY: duksizes
 duksizes: duk
-	python src/genexesizereport.py duk > /tmp/duk_sizes.html
+	$(PYTHON) src/genexesizereport.py duk > /tmp/duk_sizes.html
 
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
@@ -255,44 +265,44 @@ test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 .PHONY:	ecmatest
 ecmatest: npminst duk
 	@echo "### ecmatest"
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	ecmatestd
 ecmatestd: npminst dukd
 	@echo "### ecmatestd"
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qecmatest
 qecmatest: npminst duk
 	@echo "### qecmatest"
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	qecmatestd
 qecmatestd: npminst dukd
 	@echo "### qecmatestd"
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 
 .PHONY:	vgecmatest
 vgecmatest: npminst duk
 	@echo "### vgecmatest"
-	node runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
 
 .PHONY:	apitest
 apitest: npminst libduktape.so.1.0.0
 	@echo "### apitest"
-	node runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
 .PHONY: vgapitest
 vgapitest: npminst libduktape.so.1.0.0
 	@echo "### vgapitest"
-	node runtests/runtests.js --valgrind --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js --valgrind --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 
 # FIXME: torturetest; torture + valgrind
 
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
-	wget https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
+	$(WGET) https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
 
 .PHONY:	regfuzztest
 regfuzztest: regfuzz-0.1.tar.gz duk
@@ -314,14 +324,14 @@ vgregfuzztest: regfuzz-0.1.tar.gz duk
 	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
 	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
 	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
-	cd /tmp/duktape-regfuzz; valgrind ./duk regfuzz-test.js
+	cd /tmp/duktape-regfuzz; $(VALGRIND) ./duk regfuzz-test.js
 
 underscore:
 	# http://underscorejs.org/
 	# https://github.com/jashkenas/underscore
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
-	git clone --depth 1 https://github.com/jashkenas/underscore.git
+	$(GIT) clone --depth 1 https://github.com/jashkenas/underscore.git
 
 .PHONY: underscoretest
 underscoretest:	underscore duk
@@ -340,18 +350,18 @@ underscoretest:	underscore duk
 vgunderscoretest: underscore duk
 	@echo "### vgunderscoretest"
 	@echo "Run underscore tests with underscore-test-shim.js, under valgrind"
-	-util/underscore_test.sh valgrind ./duk underscore/test/arrays.js
-	-util/underscore_test.sh valgrind ./duk underscore/test/chaining.js
-	-util/underscore_test.sh valgrind ./duk underscore/test/collections.js
-	-util/underscore_test.sh valgrind ./duk underscore/test/functions.js
-	-util/underscore_test.sh valgrind ./duk underscore/test/objects.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/arrays.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/chaining.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/collections.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/functions.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/objects.js
 	# speed test disabled, requires JSLitmus
-	#-util/underscore_test.sh valgrind ./duk underscore/test/speed.js
-	-util/underscore_test.sh valgrind ./duk underscore/test/utility.js
+	#-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/speed.js
+	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/utility.js
 
 d067d2f0ca30.tar.bz2:
 	# http://test262.ecmascript.org/
-	wget http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
+	$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
 
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
 	tar xvfj d067d2f0ca30.tar.bz2
@@ -361,16 +371,16 @@ test262test: test262-d067d2f0ca30 duk
 	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
-	cat /tmp/duk-test262.log | python util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
+	cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
+	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
 .PHONY: vgtest262test
 vgtest262test: test262-d067d2f0ca30 duk
 	@echo "### vgtest262test"
 	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
-	cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "valgrind ../duk {{path}}" --summary >/tmp/duk-vgtest262.log
-	cat /tmp/duk-vgtest262.log | python util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
+	cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "$(VALGRIND) ../duk {{path}}" --summary >/tmp/duk-vgtest262.log
+	cat /tmp/duk-vgtest262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
 	cat /tmp/duk-vgtest262-filtered.log
 	
 # Unholy helper to write out a testcase, the unholiness is that it reads
@@ -379,13 +389,13 @@ vgtest262test: test262-d067d2f0ca30 duk
 .PHONY: test262cat
 test262cat: test262-d067d2f0ca30
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	@cd test262-d067d2f0ca30; python tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+	@cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
 	# https://github.com/kripken/emscripten
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
-	git clone --depth 1 https://github.com/kripken/emscripten.git
+	$(GIT) clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
@@ -399,7 +409,7 @@ emscriptentest: emscripten duk
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	#cat /tmp/duk-emcc-test.js | python util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
 	./duk /tmp/duk-emcc-test.js
@@ -410,10 +420,10 @@ vgemscriptentest: emscripten duk
 	-@rm -f /tmp/duk-emcc-vgtest*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-vgtest.js
-	#cat /tmp/duk-emcc-vgtest.js | python util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
+	#cat /tmp/duk-emcc-vgtest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
 	@ls -l /tmp/duk-emcc-vgtest*
-	#valgrind ./duk /tmp/duk-emcc-vgtest-fixed.js
-	valgrind ./duk /tmp/duk-emcc-vgtest.js
+	#$(VALGRIND) ./duk /tmp/duk-emcc-vgtest-fixed.js
+	$(VALGRIND) ./duk /tmp/duk-emcc-vgtest.js
 
 # Compile Duktape with Emscripten and execute it with NodeJS.
 # Current status: requires Duktape alignment fixes (alignment by 8).
@@ -436,11 +446,11 @@ emscriptenduktest: emscripten dist
 	@echo "### emscriptenduktest"
 	-@rm -f /tmp/duk-emcc-duktest.js
 	emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
-	node /tmp/duk-emcc-duktest.js \
+	$(NODE) /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
-	node /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
+	$(NODE) /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
 
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
@@ -460,10 +470,10 @@ dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 jquery-1.11.0.js:
-	wget http://code.jquery.com/jquery-1.11.0.js
+	$(WGET) http://code.jquery.com/jquery-1.11.0.js
 
 lua-5.2.3.tar.gz:
-	wget http://www.lua.org/ftp/lua-5.2.3.tar.gz
+	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz
 
 lua-5.2.3:
 	tar xfz lua-5.2.3.tar.gz
@@ -482,7 +492,7 @@ emscriptenluatest: emscripten duk lua-5.2.3
 	@echo "### emscriptenluatest"
 	-@rm -f /tmp/duk-emcc-luatest*
 	emscripten/emcc -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
-	cat /tmp/duk-emcc-luatest.js | python util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
+	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	./duk /tmp/duk-emcc-luatest-fixed.js
 
@@ -490,7 +500,7 @@ JS-Interpreter:
 	# https://github.com/NeilFraser/JS-Interpreter
 	# Use shallow clone to minimize disk use
 	# Master is OK because not a critical dependency
-	git clone --depth 1 https://github.com/NeilFraser/JS-Interpreter.git
+	$(GIT) clone --depth 1 https://github.com/NeilFraser/JS-Interpreter.git
 
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
@@ -508,11 +518,11 @@ vgjsinterpretertest: JS-Interpreter duk
 	echo "window = {};" > /tmp/duk-jsint-vgtest.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-vgtest.js
 	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-vgtest.js
-	valgrind ./duk /tmp/duk-jsint-vgtest.js
+	$(VALGRIND) ./duk /tmp/duk-jsint-vgtest.js
 
 luajs.zip:
 	# https://github.com/mherkender/lua.js
-	wget https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
+	$(WGET) https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
 
 luajs: luajs.zip
 	-@rm -rf luajs/
@@ -533,12 +543,12 @@ vgluajstest: luajs duk
 	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-vgmandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-vgtest.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-vgtest.js
-	valgrind ./duk /tmp/duk-luajs-vgtest.js
+	$(VALGRIND) ./duk /tmp/duk-luajs-vgtest.js
 
 # Closure
 compiler-latest.zip:
 	# https://code.google.com/p/closure-compiler/
-	wget http://dl.google.com/closure-compiler/compiler-latest.zip
+	$(WGET) http://dl.google.com/closure-compiler/compiler-latest.zip
 
 compiler.jar: compiler-latest.zip
 	unzip compiler-latest.zip compiler.jar
@@ -548,28 +558,28 @@ compiler.jar: compiler-latest.zip
 closuretest: compiler.jar duk
 	@echo "### closuretest"
 	-@rm -f /tmp/duk-closure-test*
-	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
+	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
 	./duk /tmp/duk-closure-test.js
 
 .PHONY: vgclosuretest
 vgclosuretest: compiler.jar duk
 	@echo "### vgclosuretest"
 	-@rm -f /tmp/duk-closure-vgtest*
-	java -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-vgtest.js
-	valgrind ./duk /tmp/duk-closure-vgtest.js
+	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-vgtest.js
+	$(VALGRIND) ./duk /tmp/duk-closure-vgtest.js
 
 UglifyJS:
 	# https://github.com/mishoo/UglifyJS
 	# Use a specific release because UglifyJS is used in building Duktape
 	-@rm -f v1.3.5.tar.gz
-	wget https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
+	$(WGET) https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
 	tar xfz v1.3.5.tar.gz
 	mv UglifyJS-1.3.5 UglifyJS
 	-@rm -f v1.3.5.tar.gz
 
 	# Use shallow clone to minimize disk use
 	# Don't use this because it's a moving critical dependency
-	#git clone --depth 1 https://github.com/mishoo/UglifyJS.git
+	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS.git
 
 UglifyJS2:
 	# https://github.com/mishoo/UglifyJS2
@@ -577,7 +587,7 @@ UglifyJS2:
 	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
 	# the NodeJS dependencies need to be controlled for this to really work.)
 	-@rm -f v2.4.12.tar.gz
-	wget https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
+	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
 	tar xfz v2.4.12.tar.gz
 	mv UglifyJS2-2.4.12 UglifyJS2
 	-@rm -f v2.4.12.tar.gz
@@ -585,11 +595,11 @@ UglifyJS2:
 
 	# Use shallow clone to minimize disk use
 	# Don't use this because it's a moving critical dependency
-	#git clone --depth 1 https://github.com/mishoo/UglifyJS2.git
+	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
 
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
-	wget http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
+	$(WGET) http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
@@ -624,7 +634,7 @@ dist-src:	dist
 site: dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
-	cd website/; python buildsite.py ../site/
+	cd website/; $(PYTHON) buildsite.py ../site/
 	-@rm -rf /tmp/site/
 	cp -r site /tmp/  # FIXME
 
