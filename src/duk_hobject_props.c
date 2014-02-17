@@ -292,8 +292,8 @@ static void duk__realloc_props(duk_hthread *thr,
 	 *  on low RAM platforms requiring alignment.
 	 */
 
-#if defined(DUK_USE_HOBJECT_LAYOUT_2)
-	DUK_DDDPRINT("using layout 2, no need to pad e_size: %d", (int) new_e_size);
+#if defined(DUK_USE_HOBJECT_LAYOUT_3)
+	DUK_DDDPRINT("using layout 3, no need to pad e_size: %d", (int) new_e_size);
 	new_e_size_adjusted = new_e_size;
 #elif defined(DUK_USE_HOBJECT_LAYOUT_1) && (DUK_HOBJECT_ALIGN_TARGET == 1)
 	DUK_DDDPRINT("using layout 1, but no need to pad e_size: %d", (int) new_e_size);

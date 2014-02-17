@@ -228,7 +228,7 @@
 		(set_a) = (duk_tval *) ((set_e_f) + (set_e_size)); \
 		(set_h) = (duk_uint32_t *) ((set_a) + (set_a_size)); \
 	} while(0)
-#elif defined(DUK_USE_HOBJECT_LAYOUT_2)
+#elif defined(DUK_USE_HOBJECT_LAYOUT_3)
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
 		(h)->p + \
@@ -419,9 +419,9 @@
 #define DUK_HOBJECT_A_ABANDON_LIMIT      2  /* 25%, i.e. less than 25% used -> abandon */
 
 /* internal align target for props allocation, must be 2*n for some n */
-#if defined(DUK_USE_ALIGN4)
+#if defined(DUK_USE_ALIGN_4)
 #define DUK_HOBJECT_ALIGN_TARGET         4
-#elif defined(DUK_USE_ALIGN8)
+#elif defined(DUK_USE_ALIGN_8)
 #define DUK_HOBJECT_ALIGN_TARGET         8
 #else
 #define DUK_HOBJECT_ALIGN_TARGET         1
@@ -491,7 +491,7 @@ struct duk_hobject {
 	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
 	 *
-	 *  Layout 2 (DUK_USE_HOBJECT_LAYOUT_2):
+	 *  Layout 2 (DUK_USE_HOBJECT_LAYOUT_3):
 	 *
 	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
 	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)

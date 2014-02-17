@@ -28,6 +28,7 @@
 #define DUK_HBUFFER_CLEAR_DYNAMIC(x)              DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
 
 #define DUK_HBUFFER_FIXED_GET_DATA_PTR(x)         ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
+#define DUK_HBUFFER_FIXED_GET_SIZE(x)             ((x)->u.s.size)
 
 #define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)     ((x)->usable_size + 1)
 #define DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(x)    ((x)->usable_size)
@@ -81,12 +82,29 @@ struct duk_hbuffer {
 	 */
 };
 
-#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
 #pragma pack(push, 8)
 #endif
 struct duk_hbuffer_fixed {
-	duk_heaphdr hdr;
-	size_t size;
+	/* A union is used here as a portable struct size / alignment trick:
+	 * by adding a 32-bit or a 64-bit (unused) union member, the size of
+	 * the struct is effectively forced to be a multiple of 4 or 8 bytes
+	 * (respectively) without increasing the size of the struct unless
+	 * necessary.
+	 */
+	union {
+		struct {
+			duk_heaphdr hdr;
+			size_t size;
+		} s;
+#if defined(DUK_USE_ALIGN_4)
+		duk_uint32_t dummy_for_align4;
+#elif defined(DUK_USE_ALIGN_8)
+		duk_uint64_t dummy_for_align8;
+#else
+		/* no extra padding */
+#endif
+	} u;
 
 	/*
 	 *  Data follows the struct header.  The struct size is padded by the
@@ -100,19 +118,14 @@ struct duk_hbuffer_fixed {
 	 *  Duktape itself breaks (e.g. the compiler stores duk_tvals in a
 	 *  dynamic buffer).
 	 */
-
-#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_DUMMY_MEMBER)
-	/* Portable but very wasteful approach to ensuring alignment by 8. */
-	duk_uint64_t dummy_for_align8;
-#endif
 }
-#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_GCC_ATTR)
+#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_GCC_ATTR)
 __attribute__ ((aligned (8)))
-#elif defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_CLANG_ATTR)
+#elif defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_CLANG_ATTR)
 __attribute__ ((aligned (8)))
 #endif
 ;
-#if defined(DUK_USE_ALIGN8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
 #pragma pack(pop)
 #endif
 

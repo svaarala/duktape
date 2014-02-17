@@ -483,13 +483,15 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			"p1"
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
 			"p2"
+#elif defined(DUK_USE_HOBJECT_LAYOUT_3)
+			"p3"
 #else
 			"p?"
 #endif
 			" "
-#if defined(DUK_USE_ALIGN4)
+#if defined(DUK_USE_ALIGN_4)
 			"a4"
-#elif defined(DUK_USE_ALIGN8)
+#elif defined(DUK_USE_ALIGN_8)
 			"a8"
 #else
 			"a1"

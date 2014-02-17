@@ -136,13 +136,13 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	duk_uint_fast32_t curr_line;
 
 	DUK_ASSERT(buf != NULL);
-	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(buf));
+	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) buf));
 
 	hdr_index = pc / DUK_PC2LINE_SKIP;
 	pc_base = hdr_index * DUK_PC2LINE_SKIP;
 	n = pc - pc_base;
 
-	if (DUK_HBUFFER_GET_SIZE(buf) <= sizeof(duk_uint32_t)) {
+	if (DUK_HBUFFER_FIXED_GET_SIZE(buf) <= sizeof(duk_uint32_t)) {
 		DUK_DDPRINT("pc2line lookup failed: buffer is smaller than minimal header");
 		goto error;
 	}
@@ -158,7 +158,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 
 	curr_line = hdr[1 + hdr_index * 2];
 	start_offset = hdr[1 + hdr_index * 2 + 1];
-	if ((duk_size_t) start_offset > DUK_HBUFFER_GET_SIZE(buf)) {
+	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
 		DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%d, buffer_size=%d)",
 		            (int) start_offset, (int) DUK_HBUFFER_GET_SIZE(buf));
 		goto error;
@@ -166,7 +166,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 
 	DUK_MEMSET(bd_ctx, 0, sizeof(*bd_ctx));
 	bd_ctx->data = ((duk_uint8_t *) hdr) + start_offset;
-	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_GET_SIZE(buf) - start_offset);
+	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_FIXED_GET_SIZE(buf) - start_offset);
 
 #if 0
 	DUK_DDDPRINT("pc2line lookup: pc=%d -> hdr_index=%d, pc_base=%d, n=%d, start_offset=%d",

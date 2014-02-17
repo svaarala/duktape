@@ -144,11 +144,11 @@ static void duk__selftest_double_zero_sign(void) {
  */
 
 static void duk__selftest_struct_align(void) {
-#if defined(DUK_USE_ALIGN4)
+#if defined(DUK_USE_ALIGN_4)
 	if ((sizeof(duk_hbuffer_fixed) % 4) != 0) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 4");
 	}
-#elif defined(DUK_USE_ALIGN8)
+#elif defined(DUK_USE_ALIGN_8)
 	if ((sizeof(duk_hbuffer_fixed) % 8) != 0) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 8");
 	}
