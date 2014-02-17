@@ -137,6 +137,27 @@ static void duk__selftest_double_zero_sign(void) {
 }
 
 /*
+ *  Struct size/alignment if platform requires it
+ *
+ *  There are some compiler specific struct padding pragmas etc in use, this
+ *  selftest ensures they're correctly detected and used.
+ */
+
+static void duk__selftest_struct_align(void) {
+#if defined(DUK_USE_ALIGN4)
+	if ((sizeof(duk_hbuffer_fixed) % 4) != 0) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 4");
+	}
+#elif defined(DUK_USE_ALIGN8)
+	if ((sizeof(duk_hbuffer_fixed) % 8) != 0) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 8");
+	}
+#else
+	/* no check */
+#endif
+}
+
+/*
  *  Self test main
  */
 
@@ -146,6 +167,7 @@ void duk_selftest_run_tests(void) {
 	duk__selftest_double_union_size();
 	duk__selftest_double_aliasing();
 	duk__selftest_double_zero_sign();
+	duk__selftest_struct_align();
 }
 
 #undef DUK__DBLUNION_CMP_TRUE
