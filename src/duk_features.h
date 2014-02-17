@@ -733,6 +733,11 @@ typedef double duk_double_t;
 #undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
 #endif
 
+/* Object property allocation layout has implications for memory and code
+ * footprint and generated code size/speed.  The best layout also depends
+ * on whether the platform has alignment requirements or benefits from
+ * having mostly aligned accesses.
+ */
 #undef DUK_USE_HOBJECT_LAYOUT_1
 #undef DUK_USE_HOBJECT_LAYOUT_2
 #undef DUK_USE_HOBJECT_LAYOUT_3
@@ -744,10 +749,11 @@ typedef double duk_double_t;
  */
 #define DUK_USE_HOBJECT_LAYOUT_1
 #else
-/* Otherwise layout is used by default, as it is compact even on
- * platforms with alignment requirements.
+/* On other platforms use layout 2, which requires some padding but
+ * is a bit more natural than layout 3 in ordering the entries.  Layout
+ * 3 is currently not used.
  */
-#define DUK_USE_HOBJECT_LAYOUT_3
+#define DUK_USE_HOBJECT_LAYOUT_2
 #endif
 
 /*
