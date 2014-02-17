@@ -214,8 +214,7 @@ Planned
   performance issue
 
 * On platforms requiring a specific alignment, use an alternate object
-  property table memory layout which requires no padding and thus reduces
-  memory footprint
+  property table memory layout to reduce memory footprint
 
 * Portability fixes for Crossbridge (Flash)
 
