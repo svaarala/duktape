@@ -678,34 +678,34 @@ typedef double duk_double_t;
  */
 
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#undef DUK_USE_ALIGN4
-#undef DUK_USE_ALIGN8
+#undef DUK_USE_ALIGN_4
+#undef DUK_USE_ALIGN_8
 
 #if defined(DUK_F_EMSCRIPTEN)
 /* Required on at least some targets, so use whenever Emscripten used,
  * regardless of compilation target.
  */
-#define DUK_USE_ALIGN8
+#define DUK_USE_ALIGN_8
 #elif defined(DUK_F_ARM)
-#define DUK_USE_ALIGN4
+#define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
-#define DUK_USE_ALIGN4
+#define DUK_USE_ALIGN_4
 #elif defined(DUK_F_X86) || defined(DUK_F_X64)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* unknown, use safe default */
-#define DUK_USE_ALIGN8
+#define DUK_USE_ALIGN_8
 #endif
 
 /* User forced alignment to 4 or 8. */
 #if defined(DUK_OPT_FORCE_ALIGN)
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#undef DUK_USE_ALIGN4
-#undef DUK_USE_ALIGN8
+#undef DUK_USE_ALIGN_4
+#undef DUK_USE_ALIGN_8
 #if (DUK_OPT_FORCE_ALIGN == 4)
-#define DUK_USE_ALIGN4
+#define DUK_USE_ALIGN_4
 #elif (DUK_OPT_FORCE_ALIGN == 8)
-#define DUK_USE_ALIGN8
+#define DUK_USE_ALIGN_8
 #else
 #error invalid DUK_OPT_FORCE_ALIGN value
 #endif
@@ -733,18 +733,25 @@ typedef double duk_double_t;
 #undef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
 #endif
 
+/* Object property allocation layout has implications for memory and code
+ * footprint and generated code size/speed.  The best layout also depends
+ * on whether the platform has alignment requirements or benefits from
+ * having mostly aligned accesses.
+ */
 #undef DUK_USE_HOBJECT_LAYOUT_1
 #undef DUK_USE_HOBJECT_LAYOUT_2
+#undef DUK_USE_HOBJECT_LAYOUT_3
 #if defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE) && \
-    !defined(DUK_USE_ALIGN4) && !defined(DUK_USE_ALIGN8)
+    !defined(DUK_USE_ALIGN_4) && !defined(DUK_USE_ALIGN_8)
 /* On platforms without any alignment issues, layout 1 is preferable
  * because it compiles to slightly less code and provides direct access
  * to property keys.
  */
 #define DUK_USE_HOBJECT_LAYOUT_1
 #else
-/* Otherwise layout is used by default, as it is compact even on
- * platforms with alignment requirements.
+/* On other platforms use layout 2, which requires some padding but
+ * is a bit more natural than layout 3 in ordering the entries.  Layout
+ * 3 is currently not used.
  */
 #define DUK_USE_HOBJECT_LAYOUT_2
 #endif

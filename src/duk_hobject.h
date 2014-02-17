@@ -191,6 +191,7 @@
  */
 
 #if defined(DUK_USE_HOBJECT_LAYOUT_1)
+/* LAYOUT 1 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
 		(h)->p \
@@ -215,14 +216,72 @@
 			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			(h)->a_size * sizeof(duk_tval) \
 	))
-
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
 		(n_ent) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 		(n_arr) * sizeof(duk_tval) + \
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
+#define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
+		(set_e_k) = (duk_hstring **) (p_base); \
+		(set_e_pv) = (duk_propvalue *) ((set_e_k) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) ((set_e_pv) + (n_ent)); \
+		(set_a) = (duk_tval *) ((set_e_f) + (n_ent)); \
+		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
+	} while(0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
+/* LAYOUT 2 */
+#if defined(DUK_USE_ALIGN_4)
+#define DUK_HOBJECT_E_FLAG_PADDING(e_sz) ((4 - (e_sz)) & 0x03)
+#elif defined(DUK_USE_ALIGN_8)
+#define DUK_HOBJECT_E_FLAG_PADDING(e_sz) ((8 - (e_sz)) & 0x07)
+#else
+#define DUK_HOBJECT_E_FLAG_PADDING(e_sz) 0
+#endif
+#define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
+	((duk_hstring **) ( \
+		(h)->p + \
+			(h)->e_size * sizeof(duk_propvalue) \
+	))
+#define DUK_HOBJECT_E_GET_VALUE_BASE(h)         \
+	((duk_propvalue *) ( \
+		(h)->p \
+	))
+#define DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
+	((duk_uint8_t *) ( \
+		(h)->p + (h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
+	))
+#define DUK_HOBJECT_A_GET_BASE(h)               \
+	((duk_tval *) ( \
+		(h)->p + \
+			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+			DUK_HOBJECT_E_FLAG_PADDING((h)->e_size) \
+	))
+#define DUK_HOBJECT_H_GET_BASE(h)               \
+	((duk_uint32_t *) ( \
+		(h)->p + \
+			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+			DUK_HOBJECT_E_FLAG_PADDING((h)->e_size) + \
+			(h)->a_size * sizeof(duk_tval) \
+	))
+#define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
+	( \
+		(n_ent) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+		DUK_HOBJECT_E_FLAG_PADDING((n_ent)) + \
+		(n_arr) * sizeof(duk_tval) + \
+		(n_hash) * sizeof(duk_uint32_t) \
+	)
+#define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
+		(set_e_pv) = (duk_propvalue *) (p_base); \
+		(set_e_k) = (duk_hstring **) ((set_e_pv) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) ((set_e_k) + (n_ent)); \
+		(set_a) = (duk_tval *) (((duk_uint8_t *) (set_e_f)) + \
+		                        sizeof(duk_uint8_t) * (n_ent) + \
+		                        DUK_HOBJECT_E_FLAG_PADDING((n_ent))); \
+		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
+	} while(0)
+#elif defined(DUK_USE_HOBJECT_LAYOUT_3)
+/* LAYOUT 3 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
 		(h)->p + \
@@ -251,13 +310,19 @@
 			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
 			(h)->a_size * sizeof(duk_tval) \
 	))
-
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
 		(n_ent) * (sizeof(duk_propvalue) + sizeof(duk_hstring *) + sizeof(duk_uint8_t)) + \
 		(n_arr) * sizeof(duk_tval) + \
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
+#define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
+		(set_e_pv) = (duk_propvalue *) (p_base); \
+		(set_a) = (duk_tval *) ((set_e_pv) + (n_ent)); \
+		(set_e_k) = (duk_hstring **) ((set_a) + (n_arr)); \
+		(set_h) = (duk_uint32_t *) ((set_e_k) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) ((set_h) + (n_hash)); \
+	} while(0)
 #else
 #error invalid hobject layout defines
 #endif  /* hobject property layout */
@@ -407,9 +472,9 @@
 #define DUK_HOBJECT_A_ABANDON_LIMIT      2  /* 25%, i.e. less than 25% used -> abandon */
 
 /* internal align target for props allocation, must be 2*n for some n */
-#if defined(DUK_USE_ALIGN4)
+#if defined(DUK_USE_ALIGN_4)
 #define DUK_HOBJECT_ALIGN_TARGET         4
-#elif defined(DUK_USE_ALIGN8)
+#elif defined(DUK_USE_ALIGN_8)
 #define DUK_HOBJECT_ALIGN_TARGET         8
 #else
 #define DUK_HOBJECT_ALIGN_TARGET         1
@@ -468,36 +533,53 @@ struct duk_hobject {
 	/*
 	 *  'p' contains {key,value,flags} entries, optional array entries, and an
 	 *  optional hash lookup table for non-array entries in a single 'sliced'
-	 *  allocation.  There are two layout options.
+	 *  allocation.  There are several layout options, which differ slightly in
+	 *  generated code size/speed and alignment/padding; duk_features.h selects
+	 *  the layout used.
 	 *
 	 *  Layout 1 (DUK_USE_HOBJECT_LAYOUT_1):
 	 *
-	 *    e_size * sizeof(duk_hstring *)   bytes of   entry keys (e_used gc reachable)
-	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
-	 *    e_size * sizeof(duk_uint8_t)     bytes of   entry flags (e_used gc reachable)
-	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)
-	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
-	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
+	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_used gc reachable)
+	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
+	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
+	 *                                                      0xffffffffU = unused, 0xfffffffeU = deleted
 	 *
 	 *  Layout 2 (DUK_USE_HOBJECT_LAYOUT_2):
 	 *
-	 *    e_size * sizeof(duk_propvalue)   bytes of   entry values (e_used gc reachable)
-	 *    a_size * sizeof(duk_tval)        bytes of   (opt) array values (plain only) (all gc reachable)
-	 *    e_size * sizeof(duk_hstring *)   bytes of   entry keys (e_used gc reachable)
-	 *    h_size * sizeof(duk_uint32_t)    bytes of   (opt) hash indexes to entries (e_size),
-	 *                                                0xffffffffU = unused, 0xfffffffeU = deleted
-	 *    e_size * sizeof(duk_uint8_t)     bytes of   entry flags (e_used gc reachable)
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
+	 *    e_size * sizeof(duk_uint8_t) + pad     bytes of   entry flags (e_used gc reachable)
+	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
+	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
+	 *                                                      0xffffffffU = unused, 0xfffffffeU = deleted
+	 *
+	 *  Layout 3 (DUK_USE_HOBJECT_LAYOUT_3):
+	 *
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
+	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
+	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
+	 *                                                      0xffffffffU = unused, 0xfffffffeU = deleted
+	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_used gc reachable)
 	 *
 	 *  In layout 1, the 'e_used' count is rounded to 4 or 8 on platforms
 	 *  requiring 4 or 8 byte alignment.  This ensures proper alignment
-	 *  for the entries, at the cost of memory footprint.
+	 *  for the entries, at the cost of memory footprint.  However, it's
+	 *  probably preferable to use another layout on such platforms instead.
 	 *
-	 *  In layout 2, entry values and array values are always aligned properly,
+	 *  In layout 2, the key and value parts are swapped to avoid padding
+	 *  the key array on platforms requiring alignment by 8.  The flags part
+	 *  is padded to get alignment for array entries.  The 'e_used' count does
+	 *  not need to be rounded as in layout 1.
+	 *
+	 *  In layout 3, entry values and array values are always aligned properly,
 	 *  and assuming pointers are at most 8 bytes, so are the entry keys.  Hash
 	 *  indices will be properly aligned (assuming pointers are at least 4 bytes).
 	 *  Finally, flags don't need additional alignment.  This layout provides
-	 *  compact allocations (even on platforms with alignment requirements) at
-	 *  the cost of a bit slower lookups.
+	 *  compact allocations without padding (even on platforms with alignment
+	 *  requirements) at the cost of a bit slower lookups.
 	 *
 	 *  Objects with few keys don't have a hash index; keys are looked up linearly,
 	 *  which is cache efficient because the keys are consecutive.  Larger objects
