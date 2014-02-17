@@ -389,21 +389,11 @@ static void duk__realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_p != NULL);  /* since new_alloc_size > 0 */
 	}
 
-#if defined(DUK_USE_HOBJECT_LAYOUT_1)
-	new_e_k = (duk_hstring **) new_p;
-	new_e_pv = (duk_propvalue *) (new_e_k + new_e_size_adjusted);
-	new_e_f = (duk_uint8_t *) (new_e_pv + new_e_size_adjusted);
-	new_a = (duk_tval *) (new_e_f + new_e_size_adjusted);
-	new_h = (duk_uint32_t *) (new_a + new_a_size);
-#elif defined(DUK_USE_HOBJECT_LAYOUT_2)
-	new_e_pv = (duk_propvalue *) new_p;
-	new_a = (duk_tval *) (new_e_pv + new_e_size_adjusted);
-	new_e_k = (duk_hstring **) (new_a + new_a_size);
-	new_h = (duk_uint32_t *) (new_e_k + new_e_size_adjusted);
-	new_e_f = (duk_uint8_t *) (new_h + new_h_size);
-#else
-#error invalid hobject layout defines
-#endif
+	/* Set up pointers to the new property area: this is hidden behind a macro
+	 * because it is memory layout specific.
+	 */
+	DUK_HOBJECT_P_SET_REALLOC_PTRS(new_p, new_e_k, new_e_pv, new_e_f, new_a, new_h,
+	                               new_e_size_adjusted, new_a_size, new_h_size);
 	new_e_used = 0;
 
 	/* if new_p == NULL, all of these pointers are NULL */

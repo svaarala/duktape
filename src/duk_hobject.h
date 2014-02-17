@@ -215,13 +215,19 @@
 			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			(h)->a_size * sizeof(duk_tval) \
 	))
-
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
 		(n_ent) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 		(n_arr) * sizeof(duk_tval) + \
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
+#define DUK_HOBJECT_P_SET_REALLOC_PTRS(set_p,set_e_k,set_e_pv,set_e_f,set_a,set_h,set_e_size,set_a_size,set_h_size)  do { \
+		(set_e_k) = (duk_hstring **) (set_p); \
+		(set_e_pv) = (duk_propvalue *) ((set_e_k) + (set_e_size)); \
+		(set_e_f) = (duk_uint8_t *) ((set_e_pv) + (set_e_size)); \
+		(set_a) = (duk_tval *) ((set_e_f) + (set_e_size)); \
+		(set_h) = (duk_uint32_t *) ((set_a) + (set_a_size)); \
+	} while(0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
@@ -251,13 +257,19 @@
 			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
 			(h)->a_size * sizeof(duk_tval) \
 	))
-
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
 		(n_ent) * (sizeof(duk_propvalue) + sizeof(duk_hstring *) + sizeof(duk_uint8_t)) + \
 		(n_arr) * sizeof(duk_tval) + \
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
+#define DUK_HOBJECT_P_SET_REALLOC_PTRS(set_p,set_e_k,set_e_pv,set_e_f,set_a,set_h,set_e_size,set_a_size,set_h_size)  do { \
+		(set_e_pv) = (duk_propvalue *) (set_p); \
+		(set_a) = (duk_tval *) ((set_e_pv) + (set_e_size)); \
+		(set_e_k) = (duk_hstring **) ((set_a) + (set_a_size)); \
+		(set_h) = (duk_uint32_t *) ((set_e_k) + (set_e_size)); \
+		(set_e_f) = (duk_uint8_t *) ((set_h) + (set_h_size)); \
+	} while(0)
 #else
 #error invalid hobject layout defines
 #endif  /* hobject property layout */
