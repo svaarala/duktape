@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: dukweb eval output for Duktape.info(Duktape) does not show pointer or 'null' in its place
+desc: |-
+  Currently the output is encoded with JSON.stringify() which produces a 'null'
+  in place of the pointer (this is visible in the console.log).  However, the
+  value which ends up in the browser output area is empty (e.g. 3,,7,.. instead
+  of 3,0xdeadbeef,7,...).
+  
+  This will probably resolve automatically when a better value passing mechanism
+  is implemented.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-17 23:30:51.425910 Z
+references: []
+
+id: 6bc6f80312c1438f8b95a22b1feccb9dfdb65133
+log_events: 
+- - 2014-02-17 23:30:51.634062 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
