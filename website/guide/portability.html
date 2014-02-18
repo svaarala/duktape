@@ -235,5 +235,11 @@ headers are different (especially for pre C99/C++11).</p>
     either <code>DUK_OPT_FORCE_ALIGN=4</code> or <code>DUK_OPT_FORCE_ALIGN=8</code>.
     The alignment number should match whatever alignment is needed for IEEE
     doubles and 64-bit integer values.</li>
+<li>If compilation fails in endianness detection, Duktape probably doesn't
+    (yet) support the platform specific endianness headers of your platform;
+    such headers are unfortunately non-standardized.  Use
+    <code>DUK_OPT_FORCE_BYTEORDER</code> to force endianness as a workaround.
+    If you know how the endianness detection should work on your platform,
+    please send an e-mail about the issue or contribute a patch.</li>
 </ul>
 

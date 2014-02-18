@@ -766,13 +766,38 @@ typedef double duk_double_t;
  *  _BYTE_ORDER are used (e.g. Crossbridge has a single underscore).
  */
 
+#undef DUK_F_BYTEORDER_DETECTED
+#undef DUK_USE_BYTEORDER_FORCED
+
+/* For custom platforms allow user to define byteorder explicitly.
+ * Since endianness headers are not standardized, this is a useful
+ * workaround for custom platforms for which endianness detection
+ * is not directly supported.  Perhaps custom hardware is used and
+ * user cannot submit upstream patches.
+ */
+#if defined(DUK_OPT_FORCE_BYTEORDER)
+#if (DUK_OPT_FORCE_BYTEORDER == 1)
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#elif (DUK_OPT_FORCE_BYTEORDER == 2)
+#define DUK_USE_DOUBLE_ME
+#define DUK_USE_MIDDLE_ENDIAN
+#elif (DUK_OPT_FORCE_BYTEORDER == 3)
+#define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
+#else
+#error invalid DUK_OPT_FORCE_BYTEORDER value
+#endif
+#define DUK_F_BYTEORDER_DETECTED
+#define DUK_USE_BYTEORDER_FORCED
+#endif  /* DUK_OPT_FORCE_BYTEORDER */
+
 /* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
  * and __FLOAT_WORD_ORDER or resort to GCC/ARM specifics.  Improve the
  * detection code and perhaps allow some compiler define to override the
  * detection for unhandled cases.
  */
-
-#if defined(DUK_F_STD_BYTEORDER_DETECT)
+#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_STD_BYTEORDER_DETECT)
 /* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
 #if defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN) || \
     defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && (_BYTE_ORDER == _LITTLE_ENDIAN) || \
@@ -782,11 +807,13 @@ typedef double duk_double_t;
     defined(__GNUC__) && !defined(__arm__)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
 #elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
       defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) || \
       defined(__GNUC__) && defined(__arm__)
 #define DUK_USE_DOUBLE_ME
 #define DUK_USE_MIDDLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
 #else
 #error unsupported: byte order is little endian but cannot determine IEEE double word order
 #endif
@@ -798,18 +825,19 @@ typedef double duk_double_t;
     defined(__GNUC__) && !defined(__arm__)
 #define DUK_USE_DOUBLE_BE
 #define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
 #else
 #error unsupported: byte order is big endian but cannot determine IEEE double word order
 #endif
 #else
 #error unsupported: cannot determine byte order
 #endif
-#endif  /* DUK_F_STD_BYTEORDER_DETECT */
+#endif  /* !DUK_F_BYTEORDER_DETECTED && DUK_F_STD_BYTEORDER_DETECT */
 
 /* On Windows, assume we're little endian.  Even Itanium which has a
  * configurable endianness runs little endian in Windows.
  */
-#if defined(DUK_F_WINDOWS) && !defined(DUK_F_STD_BYTEORDER_DETECT)
+#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_WINDOWS)
 /* FIXME: verify that Windows on ARM is little endian for floating point
  * values too.
  */
@@ -820,7 +848,7 @@ typedef double duk_double_t;
 /* On crossbridge, assume we're little endian.  Crossbridge could almost
  * use the standard byteorder detect #ifdefs, but it lacks _FLOAT_WORD_ORDER.
  */
-#if defined(DUK_F_FLASHPLAYER) && !defined(DUK_F_STD_BYTEORDER_DETECT)
+#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_FLASHPLAYER)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #endif
@@ -831,6 +859,10 @@ typedef double duk_double_t;
 
 #if !defined(DUK_USE_LITTLE_ENDIAN) && !defined(DUK_USE_MIDDLE_ENDIAN) && !defined(DUK_USE_BIG_ENDIAN)
 #error unsupported: cannot determine byte order variant
+#endif
+
+#if !defined(DUK_F_BYTEORDER_DETECTED)
+#error unsupported: byte order detection failed (should not happen)
 #endif
 
 /*
