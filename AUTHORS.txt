@@ -35,4 +35,4 @@ bugs, provided ideas, etc; in order of appearance):
 * judofyr (http://www.reddit.com/user/judofyr)
 * Jason Woofenden
 * Michał Przybyś
-
+* Anthony Howe
