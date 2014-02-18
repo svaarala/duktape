@@ -62,7 +62,6 @@
 
     // anticipate new functions
     if (false) {
-        def('line', function() { return 0; });
     }
 
     // console.log compatibility

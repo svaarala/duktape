@@ -44,14 +44,11 @@ duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx);
 duk_double_t duk_bi_date_get_now(duk_context *ctx);
 
 duk_ret_t duk_bi_duk_object_info(duk_context *ctx);
+duk_ret_t duk_bi_duk_object_line(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_gc(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_fin(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_enc(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_dec(duk_context *ctx);
-duk_ret_t duk_bi_duk_object_jx_dec(duk_context *ctx);
-duk_ret_t duk_bi_duk_object_jx_enc(duk_context *ctx);
-duk_ret_t duk_bi_duk_object_jc_dec(duk_context *ctx);
-duk_ret_t duk_bi_duk_object_jc_enc(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_compact(duk_context *ctx);
 
 duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx);

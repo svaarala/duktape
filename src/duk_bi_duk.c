@@ -112,6 +112,41 @@ duk_ret_t duk_bi_duk_object_info(duk_context *ctx) {
 	return 1;
 }
 
+duk_ret_t duk_bi_duk_object_line(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_activation *act_caller;
+	duk_hobject *h_func;
+	duk_hbuffer_fixed *pc2line;
+	duk_uint_fast32_t pc;
+	duk_uint_fast32_t line;
+
+	if (thr->callstack_top < 2) {
+		return 0;
+	}
+	act_caller = thr->callstack + thr->callstack_top - 2;
+
+	h_func = act_caller->func;
+	DUK_ASSERT(h_func != NULL);
+	if (!DUK_HOBJECT_HAS_COMPILEDFUNCTION(h_func)) {
+		return 0;
+	}
+
+	/* FIXME: shared helper */
+	duk_push_hobject(ctx, h_func);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_PC2LINE);
+	if (duk_is_buffer(ctx, -1)) {
+		pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
+		pc = (duk_uint_fast32_t) act_caller->pc;
+		line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
+	} else {
+		line = 0;
+	}
+
+	duk_push_int(ctx, (int) line);  /* FIXME: typing */
+	return 1;
+}
+
 duk_ret_t duk_bi_duk_object_gc(duk_context *ctx) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_hthread *thr = (duk_hthread *) ctx;
