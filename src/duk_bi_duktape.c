@@ -154,6 +154,62 @@ duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
 }
 #endif  /* DUK_USE_PC2LINE */
 
+duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_activation *act;
+	duk_hobject *h_func;
+	duk_hbuffer_fixed *pc2line;
+	duk_uint_fast32_t pc;
+	duk_uint_fast32_t line;
+	duk_int_t level;
+
+	/* -1             = top callstack entry, callstack[callstack_top - 1]
+	 * -callstack_top = bottom callstack entry, callstack[0]
+	 */
+	level = duk_to_int(ctx, 0);
+	if (level >= 0 || -level > (duk_int_t) thr->callstack_top) {
+		return 0;
+	}
+	DUK_ASSERT(level >= -thr->callstack_top && level <= -1);
+	act = thr->callstack + thr->callstack_top + level;
+
+	duk_push_object(ctx);
+
+	h_func = act->func;
+	DUK_ASSERT(h_func != NULL);
+	duk_push_hobject(ctx, h_func);
+
+	pc = (duk_uint_fast32_t) act->pc;
+	duk_push_int(ctx, (int) pc);  /* FIXME: typing */
+
+	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE);
+	if (duk_is_buffer(ctx, -1)) {
+		pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
+		pc = (duk_uint_fast32_t) act->pc;
+		line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
+	} else {
+		line = 0;
+	}
+	duk_pop(ctx);
+
+	duk_push_int(ctx, (int) line);  /* FIXME: typing */
+
+	/* Providing access to e.g. act->lex_env would be dangerous: these
+	 * internal structures must never be accessible to the application.
+	 * Duktape relies on them having consistent data, and this consistency
+	 * is only asserted for, not checked for.
+	 */
+
+	/* [ level obj func pc line ] */
+
+	/* FIXME: version specific array format instead? */
+	duk_def_prop_stridx(ctx, -4, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WEC);
+	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PC, DUK_PROPDESC_FLAGS_WEC);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LC_FUNCTION, DUK_PROPDESC_FLAGS_WEC);
+	return 1;
+}
+
 duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_hthread *thr = (duk_hthread *) ctx;
