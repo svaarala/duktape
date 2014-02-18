@@ -551,7 +551,7 @@ vgluajstest: luajs duk
 	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
 	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-vgmandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-vgtest.js
-	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-vgtest.js
+	cat luajs/lua.js /tmp/duk-luajs-vgmandel.js >> /tmp/duk-luajs-vgtest.js
 	$(VALGRIND) ./duk /tmp/duk-luajs-vgtest.js
 
 # Closure
