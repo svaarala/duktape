@@ -13,7 +13,7 @@ desc: |-
   (and a slow check in others)?
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -25,4 +25,8 @@ log_events:
 - - 2013-12-01 22:33:39.143934 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-02-18 13:17:06.876319 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

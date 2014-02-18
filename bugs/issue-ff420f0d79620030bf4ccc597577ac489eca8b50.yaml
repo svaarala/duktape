@@ -30,3 +30,7 @@ log_events:
     
     This would have the side effect that 'length' couldn't be deleted from Duktape/C
     functions.
+- - 2014-02-18 12:06:38.357508 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - Add an intermediate prototype object so that Function.prototype is not polluted?

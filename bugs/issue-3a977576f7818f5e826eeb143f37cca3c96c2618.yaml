@@ -3,7 +3,7 @@ title: make regexps more lenient to be more compatible (and add a strictness opt
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-24 23:39:47.755127 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-02-18 13:22:41.378946 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

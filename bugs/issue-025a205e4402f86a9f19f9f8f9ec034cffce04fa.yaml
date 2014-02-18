@@ -17,7 +17,7 @@ desc: |-
     - Example: http://www.eclipse.org/articles/Article-Debugger/how-to.html
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -33,4 +33,8 @@ log_events:
 - - 2013-12-01 00:32:40.499959 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from unassigned
+  - ""
+- - 2014-02-18 13:17:01.537290 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

@@ -3,7 +3,7 @@ title: 16-bit clen, blen, flags, e_idx, h_idx, a_idx
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2014-01-12 14:03:12.159886 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
+  - ""
+- - 2014-02-18 13:22:35.400324 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

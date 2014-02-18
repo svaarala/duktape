@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: should Duktape.line() instead be a helper which allows callstack introspection?
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-18 15:29:56.019029 Z
+references: []
+
+id: a944889263f48455d533d1162bfeeab1ea121741
+log_events: 
+- - 2014-02-18 15:29:56.194660 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

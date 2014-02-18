@@ -7,7 +7,7 @@ desc: |-
   devices.
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2013-12-08 00:08:44.781408 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-02-18 13:22:36.204124 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

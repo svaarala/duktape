@@ -3,7 +3,7 @@ title: add a dll makefile example to distributable source
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -31,4 +31,8 @@ log_events:
 - - 2014-01-12 13:33:37.854589 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
+  - ""
+- - 2014-02-18 13:16:58.740520 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""

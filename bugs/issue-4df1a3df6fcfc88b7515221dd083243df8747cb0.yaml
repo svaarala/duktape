@@ -108,7 +108,7 @@ desc: |-
   loop counter.
 type: :bugfix
 component: duk
-release: v0.11
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -194,4 +194,8 @@ log_events:
 - - 2014-02-11 22:37:38.045628 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
+  - ""
+- - 2014-02-18 13:22:36.557661 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
   - ""

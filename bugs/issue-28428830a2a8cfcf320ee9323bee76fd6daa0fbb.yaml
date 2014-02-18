@@ -9,7 +9,7 @@ desc: |-
   for error messages useful: http://gcc.gnu.org/onlinedocs/cpp/Line-Control.html
 type: :task
 component: duk
-release: v0.7
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
@@ -25,4 +25,8 @@ log_events:
 - - 2013-09-21 20:56:43.108987 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
+  - ""
+- - 2014-02-18 13:22:30.691978 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.7
   - ""

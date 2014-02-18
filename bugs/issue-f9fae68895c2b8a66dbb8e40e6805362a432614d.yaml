@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: shared helper for duk_hobject_pc2line_query (which is probably too low level)
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-18 15:29:40.739234 Z
+references: []
+
+id: f9fae68895c2b8a66dbb8e40e6805362a432614d
+log_events: 
+- - 2014-02-18 15:29:40.914743 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
