@@ -239,7 +239,10 @@ cleanall: clean
 	-@rm -f lua-5.2.3.tar.gz
 	-@rm -f luajs.zip
 	-@rm -f jquery-1.11.0.js
-
+	-@rm -rf coffee-script
+	-@rm -rf LiveScript
+	-@rm -rf coco
+	
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
@@ -606,6 +609,20 @@ UglifyJS2:
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
 	$(WGET) http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
+
+coffee-script:
+	# http://coffeescript.org/
+	# https://github.com/jashkenas/coffee-script
+	$(GIT) clone --depth 1 https://github.com/jashkenas/coffee-script.git
+
+LiveScript:
+	# http://livescript.net/
+	# https://github.com/gkz/LiveScript
+	$(GIT) clone --depth 1 https://github.com/gkz/LiveScript.git
+
+coco:
+	# https://github.com/satyr/coco
+	$(GIT) clone --depth 1 https://github.com/satyr/coco
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
