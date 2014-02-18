@@ -216,7 +216,7 @@ Planned
 * On platforms requiring a specific alignment, use an alternate object
   property table memory layout to reduce memory footprint
 
-* Portability fixes for Crossbridge (Flash)
+* Portability fixes for Crossbridge (Flash), NetBSD
 
 * Warning fixes for non-default feature options and a few exotic compilers
 
