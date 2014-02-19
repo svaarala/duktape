@@ -5,22 +5,21 @@ Status of test262 testcases
 Overview
 ========
 
-Test262 provides testcases for various Ecmascript features, unfortunately
-also including features and behavior beyond E5/E5.1 standard (for instance
-the tests refer to the ``Intl`` module).
+Test262 provides testcases for various Ecmascript features.  It also includes
+features and behavior beyond E5/E5.1 standard (for instance the tests related
+to the ``Intl`` module).
 
 This document summarizes the currently failing testcases and why they fail.
 The test run was executed against::
 
   d83445976cb8ca6169a2ac3ac76dd8d8  d067d2f0ca30.tar.bz2
 
-A list of known bugs is documented in::
+A full list of known bugs is documented in::
 
   test262-known-issues.json
 
-This list contains testcases which are known and accepted to fail for now:
-test case might be buggy or expect non-standard behavior, or there might be
-a Duktape limitation (a long term bug) which is accepted for now.
+This file describes a subset of test cases whose reasons for failure require
+a longer explanation.
 
 Summary of failure reasons
 ==========================
@@ -42,9 +41,14 @@ cases to fail:
     - invalid decimal escapes in character classes (e.g. ``[\12-\14]``)
     - special characters appearing literally without escape (e.g. ``]``)
 
-* Duktape does not allow function declaration outside Program or FunctionBody
-  top level.  Such statements are not part of E5/E5.1.  (They are fairly common
-  so perhaps this support will be added later.)
+* Duktape has a conservative limit on the C recursion required to execute
+  regexps.  This limit can cause several test cases to fail.
+
+* When an empty quantifier is being matched with a quantifier such as ``+``,
+  Duktape may now get stuck and match the empty quantified over and over
+  (it should match the quantified a minimum number of times and then continue).
+  To protect against infinite loop, Duktape eventually bails out with a
+  RangeError.
 
 * Duktape does not support specific locales, which affect e.g. case conversion
   and locale sensitive string comparison.  ``String.prototype.localeCompare()``
@@ -53,16 +57,24 @@ cases to fail:
   from ``"\u00f6"`` (precomposed).
 
 * Labels defined for statements other than iteration statements don't work
-  fully at the moment.  This causes an ``INVALID opcode`` error.
+  fully at the moment, which causes an ``INVALID opcode`` error.  The invalid
+  opcode is intentional and indicates that control flow was directed to an
+  unexpected break/continue label slot.  This is a safe way to stop bytecode
+  execution but may look a bit alarming.
 
 * Duktape allows octal syntax.  There is a test case which requires that
   ``parseInt()`` should not accept octal syntax; this test case fails.
 
-* Duktape has a conservative limit on the C recursion required to execute
-  regexps.  This limit can cause several test cases to fail.
-
 * There seem to be several bugs in the Date testcases of test262 (see
   detailed error description).
+
+* Duktape now allows non-standard function declaration outside Program or
+  FunctionBody top level (such statements are technically not part of E5/E5.1).
+  Unfortunately the semantics for these differ from engine to engine; Duktape
+  uses the V8 semantics of "hoisting" the definition so that the function has
+  only access to the top level variable scope.  Although test262 test cases
+  do have non-standard function declarations (outside top level), they seem
+  to be compatible with the V8 semantics and no known issues remain.
 
 Notes on individual errors
 ==========================
@@ -184,7 +196,7 @@ ch12/12.6/12.6.1/S12.6.1_A4_T5
           global /tmp/test262-VkMHq3.js:2217 preventsyield
   ===
 
-Duktape bug.
+Duktape bug, see test-bug-labelled-block.js.
 
 ch12/12.6/12.6.2/S12.6.2_A4_T5
 ------------------------------
@@ -198,7 +210,7 @@ ch12/12.6/12.6.2/S12.6.2_A4_T5
           global /tmp/test262-npZKm6.js:2217 preventsyield
   ===
 
-Duktape bug.
+Duktape bug, see test-bug-labelled-block.js.
 
 ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1
 -------------------------------------------
@@ -234,8 +246,53 @@ First error happens with index 4 into the regexp set, the precise error is::
           RegExp (null) native strict construct preventsyield
           global /tmp/foo.js:2285 preventsyield
 
-It seems that the RegExp contains a literal "]" character (which is not paired
-with a "[" to begin a character class), which is a SyntaxError.
+The character class ``[^]]`` contains an unescaped ``]`` (probably ``[^\]]``
+was intended, so it gets parsed as a character class ``[^]`` followed by a
+literal, unescaped ``]`` which is a SyntaxError.  There are two other instances
+like this in the test case.
+
+ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4
+---------------------------------------------
+
+::
+
+  === ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4 failed in non-strict mode ===
+  --- errors ---
+  Test262 Error: #4: __executed = /(z)((a+)?(b+)?(c))*/.exec("zaacbbbcac"); __executed[4] === undefined. Actual: bbb
+  ===
+
+Duktape bug: Duktape doesn't reset captures inside a quantified expression
+when the quantified is matched again.  A skipped capture may thus "leak" a
+match from a previous round.  See test-bug-regexp-quantifier-captures.js.
+
+ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5
+---------------------------------------------
+
+::
+
+  === ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5 failed in non-strict mode ===
+  --- errors ---
+  RangeError: regexp executor recursion limit
+          duk_regexp_executor.c:145
+          exec (null) native strict preventsyield
+          global /tmp/test262-yJCwFh.js:2215 preventsyield
+  ===
+
+Duktape bug: matching ``/(a*)b\1+/`` against ``"baaaac"`` first matches an
+empty string to capture group 1, then matches a "b", and finally ends up
+matching the empty string with a ``+`` quantifier.  Duktape doesn't currently
+always handle empty quantified expressions correctly, so it gets stuck and
+bails out eventually with a RangeError.  See test-regexp-empty-quantified.js.
+
+ch15/15.10/15.10.2/15.10.2.9/S15.10.2.9_A1_T5
+---------------------------------------------
+
+Same cause as: ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5.
+
+15/15.10/15.10.6/15.10.6.2/S15.10.6.2_A1_T6
+-------------------------------------------
+
+Same cause as: ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4.
 
 ch15/15.10/15.10.2/15.10.2.10/S15.10.2.10_A2.1_T3
 -------------------------------------------------
@@ -319,44 +376,6 @@ ClassEscape throws a SyntaxError; see E5.1 Section 15.10.2.19 steps 1-2::
 
   2. If E is not a character then throw a SyntaxError exception.
 
-ch15/15.10/15.10.2/15.10.2.3/S15.10.2.3_A1_T8
----------------------------------------------
-
-::
-
-  === ch15/15.10/15.10.2/15.10.2.3/S15.10.2.3_A1_T8 failed in non-strict mode ===
-  --- errors ---
-  RangeError: regexp executor recursion limit
-          duk_regexp_executor.c:145
-          exec (null) native strict preventsyield
-          global /tmp/test262-FESnbK.js:2215 preventsyield
-  ===
-
-Caused by::
-
-  __executed = /(?:ab|cd)+|ef/.exec("aekfcd");
-
-This should be a pretty simple case, looks like some Duktape bug.
-
-ch15/15.10/15.10.2/15.10.2.3/S15.10.2.3_A1_T9
----------------------------------------------
-
-::
-
-  === ch15/15.10/15.10.2/15.10.2.3/S15.10.2.3_A1_T9 failed in non-strict mode ===
-  --- errors ---
-  RangeError: regexp executor recursion limit
-          duk_regexp_executor.c:145
-          exec (null) native strict preventsyield
-          global /tmp/test262-Nghlk8.js:2215 preventsyield
-  ===
-
-Caused by::
-
-  __executed = /(?:ab|cd)+|ef/i.exec("AEKFCDab");
-
-This should be a pretty simple case, looks like some Duktape bug.
-
 ch15/15.10/15.10.2/15.10.2.6/S15.10.2.6_A4_T7
 ---------------------------------------------
 
@@ -376,6 +395,28 @@ is expected not to match.
 If the invalid characters are escaped, the test case passes::
 
   __executed = /\B\[\^z\]\{4\}\B/.test("devil arise\tforzzx\nevils");
+
+ch15/15.4/15.4.4/15.4.4.10/S15.4.4.10_A3_T3
+-------------------------------------------
+
+::
+
+  === ch15/15.4/15.4.4/15.4.4.10/S15.4.4.10_A3_T3 failed in non-strict mode ===
+  --- errors ---
+  Test262 Error: #1: var obj = {}; obj.slice = Array.prototype.slice; obj[4294967294] = "x"; obj.length = 4294967295; var arr = obj.slice(4294967294,4294967295); arr.length === 1. Actual: 0
+  ===
+
+This bug is probably caused by C typing related to array length handling.
+Arrays over 2G elements long will probably have such issues.  There are
+several similar failing test cases, e.g.:
+
+* ch15/15.4/15.4.4/15.4.4.12/S15.4.4.12_A3_T3
+* ch15/15.4/15.4.4/15.4.4.14/15.4.4.14-9-9
+* ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-12
+* ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-16
+* ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-8-9
+
+Fortunately these don't have much real world relevance.
 
 ch15/15.5/15.5.4/15.5.4.7/S15.5.4.7_A1_T11
 ------------------------------------------
