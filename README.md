@@ -78,6 +78,11 @@ intended to work on e.g. OSX or Windows.  The source distributable has more
 user-friendly Makefile examples, but you should normally simply write your
 own Makefile when integrating Duktape into your program.
 
+Reporting bugs
+--------------
+
+See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
+
 Contributing
 ------------
 

@@ -1,15 +1,20 @@
 Contributing to Duktape
 =======================
 
+Copyrights and licensing
+------------------------
+
 Duktape copyrights are held by its contributors.  Contributors agree to
 license their contribution(s) under Duktape `LICENSE.txt`.  See `AUTHORS.txt`
 for details.
 
-To make a contribution to Duktape:
+To make a code contribution to Duktape
+--------------------------------------
 
 * Fork the Duktape Github repository and make your changes.  Use a well named
   topic branch for the changes, preferably with lowercase and dashes, e.g.
-  `xyz-compiler-fixes`.
+  `xyz-compiler-fixes`.  Fork off the `master` branch.  Avoid forking from
+  Duktape repository work branches as they may get rebased.
 
 * Test your changes as thoroughly as possible.  At the very minimum, the number
   of failed test cases with `make qecmatest` and `make apitest` should not
@@ -43,3 +48,15 @@ To make a contribution to Duktape:
 
   - If test case status changes (tests are broken / fixed, test cases
     themselves needed fixing, test cases were added, etc), mention that.
+
+To report bugs
+--------------
+
+For now, e-mail to <sami.vaarala@iki.fi> to report bugs:
+
+* Please attach a compilation or execution log to help diagnosis.
+
+* For portability related compilation errors, such as endianness detection,
+  please attach a list of the preprocessor defines provided by your compiler
+  (if possible).  For GCC and Clang there are helpful Makefile targets,
+  `gccpredefs` and `clangpredefs`.
