@@ -160,6 +160,12 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_BSD
 #endif
 
+/* Generic Unix */
+#if defined(__unix) || defined(__unix__) || defined(DUK_F_LINUX) || \
+    defined(DUK_F_BSD)
+#define DUK_F_UNIX
+#endif
+
 /* Windows (32-bit or above) */
 #if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || \
     defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
@@ -1559,13 +1565,13 @@ extern double duk_computed_nan;
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(__linux)
+#elif defined(DUK_F_LINUX)
 /* Linux (__unix also defined) */
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(__unix)
+#elif defined(DUK_F_UNIX)
 /* Other Unix */
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define DUK_USE_DATE_TZO_GMTIME_R
@@ -1606,7 +1612,7 @@ extern double duk_computed_nan;
     defined(DUK_USE_DATE_PRS_STRPTIME) || \
     defined(DUK_USE_DATE_FMT_STRFTIME)
 /* just a sanity check */
-#if defined(__linux) && !defined(_XOPEN_SOURCE)
+#if defined(DUK_F_LINUX) && !defined(_XOPEN_SOURCE)
 #error expected _XOPEN_SOURCE to be defined here
 #endif
 #include <time.h>
