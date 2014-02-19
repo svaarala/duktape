@@ -160,7 +160,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	start_offset = hdr[1 + hdr_index * 2 + 1];
 	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
 		DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%d, buffer_size=%d)",
-		            (int) start_offset, (int) DUK_HBUFFER_GET_SIZE(buf));
+		            (int) start_offset, (int) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf));
 		goto error;
 	}
 
