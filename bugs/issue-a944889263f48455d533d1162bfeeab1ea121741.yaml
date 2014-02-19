@@ -16,3 +16,20 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-18 21:53:44.505216 Z
+  - sva <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    In addition to callstack introspection one would also need the ability to
+    get a thread's resumer to be able to enumerate the whole coroutine chain.
+    
+    Perhaps Duktape.act() should be merged with Duktape.info() into a shared
+    function to introspect Duktape values.  For threads, an optional second
+    argument could request for a certain callstack entry to be introspected.
+    The thread fields could provide the resumer reference.
+    
+    If this were done, then Duktape.info() array format would probably need
+    to be something more verbose and more easily extensible.  Other value
+    types also have additional interesting fields from an introspection
+    perspective.  For instance, buffer values have a buffer fixed/dynamic
+    type and a potential spare.
