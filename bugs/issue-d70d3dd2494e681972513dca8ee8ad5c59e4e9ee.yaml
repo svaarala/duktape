@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add xmldoc basic test
+title: perhaps remove explicit 'vg' targets, and add a fixed option to build 'duk' with a valgrind wrapper
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2014-02-19 13:20:01.653734 Z
+creation_time: 2014-02-19 13:29:09.747580 Z
 references: []
 
-id: 19d39f3df1f53ecbc2d7e9e422cf9cf96a3df04a
+id: d70d3dd2494e681972513dca8ee8ad5c59e4e9ee
 log_events: 
-- - 2014-02-19 13:20:01.832497 Z
+- - 2014-02-19 13:29:09.896534 Z
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-02-19 22:51:57.183237 Z
+- - 2014-02-19 22:51:53.655373 Z
   - sva <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""
