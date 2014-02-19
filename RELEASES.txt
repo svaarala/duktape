@@ -216,6 +216,9 @@ Planned
 * On platforms requiring a specific alignment, use an alternate object
   property table memory layout to reduce memory footprint
 
+* Fix a bug in regexp handling of non-capturing groups inside quantifier
+  expressions
+
 * Portability fixes for Crossbridge (Flash), NetBSD
 
 * Warning fixes for non-default feature options and a few exotic compilers
