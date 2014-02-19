@@ -179,8 +179,8 @@ CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
-#CCOPTS_DEBUG += -DDUK_OPT_DDEBUG
-#CCOPTS_DEBUG += -DDUK_OPT_DDDEBUG
+CCOPTS_DEBUG += -DDUK_OPT_DDEBUG
+CCOPTS_DEBUG += -DDUK_OPT_DDDEBUG
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 CCLIBS	= -lm
 CCLIBS += -lreadline
@@ -189,7 +189,7 @@ CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. 
 # Replace 'duk' and 'dukd' with automatic valgrind wrappers (plain commands
 # will be duk.raw and dukd.raw).  Targets for runtests.js bypass the wrapper
 # because runtests.js has its own valgrind handling.
-VALGRIND_WRAP=1
+#VALGRIND_WRAP=1
 
 # Compile 'duk' only by default
 .PHONY:	all
@@ -624,6 +624,12 @@ xmldoctest: sax-js xmldoc duk
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat xmldoc-testcases/basic.js >> /tmp/duk-xmldoc-test.js
 	./duk /tmp/duk-xmldoc-test.js
+
+gccpredefs:
+	gcc -dM -E - < /dev/null
+
+clangpredefs:
+	clang -dM -E - < /dev/null
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
