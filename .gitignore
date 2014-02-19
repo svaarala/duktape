@@ -20,4 +20,6 @@ dukvm.js
 jquery-1.11.0.js
 coffee-script
 LiveScript
-coco	
+coco
+sax-js
+xmldoc

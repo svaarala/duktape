@@ -186,6 +186,11 @@ CCLIBS	= -lm
 CCLIBS += -lreadline
 CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
 
+# Replace 'duk' and 'dukd' with automatic valgrind wrappers (plain commands
+# will be duk.raw and dukd.raw).  Targets for runtests.js bypass the wrapper
+# because runtests.js has its own valgrind handling.
+VALGRIND_WRAP=1
+
 # Compile 'duk' only by default
 .PHONY:	all
 all:	checksetup duk
@@ -198,7 +203,7 @@ checksetup:
 clean:
 	-@rm -rf dist/
 	-@rm -rf site/
-	-@rm -f duk dukd
+	-@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
 	-@rm -f libduktape*.so*
 	-@rm -f doc/*.html
 	-@rm -f src/*.pyc
@@ -207,16 +212,14 @@ clean:
 	-@rm -f /tmp/duk_sizes.html
 	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
 	-@rm -rf /tmp/duktape-regfuzz/
-	-@rm -f /tmp/duk-test.log /tmp/duk-vgtest.log /tmp/duk-api-test.log
+	-@rm -f /tmp/duk-test.log /tmp/duk-api-test.log
 	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
-	-@rm -f /tmp/duk-emcc-test* /tmp/duk-emcc-vgtest*
+	-@rm -f /tmp/duk-emcc-test*
 	-@rm -f /tmp/duk-emcc-luatest*
 	-@rm -f /tmp/duk-emcc-duktest*
-	-@rm -f /tmp/duk-jsint-test* /tmp/duk-jsint-vgtest*
+	-@rm -f /tmp/duk-jsint-test*
 	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
-	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
-	-@rm -f /tmp/duk-closure-test* /tmp/duk-closure-vgtest*
+	-@rm -f /tmp/duk-closure-test*
 	-@rm -f a.out
 	-@rm -rf test262-d067d2f0ca30
 	-@rm -f compiler.jar
@@ -242,7 +245,9 @@ cleanall: clean
 	-@rm -rf coffee-script
 	-@rm -rf LiveScript
 	-@rm -rf coco
-	
+	-@rm -rf sax-js
+	-@rm -rf xmldoc
+
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
@@ -255,55 +260,98 @@ libduktaped.so.1.0.0: dist
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-duk: dist
+duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
-dukd: dist
+duk.vg: duk.raw
+	-@rm -f $@
+	@echo '#!/bin/sh' > $@
+	@echo 'valgrind "$(shell pwd)/$<" "$$@"' >> $@
+	@chmod ugo+rx $@
+
+duk: duk.raw duk.vg
+	-@rm -f $@
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "Using valgrind wrapped $@"
+	@cp duk.vg $@
+else
+	@cp duk.raw $@
+endif
+
+dukd.raw: dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
+dukd.vg: dukd.raw
+	-@rm -f $@
+	@echo '#!/bin/sh' > $@
+	@echo 'valgrind "$(shell pwd)/$<" "$$@"' >> $@
+	@chmod ugo+rx $@
+
+dukd: dukd.raw dukd.vg
+	-@rm -f dukd
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "Using valgrind wrapped $@"
+	@cp dukd.vg $@
+else
+	@cp dukd.raw $@
+endif
+
 .PHONY: duksizes
-duksizes: duk
-	$(PYTHON) src/genexesizereport.py duk > /tmp/duk_sizes.html
+duksizes: duk.raw
+	$(PYTHON) src/genexesizereport.py $< > /tmp/duk_sizes.html
 
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
 .PHONY:	ecmatest
 ecmatest: npminst duk
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "### ecmatest (valgrind)"
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+else
 	@echo "### ecmatest"
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+endif
 
 .PHONY:	ecmatestd
 ecmatestd: npminst dukd
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "### ecmatestd (valgrind)"
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+else
 	@echo "### ecmatestd"
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+endif
 
 .PHONY:	qecmatest
 qecmatest: npminst duk
-	@echo "### qecmatest"
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "### qecmatest (valgrind)"
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+else
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	@echo "### qecmatest"
+endif
 
 .PHONY:	qecmatestd
 qecmatestd: npminst dukd
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "### qecmatestd (valgrind)"
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+else
 	@echo "### qecmatestd"
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
-
-.PHONY:	vgecmatest
-vgecmatest: npminst duk
-	@echo "### vgecmatest"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 1 --test-sleep 30  --log-file=/tmp/duk-vgtest.log --valgrind --verbose ecmascript-testcases/
+endif
 
 .PHONY:	apitest
 apitest: npminst libduktape.so.1.0.0
+ifeq ($(VALGRIND_WRAP),1)
+	@echo "### apitest (valgrind)"
+	$(NODE) runtests/runtests.js --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
+else
 	@echo "### apitest"
 	$(NODE) runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
-
-.PHONY: vgapitest
-vgapitest: npminst libduktape.so.1.0.0
-	@echo "### vgapitest"
-	$(NODE) runtests/runtests.js --valgrind --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
-
-# FIXME: torturetest; torture + valgrind
+endif
 
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
@@ -321,16 +369,6 @@ regfuzztest: regfuzz-0.1.tar.gz duk
 	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
 	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
 	cd /tmp/duktape-regfuzz; ./duk regfuzz-test.js
-
-.PHONY: vgregfuzztest
-vgregfuzztest: regfuzz-0.1.tar.gz duk
-	@echo "### vgregfuzztest"
-	rm -rf /tmp/duktape-regfuzz; mkdir -p /tmp/duktape-regfuzz
-	cp regfuzz-0.1.tar.gz duk /tmp/duktape-regfuzz
-	tar -C /tmp/duktape-regfuzz -x -v -z -f regfuzz-0.1.tar.gz
-	echo "arguments = [ 0xdeadbeef ];" > /tmp/duktape-regfuzz/regfuzz-test.js
-	cat /tmp/duktape-regfuzz/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> /tmp/duktape-regfuzz/regfuzz-test.js
-	cd /tmp/duktape-regfuzz; $(VALGRIND) ./duk regfuzz-test.js
 
 underscore:
 	# http://underscorejs.org/
@@ -352,19 +390,6 @@ underscoretest:	underscore duk
 	#-util/underscore_test.sh ./duk underscore/test/speed.js
 	-util/underscore_test.sh ./duk underscore/test/utility.js
 
-.PHONY: vgunderscoretest
-vgunderscoretest: underscore duk
-	@echo "### vgunderscoretest"
-	@echo "Run underscore tests with underscore-test-shim.js, under valgrind"
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/arrays.js
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/chaining.js
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/collections.js
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/functions.js
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/objects.js
-	# speed test disabled, requires JSLitmus
-	#-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/speed.js
-	-util/underscore_test.sh $(VALGRIND) ./duk underscore/test/utility.js
-
 d067d2f0ca30.tar.bz2:
 	# http://test262.ecmascript.org/
 	$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
@@ -381,14 +406,6 @@ test262test: test262-d067d2f0ca30 duk
 	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
-.PHONY: vgtest262test
-vgtest262test: test262-d067d2f0ca30 duk
-	@echo "### vgtest262test"
-	-@rm -f /tmp/duk-vgtest262.log /tmp/duk-vgtest262-filtered.log
-	cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "$(VALGRIND) ../duk {{path}}" --summary >/tmp/duk-vgtest262.log
-	cat /tmp/duk-vgtest262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-vgtest262-filtered.log
-	cat /tmp/duk-vgtest262-filtered.log
-	
 # Unholy helper to write out a testcase, the unholiness is that it reads
 # command line arguments and complains about missing targets etc:
 # http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
@@ -419,17 +436,6 @@ emscriptentest: emscripten duk
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
 	./duk /tmp/duk-emcc-test.js
-
-.PHONY: vgemscriptentest
-vgemscriptentest: emscripten duk
-	@echo "### vgemscriptentest"
-	-@rm -f /tmp/duk-emcc-vgtest*
-	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-vgtest.js
-	#cat /tmp/duk-emcc-vgtest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-vgtest-fixed.js
-	@ls -l /tmp/duk-emcc-vgtest*
-	#$(VALGRIND) ./duk /tmp/duk-emcc-vgtest-fixed.js
-	$(VALGRIND) ./duk /tmp/duk-emcc-vgtest.js
 
 # Compile Duktape with Emscripten and execute it with NodeJS.
 # Current status: requires Duktape alignment fixes (alignment by 8).
@@ -520,15 +526,6 @@ jsinterpretertest: JS-Interpreter duk
 	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-test.js
 	./duk /tmp/duk-jsint-test.js
 
-.PHONY: vgjsinterpretertest
-vgjsinterpretertest: JS-Interpreter duk
-	@echo "### vgjsinterpretertest"
-	-@rm -f /tmp/duk-jsint-vgtest*
-	echo "window = {};" > /tmp/duk-jsint-vgtest.js
-	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-vgtest.js
-	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-vgtest.js
-	$(VALGRIND) ./duk /tmp/duk-jsint-vgtest.js
-
 luajs.zip:
 	# https://github.com/mherkender/lua.js
 	$(WGET) https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
@@ -546,14 +543,6 @@ luajstest: luajs duk
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
 	./duk /tmp/duk-luajs-test.js
 
-.PHONY: vgluajstest
-vgluajstest: luajs duk
-	-@rm -f /tmp/duk-luajs-vgmandel.js /tmp/duk-luajs-vgtest.js
-	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-vgmandel.js
-	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-vgtest.js
-	cat luajs/lua.js /tmp/duk-luajs-vgmandel.js >> /tmp/duk-luajs-vgtest.js
-	$(VALGRIND) ./duk /tmp/duk-luajs-vgtest.js
-
 # Closure
 compiler-latest.zip:
 	# https://code.google.com/p/closure-compiler/
@@ -569,13 +558,6 @@ closuretest: compiler.jar duk
 	-@rm -f /tmp/duk-closure-test*
 	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
 	./duk /tmp/duk-closure-test.js
-
-.PHONY: vgclosuretest
-vgclosuretest: compiler.jar duk
-	@echo "### vgclosuretest"
-	-@rm -f /tmp/duk-closure-vgtest*
-	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-vgtest.js
-	$(VALGRIND) ./duk /tmp/duk-closure-vgtest.js
 
 UglifyJS:
 	# https://github.com/mishoo/UglifyJS
@@ -623,6 +605,25 @@ LiveScript:
 coco:
 	# https://github.com/satyr/coco
 	$(GIT) clone --depth 1 https://github.com/satyr/coco
+
+sax-js:
+	# https://github.com/isaacs/sax-js
+	$(GIT) clone --depth 1 https://github.com/isaacs/sax-js.git
+
+xmldoc:
+	# https://github.com/nfarina/xmldoc
+	# http://nfarina.com/post/34302964969/a-lightweight-xml-document-class-for-nodejs-javascript
+	$(GIT) clone --depth 1 https://github.com/nfarina/xmldoc.git 
+
+xmldoctest: sax-js xmldoc duk
+	@echo "### xmldoctest"
+	-@rm -f /tmp/duk-xmldoc-test*
+	cat sax-js/lib/sax.js > /tmp/duk-xmldoc-test.js
+	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
+	cat xmldoc/lib/xmldoc.js >> /tmp/duk-xmldoc-test.js
+	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
+	cat xmldoc-testcases/basic.js >> /tmp/duk-xmldoc-test.js
+	./duk /tmp/duk-xmldoc-test.js
 
 .PHONY:	npminst
 npminst:	runtests/node_modules
