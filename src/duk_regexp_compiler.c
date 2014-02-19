@@ -318,6 +318,9 @@ static duk_int32_t duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expec
 				 *  side effects (for instance, if we allowed captures in simple atoms, the
 				 *  capture needs to happen).  The simple solution below is to force the
 				 *  quantifier to match at most once, since the additional matches have no effect.
+				 *
+				 *  With a simple atom there can be no capture groups, so no captures need
+				 *  to be reset.
 				 */
 				duk_int32_t atom_code_length;
 				duk_uint32_t offset;
@@ -362,6 +365,10 @@ static duk_int32_t duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expec
 				 *  quantifiers.  This would need some sort of a 'progress' instruction.
 				 *
 				 *  XXX: impose limit on maximum result size, i.e. atom_code_len * atom_copies?
+				 *
+				 *  FIXME: captures inside the quantified need to be set to undefined.
+				 *  This is currently not implemented: how to track the relevant 'saved'
+				 *  set?
 				 */
 				duk_int32_t atom_code_length;
 				duk_uint32_t atom_copies;
@@ -565,8 +572,8 @@ static duk_int32_t duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expec
 			break;
 		}
 		case DUK_RETOK_ATOM_START_NONCAPTURE_GROUP: {
-			new_atom_char_length = duk__parse_disjunction(re_ctx, 0);
 			new_atom_start_offset = DUK__BUFLEN(re_ctx);
+			new_atom_char_length = duk__parse_disjunction(re_ctx, 0);
 			break;
 		}
 		case DUK_RETOK_ATOM_START_CHARCLASS:
