@@ -216,8 +216,11 @@ Planned
 * On platforms requiring a specific alignment, use an alternate object
   property table memory layout to reduce memory footprint
 
-* Fix a bug in regexp handling of non-capturing groups inside quantifier
-  expressions
+* Fix a regexp bug: non-capturing groups inside quantifier expressions
+  were matched incorrectly
+
+* Fix a regexp bug: capture groups were not reset to 'undefined' when
+  a quantified with capture groups was re-matched by a quantifier
 
 * Portability fixes for Crossbridge (Flash), NetBSD
 
