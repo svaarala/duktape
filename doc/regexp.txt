@@ -231,9 +231,11 @@ values during matching.
 
 Saving a pointer currently involves C recursion: when a pointer is saved,
 the previous value is stored and the matcher is called recursively.  If
-backtracking needs to happen, the previous value can be restored.  (One
-could also try to erase saved pointers during backtracking based on the
-saved pointer value: if we backtrack ``SP`` beyond the saved pointer,
+backtracking needs to happen, the previous value can be restored.  Saved
+pointers are also wiped when a quantifier rematches a quantified containing
+captures.  The previous pointers also need to be saved and restored in this
+case.  (One could also try to erase saved pointers during backtracking based
+on the saved pointer value: if we backtrack ``SP`` beyond the saved pointer,
 the pointer is erased.)
 
 The mapping between saved pointers are capture groups is described in
@@ -509,6 +511,12 @@ The opcode name prefix ``DUK_REOP_`` is omitted for brevity; for instance,
 | SAVE                     | Save ``SP`` (string pointer) to ``saved[i]``.   |
 |                          |                                                 |
 |                          | * ``uint``: ``i``, saved array index            |
++--------------------------+-------------------------------------------------+
+| WIPERANGE                | Set saved indices at [start,start+count-1] to   |
+|                          | NULL, restoring previous values if backtracking.|
+|                          |                                                 |
+|                          | * ``uint``: ``start``, saved array start index  |
+|                          | * ``uint``: ``count`` (> 0)                     |
 +--------------------------+-------------------------------------------------+
 | LOOKPOS                  | Positive lookahead.                             |
 |                          |                                                 |
