@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: select and document versioning for 1.0 release and after
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-20 10:06:34.817706 Z
+references: []
+
+id: 24400c91fa3cc4f2a1a7b9507c3122f788812d8e
+log_events: 
+- - 2014-02-20 10:06:35.045471 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
