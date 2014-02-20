@@ -170,7 +170,7 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	if (level >= 0 || -level > (duk_int_t) thr->callstack_top) {
 		return 0;
 	}
-	DUK_ASSERT(level >= -thr->callstack_top && level <= -1);
+	DUK_ASSERT(level >= -((duk_int_t) thr->callstack_top) && level <= -1);
 	act = thr->callstack + thr->callstack_top + level;
 
 	duk_push_object(ctx);
