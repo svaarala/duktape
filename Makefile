@@ -395,7 +395,7 @@ d067d2f0ca30.tar.bz2:
 	$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
 
 test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
-	tar xvfj d067d2f0ca30.tar.bz2
+	tar xfj d067d2f0ca30.tar.bz2
 
 .PHONY: test262test
 test262test: test262-d067d2f0ca30 duk
