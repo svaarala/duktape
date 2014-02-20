@@ -437,7 +437,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 			idx = duk__bc_get_u32(re_ctx, &pc);
 			if (idx >= re_ctx->nsaved) {
 				/* idx is unsigned, < 0 check is not necessary */
-				DUK_DPRINT("internal error, regexp save index insane");
+				DUK_DPRINT("internal error, regexp save index insane: idx=%d", (int) idx);
 				goto internal_error;
 			}
 			old = re_ctx->saved[idx];
@@ -448,6 +448,69 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 				goto match;
 			}
 			re_ctx->saved[idx] = old;
+			goto fail;
+		}
+		case DUK_REOP_WIPERANGE: {
+			/* Wipe capture range and save old values for backtracking.
+			 *
+			 * XXX: this typically happens with a relatively small idx_count.
+			 * It might be useful to handle cases where the count is small
+			 * (say <= 8) by saving the values in stack instead.  This would
+			 * reduce memory churn and improve performance, at the cost of a
+			 * slightly higher code footprint.
+			 */
+			duk_uint32_t idx_start, idx_count;
+#ifdef DUK_USE_EXPLICIT_NULL_INIT
+			duk_uint32_t idx_end, idx;
+#endif
+			duk_uint8_t **range_save;
+			duk_uint8_t *sub_sp;
+
+			idx_start = duk__bc_get_u32(re_ctx, &pc);
+			idx_count = duk__bc_get_u32(re_ctx, &pc);
+			DUK_DDDPRINT("wipe saved range: start=%d, count=%d -> [%d,%d] (captures [%d,%d])",
+			             idx_start, idx_count,
+			             idx_start, idx_start + idx_count - 1,
+			             idx_start / 2, (idx_start + idx_count - 1) / 2);
+			if (idx_start + idx_count > re_ctx->nsaved || idx_count == 0) {
+				/* idx is unsigned, < 0 check is not necessary */
+				DUK_DPRINT("internal error, regexp wipe indices insane: idx_start=%d, idx_count=%d",
+				           (int) idx_start, (int) idx_count);
+				goto internal_error;
+			}
+			DUK_ASSERT(idx_count > 0);
+
+			duk_require_stack((duk_context *) re_ctx->thr, 1);
+			range_save = (duk_uint8_t **) duk_push_fixed_buffer((duk_context *) re_ctx->thr,
+			                                                    sizeof(duk_uint8_t *) * idx_count);
+			DUK_ASSERT(range_save != NULL);
+			DUK_MEMCPY(range_save, re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
+#ifdef DUK_USE_EXPLICIT_NULL_INIT
+			idx_end = idx_start + idx_count;
+			for (idx = idx_start; idx < idx_end; idx++) {
+				re_ctx->saved[idx] = NULL;
+			}
+#else
+			DUK_MEMSET(re_ctx->saved + idx_start, 0, sizeof(duk_uint8_t *) * idx_count);
+#endif
+
+			sub_sp = duk__match_regexp(re_ctx, pc, sp);
+			if (sub_sp) {
+				/* match: keep wiped/resaved values */
+				DUK_DDDPRINT("match: keep wiped/resaved values [%d,%d] (captures [%d,%d])",
+				             (int) idx_start, (int) (idx_start + idx_count - 1),
+			                     idx_start / 2, (idx_start + idx_count - 1) / 2);
+				duk_pop((duk_context *) re_ctx->thr);
+				sp = sub_sp;
+				goto match;
+			}
+
+			/* fail: restore saves */
+			DUK_DDDPRINT("fail: restore wiped/resaved values [%d,%d] (captures [%d,%d])",
+			             (int) idx_start, (int) (idx_start + idx_count - 1),
+			             idx_start / 2, (idx_start + idx_count - 1) / 2);
+			DUK_MEMCPY(re_ctx->saved + idx_start, range_save, sizeof(duk_uint8_t *) * idx_count);
+			duk_pop((duk_context *) re_ctx->thr);
 			goto fail;
 		}
 		case DUK_REOP_LOOKPOS:
@@ -843,9 +906,9 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INPUT, DUK_PROPDESC_FLAGS_WEC);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {
-			/* If saved[] pointers are insane, we just ignore them instead of
-			 * throwing an internal error; the captures are returned as 'undefined'.
-			 * This should, of course, never happen in practice.
+			/* Captures which are undefined have NULL pointers and are returned
+			 * as 'undefined'.  The same is done when saved[] pointers are insane
+			 * (this should, of course, never happen in practice).
 			 */
 			if (re_ctx.saved[i] && re_ctx.saved[i+1] && re_ctx.saved[i+1] >= re_ctx.saved[i]) {
 				duk_hstring *h_saved;

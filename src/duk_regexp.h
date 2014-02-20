@@ -36,13 +36,14 @@
 #define DUK_REOP_SQMINIMAL                 9
 #define DUK_REOP_SQGREEDY                  10
 #define DUK_REOP_SAVE                      11
-#define DUK_REOP_LOOKPOS                   12
-#define DUK_REOP_LOOKNEG                   13
-#define DUK_REOP_BACKREFERENCE             14
-#define DUK_REOP_ASSERT_START              15
-#define DUK_REOP_ASSERT_END                16
-#define DUK_REOP_ASSERT_WORD_BOUNDARY      17
-#define DUK_REOP_ASSERT_NOT_WORD_BOUNDARY  18
+#define DUK_REOP_WIPERANGE                 12
+#define DUK_REOP_LOOKPOS                   13
+#define DUK_REOP_LOOKNEG                   14
+#define DUK_REOP_BACKREFERENCE             15
+#define DUK_REOP_ASSERT_START              16
+#define DUK_REOP_ASSERT_END                17
+#define DUK_REOP_ASSERT_WORD_BOUNDARY      18
+#define DUK_REOP_ASSERT_NOT_WORD_BOUNDARY  19
 
 /* flags */
 #define DUK_RE_FLAG_GLOBAL                 (1 << 0)
