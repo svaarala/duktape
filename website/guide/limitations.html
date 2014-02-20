@@ -48,14 +48,6 @@ RangeError: regexp executor recursion limit
         global input:1 preventsyield
 </pre>
 
-<h2>Regexp quantifier over captures</h2>
-
-<p>When a quantified atom contains captures, the E5.1 specification requires
-that the captures inside the quantified are reset to <code>undefined</code>
-whenever the quantified is re-matched by the quantifier.  Duktape doesn't
-currently do this, which may cause a capture to show through a previous round
-if the capture in question is skipped in quantifier matching.</p>
-
 <h2>Regexp dollar escape</h2>
 
 <p>The Duktape RegExp syntax allows dollar escaping (e.g. <code>/\$/</code>)
