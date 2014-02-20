@@ -29,6 +29,14 @@ typedef struct {
 	 * varies or is not known.
 	 */
 	duk_int32_t charlen;
+
+	/* re_ctx->captures at start and end of atom parsing.
+	 * Since 'captures' indicates highest capture number emitted
+	 * so far in a DUK_REOP_SAVE, the captures numbers saved by
+	 * the atom are: ]start_captures,end_captures].
+	 */
+	duk_uint32_t start_captures;
+	duk_uint32_t end_captures;
 } duk__re_atom_info;
 
 /*
@@ -259,6 +267,8 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 		          "regexp compiler recursion limit reached");
 	}
 	re_ctx->recursion_depth++;
+
+	out_atom_info->start_captures = re_ctx->captures;
 
 	for (;;) {
 		duk_int32_t new_atom_char_length;   /* char length of the atom parsed in this loop */
@@ -690,8 +700,12 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 		                        offset - unpatched_disjunction_split);
 	}
 
-	DUK_DDDPRINT("parse disjunction finished: charlen=%d", (int) res_charlen);
+	out_atom_info->end_captures = re_ctx->captures;
 	out_atom_info->charlen = res_charlen;
+	DUK_DDDPRINT("parse disjunction finished: charlen=%d, start_captures=%d, end_captures=%d, captures_made=]%d,%d]",
+	             (int) out_atom_info->charlen,
+	             (int) out_atom_info->start_captures, (int) out_atom_info->end_captures,
+	             (int) out_atom_info->start_captures, (int) out_atom_info->end_captures);
 
 	re_ctx->recursion_depth--;
 }

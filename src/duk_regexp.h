@@ -72,7 +72,7 @@ struct duk_re_compiler_ctx {
 	duk_lexer_ctx lex;
 	duk_re_token curr_token;
 	duk_hbuffer_dynamic *buf;
-	duk_uint32_t captures;
+	duk_uint32_t captures;  /* highest capture number emitted so far (used as: ++captures) */
 	duk_uint32_t highest_backref;
 	duk_uint32_t recursion_depth;
 	duk_uint32_t recursion_limit;
