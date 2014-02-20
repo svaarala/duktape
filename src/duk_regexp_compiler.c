@@ -30,6 +30,11 @@ typedef struct {
 	 */
 	duk_int32_t charlen;
 
+#if 0
+	/* These are not needed to implement quantifier capture handling,
+	 * but might be needed at some point.
+	 */
+
 	/* re_ctx->captures at start and end of atom parsing.
 	 * Since 'captures' indicates highest capture number emitted
 	 * so far in a DUK_REOP_SAVE, the captures numbers saved by
@@ -37,6 +42,7 @@ typedef struct {
 	 */
 	duk_uint32_t start_captures;
 	duk_uint32_t end_captures;
+#endif
 } duk__re_disjunction_info;
 
 /*
@@ -269,7 +275,9 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 	}
 	re_ctx->recursion_depth++;
 
+#if 0
 	out_atom_info->start_captures = re_ctx->captures;
+#endif
 
 	for (;;) {
 		/* atom_char_length, atom_start_offset, atom_start_offset reflect the
@@ -726,12 +734,12 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 		                        offset - unpatched_disjunction_split);
 	}
 
+#if 0
 	out_atom_info->end_captures = re_ctx->captures;
+#endif
 	out_atom_info->charlen = res_charlen;
-	DUK_DDDPRINT("parse disjunction finished: charlen=%d, start_captures=%d, end_captures=%d, captures_made=]%d,%d]",
-	             (int) out_atom_info->charlen,
-	             (int) out_atom_info->start_captures, (int) out_atom_info->end_captures,
-	             (int) out_atom_info->start_captures, (int) out_atom_info->end_captures);
+	DUK_DDDPRINT("parse disjunction finished: charlen=%d",
+	             (int) out_atom_info->charlen);
 
 	re_ctx->recursion_depth--;
 }
