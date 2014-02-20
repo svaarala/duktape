@@ -251,20 +251,6 @@ was intended, so it gets parsed as a character class ``[^]`` followed by a
 literal, unescaped ``]`` which is a SyntaxError.  There are two other instances
 like this in the test case.
 
-ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4
----------------------------------------------
-
-::
-
-  === ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4 failed in non-strict mode ===
-  --- errors ---
-  Test262 Error: #4: __executed = /(z)((a+)?(b+)?(c))*/.exec("zaacbbbcac"); __executed[4] === undefined. Actual: bbb
-  ===
-
-Duktape bug: Duktape doesn't reset captures inside a quantified expression
-when the quantified is matched again.  A skipped capture may thus "leak" a
-match from a previous round.  See test-bug-regexp-quantifier-captures.js.
-
 ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5
 ---------------------------------------------
 
@@ -288,11 +274,6 @@ ch15/15.10/15.10.2/15.10.2.9/S15.10.2.9_A1_T5
 ---------------------------------------------
 
 Same cause as: ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5.
-
-15/15.10/15.10.6/15.10.6.2/S15.10.6.2_A1_T6
--------------------------------------------
-
-Same cause as: ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4.
 
 ch15/15.10/15.10.2/15.10.2.10/S15.10.2.10_A2.1_T3
 -------------------------------------------------
