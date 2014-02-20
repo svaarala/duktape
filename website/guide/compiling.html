@@ -4,9 +4,11 @@
 
 <p>If you compile Duktape with no compiler options, Duktape will detect the
 compiler and the platform automatically and select defaults appropriate in
-most cases.</p>
+most cases.  The <code>-std=c99</code> (or similar) option is recommended to
+ensure C99 semantics.  Without this option you may get compiler warnings
+because Duktape needs to work around the lack of variadic macros.</p>
 
-<p>The default features are, at a high level:</p>
+<p>Duktape feature defaults are, at a high level:</p>
 <ul>
 <li>Full Ecmascript compliance
     (including the optional 
