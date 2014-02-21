@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "netbsd issue: test-bi-math"
+desc: ""
+type: :bugfix
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-21 10:49:25.136819 Z
+references: []
+
+id: 54bd7fce9a98d98759e6c276866f737a9dbeb37d
+log_events: 
+- - 2014-02-21 10:49:25.312616 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

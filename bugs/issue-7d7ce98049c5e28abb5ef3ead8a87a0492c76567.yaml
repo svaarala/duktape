@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: first set of automatic tests on multiple platforms
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-21 10:30:46.473669 Z
+references: []
+
+id: 7d7ce98049c5e28abb5ef3ead8a87a0492c76567
+log_events: 
+- - 2014-02-21 10:30:46.623763 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

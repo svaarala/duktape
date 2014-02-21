@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "next step for testing: better autotest, Duktape compilation profiles, perhaps replace runtests"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-21 10:35:51.909368 Z
+references: []
+
+id: f783cef437fe638e76e0ddae01277957ed8507d1
+log_events: 
+- - 2014-02-21 10:35:52.053304 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
