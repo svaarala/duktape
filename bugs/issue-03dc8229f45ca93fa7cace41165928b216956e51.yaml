@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2014-02-21 10:49:37.088806 Z
 references: []
 
@@ -16,3 +16,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-02-21 12:01:35.730157 Z
+  - sva <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - Not actually a bug, the test case was timezone specific.
