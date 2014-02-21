@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check bestPractice failures in test262 suite
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-21 14:20:23.182651 Z
+references: []
+
+id: 3a15c4f1dead086575aafe4ad2f1d5522eeb34f9
+log_events: 
+- - 2014-02-21 14:20:23.347623 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
