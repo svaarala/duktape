@@ -154,13 +154,23 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_LINUX
 #endif
 
+/* FreeBSD */
+#if defined(__FreeBSD__) || defined(__FreeBSD)
+#define DUK_F_FREEBSD
+#endif
+
 /* NetBSD */
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__NetBSD)
 #define DUK_F_NETBSD
 #endif
 
+/* OpenBSD */
+#if defined(__OpenBSD__) || defined(__OpenBSD)
+#define DUK_F_OPENBSD
+#endif
+
 /* BSD variant */
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
+#if defined(DUK_F_FREEBSD) || defined(DUK_F_NETBSD) || defined(DUK_F_OPENBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
 #define DUK_F_BSD
 #endif
@@ -192,11 +202,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_AMIGAOS
 #endif
 
-/* FreeBSD. */
-#if defined(__FreeBSD__)
-#define DUK_F_FREEBSD
-#endif
-
 /* Flash player (e.g. Crossbridge) */
 #if defined(__FLASHPLAYER__)
 #define DUK_F_FLASHPLAYER
@@ -218,17 +223,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 #endif
 
-/* Clang. */
+/* Clang */
 #if defined(__clang__)
 #define DUK_F_CLANG
 #endif
 
-/* MSVC. */
+/* MSVC */
 #if defined(_MSC_VER)
 #define DUK_F_MSVC
 #endif
 
-/* MinGW. */
+/* MinGW */
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #define DUK_F_MINGW
 #endif
@@ -261,9 +266,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
-#elif defined(DUK_F_BSD)
-/* BSD */
+#elif defined(DUK_F_OPENBSD)
 #define DUK_F_STD_BYTEORDER_DETECT
+/* http://www.monkey.org/openbsd/archive/ports/0401/msg00089.html */
+#include <sys/types.h>
+#include <sys/endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#elif defined(DUK_F_BSD)
+/* other BSD */
+#define DUK_F_STD_BYTEORDER_DETECT
+#include <sys/types.h>
 #include <sys/endian.h>
 #include <limits.h>
 #include <sys/param.h>
@@ -291,6 +304,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #else
 /* Linux and hopefully others */
 #define DUK_F_STD_BYTEORDER_DETECT
+#include <sys/types.h>
 #include <endian.h>
 #include <limits.h>
 #include <sys/param.h>
