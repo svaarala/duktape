@@ -1,7 +1,7 @@
 /*===
 getTime="0" getUTCFullYear="1970" getUTCMonth="0" getUTCDate="1" getUTCDay="4" getUTCHours="0" getUTCMinutes="0" getUTCSeconds="0" getUTCMilliseconds="0"
-getTime="-6373554850554994" getUTCFullYear="-200000" getUTCMonth="1" getUTCDate="2" getUTCDay="3" getUTCHours="1" getUTCMinutes="4" getUTCSeconds="5" getUTCMilliseconds="6"
-getTime="6249225949445006" getUTCFullYear="200000" getUTCMonth="1" getUTCDate="2" getUTCDay="3" getUTCHours="1" getUTCMinutes="4" getUTCSeconds="5" getUTCMilliseconds="6"
+getTime="-6373554843354994" getUTCFullYear="-200000" getUTCMonth="1" getUTCDate="2" getUTCDay="3" getUTCHours="3" getUTCMinutes="4" getUTCSeconds="5" getUTCMilliseconds="6"
+getTime="6249225956645006" getUTCFullYear="200000" getUTCMonth="1" getUTCDate="2" getUTCDay="3" getUTCHours="3" getUTCMinutes="4" getUTCSeconds="5" getUTCMilliseconds="6"
 getTime="NaN" getUTCFullYear="NaN" getUTCMonth="NaN" getUTCDate="NaN" getUTCDay="NaN" getUTCHours="NaN" getUTCMinutes="NaN" getUTCSeconds="NaN" getUTCMilliseconds="NaN"
 ===*/
 
@@ -46,8 +46,8 @@ function datePrototypeGetterTests() {
     // FIXME: more tests?
 
     pg(new Date(0));
-    pg(new Date(-200000, 1, 2, 3, 4, 5, 6));
-    pg(new Date(200000, 1, 2, 3, 4, 5, 6));
+    pg(new Date(Date.UTC(-200000, 1, 2, 3, 4, 5, 6)));
+    pg(new Date(Date.UTC(200000, 1, 2, 3, 4, 5, 6)));
 
     // NaN
     pg(new Date(Date.UTC(-300000, 1, 2, 3, 4, 5, 6)));
