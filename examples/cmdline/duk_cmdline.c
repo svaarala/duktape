@@ -257,6 +257,7 @@ int handle_interactive(duk_context *ctx) {
 	char *buffer = NULL;
 	int retval = 0;
 	int rc;
+	int got_eof = 0;
 
 	duk_eval_string(ctx, GREET_CODE(" [no readline]"));
 	duk_pop(ctx);
@@ -269,7 +270,7 @@ int handle_interactive(duk_context *ctx) {
 		goto done;
 	}
 
-	for (;;) {
+	while (!got_eof) {
 		size_t idx = 0;
 
 		fwrite(prompt, 1, strlen(prompt), stdout);
@@ -278,6 +279,7 @@ int handle_interactive(duk_context *ctx) {
 		for (;;) {
 			int c = fgetc(stdin);
 			if (c == EOF) {
+				got_eof = 1;
 				break;
 			} else if (c == '\n') {
 				break;
