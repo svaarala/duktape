@@ -132,8 +132,10 @@ static double duk__pow_fixed(double x, double y) {
 	 * result is NaN, while at least Linux pow() returns 1.
 	 */
 
-	int cy;
+	int cx, cy, sx;
 
+	DUK_UNREF(cx);
+	DUK_UNREF(sx);
 	cy = DUK_FPCLASSIFY(y);
 
 	if (cy == DUK_FP_NAN) {
@@ -142,7 +144,45 @@ static double duk__pow_fixed(double x, double y) {
 	if (fabs(x) == 1.0 && cy == DUK_FP_INFINITE) {
 		goto ret_nan;
 	}
+#if defined(DUK_USE_POW_NETBSD_WORKAROUND)
+	/* See test-bug-netbsd-math-pow.js: NetBSD 6.0 on x86 (at least) does not
+	 * correctly handle some cases where x=+/-0.  Specific fixes to these
+	 * here.
+	 */
+	cx = DUK_FPCLASSIFY(x);
+	if (cx == DUK_FP_ZERO && y < 0.0) {
+		sx = DUK_SIGNBIT(x);
+		if (sx == 0) {
+			/* Math.pow(+0,y) should be Infinity when y<0.  NetBSD pow()
+			 * returns -Infinity instead when y is <0 and finite.  The
+			 * if-clause also catches y == -Infinity (which works even
+			 * without the fix).
+			 */
+			return DUK_DOUBLE_INFINITY;
+		} else {
+			/* Math.pow(-0,y) where y<0 should be:
+			 *   - -Infinity if y<0 and an odd integer
+			 *   - Infinity otherwise
+			 * NetBSD pow() returns -Infinity for all finite y<0.  The
+			 * if-clause also catches y == -Infinity (which works even
+			 * without the fix).
+			 */
 
+			/* fmod() return value has same sign as input (negative) so
+			 * the result here will be in the range ]-2,0], 1 indicates
+			 * odd.  If x is -Infinity, NaN is returned and the odd check
+			 * always concludes "not odd" which results in desired outcome.
+			 */
+			double tmp = fmod(y, 2);
+			if (tmp == -1.0) {
+				return -DUK_DOUBLE_INFINITY;
+			} else {
+				/* Not odd, or y == -Infinity */
+				return DUK_DOUBLE_INFINITY;
+			}
+		}
+	}
+#endif
 	return pow(x, y);
 
  ret_nan:

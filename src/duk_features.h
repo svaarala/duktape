@@ -154,6 +154,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_LINUX
 #endif
 
+/* NetBSD */
+#if defined(__NetBSD__)
+#define DUK_F_NETBSD
+#endif
+
 /* BSD variant */
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD) || \
     defined(__bsdi__) || defined(__DragonFly__)
@@ -1025,6 +1030,15 @@ extern double duk_computed_nan;
 #undef DUK_USE_MATH_FMIN
 #undef DUK_USE_MATH_FMAX
 #undef DUK_USE_MATH_ROUND
+#endif
+
+/* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,
+ * see test-bug-netbsd-math-pow.js.  Use NetBSD specific workaround.
+ * (This might be a wider problem; if so, generalize the define name.)
+ */
+#undef DUK_USE_POW_NETBSD_WORKAROUND
+#if defined(DUK_F_NETBSD)
+#define DUK_USE_POW_NETBSD_WORKAROUND
 #endif
 
 /*
