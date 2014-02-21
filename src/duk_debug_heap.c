@@ -12,7 +12,7 @@ static void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *s
 	duk_size_t maxchars;
 	duk_uint8_t *data;
 
-	DUK_MEMSET(buf, 0, buf_size);
+	DUK_MEMZERO(buf, buf_size);
 
 	maxchars = (duk_size_t) (buf_size - 1);
 	data = DUK_HSTRING_GET_DATA(str);

@@ -62,7 +62,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 		             (int) hdr[hdr_index + 1]);
 #endif
 
-		DUK_MEMSET(be_ctx, 0, sizeof(*be_ctx));
+		DUK_MEMZERO(be_ctx, sizeof(*be_ctx));
 		be_ctx->data = ((duk_uint8_t *) hdr) + curr_offset;
 		be_ctx->length = (duk_size_t) DUK_PC2LINE_MAX_DIFF_LENGTH;
 
@@ -164,7 +164,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 		goto error;
 	}
 
-	DUK_MEMSET(bd_ctx, 0, sizeof(*bd_ctx));
+	DUK_MEMZERO(bd_ctx, sizeof(*bd_ctx));
 	bd_ctx->data = ((duk_uint8_t *) hdr) + start_offset;
 	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_FIXED_GET_SIZE(buf) - start_offset);
 

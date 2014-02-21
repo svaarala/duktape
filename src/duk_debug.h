@@ -88,7 +88,7 @@
 /* summary macros */
 
 #define DUK_DEBUG_SUMMARY_INIT()  do { \
-		DUK_MEMSET(duk_debug_summary_buf, 0, sizeof(duk_debug_summary_buf)); \
+		DUK_MEMZERO(duk_debug_summary_buf, sizeof(duk_debug_summary_buf)); \
 		duk_debug_summary_idx = 0; \
 	} while (0)
 

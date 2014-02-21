@@ -491,7 +491,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 				re_ctx->saved[idx] = NULL;
 			}
 #else
-			DUK_MEMSET(re_ctx->saved + idx_start, 0, sizeof(duk_uint8_t *) * idx_count);
+			DUK_MEMZERO(re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
 #endif
 
 			sub_sp = duk__match_regexp(re_ctx, pc, sp);
@@ -704,7 +704,7 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 
 	/* [ ... re_obj input bc ] */
 
-	DUK_MEMSET(&re_ctx, 0, sizeof(re_ctx));
+	DUK_MEMZERO(&re_ctx, sizeof(re_ctx));
 
 	re_ctx.thr = thr;
 	re_ctx.input = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);

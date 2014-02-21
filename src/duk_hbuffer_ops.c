@@ -73,9 +73,8 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 			 * be rezeroed (the safety NUL byte).
 			 */
 			DUK_ASSERT(new_alloc_size - buf->usable_size > 0);
-			DUK_MEMSET((void *) ((char *) res + buf->usable_size),
-			           0,
-			           new_alloc_size - buf->usable_size);
+			DUK_MEMZERO((void *) ((char *) res + buf->usable_size),
+			            new_alloc_size - buf->usable_size);
 		}
 
 		buf->size = new_size;
@@ -391,9 +390,8 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	                    DUK_HBUFFER_GET_SIZE(buf) - end_offset);  /* always > 0 */
 	}
 
-	DUK_MEMSET(p + DUK_HBUFFER_GET_SIZE(buf) - length,
-	           0,
-	           length);  /* always > 0 */
+	DUK_MEMZERO(p + DUK_HBUFFER_GET_SIZE(buf) - length,
+	            length);  /* always > 0 */
 
 	buf->size -= length;
 

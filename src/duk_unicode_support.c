@@ -285,7 +285,7 @@ static duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_size_
 	duk_bitdecoder_ctx bd_ctx;
 	duk_codepoint_t prev_re;
 
-	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
+	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd_ctx.data = (duk_uint8_t *) unitab;
 	bd_ctx.length = (duk_size_t) unilen;
 
@@ -825,7 +825,7 @@ static duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 	}
 
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
-	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
+	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	if (uppercase) {
 		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_uc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_uc);

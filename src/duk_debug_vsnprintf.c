@@ -767,7 +767,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 	const char *p_end = p + strlen(format);
 	int retval;
 	
-	DUK_MEMSET(&fb, 0, sizeof(fb));
+	DUK_MEMZERO(&fb, sizeof(fb));
 	fb.buffer = (duk_uint8_t *) str;
 	fb.length = size;
 	fb.offset = 0;
@@ -791,7 +791,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 		 *  understand.  See man 3 printf.
 		 */
 
-		DUK_MEMSET(&st, 0, sizeof(st));
+		DUK_MEMZERO(&st, sizeof(st));
 		st.fb = &fb;
 		st.depth = 0;
 		st.depth_limit = 1;
@@ -856,7 +856,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 					/* format is too large, abort */
 					goto error;
 				}
-				DUK_MEMSET(fmtbuf, 0, sizeof(fmtbuf));
+				DUK_MEMZERO(fmtbuf, sizeof(fmtbuf));
 				DUK_MEMCPY(fmtbuf, p_begfmt, fmtlen);
 
 				/* assume exactly 1 arg, which is why '*' is forbidden; arg size still
@@ -914,7 +914,7 @@ void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int 
 	char *p = buf;
 	char *p_end = buf + buf_size - 1;
 
-	DUK_MEMSET(buf, 0, buf_size);
+	DUK_MEMZERO(buf, buf_size);
 
 	for (i = 0; i < fptr_size; i++) {
 		int left = p_end - p;

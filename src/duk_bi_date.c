@@ -132,7 +132,7 @@ static void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER 
 	}
 }
 static void duk__set_systime_jan1970(SYSTEMTIME *st) {
-	DUK_MEMSET((void *) st, 0, sizeof(*st));
+	DUK_MEMZERO((void *) st, sizeof(*st));
 	st->wYear = 1970;
 	st->wMonth = 1;
 	st->wDayOfWeek = 4;  /* not sure whether or not needed; Thursday */
@@ -220,7 +220,7 @@ static int duk__get_local_tzoffset(double d) {
 
 	t1 = t;
 
-	DUK_MEMSET((void *) tms, 0, sizeof(struct tm) * 2);
+	DUK_MEMZERO((void *) tms, sizeof(struct tm) * 2);
 
 #if defined(DUK_USE_DATE_TZO_GMTIME_R)
 	(void) gmtime_r(&t, &tms[0]);
@@ -318,13 +318,13 @@ static int duk__parse_string_strptime(duk_context *ctx, const char *str) {
 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
 	DUK_ASSERT(str != NULL);
-	DUK_MEMSET(buf, 0, sizeof(buf));  /* valgrind whine without this */
+	DUK_MEMZERO(buf, sizeof(buf));  /* valgrind whine without this */
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
 	DUK_DDDPRINT("parsing: '%s'", buf);
 
-	DUK_MEMSET(&tm, 0, sizeof(tm));
+	DUK_MEMZERO(&tm, sizeof(tm));
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
 		DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
 		             "wday:%d,yday:%d,isdst:%d}",
@@ -355,7 +355,7 @@ static int duk__parse_string_getdate(duk_context *ctx, const char *str) {
 	 * convenient for an embeddable interpreter.
 	 */
 
-	DUK_MEMSET(&tm, 0, sizeof(struct tm));
+	DUK_MEMZERO(&tm, sizeof(struct tm));
 	rc = getdate_r(str, &tm);
 	DUK_DDDPRINT("getdate_r() -> %d", rc);
 
@@ -394,7 +394,7 @@ static int duk__format_parts_strftime(duk_context *ctx, int *parts, int tzoffset
 		return 0;
 	}
 
-	DUK_MEMSET(&tm, 0, sizeof(tm));
+	DUK_MEMZERO(&tm, sizeof(tm));
 	tm.tm_sec = parts[DUK__IDX_SECOND];
 	tm.tm_min = parts[DUK__IDX_MINUTE];
 	tm.tm_hour = parts[DUK__IDX_HOUR];
@@ -404,7 +404,7 @@ static int duk__format_parts_strftime(duk_context *ctx, int *parts, int tzoffset
 	tm.tm_wday = parts[DUK__IDX_WEEKDAY];
 	tm.tm_isdst = 0;
 
-	DUK_MEMSET(buf, 0, sizeof(buf));
+	DUK_MEMZERO(buf, sizeof(buf));
 	if ((flags & DUK__FLAG_TOSTRING_DATE) && (flags & DUK__FLAG_TOSTRING_TIME)) {
 		fmt = "%c";
 	} else if (flags & DUK__FLAG_TOSTRING_DATE) {
@@ -527,7 +527,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	int i;
 
 	/* During parsing, month and day are one-based; set defaults here. */
-	DUK_MEMSET(parts, 0, sizeof(parts));
+	DUK_MEMZERO(parts, sizeof(parts));
 	DUK_ASSERT(parts[DUK__IDX_YEAR] == 0);  /* don't care value, year is mandatory */
 	parts[DUK__IDX_MONTH] = 1;
 	parts[DUK__IDX_DAY] = 1;

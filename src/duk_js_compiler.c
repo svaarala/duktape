@@ -480,7 +480,7 @@ static void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	entry_top = duk_get_top(ctx);
 
-	DUK_MEMSET(func, 0, sizeof(*func));  /* intentional overlap with earlier memzero */
+	DUK_MEMZERO(func, sizeof(*func));  /* intentional overlap with earlier memzero */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	func->h_name = NULL;
 	func->h_code = NULL;
@@ -3902,7 +3902,7 @@ static void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags
 	DUK_DDDPRINT("duk__expr(), rbp_flags=%d, rbp=%d, allow_in=%d, paren_level=%d",
 	             rbp_flags, rbp, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level);
 
-	DUK_MEMSET(&tmp_alloc, 0, sizeof(tmp_alloc));
+	DUK_MEMZERO(&tmp_alloc, sizeof(tmp_alloc));
 	tmp->x1.valstack_idx = duk_get_top(ctx);
 	tmp->x2.valstack_idx = tmp->x1.valstack_idx + 1;
 	duk_push_undefined(ctx);
@@ -5695,7 +5695,7 @@ static void duk__parse_stmts(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
 	 * for nested functions (which may occur inside expressions).
 	 */
 
-	DUK_MEMSET(&res_alloc, 0, sizeof(res_alloc));
+	DUK_MEMZERO(&res_alloc, sizeof(res_alloc));
 	res->t = DUK_IVAL_PLAIN;
 	res->x1.t = DUK_ISPEC_VALUE;
 	res->x1.valstack_idx = duk_get_top(ctx);
@@ -6489,7 +6489,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 
 	DUK_MEMCPY(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
 
-	DUK_MEMSET(&comp_ctx->curr_func, 0, sizeof(duk_compiler_func));
+	DUK_MEMZERO(&comp_ctx->curr_func, sizeof(duk_compiler_func));
 	duk__init_func_valstack_slots(comp_ctx);
 	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
 
@@ -6717,7 +6717,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	 * Alternatives would be nice.
 	 */
 
-	DUK_MEMSET(&comp_stk, 0, sizeof(comp_stk));
+	DUK_MEMZERO(&comp_stk, sizeof(comp_stk));
 	comp_stk.flags = flags;
 	duk_push_pointer(ctx, (void *) &comp_stk);
 

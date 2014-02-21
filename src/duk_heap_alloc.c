@@ -259,7 +259,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
 	int i, j;
 
-	DUK_MEMSET(&bd_ctx, 0, sizeof(bd_ctx));
+	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_strings_data;
 	bd->length = (duk_size_t) DUK_STRDATA_DATA_LENGTH;
 
@@ -513,7 +513,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 
 	/* zero everything */
-	DUK_MEMSET(res, 0, sizeof(*res));
+	DUK_MEMZERO(res, sizeof(*res));
 
 	/* explicit NULL inits */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
@@ -590,7 +590,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	        }
 	}
 #else
-	DUK_MEMSET(res->st, 0, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
+	DUK_MEMZERO(res->st, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 #endif
 
 	/* strcache init */

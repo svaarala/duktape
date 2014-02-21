@@ -1432,7 +1432,7 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 		const char *fmt;
 		void *ptr = DUK_TVAL_GET_POINTER(tv);
 
-		DUK_MEMSET(buf, 0, sizeof(buf));
+		DUK_MEMZERO(buf, sizeof(buf));
 
 		/* The #ifdef clutter here needs to handle the three cases:
 		 * (1) JSONX+JSONC, (2) JSONX only, (3) JSONC only.
@@ -1624,7 +1624,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
 	             flags, duk_get_top(ctx));
 
-	DUK_MEMSET(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
+	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	/* nothing now */
@@ -1712,7 +1712,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 *  Context init
 	 */
 
-	DUK_MEMSET(&js_ctx_alloc, 0, sizeof(js_ctx_alloc));
+	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	js_ctx->h_replacer = NULL;

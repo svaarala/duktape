@@ -34,7 +34,7 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 		goto error;
 	}
 
-	DUK_MEMSET(res, 0, sizeof(duk_hstring));
+	DUK_MEMZERO(res, sizeof(duk_hstring));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
@@ -239,7 +239,7 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 		new_entries[i] = NULL;
 	}
 #else
-	DUK_MEMSET(new_entries, 0, sizeof(duk_hstring *) * new_size);
+	DUK_MEMZERO(new_entries, sizeof(duk_hstring *) * new_size);
 #endif
 
 	/* Because new_size > duk__count_used(heap), guaranteed to work */
