@@ -654,6 +654,7 @@ dist-src:	dist
 	rm -rf duktape-$(DUK_VERSION_FORMATTED).tar*
 	mkdir duktape-$(DUK_VERSION_FORMATTED)
 	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
+	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
