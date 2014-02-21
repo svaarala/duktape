@@ -1057,6 +1057,8 @@ extern double duk_computed_nan;
 
 /*
  *  ANSI C string/memory function wrapper defines to allow easier workarounds.
+ *  Also convenience macros like DUK_MEMZERO which may be mapped to existing
+ *  platform function to zero memory (like the deprecated bzero).
  *
  *  For instance, some platforms don't support zero-size memcpy correctly,
  *  some arcane uclibc versions have a buggy memcpy (but working memmove)
@@ -1092,6 +1094,8 @@ extern double duk_computed_nan;
 #define DUK_VSNPRINTF    vsnprintf
 #define DUK_SSCANF       sscanf
 #define DUK_VSSCANF      vsscanf
+
+#define DUK_MEMZERO(p,n)  DUK_MEMSET((p), 0, (n))
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
