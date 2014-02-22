@@ -72,8 +72,8 @@ void duk_err_handle_error_nonverbose2(const char *filename, int line, duk_hthrea
 void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg) {
 	DUK_UNREF(ctx);
 #ifdef DUK_USE_FILE_IO
-	fprintf(stderr, "FATAL %d: %s\n", code, msg ? msg : "null");
-	fflush(stderr);
+	DUK_FPRINTF(DUK_STDERR, "FATAL %d: %s\n", code, msg ? msg : "null");
+	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */
 #endif
@@ -89,18 +89,18 @@ void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg) {
 #if !defined(DUK_USE_PANIC_HANDLER)
 void duk_default_panic_handler(int code, const char *msg) {
 #ifdef DUK_USE_FILE_IO
-	fprintf(stderr, "PANIC %d: %s ("
+	DUK_FPRINTF(DUK_STDERR, "PANIC %d: %s ("
 #if defined(DUK_USE_PANIC_ABORT)
-	        "calling abort"
+	            "calling abort"
 #elif defined(DUK_USE_PANIC_EXIT)
-	        "calling exit"
+	            "calling exit"
 #elif defined(DUK_USE_PANIC_SEGFAULT)
-	        "segfaulting on purpose"
+	            "segfaulting on purpose"
 #else
 #error no DUK_USE_PANIC_xxx macro defined
 #endif	
-	        ")\n", code, msg ? msg : "null");
-	fflush(stderr);
+	            ")\n", code, msg ? msg : "null");
+	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */
 #endif

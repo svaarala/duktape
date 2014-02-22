@@ -91,28 +91,28 @@ void duk_debug_log(int level, const char *file, int line, const char *func, char
 	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
-	fprintf(stderr, "%s[%s] <%llu> %s:%d (%s):%s %s%s\n",
-		duk__get_term_1(level),
-		duk__get_level_string(level),
-		duk_rdtsc(),
-		file,
-		line,
-		func,
-		duk__get_term_2(level),
-		duk__debug_buf,
-		duk__get_term_3(level));
+	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%d (%s):%s %s%s\n",
+	            duk__get_term_1(level),
+	            duk__get_level_string(level),
+	            duk_rdtsc(),
+	            file,
+	            line,
+	            func,
+	            duk__get_term_2(level),
+	            duk__debug_buf,
+	            duk__get_term_3(level));
 #else
-	fprintf(stderr, "%s[%s] %s:%d (%s):%s %s%s\n",
-		duk__get_term_1(level),
-		duk__get_level_string(level),
-		file,
-		line,
-		func,
-		duk__get_term_2(level),
-		duk__debug_buf,
-		duk__get_term_3(level));
+	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%d (%s):%s %s%s\n",
+	            duk__get_term_1(level),
+	            duk__get_level_string(level),
+	            file,
+	            line,
+	            func,
+	            duk__get_term_2(level),
+	            duk__debug_buf,
+	            duk__get_term_3(level));
 #endif
-	fflush(stderr);
+	DUK_FFLUSH(DUK_STDERR);
 
 	va_end(ap);
 }
@@ -134,28 +134,28 @@ void duk_debug_log(char *fmt, ...) {
 	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 #ifdef DUK_USE_DPRINT_RDTSC
-	fprintf(stderr, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
-		duk__get_term_1(level),
-		duk__get_level_string(duk_debug_level_stash),
-		duk_rdtsc(),
-	        duk_debug_file_stash,
-	        duk_debug_line_stash,
-	        duk_debug_func_stash,
-		duk__get_term_2(level),
-		duk__debug_buf,
-		duk__get_term_3(level));
+	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
+	            duk__get_term_1(level),
+	            duk__get_level_string(duk_debug_level_stash),
+	            duk_rdtsc(),
+	            duk_debug_file_stash,
+	            duk_debug_line_stash,
+	            duk_debug_func_stash,
+	            duk__get_term_2(level),
+	            duk__debug_buf,
+	            duk__get_term_3(level));
 #else
-	fprintf(stderr, "%s[%s] %s:%s (%s):%s %s%s\n",
-		duk__get_term_1(level),
-		duk__get_level_string(duk_debug_level_stash),
-	        duk_debug_file_stash,
-	        duk_debug_line_stash,
-	        duk_debug_func_stash,
-		duk__get_term_2(level),
-		duk__debug_buf,
-		duk__get_term_3(level));
+	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%s (%s):%s %s%s\n",
+	            duk__get_term_1(level),
+	            duk__get_level_string(duk_debug_level_stash),
+	            duk_debug_file_stash,
+	            duk_debug_line_stash,
+	            duk_debug_func_stash,
+	            duk__get_term_2(level),
+	            duk__debug_buf,
+	            duk__get_term_3(level));
 #endif
-	fflush(stderr);
+	DUK_FFLUSH(DUK_STDERR);
 
 	va_end(ap);
 }

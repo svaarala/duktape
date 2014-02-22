@@ -169,7 +169,7 @@ size_t duk_hbuffer_insert_cstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, si
 	DUK_ASSERT(str != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
 
-	len = strlen(str);
+	len = DUK_STRLEN(str);
 	duk_hbuffer_insert_bytes(thr, buf, offset, (duk_uint8_t *) str, len);
 	return len;
 }
@@ -261,7 +261,7 @@ size_t duk_hbuffer_append_cstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, co
 	DUK_ASSERT(str != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
 
-	len = strlen(str);
+	len = DUK_STRLEN(str);
 	duk_hbuffer_insert_bytes(thr, buf, DUK_HBUFFER_GET_SIZE(buf), (duk_uint8_t *) str, len);
 	return len;
 }

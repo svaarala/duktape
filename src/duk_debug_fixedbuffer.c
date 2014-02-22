@@ -26,7 +26,7 @@ void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x) {
 }
 
 void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x) {
-	duk_fb_put_bytes(fb, (duk_uint8_t *) x, (duk_uint32_t) strlen(x));
+	duk_fb_put_bytes(fb, (duk_uint8_t *) x, (duk_uint32_t) DUK_STRLEN(x));
 }
 
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {

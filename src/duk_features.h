@@ -1065,6 +1065,11 @@ extern double duk_computed_nan;
  *  and so on.  Such broken platforms can be dealt with here.
  */
 
+typedef FILE duk_file;
+#define DUK_STDIN       stdin
+#define DUK_STDOUT      stdout
+#define DUK_STDERR      stderr
+
 /* Old uclibcs have a broken memcpy so use memmove instead (this is overly
  * wide now on purpose):
  * http://lists.uclibc.org/pipermail/uclibc-cvs/2008-October/025511.html
@@ -1078,8 +1083,11 @@ extern double duk_computed_nan;
 #define DUK_MEMMOVE      memmove
 #define DUK_MEMCMP       memcmp
 #define DUK_MEMSET       memset
+#define DUK_STRLEN       strlen
 #define DUK_STRCMP       strcmp
 #define DUK_STRNCMP      strncmp
+#define DUK_PRINTF       printf
+#define DUK_FPRINTF      fprintf
 #define DUK_SPRINTF      sprintf
 #if defined(DUK_F_MSVC)
 /* _snprintf() does NOT NUL terminate on truncation, but Duktape code never
@@ -1094,6 +1102,13 @@ extern double duk_computed_nan;
 #define DUK_VSNPRINTF    vsnprintf
 #define DUK_SSCANF       sscanf
 #define DUK_VSSCANF      vsscanf
+#define DUK_FOPEN        fopen
+#define DUK_FCLOSE       fclose
+#define DUK_FREAD        fread
+#define DUK_FWRITE       fwrite
+#define DUK_FSEEK        fseek
+#define DUK_FTELL        ftell
+#define DUK_FFLUSH       fflush
 
 #define DUK_MEMZERO(p,n)  DUK_MEMSET((p), 0, (n))
 

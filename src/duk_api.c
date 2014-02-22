@@ -2303,7 +2303,7 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
 	DUK_ASSERT(ctx != NULL);
 
 	if (str) {
-		return duk_push_lstring(ctx, str, strlen(str));
+		return duk_push_lstring(ctx, str, DUK_STRLEN(str));
 	} else {
 		duk_push_null(ctx);
 		return NULL;
@@ -2317,7 +2317,7 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
  */
 const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	FILE *f = NULL;
+	duk_file *f = NULL;
 	char *buf;
 	long sz;
 
@@ -2325,32 +2325,32 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	if (!path) {
 		goto fail;
 	}
-	f = fopen(path, "rb");
+	f = DUK_FOPEN(path, "rb");
 	if (!f) {
 		goto fail;
 	}
-	if (fseek(f, 0, SEEK_END) < 0) {
+	if (DUK_FSEEK(f, 0, SEEK_END) < 0) {
 		goto fail;
 	}
-	sz = ftell(f);
+	sz = DUK_FTELL(f);
 	if (sz < 0) {
 		goto fail;
 	}
-	if (fseek(f, 0, SEEK_SET) < 0) {
+	if (DUK_FSEEK(f, 0, SEEK_SET) < 0) {
 		goto fail;
 	}
 	buf = (char *) duk_push_fixed_buffer(ctx, (size_t) sz);
 	DUK_ASSERT(buf != NULL);
-	if (fread(buf, 1, sz, f) != (size_t) sz) {
+	if (DUK_FREAD(buf, 1, sz, f) != (size_t) sz) {
 		goto fail;
 	}
-	(void) fclose(f);  /* ignore fclose() error */
+	(void) DUK_FCLOSE(f);  /* ignore fclose() error */
 	f = NULL;
 	return duk_to_string(ctx, -1);
 
  fail:
 	if (f) {
-		fclose(f);
+		DUK_FCLOSE(f);
 	}
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "failed to read file");
 	return NULL;
@@ -2584,7 +2584,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 
 	/* initial estimate based on format string */
-	sz = strlen(fmt) + 16;  /* XXX: plus something to avoid just missing */
+	sz = DUK_STRLEN(fmt) + 16;  /* XXX: plus something to avoid just missing */
 	if (sz < DUK_PUSH_SPRINTF_INITIAL_SIZE) {
 		sz = DUK_PUSH_SPRINTF_INITIAL_SIZE;
 	}

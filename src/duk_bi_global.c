@@ -650,7 +650,7 @@ int duk_bi_global_object_unescape(duk_context *ctx) {
 
 #ifdef DUK_USE_BROWSER_LIKE
 #ifdef DUK_USE_FILE_IO
-static int duk__print_alert_helper(duk_context *ctx, FILE *f_out) {
+static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 	int nargs;
 	int i;
 	const char *str;
@@ -668,7 +668,7 @@ static int duk__print_alert_helper(duk_context *ctx, FILE *f_out) {
 		size_t sz = 0;
 		buf = (const char *) duk_get_buffer(ctx, 0, &sz);
 		if (buf && sz > 0) {
-			fwrite(buf, 1, sz, f_out);
+			DUK_FWRITE(buf, 1, sz, f_out);
 		}
 		goto flush;
 	}
@@ -689,23 +689,23 @@ static int duk__print_alert_helper(duk_context *ctx, FILE *f_out) {
 
 		str = duk_get_lstring(ctx, -1, &len);
 		if (str) {
-			fwrite(str, 1, len, f_out);
+			DUK_FWRITE(str, 1, len, f_out);
 		}
 	}
 
-	fwrite(&nl, 1, 1, f_out);
+	DUK_FWRITE(&nl, 1, 1, f_out);
 
  flush:
-	fflush(f_out);
+	DUK_FFLUSH(f_out);
 	return 0;
 }
 
 int duk_bi_global_object_print(duk_context *ctx) {
-	return duk__print_alert_helper(ctx, stdout);
+	return duk__print_alert_helper(ctx, DUK_STDOUT);
 }
 
 int duk_bi_global_object_alert(duk_context *ctx) {
-	return duk__print_alert_helper(ctx, stderr);
+	return duk__print_alert_helper(ctx, DUK_STDERR);
 }
 #else  /* DUK_USE_FILE_IO */
 /* Supported but no file I/O -> silently ignore, no error */

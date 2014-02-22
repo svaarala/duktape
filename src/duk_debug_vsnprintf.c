@@ -764,7 +764,7 @@ static void duk__print_opcode(duk__dprint_state *st, int opcode) {
 int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 	duk_fixedbuffer fb;
 	const char *p = format;
-	const char *p_end = p + strlen(format);
+	const char *p_end = p + DUK_STRLEN(format);
 	int retval;
 	
 	DUK_MEMZERO(&fb, sizeof(fb));
