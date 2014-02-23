@@ -203,6 +203,9 @@ Planned
 * Execute finalizers for all objects, even reachable ones, when a heap
   is freed to allow native resources to be freed reliably
 
+* new Object() now promotes plain buffer and pointer values to Buffer
+  and Pointer objects
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
   **FIXME: under work**
