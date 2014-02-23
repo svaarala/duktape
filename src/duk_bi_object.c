@@ -15,14 +15,18 @@ int duk_bi_object_constructor(duk_context *ctx) {
 		return 1;
 	}
 
+	/* Pointer and buffer primitive values are treated like other
+	 * primitives values which have a fully fledged object counterpart:
+	 * promote to an object value.
+	 */
 	if (duk_check_type_mask(ctx, 0, DUK_TYPE_MASK_STRING |
 	                                DUK_TYPE_MASK_BOOLEAN |
-	                                DUK_TYPE_MASK_NUMBER)) {
+	                                DUK_TYPE_MASK_NUMBER |
+	                                DUK_TYPE_MASK_POINTER |
+	                                DUK_TYPE_MASK_BUFFER)) {
 		duk_to_object(ctx, 0);
 		return 1;
 	}
-
-	/* FIXME: handling for POINTER and BUFFER */
 
 	duk_push_object_helper(ctx,
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
