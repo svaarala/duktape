@@ -210,7 +210,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		t = duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
 			DUK_DDDPRINT("set internal prototype: built-in %d", (int) t);
-			DUK_HOBJECT_SET_PROTOTYPE(thr, h, thr->builtins[t]);
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[t]);
 		}
 
 		t = duk_bd_decode(bd, DUK__BIDX_BITS);

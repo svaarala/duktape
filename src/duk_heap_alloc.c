@@ -363,7 +363,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread_create_builtin_objects(thr);
 
 	/* default prototype (Note: 'thr' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE(thr, (duk_hobject *) thr, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) thr, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	return 1;
 }

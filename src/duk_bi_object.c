@@ -92,7 +92,7 @@ int duk_bi_object_constructor_create(duk_context *ctx) {
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(h->prototype == NULL);
-	DUK_HOBJECT_SET_PROTOTYPE(thr, h, proto);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
 
 	if (!duk_is_undefined(ctx, 1)) {
 		/* [ O Properties obj ] */

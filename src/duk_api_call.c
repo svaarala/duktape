@@ -368,7 +368,7 @@ void duk_new(duk_context *ctx, int nargs) {
 		             "-> set fallback prototype to that value: %!iO", proto);
 		fallback = duk_get_hobject(ctx, -2);
 		DUK_ASSERT(fallback != NULL);
-		DUK_HOBJECT_SET_PROTOTYPE(thr, fallback, proto);
+		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
 	}
 	duk_pop(ctx);
 

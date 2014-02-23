@@ -1027,7 +1027,7 @@ void duk_regexp_create_instance(duk_hthread *thr) {
 	/* [ ... regexp_object escaped_source bytecode ] */
 
 	DUK_HOBJECT_SET_CLASS_NUMBER(h, DUK_HOBJECT_CLASS_REGEXP);
-	DUK_HOBJECT_SET_PROTOTYPE(thr, h, thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]);
 
 	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_BYTECODE, DUK_PROPDESC_FLAGS_NONE);
 

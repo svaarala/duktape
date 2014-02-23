@@ -2660,7 +2660,7 @@ int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int pr
 	/* object is now reachable */
 
 	if (prototype_bidx >= 0) {
-		DUK_HOBJECT_SET_PROTOTYPE(thr, h, thr->builtins[prototype_bidx]);
+		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[prototype_bidx]);
 	} else {
 		DUK_ASSERT(prototype_bidx == -1);
 		DUK_ASSERT(h->prototype == NULL);
@@ -2737,7 +2737,7 @@ int duk_push_thread(duk_context *ctx) {
 	thr->valstack_top++;
 
 	/* default prototype (Note: 'obj' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	/* important to do this *after* pushing, to make the thread reachable for gc */
 
@@ -2788,7 +2788,7 @@ int duk_push_compiledfunction(duk_context *ctx) {
 	thr->valstack_top++;
 
 	/* default prototype (Note: 'obj' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	return ret;
 }
@@ -2846,7 +2846,7 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	thr->valstack_top++;
 
 	/* default prototype (Note: 'obj' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	return ret;
 
@@ -2892,7 +2892,7 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 
 	/* error gets its 'name' from the prototype */
 	proto = duk_error_prototype_from_code(thr, err_code);
-	DUK_HOBJECT_SET_PROTOTYPE(thr, errobj, proto);  /* adjusts refcount */
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, errobj, proto);
 
 	/* ... and its 'message' from an instance property */
 	if (fmt) {

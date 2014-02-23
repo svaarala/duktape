@@ -601,7 +601,7 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 		duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
 
 		act = thr->callstack + thr->callstack_top - 1;
-		DUK_HOBJECT_SET_PROTOTYPE(thr, new_env, act->lex_env);  /* updates refcounts */
+		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
 
 		act = thr->callstack + thr->callstack_top - 1;
 		act->lex_env = new_env;
@@ -2827,7 +2827,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_ASSERT(new_env != NULL);
 
 				act = thr->callstack + thr->callstack_top - 1;  /* FIXME: relookup, awkward */
-				DUK_HOBJECT_SET_PROTOTYPE(thr, new_env, act->lex_env);  /* updates refcount */
+				DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
 
 				act = thr->callstack + thr->callstack_top - 1;  /* FIXME: relookup, awkward */
 				act->lex_env = new_env;

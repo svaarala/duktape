@@ -433,7 +433,7 @@
  */		
 
 /* note: this updates refcounts */
-#define DUK_HOBJECT_SET_PROTOTYPE(thr,h,p)              duk_hobject_set_prototype((thr),(h),(p))
+#define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype((thr),(h),(p))
 
 /*
  *  Macros for Ecmascript built-in semantics

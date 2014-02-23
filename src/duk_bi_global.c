@@ -473,7 +473,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			DUK_DDDPRINT("new_env allocated: %!iO", new_env);
 
 			act = thr->callstack + thr->callstack_top - 2;  /* caller */
-			DUK_HOBJECT_SET_PROTOTYPE(thr, new_env, act->lex_env);  /* updates refcounts */
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
 			act = NULL;  /* invalidated */
 
 			outer_lex_env = new_env;

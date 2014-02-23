@@ -164,7 +164,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(fun_clos->bytecode != NULL);
 
 	/* XXX: or copy from template? */
-	DUK_HOBJECT_SET_PROTOTYPE(thr, &fun_clos->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);  /* contains incref */
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &fun_clos->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	/*
 	 *  Init/assert flags, copying them where appropriate.
@@ -246,7 +246,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			env = duk_get_hobject(ctx, -1);
 			DUK_ASSERT(env != NULL);
 			DUK_ASSERT(proto != NULL);
-			DUK_HOBJECT_SET_PROTOTYPE(thr, env, proto);  /* increases 'proto' refcount */
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, env, proto);
 
 			/* [ ... closure template env ] */
 
@@ -481,7 +481,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	                              -1);  /* no prototype, updated below */
 	env = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(env != NULL);
-	DUK_HOBJECT_SET_PROTOTYPE(thr, env, parent);  /* parent env is the prototype, updates refcounts */
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, env, parent);  /* parent env is the prototype */
 
 	/* open scope information, for compiled functions only */
 
