@@ -560,6 +560,7 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 	if (!is_finally && DUK_CAT_HAS_CATCH_BINDING_ENABLED(&thr->catchstack[cat_idx])) {
 		duk_activation *act;
 		duk_hobject *new_env;
+		duk_hobject *act_lex_env;
 
 		DUK_DDDPRINT("catcher has an automatic catch binding");
 
@@ -581,10 +582,14 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 		DUK_ASSERT(act->var_env != NULL);
 		DUK_ASSERT(act->func != NULL);
 
-		(void) duk_push_object_helper(ctx,
-		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-		                              -1);  /* no prototype, updated below */
+		act = thr->callstack + thr->callstack_top - 1;
+		act_lex_env = act->lex_env;
+		act = NULL;  /* invalidated */
+
+		(void) duk_push_object_helper_proto(ctx,
+		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+		                                    act_lex_env);
 		new_env = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(new_env != NULL);
 		DUK_DDDPRINT("new_env allocated: %!iO", new_env);
@@ -599,9 +604,6 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 		duk_push_hstring(ctx, thr->catchstack[cat_idx].h_varname);
 		duk_push_tval(ctx, &thr->heap->lj.value1);
 		duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
-
-		act = thr->callstack + thr->callstack_top - 1;
-		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
 
 		act = thr->callstack + thr->callstack_top - 1;
 		act->lex_env = new_env;

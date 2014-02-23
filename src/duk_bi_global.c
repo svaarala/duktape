@@ -459,22 +459,23 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 
 		if (DUK_HOBJECT_HAS_STRICT((duk_hobject *) func)) {
 			duk_hobject *new_env;
+			duk_hobject *act_lex_env;
 
 			DUK_DDDPRINT("direct eval call to a strict function -> "
 			             "var_env and lex_env to a fresh env, "
 			             "this_binding to caller's this_binding");
 
-			(void) duk_push_object_helper(ctx,
-			                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                              -1);  /* no prototype, updated below */
+			act = thr->callstack + thr->callstack_top - 2;  /* caller */
+			act_lex_env = act->lex_env;
+			act = NULL;  /* invalidated */
+
+			(void) duk_push_object_helper_proto(ctx,
+			                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                                    act_lex_env);
 			new_env = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(new_env != NULL);
 			DUK_DDDPRINT("new_env allocated: %!iO", new_env);
-
-			act = thr->callstack + thr->callstack_top - 2;  /* caller */
-			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
-			act = NULL;  /* invalidated */
 
 			outer_lex_env = new_env;
 			outer_var_env = new_env;

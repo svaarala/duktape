@@ -214,7 +214,6 @@ void duk_js_push_closure(duk_hthread *thr,
 
 		if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
 			duk_hobject *proto;
-			duk_hobject *env;
 
 			/*
 			 *  Named function expression, name needs to be bound
@@ -234,19 +233,18 @@ void duk_js_push_closure(duk_hthread *thr,
 			}
 
 			/* -> [ ... closure template env ] */
-			(void) duk_push_object_helper(ctx,
-	   		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                              -1);  /* no prototype, updated below */
+			(void) duk_push_object_helper_proto(ctx,
+	   		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                                    proto);
 
+			/* It's important that duk_def_prop() is a 'raw define' so that any
+			 * properties in an ancestor are never an issue (they should never be
+			 * e.g. non-writable, but just in case).
+			 */
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
 			duk_dup(ctx, -4);                                    /* -> [ ... closure template env funcname closure ] */
 			duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);      /* -> [ ... closure template env ] */
-
-			env = duk_get_hobject(ctx, -1);
-			DUK_ASSERT(env != NULL);
-			DUK_ASSERT(proto != NULL);
-			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, env, proto);
 
 			/* [ ... closure template env ] */
 

@@ -2669,6 +2669,19 @@ int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int pr
 	return ret;
 }
 
+int duk_push_object_helper_proto(duk_context *ctx, int hobject_flags_and_class, duk_hobject *proto) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	int ret;
+	duk_hobject *h;
+
+	ret = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
+	h = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(h->prototype == NULL);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
+	return ret;
+}
+
 int duk_push_object(duk_context *ctx) {
 	return duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -2868,7 +2881,6 @@ void duk_push_c_function_nonconstruct(duk_context *ctx, duk_c_function func, int
 static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
-	duk_hobject *errobj;
 	duk_hobject *proto;
 #ifdef DUK_USE_AUGMENT_ERRORS
 	int noblame_fileline;
@@ -2883,16 +2895,12 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 #endif
 	err_code = err_code & (~DUK_ERRCODE_FLAG_NOBLAME_FILELINE);
 
-	retval = duk_push_object_helper(ctx,
-	                                DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
-	                                DUK_BIDX_ERROR_PROTOTYPE);  /* prototype updated below */
-
-	errobj = duk_require_hobject(ctx, -1);
-
 	/* error gets its 'name' from the prototype */
 	proto = duk_error_prototype_from_code(thr, err_code);
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, errobj, proto);
+	retval = duk_push_object_helper_proto(ctx,
+	                                      DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                      DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
+	                                      proto);
 
 	/* ... and its 'message' from an instance property */
 	if (fmt) {

@@ -41,8 +41,10 @@ int duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
-	/* FIXME: should the API call handle this directly, i.e. attempt
+	/* XXX: should the API call handle this directly, i.e. attempt
 	 * to duk_push_hobject(ctx, null) would push a null instead?
+	 * (On the other hand 'undefined' would be just as logical, but
+	 * not wanted here.)
 	 */
 
 	if (h->prototype) {
@@ -66,10 +68,8 @@ int duk_bi_object_constructor_get_own_property_names(duk_context *ctx) {
 }
 
 int duk_bi_object_constructor_create(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_hobject *proto = NULL;
-	duk_hobject *h;
 
 	DUK_ASSERT_TOP(ctx, 2);
 
@@ -84,15 +84,10 @@ int duk_bi_object_constructor_create(duk_context *ctx) {
 		return DUK_RET_TYPE_ERROR;
 	}
 
-	/* FIXME: direct helper to create with specific prototype */
-	(void) duk_push_object_helper(ctx,
-	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                              -1);
-	h = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(h->prototype == NULL);
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
+	(void) duk_push_object_helper_proto(ctx,
+	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                                    proto);
 
 	if (!duk_is_undefined(ctx, 1)) {
 		/* [ O Properties obj ] */
