@@ -150,7 +150,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Linux */
-#if defined(__linux)
+#if defined(__linux) || defined(__linux__) || defined(linux)
 #define DUK_F_LINUX
 #endif
 
@@ -176,8 +176,8 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Generic Unix */
-#if defined(__unix) || defined(__unix__) || defined(DUK_F_LINUX) || \
-    defined(DUK_F_BSD)
+#if defined(__unix) || defined(__unix__) || defined(unix) || \
+    defined(DUK_F_LINUX) || defined(DUK_F_BSD)
 #define DUK_F_UNIX
 #endif
 
@@ -262,12 +262,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 #if defined(__APPLE__)
 /* Apple OSX */
-#define DUK_F_STD_BYTEORDER_DETECT
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
 #elif defined(DUK_F_OPENBSD)
-#define DUK_F_STD_BYTEORDER_DETECT
 /* http://www.monkey.org/openbsd/archive/ports/0401/msg00089.html */
 #include <sys/types.h>
 #include <sys/endian.h>
@@ -275,7 +273,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <sys/param.h>
 #elif defined(DUK_F_BSD)
 /* other BSD */
-#define DUK_F_STD_BYTEORDER_DETECT
 #include <sys/types.h>
 #include <sys/endian.h>
 #include <limits.h>
@@ -297,13 +294,12 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <windows.h>
 #include <limits.h>
 #elif defined(DUK_F_FLASHPLAYER)
-/* Crossbridge, uses custom byteorder detection */
+/* Crossbridge */
 #include <endian.h>
 #include <limits.h>
 #include <sys/param.h>
 #else
 /* Linux and hopefully others */
-#define DUK_F_STD_BYTEORDER_DETECT
 #include <sys/types.h>
 #include <endian.h>
 #include <limits.h>
@@ -784,11 +780,22 @@ typedef double duk_double_t;
 /*
  *  Byte order and double memory layout detection
  *
- *  This needs to be done before choosing a default profile, as it affects
- *  profile selection.
+ *  Endianness detection is a major portability hassle because the macros
+ *  and headers are not standardized.  There's even variance across UNIX
+ *  platforms.  Even with "standard" headers, details like underscore count
+ *  varies between platforms, e.g. both __BYTE_ORDER and _BYTE_ORDER are used
+ *  (Crossbridge has a single underscore, for instance).
  *
- *  Underscore count varies between platforms, e.g. both __BYTE_ORDER and
- *  _BYTE_ORDER are used (e.g. Crossbridge has a single underscore).
+ *  The checks below are structured with this in mind: several approaches are
+ *  used, and at the end we check if any of them worked.  This allows generic
+ *  approaches to be tried first, and platform/compiler specific hacks tried
+ *  last.  As a last resort, the user can force a specific endianness, as it's
+ *  not likely that automatic detection will work on the most exotic platforms.
+ *
+ *  Duktape supports little and big endian machines.  There's also support
+ *  for a hybrid used by some ARM machines where integers are little endian
+ *  but IEEE double values use a mixed order (12345678 -> 43218765); this is
+ *  now named a bit misleadingly as "middle endian".
  */
 
 #undef DUK_F_BYTEORDER_DETECTED
@@ -817,47 +824,103 @@ typedef double duk_double_t;
 #define DUK_USE_BYTEORDER_FORCED
 #endif  /* DUK_OPT_FORCE_BYTEORDER */
 
-/* FIXME: Not very good detection right now, expect to find __BYTE_ORDER
- * and __FLOAT_WORD_ORDER or resort to GCC/ARM specifics.  Improve the
- * detection code and perhaps allow some compiler define to override the
- * detection for unhandled cases.
+/* More or less standard endianness predefines provided by header files.
+ * The ARM hybrid case is detected by assuming that __FLOAT_WORD_ORDER
+ * will be big endian, see: http://lists.mysql.com/internals/443.
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_STD_BYTEORDER_DETECT)
-/* determine endianness variant: little-endian (LE), big-endian (BE), or "middle-endian" (ME) i.e. ARM */
+#if !defined(DUK_F_BYTEORDER_DETECTED)
 #if defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN) || \
     defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && (_BYTE_ORDER == _LITTLE_ENDIAN) || \
     defined(__LITTLE_ENDIAN__)
+/* Integer little endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
-    defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN) || \
-    defined(__GNUC__) && !defined(__arm__)
+    defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN) ||
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #define DUK_F_BYTEORDER_DETECTED
 #elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
-      defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) || \
-      defined(__GNUC__) && defined(__arm__)
+      defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) ||
 #define DUK_USE_DOUBLE_ME
 #define DUK_USE_MIDDLE_ENDIAN
 #define DUK_F_BYTEORDER_DETECTED
+#elif !defined(__FLOAT_WORD_ORDER) && !defined(_FLOAT_WORD_ORDER)
+/* Float word order not known, assume not a hybrid. */
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
 #else
-#error unsupported: byte order is little endian but cannot determine IEEE double word order
-#endif
+/* byte order is little endian but cannot determine IEEE double word order */
+#endif  /* float word order */
 #elif defined(__BYTE_ORDER) && defined(__BIG_ENDIAN) && (__BYTE_ORDER == __BIG_ENDIAN) || \
       defined(_BYTE_ORDER) && defined(_BIG_ENDIAN) && (_BYTE_ORDER == _BIG_ENDIAN) || \
       defined(__BIG_ENDIAN__)
+/* Integer big endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
-    defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) || \
-    defined(__GNUC__) && !defined(__arm__)
+    defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) ||
+#define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#elif !defined(__FLOAT_WORD_ORDER) && !defined(_FLOAT_WORD_ORDER)
+/* Float word order not known, assume not a hybrid. */
 #define DUK_USE_DOUBLE_BE
 #define DUK_USE_BIG_ENDIAN
 #define DUK_F_BYTEORDER_DETECTED
 #else
-#error unsupported: byte order is big endian but cannot determine IEEE double word order
-#endif
+/* byte order is big endian but cannot determine IEEE double word order */
+#endif  /* float word order */
 #else
-#error unsupported: cannot determine byte order
-#endif
-#endif  /* !DUK_F_BYTEORDER_DETECTED && DUK_F_STD_BYTEORDER_DETECT */
+/* cannot determine byte order */
+#endif  /* integer byte order */
+#endif  /* !defined(DUK_F_BYTEORDER_DETECTED) */
+
+/* GCC and Clang provide endianness defines as built-in predefines, with
+ * leading and trailing double underscores (e.g. __BYTE_ORDER__).  See
+ * output of "make gccpredefs" and "make clangpredefs".  Clang doesn't
+ * seem to provide __FLOAT_WORD_ORDER__.
+ * http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+ */
+#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(__BYTE_ORDER__)
+#if defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+/* Integer little endian */
+#if defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
+    (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#elif defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+      (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define DUK_USE_DOUBLE_ME
+#define DUK_USE_MIDDLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#elif !defined(__FLOAT_WORD_ORDER__)
+/* Float word order not known, assume not a hybrid. */
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#else
+/* byte order is little endian but cannot determine IEEE double word order */
+#endif  /* float word order */
+#elif defined(__ORDER_BIG_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+/* Integer big endian */
+#if defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#elif !defined(__FLOAT_WORD_ORDER__)
+/* Float word order not known, assume not a hybrid. */
+#define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#else
+/* byte order is big endian but cannot determine IEEE double word order */
+#endif  /* float word order */
+#else
+/* cannot determine byte order; __ORDER_PDP_ENDIAN__ is related to 32-bit
+ * integer ordering and is not relevant
+ */
+#endif  /* integer byte order */
+#endif  /* !defined(DUK_F_BYTEORDER_DETECTED) && defined(__BYTE_ORDER__) */
 
 /* On Windows, assume we're little endian.  Even Itanium which has a
  * configurable endianness runs little endian in Windows.
@@ -870,22 +933,22 @@ typedef double duk_double_t;
 #define DUK_USE_LITTLE_ENDIAN
 #endif  /* Windows */
 
-/* On crossbridge, assume we're little endian.  Crossbridge could almost
- * use the standard byteorder detect #ifdefs, but it lacks _FLOAT_WORD_ORDER.
+/* Crossbridge should work with the standard byteorder #ifdefs.  It doesn't
+ * provide _FLOAT_WORD_ORDER but the standard approach now covers that case
+ * too.  This has been left here just in case.
  */
 #if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_FLASHPLAYER)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #endif
 
+/* Check that something got defined; if not, bail out. */
 #if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
 #error unsupported: cannot determine IEEE double byte order variant
 #endif
-
 #if !defined(DUK_USE_LITTLE_ENDIAN) && !defined(DUK_USE_MIDDLE_ENDIAN) && !defined(DUK_USE_BIG_ENDIAN)
 #error unsupported: cannot determine byte order variant
 #endif
-
 #if !defined(DUK_F_BYTEORDER_DETECTED)
 #error unsupported: byte order detection failed (should not happen)
 #endif
