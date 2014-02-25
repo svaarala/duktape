@@ -212,6 +212,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_EMSCRIPTEN
 #endif
 
+/* QNX */
+#if defined(__QNX__)
+#define DUK_F_QNX
+#endif
+
 /* GCC and GCC version convenience define. */
 #if defined(__GNUC__)
 #define DUK_F_GCC
@@ -260,6 +265,12 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 #endif
 
+#if defined(DUK_F_QNX)
+/* See: /opt/qnx650/target/qnx6/usr/include/sys/platform.h */
+#define _XOPEN_SOURCE    600
+#define _POSIX_C_SOURCE  200112
+#endif
+
 #if defined(__APPLE__)
 /* Apple OSX */
 #include <architecture/byte_order.h>
@@ -296,6 +307,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #elif defined(DUK_F_FLASHPLAYER)
 /* Crossbridge */
 #include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#elif defined(DUK_F_QNX)
+#include <sys/types.h>
 #include <limits.h>
 #include <sys/param.h>
 #else
@@ -834,12 +849,12 @@ typedef double duk_double_t;
     defined(__LITTLE_ENDIAN__)
 /* Integer little endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
-    defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN) ||
+    defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
 #define DUK_F_BYTEORDER_DETECTED
 #elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
-      defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) ||
+      defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN)
 #define DUK_USE_DOUBLE_ME
 #define DUK_USE_MIDDLE_ENDIAN
 #define DUK_F_BYTEORDER_DETECTED
@@ -940,6 +955,26 @@ typedef double duk_double_t;
 #if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_FLASHPLAYER)
 #define DUK_USE_DOUBLE_LE
 #define DUK_USE_LITTLE_ENDIAN
+#endif
+
+/* QNX gcc cross compiler seems to define e.g. __LITTLEENDIAN__ or __BIGENDIAN__:
+ *  $ /opt/qnx650/host/linux/x86/usr/bin/i486-pc-nto-qnx6.5.0-gcc -dM -E - </dev/null | grep -ni endian
+ *  67:#define __LITTLEENDIAN__ 1
+ *  $ /opt/qnx650/host/linux/x86/usr/bin/mips-unknown-nto-qnx6.5.0-gcc -dM -E - </dev/null | grep -ni endian
+ *  81:#define __BIGENDIAN__ 1
+ *  $ /opt/qnx650/host/linux/x86/usr/bin/arm-unknown-nto-qnx6.5.0-gcc -dM -E - </dev/null | grep -ni endian
+ *  70:#define __LITTLEENDIAN__ 1
+ */
+#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_QNX)
+#if defined(__LITTLEENDIAN__)
+#define DUK_USE_DOUBLE_LE
+#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#elif defined(__BIGENDIAN__)
+#define DUK_USE_DOUBLE_BE
+#define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER_DETECTED
+#endif
 #endif
 
 /* Check that something got defined; if not, bail out. */
@@ -1704,6 +1739,11 @@ typedef FILE duk_file;
 #define DUK_USE_DATE_NOW_TIME
 #define DUK_USE_DATE_TZO_GMTIME
 /* no parsing (not an error) */
+#define DUK_USE_DATE_FMT_STRFTIME
+#elif defined(DUK_F_QNX)
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #else
 #error platform not supported
