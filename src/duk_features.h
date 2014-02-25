@@ -813,8 +813,15 @@ typedef double duk_double_t;
  *  now named a bit misleadingly as "middle endian".
  */
 
-#undef DUK_F_BYTEORDER_DETECTED
+#undef DUK_F_BYTEORDER
 #undef DUK_USE_BYTEORDER_FORCED
+
+/* DUK_F_BYTEORDER is set as an intermediate value when detection
+ * succeeds, to one of:
+ *   1 = little endian
+ *   2 = middle (arm hybrid) endian
+ *   3 = big endian
+ */
 
 /* For custom platforms allow user to define byteorder explicitly.
  * Since endianness headers are not standardized, this is a useful
@@ -824,18 +831,14 @@ typedef double duk_double_t;
  */
 #if defined(DUK_OPT_FORCE_BYTEORDER)
 #if (DUK_OPT_FORCE_BYTEORDER == 1)
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER 1
 #elif (DUK_OPT_FORCE_BYTEORDER == 2)
-#define DUK_USE_DOUBLE_ME
-#define DUK_USE_MIDDLE_ENDIAN
+#define DUK_F_BYTEORDER 2
 #elif (DUK_OPT_FORCE_BYTEORDER == 3)
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
+#define DUK_F_BYTEORDER 3
 #else
 #error invalid DUK_OPT_FORCE_BYTEORDER value
 #endif
-#define DUK_F_BYTEORDER_DETECTED
 #define DUK_USE_BYTEORDER_FORCED
 #endif  /* DUK_OPT_FORCE_BYTEORDER */
 
@@ -843,26 +846,20 @@ typedef double duk_double_t;
  * The ARM hybrid case is detected by assuming that __FLOAT_WORD_ORDER
  * will be big endian, see: http://lists.mysql.com/internals/443.
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED)
+#if !defined(DUK_F_BYTEORDER)
 #if defined(__BYTE_ORDER) && defined(__LITTLE_ENDIAN) && (__BYTE_ORDER == __LITTLE_ENDIAN) || \
     defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && (_BYTE_ORDER == _LITTLE_ENDIAN) || \
     defined(__LITTLE_ENDIAN__)
 /* Integer little endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__LITTLE_ENDIAN) && (__FLOAT_WORD_ORDER == __LITTLE_ENDIAN) || \
     defined(_FLOAT_WORD_ORDER) && defined(_LITTLE_ENDIAN) && (_FLOAT_WORD_ORDER == _LITTLE_ENDIAN)
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 1
 #elif defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
       defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN)
-#define DUK_USE_DOUBLE_ME
-#define DUK_USE_MIDDLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 2
 #elif !defined(__FLOAT_WORD_ORDER) && !defined(_FLOAT_WORD_ORDER)
 /* Float word order not known, assume not a hybrid. */
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 1
 #else
 /* byte order is little endian but cannot determine IEEE double word order */
 #endif  /* float word order */
@@ -872,21 +869,17 @@ typedef double duk_double_t;
 /* Integer big endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
     defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) ||
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 3
 #elif !defined(__FLOAT_WORD_ORDER) && !defined(_FLOAT_WORD_ORDER)
 /* Float word order not known, assume not a hybrid. */
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 3
 #else
 /* byte order is big endian but cannot determine IEEE double word order */
 #endif  /* float word order */
 #else
 /* cannot determine byte order */
 #endif  /* integer byte order */
-#endif  /* !defined(DUK_F_BYTEORDER_DETECTED) */
+#endif  /* !defined(DUK_F_BYTEORDER) */
 
 /* GCC and Clang provide endianness defines as built-in predefines, with
  * leading and trailing double underscores (e.g. __BYTE_ORDER__).  See
@@ -894,24 +887,18 @@ typedef double duk_double_t;
  * seem to provide __FLOAT_WORD_ORDER__.
  * http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(__BYTE_ORDER__)
+#if !defined(DUK_F_BYTEORDER) && defined(__BYTE_ORDER__)
 #if defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 /* Integer little endian */
 #if defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
     (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 1
 #elif defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
       (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
-#define DUK_USE_DOUBLE_ME
-#define DUK_USE_MIDDLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 2
 #elif !defined(__FLOAT_WORD_ORDER__)
 /* Float word order not known, assume not a hybrid. */
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 1
 #else
 /* byte order is little endian but cannot determine IEEE double word order */
 #endif  /* float word order */
@@ -919,14 +906,10 @@ typedef double duk_double_t;
 /* Integer big endian */
 #if defined(__FLOAT_WORD_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
     (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 3
 #elif !defined(__FLOAT_WORD_ORDER__)
 /* Float word order not known, assume not a hybrid. */
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 3
 #else
 /* byte order is big endian but cannot determine IEEE double word order */
 #endif  /* float word order */
@@ -935,26 +918,24 @@ typedef double duk_double_t;
  * integer ordering and is not relevant
  */
 #endif  /* integer byte order */
-#endif  /* !defined(DUK_F_BYTEORDER_DETECTED) && defined(__BYTE_ORDER__) */
+#endif  /* !defined(DUK_F_BYTEORDER) && defined(__BYTE_ORDER__) */
 
 /* On Windows, assume we're little endian.  Even Itanium which has a
  * configurable endianness runs little endian in Windows.
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_WINDOWS)
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_WINDOWS)
 /* FIXME: verify that Windows on ARM is little endian for floating point
  * values too.
  */
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
+#define DUK_F_BYTEORDER 1
 #endif  /* Windows */
 
 /* Crossbridge should work with the standard byteorder #ifdefs.  It doesn't
  * provide _FLOAT_WORD_ORDER but the standard approach now covers that case
  * too.  This has been left here just in case.
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_FLASHPLAYER)
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_FLASHPLAYER)
+#define DUK_F_BYTEORDER 1
 #endif
 
 /* QNX gcc cross compiler seems to define e.g. __LITTLEENDIAN__ or __BIGENDIAN__:
@@ -965,28 +946,34 @@ typedef double duk_double_t;
  *  $ /opt/qnx650/host/linux/x86/usr/bin/arm-unknown-nto-qnx6.5.0-gcc -dM -E - </dev/null | grep -ni endian
  *  70:#define __LITTLEENDIAN__ 1
  */
-#if !defined(DUK_F_BYTEORDER_DETECTED) && defined(DUK_F_QNX)
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_QNX)
+/* XXX: ARM hybrid? */
 #if defined(__LITTLEENDIAN__)
-#define DUK_USE_DOUBLE_LE
-#define DUK_USE_LITTLE_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 1
 #elif defined(__BIGENDIAN__)
-#define DUK_USE_DOUBLE_BE
-#define DUK_USE_BIG_ENDIAN
-#define DUK_F_BYTEORDER_DETECTED
+#define DUK_F_BYTEORDER 3
 #endif
 #endif
 
-/* Check that something got defined; if not, bail out. */
-#if !defined(DUK_USE_DOUBLE_LE) && !defined(DUK_USE_DOUBLE_ME) && !defined(DUK_USE_DOUBLE_BE)
-#error unsupported: cannot determine IEEE double byte order variant
-#endif
-#if !defined(DUK_USE_LITTLE_ENDIAN) && !defined(DUK_USE_MIDDLE_ENDIAN) && !defined(DUK_USE_BIG_ENDIAN)
-#error unsupported: cannot determine byte order variant
-#endif
-#if !defined(DUK_F_BYTEORDER_DETECTED)
-#error unsupported: byte order detection failed (should not happen)
-#endif
+/* Check whether or not byte order detection worked based on the intermediate
+ * define, and define final values.  If detection failed, #error out.
+ */
+#if defined(DUK_F_BYTEORDER)
+#if (DUK_F_BYTEORDER == 1)
+#define DUK_USE_LITTLE_ENDIAN
+#define DUK_USE_DOUBLE_LE
+#elif (DUK_F_BYTEORDER == 2)
+#define DUK_USE_MIDDLE_ENDIAN
+#define DUK_USE_DOUBLE_ME
+#elif (DUK_F_BYTEORDER == 3)
+#define DUK_USE_BIG_ENDIAN
+#define DUK_USE_DOUBLE_BE
+#else
+#error unsupported: byte order detection failed (internal error, should not happen)
+#endif  /* byte order */
+#else
+#error unsupported: byte order detection failed
+#endif  /* defined(DUK_F_BYTEORDER) */
 
 /*
  *  Check whether or not a packed duk_tval representation is possible.
