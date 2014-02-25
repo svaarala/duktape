@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: integrate scan-build into Makefile
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-24 11:09:34.938867 Z
+references: []
+
+id: 62ec469f331d7a07ca50b200a97424dd68ae1f2e
+log_events: 
+- - 2014-02-24 11:09:35.130877 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

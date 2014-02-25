@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "test262 interfacing with remote running: use of stderr, exit code"
+desc: |-
+  E.g. SyntaxError is visible in stderr only (same in Rhino), but a non-zero
+  exit code is not preserved by remote execution through ssh.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-02-21 20:51:01.123430 Z
+references: []
+
+id: 60a78f5758f3d78601808de41bd5ac78da990eb2
+log_events: 
+- - 2014-02-21 20:51:01.290795 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
