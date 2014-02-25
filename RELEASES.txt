@@ -226,7 +226,8 @@ Planned
   a quantified with capture groups was re-matched by a quantifier
 
 * Portability fixes for Crossbridge (Flash), NetBSD (endianness detection
-  and a few Math.pow() fixes), OpenBSD (endianness detection)
+  and a few Math.pow() fixes), OpenBSD (endianness detection),
+  QNX (endianness and other fixes)
 
 * Warning fixes for non-default feature options and a few exotic compilers
 
