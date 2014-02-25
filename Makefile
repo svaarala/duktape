@@ -62,7 +62,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_error_macros.c \
 	$(DISTSRCSEP)/duk_error_longjmp.c \
 	$(DISTSRCSEP)/duk_error_throw.c \
-	$(DISTSRCSEP)/duk_error_fatal.c \
 	$(DISTSRCSEP)/duk_error_augment.c \
 	$(DISTSRCSEP)/duk_error_misc.c \
 	$(DISTSRCSEP)/duk_heap_misc.c \
@@ -299,6 +298,12 @@ endif
 .PHONY: duksizes
 duksizes: duk.raw
 	$(PYTHON) src/genexesizereport.py $< > /tmp/duk_sizes.html
+
+dukscanbuild: dist
+	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+
+dukdscanbuild: dist
+	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
