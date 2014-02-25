@@ -850,3 +850,9 @@ For instance, arguments could be given in a table::
 
 However, passing flags and arguments in objects has a large footprint.
 
+Alternative to "undefined"
+--------------------------
+
+Because "undefined" is not an actual keyword, it may be bound to an arbitrary
+value and is thus unsafe to eval.  An alternative to "undefined" is "void 0"
+which always evaluates to undefined, but is a bit cryptic.
