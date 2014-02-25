@@ -2,7 +2,12 @@
 Release checklist
 =================
 
-* Ensure git commits are up-to-date
+* Git maintenance
+
+  - ensure git commits are up-to-date
+  - ensure branches are merged, unused branches deleted (also remotely)
+  - git fsck --full
+  - git gc --aggressive
 
 * Finalize DUK_VERSION
 
