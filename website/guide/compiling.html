@@ -55,10 +55,11 @@ The table below summarizes the available options, in no particular order:</p>
 <tr>
 <td class="definename">DUK_OPT_FORCE_BYTEORDER</td>
 <td>Use this to skip byte order detection and force a specific byte order:
-    <code>1</code> for little endian, <code>2</code> for "middle" endian,
-    <code>3</code> for big endian.  Byte order detection relies on unstandardized
-    platform specific header files, so this may be required for custom
-    platforms if compilation fails in endianness detection.</td>
+    <code>1</code> for little endian, <code>2</code> for ARM "mixed" endian
+    (integers little endian, IEEE doubles mixed endian), <code>3</code> for
+    big endian.  Byte order detection relies on unstandardized platform
+    specific header files, so this may be required for custom platforms if
+    compilation fails in endianness detection.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_REFERENCE_COUNTING</td>
