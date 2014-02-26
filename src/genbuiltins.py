@@ -1283,7 +1283,7 @@ builtins_orig = [
 
 class GenBuiltins:
 	build_info = None
-	byte_order = None
+	double_byte_order = None
 	ext_section_b = None
 	ext_browser_like = None
 
@@ -1299,9 +1299,9 @@ class GenBuiltins:
 	count_normal_props = None
 	count_function_props = None
 
-	def __init__(self, build_info=None, initjs_data=None, byte_order=None, ext_section_b=None, ext_browser_like=None):
+	def __init__(self, build_info=None, initjs_data=None, double_byte_order=None, ext_section_b=None, ext_browser_like=None):
 		self.build_info = build_info
-		self.byte_order = byte_order
+		self.double_byte_order = double_byte_order
 		self.ext_section_b = ext_section_b
 		self.ext_browser_like = ext_browser_like
 
@@ -1491,12 +1491,12 @@ class GenBuiltins:
 				val = float(val)
 
 				# encoding of double must match target architecture byte order
-				bo = self.byte_order
+				bo = self.double_byte_order
 				if bo == 'big':
 					data = struct.pack('>d', val)	# 01234567
 				elif bo == 'little':
 					data = struct.pack('<d', val)	# 76543210
-				elif bo == 'middle':	# arm
+				elif bo == 'mixed':	# arm
 					data = struct.pack('<d', val)	# 32107654
 					data = data[4:8] + data[0:4]
 				else:
@@ -1734,12 +1734,12 @@ if __name__ == '__main__':
 	f.close()
 
 	# genbuiltins for different profiles
-	gb_little = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='little', ext_section_b=True, ext_browser_like=True)
+	gb_little = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='little', ext_section_b=True, ext_browser_like=True)
 	gb_little.processBuiltins()
-	gb_big = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='big', ext_section_b=True, ext_browser_like=True)
+	gb_big = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='big', ext_section_b=True, ext_browser_like=True)
 	gb_big.processBuiltins()
-	gb_middle = GenBuiltins(build_info = build_info, initjs_data = initjs_data, byte_order='middle', ext_section_b=True, ext_browser_like=True)
-	gb_middle.processBuiltins()
+	gb_mixed = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='mixed', ext_section_b=True, ext_browser_like=True)
+	gb_mixed.processBuiltins()
 
 	# write C source file containing both strings and builtins
 	genc = dukutil.GenerateC()
@@ -1751,7 +1751,7 @@ if __name__ == '__main__':
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
 	gb_big.emitSource(genc)
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
-	gb_middle.emitSource(genc)
+	gb_mixed.emitSource(genc)
 	genc.emitLine('#else')
 	genc.emitLine('#error invalid endianness defines')
 	genc.emitLine('#endif')
@@ -1771,7 +1771,7 @@ if __name__ == '__main__':
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
 	gb_big.emitHeader(genc)
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
-	gb_middle.emitHeader(genc)
+	gb_mixed.emitHeader(genc)
 	genc.emitLine('#else')
 	genc.emitLine('#error invalid endianness defines')
 	genc.emitLine('#endif')

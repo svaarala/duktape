@@ -463,11 +463,20 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
 
 	duk_push_string(ctx,
-#if defined(DUK_USE_LITTLE_ENDIAN)
+#if defined(DUK_USE_INTEGER_LE)
 	                "l"
-#elif defined(DUK_USE_BIG_ENDIAN)
+#elif defined(DUK_USE_INTEGER_BE)
 	                "b"
-#elif defined(DUK_USE_MIDDLE_ENDIAN)
+#elif defined(DUK_USE_INTEGER_ME)  /* integer mixed endian not really used now */
+	                "m"
+#else
+	                "?"
+#endif
+#if defined(DUK_USE_DOUBLE_LE)
+	                "l"
+#elif defined(DUK_USE_DOUBLE_BE)
+	                "b"
+#elif defined(DUK_USE_DOUBLE_ME)
 	                "m"
 #else
 	                "?"

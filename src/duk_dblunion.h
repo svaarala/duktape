@@ -26,9 +26,9 @@
  *
  *    A B C D E F G H    Big endian (e.g. 68k)           DUK_USE_DOUBLE_BE
  *    H G F E D C B A    Little endian (e.g. x86)        DUK_USE_DOUBLE_LE
- *    D C B A H G F E    Middle/cross endian (e.g. ARM)  DUK_USE_DOUBLE_ME
+ *    D C B A H G F E    Mixed/cross endian (e.g. ARM)   DUK_USE_DOUBLE_ME
  *
- *  ARM is a special case: ARM double values are in middle/cross endian
+ *  ARM is a special case: ARM double values are in mixed/cross endian
  *  format while ARM duk_uint64_t values are in standard little endian
  *  format (H G F E D C B A).  When a double is read as a duk_uint64_t
  *  from memory, the register will contain the (logical) value

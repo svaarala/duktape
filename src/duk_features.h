@@ -809,8 +809,8 @@ typedef double duk_double_t;
  *
  *  Duktape supports little and big endian machines.  There's also support
  *  for a hybrid used by some ARM machines where integers are little endian
- *  but IEEE double values use a mixed order (12345678 -> 43218765); this is
- *  now named a bit misleadingly as "middle endian".
+ *  but IEEE double values use a mixed order (12345678 -> 43218765).  This
+ *  byte order for doubles is referred to as "mixed endian".
  */
 
 #undef DUK_F_BYTEORDER
@@ -819,7 +819,7 @@ typedef double duk_double_t;
 /* DUK_F_BYTEORDER is set as an intermediate value when detection
  * succeeds, to one of:
  *   1 = little endian
- *   2 = middle (arm hybrid) endian
+ *   2 = mixed (arm hybrid) endian
  *   3 = big endian
  */
 
@@ -960,13 +960,13 @@ typedef double duk_double_t;
  */
 #if defined(DUK_F_BYTEORDER)
 #if (DUK_F_BYTEORDER == 1)
-#define DUK_USE_LITTLE_ENDIAN
+#define DUK_USE_INTEGER_LE
 #define DUK_USE_DOUBLE_LE
 #elif (DUK_F_BYTEORDER == 2)
-#define DUK_USE_MIDDLE_ENDIAN
+#define DUK_USE_INTEGER_LE  /* integer endianness is little on purpose */
 #define DUK_USE_DOUBLE_ME
 #elif (DUK_F_BYTEORDER == 3)
-#define DUK_USE_BIG_ENDIAN
+#define DUK_USE_INTEGER_BE
 #define DUK_USE_DOUBLE_BE
 #else
 #error unsupported: byte order detection failed (internal error, should not happen)

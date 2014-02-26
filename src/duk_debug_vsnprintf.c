@@ -924,7 +924,7 @@ void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int 
 		}
 
 		/* Quite approximate but should be useful for little and big endian. */
-#ifdef DUK_USE_BIG_ENDIAN
+#ifdef DUK_USE_INTEGER_BE
 		ch = fptr[i];
 #else
 		ch = fptr[fptr_size - 1 - i];

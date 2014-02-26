@@ -59,20 +59,27 @@ static void duk__selftest_byte_order(void) {
 	 *  >>> struct.pack('>d', 102030405060).encode('hex')
 	 *  '4237c17c6dc40000'
 	 */
-#if defined(DUK_USE_LITTLE_ENDIAN)
+#if defined(DUK_USE_INTEGER_LE)
 	u1.c[0] = 0xef; u1.c[1] = 0xbe; u1.c[2] = 0xad; u1.c[3] = 0xde;
+#elif defined(DUK_USE_INTEGER_ME)
+#error integer mixed endian not supported now
+#elif defined(DUK_USE_INTEGER_BE)
+	u1.c[0] = 0xde; u1.c[1] = 0xad; u1.c[2] = 0xbe; u1.c[3] = 0xef;
+#else
+#error unknown integer endianness
+#endif
+
+#if defined(DUK_USE_DOUBLE_LE)
 	u2.c[0] = 0x00; u2.c[1] = 0x00; u2.c[2] = 0xc4; u2.c[3] = 0x6d;
 	u2.c[4] = 0x7c; u2.c[5] = 0xc1; u2.c[6] = 0x37; u2.c[7] = 0x42;
-#elif defined(DUK_USE_MIDDLE_ENDIAN)
-	u1.c[0] = 0xef; u1.c[1] = 0xbe; u1.c[2] = 0xad; u1.c[3] = 0xde;
+#elif defined(DUK_USE_DOUBLE_ME)
 	u2.c[0] = 0x7c; u2.c[1] = 0xc1; u2.c[2] = 0x37; u2.c[3] = 0x42;
 	u2.c[4] = 0x00; u2.c[5] = 0x00; u2.c[6] = 0xc4; u2.c[7] = 0x6d;
-#elif defined(DUK_USE_BIG_ENDIAN)
-	u1.c[0] = 0xde; u1.c[1] = 0xad; u1.c[2] = 0xbe; u1.c[3] = 0xef;
+#elif defined(DUK_USE_DOUBLE_BE)
 	u2.c[0] = 0x42; u2.c[1] = 0x37; u2.c[2] = 0xc1; u2.c[3] = 0x7c;
 	u2.c[4] = 0x6d; u2.c[5] = 0xc4; u2.c[6] = 0x00; u2.c[7] = 0x00;
 #else
-#error unknown endianness
+#error unknown double endianness
 #endif
 
 	if (u1.i != (duk_uint32_t) 0xdeadbeefUL) {
@@ -117,7 +124,7 @@ static void duk__selftest_double_aliasing(void) {
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
-	/* middle endian */
+	/* mixed endian */
 	a.c[0] = 0x00; a.c[1] = 0x00; a.c[2] = 0xf1; a.c[3] = 0xff;
 	a.c[4] = 0x11; a.c[5] = 0x22; a.c[6] = 0x33; a.c[7] = 0x44;
 	b = a;
