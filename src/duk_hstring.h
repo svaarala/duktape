@@ -17,9 +17,6 @@
 #ifndef DUK_HSTRING_H_INCLUDED
 #define DUK_HSTRING_H_INCLUDED
 
-/* FIXME: flag for 'valid extended utf-8' (internal strings are not, regexp bytecode is)? */
-/* FIXME: flag for 'contains non-bmp chars'? */
-
 /* Impose a maximum string length for now.  Restricted artificially to
  * ensure adding a heap header length won't overflow size_t.  The limit
  * should be synchronized with DUK_HBUFFER_MAX_BYTELEN.
@@ -29,6 +26,12 @@
  * closer to maximum support on 32-bit platforms).
  */
 #define DUK_HSTRING_MAX_BYTELEN                     (0x7fffffffUL)
+
+/* XXX: could add flags for "is valid CESU-8" (Ecmascript compatible strings),
+ * "is valid UTF-8", "is valid extended UTF-8" (internal strings are not,
+ * regexp bytecode is), and "contains non-BMP characters".  These are not
+ * needed right now.
+ */
 
 #define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(0)  /* string is a valid array index */
 #define DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(1)  /* string is internal */

@@ -77,10 +77,10 @@
 /* object dumpers */
 
 #define DUK_DEBUG_DUMP_HEAP(x)               duk_debug_dump_heap((x))
-#define DUK_DEBUG_DUMP_HSTRING(x)            /*FIXME*/
+#define DUK_DEBUG_DUMP_HSTRING(x)            /* XXX: unimplemented */
 #define DUK_DEBUG_DUMP_HOBJECT(x)            duk_debug_dump_hobject((x))
-#define DUK_DEBUG_DUMP_HCOMPILEDFUNCTION(x)  /*FIXME*/
-#define DUK_DEBUG_DUMP_HNATIVEFUNCTION(x)    /*FIXME*/
+#define DUK_DEBUG_DUMP_HCOMPILEDFUNCTION(x)  /* XXX: unimplemented */
+#define DUK_DEBUG_DUMP_HNATIVEFUNCTION(x)    /* XXX: unimplemented */
 #define DUK_DEBUG_DUMP_HTHREAD(thr)          duk_debug_dump_hobject((duk_hobject *) (thr))
 #define DUK_DEBUG_DUMP_CALLSTACK(thr)        duk_debug_dump_callstack((thr))
 #define DUK_DEBUG_DUMP_ACTIVATION(thr,act)   duk_debug_dump_activation((thr),(act))
