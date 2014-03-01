@@ -16,7 +16,7 @@
 #define DUK_ERROR_H_INCLUDED
 
 /*
- *  Error codes (defined in duktape.h)
+ *  Error codes: defined in duktape.h
  *
  *  Error codes are used as a shorthand to throw exceptions from inside
  *  the implementation.  The appropriate Ecmascript object is constructed
@@ -24,11 +24,6 @@
  *  codes are defined in the public API header because they are also used
  *  by calling code.
  */
-
-/* FIXME: remove */
-/* for function return codes */
-#define DUK_ERR_OK                   0     /* call successful */
-#define DUK_ERR_FAIL                 1     /* call failed */
 
 /*
  *  Normal error

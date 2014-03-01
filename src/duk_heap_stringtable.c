@@ -267,11 +267,11 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 	heap->st_size = new_size;
 	heap->st_used = new_used;  /* may be less, since DELETED entries are NULLed by rehash */
 
-	return DUK_ERR_OK;
+	return 0;  /* OK */
 
  error:
 	DUK_FREE(heap, new_entries);
-	return DUK_ERR_FAIL;
+	return 1;  /* FAIL */
 }
 
 static int duk__resize_strtab(duk_heap *heap) {
@@ -314,7 +314,7 @@ static int duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_used) {
 		/* load factor too low or high, count actually used entries and resize */
 		return duk__resize_strtab(heap);
 	} else {
-		return DUK_ERR_OK;
+		return 0;  /* OK */
 	}
 }
 

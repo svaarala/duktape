@@ -887,7 +887,7 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 #ifdef DUK_USE_VOLUNTARY_GC
 		heap->mark_and_sweep_trigger_counter = DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP;
 #endif
-		return DUK_ERR_OK;
+		return 0;  /* OK */
 	}
 
 	DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08x, effective flags: 0x%08x",
@@ -1077,7 +1077,7 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, no voluntary trigger",
 	           (int) count_keep_obj, (int) count_keep_str);
 #endif
-	return DUK_ERR_OK;
+	return 0;  /* OK */
 }
 
 #else  /* DUK_USE_MARK_AND_SWEEP */
