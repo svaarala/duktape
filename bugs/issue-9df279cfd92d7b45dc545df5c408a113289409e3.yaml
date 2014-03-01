@@ -3,7 +3,7 @@ title: add custom uri format to refer to e5.1 html spec in website (e.g. 'e51:8.
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-01-22 23:28:10.144149 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-02-28 22:17:51.783215 Z
+  - sva <sami.vaarala@iki.fi>
+  - unassigned from release v0.10
   - ""
