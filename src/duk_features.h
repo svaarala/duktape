@@ -47,10 +47,6 @@
 #ifndef DUK_FEATURES_H_INCLUDED
 #define DUK_FEATURES_H_INCLUDED
 
-/* FIXME: platform detection and all includes and defines in one big
- * if-else ladder (now e.g. datetime providers is a separate ladder).
- */
-
 /*
  *  Compiler features
  */
