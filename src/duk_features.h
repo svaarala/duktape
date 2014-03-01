@@ -290,12 +290,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <sys/param.h>
 #elif defined(DUK_F_TOS)
 /* Atari ST TOS */
-#define DUK_USE_DOUBLE_BE
 #include <limits.h>
 #elif defined(DUK_F_AMIGAOS)
 #if defined(DUK_F_M68K)
 /* AmigaOS on M68k */
-#define DUK_USE_DOUBLE_BE
 #include <limits.h>
 #else
 #error AmigaOS but not M68K, not supported now
@@ -919,6 +917,18 @@ typedef double duk_double_t;
  */
 #endif  /* integer byte order */
 #endif  /* !defined(DUK_F_BYTEORDER) && defined(__BYTE_ORDER__) */
+
+/* Atari ST TOS */
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_TOS)
+#define DUK_F_BYTEORDER 3
+#endif
+
+/* AmigaOS on M68k */
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_AMIGAOS)
+#if defined(DUK_F_M68K)
+#define DUK_F_BYTEORDER 3
+#endif
+#endif
 
 /* On Windows, assume we're little endian.  Even Itanium which has a
  * configurable endianness runs little endian in Windows.
