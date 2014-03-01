@@ -244,13 +244,33 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /*
- *  Platform detection and system includes
+ *  Platform detection, system includes, Date provider selection.
  *
  *  Feature selection (e.g. _XOPEN_SOURCE) must happen before any system
  *  headers are included.
  *
- *  Can trigger standard byte order detection (later in this file) or
- *  specify byte order explicitly on more exotic platforms.
+ *  Date provider selection seems a bit out-of-place here, but since
+ *  the date headers and provider functions are heavily platform
+ *  specific, there's little point in duplicating the platform if-else
+ *  ladder.  All platform specific Date provider functions are in
+ *  duk_bi_date.c; here we provide appropriate #defines to enable them,
+ *  and include all the necessary system headers so that duk_bi_date.c
+ *  compiles.  Date "providers" are:
+ *
+ *    NOW = getting current time (required)
+ *    TZO = getting local time offset (required)
+ *    PRS = parse datetime (optional)
+ *    FMT = format datetime (optional)
+ *
+ *  There's a lot of duplication here, unfortunately, because many
+ *  platforms have similar (but not identical) headers, Date providers,
+ *  etc.  The duplication could be removed by more complicated nested
+ *  #ifdefs, but it would then be more difficult to make fixes which
+ *  affect only a specific platform.
+ *
+ *  FIXME: add a way to provide custom functions to provide the critical
+ *  primitives; this would be convenient when porting to unknown platforms
+ *  (rather than muck with Duktape internals).
  */
 
 #if defined(DUK_F_LINUX)
@@ -272,51 +292,127 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 #if defined(__APPLE__)
-/* Apple OSX */
+/* Mac OSX, iPhone, Darwin */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 #elif defined(DUK_F_OPENBSD)
 /* http://www.monkey.org/openbsd/archive/ports/0401/msg00089.html */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
 #include <sys/endian.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 #elif defined(DUK_F_BSD)
 /* other BSD */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
 #include <sys/endian.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 #elif defined(DUK_F_TOS)
 /* Atari ST TOS */
+#define DUK_USE_DATE_NOW_TIME
+#define DUK_USE_DATE_TZO_GMTIME
+/* no parsing (not an error) */
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <limits.h>
+#include <time.h>
 #elif defined(DUK_F_AMIGAOS)
 #if defined(DUK_F_M68K)
 /* AmigaOS on M68k */
+#define DUK_USE_DATE_NOW_TIME
+#define DUK_USE_DATE_TZO_GMTIME
+/* no parsing (not an error) */
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <limits.h>
+#include <time.h>
 #else
 #error AmigaOS but not M68K, not supported now
 #endif
 #elif defined(DUK_F_WINDOWS)
+/* Windows 32-bit and 64-bit are currently the same. */
 /* MSVC does not have sys/param.h */
+#define DUK_USE_DATE_NOW_WINDOWS
+#define DUK_USE_DATE_TZO_WINDOWS
+/* Note: PRS and FMT are intentionally left undefined for now.  This means
+ * there is no platform specific date parsing/formatting but there is still
+ * the ISO 8601 standard format.
+ */
 #include <windows.h>
 #include <limits.h>
 #elif defined(DUK_F_FLASHPLAYER)
 /* Crossbridge */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <endian.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 #elif defined(DUK_F_QNX)
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
 #include <limits.h>
 #include <sys/param.h>
-#else
-/* Linux and hopefully others */
+#include <sys/time.h>
+#include <time.h>
+#elif defined(DUK_F_LINUX)
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
 #include <endian.h>
 #include <limits.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
+#elif defined(__posix)
+/* POSIX */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#include <sys/types.h>
+#include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
+#else
+/* Other UNIX, hopefully others */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#include <sys/types.h>
+#include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 #endif
 
 /* Shared includes */
@@ -326,14 +422,12 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
-
 #ifdef DUK_F_TOS
 /*FIXME*/
 #else
 /* XXX: technically C99 (C++11) but found in many systems */
 #include <stdint.h>
 #endif
-
 #include <math.h>
 
 /*
@@ -1673,96 +1767,6 @@ typedef FILE duk_file;
 #define DUK_USE_GCC_PRAGMAS
 #else
 #undef DUK_USE_GCC_PRAGMAS
-#endif
-
-/*
- *  Date built-in platform primitive selection
- *
- *  This is a direct platform dependency which is difficult to eliminate.
- *  Select provider through defines, and then include necessary system
- *  headers so that duk_bi_date.c compiles.
- *
- *  FIXME: add a way to provide custom functions to provide the critical
- *  primitives; this would be convenient when porting to unknown platforms
- *  (rather than muck with Duktape internals).
- */
-
-/* NOW = getting current time (required)
- * TZO = getting local time offset (required)
- * PRS = parse datetime (optional)
- * FMT = format datetime (optional)
- */
-
-#if defined(_WIN64) || defined(WIN64) || defined(_WIN32) || defined(WIN32)
-/* Windows 32-bit and 64-bit are currently the same. */
-#define DUK_USE_DATE_NOW_WINDOWS
-#define DUK_USE_DATE_TZO_WINDOWS
-/* Note: PRS and FMT are intentionally left undefined for now.  This means
- * there is no platform specific date parsing/formatting but there is still
- * the ISO 8601 standard format.
- */
-#elif defined(__APPLE__)
-/* Mac OSX, iPhone, Darwin */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME_R
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(DUK_F_LINUX)
-/* Linux (__unix also defined) */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME_R
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(DUK_F_UNIX)
-/* Other Unix */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME_R
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(__posix)
-/* POSIX */
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME_R
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(DUK_F_TOS)
-/* Atari ST TOS */
-#define DUK_USE_DATE_NOW_TIME
-#define DUK_USE_DATE_TZO_GMTIME
-/* no parsing (not an error) */
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(DUK_F_AMIGAOS)
-/* AmigaOS */
-#define DUK_USE_DATE_NOW_TIME
-#define DUK_USE_DATE_TZO_GMTIME
-/* no parsing (not an error) */
-#define DUK_USE_DATE_FMT_STRFTIME
-#elif defined(DUK_F_QNX)
-#define DUK_USE_DATE_NOW_GETTIMEOFDAY
-#define DUK_USE_DATE_TZO_GMTIME_R
-#define DUK_USE_DATE_PRS_STRPTIME
-#define DUK_USE_DATE_FMT_STRFTIME
-#else
-#error platform not supported
-#endif
-
-/*
- *  Date includes
- */
-
-#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-#include <sys/time.h>
-#endif
-
-#if defined(DUK_USE_DATE_TZO_GMTIME) || \
-    defined(DUK_USE_DATE_TZO_GMTIME_R) || \
-    defined(DUK_USE_DATE_PRS_STRPTIME) || \
-    defined(DUK_USE_DATE_FMT_STRFTIME)
-/* just a sanity check */
-#if defined(DUK_F_LINUX) && !defined(_XOPEN_SOURCE)
-#error expected _XOPEN_SOURCE to be defined here
-#endif
-#include <time.h>
 #endif
 
 /*
