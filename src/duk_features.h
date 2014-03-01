@@ -1024,7 +1024,7 @@ typedef double duk_double_t;
  * configurable endianness runs little endian in Windows.
  */
 #if !defined(DUK_F_BYTEORDER) && defined(DUK_F_WINDOWS)
-/* FIXME: verify that Windows on ARM is little endian for floating point
+/* XXX: verify that Windows on ARM is little endian for floating point
  * values too.
  */
 #define DUK_F_BYTEORDER 1
@@ -1739,7 +1739,7 @@ typedef FILE duk_file;
  *    3) Portable but wastes memory / complicates allocation: char buf[1]
  */
 
-/* FIXME: Currently unused, only hbuffer.h needed this at some point. */
+/* XXX: Currently unused, only hbuffer.h needed this at some point. */
 #undef DUK_USE_FLEX_C99
 #undef DUK_USE_FLEX_ZEROSIZE
 #undef DUK_USE_FLEX_ONESIZE
@@ -1755,7 +1755,7 @@ typedef FILE duk_file;
  *  GCC pragmas
  */
 
-/* FIXME: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
+/* XXX: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
  * This is very approximate but allows clean builds for development right now.
  */
 /* http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html */
