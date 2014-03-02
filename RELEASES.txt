@@ -207,13 +207,15 @@ Planned
 * Execute finalizers for all objects, even reachable ones, when a heap
   is freed to allow native resources to be freed reliably
 
-* new Object() now promotes plain buffer and pointer values to Buffer
+* "new Object()" now promotes plain buffer and pointer values to Buffer
   and Pointer objects
 
 * Change Array.prototype.splice() behavior so that if 2nd argument
   (deleteCount) is not given, splice to end of array instead of treating
   like deleteCount was zero: the new behavior is non-standard but is the
   real world behavior used by V8, Rhino, Spidermonkey, etc
+
+* Add an automatic 'length' property to Duktape/C functions
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
