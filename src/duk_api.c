@@ -2847,7 +2847,7 @@ int duk_push_compiledfunction(duk_context *ctx) {
 	return ret;
 }
 
-int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
+static int duk__push_c_function_raw(duk_context *ctx, duk_c_function func, int nargs, duk_uint32_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hnativefunction *obj;
 	int ret;
@@ -2878,12 +2878,7 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	 * cannot e.g. declare variables to caller's scope.
 	 */
 
-	obj = duk_hnativefunction_alloc(thr->heap, DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                           DUK_HOBJECT_FLAG_CONSTRUCTABLE |
-	                                           DUK_HOBJECT_FLAG_NATIVEFUNCTION |
-	                                           DUK_HOBJECT_FLAG_NEWENV |
-	                                           DUK_HOBJECT_FLAG_STRICT |
-	                                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
+	obj = duk_hnativefunction_alloc(thr->heap, flags);
 	if (!obj) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate a function object");
 	}
@@ -2909,14 +2904,43 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	return 0;  /* not reached */
 }
 
-/* This is only used by built-in initialization now, so it can be clunky. */
-void duk_push_c_function_nonconstruct(duk_context *ctx, duk_c_function func, int nargs) {
-	duk_hobject *h;
+int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
+	duk_uint32_t flags;
 
-	(void) duk_push_c_function(ctx, func, nargs);
-	h = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h != NULL);
-	DUK_HOBJECT_CLEAR_CONSTRUCTABLE(h);
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NEWENV |
+	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
+	
+	return duk__push_c_function_raw(ctx, func, nargs, flags);
+}
+
+void duk_push_c_function_nospecial(duk_context *ctx, duk_c_function func, int nargs) {
+	duk_uint32_t flags;
+
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NEWENV |
+	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
+	
+	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
+}
+
+void duk_push_c_function_noconstruct_nospecial(duk_context *ctx, duk_c_function func, int nargs) {
+	duk_uint32_t flags;
+
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NEWENV |
+	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
+	
+	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
 static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, va_list ap) {

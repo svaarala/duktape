@@ -229,6 +229,12 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 				duk_push_true(ctx);
 				duk_put_prop(ctx, -3);
 			}
+		} else if (DUK_HOBJECT_HAS_SPECIAL_DUKFUNC(curr)) {
+			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
+				duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
+				duk_push_true(ctx);
+				duk_put_prop(ctx, -3);
+			}
 		}
 
 		/*

@@ -1418,6 +1418,21 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments special */
 		}
+	} else if (DUK_HOBJECT_HAS_SPECIAL_DUKFUNC(obj)) {
+		DUK_DDDPRINT("duktape/c object special property get for key: %!O, arr_idx: %d", key, arr_idx);
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			DUK_DDDPRINT("-> found, key is 'length', length special behavior");
+
+			if (push_value) {
+				duk_int16_t func_nargs = ((duk_hnativefunction *) obj)->nargs;
+				duk_push_int(ctx, func_nargs == DUK_HNATIVEFUNCTION_NARGS_VARARGS ? 0 : func_nargs);
+			}
+			out_desc->flags = 0;  /* not enumerable */
+
+			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments special */
+		}
 	}
 
 	/* Array properties have special behavior but they are concrete,

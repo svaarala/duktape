@@ -96,7 +96,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			/* FIXME: set magic directly here? (it could share the c_nargs arg) */
-			duk_push_c_function(ctx, c_func, c_nargs);
+			duk_push_c_function_nospecial(ctx, c_func, c_nargs);
 
 			h = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(h != NULL);
@@ -337,8 +337,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
-				duk_push_c_function_nonconstruct(ctx, c_func_getter, 0);  /* always 0 args */
-				duk_push_c_function_nonconstruct(ctx, c_func_setter, 1);  /* always 1 arg */
+				duk_push_c_function_noconstruct_nospecial(ctx, c_func_getter, 0);  /* always 0 args */
+				duk_push_c_function_noconstruct_nospecial(ctx, c_func_setter, 1);  /* always 1 arg */
 
 				/* FIXME: magic for getter/setter? */
 
@@ -393,7 +393,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* [ (builtin objects) ] */
 
-			duk_push_c_function_nonconstruct(ctx, c_func, c_nargs);
+			duk_push_c_function_noconstruct_nospecial(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
 			DUK_UNREF(h_func);
 
