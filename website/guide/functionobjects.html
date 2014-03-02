@@ -22,12 +22,6 @@ afterwards):</p>
 </tbody>
 </table>
 
-<p>User-created Duktape/C functions (<code>duk_push_c_function()</code>) are
-currently missing <code>length</code>, <code>prototype</code>, <code>caller</code>,
-and <code>arguments</code> properties by default.  User code can of course
-assign these but is not required to do so.  This is intentional as it
-reduces Function object size.</p>
-
 <p>The <code>name</code> property is assigned to all functions and is also
 the name used in tracebacks.  It is assigned as follows:</p>
 <pre class="ecmascript-code">
@@ -46,3 +40,21 @@ var bar = function () {
 }
 </pre>
 
+<p>User-created Duktape/C functions (<code>duk_push_c_function()</code>) have
+a different set of properties to reduce Function object memory footprint:</p>
+
+<table>
+<thead>
+<tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td class="propname">length</td><td>standard</td><td>
+Function argument count, matches argument to <code>duk_push_c_function()</code>, 0 for varargs.
+Non-writable and non-configurable.</td></tr>
+</tbody>
+</table>
+
+<p>Note in particular that the standard <code>prototype</code>, <code>caller</code>,
+and <code>arguments</code> properties are missing by default.  This is not strictly
+compliant but is important to reduce function footprint.  User code can of course
+assign these but is not required to do so.</p>
