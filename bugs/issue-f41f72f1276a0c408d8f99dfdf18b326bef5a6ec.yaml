@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update hobject-algorithms to include new special behaviors
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-02 22:04:06.884523 Z
+references: []
+
+id: f41f72f1276a0c408d8f99dfdf18b326bef5a6ec
+log_events: 
+- - 2014-03-02 22:04:07.028536 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

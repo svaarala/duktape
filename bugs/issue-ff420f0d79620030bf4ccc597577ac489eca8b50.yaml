@@ -1,11 +1,11 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: add a 'length' property to user Duktape/C functions too?
+title: add a 'length' property and maybe other function properties to user Duktape/C functions too?
 desc: ""
 type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2013-11-04 21:22:21.310962 Z
 references: []
@@ -34,3 +34,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - Add an intermediate prototype object so that Function.prototype is not polluted?
+- - 2014-03-02 22:23:19.268925 Z
+  - sva <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
