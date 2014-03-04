@@ -66,4 +66,3 @@ void duk_fileio_register(duk_context *ctx) {
 	duk_put_prop(ctx, -3);
 	duk_pop(ctx);
 }
-

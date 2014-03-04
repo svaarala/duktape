@@ -1,0 +1,221 @@
+/*
+ *  Main for evloop command line tool.
+ *
+ *  Runs a given script from file or stdin inside an eventloop.  The
+ *  script can then access setTimeout() etc.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#ifndef NO_SIGNAL
+#include <signal.h>
+#endif
+
+#include "duktape.h"
+
+extern void duk_ncurses_register(duk_context *ctx);
+extern void duk_socket_register(duk_context *ctx);
+extern void duk_fileio_register(duk_context *ctx);
+
+#ifndef NO_SIGNAL
+static void my_sighandler(int x) {
+	fprintf(stderr, "Got signal %d\n", x);
+	
+}
+static void set_sigint_handler(void) {
+	(void) signal(SIGINT, my_sighandler);
+}
+#endif  /* NO_SIGNAL */
+
+/* Print error to stderr and pop error. */
+static void print_error(duk_context *ctx, FILE *f) {
+	if (duk_is_object(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
+		/* FIXME: print error objects specially */
+		/* FIXME: pcall the string coercion */
+		duk_get_prop_string(ctx, -1, "stack");
+		if (duk_is_string(ctx, -1)) {
+			fprintf(f, "%s\n", duk_get_string(ctx, -1));
+			fflush(f);
+			duk_pop_2(ctx);
+			return;
+		} else {
+			duk_pop(ctx);
+		}
+	}
+	duk_to_string(ctx, -1);
+	fprintf(f, "%s\n", duk_get_string(ctx, -1));
+	fflush(f);
+	duk_pop(ctx);
+}
+
+int wrapped_compile_execute(duk_context *ctx) {
+	int comp_flags = 0;
+
+	/* Compile input and place it into global _USERCODE */
+	duk_compile(ctx, comp_flags);
+	duk_push_global_object(ctx);
+	duk_insert(ctx, -2);  /* [ ... global func ] */
+	duk_put_prop_string(ctx, -2, "_USERCODE");
+	duk_pop(ctx);
+#if 0
+	printf("compiled usercode\n");
+#endif
+
+	/* Start a zero timer which will call _USERCODE from within
+	 * the event loop.
+	 */
+	duk_eval_string(ctx, "print('set _USERCODE timer'); setTimeout(function() { _USERCODE(); }, 0);");
+	duk_pop(ctx);
+
+	/* Finally, launch eventloop.  This call only returns after the
+	 * eventloop terminates.
+	 */
+	duk_eval_string(ctx, "print('call _EVENTLOOP.run'); _EVENTLOOP.run();");
+	duk_pop(ctx);
+
+	return 0;
+}
+
+int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
+	char *buf = NULL;
+	int len;
+	int got;
+	int rc;
+	int retval = -1;
+
+	if (fseek(f, 0, SEEK_END) < 0) {
+		goto error;
+	}
+	len = (int) ftell(f);
+	if (fseek(f, 0, SEEK_SET) < 0) {
+		goto error;
+	}
+	buf = (char *) malloc(len);
+	if (!buf) {
+		goto error;
+	}
+
+	got = fread((void *) buf, (size_t) 1, (size_t) len, f);
+
+	duk_push_lstring(ctx, buf, got);
+	duk_push_string(ctx, filename);
+
+	free(buf);
+	buf = NULL;
+
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+	if (rc != DUK_EXEC_SUCCESS) {
+		print_error(ctx, stderr);
+		goto error;
+	} else {
+		duk_pop(ctx);
+		retval = 0;
+	}
+	/* fall thru */
+
+ error:
+	if (buf) {
+		free(buf);
+	}
+	return retval;
+}
+
+int handle_file(duk_context *ctx, const char *filename) {
+	FILE *f = NULL;
+	int retval;
+
+	f = fopen(filename, "rb");
+	if (!f) {
+		fprintf(stderr, "failed to open source file: %s\n", filename);
+		fflush(stderr);
+		goto error;
+	}
+
+	retval = handle_fh(ctx, f, filename);
+
+	fclose(f);
+	return retval;
+
+ error:
+	return -1;
+}
+
+int handle_stdin(duk_context *ctx) {
+	int retval;
+
+	retval = handle_fh(ctx, stdin, "stdin");
+
+	return retval;
+}
+
+int main(int argc, char *argv[]) {
+	duk_context *ctx = NULL;
+	int retval = 0;
+	const char *filename = NULL;
+	int i;
+
+#ifndef NO_SIGNAL
+	set_sigint_handler();
+
+	/* This is useful at the global level; libraries should avoid SIGPIPE though */
+	/*signal(SIGPIPE, SIG_IGN);*/
+#endif
+
+	for (i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (!arg) {
+			goto usage;
+		}
+		if (strlen(arg) > 1 && arg[0] == '-') {
+			goto usage;
+		} else {
+			if (filename) {
+				goto usage;
+			}
+			filename = arg;
+		}
+	}
+
+	ctx = duk_create_heap_default();
+
+	duk_ncurses_register(ctx);
+	duk_socket_register(ctx);
+	duk_fileio_register(ctx);
+
+	duk_eval_file(ctx, "eventloop.js");
+#if 0
+	printf("evaled eventloop.js\n");
+#endif
+
+	if (filename) {
+#if 0
+		printf("filename: %s\n", filename);
+#endif
+		if (strcmp(filename, "-") == 0) {
+			if (handle_stdin(ctx) != 0) {
+				retval = 1;
+				goto cleanup;
+			}
+		} else {
+			if (handle_file(ctx, filename) != 0) {
+				retval = 1;
+				goto cleanup;
+			}
+		}
+	}
+
+ cleanup:
+	if (ctx) {
+		duk_destroy_heap(ctx);
+	}
+
+	return retval;
+
+ usage:
+	fprintf(stderr, "Usage: evloop <filename>\n");
+	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
+	fflush(stderr);
+	exit(1);
+}
+
