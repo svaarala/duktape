@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_abort() to flag forced exit to a running executor?
+desc: |-
+  Similar to step limit, this would cause an error ("aborted") to be
+  propagated to the top level.  This would provide some more control
+  for sandboxing, but only would be useful in multi-threaded environments.
+  
+  Implementation must carefully avoid threading issues, and the abort flag
+  must be volatile.
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-03 22:07:17.543300 Z
+references: []
+
+id: 6ade65093352e427d906623a3ff2274f2d1fd699
+log_events: 
+- - 2014-03-03 22:07:18.111120 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
