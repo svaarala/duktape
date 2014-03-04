@@ -349,6 +349,9 @@ void duk_push_this(duk_context *ctx);
 void duk_push_current_function(duk_context *ctx);
 void duk_push_current_thread(duk_context *ctx);
 void duk_push_global_object(duk_context *ctx);
+void duk_push_heap_stash(duk_context *ctx);
+void duk_push_global_stash(duk_context *ctx);
+void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
 int duk_push_object(duk_context *ctx);
 int duk_push_array(duk_context *ctx);

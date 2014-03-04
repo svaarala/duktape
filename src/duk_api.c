@@ -6,6 +6,7 @@
  */
 
 /* FIXME: repetition of stack pre-checks -> helper or macro or inline */
+/* FIXME: shared api error strings, and perhaps even throw code for rare cases? */
 
 #include "duk_internal.h"
 
@@ -2551,6 +2552,46 @@ void duk_push_global_object(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 
 	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+}
+
+/* XXX: size optimize */
+static void duk__push_stash(duk_context *ctx) {
+	DUK_ASSERT(ctx != NULL);
+	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE)) {
+		DUK_DDDPRINT("creating heap/global/thread stash on first use");
+		duk_pop(ctx);
+		duk_push_object_internal(ctx);
+		duk_dup_top(ctx);
+		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
+	}
+	duk_remove(ctx, -2);
+}
+
+void duk_push_heap_stash(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_heap *heap;
+	DUK_ASSERT(ctx != NULL);
+	heap = thr->heap;
+	DUK_ASSERT(heap->heap_object != NULL);
+	duk_push_hobject(ctx, heap->heap_object);
+	duk__push_stash(ctx);
+}
+
+void duk_push_global_stash(duk_context *ctx) {
+	DUK_ASSERT(ctx != NULL);
+	duk_push_global_object(ctx);
+	duk__push_stash(ctx);
+}
+
+void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	DUK_ASSERT(ctx != NULL);
+	if (!target_ctx) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid argument(s)");
+		return;  /* not reached */
+	}
+	duk_push_hobject(ctx, (duk_hobject *) target_ctx);
+	duk__push_stash(ctx);
 }
 
 static int duk__try_push_vsprintf(duk_context *ctx, void *buf, size_t sz, const char *fmt, va_list ap) {
