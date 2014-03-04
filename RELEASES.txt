@@ -193,6 +193,10 @@ Planned
 0.10.0 (2014-03-XX)
 -------------------
 
+* Add duk_push_heap_stash(), duk_push_global_stash(), and
+  duk_push_thread_stash() to provide C code with stashes for storing
+  values invisible to Ecmascript code
+
 * Add Duktape.compact() and Duktape.line()
 
 * Add a message argument to fatal handler function callback, simplify
