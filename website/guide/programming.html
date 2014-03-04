@@ -403,7 +403,9 @@ static int my_func(duk_context *ctx) {
 
 <p>Sometimes it would be nice to provide parameters or additional state
 to a Duktape/C function out-of-band, i.e. outside explicit call arguments.
-There are a few ways to achieve this.</p>
+There are several ways to achieve this.</p>
+
+<h3>Function object</h3>
 
 <p>First, a Duktape/C function can use its Function object to store state
 or parameters.  A certain Duktape/C function (the actual C function)
@@ -420,6 +422,8 @@ is easy:</p>
 duk_push_current_function(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
+
+<h3>'this' binding</h3>
 
 <p>Another alternative for storing state is to call the Duktape/C function
 as a method and then use the <code>this</code> binding for storing state.  For
@@ -438,6 +442,26 @@ methods, which has both advantages and disadvantages.</p>
 duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
+
+<h3>Heap stash</h3>
+
+<p>The heap stash is an object visible only from C code.  It is associated
+with the Duktape heap, and allows Duktape/C code to store "under the hood"
+state data which is not exposed to Ecmascript code.  It is accessed with the
+<code>duk_push_heap_stash()</code> API call.</p>
+
+<h3>Global stash</h3>
+
+<p>The global stash is like the heap stash, but is associated with a global
+object.  It is accessed with the <code>duk_push_global_stash()</code> API
+call.  There can be several environments with different global objects
+within the same heap.</p>
+
+<h3>Thread stash</h3>
+
+<p>The thread stash is like the heap stash, but is associated with a Duktape
+thread (i.e. a <code>ctx</code> pointer).  It is accessible with the
+<code>duk_push_thread_stash()</code> API call.</p>
 
 <h2>Duktape version specific code</h2>
 

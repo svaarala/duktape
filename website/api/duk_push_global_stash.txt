@@ -1,0 +1,29 @@
+=proto
+void duk_push_global_stash(duk_context *ctx);
+
+=stack
+[ ... ] -> [ ... stash! ]
+
+=summary
+<p>Push the global stash object to the stack.  The global stash is an internal
+object which can be used to store key/value pairs from C code so that they are
+reachable for garbage collection, but are not accessible from Ecmascript code.
+The stash is only accessible from C code with a <code>ctx</code> argument
+associated with the same global object.</p>
+
+=example
+int set_timer_callback(duk_context *ctx) {
+    duk_push_global_stash(ctx);
+    duk_dup(ctx, 0);  /* timer callback */
+    duk_put_prop_string(ctx, -2, "timerCallback");
+    return 0;
+}
+
+=tags
+stack
+stash
+object
+
+=seealso
+duk_push_heap_stash
+duk_push_thread_stash
