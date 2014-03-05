@@ -1628,6 +1628,11 @@ typedef FILE duk_file;
 #undef DUK_USE_FUNC_STMT
 #endif
 
+/* Array.prototype.splice() non-standard but real world compatible behavior
+ * when deleteCount is omitted.
+ */
+#define DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+
 /*
  *  Function instance features.
  */

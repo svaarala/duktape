@@ -670,16 +670,22 @@ int duk_bi_array_prototype_sort(duk_context *ctx) {
 
 int duk_bi_array_prototype_splice(duk_context *ctx) {
 	int nargs;
+	int have_delcount;
 	int item_count;
 	int len;
 	int act_start;
 	int del_count;
 	int i;
 
+	DUK_UNREF(have_delcount);
+
 	nargs = duk_get_top(ctx);
 	if (nargs < 2) {
 		duk_set_top(ctx, 2);
 		nargs = 2;
+		have_delcount = 0;
+	} else {
+		have_delcount = 1;
 	}
 
 	len = duk__push_this_obj_len_u32(ctx);
@@ -690,7 +696,21 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 	}
 	DUK_ASSERT(act_start >= 0 && act_start <= len);
 
-	del_count = duk_to_int_clamped(ctx, 1, 0, len - act_start);
+#ifdef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+	if (have_delcount) {
+#endif
+		del_count = duk_to_int_clamped(ctx, 1, 0, len - act_start);
+#ifdef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+	} else {
+		/* E5.1 standard behavior when deleteCount is not given would be
+		 * to treat it just like if 'undefined' was given, which coerces
+		 * ultimately to 0.  Real world behavior is to splice to the end
+		 * of array, see test-bi-array-proto-splice-no-delcount.js.
+		 */
+		del_count = len - act_start;
+	}
+#endif
+
 	DUK_ASSERT(del_count >= 0 && del_count <= len - act_start);
 	DUK_ASSERT(del_count + act_start <= len);
 
