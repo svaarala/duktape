@@ -1,19 +1,27 @@
 /*
  *  Pure Ecmascript eventloop example.
  *
- *  Timer state handling is very inefficient in this trivial example.
- *  An actual eventloop would use a sorted timer list or a heap structure
- *  to manage timers and to get the "nearest timer" more efficiently.
+ *  Timer state handling is inefficient in this trivial example.  Timers are
+ *  kept in an array sorted by their expiry time which works well for expiring
+ *  timers, but has O(n) insertion performance.  A better implementation would
+ *  use a heap or some other efficient structure for managing timers so that
+ *  all operations (insert, remove, get nearest timer) have good performance.
  *
  *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Timers
  */
 
 /*
  *  Timer manager
+ *
+ *  Timers are sorted by 'target' property which indicates expiry time of
+ *  the timer.  The timer expiring next is last in the array, so that
+ *  removals happen at the end, and inserts for timers expiring in the
+ *  near future displace as few elements in the array as possible.
  */
 
 function TimerManager() {
-    this.active = [];
+    this.timers = [];   // active timers, sorted (nearest expiry last)
+    this.work = [];     // work list when processing expired timers
     this.nextTimerId = 1;
     this.minimumDelay = 1;
     this.minimumWait = 1;
@@ -21,75 +29,129 @@ function TimerManager() {
 
 TimerManager.prototype.dumpState = function() {
     print('TIMER STATE:');
-    this.active.forEach(function(t) {
+    this.timers.forEach(function(t) {
         print('    ' + Duktape.enc('jsonx', t));
     });
 }
 
+// Get timer with lowest expiry time.  Since the active timers list is
+// sorted, it's always the last timer.
 TimerManager.prototype.getEarliestTimer = function() {
-    var i, n, t;
-    var timers = this.active;
-    var res;
-
+    var timers = this.timers;
     n = timers.length;
-    if (n <= 0) {
-        return null;
-    }
-
-    res = timers[0];
-    for (i = 1; i < n; i++) {
-        t = timers[i];
-        if (t.target < res.target) {
-            res = t;
-        }
-    }
-
-    return res;
+    return (n > 0 ? timers[n - 1] : null);
 }
 
 TimerManager.prototype.getEarliestWait = function() {
     var t = this.getEarliestTimer();
-    if (!t) {
-        return null;
-    }
-    var res = t.target - Date.now();
-    return Math.max(this.minimumWait, res);
+    return (t ? Math.max(this.minimumWait, t.target - Date.now()) : null);
 }
 
-TimerManager.prototype.processTimers = function() {
+TimerManager.prototype.insertTimer = function(timer) {
+    var timers = this.timers;
     var i, n, t;
-    var timers = this.active;
-    var res;
-    var now = Date.now();
-    var work = [];
 
     /*
-     *  Here we must be careful with mutations: one-shot timers are removed,
-     *  and user callbacks can both insert and remove timers and intervals.
-     *  We want to process those timers which are present before any callbacks
-     *  have potentially mutated the timer list.  A very inefficient manual
-     *  clone is used.
+     *  Find 'i' such that we want to insert *after* timers[i] at index i+1.
+     *  If no such timer, for-loop terminates with i-1, and we insert at -1+1=0.
      */
 
     n = timers.length;
+    for (i = n - 1; i >= 0; i--) {
+        t = timers[i];
+        if (timer.target <= t.target) {
+            // insert after 't', to index i+1
+            break;
+        }
+    }
+
+    timers.splice(i + 1 /*start*/, 0 /*deleteCount*/, timer);
+}
+
+// Remove timer/interval with a timer ID.  The timer/interval can reside
+// either on the active list, or if we're processing expired timers, on
+// the work list.
+TimerManager.prototype.removeTimerById = function(timer_id) {
+    var timers = this.timers;
+    var work = this.work;
+    var i, n, t;
+
+    n = timers.length;
     for (i = 0; i < n; i++) {
-        var t = timers[i];
-        if (t.removed) {
-            // if a callback uses clearTimeout() or clearInterval(), the
-            // timer may have been cancelled and we don't want to call its
-            // callback even if expired
-            continue;
+        t = timers[i];
+        if (t.id === timer_id) {
+            // Timer on active list: mark removed (not really necessary, but
+            // nice for dumping), and remove from active list.
+            t.removed = true;
+            this.timers.splice(i /*start*/, 1 /*deleteCount*/);
+            return;
         }
-        if (now > t.target) {
-            work.push(timers[i]);
-        }
+    }
+
+    if (!work) {
+        // no such ID, ignore
+        return;
     }
 
     n = work.length;
     for (i = 0; i < n; i++) {
-        t = work[i];  // 'work' is safe from mutation
+        t = work[i];
+        if (t.id === timer_id) {
+            // Timer on work list: timer is being deleted from user callback
+            // while expiring timers are being processed.  Mark removed, so
+            // that the timer is not reinserted back into the active list,
+            // but don't remove from work list.
+            t.removed = true;
+            return;
+        }
+    }
+
+    // no such ID, ignore
+}
+
+TimerManager.prototype.processTimers = function() {
+    var now = Date.now();
+    var timers = this.timers;
+    var work;
+    var i, n, t;
+
+    /*
+     *  Here we must be careful with mutations: one-shot timers are removed,
+     *  and user callbacks can both insert and remove timers and intervals.
+     *  We want to process (only) those expired timers which are present
+     *  before any callbacks have potentially mutated the timer list.
+     *
+     *  Current simple approach is to move expired timers to a work list
+     *  before calling any callback functions.  Since the active timer list
+     *  is sorted, active timer scan can bail out early once a non-expired
+     *  timer has been found.
+     */
+
+    // Find 'i' such that timers[i] has not yet expired, worklist will then
+    // be timers[i+1] onwards.
+
+    n = timers.length;
+    for (i = n - 1; i >= 0; i--) {
+        var t = timers[i];
+        if (now <= t.target) {
+            // Timer has not expired, last timer to keep is timers[i].
+            break;
+        }
+    }
+    work = timers.splice(i + 1, timers.length - i);
+    this.work = work;  // make accessible to callbacks (e.g. clearTimeout)
+
+    // Process expired timers, callback for nearest expiry is called first
+    // (not mandatory but nice).  The callbacks may add new timers (not a
+    // problem), or cancel timers either on the active list or the work list.
+    // When a timer on the work list is cancelled, it is marked 'removed'
+    // but is not removed from the worklist, as we handle that below.
+
+    n = work.length;
+    for (i = n - 1; i >= 0; i--) {
+        t = work[i];
         if (t.oneshot) {
-            t.remove = true;
+            t.removed = true;  // flag for removal
         } else {
             t.target = now + t.delay;
         }
@@ -99,19 +161,24 @@ TimerManager.prototype.processTimers = function() {
             print('timer callback failed, ignored: ' + e);
         }
     }
+    this.work = null;  // no longer needs to be reachable
 
-    /*
-     *  Remove timers marked with remove=true, iterating in reverse order
-     *  so that indexing works correctly even with removals.
-     */
+    // Drop one-shot timers, reinsert interval timers to active list so that
+    // they get sorted to correct position.  If timer/interval has been removed
+    // (= marked removed) by user callback or above (for oneshot timers), just
+    // ignore them here and the timers are removed.
 
-     n = timers.length;
-     for (i = n - 1; i >= 0; i--) {
-         t = timers[i];
-         if (t.remove) {
-             timers.splice(i, 1);
-         }
-     }
+    n = work.length;
+    for (i = n - 1; i >= 0; i--) {
+        t = work[i];
+        if (t.removed) {
+            // Also covers oneshot timers which are marked removed above.
+            continue;
+        } else {
+            // Reinsert interval timer to correct sorted position.
+            this.insertTimer(t);
+        }
+    }
 }
 
 var _TIMERMANAGER = new TimerManager();  // singleton instance
@@ -148,7 +215,7 @@ function setTimeout(func, delay) {
 
     timer_id = mgr.nextTimerId++;
 
-    mgr.active.push({
+    mgr.insertTimer({
         id: timer_id,
         oneshot: true,
         cb: cb_func,
@@ -160,25 +227,12 @@ function setTimeout(func, delay) {
 }
 
 function clearTimeout(timer_id) {
-    var i, n, t;
     var mgr = _TIMERMANAGER;
-    var timers = mgr.active;
 
     if (typeof timer_id !== 'number') {
         throw new TypeError('timer ID is not a number');
     }
-
-    n = timers.length;
-    for (i = 0; i < n; i++) {
-        t = timers[i];
-        if (t.id === timer_id) {
-            t.removed = true;
-            mgr.active.splice(i, 1);
-            return;
-        }
-    }
-
-    // no such ID, ignore
+    mgr.removeTimerById(timer_id);
 }
 
 function setInterval(func, delay) {
@@ -207,7 +261,7 @@ function setInterval(func, delay) {
 
     timer_id = mgr.nextTimerId++;
 
-    mgr.active.push({
+    mgr.insertTimer({
         id: timer_id,
         oneshot: false,
         cb: cb_func,
@@ -219,8 +273,12 @@ function setInterval(func, delay) {
 }
 
 function clearInterval(timer_id) {
-    // same handling for now
-    clearTimeout(timer_id);
+    var mgr = _TIMERMANAGER;
+
+    if (typeof timer_id !== 'number') {
+        throw new TypeError('timer ID is not a number');
+    }
+    mgr.removeTimerById(timer_id);
 }
 
 /*
@@ -247,7 +305,13 @@ EventLoop.prototype.run = function() {
             break;
         }
 
-        socket.poll({}, wait);
+        /* FIXME: sockets */
+        try {
+            socket.poll({}, wait);
+        } catch (e) {
+            // Eat errors silently.  When resizing curses window an EINTR
+            // happens now.
+        }
     }
 }
 

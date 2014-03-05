@@ -24,19 +24,27 @@ function fillScreen(ch) {
 
 function main() {
     var i, j;
+    var counters = [];
+    var size, w, h;
 
     ncurses.initscr();
+    size = ncurses.getmaxyx();
+    h = size[0];
+    w = size[1];
+
     fillScreen('.');
 
     setInterval(function () {
-        ncurses.mvprintw(1, 4, new Date().toISOString() + '  ' + _TIMERMANAGER.active.length +
+        ncurses.mvprintw(1, 4, new Date().toISOString() + '  ' + _TIMERMANAGER.timers.length +
                                ' timers/intervals' + '    ');
         ncurses.refresh();
     }, 1000);
 
-    function addCounter(row, interval) {
+    function addCounter(row, index, interval) {
+        counters[index] = 0;
         setInterval(function () {
-            ncurses.mvprintw(row, 4, '' + Date.now());
+            counters[index]++;
+            ncurses.mvprintw(row, 4, '' + Date.now() + ' ' + counters[index]);
             ncurses.refresh();
         }, interval);
     }
@@ -48,13 +56,17 @@ function main() {
         }, interval);
     }
 
-    for (i = 0; i < 16; i++) {
-        addCounter(3 + i, 363 * i + 400);
+    for (i = 0; i < h - 5; i++) {
+        addCounter(3 + i, i, 363 * i + 400);
     }
 
-    for (i = 0; i < 16; i++) {
-        for (j = 0; j < 48; j++) {
-            addRandomChar(3 + i, 20 + j, Math.random() * 10000 + 1000);
+    /* Here the inserts take a lot of time because the underlying timer manager
+     * data structure has O(n) insertion performance.
+     */
+    for (i = 0; i < h - 5; i++) {
+        for (j = 0; j < w - 50; j++) {
+            // Math.exp(0)...Math.exp(8) is an uneven distribution between 1...~2980.
+            addRandomChar(3 + i, 28 + j, 58000 - Math.exp(Math.random() * 8) * 20);
         }
     }
 
