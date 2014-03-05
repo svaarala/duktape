@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: restructure web pages to per-language directories, make multi-language build preparations
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-05 17:00:23.829965 Z
+references: []
+
+id: b2bf878722fdd33d19592cf11e5357285e14c235
+log_events: 
+- - 2014-03-05 17:00:24.005967 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
