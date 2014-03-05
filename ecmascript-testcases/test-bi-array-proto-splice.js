@@ -5415,6 +5415,11 @@ function basicTest() {
     // non-zero deleteCount with items
 
     test([1,2,3], [0, 2]);
+
+    // NOTE: don't test for missing deleteCount: the standard behavior for
+    // that is to treat deleteCount as undefined (same as 0) but the real
+    // world behavior is to splice to end of array.  This is covered by a
+    // separate testcase.
 }
 
 try {
@@ -5493,16 +5498,18 @@ print('coercion');
 function coercionTest() {
     var obj;
 
-    // this coercion
+    // this coercion, arguments [0,0] are given to avoid the case where
+    // deleteCount is omitted (it has different standard and real world
+    // behavior and is covered by a separate testcase).
 
-    test(undefined);
-    test(null);
-    test(true);
-    test(false);
-    test(123);
-    test('quux');  // even though deleteCount=0 and no new items, 'length' is written, which causes TypeError
-    test([1,2]);
-    test({ foo: 1, bar: 2 });
+    test(undefined, [0,0]);
+    test(null, [0,0]);
+    test(true, [0,0]);
+    test(false, [0,0]);
+    test(123, [0,0]);
+    test('quux', [0,0]);  // even though deleteCount=0 and no new items, 'length' is written, which causes TypeError
+    test([1,2], [0,0]);
+    test({ foo: 1, bar: 2 }, [0,0]);
 
     // length coercion
 
