@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "check distributable makefiles: at dist top level, or inside examples, or both?"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-06 01:39:51.290393 Z
+references: []
+
+id: 21bb7178ed981f544a0f29b02f72b67671b8bcde
+log_events: 
+- - 2014-03-06 01:39:51.463295 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
