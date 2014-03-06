@@ -1,4 +1,4 @@
-*
+/*
  *  Pure Ecmascript eventloop example.
  *
  *  Timer state handling is inefficient in this trivial example.  Timers are

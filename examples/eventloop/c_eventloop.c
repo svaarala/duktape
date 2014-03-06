@@ -107,7 +107,7 @@ static void expire_timers(duk_context *ctx) {
 	 * is a sanity limit on how many times we do this per expiry round.
 	 */
 
-	duk_push_global_object(ctx);  /* FIXME: duk_push_global_stash() */
+	duk_push_global_stash(ctx);
 	duk_get_prop_string(ctx, -1, "eventTimers");
 
 	/* [ ... stash eventTimers ] */
@@ -284,7 +284,7 @@ static int create_timer(duk_context *ctx) {
 
 	/* Finally, register the callback to the global stash 'eventTimers' object. */
 
-	duk_push_global_object(ctx);  /* FIXME: duk_push_global_stash() */
+	duk_push_global_stash(ctx);
 	duk_get_prop_string(ctx, -1, "eventTimers");  /* -> [ func delay oneshot stash eventTimers ] */
 	duk_push_number(ctx, (double) timer_id);
 	duk_dup(ctx, 0);
@@ -357,7 +357,7 @@ static int delete_timer(duk_context *ctx) {
 			 * the timer callback state from the global 'stash'.
 			 */
 
-			duk_push_global_object(ctx);  /* FIXME: duk_push_global_stash() */
+			duk_push_global_stash(ctx);
 			duk_get_prop_string(ctx, -1, "eventTimers");  /* -> [ timer_id stash eventTimers ] */
 			duk_push_number(ctx, (double) timer_id);
 			duk_del_prop(ctx, -2);  /* delete eventTimers[timer_id] */
@@ -400,8 +400,10 @@ void eventloop_register(duk_context *ctx) {
 	duk_put_prop(ctx, -3);  /* set global 'eventloop' */
 
 	/* Initialize global stash 'eventTimers' */
+	duk_push_global_stash(ctx);
 	duk_push_object(ctx);
 	duk_put_prop_string(ctx, -2, "eventTimers");
+	duk_pop(ctx);
 
 	duk_pop(ctx);
 }
