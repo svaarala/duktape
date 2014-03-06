@@ -20,6 +20,8 @@ int adder(duk_context *ctx) {
 int main(int argc, char *argv[]) {
 	duk_context *ctx = duk_create_heap_default();
 
+	(void) argc; (void) argv;  /* suppress warning */
+
 	duk_eval_string(ctx, "print('Hello world!');");
 
 	duk_push_global_object(ctx);
