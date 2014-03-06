@@ -14,9 +14,14 @@
 
 #include "duktape.h"
 
-extern void duk_ncurses_register(duk_context *ctx);
-extern void duk_socket_register(duk_context *ctx);
-extern void duk_fileio_register(duk_context *ctx);
+extern void poll_register(duk_context *ctx);
+extern void ncurses_register(duk_context *ctx);
+extern void socket_register(duk_context *ctx);
+extern void fileio_register(duk_context *ctx);
+extern void eventloop_register(duk_context *ctx);
+extern int eventloop_run(duk_context *ctx);  /* Duktape/C function, safe called */
+
+static int c_evloop = 0;
 
 #ifndef NO_SIGNAL
 static void my_sighandler(int x) {
@@ -51,6 +56,7 @@ static void print_error(duk_context *ctx, FILE *f) {
 
 int wrapped_compile_execute(duk_context *ctx) {
 	int comp_flags = 0;
+	int rc;
 
 	/* Compile input and place it into global _USERCODE */
 	duk_compile(ctx, comp_flags);
@@ -65,14 +71,29 @@ int wrapped_compile_execute(duk_context *ctx) {
 	/* Start a zero timer which will call _USERCODE from within
 	 * the event loop.
 	 */
-	duk_eval_string(ctx, "print('set _USERCODE timer'); setTimeout(function() { _USERCODE(); }, 0);");
+	fprintf(stderr, "set _USERCODE timer\n");
+	fflush(stderr);
+	duk_eval_string(ctx, "setTimeout(function() { _USERCODE(); }, 0);");
 	duk_pop(ctx);
 
 	/* Finally, launch eventloop.  This call only returns after the
 	 * eventloop terminates.
 	 */
-	duk_eval_string(ctx, "print('call _EVENTLOOP.run'); _EVENTLOOP.run();");
-	duk_pop(ctx);
+	if (c_evloop) {
+		fprintf(stderr, "calling eventloop_run()\n");
+		fflush(stderr);
+		rc = duk_safe_call(ctx, eventloop_run, 0 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		if (rc != 0) {
+			fprintf(stderr, "eventloop_run() failed: %s\n", duk_to_string(ctx, -1));
+			fflush(stderr);
+		}
+		duk_pop(ctx);
+	} else {
+		fprintf(stderr, "calling _EVENTLOOP.run()\n");
+		fflush(stderr);
+		duk_eval_string(ctx, "_EVENTLOOP.run();");
+		duk_pop(ctx);
+	}
 
 	return 0;
 }
@@ -167,7 +188,9 @@ int main(int argc, char *argv[]) {
 		if (!arg) {
 			goto usage;
 		}
-		if (strlen(arg) > 1 && arg[0] == '-') {
+		if (strcmp(arg, "-c") == 0) {
+			c_evloop = 1;
+		} else if (strlen(arg) > 1 && arg[0] == '-') {
 			goto usage;
 		} else {
 			if (filename) {
@@ -176,32 +199,42 @@ int main(int argc, char *argv[]) {
 			filename = arg;
 		}
 	}
+	if (!filename) {
+		goto usage;
+	}
 
 	ctx = duk_create_heap_default();
 
-	duk_ncurses_register(ctx);
-	duk_socket_register(ctx);
-	duk_fileio_register(ctx);
+	poll_register(ctx);
+	ncurses_register(ctx);
+	socket_register(ctx);
+	fileio_register(ctx);
 
-	duk_eval_file(ctx, "eventloop.js");
-#if 0
-	printf("evaled eventloop.js\n");
-#endif
+	if (c_evloop) {
+		fprintf(stderr, "Using C based eventloop (omit -c to use Ecmascript based eventloop)\n");
+		fflush(stderr);
 
-	if (filename) {
-#if 0
-		printf("filename: %s\n", filename);
-#endif
-		if (strcmp(filename, "-") == 0) {
-			if (handle_stdin(ctx) != 0) {
-				retval = 1;
-				goto cleanup;
-			}
-		} else {
-			if (handle_file(ctx, filename) != 0) {
-				retval = 1;
-				goto cleanup;
-			}
+		eventloop_register(ctx);
+		duk_eval_file(ctx, "c_eventloop.js");
+	} else {
+		fprintf(stderr, "Using Ecmascript based eventloop (give -c to use C based eventloop)\n");
+		fflush(stderr);
+
+		duk_eval_file(ctx, "ecma_eventloop.js");
+	}
+
+	fprintf(stderr, "Executing code from: '%s'\n", filename);
+	fflush(stderr);
+
+	if (strcmp(filename, "-") == 0) {
+		if (handle_stdin(ctx) != 0) {
+			retval = 1;
+			goto cleanup;
+		}
+	} else {
+		if (handle_file(ctx, filename) != 0) {
+			retval = 1;
+			goto cleanup;
 		}
 	}
 
@@ -213,9 +246,11 @@ int main(int argc, char *argv[]) {
 	return retval;
 
  usage:
-	fprintf(stderr, "Usage: evloop <filename>\n");
+	fprintf(stderr, "Usage: evloop [-c] <filename>\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Uses an Ecmascript based eventloop (ecma_eventloop.js) by default.\n");
+	fprintf(stderr, "If -c option given, uses a C based eventloop (c_eventloop.{c,js}).\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
 	fflush(stderr);
 	exit(1);
 }
-

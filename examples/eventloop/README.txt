@@ -1,15 +1,24 @@
 Eventloop examples
 ==================
 
-A few examples on how an event loop can be implemented with Duktape.  There
-are several approaches, here we demonstrate two main approaches:
+A few examples on how an event loop can be implemented with Duktape.  To test
+(Linux only, perhaps other Unix)::
+
+  $ make
+  $ ./evloop curses-timers.js     # run with Ecmascript eventloop
+  $ ./evloop -c curses-timers.js  # run with C eventloop
+
+There are several approaches to implementation timers.  Here we demonstrate
+two main approaches:
 
 1. Using a C eventloop which calls into Javascript.  All the event loop state
    like timers, sockets, etc, is held in C structures.
+   (See ``c_eventloop.c`` and ``c_eventloop.js``.)
 
 2. Using an Ecmascript eventloop which never returns.  All the event loop state
    can be managed with Ecmascript code instead of C structures.  The Ecmascript
    eventloop calls a Duktape/C helper to do the lowest level poll() call.
+   (See ``ecma_eventloop.js``.)
 
 The event loop API provided by both examples is the same, and includes:
 

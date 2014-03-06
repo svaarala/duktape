@@ -178,6 +178,7 @@ cat src/duktape.h | sed \
 
 for i in \
 	README.txt \
+	Makefile \
 	duk_cmdline.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
@@ -186,19 +187,23 @@ done
 for i in \
 	README.txt \
 	Makefile \
-	eventloop.c \
-	eventloop.js \
+	c_eventloop.c \
+	c_eventloop.js \
+	ecma_eventloop.js \
 	main.c \
-	duk_ncurses.c \
-	duk_socket.c \
-	duk_fileio.c \
+	poll.c \
+	ncurses.c \
+	socket.c \
+	fileio.c \
 	curses-timers.js \
+	basic-test.js \
 	; do
 	cp examples/eventloop/$i $DIST/examples/eventloop/
 done
 
 for i in \
 	README.txt \
+	Makefile \
 	hello.c \
 	; do
 	cp examples/hello/$i $DIST/examples/hello/
@@ -206,6 +211,7 @@ done
 
 for i in \
 	README.txt \
+	Makefile \
 	eval.c \
 	; do
 	cp examples/eval/$i $DIST/examples/eval/

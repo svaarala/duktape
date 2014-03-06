@@ -2,24 +2,24 @@
  *  Test using timers and intervals with curses.
  */
 
-if (typeof ncurses !== 'object') {
-    throw new Error('ncurses required');
+if (typeof Ncurses !== 'object') {
+    throw new Error('Ncurses required');
 }
 
 function fillScreen(ch) {
     var size, w, h;
     var i, j;
 
-    size = ncurses.getmaxyx();
+    size = Ncurses.getmaxyx();
     h = size[0];
     w = size[1];
 
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
-            ncurses.mvprintw(i, j, ch);
+            Ncurses.mvprintw(i, j, ch);
         }
     }
-    ncurses.refresh();
+    Ncurses.refresh();
 }
 
 function main() {
@@ -27,32 +27,31 @@ function main() {
     var counters = [];
     var size, w, h;
 
-    ncurses.initscr();
-    size = ncurses.getmaxyx();
+    Ncurses.initscr();
+    size = Ncurses.getmaxyx();
     h = size[0];
     w = size[1];
 
     fillScreen('.');
 
     setInterval(function () {
-        ncurses.mvprintw(1, 4, new Date().toISOString() + '  ' + _TIMERMANAGER.timers.length +
-                               ' timers/intervals' + '    ');
-        ncurses.refresh();
+        Ncurses.mvprintw(1, 4, new Date().toISOString());
+        Ncurses.refresh();
     }, 1000);
 
     function addCounter(row, index, interval) {
         counters[index] = 0;
         setInterval(function () {
             counters[index]++;
-            ncurses.mvprintw(row, 4, '' + Date.now() + ' ' + counters[index]);
-            ncurses.refresh();
+            Ncurses.mvprintw(row, 4, '' + Date.now() + ' ' + counters[index]);
+            Ncurses.refresh();
         }, interval);
     }
 
     function addRandomChar(row, col, interval) {
         setTimeout(function () {
-            ncurses.mvprintw(row, col, String.fromCharCode(Math.random() * 64 + 0x20));
-            ncurses.refresh();
+            Ncurses.mvprintw(row, col, String.fromCharCode(Math.random() * 64 + 0x20));
+            Ncurses.refresh();
         }, interval);
     }
 
@@ -71,9 +70,9 @@ function main() {
     }
 
 /*
-    ncurses.getch();
-    ncurses.endwin();
-    ncurses.delscreen();
+    Ncurses.getch();
+    Ncurses.endwin();
+    Ncurses.delscreen();
     print('deleted');
 */
 }
