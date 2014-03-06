@@ -67,14 +67,17 @@ static const char *duk__get_term_3(int level) {
 #else
 
 static const char *duk__get_term_1(int level) {
+	DUK_UNREF(level);
 	return (const char *) "";
 }
 
 static const char *duk__get_term_2(int level) {
+	DUK_UNREF(level);
 	return (const char *) "";
 }
 
 static const char *duk__get_term_3(int level) {
+	DUK_UNREF(level);
 	return (const char *) "";
 }
 
