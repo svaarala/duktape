@@ -88,3 +88,7 @@ function clearInterval(timer_id) {
     }
     EventLoop.deleteTimer(timer_id);
 }
+
+function requestEventLoopExit() {
+    EventLoop.requestExit();
+}

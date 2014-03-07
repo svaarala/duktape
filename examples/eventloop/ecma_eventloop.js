@@ -11,7 +11,7 @@
  */
 
 /*
- *  Timer manager
+ *  Event loop
  *
  *  Timers are sorted by 'target' property which indicates expiry time of
  *  the timer.  The timer expiring next is last in the array, so that
@@ -19,16 +19,17 @@
  *  near future displace as few elements in the array as possible.
  */
 
-function TimerManager() {
+function EventLoop() {
     this.timers = [];         // active timers, sorted (nearest expiry last)
     this.expiring = null;     // set to timer being expired (needs special handling in clearTimeout/clearInterval)
     this.nextTimerId = 1;
     this.minimumDelay = 1;
     this.minimumWait = 1;
     this.maxExpirys = 10;
+    this.exitRequested = false;
 };
 
-TimerManager.prototype.dumpState = function() {
+EventLoop.prototype.dumpState = function() {
     print('TIMER STATE:');
     this.timers.forEach(function(t) {
         print('    ' + Duktape.enc('jsonx', t));
@@ -40,18 +41,18 @@ TimerManager.prototype.dumpState = function() {
 
 // Get timer with lowest expiry time.  Since the active timers list is
 // sorted, it's always the last timer.
-TimerManager.prototype.getEarliestTimer = function() {
+EventLoop.prototype.getEarliestTimer = function() {
     var timers = this.timers;
     n = timers.length;
     return (n > 0 ? timers[n - 1] : null);
 }
 
-TimerManager.prototype.getEarliestWait = function() {
+EventLoop.prototype.getEarliestWait = function() {
     var t = this.getEarliestTimer();
     return (t ? Math.max(this.minimumWait, t.target - Date.now()) : null);
 }
 
-TimerManager.prototype.insertTimer = function(timer) {
+EventLoop.prototype.insertTimer = function(timer) {
     var timers = this.timers;
     var i, n, t;
 
@@ -75,7 +76,7 @@ TimerManager.prototype.insertTimer = function(timer) {
 // Remove timer/interval with a timer ID.  The timer/interval can reside
 // either on the active list or it may be an expired timer (this.expiring)
 // whose user callback we're running when this function gets called.
-TimerManager.prototype.removeTimerById = function(timer_id) {
+EventLoop.prototype.removeTimerById = function(timer_id) {
     var timers = this.timers;
     var i, n, t;
 
@@ -107,7 +108,7 @@ TimerManager.prototype.removeTimerById = function(timer_id) {
    // no such ID, ignore
 }
 
-TimerManager.prototype.processTimers = function() {
+EventLoop.prototype.processTimers = function() {
     var now = Date.now();
     var timers = this.timers;
     var sanity = this.maxExpirys;
@@ -130,6 +131,17 @@ TimerManager.prototype.processTimers = function() {
      */
 
     while (sanity-- > 0) {
+        // If exit requested, don't call any more callbacks.  This allows
+        // a callback to do cleanups and request exit, and can be sure that
+        // no more callbacks are processed.
+
+        if (this.exitRequested) {
+            //print('exit requested, exit');
+            break;
+        }
+
+        // Timers to expire?
+
         n = timers.length;
         if (n <= 0) {
             break;
@@ -176,129 +188,18 @@ TimerManager.prototype.processTimers = function() {
     }
 }
 
-var _TIMERMANAGER = new TimerManager();  // singleton instance
-
-/*
- *  Timer API
- *
- *  These interface with the singleton TimerManager.
- */
-
-function setTimeout(func, delay) {
-    var cb_func;
-    var bind_args;
-    var timer_id;
-    var mgr = _TIMERMANAGER;
-
-    if (typeof delay !== 'number') {
-        throw new TypeError('delay is not a number');
-    }
-    delay = Math.max(mgr.minimumDelay, delay);
-
-    if (typeof func === 'string') {
-        // Legacy case: callback is a string.
-        cb_func = eval.bind(this, func);
-    } else if (typeof func !== 'function') {
-        throw new TypeError('callback is not a function/string');
-    } else if (arguments.length > 2) {
-        // Special case: callback arguments are provided.
-        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
-        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
-        cb_func = func.bind.apply(func, bind_args);
-    } else {
-        // Normal case: callback given as a function without arguments.
-        cb_func = func;
-    }
-
-    timer_id = mgr.nextTimerId++;
-
-    mgr.insertTimer({
-        id: timer_id,
-        oneshot: true,
-        cb: cb_func,
-        delay: delay,
-        target: Date.now() + delay
-    });
-
-    return timer_id;
-}
-
-function clearTimeout(timer_id) {
-    var mgr = _TIMERMANAGER;
-
-    if (typeof timer_id !== 'number') {
-        throw new TypeError('timer ID is not a number');
-    }
-    mgr.removeTimerById(timer_id);
-}
-
-function setInterval(func, delay) {
-    var cb_func;
-    var bind_args;
-    var timer_id;
-    var mgr = _TIMERMANAGER;
-
-    if (typeof delay !== 'number') {
-        throw new TypeError('delay is not a number');
-    }
-    delay = Math.max(mgr.minimumDelay, delay);
-
-    if (typeof func === 'string') {
-        // Legacy case: callback is a string.
-        cb_func = eval.bind(this, func);
-    } else if (typeof func !== 'function') {
-        throw new TypeError('callback is not a function/string');
-    } else if (arguments.length > 2) {
-        // Special case: callback arguments are provided.
-        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
-        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
-        cb_func = func.bind.apply(func, bind_args);
-    } else {
-        // Normal case: callback given as a function without arguments.
-        cb_func = func;
-    }
-
-    timer_id = mgr.nextTimerId++;
-
-    mgr.insertTimer({
-        id: timer_id,
-        oneshot: false,
-        cb: cb_func,
-        delay: delay,
-        target: Date.now() + delay
-    });
-
-    return timer_id;
-}
-
-function clearInterval(timer_id) {
-    var mgr = _TIMERMANAGER;
-
-    if (typeof timer_id !== 'number') {
-        throw new TypeError('timer ID is not a number');
-    }
-    mgr.removeTimerById(timer_id);
-}
-
-/*
- *  Event loop
- */
-
-function EventLoop() {
-}
-
 EventLoop.prototype.run = function() {
     var wait;
 
     for (;;) {
-        _TIMERMANAGER.processTimers();
-        //_TIMERMANAGER.dumpState();
+        this.processTimers();
+        //this.dumpState();
 
         if (this.exitRequested) {
             //print('exit requested, exit');
             break;
         }
-        wait = _TIMERMANAGER.getEarliestWait();
+        wait = this.getEarliestWait();
         if (!wait) {
             //print('no active timers, exit');
             break;
@@ -314,8 +215,115 @@ EventLoop.prototype.run = function() {
     }
 }
 
-EventLoop.prototype.exit = function() {
+EventLoop.prototype.requestExit = function() {
     this.exitRequested = true;
 }
 
-var _EVENTLOOP = new EventLoop();
+var _EVENTLOOP = new EventLoop();  // singleton instance
+
+/*
+ *  Timer API
+ *
+ *  These interface with the singleton EventLoop.
+ */
+
+function setTimeout(func, delay) {
+    var cb_func;
+    var bind_args;
+    var timer_id;
+    var evloop = _EVENTLOOP;
+
+    if (typeof delay !== 'number') {
+        throw new TypeError('delay is not a number');
+    }
+    delay = Math.max(evloop.minimumDelay, delay);
+
+    if (typeof func === 'string') {
+        // Legacy case: callback is a string.
+        cb_func = eval.bind(this, func);
+    } else if (typeof func !== 'function') {
+        throw new TypeError('callback is not a function/string');
+    } else if (arguments.length > 2) {
+        // Special case: callback arguments are provided.
+        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
+        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
+        cb_func = func.bind.apply(func, bind_args);
+    } else {
+        // Normal case: callback given as a function without arguments.
+        cb_func = func;
+    }
+
+    timer_id = evloop.nextTimerId++;
+
+    evloop.insertTimer({
+        id: timer_id,
+        oneshot: true,
+        cb: cb_func,
+        delay: delay,
+        target: Date.now() + delay
+    });
+
+    return timer_id;
+}
+
+function clearTimeout(timer_id) {
+    var evloop = _EVENTLOOP;
+
+    if (typeof timer_id !== 'number') {
+        throw new TypeError('timer ID is not a number');
+    }
+    evloop.removeTimerById(timer_id);
+}
+
+function setInterval(func, delay) {
+    var cb_func;
+    var bind_args;
+    var timer_id;
+    var evloop = _EVENTLOOP;
+
+    if (typeof delay !== 'number') {
+        throw new TypeError('delay is not a number');
+    }
+    delay = Math.max(evloop.minimumDelay, delay);
+
+    if (typeof func === 'string') {
+        // Legacy case: callback is a string.
+        cb_func = eval.bind(this, func);
+    } else if (typeof func !== 'function') {
+        throw new TypeError('callback is not a function/string');
+    } else if (arguments.length > 2) {
+        // Special case: callback arguments are provided.
+        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
+        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
+        cb_func = func.bind.apply(func, bind_args);
+    } else {
+        // Normal case: callback given as a function without arguments.
+        cb_func = func;
+    }
+
+    timer_id = evloop.nextTimerId++;
+
+    evloop.insertTimer({
+        id: timer_id,
+        oneshot: false,
+        cb: cb_func,
+        delay: delay,
+        target: Date.now() + delay
+    });
+
+    return timer_id;
+}
+
+function clearInterval(timer_id) {
+    var evloop = _EVENTLOOP;
+
+    if (typeof timer_id !== 'number') {
+        throw new TypeError('timer ID is not a number');
+    }
+    evloop.removeTimerById(timer_id);
+}
+
+/* custom call */
+function requestEventLoopExit() {
+    _EVENTLOOP.requestExit();
+}

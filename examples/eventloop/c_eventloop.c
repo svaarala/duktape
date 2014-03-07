@@ -48,6 +48,7 @@ static ev_timer timer_list[MAX_TIMERS];
 static ev_timer timer_expiring;
 static int timer_count;  /* last timer at timer_count - 1 */
 static int64_t timer_next_id = 1;
+static int exit_requested = 0;
 
 /* Get Javascript compatible 'now' timestamp (millisecs since 1970). */
 static double get_now(void) {
@@ -114,6 +115,19 @@ static void expire_timers(duk_context *ctx) {
 
 	now = get_now();
 	while (sanity-- > 0) {
+		/*
+		 *  If exit has been requested, exit without running further
+		 *  callbacks.
+		 */
+
+		if (exit_requested) {
+#if 0
+			fprintf(stderr, "exit requested, exiting timer expiry loop\n");
+			fflush(stderr);
+#endif
+			break;
+		}
+
 		/*
 		 *  Expired timer(s) still exist?
 		 */
@@ -206,6 +220,14 @@ int eventloop_run(duk_context *ctx) {
 
 	for (;;) {
 		expire_timers(ctx);
+
+		if (exit_requested) {
+#if 0
+			fprintf(stderr, "exit requested, exiting event loop\n");
+			fflush(stderr);
+#endif
+			break;
+		}
 
 		now = get_now();
 		t = find_nearest_timer();
@@ -381,6 +403,12 @@ static int delete_timer(duk_context *ctx) {
 	return 1;
 }
 
+static int request_exit(duk_context *ctx) {
+	(void) ctx;
+	exit_requested = 1;
+	return 0;
+}
+
 void eventloop_register(duk_context *ctx) {
 	memset((void *) timer_list, 0, MAX_TIMERS * sizeof(ev_timer));
 	memset((void *) &timer_expiring, 0, sizeof(ev_timer));
@@ -395,6 +423,10 @@ void eventloop_register(duk_context *ctx) {
 
 	duk_push_string(ctx, "deleteTimer");
 	duk_push_c_function(ctx, delete_timer, 1);
+	duk_put_prop(ctx, -3);
+
+	duk_push_string(ctx, "requestExit");
+	duk_push_c_function(ctx, request_exit, 1);
 	duk_put_prop(ctx, -3);
 
 	duk_put_prop(ctx, -3);  /* set global 'eventloop' */

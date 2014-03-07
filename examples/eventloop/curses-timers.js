@@ -69,12 +69,11 @@ function main() {
         }
     }
 
-/*
-    Ncurses.getch();
-    Ncurses.endwin();
-    Ncurses.delscreen();
-    print('deleted');
-*/
+    setTimeout(function () {
+        Ncurses.endwin();
+        Ncurses.delscreen();
+        requestEventLoopExit();
+    }, 120e3);
 }
 
 main();
