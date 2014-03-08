@@ -440,7 +440,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 		}
 	} else {
-		DUK_ASSERT(act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL == 0);
+		DUK_ASSERT((act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0);
 	}
 	act_caller = NULL;  /* avoid dereference after potential callstack realloc */
 	act_eval = NULL;
