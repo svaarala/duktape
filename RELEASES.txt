@@ -223,6 +223,9 @@ Planned
 
 * Improve self tests to include byte order validation
 
+* Allow the global eval() function to be called from C code (causes an
+  indirect eval); this was at least an issue with a bound eval() call
+
 * Fix O(depth^2) inner function parsing issue, inner functions are now
   only parsed once and deeply nested inner functions are no longer a
   performance issue
