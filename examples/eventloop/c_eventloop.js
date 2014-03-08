@@ -22,10 +22,7 @@ function setTimeout(func, delay) {
 
     if (typeof func === 'string') {
         // Legacy case: callback is a string.
-        // XXX: workaround for current eval() limitation which prevents it from
-        // being called from C code.
-        //cb_func = eval.bind(this, func);
-        cb_func = function() { eval(func); };
+        cb_func = eval.bind(this, func);
     } else if (typeof func !== 'function') {
         throw new TypeError('callback is not a function/string');
     } else if (arguments.length > 2) {
@@ -61,10 +58,7 @@ function setInterval(func, delay) {
 
     if (typeof func === 'string') {
         // Legacy case: callback is a string.
-        // XXX: workaround for current eval() limitation which prevents it from
-        // being called from C code.
-        //cb_func = eval.bind(this, func);
-        cb_func = function() { eval(func); };
+        cb_func = eval.bind(this, func);
     } else if (typeof func !== 'function') {
         throw new TypeError('callback is not a function/string');
     } else if (arguments.length > 2) {
