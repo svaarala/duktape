@@ -189,24 +189,36 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	curr = target;
 	while (curr) {
-		duk_uint32_t i;
+		duk_uint32_t i, len;
 
 		/*
 		 *  Virtual properties.
 		 *
-		 *  String indices are virtual and always enumerable.  String 'length'
-		 *  is virtual and non-enumerable.  Array and arguments object props
-		 *  have special behavior but are concrete.
+		 *  String and buffer indices are virtual and always enumerable,
+		 *  'length' is virtual and non-enumerable.  Array and arguments
+		 *  object props have special behavior but are concrete.
 		 */
 
-		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr)) {
-			duk_hstring *h_val;
-
-			h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
-			DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
+		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr) ||
+		    DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr)) {
+			/* String and buffer enumeration behavior is identical now,
+			 * so use shared handler.
+			 */
+			if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr)) {
+				duk_hstring *h_val;
+				h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
+				DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
+				len = DUK_HSTRING_GET_CHARLEN(h_val);
+			} else {
+				duk_hbuffer *h_val;
+				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr));
+				h_val = duk_hobject_get_internal_value_buffer(thr->heap, curr);
+				DUK_ASSERT(h_val != NULL);  /* buffer objects must not created without internal value */
+				len = DUK_HBUFFER_GET_SIZE(h_val);
+			}
 
 			/* FIXME: type for 'i' to match string max len (duk_uint32_t) */
-			for (i = 0; i < DUK_HSTRING_GET_CHARLEN(h_val); i++) {
+			for (i = 0; i < len; i++) {
 				duk_hstring *k;
 
 				k = duk_heap_string_intern_u32_checked(thr, i);
