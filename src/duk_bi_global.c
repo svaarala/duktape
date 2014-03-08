@@ -386,6 +386,13 @@ static void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, vo
 
 /*
  *  Eval
+ *
+ *  Eval needs to handle both a "direct eval" and an "indirect eval".
+ *  Direct eval handling needs access to the caller's activation so that its
+ *  lexical environment can be accessed.  A direct eval is only possible from
+ *  Ecmascript code; an indirect eval call is possible also from C code.
+ *  When an indirect eval call is made from C code, there may not be a
+ *  calling activation at all which needs careful handling.
  */
 
 int duk_bi_global_object_eval(duk_context *ctx) {
@@ -401,34 +408,39 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 	int comp_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
+	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
+	DUK_ASSERT(((thr->callstack + thr->callstack_top - 1)->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0 || /* indirect eval */
+	           (thr->callstack_top >= 2));  /* if direct eval, calling activation must exist */
 
-	if (thr->callstack_top < 2) {
-		/* callstack_top - 1 --> this function
-		 * callstack_top - 2 --> caller
-		 *
-		 * If called directly from C, callstack_top might be 1.
-		 * We don't support that now.
-		 */
-		return DUK_RET_TYPE_ERROR;
-	}
-	DUK_ASSERT(thr->callstack_top >= 2);  /* caller and this function */
+	/*
+	 *  callstack_top - 1 --> this function
+	 *  callstack_top - 2 --> caller (may not exist)
+	 *
+	 *  If called directly from C, callstack_top might be 1.  If calling
+	 *  activation doesn't exist, call must be indirect.
+	 */
 
 	h = duk_get_hstring(ctx, 0);
 	if (!h) {
 		return 1;  /* return arg as-is */
 	}
 
-	/* FIXME: uses internal API */
-
 	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
-	act_caller = thr->callstack + thr->callstack_top - 2;  /* caller */
 	act_eval = thr->callstack + thr->callstack_top - 1;    /* this function */
-	if ((act_caller->flags & DUK_ACT_FLAG_STRICT) &&
-	    (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
-		/* Only direct eval inherits strictness from calling code
-		 * (E5.1 Section 10.1.1).
+	if (thr->callstack_top >= 2) {
+		/* Have a calling activation, check for direct eval (otherwise
+		 * assume indirect eval.
 		 */
-		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
+		act_caller = thr->callstack + thr->callstack_top - 2;  /* caller */
+		if ((act_caller->flags & DUK_ACT_FLAG_STRICT) &&
+		    (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
+			/* Only direct eval inherits strictness from calling code
+			 * (E5.1 Section 10.1.1).
+			 */
+			comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
+		}
+	} else {
+		DUK_ASSERT(act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL == 0);
 	}
 	act_caller = NULL;  /* avoid dereference after potential callstack realloc */
 	act_eval = NULL;
@@ -440,9 +452,10 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
 
 	/* E5 Section 10.4.2 */
-	DUK_ASSERT(thr->callstack_top >= 2);
+	DUK_ASSERT(thr->callstack_top >= 1);
 	act = thr->callstack + thr->callstack_top - 1;  /* this function */
 	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {	
+		DUK_ASSERT(thr->callstack_top >= 2);
 		act = thr->callstack + thr->callstack_top - 2;  /* caller */
 		if (act->lex_env == NULL) {
 			DUK_ASSERT(act->var_env == NULL);
