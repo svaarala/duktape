@@ -275,6 +275,15 @@ different Ecmascript typed array specifications, though, see e.g.
 These will be implemented on top of raw arrays, most likely.
 </p>
 
+<p>Like strings, buffer values have a <code>length</code> property and
+array index properties for reading and writing individual bytes in the buffer.
+The value of a indexed byte (<code>buf[123]</code>) is a number in the
+range 0...255 which represents a byte value.  This differs from string
+behavior where the indexed values are one-character strings (much more
+expensive).  The <code>length</code> property is read-only at the moment.
+These properties are available for both plain buffer values and buffer
+object values.</p>
+
 <h2>Pointer</h2>
 
 <p>The <b>pointer</b> type is a raw, uninterpreted C pointer, essentially
