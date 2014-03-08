@@ -28,12 +28,12 @@ static int socket_create_server_socket(duk_context *ctx) {
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	ent = gethostbyname(addr);
 	if (!ent) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	addr_list = (struct in_addr **) ent->h_addr_list;
@@ -43,7 +43,7 @@ static int socket_create_server_socket(duk_context *ctx) {
 		break;
 	}
 	if (!addr_inet) {
-		duk_error(ctx, 1 /*FIXME*/, "cannot resolve %s", addr);
+		duk_error(ctx, DUK_ERR_ERROR, "cannot resolve %s", addr);
 	}
 
 	memset(&sockaddr, 0, sizeof(sockaddr));
@@ -53,13 +53,13 @@ static int socket_create_server_socket(duk_context *ctx) {
 
 	rc = bind(sock, (const struct sockaddr *) &sockaddr, sizeof(sockaddr));
 	if (rc < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	rc = listen(sock, 10 /*backlog*/);
 	if (rc < 0) {
 		(void) close(sock);
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	duk_push_int(ctx, sock);
@@ -72,7 +72,7 @@ static int socket_close(duk_context *ctx) {
 
 	rc = close(sock);
 	if (rc < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 	return 0;
 }
@@ -89,7 +89,7 @@ static int socket_accept(duk_context *ctx) {
 
 	rc = accept(sock, (struct sockaddr *) &addr, &addrlen);
 	if (rc < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	if (addrlen == sizeof(addr)) {
@@ -121,7 +121,7 @@ static int socket_read(duk_context *ctx) {
 
 	rc = recvfrom(sock, (void *) readbuf, sizeof(readbuf), 0, NULL, NULL);
 	if (rc < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	data = duk_push_fixed_buffer(ctx, rc);
@@ -145,7 +145,7 @@ static int socket_write(duk_context *ctx) {
 	rc = sendto(sock, (void *) data, len, MSG_NOSIGNAL, NULL, 0);
 #endif
 	if (rc < 0) {
-		duk_error(ctx, 1 /*FIXME*/, "%s (errno=%d)", strerror(errno), errno);
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	duk_push_int(ctx, rc);
