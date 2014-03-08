@@ -75,6 +75,10 @@ static duk_ret_t test_3(duk_context *ctx) {
 	 * gets an object coerced version.
 	 */
 
+	/* FIXME: with default being strict there is no way for C code to
+	 * define a non-strict function through eval right now.
+	 */
+
 	duk_eval_string(ctx, "Number.prototype.myfunc1 = function() { print(typeof this, this, Object.prototype.toString.call(this)); };");
 	duk_pop(ctx);
 	duk_eval_string(ctx, "Number.prototype.myfunc2 = function() { 'use strict'; print(typeof this, this, Object.prototype.toString.call(this)); };");
