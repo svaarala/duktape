@@ -32,7 +32,7 @@
 #ifndef DUK_HOBJECT_H_INCLUDED
 #define DUK_HOBJECT_H_INCLUDED
 
-/* there are currently 22 flag bits available */
+/* there are currently 26 flag bits available */
 #define DUK_HOBJECT_FLAG_EXTENSIBLE            DUK_HEAPHDR_USER_FLAG(0)   /* object is extensible */
 #define DUK_HOBJECT_FLAG_CONSTRUCTABLE         DUK_HEAPHDR_USER_FLAG(1)   /* object is constructable */
 #define DUK_HOBJECT_FLAG_BOUND                 DUK_HEAPHDR_USER_FLAG(2)   /* object established using Function.prototype.bind() */
@@ -49,8 +49,12 @@
 #define DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ     DUK_HEAPHDR_USER_FLAG(14)  /* 'String' object, array index special behavior */
 #define DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS     DUK_HEAPHDR_USER_FLAG(15)  /* 'Arguments' object and has arguments special behavior (non-strict callee) */
 #define DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC       DUK_HEAPHDR_USER_FLAG(16)  /* Duktape/C (nativefunction) object, special 'length' */
+/* bit 17 unused */
+/* bit 18 unused */
+/* bit 19 unused */
+/* bit 20 unused */
 
-#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(17)
+#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(21)
 #define DUK_HOBJECT_FLAG_CLASS_BITS            5
 
 #define DUK_HOBJECT_GET_CLASS_NUMBER(h)        \
