@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -14,6 +15,28 @@
 #include <time.h>
 
 #include "duktape.h"
+
+#define  ERROR_FROM_ERRNO(ctx)  do { \
+		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno); \
+	} while (0)
+
+static void set_nonblocking(duk_context *ctx, int fd) {
+	int rc;
+	int flags;
+
+	rc = fcntl(fd, F_GETFL);
+	if (rc < 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+	flags = rc;
+
+	flags |= O_NONBLOCK;
+
+	rc = fcntl(fd, F_SETFL, flags);
+	if (rc < 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+}
 
 static int socket_create_server_socket(duk_context *ctx) {
 	const char *addr = duk_to_string(ctx, 0);
@@ -28,12 +51,28 @@ static int socket_create_server_socket(duk_context *ctx) {
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
+
+	set_nonblocking(ctx, sock);
+
+	i = 1;
+	rc = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void *) &i, sizeof(int));
+	if (rc != 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+
+#ifdef __APPLE__
+	i = 1;
+	rc = setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, (const void *) &i, sizeof(int));
+	if (rc != 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+#endif
 
 	ent = gethostbyname(addr);
 	if (!ent) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 
 	addr_list = (struct in_addr **) ent->h_addr_list;
@@ -53,13 +92,13 @@ static int socket_create_server_socket(duk_context *ctx) {
 
 	rc = bind(sock, (const struct sockaddr *) &sockaddr, sizeof(sockaddr));
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 
 	rc = listen(sock, 10 /*backlog*/);
 	if (rc < 0) {
 		(void) close(sock);
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 
 	duk_push_int(ctx, sock);
@@ -72,7 +111,7 @@ static int socket_close(duk_context *ctx) {
 
 	rc = close(sock);
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 	return 0;
 }
@@ -89,8 +128,10 @@ static int socket_accept(duk_context *ctx) {
 
 	rc = accept(sock, (struct sockaddr *) &addr, &addrlen);
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
+
+	set_nonblocking(ctx, sock);
 
 	if (addrlen == sizeof(addr)) {
 		uint32_t tmp = ntohl(addr.sin_addr.s_addr);
@@ -121,7 +162,7 @@ static int socket_read(duk_context *ctx) {
 
 	rc = recvfrom(sock, (void *) readbuf, sizeof(readbuf), 0, NULL, NULL);
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 
 	data = duk_push_fixed_buffer(ctx, rc);
@@ -139,13 +180,12 @@ static int socket_write(duk_context *ctx) {
 
 	/* MSG_NOSIGNAL: avoid SIGPIPE */
 #ifdef __APPLE__
-	/* FIXME: must use socket options to get same behavior */
 	rc = sendto(sock, (void *) data, len, 0, NULL, 0);
 #else
 	rc = sendto(sock, (void *) data, len, MSG_NOSIGNAL, NULL, 0);
 #endif
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		ERROR_FROM_ERRNO(ctx);
 	}
 
 	duk_push_int(ctx, rc);

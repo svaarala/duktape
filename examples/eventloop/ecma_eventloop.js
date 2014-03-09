@@ -20,12 +20,19 @@
  */
 
 function EventLoop() {
+    // timers
     this.timers = [];         // active timers, sorted (nearest expiry last)
     this.expiring = null;     // set to timer being expired (needs special handling in clearTimeout/clearInterval)
     this.nextTimerId = 1;
     this.minimumDelay = 1;
     this.minimumWait = 1;
     this.maxExpirys = 10;
+
+    // sockets
+    this.socketListeners = {};  // fd -> callback
+    this.socketReaders = {};    // fd -> callback
+
+    // misc
     this.exitRequested = false;
 };
 
@@ -190,33 +197,133 @@ EventLoop.prototype.processTimers = function() {
 
 EventLoop.prototype.run = function() {
     var wait;
+    var POLLIN = Poll.POLLIN;
+    var poll_set;
+    var fd;
+    var t;
+    var rc;
+    var acc_res;
 
     for (;;) {
+        /*
+         *  Process expired timers.
+         */
+
         this.processTimers();
         //this.dumpState();
+
+        /*
+         *  Exit check (may be requested by a user callback)
+         */
 
         if (this.exitRequested) {
             //print('exit requested, exit');
             break;
         }
+
+        /*
+         *  Create poll socket list.  This is a very naive approach.
+         *  On Linux, one could use e.g. epoll() and manage socket lists
+         *  incrementally.
+         */
+
+        poll_set = {};
+        for (fd in this.socketListeners) {
+            poll_set[fd] = { events: POLLIN, revents: 0 };
+        }
+        for (fd in this.socketReaders) {
+            poll_set[fd] = { events: POLLIN, revents: 0 };
+        }
+        //print('poll_set IN:', Duktape.enc('jsonx', poll_set));
+
+        /*
+         *  Wait timeout for timer closest to expiry.  Since the poll
+         *  timeout is relative, get this as close to poll() as possible.
+         */
+
         wait = this.getEarliestWait();
         if (!wait) {
             //print('no active timers, exit');
             break;
         }
 
-        /* FIXME: sockets */
+        /*
+         *  Do the actual poll.
+         */
+
         try {
-            Poll.poll({}, wait);
+            Poll.poll(poll_set, wait);
         } catch (e) {
             // Eat errors silently.  When resizing curses window an EINTR
             // happens now.
+        }
+
+        /*
+         *  Process all sockets so that nothing is left unhandled for the
+         *  next round.
+         */
+
+        //print('poll_set OUT:', Duktape.enc('jsonx', poll_set));
+        for (fd in poll_set) {
+            t = poll_set[fd];
+            if (t.revents === POLLIN) {
+                cb = this.socketReaders[fd];
+                if (cb) {
+                    data = Socket.read(fd);  // no size control now
+                    //print('READ', Duktape.enc('jsonx', data));
+                    if (String(data) === '') {
+                        //print('zero read for fd ' + fd + ', closing forcibly');
+                        rc = Socket.close(fd);  // ignore result
+                        delete this.socketListeners[fd];
+                        delete this.socketReaders[fd];
+                    } else {
+                        cb(fd, data);
+                    }
+                } else {
+                    cb = this.socketListeners[fd];
+                    if (cb) {
+                        acc_res = Socket.accept(fd);
+                        //print('ACCEPT:', Duktape.enc('jsonx', acc_res));
+                        cb(acc_res.fd, acc_res.addr, acc_res.port);
+                    } else {
+                        //print('UNKNOWN');
+                    }
+                }
+            } else if (t.revents !== 0) {
+                //print('revents ' + t.revents + ' for fd ' + fd + ', closing forcibly');
+                rc = Socket.close(fd);  // ignore result
+                delete this.socketListeners[fd];
+                delete this.socketReaders[fd];
+            }
         }
     }
 }
 
 EventLoop.prototype.requestExit = function() {
     this.exitRequested = true;
+}
+
+EventLoop.prototype.server = function(address, port, cb_accepted) {
+    var fd = Socket.createServerSocket(address, port);
+    this.socketListeners[fd] = cb_accepted;
+}
+
+EventLoop.prototype.connect = function(address, port, cb_connected) {
+    // FIXME: async handling with plain poll()
+}
+
+EventLoop.prototype.close = function(fd) {
+    delete this.socketReaders[fd];
+    delete this.socketListeners[fd];
+}
+
+EventLoop.prototype.setReader = function(fd, cb_read) {
+    this.socketReaders[fd] = cb_read;
+}
+
+EventLoop.prototype.write = function(fd, data) {
+    // This simple example doesn't have support for write blocking / draining
+    var rc = Socket.write(fd, Duktape.Buffer(data));
 }
 
 var _EVENTLOOP = new EventLoop();  // singleton instance

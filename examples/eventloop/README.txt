@@ -1,8 +1,9 @@
 Eventloop examples
 ==================
 
-A few examples on how an event loop can be implemented with Duktape.  To test
-(Linux only, perhaps other Unix)::
+A few examples on how an event loop can be implemented with Duktape, mainly
+illlustrating how the Duktape interface works (not how event loops should be
+built otherwise).  To test (Linux only, perhaps other Unix)::
 
   $ make
   $ ./evloop curses-timers.js     # run with Ecmascript eventloop
@@ -31,8 +32,9 @@ related:
 
 * File I/O
 
-* Curses integration for doing beautiful character graphics
+* Curses, for doing beautiful character graphics
 
-Note that this is NOT a production quality event loop.  For example, a
+Note that this is **not** a production quality event loop.  For example, a
 production quality event loop would track its internal state (active timers
-and sockets) much more efficiently.
+and sockets) much more efficiently.  Also, the example uses poll() while one
+should use epoll() on Linux, kqueue() on BSD systems, etc.

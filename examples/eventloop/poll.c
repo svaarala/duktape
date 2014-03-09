@@ -89,6 +89,26 @@ void poll_register(duk_context *ctx) {
 	duk_push_c_function(ctx, poll_poll, 2);
 	duk_put_prop(ctx, -3);
 
+	duk_push_int(ctx, POLLIN);
+	duk_put_prop_string(ctx, -2, "POLLIN");
+	duk_push_int(ctx, POLLPRI);
+	duk_put_prop_string(ctx, -2, "POLLPRI");
+	duk_push_int(ctx, POLLOUT);
+	duk_put_prop_string(ctx, -2, "POLLOUT");
+#if 0
+	/* Linux 2.6.17 and upwards, requires _GNU_SOURCE etc, not added
+	 * now because we don't use it.
+	 */
+	duk_push_int(ctx, POLLRDHUP);
+	duk_put_prop_string(ctx, -2, "POLLRDHUP");
+#endif
+	duk_push_int(ctx, POLLERR);
+	duk_put_prop_string(ctx, -2, "POLLERR");
+	duk_push_int(ctx, POLLHUP);
+	duk_put_prop_string(ctx, -2, "POLLHUP");
+	duk_push_int(ctx, POLLNVAL);
+	duk_put_prop_string(ctx, -2, "POLLNVAL");
+
 	duk_put_prop(ctx, -3);
 	duk_pop(ctx);
 }
