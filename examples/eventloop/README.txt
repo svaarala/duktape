@@ -1,13 +1,22 @@
+==================
 Eventloop examples
+==================
+
+Overview and usage
 ==================
 
 A few examples on how an event loop can be implemented with Duktape, mainly
 illlustrating how the Duktape interface works (not how event loops should be
-built otherwise).  To test (Linux only, perhaps other Unix)::
+built otherwise).
+
+To test (Linux only, perhaps other Unix)::
 
   $ make
   $ ./evloop curses-timers.js     # run with Ecmascript eventloop
   $ ./evloop -c curses-timers.js  # run with C eventloop
+
+Implementation approaches
+=========================
 
 There are several approaches to implementation timers.  Here we demonstrate
 two main approaches:
@@ -20,6 +29,9 @@ two main approaches:
    can be managed with Ecmascript code instead of C structures.  The Ecmascript
    eventloop calls a Duktape/C helper to do the lowest level poll() call.
    (See ``ecma_eventloop.js``.)
+
+Services provided
+=================
 
 The event loop API provided by both examples is the same, and includes:
 
@@ -34,7 +46,16 @@ related:
 
 * Curses, for doing beautiful character graphics
 
-Note that this is **not** a production quality event loop.  For example, a
-production quality event loop would track its internal state (active timers
-and sockets) much more efficiently.  Also, the example uses poll() while one
-should use epoll() on Linux, kqueue() on BSD systems, etc.
+Limitations
+===========
+
+This is **not** a production quality event loop.  This is on purpose, to
+keep the example somewhat simple.  Some shortcomings include:
+
+* A production quality event loop would track its internal state (active
+  timers and sockets) much more efficiently.
+
+* The example uses poll() while one should use epoll() on Linux, kqueue()
+  on BSD systems, etc.
+
+* Error handling is mostly missing.

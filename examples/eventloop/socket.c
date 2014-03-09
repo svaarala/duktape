@@ -38,6 +38,30 @@ static void set_nonblocking(duk_context *ctx, int fd) {
 	}
 }
 
+static void set_reuseaddr(duk_context *ctx, int fd) {
+	int val;
+	int rc;
+
+	val = 1;
+	rc = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &val, sizeof(val));
+	if (rc != 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+}
+
+#ifdef __APPLE__
+static void set_nosigpipe(duk_context *ctx, int fd) {
+	int val;
+	int rc;
+
+	val = 1;
+	rc = setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, (const void *) &val, sizeof(val));
+	if (rc != 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+}
+#endif
+
 static int socket_create_server_socket(duk_context *ctx) {
 	const char *addr = duk_to_string(ctx, 0);
 	int port = duk_to_int(ctx, 1);
@@ -55,19 +79,9 @@ static int socket_create_server_socket(duk_context *ctx) {
 	}
 
 	set_nonblocking(ctx, sock);
-
-	i = 1;
-	rc = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void *) &i, sizeof(int));
-	if (rc != 0) {
-		ERROR_FROM_ERRNO(ctx);
-	}
-
+	set_reuseaddr(ctx, sock);
 #ifdef __APPLE__
-	i = 1;
-	rc = setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, (const void *) &i, sizeof(int));
-	if (rc != 0) {
-		ERROR_FROM_ERRNO(ctx);
-	}
+	set_nosigpipe(ctx, sock);
 #endif
 
 	ent = gethostbyname(addr);
@@ -132,6 +146,9 @@ static int socket_accept(duk_context *ctx) {
 	}
 
 	set_nonblocking(ctx, sock);
+#ifdef __APPLE__
+	set_nosigpipe(ctx, sock);
+#endif
 
 	if (addrlen == sizeof(addr)) {
 		uint32_t tmp = ntohl(addr.sin_addr.s_addr);
@@ -152,6 +169,63 @@ static int socket_accept(duk_context *ctx) {
 	}
 	
 	return 0;
+}
+
+static int socket_connect(duk_context *ctx) {
+	const char *addr = duk_to_string(ctx, 0);
+	int port = duk_to_int(ctx, 1);
+	int sock;
+	struct sockaddr_in sockaddr;
+	struct hostent *ent;
+	struct in_addr **addr_list;
+	struct in_addr *addr_inet;
+	int i;
+	int rc;
+
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock < 0) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+
+	set_nonblocking(ctx, sock);
+#ifdef __APPLE__
+	set_nosigpipe(ctx, sock);
+#endif
+
+	ent = gethostbyname(addr);
+	if (!ent) {
+		ERROR_FROM_ERRNO(ctx);
+	}
+
+	addr_list = (struct in_addr **) ent->h_addr_list;
+	addr_inet = NULL;
+	for (i = 0; addr_list[i]; i++) {
+		addr_inet = addr_list[i];
+		break;
+	}
+	if (!addr_inet) {
+		duk_error(ctx, DUK_ERR_ERROR, "cannot resolve %s", addr);
+	}
+
+	memset(&sockaddr, 0, sizeof(sockaddr));
+	sockaddr.sin_family = AF_INET;
+	sockaddr.sin_port = htons(port);
+	sockaddr.sin_addr = *addr_inet;
+
+	rc = connect(sock, (const struct sockaddr *) &sockaddr, (socklen_t) sizeof(sockaddr));
+	if (rc < 0) {
+		if (errno == EINPROGRESS) {
+#if 0
+			fprintf(stderr, "connect() returned EINPROGRESS as expected, need to poll writability\n");
+			fflush(stderr);
+#endif
+		} else {
+			ERROR_FROM_ERRNO(ctx);
+		}
+	}
+
+	duk_push_int(ctx, sock);
+	return 1;
 }
 
 static int socket_read(duk_context *ctx) {
@@ -207,6 +281,10 @@ void socket_register(duk_context *ctx) {
 
 	duk_push_string(ctx, "accept");
 	duk_push_c_function(ctx, socket_accept, 1);
+	duk_put_prop(ctx, -3);
+
+	duk_push_string(ctx, "connect");
+	duk_push_c_function(ctx, socket_connect, 2);
 	duk_put_prop(ctx, -3);
 
 	duk_push_string(ctx, "read");

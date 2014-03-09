@@ -31,6 +31,7 @@ function EventLoop() {
     // sockets
     this.socketListeners = {};  // fd -> callback
     this.socketReaders = {};    // fd -> callback
+    this.socketConnecting = {}; // fd -> callback
 
     // misc
     this.exitRequested = false;
@@ -198,9 +199,10 @@ EventLoop.prototype.processTimers = function() {
 EventLoop.prototype.run = function() {
     var wait;
     var POLLIN = Poll.POLLIN;
+    var POLLOUT = Poll.POLLOUT;
     var poll_set;
     var fd;
-    var t;
+    var t, rev;
     var rc;
     var acc_res;
 
@@ -234,7 +236,10 @@ EventLoop.prototype.run = function() {
         for (fd in this.socketReaders) {
             poll_set[fd] = { events: POLLIN, revents: 0 };
         }
-        //print('poll_set IN:', Duktape.enc('jsonx', poll_set));
+        for (fd in this.socketConnecting) {
+            poll_set[fd] = { events: POLLOUT, revents: 0 };
+        }
+        //print(new Date(), 'poll_set IN:', Duktape.enc('jsonx', poll_set));
 
         /*
          *  Wait timeout for timer closest to expiry.  Since the poll
@@ -263,10 +268,12 @@ EventLoop.prototype.run = function() {
          *  next round.
          */
 
-        //print('poll_set OUT:', Duktape.enc('jsonx', poll_set));
+        //print(new Date(), 'poll_set OUT:', Duktape.enc('jsonx', poll_set));
         for (fd in poll_set) {
             t = poll_set[fd];
-            if (t.revents === POLLIN) {
+            rev = t.revents;
+
+            if (rev & POLLIN) {
                 cb = this.socketReaders[fd];
                 if (cb) {
                     data = Socket.read(fd);  // no size control now
@@ -289,7 +296,19 @@ EventLoop.prototype.run = function() {
                         //print('UNKNOWN');
                     }
                 }
-            } else if (t.revents !== 0) {
+            }
+
+            if (rev & POLLOUT) {
+                cb = this.socketConnecting[fd];
+                if (cb) {
+                    delete this.socketConnecting[fd];
+                    cb(fd);
+                } else {
+                    //print('UNKNOWN POLLOUT');
+                }
+            }
+
+            if ((rev & ~(POLLIN|POLLOUT)) !== 0) {
                 //print('revents ' + t.revents + ' for fd ' + fd + ', closing forcibly');
                 rc = Socket.close(fd);  // ignore result
                 delete this.socketListeners[fd];
@@ -309,7 +328,8 @@ EventLoop.prototype.server = function(address, port, cb_accepted) {
 }
 
 EventLoop.prototype.connect = function(address, port, cb_connected) {
-    // FIXME: async handling with plain poll()
+    var fd = Socket.connect(address, port);
+    this.socketConnecting[fd] = cb_connected;
 }
 
 EventLoop.prototype.close = function(fd) {
