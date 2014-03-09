@@ -197,6 +197,8 @@ for i in \
 	fileio.c \
 	curses-timers.js \
 	basic-test.js \
+	server-socket-test.js \
+	client-socket-test.js \
 	; do
 	cp examples/eventloop/$i $DIST/examples/eventloop/
 done
