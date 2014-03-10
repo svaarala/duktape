@@ -19,25 +19,25 @@
  *  near future displace as few elements in the array as possible.
  */
 
-function EventLoop() {
+EventLoop = {
     // timers
-    this.timers = [];         // active timers, sorted (nearest expiry last)
-    this.expiring = null;     // set to timer being expired (needs special handling in clearTimeout/clearInterval)
-    this.nextTimerId = 1;
-    this.minimumDelay = 1;
-    this.minimumWait = 1;
-    this.maxExpirys = 10;
+    timers: [],         // active timers, sorted (nearest expiry last)
+    expiring: null,     // set to timer being expired (needs special handling in clearTimeout/clearInterval)
+    nextTimerId: 1,
+    minimumDelay: 1,
+    minimumWait: 1,
+    maxExpirys: 10,
 
     // sockets
-    this.socketListeners = {};  // fd -> callback
-    this.socketReaders = {};    // fd -> callback
-    this.socketConnecting = {}; // fd -> callback
+    socketListening: {},  // fd -> callback
+    socketReading: {},    // fd -> callback
+    socketConnecting: {}, // fd -> callback
 
     // misc
-    this.exitRequested = false;
+    exitRequested: false
 };
 
-EventLoop.prototype.dumpState = function() {
+EventLoop.dumpState = function() {
     print('TIMER STATE:');
     this.timers.forEach(function(t) {
         print('    ' + Duktape.enc('jsonx', t));
@@ -49,18 +49,18 @@ EventLoop.prototype.dumpState = function() {
 
 // Get timer with lowest expiry time.  Since the active timers list is
 // sorted, it's always the last timer.
-EventLoop.prototype.getEarliestTimer = function() {
+EventLoop.getEarliestTimer = function() {
     var timers = this.timers;
     n = timers.length;
     return (n > 0 ? timers[n - 1] : null);
 }
 
-EventLoop.prototype.getEarliestWait = function() {
+EventLoop.getEarliestWait = function() {
     var t = this.getEarliestTimer();
     return (t ? Math.max(this.minimumWait, t.target - Date.now()) : null);
 }
 
-EventLoop.prototype.insertTimer = function(timer) {
+EventLoop.insertTimer = function(timer) {
     var timers = this.timers;
     var i, n, t;
 
@@ -84,7 +84,7 @@ EventLoop.prototype.insertTimer = function(timer) {
 // Remove timer/interval with a timer ID.  The timer/interval can reside
 // either on the active list or it may be an expired timer (this.expiring)
 // whose user callback we're running when this function gets called.
-EventLoop.prototype.removeTimerById = function(timer_id) {
+EventLoop.removeTimerById = function(timer_id) {
     var timers = this.timers;
     var i, n, t;
 
@@ -116,7 +116,7 @@ EventLoop.prototype.removeTimerById = function(timer_id) {
    // no such ID, ignore
 }
 
-EventLoop.prototype.processTimers = function() {
+EventLoop.processTimers = function() {
     var now = Date.now();
     var timers = this.timers;
     var sanity = this.maxExpirys;
@@ -196,11 +196,12 @@ EventLoop.prototype.processTimers = function() {
     }
 }
 
-EventLoop.prototype.run = function() {
+EventLoop.run = function() {
     var wait;
     var POLLIN = Poll.POLLIN;
     var POLLOUT = Poll.POLLOUT;
     var poll_set;
+    var poll_count;
     var fd;
     var t, rev;
     var rc;
@@ -230,14 +231,18 @@ EventLoop.prototype.run = function() {
          */
 
         poll_set = {};
-        for (fd in this.socketListeners) {
+        poll_count = 0;
+        for (fd in this.socketListening) {
             poll_set[fd] = { events: POLLIN, revents: 0 };
+            poll_count++;
         }
-        for (fd in this.socketReaders) {
+        for (fd in this.socketReading) {
             poll_set[fd] = { events: POLLIN, revents: 0 };
+            poll_count++;
         }
         for (fd in this.socketConnecting) {
             poll_set[fd] = { events: POLLOUT, revents: 0 };
+            poll_count++;
         }
         //print(new Date(), 'poll_set IN:', Duktape.enc('jsonx', poll_set));
 
@@ -247,8 +252,8 @@ EventLoop.prototype.run = function() {
          */
 
         wait = this.getEarliestWait();
-        if (!wait) {
-            //print('no active timers, exit');
+        if (!wait && poll_count === 0) {
+            print('no active timers and no sockets to poll, exit');
             break;
         }
 
@@ -274,20 +279,20 @@ EventLoop.prototype.run = function() {
             rev = t.revents;
 
             if (rev & POLLIN) {
-                cb = this.socketReaders[fd];
+                cb = this.socketReading[fd];
                 if (cb) {
                     data = Socket.read(fd);  // no size control now
                     //print('READ', Duktape.enc('jsonx', data));
                     if (String(data) === '') {
                         //print('zero read for fd ' + fd + ', closing forcibly');
                         rc = Socket.close(fd);  // ignore result
-                        delete this.socketListeners[fd];
-                        delete this.socketReaders[fd];
+                        delete this.socketListening[fd];
+                        delete this.socketReading[fd];
                     } else {
                         cb(fd, data);
                     }
                 } else {
-                    cb = this.socketListeners[fd];
+                    cb = this.socketListening[fd];
                     if (cb) {
                         acc_res = Socket.accept(fd);
                         //print('ACCEPT:', Duktape.enc('jsonx', acc_res));
@@ -308,45 +313,43 @@ EventLoop.prototype.run = function() {
                 }
             }
 
-            if ((rev & ~(POLLIN|POLLOUT)) !== 0) {
+            if ((rev & ~(POLLIN | POLLOUT)) !== 0) {
                 //print('revents ' + t.revents + ' for fd ' + fd + ', closing forcibly');
                 rc = Socket.close(fd);  // ignore result
-                delete this.socketListeners[fd];
-                delete this.socketReaders[fd];
+                delete this.socketListening[fd];
+                delete this.socketReading[fd];
             }
         }
     }
 }
 
-EventLoop.prototype.requestExit = function() {
+EventLoop.requestExit = function() {
     this.exitRequested = true;
 }
 
-EventLoop.prototype.server = function(address, port, cb_accepted) {
+EventLoop.server = function(address, port, cb_accepted) {
     var fd = Socket.createServerSocket(address, port);
-    this.socketListeners[fd] = cb_accepted;
+    this.socketListening[fd] = cb_accepted;
 }
 
-EventLoop.prototype.connect = function(address, port, cb_connected) {
+EventLoop.connect = function(address, port, cb_connected) {
     var fd = Socket.connect(address, port);
     this.socketConnecting[fd] = cb_connected;
 }
 
-EventLoop.prototype.close = function(fd) {
-    delete this.socketReaders[fd];
-    delete this.socketListeners[fd];
+EventLoop.close = function(fd) {
+    delete this.socketReading[fd];
+    delete this.socketListening[fd];
 }
 
-EventLoop.prototype.setReader = function(fd, cb_read) {
-    this.socketReaders[fd] = cb_read;
+EventLoop.setReader = function(fd, cb_read) {
+    this.socketReading[fd] = cb_read;
 }
 
-EventLoop.prototype.write = function(fd, data) {
+EventLoop.write = function(fd, data) {
     // This simple example doesn't have support for write blocking / draining
     var rc = Socket.write(fd, Duktape.Buffer(data));
 }
-
-var _EVENTLOOP = new EventLoop();  // singleton instance
 
 /*
  *  Timer API
@@ -358,7 +361,7 @@ function setTimeout(func, delay) {
     var cb_func;
     var bind_args;
     var timer_id;
-    var evloop = _EVENTLOOP;
+    var evloop = EventLoop;
 
     if (typeof delay !== 'number') {
         throw new TypeError('delay is not a number');
@@ -394,7 +397,7 @@ function setTimeout(func, delay) {
 }
 
 function clearTimeout(timer_id) {
-    var evloop = _EVENTLOOP;
+    var evloop = EventLoop;
 
     if (typeof timer_id !== 'number') {
         throw new TypeError('timer ID is not a number');
@@ -406,7 +409,7 @@ function setInterval(func, delay) {
     var cb_func;
     var bind_args;
     var timer_id;
-    var evloop = _EVENTLOOP;
+    var evloop = EventLoop;
 
     if (typeof delay !== 'number') {
         throw new TypeError('delay is not a number');
@@ -442,7 +445,7 @@ function setInterval(func, delay) {
 }
 
 function clearInterval(timer_id) {
-    var evloop = _EVENTLOOP;
+    var evloop = EventLoop;
 
     if (typeof timer_id !== 'number') {
         throw new TypeError('timer ID is not a number');
@@ -452,5 +455,5 @@ function clearInterval(timer_id) {
 
 /* custom call */
 function requestEventLoopExit() {
-    _EVENTLOOP.requestExit();
+    EventLoop.requestExit();
 }

@@ -89,9 +89,9 @@ int wrapped_compile_execute(duk_context *ctx) {
 		}
 		duk_pop(ctx);
 	} else {
-		fprintf(stderr, "calling _EVENTLOOP.run()\n");
+		fprintf(stderr, "calling EventLoop.run()\n");
 		fflush(stderr);
-		duk_eval_string(ctx, "_EVENTLOOP.run();");
+		duk_eval_string(ctx, "EventLoop.run();");
 		duk_pop(ctx);
 	}
 
