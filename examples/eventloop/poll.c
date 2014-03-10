@@ -85,9 +85,8 @@ void poll_register(duk_context *ctx) {
 	duk_push_string(ctx, "Poll");
 	duk_push_object(ctx);
 
-	duk_push_string(ctx, "poll");
 	duk_push_c_function(ctx, poll_poll, 2);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "poll");
 
 	duk_push_int(ctx, POLLIN);
 	duk_put_prop_string(ctx, -2, "POLLIN");

@@ -59,9 +59,8 @@ void fileio_register(duk_context *ctx) {
 	duk_push_string(ctx, "FileIo");
 	duk_push_object(ctx);
 
-	duk_push_string(ctx, "readfile");
 	duk_push_c_function(ctx, fileio_readfile, 1);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "readfile");
 
 	duk_put_prop(ctx, -3);
 	duk_pop(ctx);

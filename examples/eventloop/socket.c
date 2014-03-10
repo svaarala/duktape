@@ -275,25 +275,20 @@ void socket_register(duk_context *ctx) {
 	duk_push_c_function(ctx, socket_create_server_socket, 2);
 	duk_put_prop(ctx, -3);
 
-	duk_push_string(ctx, "close");
 	duk_push_c_function(ctx, socket_close, 1);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "close");
 
-	duk_push_string(ctx, "accept");
 	duk_push_c_function(ctx, socket_accept, 1);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "accept");
 
-	duk_push_string(ctx, "connect");
 	duk_push_c_function(ctx, socket_connect, 2);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "connect");
 
-	duk_push_string(ctx, "read");
 	duk_push_c_function(ctx, socket_read, 1);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "read");
 
-	duk_push_string(ctx, "write");
 	duk_push_c_function(ctx, socket_write, 2);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_string(ctx, -2, "write");
 
 	duk_put_prop(ctx, -3);
 	duk_pop(ctx);
