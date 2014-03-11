@@ -757,13 +757,13 @@ duk_tval *duk_require_tval(duk_context *ctx, int index) {
 		}
 		tv = thr->valstack_top + index;
 		DUK_ASSERT(tv < thr->valstack_top);
-		if (tv < thr->valstack_bottom) {
+		if (DUK_UNLIKELY(tv < thr->valstack_bottom)) {
 			goto fail;
 		}
 	} else {
 		tv = thr->valstack_bottom + index;
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		if (tv >= thr->valstack_top) {
+		if (DUK_UNLIKELY(tv >= thr->valstack_top)) {
 			goto fail;
 		}
 	}

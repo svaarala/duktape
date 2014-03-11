@@ -840,10 +840,23 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 	DUK_ASSERT(e_idx != NULL);
 	DUK_ASSERT(h_idx != NULL);
 
-	*e_idx = -1;
-	*h_idx = -1;
+	if (DUK_LIKELY(obj->h_size == 0)) {
+		/* linear scan: more likely because most objects are small */
+		duk_uint_fast32_t i;
+		duk_uint_fast32_t n;
+		duk_hstring **h_keys_base;
+		DUK_DDDPRINT("duk_hobject_find_existing_entry() using linear scan for lookup");
 
-	if (obj->h_size > 0) {
+		h_keys_base = DUK_HOBJECT_E_GET_KEY_BASE(obj);
+		n = obj->e_used;
+		for (i = 0; i < n; i++) {
+			if (h_keys_base[i] == key) {
+				*e_idx = i;
+				*h_idx = -1;
+				return;
+			}
+		}
+	} else {
 		/* hash lookup */
 		int i;
 		int n;
@@ -885,26 +898,11 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 			/* guaranteed to finish, as hash is never full */
 			DUK_ASSERT(i != (int) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));  /* FIXME: typing */
 		}
-	} else {
-		/* linear scan */
-		int i;
-		int n;
-		duk_hstring **h_keys_base;
-		DUK_DDDPRINT("duk_hobject_find_existing_entry() using linear scan for lookup");
-
-		h_keys_base = DUK_HOBJECT_E_GET_KEY_BASE(obj);
-		n = obj->e_used;
-		for (i = 0; i < n; i++) {
-			if (h_keys_base[i] == key) {
-				*e_idx = i;
-				DUK_ASSERT(*h_idx == -1);
-				return;
-			}
-		}
 	}
 
 	/* not found */
-	DUK_ASSERT(*e_idx == -1 && *h_idx == -1);
+	*e_idx = -1;
+	*h_idx = -1;
 }
 
 /* For internal use: get non-accessor entry value */
