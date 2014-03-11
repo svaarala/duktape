@@ -53,7 +53,16 @@ This is **not** a production quality event loop.  This is on purpose, to
 keep the example somewhat simple.  Some shortcomings include:
 
 * A production quality event loop would track its internal state (active
-  timers and sockets) much more efficiently.
+  timers and sockets) much more efficiently.  In general memory usage and
+  code footprint can be reduced.
+
+* Buffer churn caused by allocating a new buffer for every socket read
+  should be eliminated by reusing buffers where appropriate.  Although
+  churn doesn't increase memory footprint with reference counting, it
+  is slower than reusing buffers and might aggravate memory fragmentation.
+
+* There is no way to suspend reading or writing in the example.  Adding
+  them is straightforward: the poll set needs to be managed dynamically.
 
 * The example uses poll() while one should use epoll() on Linux, kqueue()
   on BSD systems, etc.
