@@ -86,3 +86,94 @@ function clearInterval(timer_id) {
 function requestEventLoopExit() {
     EventLoop.requestExit();
 }
+
+/*
+ *  Socket handling
+ *
+ *  Ideally this would be implemented more in C than here for more speed
+ *  and smaller footprint: C code would directly maintain the callback state
+ *  and such.
+ *
+ *  Also for more optimal I/O, the buffer churn caused by allocating and
+ *  freeing a lot of buffer values could be eliminated by reusing buffers.
+ *  Socket reads would then go into a pre-allocated buffer, for instance.
+ */
+
+EventLoop.socketListening = {};
+EventLoop.socketReading = {};
+EventLoop.socketConnecting = {};
+
+EventLoop.fdPollHandler = function(fd, revents) {
+    var data;
+    var cb;
+    var rc;
+    var acc_res;
+
+    //print('activity on fd', fd, 'revents', revents);
+
+    if (revents & Poll.POLLIN) {
+        cb = this.socketReading[fd];
+        if (cb) {
+            data = Socket.read(fd);  // no size control now
+            //print('READ', Duktape.enc('jsonx', data));
+            if (String(data) === '') {  // FIXME
+                this.close(fd);
+                return;
+            }
+            cb(fd, data);
+        } else {
+            cb = this.socketListening[fd];
+            if (cb) {
+                acc_res = Socket.accept(fd);
+                //print('ACCEPT:', Duktape.enc('jsonx', acc_res));
+                cb(acc_res.fd, acc_res.addr, acc_res.port);
+            } else {
+                //print('UNKNOWN');
+            }
+        }
+    }
+
+    if (revents & Poll.POLLOUT) {
+        // Connected
+        cb = this.socketConnecting[fd];
+        if (cb) {
+            delete this.socketConnecting[fd];
+            cb(fd);
+        }
+    }
+
+    if ((revents & ~(Poll.POLLIN | Poll.POLLOUT)) !== 0) {
+        //print('unexpected revents, close fd');
+        this.close(fd);
+    }
+}
+
+EventLoop.server = function(address, port, cb_accepted) {
+    var fd = Socket.createServerSocket(address, port);
+    this.socketListening[fd] = cb_accepted;
+    this.listenFd(fd, Poll.POLLIN);
+}
+
+EventLoop.connect = function(address, port, cb_connected) {
+    var fd = Socket.connect(address, port);
+    this.socketConnecting[fd] = cb_connected;
+    this.listenFd(fd, Poll.POLLOUT);
+}
+
+EventLoop.close = function(fd) {
+    EventLoop.listenFd(fd, 0);
+    delete this.socketListening[fd];
+    delete this.socketReading[fd];
+    delete this.socketConnecting[fd];
+    Socket.close(fd);
+}
+
+EventLoop.setReader = function(fd, cb_read) {
+    this.socketReading[fd] = cb_read;
+    this.listenFd(fd, Poll.POLLIN);
+}
+
+EventLoop.write = function(fd, data) {
+    // This simple example doesn't have support for write blocking / draining
+    var rc = Socket.write(fd, Duktape.Buffer(data));
+}
