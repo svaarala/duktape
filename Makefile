@@ -246,6 +246,7 @@ cleanall: clean
 	-@rm -rf coco
 	-@rm -rf sax-js
 	-@rm -rf xmldoc
+	-@rm -rf FlameGraph
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -629,6 +630,11 @@ xmldoctest: sax-js xmldoc duk
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat xmldoc-testcases/basic.js >> /tmp/duk-xmldoc-test.js
 	./duk /tmp/duk-xmldoc-test.js
+
+FlameGraph:
+	# http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
+	# https://github.com/brendangregg/FlameGraph
+	$(GIT) clone --depth 1 https://github.com/brendangregg/FlameGraph
 
 gccpredefs:
 	gcc -dM -E - < /dev/null
