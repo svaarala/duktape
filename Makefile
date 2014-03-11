@@ -208,6 +208,8 @@ clean:
 	-@rm -f src/*.pyc
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.* ms_print.tmp.*
+	-@rm -rf cachegrind.out.*
+	-@rm -rf oprofile_data/
 	-@rm -f /tmp/duk_sizes.html
 	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
 	-@rm -rf /tmp/duktape-regfuzz/
@@ -247,6 +249,7 @@ cleanall: clean
 	-@rm -rf sax-js
 	-@rm -rf xmldoc
 	-@rm -rf FlameGraph
+	-@rm -rf dtrace4linux
 
 libduktape.so.1.0.0: dist
 	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -634,7 +637,12 @@ xmldoctest: sax-js xmldoc duk
 FlameGraph:
 	# http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
 	# https://github.com/brendangregg/FlameGraph
-	$(GIT) clone --depth 1 https://github.com/brendangregg/FlameGraph
+	$(GIT) clone --depth 1 https://github.com/brendangregg/FlameGraph.git
+
+dtrace4linux:
+	# https://github.com/dtrace4linux/linux
+	# http://crtags.blogspot.fi/
+	$(GIT) clone --depth 1 https://github.com/dtrace4linux/linux.git dtrace4linux
 
 gccpredefs:
 	gcc -dM -E - < /dev/null
