@@ -209,6 +209,7 @@ clean:
 	-@rm -rf duktape-*  # covers various files and dirs
 	-@rm -rf massif.out.* ms_print.tmp.*
 	-@rm -rf cachegrind.out.*
+	-@rm -rf callgrind.out.*
 	-@rm -rf oprofile_data/
 	-@rm -f /tmp/duk_sizes.html
 	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
