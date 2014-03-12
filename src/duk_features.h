@@ -1632,6 +1632,17 @@ typedef FILE duk_file;
  * when deleteCount is omitted.
  */
 #define DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+#if defined(DUK_OPT_NO_ARRAY_SPLICE_NONSTD_DELCOUNT)
+#undef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+#endif
+
+/* Non-standard 'caller' property for function instances, see
+ * test-bi-function-nonstd-caller-prop.js.
+ */
+#undef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#if defined(DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY)
+#define DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#endif
 
 /*
  *  Function instance features.
