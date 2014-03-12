@@ -186,12 +186,12 @@ The table below summarizes the available options, in no particular order:</p>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_ARRAY_SPLICE_NONSTD_DELCOUNT</td>
-<td>For better compatibility with existing code, <code>Array.splice()</code>
+<td>For better compatibility with existing code, <code>Array.prototype.splice()</code>
     has non-standard behavior by default when the second argument (deleteCount)
     is not given: the splice operation is extended to the end of the array.
-    If this option is given, <code>Array.splice()</code> will behave in a
-    strictly conforming fashion, treating a missing deleteCount the same as
-    an undefined (or 0) value.</td>
+    If this option is given, <code>splice()</code> will behave in a strictly
+    conforming fashion, treating a missing deleteCount the same as an undefined
+    (or 0) value.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_JSONX</td>
