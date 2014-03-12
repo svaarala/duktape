@@ -229,9 +229,12 @@ struct duk_hthread {
 	duk_int_t interrupt_counter;
 #endif
 
-	/* Builtin-objects; may be shared with other threads, copies of
-	 * pointers in duk_heap.  This is rather expensive, currently
-	 * 38x4 = 152 bytes.
+	/* Builtin-objects; may or may not be shared with other threads,
+	 * threads existing in different "compartments" will have different
+	 * built-ins.  Must be stored on a per-thread basis because there
+	 * is no intermediate structure for a thread group / compartment.
+	 * This takes quite a lot of space, currently 43x4 = 172 bytes on
+	 * 32-bit platforms.
 	 */
 	duk_hobject *builtins[DUK_NUM_BUILTINS];
 
