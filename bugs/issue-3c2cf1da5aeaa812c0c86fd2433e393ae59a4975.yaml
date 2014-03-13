@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "test a few profiling tools: valgrind (callgrind), oprofile, perf"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-11 15:42:36.651592 Z
+references: []
+
+id: 3c2cf1da5aeaa812c0c86fd2433e393ae59a4975
+log_events: 
+- - 2014-03-11 15:42:36.827514 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
