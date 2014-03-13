@@ -452,6 +452,7 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound chain resolved */
 	DUK_ASSERT(thr->callstack_top >= 1);
 
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
@@ -470,8 +471,9 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 		 *
 		 * FIXME: there is no special flag to infer this correctly now.
 		 * The NEWENV flag is used now which works as intended for
-		 * global code, non-strict eval code, and non-bound functions.
-		 * It works incorrectly for strict eval code and bound functions.
+		 * everything (global code, non-strict eval code, and functions)
+		 * except strict eval code.  Bound functions are never an issue
+		 * because 'func' has been resolved to a non-bound function.
 		 */
 
 		if (act_caller) {
