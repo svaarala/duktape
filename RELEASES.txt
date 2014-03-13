@@ -217,6 +217,10 @@ Planned
 
 * Add an automatic 'length' property to Duktape/C functions
 
+* Add a feature define to provide a 'caller' property for non-strict
+  functions, with behavior similar to the (non-standard) behavior in
+  e.g. V8 and Rhino
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
   **FIXME: under work**
