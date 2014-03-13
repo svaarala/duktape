@@ -26,6 +26,8 @@ function summarizeCaller(f) {
         return 'null';
     } else if (typeof f.caller === 'function') {
         return f.caller.name || 'anon';
+    } else if (typeof f.caller === 'number') {
+        return f.caller;  // not needed, used during development
     } else {
         return typeof f.caller;
     }
@@ -35,7 +37,7 @@ function summarizeCaller(f) {
 basic tests
 null false false false undefined undefined
 null false false false undefined undefined
-null false false false function function
+undefined undefined false false function function
 TypeError
 function basicTest
 function false false false undefined undefined
@@ -135,6 +137,14 @@ after ecmaNoTail, ecmaTail1 null
 after ecmaNoTail, ecmaTail2 null
 in nativeCall forEach
 after nativeCall null
+in nonStrictEvalCall null
+after nonStrictEvalCall null
+in strictEvalCall eval
+after strictEvalCall null
+in boundNonStrictCall callTypeTest
+after boundNonStrictCall null
+TypeError
+TypeError
 ===*/
 
 /* Different call type cases.  These have different internal handling for
@@ -172,12 +182,54 @@ function callTypeTest() {
     print('after ecmaNoTail, ecmaTail1', summarizeCaller(ecmaTail1));
     print('after ecmaNoTail, ecmaTail2', summarizeCaller(ecmaTail2));
 
-    // native-to-Ecmascript call
+    // Native-to-Ecmascript call
     function nativeCall() {
         print('in nativeCall', summarizeCaller(nativeCall));
     }
     [1].forEach(nativeCall);
     print('after nativeCall', summarizeCaller(nativeCall));
+
+    // Non-strict eval: V8 provides 'callTypeTest' in the target function
+    // 'caller' property.  Duktape handles eval() as an intermediate function
+    // in the call stack, and provides 'null' instead.
+    function nonStrictEvalCall() {
+        print('in nonStrictEvalCall', summarizeCaller(nonStrictEvalCall));
+    }
+    eval('nonStrictEvalCall()');
+    print('after nonStrictEvalCall', summarizeCaller(nonStrictEvalCall));
+
+    // Strict eval: V8 provides 'callTypeTest' in the target function
+    // 'caller' property.  Duktape handles eval() as an intermediate function
+    // in the call stack, but because strict eval functions look like normal
+    // functions internally, it provides 'eval' here at the moment.
+    function strictEvalCall() {
+        print('in strictEvalCall', summarizeCaller(strictEvalCall));
+    }
+    eval('"use strict"; strictEvalCall()');
+    print('after strictEvalCall', summarizeCaller(strictEvalCall));
+
+    // Call to bound function, final function is non-strict.
+    function boundNonStrictCall() {
+        print('in boundNonStrictCall', summarizeCaller(boundNonStrictCall));
+    }
+    boundNonStrictCall.bind(null)();
+    print('after boundNonStrictCall', summarizeCaller(boundNonStrictCall));
+
+    // call to bound function, final function is strict
+    function boundStrictCall() {
+        "use strict";
+        print('in boundStrictCall', summarizeCaller(boundStrictCall));
+    }
+    try {
+        boundStrictCall.bind(null)();
+    } catch (e) {
+        print(e.name);
+    }
+    try {
+        print('after boundStrictCall', summarizeCaller(boundStrictCall));
+    } catch (e) {
+        print(e.name);
+    }
 }
 
 print('call types');
@@ -335,14 +387,16 @@ co1 f (after g) entry2 null
 co1 entry1 (after f) null null
 co2 g null f
 co2 f (after g) null null
-co2 entry2 (after f) null null
+co2 entry2 (after f) entry1 null
 ===*/
 
 /* When a function is entered/exited, the 'caller' property is overwritten
  * by whichever thread has last executed.  This is confusing when the same
  * function instances are updated by multiple coroutines.
  *
- * Test for the expected (but confusing) behavior here.
+ * Test for the expected (but confusing) behavior here.  Note that the final
+ * value for f.caller here is 'entry1' which is very undesirable, but not
+ * easy to fix with the save/restore approach to 'caller' handling.
  */
 
 function coroutineOverwriteTest() {
@@ -381,7 +435,7 @@ function coroutineOverwriteTest() {
 
     var co1 = new Duktape.Thread(entry1);
     co1.name = 'co1';
-    var co2 = new Duktape.Thread(entry1);
+    var co2 = new Duktape.Thread(entry2);
     co2.name = 'co2';
 
     /*
@@ -428,15 +482,20 @@ try {
 
 /*===
 coroutine gc
-f started resume null
-g called resume f
+f started null null
+g called null f
 canary finalized
-after null null
+after null f
 ===*/
 
 /* Coroutine garbage collection test.  A garbage collected coroutine gets
  * freed.  Conceptually its call stack is NOT unwound but rather just freed.
  * Even so, 'caller' should get reset to its original value.
+ *
+ * At the moment Duktape doesn't handle this case correctly and 'caller'
+ * values are not reset.  In general, coroutines and 'caller' don't mix
+ * well (see test above for a normal case where 'caller' is non-null after
+ * coroutine stacks have been unwound).
  */
 
 function coroutineGcTest() {
