@@ -1,5 +1,7 @@
 /*
  *  Test presence of custom Function properties.
+ *
+ *  This testcase breaks with DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY.
  */
 
 /*===
