@@ -440,6 +440,83 @@ static void duk__handle_oldenv_for_call(duk_hthread *thr,
 }
 
 /*
+ *  Helper for updating callee 'caller' property.
+ */
+
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
+	duk_tval *tv_caller;
+	duk_hobject *h_tmp;
+	duk_activation *act_callee;
+	duk_activation *act_caller;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(func != NULL);
+	DUK_ASSERT(thr->callstack_top >= 1);
+
+	if (DUK_HOBJECT_HAS_STRICT(func)) {
+		/* Strict functions don't get their 'caller' updated. */
+		return;
+	}
+
+	act_callee = thr->callstack + thr->callstack_top - 1;
+	act_caller = (thr->callstack_top >= 2 ? act_callee - 1 : NULL);
+
+	/* Backup 'caller' property and update its value. */
+	tv_caller = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_CALLER(thr));
+	if (tv_caller) {
+		/* If caller is global/eval code, 'caller' should be set to
+		 * 'null'.
+		 *
+		 * FIXME: there is no special flag to infer this correctly now.
+		 * The NEWENV flag is used now which works as intended for
+		 * global code, non-strict eval code, and non-bound functions.
+		 * It works incorrectly for strict eval code and bound functions.
+		 */
+
+		if (act_caller) {
+			DUK_ASSERT(act_caller->func != NULL);
+			if (!DUK_HOBJECT_HAS_NEWENV(act_caller->func)) {
+				/* Setting to NULL causes 'caller' to be set to
+				 * 'null' as desired.
+				 */
+				act_caller = NULL;
+			}
+		}
+
+		if (DUK_TVAL_IS_OBJECT(tv_caller)) {
+			h_tmp = DUK_TVAL_GET_OBJECT(tv_caller);
+			act_callee->prev_caller = h_tmp;
+			DUK_ASSERT(act_callee->prev_caller != NULL);
+
+			/* Previous value doesn't need refcount changes because its ownership
+			 * is transferred to prev_caller.
+			 */
+
+			if (act_caller) {
+				DUK_ASSERT(act_caller->func != NULL);
+				DUK_TVAL_SET_OBJECT(tv_caller, act_caller->func);
+				DUK_TVAL_INCREF(thr, tv_caller);
+			} else {
+				DUK_TVAL_SET_NULL(tv_caller);  /* no incref */
+			}
+		} else {
+			/* 'caller' must only take on 'null' or function value */
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_caller));
+			DUK_ASSERT(act_callee->prev_caller == NULL);
+			if (act_caller) {
+				DUK_ASSERT(act_caller->func != NULL);
+				DUK_TVAL_SET_OBJECT(tv_caller, act_caller->func);
+				DUK_TVAL_INCREF(thr, tv_caller);
+			} else {
+				DUK_TVAL_SET_NULL(tv_caller);  /* no incref */
+			}
+		}
+	}
+}
+#endif  /* DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
+
+/*
  *  Determine the effective 'this' binding and coerce the current value
  *  on the valstack to the effective one (in-place, at idx_this).
  *
@@ -940,6 +1017,9 @@ int duk_handle_call(duk_hthread *thr,
 	act->func = func;
 	act->var_env = NULL;
 	act->lex_env = NULL;
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+	act->prev_caller = NULL;
+#endif
 	act->pc = 0;
 	act->idx_bottom = entry_valstack_bottom_index + idx_args;
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
@@ -952,6 +1032,11 @@ int duk_handle_call(duk_hthread *thr,
 	}
 
 	DUK_HOBJECT_INCREF(thr, func);  /* act->func */
+
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+	duk__update_func_caller_prop(thr, func);
+	act = thr->callstack + thr->callstack_top - 1;
+#endif
 
 	/* [... func this arg1 ... argN] */
 
@@ -1670,6 +1755,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_hobject *func;    /* 'func' on stack (borrowed reference) */
 	duk_activation *act;
 	duk_hobject *env;
+	int use_tailcall;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -1789,8 +1875,18 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 */
 
 	/* XXX: some overlapping code; cleanup */
+	use_tailcall = call_flags & DUK_CALL_FLAG_IS_TAILCALL;
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+	if (!DUK_HOBJECT_HAS_STRICT(func)) {
+		/* Callee 'caller' property cannot be updated properly when
+		 * tailcalls are used, so disable.
+		 */
+		DUK_DDDPRINT("tailcall disabled because 'caller' property enabled and target is non-strict");
+		use_tailcall = 0;
+	}
+#endif
 
-	if (call_flags & DUK_CALL_FLAG_IS_TAILCALL) {
+	if (use_tailcall) {
 		duk_tval *tv1, *tv2;
 		duk_tval tv_tmp;
 		int i;
@@ -1825,10 +1921,22 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		/* Start filling in the activation */
 		act->func = func;  /* don't want an intermediate exposed state with func == NULL */
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		act->prev_caller = NULL;
+#endif
 		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_INCREF(thr, func);
 		act = thr->callstack + thr->callstack_top - 1;  /* side effects (currently none though) */
+#endif
+
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		/* This doesn't actually work properly for tail calls, so tail
+		 * calls are disabled when the custom 'caller' property is enabled
+		 * and call target is non-strict.
+		 */
+		duk__update_func_caller_prop(thr, func);
+		act = thr->callstack + thr->callstack_top - 1;
 #endif
 
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
@@ -1928,6 +2036,9 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->func = func;
 		act->var_env = NULL;
 		act->lex_env = NULL;
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		act->prev_caller = NULL;
+#endif
 		act->pc = 0;
 		act->idx_bottom = entry_valstack_bottom_index + idx_args;
 		DUK_ASSERT(nregs >= 0);
@@ -1936,6 +2047,11 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 #endif
 
 		DUK_HOBJECT_INCREF(thr, func);  /* act->func */
+
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		duk__update_func_caller_prop(thr, func);
+		act = thr->callstack + thr->callstack_top - 1;
+#endif
 	}
 
 	/* [... func this arg1 ... argN]  (not tail call)

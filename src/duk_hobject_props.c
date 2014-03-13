@@ -1918,6 +1918,10 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
  found:
 	/* [key result] */
 
+#if !defined(DUK_USE_FUNC_NONSTD_CALLER_PROPERTY)
+	/* This special behavior is disabled when the non-standard 'caller' property
+	 * is enabled, as it conflicts with the free use of 'caller'.
+	 */
 	if (key == DUK_HTHREAD_STRING_CALLER(thr) &&
 	    DUK_TVAL_IS_OBJECT(tv_obj)) {
 		duk_hobject *orig = DUK_TVAL_GET_OBJECT(tv_obj);
@@ -1941,10 +1945,11 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			    DUK_HOBJECT_IS_FUNCTION(h) &&
 			    DUK_HOBJECT_HAS_STRICT(h)) {
 				/* XXX: sufficient to check 'strict', assert for 'is function' */
-				DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "attempt to read 'caller' which is strict");
+				DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "attempt to read strict 'caller'");
 			}
 		}
 	}
+#endif   /* !DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
 
 	duk_remove(ctx, -2);  /* [key result] -> [result] */
 
