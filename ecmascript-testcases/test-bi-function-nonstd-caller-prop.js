@@ -15,7 +15,8 @@
 /*---
 {
     "nonstandard": true,
-    "custom": true
+    "custom": true,
+    "specialoptions": true
 }
 ---*/
 
