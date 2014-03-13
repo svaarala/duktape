@@ -185,3 +185,25 @@ var fn = function myfunc() {
 
 <p>These issues can be avoided by compiling Duktape with mark-and-sweep
 enabled (which is the default).</p>
+
+<h2>Non-standard function 'caller' property limitations</h2>
+
+<p>When <code>DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY</code> is given, Duktape
+updates the <code>caller</code> property of non-strict function instances
+similarly to e.g. V8 and
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/caller">Spidermonkey</a>.
+There are a few limitations, though:</p>
+<ul>
+<li>When a (non-strict) function is called from eval code, Duktape sets
+    <code>caller</code> to <code>null</code> if the eval code is non-strict,
+    and <code>eval</code> (reference to the eval built-in function) if the
+    eval code is strict.  This deviates from e.g. V8 behavior.</li>
+<li>Coroutines and <code>caller</code> don't mix well: <code>caller</code>
+    may be left in a non-<code>null</code> state even after coroutine call
+    stacks have been fully unwound.  Also, if a coroutine is garbage collected
+    before its call stack is unwound, the <code>caller</code> property of
+    functions in its callstack will not get updated now.</li>
+</ul>
+
+<p>See the internal <code>test-bi-function-nonstd-caller-prop.js</code> test
+case for further details.</p>
