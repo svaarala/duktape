@@ -778,6 +778,14 @@ typedef double duk_double_t;
 #endif
 #endif
 
+/* Convenience define: 32-bit pointers.  This is an important optimization
+ * target (e.g. for struct sizing).
+ */
+#undef DUK_USE_32BIT_PTRS
+#if DUK_UINTPTR_MAX <= 0xffffffffUL
+#define DUK_USE_32BIT_PTRS
+#endif
+
 /*
  *  Check whether we should use 64-bit integers
  */

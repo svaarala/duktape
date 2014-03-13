@@ -129,6 +129,47 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		p = &thr->callstack[idx];
 		DUK_ASSERT(p->func != NULL);
 
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		/*
+		 *  Restore 'caller' property for non-strict callee functions.
+		 */
+
+		if (!DUK_HOBJECT_HAS_STRICT(p->func)) {
+			duk_tval *tv_caller;
+			duk_tval tv_tmp;
+			duk_hobject *h_tmp;
+
+			tv_caller = duk_hobject_find_existing_entry_tval_ptr(p->func, DUK_HTHREAD_STRING_CALLER(thr));
+
+			/* The p->prev_caller should only be set if the entry for 'caller'
+			 * exists (as it is only set in that case, and the property is not
+			 * configurable), but handle all the cases anyway.
+			 */
+
+			if (tv_caller) {
+				if (p->prev_caller) {
+					/* Just transfer the refcount from p->prev_caller to tv_caller,
+					 * so no need for a refcount update.  This is the expected case.
+					 */
+					DUK_TVAL_SET_OBJECT(tv_caller, p->prev_caller);
+					p->prev_caller = NULL;
+				} else {
+					DUK_TVAL_SET_TVAL(&tv_tmp, tv_caller);
+					DUK_TVAL_SET_NULL(tv_caller);   /* no incref needed */
+					DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+				}
+			} else {
+				h_tmp = p->prev_caller;
+				if (h_tmp) {
+					p->prev_caller = NULL;
+					DUK_HOBJECT_DECREF(thr, h_tmp);  /* side effects */
+				}
+			}
+			p = &thr->callstack[idx];  /* avoid side effects */
+			DUK_ASSERT(p->prev_caller == NULL);
+		}
+#endif
+
 		/*
 		 *  Close environment record(s) if they exist.
 		 *

@@ -381,6 +381,14 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (DUK_HOBJECT_HAS_STRICT(&fun_clos->obj)) {
 		duk_def_prop_stridx_thrower(ctx, -2, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
 		duk_def_prop_stridx_thrower(ctx, -2, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+	} else {
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value");
+		duk_push_null(ctx);
+		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+#else
+		DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used");
+#endif
 	}
 
 	/*

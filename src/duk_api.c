@@ -2999,7 +2999,6 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 #endif
 
 	return retval;
-
 }
 
 int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {

@@ -109,8 +109,12 @@ static void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		for (i = 0; i < t->callstack_top; i++) {
 			duk_activation *act = &t->callstack[i];
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->func);
+			duk__mark_heaphdr(heap, (duk_heaphdr *) act->func);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->var_env);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->lex_env);
+#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+			duk__mark_heaphdr(heap, (duk_heaphdr *) act->prev_caller);
+#endif
 		}
 
 #if 0  /* nothing now */
