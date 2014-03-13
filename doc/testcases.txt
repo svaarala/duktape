@@ -100,6 +100,9 @@ metadata keys:
   but matches real world expectations (different from a purely Duktape
   specific features).
 
+* ``specialoptions``: if true, expected behavior requires special feature
+  options to be given and the test case is expected to fail without them.
+
 * ``knownissue``: if true, the test is categorized as failure but is shown
   as a known issue which does not need immediate fixing (i.e. they are not
   release blockers).  Bugs marked as known issues may be difficult to fix,
