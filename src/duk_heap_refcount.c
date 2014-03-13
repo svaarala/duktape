@@ -127,8 +127,6 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 #endif
 		}
 
-		/* FIXME: restoring 'func' values */
-
 #if 0  /* nothing now */
 		for (i = 0; i < t->catchstack_top; i++) {
 			duk_catcher *cat = &t->catchstack[i];
