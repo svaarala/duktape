@@ -245,6 +245,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
 			duk_dup(ctx, -4);                                    /* -> [ ... closure template env funcname closure ] */
 			duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);      /* -> [ ... closure template env ] */
+			/* env[funcname] = closure */
 
 			/* [ ... closure template env ] */
 
