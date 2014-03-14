@@ -243,7 +243,7 @@ try {
 
 /*===
 multiple occurrences in callstack
-f caller multipleOccurrenceTest null null
+f called multipleOccurrenceTest null null
 g called multipleOccurrenceTest f null
 h called multipleOccurrenceTest f g
 g called multipleOccurrenceTest h g
