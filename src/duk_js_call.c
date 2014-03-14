@@ -477,8 +477,10 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 		 */
 
 		if (act_caller) {
-			DUK_ASSERT(act_caller->func != NULL);
-			if (!DUK_HOBJECT_HAS_NEWENV(act_caller->func)) {
+			/* act_caller->func may be NULL in some finalization cases,
+			 * just treat like we don't know the caller.
+			 */
+			if (act_caller->func && !DUK_HOBJECT_HAS_NEWENV(act_caller->func)) {
 				/* Setting to NULL causes 'caller' to be set to
 				 * 'null' as desired.
 				 */
@@ -488,8 +490,8 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 
 		if (DUK_TVAL_IS_OBJECT(tv_caller)) {
 			h_tmp = DUK_TVAL_GET_OBJECT(tv_caller);
+			DUK_ASSERT(h_tmp != NULL);
 			act_callee->prev_caller = h_tmp;
-			DUK_ASSERT(act_callee->prev_caller != NULL);
 
 			/* Previous value doesn't need refcount changes because its ownership
 			 * is transferred to prev_caller.
@@ -506,8 +508,10 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 			/* 'caller' must only take on 'null' or function value */
 			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_caller));
 			DUK_ASSERT(act_callee->prev_caller == NULL);
-			if (act_caller) {
-				DUK_ASSERT(act_caller->func != NULL);
+			if (act_caller && act_caller->func) {
+				/* Tolerate act_caller->func == NULL which happens in
+				 * some finalization cases; treat like unknown caller.
+				 */
 				DUK_TVAL_SET_OBJECT(tv_caller, act_caller->func);
 				DUK_TVAL_INCREF(thr, tv_caller);
 			} else {

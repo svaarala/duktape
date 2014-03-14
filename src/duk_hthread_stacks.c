@@ -147,6 +147,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 			 */
 
 			if (tv_caller) {
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv_caller);
 				if (p->prev_caller) {
 					/* Just transfer the refcount from p->prev_caller to tv_caller,
 					 * so no need for a refcount update.  This is the expected case.
@@ -154,10 +155,10 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 					DUK_TVAL_SET_OBJECT(tv_caller, p->prev_caller);
 					p->prev_caller = NULL;
 				} else {
-					DUK_TVAL_SET_TVAL(&tv_tmp, tv_caller);
 					DUK_TVAL_SET_NULL(tv_caller);   /* no incref needed */
-					DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+					DUK_ASSERT(p->prev_caller == NULL);
 				}
+				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 			} else {
 				h_tmp = p->prev_caller;
 				if (h_tmp) {
