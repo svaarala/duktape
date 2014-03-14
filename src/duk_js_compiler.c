@@ -4878,14 +4878,21 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 		DUK_DDDPRINT("return with a value");
 
+		DUK_UNREF(pc_before_expr);
+		DUK_UNREF(pc_after_expr);
+
 		pc_before_expr = duk__get_current_pc(comp_ctx);
 		reg_val = duk__exprtop_toregconst(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
 		/* Tail call check: if last opcode emitted was CALL, and
 		 * the context allows it, change the CALL to a tailcall.
+		 * The non-standard 'caller' property disables tail calls
+		 * because they pose some special cases which haven't been
+		 * fixed yet.
 		 */
 
+#if !defined(DUK_USE_FUNC_NONSTD_CALLER_PROPERTY)
 		if (comp_ctx->curr_func.catch_depth == 0 &&   /* no catchers */
 		    pc_after_expr > pc_before_expr) {         /* at least one opcode emitted */
 			duk_compiler_instr *instr;
@@ -4905,6 +4912,7 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 				return;
 			}
 		}
+#endif  /* !DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
 
 		ret_flags = DUK_BC_RETURN_FLAG_HAVE_RETVAL;
 	}
