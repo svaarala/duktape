@@ -13,7 +13,8 @@
 
 /*---
 {
-    "nonstandard": true
+    "nonstandard": true,
+    "comment": "will fail with DUK_OPT_NO_ARRAY_SPLICE_NONSTD_DELCOUNT"
 }
 ---*/
 
