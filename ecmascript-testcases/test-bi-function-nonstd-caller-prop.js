@@ -26,7 +26,7 @@ function summarizeCaller(f) {
     } else if (f.caller === null) {
         return 'null';
     } else if (typeof f.caller === 'function') {
-        return f.caller.name || 'anon';
+        return f.caller.myName || f.caller.name || 'anon';
     } else if (typeof f.caller === 'number') {
         return f.caller;  // not needed, used during development
     } else {
@@ -243,7 +243,7 @@ try {
 
 /*===
 multiple occurrences in callstack
-f called multipleOccurrenceTest null null
+f caller multipleOccurrenceTest null null
 g called multipleOccurrenceTest f null
 h called multipleOccurrenceTest f g
 g called multipleOccurrenceTest h g
@@ -532,3 +532,140 @@ try {
 } catch (e) {
     print(e);
 }
+
+/*===
+unwind gc test
+1
+f caller: unwindGcTestInner
+g caller: f
+h caller: g
+0
+f caller: h
+g caller: f
+h caller: g
+f_fin true
+g_fin true
+h_fin true
+force gc
+f_fin true
+g_fin true
+h_fin true
+1
+f caller: unwindGcTestInner
+g caller: f
+h caller: g
+0
+f caller: h
+g caller: f
+h caller: g
+Error
+f_fin true
+g_fin true
+h_fin true
+force gc
+f_fin true
+g_fin true
+h_fin true
+===*/
+
+/* Test refcount updates for unwind.  Create a call chain, delete all function
+ * references from the innermost function.  The call chain must have a function
+ * which occurs more than once to exercise the refcount handling better.  Then
+ * return or throw an error which causes the call chain to unwind and check the
+ * finalizers are executed.
+ *
+ * The inner-outer function split and inner functions are somewhat paranoid,
+ * the idea is to minimize risk of having references in active function temp
+ * registers which are reachability roots but not immediately apparent.
+ */
+
+var f_fin = false, g_fin = false, h_fin = false;
+
+function unwindGcTestInner(throwAtEnd) {
+    var obj = {};
+
+    obj.h = function (num) {
+        print(num);
+        print('f caller:', summarizeCaller(obj.f));
+        print('g caller:', summarizeCaller(obj.g));
+        print('h caller:', summarizeCaller(obj.h));
+        if (num > 0) {
+            obj.f(num - 1);
+            return;
+        }
+        obj.f = null;
+        obj.g = null;
+        obj.h = null;
+        if (throwAtEnd) {
+            throw Error('finished');
+        } else {
+            return;
+        }
+    };
+    obj.g = function (num) {
+        obj.h(num);
+    };
+    obj.f = function (num) {
+        obj.g(num);
+    };
+
+    // Named function expressions could be used, this is a workaround around
+    // a current bug: test-bug-named-funcexpr-refcount.js.  Once that is fixed,
+    // this oddness is not required.
+    obj.f.myName = 'f';
+    obj.g.myName = 'g';
+    obj.h.myName = 'h';
+
+    function breakCycles() {
+        // The circular references that the functions participate in are
+        // broken so that we can check that refcount will collect them
+        // (not just mark-and-sweep).
+        obj.f.prototype.constructor = null;
+        obj.g.prototype.constructor = null;
+        obj.h.prototype.constructor = null;
+    }
+    breakCycles();
+
+    function setFinalizers() {
+        Duktape.fin(obj.f, function() { f_fin = true; });
+        Duktape.fin(obj.g, function() { g_fin = true; });
+        Duktape.fin(obj.h, function() { h_fin = true; });
+    }
+    setFinalizers();
+
+    try {
+        Duktape.gc();  // minimize gc variance
+        obj.f(1);
+    } catch (e) {
+        print(e.name);
+    }
+}
+
+function unwindGcTest(throwAtEnd) {
+    f_fin = false;
+    g_fin = false;
+    h_fin = false;
+
+    unwindGcTestInner(throwAtEnd);
+
+    print('f_fin', f_fin);
+    print('g_fin', g_fin);
+    print('h_fin', h_fin);
+
+    print('force gc');
+    Duktape.gc();  // ensure consistency even when refcount disabled
+
+    print('f_fin', f_fin);
+    print('g_fin', g_fin);
+    print('h_fin', h_fin);
+}
+
+print('unwind gc test');
+
+try {
+    unwindGcTest(false);
+    unwindGcTest(true);
+} catch (e) {
+    print(e);
+}
+
