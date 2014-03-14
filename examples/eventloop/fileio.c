@@ -8,7 +8,7 @@
 
 #include "duktape.h"
 
-int duk_fileio_readfile(duk_context *ctx) {
+static int fileio_readfile(duk_context *ctx) {
 	const char *filename = duk_to_string(ctx, 0);
 	FILE *f = NULL;
 	long len;
@@ -37,7 +37,7 @@ int duk_fileio_readfile(duk_context *ctx) {
 	buf = duk_push_fixed_buffer(ctx, (size_t) len);
 
 	got = fread(buf, 1, len, f);
-	if (got != len) {
+	if (got != (size_t) len) {
 		goto error;
 	}
 
@@ -54,16 +54,14 @@ int duk_fileio_readfile(duk_context *ctx) {
 	return DUK_RET_ERROR;
 }
 
-void duk_fileio_register(duk_context *ctx) {
+void fileio_register(duk_context *ctx) {
 	duk_push_global_object(ctx);
-	duk_push_string(ctx, "fileio");
+	duk_push_string(ctx, "FileIo");
 	duk_push_object(ctx);
 
-	duk_push_string(ctx, "readfile");
-	duk_push_c_function(ctx, duk_fileio_readfile, 1);
-	duk_put_prop(ctx, -3);
+	duk_push_c_function(ctx, fileio_readfile, 1);
+	duk_put_prop_string(ctx, -2, "readfile");
 
 	duk_put_prop(ctx, -3);
 	duk_pop(ctx);
 }
-

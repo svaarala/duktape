@@ -50,6 +50,7 @@ mkdir $DIST/examples
 mkdir $DIST/examples/hello
 mkdir $DIST/examples/eval
 mkdir $DIST/examples/cmdline
+mkdir $DIST/examples/eventloop
 mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
 
@@ -176,25 +177,50 @@ cat src/duktape.h | sed \
 	> $DISTSRCSEP/duktape.h
 
 for i in \
+	README.txt \
+	Makefile \
 	duk_cmdline.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
 done
 
 for i in \
+	README.txt \
+	Makefile \
+	c_eventloop.c \
+	c_eventloop.js \
+	ecma_eventloop.js \
+	main.c \
+	poll.c \
+	ncurses.c \
+	socket.c \
+	fileio.c \
+	curses-timers.js \
+	basic-test.js \
+	server-socket-test.js \
+	client-socket-test.js \
+	; do
+	cp examples/eventloop/$i $DIST/examples/eventloop/
+done
+
+for i in \
+	README.txt \
+	Makefile \
 	hello.c \
 	; do
 	cp examples/hello/$i $DIST/examples/hello/
 done
 
 for i in \
+	README.txt \
+	Makefile \
 	eval.c \
 	; do
 	cp examples/eval/$i $DIST/examples/eval/
 done
 
-
 for i in \
+	README.txt \
 	fib.js \
 	process.js \
 	processlines.c \
@@ -206,6 +232,7 @@ for i in \
 done
 
 for i in \
+	README.txt \
 	Makefile \
 	globals.coffee \
 	hello.coffee \
