@@ -45,7 +45,7 @@ static void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 		 * are not freed for the same reason.
 		 */
 
-		/* FIXME: with 'caller' property the callstack would need
+		/* XXX: with 'caller' property the callstack would need
 		 * to be unwound to update the 'caller' properties of
 		 * functions in the callstack.
 		 */
