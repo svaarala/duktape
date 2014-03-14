@@ -36,8 +36,8 @@ static void set_sigint_handler(void) {
 /* Print error to stderr and pop error. */
 static void print_error(duk_context *ctx, FILE *f) {
 	if (duk_is_object(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
-		/* FIXME: print error objects specially */
-		/* FIXME: pcall the string coercion */
+		/* XXX: print error objects specially */
+		/* XXX: pcall the string coercion */
 		duk_get_prop_string(ctx, -1, "stack");
 		if (duk_is_string(ctx, -1)) {
 			fprintf(f, "%s\n", duk_get_string(ctx, -1));

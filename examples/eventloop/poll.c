@@ -61,7 +61,6 @@ static int poll_poll(duk_context *ctx) {
 		/* update revents */
 
 		if (fds[i].revents) {
-			/* FIXME: need an duk_array_push */
 			duk_push_int(ctx, fds[i].fd);  /* -> [... retarr fd] */
 			duk_put_prop_index(ctx, -2, nchanged);
 			nchanged++;

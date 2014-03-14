@@ -13,6 +13,7 @@ print('listen on ' + HOST + ':' + PORT);
 EventLoop.server(HOST, PORT, function (fd, addr, port) {
     print('new connection on fd ' + fd + ' from ' + addr + ':' + port);
     EventLoop.setReader(fd, function (fd, data) {
+        // FIXME: uppercase as bytes, no decode errors
         print('read data on fd ' + fd + ', length ' + data.length);
         EventLoop.write(fd, String(data).toUpperCase());
     });
