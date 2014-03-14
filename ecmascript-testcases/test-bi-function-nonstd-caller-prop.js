@@ -609,9 +609,9 @@ function unwindGcTestInner(throwAtEnd) {
         obj.g(num);
     };
 
-    // Named function expressions could be used, this is a workaround around
-    // a current bug: test-bug-named-funcexpr-refcount.js.  Once that is fixed,
-    // this oddness is not required.
+    // Named function expressions could be used but they cause an internal
+    // reference loop which cannot be broken from use code (see
+    // test-dev-named-funcexpr-refcount.js for details).
     obj.f.myName = 'f';
     obj.g.myName = 'g';
     obj.h.myName = 'h';
