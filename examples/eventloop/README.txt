@@ -59,7 +59,7 @@ keep the example somewhat simple.  Some shortcomings include:
 * Buffer churn caused by allocating a new buffer for every socket read
   should be eliminated by reusing buffers where appropriate.  Although
   churn doesn't increase memory footprint with reference counting, it
-  is slower than reusing buffers and might aggravate memory fragmentation.
+  is slower than reusing buffers and might increase memory fragmentation.
 
 * There is no way to suspend reading or writing in the example.  Adding
   them is straightforward: the poll set needs to be managed dynamically.
@@ -67,4 +67,5 @@ keep the example somewhat simple.  Some shortcomings include:
 * The example uses poll() while one should use epoll() on Linux, kqueue()
   on BSD systems, etc.
 
-* Error handling is mostly missing.
+* Error handling is mostly missing.  Debug prints don't interact well
+  with curses.

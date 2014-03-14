@@ -26,6 +26,7 @@ EventLoop = {
     nextTimerId: 1,
     minimumDelay: 1,
     minimumWait: 1,
+    maximumWait: 60000,
     maxExpirys: 10,
 
     // sockets
@@ -57,7 +58,7 @@ EventLoop.getEarliestTimer = function() {
 
 EventLoop.getEarliestWait = function() {
     var t = this.getEarliestTimer();
-    return (t ? Math.max(this.minimumWait, t.target - Date.now()) : null);
+    return (t ? t.target - Date.now() : null);
 }
 
 EventLoop.insertTimer = function(timer) {
@@ -252,9 +253,15 @@ EventLoop.run = function() {
          */
 
         wait = this.getEarliestWait();
-        if (!wait && poll_count === 0) {
-            print('no active timers and no sockets to poll, exit');
-            break;
+        if (wait === null) {
+            if (poll_count === 0) {
+                print('no active timers and no sockets to poll, exit');
+                break;
+            } else {
+                wait = this.maximumWait;
+            }
+        } else {
+            wait = Math.min(this.maximumWait, Math.max(this.minimumWait, wait));
         }
 
         /*
