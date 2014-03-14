@@ -4,6 +4,12 @@
  *  This testcase breaks with DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY.
  */
 
+/*---
+{
+    "comment": "breaks with DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY"
+}
+---*/
+
 /*===
 name: true, fileName: true, length: true, caller: false, arguments: false, callee: false, prototype: true
 name: true, fileName: true, length: true, caller: true, arguments: true, callee: false, prototype: true
