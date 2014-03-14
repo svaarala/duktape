@@ -398,8 +398,9 @@ to submit a patch to be included in the mainline distribution:</p>
     memory allocation fails.</li>
 <li><b>Reference counting only</b>: reduces code footprint and eliminates
     garbage collection pauses, but objects in unreachable reference cycles
-    are not collected until the Duktape heap is destroyed.  See note below
-    on function instances and reference cycles.</li>
+    are not collected until the Duktape heap is destroyed.  This alternative
+    is not recommended unless the reference cycles are not an issue.  See notes
+    below.</li>
 <li><b>Mark-and-sweep only</b>: reduces code footprint and memory footprint
     (heap headers don't need to store a reference count), but there is more
     memory usage variance than in the default case.  The frequency of voluntary,
@@ -418,37 +419,12 @@ both children and parents (creating reference cycles for each node) you could
 walk the tree and set the parent reference to <code>null</code> before deleting
 the final reference to the tree.</p>
 
-<p>Unfortunately every Ecmascript function instance is, by default, in a
-reference loop with an automatic prototype object created for the object.
-The function instance's <code>prototype</code> property points to the prototype
-object, and the prototype's <code>constructor</code> property points back to the
-function instance.  Only mark-and-sweep is able to collect these reference
-loops at the moment.  If you build with reference counting only, function
-instances may appear to leak memory; the memory will be released when the
-relevant heap is destroyed.  You can also break the reference loops manually
-(although this is a bit cumbersome):</p>
-<pre class="ecmascript-code">
-var f = function() { };
-var g = function() { };
-var h = function() { };
-Duktape.fin(f, function() { print('finalizer for f'); });
-Duktape.fin(g, function() { print('finalizer for g'); });
-Duktape.fin(h, function() { print('finalizer for h'); });
-
-// not collected until heap destruction in a reference counting only build
-f = null;            // not collected immediately
-
-// break cycle by deleting 'prototype' reference (alternative 1)
-g.prototype = null;
-g = null;            // collected immediately, finalizer runs
-
-// break cycle by deleting 'constructor' reference (alternative 2)
-h.prototype.constructor = null;
-h = null;            // collected immediately, finalizer runs
-
-// no-op with refcount only, with mark-and-sweep finalizer for 'f' runs
-Duktape.gc();
-</pre>
+<p>Unfortunately every Ecmascript function instance is required to be in a
+reference loop with an automatic prototype object created for the function.
+You can break this loop manually if you wish.  For internal technical reasons,
+named function expressions are also in a reference loop; this loop cannot be
+broken from user code and only mark-and-sweep can collect such functions.
+See <a href="#limitations">Limitations</a>.</p>
 
 <h2>Compiler warnings</h2>
 

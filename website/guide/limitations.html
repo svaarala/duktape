@@ -136,3 +136,52 @@ function foreverLoop() {
 </pre>
 
 <p>This is typically not an issue if there are no long-running functions.</p>
+
+<h2>Function instances are garbage collected only by mark-and-sweep</h2>
+
+<p>Every Ecmascript function instance is, by default, in a reference loop with
+an automatic prototype object created for the function.  The function instance's
+<code>prototype</code> property points to the prototype object, and the prototype's
+<code>constructor</code> property points back to the function instance.  Only
+mark-and-sweep is able to collect these reference loops at the moment.  If you
+build with reference counting only, function instances may appear to leak memory;
+the memory will be released when the relevant heap is destroyed.</p>
+
+<p>You can break the reference loops manually (although this is a bit cumbersome):</p>
+<pre class="ecmascript-code">
+var f = function() { };
+var g = function() { };
+var h = function() { };
+Duktape.fin(f, function() { print('finalizer for f'); });
+Duktape.fin(g, function() { print('finalizer for g'); });
+Duktape.fin(h, function() { print('finalizer for h'); });
+
+// not collected until heap destruction in a reference counting only build
+f = null;            // not collected immediately
+
+// break cycle by deleting 'prototype' reference (alternative 1)
+g.prototype = null;
+g = null;            // collected immediately, finalizer runs
+
+// break cycle by deleting 'constructor' reference (alternative 2)
+h.prototype.constructor = null;
+h = null;            // collected immediately, finalizer runs
+
+// no-op with refcount only, with mark-and-sweep finalizer for 'f' runs
+Duktape.gc();
+</pre>
+
+<p>For internal technical reasons, named function expressions are also in a
+reference loop with an internal environment record object.  This loop cannot
+be broken from user code and only mark-and-sweep can collect such functions.
+Ordinary function declarations and anonymous functions don't have this
+limitation.  Example:</p>
+<pre class="ecmascript-code">
+var fn = function myfunc() {
+    // myfunc is in reference loop with an internal environment record,
+    // and can only be collected with mark-and-sweep.
+}
+</pre>
+
+<p>These issues can be avoided by compiling Duktape with mark-and-sweep
+enabled (which is the default).</p>
