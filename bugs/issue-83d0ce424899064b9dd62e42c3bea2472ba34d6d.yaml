@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: direct api call to create an object with a specific constructor?
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-14 06:42:09.527532 Z
+references: []
+
+id: 83d0ce424899064b9dd62e42c3bea2472ba34d6d
+log_events: 
+- - 2014-03-14 06:42:09.716106 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""

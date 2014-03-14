@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "runtests: explain test case failures when 'specialoptions' flag is set"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-13 22:19:52.753539 Z
+references: []
+
+id: 9d7ac1f168fd1404bb54dd6df25c8f70e8befbc4
+log_events: 
+- - 2014-03-13 22:19:52.921131 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
