@@ -561,6 +561,16 @@ function testRunnerMain() {
                 if (res.testcase.meta.knownissue) {
                     parts.push('known issue');
                 }
+                if (res.testcase.meta.specialoptions) {
+                    if (typeof res.testcase.meta.specialoptions === 'string') {
+                        parts.push('requires special feature options: ' + res.testcase.meta.specialoptions);
+                    } else {
+                        parts.push('requires special feature options');
+                    }
+                }
+                if (res.testcase.meta.comment) {
+                    parts.push('comment: ' + res.testcase.meta.comment);
+                }
                 need = true;
             } else {
                 countPass++;
