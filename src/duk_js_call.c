@@ -469,7 +469,7 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 		/* If caller is global/eval code, 'caller' should be set to
 		 * 'null'.
 		 *
-		 * FIXME: there is no special flag to infer this correctly now.
+		 * XXX: there is no special flag to infer this correctly now.
 		 * The NEWENV flag is used now which works as intended for
 		 * everything (global code, non-strict eval code, and functions)
 		 * except strict eval code.  Bound functions are never an issue
