@@ -1093,6 +1093,7 @@ bi_duk = {
 		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_buffer_constructor' } },
 		{ 'name': 'Pointer',			'value': { 'type': 'builtin', 'id': 'bi_pointer_constructor' } },
 		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
+		{ 'name': 'Logger',			'value': { 'type': 'builtin', 'id': 'bi_logger_constructor' } },
 	],
 	'functions': [
 		{ 'name': 'info',			'native': 'duk_bi_duk_object_info',             'length': 1 },
@@ -1205,6 +1206,47 @@ bi_pointer_prototype = {
 	],
 }
 
+bi_logger_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_logger_prototype',
+	'class': 'Function',
+	'name': 'Logger',
+
+	'length': 1,
+	'native': 'duk_bi_logger_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+	]
+}
+
+bi_logger_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_logger_constructor',
+	'class': 'Object',
+
+	'values': [
+		# default log level: 2 = info
+		{ 'name': 'l',				'value': 2,			'attributes': 'w' },
+
+		# default logger name (if undefined given or fileName of caller not known)
+		{ 'name': 'n',				'value': 'anon',		'attributes': 'w' },
+	],
+	'functions': [
+		{ 'name': 'fmt',			'native': 'duk_bi_logger_prototype_fmt',		'length': 1 },
+		{ 'name': 'raw',			'native': 'duk_bi_logger_prototype_raw',		'length': 1 },
+		{ 'name': 'trace',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },
+		{ 'name': 'debug',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },
+		{ 'name': 'info',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },
+		{ 'name': 'warn',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 3 } },
+		{ 'name': 'error',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 4 } },
+		{ 'name': 'fatal',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 5 } },
+	],
+}
+
+
 # This is an Error *instance* used to avoid allocation when a "double error" occurs.
 # The object is "frozen and sealed" to avoid code accidentally modifying the instance.
 # This is important because the error is rethrown as is.
@@ -1274,6 +1316,8 @@ builtins_orig = [
 	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype },
 	{ 'id': 'bi_pointer_constructor',		'info': bi_pointer_constructor },
 	{ 'id': 'bi_pointer_prototype',			'info': bi_pointer_prototype },
+	{ 'id': 'bi_logger_constructor',		'info': bi_logger_constructor },
+	{ 'id': 'bi_logger_prototype',			'info': bi_logger_prototype },
 	{ 'id': 'bi_double_error',                      'info': bi_double_error },
 ]
 
@@ -1562,7 +1606,7 @@ class GenBuiltins:
 			length = funspec['length']
 			be.bits(length, LENGTH_PROP_BITS)
 
-			if funspec.has_key('varargs'):
+			if funspec.get('varargs', False):
 				be.bits(1, 1)  # flag: non-default nargs
 				be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
 			elif funspec.has_key('nargs'):
@@ -1620,7 +1664,7 @@ class GenBuiltins:
 			stridx = self.gs.stringToIndex(bi['name'])
 			be.bits(stridx, STRIDX_BITS)
 
-			if bi.has_key('varargs'):
+			if bi.get('varargs', False):
 				be.bits(1, 1)  # flag: non-default nargs
 				be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
 			elif bi.has_key('nargs'):

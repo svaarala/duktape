@@ -165,6 +165,11 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx);
 duk_ret_t duk_bi_thread_yield(duk_context *ctx);
 duk_ret_t duk_bi_thread_current(duk_context *ctx);
 
+duk_ret_t duk_bi_logger_constructor(duk_context *ctx);
+duk_ret_t duk_bi_logger_prototype_fmt(duk_context *ctx);
+duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx);
+duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx);
+
 duk_ret_t duk_bi_type_error_thrower(duk_context *ctx);
 
 #endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */
