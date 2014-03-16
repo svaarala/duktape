@@ -4,16 +4,14 @@
 
 #include "duk_internal.h"
 
-/* FIXME: ASCII */
-
 /* 3-letter log level strings */
 static const duk_uint8_t duk__log_level_strings[] = {
-	(duk_uint8_t) 'T', (duk_uint8_t) 'R', (duk_uint8_t) 'C',
-	(duk_uint8_t) 'D', (duk_uint8_t) 'B', (duk_uint8_t) 'G',
-	(duk_uint8_t) 'I', (duk_uint8_t) 'N', (duk_uint8_t) 'F',
-	(duk_uint8_t) 'W', (duk_uint8_t) 'R', (duk_uint8_t) 'N',
-	(duk_uint8_t) 'E', (duk_uint8_t) 'R', (duk_uint8_t) 'R',
-	(duk_uint8_t) 'F', (duk_uint8_t) 'T', (duk_uint8_t) 'L'
+	(duk_uint8_t) DUK_ASC_UC_T, (duk_uint8_t) DUK_ASC_UC_R, (duk_uint8_t) DUK_ASC_UC_C,
+	(duk_uint8_t) DUK_ASC_UC_D, (duk_uint8_t) DUK_ASC_UC_B, (duk_uint8_t) DUK_ASC_UC_G,
+	(duk_uint8_t) DUK_ASC_UC_I, (duk_uint8_t) DUK_ASC_UC_N, (duk_uint8_t) DUK_ASC_UC_F,
+	(duk_uint8_t) DUK_ASC_UC_W, (duk_uint8_t) DUK_ASC_UC_R, (duk_uint8_t) DUK_ASC_UC_N,
+	(duk_uint8_t) DUK_ASC_UC_E, (duk_uint8_t) DUK_ASC_UC_R, (duk_uint8_t) DUK_ASC_UC_R,
+	(duk_uint8_t) DUK_ASC_UC_F, (duk_uint8_t) DUK_ASC_UC_T, (duk_uint8_t) DUK_ASC_UC_L
 };
 
 /* Constructor */
@@ -220,22 +218,22 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 
 	DUK_MEMCPY((void *) p, (void *) date_buf, date_len);
 	p += date_len;
-	*p++ = (duk_uint8_t) 0x20;  /* FIXME: ascii */
+	*p++ = (duk_uint8_t) DUK_ASC_SPACE;
 
 	q = duk__log_level_strings + (entry_lev * 3);
 	DUK_MEMCPY((void *) p, (void *) q, (duk_size_t) 3);
 	p += 3;
 
-	*p++ = (duk_uint8_t) 0x20;  /* FIXME: ascii */
+	*p++ = (duk_uint8_t) DUK_ASC_SPACE;
 
 	arg_str = (const duk_uint8_t *) duk_get_lstring(ctx, -2, &arg_len);
 	DUK_MEMCPY((void *) p, (const void *) arg_str, arg_len);
 	p += arg_len;
 
-	*p++ = (duk_uint8_t) ':';  /* FIXME: ascii */
+	*p++ = (duk_uint8_t) DUK_ASC_COLON;
 
 	for (i = 0; i < nargs; i++) {
-		*p++ = (duk_uint8_t) 0x20;  /* FIXME: DUK_ASC_SPACE */
+		*p++ = (duk_uint8_t) DUK_ASC_SPACE;
 
 		arg_str = (const duk_uint8_t *) duk_get_lstring(ctx, i, &arg_len);
 		DUK_ASSERT(arg_str != NULL);
