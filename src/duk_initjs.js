@@ -72,4 +72,9 @@
             }
         };
     }
+
+    // logger object for C code
+    if (true) {
+        D.Logger.clog = new D.Logger('C');
+    }
 })(this, Duktape);
