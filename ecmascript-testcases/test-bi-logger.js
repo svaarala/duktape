@@ -155,6 +155,8 @@ TIMESTAMP INF myLogger: error: ERROR:my error
 toLogString() called
 toLogString() called
 TIMESTAMP INF myLogger: lazy visible {foo:1,bar:2} {quux:3,baz:4}
+TIMESTAMP INF myLogger: lazy visible {foo:1,bar:2} {quux:3,baz:4}
+TIMESTAMP INF myLogger: lazy visible {foo:1,bar:2} {quux:3,baz:4}
 TIMESTAMP INF myLogger: instance overrides fmt: OBJECT
 TIMESTAMP INF myLogger2: other loggers still use default fmt: [object Object]
 TIMESTAMP INF myLogger: logger now using default fmt again: [object Object]
@@ -183,7 +185,8 @@ function formattingTest() {
 
     // Lazy formatting using toLogString
 
-    function lazyJsonx(val) {
+    function lazyJsonx1(val) {
+        // Simple alternative, creates a closure per value
         return {
             toLogString: function() {
                 print('toLogString() called');
@@ -192,8 +195,34 @@ function formattingTest() {
         };
     }
 
-    logger.info('lazy visible', lazyJsonx({foo:1, bar:2}), lazyJsonx({quux:3, baz:4}));
-    logger.debug('lazy invisible', lazyJsonx({foo:1, bar:2}), lazyJsonx({quux:3, baz:4}));
+    function lazyJsonx2(val) {
+        // Alternative using bind() (does not print anything when formatting)
+        return {
+            toLogString: Duktape.enc.bind(null, 'jsonx', val)
+        };
+    }
+
+    function LazyValue(val) {
+        this.v = val;
+    }
+    LazyValue.prototype.toLogString = function () {
+        return Duktape.enc('jsonx', this.v);
+    }
+    function lazyJsonx3(val) {
+        // Alternative which avoids creating a closure per value.  This relies
+        // on toLogString() being called as a method, with 'this' bound to the
+        // object.
+        return new LazyValue(val);
+    }
+
+    logger.info('lazy visible', lazyJsonx1({foo:1, bar:2}), lazyJsonx1({quux:3, baz:4}));
+    logger.debug('lazy invisible', lazyJsonx1({foo:1, bar:2}), lazyJsonx1({quux:3, baz:4}));
+
+    logger.info('lazy visible', lazyJsonx2({foo:1, bar:2}), lazyJsonx2({quux:3, baz:4}));
+    logger.debug('lazy invisible', lazyJsonx2({foo:1, bar:2}), lazyJsonx2({quux:3, baz:4}));
+
+    logger.info('lazy visible', lazyJsonx3({foo:1, bar:2}), lazyJsonx3({quux:3, baz:4}));
+    logger.debug('lazy invisible', lazyJsonx3({foo:1, bar:2}), lazyJsonx3({quux:3, baz:4}));
 
     // The object formatter function fmt() can be overridden in the instance
 
