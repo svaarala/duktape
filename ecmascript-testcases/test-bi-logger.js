@@ -7,6 +7,7 @@
  */
 
 Duktape.Logger.prototype.raw = function raw_replacement(msg) {
+    // Timestamp is non-predictable
     msg = msg.replace(/^\S+/, 'TIMESTAMP');
     print(msg);
 }
@@ -14,6 +15,11 @@ Duktape.Logger.prototype.raw = function raw_replacement(msg) {
 /*===
 logger name
 TIMESTAMP INF myLogger: logger created
+TIMESTAMP INF anon: logger created
+TIMESTAMP INF anon: undefined: inherit anon
+TIMESTAMP INF anon: logger created
+TIMESTAMP INF anon: null: inherit anon
+TIMESTAMP INF input: logger created
 TIMESTAMP INF myLogger: logger created
 TIMESTAMP INF newName: logger renamed
 TIMESTAMP INF anon: logger name deleted
@@ -28,28 +34,31 @@ function loggerNameTest() {
     logger = new Duktape.Logger('myLogger');
     logger.info('logger created');
 
-    // Logger name defaults to caller fileName if present
+    // Logger name given as null/undefined (any non-string actually) causes
+    // the logger to not have a 'n' property and does *not* trigger automatic
+    // name assignment.
 
-    /* XXX: this would be nice to test, but fileName is not writable so
-     * expect string is difficult to control.
-     */
-    /*
-    function func2() {
-        return new Duktape.Logger();
-    }
-    function func1() {
-        func1.filename = 'fake.js';
-        var ret = func2();
-        return ret;
-    }
-    logger = func1();
+    logger = new Duktape.Logger(undefined);
     logger.info('logger created');
-    */
+    logger.info('undefined: inherit anon');
+
+    logger = new Duktape.Logger(null);
+    logger.info('logger created');
+    logger.info('null: inherit anon');
+
+    // Logger name defaults to caller fileName if present.  We don't know
+    // the full path of the logger and fileName is not writable, so we use
+    // eval to force caller fileName to "input".
+
+    logger = eval('new Duktape.Logger()');  // caller fileName is 'input'
+    logger.info('logger created');
 
     // If fileName is not present, logger gets no 'n' property and
     // inherits 'n' from Logger prototype
 
-    /* XXX: same issue here */
+    /* XXX: cannot easily test because cannot create a function with no
+     * fileName, and fileName is not configurable so can't delete it.
+     */
 
     // Logger name can be modified runtime, and even removed in which
     // case it is inherited from the Logger prototype
