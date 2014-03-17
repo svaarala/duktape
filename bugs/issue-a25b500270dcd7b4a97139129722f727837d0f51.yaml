@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "duk_call_method: swap func and this binding order?"
+desc: |-
+  The order [ this func arg1 ... argN ] is often more convenience when
+  the 'func' is read from an object.
+type: :task
+component: duk
+release: v0.11
+reporter: sva <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-16 22:09:31.034074 Z
+references: []
+
+id: a25b500270dcd7b4a97139129722f727837d0f51
+log_events: 
+- - 2014-03-16 22:09:31.194022 Z
+  - sva <sami.vaarala@iki.fi>
+  - created
+  - ""
