@@ -1213,6 +1213,7 @@ bi_logger_constructor = {
 	'name': 'Logger',
 
 	'length': 1,
+	'varargs': True,
 	'native': 'duk_bi_logger_constructor',
 	'callable': True,
 	'constructable': True,
