@@ -15,6 +15,16 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	va_list ap;
 	char buf[DUK__LOGFMT_BUFSIZE];
+	duk_uint16_t stridx_logfunc[6] = {
+		DUK_STRIDX_LC_TRACE, DUK_STRIDX_LC_DEBUG, DUK_STRIDX_LC_INFO,
+		DUK_STRIDX_LC_WARN, DUK_STRIDX_LC_ERROR, DUK_STRIDX_LC_FATAL
+	};
+
+	if (level < 0) {
+		level = 0;
+	} else if (level > (int) (sizeof(stridx_logfunc) / sizeof(duk_uint16_t)) - 1) {
+		level = (int) (sizeof(stridx_logfunc) / sizeof(duk_uint16_t)) - 1;
+	}
 
 	va_start(ap, fmt);
 	DUK_VSNPRINTF(buf, sizeof(buf), fmt, ap);
@@ -22,13 +32,13 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...) {
 	va_end(ap);
 
 	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_LOGGER_CONSTRUCTOR]);
-	duk_get_prop_string(ctx, -1, "clog");  /*FIXME*/
-	duk_get_prop_string(ctx, -1, "info");  /*FIXME:level*/
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_CLOG);
+	duk_get_prop_stridx(ctx, -1, stridx_logfunc[level]);
 
 	/* [ ... Logger clog info ] */
 
 	duk_dup(ctx, -2);
-	duk_push_string(ctx, buf);  /*FIXME: duk_push_vsprintf? */
+	duk_push_string(ctx, buf);  /* FIXME: duk_push_vsprintf? */
 
 	/* [ ... Logger clog info clog msg ] */
 

@@ -593,6 +593,9 @@ duk_string_list = [
 	mkstr("n", custom=True),
 	mkstr("l", custom=True),
 
+	# C logger
+	mkstr("clog", custom=True),
+
 	# for controlling log formatting of objects
 	mkstr("toLogString"),
 
@@ -713,7 +716,21 @@ special_define_names = {
 
 	'error': 'LC_ERROR',
 	'Error': 'UC_ERROR',
-	
+
+	# log levels
+	'trace': 'LC_TRACE',
+	#'Trace': 'UC_TRACE',
+	'debug': 'LC_DEBUG',
+	#'Debug': 'UC_DEBUG',
+	'info': 'LC_INFO',
+	#'Info': 'UC_INFO',
+	'warn': 'LC_WARN',
+	#'Warn': 'UC_WARN',
+	#'error': 'LC_ERROR',  # already above
+	#'Error': 'UC_ERROR',
+	'fatal': 'LC_FATAL',
+	#'Fatal': 'UC_FATAL',
+
 	'+Infinity': 'PLUS_INFINITY',
 	'-Infinity': 'MINUS_INFINITY',
 	'0': 'ZERO',

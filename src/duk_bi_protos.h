@@ -5,6 +5,14 @@
 #ifndef DUK_BUILTIN_PROTOS_H_INCLUDED
 #define DUK_BUILTIN_PROTOS_H_INCLUDED
 
+/* Buffer size needed for duk_bi_date_format_timeval().
+ * Accurate value is 32 + 1 for NUL termination:
+ *   >>> len('+123456-01-23T12:34:56.123+12:34')
+ *   32
+ * Include additional space to be safe.
+ */
+#define  DUK_BI_DATE_ISO8601_BUFSIZE  48
+
 duk_ret_t duk_bi_array_constructor(duk_context *ctx);
 duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx);
 duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx);
@@ -40,8 +48,9 @@ duk_ret_t duk_bi_date_prototype_get_time(duk_context *ctx);
 duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx);
 duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx);
 duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx);
-/* Helper exposed for internal use */
+/* Helpers exposed for internal use */
 duk_double_t duk_bi_date_get_now(duk_context *ctx);
+void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf);
 
 duk_ret_t duk_bi_duk_object_info(duk_context *ctx);
 duk_ret_t duk_bi_duk_object_line(duk_context *ctx);

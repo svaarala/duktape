@@ -36,7 +36,10 @@ duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 		if (thr->callstack_top >= 2) {
 			duk_activation *act_caller = thr->callstack + thr->callstack_top - 2;
 			if (act_caller->func) {
-				/* FIXME: stripped filename? */
+				/* Stripping the filename might be a good idea
+				 * ("/foo/bar/quux.js" -> logger name "quux"),
+				 * but now used verbatim.
+				 */
 				duk_push_hobject(ctx, act_caller->func);
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
 				duk_replace(ctx, 0);
@@ -116,11 +119,15 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	duk_size_t arg_len;
 	duk_uint8_t *buf, *p;
 	const duk_uint8_t *q;
-	char date_buf[64];  /*FIXME*/
+	duk_uint8_t date_buf[DUK_BI_DATE_ISO8601_BUFSIZE];
 	duk_size_t date_len;
 	duk_small_int_t rc;
 
 	DUK_ASSERT(entry_lev >= 0 && entry_lev <= 5);
+
+	/* XXX: buffer reuse? */
+	/* XXX: sanitize to printable (and maybe ASCII) */
+	/* XXX: better multiline */
 
 	/*
 	 *  Logger arguments are:
@@ -151,12 +158,9 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	}
 	/* log level could be popped but that's not necessary */
 
-	/* FIXME: change date formatting to provide a better timestmap, and
-	 * avoid float formatting (portability).
-	 */
-	now = duk_bi_date_get_now(ctx) / 1000.0;
-	DUK_SNPRINTF(date_buf, sizeof(date_buf), "%.3lf", now);
-	date_len = DUK_STRLEN(date_buf);
+	now = duk_bi_date_get_now(ctx);
+	duk_bi_date_format_timeval(now, date_buf);
+	date_len = DUK_STRLEN((const char *) date_buf);
 
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LC_N);
 	duk_to_string(ctx, -1);
@@ -167,12 +171,6 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	/*
 	 *  Pass 1
 	 */
-
-	/* FIXME: buffer reuse? */
-	/* FIXME: logger prefix */
-	/* FIXME: sanitize printable */
-	/* FIXME: formatting safety */
-	/* FIXME: multiline */
 
 	/* Line format: <time> <entryLev> <loggerName>: <msg> */
 
