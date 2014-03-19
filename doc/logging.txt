@@ -61,7 +61,7 @@ with spaces, and a prefix is added.  The prefix contains a timestamp, the
 log level, and the logger name.  Example::
 
   duk> logger.info('test', 123)
-  1395003609.854 INF myLogger: test 123
+  2014-03-19T02:42:20.425Z INF myLogger: test 123
 
 Each arguments is formatted separately, and if an error is thrown during
 formatting, the argument is replaced with string coercion of the error.
