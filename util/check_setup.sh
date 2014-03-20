@@ -17,15 +17,22 @@ fi
 
 NODEJS_VERSION=`nodejs -v 2>/dev/null`
 if [ $? != 0 ]; then
-	NODE_VERSION=`node -v 2>/dev/null`
-	if [ $? != 0 ]; then
-		echo "*** Missing NodeJS:"
-		echo "  $ sudo apt-get install nodejs npm  # may also be 'node'"
-		echo ""
-		ERRORS=1
-	fi
+	echo "*** Missing NodeJS:"
+	echo "  $ sudo apt-get install nodejs nodejs-legacy npm  # may also be 'node'"
+	echo ""
+	ERRORS=1
 fi
-#echo "Node version: $NODE_VERSION"
+#echo "NodeJS version: $NODEJS_VERSION"
+
+# some tools like uglifyjs require 'node', not 'nodejs'
+NODE_VERSION=`node -v 2>/dev/null`
+if [ $? != 0 ]; then
+	echo "*** Missing NodeJS legacy ('node' command):"
+	echo "  $ sudo apt-get install nodejs-legacy"
+	echo ""
+	ERRORS=1
+fi
+#echo "NodeJS 'node' version: $NODE_VERSION"
 
 GIT_VERSION=`git --version 2>/dev/null`
 if [ $? != 0 ]; then
