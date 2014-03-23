@@ -81,9 +81,13 @@ if formatting fails and also string coercing the formatting error fails,
 the latter error will propagate out of the logger.  As always, internal errors
 like out-of-memory or out-of-stack can occur at any time.
 
-The final log string is passed to the logging backend, provided by
-``Duktape.Logger.prototype.raw()``.  The default implementation writes the
-log message to ``stderr`` and appends a newline.
+The final log message is passed as a buffer to the logging backend, provided
+by ``Duktape.Logger.prototype.raw()``.  The default implementation writes the
+log message to ``stderr`` and appends a newline.  The log message is provided
+as a buffer (instead of a string) to avoid interning the message unnecessarily.
+For short messages, a single dynamic buffer is reused over and over by modifying
+the visible size of the buffer (the dynamic buffer is not reallocated), to
+eliminate memory churn.
 
 Logger related properties like the logger name (``p``), log level (``l``),
 and the ``fmt()`` and ``raw()`` functions are all looked up through the
@@ -193,7 +197,8 @@ Some options:
   object values.
 
 * Replace ``Duktape.Logger.prototype.raw()`` for redirecting formatted
-  log lines to an alternate destination.
+  log lines to an alternate destination.  Be careful to avoid unnecessary
+  memory and string table churn.
 
 * Replace the frontend functions (``Duktape.Logger.prototype.info()``
   etc) for custom formatting of log lines.  You may also choose not to
