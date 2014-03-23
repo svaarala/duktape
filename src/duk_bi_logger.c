@@ -32,7 +32,11 @@ duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 	/* [ name this ] */
 
 	if (nargs == 0) {
-		/* Automatic defaulting of logger name from caller. */
+		/* Automatic defaulting of logger name from caller.  This would
+		 * work poorly with tail calls, but constructor calls are currently
+		 * never tail calls, so tail calls are not an issue now.
+		 */
+
 		if (thr->callstack_top >= 2) {
 			duk_activation *act_caller = thr->callstack + thr->callstack_top - 2;
 			if (act_caller->func) {
@@ -84,18 +88,22 @@ duk_ret_t duk_bi_logger_prototype_fmt(duk_context *ctx) {
 
 /* Default function to write a formatted log line.  Writes to stderr,
  * appending a newline to the log line.
+ *
+ * The argument is a buffer whose visible size contains the log message.
+ * This function should avoid coercing the buffer to a string to avoid
+ * string table traffic.
  */
 duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
-	const char *str;
-	duk_size_t len;
+	const char *data;
+	duk_size_t data_len;
 
 	DUK_UNREF(ctx);
-	DUK_UNREF(str);
-	DUK_UNREF(len);
+	DUK_UNREF(data);
+	DUK_UNREF(data_len);
 
 #ifdef DUK_USE_FILE_IO
-	str = duk_require_lstring(ctx, 0, &len);
-	fwrite((const void *) str, 1, len, stderr);
+	data = (const char *) duk_require_buffer(ctx, 0, &data_len);
+	fwrite((const void *) data, 1, data_len, stderr);
 	fputc((int) '\n', stderr);
 	fflush(stderr);
 #else
@@ -104,11 +112,13 @@ duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
 	return 0;
 }
 
-/* Log frontend shared helper, provides methods such as info().
- * This needs to have small footprint, reasonable performance,
- * minimal memory churn, etc.
+/* Log frontend shared helper, magic value indicates log level.  Provides
+ * frontend functions: trace(), debug(), info(), warn(), error(), fatal().
+ * This needs to have small footprint, reasonable performance, minimal
+ * memory churn, etc.
  */
 duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_double_t now;
 	duk_small_int_t entry_lev = duk_get_magic(ctx);
 	duk_small_int_t logger_lev;
@@ -125,7 +135,6 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 
 	DUK_ASSERT(entry_lev >= 0 && entry_lev <= 5);
 
-	/* XXX: buffer reuse? */
 	/* XXX: sanitize to printable (and maybe ASCII) */
 	/* XXX: better multiline */
 
@@ -138,7 +147,11 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	 *
 	 *  We want to minimize memory churn so a two-pass approach
 	 *  is used: first pass formats arguments and computes final
-	 *  string length, second pass copies strings into the result.
+	 *  string length, second pass copies strings either into a
+	 *  pre-allocated and reused buffer (short messages) or into a
+	 *  newly allocated fixed buffer.  If the backend function plays
+	 *  nice, it won't coerce the buffer to a string (and thus
+	 *  intern it).
 	 */
 
 	nargs = duk_get_top(ctx);
@@ -214,7 +227,33 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	 *  Pass 2
 	 */
 
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, tot_len);
+	if (tot_len <= DUK_BI_LOGGER_SHORT_MSG_LIMIT) {
+		duk_hbuffer_dynamic *h_buf;
+
+		DUK_DPRINT("reuse existing small log message buffer, tot_len %d", (int) tot_len);
+
+		/* We can assert for all buffer properties because user code
+		 * never has access to heap->log_buffer.
+		 */
+
+		DUK_ASSERT(thr != NULL);
+		DUK_ASSERT(thr->heap != NULL);
+		h_buf = thr->heap->log_buffer;
+		DUK_ASSERT(h_buf != NULL);
+		DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) h_buf));
+		DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(h_buf) == DUK_BI_LOGGER_SHORT_MSG_LIMIT);
+
+		/* Set buffer 'visible size' to actual message length and
+		 * push it to the stack.
+		 */
+
+		DUK_HBUFFER_SET_SIZE((duk_hbuffer *) h_buf, tot_len);
+		duk_push_hbuffer(ctx, (duk_hbuffer *) h_buf);
+		buf = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+	} else {
+		DUK_DPRINT("use a one-off large log message buffer, tot_len %d", (int) tot_len);
+		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, tot_len);
+	}
 	DUK_ASSERT(buf != NULL);
 	p = buf;
 
@@ -251,9 +290,9 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	 * flexibility.
 	 */
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_RAW);
-	duk_push_lstring(ctx, (const char *) buf, tot_len);
-	/* [ arg1 ... argN this loggerLevel loggerName buffer 'raw' msg ] */
-	duk_call_prop(ctx, -6, 1);  /* this.raw(msg) */
+	duk_dup(ctx, -2);
+	/* [ arg1 ... argN this loggerLevel loggerName buffer 'raw' buffer ] */
+	duk_call_prop(ctx, -6, 1);  /* this.raw(buffer) */
 
 	return 0;
 }

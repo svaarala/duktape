@@ -13,6 +13,11 @@
  */
 #define  DUK_BI_DATE_ISO8601_BUFSIZE  48
 
+/* Buffer size for "short log message" which use a heap-level pre-allocated
+ * dynamic buffer to reduce memory churn.
+ */
+#define  DUK_BI_LOGGER_SHORT_MSG_LIMIT  256
+
 duk_ret_t duk_bi_array_constructor(duk_context *ctx);
 duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx);
 duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx);

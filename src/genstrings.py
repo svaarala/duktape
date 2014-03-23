@@ -593,8 +593,8 @@ duk_string_list = [
 	mkstr("n", custom=True),
 	mkstr("l", custom=True),
 
-	# C logger
-	mkstr("clog", custom=True),
+	# Auxiliary logger strings
+	mkstr("clog", custom=True),  # C logger
 
 	# for controlling log formatting of objects
 	mkstr("toLogString"),
