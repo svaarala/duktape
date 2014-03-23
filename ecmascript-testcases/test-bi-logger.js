@@ -6,11 +6,14 @@
  *  log lines to write expect strings.
  */
 
-Duktape.Logger.prototype.raw = function raw_replacement(msg) {
+function raw_replacement(msg) {
     // Timestamp is non-predictable
+    msg = String(msg);  // arg is a buffer
     msg = msg.replace(/^\S+/, 'TIMESTAMP');
     print(msg);
 }
+
+Duktape.Logger.prototype.raw = raw_replacement;
 
 /*===
 logger name
@@ -79,7 +82,7 @@ print('logger name');
 try {
     loggerNameTest();
 } catch (e) {
-    print(e);
+    print(e.stack);
 }
 
 /*===
@@ -310,3 +313,172 @@ try {
 } catch (e) {
     print(e);
 }
+
+/*===
+length test
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+40
+41
+43
+47
+55
+71
+103
+167
+295
+551
+1063
+2087
+4135
+8231
+16423
+32807
+65575
+131111
+262183
+524327
+1048615
+===*/
+
+/* There are internal behavior differences when logging short and long
+ * log messages.  Short messages (currently) reuse a single stashed
+ * buffer, while longer messages use one-off buffers.  Exercise the
+ * boundary between the two.  The limit is DUK_BI_LOGGER_SHORT_MSG_LIMIT,
+ * currently 256.
+ */
+
+function lengthTest() {
+    var logger;
+    var msg;
+
+    // Replace raw() with something that just prints the result length.
+
+    function raw_printlen(msg) {
+        print(String(msg).length);
+    }
+    Duktape.Logger.prototype.raw = raw_printlen;
+
+    function mkStr(len) {
+        var res = '';
+        while (len--) {
+            res = res + 'x';
+        }
+        return res;
+    }
+
+    // Exercise the boundary between the two buffer behaviors.  Start earlier
+    // than the limit to account for the log prefix.
+    logger = new Duktape.Logger('myLogger');
+    msg = mkStr(200);
+    while (msg.length <= 290) {
+        logger.info(msg);
+        msg = msg + 'x';
+    }
+
+    // Test log entries up to 1 MB.
+    msg = 'y';
+    while (msg.length <= 1024 * 1024) {
+        logger.info(msg);
+        msg = msg + msg;
+    }
+}
+
+print('length test');
+
+try {
+    lengthTest();
+} catch (e) {
+    print(e);
+}
+
+Duktape.Logger.prototype.raw = raw_replacement;
