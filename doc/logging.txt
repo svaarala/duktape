@@ -63,7 +63,7 @@ log level, and the logger name.  Example::
   duk> logger.info('test', 123)
   2014-03-19T02:42:20.425Z INF myLogger: test 123
 
-Each arguments is formatted separately, and if an error is thrown during
+Each argument is formatted separately, and if an error is thrown during
 formatting, the argument is replaced with string coercion of the error.
 Non-object values are formatted in pure C by the default logger functions
 to minimize unnecessary calls.  Object values are formatted by calling
