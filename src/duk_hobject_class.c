@@ -17,7 +17,7 @@
 #if (DUK_STRIDX_DATE > 255)
 #error constant too large
 #endif
-#if (DUK_STRIDX_ERROR > 255)
+#if (DUK_STRIDX_UC_ERROR > 255)
 #error constant too large
 #endif
 #if (DUK_STRIDX_UC_FUNCTION > 255)
@@ -55,7 +55,7 @@ duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_ARRAY,
 	DUK_STRIDX_UC_BOOLEAN,
 	DUK_STRIDX_DATE,
-	DUK_STRIDX_ERROR,
+	DUK_STRIDX_UC_ERROR,
 	DUK_STRIDX_UC_FUNCTION,
 	DUK_STRIDX_JSON,
 	DUK_STRIDX_MATH,

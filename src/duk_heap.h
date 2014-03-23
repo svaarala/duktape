@@ -355,6 +355,9 @@ struct duk_heap {
 	/* heap level "stash" object (e.g., various reachability roots) */
 	duk_hobject *heap_object;
 
+	/* heap level temporary log formatting buffer */
+	duk_hbuffer_dynamic *log_buffer;
+
 	/* duk_handle_call / duk_handle_safe_call recursion depth limiting */
 	int call_recursion_depth;
 	int call_recursion_limit;

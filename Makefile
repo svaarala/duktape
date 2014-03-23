@@ -100,6 +100,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_api_thread.c \
 	$(DISTSRCSEP)/duk_api_buffer.c \
 	$(DISTSRCSEP)/duk_api_var.c \
+	$(DISTSRCSEP)/duk_api_logging.c \
 	$(DISTSRCSEP)/duk_api.c \
 	$(DISTSRCSEP)/duk_lexer.c \
 	$(DISTSRCSEP)/duk_js_call.c \
@@ -124,6 +125,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_bi_string.c \
 	$(DISTSRCSEP)/duk_bi_buffer.c \
 	$(DISTSRCSEP)/duk_bi_pointer.c \
+	$(DISTSRCSEP)/duk_bi_logger.c \
 	$(DISTSRCSEP)/duk_selftest.c
 
 # Use combined sources for testing etc.

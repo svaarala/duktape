@@ -194,6 +194,7 @@ static void duk__mark_roots_heap(duk_heap *heap) {
 
 	duk__mark_heaphdr(heap, (duk_heaphdr *) heap->heap_thread);
 	duk__mark_heaphdr(heap, (duk_heaphdr *) heap->heap_object);
+	duk__mark_heaphdr(heap, (duk_heaphdr *) heap->log_buffer);
 
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 		duk_hstring *h = heap->strs[i];

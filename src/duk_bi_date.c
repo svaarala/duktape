@@ -1103,7 +1103,8 @@ static int duk__set_this_timeval_from_dparts(duk_context *ctx, double *dparts, i
 	return 1;
 }
 
-static int duk__format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset, int flags) {
+/* 'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long. */
+static void duk__format_parts_iso8601(int *parts, int tzoffset, int flags, duk_uint8_t *out_buf) {
 	char yearstr[8];   /* "-123456\0" */
 	char tzstr[8];     /* "+11:22\0" */
 	char sep = (flags & DUK__FLAG_SEP_T) ? 'T' : ' ';
@@ -1138,19 +1139,17 @@ static int duk__format_parts_iso8601(duk_context *ctx, int *parts, int tzoffset,
 	}
 
 	if ((flags & DUK__FLAG_TOSTRING_DATE) && (flags & DUK__FLAG_TOSTRING_TIME)) {
-		duk_push_sprintf(ctx, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
-		                 yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY], sep,
-		                 parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE], parts[DUK__IDX_SECOND],
-		                 parts[DUK__IDX_MILLISECOND], tzstr);
+		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
+		            yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY], sep,
+		            parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE], parts[DUK__IDX_SECOND],
+		            parts[DUK__IDX_MILLISECOND], tzstr);
 	} else if (flags & DUK__FLAG_TOSTRING_DATE) {
-		duk_push_sprintf(ctx, "%s-%02d-%02d", yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY]);
+		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d", yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY]);
 	} else {
 		DUK_ASSERT(flags & DUK__FLAG_TOSTRING_TIME);
-		duk_push_sprintf(ctx, "%02d:%02d:%02d.%03d%s", parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE],
-		                 parts[DUK__IDX_SECOND], parts[DUK__IDX_MILLISECOND], tzstr);
+		DUK_SPRINTF((char *) out_buf, "%02d:%02d:%02d.%03d%s", parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE],
+		            parts[DUK__IDX_SECOND], parts[DUK__IDX_MILLISECOND], tzstr);
 	}
-
-	return 1;
 }
 
 /* Helper for string conversion calls: check 'this' binding, get the
@@ -1161,6 +1160,7 @@ static int duk__to_string_helper(duk_context *ctx, int flags) {
 	int parts[DUK__NUM_PARTS];
 	int tzoffset;  /* seconds */
 	int rc;
+	duk_uint8_t buf[DUK_BI_DATE_ISO8601_BUFSIZE];
 
 	d = duk__push_this_get_timeval_tzoffset(ctx, flags, &tzoffset);
 	if (DUK_ISNAN(d)) {
@@ -1191,8 +1191,12 @@ static int duk__to_string_helper(duk_context *ctx, int flags) {
 #endif
 	}
 
-	rc = duk__format_parts_iso8601(ctx, parts, tzoffset, flags);
-	return rc;
+	/* Different calling convention than above used because the helper
+	 * is shared.
+	 */
+	duk__format_parts_iso8601(parts, tzoffset, flags, buf);
+	duk_push_string(ctx, (const char *) buf);
+	return 1;
 }
 
 /* Helper for component getter calls: check 'this' binding, get the
@@ -1383,6 +1387,27 @@ static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs
 	DUK_DDDPRINT("parts from args -> %lf %lf %lf %lf %lf %lf %lf %lf",
 	             dparts[0], dparts[1], dparts[2], dparts[3],
 	             dparts[4], dparts[5], dparts[6], dparts[7]);
+}
+
+/*
+ *  Helper to format a time value into caller buffer, used by logging.
+ *  'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long.
+ */
+
+void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
+	int parts[DUK__NUM_PARTS];
+
+	duk__timeval_to_parts(timeval,
+	                      parts,
+	                      NULL,
+	                      DUK__FLAG_ONEBASED);
+
+	duk__format_parts_iso8601(parts,
+	                          0 /*tzoffset*/,
+	                          DUK__FLAG_TOSTRING_DATE |
+	                          DUK__FLAG_TOSTRING_TIME |
+	                          DUK__FLAG_SEP_T /*flags*/,
+	                          out_buf);
 }
 
 /*

@@ -61,6 +61,7 @@ does not block.</p>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
+<tr><td class="propname">Logger</td><td>Logger constructor (function).</td></tr>
 </tbody>
 </table>
 
@@ -527,5 +528,73 @@ cases:</p>
 </thead>
 <tbody>
 <tr><td colspan="2">No properties at the moment.</td></tr>
+</tbody>
+</table>
+
+<h2>Duktape.Logger (constructor)</h2>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="propname">prototype</td><td>Prototype for Logger objects.</td></tr>
+<tr><td class="propname">clog</td><td>Representative logger for log entries written from C code.</td></tr>
+</tbody>
+</table>
+
+<p>Called as a constructor, creates a new Logger object with a specified name
+(first argument).  If the name is omitted, Logger will automatically assign
+a name based on the calling function's <code>fileName</code>.
+If called as a normal function, throws a <code>TypeError</code>.</p>
+
+<p>Logger instances have the following properties:</p>
+<ul>
+<li><code>n</code>: logger name; the property will be missing if (a) the given
+    name is not a string, or (b) no name is given and the automatic assignment
+    fails.  The logger will then inherit a value from the Logger prototype.
+    You can manually set this property later to whatever value is desired.</li>
+<li><code>l</code>: log level, indicates the minimum log level to output.
+    This property is not assigned by default and the logger inherits a default
+    level from the Logger prototype.  You can manually set this property to
+    another value to control log level on a per-logger basis.</li>
+</ul>
+
+<p>To write log entries:</p>
+<pre class="ecmascript-code">
+logger.info('three values:', val1, val2, val3);
+</pre>
+
+<p>For now, see the
+<a href="https://github.com/svaarala/duktape/blob/master/doc/logging.txt">internal documentation</a>
+on logging for more info.</p>
+
+<div class="fixme">
+Tail calling might theoretically affect the automatic name assignment (i.e.
+when logger name argument is omitted).  However, constructor calls are never
+converted to tail calls, so this is not a practical issue.
+</div>
+
+<h2>Duktape.Logger.prototype</h2>
+
+<table>
+<thead>
+<tr>
+<th>Property</th><th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="propname">raw</td><td>Output a formatted log line (buffer value), by default writes to <code>stderr</code>.</td></tr>
+<tr><td class="propname">fmt</td><td>Format a single (object) argument.</td></tr>
+<tr><td class="propname">trace</td><td>Write a trace level (level 0, TRC) log entry.</td></tr>
+<tr><td class="propname">debug</td><td>Write a debug level (level 1, DBG) log entry.</td></tr>
+<tr><td class="propname">info</td><td>Write an info level (level 2, INF) log entry.</td></tr>
+<tr><td class="propname">warn</td><td>Write a warn level (level 3, WRN) log entry.</td></tr>
+<tr><td class="propname">error</td><td>Write an error level (level 4, ERR) log entry.</td></tr>
+<tr><td class="propname">fatal</td><td>Write a fatal level (level 5, FTL) log entry.</td></tr>
+<tr><td class="propname">l</td><td>Default log level, initial value is 2 (info).</td></tr>
+<tr><td class="propname">n</td><td>Default logger name, initial value is "anon".</td></tr>
 </tbody>
 </table>

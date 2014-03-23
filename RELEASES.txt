@@ -199,6 +199,9 @@ Planned
 
 * Add Duktape.compact() and Duktape.line()
 
+* Add a barebones built-in logging framework with both Ecmascript and C
+  APIs and easy customization
+
 * Add a message argument to fatal handler function callback, simplify
   internal fatal error and panic handling
 

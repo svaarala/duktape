@@ -481,6 +481,7 @@ duk_string_list = [
 	mkstr("Buffer", custom=True, class_name=True),
 	mkstr("Pointer", custom=True, class_name=True),
 	mkstr("Thread", custom=True, class_name=True),
+	mkstr("Logger", custom=True, class_name=True),
 
 	# non-standard built-in object names
 	mkstr("ThrowTypeError", custom=True),  # implementation specific, matches V8
@@ -547,7 +548,7 @@ duk_string_list = [
 	mkstr("compile", custom=True),                  # used as a filename for functions created with Function constructor
 	mkstr("input", custom=True),                    # used as a filename for eval temp function
 
-	# Duktape_ object
+	# Duktape object
 	mkstr("Duktape", custom=True),
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
@@ -577,6 +578,26 @@ duk_string_list = [
 	mkstr("current", custom=True),
 
 	# Thread prototype
+
+	# Logger constructor
+
+	# Logger prototype and logger instances
+	mkstr("fmt", custom=True),
+	mkstr("raw", custom=True),
+	mkstr("trace", custom=True),
+	mkstr("debug", custom=True),
+	mkstr("info", custom=True),
+	mkstr("warn", custom=True),
+	mkstr("error", custom=True),
+	mkstr("fatal", custom=True),
+	mkstr("n", custom=True),
+	mkstr("l", custom=True),
+
+	# Auxiliary logger strings
+	mkstr("clog", custom=True),  # C logger
+
+	# for controlling log formatting of objects
+	mkstr("toLogString"),
 
 	# special literals for custom json encodings
 	mkstr('{"_undef":true}'),
@@ -688,6 +709,27 @@ special_define_names = {
 	'Pointer': 'UC_POINTER',
 	#'thread': 'LC_THREAD',
 	'Thread': 'UC_THREAD',
+	#'logger': 'LC_LOGGER',
+	'Logger': 'UC_LOGGER',
+	'n': 'LC_N',
+	'l': 'LC_L',
+
+	'error': 'LC_ERROR',
+	'Error': 'UC_ERROR',
+
+	# log levels
+	'trace': 'LC_TRACE',
+	#'Trace': 'UC_TRACE',
+	'debug': 'LC_DEBUG',
+	#'Debug': 'UC_DEBUG',
+	'info': 'LC_INFO',
+	#'Info': 'UC_INFO',
+	'warn': 'LC_WARN',
+	#'Warn': 'UC_WARN',
+	#'error': 'LC_ERROR',  # already above
+	#'Error': 'UC_ERROR',
+	'fatal': 'LC_FATAL',
+	#'Fatal': 'UC_FATAL',
 
 	'+Infinity': 'PLUS_INFINITY',
 	'-Infinity': 'MINUS_INFINITY',

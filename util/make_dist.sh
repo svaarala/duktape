@@ -70,6 +70,7 @@ for i in	\
 	duk_api_string.c	\
 	duk_api_thread.c	\
 	duk_api_var.c		\
+	duk_api_logging.c	\
 	duk_bi_array.c		\
 	duk_bi_boolean.c	\
 	duk_bi_buffer.c		\
@@ -83,6 +84,7 @@ for i in	\
 	duk_bi_number.c		\
 	duk_bi_object.c		\
 	duk_bi_pointer.c	\
+	duk_bi_logger.c		\
 	duk_bi_protos.h		\
 	duk_bi_regexp.c		\
 	duk_bi_string.c		\
