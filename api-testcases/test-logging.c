@@ -22,6 +22,7 @@ int test_1(duk_context *ctx) {
 	 * with a fixed string to be able to build an expect string.
 	 */
 	duk_eval_string(ctx, "Duktape.Logger.prototype.raw = function (msg) {\n"
+	                     "    msg = String(msg);  // arg is a buffer\n"
 	                     "    msg = msg.replace(/\\S+/, 'TIMESTAMP')\n"
 	                     "    print(msg);\n"
 	                     "}");
