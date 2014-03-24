@@ -193,6 +193,9 @@ Planned
 0.10.0 (2014-03-XX)
 -------------------
 
+* Avoid "out of regs" for large expressions containing function calls by
+  using indirect call opcodes in bytecode
+
 * Add duk_push_heap_stash(), duk_push_global_stash(), and
   duk_push_thread_stash() to provide C code with stashes for storing
   values invisible to Ecmascript code
