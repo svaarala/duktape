@@ -82,7 +82,7 @@ print('logger name');
 try {
     loggerNameTest();
 } catch (e) {
-    print(e.stack);
+    print(e);
 }
 
 /*===
