@@ -2312,7 +2312,8 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		if (num_values > 0) {
 			/* B and C have a non-register/const meaning, so shuffling
 			 * is not allowed.
-			 */	
+			 */
+			/* FIXME: indirect MPUTARR */
 			duk__emit_a_b_c(comp_ctx,
 			                DUK_OP_MPUTARR | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 			                reg_obj,
@@ -2538,6 +2539,7 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 					/* B and C have a non-register/const meaning, so shuffling
 					 * is not allowed.
 					 */
+					/* FIXME: indirect MPUTOBJ */
 					duk__emit_a_b_c(comp_ctx,
 					                DUK_OP_MPUTOBJ | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 					                reg_obj,
@@ -2597,7 +2599,8 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 		if (num_pairs > 0) {
 			/* B and C have a non-register/const meaning, so shuffling
 			 * is not allowed.
-			 */	
+			 */
+			/* FIXME: indirect MPUTOBJ */
 			duk__emit_a_b_c(comp_ctx,
 			                DUK_OP_MPUTOBJ | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 			                reg_obj,
@@ -2853,7 +2856,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * is not allowed.
 		 */
 		duk__emit_a_b_c(comp_ctx,
-		              DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+		              DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 		              0 /*unused*/,
 		              reg_target /*target*/,
 		              nargs /*num_args*/);
