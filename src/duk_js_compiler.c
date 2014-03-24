@@ -924,16 +924,22 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
  *  Code emission helpers
  *
  *  Some emission helpers understand the range of target and source reg/const
- *  values and automatically emit shuffling code if necessary.  This only
- *  makes sense if the slot in question (A, B, C) is used in the standard
- *  register/constant meaning.  If slot A is used in a non-standard way the
- *  caller simply needs to ensure that the raw value fits into A so as to not
- *  trigger shuffling.  The flag DUK__EMIT_FLAG_NO_SHUFFLE_A can be set to ensure
- *  compilation fails if the value does not fit into A.  For slots B and C
- *  the raw slot size is 9 bits but one bit is reserved for the reg/const
- *  indicator.  To use the full 9-bit range for a raw value, shuffling is
- *  disabled with the DUK__EMIT_FLAG_NO_SHUFFLE_{B,C} flag.  Shuffling is only
- *  done for A, B, and C slots, not the larger BC or ABC slots.
+ *  values and automatically emit shuffling code if necessary.  This is the
+ *  case when the slot in question (A, B, C) is used in the standard way and
+ *  for opcodes the emission helpers explicitly understand (like DUK_OP_CALL).
+ *
+ *  If a slot is used in a non-standard way the caller must ensure that the
+ *  raw value fits into the corresponding slot so as to not trigger shuffling.
+ *  The caller must set a "no shuffle" flag to ensure compilation fails if
+ *  shuffling were to be triggered because of an internal error.
+ *
+ *  For slots B and C the raw slot size is 9 bits but one bit is reserved for
+ *  the reg/const indicator.  To use the full 9-bit range for a raw value,
+ *  shuffling must be disabled with the DUK__EMIT_FLAG_NO_SHUFFLE_{B,C} flag.
+ *  Shuffling is only done for A, B, and C slots, not the larger BC or ABC slots.
+ *
+ *  There is call handling specific understanding in the A-B-C emitter to
+ *  convert call setup and call instructions into indirect ones if necessary.
  */
 
 /* Code emission flags, passed in the 'opcode' field */
@@ -1001,10 +1007,14 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 
 	DUK_ASSERT((op_flags & 0xff) >= DUK_BC_OP_MIN && (op_flags & 0xff) <= DUK_BC_OP_MAX);
 
+	/* Slot B */
+
 	if (b & DUK__CONST_MARKER) {
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) == 0);
+		DUK_ASSERT((op_flags & 0xff) != DUK_OP_CALL);
+		DUK_ASSERT((op_flags & 0xff) != DUK_OP_NEW);
 		b = b & ~DUK__CONST_MARKER;
-		if (b < 0x100) {
+		if (b <= 0xff) {
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0x100, 0);  /* const flag for B */
 		} else if (b <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
@@ -1016,25 +1026,38 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 		}
 	} else {
 		if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) {
-			if (b >= DUK_BC_B_MAX) {
+			if (b > DUK_BC_B_MAX) {
 				goto error_outofregs;
 			}
-		} else if (b < 0x100) {
+		} else if (b <= 0xff) {
 			;
 		} else if (b <= DUK_BC_BC_MAX) {
+			duk_small_int_t op = op_flags & 0xff;
+
 			comp_ctx->curr_func.needs_shuffle = 1;
 			tmp = comp_ctx->curr_func.shuffle1;
-			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
+
+			if (op == DUK_OP_CALL || op == DUK_OP_NEW) {
+				/* Special handling for CALL/NEW shuffling. */
+				duk__emit_loadint(comp_ctx, tmp, b);
+				DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
+				DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
+				op_flags++;  /* indirect opcode follows direct */
+			} else {
+				duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
+			}
 			b = tmp;
 		} else {
 			goto error_outofregs;
 		}
 	}
 
+	/* Slot C */
+
 	if (c & DUK__CONST_MARKER) {
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) == 0);
 		c = c & ~DUK__CONST_MARKER;
-		if (c < 0x100) {
+		if (c <= 0xff) {
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0, 0x100);  /* const flag for C */
 		} else if (c <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
@@ -1046,10 +1069,10 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 		}
 	} else {
 		if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) {
-			if (c >= DUK_BC_C_MAX) {
+			if (c > DUK_BC_C_MAX) {
 				goto error_outofregs;
 			}
-		} else if (c < 0x100) {
+		} else if (c <= 0xff) {
 			;
 		} else if (b <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
@@ -1061,17 +1084,35 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 		}
 	}
 
+	/* Slot A */
+
 	if (a <= DUK_BC_A_MAX) {
 		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
 		duk__emit(comp_ctx, ins);
 	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
 		goto error_outofregs;
 	} else if (a <= DUK_BC_BC_MAX) {
+		duk_small_int_t op = op_flags & 0xff;
+
 		comp_ctx->curr_func.needs_shuffle = 1;
 		tmp = comp_ctx->curr_func.shuffle3;
-		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, tmp, b, c);
-		duk__emit(comp_ctx, ins);
-		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+
+		if (op == DUK_OP_CSVAR || op == DUK_OP_CSREG || op == DUK_OP_CSPROP) {
+			/* Special handling for call setup instructions. */
+			comp_ctx->curr_func.needs_shuffle = 1;
+			tmp = comp_ctx->curr_func.shuffle3;
+
+			duk__emit_loadint(comp_ctx, tmp, a);
+			DUK_ASSERT(DUK_OP_CSVARI == DUK_OP_CSVAR + 1);
+			DUK_ASSERT(DUK_OP_CSREGI == DUK_OP_CSREG + 1);
+			DUK_ASSERT(DUK_OP_CSPROPI == DUK_OP_CSPROP + 1);
+			ins |= DUK_ENC_OP_A_B_C(op + 1, tmp, b, c);  /* indirect opcode follows direct */
+			duk__emit(comp_ctx, ins);
+		} else {
+			ins |= DUK_ENC_OP_A_B_C(op, tmp, b, c);
+			duk__emit(comp_ctx, ins);
+			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+		}
 	} else {
 		goto error_outofregs;
 	}
@@ -2808,14 +2849,14 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			nargs = 0;
 		}
 
-		/* Opcode slots are used in a non-standard way, so shuffling is
-		 * not allowed.
+		/* Opcode slot C is used in a non-standard way, so shuffling
+		 * is not allowed.
 		 */
 		duk__emit_a_b_c(comp_ctx,
-		                DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
-		                reg_target /*target*/,
-		                reg_target /*start*/,
-		                nargs /*num_args*/);
+		              DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+		              0 /*unused*/,
+		              reg_target /*target*/,
+		              nargs /*num_args*/);
 
 		DUK_DDDPRINT("end parsing new expression");
 
@@ -3230,12 +3271,12 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			duk_dup(ctx, left->x1.valstack_idx);
 			if (duk__lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 				duk__emit_a_b(comp_ctx,
-				              DUK_OP_CSREG | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+				              DUK_OP_CSREG,
 				              reg_cs + 0,
 				              reg_varbind);
 			} else {
 				duk__emit_a_b(comp_ctx,
-				              DUK_OP_CSVAR | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+				              DUK_OP_CSVAR,
 				              reg_cs + 0,
 				              reg_varname);
 			}
@@ -3245,7 +3286,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 0);  /* base */
 			duk__ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 1);  /* key */
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_CSPROP | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+			                DUK_OP_CSPROP,
 			                reg_cs + 0,
 			                reg_cs + 0,
 			                reg_cs + 1);  /* in-place setup */
@@ -3254,7 +3295,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 
 			duk__ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);
 			duk__emit_a_b(comp_ctx,
-			              DUK_OP_CSREG | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+			              DUK_OP_CSREG,
 			              reg_cs + 0,
 			              reg_cs + 0);  /* in-place setup */
 		}
@@ -3262,16 +3303,13 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		DUK__SETTEMP(comp_ctx, reg_cs + 2);
 		nargs = duk__parse_arguments(comp_ctx, res);  /* parse args starting from "next temp" */
 
-		/* FIXME: opcode inconsistency with NEW now, which uses explicit result reg */
-
 		/* Tailcalls are handled by back-patching the TAILCALL flag to the
 		 * already emitted instruction later (in return statement parser).
-		 * Since A, B, and C have a special meaning here, they cannot be "shuffled"
-		 * (if reg_cs or nargs don't fit in B/C, function cannot be compiled).
+		 * Since A and C have a special meaning here, they cannot be "shuffled".
 		 */
 
 		duk__emit_a_b_c(comp_ctx,
-		                DUK_OP_CALL | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+		                DUK_OP_CALL | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 		                call_flags /*flags*/,
 		                reg_cs /*basereg*/,
 		                nargs /*numargs*/);
@@ -4896,11 +4934,13 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		if (comp_ctx->curr_func.catch_depth == 0 &&   /* no catchers */
 		    pc_after_expr > pc_before_expr) {         /* at least one opcode emitted */
 			duk_compiler_instr *instr;
+			duk_small_int_t op;
 
 			instr = duk__get_instr_ptr(comp_ctx, pc_after_expr - 1);
 			DUK_ASSERT(instr != NULL);
 
-			if (DUK_DEC_OP(instr->ins) == DUK_OP_CALL) {
+			op = DUK_DEC_OP(instr->ins);
+			if (op == DUK_OP_CALL || op == DUK_OP_CALLI) {
 				DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				             "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				             "and last instruction is a CALL "
