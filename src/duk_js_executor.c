@@ -462,6 +462,8 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 
 /* only called when act_idx points to an Ecmascript function */
 static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
+	duk_hcompiledfunction *h_func;
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(act_idx >= 0);
 	DUK_ASSERT(thr->callstack[act_idx].func != NULL);
@@ -483,10 +485,15 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
 	 *  top to 'nregs' always.
 	 */
 
-	/* FIXME: checkstack here for nregs + internal spare */
+	h_func = (duk_hcompiledfunction *) thr->callstack[act_idx].func;
 
-	duk_set_top((duk_context *) thr,
-	            ((duk_hcompiledfunction *) thr->callstack[act_idx].func)->nregs);
+	duk_require_valstack_resize((duk_context *) thr,
+	                            (thr->valstack_bottom - thr->valstack) +          /* bottom of current func */
+	                                h_func->nregs +                               /* reg count */
+	                                DUK_VALSTACK_INTERNAL_EXTRA,                  /* + spare */
+	                            1);                                               /* allow_shrink */
+
+	duk_set_top((duk_context *) thr, h_func->nregs);
 }
 
 static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finally) {
@@ -1847,15 +1854,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_NEW: {
+		case DUK_OP_NEW:
+		case DUK_OP_NEWI: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 			int c = DUK_DEC_C(ins);
 			int i;
 
-			/* A -> target register
-			 * B -> start reg: constructor, arg1, ..., argN
+			/* A -> unused (reserved for flags, for consistency with DUK_OP_CALL)
+			 * B -> target register and start reg: constructor, arg1, ..., argN
+			 *      (for DUK_OP_NEWI, 'b' is indirect)
 			 * C -> num args (N)
 			 */
 
@@ -1868,13 +1876,22 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * b + c, and let the return handling fix up the stack frame?
 			 */
 
+			if (DUK_DEC_OP(ins) == DUK_OP_NEWI) {
+				duk_tval *tv_ind = DUK__REGP(b);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("NEWI target is not a number");
+				}
+				b = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+			}
+
+			duk_require_stack(ctx, c);
 			duk_push_tval(ctx, DUK__REGP(b));
 			for (i = 0; i < c; i++) {
 				duk_push_tval(ctx, DUK__REGP(b + i + 1));
 			}
 			duk_new(ctx, c);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDDPRINT("NEW -> %!iT", duk_get_tval(ctx, -1));
-			duk_replace(ctx, a);
+			duk_replace(ctx, b);
 			break;
 		}
 
@@ -1905,7 +1922,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_CSREG: {
+		case DUK_OP_CSREG:
+		case DUK_OP_CSREGI: {
 			/*
 			 *  Assuming a register binds to a variable declared within this
 			 *  function (a declarative binding), the 'this' for the call
@@ -1917,6 +1935,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int b = DUK_DEC_B(ins);  /* restricted to regs */
 
 			/* A -> target register (A, A+1) for call setup
+			 *      (for DUK_OP_CSREGI, 'a' is indirect)
 			 * B -> register containing target function (not type checked here)
 			 */
 
@@ -1925,6 +1944,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* Note: target registers a and a+1 may overlap with DUK__REGP(b).
 			 * Careful here.
 			 */
+
+			if (DUK_DEC_OP(ins) == DUK_OP_CSREGI) {
+				duk_tval *tv_ind = DUK__REGP(a);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("CSREGI target is not a number");
+				}
+				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+			}
 
 			duk_push_tval(ctx, DUK__REGP(b));
 			duk_replace(ctx, a);
@@ -2044,7 +2071,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_CSVAR: {
+		case DUK_OP_CSVAR:
+		case DUK_OP_CSVARI: {
 			/* 'this' value:
 			 * E5 Section 6.b.i
 			 *
@@ -2070,6 +2098,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* Note: target registers a and a+1 may overlap with DUK__REGCONSTP(b)
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
+
+			if (DUK_DEC_OP(ins) == DUK_OP_CSVARI) {
+				duk_tval *tv_ind = DUK__REGP(a);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("CSVARI target is not a number");
+				}
+				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+			}
 
 			duk_replace(ctx, a+1);  /* 'this' binding */
 			duk_replace(ctx, a);    /* variable value (function, we hope, not checked here) */
@@ -2200,7 +2236,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_CSPROP: {
+		case DUK_OP_CSPROP:
+		case DUK_OP_CSPROPI: {
 			duk_context *ctx = (duk_context *) thr;
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
@@ -2224,6 +2261,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* Note: target registers a and a+1 may overlap with DUK__REGP(b)
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
+
+			if (DUK_DEC_OP(ins) == DUK_OP_CSPROPI) {
+				duk_tval *tv_ind = DUK__REGP(a);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("CSPROPI target is not a number");
+				}
+				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+			}
 
 			duk_push_tval(ctx, DUK__REGP(b));  /* [ ... val obj ] */
 			duk_replace(ctx, a+1);        /* 'this' binding */
@@ -2502,7 +2547,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_CALL: {
+		case DUK_OP_CALL:
+		case DUK_OP_CALLI: {
 			duk_context *ctx = (duk_context *) thr;
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
@@ -2516,12 +2562,21 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* A -> flags
 			 * B -> base register for call (base -> func, base+1 -> this, base+2 -> arg1 ... base+2+N-1 -> argN)
+			 *      (for DUK_OP_CALLI, 'b' is indirect)
 			 * C -> nargs
 			 */
 
 			/* these are not necessarily 0 or 1 (may be other non-zero), that's ok */
 			flag_tailcall = (a & DUK_BC_CALL_FLAG_TAILCALL);
 			flag_evalcall = (a & DUK_BC_CALL_FLAG_EVALCALL);
+
+			if (DUK_DEC_OP(ins) == DUK_OP_CALLI) {
+				duk_tval *tv_ind = DUK__REGP(b);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("CALLI target is not a number");
+				}
+				b = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+			}
 
 			tv_func = DUK__REGP(b);
 			if (!DUK_TVAL_IS_OBJECT(tv_func)) {
