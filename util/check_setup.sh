@@ -5,6 +5,7 @@
 #
 
 ERRORS=0
+WARNINGS=0
 
 uname -a | grep -ni linux >/dev/null
 RET=$?
@@ -61,9 +62,47 @@ if [ $? != 0 ]; then
 fi
 #echo "JAVA_VERSION: $JAVA_VERSION"
 
-if [ "x$ERRORS" = "x0" ]; then
+CLANG_VERSION=`clang -v 2>&1`
+if [ $? != 0 ]; then
+	echo "*** Missing clang (affects emscripten tests):"
+	echo "  $ sudo apt-get install clang"
+	echo ""
+	WARNINGS=1
+fi
+
+LLVM_LINK_VERSION=`llvm-link --version 2>&1`  # exit code will be 1
+which llvm-link 2>/dev/null >/dev/null
+if [ $? != 0 ]; then
+	echo "*** Missing llvm (affects emscripten tests):"
+	echo "  $ sudo apt-get install llvm"
+	echo ""
+	WARNINGS=1
+fi
+
+python -c 'from bs4 import BeautifulSoup, Tag' 2>/dev/null
+if [ $? != 0 ]; then
+	echo "*** Missing BeautifulSoup (affects website build)"
+	echo "  $ sudo apt-get install python-bs4"
+	echo ""
+	WARNINGS=1
+fi
+
+SOURCE_HIGHLIGHT_VERSION=`source-highlight --version`
+if [ $? != 0 ]; then
+	echo "*** Missing source-highlight (affects website build)"
+	echo "  $ sudo apt-get install source-highlight"
+	echo ""
+	WARNINGS=1
+fi
+
+if [ "x$ERRORS" != "x0" ]; then
+	echo "*** Errors found in system setup, see error messages above!"
+	exit 1
+fi
+
+if [ "x$WARNINGS" != "x0" ]; then
+	echo "*** Warnings found in system setup, see warnings above"
 	exit 0
 fi
 
-echo "*** Errors found in system setup, see error messages above!"
-exit 1
+exit 0
