@@ -74,14 +74,13 @@
 
 /* must match bytecode defines now; build autogenerate? */
 static const char *duk__bc_optab[] = {
-	"LDREG", "STREG", "LDCONST", "LDINT", "LDINTX", "MPUTOBJ", "MPUTARR", "NEW", "REGEXP", "CSREG",
-	"GETVAR", "PUTVAR", "DECLVAR", "DELVAR", "CSVAR", "CLOSURE", "GETPROP", "PUTPROP", "DELPROP", "CSPROP",
-	"ADD", "SUB", "MUL", "DIV", "MOD", "UNM", "UNP", "INC", "DEC", "BAND",
-	"BOR", "BXOR", "BNOT", "BASL", "BLSR", "BASR", "LNOT", "EQ", "NEQ", "SEQ",
-	"SNEQ", "GT", "GE", "LT", "LE", "IF", "INSTOF", "IN", "JUMP", "RETURN",
-
-	"CALL", "LABEL", "ENDLABEL", "BREAK", "CONTINUE", "TRYCATCH", "OP56", "OP57", "OP58", "OP59",
-	"OP60", "EXTRA", "DEBUG", "INVALID",
+	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTARR",  "NEW",      "NEWI",     "REGEXP",
+	"CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",   "CLOSURE",  "GETPROP",
+	"PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",      "MOD",      "UNM",
+	"UNP",      "INC",      "DEC",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "BNOT",
+	"LNOT",     "EQ",       "NEQ",      "SEQ",      "SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",
+	"INSTOF",   "IN",       "JUMP",     "RETURN",   "CALL",     "CALLI",    "LABEL",    "ENDLABEL", "BREAK",    "CONTINUE",
+	"TRYCATCH", "EXTRA",    "DEBUG",    "INVALID",
 };
 
 static const char *duk__bc_extraoptab[] = {
