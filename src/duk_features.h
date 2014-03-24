@@ -1668,7 +1668,8 @@ typedef FILE duk_file;
  *  a shallow stack on unknown platforms or known embedded platforms.
  */
 
-#if defined(DUK_F_LINUX) || defined(DUK_F_BSD) || defined(DUK_F_WINDOWS)
+#if defined(DUK_F_LINUX) || defined(DUK_F_BSD) || defined(DUK_F_WINDOWS) || \
+    defined(DUK_OPT_DEEP_C_STACK)
 #define DUK_USE_DEEP_C_STACK
 #else
 #undef DUK_USE_DEEP_C_STACK
