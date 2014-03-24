@@ -62,6 +62,14 @@ The table below summarizes the available options, in no particular order:</p>
     compilation fails in endianness detection.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_DEEP_C_STACK</td>
+<td>By default Duktape imposes a sanity limit on the depth of the C stack
+    because it is often limited in embedded environments.  This option
+    forces Duktape to use a deep C stack which relaxes e.g. recursion
+    limits.  Automatic feature detection enables deep C stacks on some
+    platforms known to have them (e.g. Linux, BSD, Windows).</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_REFERENCE_COUNTING</td>
 <td>Disable reference counting and use only mark-and-sweep for garbage collection.
     Although this reduces memory footprint of heap objects, the downside is much
