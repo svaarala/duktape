@@ -96,10 +96,10 @@ static void duk__emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a);
 #endif
 static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc);
 static void duk__emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc);
-static void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop, int b, int c);
-static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop, int b);
+static void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop_flags, int b, int c);
+static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop_flags, int b);
 static void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, int extraop, int bc);
-static void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop);
+static void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop_flags);
 static void duk__emit_loadint(duk_compiler_ctx *comp_ctx, int reg, int val);
 static void duk__emit_jump(duk_compiler_ctx *comp_ctx, int target_pc);
 static int duk__emit_jump_empty(duk_compiler_ctx *comp_ctx);
@@ -928,9 +928,18 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
  *  case when the slot in question (A, B, C) is used in the standard way and
  *  for opcodes the emission helpers explicitly understand (like DUK_OP_CALL).
  *
- *  If a slot is used in a non-standard way the caller must ensure that the
- *  raw value fits into the corresponding slot so as to not trigger shuffling.
- *  The caller must set a "no shuffle" flag to ensure compilation fails if
+ *  The standard way is that:
+ *    - slot A is a target register
+ *    - slot B is a source register/constant
+ *    - slot C is a source register/constant
+ *
+ *  If a slot is used in a non-standard way the caller must indicate this
+ *  somehow.  If a slot is used as a target instead of a source (or vice
+ *  versa), this can be indicated with a flag to trigger proper shuffling
+ *  (e.g. DUK__EMIT_FLAG_B_IS_TARGET).  If the value in the slot is not
+ *  register/const related at all, the caller must ensure that the raw value
+ *  fits into the corresponding slot so as to not trigger shuffling.  The
+ *  caller must set a "no shuffle" flag to ensure compilation fails if
  *  shuffling were to be triggered because of an internal error.
  *
  *  For slots B and C the raw slot size is 9 bits but one bit is reserved for
@@ -946,6 +955,9 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 #define DUK__EMIT_FLAG_NO_SHUFFLE_A  (1 << 8)
 #define DUK__EMIT_FLAG_NO_SHUFFLE_B  (1 << 9)
 #define DUK__EMIT_FLAG_NO_SHUFFLE_C  (1 << 10)
+#define DUK__EMIT_FLAG_A_IS_SOURCE   (1 << 11)  /* slot A is a source (default: target) */
+#define DUK__EMIT_FLAG_B_IS_TARGET   (1 << 12)  /* slot B is a target (default: source) */
+#define DUK__EMIT_FLAG_C_IS_TARGET   (1 << 13)  /* slot C is a target (default: source) */
 
 /* FIXME: clarify on when and where DUK__CONST_MARKER is allowed */
 /* FIXME: opcode specific assertions on when consts are allowed */
@@ -999,18 +1011,66 @@ static void duk__emit_op_only(duk_compiler_ctx *comp_ctx, int op) {
 
 static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b, int c) {
 	duk_instr ins = 0;
+	duk_int_t a_out = 0;
+	duk_int_t b_out = 0;
+	duk_int_t c_out = 0;
 	duk_int_t tmp;
 
-	/* FIXME: rely on max temp/const checks; if they don't exceed BC
-	 * limit, then nothing here can too (i.e. just assert for it)?
+	/* We could rely on max temp/const checks: if they don't exceed BC
+	 * limit, nothing here can either (just asserts would be enough).
+	 * Currently we check for the limits, which provides additional
+	 * protection against creating invalid bytecode due to compiler
+	 * bugs.
 	 */
 
 	DUK_ASSERT((op_flags & 0xff) >= DUK_BC_OP_MIN && (op_flags & 0xff) <= DUK_BC_OP_MAX);
+
+	/* Input shuffling happens before the actual operation, while output
+	 * shuffling happens afterwards.  Output shuffling decisions are still
+	 * made at the same time to reduce branch clutter; output shuffle decisions
+	 * are recorded into X_out variables.
+	 */
+
+	/* Slot A */
+
+	if (a <= DUK_BC_A_MAX) {
+		;
+	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
+		DUK_DPRINT("out of regs: 'a' (reg) needs shuffling but shuffle prohibited, a: %d", (int) a);
+		goto error_outofregs;
+	} else if (a <= DUK_BC_BC_MAX) {
+		comp_ctx->curr_func.needs_shuffle = 1;
+		tmp = comp_ctx->curr_func.shuffle1;
+		if (op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) {
+			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, a));
+		} else {
+			duk_small_int_t op = op_flags & 0xff;
+			if (op == DUK_OP_CSVAR || op == DUK_OP_CSREG || op == DUK_OP_CSPROP) {
+				/* Special handling for call setup instructions.  The target
+				 * is expressed indirectly, but there is no output shuffling.
+				 */
+				DUK_ASSERT((op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) == 0);
+				duk__emit_loadint(comp_ctx, tmp, a);
+				DUK_ASSERT(DUK_OP_CSVARI == DUK_OP_CSVAR + 1);
+				DUK_ASSERT(DUK_OP_CSREGI == DUK_OP_CSREG + 1);
+				DUK_ASSERT(DUK_OP_CSPROPI == DUK_OP_CSPROP + 1);
+				op_flags++;  /* indirect opcode follows direct */
+			} else {
+				/* Output shuffle needed after main operation */
+				a_out = a;
+			}
+		}
+		a = tmp;
+	} else {
+		DUK_DPRINT("out of regs: 'a' (reg) needs shuffling but does not fit into BC, a: %d", (int) a);
+		goto error_outofregs;
+	}
 
 	/* Slot B */
 
 	if (b & DUK__CONST_MARKER) {
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) == 0);
+		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
 		DUK_ASSERT((op_flags & 0xff) != DUK_OP_CALL);
 		DUK_ASSERT((op_flags & 0xff) != DUK_OP_NEW);
 		b = b & ~DUK__CONST_MARKER;
@@ -1018,36 +1078,44 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0x100, 0);  /* const flag for B */
 		} else if (b <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
-			tmp = comp_ctx->curr_func.shuffle1;
+			tmp = comp_ctx->curr_func.shuffle2;
 			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDCONST, tmp, b));
 			b = tmp;
 		} else {
+			DUK_DPRINT("out of regs: 'b' (const) needs shuffling but does not fit into BC, b: %d", (int) b);
 			goto error_outofregs;
 		}
 	} else {
-		if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) {
+		if (b <= 0xff) {
+			;
+		} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) {
 			if (b > DUK_BC_B_MAX) {
+				/* Note: 0xff != DUK_BC_B_MAX */
+				DUK_DPRINT("out of regs: 'b' (reg) needs shuffling but shuffle prohibited, b: %d", (int) b);
 				goto error_outofregs;
 			}
-		} else if (b <= 0xff) {
-			;
 		} else if (b <= DUK_BC_BC_MAX) {
-			duk_small_int_t op = op_flags & 0xff;
-
 			comp_ctx->curr_func.needs_shuffle = 1;
-			tmp = comp_ctx->curr_func.shuffle1;
-
-			if (op == DUK_OP_CALL || op == DUK_OP_NEW) {
-				/* Special handling for CALL/NEW shuffling. */
-				duk__emit_loadint(comp_ctx, tmp, b);
-				DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
-				DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
-				op_flags++;  /* indirect opcode follows direct */
+			tmp = comp_ctx->curr_func.shuffle2;
+			if (op_flags & DUK__EMIT_FLAG_B_IS_TARGET) {
+				/* Output shuffle needed after main operation */
+				b_out = b;
 			} else {
-				duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
+				duk_small_int_t op = op_flags & 0xff;
+				if (op == DUK_OP_CALL || op == DUK_OP_NEW) {
+					/* Special handling for CALL/NEW shuffling. */
+					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
+					duk__emit_loadint(comp_ctx, tmp, b);
+					DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
+					DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
+					op_flags++;  /* indirect opcode follows direct */
+				} else {
+					duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
+				}
 			}
 			b = tmp;
 		} else {
+			DUK_DPRINT("out of regs: 'b' (reg) needs shuffling but does not fit into BC, b: %d", (int) b);
 			goto error_outofregs;
 		}
 	}
@@ -1056,66 +1124,74 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 
 	if (c & DUK__CONST_MARKER) {
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) == 0);
+		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_C_IS_TARGET) == 0);
 		c = c & ~DUK__CONST_MARKER;
 		if (c <= 0xff) {
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0, 0x100);  /* const flag for C */
 		} else if (c <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
-			tmp = comp_ctx->curr_func.shuffle2;
+			tmp = comp_ctx->curr_func.shuffle3;
 			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDCONST, tmp, c));
 			c = tmp;
 		} else {
+			DUK_DPRINT("out of regs: 'c' (const) needs shuffling but does not fit into BC, c: %d", (int) c);
 			goto error_outofregs;
 		}
 	} else {
-		if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) {
+		if (c <= 0xff) {
+			;
+		} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) {
 			if (c > DUK_BC_C_MAX) {
+				/* Note: 0xff != DUK_BC_C_MAX */
+				DUK_DPRINT("out of regs: 'c' (reg) needs shuffling but shuffle prohibited, c: %d", (int) c);
 				goto error_outofregs;
 			}
-		} else if (c <= 0xff) {
-			;
-		} else if (b <= DUK_BC_BC_MAX) {
+		} else if (c <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
-			tmp = comp_ctx->curr_func.shuffle2;
-			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, c));
+			tmp = comp_ctx->curr_func.shuffle3;
+			if (op_flags & DUK__EMIT_FLAG_C_IS_TARGET) {
+				/* Output shuffle needed after main operation */
+				c_out = c;
+			} else {
+				duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, c));
+			}
 			c = tmp;
 		} else {
+			DUK_DPRINT("out of regs: 'c' (reg) needs shuffling but does not fit into BC, c: %d", (int) c);
 			goto error_outofregs;
 		}
 	}
 
-	/* Slot A */
+	/* Main operation */
 
-	if (a <= DUK_BC_A_MAX) {
-		ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
-		duk__emit(comp_ctx, ins);
-	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
-		goto error_outofregs;
-	} else if (a <= DUK_BC_BC_MAX) {
-		duk_small_int_t op = op_flags & 0xff;
+	DUK_ASSERT(a >= DUK_BC_A_MIN && a <= DUK_BC_A_MAX);
+	DUK_ASSERT(b >= DUK_BC_B_MIN && b <= DUK_BC_B_MAX);
+	DUK_ASSERT(c >= DUK_BC_C_MIN && c <= DUK_BC_C_MAX);
 
-		comp_ctx->curr_func.needs_shuffle = 1;
-		tmp = comp_ctx->curr_func.shuffle3;
+	ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
+	duk__emit(comp_ctx, ins);
 
-		if (op == DUK_OP_CSVAR || op == DUK_OP_CSREG || op == DUK_OP_CSPROP) {
-			/* Special handling for call setup instructions. */
-			comp_ctx->curr_func.needs_shuffle = 1;
-			tmp = comp_ctx->curr_func.shuffle3;
-
-			duk__emit_loadint(comp_ctx, tmp, a);
-			DUK_ASSERT(DUK_OP_CSVARI == DUK_OP_CSVAR + 1);
-			DUK_ASSERT(DUK_OP_CSREGI == DUK_OP_CSREG + 1);
-			DUK_ASSERT(DUK_OP_CSPROPI == DUK_OP_CSPROP + 1);
-			ins |= DUK_ENC_OP_A_B_C(op + 1, tmp, b, c);  /* indirect opcode follows direct */
-			duk__emit(comp_ctx, ins);
-		} else {
-			ins |= DUK_ENC_OP_A_B_C(op, tmp, b, c);
-			duk__emit(comp_ctx, ins);
-			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
-		}
-	} else {
-		goto error_outofregs;
+	if (a_out || b_out || c_out) {
+		DUK_DPRINT("output shuffled: op_flags=%04x, a=%d, b=%d, c=%d, a_out=%d, b_out=%d, c_out=%d",
+		           (int) op_flags, (int) a, (int) b, (int) c, (int) a_out, (int) b_out, (int) c_out);
 	}
+
+	/* Output shuffling: only one output register is realistically possible. */
+
+	if (a_out != 0) {
+		DUK_ASSERT(b_out == 0);
+		DUK_ASSERT(c_out == 0);
+		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, a, a_out));
+	} else if (b_out != 0) {
+		DUK_ASSERT(a_out == 0);
+		DUK_ASSERT(c_out == 0);
+		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, b, b_out));
+	} else if (c_out != 0) {
+		DUK_ASSERT(b_out == 0);
+		DUK_ASSERT(c_out == 0);
+		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, c, c_out));
+	}
+
 	return;
 
  error_outofregs:
@@ -1143,7 +1219,12 @@ static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc) {
 	DUK_ASSERT(bc >= DUK_BC_BC_MIN && bc <= DUK_BC_BC_MAX);
 	DUK_ASSERT((bc & DUK__CONST_MARKER) == 0);
 
-	/* FIXME: no check for 'bc' range now, inconsistent with duk__emit_a_b_c */
+	if (bc <= DUK_BC_BC_MAX) {
+		;
+	} else {
+		/* No BC shuffling now. */
+		goto error_outofregs;
+	}
 
 	if (a <= DUK_BC_A_MAX) {
 		ins = DUK_ENC_OP_A_BC(op, a, bc);
@@ -1176,24 +1257,45 @@ static void duk__emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc) {
 	duk__emit(comp_ctx, ins);
 }
 
-static void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop, int b, int c) {
-	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
-	duk__emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, b, c);
+static void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop_flags, int b, int c) {
+	DUK_ASSERT((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN &&
+	           (extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
+	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	duk__emit_a_b_c(comp_ctx,
+	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                extraop_flags & 0xff,
+	                b,
+	                c);
 }
 
-static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop, int b) {
-	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
-	duk__emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, b, 0);
+static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop_flags, int b) {
+	DUK_ASSERT((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN &&
+	           (extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
+	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	duk__emit_a_b_c(comp_ctx,
+	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                extraop_flags & 0xff,
+	                b,
+	                0);
 }
 
 static void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, int extraop, int bc) {
 	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
-	duk__emit_a_bc(comp_ctx, DUK_OP_EXTRA, extraop, bc);
+	duk__emit_a_bc(comp_ctx,
+	               DUK_OP_EXTRA,
+	               extraop,
+	               bc);
 }
 
-static void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop) {
-	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
-	duk__emit_a_b_c(comp_ctx, DUK_OP_EXTRA, extraop, 0, 0);
+static void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, int extraop_flags) {
+	DUK_ASSERT((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN &&
+	           (extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
+	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	duk__emit_a_b_c(comp_ctx,
+	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                extraop_flags & 0xff,
+	                0,
+	                0);
 }
 
 static void duk__emit_loadint(duk_compiler_ctx *comp_ctx, int reg, duk_int32_t val) {
@@ -2232,7 +2334,10 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	max_init_values = DUK__MAX_ARRAY_INIT_VALUES;  /* XXX: depend on available temps? */
 
 	reg_obj = DUK__ALLOCTEMP(comp_ctx);
-	duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_NEWARR, reg_obj, 0);  /* XXX: patch initial size afterwards? */
+	duk__emit_extraop_b_c(comp_ctx,
+	                      DUK_EXTRAOP_NEWARR | DUK__EMIT_FLAG_B_IS_TARGET, 
+	                      reg_obj,
+	                      0);  /* XXX: patch initial size afterwards? */
  	temp_start = DUK__GETTEMP(comp_ctx);
 
 	/*
@@ -2311,14 +2416,16 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 		if (num_values > 0) {
 			/* B and C have a non-register/const meaning, so shuffling
-			 * is not allowed.  Also A has non-standard meaning.
+			 * is not allowed.  Also A has non-standard meaning, is is
+			 * a source (object is read from it).
 			 */
 			/* FIXME: indirect MPUTARR */
 			duk__emit_a_b_c(comp_ctx,
 			                DUK_OP_MPUTARR |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
+			                    DUK__EMIT_FLAG_A_IS_SOURCE,
 			                reg_obj,
 			                temp_start,
 			                num_values);
@@ -2429,7 +2536,10 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	max_init_pairs = DUK__MAX_OBJECT_INIT_PAIRS;  /* XXX: depend on available temps? */
 
 	reg_obj = DUK__ALLOCTEMP(comp_ctx);
-	duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_NEWOBJ, reg_obj, 0);  /* XXX: patch initial size afterwards? */
+	duk__emit_extraop_b_c(comp_ctx,
+	                      DUK_EXTRAOP_NEWOBJ | DUK__EMIT_FLAG_B_IS_TARGET,
+	                      reg_obj,
+	                      0);  /* XXX: patch initial size afterwards? */
 	temp_start = DUK__GETTEMP(comp_ctx);
 
 	/* temp object for tracking / detecting duplicate keys */
@@ -2548,7 +2658,8 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 					                DUK_OP_MPUTOBJ |
 					                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
 					                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
-					                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
+					                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
+					                    DUK__EMIT_FLAG_A_IS_SOURCE,
 					                reg_obj,
 					                temp_start,
 					                num_pairs);
@@ -2612,7 +2723,8 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 			                DUK_OP_MPUTOBJ |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
+			                    DUK__EMIT_FLAG_A_IS_SOURCE,
 			                reg_obj,
 			                temp_start,
 			                num_pairs);
@@ -2727,7 +2839,9 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	case DUK_TOK_THIS: {
 		int reg_temp;
 		reg_temp = DUK__ALLOCTEMP(comp_ctx);
-		duk__emit_extraop_b(comp_ctx, DUK_EXTRAOP_LDTHIS, reg_temp);
+		duk__emit_extraop_b(comp_ctx,
+		                    DUK_EXTRAOP_LDTHIS | DUK__EMIT_FLAG_B_IS_TARGET,
+		                    reg_temp);
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
 		res->x1.regconst = reg_temp;
@@ -2939,7 +3053,8 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			duk_dup(ctx, res->x1.valstack_idx);
 			if (duk__lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 				/* register bound variables are non-configurable -> always false */
-				duk__emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDFALSE, reg_temp);
+				duk__emit_extraop_bc(comp_ctx,
+				                     DUK_EXTRAOP_LDFALSE, reg_temp);
 			} else {
 				duk_dup(ctx, res->x1.valstack_idx);
 				reg_varname = duk__getconst(comp_ctx);
@@ -2992,8 +3107,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				DUK_DDDPRINT("typeof for an identifier name which could not be resolved "
 				             "at compile time, need to use special run-time handling");
 				tr = DUK__ALLOCTEMP(comp_ctx);
-				duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TYPEOFID, tr, reg_varname);
-
+				duk__emit_extraop_b_c(comp_ctx,
+				                      DUK_EXTRAOP_TYPEOFID | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      tr,
+				                      reg_varname);
 				res->t = DUK_IVAL_PLAIN;
 				res->x1.t = DUK_ISPEC_REGCONST;
 				res->x1.regconst = tr;
@@ -3082,7 +3199,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		/* FIXME: refactor into unary2: above? */
 		int tr;
 		tr = duk__ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
-		duk__emit_extraop_b_c(comp_ctx, args >> 8, tr, tr);
+		duk__emit_extraop_b_c(comp_ctx,
+		                      (args >> 8) | DUK__EMIT_FLAG_B_IS_TARGET,
+		                      tr,
+		                      tr);
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
 		res->x1.regconst = tr;
@@ -3136,7 +3256,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			 * for proper semantics (consider ToNumber() called for an object).
 			 */
 			duk__ivalue_toforcedreg(comp_ctx, res, reg_res);
-			duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);  /* for side effects */
+			duk__emit_extraop_b_c(comp_ctx,
+			                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      reg_res,
+			                      reg_res);  /* for side effects */
 			duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_INVLHS);
 		}
 		res->t = DUK_IVAL_PLAIN;
@@ -3845,12 +3968,18 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			duk_dup(ctx, left->x1.valstack_idx);
 			if (duk__lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 				duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_res, reg_varbind);
-				duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_res,
+				                      reg_res);
 				duk__emit_a_b(comp_ctx, args_op, reg_varbind, reg_res);
 			} else {
 				int reg_temp = DUK__ALLOCTEMP(comp_ctx);
 				duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
-				duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_res,
+				                      reg_res);
 				duk__emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
 				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temp, reg_varname);
 			}
@@ -3864,7 +3993,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			reg_obj = duk__ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
 			reg_key = duk__ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
 			duk__emit_a_b_c(comp_ctx, DUK_OP_GETPROP, reg_res, reg_obj, reg_key);
-			duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);
+			duk__emit_extraop_b_c(comp_ctx,
+			                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      reg_res,
+			                      reg_res);
 			duk__emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
 			duk__emit_a_b_c(comp_ctx, DUK_OP_PUTPROP, reg_obj, reg_key, reg_temp);
 		} else {
@@ -3873,7 +4005,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			 * for proper semantics (consider ToNumber() called for an object).
 			 */
 			duk__ivalue_toforcedreg(comp_ctx, left, reg_res);
-			duk__emit_extraop_b_c(comp_ctx, DUK_EXTRAOP_TONUM, reg_res, reg_res);  /* for side effects */
+			duk__emit_extraop_b_c(comp_ctx,
+			                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      reg_res,
+			                      reg_res);  /* for side effects */
 			duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_INVLHS);
 		}
 
