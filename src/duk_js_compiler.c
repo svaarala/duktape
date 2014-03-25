@@ -94,7 +94,7 @@ static void duk__emit_a_b(duk_compiler_ctx *comp_ctx, int op_flags, int a, int b
 #if 0  /* unused */
 static void duk__emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a);
 #endif
-static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc);
+static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op_flags, int a, int bc);
 static void duk__emit_abc(duk_compiler_ctx *comp_ctx, int op, int abc);
 static void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, int extraop_flags, int b, int c);
 static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop_flags, int b);
@@ -1016,6 +1016,9 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 	duk_int_t c_out = 0;
 	duk_int_t tmp;
 
+	DUK_DDDPRINT("emit: op_flags=%04x, a=%d, b=%d, c=%d",
+	             (int) op_flags, (int) a, (int) b, (int) c);
+	
 	/* We could rely on max temp/const checks: if they don't exceed BC
 	 * limit, nothing here can either (just asserts would be enough).
 	 * Currently we check for the limits, which provides additional
@@ -1160,7 +1163,21 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 				/* Output shuffle needed after main operation */
 				c_out = c;
 			} else {
-				duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, c));
+				duk_small_int_t op = op_flags & 0xff;
+				if (op == DUK_OP_EXTRA &&
+				    (a == DUK_EXTRAOP_INITGET || a == DUK_EXTRAOP_INITSET)) {
+					/* Special shuffling for INITGET/INITSET, where slot C
+					 * identifies a register pair and cannot be shuffled
+					 * normally.  Use an indirect variant instead.
+					 */
+					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_C_IS_TARGET) == 0);
+					duk__emit_loadint(comp_ctx, tmp, c);
+					DUK_ASSERT(DUK_EXTRAOP_INITGETI == DUK_EXTRAOP_INITGET + 1);
+					DUK_ASSERT(DUK_EXTRAOP_INITSETI == DUK_EXTRAOP_INITSET + 1);
+					a++;  /* indirect opcode follows direct */
+				} else {
+					duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, c));
+				}
 			}
 			c = tmp;
 		} else {
@@ -1177,11 +1194,6 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 
 	ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
 	duk__emit(comp_ctx, ins);
-
-	if (a_out || b_out || c_out) {
-		DUK_DPRINT("output shuffled: op_flags=%04x, a=%d, b=%d, c=%d, a_out=%d, b_out=%d, c_out=%d",
-		           (int) op_flags, (int) a, (int) b, (int) c, (int) a_out, (int) b_out, (int) c_out);
-	}
 
 	/* Output shuffling: only one output register is realistically possible. */
 
@@ -1215,14 +1227,14 @@ static void duk__emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a) {
 }
 #endif
 
-static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc) {
+static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op_flags, int a, int bc) {
 	duk_instr ins;
 	duk_int_t tmp;
 
 	/* allow caller to give a const number with the DUK__CONST_MARKER */
 	bc = bc & (~DUK__CONST_MARKER);
 
-	DUK_ASSERT(op >= DUK_BC_OP_MIN && op <= DUK_BC_OP_MAX);
+	DUK_ASSERT((op_flags & 0xff) >= DUK_BC_OP_MIN && (op_flags & 0xff) <= DUK_BC_OP_MAX);
 	DUK_ASSERT(bc >= DUK_BC_BC_MIN && bc <= DUK_BC_BC_MAX);
 	DUK_ASSERT((bc & DUK__CONST_MARKER) == 0);
 
@@ -1234,14 +1246,21 @@ static void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, int op, int a, int bc) {
 	}
 
 	if (a <= DUK_BC_A_MAX) {
-		ins = DUK_ENC_OP_A_BC(op, a, bc);
+		ins = DUK_ENC_OP_A_BC(op_flags & 0xff, a, bc);
 		duk__emit(comp_ctx, ins);
+	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
+		goto error_outofregs;
 	} else if (a <= DUK_BC_BC_MAX) {
 		comp_ctx->curr_func.needs_shuffle = 1;
-		tmp = comp_ctx->curr_func.shuffle3;
-		ins = DUK_ENC_OP_A_BC(op, tmp, bc);
-		duk__emit(comp_ctx, ins);
-		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+		tmp = comp_ctx->curr_func.shuffle1;
+		ins = DUK_ENC_OP_A_BC(op_flags & 0xff, tmp, bc);
+		if (op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) {
+			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, a));
+			duk__emit(comp_ctx, ins);
+		} else {
+			duk__emit(comp_ctx, ins);
+			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, tmp, a));
+		}
 	} else {
 		goto error_outofregs;
 	}
@@ -1288,6 +1307,7 @@ static void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, int extraop_flags, i
 
 static void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, int extraop, int bc) {
 	DUK_ASSERT(extraop >= DUK_BC_EXTRAOP_MIN && extraop <= DUK_BC_EXTRAOP_MAX);
+	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
 	duk__emit_a_bc(comp_ctx,
 	               DUK_OP_EXTRA,
 	               extraop,
@@ -2682,6 +2702,10 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 				duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, reg_temp, reg_key);
 				reg_temp = DUK__ALLOCTEMP(comp_ctx);
 				duk__emit_a_bc(comp_ctx, DUK_OP_CLOSURE, reg_temp, fnum);
+
+				/* Slot C is used in a non-standard fashion (range of regs),
+				 * emitter code has special handling for it.
+				 */
 				duk__emit_extraop_b_c(comp_ctx,
 				                      (is_get ? DUK_EXTRAOP_INITGET : DUK_EXTRAOP_INITSET),
 				                      reg_obj,
@@ -3245,7 +3269,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
 				                      reg_res,
 				                      reg_res);
-				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_res, reg_varname);
+				duk__emit_a_bc(comp_ctx,
+				               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+				               reg_res,
+				               reg_varname);
 			}
 
 			DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%d, reg_varname=%d",
@@ -3876,7 +3903,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 					duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, reg_temp, reg_res);
 					reg_res = reg_temp;
 				}
-				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_res, reg_varname);
+				duk__emit_a_bc(comp_ctx,
+				               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+				               reg_res,
+				               reg_varname);
 			}
 
 			res->t = DUK_IVAL_PLAIN;
@@ -3998,7 +4028,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
 				                      reg_temp,
 				                      reg_res);
-				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temp, reg_varname);
+				duk__emit_a_bc(comp_ctx,
+				               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+				               reg_temp,
+				               reg_varname);
 			}
 
 			DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%d, reg_varname=%d",
@@ -4346,7 +4379,10 @@ static void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 		} else {
 			int reg_val;
 			reg_val = duk__ivalue_toreg(comp_ctx, res);
-			duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_val, reg_varname);
+			duk__emit_a_bc(comp_ctx,
+			               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+			               reg_val,
+			               reg_varname);
 		}
 	}
 
@@ -4443,7 +4479,10 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 			if (reg_varbind >= 0) {
 				duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temps + 0);
 			} else {
-				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temps + 0, reg_varname);
+				duk__emit_a_bc(comp_ctx,
+				               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+				               reg_temps + 0,
+				               reg_varname);
 			}
 			goto parse_3_or_4;
 		} else {
@@ -4495,7 +4534,10 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 				if (duk__lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
 					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temps + 0);
 				} else {
-					duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temps + 0, reg_varname);
+					duk__emit_a_bc(comp_ctx,
+					               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+					               reg_temps + 0,
+					               reg_varname);
 				}
 			} else if (res->t == DUK_IVAL_PROP) {
 				/* Don't allow a constant for the object (even for a number etc), as
@@ -5281,7 +5323,10 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk_push_null(ctx);
 		duk_put_prop(ctx, comp_ctx->curr_func.varmap_idx);
 
-		duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_catch + 0 /*value*/, const_varname /*varname*/);
+		duk__emit_a_bc(comp_ctx,
+		               DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE,
+		               reg_catch + 0 /*value*/,
+		               const_varname /*varname*/);
 
 		DUK_DDDPRINT("varmap before parsing catch clause: %!iT", duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx));
 

@@ -85,8 +85,8 @@ static const char *duk__bc_optab[] = {
 
 static const char *duk__bc_extraoptab[] = {
 	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
-	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITGET", "ENDTRY", "ENDCATCH", "ENDFIN", "THROW",
-	"INVLHS", "UNM", "UNP", "INC", "DEC", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITSETI", "INITGET", "INITGETI", "ENDTRY", "ENDCATCH",
+	"ENDFIN", "THROW", "INVLHS", "UNM", "UNP", "INC", "DEC", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 

@@ -143,16 +143,18 @@ typedef duk_uint32_t duk_instr;
 #define DUK_EXTRAOP_INITENUM        12
 #define DUK_EXTRAOP_NEXTENUM        13
 #define DUK_EXTRAOP_INITSET         14
-#define DUK_EXTRAOP_INITGET         15
-#define DUK_EXTRAOP_ENDTRY          16
-#define DUK_EXTRAOP_ENDCATCH        17
-#define DUK_EXTRAOP_ENDFIN          18
-#define DUK_EXTRAOP_THROW           19
-#define DUK_EXTRAOP_INVLHS          20
-#define DUK_EXTRAOP_UNM             21
-#define DUK_EXTRAOP_UNP             22
-#define DUK_EXTRAOP_INC             23
-#define DUK_EXTRAOP_DEC             24
+#define DUK_EXTRAOP_INITSETI        15
+#define DUK_EXTRAOP_INITGET         16
+#define DUK_EXTRAOP_INITGETI        17
+#define DUK_EXTRAOP_ENDTRY          18
+#define DUK_EXTRAOP_ENDCATCH        19
+#define DUK_EXTRAOP_ENDFIN          20
+#define DUK_EXTRAOP_THROW           21
+#define DUK_EXTRAOP_INVLHS          22
+#define DUK_EXTRAOP_UNM             23
+#define DUK_EXTRAOP_UNP             24
+#define DUK_EXTRAOP_INC             25
+#define DUK_EXTRAOP_DEC             26
 
 /* DUK_OP_DEBUG, sub-operation in A */
 #define DUK_DEBUGOP_DUMPREG         0

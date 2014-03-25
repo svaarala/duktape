@@ -3130,9 +3130,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_INITSET:
-			case DUK_EXTRAOP_INITGET: {
+			case DUK_EXTRAOP_INITSETI:
+			case DUK_EXTRAOP_INITGET:
+			case DUK_EXTRAOP_INITGETI: {
 				duk_context *ctx = (duk_context *) thr;
-				int a = DUK_DEC_A(ins);  /* extraop */
+				int is_set = (extraop == DUK_EXTRAOP_INITSET || extraop == DUK_EXTRAOP_INITSETI);
 				int b = DUK_DEC_B(ins);
 				int c = DUK_DEC_C(ins);
 
@@ -3146,6 +3148,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 *  of the same name.  It also ensures that setter and getter can only
 				 *  be initialized once (or not at all).
 				 */
+
+				if (extraop == DUK_EXTRAOP_INITSETI || extraop == DUK_EXTRAOP_INITGETI) {
+					duk_tval *tv_ind = DUK__REGP(c);
+					if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+						DUK__INTERNAL_ERROR("DUK_EXTRAOP_INITSETI/DUK_EXTRAOP_INITGETI target is not a number");
+					}
+					c = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+				}
 
 				/* FIXME: this is now a very unoptimal implementation -- this can be
 				 * made very simple by direct manipulation of the object internals,
@@ -3163,8 +3173,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
 				duk_push_true(ctx);
 				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
-				duk_dup(ctx, c+1);
-				duk_put_prop_stridx(ctx, -2, (a == DUK_EXTRAOP_INITSET ? DUK_STRIDX_SET : DUK_STRIDX_GET));
+				duk_dup(ctx, c + 1);
+				duk_put_prop_stridx(ctx, -2, (is_set ? DUK_STRIDX_SET : DUK_STRIDX_GET));
 
 				DUK_DDDPRINT("INITGET/INITSET: obj=%!T, key=%!T, desc=%!T",
 				             duk_get_tval(ctx, -3), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
