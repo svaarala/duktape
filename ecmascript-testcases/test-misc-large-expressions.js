@@ -5,7 +5,11 @@
  *  If a large expression contains function calls deep inside the expression
  *  structure, register shuffling alone is not enough to handle the call
  *  correctly: an ordinary DUK_OP_CALL cannot reach the registers, so an
- *  indirect call is needed instead.
+ *  indirect call is needed instead.  Object literal related instructions
+ *  (NEWOBJ, NEWARR, MPUTOBJ, MPUTARR) also need some indirection.
+ *
+ *  In addition to indirection, several instructions need shuffling which
+ *  is exercised in this test case.
  *
  *  To exercise all the indirect call related opcodes:
  *
@@ -17,71 +21,19 @@
  *
  *  Constructor calls (DUK_OP_NEW) are independent of call setups, so it
  *  suffices to test DUK_OP_NEW with any of the call setup variants.
+ *
+ *  Other opcodes to test:
+ *
+ *    - NEWARR and MPUTARR: array literal
+ *    - NEWOBJ and MPUTOBJ: object literal
+ *    - LDTHIS: 'this'
+ *    - LDTRUE and LDFALSE: true and false literals
+ *    - TYPEOF: typeof of a local variable or a constant
+ *    - TYPEOFID: typeof of a non-local variable
  */
 
 /*===
 large expressions
-no func calls
-100
-200
-300
-400
-500
-600
-700
-800
-900
-1000
-1100
-1200
-1300
-1400
-1500
-1600
-1700
-1800
-1900
-first func call
-100
-200
-300
-400
-500
-600
-700
-800
-900
-1000
-1100
-1200
-1300
-1400
-1500
-1600
-1700
-1800
-1900
-last func call
-100
-200
-300
-400
-500
-600
-700
-800
-900
-1000
-1100
-1200
-1300
-1400
-1500
-1600
-1700
-1800
-1900
-all func calls
 100
 200
 300
@@ -110,25 +62,60 @@ function returnTrue() {
 function MyConstructor() {
 }
 
-function buildExpr(count, firstFuncCall, lastFuncCall, allFuncCalls, callStyle) {
+function buildExpr(count) {
     var terms = [];
     var i;
 
-    for (i = 0; i < count; i++) {
-        if (allFuncCalls || (i == 0) && firstFuncCall || (i == count - 1) && lastFuncCall) {
-            if (callStyle === 'newextvar') {
-                terms.push('new MyConstructor("dummy")');
-            } else if (callStyle === 'extvar') {
-                terms.push('returnTrue("dummy")');
-            } else if (callStyle === 'locvar') {
-                terms.push('returnTrueLocal("dummy")');
-            } else {
-                terms.push('obj.ret("dummy")');
-            }
-        } else {
-            terms.push('true');
-        }
+    /* The returned expression is a giant &&-expression with a lot of terms.
+     * Every term should be "truthy" to keep the evaluation going.  The last
+     * term is always a fixed string which is tested against.
+     */
+
+    for (i = 0; i < count - 1; i++) {
+        switch (i % 10) {
+        case 0:
+            // constructor call
+            terms.push('new MyConstructor("dummy")');
+            break;
+        case 1:
+            // external variable call
+            terms.push('returnTrue("dummy")');
+            break;
+        case 2:
+            // local variable call
+            terms.push('returnTrueLocal("dummy")');
+            break;
+        case 3:
+            // property call
+            terms.push('obj.ret("dummy")');
+            break;
+        case 4:
+            // object literal
+            terms.push('{foo:1,bar:2}');
+            break;
+        case 5:
+            // array literal
+            terms.push('["foo","bar"]');
+            break;
+        case 6:
+            // true and false
+            terms.push('(false || true)');
+            break;
+        case 7:
+            // typeof local variable
+            terms.push('typeof returnTrueLocal');  // 'function' -> truthy
+            break;
+        case 8:
+            // typeof constant
+            terms.push('typeof "strval"');  // 'string' -> truthy
+            break;
+        case 9:
+            // typeof non-local variable
+            terms.push('typeof Math');      // 'string' -> truthy
+            break;
+       }
     }
+    terms.push('"last-term"');
 
     return "(function() {\n" +
            "    var returnTrueLocal = returnTrue;\n" +
@@ -139,77 +126,31 @@ function buildExpr(count, firstFuncCall, lastFuncCall, allFuncCalls, callStyle) 
 
 function largeExprTest() {
     var i, limit;
-
-    function test(expr, name, expectTrue) {
-        var res;
-        try {
-            res = eval(expr);
-            if (expectTrue && res !== true) {
-                throw new Error('result does not match expected value');
-            } else if (!expectTrue && (typeof res !== 'object')) {
-                // Constructor calls return an object ("truthy")
-                throw new Error('result does not match expected value');
-            }
-        } catch (e) {
-            print('failed ' + name + ': ' + e);
-            throw e;
-        }
-    }
+    var expr;
+    var res;
 
     // Compiler recursion limit currently bites around 2500
     limit = 2000;
 
-    print('no func calls');
-    for (i = 1; i < limit; i++) {
-        if ((i % 100) == 0) { print(i); }
-        test(buildExpr(i, false, false, false, 'ignore'), 'no-func-calls:' + i, true);
-    }
-
-    print('first func call');
     for (i = 2; i < limit; i++) {
         if ((i % 100) == 0) { print(i); }
-        test(buildExpr(i, true, false, false, 'newextvar'), 'first-func-call-newextvar:' + i, true);
-        test(buildExpr(i, true, false, false, 'extvar'), 'first-func-call-extvar:' + i, true);
-        test(buildExpr(i, true, false, false, 'locvar'), 'first-func-call-locvar:' + i, true);
-        test(buildExpr(i, true, false, false, 'object'), 'first-func-call-object:' + i, true);
-    }
 
-    print('last func call');
-    for (i = 2; i < limit; i++) {
-        if ((i % 100) == 0) { print(i); }
-        test(buildExpr(i, false, true, false, 'newextvar'), 'last-func-call-newextvar:' + i, false);
-        test(buildExpr(i, false, true, false, 'extvar'), 'last-func-call-extvar:' + i, true);
-        test(buildExpr(i, false, true, false, 'locvar'), 'last-func-call-locvar:' + i, true);
-        test(buildExpr(i, false, true, false, 'object'), 'last-func-call-object:' + i, true);
-    }
+        expr = buildExpr(i);
+        //print(expr);
 
-    print('all func calls');
-    for (i = 2; i < limit; i++) {
-        if ((i % 100) == 0) { print(i); }
-        test(buildExpr(i, false, false, true, 'newextvar'), 'all-func-calls-newextvar:' + i, false);
-        test(buildExpr(i, false, false, true, 'extvar'), 'all-func-calls-extvar:' + i, true);
-        test(buildExpr(i, false, false, true, 'locvar'), 'all-func-calls-locvar:' + i, true);
-        test(buildExpr(i, false, false, true, 'object'), 'all-func-calls-object:' + i, true);
+        try {
+            res = eval(expr)
+            if (res !== 'last-term') {
+                throw new Error('result does not match expected value, result was: ' + res);
+            }
+        } catch (e) {
+            print('failed with i=' + i + ': ' + e);
+            throw e;
+        }
     }
 }
 
 print('large expressions')
-
-if (false) {
-    print(buildExpr(3, false, false, false, null));
-    print(buildExpr(3, true, false, false, 'newextvar'));
-    print(buildExpr(3, true, false, false, 'extvar'));
-    print(buildExpr(3, true, false, false, 'locvar'));
-    print(buildExpr(3, true, false, false, 'object'));
-    print(buildExpr(3, false, true, false, 'newextvar'));
-    print(buildExpr(3, false, true, false, 'extvar'));
-    print(buildExpr(3, false, true, false, 'locvar'));
-    print(buildExpr(3, false, true, false, 'object'));
-    print(buildExpr(3, false, false, true, 'newextvar'));
-    print(buildExpr(3, false, false, true, 'extvar'));
-    print(buildExpr(3, false, false, true, 'locvar'));
-    print(buildExpr(3, false, false, true, 'object'));
-}
 
 try {
     largeExprTest();
