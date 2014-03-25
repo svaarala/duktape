@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "ecmascript/c call handling and valstack size: probably need to store guaranteed size?"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-24 21:30:33.088489 Z
+references: []
+
+id: 3adc6d4469d4359dc9431bc35330f45f243ff6cb
+log_events: 
+- - 2014-03-24 21:30:33.248430 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
