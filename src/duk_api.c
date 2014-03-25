@@ -338,13 +338,13 @@ static int duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	}
 #endif
 
-	DUK_DPRINT("resized valstack to %d elements (%d bytes), bottom=%d, top=%d, "
-	           "new pointers: start=%p end=%p bottom=%p top=%p",
-	           (int) new_size, (int) new_alloc_size,
-	           (int) (thr->valstack_bottom - thr->valstack),
-	           (int) (thr->valstack_top - thr->valstack),
-	           (void *) thr->valstack, (void *) thr->valstack_end,
-	           (void *) thr->valstack_bottom, (void *) thr->valstack_top);
+	DUK_DDPRINT("resized valstack to %d elements (%d bytes), bottom=%d, top=%d, "
+	            "new pointers: start=%p end=%p bottom=%p top=%p",
+	            (int) new_size, (int) new_alloc_size,
+	            (int) (thr->valstack_bottom - thr->valstack),
+	            (int) (thr->valstack_top - thr->valstack),
+	            (void *) thr->valstack, (void *) thr->valstack_end,
+	            (void *) thr->valstack_bottom, (void *) thr->valstack_top);
 
 	/* init newly allocated slots (only) */
 	p = (duk_tval *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
