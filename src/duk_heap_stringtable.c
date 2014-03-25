@@ -186,7 +186,7 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	int prev_mark_and_sweep_base_flags;
 #endif
-#ifdef DUK_USE_DEBUG
+#ifdef DUK_USE_DDEBUG
 	duk_uint32_t old_used = heap->st_used;
 #endif
 	duk_uint32_t old_size = heap->st_size;
