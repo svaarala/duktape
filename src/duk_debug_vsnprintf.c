@@ -74,19 +74,19 @@
 
 /* must match bytecode defines now; build autogenerate? */
 static const char *duk__bc_optab[] = {
-	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTARR",  "NEW",      "NEWI",     "REGEXP",
-	"CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",   "CLOSURE",  "GETPROP",
-	"PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",      "MOD",      "UNM",
-	"UNP",      "INC",      "DEC",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "BNOT",
-	"LNOT",     "EQ",       "NEQ",      "SEQ",      "SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",
-	"INSTOF",   "IN",       "JUMP",     "RETURN",   "CALL",     "CALLI",    "LABEL",    "ENDLABEL", "BREAK",    "CONTINUE",
-	"TRYCATCH", "EXTRA",    "DEBUG",    "INVALID",
+	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTOBJI", "MPUTARR",  "MPUTARRI", "NEW",
+	"NEWI",     "REGEXP", 	"CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",
+	"CLOSURE",  "GETPROP", 	"PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",
+	"MOD",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR", 	"BASR",     "BNOT", 	"LNOT",     "EQ",
+	"NEQ",      "SEQ",      "SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF", 	"INSTOF",   "IN",
+	"JUMP",     "RETURN",   "CALL",     "CALLI",    "LABEL",    "ENDLABEL", "BREAK",    "CONTINUE", "TRYCATCH", "UNUSED59",
+	"UNUSED60", "EXTRA",    "DEBUG",    "INVALID",
 };
 
 static const char *duk__bc_extraoptab[] = {
 	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
 	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITGET", "ENDTRY", "ENDCATCH", "ENDFIN", "THROW",
-	"INVLHS", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"INVLHS", "UNM", "UNP", "INC", "DEC", "XXX", "XXX", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 

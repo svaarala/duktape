@@ -352,19 +352,19 @@ static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, 
 	}
 
 	switch (opcode) {
-	case DUK_OP_UNM: {
+	case DUK_EXTRAOP_UNM: {
 		du.d = -d1;
 		break;
 	}
-	case DUK_OP_UNP: {
+	case DUK_EXTRAOP_UNP: {
 		du.d = d1;
 		break;
 	}
-	case DUK_OP_INC: {
+	case DUK_EXTRAOP_INC: {
 		du.d = d1 + 1.0;
 		break;
 	}
-	case DUK_OP_DEC: {
+	case DUK_EXTRAOP_DEC: {
 		du.d = d1 - 1.0;
 		break;
 	}
@@ -1732,7 +1732,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_MPUTOBJ: {
+		case DUK_OP_MPUTOBJ:
+		case DUK_OP_MPUTOBJI: {
 			duk_context *ctx = (duk_context *) thr;
 			int t;
 			duk_tval *tv1;
@@ -1752,6 +1753,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
 			idx = (int) DUK_DEC_B(ins);
+			if (DUK_DEC_OP(ins) == DUK_OP_MPUTOBJI) {
+				duk_tval *tv_ind = DUK__REGP(idx);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("MPUTOBJI target is not a number");
+				}
+				idx = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+			}
 
 			count = (int) DUK_DEC_C(ins);
 
@@ -1780,7 +1788,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			break;
 		}
 
-		case DUK_OP_MPUTARR: {
+		case DUK_OP_MPUTARR:
+		case DUK_OP_MPUTARRI: {
 			duk_context *ctx = (duk_context *) thr;
 			int t;
 			duk_tval *tv1;
@@ -1801,6 +1810,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
 			idx = (int) DUK_DEC_B(ins);
+			if (DUK_DEC_OP(ins) == DUK_OP_MPUTARRI) {
+				duk_tval *tv_ind = DUK__REGP(idx);
+				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
+					DUK__INTERNAL_ERROR("MPUTARRI target is not a number");
+				}
+				idx = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+			}
 
 			count = (int) DUK_DEC_C(ins);
 
@@ -2295,19 +2311,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			} else {
 				duk__vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			}
-			break;
-		}
-
-		/* FIXME: move these into EXTRAOPs? */
-		case DUK_OP_UNM:
-		case DUK_OP_UNP:
-		case DUK_OP_INC:
-		case DUK_OP_DEC: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int op = DUK_DEC_OP(ins);
-
-			duk__vm_arith_unary_op(thr, DUK__REGCONSTP(b), a, op);
 			break;
 		}
 
@@ -3347,6 +3350,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				break;
 			}
 
+			case DUK_EXTRAOP_UNM:
+			case DUK_EXTRAOP_UNP:
+			case DUK_EXTRAOP_INC:
+			case DUK_EXTRAOP_DEC: {
+				int b = DUK_DEC_B(ins);
+				int c = DUK_DEC_C(ins);
+
+				duk__vm_arith_unary_op(thr, DUK__REGCONSTP(c), b, extraop);
+				break;
+			}
 			default: {
 				DUK__INTERNAL_ERROR("invalid extra opcode");
 			}

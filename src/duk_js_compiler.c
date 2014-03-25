@@ -1102,12 +1102,19 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, int op_flags, int a, int
 				b_out = b;
 			} else {
 				duk_small_int_t op = op_flags & 0xff;
-				if (op == DUK_OP_CALL || op == DUK_OP_NEW) {
-					/* Special handling for CALL/NEW shuffling. */
+				if (op == DUK_OP_CALL || op == DUK_OP_NEW ||
+				    op == DUK_OP_MPUTOBJ || op == DUK_OP_MPUTARR) {
+					/* Special handling for CALL/NEW/MPUTOBJ/MPUTARR shuffling.
+					 * For each, slot B identifies the first register of a range
+					 * of registers, so normal shuffling won't work.  Instead,
+					 * an indirect version of the opcode is used.
+					 */
 					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
 					duk__emit_loadint(comp_ctx, tmp, b);
 					DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
 					DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
+					DUK_ASSERT(DUK_OP_MPUTOBJI == DUK_OP_MPUTOBJ + 1);
+					DUK_ASSERT(DUK_OP_MPUTARRI == DUK_OP_MPUTARR + 1);
 					op_flags++;  /* indirect opcode follows direct */
 				} else {
 					duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, b));
@@ -2415,15 +2422,15 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		}
 
 		if (num_values > 0) {
-			/* B and C have a non-register/const meaning, so shuffling
-			 * is not allowed.  Also A has non-standard meaning, is is
-			 * a source (object is read from it).
+			/* - A is a source register (it's not a write target, but used
+			 *   to identify the target object) but can be shuffled.
+			 * - B cannot be shuffled normally because it identifies a range
+			 *   of registers, the emitter has special handling for this.
+			 * - C is a non-register number and cannot be shuffled, but
+			 *   never needs to be.
 			 */
-			/* FIXME: indirect MPUTARR */
 			duk__emit_a_b_c(comp_ctx,
 			                DUK_OP_MPUTARR |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
 			                    DUK__EMIT_FLAG_A_IS_SOURCE,
 			                reg_obj,
@@ -2649,15 +2656,15 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 				reg_key = duk__getconst(comp_ctx);
 
 				if (num_pairs > 0) {
-					/* B and C have a non-register/const meaning, so shuffling
-					 * is not allowed.  Also A has a non-standard meaning (it's
-					 * not a write target) so it cannot be shuffled.
+					/* - A is a source register (it's not a write target, but used
+					 *   to identify the target object) but can be shuffled.
+					 * - B cannot be shuffled normally because it identifies a range
+					 *   of registers, the emitter has special handling for this.
+					 * - C is a non-register number and cannot be shuffled, but
+					 *   never needs to be.
 					 */
-					/* FIXME: indirect MPUTOBJ */
 					duk__emit_a_b_c(comp_ctx,
 					                DUK_OP_MPUTOBJ |
-					                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
-					                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
 					                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
 					                    DUK__EMIT_FLAG_A_IS_SOURCE,
 					                reg_obj,
@@ -2715,14 +2722,9 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 		}
 
 		if (num_pairs > 0) {
-			/* B and C have a non-register/const meaning, so shuffling
-			 * is not allowed.  Also A has non-standard meaning.
-			 */
-			/* FIXME: indirect MPUTOBJ */
+			/* See MPUTOBJ comments above. */
 			duk__emit_a_b_c(comp_ctx,
 			                DUK_OP_MPUTOBJ |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
 			                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
 			                    DUK__EMIT_FLAG_A_IS_SOURCE,
 			                reg_obj,
@@ -3122,12 +3124,12 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		goto unary_extraop;
 	}
 	case DUK_TOK_INCREMENT: {
-		args = (DUK_OP_INC << 8) + 0;
-		goto preincdec;
+		args = (DUK_EXTRAOP_INC << 8) + 0;
+		goto preincdec_extraop;
 	}
 	case DUK_TOK_DECREMENT: {
-		args = (DUK_OP_DEC << 8) + 0;
-		goto preincdec;
+		args = (DUK_EXTRAOP_DEC << 8) + 0;
+		goto preincdec_extraop;
 	}
 	case DUK_TOK_ADD: {
 		/* unary plus */
@@ -3137,8 +3139,8 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			/* unary plus of a number is identity */
 			;
 		} else {
-			args = (DUK_OP_UNP << 8) + 0;
-			goto unary;
+			args = (DUK_EXTRAOP_UNP << 8) + 0;
+			goto unary_extraop;
 		}
 		return;
 	}
@@ -3158,8 +3160,8 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			d = DUK_TVAL_GET_NUMBER(tv_num);
 			DUK_TVAL_SET_NUMBER(tv_num, -d);  /* FIXME: OK for NaN, Infinity?  NaN normalization? */
 		} else {
-			args = (DUK_OP_UNM << 8) + 0;
-			goto unary;
+			args = (DUK_EXTRAOP_UNM << 8) + 0;
+			goto unary_extraop;
 		}
 		return;
 	}
@@ -3209,7 +3211,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		return;
 	}
 
- preincdec:
+ preincdec_extraop:
 	{
 		/* preincrement and predecrement */
 		int reg_res;
@@ -3232,11 +3234,17 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 			duk_dup(ctx, res->x1.valstack_idx);
 			if (duk__lookup_lhs(comp_ctx, &reg_varbind, &reg_varname)) {
-				duk__emit_a_b(comp_ctx, args_op, reg_varbind, reg_varbind);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_varbind,
+				                      reg_varbind);
 				duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_res, reg_varbind);
 			} else {
 				duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
-				duk__emit_a_b(comp_ctx, args_op, reg_res, reg_res);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_res,
+				                      reg_res);
 				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_res, reg_varname);
 			}
 
@@ -3248,7 +3256,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			reg_obj = duk__ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
 			reg_key = duk__ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
 			duk__emit_a_b_c(comp_ctx, DUK_OP_GETPROP, reg_res, reg_obj, reg_key);
-			duk__emit_a_b(comp_ctx, args_op, reg_res, reg_res);
+			duk__emit_extraop_b_c(comp_ctx,
+			                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      reg_res,
+			                      reg_res);
 			duk__emit_a_b_c(comp_ctx, DUK_OP_PUTPROP, reg_obj, reg_key, reg_res);
 		} else {
 			/* Technically return value is not needed because INVLHS will
@@ -3460,12 +3471,12 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 	/* POSTFIX EXPRESSION */
 
 	case DUK_TOK_INCREMENT: {
-		args = (DUK_OP_INC << 8) + 0;
-		goto postincdec;
+		args = (DUK_EXTRAOP_INC << 8) + 0;
+		goto postincdec_extraop;
 	}
 	case DUK_TOK_DECREMENT: {
-		args = (DUK_OP_DEC << 8) + 0;
-		goto postincdec;
+		args = (DUK_EXTRAOP_DEC << 8) + 0;
+		goto postincdec_extraop;
 	}
 
 	/* MULTIPLICATIVE EXPRESSION */
@@ -3934,7 +3945,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		return;
 	}
 
- postincdec:
+ postincdec_extraop:
 	{
 		/*
 		 *  Post-increment/decrement will return the original value as its
@@ -3972,7 +3983,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 				                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
 				                      reg_res,
 				                      reg_res);
-				duk__emit_a_b(comp_ctx, args_op, reg_varbind, reg_res);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_varbind,
+				                      reg_res);
 			} else {
 				int reg_temp = DUK__ALLOCTEMP(comp_ctx);
 				duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, reg_res, reg_varname);
@@ -3980,7 +3994,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 				                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
 				                      reg_res,
 				                      reg_res);
-				duk__emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
+				duk__emit_extraop_b_c(comp_ctx,
+				                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+				                      reg_temp,
+				                      reg_res);
 				duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR, reg_temp, reg_varname);
 			}
 
@@ -3997,7 +4014,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			                      DUK_EXTRAOP_TONUM | DUK__EMIT_FLAG_B_IS_TARGET,
 			                      reg_res,
 			                      reg_res);
-			duk__emit_a_b(comp_ctx, args_op, reg_temp, reg_res);
+			duk__emit_extraop_b_c(comp_ctx,
+			                      args_op | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      reg_temp,
+			                      reg_res);
 			duk__emit_a_b_c(comp_ctx, DUK_OP_PUTPROP, reg_obj, reg_key, reg_temp);
 		} else {
 			/* Technically return value is not needed because INVLHS will
