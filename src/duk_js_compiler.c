@@ -2311,11 +2311,14 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 		if (num_values > 0) {
 			/* B and C have a non-register/const meaning, so shuffling
-			 * is not allowed.
+			 * is not allowed.  Also A has non-standard meaning.
 			 */
 			/* FIXME: indirect MPUTARR */
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_MPUTARR | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+			                DUK_OP_MPUTARR |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
 			                reg_obj,
 			                temp_start,
 			                num_values);
@@ -2537,11 +2540,15 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 
 				if (num_pairs > 0) {
 					/* B and C have a non-register/const meaning, so shuffling
-					 * is not allowed.
+					 * is not allowed.  Also A has a non-standard meaning (it's
+					 * not a write target) so it cannot be shuffled.
 					 */
 					/* FIXME: indirect MPUTOBJ */
 					duk__emit_a_b_c(comp_ctx,
-					                DUK_OP_MPUTOBJ | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+					                DUK_OP_MPUTOBJ |
+					                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
+					                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
+					                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
 					                reg_obj,
 					                temp_start,
 					                num_pairs);
@@ -2598,11 +2605,14 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 
 		if (num_pairs > 0) {
 			/* B and C have a non-register/const meaning, so shuffling
-			 * is not allowed.
+			 * is not allowed.  Also A has non-standard meaning.
 			 */
 			/* FIXME: indirect MPUTOBJ */
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_MPUTOBJ | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+			                DUK_OP_MPUTOBJ |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_A |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_B |
+			                    DUK__EMIT_FLAG_NO_SHUFFLE_C,
 			                reg_obj,
 			                temp_start,
 			                num_pairs);
