@@ -32,6 +32,8 @@
  *    - TYPEOFID: typeof of a non-local variable
  */
 
+var extVar = 0;  // dummy assignment target
+
 /*===
 large expressions
 100
@@ -53,6 +55,7 @@ large expressions
 1700
 1800
 1900
+123
 ===*/
 
 function returnTrue() {
@@ -72,7 +75,7 @@ function buildExpr(count) {
      */
 
     for (i = 0; i < count - 1; i++) {
-        switch (i % 10) {
+        switch (i % 14) {
         case 0:
             // constructor call
             terms.push('new MyConstructor("dummy")');
@@ -113,6 +116,22 @@ function buildExpr(count) {
             // typeof non-local variable
             terms.push('typeof Math');      // 'string' -> truthy
             break;
+        case 10:
+            // setter and getter in object literal
+            terms.push('{ get foo() {}, set foo(x) {} }');
+            break;
+        case 11:
+            // setter and getter in object literal, call getter to ensure it work
+            terms.push('({ get foo() { return true; }, set foo(x) {} }).foo');
+            break;
+        case 12:
+            // setter and getter in object literal, call setter to ensure it work
+            terms.push('(({ get foo() {}, set foo(x) { return true; } }).foo = 234)');
+            break;
+        case 13:
+            // assignment to external variable (PUTVAR)
+            terms.push('(extVar = 123)');
+            break;
        }
     }
     terms.push('"last-term"');
@@ -148,6 +167,8 @@ function largeExprTest() {
             throw e;
         }
     }
+
+    print(extVar);
 }
 
 print('large expressions')
