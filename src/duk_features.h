@@ -1747,6 +1747,11 @@ typedef FILE duk_file;
 #define DUK_USE_EXPLICIT_NULL_INIT
 #endif
 
+#define DUK_USE_ZERO_BUFFER_DATA
+#if defined(DUK_OPT_NO_ZERO_BUFFER_DATA)
+#undef DUK_USE_ZERO_BUFFER_DATA
+#endif
+
 #if defined(DUK_F_C99) || (defined(DUK_F_CPP11) && defined(__GNUC__))
 #define DUK_USE_VARIADIC_MACROS
 #else

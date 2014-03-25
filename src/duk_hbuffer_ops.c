@@ -73,8 +73,10 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 			 * be rezeroed (the safety NUL byte).
 			 */
 			DUK_ASSERT(new_alloc_size - buf->usable_size > 0);
+#ifdef DUK_USE_ZERO_BUFFER_DATA
 			DUK_MEMZERO((void *) ((char *) res + buf->usable_size),
 			            new_alloc_size - buf->usable_size);
+#endif
 		}
 
 		buf->size = new_size;
@@ -390,6 +392,9 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	                    DUK_HBUFFER_GET_SIZE(buf) - end_offset);  /* always > 0 */
 	}
 
+	/* Here we want to zero data even with automatic buffer zeroing
+	 * disabled as we depend on this internally too.
+	 */
 	DUK_MEMZERO(p + DUK_HBUFFER_GET_SIZE(buf) - length,
 	            length);  /* always > 0 */
 
