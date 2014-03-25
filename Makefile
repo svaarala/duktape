@@ -505,7 +505,7 @@ jquery-1.11.0.js:
 lua-5.2.3.tar.gz:
 	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz
 
-lua-5.2.3:
+lua-5.2.3: lua-5.2.3.tar.gz
 	tar xfz lua-5.2.3.tar.gz
 
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
@@ -515,13 +515,13 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	lua.c lundump.c lvm.c lzio.c
 
 # This doesn't currently work: -s USE_TYPED_ARRAYS=0 causes compilation to
-# fail.  Even with typed arrays enabled, Duktape runs out of registers trying
-# to execute the result.
+# fail.  Duktape also used to run out of registers trying to run the result,
+# but this should no longer be the case.
 .PHONY: emscriptenluatest
 emscriptenluatest: emscripten duk lua-5.2.3
 	@echo "### emscriptenluatest"
 	-@rm -f /tmp/duk-emcc-luatest*
-	emscripten/emcc -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	./duk /tmp/duk-emcc-luatest-fixed.js
