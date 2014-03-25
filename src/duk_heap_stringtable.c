@@ -255,11 +255,11 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 	}
 
 #ifdef DUK_USE_DEBUG
-	DUK_DPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
-	           (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
-	           (int) (((double) old_used) / ((double) old_size) * 100.0),
-	           (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) new_used,
-	           (int) (((double) new_used) / ((double) new_size) * 100.0));
+	DUK_DDPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
+	            (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
+	            (int) (((double) old_used) / ((double) old_size) * 100.0),
+	            (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) new_used,
+	            (int) (((double) new_used) / ((double) new_size) * 100.0));
 #endif
 
 	DUK_FREE(heap, heap->st);
