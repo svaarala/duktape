@@ -1441,7 +1441,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 
 			DUK_DDDPRINT("array index exists");
 
- 			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
+			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
 			DUK_ASSERT(h_val);
 			if (arr_idx < DUK_HBUFFER_GET_SIZE(h_val)) {
 				DUK_DDDPRINT("-> found, array index inside buffer");
@@ -1468,7 +1468,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			 * to operate on buffer length.
 			 */
 
- 			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
+			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
 			DUK_ASSERT(h_val != NULL);
 			if (push_value) {
 				duk_push_number(ctx, (double) DUK_HBUFFER_GET_SIZE(h_val));
@@ -2578,7 +2578,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 		DUK_DDDPRINT("base object is a string, start lookup from string prototype");
 		curr = thr->builtins[DUK_BIDX_STRING_PROTOTYPE];
-		goto lookup;  /* avoid double coercion */	
+		goto lookup;  /* avoid double coercion */
 	}
 
 	case DUK_TAG_OBJECT: {
@@ -2743,7 +2743,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 						duk_push_tval(ctx, tv_val);
 						data[arr_idx] = (duk_uint8_t) duk_to_number(ctx, -1);
 						duk_pop(ctx);
- 						goto success_no_arguments_special;
+						goto success_no_arguments_special;
 					}
 				}
 
