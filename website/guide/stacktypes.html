@@ -278,11 +278,20 @@ These will be implemented on top of raw arrays, most likely.
 <p>Like strings, buffer values have a <code>length</code> property and
 array index properties for reading and writing individual bytes in the buffer.
 The value of a indexed byte (<code>buf[123]</code>) is a number in the
-range 0...255 which represents a byte value.  This differs from string
-behavior where the indexed values are one-character strings (much more
-expensive).  The <code>length</code> property is read-only at the moment.
-These properties are available for both plain buffer values and buffer
-object values.</p>
+range 0...255 which represents a byte value (written values are coerced to
+integer modulo 256).  This differs from string behavior where the indexed
+values are one-character strings (much more expensive).  The <code>length</code>
+property is read-only at the moment (so you can't resize a string by assigning
+to the length property).  These properties are available for both plain buffer
+values and buffer object values.</p>
+
+<div class="note">
+Because the value written to a buffer index is number coerced, assigning
+a one-character value does not work as often expected.  For instance, 
+<code>buf[123] = 'x'</code> causes zero to be written to the buffer, as
+ToNumber('x') = 0.  For clarity, you should only assign number values,
+e.g. <code>buf[123] = 0x78;</code>.
+</div>
 
 <h2>Pointer</h2>
 
