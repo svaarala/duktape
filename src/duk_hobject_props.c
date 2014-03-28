@@ -24,19 +24,14 @@
  *    - If a finalizer is executed, it may operate on the the same object
  *      we're currently dealing with.  For instance, the finalizer might
  *      delete a certain property which has already been looked up and
- *      confirmed to exist.
- *
- *      FIXME: there is currently no protection against this.  When finalizer
- *      support is finalized, it may be necessary to block finalizer execution
- *      for all GC which happens during a property access.
+ *      confirmed to exist.  Ideally finalizers would be disabled if GC
+ *      happens during property access.  At the moment property table realloc
+ *      disables finalizers, and all DECREFs may cause arbitrary changes so
+ *      handle DECREF carefully.
  *
  *    - The order of operations for a DECREF matters.  When DECREF is executed,
  *      the entire object graph must be consistent; note that a refzero may
  *      lead to a mark-and-sweep through a refcount finalizer.
- *
- *      FIXME: some refcount operations might be more simple with a raw DECREF
- *      operator which did not process the refzero list at all.  Refzero list
- *      could be checked when all refcount adjustments have been made.
  */
 
 #include "duk_internal.h"
@@ -157,7 +152,6 @@ static duk_uint32_t duk__get_min_grow_e(duk_uint32_t e_size) {
 
 /* Get minimum array part growth for a certain size. */
 static int duk__get_min_grow_a(int a_size) {
-	/* FIXME: a_size typing */
 	duk_uint32_t res;
 
 	DUK_ASSERT((duk_size_t) a_size <= DUK_HOBJECT_MAX_PROPERTIES);
@@ -398,12 +392,9 @@ static void duk__realloc_props(duk_hthread *thr,
 	 *
 	 *  Note: heap_mark_and_sweep_base_flags are altered here to ensure
 	 *  no-one touches this object while we're resizing and rehashing it.
-	 *  The flags must be reset on every exit path after it.
-	 */
-
-	/* FIXME: mark-and-sweep flags will now prevent of all objects; it would
-	 * be more ideal if we could still compact other objects in an emergency
-	 * GC.
+	 *  The flags must be reset on every exit path after it.  Finalizers
+	 *  and compaction is prevented currently for all objects while it
+	 *  would be enough to restrict it only for the current object.
 	 */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
@@ -1510,7 +1501,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 
 			DUK_DDDPRINT("-> found, key is 'length', length special behavior");
 
-			/* FIXME: buffer length should be writable and have special behavior
+			/* XXX: buffer length should be writable and have special behavior
 			 * like arrays.  For now, make it read-only and use explicit methods
 			 * to operate on buffer length.
 			 */
@@ -1803,7 +1794,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
 	 *  them being invalidated by a valstack resize.
 	 *
-	 *  FIXME: this is now an overkill for many fast paths.  Rework this
+	 *  XXX: this is now an overkill for many fast paths.  Rework this
 	 *  to be faster (although switching to a valstack discipline might
 	 *  be a better solution overall).
 	 */
@@ -2554,7 +2545,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
 	 *  them being invalidated by a valstack resize.
 	 *
-	 *  FIXME: this is an overkill for some paths, so optimize this later
+	 *  XXX: this is an overkill for some paths, so optimize this later
 	 *  (or maybe switch to a stack arguments model entirely).
 	 */
 
@@ -2770,8 +2761,6 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 				DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable");
 				if (DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr)) {
 					duk_hbuffer *h;
-
-					/* FIXME: lots of duplication here too */
 
 					DUK_DDPRINT("writable virtual property is in buffer object");
 					h = duk_hobject_get_internal_value_buffer(thr->heap, curr);
@@ -4827,8 +4816,6 @@ int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags)
 	duk_push_boolean(ctx, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
 	return 1;
 }
-
-/* FIXME change these into actual function calls? */
 
 /*
  *  Object.seal() and Object.freeze()  (E5 Sections 15.2.3.8 and 15.2.3.9)
