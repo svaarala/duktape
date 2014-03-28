@@ -290,7 +290,13 @@ Because the value written to a buffer index is number coerced, assigning
 a one-character value does not work as often expected.  For instance, 
 <code>buf[123] = 'x'</code> causes zero to be written to the buffer, as
 ToNumber('x') = 0.  For clarity, you should only assign number values,
-e.g. <code>buf[123] = 0x78;</code>.
+e.g. <code>buf[123] = 0x78</code>.
+</div>
+
+<div class="note">
+There is a fast path for reading and writing numeric indices of plain buffer
+values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  This
+fast path is not active when the base value is a Buffer object.
 </div>
 
 <h2>Pointer</h2>
