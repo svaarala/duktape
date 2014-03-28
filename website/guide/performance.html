@@ -85,6 +85,16 @@ provides fast paths for ASCII characters and pure ASCII strings in internal
 algorithms whenever applicable.  This applies to algorithms such as case
 conversion, regexp matching, etc.</p>
 
+<h3>Buffer accesses</h3>
+
+<p>
+There is a fast path for reading and writing numeric indices of plain buffer
+values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  The
+fast path avoids coercing the index to a string (here <code>"123"</code>)
+before attempting a lookup.</p>
+
+<p>This fast path is not active when the base value is a Buffer object.</p>
+
 <h3>Object/array storage</h3>
 
 <p>Object properties are stored in a linear key/value list which provides
@@ -241,6 +251,35 @@ corresponding to the character offset.</p>
 ASCII codepoints but fall back to a slow path for non-ASCII codepoints.  The
 slow path is size optimized, not speed optimized, and often involve linear
 range matching.</p>
+
+<h2>Iterate over plain buffer values, not Buffer objects</h2>
+
+<p>Plain buffer values have a fast path when buffer contents are accessed
+with numeric indices.  When dealing with a value which is potentially a
+Buffer object (not a plain buffer), get the plain buffer before iteration:</p>
+
+<pre class="ecmascript-code">
+var b, i, n;
+
+// Buffer object, typeof is 'object'
+var bufferValue = new Duktape.Buffer('foo');
+print(typeof bufferValue);  // 'object'
+
+// Get plain buffer, if already plain, no harm
+b = bufferValue.valueOf();
+print(typeof b);  // always 'buffer'
+
+n = b.length;
+for (i = 0; i &lt; n; i++) {
+    print(i, b[i]);  // fast path buffer access
+}
+</pre>
+
+<p>When creating buffers, note that <code>new Duktape.Buffer(x)</code> always
+creates a Buffer object, while <code>Duktape.Buffer(x)</code> returns a plain
+buffer value.  This mimics how Ecmascript <code>new String()</code> and
+<code>String()</code> work.  Plain buffers should be preferred whenever
+possible.</p>
 
 <h2>Avoid sparse arrays when possible</h2>
 

@@ -76,6 +76,53 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 static int duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, int push_value);
 
 /*
+ *  Misc helpers
+ */
+
+/* Convert a duk_tval number (caller checks) to a 32-bit index.  Returns
+ * DUK__NO_ARRAY_INDEX if the number is not whole or not a valid array
+ * index.
+ */
+static duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
+	duk_double_t dbl;
+	duk_uint32_t idx;
+
+	DUK_ASSERT(tv != NULL);
+	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+
+	dbl = DUK_TVAL_GET_NUMBER(tv);
+	idx = (duk_uint32_t) dbl;
+	if ((duk_double_t) idx == dbl) {
+	        /* Is whole and within 32 bit range.  If the value happens to be 0xFFFFFFFF,
+		 * it's not a valid array index but will then match DUK__NO_ARRAY_INDEX.
+		 */
+		return idx;
+	}
+	return DUK__NO_ARRAY_INDEX;
+}
+
+/* Push an arbitrary duk_tval to the stack, coerce it to string, and return
+ * both a duk_hstring pointer and an array index (or DUK__NO_ARRAY_INDEX).
+ */
+static duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_tval *tv, duk_hstring **out_h) {
+	duk_uint32_t arr_idx;
+	duk_hstring *h;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(tv != NULL);
+	DUK_ASSERT(out_h != NULL);
+
+	duk_push_tval(ctx, tv);
+	duk_to_string(ctx, -1);
+	h = duk_get_hstring(ctx, -1);
+	DUK_ASSERT(h != NULL);
+	*out_h = h;
+
+	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(h);
+	return arr_idx;
+}
+
+/*
  *  Helpers for managing property storage size
  */
 
@@ -1076,6 +1123,22 @@ duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *
 	return NULL;
 }
 
+duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj) {
+	duk_tval tv;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	if (duk_hobject_get_internal_value(heap, obj, &tv)) {
+		duk_hbuffer *h;
+		DUK_ASSERT(DUK_TVAL_IS_BUFFER(&tv));
+		h = DUK_TVAL_GET_BUFFER(&tv);
+		return h;
+	}
+
+	return NULL;
+}
+
 /*
  *  Arguments handling helpers (argument map mainly).
  *
@@ -1393,7 +1456,8 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 					duk_push_hstring(ctx, h_val);
 					duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
 				}
-				out_desc->flags = DUK_PROPDESC_FLAG_ENUMERABLE;  /* E5 Section 15.5.5.2 */
+				out_desc->flags = DUK_PROPDESC_FLAG_ENUMERABLE |  /* E5 Section 15.5.5.2 */
+				                  DUK_PROPDESC_FLAG_VIRTUAL;
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
 				return 1;  /* cannot be e.g. arguments special, since special 'traits' are mutually exclusive */
@@ -1411,7 +1475,52 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			if (push_value) {
 				duk_push_number(ctx, (double) DUK_HSTRING_GET_CHARLEN(h_val));
 			}
-			out_desc->flags = 0;  /* E5 Section 15.5.5.1 */
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* E5 Section 15.5.5.1 */
+
+			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments special */
+		}
+	} else if (DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) {
+		DUK_DDDPRINT("buffer object special property get for key: %!O, arr_idx: %d", key, arr_idx);
+
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
+			duk_hbuffer *h_val;
+
+			DUK_DDDPRINT("array index exists");
+
+			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
+			DUK_ASSERT(h_val);
+			if (arr_idx < DUK_HBUFFER_GET_SIZE(h_val)) {
+				DUK_DDDPRINT("-> found, array index inside buffer");
+				if (push_value) {
+					duk_push_int(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_val))[arr_idx]);
+				}
+				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
+				                  DUK_PROPDESC_FLAG_ENUMERABLE |
+				                  DUK_PROPDESC_FLAG_VIRTUAL;
+
+				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
+				return 1;  /* cannot be e.g. arguments special, since special 'traits' are mutually exclusive */
+			} else {
+				/* index is above internal buffer length -> property is fully normal */
+				DUK_DDDPRINT("array index outside buffer -> normal property");
+			}
+		} else if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			duk_hbuffer *h_val;
+
+			DUK_DDDPRINT("-> found, key is 'length', length special behavior");
+
+			/* FIXME: buffer length should be writable and have special behavior
+			 * like arrays.  For now, make it read-only and use explicit methods
+			 * to operate on buffer length.
+			 */
+
+			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
+			DUK_ASSERT(h_val != NULL);
+			if (push_value) {
+				duk_push_number(ctx, (double) DUK_HBUFFER_GET_SIZE(h_val));
+			}
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments special */
@@ -1426,7 +1535,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 				duk_int16_t func_nargs = ((duk_hnativefunction *) obj)->nargs;
 				duk_push_int(ctx, func_nargs == DUK_HNATIVEFUNCTION_NARGS_VARARGS ? 0 : func_nargs);
 			}
-			out_desc->flags = 0;  /* not enumerable */
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* not enumerable */
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments special */
@@ -1586,13 +1695,14 @@ static duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_ui
 
 	if ((!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) &&
 	    (!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj)) &&
 	    (key_idx < obj->a_size)) {
 		/* technically required to check, but obj->a_size check covers this */
 		DUK_ASSERT(key_idx != 0xffffffffU);
 
 		DUK_DDDPRINT("fast path attempt (key is an array index, no special "
-		             "string/arguments behavior, object has array part, key "
+		             "string/arguments/buffer behavior, object has array part, key "
 		             "inside array size)"); 
 
 		DUK_ASSERT(obj->a_size > 0);  /* true even for key_idx == 0 */
@@ -1623,18 +1733,16 @@ static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_t
 	if (DUK_TVAL_IS_NUMBER(key_tv) &&
 	    (!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) &&
 	    (!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj))) {
-		double d;
 		duk_uint32_t idx;
 
-		DUK_DDDPRINT("fast path attempt (key is a number, no special string/arguments "
+		DUK_DDDPRINT("fast path attempt (key is a number, no special string/arguments/buffer "
 		             "behavior, object has array part)");
 
-		/* FIXME: faster way to do this index coercion and validation? */
+		idx = duk__tval_number_to_arr_idx(key_tv);
 
- 		d = DUK_TVAL_GET_NUMBER(key_tv);
-		idx = (duk_uint32_t) d;
-		if ((double) idx == d) {
+		if (idx != DUK__NO_ARRAY_INDEX) {
 			/* Note: idx is not necessarily a valid array index (0xffffffffU is not valid) */
 			DUK_ASSERT_DISABLE(idx >= 0);  /* disabled because idx is duk_uint32_t so always true */
 			DUK_ASSERT_DISABLE(idx <= 0xffffffffU);  /* same */
@@ -1726,32 +1834,39 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
+		duk_int_t pop_count;
 
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
-			double t = DUK_TVAL_GET_NUMBER(tv_key);
-			duk_uint32_t idx = (duk_uint32_t) t;
-
-			DUK_DDDPRINT("base object is string, key is number %!T, int value %d", tv_key, (int) idx);
-
-			if ((double) idx == t &&                     /* is whole and >= 0 */
-			    idx < DUK_HSTRING_GET_CHARLEN(h)) {      /* and inside string */
-				duk_push_hstring(ctx, h);
-				duk_substring(ctx, -1, idx, idx + 1);  /* [str] -> [substr] */
-
-				DUK_DDDPRINT("-> %!T (base is a string, key is a whole number "
-				             "inside string length -> return char)",
-				             duk_get_tval(ctx, -1));
-				return 1;
-			}
+			arr_idx = duk__tval_number_to_arr_idx(tv_key);
+			DUK_DDDPRINT("base object string, key is a fast-path number; arr_idx %d", (int) arr_idx);
+			pop_count = 0;
+		} else {
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object string, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+			pop_count = 1;
 		}
 
-		duk_push_tval(ctx, tv_key);
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
-		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
-		DUK_ASSERT(key != NULL);
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
+		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
+			duk_pop_n(ctx, pop_count);
+			duk_push_hstring(ctx, h);
+			duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
 
-		DUK_DDDPRINT("base object string, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), arr_idx);
+			DUK_DDDPRINT("-> %!T (base is string, key is an index inside string length "
+			             "after coercion -> return char)",
+			             duk_get_tval(ctx, -1));
+			return 1;
+		}
+
+		if (pop_count == 0) {
+			/* This is a pretty awkward control flow, but we need to recheck the
+			 * key coercion here.
+			 */
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object string, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+		}
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			duk_pop(ctx);  /* [key] -> [] */
@@ -1762,19 +1877,6 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			             duk_get_tval(ctx, -1));
 			return 1;
 		}
-
-		if (arr_idx != DUK__NO_ARRAY_INDEX &&
-		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
-			duk_pop(ctx);  /* [key] -> [] */
-			duk_push_hstring(ctx, h);
-			duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
-
-			DUK_DDDPRINT("-> %!T (base is string, key is an index inside string length "
-			             "after coercion -> return char)",
-			             duk_get_tval(ctx, -1));
-			return 1;
-		}
-
 		DUK_DDDPRINT("base object is a string, start lookup from string prototype");
 		curr = thr->builtins[DUK_BIDX_STRING_PROTOTYPE];
 		goto lookup;  /* avoid double coercion */
@@ -1797,10 +1899,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		}
 
 		if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(curr)) {
-			duk_push_tval(ctx, tv_key);
-			duk_to_string(ctx, -1);
-			key = duk_get_hstring(ctx, -1);
-			arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 			DUK_ASSERT(key != NULL);
 
 			if (duk__check_arguments_map_for_get(thr, curr, key, &desc)) {
@@ -1820,11 +1919,62 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		break;
 	}
 
-	/* Buffer doesn't have virtual properties at the moment (indices or length). */
+	/* Buffer has virtual properties similar to string, but indexed values
+	 * are numbers, not 1-byte buffers/strings which would perform badly.
+	 */
 	case DUK_TAG_BUFFER: {
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
+		duk_int_t pop_count;
+
+		/*
+		 *  Because buffer values are often looped over, a number fast path
+		 *  is important.
+		 */
+
+		if (DUK_TVAL_IS_NUMBER(tv_key)) {
+			arr_idx = duk__tval_number_to_arr_idx(tv_key);
+			DUK_DDDPRINT("base object buffer, key is a fast-path number; arr_idx %d", (int) arr_idx);
+			pop_count = 0;
+		} else {
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object buffer, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+			pop_count = 1;
+		}
+
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
+		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+			duk_pop_n(ctx, pop_count);
+			duk_push_int(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h))[arr_idx]);
+
+			DUK_DDDPRINT("-> %!T (base is buffer, key is an index inside buffer length "
+			             "after coercion -> return byte as number)",
+			             duk_get_tval(ctx, -1));
+			return 1;
+		}
+
+		if (pop_count == 0) {
+			/* This is a pretty awkward control flow, but we need to recheck the
+			 * key coercion here.
+			 */
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object buffer, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+		}
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			duk_pop(ctx);  /* [key] -> [] */
+			duk_push_number(ctx, (double) DUK_HBUFFER_GET_SIZE(h));  /* [] -> [res] */
+
+			DUK_DDDPRINT("-> %!T (base is buffer, key is 'length' after coercion -> "
+			             "return buffer length)",
+			             duk_get_tval(ctx, -1));
+			return 1;
+		}
+
 		DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype");
 		curr = thr->builtins[DUK_BIDX_BUFFER_PROTOTYPE];
-		break;
+		goto lookup;  /* avoid double coercion */
 	}
 
 	case DUK_TAG_POINTER: {
@@ -1844,10 +1994,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 	/* key coercion (unless already coerced above) */
 	DUK_ASSERT(key == NULL);
-	duk_push_tval(ctx, tv_key);
-	duk_to_string(ctx, -1);
-	key = duk_get_hstring(ctx, -1);
-	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+	arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 	DUK_ASSERT(key != NULL);
 
 	/*
@@ -2424,13 +2571,9 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 	switch (DUK_TVAL_GET_TAG(tv_obj)) {
 	case DUK_TAG_UNDEFINED:
-	case DUK_TAG_NULL:
-	case DUK_TAG_BUFFER:
-	case DUK_TAG_POINTER: {
-		/* FIXME: prototype objects for buffer and perhaps pointer? */
-
+	case DUK_TAG_NULL: {
 		/* Note: unconditional throw */
-		DUK_DDDPRINT("base object is undefined, null, buffer, or pointer -> reject (object=%!iT)", tv_obj);
+		DUK_DDDPRINT("base object is undefined or null -> reject (object=%!iT)", tv_obj);
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid base reference for property write");
 		return 0;
 	}
@@ -2445,14 +2588,12 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 
 		/*
-		 *  Note: currently no fast path for array writes.
+		 *  Note: currently no fast path for array index writes.
+		 *  They won't be possible anyway as strings are immutable.
 		 */
 
 		DUK_ASSERT(key == NULL);
-		duk_push_tval(ctx, tv_key);
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
-		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -2467,7 +2608,6 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		DUK_DDDPRINT("base object is a string, start lookup from string prototype");
 		curr = thr->builtins[DUK_BIDX_STRING_PROTOTYPE];
 		goto lookup;  /* avoid double coercion */
-	
 	}
 
 	case DUK_TAG_OBJECT: {
@@ -2475,6 +2615,63 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		orig = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(orig != NULL);
 		curr = orig;
+		break;
+	}
+
+	case DUK_TAG_BUFFER: {
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
+		duk_int_t pop_count = 0;
+
+		/*
+		 *  Because buffer values may be looped over and read/written
+		 *  from, an array index fast path is important.
+		 */
+
+		if (DUK_TVAL_IS_NUMBER(tv_key)) {
+			arr_idx = duk__tval_number_to_arr_idx(tv_key);
+			DUK_DDDPRINT("base object buffer, key is a fast-path number; arr_idx %d", (int) arr_idx);
+			pop_count = 0;
+		} else {
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object buffer, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+			pop_count = 1;
+		}
+
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
+		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+			duk_uint8_t *data;
+			DUK_DDDPRINT("writing to buffer data at index %d", (int) arr_idx);
+			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
+			duk_push_tval(ctx, tv_val);
+			data[arr_idx] = (duk_uint8_t) duk_to_number(ctx, -1);
+			pop_count++;
+			duk_pop_n(ctx, pop_count);
+			DUK_DDDPRINT("result: success (buffer data write)");
+			return 1;
+		}
+
+		if (pop_count == 0) {
+			/* This is a pretty awkward control flow, but we need to recheck the
+			 * key coercion here.
+			 */
+			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+			DUK_ASSERT(key != NULL);
+			DUK_DDDPRINT("base object buffer, key is a non-fast-path number; after coercion key is %!T, arr_idx %d", duk_get_tval(ctx, -1), (int) arr_idx);
+		}
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			goto fail_not_writable;
+		}
+
+		DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype");
+		curr = thr->builtins[DUK_BIDX_BUFFER_PROTOTYPE];
+		goto lookup;  /* avoid double coercion */
+	}
+
+	case DUK_TAG_POINTER: {
+		DUK_DDDPRINT("base object is a pointer, start lookup from pointer prototype");
+		curr = thr->builtins[DUK_BIDX_POINTER_PROTOTYPE];
 		break;
 	}
 
@@ -2488,10 +2685,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	}
 
 	DUK_ASSERT(key == NULL);
-	duk_push_tval(ctx, tv_key);
-	duk_to_string(ctx, -1);
-	key = duk_get_hstring(ctx, -1);
-	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+	arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 	DUK_ASSERT(key != NULL);
 
  lookup:
@@ -2567,9 +2761,35 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			 *  Found existing own (non-inherited) plain property.
 			 *  Do an access control check and update in place.
 			 */
+
 			if (!(desc.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
 				DUK_DDPRINT("found existing own (non-inherited) plain property, but property is not writable");
 				goto fail_not_writable;
+			}
+			if (desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
+				DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable");
+				if (DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr)) {
+					duk_hbuffer *h;
+
+					/* FIXME: lots of duplication here too */
+
+					DUK_DDPRINT("writable virtual property is in buffer object");
+					h = duk_hobject_get_internal_value_buffer(thr->heap, curr);
+					DUK_ASSERT(h != NULL);
+
+					if (arr_idx != DUK__NO_ARRAY_INDEX &&
+					    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+						duk_uint8_t *data;
+						DUK_DDDPRINT("writing to buffer data at index %d", (int) arr_idx);
+						data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
+						duk_push_tval(ctx, tv_val);
+						data[arr_idx] = (duk_uint8_t) duk_to_number(ctx, -1);
+						duk_pop(ctx);
+						goto success_no_arguments_special;
+					}
+				}
+
+				goto fail_internal;  /* should not happen */
 			}
 			DUK_DDPRINT("put to existing own plain property, property is writable");
 			goto update_old;
@@ -2613,10 +2833,11 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 	DUK_ASSERT(orig != NULL);
 
-	/* Currently there are no writable virtual properties,
-	 * so the property must be concretely stored in either
-	 * the array or the entry part.
+	/* Although there are writable virtual properties (e.g. plain buffer
+	 * and buffer object number indices), they are handled before we come
+	 * here.
 	 */
+	DUK_ASSERT((desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) == 0);
 	DUK_ASSERT(desc.a_idx >= 0 || desc.e_idx >= 0);
 
 	if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(orig) &&
@@ -2976,6 +3197,14 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	DUK_DDDPRINT("result: error, accessor property without setter");
 	if (throw_flag) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "undefined setter for accessor");
+	}
+	duk_pop(ctx);  /* remove key */
+	return 0;
+
+ fail_internal:
+	DUK_DDDPRINT("result: error, internal");
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "internal error");
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;

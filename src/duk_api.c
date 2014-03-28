@@ -1837,12 +1837,8 @@ void *duk_to_pointer(duk_context *ctx, int index) {
 void duk_to_object(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_hobject *res;
 	int shared_flags = 0;   /* shared flags for a subset of types */
 	int shared_proto = 0;
-	int shared_string = 0;
-
-	/* FIXME: rework shared_XXX to fit into one reg? */
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -1865,9 +1861,9 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	case DUK_TAG_STRING: {
 		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		               DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
 		shared_proto = DUK_BIDX_STRING_PROTOTYPE;
-		shared_string = 1;
 		goto create_object;
 	}
 	case DUK_TAG_OBJECT: {
@@ -1876,6 +1872,7 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	case DUK_TAG_BUFFER: {
 		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		               DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER);
 		shared_proto = DUK_BIDX_BUFFER_PROTOTYPE;
 		goto create_object;
@@ -1897,21 +1894,16 @@ void duk_to_object(duk_context *ctx, int index) {
 
  create_object:
 	(void) duk_push_object_helper(ctx, shared_flags, shared_proto);
-	res = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(res != NULL);
 
 	/* Note: Boolean prototype's internal value property is not writable,
 	 * but duk_def_prop_stridx() disregards the write protection.  Boolean
 	 * instances are immutable.
+	 *
+	 * String and buffer special behaviors are already enabled which is not
+	 * ideal, but a write to the internal value is not affected by them.
 	 */
 	duk_dup(ctx, index);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
-
-	/* FIXME: fix this check to lookup class from shared_flags to minimize size */
-	if (shared_string) {
-		/* Enable special string behavior only after internal value has been set */
-		DUK_HOBJECT_SET_SPECIAL_STRINGOBJ(res);
-	}
 
 	duk_replace(ctx, index);
 }

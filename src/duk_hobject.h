@@ -32,7 +32,7 @@
 #ifndef DUK_HOBJECT_H_INCLUDED
 #define DUK_HOBJECT_H_INCLUDED
 
-/* there are currently 22 flag bits available */
+/* there are currently 26 flag bits available */
 #define DUK_HOBJECT_FLAG_EXTENSIBLE            DUK_HEAPHDR_USER_FLAG(0)   /* object is extensible */
 #define DUK_HOBJECT_FLAG_CONSTRUCTABLE         DUK_HEAPHDR_USER_FLAG(1)   /* object is constructable */
 #define DUK_HOBJECT_FLAG_BOUND                 DUK_HEAPHDR_USER_FLAG(2)   /* object established using Function.prototype.bind() */
@@ -49,8 +49,12 @@
 #define DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ     DUK_HEAPHDR_USER_FLAG(14)  /* 'String' object, array index special behavior */
 #define DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS     DUK_HEAPHDR_USER_FLAG(15)  /* 'Arguments' object and has arguments special behavior (non-strict callee) */
 #define DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC       DUK_HEAPHDR_USER_FLAG(16)  /* Duktape/C (nativefunction) object, special 'length' */
+#define DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ     DUK_HEAPHDR_USER_FLAG(17)  /* 'Buffer' object, array index special behavior, virtual 'length' */
+/* bit 18 unused */
+/* bit 19 unused */
+/* bit 20 unused */
 
-#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(17)
+#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(21)
 #define DUK_HOBJECT_FLAG_CLASS_BITS            5
 
 #define DUK_HOBJECT_GET_CLASS_NUMBER(h)        \
@@ -108,7 +112,8 @@
 #define DUK_HOBJECT_SPECIAL_BEHAVIOR_FLAGS     (DUK_HOBJECT_FLAG_SPECIAL_ARRAY | \
                                                 DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS | \
                                                 DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ | \
-                                                DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC)
+                                                DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC | \
+                                                DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ)
 
 #define DUK_HOBJECT_HAS_SPECIAL_BEHAVIOR(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_SPECIAL_BEHAVIOR_FLAGS)
 
@@ -128,6 +133,7 @@
 #define DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(h)   DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ)
 #define DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(h)   DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS)
 #define DUK_HOBJECT_HAS_SPECIAL_DUKFUNC(h)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC)
+#define DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(h)   DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ)
 
 #define DUK_HOBJECT_SET_EXTENSIBLE(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXTENSIBLE)
 #define DUK_HOBJECT_SET_CONSTRUCTABLE(h)       DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CONSTRUCTABLE)
@@ -145,6 +151,7 @@
 #define DUK_HOBJECT_SET_SPECIAL_STRINGOBJ(h)   DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ)
 #define DUK_HOBJECT_SET_SPECIAL_ARGUMENTS(h)   DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS)
 #define DUK_HOBJECT_SET_SPECIAL_DUKFUNC(h)     DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC)
+#define DUK_HOBJECT_SET_SPECIAL_BUFFEROBJ(h)   DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ)
 
 #define DUK_HOBJECT_CLEAR_EXTENSIBLE(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXTENSIBLE)
 #define DUK_HOBJECT_CLEAR_CONSTRUCTABLE(h)     DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CONSTRUCTABLE)
@@ -162,12 +169,16 @@
 #define DUK_HOBJECT_CLEAR_SPECIAL_STRINGOBJ(h) DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ)
 #define DUK_HOBJECT_CLEAR_SPECIAL_ARGUMENTS(h) DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS)
 #define DUK_HOBJECT_CLEAR_SPECIAL_DUKFUNC(h)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC)
+#define DUK_HOBJECT_CLEAR_SPECIAL_BUFFEROBJ(h) DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ)
 
 /* flags used for property attributes in duk_propdesc and packed flags */
 #define DUK_PROPDESC_FLAG_WRITABLE              (1 << 0)    /* E5 Section 8.6.1 */
 #define DUK_PROPDESC_FLAG_ENUMERABLE            (1 << 1)    /* E5 Section 8.6.1 */
 #define DUK_PROPDESC_FLAG_CONFIGURABLE          (1 << 2)    /* E5 Section 8.6.1 */
 #define DUK_PROPDESC_FLAG_ACCESSOR              (1 << 3)    /* accessor */
+#define DUK_PROPDESC_FLAG_VIRTUAL               (1 << 4)    /* property is virtual: used in duk_propdesc, never stored
+                                                             * (used by e.g. buffer virtual properties)
+                                                             */
 #define DUK_PROPDESC_FLAGS_MASK                 (DUK_PROPDESC_FLAG_WRITABLE | \
                                                  DUK_PROPDESC_FLAG_ENUMERABLE | \
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE | \
@@ -659,6 +670,7 @@ int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags)
 /* internal properties */
 int duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
 duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
+duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj);
 	
 /* hobject management functions */
 void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
