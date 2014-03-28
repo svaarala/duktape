@@ -116,7 +116,7 @@ EventLoop.fdPollHandler = function(fd, revents) {
         if (cb) {
             data = Socket.read(fd);  // no size control now
             //print('READ', Duktape.enc('jsonx', data));
-            if (String(data) === '') {  // FIXME
+            if (data.length === 0) {
                 this.close(fd);
                 return;
             }

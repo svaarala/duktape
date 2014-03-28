@@ -290,7 +290,7 @@ EventLoop.run = function() {
                 if (cb) {
                     data = Socket.read(fd);  // no size control now
                     //print('READ', Duktape.enc('jsonx', data));
-                    if (String(data) === '') {  // FIXME
+                    if (data.length === 0) {
                         //print('zero read for fd ' + fd + ', closing forcibly');
                         rc = Socket.close(fd);  // ignore result
                         delete this.socketListening[fd];

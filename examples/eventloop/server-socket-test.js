@@ -13,8 +13,22 @@ print('listen on ' + HOST + ':' + PORT);
 EventLoop.server(HOST, PORT, function (fd, addr, port) {
     print('new connection on fd ' + fd + ' from ' + addr + ':' + port);
     EventLoop.setReader(fd, function (fd, data) {
-        // FIXME: uppercase as bytes, no decode errors
+        var b, i, n, x;
+
+        // Handle socket data carefully: if you convert it to a string,
+        // it may not be valid UTF-8 etc.  Here we operate on the data
+        // directly in the buffer.
+
+        b = data.valueOf();  // ensure we get a plain buffer
+        n = b.length;
+        for (i = 0; i < n; i++) {
+            x = b[i];
+            if (x >= 0x61 && x <= 0x7a) {
+                b[i] = x - 0x20;  // uppercase
+            }
+        }
+
         print('read data on fd ' + fd + ', length ' + data.length);
-        EventLoop.write(fd, String(data).toUpperCase());
+        EventLoop.write(fd, data);
     });
 });
