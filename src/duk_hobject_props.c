@@ -3916,13 +3916,8 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	 *  all coercions must be done first.  Boolean conversion of 'undefined' is false.
 	 */
 
-	has_enumerable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_ENUMERABLE);
-	is_enumerable = duk_to_boolean(ctx, -1);
-	duk_pop(ctx);
-
-	has_configurable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_CONFIGURABLE);
-	is_configurable = duk_to_boolean(ctx, -1);
-	duk_pop(ctx);
+	is_enumerable = duk_get_prop_stridx_boolean(ctx, idx_desc, DUK_STRIDX_ENUMERABLE, &has_enumerable);
+	is_configurable = duk_get_prop_stridx_boolean(ctx, idx_desc, DUK_STRIDX_CONFIGURABLE, &has_configurable);
 
 	has_value = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_VALUE);
 	if (has_value) {
@@ -3936,9 +3931,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	}
 	/* leave value on stack intentionally to ensure we can refer to it later */
 
-	has_writable = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_WRITABLE);
-	is_writable = duk_to_boolean(ctx, -1);
-	duk_pop(ctx);
+	is_writable = duk_get_prop_stridx_boolean(ctx, idx_desc, DUK_STRIDX_WRITABLE, &has_writable);
 
 	has_get = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_GET);
 	get = NULL;

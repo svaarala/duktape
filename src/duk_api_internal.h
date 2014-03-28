@@ -79,6 +79,10 @@ int duk_put_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);  
 int duk_del_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [] */
 int duk_has_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [] */
 
+#define duk_get_prop_stridx_boolean(ctx,obj_index,stridx,out_has_prop) \
+	duk_get_prop_stridx_boolean_raw((ctx),((obj_index) << 16)|(stridx),(out_has_prop))
+int duk_get_prop_stridx_boolean_raw(duk_context *ctx, int obj_index_and_stridx, int *out_has_prop);  /* [] -> [] */
+
 void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags);  /* [key val] -> [] */
 void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags);  /* [val] -> [] */
 void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [val] -> [] */

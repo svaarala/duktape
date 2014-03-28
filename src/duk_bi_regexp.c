@@ -44,15 +44,9 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		if (duk_is_undefined(ctx, 1)) {
 			int flag_g, flag_i, flag_m;
 			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
-
-			/* FIXME: very awkward handling of flags */
-			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_GLOBAL);
-			flag_g = duk_to_boolean(ctx, -1);
-			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_IGNORE_CASE);
-			flag_i = duk_to_boolean(ctx, -1);
-			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_MULTILINE);
-			flag_m = duk_to_boolean(ctx, -1);
-			duk_pop_n(ctx, 3);
+			flag_g = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_GLOBAL, NULL);
+			flag_i = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_IGNORE_CASE, NULL);
+			flag_m = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_MULTILINE, NULL);
 
 			duk_push_sprintf(ctx, "%s%s%s",
 			                 (flag_g ? "g" : ""),
