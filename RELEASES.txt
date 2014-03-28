@@ -216,6 +216,10 @@ Planned
 * "new Object()" now promotes plain buffer and pointer values to Buffer
   and Pointer objects
 
+* Buffer values now have virtual numeric index properties and a virtual
+  'length' property, so that you can do x = buf[123], buf[123] = x and
+  buf.length
+
 * Change Array.prototype.splice() behavior so that if 2nd argument
   (deleteCount) is not given, splice to end of array instead of treating
   like deleteCount was zero: the new behavior is non-standard but is the
