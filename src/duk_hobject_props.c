@@ -1735,17 +1735,14 @@ static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_t
 	    (!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) &&
 	    (!DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj))) {
-		double d;
 		duk_uint32_t idx;
 
 		DUK_DDDPRINT("fast path attempt (key is a number, no special string/arguments/buffer "
 		             "behavior, object has array part)");
 
-		/* FIXME: faster way to do this index coercion and validation? */
+		idx = duk__tval_number_to_arr_idx(key_tv);
 
- 		d = DUK_TVAL_GET_NUMBER(key_tv);
-		idx = (duk_uint32_t) d;
-		if ((double) idx == d) {
+		if (idx != DUK__NO_ARRAY_INDEX) {
 			/* Note: idx is not necessarily a valid array index (0xffffffffU is not valid) */
 			DUK_ASSERT_DISABLE(idx >= 0);  /* disabled because idx is duk_uint32_t so always true */
 			DUK_ASSERT_DISABLE(idx <= 0xffffffffU);  /* same */
