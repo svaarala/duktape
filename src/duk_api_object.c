@@ -247,13 +247,16 @@ void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags) {
 }
 
 void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags) {
-	/* FIXME: interns arr_index and used from some fast path call sites (at least
-	 * duk_error_augment.c traceback creation.  Implement a fast path.
-	 */
-	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_number(ctx, (double) arr_index);  /* FIXME: push u32 */
-	duk_insert(ctx, -2);  /* [ key value ] */
-	duk_def_prop(ctx, obj_index, desc_flags);
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *obj;
+
+	DUK_ASSERT(ctx != NULL);
+
+	obj = duk_require_hobject(ctx, obj_index);
+	DUK_ASSERT(obj != NULL);
+
+	duk_hobject_define_property_internal_arridx(thr, obj, arr_index, desc_flags);
+	/* value popped by call */
 }
 
 void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags) {
@@ -272,8 +275,7 @@ void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, i
 	DUK_ASSERT(duk_require_tval(ctx, -1) != NULL);
 
 	duk_hobject_define_property_internal(thr, obj, key, desc_flags);
-
-	/* value already popped */
+	/* value popped by call */
 }
 
 void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int stridx, unsigned int builtin_idx, int desc_flags) {
