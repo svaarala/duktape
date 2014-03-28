@@ -8,8 +8,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-03-06 12:43:46.320318 Z
 references: []
 
@@ -25,3 +25,7 @@ log_events:
   - |-
     duk_hobject flags field is now full; 2 more bits can be allocated from heaphdr
     to implement this feature.
+- - 2014-03-28 00:14:58.051081 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

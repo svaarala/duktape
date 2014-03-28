@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: allow writing single character values to buffer objects (e.g. buf[123] = 'x')
+desc: |-
+  Currently the string value will be coerced to a number which leads to
+  quite unexpected behavior.  For instance, buf[123] = 'x' will assign 0x00
+  to the buffer, and buf[123] = '9' will assign 0x09 (not 0x39) to the buffer.
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-27 22:28:47.206755 Z
+references: []
+
+id: b557ffd92f8ffe1774a403e138a1237599be230d
+log_events: 
+- - 2014-03-27 22:28:47.342500 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

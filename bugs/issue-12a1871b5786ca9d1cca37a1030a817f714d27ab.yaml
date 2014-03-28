@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: move built-in and additional user-given strings into code constants (text section) (perhaps option)
+desc: This would reduce RAM footprint by around 20kB.
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-03-27 22:26:46.414844 Z
+references: []
+
+id: 12a1871b5786ca9d1cca37a1030a817f714d27ab
+log_events: 
+- - 2014-03-27 22:26:46.566835 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
