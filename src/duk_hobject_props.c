@@ -3437,7 +3437,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
  *  operations.
  */
 
-void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, int flags) {
+void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_propdesc desc;
 	duk_uint32_t arr_idx;
@@ -3527,10 +3527,66 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	DUK_TVAL_SET_TVAL(tv1, tv2);
 	DUK_TVAL_INCREF(thr, tv1);
-	DUK_TVAL_DECREF(thr, &tv_tmp);    /* side effects */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
  skip_write:
 	duk_pop(ctx);  /* remove in_val */
+}
+
+/*
+ *  Fast path for defining array indexed values without interning the key.
+ *  This is used by e.g. code for Array prototype and traceback creation so
+ *  must avoid interning.
+ */
+
+void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uint32_t arr_idx, duk_small_int_t flags) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_hstring *key;
+	duk_tval *tv1, *tv2;
+	duk_tval tv_tmp;
+
+	DUK_DDDPRINT("define new property (internal) arr_idx fast path: thr=%p, obj=%!O, arr_idx=%d, flags=0x%02x, val=%!T",
+	             (void *) thr, obj, (int) arr_idx, flags, duk_get_tval(ctx, -1));
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) &&
+	    arr_idx != DUK__NO_ARRAY_INDEX &&
+	    flags == DUK_PROPDESC_FLAGS_WEC) {
+		DUK_ASSERT((flags & DUK_PROPDESC_FLAG_NO_OVERWRITE) == 0);  /* covered by comparison */
+
+		DUK_DDDPRINT("define property to array part (property may or may not exist yet)");
+
+		/* always grow the array, no sparse / abandon support here */
+		if (arr_idx >= obj->a_size) {
+			duk__grow_props_for_array_item(thr, obj, arr_idx);
+		}
+
+		DUK_ASSERT(arr_idx < obj->a_size);
+		tv1 = DUK_HOBJECT_A_GET_VALUE_PTR(obj, arr_idx);
+		tv2 = duk_require_tval(ctx, -1);
+
+		DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+		DUK_TVAL_SET_TVAL(tv1, tv2);
+		DUK_TVAL_INCREF(thr, tv1);
+		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+		duk_pop(ctx);  /* [ ...val ] -> [ ... ] */
+		return;
+	}
+
+	DUK_DDDPRINT("define property fast path didn't work, use slow path");
+
+	duk_push_number(ctx, (double) arr_idx);
+	key = duk_to_hstring(ctx, -1);
+	DUK_ASSERT(key != NULL);
+	duk_insert(ctx, -2);  /* [ ... val key ] -> [ ... key val ] */
+
+	duk_hobject_define_property_internal(thr, obj, key, flags);
+
+	duk_pop(ctx);  /* [ ... key ] -> [ ... ] */
 }
 
 /*
@@ -3541,7 +3597,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
  *  and then changes the entry to an accessor (this is to save code space).
  */
 
-void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, int propflags) {
+void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_int_t propflags) {
 	duk_context *ctx = (duk_context *) thr;
 	int e_idx;
 	int h_idx;
