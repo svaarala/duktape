@@ -6,7 +6,7 @@ desc: |-
   the argument list during bind() to avoid chaining.
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -18,4 +18,8 @@ log_events:
 - - 2013-11-26 22:08:55.229676 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-03-28 10:26:24.662733 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""

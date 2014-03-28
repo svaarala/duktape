@@ -3,7 +3,7 @@ title: api macro for checking "unix-like" retval, and throw based on errno?
 desc: Not fully portable, but would be very convenient.
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-03-09 16:43:14.782123 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-03-28 10:26:28.038509 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""

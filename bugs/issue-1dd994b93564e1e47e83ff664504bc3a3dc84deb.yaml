@@ -3,7 +3,7 @@ title: "improve Dukweb: fully typed eval() bindings, error handling, emscripten 
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -43,3 +43,7 @@ log_events:
     The user should be able to change an old input too and re-evaluate it.
     There should probably also be a small button to force re-evaluation.
     Automatic eval on blur should probably be a tickbox option.
+- - 2014-03-28 10:26:26.612192 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
+  - ""

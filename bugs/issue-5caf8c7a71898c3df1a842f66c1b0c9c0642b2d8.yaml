@@ -6,7 +6,7 @@ desc: |-
   object flags, so a single "has special behavior" flag suffices.
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -18,4 +18,8 @@ log_events:
 - - 2014-03-02 22:05:46.243862 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-03-28 10:26:27.531678 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""

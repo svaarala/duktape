@@ -3,7 +3,7 @@ title: direct api call to create an object with a specific constructor?
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-03-14 06:42:09.716106 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-03-28 10:26:28.427930 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""
