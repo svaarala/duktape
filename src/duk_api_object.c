@@ -63,6 +63,22 @@ int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	return duk_get_prop(ctx, obj_index);
 }
 
+int duk_get_prop_stridx_boolean(duk_context *ctx, int obj_index, duk_small_int_t stridx, int *out_has_prop) {
+	int rc;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_DISABLE(stridx >= 0);
+	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+
+	rc = duk_get_prop_stridx(ctx, obj_index, stridx);
+	if (out_has_prop) {
+		*out_has_prop = rc;
+	}
+	rc = duk_to_boolean(ctx, -1);
+	duk_pop(ctx);
+	return rc;
+}
+
 int duk_put_prop(duk_context *ctx, int obj_index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_obj;
