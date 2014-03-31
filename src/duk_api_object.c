@@ -63,9 +63,7 @@ int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx) {
 	return duk_get_prop(ctx, obj_index);
 }
 
-int duk_get_prop_stridx_boolean_raw(duk_context *ctx, int obj_index_and_stridx, int *out_has_prop) {
-	int obj_index = obj_index_and_stridx >> 16;
-	int stridx = obj_index_and_stridx & 0xffff;
+int duk_get_prop_stridx_boolean(duk_context *ctx, int obj_index, duk_small_int_t stridx, int *out_has_prop) {
 	int rc;
 
 	DUK_ASSERT(ctx != NULL);
