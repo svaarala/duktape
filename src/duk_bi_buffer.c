@@ -13,6 +13,7 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
 	duk_small_int_t buf_dynamic;
 	duk_uint8_t *buf_data;
 	const duk_uint8_t *src_data;
+	duk_hobject *h_obj;
 
 	/*
 	 *  Constructor arguments are currently somewhat compatible with
@@ -42,6 +43,16 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
 		DUK_ASSERT(src_data != NULL);  /* even for zero-length string */
 		buf_data = duk_push_buffer(ctx, buf_size, buf_dynamic);
 		DUK_MEMCPY((void *) buf_data, (const void *) src_data, (size_t) buf_size);
+		break;
+	case DUK_TYPE_OBJECT:
+		/* Buffer object: get the plain buffer inside */
+		h_obj = duk_get_hobject(ctx, 0);
+		DUK_ASSERT(h_obj != NULL);
+		if (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) != DUK_HOBJECT_CLASS_BUFFER) {
+			return DUK_RET_TYPE_ERROR;
+		}
+		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_VALUE);
+		DUK_ASSERT(duk_is_buffer(ctx, -1));
 		break;
 	case DUK_TYPE_NONE:
 	default:
