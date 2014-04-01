@@ -420,18 +420,35 @@ details.</p>
 </tbody>
 </table>
 
-<p>The Buffer constructor is a function which can be called both as an
-ordinary function and as a constructor:</p>
+<p>The Buffer constructor is a function which returns a plain buffer when
+called as a normal function and a Buffer object when called as a
+constructor.  Otherwise the behavior is the same:</p>
 <ul>
-<li>When called as a function, coerces the first argument to a buffer using
-    the custom <code>ToBuffer</code> coercion.  The return value is a plain
-    buffer (not a Buffer object).</li>
-<li>When called as a constructor, coerces the first argument to a buffer
-    using the custom <code>ToBuffer</code> coercion.  Returns a Buffer object
-    whose internal value is the buffer resulting from the coercion.  The
-    internal prototype of the newly created Buffer will be the
+<li>If the first argument is a plain buffer, the buffer is used as is (a new
+    buffer is not created).  The second argument is ignored.  This form
+    can be used to wrap a plain buffer value into a Buffer object.</li>
+<li>If the first argument is a Buffer object, the internal plain buffer value
+    of the argument is used (a new buffer is not created).  The second argument
+    is again ignored.  If called as a constructor, a new Buffer object is
+    returned, but it will internally point to the same plain buffer value.</li>
+<li>If the first argument is a string, a new buffer is created and the bytes
+    from the string's internal extended UTF-8 representation are copied to the
+    buffer.  The second argument (if present) indicates whether or not the new
+    buffer should be dynamic (resizable); the default value is false.</li>
+<li>If the first argument is a number, a new buffer is created and filled with
+    zero.  The second argument (if present) indicates whether or not the new
+    buffer should be dynamic.  Zero filling the buffer is the default behavior,
+    but this can be disabled with a feature option; if disabled, the contents
+    will be unpredictable.</li>
+<li>When called as a constructor, the result is converted into a Buffer
+    object whose internal value is the plain buffer.  The internal prototype
+    of the newly created Buffer will be the
     <code>Duktape.Buffer.prototype</code> object.</li>
 </ul>
+
+<div class="fixme">
+Add a note on how to copy a buffer because the constructor never does that now.
+</div>
 
 <h2>Duktape.Buffer.prototype</h2>
 
