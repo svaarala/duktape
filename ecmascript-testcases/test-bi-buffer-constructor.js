@@ -39,8 +39,11 @@ object dynamic 3 bytes: 98 97 114
 object dynamic 3 bytes: 98 97 114
 object dynamic 3 bytes: 98 97 114
 buffer is the same: true
-object TypeError
-object TypeError
+plain fixed 4 bytes: 113 117 117 120
+buffer is the same: true
+object fixed 4 bytes: 113 117 117 120
+buffer is the same: true
+object is the same: false
 undefined TypeError
 undefined TypeError
 null TypeError
@@ -157,23 +160,19 @@ function test() {
     dump(new Duktape.Buffer(b, false, 'ignored'));
     print('buffer is the same:', (new Duktape.Buffer(b)).valueOf() === b);
 
-    /* Buffer object argument: currently a TypeError which is perhaps not the
-     * best behavior.
+    /* Buffer object argument: if called as a plain function, return the
+     * plain buffer; if called as a constructor, create a new Buffer object
+     * with the same plain value inside.  This is the same as String behavior.
      */
 
     b = new Duktape.Buffer('quux');
 
-    try {
-        dump(Duktape.Buffer(b));
-    } catch (e) {
-        print(typeof b, e.name);
-    }
+    dump(Duktape.Buffer(b));
+    print('buffer is the same:', b.valueOf() === Duktape.Buffer(b));
 
-    try {
-        dump(new Duktape.Buffer(b));
-    } catch (e) {
-        print(typeof b, e.name);
-    }
+    dump(new Duktape.Buffer(b));
+    print('buffer is the same:', b.valueOf() === new Duktape.Buffer(b).valueOf());
+    print('object is the same:', b === new Duktape.Buffer(b));
 
     /* Other types: TypeErrors for now. */
 
