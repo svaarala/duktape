@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add proper special behavior for virtual buffer index properties in defineProperty()
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-03 09:57:26.389430 Z
+references: []
+
+id: a1a6faf906ec5cd85dfab8e51584e8110b19d5d2
+log_events: 
+- - 2014-04-03 09:57:26.549384 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
