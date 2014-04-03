@@ -3,7 +3,7 @@ title: merge duk_to_buffer() and duk_to_fixed_buffer()
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-04-01 20:27:03.022047 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-04-03 09:28:47.794893 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""
