@@ -37,3 +37,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Michał Przybyś
 * Anthony Howe
 * Conrad Pankoff
+* Jim Schimpf
