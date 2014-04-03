@@ -4291,6 +4291,14 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		}
 	}
 
+	/* reject attempt to change virtual properties: not part of the
+	 * standard algorithm, applies currently to e.g. virtual index
+	 * properties of buffer objects (which are virtual but writable).
+	 */
+	if (curr.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
+		goto fail_virtual;
+	}
+
 	/* descriptor type specific checks */
 	if (has_set || has_get) {
 		/* IsAccessorDescriptor(desc) == true */
@@ -4682,6 +4690,10 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	/* no need to unwind stack (rewound automatically) */
 	duk_set_top(ctx, 1);  /* -> [ obj ] */
 	return 1;
+
+ fail_virtual:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property is virtual");
+	return 0;
 
  fail_invalid_desc:
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid descriptor");
