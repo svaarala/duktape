@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: merge duk_to_buffer() and duk_to_fixed_buffer()
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-01 20:27:02.862166 Z
+references: []
+
+id: 352421f903b8d23e19ef7c17caf64856ad1fbcfb
+log_events: 
+- - 2014-04-01 20:27:03.022047 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
