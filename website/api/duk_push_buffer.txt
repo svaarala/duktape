@@ -21,6 +21,17 @@ header and another for the currently allocated data area.  A fixed buffer only
 requires a single allocation: the data area follows the buffer header.
 </div>
 
+<div class="note">
+Be careful when requesting a zero length dynamic buffer: a <code>NULL</code>
+data pointer is not an error and should not confuse calling code.
+</div>
+
+<div class="note">
+Duktape can be compiled with a feature option which disables automatic zeroing
+of allocated buffer data.  If this is the case, you need to zero the buffer
+manually if necessary.
+</div>
+
 =example
 /* Allocate a fixed buffer of 1024 bytes.  There is no need to check for
  * the return value: an error is thrown if allocation fails.

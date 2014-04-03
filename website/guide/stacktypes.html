@@ -263,7 +263,11 @@ size.  The size of a fixed buffer is given at its creation, and fixed buffers
 have an unchanging (stable) data pointer.  Dynamic buffers may change during their
 life time at the cost of having a (potentially) changing data pointer.  Dynamic
 buffers also need two memory allocations internally, while fixed buffers only
-need one.</p>
+need one.  The data pointer of a zero-size dynamic buffer may (or may not) be
+<code>NULL</code> which must be handled by calling code properly (i.e. a <code>NULL</code>
+data pointer only indicates an error if the requested size is non-zero).
+Unlike strings, buffer data areas are not automatically NUL terminated and calling
+code must not access the bytes following the allocated buffer size.</p>
 
 <p>Buffers are automatically garbage collected.  This also means that C code
 must not hold onto a buffer data pointer unless the buffer is reachable to
