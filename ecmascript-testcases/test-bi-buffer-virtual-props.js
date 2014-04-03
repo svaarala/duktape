@@ -220,3 +220,66 @@ try {
 } catch (e) {
     print(e);
 }
+
+/*===
+defineProperty
+3 102 111 111 undefined
+TypeError
+3 102 111 111 undefined
+TypeError
+3 102 111 111 undefined
+TypeError
+===*/
+
+/* There is currently no full support for buffer virtual properties in defineProperty().
+ * This testcase illustrates the current (not as such desirable) behavior.
+ */
+
+function definePropertyTest() {
+    var b;
+
+    // Plain buffer: TypeError (defineProperty normal behavior).
+
+    try {
+        b = Duktape.Buffer('foo');
+        print(b.length, b[0], b[1], b[2], b[3]);
+
+        Object.defineProperty(b, 'length', { value: 5 });
+        print(b.length, b[0], b[1], b[2], b[3]);
+    } catch (e) {
+        print(e.name);
+    }
+
+    // Buffer Object: 'length' is not configurable, so TypeError.
+
+    try {
+        b = new Duktape.Buffer('foo');
+        print(b.length, b[0], b[1], b[2], b[3]);
+
+        Object.defineProperty(b, 'length', { value: 5 });
+        print(b.length, b[0], b[1], b[2], b[3]);
+    } catch (e) {
+        print(e.name);
+    }
+
+    // Buffer Object: virtual properties are writable but defineProperty()
+    // will detect them as being virtual and reject any changes at the moment.
+
+    try {
+        b = new Duktape.Buffer('foo');
+        print(b.length, b[0], b[1], b[2], b[3]);
+
+        Object.defineProperty(b, '0', { value: 0x45 });
+        print(b.length, b[0], b[1], b[2], b[3]);
+    } catch (e) {
+        print(e.name);
+    }
+}
+
+print('defineProperty');
+
+try {
+    definePropertyTest();
+} catch (e) {
+    print(e);
+}
