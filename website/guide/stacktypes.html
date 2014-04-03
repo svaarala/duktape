@@ -301,7 +301,8 @@ values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  This
 fast path is not active when the base value is a Buffer object.</li>
 <li>Buffer virtual properties are not currently implemented in
 <code>defineProperty()</code>, so you can't write to buffer indices or
-buffer <code>length</code> with <code>defineProperty()</code> now.</li>
+buffer <code>length</code> with <code>defineProperty()</code> now (attempt
+to do so results in a <code>TypeError</code>).</li>
 </ul>
 
 <h2 id="type-pointer">Pointer</h2>
