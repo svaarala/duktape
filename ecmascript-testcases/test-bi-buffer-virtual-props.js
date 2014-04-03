@@ -229,6 +229,8 @@ TypeError
 TypeError
 3 102 111 111 undefined
 TypeError
+3 102 111 111 undefined
+3 102 111 111 undefined
 ===*/
 
 /* There is currently no full support for buffer virtual properties in defineProperty().
@@ -270,6 +272,18 @@ function definePropertyTest() {
         print(b.length, b[0], b[1], b[2], b[3]);
 
         Object.defineProperty(b, '0', { value: 0x45 });
+        print(b.length, b[0], b[1], b[2], b[3]);
+    } catch (e) {
+        print(e.name);
+    }
+
+    // Buffer Object: attempt to write the *same value* will be successful.
+
+    try {
+        b = new Duktape.Buffer('foo');
+        print(b.length, b[0], b[1], b[2], b[3]);
+
+        Object.defineProperty(b, '0', { value: 102 });
         print(b.length, b[0], b[1], b[2], b[3]);
     } catch (e) {
         print(e.name);
