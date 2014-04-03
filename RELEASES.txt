@@ -220,6 +220,9 @@ Planned
   'length' property, so that you can do x = buf[123], buf[123] = x and
   buf.length
 
+* Buffer data areas no longer have an automatic NUL terminator to avoid
+  rounding user-requested allocation sizes upwards unnecessarily
+
 * Change Array.prototype.splice() behavior so that if 2nd argument
   (deleteCount) is not given, splice to end of array instead of treating
   like deleteCount was zero: the new behavior is non-standard but is the
