@@ -30,7 +30,7 @@
 #define DUK_HBUFFER_FIXED_GET_DATA_PTR(x)         ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
 #define DUK_HBUFFER_FIXED_GET_SIZE(x)             ((x)->u.s.size)
 
-#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)     ((x)->usable_size + 1)
+#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)     ((x)->usable_size)
 #define DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(x)    ((x)->usable_size)
 #define DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(x)     ((x)->usable_size - (x)->size)
 #define DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(x)  ((x)->curr_alloc)
@@ -71,14 +71,19 @@ struct duk_hbuffer {
 	 *  flag.
 	 *
 	 *  If the flag is clear (the buffer is a fixed size one), the buffer
-	 *  data follows the header directly, consisting of 'size' bytes,
-	 *  followed by a zero byte for robustness.
+	 *  data follows the header directly, consisting of 'size' bytes.
 	 *
 	 *  If the flag is set, the actual buffer is allocated separately, and
 	 *  a few control fields follow the header.  Specifically:
 	 *
 	 *    - a "void *" pointing to the current allocation
 	 *    - a size_t indicating the full allocated size (always >= 'size')
+	 *
+	 *  Unlike strings, no terminator byte (NUL) is guaranteed after the
+	 *  data.  This would be convenient, but would pad aligned user buffers
+	 *  unnecessarily upwards in size.  For instance, if user code requested
+	 *  a 64-byte dynamic buffer, 65 bytes would actually be allocated which
+	 *  would then potentially round upwards to perhaps 68 or 72 bytes.
 	 */
 };
 
@@ -137,9 +142,13 @@ struct duk_hbuffer_dynamic {
 	size_t usable_size;
 
 	/*
-	 *  Alloc size is usable_size + 1; a zero byte always follows the
-	 *  buffer.  curr_alloc is explicitly allocated and will have
-	 *  alignment suitable for e.g. duk_tval.
+	 *  Allocation size for 'curr_alloc' is usable_size directly.
+	 *  There is no automatic NUL terminator for buffers (see above
+	 *  for rationale).
+	 *
+	 *  'curr_alloc' is explicitly allocated with heap allocation
+	 *  primitives and will thus always have alignment suitable for
+	 *  e.g. duk_tval and an IEEE double.
 	 */
 };
 

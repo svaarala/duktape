@@ -51,27 +51,25 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 	 *  collection.
 	 */
 
-	/* FIXME: maybe remove safety NUL term for buffers? */
-	new_alloc_size = new_usable_size + 1;  /* +1 for safety nul term */
+	new_alloc_size = new_usable_size;
 	res = DUK_REALLOC_INDIRECT(thr->heap, duk_hbuffer_get_dynalloc_ptr, (void *) buf, new_alloc_size);
-	if (res) {
+	if (res || new_alloc_size == 0) {
+		/* 'res' may be NULL if new allocation size is 0. */
+
 		DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
 		             buf->curr_alloc, buf->size, buf->usable_size,
 		             res, new_size, new_usable_size);
 
 		/*
-		 *  The entire allocated buffer area, regardless of actual used size,
-		 *  is kept zeroed in resizes for simplicity.  If the buffer is grown,
-		 *  zero the new part (the safety NUL byte is re-zeroed every time).
-		 *  Another policy would be to ensure data is zeroed as the used part
-		 *  is extended (with one safety NUL byte) this is much more simple,
-		 *  and not a big deal because the spart part is relatively small.
+		 *  The entire allocated buffer area, regardless of actual used
+		 *  size, is kept zeroed in resizes for simplicity.  If the buffer
+		 *  is grown, zero the new part.  Another policy would be to
+		 *  ensure data is zeroed as the used part is extended.  The
+		 *  current approach is much more simple and is not a big deal
+		 *  because the spare part is relatively small.
 		 */
 
 		if (new_alloc_size > buf->usable_size) {
-			/* When new_usable_size == old_usable_size, one byte will
-			 * be rezeroed (the safety NUL byte).
-			 */
 			DUK_ASSERT(new_alloc_size - buf->usable_size > 0);
 #ifdef DUK_USE_ZERO_BUFFER_DATA
 			DUK_MEMZERO((void *) ((char *) res + buf->usable_size),
@@ -87,7 +85,7 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 		          buf->size, buf->usable_size, new_size, new_usable_size);
 	}
 
-	DUK_ASSERT(res != NULL);
+	DUK_ASSERT(res != NULL || new_alloc_size == 0);
 }
 
 void duk_hbuffer_reset(duk_hthread *thr, duk_hbuffer_dynamic *buf) {

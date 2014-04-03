@@ -13,8 +13,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	if (dynamic) {
 		alloc_size = sizeof(duk_hbuffer_dynamic);
 	} else {
-		/* FIXME: maybe remove safety NUL term for buffers? */
-		alloc_size = sizeof(duk_hbuffer_fixed) + size + 1;  /* +1 for a safety nul term */
+		alloc_size = sizeof(duk_hbuffer_fixed) + size;
 	}
 
 #ifdef DUK_USE_ZERO_BUFFER_DATA
@@ -36,26 +35,24 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
 		void *ptr;
 		if (size > 0) {
-			/* FIXME: maybe remove safety NUL term for buffers? */
 			DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer");
 #ifdef DUK_USE_ZERO_BUFFER_DATA
-			ptr = DUK_ALLOC_ZEROED(heap, size + 1);  /* +1 for a safety nul term */
+			ptr = DUK_ALLOC_ZEROED(heap, size);
 #else
-			ptr = DUK_ALLOC(heap, size + 1);  /* +1 for a safety nul term */
+			ptr = DUK_ALLOC(heap, size);  /* +1 for a safety nul term */
 #endif
 			if (!ptr) {
+				/* Because size > 0, NULL check is correct */
 				goto error;
 			}
 
 			h->curr_alloc = ptr;
 			h->usable_size = size;  /* snug */
 		} else {
-			/* FIXME: if safety NUL term IS included, having a NULL ptr
-			 * for the buffer area is inconsistent.
-			 */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 			h->curr_alloc = NULL;
 #endif
+			DUK_ASSERT(h->usable_size == 0);
 		}
 	}
 
