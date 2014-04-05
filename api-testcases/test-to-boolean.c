@@ -1,4 +1,5 @@
 /*===
+*** test_1 (duk_safe_call)
 top: 18
 index 0, boolean: 0
 index 1, boolean: 0
@@ -18,9 +19,11 @@ index 14, boolean: 0
 index 15, boolean: 1
 index 16, boolean: 0
 index 17, boolean: 1
-rc=0, result=undefined
-rc=1, result=Error: invalid index: 3
-rc=1, result=Error: invalid index: -2147483648
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='Error: invalid index: 3'
+*** test_3 (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -70,21 +73,7 @@ int test_3(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	/* FIXME: this test now results in an error string containing the
-	 * exact index, which is platform dependent.
-	 */
-	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
-

@@ -1,4 +1,5 @@
 /*===
+*** test_1 (duk_safe_call)
 top: 20
 index 0, string: 'undefined', length 9
 index 0, string: 'undefined'
@@ -40,9 +41,11 @@ index 18, string: 'null', length 4
 index 18, string: 'null'
 index 19, string: '0xdeadbeef', length 10
 index 19, string: '0xdeadbeef'
-rc=0, result=undefined
-rc=1, result=Error: invalid index: 3
-rc=1, result=Error: invalid index: -2147483648
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='Error: invalid index: 3'
+*** test_3 (duk_safe_call)
+==> rc=1, result='Error: invalid index: -2147483648'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -128,21 +131,7 @@ int test_3(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	/* FIXME: this testcase currently exposes the DUK_INVALID_INDEX
-	 * constant in the error message and is thus not portable.
-	 */
-	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
-
