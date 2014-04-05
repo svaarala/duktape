@@ -479,6 +479,11 @@ void duk_to_object(duk_context *ctx, int index);
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
 void duk_to_primitive(duk_context *ctx, int index, int hint);
 
+/* safe variants of a few coercion operations */
+const char *duk_safe_to_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+#define duk_safe_to_string(ctx,index) \
+	duk_safe_to_lstring((ctx), (index), NULL)
+
 /*
  *  Misc conversion
  */
