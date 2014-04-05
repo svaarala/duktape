@@ -196,6 +196,11 @@ Planned
 * Avoid "out of regs" for large expressions by adding more comprehensive
   register shuffling and indirect variants of several bytecode opcodes
 
+* Change error handler model: error handler is now set explicitly, so
+  there is no errhandler_index argument any more in any protected API
+  calls (this is an incompatible API changes, just remove error handler
+  indices from calls)
+
 * Add duk_push_heap_stash(), duk_push_global_stash(), and
   duk_push_thread_stash() to provide C code with stashes for storing
   values invisible to Ecmascript code
