@@ -82,7 +82,7 @@ int wrapped_compile_execute(duk_context *ctx) {
 	if (c_evloop) {
 		fprintf(stderr, "calling eventloop_run()\n");
 		fflush(stderr);
-		rc = duk_safe_call(ctx, eventloop_run, 0 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		rc = duk_safe_call(ctx, eventloop_run, 0 /*nargs*/, 1 /*nrets*/);
 		if (rc != 0) {
 			fprintf(stderr, "eventloop_run() failed: %s\n", duk_to_string(ctx, -1));
 			fflush(stderr);
@@ -125,7 +125,7 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	free(buf);
 	buf = NULL;
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 	if (rc != DUK_EXEC_SUCCESS) {
 		print_error(ctx, stderr);
 		goto error;
