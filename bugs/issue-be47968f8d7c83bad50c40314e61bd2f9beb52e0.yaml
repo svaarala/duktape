@@ -40,3 +40,19 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
   - ""
+- - 2014-04-05 13:56:37.797202 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Also one simple model would be to store the current error handler
+    in the current Thread object (or perhaps the Thread stash).  This
+    way it would be reachable regardless of the value stack state, and
+    there would be no need for a setjmp catchpoint in the user code to
+    restore a previous value.
+    
+    With this approach a module which temporarily sets the error handler
+    could fail to restore it afterwards, and an undesired error handler
+    would then be effective even after the module returns control to its
+    caller.  This is probably still better than cluttering all protected
+    call related API calls with DUK_INVALID_INDEX arguments (rarely used)
+    or using a fragile pending index or something like that.
