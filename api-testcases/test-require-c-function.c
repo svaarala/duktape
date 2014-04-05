@@ -54,4 +54,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
 }
-
