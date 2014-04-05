@@ -287,7 +287,6 @@ struct duk_strcache {
 
 struct duk_ljstate {
 	duk_jmpbuf *jmpbuf_ptr;   /* current setjmp() catchpoint */
-	duk_hobject *errhandler;  /* function to invoke for errors before unwinding; may be NULL, -borrowed reference- (must be in valstack) */
 	int type;                 /* longjmp type */
 	duk_tval value1;          /* 1st related value (type specific) */
 	duk_tval value2;          /* 2nd related value (type specific) */

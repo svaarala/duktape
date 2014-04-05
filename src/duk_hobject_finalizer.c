@@ -69,7 +69,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 
 	DUK_DDDPRINT("-> finalizer found, calling wrapped finalize helper");
 	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */
-	rc = duk_safe_call(ctx, duk__finalize_helper, 0 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);  /* -> [... obj retval/error] */
+	rc = duk_safe_call(ctx, duk__finalize_helper, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
 	DUK_ASSERT_TOP(ctx, entry_top + 2);  /* duk_safe_call discipline */
 
 	if (rc != DUK_EXEC_SUCCESS) {

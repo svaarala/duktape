@@ -6,55 +6,6 @@
 
 #include "duk_internal.h"
 
-static int duk__resolve_errhandler(duk_context *ctx, int pop_count, int errhandler_index, duk_hobject **out_ptr) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-
-	DUK_ASSERT(out_ptr != NULL);
-
-	if (errhandler_index == DUK_INVALID_INDEX) {
-		/* use existing, if any */
-		*out_ptr = thr->heap->lj.errhandler;
-		return 1;
-	}
-
-	if (duk_is_valid_index(ctx, errhandler_index)) {
-		duk_tval *tv = duk_require_tval(ctx, errhandler_index);
-
-		if (DUK_TVAL_IS_OBJECT(tv)) {
-			duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
-			DUK_ASSERT(h != NULL);
-			if (DUK_HOBJECT_IS_CALLABLE(h)) {
-				*out_ptr = h;
-				return 1;
-			}
-		} else if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
-			/* explicitly force NULL handler */
-			*out_ptr = NULL;
-			return 1;
-		}
-
-		/* fall through to error */
-	}
-
-	/*
-	 *  Error: don't throw anything here as we're part of the 'pcall' process.
-	 *  Instead, simulate an error by pushing an error object on the top of
-	 *  stack.  The current error handler will not be called for this particular
-	 *  error though.
-	 *
-	 *  FIXME: this is naturally not reliable as pushing an error object may
-	 *  result in out-of-memory.  The API call semantics may need to be changed,
-	 *  or perhaps we need to push a pre-built object here to avoid any error
-	 *  potential (or instead of a pre-built object a plain value like undefined).
-	 */
-
-	DUK_ASSERT(pop_count <= duk_get_top(ctx));  /* caller ensures */
-
-	duk_pop_n(ctx, pop_count);
-	(void) duk_push_error_object_raw(ctx, DUK_ERR_API_ERROR, DUK_FILE_MACRO, DUK_LINE_MACRO, "invalid errhandler");
-	return 0;
-}
-
 /* Prepare value stack for a method call through an object property.
  * May currently throw an error e.g. when getting the property.
  */
@@ -84,7 +35,6 @@ static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index
 
 void duk_call(duk_context *ctx, int nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *errhandler;
 	int call_flags;
 	int idx_func;
 	int rc;
@@ -102,20 +52,16 @@ void duk_call(duk_context *ctx, int nargs) {
 	duk_push_undefined(ctx);
 	duk_insert(ctx, idx_func + 1);
 
-	errhandler = thr->heap->lj.errhandler;  /* use existing one (if any) */
-
 	call_flags = 0;  /* not protected, respect reclimit, not constructor */
 
 	rc = duk_handle_call(thr,           /* thread */
 	                     nargs,         /* num_stack_args */
-	                     call_flags,    /* call_flags */
-	                     errhandler);   /* errhandler */
+	                     call_flags);   /* call_flags */
 	DUK_UNREF(rc);
 }
 
 void duk_call_method(duk_context *ctx, int nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *errhandler;
 	int call_flags;
 	int idx_func;
 	int rc;
@@ -129,14 +75,11 @@ void duk_call_method(duk_context *ctx, int nargs) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid call args");
 	}
 
-	errhandler = thr->heap->lj.errhandler;  /* use existing one (if any) */
-
 	call_flags = 0;  /* not protected, respect reclimit, not constructor */
 
 	rc = duk_handle_call(thr,           /* thread */
 	                     nargs,         /* num_stack_args */
-	                     call_flags,    /* call_flags */
-	                     errhandler);   /* errhandler */
+	                     call_flags);   /* call_flags */
 	DUK_UNREF(rc);
 }
 
@@ -155,9 +98,8 @@ void duk_call_prop(duk_context *ctx, int obj_index, int nargs) {
 	duk_call_method(ctx, nargs);
 }
 
-int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
+int duk_pcall(duk_context *ctx, int nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *errhandler = NULL;
 	int call_flags;
 	int idx_func;
 	int rc;
@@ -181,11 +123,6 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!duk__resolve_errhandler(ctx, nargs + 1, errhandler_index, &errhandler)) {
-		/* error on top of stack */
-		return DUK_EXEC_ERROR;
-	}
-
 	/* awkward; we assume there is space for this */
 	duk_push_undefined(ctx);
 	duk_insert(ctx, idx_func + 1);
@@ -194,15 +131,13 @@ int duk_pcall(duk_context *ctx, int nargs, int errhandler_index) {
 
 	rc = duk_handle_call(thr,           /* thread */
 	                     nargs,         /* num_stack_args */
-	                     call_flags,    /* call_flags */
-	                     errhandler);   /* errhandler */
+	                     call_flags);   /* call_flags */
 
 	return rc;
 }
 
-int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
+int duk_pcall_method(duk_context *ctx, int nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *errhandler = NULL;
 	int call_flags;
 	int idx_func;
 	int rc;
@@ -217,32 +152,25 @@ int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!duk__resolve_errhandler(ctx, nargs + 2, errhandler_index, &errhandler)) {
-		/* error on top of stack */
-		return DUK_EXEC_ERROR;
-	}
-
 	call_flags = DUK_CALL_FLAG_PROTECTED;  /* protected, respect reclimit, not constructor */
 
 	rc = duk_handle_call(thr,           /* thread */
 	                     nargs,         /* num_stack_args */
-	                     call_flags,    /* call_flags */
-	                     errhandler);   /* errhandler */
+	                     call_flags);   /* call_flags */
 
 	return rc;
 }
 
-int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_index) {
+int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
 	/* FIXME: these will throw errors now, so this is a bad idea */
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
 	duk__call_prop_prep_stack(ctx, obj_index, nargs);
 
-	return duk_pcall_method(ctx, nargs, errhandler_index);
+	return duk_pcall_method(ctx, nargs);
 }
 
-int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets, int errhandler_index) {
+int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *errhandler = NULL;
 	int rc;
 
 	DUK_ASSERT(ctx != NULL);
@@ -254,16 +182,10 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	if (!duk__resolve_errhandler(ctx, nargs, errhandler_index, &errhandler)) {
-		/* error on top of stack (args popped) */
-		return DUK_EXEC_ERROR;
-	}
-
 	rc = duk_handle_safe_call(thr,           /* thread */
 	                          func,          /* func */
 	                          nargs,         /* num_stack_args */
-	                          nrets,         /* num_stack_res */
-	                          errhandler);   /* errhandler */
+	                          nrets);        /* num_stack_res */
 
 	return rc;
 }
@@ -310,7 +232,6 @@ void duk_new(duk_context *ctx, int nargs) {
 	duk_hobject *cons;
 	duk_hobject *fallback;
 	int idx_cons;
-	duk_hobject *errhandler = NULL;
 	int call_flags;
 	int rc;
 
@@ -399,14 +320,11 @@ void duk_new(duk_context *ctx, int nargs) {
 	 *  Call the constructor function (called in "constructor mode").
 	 */
 
-	errhandler = thr->heap->lj.errhandler;  /* use existing one (if any) */
-
 	call_flags = DUK_CALL_FLAG_CONSTRUCTOR_CALL;  /* not protected, respect reclimit, is a constructor call */
 
 	rc = duk_handle_call(thr,           /* thread */
 	                     nargs,         /* num_stack_args */
-	                     call_flags,    /* call_flags */
-	                     errhandler);   /* errhandler */
+	                     call_flags);   /* call_flags */
 	DUK_UNREF(rc);
 
 	/* [... fallback retval] */

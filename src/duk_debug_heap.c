@@ -185,7 +185,6 @@ void duk_debug_dump_heap(duk_heap *heap) {
 	/* FIXME: heap->fatal_func */
 
 	DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr);
-	DUK_DPRINT("  lj.errhandler: %!@O", (duk_heaphdr *) heap->lj.errhandler);
 	DUK_DPRINT("  lj.type: %d", heap->lj.type);
 	DUK_DPRINT("  lj.value1: %!T", &heap->lj.value1);
 	DUK_DPRINT("  lj.value2: %!T", &heap->lj.value2);

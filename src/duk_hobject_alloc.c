@@ -125,6 +125,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags) {
 	res->callstack = NULL;
 	res->catchstack = NULL;
 	res->resumer = NULL;
+	res->errhandler = NULL;
 	res->strs = NULL;
 	{
 		int i;

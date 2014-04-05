@@ -6982,7 +6982,7 @@ void duk_js_compile(duk_hthread *thr, int flags) {
 	comp_stk.flags = flags;
 	duk_push_pointer(ctx, (void *) &comp_stk);
 
-	if (duk_safe_call(ctx, duk__js_compile_raw, 3 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX) != DUK_EXEC_SUCCESS) {
+	if (duk_safe_call(ctx, duk__js_compile_raw, 3 /*nargs*/, 1 /*nret*/) != DUK_EXEC_SUCCESS) {
 		/* This now adds a line number to -any- error thrown during compilation.
 		 * Usually compilation errors are SyntaxErrors but they could also be
 		 * out-of-memory errors and the like.

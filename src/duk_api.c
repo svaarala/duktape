@@ -1638,10 +1638,10 @@ const char *duk_safe_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 	 */
 
 	duk_dup(ctx, index);
-	(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+	(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/);
 	if (!duk_is_string(ctx, -1)) {
 		/* Error: try coercing error to string once. */
-		(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/);
 		if (!duk_is_string(ctx, -1)) {
 			/* Double error */
 			duk_pop(ctx);

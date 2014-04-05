@@ -227,6 +227,9 @@ struct duk_hthread {
 	/* yield/resume book-keeping */
 	duk_hthread *resumer;			/* who resumed us (if any) */
 
+	/* errhandler */
+	duk_hobject *errhandler;
+
 #ifdef DUK_USE_INTERRUPT_COUNTER
 	/* Interrupt counter for triggering a slow path check for execution
 	 * timeout, debugger interaction such as breakpoints, etc.  This is

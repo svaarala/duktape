@@ -33,51 +33,67 @@
  */
 
 static void duk__call_errhandler(duk_hthread *thr) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_hobject *prev_errhandler;  /* borrowed reference */
 	int call_flags;
 	int rc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	if (!thr->heap->lj.errhandler) {
+	if (!thr->errhandler) {
 		DUK_DDDPRINT("no errhandler, return");
 		return;
 	}
+	/* Note: if thr->errhandler is not a function, the protected call below
+	 * will error out, so we don't need to check its type.
+	 */
 
-	/* FIXME: assert/require for valstack space */
+	duk_require_stack(ctx, 4);  /* 4 entries needed below */
 
 	/* [ ... errval ] */
 
-	DUK_DDDPRINT("errhandler is %p", (void *) thr->heap->lj.errhandler);
-	DUK_DDDPRINT("errhandler dump: %!O", (duk_heaphdr *) thr->heap->lj.errhandler);
+	DUK_DDDPRINT("errhandler is %p", (void *) thr->errhandler);
+	DUK_DDDPRINT("errhandler dump: %!O", (duk_heaphdr *) thr->errhandler);
 
-	duk_push_hobject((duk_context *) thr, thr->heap->lj.errhandler);
-	duk_insert((duk_context *) thr, -2);  /* -> [ ... errhandler errval ] */
-	duk_push_undefined((duk_context *) thr);
-	duk_insert((duk_context *) thr, -2);  /* -> [ ... errhandler undefined(= this) errval ] */
+	duk_push_hobject(ctx, thr->errhandler);
+	duk_dup_top(ctx);  /* keep a copy for thr->errhandler restore */
+	duk_insert(ctx, -2);  /* -> [ ... errhandler errhandler errval ] */
+	duk_push_undefined(ctx);
+	duk_insert(ctx, -2);  /* -> [ ... errhandler errhandler undefined(= this) errval ] */
 
-	/* [ ... errhandler undefined errval ] */
+	/* [ ... errhandler errhandler undefined errval ] */
 
 	/*
 	 *  DUK_CALL_FLAG_IGNORE_RECLIMIT causes duk_handle_call() to ignore C
 	 *  recursion depth limit (and won't increase it either).  This is
 	 *  dangerous, but useful because it allows an errhandler to run even
-	 *  if the original error is caused by C recursion depth limit.  Because
-	 *  errhandler is NULL in the errhandler call, the errhandler call
-	 *  can't cause the same situation to occur again.
+	 *  if the original error is caused by C recursion depth limit.  The
+	 *  thr->errhandler field is set to NULL for the duration of the errhandler
+	 *  call and restored afterwards (value stack is used to store the value
+	 *  in the meantime).
 	 *
 	 *  We ignore errors now: a success return and an error value both
 	 *  replace the original error value.  (This would be easy to change.)
 	 */
 
+	prev_errhandler = thr->errhandler;  /* borrowed */
+	DUK_HOBJECT_DECREF(thr, prev_errhandler);  /* no side effects because refcount >1 */
+	thr->errhandler = NULL;
+
 	call_flags = DUK_CALL_FLAG_PROTECTED |
 	             DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* protected, ignore reclimit, not constructor */
 
 	rc = duk_handle_call(thr,
-	                     1,          /* num args */
-	                     call_flags, /* call_flags */
-	                     NULL);      /* errhandler */
+	                     1,            /* num args */
+	                     call_flags);  /* call_flags */
 	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
+
+	/* [ ... errhandler errval ] */
+
+	thr->errhandler = prev_errhandler;
+	DUK_HOBJECT_INCREF(thr, prev_errhandler);
+	duk_remove(ctx, -2);
 
 	/* [ ... errval ] */
 }
@@ -156,9 +172,6 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	/*
 	 *  Call errhandler (unless error is an alloc error)
-	 *
-	 *  Note: must back up the current jmpbuf if it is the shared bytecode
-	 *  executor one (handled internally by the helper).
 	 */
 
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
