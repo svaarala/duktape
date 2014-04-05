@@ -4,22 +4,39 @@
 
 <p>If you compile Duktape with no compiler options, Duktape will detect the
 compiler and the platform automatically and select defaults appropriate in
-most cases.  The <code>-std=c99</code> (or similar) option is recommended to
-ensure C99 semantics.  Without this option you may get compiler warnings
-because Duktape needs to work around the lack of variadic macros.</p>
+most cases.  Recommended compiler options (for GCC/clang, use similar options
+in your compiler):</p>
+<ul>
+<li><code>-std=c99</code>: recommended to ensure C99 semantics
+    which improve C type detection and allows Duktape to use variadic
+    macros (without these you may get harmless compiler warnings because
+    of the way Duktape works around the lack of variadic macros)</li>
+<li><code>-Os</code>: optimize for smallest footprint, which is usually
+    desired when embedding Duktape</li>
+<li><code>-fomit-frame-pointer</code>: omit frame pointer, further reduces
+    footprint but may interfere with debugging (leave out from debug builds)</li>
+<li><code>-fstrict-aliasing</code>: use strict aliasing rules, Duktape
+    is compatible with these and they improve the resulting C code</li>
+</ul>
 
 <p>Duktape feature defaults are, at a high level:</p>
 <ul>
 <li>Full Ecmascript compliance
     (including the optional 
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>
-    features)</li>
+    features), except for intentional real world compatibility deviations
+    (see <a href="#custombehavior">Custom behavior</a>)</li>
 <li>Packed value representation (8 bytes per value) when available,
     unpacked value representation (12-16 bytes per value) when not</li>
 <li>Reference counting and mark-and-sweep garbage collection</li>
 <li>Full error messages and tracebacks</li>
 <li>No debug printing, no asserts, etc</li>
 </ul>
+
+<p>Usually the automatic defaults are OK.  If you're using Duktape on a platform
+where Duktape's automatic feature detection doesn't (yet) work, you may need to
+force a specific byte order or alignment requirements with <b>feature options</b>
+described below.</p>
 
 <h2>Feature options (DUK_OPT_xxx)</h2>
 
