@@ -65,22 +65,22 @@ int test_4(duk_context *ctx) {
 void test(duk_context *ctx) {
 	int rc;
 
-	rc = duk_safe_call(ctx, test_1, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_1, 0, 1);
 	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	rc = duk_safe_call(ctx, test_2, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_2, 0, 1);
 	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	rc = duk_safe_call(ctx, test_3, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_3, 0, 1);
 	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	/* FIXME: this test now results in an error string containing the
 	 * exact index, which is platform dependent.
 	 */
-	rc = duk_safe_call(ctx, test_4, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_4, 0, 1);
 	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }

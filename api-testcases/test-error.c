@@ -93,7 +93,7 @@ void dump_error(duk_context *ctx) {
 /* use custom helper because of dump_error() */
 #define  TEST(func)  do {  \
 		printf("*** %s (duk_pcall)\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
+		rc = duk_safe_call(ctx, (func), 0, 1); \
 		printf("==> rc=%d\n", rc); \
 		dump_error(ctx); \
 		duk_pop(ctx); \

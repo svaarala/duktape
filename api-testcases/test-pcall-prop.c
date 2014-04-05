@@ -19,7 +19,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall_prop(ctx, 1, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall_prop(ctx, 1, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);  /* res */
 	duk_pop(ctx);  /* obj */
@@ -33,7 +33,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "func_nonstrict");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall_prop(ctx, 1, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall_prop(ctx, 1, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);  /* res */
 	duk_pop(ctx);  /* obj */
@@ -47,7 +47,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "func_strict");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall_prop(ctx, 1, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall_prop(ctx, 1, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);  /* res */
 	duk_pop(ctx);  /* obj */
@@ -57,7 +57,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall_prop(ctx, 1, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall_prop(ctx, 1, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);  /* res */
 	duk_pop(ctx);  /* obj */

@@ -20,7 +20,7 @@ void test(duk_context *ctx) {
 
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "testFunc");
-	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 0);
 	printf("rc=%d\n", rc);
 	duk_pop_2(ctx);
 

@@ -72,7 +72,7 @@ int test_raw(duk_context *ctx) {
 void test(duk_context *ctx) {
 	int rc;
 
-	rc = duk_safe_call(ctx, test_raw, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_raw, 0, 1);
 	printf("rc=%d, ret=%s\n", rc, duk_to_string(ctx, -1));
 }
 

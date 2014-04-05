@@ -47,7 +47,7 @@ void test(duk_context *ctx) {
 	printf("basic case\n");
 	duk_push_c_function(ctx, my_func, 1 /*nargs*/);
 	duk_push_int(ctx, 123);
-	rc = duk_pcall(ctx, 1, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 1);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }

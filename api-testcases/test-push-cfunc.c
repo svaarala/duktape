@@ -89,13 +89,13 @@ void test(duk_context *ctx) {
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_neg_ret, 0);
-	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 0);
 	printf("top after calling my_neg_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_type_error_ret, 0);
-	rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 0);
 	printf("top after calling my_type_error_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }

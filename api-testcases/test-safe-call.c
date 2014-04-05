@@ -35,7 +35,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	duk_push_int(ctx, 12);
-	rc = duk_safe_call(ctx, test_1, 3 /*nargs*/, 2 /*nrets*/, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_1, 3 /*nargs*/, 2 /*nrets*/);
 	if (rc == DUK_EXEC_SUCCESS) {
 		printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
 		printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
@@ -48,7 +48,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	duk_push_int(ctx, 12);
-	rc = duk_safe_call(ctx, test_2, 3 /*nargs*/, 2 /*nrets*/, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_2, 3 /*nargs*/, 2 /*nrets*/);
 	if (rc == DUK_EXEC_SUCCESS) {
 		printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
 		printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
