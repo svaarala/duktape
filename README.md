@@ -33,6 +33,10 @@ This repository is **intended for Duktape developers only**, and contains
 Duktape internals: test cases, internal documentation, sources for the
 duktape.org web site, etc.
 
+Current branch policy: the "master" branch is used for active development,
+other branches are frequently rebased feature branches (so you should not
+fork off them), and tags are used for releases.
+
 Getting started: end user
 -------------------------
 
