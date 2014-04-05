@@ -1624,6 +1624,40 @@ const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 	return duk_require_lstring(ctx, index, out_len);
 }
 
+static int duk__safe_to_string_raw(duk_context *ctx) {
+	duk_to_string(ctx, -1);
+	return 1;
+}
+
+const char *duk_safe_to_lstring(duk_context *ctx, int index, size_t *out_len) {
+	index = duk_require_normalize_index(ctx, index);
+
+	/* We intentionally ignore the duk_safe_call() return value and only
+	 * check the output type.  This way we don't also need to check that
+	 * the returned value is indeed a string in the success case.
+	 */
+
+	duk_dup(ctx, index);
+	(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+	if (!duk_is_string(ctx, -1)) {
+		/* Error: try coercing error to string once. */
+		(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		if (!duk_is_string(ctx, -1)) {
+			/* Double error */
+			duk_pop(ctx);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_ERROR);
+		} else {
+			;
+		}
+	} else {
+		;
+	}
+	DUK_ASSERT(duk_is_string(ctx, -1));
+
+	duk_replace(ctx, index);
+	return duk_require_lstring(ctx, index, out_len);
+}
+
 /* FIXME: other variants like uint, u32 etc */
 int duk_to_int_clamped_raw(duk_context *ctx, int index, int minval, int maxval, int *out_clamped) {
 	duk_hthread *thr = (duk_hthread *) ctx;

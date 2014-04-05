@@ -23,3 +23,6 @@ printf("coerced string: %s\n", duk_to_string(ctx, -3));
 =tags
 stack
 string
+
+=seealso
+duk_safe_to_string

@@ -200,6 +200,9 @@ Planned
   duk_push_thread_stash() to provide C code with stashes for storing
   values invisible to Ecmascript code
 
+* Add duk_safe_to_string() and duk_safe_to_lstring() to make it easier
+  to write result printing in C
+
 * Add Duktape.compact() and Duktape.line()
 
 * Add a barebones built-in logging framework with both Ecmascript and C
