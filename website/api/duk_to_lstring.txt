@@ -29,3 +29,6 @@ printf("coerced string: %s (length %d)\n", ptr, (int) sz);
 =tags
 stack
 string
+
+=seealso
+duk_safe_to_lstring
