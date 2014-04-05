@@ -210,6 +210,9 @@ Planned
 * Add duk_safe_to_string() and duk_safe_to_lstring() to make it easier
   to write result printing in C
 
+* Add protected variants of eval/compile: duk_peval(), duk_peval_string(),
+  duk_peval_file(), duk_pcompile(), duk_pcompile_string(), duk_pcompile_file()
+
 * Add Duktape.compact() and Duktape.line()
 
 * Add a barebones built-in logging framework with both Ecmascript and C
