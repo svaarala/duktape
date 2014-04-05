@@ -11,6 +11,9 @@ final top: 0
 *** test_3 (duk_safe_call)
 function result: 11.000000
 final top: 0
+*** test_4 (duk_safe_call)
+compile result: SyntaxError: invalid object literal (line 3) (rc=1)
+final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
@@ -60,9 +63,29 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
+int test_4(duk_context *ctx) {
+	int rc;
+
+	duk_set_top(ctx, 0);
+
+	/* SyntaxError while compiling */
+
+	duk_push_string(ctx, "print('program');\n"
+	                     "function hello() { print('Hello world!'); }\n"
+	                     "123; obj={");
+	duk_push_string(ctx, "program");
+	rc = duk_pcompile(ctx, 0);
+	printf("compile result: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	duk_pop(ctx);
+
+	printf("final top: %d\n", duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
 }
 
