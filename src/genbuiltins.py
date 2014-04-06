@@ -256,7 +256,7 @@ bi_global = {
 		{ 'name': 'JSON',			'value': { 'type': 'builtin', 'id': 'bi_json' } },
 
 		# DUK specific
-		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duk' } },
+		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
 	],
 	'functions': [
 		{ 'name': 'eval',			'native': 'duk_bi_global_object_eval', 			'length': 1 },
@@ -1083,7 +1083,7 @@ bi_type_error_thrower = {
 	'functions': [],
 }
 
-bi_duk = {
+bi_duktape = {
 	'internal_prototype': 'bi_object_prototype',
 	'class': 'Object',
 
@@ -1096,13 +1096,13 @@ bi_duk = {
 		{ 'name': 'Logger',			'value': { 'type': 'builtin', 'id': 'bi_logger_constructor' } },
 	],
 	'functions': [
-		{ 'name': 'info',			'native': 'duk_bi_duk_object_info',             'length': 1 },
-		{ 'name': 'line',			'native': 'duk_bi_duk_object_line',             'length': 0 },
-		{ 'name': 'gc',				'native': 'duk_bi_duk_object_gc',		'length': 1 },
-		{ 'name': 'fin',			'native': 'duk_bi_duk_object_fin',		'length': 0,	'varargs': True },
-		{ 'name': 'enc',			'native': 'duk_bi_duk_object_enc',		'length': 0,	'varargs': True },
-		{ 'name': 'dec',			'native': 'duk_bi_duk_object_dec',		'length': 0,	'varargs': True },
-		{ 'name': 'compact',			'native': 'duk_bi_duk_object_compact',		'length': 1 },
+		{ 'name': 'info',			'native': 'duk_bi_duktape_object_info',		'length': 1 },
+		{ 'name': 'line',			'native': 'duk_bi_duktape_object_line',		'length': 0 },
+		{ 'name': 'gc',				'native': 'duk_bi_duktape_object_gc',		'length': 1 },
+		{ 'name': 'fin',			'native': 'duk_bi_duktape_object_fin',		'length': 0,	'varargs': True },
+		{ 'name': 'enc',			'native': 'duk_bi_duktape_object_enc',		'length': 0,	'varargs': True },
+		{ 'name': 'dec',			'native': 'duk_bi_duktape_object_dec',		'length': 0,	'varargs': True },
+		{ 'name': 'compact',			'native': 'duk_bi_duktape_object_compact',	'length': 1 },
 	],
 }
 
@@ -1310,7 +1310,7 @@ builtins_orig = [
 	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
 
 	# custom
-	{ 'id': 'bi_duk',				'info': bi_duk },
+	{ 'id': 'bi_duktape',				'info': bi_duktape },
 	{ 'id': 'bi_thread_constructor',		'info': bi_thread_constructor },
 	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype },
 	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor },
@@ -1697,8 +1697,8 @@ class GenBuiltins:
 
 	def processBuiltins(self):
 		# finalize built-in data
-		bi_duk = self.findBuiltIn('bi_duk')['info']
-		bi_duk['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
+		bi_duktape = self.findBuiltIn('bi_duktape')['info']
+		bi_duktape['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
 
 		# generate built-in strings
 		self.gs = genstrings.GenStrings()
