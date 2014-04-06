@@ -28,8 +28,6 @@ lineNumber: 55
 isNative: undefined
 ===*/
 
-/* FIXME: fileName, lineNumber, isNative are currently not set. */
-
 int test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
