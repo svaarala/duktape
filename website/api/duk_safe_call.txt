@@ -1,5 +1,5 @@
 =proto
-int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets, int errhandler_index);
+int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets);
 
 =stack
 [ ... arg1! ...! argN! ] -> [ ... ret1! ...! retN! ]
@@ -8,10 +8,7 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 <p>Perform a protected pure C function call inside the current value stack frame
 (the call is not visible on the call stack).  <code>nargs</code> topmost values in the
 current value stack frame are identified as call arguments, and <code>nrets</code>
-return values are provided after the call returns.  <code>errhandler_index</code> points
-to an error handler function in the current stack frame (below call arguments) which
-can modify an error value before it is thrown; to use the default error handler,
-set <code>errhandler_index</code> to <code>DUK_INVALID_INDEX</code>.</p>
+return values are provided after the call returns.</p>
 
 <p>The return value is:</p>
 <ul>
@@ -98,7 +95,7 @@ int my_func(duk_context *ctx) {
 duk_push_int(ctx, 10);
 duk_push_int(ctx, 11);
 duk_push_int(ctx, 12);
-rc = duk_safe_call(ctx, my_func, 3 /*nargs*/, 2 /*nrets*/, DUK_INVALID_INDEX);
+rc = duk_safe_call(ctx, my_func, 3 /*nargs*/, 2 /*nrets*/);
 if (rc == DUK_EXEC_SUCCESS) {
     printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
     printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
@@ -109,6 +106,3 @@ duk_pop_2(ctx);
 
 =tags
 call
-
-=fixme
-Error handler model to be cleaned up.
