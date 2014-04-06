@@ -532,7 +532,6 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", t->catchstack_size);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", t->catchstack_top);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__errhandler:"); duk__print_hobject(st, (duk_hobject *) t->errhandler);
 		/* XXX: print built-ins array? */
 
 	}
