@@ -138,7 +138,6 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 		}
 
 		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) t->resumer);
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) t->errhandler);
 	}
 }
 

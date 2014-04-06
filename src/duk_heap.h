@@ -17,6 +17,7 @@
 #define DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING                     (1 << 0)  /* mark-and-sweep is currently running */
 #define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1 << 1)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
 #define DUK_HEAP_FLAG_REFZERO_FREE_RUNNING                     (1 << 2)  /* refcount code is processing refzero list */
+#define DUK_HEAP_FLAG_ERRHANDLER_RUNNING                       (1 << 3)  /* an error handler is running */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -29,14 +30,17 @@
 #define DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)            DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
+#define DUK_HEAP_HAS_ERRHANDLER_RUNNING(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 
 #define DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
+#define DUK_HEAP_SET_ERRHANDLER_RUNNING(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
+#define DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 
 /*
  *  Longjmp types, also double as identifying continuation type for a rethrow (in 'finally')

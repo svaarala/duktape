@@ -123,7 +123,6 @@ static void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 #endif
 
 		duk__mark_heaphdr(heap, (duk_heaphdr *) t->resumer);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) t->errhandler);
 
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) t->builtins[i]);

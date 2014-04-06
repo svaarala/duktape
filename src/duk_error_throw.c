@@ -16,14 +16,27 @@
  *  top, and will be replaced by another error value based on the return
  *  value of the errhandler.
  *
- *  The helper calls duk_handle_call() recursively in protected mode, but
- *  without an error handler.  Before that call happens, no longjmps
- *  should happen; as a consequence, we must assume that the valstack
- *  contains enough temporary space for arguments and such.
+ *  The helper calls duk_handle_call() recursively in protected mode.
+ *  Before that call happens, no longjmps should happen; as a consequence,
+ *  we must assume that the valstack contains enough temporary space for
+ *  arguments and such.
  *
- *  If the errhandler call causes an error to be thrown, that error will
- *  (silently) replace the original error now.  This would be easy to
- *  change and even to signal to the caller.
+ *  While the error handler runs, any errors thrown will not trigger a
+ *  recursive error handler call (this is implemented using a heap level
+ *  flag which will "follow" through any coroutines resumed inside the
+ *  error handler).  If the error handler is not callable or throws an
+ *  error, a DoubleError replaces the original error at the moment.
+ *  This would be easy to change and even signal to the caller.
+ *
+ *  The current error handler is stored in 'Duktape.errhnd'.  There are
+ *  several alternatives to this approach, such as: internal storage
+ *  (thr->errhandler), the value stack (in a caller's frame), global object,
+ *  global stash, thread object, thread stash.  The Duktape object is easy
+ *  to access from both C and Ecmascript code without additional API calls,
+ *  and is relatively good for sandboxing because one can just delete the
+ *  globally reachable reference to the Duktape object (perhaps after
+ *  migrating it to a stash).  The error handler is also automatically
+ *  effective in a resumed thread, which is probably a good default behavior.
  *
  *  Note: since further longjmp()s may occur while calling the errhandler
  *  (for many reasons, e.g. a labeled 'break' inside the handler), the
@@ -34,52 +47,68 @@
 
 static void duk__call_errhandler(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_hobject *prev_errhandler;  /* borrowed reference */
+	duk_tval *tv_hnd;
 	int call_flags;
 	int rc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	if (!thr->errhandler) {
-		DUK_DDDPRINT("no errhandler, return");
+	if (DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap)) {
+		DUK_DDPRINT("recursive call to errhandler, ignore");
 		return;
 	}
-	/* Note: if thr->errhandler is not a function, the protected call below
-	 * will error out, so we don't need to check its type.
+
+	/*
+	 *  Check whether or not we have an error handler.
+	 *
+	 *  We must be careful of not triggering an error when looking up the
+	 *  property.  For instance, if the property is a getter, we don't want
+	 *  to call it, only plain values are allowed.  The value, if it exists,
+	 *  is not checked.  If the value is not a function, a TypeError happens
+	 *  when it is called and that error replaces the original one.
 	 */
 
-	duk_require_stack(ctx, 4);  /* 4 entries needed below */
+	DUK_ASSERT_VALSTACK_SPACE(thr, 4);  /* 4 entries needed below */
 
 	/* [ ... errval ] */
 
-	DUK_DDDPRINT("errhandler is %p", (void *) thr->errhandler);
-	DUK_DDDPRINT("errhandler dump: %!O", (duk_heaphdr *) thr->errhandler);
+	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
+	                                                  DUK_HTHREAD_STRING_ERRHND(thr));
+	if (tv_hnd == NULL) {
+		DUK_DDPRINT("errhandler does not exist or is not a plain value: %!T", tv_hnd);
+		return;
+	}
+	DUK_DDDPRINT("errhandler dump (callability not checked): %!T", tv_hnd);
+	duk_push_tval(ctx, tv_hnd);
 
-	duk_push_hobject(ctx, thr->errhandler);
-	duk_dup_top(ctx);  /* keep a copy for thr->errhandler restore */
-	duk_insert(ctx, -2);  /* -> [ ... errhandler errhandler errval ] */
+	/* [ ... errval errhandler ] */
+
+	duk_insert(ctx, -2);  /* -> [ ... errhandler errval ] */
 	duk_push_undefined(ctx);
-	duk_insert(ctx, -2);  /* -> [ ... errhandler errhandler undefined(= this) errval ] */
+	duk_insert(ctx, -2);  /* -> [ ... errhandler undefined(= this) errval ] */
 
-	/* [ ... errhandler errhandler undefined errval ] */
+	/* [ ... errhandler undefined errval ] */
 
 	/*
 	 *  DUK_CALL_FLAG_IGNORE_RECLIMIT causes duk_handle_call() to ignore C
 	 *  recursion depth limit (and won't increase it either).  This is
 	 *  dangerous, but useful because it allows an errhandler to run even
-	 *  if the original error is caused by C recursion depth limit.  The
-	 *  thr->errhandler field is set to NULL for the duration of the errhandler
-	 *  call and restored afterwards (value stack is used to store the value
-	 *  in the meantime).
+	 *  if the original error is caused by C recursion depth limit.
+	 *
+	 *  The heap level DUK_HEAP_FLAG_ERRHANDLER_RUNNING is set for the
+	 *  duration of the errhandler call and cleared afterwards.  This
+	 *  flag prevents the error handler from running recursively.  The
+	 *  flag is heap level so that the flag properly controls even coroutines
+	 *  launched by an error handler.  Since the flag is heap level, it is
+	 *  critical to restore it correctly.
 	 *
 	 *  We ignore errors now: a success return and an error value both
 	 *  replace the original error value.  (This would be easy to change.)
 	 */
 
-	prev_errhandler = thr->errhandler;  /* borrowed */
-	DUK_HOBJECT_DECREF(thr, prev_errhandler);  /* no side effects because refcount >1 */
-	thr->errhandler = NULL;
+	DUK_ASSERT(!DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));  /* since no recursive errhandlers */
+	DUK_HEAP_SET_ERRHANDLER_RUNNING(thr->heap);
 
 	call_flags = DUK_CALL_FLAG_PROTECTED |
 	             DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* protected, ignore reclimit, not constructor */
@@ -89,11 +118,8 @@ static void duk__call_errhandler(duk_hthread *thr) {
 	                     call_flags);  /* call_flags */
 	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
 
-	/* [ ... errhandler errval ] */
-
-	thr->errhandler = prev_errhandler;
-	DUK_HOBJECT_INCREF(thr, prev_errhandler);
-	duk_remove(ctx, -2);
+	DUK_ASSERT(DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));
+	DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(thr->heap);
 
 	/* [ ... errval ] */
 }

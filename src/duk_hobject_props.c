@@ -952,8 +952,7 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring
 	DUK_ASSERT(key != NULL);
 
 	duk_hobject_find_existing_entry(obj, key, &e_idx, &h_idx);
-	if (e_idx >= 0) {
-		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, e_idx));
+	if (e_idx >= 0 && !DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, e_idx)) {
 		return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(obj, e_idx);
 	} else {
 		return NULL;
@@ -970,8 +969,7 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, d
 	DUK_ASSERT(out_attrs != NULL);
 
 	duk_hobject_find_existing_entry(obj, key, &e_idx, &h_idx);
-	if (e_idx >= 0) {
-		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, e_idx));
+	if (e_idx >= 0 && !DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, e_idx)) {
 		*out_attrs = DUK_HOBJECT_E_GET_FLAGS(obj, e_idx);
 		return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(obj, e_idx);
 	} else {
