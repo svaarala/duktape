@@ -45,6 +45,7 @@
  *  written after the errhandler finishes.
  */
 
+#if defined(DUK_USE_ERRHANDLER)
 void duk_err_call_errhandler(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_hnd;
@@ -123,6 +124,7 @@ void duk_err_call_errhandler(duk_hthread *thr) {
 
 	/* [ ... errval ] */
 }
+#endif  /* DUK_USE_ERRHANDLER */
 
 /*
  *  Create and throw an error
@@ -203,8 +205,10 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
 		DUK_DPRINT("alloc or double error: skip calling errhandler to avoid further trouble");
 	} else {
+#if defined(DUK_USE_ERRHANDLER)
 		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before errhandler)", duk_get_tval(ctx, -1));
 		duk_err_call_errhandler(thr);
+#endif
 	}
 
 	/*

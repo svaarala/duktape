@@ -135,10 +135,12 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	 *  from the resumee but this is not the case now.
 	 */
 
+#if defined(DUK_USE_ERRHANDLER)
 	if (is_error) {
 		DUK_ASSERT_TOP(ctx, 2);  /* value (error) is at stack top */
 		duk_err_call_errhandler(thr);  /* in resumer's context */
 	}
+#endif
 
 #ifdef DUK_USE_DEBUG  /* debug logging */
 	if (is_error) {
@@ -257,10 +259,12 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	 *  and runs in the yielder's thread.
 	 */
 
+#if defined(DUK_USE_ERRHANDLER)
 	if (is_error) {
 		DUK_ASSERT_TOP(ctx, 1);  /* value (error) is at stack top */
 		duk_err_call_errhandler(thr);  /* in yielder's context */
 	}
+#endif
 
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
