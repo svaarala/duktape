@@ -230,6 +230,7 @@ DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc));
 #ifdef DUK_USE_AUGMENT_ERRORS
 void duk_err_augment_error(duk_hthread *thr, duk_hthread *thr_callstack, int err_index, const char *filename, int line, int noblame_fileline);
 #endif
+void duk_err_call_errhandler(duk_hthread *thr);
 
 DUK_NORETURN(void duk_err_longjmp(duk_hthread *thr));
 

@@ -3221,11 +3221,15 @@ void duk_throw(duk_context *ctx) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "no value to throw");
 	}
 
-	/* Note: errors are augmented when they are created, not when they are
-	 * thrown or re-thrown.
+	/* Errors are augmented when they are created, not when they are
+	 * thrown or re-thrown.  The current error handler, however, runs
+	 * just before an error is thrown.
 	 */
 
-	DUK_DDDPRINT("THROW ERROR (API): %!dT", duk_get_tval(ctx, -1));
+	DUK_DDDPRINT("THROW ERROR (API): %!dT (before errhandler)", duk_get_tval(ctx, -1));
+
+	duk_err_call_errhandler(thr);
+	DUK_DDDPRINT("THROW ERROR (API): %!dT (after errhandler)", duk_get_tval(ctx, -1));
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 

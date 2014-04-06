@@ -3334,8 +3334,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 
 				duk_dup(ctx, b);
+				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (before errhandler)", duk_get_tval(ctx, -1));
 
-				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT", duk_get_tval(ctx, -1));
+				duk_err_call_errhandler(thr);
+				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (after errhandler)", duk_get_tval(ctx, -1));
 
 				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 

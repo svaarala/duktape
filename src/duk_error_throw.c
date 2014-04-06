@@ -45,7 +45,7 @@
  *  written after the errhandler finishes.
  */
 
-static void duk__call_errhandler(duk_hthread *thr) {
+void duk_err_call_errhandler(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_hnd;
 	int call_flags;
@@ -203,7 +203,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
 		DUK_DPRINT("alloc or double error: skip calling errhandler to avoid further trouble");
 	} else {
-		duk__call_errhandler(thr);
+		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before errhandler)", duk_get_tval(ctx, -1));
+		duk_err_call_errhandler(thr);
 	}
 
 	/*
@@ -214,7 +215,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
-	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT",
+	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after errhandler)",
 	             &thr->heap->lj.value1, &thr->heap->lj.value2);
 
 	duk_err_longjmp(thr);
