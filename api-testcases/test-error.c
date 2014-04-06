@@ -6,7 +6,7 @@ name: RangeError
 message: range error: 123
 code: undefined
 fileName is a string: 1
-lineNumber: 36
+lineNumber: 34
 isNative: undefined
 *** test_2 (duk_pcall)
 ==> rc=1
@@ -15,7 +15,7 @@ name: Error
 message: arbitrary error code
 code: undefined
 fileName is a string: 1
-lineNumber: 45
+lineNumber: 43
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
@@ -24,7 +24,7 @@ name: TypeError
 message: 105
 code: undefined
 fileName is a string: 1
-lineNumber: 55
+lineNumber: 53
 isNative: undefined
 ===*/
 
