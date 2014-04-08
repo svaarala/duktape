@@ -9,128 +9,10 @@
 #include "duk_internal.h"
 
 /*
- *  Helper for calling errhandler.
+ *  Create and throw an error (originating from Duktape internally)
  *
- *  'thr' must be the currently active thread; the errhandler is called
- *  in its context.  The valstack of 'thr' must have the error value on
- *  top, and will be replaced by another error value based on the return
- *  value of the errhandler.
- *
- *  The helper calls duk_handle_call() recursively in protected mode.
- *  Before that call happens, no longjmps should happen; as a consequence,
- *  we must assume that the valstack contains enough temporary space for
- *  arguments and such.
- *
- *  While the error handler runs, any errors thrown will not trigger a
- *  recursive error handler call (this is implemented using a heap level
- *  flag which will "follow" through any coroutines resumed inside the
- *  error handler).  If the error handler is not callable or throws an
- *  error, a DoubleError replaces the original error at the moment.
- *  This would be easy to change and even signal to the caller.
- *
- *  The current error handler is stored in 'Duktape.errhnd'.  There are
- *  several alternatives to this approach, such as: internal storage
- *  (thr->errhandler), the value stack (in a caller's frame), global object,
- *  global stash, thread object, thread stash.  The Duktape object is easy
- *  to access from both C and Ecmascript code without additional API calls,
- *  and is relatively good for sandboxing because one can just delete the
- *  globally reachable reference to the Duktape object (perhaps after
- *  migrating it to a stash).  The error handler is also automatically
- *  effective in a resumed thread, which is probably a good default behavior.
- *
- *  Note: since further longjmp()s may occur while calling the errhandler
- *  (for many reasons, e.g. a labeled 'break' inside the handler), the
- *  caller can make no assumptions on the thr->heap->lj state after the
- *  call.  This is currently not an issue, because the lj state is only
- *  written after the errhandler finishes.
- */
-
-#if defined(DUK_USE_ERRHANDLER)
-void duk_err_call_errhandler(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
-	duk_tval *tv_hnd;
-	int call_flags;
-	int rc;
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->heap != NULL);
-
-	if (DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap)) {
-		DUK_DDPRINT("recursive call to errhandler, ignore");
-		return;
-	}
-
-	/*
-	 *  Check whether or not we have an error handler.
-	 *
-	 *  We must be careful of not triggering an error when looking up the
-	 *  property.  For instance, if the property is a getter, we don't want
-	 *  to call it, only plain values are allowed.  The value, if it exists,
-	 *  is not checked.  If the value is not a function, a TypeError happens
-	 *  when it is called and that error replaces the original one.
-	 */
-
-	DUK_ASSERT_VALSTACK_SPACE(thr, 4);  /* 4 entries needed below */
-
-	/* [ ... errval ] */
-
-	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
-	                                                  DUK_HTHREAD_STRING_ERRHND(thr));
-	if (tv_hnd == NULL) {
-		DUK_DDPRINT("errhandler does not exist or is not a plain value: %!T", tv_hnd);
-		return;
-	}
-	DUK_DDDPRINT("errhandler dump (callability not checked): %!T", tv_hnd);
-	duk_push_tval(ctx, tv_hnd);
-
-	/* [ ... errval errhandler ] */
-
-	duk_insert(ctx, -2);  /* -> [ ... errhandler errval ] */
-	duk_push_undefined(ctx);
-	duk_insert(ctx, -2);  /* -> [ ... errhandler undefined(= this) errval ] */
-
-	/* [ ... errhandler undefined errval ] */
-
-	/*
-	 *  DUK_CALL_FLAG_IGNORE_RECLIMIT causes duk_handle_call() to ignore C
-	 *  recursion depth limit (and won't increase it either).  This is
-	 *  dangerous, but useful because it allows an errhandler to run even
-	 *  if the original error is caused by C recursion depth limit.
-	 *
-	 *  The heap level DUK_HEAP_FLAG_ERRHANDLER_RUNNING is set for the
-	 *  duration of the errhandler call and cleared afterwards.  This
-	 *  flag prevents the error handler from running recursively.  The
-	 *  flag is heap level so that the flag properly controls even coroutines
-	 *  launched by an error handler.  Since the flag is heap level, it is
-	 *  critical to restore it correctly.
-	 *
-	 *  We ignore errors now: a success return and an error value both
-	 *  replace the original error value.  (This would be easy to change.)
-	 */
-
-	DUK_ASSERT(!DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));  /* since no recursive errhandlers */
-	DUK_HEAP_SET_ERRHANDLER_RUNNING(thr->heap);
-
-	call_flags = DUK_CALL_FLAG_PROTECTED |
-	             DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* protected, ignore reclimit, not constructor */
-
-	rc = duk_handle_call(thr,
-	                     1,            /* num args */
-	                     call_flags);  /* call_flags */
-	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
-
-	DUK_ASSERT(DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));
-	DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(thr->heap);
-
-	/* [ ... errval ] */
-}
-#endif  /* DUK_USE_ERRHANDLER */
-
-/*
- *  Create and throw an error
- *
- *  Push an error object on top of the stack, possibly call an errhandler,
- *  and finally longjmp.
+ *  Push an error object on top of the stack, possibly throw augmenting
+ *  the error, and finally longjmp.
  *
  *  If an error occurs while we're dealing with the current error, we might
  *  enter an infinite recursion loop.  This is prevented by detecting a
@@ -199,15 +81,15 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	}
 
 	/*
-	 *  Call errhandler (unless error is an alloc error)
+	 *  Augment error (throw time), unless alloc/double error
 	 */
 
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
-		DUK_DPRINT("alloc or double error: skip calling errhandler to avoid further trouble");
+		DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble");
 	} else {
-#if defined(DUK_USE_ERRHANDLER)
-		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before errhandler)", duk_get_tval(ctx, -1));
-		duk_err_call_errhandler(thr);
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", duk_get_tval(ctx, -1));
+		duk_err_augment_error_throw(thr);
 #endif
 	}
 
@@ -219,7 +101,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
-	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after errhandler)",
+	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
 	             &thr->heap->lj.value1, &thr->heap->lj.value2);
 
 	duk_err_longjmp(thr);

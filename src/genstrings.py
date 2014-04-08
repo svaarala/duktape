@@ -552,7 +552,8 @@ duk_string_list = [
 	mkstr("input", custom=True),                    # used as a filename for eval temp function
 
 	# Duktape object
-	mkstr("errhnd", custom=True),
+	mkstr("errcreate", custom=True),
+	mkstr("errthrow", custom=True),
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
 	mkstr("info", custom=True),

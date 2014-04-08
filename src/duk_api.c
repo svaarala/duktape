@@ -2973,7 +2973,7 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
 	duk_hobject *proto;
-#ifdef DUK_USE_AUGMENT_ERRORS
+#ifdef DUK_USE_AUGMENT_ERROR_CREATE
 	int noblame_fileline;
 #endif
 
@@ -2981,7 +2981,7 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 	DUK_ASSERT(thr != NULL);
 
 	/* Error code also packs a tracedata related flag. */
-#ifdef DUK_USE_AUGMENT_ERRORS
+#ifdef DUK_USE_AUGMENT_ERROR_CREATE
 	noblame_fileline = err_code & DUK_ERRCODE_FLAG_NOBLAME_FILELINE;
 #endif
 	err_code = err_code & (~DUK_ERRCODE_FLAG_NOBLAME_FILELINE);
@@ -3014,14 +3014,10 @@ static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
 #endif
 
-	/* Note: errors should be augmented when they are created, not when
-	 * they are thrown or rethrown.  The caller should augment the newly
-	 * pushed error if it is relevant.
-	 */
-
-#ifdef DUK_USE_AUGMENT_ERRORS
+	/* Creation time error augmentation */
+#ifdef DUK_USE_AUGMENT_ERROR_CREATE
 	/* filename may be NULL in which case file/line is not recorded */
-	duk_err_augment_error(thr, thr, -1, filename, line, noblame_fileline);  /* may throw an error */
+	duk_err_augment_error_create(thr, thr, filename, line, noblame_fileline);  /* may throw an error */
 #endif
 
 	return retval;
@@ -3226,11 +3222,11 @@ void duk_throw(duk_context *ctx) {
 	 * just before an error is thrown.
 	 */
 
-	DUK_DDDPRINT("THROW ERROR (API): %!dT (before errhandler)", duk_get_tval(ctx, -1));
-#if defined(DUK_USE_ERRHANDLER)
-	duk_err_call_errhandler(thr);
-	DUK_DDDPRINT("THROW ERROR (API): %!dT (after errhandler)", duk_get_tval(ctx, -1));
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+	DUK_DDDPRINT("THROW ERROR (API): %!dT (before throw augment)", duk_get_tval(ctx, -1));
+	duk_err_augment_error_throw(thr);
 #endif
+	DUK_DDDPRINT("THROW ERROR (API): %!dT (after throw augment)", duk_get_tval(ctx, -1));
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 

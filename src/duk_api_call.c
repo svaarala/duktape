@@ -349,8 +349,8 @@ void duk_new(duk_context *ctx, int nargs) {
 	 *  stack reflects the caller which is correct.
 	 */
 
-#ifdef DUK_USE_AUGMENT_ERRORS
-	duk_err_augment_error(thr, thr, -1, NULL, 0, 1 /*noblame_fileline*/);
+#ifdef DUK_USE_AUGMENT_ERROR_CREATE
+	duk_err_augment_error_create(thr, thr, NULL, 0, 1 /*noblame_fileline*/);
 #endif
 
 	/* [... retval] */
