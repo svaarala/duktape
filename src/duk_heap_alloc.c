@@ -40,9 +40,9 @@ static void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 		DUK_FREE(heap, t->valstack);
 		DUK_FREE(heap, t->callstack);
 		DUK_FREE(heap, t->catchstack);
-		/* Don't free h->resumer or h->errhandler because they exist
-		 * in the heap.  Callstack entries also contain function
-		 * pointers which are not freed for the same reason.
+		/* Don't free h->resumer because it exists in the heap.
+		 * Callstack entries also contain function pointers which
+		 * are not freed for the same reason.
 		 */
 
 		/* XXX: with 'caller' property the callstack would need

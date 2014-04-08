@@ -748,7 +748,7 @@ static void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaph
 
 		DUK_DDPRINT("compact object: %p", (void *) obj);
 		duk_push_hobject((duk_context *) thr, obj);
-		/* FIXME: replace errhandler for duration of compaction? */
+		/* XXX: disable error handlers for duration of compaction? */
 		duk_safe_call((duk_context *) thr, duk__protected_compact_object, 1, 0);
 
 #ifdef DUK_USE_DEBUG
