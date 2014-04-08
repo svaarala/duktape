@@ -110,14 +110,14 @@ const char *dukweb_eval(const char *code) {
 
 	printf("dukweb_eval: '%s'\n", code);
 	duk_push_string(ctx, code);
-	if (duk_safe_call(ctx, dukweb__eval_wrapper, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX)) {
+	if (duk_safe_call(ctx, dukweb__eval_wrapper, 1 /*nargs*/, 1 /*nrets*/)) {
 		/* failure */
-		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/);
 		res = duk_get_string(ctx, -1);
 		printf("dukweb_eval: result is error: %s\n", res ? res : "(null)");
 	} else {
 		/* success */
-		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/);
 		res = duk_get_string(ctx, -1);
 		printf("dukweb_eval: result is success: %s\n", res ? res : "(null)");
 	}
