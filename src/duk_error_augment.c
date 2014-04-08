@@ -393,18 +393,28 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* [ ... error ] */
 
 	/*
-	 *  Criteria for built-in augmenting:
+	 *  Criteria for augmenting:
 	 *
 	 *   - augmentation enabled in build (naturally)
-	 *   - error value is an extensible object
 	 *   - error value internal prototype chain contains the built-in
 	 *     Error prototype object (i.e. 'val instanceof Error')
+	 *
+	 *  Additional criteria for built-in augmenting:
+	 *
+	 *   - error value is an extensible object
 	 */
 
-	obj = duk_require_hobject(ctx, -1);
-	if (obj != NULL &&
-	    DUK_HOBJECT_HAS_EXTENSIBLE(obj) &&
-	    duk_hobject_prototype_chain_contains(thr, obj, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE])) {
+	obj = duk_get_hobject(ctx, -1);
+	if (!obj) {
+		DUK_DDDPRINT("value is not an object, skip both built-in and user augment");
+		return;
+	}
+	if (!duk_hobject_prototype_chain_contains(thr, obj, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE])) {
+		DUK_DDDPRINT("value is not an error instance, skip both built-in and user augment");
+		return;
+	}
+
+	if (DUK_HOBJECT_HAS_EXTENSIBLE(obj)) {
 		DUK_DDDPRINT("error meets criteria, built-in augment");
 		duk__err_augment_builtin_throw(thr, thr_callstack, filename, line, noblame_fileline, obj);
 	} else {
