@@ -111,6 +111,88 @@ with <code>Object.defineProperty()</code>.  This behavior differs from V8 where
 <code>stack</code> is an own property of the Error instance, and if you assign a
 value to <code>stack</code>, the value reads back as assigned.</p>
 
+<h2 id="error-handlers">Error handlers (errcreate and errthrow)</h2>
+
+<p>If <code>Duktape.errcreate</code> has been set, it is called right after
+Duktape has added traceback information to an object, and can process the
+error further or even replace the error value entirely.  The error handler
+only gets called with <code>Error</code> instances, and its return value is
+used as the final error value.  If the error handler throws an error, that
+error replaces the original error.  The error handler is usually called only once
+per error.  However, in corner cases related to constructors, the error handler
+can be called multiple times for a single error value.</p>
+
+<p>An error handler should avoid overwriting any properties already
+present in an object, as that would be quite confusing for other code.
+In general, an error handler should always avoid throwing an error, as that
+error replaces the original error and would also be confusing.  As a specific
+example, an error handler must not try to add a new property to a non-extensible
+object, as that would cause a <code>TypeError</code>.</p>
+
+<p>Below is an example error handler for adding a creation timestamp to
+errors at their creation:</p>
+<pre class="ecmascript-code">
+Duktape.errcreate = function (e) {
+    if (!(e instanceof Error)) {
+        // this check is not really needed because errcreate only gets
+        // called with Error instances
+        return e;
+    }
+    if ('created' in e) {
+        // already augmented or conflicting property present
+        return e;
+    }
+    if (!Object.isExtensible(e)) {
+        // object not extensible, don't try to add a new property
+        return e;
+    }
+    e.created = new Date();
+    return e;
+}
+</pre>
+
+<p>To remove the handler, delete the property (setting it to e.g. <code>null</code>
+does not work and causes a <code>TypeError</code> when Duktape attempts to
+call the <code>null</code> value):</p>
+<pre class="ecmascript-code">
+// Remove error handler for error creation
+delete Duktape.errcreate;
+</pre>
+
+<p>Similarly, if <code>Duktape.errthrow</code> has been set, it is called
+right before an error is thrown, and can process or replace the error value.
+Because Ecmascript allows any value type to be thrown, the error handler
+may get called with arbitrary input values (not just <code>Error</code>
+instances).  It may also be called more than once for the same value because
+an error can be re-thrown multiple times.</p>
+
+<p>For example, to add a throw timestamp (recording the first time the object
+has been thrown) to errors:</p>
+<pre class="ecmascript-code">
+Duktape.errcreate = function (e) {
+    if (!(e instanceof Error)) {
+        // refuse to touch anything but Error instances
+        return e;
+    }
+    if ('thrown' in e) {
+        // already augmented or conflicting property present
+        return e;
+    }
+    if (!Object.isExtensible(e)) {
+        // object not extensible, don't try to add a new property
+        return e;
+    }
+    e.thrown = new Date();
+    return e;
+}
+</pre>
+
+<p>Again, to remove the handler, delete the property:</p>
+<pre class="ecmascript-code">
+// Remove error handler for error throwing
+delete Duktape.errthrow;
+</pre>
+
 <h2>Current limitations</h2>
 
 <ul>
