@@ -56,7 +56,9 @@ log_events:
     caller.  This is probably still better than cluttering all protected
     call related API calls with DUK_INVALID_INDEX arguments (rarely used)
     or using a fragile pending index or something like that.
-- - 2014-04-09 11:41:48.676969 Z
+- - 2014-04-08 22:38:31.746085 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
-  - ""
+  - |-
+    Implemented an error handler model based on explicitly set Duktape.errcreate
+    and Duktape.errthrow instead.

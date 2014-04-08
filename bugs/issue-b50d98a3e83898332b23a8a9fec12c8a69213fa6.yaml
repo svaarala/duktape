@@ -32,7 +32,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.10 from v0.9
   - ""
-- - 2014-04-09 11:41:32.582161 Z
+- - 2014-04-08 22:38:10.170147 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
-  - ""
+  - |-
+    Implemented an error handler model based on explicitly set Duktape.errcreate
+    and Duktape.errthrow instead.
