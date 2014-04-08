@@ -21,7 +21,8 @@ Duktape allows error objects to be augmented at (1) their creation, and
 (2) when they are just about the be thrown.  Augmenting an error object
 at its creation time is usually preferable to augmenting it when it is
 being thrown: an object is only created once but can be thrown and
-rethrown multiple times.
+rethrown multiple times (however, there are corner cases related to object
+creation too, see below for details).
 
 When an instance of ``Error`` is created:
 
@@ -104,10 +105,11 @@ As discussed above, it's usually preferable to augment errors when they are
 created rather than when they are thrown: re-throwing an error might cause it
 to be augmented multiple times (overwriting previous values), and some errors
 may never even be thrown but would still benefit from having traceback
-information.  For these reasons, Duktape's built-in augmentation (essentially
-adding a traceback) happens at error creation time; optional error handlers
-allow user to additionally process errors both at their creation and just
-before they are thrown.
+information.
+
+Duktape's built-in augmentation (essentially adding a traceback) happens at
+error creation time; optional error handlers allow user to additionally process
+errors both at their creation and just before they are thrown.
 
 In more concrete terms, when a constructor call is made (i.e. ``new Foo()``)
 the final result which is about to be returned to calling code is inspected.
@@ -128,13 +130,45 @@ fields of the same name.  For instance, if the created object has a ``tracedata`
 field, it won't get overwritten by the augmentation process.  (User error
 handler has no such restrictions, and it may replace the error value entirely.)
 
-Since a particular object is never constructed twice, the error object is not
-changed by catching, re-throwing, etc.  The downside of augmenting during
-creation is that the error information may not accurately reflect the actual
-``throw`` statement which throws the error.  In particular, user code may
-create an error value in a completely different place at a completely different
-time than where and when the error is actually thrown.  User code may even throw
-the same error value multiple times.
+Although a particular object is never as such constructed twice, the current
+approach may lead to an error object being augmented twice during its creation.
+This can be achieved e.g. as follows::
+
+  function Constructor() {
+    return new Error('my error');
+  }
+
+  var e = new Constructor();
+
+Here, error augmentation (including Duktape's own augmentation handling and
+a user error handler) would happen twice:
+
+  1. When ``new Error('my error')`` executes, the result gets augmented.
+     If a user error handler (``errcreate``) exists, it is called.
+
+  2. When the ``new Constructor()`` call returns, the returned error value
+     replaces the default object given to the constructor.  The replacement
+     value (i.e. the result of ``new Error('my error')``) gets augmented.
+
+To avoid issues with this behavior, Duktape's augmentation code refuses
+to add any field to an error if it's already present.  This ensures that
+traceback data is not overwritten in step 2 above.  A user ``errcreate``
+error handler must also deal properly with multiple calls for the same
+error object.  It is easiest to do something like::
+
+  Duktape.errcreate = function (e) {
+      if ('timestamp' in e) {
+          return e;  // only touch once
+      }
+      e.timestamp = new Date();
+      return e;
+  }
+
+The downside of augmenting during creation is that the error information may
+not accurately reflect the actual ``throw`` statement which throws the error.
+In particular, user code may create an error value in a completely different
+place at a completely different time than where and when the error is actually
+thrown.  User code may even throw the same error value multiple times.
 
 Error objects can also be created by calling the ``Error`` constructor (or a
 constructor of a subclass) as a normal function.  In the standard this is
