@@ -62,11 +62,6 @@ the pointer arithmetic may wrap and work in unexpected ways if stack
 index values are large enough (e.g. 0x20000000 on a 32-bit platform
 with 8-byte packed value type).</p>
 
-<h2>Error handler model incomplete</h2>
-
-<p>The model for error handlers is incomplete.  Use <code>DUK_INVALID_INDEX</code>
-as the error handler index for now.</p>
-
 <h2>Unicode case conversion is not locale or context sensitive</h2>
 
 <p>E5 Sections 15.5.4.16 to 15.5.4.19 require context and locale processing
