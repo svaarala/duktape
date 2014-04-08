@@ -274,6 +274,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 	DUK_ASSERT(obj != NULL);
 
 	DUK_UNREF(obj);  /* unreferenced w/o tracebacks */
+	DUK_UNREF(ctx);  /* unreferenced w/ tracebacks */
 
 #ifdef DUK_USE_TRACEBACKS
 	/*
