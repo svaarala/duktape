@@ -1434,8 +1434,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
 
-	/* errhandler is kept as is, so no need to store / restore it */
-
 	/*
 	 *  Setjmp catchpoint setup.
 	 *
@@ -1487,7 +1485,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		             (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
 		             entry_jmpbuf_ptr);
 		thr->heap->lj.jmpbuf_ptr = entry_jmpbuf_ptr;
-		/* errhandler not changed, so no restore */
 
 		lj_ret = duk__handle_longjmp(thr, entry_thread, entry_callstack_top);
 
@@ -1506,7 +1503,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			thr = thr->heap->curr_thread;
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
-			/* errhandler is not changed, so no need to restore */
 
 			duk_err_longjmp(thr);
 			DUK_UNREACHABLE();
@@ -1519,7 +1515,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* FIXME: return assertions for valstack, callstack, catchstack */
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
-			/* errhandler is kept as is, so no need to store / restore it */
 			return;
 		}
 		DUK_UNREACHABLE();
@@ -2620,7 +2615,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				/* Compared to duk_handle_call():
 				 *   - protected call: never
 				 *   - ignore recursion limit: never
-				 *   - errhandler: never change current
 				 */
 
 				/* FIXME: optimize flag handling, by coordinating with bytecode */
@@ -2661,9 +2655,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				}
 
 				duk_handle_call(thr,
-				                c,           /* num_stack_args */
-				                call_flags,  /* call_flags */
-				                NULL);       /* errhandler (ignored because not protected) */
+				                c,            /* num_stack_args */
+				                call_flags);  /* call_flags */
 
 				/* FIXME: who should restore? */
 				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
@@ -3341,8 +3334,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 
 				duk_dup(ctx, b);
-
-				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT", duk_get_tval(ctx, -1));
+				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (before throw augment)", duk_get_tval(ctx, -1));
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+				duk_err_augment_error_throw(thr);
+				DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (after throw augment)", duk_get_tval(ctx, -1));
+#endif
 
 				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 

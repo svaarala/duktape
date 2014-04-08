@@ -108,7 +108,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_js_compiler.c \
 	$(DISTSRCSEP)/duk_regexp_compiler.c \
 	$(DISTSRCSEP)/duk_regexp_executor.c \
-	$(DISTSRCSEP)/duk_bi_duk.c \
+	$(DISTSRCSEP)/duk_bi_duktape.c \
 	$(DISTSRCSEP)/duk_bi_thread.c \
 	$(DISTSRCSEP)/duk_bi_thrower.c \
 	$(DISTSRCSEP)/duk_bi_array.c \

@@ -47,7 +47,7 @@ int test_1b(duk_context *ctx) {
 }
 #define  TEST(func)  do { \
 		printf("*** %s\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
+		rc = duk_safe_call(ctx, (func), 0, 1); \
 		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
 		duk_pop(ctx); \
 	} while (0)

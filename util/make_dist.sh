@@ -75,7 +75,7 @@ for i in	\
 	duk_bi_boolean.c	\
 	duk_bi_buffer.c		\
 	duk_bi_date.c		\
-	duk_bi_duk.c		\
+	duk_bi_duktape.c	\
 	duk_bi_error.c		\
 	duk_bi_function.c	\
 	duk_bi_global.c		\

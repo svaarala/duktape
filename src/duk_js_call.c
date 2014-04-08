@@ -623,8 +623,7 @@ static void duk__coerce_effective_this_binding(duk_hthread *thr,
 
 int duk_handle_call(duk_hthread *thr,
                     int num_stack_args,
-                    int call_flags,
-                    duk_hobject *errhandler) {  /* borrowed */
+                    int call_flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_size_t entry_valstack_bottom_index;
 	duk_size_t entry_callstack_top;
@@ -634,7 +633,6 @@ int duk_handle_call(duk_hthread *thr,
 	duk_uint8_t entry_thread_state;
 	volatile int need_setjmp;
 	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
-	duk_hobject * volatile old_errhandler = NULL;   /* ptr is volatile (not the target) */
 	int idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
 	int idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	int nargs;            /* # argument registers target function wants (< 0 => "as is") */
@@ -651,8 +649,6 @@ int duk_handle_call(duk_hthread *thr,
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(num_stack_args >= 0);
-	DUK_ASSERT(errhandler == NULL || DUK_HOBJECT_IS_CALLABLE(errhandler));
-	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR((duk_heaphdr *) errhandler);
 
 	/* XXX: currently NULL allocations are not supported; remove if later allowed */
 	DUK_ASSERT(thr->valstack != NULL);
@@ -684,7 +680,7 @@ int duk_handle_call(duk_hthread *thr,
 
 	DUK_DDPRINT("duk_handle_call: thr=%p, num_stack_args=%d, "
 	            "call_flags=%d (protected=%d, ignorerec=%d, constructor=%d), need_setjmp=%d, "
-	            "errhandler=%p, valstack_top=%d, idx_func=%d, idx_args=%d, rec_depth=%d/%d, "
+	            "valstack_top=%d, idx_func=%d, idx_args=%d, rec_depth=%d/%d, "
 	            "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
 	            "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
 	            (void *) thr,
@@ -694,7 +690,6 @@ int duk_handle_call(duk_hthread *thr,
 	            ((call_flags & DUK_CALL_FLAG_IGNORE_RECLIMIT) != 0 ? 1 : 0),
 	            ((call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) != 0 ? 1 : 0),
 	            need_setjmp,
-	            (void *) errhandler,
 	            duk_get_top(ctx),
 	            idx_func,
 	            idx_args,
@@ -732,15 +727,11 @@ int duk_handle_call(duk_hthread *thr,
 		goto handle_call;
 	}
 
-	old_errhandler = thr->heap->lj.errhandler;
 	old_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
-
-	thr->heap->lj.errhandler = errhandler;  /* may be NULL */
 	thr->heap->lj.jmpbuf_ptr = &our_jmpbuf;
 
 	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
-		DUK_DDDPRINT("setjmp catchpoint setup complete, errhandler=%p",
-		             (void *) thr->heap->lj.errhandler);
+		DUK_DDDPRINT("setjmp catchpoint setup complete");
 		goto handle_call;
 	}
 
@@ -776,14 +767,11 @@ int duk_handle_call(duk_hthread *thr,
 	 */
 
 	/* Note: either pointer may be NULL (at entry), so don't assert */
-	DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p, errhandler: %p -> %p",
+	DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
 	             (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-	             old_jmpbuf_ptr,
-	             (thr && thr->heap ? thr->heap->lj.errhandler : NULL),
-	             old_errhandler);
+	             old_jmpbuf_ptr);
 
 	thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
-	thr->heap->lj.errhandler = old_errhandler;
 
 	if (!(call_flags & DUK_CALL_FLAG_PROTECTED)) {
 		/*
@@ -1319,13 +1307,10 @@ int duk_handle_call(duk_hthread *thr,
 		/* Note: either pointer may be NULL (at entry), so don't assert;
 		 * this is now done potentially twice, which is OK
 		 */
-		DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p, errhandler: %p -> %p (possibly already done)",
+		DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p (possibly already done)",
 		             (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-		             old_jmpbuf_ptr,
-		             (thr && thr->heap ? thr->heap->lj.errhandler : NULL),
-		             old_errhandler);
+		             old_jmpbuf_ptr);
 		thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
-		thr->heap->lj.errhandler = old_errhandler;
 
 		/* These are just convenience "wiping" of state */
 		thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
@@ -1463,8 +1448,7 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, in
 int duk_handle_safe_call(duk_hthread *thr,
                          duk_safe_call_function func,
                          int num_stack_args,
-                         int num_stack_rets,
-                         duk_hobject *errhandler) {
+                         int num_stack_rets) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_size_t entry_valstack_bottom_index;
 	duk_size_t entry_callstack_top;
@@ -1473,7 +1457,6 @@ int duk_handle_safe_call(duk_hthread *thr,
 	duk_hthread *entry_curr_thread;
 	duk_uint8_t entry_thread_state;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
-	duk_hobject *old_errhandler = NULL;
 	duk_jmpbuf our_jmpbuf;
 	duk_tval tv_tmp;
 	int idx_retbase;
@@ -1482,8 +1465,6 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(errhandler == NULL || DUK_HOBJECT_IS_CALLABLE(errhandler));
-	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR((duk_heaphdr *) errhandler);
 
 	/* Note: careful with indices like '-x'; if 'x' is zero, it refers to bottom */
 	entry_valstack_bottom_index = (int) (thr->valstack_bottom - thr->valstack);
@@ -1496,11 +1477,11 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	/* Note: cannot portably debug print a function pointer, hence 'func' not printed! */
 	DUK_DDPRINT("duk_handle_safe_call: thr=%p, num_stack_args=%d, num_stack_rets=%d, "
-	            "errhandler=%p, valstack_top=%d, idx_retbase=%d, rec_depth=%d/%d, "
+	            "valstack_top=%d, idx_retbase=%d, rec_depth=%d/%d, "
 	            "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
 	            "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
 	            (void *) thr, num_stack_args, num_stack_rets,
-	            (void *) errhandler, duk_get_top(ctx), idx_retbase, thr->heap->call_recursion_depth,
+	            duk_get_top(ctx), idx_retbase, thr->heap->call_recursion_depth,
 	            thr->heap->call_recursion_limit, entry_valstack_bottom_index,
 	            entry_callstack_top, entry_catchstack_top, entry_call_recursion_depth,
 	            entry_curr_thread, entry_thread_state);
@@ -1517,10 +1498,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	/* setjmp catchpoint setup */
 
-	old_errhandler = thr->heap->lj.errhandler;
 	old_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
-
-	thr->heap->lj.errhandler = errhandler;  /* may be NULL */
 	thr->heap->lj.jmpbuf_ptr = &our_jmpbuf;
 
 	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
@@ -1554,7 +1532,6 @@ int duk_handle_safe_call(duk_hthread *thr,
 	 * these are now restored twice which is OK.
 	 */
 	thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
-	thr->heap->lj.errhandler = old_errhandler;
 
 	duk_hthread_catchstack_unwind(thr, entry_catchstack_top);
 	duk_hthread_callstack_unwind(thr, entry_callstack_top);
@@ -1593,8 +1570,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
  handle_call:
 
-	DUK_DDDPRINT("safe_call setjmp catchpoint setup complete, errhandler=%p",
-	             (void *) thr->heap->lj.errhandler);
+	DUK_DDDPRINT("safe_call setjmp catchpoint setup complete");
 
 	/*
 	 *  Thread state check and book-keeping.
@@ -1689,7 +1665,6 @@ int duk_handle_safe_call(duk_hthread *thr,
  finished:
 	/* Note: either pointer may be NULL (at entry), so don't assert */
 	thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
-	thr->heap->lj.errhandler = old_errhandler;
 
 	/* These are just convenience "wiping" of state */
 	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
@@ -1735,7 +1710,7 @@ int duk_handle_safe_call(duk_hthread *thr,
  *  Compared to normal calls handled by duk_handle_call(), there are a
  *  bunch of differences:
  *
- *    - the call is never protected, and current errhandler is not changed
+ *    - the call is never protected
  *    - there is no C recursion depth increase (hence an "ignore recursion
  *      limit" flag is not applicable)
  *    - instead of making the call, this helper just performs the thread

@@ -8,19 +8,49 @@ throws objects inheriting from the ``Error`` constructor.  Ecmascript
 and a ``message``.  Most Ecmascript implementations provide additional
 error properties like file name, line number, and traceback.
 
-This document describes how Duktape creates ``Error`` objects and what
-properties such objects have.  The internal traceback data format and
-the mechanism for providing human readable tracebacks is also covered.
+This document describes how Duktape creates and throws ``Error`` objects
+and what properties such objects have.  The internal traceback data format
+and the mechanism for providing human readable tracebacks is also covered.
 Also see the user documentation which covers the exposed features in a
 more approachable way.
 
+Error augmentation overview
+===========================
+
+Duktape allows error objects to be augmented at (1) their creation, and
+(2) when they are just about the be thrown.  Augmenting an error object
+at its creation time is usually preferable to augmenting it when it is
+being thrown: an object is only created once but can be thrown and
+rethrown multiple times (however, there are corner cases related to object
+creation too, see below for details).
+
+When an instance of ``Error`` is created:
+
+* Duktape first adds traceback or file/line information (depending on
+  activated features) to the error object.
+
+* Then, if ``Duktape.errcreate`` is set, it is called to augment the error
+  further (or replace it completely).  The callback is called an **error
+  handler** inside the implementation.   The user can set an error handler
+  if desired, by default it is not set.
+
+Note that only error values which are instances of ``Error`` are augmented,
+other kinds of values (even objects) are left alone.  A user error handler
+only gets called with ``Error`` instances.
+
+When **any value** is thrown (or re-thrown):
+
+* If ``Duktape.errthrow`` is set, it is called to augment or replace the
+  value thrown.  The user can set an error handler, by default it is not
+  set.
+
+Note that all values are given to ``Duktape.errthrow`` to process, not just
+``Error`` instances, so the user error handler must be careful to handle all
+value types properly.  The error handler also needs to handle re-throwing
+in whatever way is appropriate in the user context.
+
 Error object creation
 =====================
-
-Duktape "augments" any errors at their creation.  Throwing, catching,
-and re-throwing have no impact on the error object.  Only error values
-which are instances of ``Error`` are augmented, other kinds of values
-(even objects) are left alone.
 
 Errors can be created in multiple ways:
 
@@ -71,35 +101,74 @@ to access the traceback::
   var err = new Error('currently here');
   print('debug: reached this point\n' + err.stack);
 
-Augmenting an error when it is thrown has several complications; for instance,
-the error might accidentally be augmented again (overwriting previous values)
-when it is rethrown.  Some error values may never even be thrown, but would
-still benefit from having traceback information.
+As discussed above, it's usually preferable to augment errors when they are
+created rather than when they are thrown: re-throwing an error might cause it
+to be augmented multiple times (overwriting previous values), and some errors
+may never even be thrown but would still benefit from having traceback
+information.
 
-Duktape augments an error object *when it is created*.  In more concrete terms,
-when a constructor call is made (i.e. ``new Foo()``) the final result which is
-about to be returned to calling code is inspected.  This is a change to the
-standard handling of constructor calls and applies uniformly whenever any
-object is created (and unfortunately carries some overhead).  The value gets
-augmented with error information (e.g. tracedata) if it fulfills the following
-criteria:
+Duktape's built-in augmentation (essentially adding a traceback) happens at
+error creation time; optional error handlers allow user to additionally process
+errors both at their creation and just before they are thrown.
 
-  1. The value is an extensible object.
+In more concrete terms, when a constructor call is made (i.e. ``new Foo()``)
+the final result which is about to be returned to calling code is inspected.
+This is a change to the standard handling of constructor calls and applies
+uniformly whenever any object is created (and unfortunately carries some
+overhead).  If the final value is an ``Error`` instance, i.e. its internal
+prototype chain contains ``Error.prototype``:
 
-  2. The value is an instance of ``Error``, i.e. ``Error.prototype`` is in its
-     internal prototype chain.
+* If the object is also extensible, the value gets augmented with error
+  information (e.g. tracedata) by Duktape's built-in augmentation.
+
+* If ``Duktape.errcreate`` is set, the error gets further processed by
+  a user callback; note that the object doesn't need to be extensible
+  for this to happen, but it still must be an ``Error`` instance.
 
 Duktape refuses to add additional fields to the object if it already contains
 fields of the same name.  For instance, if the created object has a ``tracedata``
-field, it won't get overwritten by the augmentation process.
+field, it won't get overwritten by the augmentation process.  (User error
+handler has no such restrictions, and it may replace the error value entirely.)
 
-Since a particular object is never constructed twice, the error object is not
-changed by catching, re-throwing, etc.  The downside of augmenting during
-creation is that the error information may not accurately reflect the actual
-``throw`` statement which throws the error.  In particular, user code may
-create an error value in a completely different place at a completely different
-time than where and when the error is actually thrown.  User code may even throw
-the same error value multiple times.
+Although a particular object is never as such constructed twice, the current
+approach may lead to an error object being augmented twice during its creation.
+This can be achieved e.g. as follows::
+
+  function Constructor() {
+    return new Error('my error');
+  }
+
+  var e = new Constructor();
+
+Here, error augmentation (including Duktape's own augmentation handling and
+a user error handler) would happen twice:
+
+  1. When ``new Error('my error')`` executes, the result gets augmented.
+     If a user error handler (``errcreate``) exists, it is called.
+
+  2. When the ``new Constructor()`` call returns, the returned error value
+     replaces the default object given to the constructor.  The replacement
+     value (i.e. the result of ``new Error('my error')``) gets augmented.
+
+To avoid issues with this behavior, Duktape's augmentation code refuses
+to add any field to an error if it's already present.  This ensures that
+traceback data is not overwritten in step 2 above.  A user ``errcreate``
+error handler must also deal properly with multiple calls for the same
+error object.  It is easiest to do something like::
+
+  Duktape.errcreate = function (e) {
+      if ('timestamp' in e) {
+          return e;  // only touch once
+      }
+      e.timestamp = new Date();
+      return e;
+  }
+
+The downside of augmenting during creation is that the error information may
+not accurately reflect the actual ``throw`` statement which throws the error.
+In particular, user code may create an error value in a completely different
+place at a completely different time than where and when the error is actually
+thrown.  User code may even throw the same error value multiple times.
 
 Error objects can also be created by calling the ``Error`` constructor (or a
 constructor of a subclass) as a normal function.  In the standard this is
@@ -139,6 +208,76 @@ Fixing this behavior so that even user errors get augmented when called with
 a non-constructor call seems difficult.  It would be difficult to detect
 when augmentation is appropriate and it would also add overhead to every
 normal function call.
+
+Error throwing
+==============
+
+When **any error value** is thrown, an optional user error handler set to
+``Duktape.errthrow`` can process or replace the error value.  This applies
+to all types, because any value can be thrown.
+
+The user error handler must deal with the following:
+
+* Restricting error value modification to only relevant values, e.g. only
+  to ``Error`` instances.
+
+* Dealing with re-throwing properly.
+
+For example, the following would add a timestamp to an error object on their
+first throw::
+
+  Duktape.errthrow = function (e) {
+      if (!(e instanceof Error)) {
+          return e;  // only touch errors
+      }
+      if ('timestamp' in e) {
+          return e;  // only touch once
+      }
+      e.timestamp = new Date();
+      return e;
+  }
+
+Specifying error handlers
+=========================
+
+The current create/throw error handlers are stored in ``Duktape.errcreate``
+and ``Duktape.errthrow``.  This has several advantages:
+
+* The ``Duktape`` object is easy to access from both C and Ecmascript code
+  without additional API bindings.
+
+* It works relatively well with sandboxing: the ``Duktape`` object can be
+  moved to a stash (not accessible from user code) during sandbox init,
+  and error handlers can be controlled through the stash from C code.
+
+* The scope for the error handlers is all threads sharing the same ``Duktape``
+  built-in - i.e., threads sharing the same global environment.  This means
+  that the error handlers are automatically effective in resumed threads,
+  for instance, which is probably a good default behavior.
+
+There are several approaches to the current approach, though.  One could store
+the error handler(s) in:
+
+* Internal data structures, e.g. ``thr->errcreate`` and ``thr->errthrow``.
+  This would be stronger from a sandboxing point-of-view, but would require
+  custom bindings to get/set the handlers.  Also memory management would need
+  to know about the fields.
+
+* Calling thread's value stack (in a caller's frame), only for the duration of
+  a specific protected call.  This model is used by Lua and was also used by
+  Duktape up to 0.9.0.  The downside is that protected calls need to manage
+  error handlers which are quite rarely used.
+
+* Global object.  This seems overall worse than using the ``Duktape`` object,
+  as it would be worse for sandboxing with no apparent advantages.
+
+* Thread object.  This would require some extra code to "inherit" error
+  handler(s) to a resumed thread (as that seems like a good default behavior).
+
+* Global stash.  Good for sandboxing, but would only be accessible from C code
+  by default.
+
+* Thread stash.  Good for sandboxing, error handler "inherit" issue.
 
 Error object properties
 =======================

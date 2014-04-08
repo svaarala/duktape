@@ -6,7 +6,7 @@ name: RangeError
 message: range error: 123
 code: undefined
 fileName is a string: 1
-lineNumber: 36
+lineNumber: 34
 isNative: undefined
 *** test_2 (duk_pcall)
 ==> rc=1
@@ -15,7 +15,7 @@ name: Error
 message: arbitrary error code
 code: undefined
 fileName is a string: 1
-lineNumber: 45
+lineNumber: 43
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
@@ -24,11 +24,9 @@ name: TypeError
 message: 105
 code: undefined
 fileName is a string: 1
-lineNumber: 55
+lineNumber: 53
 isNative: undefined
 ===*/
-
-/* FIXME: fileName, lineNumber, isNative are currently not set. */
 
 int test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
@@ -93,7 +91,7 @@ void dump_error(duk_context *ctx) {
 /* use custom helper because of dump_error() */
 #define  TEST(func)  do {  \
 		printf("*** %s (duk_pcall)\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1, DUK_INVALID_INDEX); \
+		rc = duk_safe_call(ctx, (func), 0, 1); \
 		printf("==> rc=%d\n", rc); \
 		dump_error(ctx); \
 		duk_pop(ctx); \

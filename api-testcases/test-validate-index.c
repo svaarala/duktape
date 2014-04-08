@@ -59,7 +59,7 @@ void test(duk_context *ctx) {
 
 	for (idx = -5; idx <= 5; idx++) {
 		duk_push_int(ctx, idx);
-		duk_safe_call(ctx, req_valid_idx, 1, 1, DUK_INVALID_INDEX);
+		duk_safe_call(ctx, req_valid_idx, 1, 1);
 		printf("idx=%d, duk_require_valid_index -> %s\n", idx, duk_to_string(ctx, -1));
 		duk_pop(ctx);
 	}

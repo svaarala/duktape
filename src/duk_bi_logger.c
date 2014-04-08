@@ -209,7 +209,7 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 			duk_dup(ctx, i);
 			/* [ arg1 ... argN this loggerLevel loggerName 'fmt' arg ] */
 			/* call: this.fmt(arg) */
-			rc = duk_pcall_prop(ctx, -5 /*obj_index*/, 1 /*nargs*/, DUK_INVALID_INDEX /*errhandler_index*/);
+			rc = duk_pcall_prop(ctx, -5 /*obj_index*/, 1 /*nargs*/);
 			if (rc) {
 				/* Keep the error as the result (coercing it might fail below,
 				 * but we don't catch that now).

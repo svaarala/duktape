@@ -1,4 +1,5 @@
 /*===
+*** test_1 (duk_safe_call)
 top: 18
 index 0, is-null: 1
 index 1, is-null: 1
@@ -18,9 +19,11 @@ index 14, is-null: 1
 index 15, is-null: 1
 index 16, is-null: 1
 index 17, is-null: 1
-rc=0, result=undefined
-rc=1, result=Error: index out of bounds
-rc=1, result=Error: index out of bounds
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
+*** test_3 (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -71,18 +74,7 @@ int test_3(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_3, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
-

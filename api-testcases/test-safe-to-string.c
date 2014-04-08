@@ -103,7 +103,7 @@ int test_1(duk_context *ctx) {
 void test(duk_context *ctx) {
 	int rc;
 
-	rc = duk_safe_call(ctx, test_1, 0, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_1, 0, 1);
 	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }

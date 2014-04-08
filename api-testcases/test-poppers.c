@@ -122,35 +122,35 @@ void test(duk_context *ctx) {
 	int rc;
 
 	SETUP(2); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_a, 2, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_a, 2, 1);
 	printf("test_pop_1 -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(2); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_b, 2, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_b, 2, 1);
 	printf("test_pop_b -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(5); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_2a, 5, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_2a, 5, 1);
 	printf("test_pop_2a -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(5); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_2b, 5, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_2b, 5, 1);
 	printf("test_pop_2b -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(7); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_3a, 7, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_3a, 7, 1);
 	printf("test_pop_3a -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(7); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_3b, 7, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_3b, 7, 1);
 	printf("test_pop_3b -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(11); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_na, 11, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_na, 11, 1);
 	printf("test_pop_na -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	SETUP(11); PRINTTOP();
-	rc = duk_safe_call(ctx, test_pop_nb, 11, 1, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, test_pop_nb, 11, 1);
 	printf("test_pop_nb -> top=%d, rc=%d, ret='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
 
 	PRINTTOP();

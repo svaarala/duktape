@@ -201,11 +201,6 @@ static void duk__mark_roots_heap(duk_heap *heap) {
 		duk__mark_heaphdr(heap, (duk_heaphdr *) h);
 	}
 
-	/* heap->lj.errhandler: not marked, because a borrowed reference
-	 * (actual value is required to be in an active part of some
-	 * valstack)
-	 */
-
 	duk__mark_tval(heap, &heap->lj.value1);
 	duk__mark_tval(heap, &heap->lj.value2);
 }
@@ -753,7 +748,8 @@ static void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaph
 
 		DUK_DDPRINT("compact object: %p", (void *) obj);
 		duk_push_hobject((duk_context *) thr, obj);
-		duk_safe_call((duk_context *) thr, duk__protected_compact_object, 1, 0, DUK_INVALID_INDEX);  /* XXX: replace errhandler with NULL? */
+		/* XXX: disable error handlers for duration of compaction? */
+		duk_safe_call((duk_context *) thr, duk__protected_compact_object, 1, 0);
 
 #ifdef DUK_USE_DEBUG
 		new_size = DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size);

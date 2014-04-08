@@ -196,6 +196,13 @@ Planned
 * Avoid "out of regs" for large expressions by adding more comprehensive
   register shuffling and indirect variants of several bytecode opcodes
 
+* Change error handler model: error handlers are now set explicitly to
+  Duktape.errcreate and Duktape.errthrow, and can interact with both error
+  creation and error throwing
+
+* Incompatible API change: errhandler_index argument has been removed
+  from all protected API calls as unnecessary
+
 * Add duk_push_heap_stash(), duk_push_global_stash(), and
   duk_push_thread_stash() to provide C code with stashes for storing
   values invisible to Ecmascript code

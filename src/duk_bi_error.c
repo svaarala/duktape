@@ -36,9 +36,9 @@ int duk_bi_error_constructor_shared(duk_context *ctx) {
 	 * are not desirable in this case.
 	 */
 
-#ifdef DUK_USE_AUGMENT_ERRORS
+#ifdef DUK_USE_AUGMENT_ERROR_CREATE
 	if (!duk_is_constructor_call(ctx)) {
-		duk_err_augment_error(thr, thr, -1, NULL, 0, 1 /*noblame_fileline*/);
+		duk_err_augment_error_create(thr, thr, NULL, 0, 1 /*noblame_fileline*/);
 	}
 #endif
 
@@ -310,10 +310,12 @@ int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
 }
 
 int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return 0;
 }
 
 int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return 0;
 }
 

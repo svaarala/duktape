@@ -510,7 +510,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 			" "
 	                DUK_USE_ARCH_STRING);
-	duk_def_prop_stridx(ctx, DUK_BIDX_DUK, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
+	duk_def_prop_stridx(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  InitJS code - Ecmascript code evaluated from a built-in source

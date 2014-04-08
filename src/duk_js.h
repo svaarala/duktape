@@ -60,13 +60,11 @@ void duk_js_push_closure(duk_hthread *thr,
 /* call handling */
 int duk_handle_call(duk_hthread *thr,
                     int num_stack_args,
-                    int call_flags,
-                    duk_hobject *errhandler);
+                    int call_flags);
 int duk_handle_safe_call(duk_hthread *thr,
                          duk_safe_call_function func,
                          int num_stack_args,
-                         int num_stack_res,
-                         duk_hobject *errhandler);
+                         int num_stack_res);
 void duk_handle_ecma_call_setup(duk_hthread *thr,
                                 int num_stack_args,
                                 int call_flags);

@@ -64,6 +64,9 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	thr_resume = duk_require_hthread(ctx, 0);
 	is_error = (duk_small_int_t) duk_to_boolean(ctx, 2);
+	duk_set_top(ctx, 2);
+
+	/* [ thread value ] */
 
 	/*
 	 *  Thread state and calling context checks
@@ -126,10 +129,18 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	/*
 	 *  The error object has been augmented with a traceback and other
-	 *  info from its creation point -- usually another thread.  It might
-	 *  be nice to get a traceback from the resumee but this is not the
-	 *  case now.
+	 *  info from its creation point -- usually another thread.  The
+	 *  error handler is called here right before throwing, but it also
+	 *  runs in the resumer's thread.  It might be nice to get a traceback
+	 *  from the resumee but this is not the case now.
 	 */
+
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+	if (is_error) {
+		DUK_ASSERT_TOP(ctx, 2);  /* value (error) is at stack top */
+		duk_err_augment_error_throw(thr);  /* in resumer's context */
+	}
+#endif
 
 #ifdef DUK_USE_DEBUG  /* debug logging */
 	if (is_error) {
@@ -206,6 +217,9 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
 	is_error = (duk_small_int_t) duk_to_boolean(ctx, 1);
+	duk_set_top(ctx, 1);
+
+	/* [ value ] */
 
 	/*
 	 *  Thread state and calling context checks
@@ -241,7 +255,16 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	/*
 	 *  The error object has been augmented with a traceback and other
 	 *  info from its creation point -- usually the current thread.
+	 *  The error handler, however, is called right before throwing
+	 *  and runs in the yielder's thread.
 	 */
+
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+	if (is_error) {
+		DUK_ASSERT_TOP(ctx, 1);  /* value (error) is at stack top */
+		duk_err_augment_error_throw(thr);  /* in yielder's context */
+	}
+#endif
 
 #ifdef DUK_USE_DEBUG
 	if (is_error) {

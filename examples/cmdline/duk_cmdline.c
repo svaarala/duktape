@@ -120,7 +120,7 @@ static void print_error(duk_context *ctx, FILE *f) {
 	 * Note that getting the stack trace may throw an error
 	 * so this also needs to be safe call wrapped.
 	 */
-	(void) duk_safe_call(ctx, get_stack_raw, 1 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+	(void) duk_safe_call(ctx, get_stack_raw, 1 /*nargs*/, 1 /*nrets*/);
 	fprintf(f, "%s\n", duk_safe_to_string(ctx, -1));
 	fflush(f);
 	duk_pop(ctx);
@@ -216,7 +216,7 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 
 	interactive_mode = 0;  /* global */
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 	if (rc != DUK_EXEC_SUCCESS) {
 		print_error(ctx, stderr);
 		goto error;
@@ -308,7 +308,7 @@ int handle_interactive(duk_context *ctx) {
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
 			print_error(ctx, stdout);
@@ -369,7 +369,7 @@ int handle_interactive(duk_context *ctx) {
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/, DUK_INVALID_INDEX);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
 			print_error(ctx, stdout);

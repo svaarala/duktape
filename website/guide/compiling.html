@@ -126,7 +126,8 @@ The table below summarizes the available options, in no particular order:</p>
 <td class="definename">DUK_OPT_NO_AUGMENT_ERRORS</td>
 <td>Don't augment Ecmascript error objects with custom fields like
     <code>fileName</code>, <code>lineNumber</code>, and traceback data.
-    Implies <code>DUK_OPT_NO_TRACEBACKS</code>.</td>
+    Also disables <code>Duktape.errcreate</code> and <code>Duktape.errthrow</code>
+    error handler callbacks.  Implies <code>DUK_OPT_NO_TRACEBACKS</code>.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_TRACEBACKS</td>

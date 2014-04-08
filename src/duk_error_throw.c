@@ -9,84 +9,10 @@
 #include "duk_internal.h"
 
 /*
- *  Helper for calling errhandler.
+ *  Create and throw an error (originating from Duktape internally)
  *
- *  'thr' must be the currently active thread; the errhandler is called
- *  in its context.  The valstack of 'thr' must have the error value on
- *  top, and will be replaced by another error value based on the return
- *  value of the errhandler.
- *
- *  The helper calls duk_handle_call() recursively in protected mode, but
- *  without an error handler.  Before that call happens, no longjmps
- *  should happen; as a consequence, we must assume that the valstack
- *  contains enough temporary space for arguments and such.
- *
- *  If the errhandler call causes an error to be thrown, that error will
- *  (silently) replace the original error now.  This would be easy to
- *  change and even to signal to the caller.
- *
- *  Note: since further longjmp()s may occur while calling the errhandler
- *  (for many reasons, e.g. a labeled 'break' inside the handler), the
- *  caller can make no assumptions on the thr->heap->lj state after the
- *  call.  This is currently not an issue, because the lj state is only
- *  written after the errhandler finishes.
- */
-
-static void duk__call_errhandler(duk_hthread *thr) {
-	int call_flags;
-	int rc;
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->heap != NULL);
-
-	if (!thr->heap->lj.errhandler) {
-		DUK_DDDPRINT("no errhandler, return");
-		return;
-	}
-
-	/* FIXME: assert/require for valstack space */
-
-	/* [ ... errval ] */
-
-	DUK_DDDPRINT("errhandler is %p", (void *) thr->heap->lj.errhandler);
-	DUK_DDDPRINT("errhandler dump: %!O", (duk_heaphdr *) thr->heap->lj.errhandler);
-
-	duk_push_hobject((duk_context *) thr, thr->heap->lj.errhandler);
-	duk_insert((duk_context *) thr, -2);  /* -> [ ... errhandler errval ] */
-	duk_push_undefined((duk_context *) thr);
-	duk_insert((duk_context *) thr, -2);  /* -> [ ... errhandler undefined(= this) errval ] */
-
-	/* [ ... errhandler undefined errval ] */
-
-	/*
-	 *  DUK_CALL_FLAG_IGNORE_RECLIMIT causes duk_handle_call() to ignore C
-	 *  recursion depth limit (and won't increase it either).  This is
-	 *  dangerous, but useful because it allows an errhandler to run even
-	 *  if the original error is caused by C recursion depth limit.  Because
-	 *  errhandler is NULL in the errhandler call, the errhandler call
-	 *  can't cause the same situation to occur again.
-	 *
-	 *  We ignore errors now: a success return and an error value both
-	 *  replace the original error value.  (This would be easy to change.)
-	 */
-
-	call_flags = DUK_CALL_FLAG_PROTECTED |
-	             DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* protected, ignore reclimit, not constructor */
-
-	rc = duk_handle_call(thr,
-	                     1,          /* num args */
-	                     call_flags, /* call_flags */
-	                     NULL);      /* errhandler */
-	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
-
-	/* [ ... errval ] */
-}
-
-/*
- *  Create and throw an error
- *
- *  Push an error object on top of the stack, possibly call an errhandler,
- *  and finally longjmp.
+ *  Push an error object on top of the stack, possibly throw augmenting
+ *  the error, and finally longjmp.
  *
  *  If an error occurs while we're dealing with the current error, we might
  *  enter an infinite recursion loop.  This is prevented by detecting a
@@ -155,16 +81,16 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	}
 
 	/*
-	 *  Call errhandler (unless error is an alloc error)
-	 *
-	 *  Note: must back up the current jmpbuf if it is the shared bytecode
-	 *  executor one (handled internally by the helper).
+	 *  Augment error (throw time), unless alloc/double error
 	 */
 
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
-		DUK_DPRINT("alloc or double error: skip calling errhandler to avoid further trouble");
+		DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble");
 	} else {
-		duk__call_errhandler(thr);
+#if defined(DUK_USE_AUGMENT_ERROR_THROW)
+		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", duk_get_tval(ctx, -1));
+		duk_err_augment_error_throw(thr);
+#endif
 	}
 
 	/*
@@ -175,7 +101,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
-	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT",
+	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
 	             &thr->heap->lj.value1, &thr->heap->lj.value2);
 
 	duk_err_longjmp(thr);

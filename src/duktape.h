@@ -561,20 +561,16 @@ int duk_strict_equals(duk_context *ctx, int index1, int index2);
 
 /*
  *  Function (method) calls
- *
- *  If 'errhandler_index' is DUK_INVALID_INDEX, the current errhandler will be
- *  used.  If 'errhandler_index' points to an undefined value in the stack,
- *  a NULL errhandler will be used, replacing any existing errhandler.
  */
 
 void duk_call(duk_context *ctx, int nargs);
 void duk_call_method(duk_context *ctx, int nargs);
 void duk_call_prop(duk_context *ctx, int obj_index, int nargs);
-int duk_pcall(duk_context *ctx, int nargs, int errhandler_index);
-int duk_pcall_method(duk_context *ctx, int nargs, int errhandler_index);
-int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs, int errhandler_index);
+int duk_pcall(duk_context *ctx, int nargs);
+int duk_pcall_method(duk_context *ctx, int nargs);
+int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs);
 void duk_new(duk_context *ctx, int nargs);
-int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets, int errhandler_index);
+int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets);
 
 /*
  *  Thread management

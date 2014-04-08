@@ -1,13 +1,17 @@
 /*===
+*** test_1 (duk_safe_call)
 number: 123.000000 -> int: 123
 number: 123.456000 -> int: 123
 number: nan -> int: 0
 number: -inf -> int: INT_MIN
 number: inf -> int: INT_MAX
-rc=0, result=undefined
-rc=1, result=TypeError: not number
-rc=1, result=TypeError: not number
-rc=1, result=TypeError: not number
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='TypeError: not number'
+*** test_3 (duk_safe_call)
+==> rc=1, result='TypeError: not number'
+*** test_4 (duk_safe_call)
+==> rc=1, result='TypeError: not number'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -57,22 +61,8 @@ int test_4(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_3, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_4, 0, 1, DUK_INVALID_INDEX);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
 }
-

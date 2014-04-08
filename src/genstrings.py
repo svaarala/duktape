@@ -474,6 +474,9 @@ standard_other_string_list = [
 
 # Duktape specific strings
 duk_string_list = [
+	# non-standard global properties
+	mkstr("Duktape", custom=True),
+
 	# non-standard class values
 	mkstr("global", custom=True, class_name=True),	# implementation specific but shared by e.g. smjs and V8
 	mkstr("ObjEnv", custom=True, class_name=True),
@@ -549,7 +552,8 @@ duk_string_list = [
 	mkstr("input", custom=True),                    # used as a filename for eval temp function
 
 	# Duktape object
-	mkstr("Duktape", custom=True),
+	mkstr("errcreate", custom=True),
+	mkstr("errthrow", custom=True),
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
 	mkstr("info", custom=True),
@@ -769,7 +773,7 @@ special_define_names = {
 	'toUTCString': 'TO_UTC_STRING',
 	'toGMTString': 'TO_GMT_STRING',
 	'URIError': 'URI_ERROR',
-	'Duktape': 'DUK',
+	'Duktape': 'DUKTAPE',
 	'': 'EMPTY_STRING',
 	',': 'COMMA',
 	' ': 'SPACE',

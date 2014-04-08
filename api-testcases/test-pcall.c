@@ -13,7 +13,7 @@ void test(duk_context *ctx) {
 	duk_eval_string(ctx, "(function (x,y) { return x+y; })");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall(ctx, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("top after pop: %d\n", duk_get_top(ctx));
@@ -22,7 +22,7 @@ void test(duk_context *ctx) {
 	duk_eval_string(ctx, "(function (x,y) { throw new Error('my error'); })");
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
-	rc = duk_pcall(ctx, 2, DUK_INVALID_INDEX);
+	rc = duk_pcall(ctx, 2);
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("top after pop: %d\n", duk_get_top(ctx));
