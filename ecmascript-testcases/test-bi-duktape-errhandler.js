@@ -11,6 +11,30 @@ error: URIError: fake uri error, foo: undefined, bar: undefined
 - plain errcreate (sets foo and bar)
 error: ReferenceError: identifier 'aiee' undefined, foo: 1, bar: 2
 error: URIError: fake uri error, foo: 1, bar: 2
+- errcreate gets only error instances
+errcreate: object true foo
+errcreate: object true bar
+errcreate: object true quux
+errcreate: object true quux
+errcreate: object true baz
+catch: undefined
+catch: null
+catch: boolean
+catch: number
+catch: string
+catch: object
+catch: object
+catch: function
+catch: buffer
+catch: pointer
+catch: object
+catch: object
+catch: object
+catch: object
+catch: object
+catch: object
+catch: object
+catch: object
 - errcreate throws an error
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
@@ -85,6 +109,56 @@ function errCreateTest() {
     errTest2();
 
     /*
+     *  Errcreate callback only gets called with Error instances,
+     *  because only they are augmented by Duktape.
+     *
+     *  Errcreate does get called even if a constructor replaces the
+     *  default constructed value for a constructor which creates
+     *  Error instances.
+     *
+     *  Constructor2 test also illustrates a corner case: the 'quux'
+     *  Error gets errcreate processed twice: (1) when it is created
+     *  inside Constructor2, and (2) when Constructor2 returns and
+     *  the final constructed value gets checked.
+     */
+
+    print('- errcreate gets only error instances');
+    Duktape.errcreate = function (err) {
+        if (err === null) { print('errcreate:', null); }
+        else if (typeof err === 'object') { print('errcreate:', typeof err, err instanceof Error, err.message); }
+        else { print('errcreate:', typeof err); }
+        return err;
+    };
+    function Constructor1() {
+        return 123;  // attempt to replace with a non-object, ignored
+    }
+    function Constructor2() {
+        return new Error('quux');  // replace normal object with an error
+    }
+    function Constructor3() {
+        return {};  // replace Error instance with a normal object
+    }
+    Constructor3.prototype = Error.prototype;
+    function Constructor4() {
+        this.message = 'baz';
+        return 123;  // keep constructed error
+    }
+    Constructor4.prototype = Error.prototype;
+
+    [ undefined, null, true, 123, 'foo', [ 'foo', 'bar' ], { foo:1, bar:2 },
+      function () {}, Duktape.Buffer('foo'), Duktape.Pointer('dummy'),
+      new Object(), new Array(), new Error('foo'), Error('bar'),
+      new Constructor1(), new Constructor2(),
+      new Constructor3(), new Constructor4() ].forEach(function (v) {
+        try {
+            throw v;
+        } catch (err) {
+            if (err === null) { print('catch:', null); }
+            else { print('catch:', typeof err); }
+        }
+    });
+
+    /*
      *  If an errcreate causes an error, that error won't be augmented.
      *
      *  There is some inconsistent behavior here now.  If the original error
@@ -143,8 +217,15 @@ function errCreateTest() {
 
     print('- errcreate as an accessor property is ignored');
     Object.defineProperty(Duktape, 'errcreate', {
-        get: function () { return function(err) { err.foo = 'called'; return err; } },
-        set: function () { throw new Error('setter called'); },
+        get: function () {
+            return function(err) {
+                err.foo = 'called';
+                return err;
+            }
+        },
+        set: function () {
+            throw new Error('setter called');
+        },
         enumerable: true,
         configurable: true
     });
@@ -191,6 +272,43 @@ error: URIError: fake uri error, foo: undefined, bar: undefined
 - plain errthrow (sets foo and bar)
 error: ReferenceError: identifier 'aiee' undefined, foo: 1, bar: 2
 error: URIError: fake uri error, foo: 1, bar: 2
+- errthrow gets all value types
+errthrow: undefined
+catch: undefined
+errthrow: null
+catch: null
+errthrow: boolean
+catch: boolean
+errthrow: number
+catch: number
+errthrow: string
+catch: string
+errthrow: object false undefined
+catch: object
+errthrow: object false undefined
+catch: object
+errthrow: function
+catch: function
+errthrow: buffer
+catch: buffer
+errthrow: pointer
+catch: pointer
+errthrow: object false undefined
+catch: object
+errthrow: object false undefined
+catch: object
+errthrow: object true foo
+catch: object
+errthrow: object true bar
+catch: object
+errthrow: object false undefined
+catch: object
+errthrow: object true quux
+catch: object
+errthrow: object false undefined
+catch: object
+errthrow: object true baz
+catch: object
 - errthrow throws an error
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
@@ -265,12 +383,54 @@ function errThrowTest() {
 
     print('- plain errthrow (sets foo and bar)');
     Duktape.errthrow = function (err) {
+        if (!(err instanceof Error)) { return err; }
         err.foo = 1;
         err.bar = 2;
         return err;
     };
     errTest1();
     errTest2();
+
+    /*
+     *  An errthrow handler gets whatever values are thrown and must deal
+     *  with them properly.
+     */
+
+    print('- errthrow gets all value types');
+    Duktape.errthrow = function (err) {
+        if (err === null) { print('errthrow:', null); }
+        else if (typeof err === 'object') { print('errthrow:', typeof err, err instanceof Error, err.message); }
+        else { print('errthrow:', typeof err); }
+        return err;
+    };
+    function Constructor1() {
+        return 123;  // attempt to replace with a non-object, ignored
+    }
+    function Constructor2() {
+        return new Error('quux');  // replace normal object with an error
+    }
+    function Constructor3() {
+        return {};  // replace Error instance with a normal object
+    }
+    Constructor3.prototype = Error.prototype;
+    function Constructor4() {
+        this.message = 'baz';
+        return 123;  // keep constructed error
+    }
+    Constructor4.prototype = Error.prototype;
+
+    [ undefined, null, true, 123, 'foo', [ 'foo', 'bar' ], { foo:1, bar:2 },
+      function () {}, Duktape.Buffer('foo'), Duktape.Pointer('dummy'),
+      new Object(), new Array(), new Error('foo'), Error('bar'),
+      new Constructor1(), new Constructor2(),
+      new Constructor3(), new Constructor4() ].forEach(function (v) {
+        try {
+            throw v;
+        } catch (err) {
+            if (err === null) { print('catch:', null); }
+            else { print('catch:', typeof err); }
+        }
+    });
 
     /*
      *  If an errthrow causes an error, that error won't be augmented.
@@ -285,6 +445,7 @@ function errThrowTest() {
 
     print('- errthrow throws an error');
     Duktape.errthrow = function (err) {
+        if (!(err instanceof Error)) { return err; }
         err.foo = 1;
         zork;
         return err;
@@ -331,7 +492,13 @@ function errThrowTest() {
 
     print('- errthrow as an accessor property is ignored');
     Object.defineProperty(Duktape, 'errthrow', {
-        get: function () { return function(err) { err.foo = 'called'; return err; } },
+        get: function () {
+            return function(err) {
+                if (!(err instanceof Error)) { return err; }
+                err.foo = 'called';
+                return err;
+            }
+        },
         set: function () { throw new Error('setter called'); },
         enumerable: true,
         configurable: true
@@ -346,6 +513,7 @@ function errThrowTest() {
 
     print('- plain errthrow, follows into resumed thread')
     Duktape.errthrow = function (err) {
+        if (!(err instanceof Error)) { return err; }
         err.foo = 'bar';
         err.bar = 'quux';
         return err;
@@ -387,6 +555,7 @@ function errThrowTest() {
     print('- plain errthrow, called in yield/resume when isError is true');
 
     Duktape.errthrow = function (err) {
+        if (!(err instanceof Error)) { return err; }
         err.foo = 'bar';
         err.bar = 'quux';
         return err;
