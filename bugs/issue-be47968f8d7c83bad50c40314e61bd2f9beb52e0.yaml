@@ -17,8 +17,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-08-06 06:40:20.110056 Z
 references: []
 
@@ -56,3 +56,7 @@ log_events:
     caller.  This is probably still better than cluttering all protected
     call related API calls with DUK_INVALID_INDEX arguments (rarely used)
     or using a fragile pending index or something like that.
+- - 2014-04-09 11:41:48.676969 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
