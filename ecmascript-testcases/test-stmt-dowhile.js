@@ -2,11 +2,6 @@
  *  Do-while statement (E5 Section 12.6.1).
  */
 
-/*---
-{
-}
----*/
-
 /*===
 basic
 body, i: 10 count: 0
