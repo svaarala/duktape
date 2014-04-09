@@ -22,7 +22,7 @@ static int map_char(void *udata, int codepoint) {
 
 duk_push_string(ctx, "test_string");
 duk_map_string(ctx, -1, map_char, NULL);
-printf("result: '%s'\n", duk_to_string(ctx, -1));
+printf("result: %s\n", duk_to_string(ctx, -1));
 duk_pop(ctx);
 
 =tags

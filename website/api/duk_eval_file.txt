@@ -11,11 +11,9 @@ is given as a filename.  The filename associated with the temporary
 function created for the eval code is <code>path</code> as is.</p>
 
 =example
-duk_eval_string(ctx, "test.js");
-printf("result is: '%s'\n", duk_get_string(ctx, -1));
+duk_eval_file(ctx, "test.js");
+printf("result is: %s\n", duk_safe_to_string(ctx, -1));
 duk_pop(ctx);
 
 =tags
 compile
-
-=macro
