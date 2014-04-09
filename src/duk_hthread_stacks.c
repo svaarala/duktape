@@ -270,6 +270,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
 		p = &thr->callstack[idx];  /* avoid side effect issues */
+		DUK_UNREF(p);
 #endif
 	}
 

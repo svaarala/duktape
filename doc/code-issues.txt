@@ -188,6 +188,10 @@ XXX:
 NOTE:
   Noteworthy issue important for e.g. maintenance, but no action needed.
 
+SCANBUILD:
+  Scan-build note: describe why a warning is produced for warnings that
+  cannot be easily fixed or silenced.
+
 The markers must appear verbatim and be followed by a colon without
 any space in between.  This is important so that the markers can be
 grep'd.  Example::

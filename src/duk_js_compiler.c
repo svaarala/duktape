@@ -2188,6 +2188,7 @@ static void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, int
 	/* relookup after possible realloc */
 	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
+	DUK_UNREF(li_start);  /* silence scan-build warning */
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li--;
 

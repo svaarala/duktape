@@ -911,8 +911,14 @@ int duk_handle_call(duk_hthread *thr,
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1));
 
-	nargs = 0;
-	nregs = 0;
+	/* These base values are never used, but if the compiler doesn't know
+	 * that DUK_ERROR() won't return, these are needed to silence warnings.
+	 * On the other hand, scan-build will warn about the values not being
+	 * used, so add a DUK_UNREF.
+	 */
+	nargs = 0; DUK_UNREF(nargs);
+	nregs = 0; DUK_UNREF(nregs);
+
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		nargs = ((duk_hcompiledfunction *) func)->nargs;
 		nregs = ((duk_hcompiledfunction *) func)->nregs;
@@ -1883,6 +1889,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		             thr->callstack_top - 1);
 
 		act = thr->callstack + thr->callstack_top - 1;
+		DUK_UNREF(act);  /* unreferenced unless assertions used */
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
@@ -1960,7 +1967,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 			 */
 			duk_remove(ctx, 0);
 		}
-		idx_func = 0;  /* really 'not applicable' anymore, should not be referenced after this */
+		idx_func = 0; DUK_UNREF(idx_func);  /* really 'not applicable' anymore, should not be referenced after this */
 		idx_args = 0;
 
 		/* [ ... this_new | arg1 ... argN ] */

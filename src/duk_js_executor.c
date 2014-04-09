@@ -588,6 +588,7 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_ASSERT(act->var_env != NULL);
 		DUK_ASSERT(act->func != NULL);
+		DUK_UNREF(act);  /* unreferenced without assertions */
 
 		act = thr->callstack + thr->callstack_top - 1;
 		act_lex_env = act->lex_env;
