@@ -1589,6 +1589,10 @@ static int duk__declvar_helper(duk_hthread *thr,
 		}
 		DUK_ASSERT(holder != NULL);
 		DUK_ASSERT(e_idx >= 0);
+		/* SCANBUILD: scan-build produces a NULL pointer dereference warning
+		 * below; it never actually triggers because holder is actually never
+		 * NULL.
+		 */
 
 		/* ref.holder is global object, holder is the object with the
 		 * conflicting property.

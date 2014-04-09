@@ -1822,6 +1822,10 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 
 	h_buf = duk_get_hbuffer(ctx, index);
 	DUK_ASSERT(h_buf != NULL);
+	/* SCANBUILD: scan-build produces a NULL pointer dereference warning
+	 * below; it never actually triggers because h_buf is actually never
+	 * NULL.
+	 */
 
 	if (out_size) {
 		*out_size = DUK_HBUFFER_GET_SIZE(h_buf);

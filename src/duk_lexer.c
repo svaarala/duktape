@@ -1671,6 +1671,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 		DUK__ADVANCE(lex_ctx, 1);
 
 		ch = -1;  /* not strictly necessary, but avoids "uninitialized variable" warnings */
+		DUK_UNREF(ch);
 
 		if (x < 0) {
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,

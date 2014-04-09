@@ -153,7 +153,7 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 	DUK_ASSERT(DUK_HSTRING_GET_CHARLEN(h) >= char_offset);
 	dist_start = char_offset;
 	dist_end = DUK_HSTRING_GET_CHARLEN(h) - char_offset;
-	dist_sce = 0;  /* initialize for debug prints, needed if sce==NULL */
+	dist_sce = 0; DUK_UNREF(dist_sce);  /* initialize for debug prints, needed if sce==NULL */
 
 	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
 	p_end = (duk_uint8_t *) (p_start + DUK_HSTRING_GET_BYTELEN(h));

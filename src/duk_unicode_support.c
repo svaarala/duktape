@@ -874,7 +874,7 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
-	prev = -1;
+	prev = -1; DUK_UNREF(prev);
 	curr = -1;
 	next = -1;
 	for (;;) {

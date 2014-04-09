@@ -1479,6 +1479,11 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 
 			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
 			DUK_ASSERT(h_val);
+			/* SCANBUILD: h_val is known to be non-NULL but scan-build cannot
+			 * know it, so it produces NULL pointer dereference warnings for
+			 * 'h_val'.
+			 */
+
 			if (arr_idx < DUK_HBUFFER_GET_SIZE(h_val)) {
 				DUK_DDDPRINT("-> found, array index inside buffer");
 				if (push_value) {
@@ -3887,18 +3892,24 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	DUK_DDDPRINT("Object.defineProperty(): thr=%p obj=%!O key=%!O arr_idx=0x%08x desc=%!O",
 	             (void *) thr, (duk_heaphdr *) obj, (duk_heaphdr *) key, (int) arr_idx, (duk_heaphdr *) desc);
 
-	has_enumerable = 0;
-	has_configurable = 0;
-	has_value = 0;
-	has_writable = 0;
-	has_get = 0;
-	has_set = 0;
-	is_enumerable = 0;
-	is_configurable = 0;
-	is_writable = 0;
-	idx_value = -1;
-	get = NULL;
-	set = NULL;
+	/* Many of the above are just assigned over but are given base values to
+	 * avoid warnings with some compilers.  But because the values are unused,
+	 * scan-build will complain about them; silence with DUK_UNREF().
+	 */
+
+	has_enumerable = 0; DUK_UNREF(has_enumerable);
+	has_configurable = 0; DUK_UNREF(has_configurable);
+	has_value = 0; DUK_UNREF(has_value);
+	has_writable = 0; DUK_UNREF(has_writable);
+	has_get = 0; DUK_UNREF(has_get);
+	has_set = 0; DUK_UNREF(has_set);
+	is_enumerable = 0; DUK_UNREF(is_enumerable);
+	is_configurable = 0; DUK_UNREF(is_configurable);
+	is_writable = 0; DUK_UNREF(is_writable);
+	idx_value = -1; DUK_UNREF(idx_value);
+	get = NULL; DUK_UNREF(get);
+	set = NULL; DUK_UNREF(set);
+
 	arridx_new_array_length = 0;
 	pending_write_protect = 0;
 	arrlen_old_len = 0;

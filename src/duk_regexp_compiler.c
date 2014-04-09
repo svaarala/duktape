@@ -396,6 +396,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 					offset += duk__insert_u32(re_ctx, offset, qmax);
 					offset += duk__insert_jump_offset(re_ctx, offset, atom_code_length);
 				}
+				DUK_UNREF(offset);  /* silence scan-build warning */
 			} else {
 				/*
 				 *  Complex atom

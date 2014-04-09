@@ -1356,9 +1356,6 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 
 	DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1));
 
-	tv = duk_get_tval(ctx, -1);
-	DUK_ASSERT(tv != NULL);
-
 	if (duk_check_type_mask(ctx, -1, js_ctx->mask_for_undefined)) {
 		/* will result in undefined */
 		DUK_DDDPRINT("-> will result in undefined (type mask check)");
