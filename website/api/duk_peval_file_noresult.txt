@@ -1,0 +1,20 @@
+=proto
+int duk_peval_file_noresult(duk_context *ctx, const char *path);
+
+=stack
+[ ... ] -> [ ... ]
+
+=summary
+<p>Like
+<code><a href="#duk_peval_file">duk_peval_file()</a></code>, but leaves no
+result on the value stack.</p>
+
+=example
+if (duk_peval_file_noresult(ctx, "test.js") != 0) {
+    printf("eval failed\n");
+} else {
+    printf("eval successful\n");
+}
+
+=tags
+compile

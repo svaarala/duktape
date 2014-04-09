@@ -18,3 +18,6 @@ duk_pop(ctx);
 
 =tags
 compile
+
+=seealso
+duk_eval_string_noresult
