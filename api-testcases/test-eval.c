@@ -6,6 +6,13 @@ Hello world!
 return value is: 123 (rc=0)
 return value is: Error: eval error (rc=1)
 return value is: SyntaxError: invalid object literal (line 1) (rc=1)
+top=0
+doing eval
+top=0
+doing peval
+rc=0
+top=0
+rc=1
 top: 0
 ===*/
 
@@ -44,6 +51,23 @@ void test(duk_context *ctx) {
 	rc = duk_peval(ctx);
 	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
 	duk_pop(ctx);
+
+	/* Plain eval with no result */
+	printf("top=%d\n", duk_get_top(ctx));
+	duk_push_string(ctx, "print('doing eval');");
+	duk_eval_noresult(ctx);
+
+	/* Protected eval with no result, no error */
+	printf("top=%d\n", duk_get_top(ctx));
+	duk_push_string(ctx, "print('doing peval');");
+	rc = duk_peval_noresult(ctx);
+	printf("rc=%d\n", rc);
+
+	/* Protected eval with no result, syntax error */
+	printf("top=%d\n", duk_get_top(ctx));
+	duk_push_string(ctx, "print('doing peval'); obj = {");
+	rc = duk_peval_noresult(ctx);
+	printf("rc=%d\n", rc);
 
 	printf("top: %d\n", duk_get_top(ctx));
 }

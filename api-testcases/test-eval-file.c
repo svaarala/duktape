@@ -1,10 +1,21 @@
 /*===
 *** test_raw (duk_safe_call)
+top: 0
 Hello world from a file!
 return value is: 123.000000
+top: 0
+Hello world from a file!
+no result
+top: 0
 Hello world from a file, with exception
 return value is: Error: eval error (rc=1)
+top: 0
+Hello world from a file, with exception
+no result, rc=1
+top: 0
 return value is: SyntaxError: invalid object literal (line 1) (rc=1)
+top: 0
+no result, rc=1
 top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -44,19 +55,37 @@ static int test_raw(duk_context *ctx) {
 	int rc;
 
 	write_file(TMPFILE, data1);
+
+	printf("top: %d\n", duk_get_top(ctx));
 	duk_eval_file(ctx, TMPFILE);
 	printf("return value is: %lf\n", duk_get_number(ctx, -1));
 	duk_pop(ctx);
 
+	printf("top: %d\n", duk_get_top(ctx));
+	duk_eval_file_noresult(ctx, TMPFILE);
+	printf("no result\n");
+
 	write_file(TMPFILE, data2);
+
+	printf("top: %d\n", duk_get_top(ctx));
 	rc = duk_peval_file(ctx, TMPFILE);
 	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
 	duk_pop(ctx);
 
+	printf("top: %d\n", duk_get_top(ctx));
+	rc = duk_peval_file_noresult(ctx, TMPFILE);
+	printf("no result, rc=%d\n", rc);
+
 	write_file(TMPFILE, data3);
+
+	printf("top: %d\n", duk_get_top(ctx));
 	rc = duk_peval_file(ctx, TMPFILE);
 	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
 	duk_pop(ctx);
+
+	printf("top: %d\n", duk_get_top(ctx));
+	rc = duk_peval_file_noresult(ctx, TMPFILE);
+	printf("no result, rc=%d\n", rc);
 
 	printf("top: %d\n", duk_get_top(ctx));
 	return 0;
