@@ -27,7 +27,5 @@ void test(duk_context *ctx) {
 	duk_pop(ctx);
 	printf("top after pop: %d\n", duk_get_top(ctx));
 
-	/* FIXME: error handler tests */
-
 	printf("final top: %d\n", duk_get_top(ctx));
 }

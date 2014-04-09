@@ -62,8 +62,6 @@ void test(duk_context *ctx) {
 	duk_pop(ctx);  /* res */
 	duk_pop(ctx);  /* obj */
 
-	/* FIXME: error handler tests */
-
 	duk_pop(ctx);  /* dummy */
 
 	printf("final top: %d\n", duk_get_top(ctx));

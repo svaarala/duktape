@@ -37,7 +37,5 @@ void test(duk_context *ctx) {
 	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	/* FIXME: error handler tests */
-
 	printf("final top: %d\n", duk_get_top(ctx));
 }
