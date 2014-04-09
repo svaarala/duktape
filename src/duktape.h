@@ -585,8 +585,6 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-/* FIXME: add 'int' return code to non-safe variants too? */
-
 int duk_eval_raw(duk_context *ctx, int flags);
 int duk_compile_raw(duk_context *ctx, int flags);
 
