@@ -213,6 +213,9 @@ Planned
 * Add protected variants of eval/compile: duk_peval(), duk_peval_string(),
   duk_peval_file(), duk_pcompile(), duk_pcompile_string(), duk_pcompile_file()
 
+* duk_pcall_prop() now catches invalid stack index errors and property
+  lookup errors which happen before the actual call
+
 * Add Duktape.compact() and Duktape.line()
 
 * Add a barebones built-in logging framework with both Ecmascript and C
