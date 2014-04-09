@@ -25,7 +25,7 @@ int duk_eval_raw(duk_context *ctx, int flags) {
 	}
 
 	if (flags & DUK_COMPILE_SAFE) {
-		rc = duk_pcall(ctx, 0, DUK_INVALID_INDEX);  /* FIXME: user control? */
+		rc = duk_pcall(ctx, 0);
 	} else {
 		duk_call(ctx, 0);
 		rc = DUK_EXEC_SUCCESS;
@@ -85,7 +85,7 @@ int duk_compile_raw(duk_context *ctx, int flags) {
 	duk_push_int(ctx, flags);
 
 	if (flags & DUK_COMPILE_SAFE) {
-		int rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/, DUK_INVALID_INDEX);
+		int rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/);
 		return rc;
 	}
 
