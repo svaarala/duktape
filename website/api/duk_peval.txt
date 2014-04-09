@@ -27,3 +27,4 @@ compile
 duk_eval
 duk_peval_string
 duk_peval_file
+duk_peval_noresult

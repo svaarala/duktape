@@ -21,3 +21,6 @@ duk_pop(ctx);
 
 =tags
 compile
+
+=seealso
+duk_peval_file_noresult

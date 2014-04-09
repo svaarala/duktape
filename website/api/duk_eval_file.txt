@@ -17,3 +17,6 @@ duk_pop(ctx);
 
 =tags
 compile
+
+=seealso
+duk_eval_file_noresult

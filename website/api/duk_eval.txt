@@ -39,5 +39,7 @@ duk_pop(ctx);
 compile
 
 =seealso
+duk_peval
 duk_eval_string
 duk_eval_file
+duk_eval_noresult

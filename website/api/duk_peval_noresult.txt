@@ -1,0 +1,24 @@
+=proto
+int duk_peval_noresult(duk_context *ctx);
+
+=stack
+[ ... source! ] -> [ ... ]
+
+=summary
+<p>Like <code><a href="#duk_peval">duk_peval()</a></code> but leaves no result
+on the value stack.</p>
+
+=example
+duk_push_string(ctx, "print('Hello world!'); syntax error here=");
+if (duk_peval_noresult(ctx) != 0) {
+    printf("eval failed\n");
+} else {
+    printf("eval successful\n");
+}
+
+=tags
+compile
+
+=seealso
+duk_peval_string_noresult
+duk_peval_file_noresult
