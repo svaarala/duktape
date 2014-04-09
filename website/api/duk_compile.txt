@@ -112,8 +112,8 @@ duk_push_string(ctx, "print('program');\n"
                      "function hello() { print('Hello world!'); }\n"
                      "123;");
 duk_push_string(ctx, "hello");
-duk_compile(ctx, 0);
-duk_call(ctx, 0);      /* [ func filename ] -> [ result ] */
+duk_compile(ctx, 0);   /* [ source filename ] -> [ func ] */
+duk_call(ctx, 0);      /* [ func ] -> [ result ] */
 printf("program result: %lf\n", duk_get_number(ctx, -1));
 duk_pop(ctx);
 
