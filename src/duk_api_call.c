@@ -188,7 +188,10 @@ int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
 	duk_push_int(ctx, obj_index);
 	duk_push_int(ctx, nargs);
 
-	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing. */
+	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing.
+	 * If the value stack does not contain enough args, an error is thrown; this matches
+	 * behavior of the other protected call API functions.
+	 */
 	return duk_safe_call(ctx, duk__pcall_prop_raw, nargs + 1 + 2 /*nargs*/, 1 /*nrets*/);
 }
 

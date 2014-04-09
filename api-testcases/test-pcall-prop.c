@@ -27,8 +27,7 @@ rc=1, result='Error: invalid index: -6'
 rc=1, result='TypeError: call target not callable'
 ==> rc=0, result='undefined'
 *** test_9 (duk_safe_call)
-rc=1, result='Error: index out of bounds'
-==> rc=0, result='undefined'
+==> rc=1, result='Error: invalid call args'
 final top: 0
 ===*/
 
@@ -171,7 +170,11 @@ static int test_8(duk_context *ctx) {
 static int test_9(duk_context *ctx) {
 	int rc;
 
-	/* invalid arg count, 'key' would be below start of stack */
+	/* Invalid arg count, 'key' would be below start of stack.  This
+	 * results in an actual (uncaught) error at the moment, and matches
+	 * the behavior of other protected call API functions.
+	 */
+
 	duk_eval_string(ctx, "({ foo: function () { print('foo called'); } })");
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 10);
