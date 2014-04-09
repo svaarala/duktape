@@ -3,7 +3,7 @@ title: scan-build fixes and code annotations if necessary
 desc: http://clang-analyzer.llvm.org/annotations.html
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-02-24 20:20:43.804971 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-04-09 20:30:20.659456 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""
