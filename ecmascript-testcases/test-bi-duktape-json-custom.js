@@ -302,7 +302,7 @@ function characterEscapeDecodeTest() {
         } catch (e) {
             print(e.name);
         }
- 
+
     });
 }
 
