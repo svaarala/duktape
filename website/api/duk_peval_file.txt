@@ -1,0 +1,23 @@
+=proto
+int duk_peval_file(duk_context *ctx, const char *path);
+
+=stack
+[ ... ] -> [ ... result! ]  (if success, return value == 0)
+[ ... ] -> [ ... err! ]  (if failure, return value != 0)
+
+=summary
+<p>Like
+<code><a href="#duk_peval">duk_peval()</a></code>, but the eval input
+is given as a filename.  The filename associated with the temporary
+function created for the eval code is <code>path</code> as is.</p>
+
+=example
+if (duk_peval_file(ctx, "test.js") != 0) {
+    printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
+} else {
+    printf("result is: %s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);
+
+=tags
+compile

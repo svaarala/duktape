@@ -1,0 +1,29 @@
+=proto
+int duk_peval(duk_context *ctx);
+
+=stack
+[ ... source! ] -> [ ... result! ]  (if success, return value == 0)
+[ ... source! ] -> [ ... err! ]  (if failure, return value != 0)
+
+=summary
+<p>Like <code><a href="#duk_eval">duk_eval()</a></code> but catches errors
+related to compilation (such as syntax errors in the source).  A zero return
+value indicates success and the eval result is left on the stack top.
+A non-zero return value indicates an error, and the error is left on the stack top.</p>
+
+=example
+duk_push_string(ctx, "print('Hello world!'); syntax error here=");
+if (duk_peval(ctx) != 0) {
+    printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
+} else {
+    printf("result is: %s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);
+
+=tags
+compile
+
+=seealso
+duk_eval
+duk_peval_string
+duk_peval_file
