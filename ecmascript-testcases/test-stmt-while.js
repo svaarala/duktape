@@ -2,9 +2,103 @@
  *  While statement (E5 Section 12.10).
  */
 
-/*FIXME*/
+/*===
+basic
+while
+body, i: 9 count: 1
+while
+body, i: 8 count: 2
+while
+body, i: 7 count: 3
+while
+body, i: 6 count: 4
+while
+body, i: 5 count: 5
+while
+body, i: 4 count: 6
+while
+body, i: 3 count: 7
+while
+body, i: 2 count: 8
+while
+body, i: 1 count: 9
+while
+body, i: 0 count: 10
+while
+final i: -1
+===*/
+
+function basicTest() {
+    var count = 0;
+    var i = 10;
+
+    while (print('while'), count++, i-- > 0) {
+        print('body, i:', i, 'count:', count);
+    }
+    print('final i:', i);
+}
+
+print('basic');
+
+try {
+    basicTest();
+} catch (e) {
+    print(e);
+}
 
 /*===
+break and continue
+while
+body, i: 9 count: 1
+end body
+while
+body, i: 8 count: 2
+continue at 6 and 8
+while
+body, i: 7 count: 3
+end body
+while
+body, i: 6 count: 4
+continue at 6 and 8
+while
+body, i: 5 count: 5
+end body
+while
+body, i: 4 count: 6
+break at 4
+final i: 4
+===*/
+
+function breakContinueTest() {
+    var count = 0;
+    var i = 10;
+
+    while (print('while'), count++, i-- > 0) {
+        print('body, i:', i, 'count:', count);
+        if (i == 8 || i == 6) {
+            print('continue at 6 and 8');
+            continue;
+        }
+        if (i == 4) {
+            print('break at 4');
+            break;
+        }
+        print('end body');
+    }
+    print('final i:', i);
+}
+
+
+print('break and continue');
+
+try {
+    breakContinueTest();
+} catch (e) {
+    print(e);
+}
+
+/*===
+misc
 4
 3
 2
@@ -73,6 +167,8 @@ function whileTest() {
     }
     print('final', i);
 }
+
+print('misc');
 
 try {
     whileTest();
