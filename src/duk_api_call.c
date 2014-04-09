@@ -187,7 +187,9 @@ int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
 
 	duk_push_int(ctx, obj_index);
 	duk_push_int(ctx, nargs);
-	return duk_safe_call(ctx, duk__pcall_prop_raw, 2 /*nargs*/, 1 /*nrets*/);
+
+	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing. */
+	return duk_safe_call(ctx, duk__pcall_prop_raw, nargs + 1 + 2 /*nargs*/, 1 /*nrets*/);
 }
 
 int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets) {
