@@ -176,7 +176,8 @@ struct duk_memory_functions {
 #define DUK_COMPILE_EVAL                  (1 << 0)    /* compile eval code (instead of program) */
 #define DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
 #define DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
-#define DUK_COMPILE_SAFE                  (1 << 3)    /* catch compilation errors */
+#define DUK_COMPILE_SAFE                  (1 << 3)    /* (internal) catch compilation errors */
+#define DUK_COMPILE_NORESULT              (1 << 4)    /* (internal) omit eval result */
 
 /* Duktape specific error codes */
 #define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
@@ -592,9 +593,17 @@ int duk_compile_raw(duk_context *ctx, int flags);
 	((void) duk_push_string((ctx), __FILE__), \
 	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
 
+#define duk_eval_noresult(ctx)  \
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+
 #define duk_peval(ctx)  \
 	((void) duk_push_string((ctx), __FILE__), \
 	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+
+#define duk_peval_noresult(ctx)  \
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile(ctx,flags)  \
 	((void) duk_compile_raw((ctx), (flags)))
@@ -607,10 +616,20 @@ int duk_compile_raw(duk_context *ctx, int flags);
 	 (void) duk_push_string((ctx), __FILE__), \
 	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
 
+#define duk_eval_string_noresult(ctx,src)  \
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+
 #define duk_peval_string(ctx,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
 	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+
+#define duk_peval_string_noresult(ctx,src)  \
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_string(ctx,flags,src)  \
 	((void) duk_push_string((ctx), (src)), \
@@ -627,10 +646,20 @@ int duk_compile_raw(duk_context *ctx, int flags);
 	 (void) duk_push_string((ctx), (path)), \
 	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
 
+#define duk_eval_file_noresult(ctx,path)  \
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+
 #define duk_peval_file(ctx,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
 	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+
+#define duk_peval_file_noresult(ctx,path)  \
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_file(ctx,flags,path)  \
 	((void) duk_push_string_file((ctx), (path)), \

@@ -21,7 +21,8 @@ int duk_eval_raw(duk_context *ctx, int flags) {
 	/* [ ... closure/error ] */
 
 	if (rc != DUK_EXEC_SUCCESS) {
-		return DUK_EXEC_ERROR;
+		rc = DUK_EXEC_ERROR;
+		goto got_rc;
 	}
 
 	if (flags & DUK_COMPILE_SAFE) {
@@ -32,6 +33,11 @@ int duk_eval_raw(duk_context *ctx, int flags) {
 	}
 
 	/* [ ... result/error ] */
+
+ got_rc:
+	if (flags & DUK_COMPILE_NORESULT) {
+		duk_pop(ctx);
+	}
 
 	return rc;
 }
