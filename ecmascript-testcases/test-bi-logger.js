@@ -153,7 +153,15 @@ try {
 
 /*===
 formatting
-TIMESTAMP INF myLogger: types: undefined null true false 123.4 str foo,bar,quux [object Object]
+types
+TIMESTAMP INF myLogger: type: undefined
+TIMESTAMP INF myLogger: type: null
+TIMESTAMP INF myLogger: type: true
+TIMESTAMP INF myLogger: type: false
+TIMESTAMP INF myLogger: type: 123.4
+TIMESTAMP INF myLogger: type: str
+TIMESTAMP INF myLogger: type: foo,bar,quux
+TIMESTAMP INF myLogger: type: [object Object]
 TIMESTAMP INF myLogger: error: ERROR:my error
 toLogString() called
 toLogString() called
@@ -177,8 +185,15 @@ function formattingTest() {
     // Formatting test, all standard types except function (function coerces
     // a string with Ecmascript comments which interferes with the expect string)
 
-    logger.info('types:', undefined, null, true, false, 123.4, 'str',
-                [ 'foo', 'bar', 'quux' ], { foo: 1, bar: 2 });
+    print('types');
+    logger.info('type:', undefined);
+    logger.info('type:', null);
+    logger.info('type:', true);
+    logger.info('type:', false);
+    logger.info('type:', 123.4);
+    logger.info('type:', 'str');
+    logger.info('type:', [ 'foo', 'bar', 'quux' ]);
+    logger.info('type:', { foo: 1, bar: 2 });
 
     // toLogString()
 
