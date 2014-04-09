@@ -103,10 +103,13 @@ def main():
 
 	funcs_keys = funcs.keys()
 	funcs_keys.sort()
-	combined_size = 0
+	combined_size_all = 0
+	combined_size_duk = 0
 	for k in funcs_keys:
 		fun = funcs[k]
-		combined_size += fun['length']
+		combined_size_all += fun['length']
+		if fun['name'].startswith('duk_'):
+			combined_size_duk += fun['length']
 
 	f = sys.stdout
 	f.write('<html>')
@@ -128,7 +131,8 @@ tr:nth-child(2n+1) {
 	f.write('<h1>Summary</h1>')
 	f.write('<table>')
 	f.write('<tr><td>Entries</td><td>%d</td></tr>' % len(funcs_keys))
-	f.write('<tr><td>Combined size</td><td>%d</td></tr>' % combined_size)
+	f.write('<tr><td>Combined size (all)</td><td>%d</td></tr>' % combined_size_all)
+	f.write('<tr><td>Combined size (duk_*)</td><td>%d</td></tr>' % combined_size_duk)
 	f.write('</table>')
 
 	f.write('<h1>Sorted by function name</h1>')
