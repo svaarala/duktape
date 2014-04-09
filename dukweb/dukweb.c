@@ -79,16 +79,6 @@ void dukweb_close(void) {
 	}
 }
 
-static int dukweb__eval_wrapper(duk_context *ctx) {
-	duk_eval(ctx);
-	return 1;
-}
-
-static int dukweb__tostring_wrapper(duk_context *ctx) {
-	duk_to_string(ctx, -1);
-	return 1;
-}
-
 /* A very limited eval facility: one string input (eval code), one string
  * output (eval result or error, coerced with ToString()).  Data marshalling
  * needs to be implemented on top of this.
@@ -110,15 +100,13 @@ const char *dukweb_eval(const char *code) {
 
 	printf("dukweb_eval: '%s'\n", code);
 	duk_push_string(ctx, code);
-	if (duk_safe_call(ctx, dukweb__eval_wrapper, 1 /*nargs*/, 1 /*nrets*/)) {
+	if (duk_peval(ctx) != 0) {
 		/* failure */
-		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/);
-		res = duk_get_string(ctx, -1);
+		res = duk_safe_to_string(ctx, -1);
 		printf("dukweb_eval: result is error: %s\n", res ? res : "(null)");
 	} else {
 		/* success */
-		(void) duk_safe_call(ctx, dukweb__tostring_wrapper, 1 /*nargs*/, 1 /*nrets*/);
-		res = duk_get_string(ctx, -1);
+		res = duk_safe_to_string(ctx, -1);
 		printf("dukweb_eval: result is success: %s\n", res ? res : "(null)");
 	}
 
