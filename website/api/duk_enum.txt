@@ -41,7 +41,7 @@ duk_enum(ctx, -3, DUK_ENUM_INCLUDE_NONENUMERABLE);
 
 while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
     /* [ ... enum key ] */
-    printf("-> key '%s'\n", duk_get_string(ctx, -1));
+    printf("-> key %s\n", duk_get_string(ctx, -1));
     duk_pop(ctx);
 }
 

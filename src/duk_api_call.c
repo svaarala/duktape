@@ -161,12 +161,33 @@ int duk_pcall_method(duk_context *ctx, int nargs) {
 	return rc;
 }
 
-int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
-	/* FIXME: these will throw errors now, so this is a bad idea */
+static int duk__pcall_prop_raw(duk_context *ctx) {
+	int obj_index;
+	int nargs;
+
+	/* Get the original arguments.  Note that obj_index may be a relative
+	 * index so the stack must have the same top when we use it.
+	 */
+
+	obj_index = duk_get_int(ctx, -2);
+	nargs = duk_get_int(ctx, -1);
+	duk_pop_2(ctx);
+
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
 	duk__call_prop_prep_stack(ctx, obj_index, nargs);
+	duk_call_method(ctx, nargs);
+	return 1;
+}
 
-	return duk_pcall_method(ctx, nargs);
+int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
+	/*
+	 *  Must be careful to catch errors related to value stack manipulation
+	 *  and property lookup, not just the call itself.
+	 */
+
+	duk_push_int(ctx, obj_index);
+	duk_push_int(ctx, nargs);
+	return duk_safe_call(ctx, duk__pcall_prop_raw, 2 /*nargs*/, 1 /*nrets*/);
 }
 
 int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets) {

@@ -172,10 +172,11 @@ struct duk_memory_functions {
 #define DUK_ENUM_ARRAY_INDICES_ONLY       (1 << 3)    /* only enumerate array indices */
 #define DUK_ENUM_SORT_ARRAY_INDICES       (1 << 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
 
-/* Compilation flags for duk_compile() */
+/* Compilation flags for duk_compile() and duk_eval() */
 #define DUK_COMPILE_EVAL                  (1 << 0)    /* compile eval code (instead of program) */
 #define DUK_COMPILE_FUNCTION              (1 << 1)    /* compile function code (instead of program) */
 #define DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
+#define DUK_COMPILE_SAFE                  (1 << 3)    /* catch compilation errors */
 
 /* Duktape specific error codes */
 #define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
@@ -584,52 +585,72 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-void duk_eval_raw(duk_context *ctx);
-void duk_compile(duk_context *ctx, int flags);
+int duk_eval_raw(duk_context *ctx, int flags);
+int duk_compile_raw(duk_context *ctx, int flags);
 
 #define duk_eval(ctx)  \
-	do { \
-		(void) duk_push_string((ctx),__FILE__); \
-		duk_eval_raw((ctx)); \
-	} while (0)
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+
+#define duk_peval(ctx)  \
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+
+#define duk_compile(ctx,flags)  \
+	((void) duk_compile_raw((ctx), (flags)))
+
+#define duk_pcompile(ctx,flags)  \
+	(duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
 
 #define duk_eval_string(ctx,src)  \
-	do { \
-		(void) duk_push_string((ctx),(src)); \
-		(void) duk_push_string((ctx),__FILE__); \
-		duk_eval_raw((ctx)); \
-	} while (0)
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+
+#define duk_peval_string(ctx,src)  \
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_compile_string(ctx,flags,src)  \
-	do { \
-		(void) duk_push_string((ctx),(src)); \
-		(void) duk_push_string((ctx),__FILE__); \
-		duk_compile((ctx), (flags)); \
-	} while (0)
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_compile_raw((ctx), (flags)))
+
+#define duk_pcompile_string(ctx,flags,src)  \
+	((void) duk_push_string((ctx), (src)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
 
 #define duk_eval_file(ctx,path)  \
-	do { \
-		(void) duk_push_string_file((ctx),(path)); \
-		(void) duk_push_string((ctx),(path)); \
-		duk_eval_raw((ctx)); \
-	} while (0)
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+
+#define duk_peval_file(ctx,path)  \
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_compile_file(ctx,flags,path)  \
-	do { \
-		(void) duk_push_string_file((ctx),(path)); \
-		(void) duk_push_string((ctx),(path)); \
-		duk_compile((ctx), (flags)); \
-	} while (0)
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 (void) duk_compile_raw((ctx), (flags)))
 
-#ifdef __cplusplus
-}
-#endif
+#define duk_pcompile_file(ctx,flags,path)  \
+	((void) duk_push_string_file((ctx), (path)), \
+	 (void) duk_push_string((ctx), (path)), \
+	 duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
 
 /*
  *  Logging
  */
 
 void duk_log(duk_context *ctx, int level, const char *fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* DUKTAPE_H_INCLUDED */
 

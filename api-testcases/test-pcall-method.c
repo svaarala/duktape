@@ -16,7 +16,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	/* basic success case, strict target function (this not coerced)) */
@@ -25,7 +25,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	/* basic error case */
@@ -34,10 +34,8 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
-
-	/* FIXME: error handler tests */
 
 	printf("final top: %d\n", duk_get_top(ctx));
 }

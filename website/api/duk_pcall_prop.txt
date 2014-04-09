@@ -29,7 +29,3 @@ duk_pop(ctx);
 =tags
 property
 call
-
-=fixme
-This call is currently not safe: the property is looked up before a error
-catching is active.
