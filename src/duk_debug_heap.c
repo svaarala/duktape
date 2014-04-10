@@ -102,10 +102,9 @@ static void duk__dump_stringtable(duk_heap *heap) {
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), e);
 
-			/* FIXME: all string flags not printed now */
-
 #ifdef DUK_USE_REFERENCE_COUNTING
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, arridx=%d, internal=%d",
+			DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
 			           i,
 			           (void *) e,
 			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
@@ -115,9 +114,13 @@ static void duk__dump_stringtable(duk_heap *heap) {
 			           (int) e->blen,
 			           (int) e->clen,
 			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0);
+			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
 #else
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, arridx=%d, internal=%d",
+			DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
 			           i,
 			           (void *) e,
 			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
@@ -126,7 +129,10 @@ static void duk__dump_stringtable(duk_heap *heap) {
 			           (int) e->blen,
 			           (int) e->clen,
 			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0);
+			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
 #endif
 		}
 	}
