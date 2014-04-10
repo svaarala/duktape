@@ -373,8 +373,7 @@ void duk_put_function_list(duk_context *ctx, int obj_index, const duk_functionli
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	if (ent != NULL) {
 		while (ent->key != NULL) {
-			/* Functions arg count is always "varargs". */
-			duk_push_c_function(ctx, ent->value, DUK_VARARGS);
+			duk_push_c_function(ctx, ent->value, ent->nargs);
 			duk_put_prop_string(ctx, obj_index, ent->key);
 			ent++;
 		}
