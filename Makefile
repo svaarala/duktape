@@ -311,6 +311,13 @@ endif
 duksizes: duk.raw
 	$(PYTHON) src/genexesizereport.py $< > /tmp/duk_sizes.html
 
+fixmecount:
+	@echo "FIXME:     `grep FIXME: src/*.c src/*.h | wc -l | tr -d ' '`"
+	@echo "XXX:       `grep XXX: src/*.c src/*.h | wc -l | tr -d ' '`"
+	@echo "TODO:      `grep TODO: src/*.c src/*.h | wc -l | tr -d ' '`"
+	@echo "NOTE:      `grep NOTE: src/*.c src/*.h | wc -l | tr -d ' '`"
+	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h | wc -l | tr -d ' '`"
+
 dukscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
