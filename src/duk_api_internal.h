@@ -22,11 +22,8 @@ int duk_check_stack_raw(duk_context *ctx, unsigned int extra);
 void duk_require_stack_raw(duk_context *ctx, unsigned int extra);
 
 duk_tval *duk_get_tval(duk_context *ctx, int index);
-duk_tval duk_get_tval_value(duk_context *ctx, int index);      /* FIXME: not implemented now */
 duk_tval *duk_require_tval(duk_context *ctx, int index);
-duk_tval duk_require_tval_value(duk_context *ctx, int index);  /* FIXME: not implemented now */
 void duk_push_tval(duk_context *ctx, duk_tval *tv);
-void duk_push_tval_value(duk_context *ctx, duk_tval tv);       /* FIXME: not implemented now */
 
 void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the current 'this' binding; throw TypeError
                                                                 * if binding is not object coercible (CheckObjectCoercible).
@@ -44,7 +41,7 @@ duk_hthread *duk_get_hthread(duk_context *ctx, int index);
 duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, int index);
 duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, int index);
 
-/* FIXME: specific getters for e.g. thread; duk_get_hobject_with_flags()
+/* XXX: add specific getters for e.g. thread; duk_get_hobject_with_flags()
  * could be the underlying primitive?
  */
 

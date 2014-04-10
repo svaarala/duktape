@@ -77,10 +77,6 @@ struct duk_compiler_instr {
  *  Compiler state
  */
 
-/* FIXME: these two defines are not referenced? */
-#define DUK_MAX_MAPPED_REGS              128  /* max regs mapped to arguments and variables */
-#define DUK_MAX_ACTIVE_LABELS            64
-
 #define DUK_LABEL_FLAG_ALLOW_BREAK       (1 << 0)
 #define DUK_LABEL_FLAG_ALLOW_CONTINUE    (1 << 1)
 
