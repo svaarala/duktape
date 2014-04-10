@@ -174,6 +174,8 @@ void duk_debug_dump_heap(duk_heap *heap) {
 	DUK_DPRINT("  realloc_func: %s", buf);
 	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->free_func, sizeof(heap->free_func));
 	DUK_DPRINT("  free_func: %s", buf);
+	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->fatal_func, sizeof(heap->fatal_func));
+	DUK_DPRINT("  fatal_func: %s", buf);
 #ifdef DUK_USE_GCC_PRAGMAS
 #pragma GCC diagnostic pop
 #endif
@@ -187,8 +189,6 @@ void duk_debug_dump_heap(duk_heap *heap) {
 	DUK_DPRINT("  mark-and-sweep rec depth: %d", heap->mark_and_sweep_recursion_depth);
 	DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", heap->mark_and_sweep_base_flags);
 #endif
-
-	/* FIXME: heap->fatal_func */
 
 	DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr);
 	DUK_DPRINT("  lj.type: %d", heap->lj.type);

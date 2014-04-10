@@ -310,6 +310,13 @@ struct duk_heap {
 	duk_free_function free_func;
 	void *alloc_udata;
 
+	/* Fatal error handling, called e.g. when a longjmp() is needed but
+	 * lj.jmpbuf_ptr is NULL.  fatal_func must never return; it's not
+	 * declared as "noreturn" because doing that for typedefs is a bit
+	 * challenging portability-wise.
+	 */
+	duk_fatal_function fatal_func;
+
 	/* allocated heap objects */
 	duk_heaphdr *heap_allocated;
 
@@ -335,13 +342,6 @@ struct duk_heap {
 	/* work list for objects to be finalized (by mark-and-sweep) */
 	duk_heaphdr *finalize_list;
 #endif
-
-	/* Fatal error handling, called e.g. when a longjmp() is needed but
-	 * lj.jmpbuf_ptr is NULL.  fatal_func must never return; it's not
-	 * declared as "noreturn" because doing that for typedefs is a bit
-	 * challenging portability-wise.
-	 */
-	duk_fatal_function fatal_func;
 
 	/* longjmp state */
 	duk_ljstate lj;
