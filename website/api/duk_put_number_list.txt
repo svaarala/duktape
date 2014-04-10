@@ -1,6 +1,6 @@
 
 =proto
-void duk_put_number_list(duk_context *ctx, int obj_index, const duk_numberlist_entry *numbers);
+void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers);
 
 =stack
 [ ... obj! ... ] -> [ ... obj! ... ]
@@ -14,7 +14,7 @@ at <code>obj_index</code>.  The number list is given as a list of pairs
 classes implemented in C.</p>
 
 =example
-const duk_numberlist_entry my_module_consts[] = {
+const duk_number_list_entry my_module_consts[] = {
 	{ "FLAG_FOO", (double) (1 << 0) },
 	{ "FLAG_BAR", (double) (1 << 1) },
 	{ "FLAG_QUUX", (double) (1 << 2) },

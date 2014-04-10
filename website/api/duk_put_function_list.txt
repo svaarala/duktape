@@ -1,6 +1,6 @@
 
 =proto
-void duk_put_function_list(duk_context *ctx, int obj_index, const duk_functionlist_entry *funcs);
+void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs);
 
 =stack
 [ ... obj! ... ] -> [ ... obj! ... ]
@@ -15,7 +15,7 @@ with a triple where name is <code>NULL</code> (preferably also function is
 as a set of Duktape/C functions.</p>
 
 =example
-const duk_functionlist_entry my_module_funcs[] = {
+const duk_function_list_entry my_module_funcs[] = {
 	{ "tweak", do_tweak, 0 /* no args */ },
 	{ "adjust", do_adjust, 3 /* 3 args */ },
 	{ "frobnicate", do_frobnicate, DUK_VARAGS /* variable args */ },
