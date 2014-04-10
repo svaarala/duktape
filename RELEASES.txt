@@ -216,6 +216,9 @@ Planned
 * duk_pcall_prop() now catches invalid stack index errors and property
   lookup errors which happen before the actual call
 
+* Add duk_put_function_list() and duk_put_number_list() to make it easier
+  to define modules from C code
+
 * Add Duktape.compact() and Duktape.line()
 
 * Add a barebones built-in logging framework with both Ecmascript and C
