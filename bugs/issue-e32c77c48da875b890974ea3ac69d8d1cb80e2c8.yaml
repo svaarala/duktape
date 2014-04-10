@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "duk_xmove(): remove or document"
+desc: ""
+type: :task
+component: duk
+release: v0.10
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-10 20:34:08.627414 Z
+references: []
+
+id: e32c77c48da875b890974ea3ac69d8d1cb80e2c8
+log_events: 
+- - 2014-04-10 20:34:08.774849 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

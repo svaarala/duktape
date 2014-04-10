@@ -3,7 +3,7 @@ title: shared helper for duk_hobject_pc2line_query (which is probably too low le
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-02-18 15:29:40.914743 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-04-10 19:47:18.860734 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""

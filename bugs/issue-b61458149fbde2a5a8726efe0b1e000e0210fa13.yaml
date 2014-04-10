@@ -3,7 +3,7 @@ title: add an easy mechanism to pass args to eval'd code (perhaps eval a functio
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-02-06 21:44:59.208370 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-04-10 19:47:18.982384 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""
