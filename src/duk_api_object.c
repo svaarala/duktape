@@ -367,8 +367,8 @@ int duk_next(duk_context *ctx, int enum_index, int get_value) {
  *  Helpers for writing multiple properties
  */
 
-void duk_put_function_list(duk_context *ctx, int obj_index, const duk_functionlist_entry *funcs) {
-	const duk_functionlist_entry *ent = funcs;
+void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs) {
+	const duk_function_list_entry *ent = funcs;
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	if (ent != NULL) {
@@ -380,8 +380,8 @@ void duk_put_function_list(duk_context *ctx, int obj_index, const duk_functionli
 	}
 }
 
-void duk_put_number_list(duk_context *ctx, int obj_index, const duk_numberlist_entry *numbers) {
-	const duk_numberlist_entry *ent = numbers;
+void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers) {
+	const duk_number_list_entry *ent = numbers;
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	if (ent != NULL) {
