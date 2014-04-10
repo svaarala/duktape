@@ -54,14 +54,16 @@ static int fileio_readfile(duk_context *ctx) {
 	return DUK_RET_ERROR;
 }
 
+static duk_function_list_entry fileio_funcs[] = {
+	{ "readfile", fileio_readfile, 1 },
+	{ NULL, NULL, 0 }
+};
+
 void fileio_register(duk_context *ctx) {
+	/* Set global 'FileIo'. */
 	duk_push_global_object(ctx);
-	duk_push_string(ctx, "FileIo");
 	duk_push_object(ctx);
-
-	duk_push_c_function(ctx, fileio_readfile, 1);
-	duk_put_prop_string(ctx, -2, "readfile");
-
-	duk_put_prop(ctx, -3);
+	duk_put_function_list(ctx, -1, fileio_funcs);
+	duk_put_prop_string(ctx, -2, "FileIo");
 	duk_pop(ctx);
 }

@@ -266,31 +266,21 @@ static int socket_write(duk_context *ctx) {
 	return 1;
 }
 
+static duk_function_list_entry socket_funcs[] = {
+	{ "createServerSocket", socket_create_server_socket, 2 },
+	{ "close", socket_close, 1 },
+	{ "accept", socket_accept, 1 },
+	{ "connect", socket_connect, 2 },
+	{ "read", socket_read, 1 },
+	{ "write", socket_write, 2 },
+	{ NULL, NULL, 0 }
+};
+
 void socket_register(duk_context *ctx) {
+	/* Set global 'Socket'. */
 	duk_push_global_object(ctx);
-	duk_push_string(ctx, "Socket");
 	duk_push_object(ctx);
-
-	duk_push_string(ctx, "createServerSocket");
-	duk_push_c_function(ctx, socket_create_server_socket, 2);
-	duk_put_prop(ctx, -3);
-
-	duk_push_c_function(ctx, socket_close, 1);
-	duk_put_prop_string(ctx, -2, "close");
-
-	duk_push_c_function(ctx, socket_accept, 1);
-	duk_put_prop_string(ctx, -2, "accept");
-
-	duk_push_c_function(ctx, socket_connect, 2);
-	duk_put_prop_string(ctx, -2, "connect");
-
-	duk_push_c_function(ctx, socket_read, 1);
-	duk_put_prop_string(ctx, -2, "read");
-
-	duk_push_c_function(ctx, socket_write, 2);
-	duk_put_prop_string(ctx, -2, "write");
-
-	duk_put_prop(ctx, -3);
+	duk_put_function_list(ctx, -1, socket_funcs);
+	duk_put_prop_string(ctx, -2, "Socket");
 	duk_pop(ctx);
 }
-

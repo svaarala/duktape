@@ -88,9 +88,13 @@ typedef int duk_bool_t;
 typedef size_t duk_size_t;
 
 struct duk_memory_functions;
+struct duk_function_list_entry;
+struct duk_number_list_entry;
 
 typedef void duk_context;
 typedef struct duk_memory_functions duk_memory_functions;
+typedef struct duk_function_list_entry duk_function_list_entry;
+typedef struct duk_number_list_entry duk_number_list_entry;
 
 typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
@@ -106,6 +110,17 @@ struct duk_memory_functions {
 	duk_realloc_function realloc;
 	duk_free_function free;
 	void *udata;
+};
+
+struct duk_function_list_entry {
+	const char *key;
+	duk_c_function value;
+	int nargs;
+};
+
+struct duk_number_list_entry {
+	const char *key;
+	double value;
 };
 
 /*
@@ -524,6 +539,13 @@ int duk_del_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
 int duk_has_prop(duk_context *ctx, int obj_index);
 int duk_has_prop_string(duk_context *ctx, int obj_index, const char *key);
 int duk_has_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
+
+/*
+ *  Module helpers: put multiple function or constant properties
+ */
+
+void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs);
+void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers);
 
 /*
  *  Variable access

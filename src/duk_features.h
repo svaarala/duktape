@@ -1664,6 +1664,11 @@ typedef FILE duk_file;
 #undef DUK_USE_PC2LINE
 #endif
 
+#undef DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
+#if defined(DUK_OPT_FUNC_NONSTD_SOURCE_PROPERTY)
+#define DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
+#endif
+
 /*
  *  Deep vs. shallow stack.
  *

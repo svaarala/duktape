@@ -363,4 +363,32 @@ int duk_next(duk_context *ctx, int enum_index, int get_value) {
 	return duk_hobject_enumerator_next(ctx, get_value);
 }
 
+/*
+ *  Helpers for writing multiple properties
+ */
 
+void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs) {
+	const duk_function_list_entry *ent = funcs;
+
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+	if (ent != NULL) {
+		while (ent->key != NULL) {
+			duk_push_c_function(ctx, ent->value, ent->nargs);
+			duk_put_prop_string(ctx, obj_index, ent->key);
+			ent++;
+		}
+	}
+}
+
+void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers) {
+	const duk_number_list_entry *ent = numbers;
+
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+	if (ent != NULL) {
+		while (ent->key != NULL) {
+			duk_push_number(ctx, ent->value);
+			duk_put_prop_string(ctx, obj_index, ent->key);
+			ent++;
+		}
+	}
+}

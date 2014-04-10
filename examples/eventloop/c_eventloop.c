@@ -269,7 +269,7 @@ int eventloop_run(duk_context *ctx) {
 	 */
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "EventLoop");
-	duk_get_prop_string(ctx, -1, "fdPollHandler");  /* -> [ global EventLoop fdPollHandler ] */
+	duk_get_prop_string(ctx, -1, "fdPollHandler");  /* -> [ global EventLoop fdPollHandler ] */
 	idx_fd_handler = duk_get_top_index(ctx);
 	idx_eventloop = idx_fd_handler - 1;
 
@@ -590,35 +590,29 @@ static int request_exit(duk_context *ctx) {
 	return 0;
 }
 
+static duk_function_list_entry eventloop_funcs[] = {
+	{ "createTimer", create_timer, 3 },
+	{ "deleteTimer", delete_timer, 1 },
+	{ "listenFd", listen_fd, 2 },
+	{ "requestExit", request_exit, 0 },
+	{ NULL, NULL, 0 }
+};
+
 void eventloop_register(duk_context *ctx) {
 	memset((void *) timer_list, 0, MAX_TIMERS * sizeof(ev_timer));
 	memset((void *) &timer_expiring, 0, sizeof(ev_timer));
 	memset((void *) poll_list, 0, MAX_FDS * sizeof(struct pollfd));
 
+	/* Set global 'EventLoop'. */
 	duk_push_global_object(ctx);
-	duk_push_string(ctx, "EventLoop");
 	duk_push_object(ctx);
+	duk_put_function_list(ctx, -1, eventloop_funcs);
+	duk_put_prop_string(ctx, -2, "EventLoop");
+	duk_pop(ctx);
 
-	duk_push_c_function(ctx, create_timer, 3);
-	duk_put_prop_string(ctx, -2, "createTimer");
-
-	duk_push_c_function(ctx, delete_timer, 1);
-	duk_put_prop_string(ctx, -2, "deleteTimer");
-
-	duk_push_c_function(ctx, listen_fd, 2);
-	duk_put_prop_string(ctx, -2, "listenFd");
-
-	duk_push_c_function(ctx, request_exit, 0);
-	duk_put_prop_string(ctx, -2, "requestExit");
-
-	duk_put_prop(ctx, -3);  /* set global 'eventloop' */
-
-	/* Initialize global stash 'eventTimers' */
+	/* Initialize global stash 'eventTimers'. */
 	duk_push_global_stash(ctx);
 	duk_push_object(ctx);
 	duk_put_prop_string(ctx, -2, "eventTimers");
 	duk_pop(ctx);
-
-	duk_pop(ctx);
 }
-

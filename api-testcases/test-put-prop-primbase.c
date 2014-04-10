@@ -1,7 +1,7 @@
 /*===
 *** test_put (duk_safe_call)
 put rc=0
-final top: 0
+final top: 1
 ==> rc=0, result='undefined'
 *** test_put (duk_pcall)
 ==> rc=1, result='TypeError: non-object base reference'
@@ -22,7 +22,7 @@ int test_put(duk_context *ctx) {
 
 	printf("put rc=%d\n", rc);
 
-	printf("final top: %d\n", rc);
+	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
 }
 
