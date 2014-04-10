@@ -115,6 +115,7 @@ struct duk_memory_functions {
 struct duk_functionlist_entry {
 	const char *key;
 	duk_c_function value;
+	int nargs;
 };
 
 struct duk_numberlist_entry {
