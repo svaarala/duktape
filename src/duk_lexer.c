@@ -76,14 +76,12 @@
 
 #include "duk_internal.h"
 
-/* FIXME: check defines */
-
 /*
  *  Various defines and file specific helper macros
  */
 
 #define DUK__MAX_RE_DECESC_DIGITS     9
-#define DUK__MAX_RE_QUANT_DIGITS      9   /* FIXME: does not allow e.g. 2**31-1, but one more would allow overflows of u32 */
+#define DUK__MAX_RE_QUANT_DIGITS      9   /* Does not allow e.g. 2**31-1, but one more would allow overflows of u32. */
 
 #define DUK__LOOKUP(lex_ctx,index)    ((lex_ctx)->window[(index)])
 #define DUK__ADVANCE(lex_ctx,count)   duk__advance_chars((lex_ctx), (count))
@@ -311,7 +309,7 @@ static void duk__advance_chars(duk_lexer_ctx *lex_ctx, int count) {
 
 static void duk__initbuffer(duk_lexer_ctx *lex_ctx) {
 	if (lex_ctx->buf->usable_size < DUK_LEXER_TEMP_BUF_LIMIT) {
-		/* FIXME: resize (zero) without realloc -> API change */
+		/* Resize (zero) without realloc. */
 		lex_ctx->buf->size = 0;
 	} else {
 		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, 0, DUK_LEXER_TEMP_BUF_LIMIT);
@@ -660,12 +658,6 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 * 
 			 */
 
-			/* FIXME: needs to be checked carefully */
-
-			/* FIXME: lexical parsing of regexps may be needed even without regexp
-			 * support because regexp mode is the default in the compiler.
-			 */
-
 			/* first, parse regexp body roughly */
 
 			duk_uint8_t state = 0;  /* 0=base, 1=esc, 2=class, 3=class+esc */
@@ -984,14 +976,14 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  starting with a '0' must be followed by a non-digit.  Leading
 		 *  zeroes are syntax errors and must be checked for.
 		 *
-		 *  FIXME: the two step parsing process is quite awkward, it would
+		 *  XXX: the two step parsing process is quite awkward, it would
 		 *  be more straightforward to allow numconv to parse the longest
 		 *  valid prefix (it already does that, it only needs to indicate
 		 *  where the input ended).  However, the lexer decodes characters
 		 *  using a lookup window, so this is not a trivial change.
 		 */
 
-		/* FIXME: because of the final check below (that the literal is not
+		/* XXX: because of the final check below (that the literal is not
 		 * followed by a digit), this could maybe be simplified, if we bail
 		 * out early from a leading zero (and if there are no periods etc).
 		 * Maybe too complex.
@@ -1555,7 +1547,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 		break;
 	}
 	case '(': {
-		/* FIXME: naming is inconsistent: ATOM_END_GROUP ends an ASSERT_START_LOOKAHEAD */
+		/* XXX: naming is inconsistent: ATOM_END_GROUP ends an ASSERT_START_LOOKAHEAD */
 
 		if (y == '?') {
 			if (DUK__L2() == '=') {

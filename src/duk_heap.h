@@ -200,7 +200,7 @@
 /*
  *  Memory calls: relative to heap, GC interaction, but no error throwing.
  *
- *  TODO: Currently a mark-and-sweep triggered by memory allocation will run
+ *  XXX: Currently a mark-and-sweep triggered by memory allocation will run
  *  using the heap->heap_thread.  This thread is also used for running
  *  mark-and-sweep finalization; this is not ideal because it breaks the
  *  isolation between multiple global environments.

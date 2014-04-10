@@ -862,7 +862,9 @@ void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase
 	h_input = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	/* FIXME: should init with a spare of at least h_input->blen? */
+	/* XXX: should init the buffer with a spare of at least h_input->blen
+	 * to avoid unnecessary growth steps.
+	 */
 	duk_push_dynamic_buffer(ctx, 0);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);

@@ -52,7 +52,7 @@ typedef struct {
  *  even though the buffer operations will use duk_size_t.
  */
 
-/* FIXME: the insert helpers should ensure that the bytecode result is not
+/* XXX: the insert helpers should ensure that the bytecode result is not
  * larger than expected (or at least assert for it).  Many things in the
  * bytecode, like skip offsets, won't work correctly if the bytecode is
  * larger than say 2G.
