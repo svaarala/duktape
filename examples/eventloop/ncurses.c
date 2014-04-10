@@ -83,36 +83,23 @@ static int ncurses_getch(duk_context *ctx) {
 	return 1;
 }
 
+static duk_function_list_entry ncurses_funcs[] = {
+	{ "initscr", ncurses_initscr, 0 },
+	{ "endwin", ncurses_endwin, 0 },
+	{ "delscreen", ncurses_delscreen, 0 },
+	{ "getmaxyx", ncurses_getmaxyx, 0 },
+	{ "printw", ncurses_printw, 1 },
+	{ "mvprintw", ncurses_mvprintw, 3 },
+	{ "refresh", ncurses_refresh, 0 },
+	{ "getch", ncurses_getch, 0 },
+	{ NULL, NULL, 0 }
+};
+
 void ncurses_register(duk_context *ctx) {
+	/* Set global 'Ncurses'. */
 	duk_push_global_object(ctx);
-	duk_push_string(ctx, "Ncurses");
 	duk_push_object(ctx);
-
-	duk_push_c_function(ctx, ncurses_initscr, 0);
-	duk_put_prop_string(ctx, -2, "initscr");
-
-	duk_push_c_function(ctx, ncurses_endwin, 0);
-	duk_put_prop_string(ctx, -2, "endwin");
-
-	duk_push_c_function(ctx, ncurses_delscreen, 0);
-	duk_put_prop_string(ctx, -2, "delscreen");
-
-	duk_push_c_function(ctx, ncurses_getmaxyx, 0);
-	duk_put_prop_string(ctx, -2, "getmaxyx");
-
-	duk_push_c_function(ctx, ncurses_printw, 1);
-	duk_put_prop_string(ctx, -2, "printw");
-
-	duk_push_c_function(ctx, ncurses_mvprintw, 3);
-	duk_put_prop_string(ctx, -2, "mvprintw");
-
-	duk_push_c_function(ctx, ncurses_refresh, 0);
-	duk_put_prop_string(ctx, -2, "refresh");
-
-	duk_push_c_function(ctx, ncurses_getch, 0);
-	duk_put_prop_string(ctx, -2, "getch");
-
-	duk_put_prop(ctx, -3);
+	duk_put_function_list(ctx, -1, ncurses_funcs);
+	duk_put_prop_string(ctx, -2, "Ncurses");
 	duk_pop(ctx);
 }
-

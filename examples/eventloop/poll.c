@@ -79,35 +79,33 @@ static int poll_poll(duk_context *ctx) {
 	return 1;
 }
 
-void poll_register(duk_context *ctx) {
-	duk_push_global_object(ctx);
-	duk_push_string(ctx, "Poll");
-	duk_push_object(ctx);
+static duk_function_list_entry poll_funcs[] = {
+	{ "poll", poll_poll, 2 },
+	{ NULL, NULL, 0 }
+};
 
-	duk_push_c_function(ctx, poll_poll, 2);
-	duk_put_prop_string(ctx, -2, "poll");
-
-	duk_push_int(ctx, POLLIN);
-	duk_put_prop_string(ctx, -2, "POLLIN");
-	duk_push_int(ctx, POLLPRI);
-	duk_put_prop_string(ctx, -2, "POLLPRI");
-	duk_push_int(ctx, POLLOUT);
-	duk_put_prop_string(ctx, -2, "POLLOUT");
+static duk_number_list_entry poll_consts[] = {
+	{ "POLLIN", (double) POLLIN },
+	{ "POLLPRI", (double) POLLPRI },
+	{ "POLLOUT", (double) POLLOUT },
 #if 0
 	/* Linux 2.6.17 and upwards, requires _GNU_SOURCE etc, not added
 	 * now because we don't use it.
 	 */
-	duk_push_int(ctx, POLLRDHUP);
-	duk_put_prop_string(ctx, -2, "POLLRDHUP");
+	{ "POLLRDHUP", (double) POLLRDHUP },
 #endif
-	duk_push_int(ctx, POLLERR);
-	duk_put_prop_string(ctx, -2, "POLLERR");
-	duk_push_int(ctx, POLLHUP);
-	duk_put_prop_string(ctx, -2, "POLLHUP");
-	duk_push_int(ctx, POLLNVAL);
-	duk_put_prop_string(ctx, -2, "POLLNVAL");
+	{ "POLLERR", (double) POLLERR },
+	{ "POLLHUP", (double) POLLHUP },
+	{ "POLLNVAL", (double) POLLNVAL },
+	{ NULL, 0.0 }
+};
 
-	duk_put_prop(ctx, -3);
+void poll_register(duk_context *ctx) {
+	/* Set global 'Poll' with functions and constants. */
+	duk_push_global_object(ctx);
+	duk_push_object(ctx);
+	duk_put_function_list(ctx, -1, poll_funcs);
+	duk_put_number_list(ctx, -1, poll_consts);
+	duk_put_prop_string(ctx, -2, "Poll");
 	duk_pop(ctx);
 }
-
