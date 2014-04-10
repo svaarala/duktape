@@ -1659,10 +1659,6 @@ typedef FILE duk_file;
 #define DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
 #endif
 
-/*
- *  Function instance features.
- */
-
 #define DUK_USE_PC2LINE
 #if defined(DUK_OPT_NO_PC2LINE)
 #undef DUK_USE_PC2LINE
