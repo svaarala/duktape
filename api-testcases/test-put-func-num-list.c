@@ -38,14 +38,14 @@ static int do_frobnicate(duk_context *ctx) {
 	return 1;
 }
 
-static const duk_functionlist_entry my_funcs[] = {
+static const duk_function_list_entry my_funcs[] = {
 	{ "tweak", do_tweak, 0 },
 	{ "adjust", do_adjust, 3 },
 	{ "frobnicate", do_frobnicate, DUK_VARARGS },
 	{ NULL, NULL, 0 }
 };
 
-static const duk_numberlist_entry my_consts[] = {
+static const duk_number_list_entry my_consts[] = {
 	{ "FLAG_FOO", (double) (1 << 0) },
 	{ "FLAG_BAR", (double) (1 << 1) },
 	{ "FLAG_QUUX", (double) (1 << 2) },
