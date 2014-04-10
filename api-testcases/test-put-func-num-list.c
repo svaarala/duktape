@@ -7,39 +7,42 @@ tweak,adjust,frobnicate,FLAG_FOO,FLAG_BAR,FLAG_QUUX,meaning
 2
 4
 42
-tweak, top=3
-3
+tweak, top=0
+0
 adjust, top=3
 4
-frobnicate, top=3
+frobnicate, top=6
 5
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
 static int do_tweak(duk_context *ctx) {
+	/* nargs=0 */
 	printf("tweak, top=%d\n", duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 0) + duk_get_int(ctx, 1));
 	return 1;
 }
 
 static int do_adjust(duk_context *ctx) {
+	/* nargs=3 */
 	printf("adjust, top=%d\n", duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 0) + duk_get_int(ctx, 2));
 	return 1;
 }
 
 static int do_frobnicate(duk_context *ctx) {
+	/* nargs=VARARGS */
 	printf("frobnicate, top=%d\n", duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 1) + duk_get_int(ctx, 2));
 	return 1;
 }
 
 static const duk_functionlist_entry my_funcs[] = {
-	{ "tweak", do_tweak },
-	{ "adjust", do_adjust },
-	{ "frobnicate", do_frobnicate },
-	{ NULL, NULL }
+	{ "tweak", do_tweak, 0 },
+	{ "adjust", do_adjust, 3 },
+	{ "frobnicate", do_frobnicate, DUK_VARARGS },
+	{ NULL, NULL, 0 }
 };
 
 static const duk_numberlist_entry my_consts[] = {
@@ -75,9 +78,9 @@ int test_1(duk_context *ctx) {
 	    "print(MyModule.FLAG_BAR);\n"
 	    "print(MyModule.FLAG_QUUX);\n"
 	    "print(MyModule.meaning);\n"
-	    "print(MyModule.tweak(1, 2, 3));\n"
-	    "print(MyModule.adjust(1, 2, 3));\n"
-	    "print(MyModule.frobnicate(1, 2, 3));\n"
+	    "print(MyModule.tweak(1, 2, 3, 4, 5, 6));\n"
+	    "print(MyModule.adjust(1, 2, 3, 4, 5, 6));\n"
+	    "print(MyModule.frobnicate(1, 2, 3, 4, 5, 6));\n"
 	);
 
 	printf("final top: %d\n", duk_get_top(ctx));
