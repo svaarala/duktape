@@ -1,0 +1,40 @@
+
+=proto
+void duk_put_function_list(duk_context *ctx, int obj_index, const duk_functionlist_entry *funcs);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... ]
+
+=summary
+<p>Set multiple function properties into a target object at <code>obj_index</code>.
+The functions are specified as a list of triples (name, function, nargs), ending
+with a triple where name is <code>NULL</code> (preferably also function is
+<code>NULL</code> for sanity).</p>
+
+<p>This is useful e.g. when defining modules or classes implemented
+as a set of Duktape/C functions.</p>
+
+=example
+const duk_functionlist_entry my_module_funcs[] = {
+	{ "tweak", do_tweak, 0 /* no args */ },
+	{ "adjust", do_adjust, 3 /* 3 args */ },
+	{ "frobnicate", do_frobnicate, DUK_VARAGS /* variable args */ },
+	{ NULL, NULL, 0 }
+};
+
+/* Initialize an object with a set of function properties, and set it to
+ * global object 'MyModule'.
+ */
+
+duk_push_global_object(ctx);
+duk_push_object(ctx);  /* -> [ ... global obj ] */
+duk_put_function_list(ctx, -1, my_module_funcs);
+duk_put_prop_string(ctx, -2, "MyModule");  /* -> [ ... global ] */
+duk_pop(ctx);
+
+=tags
+property
+module
+
+=seealso
+duk_put_number_list
