@@ -112,6 +112,7 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	return 1;
 }
 
+#if defined(DUK_USE_PC2LINE)
 duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act_caller;
@@ -146,6 +147,12 @@ duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
 	duk_push_int(ctx, (int) line);  /* FIXME: typing */
 	return 1;
 }
+#else  /* DUK_USE_PC2LINE */
+duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return 0;
+}
+#endif  /* DUK_USE_PC2LINE */
 
 duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 #ifdef DUK_USE_MARK_AND_SWEEP

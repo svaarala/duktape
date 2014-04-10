@@ -9,6 +9,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_PC2LINE)
+
 /* Generate pc2line data for an instruction sequence, leaving a buffer on stack top. */
 void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length) {
 	duk_context *ctx = (duk_context *) thr;
@@ -213,3 +215,4 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	return 0;
 }
 
+#endif  /* DUK_USE_PC2LINE */

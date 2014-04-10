@@ -843,7 +843,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 #endif  /* DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY */
 
 	/* _pc2line */
-#ifdef DUK_USE_PC2LINE
+#if defined(DUK_USE_PC2LINE)
 	if (1) {
 		/*
 		 *  Size-optimized pc->line mapping.
@@ -990,17 +990,23 @@ static duk_compiler_instr *duk__get_instr_ptr(duk_compiler_ctx *comp_ctx, int pc
  */
 static void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr ins) {
 	duk_hbuffer_dynamic *h;
+#if defined(DUK_USE_PC2LINE)
 	int line;
+#endif
 	duk_compiler_instr instr;
 
 	DUK_DDDPRINT("duk__emit: 0x%08x line=%d pc=%d --> %!I",
 	             ins, comp_ctx->curr_token.start_line, duk__get_current_pc(comp_ctx), ins);
 
 	h = comp_ctx->curr_func.h_code;
+#if defined(DUK_USE_PC2LINE)
 	line = comp_ctx->curr_token.start_line;  /* approximation, close enough */
+#endif
 
 	instr.ins = ins;
+#if defined(DUK_USE_PC2LINE)
 	instr.line = line;
+#endif
 
 	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
 }
@@ -1375,15 +1381,22 @@ static int duk__emit_jump_empty(duk_compiler_ctx *comp_ctx) {
  */
 static void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, int jump_pc) {
 	duk_hbuffer_dynamic *h;
+#if defined(DUK_USE_PC2LINE)
 	int line;
+#endif
 	duk_compiler_instr instr;
 	size_t offset;
 
 	h = comp_ctx->curr_func.h_code;
+#if defined(DUK_USE_PC2LINE)
 	line = comp_ctx->curr_token.start_line;  /* approximation, close enough */
+#endif
 
 	instr.ins = DUK_ENC_OP_ABC(DUK_OP_JUMP, 0);
+#if defined(DUK_USE_PC2LINE)
 	instr.line = line;
+#endif
+
 	offset = jump_pc * sizeof(duk_compiler_instr);
 
 	duk_hbuffer_insert_bytes(comp_ctx->thr, h, offset, (duk_uint8_t *) &instr, sizeof(instr));

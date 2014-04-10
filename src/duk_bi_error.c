@@ -151,7 +151,6 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 			const char *funcname;
 			duk_hobject *h_func;
 			duk_hstring *h_name;
-			duk_hbuffer_fixed *pc2line;
 
 			duk_require_stack(ctx, 5);
 			duk_get_prop_index(ctx, idx_td, i);
@@ -174,8 +173,10 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 				duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
 				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
 
+#if defined(DUK_USE_PC2LINE)
 				duk_get_prop_stridx(ctx, -4, DUK_STRIDX_INT_PC2LINE);
 				if (duk_is_buffer(ctx, -1)) {
+					duk_hbuffer_fixed *pc2line;
 					pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
 					line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
@@ -183,6 +184,9 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 					line = 0;
 				}
 				duk_pop(ctx);
+#else
+				line = 0;
+#endif
 
 				/* [ ... v1 v2 name filename ] */
 
