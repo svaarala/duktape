@@ -74,10 +74,6 @@ typedef struct {
  *     object remains reachable.
  */
 
-/* FIXME: need to recheck the resulting Function instance objects for
- * compliance to E5 Section 13.2.
- */
-
 static void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunction *f) {
 	duk_tval *tv, *tv_end;
 	duk_hobject **funcs, **funcs_end;
@@ -137,7 +133,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_push_compiledfunction(ctx);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
-	fun_clos = (duk_hcompiledfunction *) duk_get_hobject(ctx, -2);  /* FIXME: duk_get_hcompiledfunction */
+	fun_clos = (duk_hcompiledfunction *) duk_get_hobject(ctx, -2);  /* XXX: duk_get_hcompiledfunction */
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun_clos));
 	DUK_ASSERT(fun_clos != NULL);
 	DUK_ASSERT(fun_clos->data == NULL);
@@ -355,7 +351,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  instance (closure) which prevents refcount-based collection of
 	 *  function instances.
 	 *
-	 *  FIXME: Try to avoid creating the default prototype object, because
+	 *  XXX: Try to avoid creating the default prototype object, because
 	 *  many functions are not used as constructors and the default
 	 *  prototype is unnecessary.  Perhaps it could be created on-demand
 	 *  when it is first accessed?
@@ -372,7 +368,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  "arguments" and "caller" must be mapped to throwers for
 	 *  strict mode and bound functions (E5 Section 15.3.5).
 	 *
-	 *  FIXME: This is expensive to have for every strict function instance.
+	 *  XXX: This is expensive to have for every strict function instance.
 	 *  Try to implement as virtual properties or on-demand created properties.
 	 */
 
@@ -399,7 +395,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  We could also leave name 'undefined' for anonymous functions but that would
 	 *  differ from behavior of other engines, so use an empty string.
 	 *
-	 *  FIXME: make optional?  costs something per function.
+	 *  XXX: make optional?  costs something per function.
 	 */
 
 	/* [ ... closure template ] */
@@ -610,12 +606,12 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 		duk_tval *tv;
 		int regnum;
 
-		/* FIXME: additional conditions when to close variables? we don't want to do it
+		/* XXX: additional conditions when to close variables? we don't want to do it
 		 * unless the environment may have "escaped" (referenced in a function closure).
 		 * With delayed environments, the existence is probably good enough of a check.
 		 */
 
-		/* FIXME: any way to detect faster whether something needs to be closed?
+		/* XXX: any way to detect faster whether something needs to be closed?
 		 * We now look up _callee and then skip the rest.
 		 */
 
@@ -787,7 +783,7 @@ static int duk__getid_open_decl_env_regs(duk_hthread *thr,
 
 	idx = env_regbase + reg_rel;
 	tv = &env_thr->valstack[idx];
-	DUK_ASSERT(tv >= env_thr->valstack && tv < env_thr->valstack_end);  /* FIXME: more accurate? */
+	DUK_ASSERT(tv >= env_thr->valstack && tv < env_thr->valstack_end);  /* XXX: more accurate? */
 
 	out->value = tv;
 	out->attrs = DUK_PROPDESC_FLAGS_W;  /* registers are mutable, non-deletable */
