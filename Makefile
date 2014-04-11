@@ -367,8 +367,12 @@ else
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
+.PHONY: apiprep
+apiprep: npminst libduktape.so.1.0.0
+	# Separate target because it's also convenient to run manually.
+
 .PHONY:	apitest
-apitest: npminst libduktape.so.1.0.0
+apitest: apiprep
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### apitest (valgrind)"
 	$(NODE) runtests/runtests.js --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
