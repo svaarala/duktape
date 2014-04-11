@@ -14,14 +14,19 @@
 (function(G, D) {
     'use strict';
 
-    function def(name, value) {
-        Object.defineProperty(D, name, {
+    function def(object, name, value) {
+        Object.defineProperty(object, name, {
             value: value,
             writable: true,
             enumerable: false,
             configurable: true
         });
     }
+
+    function defD(name, value) {
+        def(D, name, value);
+    }
+
 
     // Compatibility for 'console.log'.
     if (false) {
@@ -34,6 +39,6 @@
 
     // Logger object for C code provided by init code now.
     if (true) {
-        D.Logger.clog = new D.Logger('C');
+        def(D.Logger, 'clog', new D.Logger('C'));
     }
 })(this, Duktape);
