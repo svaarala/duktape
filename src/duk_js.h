@@ -48,6 +48,22 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 #define duk_js_samevalue(tv_x,tv_y) \
 	duk_js_equals_helper(NULL, (tv_x), (tv_y), DUK_EQUALS_FLAG_SAMEVALUE)
 
+/* E5 Sections 11.8.1, 11.8.5; x < y */
+#define duk_js_lessthan(thr,tv_x,tv_y) \
+	duk_js_compare_helper((thr), (tv_x), (tv_Y), 1, 0)
+
+/* E5 Sections 11.8.2, 11.8.5; x > y  -->  y < x */
+#define duk_js_greaterthan(thr,tv_x,tv_y) \
+	duk_js_compare_helper((thr), (tv_y), (tv_x), 0, 0)
+
+/* E5 Sections 11.8.3, 11.8.5; x <= y  -->  not (x > y)  -->  not (y < x) */
+#define duk_js_lessthanorequal(thr,tv_x,tv_y) \
+	duk_js_compare_helper((thr), (tv_y), (tv_x), 0, 1);
+
+/* E5 Sections 11.8.4, 11.8.5; x >= y  -->  not (x < y) */
+#define duk_js_greaterthanorequal(thr,tv_x,tv_y) \
+	duk_js_compare_helper((thr), (tv_x), (tv_y), 1, 1);
+
 /* identifiers and environment handling */
 int duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, int throw_flag);
 int duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, int throw_flag);

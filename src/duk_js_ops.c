@@ -897,33 +897,6 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	return retval;
 }
 
-/* FIXME: remove these? or make them macros? */
-#if 0  /* unused */
-/* E5 Sections 11.8.1, 11.8.5 */
-int duk_js_lessthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x < y */
-	return duk_js_compare_helper(thr, tv_x, tv_y, 1, 0);
-}
-
-/* E5 Sections 11.8.2, 11.8.5 */
-int duk_js_greaterthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x > y  -->  y < x */
-	return duk_js_compare_helper(thr, tv_y, tv_x, 0, 0);
-}
-
-/* E5 Sections 11.8.3, 11.8.5 */
-int duk_js_lessthanorequal(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x <= y  -->  not (x > y)  -->  not (y < x) */
-	return duk_js_compare_helper(thr, tv_y, tv_x, 0, 1);
-}
-
-/* E5 Sections 11.8.4, 11.8.5 */
-int duk_js_greaterthanorequal(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x >= y  -->  not (x < y) */
-	return duk_js_compare_helper(thr, tv_x, tv_y, 1, 1);
-}
-#endif
-
 /*
  *  instanceof
  */
