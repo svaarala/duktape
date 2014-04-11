@@ -448,7 +448,8 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
  *  Any type of longjmp() can be caught here, including intra-function
  *  longjmp()s like 'break', 'continue', (slow) 'return', 'yield', etc.
  *
- *  Error policy: FIXME.
+ *  Error policy: should not ordinarily throw errors.  Errors thrown
+ *  will bubble outwards.
  *
  *  Returns:
  *    0   restart execution
@@ -659,7 +660,6 @@ static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_id
 	DUK_ASSERT(resumer->callstack[act_idx].func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(resumer->callstack[act_idx].func));  /* resume caller must be an ecmascript func */
 
-	/* FIXME: api primitive */
 	DUK_DDDPRINT("resume idx_retval is %d", resumer->callstack[act_idx].idx_retval);
 
 	tv1 = &resumer->valstack[resumer->callstack[act_idx].idx_retval];  /* return value from Duktape.Thread.resume() */
@@ -689,8 +689,8 @@ static int duk__handle_longjmp(duk_hthread *thr,
 
 	entry_callstack_index = entry_callstack_top - 1;
 
-	/* FIXME: assert that 'thr' should be current thread, as no-one resumes
-	 * except us, and we switch 'thr' in that case.
+	/* 'thr' is the current thread, as no-one resumes except us and we
+	 * switch 'thr' in that case.
 	 */
 
 	/*
@@ -1253,12 +1253,10 @@ static int duk__handle_longjmp(duk_hthread *thr,
 	return retval;
 
  convert_to_internal_error:
+	/* This could also be thrown internally (set the error, goto check_longjmp),
+	 * but it's better for internal errors to bubble outwards.
+	 */
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor longjmp handler");
-#if 0
-	/* FIXME: could also handle internally */
-	thr->heap->lj.type = DUK_LJ_TYPE_THROW;
-	goto check_longjmp;
-#endif
 	DUK_UNREACHABLE();
 	return retval;
 }
@@ -1763,14 +1761,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			count = (int) DUK_DEC_C(ins);
 
 			if (idx < 0 || idx + count * 2 > duk_get_top(ctx)) {
-				/* FIXME: improve check; check against nregs, not against top */
+				/* XXX: improve check; check against nregs, not against top */
 				DUK__INTERNAL_ERROR("MPUTOBJ out of bounds");
 			}
 
 			duk_push_hobject(ctx, obj);
 
 			while (count > 0) {
-				/* FIXME: faster initialization (direct access or better primitives) */
+				/* XXX: faster initialization (direct access or better primitives) */
 
 				duk_push_tval(ctx, DUK__REGP(idx));
 				if (!duk_is_string(ctx, -1)) {
@@ -1820,7 +1818,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			count = (int) DUK_DEC_C(ins);
 
 			if (idx < 0 || idx + count + 1 > duk_get_top(ctx)) {
-				/* FIXME: improve check; check against nregs, not against top */
+				/* XXX: improve check; check against nregs, not against top */
 				DUK__INTERNAL_ERROR("MPUTARR out of bounds");
 			}
 
@@ -1840,19 +1838,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * explicit SETALEN which will update the length.
 				 */
 
-				/* FIXME: duk_def_prop() will currently coerce its argument to a string,
-				 * causing every array index to be interned, avoiding interning is quite
-				 * important to handle large array literals efficiently.
-				 *
-				 * FIXME: further, because we're dealing with 'own' properties of a fresh
-				 * array, the array initializer should just ensure that the array has a
-				 * large enough array part and write the values directly into array part,
+				/*
+				 * FIXME: because we're dealing with 'own' properties of a fresh array,
+				 * the array initializer should just ensure that the array has a large
+				 * enough array part and write the values directly into array part,
 				 * and finally set 'length' manually in the end (as already happens now).
 				 */
 
-				duk_push_number(ctx, (double) arr_idx);           /* FIXME: duk_push_uint */
-				duk_push_tval(ctx, DUK__REGP(idx));               /* -> [... obj key value] */
-				duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_WEC);    /* -> [... obj] */
+				duk_push_tval(ctx, DUK__REGP(idx));                              /* -> [... obj value] */
+				duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);    /* -> [... obj] */
 
 				count--;
 				idx++;
@@ -2711,8 +2705,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_ENDLABEL: {
 			duk_catcher *cat;
 #if defined(DUK_USE_DDDEBUG) || defined(DUK_USE_ASSERTIONS)
-			int abc = DUK_DEC_ABC(ins);
-			DUK_DDDPRINT("ENDLABEL %d", abc);
+			duk_int_t abc = DUK_DEC_ABC(ins);
+			DUK_DDDPRINT("ENDLABEL %d", (int) abc);
 #endif
 
 			DUK_ASSERT(thr->catchstack_top >= 1);
@@ -2720,7 +2714,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat = &thr->catchstack[thr->catchstack_top - 1];
 			DUK_UNREF(cat);
 			DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
-			DUK_ASSERT((int) DUK_CAT_GET_LABEL(cat) == abc);  /* FIXME: typing */
+			DUK_ASSERT((duk_int_t) DUK_CAT_GET_LABEL(cat) == abc);
 
 			duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
 			/* no need to unwind callstack */
@@ -2880,10 +2874,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				new_env = duk_get_hobject(ctx, -1);
 				DUK_ASSERT(new_env != NULL);
 
-				act = thr->callstack + thr->callstack_top - 1;  /* FIXME: relookup, awkward */
+				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
 				DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);
 
-				act = thr->callstack + thr->callstack_top - 1;  /* FIXME: relookup, awkward */
+				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
 				act->lex_env = new_env;
 				DUK_HOBJECT_INCREF(thr, new_env);
 				duk_pop(ctx);
@@ -2891,7 +2885,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				;
 			}
 
-			cat = thr->catchstack + thr->catchstack_top - 1;  /* FIXME: relookup, awkward */
+			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
 			cat->callstack_index = thr->callstack_top - 1;
 			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
 			cat->idx_base = (int) (thr->valstack_bottom - thr->valstack) + b;
@@ -3401,8 +3395,6 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_DEBUG_DUMP_HTHREAD(thr);
 				break;
 			}
-
-			/*FIXME*/
 
 			case DUK_DEBUGOP_LOGMARK: {
 				DUK_DPRINT("LOGMARK: mark %d at pc %d", DUK_DEC_BC(ins), act->pc - 1);  /* -1, autoinc */
