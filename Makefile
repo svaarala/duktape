@@ -39,6 +39,9 @@ DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
 DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 
+# Ditz release (next release name)
+DITZ_RELEASE=v0.10
+
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
 DISTCMD = dist/examples/cmdline
@@ -319,6 +322,10 @@ fixmecount:
 	@echo "NOTE:      `grep NOTE: src/*.c src/*.h | wc -l | tr -d ' '`"
 	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h | wc -l | tr -d ' '`"
 
+# Issue count for next release.
+issuecount:
+	@echo "Issues left for $(DITZ_RELEASE): `ditz todo v0.10 | wc -l | tr -d ' '`"
+
 dukscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
@@ -368,9 +375,9 @@ else
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
+# Separate target because it's also convenient to run manually.
 .PHONY: apiprep
 apiprep: npminst libduktape.so.1.0.0
-	# Separate target because it's also convenient to run manually.
 
 .PHONY:	apitest
 apitest: apiprep
