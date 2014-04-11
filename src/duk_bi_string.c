@@ -54,7 +54,7 @@ duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx) {
 	 */
 
 	n = duk_get_top(ctx);
-	duk_push_dynamic_buffer(ctx, 0);  /* FIXME: initial spare size estimate from 'n' */
+	duk_push_dynamic_buffer(ctx, 0);  /* XXX: initial spare size estimate from 'n' */
 	h = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 
 	for (i = 0; i < n; i++) {
@@ -107,8 +107,6 @@ duk_ret_t duk_bi_string_prototype_to_string(duk_context *ctx) {
  *  Character and charcode access
  */
 
-/* FIXME: charAt() and charCodeAt() could probably use a shared helper. */
-
 duk_ret_t duk_bi_string_prototype_char_at(duk_context *ctx) {
 	duk_int_t pos;  /* FIXME: type, duk_to_int() needs to be fixed */
 
@@ -154,7 +152,9 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
  *  substring(), substr(), slice()
  */
 
-/* FIXME: any chance of merging these three similar algorithms? */
+/* XXX: any chance of merging these three similar but still slightly
+ * different algorithms so that footprint would be reduced?
+ */
 
 duk_ret_t duk_bi_string_prototype_substring(duk_context *ctx) {
 	duk_hstring *h;
@@ -774,9 +774,9 @@ duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
  *  split()
  */
 
-/* FIXME: very messy now, but works */
-/* FIXME: remove unused variables (they are nominally used so compiled doesn't complain) */
-/* FIXME: general cleanup */
+/* FIXME: very messy now, but works; clean up, remove unused variables (nomimally
+ * used so compiler doesn't complain).
+ */
 
 int duk_bi_string_prototype_split(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
