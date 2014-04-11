@@ -72,6 +72,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_heap_hashstring.c \
 	$(DISTSRCSEP)/duk_heap_stringtable.c \
 	$(DISTSRCSEP)/duk_heap_stringcache.c \
+	$(DISTSRCSEP)/duk_hstring_misc.c \
 	$(DISTSRCSEP)/duk_hthread_misc.c \
 	$(DISTSRCSEP)/duk_hthread_alloc.c \
 	$(DISTSRCSEP)/duk_hthread_builtins.c \

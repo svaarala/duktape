@@ -130,6 +130,7 @@ for i in	\
 	duk_hobject_pc2line.c	\
 	duk_hobject_props.c	\
 	duk_hstring.h		\
+	duk_hstring_misc.c	\
 	duk_hthread_alloc.c	\
 	duk_hthread_builtins.c	\
 	duk_hthread.h		\
