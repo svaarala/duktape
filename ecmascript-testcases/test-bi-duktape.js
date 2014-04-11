@@ -10,99 +10,144 @@
 
 /*===
 global
-Duktape object true false true false false
-print function true false true false false
-alert function true false true false false
+Duktape object wc
+print function wc
+alert function wc
 Duktape
-env string true false true false false
-version number false false false false false
-fin function true false true false false
-enc function true false true false false
-dec function true false true false false
-info function true false true false false
-gc function true false true false false
-Buffer function true false true false false
-Pointer function true false true false false
-Thread function true false true false false
-Buffer
-prototype object false false false false false
-toString function true false true false false
-valueOf function true false true false false
-Pointer
-prototype object false false false false false
-toString function true false true false false
-valueOf function true false true false false
-Thread
-prototype object false false false false false
-resume function true false true false false
-yield function true false true false false
-current function true false true false false
+Duktape.version number none
+Duktape.Buffer function wc
+Duktape.Pointer function wc
+Duktape.Thread function wc
+Duktape.Logger function wc
+Duktape.info function wc
+Duktape.line function wc
+Duktape.gc function wc
+Duktape.fin function wc
+Duktape.enc function wc
+Duktape.dec function wc
+Duktape.compact function wc
+Duktape.env string wc
+Duktape.Buffer.name string none
+Duktape.Buffer.length number none
+Duktape.Buffer.prototype object none
+Duktape.Buffer.prototype.constructor function wc
+Duktape.Buffer.prototype.toString function wc
+Duktape.Buffer.prototype.valueOf function wc
+Duktape.Buffer.prototype.toString.length number none
+Duktape.Buffer.prototype.toString.name string none
+Duktape.Buffer.prototype.valueOf.length number none
+Duktape.Buffer.prototype.valueOf.name string none
+Duktape.Pointer.name string none
+Duktape.Pointer.length number none
+Duktape.Pointer.prototype object none
+Duktape.Pointer.prototype.constructor function wc
+Duktape.Pointer.prototype.toString function wc
+Duktape.Pointer.prototype.valueOf function wc
+Duktape.Pointer.prototype.toString.length number none
+Duktape.Pointer.prototype.toString.name string none
+Duktape.Pointer.prototype.valueOf.length number none
+Duktape.Pointer.prototype.valueOf.name string none
+Duktape.Thread.name string none
+Duktape.Thread.length number none
+Duktape.Thread.prototype object none
+Duktape.Thread.yield function wc
+Duktape.Thread.resume function wc
+Duktape.Thread.current function wc
+Duktape.Thread.prototype.constructor function wc
+Duktape.Thread.yield.length number none
+Duktape.Thread.yield.name string none
+Duktape.Thread.resume.length number none
+Duktape.Thread.resume.name string none
+Duktape.Thread.current.length number none
+Duktape.Thread.current.name string none
+Duktape.Logger.name string none
+Duktape.Logger.length number none
+Duktape.Logger.prototype object none
+Duktape.Logger.clog object wc
+Duktape.Logger.prototype.constructor function wc
+Duktape.Logger.prototype.l number w
+Duktape.Logger.prototype.n string w
+Duktape.Logger.prototype.fmt function wc
+Duktape.Logger.prototype.raw function wc
+Duktape.Logger.prototype.trace function wc
+Duktape.Logger.prototype.debug function wc
+Duktape.Logger.prototype.info function wc
+Duktape.Logger.prototype.warn function wc
+Duktape.Logger.prototype.error function wc
+Duktape.Logger.prototype.fatal function wc
+Duktape.Logger.prototype.fmt.length number none
+Duktape.Logger.prototype.fmt.name string none
+Duktape.Logger.prototype.raw.length number none
+Duktape.Logger.prototype.raw.name string none
+Duktape.Logger.prototype.trace.length number none
+Duktape.Logger.prototype.trace.name string none
+Duktape.Logger.prototype.debug.length number none
+Duktape.Logger.prototype.debug.name string none
+Duktape.Logger.prototype.info.length number none
+Duktape.Logger.prototype.info.name string none
+Duktape.Logger.prototype.warn.length number none
+Duktape.Logger.prototype.warn.name string none
+Duktape.Logger.prototype.error.length number none
+Duktape.Logger.prototype.error.name string none
+Duktape.Logger.prototype.fatal.length number none
+Duktape.Logger.prototype.fatal.name string none
+Duktape.Logger.clog.n string wec
+Duktape.info.length number none
+Duktape.info.name string none
+Duktape.line.length number none
+Duktape.line.name string none
+Duktape.gc.length number none
+Duktape.gc.name string none
+Duktape.fin.length number none
+Duktape.fin.name string none
+Duktape.enc.length number none
+Duktape.enc.name string none
+Duktape.dec.length number none
+Duktape.dec.name string none
+Duktape.compact.length number none
+Duktape.compact.name string none
 ===*/
 
 function propsTest() {
-    function printraw(obj, name) {
+    function printraw(obj, name, printname) {
         var t = typeof obj[name];
         var d = Object.getOwnPropertyDescriptor(obj, name) || {};
-        print(name, t, d.writable, d.enumerable, d.configurable, 'set' in d, 'get' in d );
+        var tmp = [];
+        tmp.push('writable' in d ? (d.writable ? "w" : "") : '');
+        tmp.push('enumerable' in d ? (d.enumerable ? "e" : "") : '');
+        tmp.push('configurable' in d ? (d.configurable ? "c" : "") : '');
+        tmp = [ tmp.join('') || 'none' ];
+        if ('set' in d) { tmp.push('has-set'); }
+        if ('get' in d) { tmp.push('has-get'); }
+        print(printname, t, tmp.join(' '));
     }
 
-    function fglob(name) {
-        printraw(this, name);
-    }
-    function fduk(name) {
-        printraw(Duktape, name);
-    }
-    function fbuf(name) {
-        printraw(Duktape.Buffer, name);
-    }
-    function fbufp(name) {
-        printraw(Duktape.Buffer.prototype, name);
-    }
-    function fptr(name) {
-        printraw(Duktape.Pointer, name);
-    }
-    function fptrp(name) {
-        printraw(Duktape.Pointer.prototype, name);
-    }
-    function fthr(name) {
-        printraw(Duktape.Thread, name);
-    }
-    function fthrp(name) {
-        printraw(Duktape.Thread.prototype, name);
+    function printall(obj, printname) {
+        var visited = [];
+
+        function rec(obj, printname) {
+            visited.push(obj);
+            var ownprops = Object.getOwnPropertyNames(obj);  // keep enum order
+            ownprops.forEach(function (pname) {
+                printraw(obj, pname, printname + '.' + pname);
+            });
+            ownprops.forEach(function (pname) {
+                if ((typeof obj[pname] === 'object' || typeof obj[pname] === 'function') &&
+                    visited.indexOf(obj[pname]) < 0) {
+                    rec(obj[pname], printname + '.' + pname);
+                }
+            });
+        }
+        return rec(obj, printname);
     }
 
     print('global');
-    fglob('Duktape');
-    fglob('print');
-    fglob('alert');
+    printraw(this, 'Duktape', 'Duktape');
+    printraw(this, 'print', 'print');
+    printraw(this, 'alert', 'alert');
 
     print('Duktape');
-    fduk('env');
-    fduk('version');
-    fduk('fin');
-    fduk('enc');
-    fduk('dec');
-    fduk('info');
-    fduk('gc');
-    fduk('Buffer');
-    fduk('Pointer');
-    fduk('Thread');
-
-    print('Buffer');
-    fbuf('prototype');
-    fbufp('toString');
-    fbufp('valueOf');
-
-    print('Pointer');
-    fptr('prototype');
-    fptrp('toString');
-    fptrp('valueOf');
-
-    print('Thread');
-    fthr('prototype');
-    fthr('resume');
-    fthr('yield');
-    fthr('current');
+    printall(Duktape, 'Duktape');
 }
 
 try {
