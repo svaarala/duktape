@@ -241,6 +241,7 @@ clean:
 	-@rm -f dukweb.js
 	-@rm -rf /tmp/dukweb-test/
 
+.PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	-@rm -f regfuzz-*.tar.gz
@@ -324,9 +325,11 @@ issuecount:
 	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h | wc -l | tr -d ' '`"
 	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo v0.10 | wc -l | tr -d ' '`"
 
+.PHONY: dukscanbuild
 dukscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
+.PHONY: dukdscanbuild
 dukdscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
@@ -511,6 +514,7 @@ dukweb.js: emscripten dist
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
 
+.PHONY: dukwebtest
 dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "### dukwebtest"
 	-@rm -rf /tmp/dukweb-test/
@@ -669,9 +673,11 @@ dtrace4linux:
 	# http://crtags.blogspot.fi/
 	$(GIT) clone --depth 1 https://github.com/dtrace4linux/linux.git dtrace4linux
 
+.PHONY: gccpredefs
 gccpredefs:
 	gcc -dM -E - < /dev/null
 
+.PHONY: clangpredefs
 clangpredefs:
 	clang -dM -E - < /dev/null
 
