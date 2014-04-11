@@ -417,25 +417,28 @@ static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
+static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z) {
 	/*
 	 *  E5 Section 11.4.9
 	 */
 
-	duk_context *ctx = (duk_context *) thr;
-	int val;
+	duk_tval tv_tmp;
+	int res;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT(tv_z != NULL);  /* reg */
 
-	/* FIXME: very awkward */
-	duk_push_tval(ctx, tv_x);
-	val = duk_to_boolean(ctx, -1);
-	duk_pop(ctx);
-	duk_push_boolean(ctx, (val ? 0 : 1));
-	duk_replace(ctx, idx_z);
+	/* ToBoolean() does not require any operations with side effects so
+	 * we can do it efficiently.  For footprint it would be better to use
+	 * duk_js_toboolean() and then push+replace to the result slot.
+	 */
+	res = duk_js_toboolean(tv_x);  /* does not modify tv_x */
+	DUK_ASSERT(res == 0 || res == 1);
+	res ^= 1;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+	DUK_TVAL_SET_BOOLEAN(tv_z, res);  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 }
 
 /*
@@ -2337,7 +2340,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
 
-			duk__vm_logical_not(thr, DUK__REGCONSTP(b), a);
+			duk__vm_logical_not(thr, DUK__REGCONSTP(b), DUK__REGP(a));
 			break;
 		}
 
