@@ -486,7 +486,7 @@ static int duk__js_samevalue_number(double x, double y) {
 		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
 		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
 
-		/* FIXME: try direct zero comparison */
+		/* Using classification has smaller footprint than direct comparison. */
 		if (DUK_UNLIKELY(cx == DUK_FP_ZERO && cy == DUK_FP_ZERO)) {
 			/* Note: cannot assume that a non-zero return value of signbit() would
 			 * always be the same -- hence cannot (portably) use something like:
