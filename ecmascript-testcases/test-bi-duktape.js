@@ -10,59 +10,65 @@
 
 /*===
 global
-object
-function
-function
+Duktape object true false true false false
+print function true false true false false
+alert function true false true false false
 Duktape
-string
-number
-function
-function
-function
-function
-function
-function
-function
-function
+env string true false true false false
+version number false false false false false
+fin function true false true false false
+enc function true false true false false
+dec function true false true false false
+info function true false true false false
+gc function true false true false false
+Buffer function true false true false false
+Pointer function true false true false false
+Thread function true false true false false
 Buffer
-object
-function
-function
+prototype object false false false false false
+toString function true false true false false
+valueOf function true false true false false
 Pointer
-object
-function
-function
+prototype object false false false false false
+toString function true false true false false
+valueOf function true false true false false
 Thread
-object
-function
-function
-function
+prototype object false false false false false
+resume function true false true false false
+yield function true false true false false
+current function true false true false false
 ===*/
 
 function propsTest() {
+    function printraw(obj, name) {
+        var t = typeof obj[name];
+        var d = Object.getOwnPropertyDescriptor(obj, name) || {};
+        print(name, t, d.writable, d.enumerable, d.configurable, 'set' in d, 'get' in d );
+    }
+
     function fglob(name) {
-        print(typeof this[name]);
+        printraw(this, name);
     }
     function fduk(name) {
-        print(typeof Duktape[name]);
+        printraw(Duktape, name);
     }
     function fbuf(name) {
-        print(typeof Duktape.Buffer[name]);
+        printraw(Duktape.Buffer, name);
     }
     function fbufp(name) {
-        print(typeof Duktape.Buffer.prototype[name]);
+        printraw(Duktape.Buffer.prototype, name);
     }
     function fptr(name) {
-        print(typeof Duktape.Pointer[name]);
+        printraw(Duktape.Pointer, name);
     }
     function fptrp(name) {
-        print(typeof Duktape.Pointer.prototype[name]);
+        printraw(Duktape.Pointer.prototype, name);
     }
     function fthr(name) {
-        print(typeof Duktape.Thread[name]);
+        printraw(Duktape.Thread, name);
     }
     function fthrp(name) {
-        print(typeof Duktape.Thread.prototype[name]);
+        printraw(Duktape.Thread.prototype, name);
     }
 
     print('global');
