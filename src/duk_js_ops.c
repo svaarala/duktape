@@ -428,9 +428,11 @@ static int duk__js_equals_number(double x, double y) {
 	}
 	return 0;
 #else  /* DUK_USE_PARANOID_MATH */
-	/* Better equivalent algorithm. */
-	/* FIXME: this could actually go into a macro, because C and Ecmascript
-	 * semantics are identical (as long the compiler complies).
+	/* Better equivalent algorithm.  If the compiler is compliant, C and
+	 * Ecmascript semantics are identical for this particular comparison.
+	 * In particular, NaNs must never compare equal and zeroes must compare
+	 * equal regardless of sign.  Could also use a macro, but this inlines
+	 * already nicely (no difference on gcc, for instance).
 	 */
 	if (x == y) {
 		/* IEEE requires that NaNs compare false */
