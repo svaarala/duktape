@@ -710,8 +710,6 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
  *  flags to get the rest.
  */
 
-/* FIXME: join flags into one integer argument? */
-
 /* FIXME: this should probably just operate on the stack top, because it
  * needs to push stuff on the stack anyway...
  */
@@ -770,7 +768,7 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	return 0;
 }
 
-int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int eval_left_first, int negate) {
+int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	double d1, d2;
 	int c1, c2;
@@ -781,7 +779,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
 
-	if (eval_left_first) {
+	if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
 		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
 		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
 	} else {
@@ -810,7 +808,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 		 * preserve it just in case.
 		 */
 
-		if (eval_left_first) {
+		if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
 			d1 = duk_to_number(ctx, -2);
 			d2 = duk_to_number(ctx, -1);
 		} else {
@@ -873,7 +871,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	goto cleanup;
 
  lt_true:
-	if (negate) {
+	if (flags & DUK_COMPARE_FLAG_NEGATE) {
 		retval = 0;
 		goto cleanup;
 	} else {
@@ -883,7 +881,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	/* never here */
 
  lt_false:
-	if (negate) {
+	if (flags & DUK_COMPARE_FLAG_NEGATE) {
 		retval = 1;
 		goto cleanup;
 	} else {

@@ -13,9 +13,13 @@
 #define DUK_CALL_FLAG_IS_TAILCALL            (1 << 4)  /* duk_handle_ecma_call_setup: setup for a tailcall */
 #define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 5)  /* call is a direct eval call */
 
-/* Flags for duk__js_equals_helper(). */
+/* Flags for duk_js_equals_helper(). */
 #define DUK_EQUALS_FLAG_SAMEVALUE            (1 << 0)  /* use SameValue instead of non-strict equality */
 #define DUK_EQUALS_FLAG_STRICT               (1 << 1)  /* use strict equality instead of non-strict equality */
+
+/* Flags for duk_js_compare_helper(). */
+#define DUK_COMPARE_FLAG_EVAL_LEFT_FIRST     (1 << 0)  /* eval left argument first */
+#define DUK_COMPARE_FLAG_NEGATE              (1 << 1)  /* negate result */
 
 /* conversions, coercions, comparison, etc */
 int duk_js_toboolean(duk_tval *tv);
@@ -32,7 +36,7 @@ duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t b
 duk_uint32_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
 int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
 int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);
-int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int eval_left_first, int negate);
+int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
 int duk_js_lessthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 int duk_js_greaterthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 int duk_js_lessthanorequal(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
@@ -50,19 +54,19 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 
 /* E5 Sections 11.8.1, 11.8.5; x < y */
 #define duk_js_lessthan(thr,tv_x,tv_y) \
-	duk_js_compare_helper((thr), (tv_x), (tv_Y), 1, 0)
+	duk_js_compare_helper((thr), (tv_x), (tv_Y), DUK_COMPARE_FLAG_EVAL_LEFT_FIRST)
 
 /* E5 Sections 11.8.2, 11.8.5; x > y  -->  y < x */
 #define duk_js_greaterthan(thr,tv_x,tv_y) \
-	duk_js_compare_helper((thr), (tv_y), (tv_x), 0, 0)
+	duk_js_compare_helper((thr), (tv_y), (tv_x), 0)
 
 /* E5 Sections 11.8.3, 11.8.5; x <= y  -->  not (x > y)  -->  not (y < x) */
 #define duk_js_lessthanorequal(thr,tv_x,tv_y) \
-	duk_js_compare_helper((thr), (tv_y), (tv_x), 0, 1);
+	duk_js_compare_helper((thr), (tv_y), (tv_x), DUK_COMPARE_FLAG_NEGATE)
 
 /* E5 Sections 11.8.4, 11.8.5; x >= y  -->  not (x < y) */
 #define duk_js_greaterthanorequal(thr,tv_x,tv_y) \
-	duk_js_compare_helper((thr), (tv_x), (tv_y), 1, 1);
+	duk_js_compare_helper((thr), (tv_x), (tv_y), DUK_COMPARE_FLAG_EVAL_LEFT_FIRST | DUK_COMPARE_FLAG_NEGATE)
 
 /* identifiers and environment handling */
 int duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, int throw_flag);

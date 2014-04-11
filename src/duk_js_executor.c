@@ -2398,8 +2398,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK__REGCONSTP(b),  /* x */
-			                            0,                  /* eval_left_first */
-			                            0);                 /* negate */
+			                            0);                 /* flags */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2417,8 +2416,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(b),  /* x */
 			                            DUK__REGCONSTP(c),  /* y */
-			                            1,                  /* eval_left_first */
-			                            1);                 /* negate */
+			                            DUK_COMPARE_FLAG_EVAL_LEFT_FIRST |
+			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2436,8 +2435,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(b),  /* x */
 			                            DUK__REGCONSTP(c),  /* y */
-			                            1,                  /* eval_left_first */
-			                            0);                 /* negate */
+			                            DUK_COMPARE_FLAG_EVAL_LEFT_FIRST);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
@@ -2455,8 +2453,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK__REGCONSTP(b),  /* x */
-			                            0,                  /* eval_left_first */
-			                            1);                 /* negate */
+			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
 			duk_replace(ctx, a);
