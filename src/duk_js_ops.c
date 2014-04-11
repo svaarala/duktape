@@ -413,27 +413,43 @@ int duk_js_iscallable(duk_tval *tv_x) {
  */
 
 static int duk__js_equals_number(double x, double y) {
+#if defined(DUK_USE_PARANOID_MATH)
+	/* Straightforward algorithm, makes fewer compiler assumptions. */
 	int cx = DUK_FPCLASSIFY(x);
 	int cy = DUK_FPCLASSIFY(y);
-
 	if (cx == DUK_FP_NAN || cy == DUK_FP_NAN) {
 		return 0;
 	}
-
-	/* FIXME: optimize */
-
 	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
 		return 1;
 	}
-
 	if (x == y) {
 		return 1;
 	}
-
 	return 0;
+#else  /* DUK_USE_PARANOID_MATH */
+	/* Better equivalent algorithm. */
+	/* FIXME: this could actually go into a macro, because C and Ecmascript
+	 * semantics are identical (as long the compiler complies).
+	 */
+	if (x == y) {
+		/* IEEE requires that NaNs compare false */
+		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
+		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
+		return 1;
+	} else {
+		/* IEEE requires that zeros compare the same regardless
+		 * of their signed, so if both x and y are zeroes, they
+		 * are caught above.
+		 */
+		DUK_ASSERT(!(DUK_FPCLASSIFY(x) == DUK_FP_ZERO && DUK_FPCLASSIFY(y) == DUK_FP_ZERO));
+		return 0;
+	}
+#endif  /* DUK_USE_PARANOID_MATH */
 }
 
 static int duk__js_samevalue_number(double x, double y) {
+#if defined(DUK_USE_PARANOID_MATH)
 	int cx = DUK_FPCLASSIFY(x);
 	int cy = DUK_FPCLASSIFY(y);
 
@@ -441,17 +457,14 @@ static int duk__js_samevalue_number(double x, double y) {
 		/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
 		return 1;
 	}
-
 	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
 		/* Note: cannot assume that a non-zero return value of signbit() would
 		 * always be the same -- hence cannot (portably) use something like:
 		 *
 		 *     signbit(x) == signbit(y)
 		 */
-
 		int sx = (DUK_SIGNBIT(x) ? 1 : 0);
 		int sy = (DUK_SIGNBIT(y) ? 1 : 0);
-
 		return (sx == sy);
 	}
 
@@ -462,6 +475,44 @@ static int duk__js_samevalue_number(double x, double y) {
 	 */
 
 	return (x == y);
+#else  /* DUK_USE_PARANOID_MATH */
+	int cx = DUK_FPCLASSIFY(x);
+	int cy = DUK_FPCLASSIFY(y);
+
+	if (x == y) {
+		/* IEEE requires that NaNs compare false */
+		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
+		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
+
+		/* FIXME: try direct zero comparison */
+		if (DUK_UNLIKELY(cx == DUK_FP_ZERO && cy == DUK_FP_ZERO)) {
+			/* Note: cannot assume that a non-zero return value of signbit() would
+			 * always be the same -- hence cannot (portably) use something like:
+			 *
+			 *     signbit(x) == signbit(y)
+			 */
+			int sx = (DUK_SIGNBIT(x) ? 1 : 0);
+			int sy = (DUK_SIGNBIT(y) ? 1 : 0);
+			return (sx == sy);
+		}
+		return 1;
+	} else {
+		/* IEEE requires that zeros compare the same regardless
+		 * of their signed, so if both x and y are zeroes, they
+		 * are caught above.
+		 */
+		DUK_ASSERT(!(DUK_FPCLASSIFY(x) == DUK_FP_ZERO && DUK_FPCLASSIFY(y) == DUK_FP_ZERO));
+
+		/* Difference to non-strict/strict comparison is that NaNs compare
+		 * equal and signed zero signs matter.
+		 */
+		if (DUK_UNLIKELY(cx == DUK_FP_NAN && cy == DUK_FP_NAN)) {
+			/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
+			return 1;
+		}
+		return 0;
+	}
+#endif  /* DUK_USE_PARANOID_MATH */
 }
 
 int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
