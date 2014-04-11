@@ -283,6 +283,18 @@ void duk_trim(duk_context *ctx, int index) {
 }
 
 int duk_char_code_at(duk_context *ctx, int index, duk_size_t char_offset) {
-	/* FIXME: should share code with duk_bi_string_prototype_char_code_at */
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "unimplemented");
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h;
+	duk_ucodepoint_t cp;
+
+	h = duk_require_hstring(ctx, index);
+	DUK_ASSERT(h != NULL);
+
+	DUK_ASSERT_DISABLE(char_offset >= 0);  /* always true, arg is unsigned */
+	if (char_offset >= DUK_HSTRING_GET_CHARLEN(h)) {
+		return 0;
+	}
+
+	cp = duk_hstring_char_code_at_raw(thr, h, char_offset);
+	return (int) cp;
 }
