@@ -121,7 +121,7 @@ static void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, 
 static duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
 	duk_small_int_t len;
 
-	/* FIXME: solve into closed form (smaller code) */
+	/* XXX: solve into closed form (smaller code) */
 
 	if (skip < 0) {
 		/* two encoding attempts suffices */
@@ -408,10 +408,6 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 				 *  quantifiers.  This would need some sort of a 'progress' instruction.
 				 *
 				 *  XXX: impose limit on maximum result size, i.e. atom_code_len * atom_copies?
-				 *
-				 *  FIXME: captures inside the quantified need to be set to undefined.
-				 *  This is currently not implemented: how to track the relevant 'saved'
-				 *  set?
 				 */
 				duk_int32_t atom_code_length;
 				duk_uint32_t atom_copies;
