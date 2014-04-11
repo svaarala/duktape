@@ -1248,6 +1248,12 @@ extern double duk_computed_nan;
 #define DUK_USE_POW_NETBSD_WORKAROUND
 #endif
 
+/* Rely as little as possible on compiler behavior for NaN comparison,
+ * signed zero handling, etc.  Currently never activated but may be needed
+ * for broken compilers.
+ */
+#undef DUK_USE_PARANOID_MATH
+
 /*
  *  ANSI C string/memory function wrapper defines to allow easier workarounds.
  *  Also convenience macros like DUK_MEMZERO which may be mapped to existing

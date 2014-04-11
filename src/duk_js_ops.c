@@ -241,7 +241,7 @@ double duk_js_tointeger_number(double x) {
 	if (c == DUK_FP_NAN) {
 		return 0.0;
 	} else if (c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
-		/* FIXME: FP_ZERO check can be removed, the else clause handles it
+		/* XXX: FP_ZERO check can be removed, the else clause handles it
 		 * correctly (preserving sign).
 		 */
 		return x;
@@ -362,10 +362,11 @@ void duk_js_checkobjectcoercible(duk_hthread *thr, duk_tval *tv_x) {
 /*
  *  IsCallable()  (E5 Section 9.11)
  *
- *  FIXME: API equivalent is a separate implementation now, and this has
+ *  XXX: API equivalent is a separate implementation now, and this has
  *  currently no callers.
  */
 
+#if 0  /* unused */
 int duk_js_iscallable(duk_tval *tv_x) {
 	duk_hobject *obj;
 
@@ -377,6 +378,7 @@ int duk_js_iscallable(duk_tval *tv_x) {
 
 	return DUK_HOBJECT_IS_CALLABLE(obj);
 }
+#endif
 
 /*
  *  Loose equality, strict equality, and SameValue (E5 Sections 11.9.1, 11.9.4,
@@ -410,36 +412,119 @@ int duk_js_iscallable(duk_tval *tv_x) {
  *  - E5 Section 11.9.6, step 4 (strict)
  */
 
-int duk_js_equals_number(double x, double y) {
+static int duk__js_equals_number(double x, double y) {
+#if defined(DUK_USE_PARANOID_MATH)
+	/* Straightforward algorithm, makes fewer compiler assumptions. */
 	int cx = DUK_FPCLASSIFY(x);
 	int cy = DUK_FPCLASSIFY(y);
-
 	if (cx == DUK_FP_NAN || cy == DUK_FP_NAN) {
 		return 0;
 	}
-
-	/* FIXME: optimize */
-
 	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
 		return 1;
 	}
-
 	if (x == y) {
 		return 1;
 	}
-
 	return 0;
+#else  /* DUK_USE_PARANOID_MATH */
+	/* Better equivalent algorithm.  If the compiler is compliant, C and
+	 * Ecmascript semantics are identical for this particular comparison.
+	 * In particular, NaNs must never compare equal and zeroes must compare
+	 * equal regardless of sign.  Could also use a macro, but this inlines
+	 * already nicely (no difference on gcc, for instance).
+	 */
+	if (x == y) {
+		/* IEEE requires that NaNs compare false */
+		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
+		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
+		return 1;
+	} else {
+		/* IEEE requires that zeros compare the same regardless
+		 * of their signed, so if both x and y are zeroes, they
+		 * are caught above.
+		 */
+		DUK_ASSERT(!(DUK_FPCLASSIFY(x) == DUK_FP_ZERO && DUK_FPCLASSIFY(y) == DUK_FP_ZERO));
+		return 0;
+	}
+#endif  /* DUK_USE_PARANOID_MATH */
 }
 
-/* E5 Section 11.9.3. */
-int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+static int duk__js_samevalue_number(double x, double y) {
+#if defined(DUK_USE_PARANOID_MATH)
+	int cx = DUK_FPCLASSIFY(x);
+	int cy = DUK_FPCLASSIFY(y);
+
+	if (cx == DUK_FP_NAN && cy == DUK_FP_NAN) {
+		/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
+		return 1;
+	}
+	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
+		/* Note: cannot assume that a non-zero return value of signbit() would
+		 * always be the same -- hence cannot (portably) use something like:
+		 *
+		 *     signbit(x) == signbit(y)
+		 */
+		int sx = (DUK_SIGNBIT(x) ? 1 : 0);
+		int sy = (DUK_SIGNBIT(y) ? 1 : 0);
+		return (sx == sy);
+	}
+
+	/* normal comparison; known:
+	 *   - both x and y are not NaNs (but one of them can be)
+	 *   - both x and y are not zero (but one of them can be)
+	 *   - x and y may be denormal or infinite
+	 */
+
+	return (x == y);
+#else  /* DUK_USE_PARANOID_MATH */
+	int cx = DUK_FPCLASSIFY(x);
+	int cy = DUK_FPCLASSIFY(y);
+
+	if (x == y) {
+		/* IEEE requires that NaNs compare false */
+		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
+		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
+
+		/* Using classification has smaller footprint than direct comparison. */
+		if (DUK_UNLIKELY(cx == DUK_FP_ZERO && cy == DUK_FP_ZERO)) {
+			/* Note: cannot assume that a non-zero return value of signbit() would
+			 * always be the same -- hence cannot (portably) use something like:
+			 *
+			 *     signbit(x) == signbit(y)
+			 */
+			int sx = (DUK_SIGNBIT(x) ? 1 : 0);
+			int sy = (DUK_SIGNBIT(y) ? 1 : 0);
+			return (sx == sy);
+		}
+		return 1;
+	} else {
+		/* IEEE requires that zeros compare the same regardless
+		 * of their signed, so if both x and y are zeroes, they
+		 * are caught above.
+		 */
+		DUK_ASSERT(!(DUK_FPCLASSIFY(x) == DUK_FP_ZERO && DUK_FPCLASSIFY(y) == DUK_FP_ZERO));
+
+		/* Difference to non-strict/strict comparison is that NaNs compare
+		 * equal and signed zero signs matter.
+		 */
+		if (DUK_UNLIKELY(cx == DUK_FP_NAN && cy == DUK_FP_NAN)) {
+			/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
+			return 1;
+		}
+		return 0;
+	}
+#endif  /* DUK_USE_PARANOID_MATH */
+}
+
+int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_tmp;
 
-	/*
-	 *  XXX: very direct translation now - should be made more efficient,
-	 *  avoid recursion, etc.
+	/* If flags != 0 (strict or SameValue), thr can be NULL.  For loose
+	 * equals comparison it must be != NULL.
 	 */
+	DUK_ASSERT(flags != 0 || thr != NULL);
 
 	/*
 	 *  Same type?
@@ -449,13 +534,18 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	 */
 
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		return duk_js_equals_number(DUK_TVAL_GET_NUMBER(tv_x),
-		                            DUK_TVAL_GET_NUMBER(tv_y));
+		if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
+			/* SameValue */
+			return duk__js_samevalue_number(DUK_TVAL_GET_NUMBER(tv_x),
+			                                DUK_TVAL_GET_NUMBER(tv_y));
+		} else {
+			/* equals and strict equals */
+			return duk__js_equals_number(DUK_TVAL_GET_NUMBER(tv_x),
+			                             DUK_TVAL_GET_NUMBER(tv_y));
+		}
 	} else if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
 		switch (DUK_TVAL_GET_TAG(tv_x)) {
-		case DUK_TAG_UNDEFINED: {
-			return 1;
-		}
+		case DUK_TAG_UNDEFINED:
 		case DUK_TAG_NULL: {
 			return 1;
 		}
@@ -471,25 +561,30 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		case DUK_TAG_BUFFER: {
-			/* non-strict equality for buffers compares contents */
-			duk_hbuffer *h_x = DUK_TVAL_GET_BUFFER(tv_x);
-			duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
-			size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
-			size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
-			void *buf_x;
-			void *buf_y;
-			if (len_x != len_y) {
-				return 0;
+			if ((flags & (DUK_EQUALS_FLAG_STRICT | DUK_EQUALS_FLAG_SAMEVALUE)) != 0) {
+				/* heap pointer comparison suffices */
+				return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
+			} else {
+				/* non-strict equality for buffers compares contents */
+				duk_hbuffer *h_x = DUK_TVAL_GET_BUFFER(tv_x);
+				duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
+				size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
+				size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
+				void *buf_x;
+				void *buf_y;
+				if (len_x != len_y) {
+					return 0;
+				}
+				buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(h_x);
+				buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
+				/* if len_x == len_y == 0, buf_x and/or buf_y may
+				 * be NULL, but that's OK.
+				 */
+				DUK_ASSERT(len_x == len_y);
+				DUK_ASSERT(len_x == 0 || buf_x != NULL);
+				DUK_ASSERT(len_y == 0 || buf_y != NULL);
+				return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
 			}
-			buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(h_x);
-			buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
-			/* if len_x == len_y == 0, buf_x and/or buf_y may
-			 * be NULL, but that's OK.
-			 */
-			DUK_ASSERT(len_x == len_y);
-			DUK_ASSERT(len_x == 0 || buf_x != NULL);
-			DUK_ASSERT(len_y == 0 || buf_y != NULL);
-			return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
 		}
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
@@ -500,8 +595,14 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		}
 	}
 
+	if ((flags & (DUK_EQUALS_FLAG_STRICT | DUK_EQUALS_FLAG_SAMEVALUE)) != 0) {
+		return 0;
+	}
+
+	DUK_ASSERT(flags == 0);  /* non-strict equality from here on */
+
 	/*
-	 *  Types are different; various cases
+	 *  Types are different; various cases for non-strict comparison
 	 *
 	 *  Since comparison is symmetric, we use a "swap trick" to reduce
 	 *  code size.
@@ -529,7 +630,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		duk_to_number(ctx, -1);
 		d1 = duk_require_number(ctx, -1);
 		duk_pop(ctx);
-		return duk_js_equals_number(d1, d2);
+		return duk__js_equals_number(d1, d2);
 	}
 
 	/* Buffer/string -> compare contents. */
@@ -575,7 +676,7 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(ctx, tv_x);
 		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
-		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+		rc = duk_js_equals_helper(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0 /*flags:nonstrict*/);
 		duk_pop_2(ctx);
 		return rc;
 	}
@@ -593,140 +694,12 @@ int duk_js_equals(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
 		duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* apparently no hint? */
-		rc = duk_js_equals(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+		rc = duk_js_equals_helper(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0 /*flags:nonstrict*/);
 		duk_pop_2(ctx);
 		return rc;
 	}
 
 	/* Nothing worked -> not equal. */
-	return 0;
-}
-
-/* E5 Section 11.9.4 */
-int duk_js_strict_equals(duk_tval *tv_x, duk_tval *tv_y) {
-	/*
-	 *  Same type?
-	 *
-	 *  Note: since number values have no explicit tag, need the awkward
-	 *  if + switch.
-	 */
-
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		/* Note: comparison of numbers is identical for loose and strict
-		 * equality, hence use loose helper.
-		 */
-		return duk_js_equals_number(DUK_TVAL_GET_NUMBER(tv_x),
-		                            DUK_TVAL_GET_NUMBER(tv_y));
-	} else if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
-		switch (DUK_TVAL_GET_TAG(tv_x)) {
-		case DUK_TAG_UNDEFINED: {
-			return 1;
-		}
-		case DUK_TAG_NULL: {
-			return 1;
-		}
-		case DUK_TAG_BOOLEAN: {
-			return DUK_TVAL_GET_BOOLEAN(tv_x) == DUK_TVAL_GET_BOOLEAN(tv_y);
-		}
-		case DUK_TAG_POINTER: {
-			return DUK_TVAL_GET_POINTER(tv_x) == DUK_TVAL_GET_POINTER(tv_y);
-		}
-		case DUK_TAG_STRING:
-		case DUK_TAG_OBJECT:
-		case DUK_TAG_BUFFER: {
-			/* heap pointer comparison suffices */
-			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
-		}
-		default: {
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
-			DUK_UNREACHABLE();
-			return 0;
-		}
-		}
-	}
-
-	/*
-	 *  Types are different -> strict equality always false
-	 */
-
-	return 0;
-}
-
-/* E5 Section 9.12 */
-int duk_js_samevalue_number(double x, double y) {
-	int cx = DUK_FPCLASSIFY(x);
-	int cy = DUK_FPCLASSIFY(y);
-
-	if (cx == DUK_FP_NAN && cy == DUK_FP_NAN) {
-		/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
-		return 1;
-	}
-
-	if (cx == DUK_FP_ZERO && cy == DUK_FP_ZERO) {
-		/* Note: cannot assume that a non-zero return value of signbit() would
-		 * always be the same -- hence cannot (portably) use something like:
-		 *
-		 *     signbit(x) == signbit(y)
-		 */
-
-		int sx = (DUK_SIGNBIT(x) ? 1 : 0);
-		int sy = (DUK_SIGNBIT(y) ? 1 : 0);
-
-		return (sx == sy);
-	}
-
-	/* normal comparison; known:
-	 *   - both x and y are not NaNs (but one of them can be)
-	 *   - both x and y are not zero (but one of them can be)
-	 *   - x and y may be denormal or infinite
-	 */
-
-	return (x == y);
-}
-
-int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y) {
-	/*
-	 *  Same type?
-	 *
-	 *  Note: since number values have no explicit tag, need the awkward
-	 *  if + switch.
-	 */
-
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		return duk_js_samevalue_number(DUK_TVAL_GET_NUMBER(tv_x),
-		                               DUK_TVAL_GET_NUMBER(tv_y));
-	} else if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
-		switch (DUK_TVAL_GET_TAG(tv_x)) {
-		case DUK_TAG_UNDEFINED: {
-			return 1;
-		}
-		case DUK_TAG_NULL: {
-			return 1;
-		}
-		case DUK_TAG_BOOLEAN: {
-			return DUK_TVAL_GET_BOOLEAN(tv_x) == DUK_TVAL_GET_BOOLEAN(tv_y);
-		}
-		case DUK_TAG_POINTER: {
-			return DUK_TVAL_GET_POINTER(tv_x) == DUK_TVAL_GET_POINTER(tv_y);
-		}
-		case DUK_TAG_STRING:
-		case DUK_TAG_OBJECT:
-		case DUK_TAG_BUFFER: {
-			/* heap pointer comparison suffices */
-			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
-		}
-		default: {
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
-			DUK_UNREACHABLE();
-			return 0;
-		}
-		}
-	}
-
-	/*
-	 *  Types are different -> strict equality always false
-	 */
-
 	return 0;
 }
 
@@ -736,8 +709,6 @@ int duk_js_samevalue(duk_tval *tv_x, duk_tval *tv_y) {
  *  E5 Section 11.8.5: implement 'x < y' and then use negate and eval_left_first
  *  flags to get the rest.
  */
-
-/* FIXME: join flags into one integer argument? */
 
 /* FIXME: this should probably just operate on the stack top, because it
  * needs to push stuff on the stack anyway...
@@ -797,7 +768,7 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	return 0;
 }
 
-int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int eval_left_first, int negate) {
+int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	double d1, d2;
 	int c1, c2;
@@ -808,7 +779,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
 
-	if (eval_left_first) {
+	if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
 		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
 		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
 	} else {
@@ -837,7 +808,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 		 * preserve it just in case.
 		 */
 
-		if (eval_left_first) {
+		if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
 			d1 = duk_to_number(ctx, -2);
 			d2 = duk_to_number(ctx, -1);
 		} else {
@@ -900,7 +871,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	goto cleanup;
 
  lt_true:
-	if (negate) {
+	if (flags & DUK_COMPARE_FLAG_NEGATE) {
 		retval = 0;
 		goto cleanup;
 	} else {
@@ -910,7 +881,7 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	/* never here */
 
  lt_false:
-	if (negate) {
+	if (flags & DUK_COMPARE_FLAG_NEGATE) {
 		retval = 1;
 		goto cleanup;
 	} else {
@@ -923,33 +894,6 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int 
 	duk_pop_2(ctx);
 	return retval;
 }
-
-/* FIXME: remove these? or make them macros? */
-#if 0  /* unused */
-/* E5 Sections 11.8.1, 11.8.5 */
-int duk_js_lessthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x < y */
-	return duk_js_compare_helper(thr, tv_x, tv_y, 1, 0);
-}
-
-/* E5 Sections 11.8.2, 11.8.5 */
-int duk_js_greaterthan(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x > y  -->  y < x */
-	return duk_js_compare_helper(thr, tv_y, tv_x, 0, 0);
-}
-
-/* E5 Sections 11.8.3, 11.8.5 */
-int duk_js_lessthanorequal(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x <= y  -->  not (x > y)  -->  not (y < x) */
-	return duk_js_compare_helper(thr, tv_y, tv_x, 0, 1);
-}
-
-/* E5 Sections 11.8.4, 11.8.5 */
-int duk_js_greaterthanorequal(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	/* x >= y  -->  not (x < y) */
-	return duk_js_compare_helper(thr, tv_x, tv_y, 1, 1);
-}
-#endif
 
 /*
  *  instanceof
