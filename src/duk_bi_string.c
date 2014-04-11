@@ -126,10 +126,7 @@ duk_ret_t duk_bi_string_prototype_char_at(duk_context *ctx) {
 duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t pos;  /* FIXME: type, duk_to_int() needs to be fixed */
-	duk_uint32_t boff;
 	duk_hstring *h;
-	duk_uint8_t *p, *p_start, *p_end;
-	duk_ucodepoint_t cp;
 	int clamped;  /* FIXME: type */
 
 	/* FIXME: faster implementation */
@@ -149,19 +146,7 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 		return 1;
 	}
 
-	boff = duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
-	DUK_DDDPRINT("charCodeAt: pos=%d -> boff=%d, str=%!O", pos, boff, h);
-	DUK_ASSERT_DISABLE(boff >= 0);
-	DUK_ASSERT(boff < DUK_HSTRING_GET_BYTELEN(h));
-	p_start = DUK_HSTRING_GET_DATA(h);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h);
-	p = p_start + boff;
-	DUK_DDDPRINT("p_start=%p, p_end=%p, p=%p", (void *) p_start, (void *) p_end, (void *) p);
-
-	/* This may throw an error though not for valid E5 strings. */
-	cp = duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
-
-	duk_push_u32(ctx, (duk_uint32_t) cp);
+	duk_push_u32(ctx, (duk_uint32_t) duk_hstring_char_code_at_raw(thr, h, pos));
 	return 1;
 }
 
