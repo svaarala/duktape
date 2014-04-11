@@ -282,3 +282,7 @@ void duk_trim(duk_context *ctx, int index) {
 	duk_replace(ctx, index);
 }
 
+int duk_char_code_at(duk_context *ctx, int index, duk_size_t char_offset) {
+	/* FIXME: should share code with duk_bi_string_prototype_char_code_at */
+	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "unimplemented");
+}

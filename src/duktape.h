@@ -575,6 +575,7 @@ void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function cal
 void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
 void duk_substring(duk_context *ctx, int index, duk_size_t start_offset, duk_size_t end_offset);
 void duk_trim(duk_context *ctx, int index);
+int duk_char_code_at(duk_context *ctx, int index, duk_size_t char_offset);
 
 /*
  *  Ecmascript operators
