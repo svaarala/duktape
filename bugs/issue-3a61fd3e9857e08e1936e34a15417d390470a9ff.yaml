@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: should duk_char_code_at() return 0 if target is not a string?
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-11 10:34:03.945743 Z
+references: []
+
+id: 3a61fd3e9857e08e1936e34a15417d390470a9ff
+log_events: 
+- - 2014-04-11 10:34:04.126597 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
