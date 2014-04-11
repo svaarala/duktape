@@ -42,7 +42,6 @@ duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, int err_code) {
 void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type) {
 	duk_tval tv_tmp;
 
-	/* FIXME: validate lj_type */
 	thr->heap->lj.type = lj_type;
 
 	DUK_ASSERT(thr->valstack_top > thr->valstack);
@@ -53,5 +52,3 @@ void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type) {
 
 	duk_pop((duk_context *) thr);
 }
-
-
