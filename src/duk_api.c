@@ -456,7 +456,7 @@ static int duk__check_valstack_resize_helper(duk_context *ctx,
 	return 1;
 }
 
-/* FIXME: unused now */
+#if 0  /* XXX: unused */
 int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink) {
 	return duk__check_valstack_resize_helper(ctx,
 	                                         min_new_size,  /* min_new_size */
@@ -464,8 +464,8 @@ int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int a
 	                                         0,             /* compact flag */
 	                                         0);            /* throw flag */
 }
+#endif
 
-/* FIXME: unused now */
 void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink) {
 	(void) duk__check_valstack_resize_helper(ctx,
 	                                         min_new_size,  /* min_new_size */
@@ -2082,12 +2082,19 @@ int duk_is_number(duk_context *ctx, int index) {
 }
 
 int duk_is_nan(duk_context *ctx, int index) {
-	/* FIXME: make more compact */
-	/* FIXME: this will now return false for non-numbers, even though they would
-	 * coerce to NaN.  In particular, duk_get_number() returns a NaN for
-	 * non-numbers, so should this also return true for non-numbers?
+	/* XXX: This will now return false for non-numbers, even though they would
+	 * coerce to NaN (as a general rule).  In particular, duk_get_number()
+	 * returns a NaN for non-numbers, so should this function also return
+	 * true for non-numbers?
 	 */
-	return duk_is_number(ctx, index) && DUK_ISNAN(duk_get_number(ctx, index));
+
+	duk_tval *tv;
+
+	tv = duk_get_tval(ctx, index);
+	if (!tv || !DUK_TVAL_IS_NUMBER(tv)) {
+		return 0;
+	}
+	return DUK_ISNAN(DUK_TVAL_GET_NUMBER(tv));
 }
 
 int duk_is_string(duk_context *ctx, int index) {
