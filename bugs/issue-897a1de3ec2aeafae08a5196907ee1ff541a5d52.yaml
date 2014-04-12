@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-23 22:14:32.833600 Z
 references: []
 
@@ -46,3 +46,7 @@ log_events:
     - math functions elsewhere (fmod, floor, fabs at least)
     - setjmp, longjmp
     - abort, exit (in panic handling)
+- - 2014-04-12 21:51:45.730185 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
