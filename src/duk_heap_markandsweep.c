@@ -13,8 +13,9 @@ static void duk__mark_tval(duk_heap *heap, duk_tval *tv);
  *  Misc
  */
 
-/* Select a thread for mark-and-sweep use.  This needs to change
- * later.
+/* Select a thread for mark-and-sweep use.
+ *
+ * FIXME: This needs to change later.
  */
 static duk_hthread *duk__get_temp_hthread(duk_heap *heap) {
 	if (heap->curr_thread) {
@@ -249,7 +250,6 @@ static void duk__mark_finalizable(duk_heap *heap) {
 
 	DUK_DDPRINT("duk__mark_finalizable: %p", (void *) heap);
 
-	/* FIXME: placeholder */
 	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
@@ -386,7 +386,6 @@ static void duk__finalize_refcounts(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *hdr;
 
-	/* FIXME: placeholder */
 	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
@@ -665,7 +664,6 @@ static void duk__run_object_finalizers(duk_heap *heap) {
 
 	DUK_DDPRINT("duk__run_object_finalizers: %p", (void *) heap);
 
-	/* FIXME: placeholder */
 	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
@@ -712,7 +710,7 @@ static void duk__run_object_finalizers(duk_heap *heap) {
  */
 
 static int duk__protected_compact_object(duk_context *ctx) {
-	/* FIXME: for threads, compact value stack, call stack, catch stack? */
+	/* XXX: for threads, compact value stack, call stack, catch stack? */
 
 	duk_hobject *obj = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(obj != NULL);
@@ -769,7 +767,7 @@ static void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaph
 }
 
 static void duk__compact_objects(duk_heap *heap) {
-	/* FIXME: which lists should participate?  to be finalized? */
+	/* XXX: which lists should participate?  to be finalized? */
 #ifdef DUK_USE_DEBUG
 	int count_check = 0;
 	int count_compact = 0;
@@ -779,7 +777,6 @@ static void duk__compact_objects(duk_heap *heap) {
 
 	DUK_DDPRINT("duk__compact_objects: %p", (void *) heap);
 
-	/* FIXME: placeholder */
 	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
@@ -953,7 +950,7 @@ int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
 	 *  finalization is not necessary for strings.
 	 */
 
-	/* FIXME: more emergency behavior, e.g. find smaller hash sizes etc */
+	/* XXX: more emergency behavior, e.g. find smaller hash sizes etc */
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	duk__finalize_refcounts(heap);
