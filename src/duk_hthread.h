@@ -15,7 +15,7 @@
 #define DUK_VALSTACK_GROW_STEP          128     /* roughly 1 kiB */
 #define DUK_VALSTACK_SHRINK_THRESHOLD   256     /* roughly 2 kiB */
 #define DUK_VALSTACK_SHRINK_SPARE       64      /* roughly 0.5 kiB */
-#define DUK_VALSTACK_INITIAL_SIZE       64      /* roughly 0.5 kiB -> but rounds up to DUK_VALSTACK_GROW_STEP in practice */
+#define DUK_VALSTACK_INITIAL_SIZE       128     /* roughly 1.0 kiB -> but rounds up to DUK_VALSTACK_GROW_STEP in practice */
 #define DUK_VALSTACK_INTERNAL_EXTRA     64      /* internal extra elements assumed on function entry,
                                                  * always added to user-defined 'extra' for e.g. the
                                                  * duk_check_stack() call.
@@ -24,6 +24,12 @@
                                                 /* number of elements guaranteed to be user accessible
                                                  * (in addition to call arguments) on Duktape/C function entry.
                                                  */
+
+/* Note: DUK_VALSTACK_INITIAL_SIZE must be >= DUK_VALSTACK_API_ENTRY_MINIMUM
+ * + DUK_VALSTACK_INTERNAL_EXTRA so that the initial stack conforms to spare
+ * requirements.
+ */
+
 #define DUK_VALSTACK_DEFAULT_MAX        1000000
 
 #define DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */

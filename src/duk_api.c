@@ -2832,10 +2832,11 @@ int duk_push_thread(duk_context *ctx) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate thread");
 	}
 
-	/* FIXME: initial size should satisfy this -> just assert for it */
-	/* extend initial stack so that it matches common requirements */
-
-	duk_require_stack((duk_context *) obj, 0);
+	/* Initial stack size satisfies the stack spare constraints so there
+	 * is no need to require stack here.
+	 */
+	DUK_ASSERT(DUK_VALSTACK_INITIAL_SIZE >=
+	           DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA);
 
 	return ret;
 }
