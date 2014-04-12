@@ -1,5 +1,9 @@
 <h1 id="defines">Header definitions</h1>
 
+<p>This section summarizes some commonly needed header definitions in
+<code>duktape.h</code>.  It is not exhaustive and the excerpts have been
+reorganized for readability; when in doubt, consult the header directly.</p>
+
 <h2>Duktape version</h2>
 
 <p>The Duktape version is available through the <code>DUK_VERSION</code> define,
@@ -14,10 +18,7 @@ the next official release.</p>
 
 <h2>Structs and typedefs</h2>
 <pre class="c-code">
-struct duk_memory_functions;
-
 typedef void duk_context;
-typedef struct duk_memory_functions duk_memory_functions;
 
 typedef int (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, size_t size);
@@ -34,6 +35,20 @@ struct duk_memory_functions {
         duk_free_function free;
         void *udata;
 };
+typedef struct duk_memory_functions duk_memory_functions;
+
+struct duk_function_list_entry {
+	const char *key;
+	duk_c_function value;
+	int nargs;
+};
+typedef struct duk_function_list_entry duk_function_list_entry;
+
+struct duk_number_list_entry {
+	const char *key;
+	double value;
+};
+typedef struct duk_number_list_entry duk_number_list_entry;
 </pre>
 
 <h2>Error codes</h2>
@@ -74,6 +89,10 @@ struct duk_memory_functions {
 #define DUK_RET_SYNTAX_ERROR         (-DUK_ERR_SYNTAX_ERROR)
 #define DUK_RET_TYPE_ERROR           (-DUK_ERR_TYPE_ERROR)
 #define DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
+
+/* Return codes for protected calls (duk_safe_call(), duk_pcall()). */
+#define DUK_EXEC_SUCCESS             0
+#define DUK_EXEC_ERROR               1
 </pre>
 
 <h2>Compilation flags for duk_compile()</h2>
