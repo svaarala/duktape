@@ -3,7 +3,7 @@ title: "check tracedata use: invalid tracedata should be tolerated; perhaps make
 desc: ""
 type: :task
 component: duk
-release: v0.10
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,17 @@ log_events:
 - - 2014-01-23 01:12:07.949553 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-04-12 22:01:38.714963 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    The only place where tracedata is now read back is duk_bi_error.c where error
+    string formatting is done.  This needs to tolerate malicious tracedata.
+    
+    Error augmentation code creates the tracedata and the data is not user
+    accessible during its creation.
+- - 2014-04-12 22:02:38.886722 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.10
   - ""
