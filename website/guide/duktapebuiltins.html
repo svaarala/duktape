@@ -446,8 +446,12 @@ constructor.  Otherwise the behavior is the same:</p>
     <code>Duktape.Buffer.prototype</code> object.</li>
 </ul>
 
-<div class="fixme">
-Add a note on how to copy a buffer because the constructor never does that now.
+<div class="note">
+There is currently (in Duktape 0.10.0) no way direct way to create a copy of
+a buffer (i.e. a new buffer with the same contents but a separate underlying
+buffer).  This will be added in Duktape 0.11.0; for now you can make a copy
+inefficiently e.g. as <code>Duktape.Buffer(String(orig_buf))</code>.  Buffers
+are currently mostly intended to be operated with from C code.
 </div>
 
 <h2>Duktape.Buffer.prototype</h2>
