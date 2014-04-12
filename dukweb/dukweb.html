@@ -20,8 +20,14 @@ page takes a few seconds to (re)load.</p>
 // that they integrate with the browser environment: output is written to
 // the text area below.
 
-print("Duktape version is " + Duktape.version);
-alert("alert from Duktape code");
+print('Duktape version is ' + Duktape.version);
+alert('alert from Duktape code');
+
+print(Duktape.enc('jsonx', { foo: 1, bar: 'xxx', quux: Duktape.Buffer('foo') }));
+
+var obj = {};
+Duktape.fin(obj, function () { print('obj finalized'); });
+obj = null;
 
 // The Dukweb object provides bindings to access the underlying web
 // environment.  Most importantly, you can use Dukweb.eval() to run
