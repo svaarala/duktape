@@ -10,7 +10,7 @@ desc: |-
   Currently e.g. Array built-ins don't always behave correctly.
 type: :task
 component: duk
-release: 
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -50,4 +50,8 @@ log_events:
 - - 2014-02-18 13:16:58.506511 Z
   - sva <sami.vaarala@iki.fi>
   - unassigned from release v0.10
+  - ""
+- - 2014-04-12 13:46:32.660619 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from unassigned
   - ""
