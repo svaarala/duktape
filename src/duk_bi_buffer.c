@@ -45,7 +45,10 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
 		DUK_MEMCPY((void *) buf_data, (const void *) src_data, (size_t) buf_size);
 		break;
 	case DUK_TYPE_OBJECT:
-		/* Buffer object: get the plain buffer inside */
+		/* Buffer object: get the plain buffer inside.  If called as as
+		 * constructor, a new Buffer object pointing to the same plain
+		 * buffer is created below.
+		 */
 		h_obj = duk_get_hobject(ctx, 0);
 		DUK_ASSERT(h_obj != NULL);
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) != DUK_HOBJECT_CLASS_BUFFER) {
