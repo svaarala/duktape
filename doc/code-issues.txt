@@ -576,6 +576,29 @@ input values are known to be constrained (e.g. year values are kept between
 [-999999,999999]).  However, if there is a bug, it's better to corrupt a
 printed output value than to cause a memory error.
 
+Calling platform functions
+==========================
+
+All platform function calls (ANSI C and other) are wrapped through macros
+defined in ``duk_features.h``.  For example, ``fwrite()`` calls are made
+using ``DUK_FWRITE()``.
+
+Many of these wrappers are not currently needed but some are, so it's simplest
+to wrap just about everything in case something needs to be tweaked.  As an
+example, on some old uclibc versions ``memcpy()`` is broken and can be
+replaced with ``memmove()`` in ``duk_features.h``.
+
+The only exception is platform specific Date built-in code.  As this code is
+always platform specific and contained to the Date code, wrapping them is not
+necessary or useful.  Any tweaks can be more comfortably applied directly in
+the Date code.
+
+The following can be used to find "leaks", accidental unwrapped calls::
+
+  $ python util/find_func_calls.py src/*.c src/*.h | \
+    grep -v -i -P ^duk_ | grep -v -P '^(sizeof|va_start|va_end|va_arg)' | \
+    sort | uniq
+
 Other considerations
 ====================
 

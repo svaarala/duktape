@@ -247,7 +247,7 @@ double duk_js_tointeger_number(double x) {
 		return x;
 	} else {
 		int s = DUK_SIGNBIT(x);
-		x = floor(fabs(x));  /* truncate towards zero */
+		x = DUK_FLOOR(DUK_FABS(x));  /* truncate towards zero */
 		if (s) {
 			x = -x;
 		}
@@ -276,7 +276,7 @@ static double duk__toint32_touint32_helper(double x, int is_toint32) {
 
 	/* x = sign(x) * floor(abs(x)), i.e. truncate towards zero, keep sign */
 	s = DUK_SIGNBIT(x);
-	x = floor(fabs(x));
+	x = DUK_FLOOR(DUK_FABS(x));
 	if (s) {
 		x = -x;
 	}
@@ -285,7 +285,7 @@ static double duk__toint32_touint32_helper(double x, int is_toint32) {
 	 * differs from what Javascript wants (see Section 9.6).
 	 */
 
-	x = fmod(x, DUK_DOUBLE_2TO32);    /* -> x in ]-2**32, 2**32[ */
+	x = DUK_FMOD(x, DUK_DOUBLE_2TO32);    /* -> x in ]-2**32, 2**32[ */
 
 	if (x < 0.0) {
 		x += DUK_DOUBLE_2TO32;

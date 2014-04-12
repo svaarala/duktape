@@ -21,7 +21,7 @@ int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_h
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "prototype chain max depth reached (loop?)");
 		}
 		h = h->prototype;
-	} while(h);
+	} while (h);
 
 	return 0;
 }

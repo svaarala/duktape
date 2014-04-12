@@ -668,7 +668,7 @@ typedef struct {
 		DUK_ASSERT((preinc_idx) - 1 >= 0); \
 		DUK_ASSERT((preinc_idx) - 1 < DUK__MAX_OUTPUT_DIGITS); \
 		((nc_ctx)->digits[(preinc_idx) - 1]) = (duk_uint8_t) (x); \
-	} while(0)
+	} while (0)
 
 static duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, duk_small_int_t radix) {
 	duk_uint8_t *p;

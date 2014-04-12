@@ -67,7 +67,7 @@ static double duk__compute_mod(double d1, double d2) {
 	 *  Compare E5 Section 11.5.3 and "man fmod".
 	 */
 
-	return fmod(d1, d2);
+	return DUK_FMOD(d1, d2);
 }
 
 static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z) {
@@ -1450,7 +1450,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	thr->heap->lj.jmpbuf_ptr = &jmpbuf;
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);
 
-	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb)) {
+	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb)) {
 		/*
 		 *  Note: any local variables accessed here must have their value
 		 *  assigned *before* the setjmp() call, OR they must be declared

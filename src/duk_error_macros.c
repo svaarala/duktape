@@ -106,13 +106,13 @@ void duk_default_panic_handler(int code, const char *msg) {
 #endif
 
 #if defined(DUK_USE_PANIC_ABORT)
-	abort();
+	DUK_ABORT();
 #elif defined(DUK_USE_PANIC_EXIT)
-	exit(-1);
+	DUK_EXIT(-1);
 #elif defined(DUK_USE_PANIC_SEGFAULT)
 	/* exit() afterwards to satisfy "noreturn" */
 	DUK_CAUSE_SEGFAULT();
-	exit(-1);
+	DUK_EXIT(-1);
 #else
 #error no DUK_USE_PANIC_xxx macro defined
 #endif

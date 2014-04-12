@@ -243,7 +243,7 @@
 		(set_e_f) = (duk_uint8_t *) ((set_e_pv) + (n_ent)); \
 		(set_a) = (duk_tval *) ((set_e_f) + (n_ent)); \
 		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
-	} while(0)
+	} while (0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
 /* LAYOUT 2 */
 #if defined(DUK_USE_ALIGN_4)
@@ -294,7 +294,7 @@
 		                        sizeof(duk_uint8_t) * (n_ent) + \
 		                        DUK_HOBJECT_E_FLAG_PADDING((n_ent))); \
 		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
-	} while(0)
+	} while (0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_3)
 /* LAYOUT 3 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
@@ -337,7 +337,7 @@
 		(set_e_k) = (duk_hstring **) ((set_a) + (n_arr)); \
 		(set_h) = (duk_uint32_t *) ((set_e_k) + (n_ent)); \
 		(set_e_f) = (duk_uint8_t *) ((set_h) + (n_hash)); \
-	} while(0)
+	} while (0)
 #else
 #error invalid hobject layout defines
 #endif  /* hobject property layout */

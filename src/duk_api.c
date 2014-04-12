@@ -2666,7 +2666,7 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 
 	buf = duk_push_dynamic_buffer(ctx, sz);
 
-	for(;;) {
+	for (;;) {
 		len = duk__try_push_vsprintf(ctx, buf, sz, fmt, ap);
 		if (len >= 0) {
 			break;

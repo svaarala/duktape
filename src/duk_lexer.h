@@ -31,7 +31,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_LEXER_SETPOINT(ctx,pt)    duk_lexer_setpoint((ctx), (pt))
 
 #define DUK_LEXER_GETPOINT(ctx,pt)    do { (pt)->offset = (ctx)->offsets[0]; \
-                                           (pt)->line = (ctx)->lines[0]; } while(0)
+                                           (pt)->line = (ctx)->lines[0]; } while (0)
 
 /* currently 6 characters of lookup are actually needed (duk_lexer.c) */
 #define DUK_LEXER_WINDOW_SIZE                     8

@@ -40,12 +40,12 @@
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION INCREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		duk__recursion_increase((comp_ctx)); \
-	} while(0)
+	} while (0)
 
 #define DUK__RECURSION_DECREASE(comp_ctx,thr)  do { \
 		DUK_DDDPRINT("RECURSION DECREASE: %s:%d", DUK_FILE_MACRO, DUK_LINE_MACRO); \
 		duk__recursion_decrease((comp_ctx)); \
-	} while(0)
+	} while (0)
 
 /* Note: slots limits below are quite approximate right now, and because they
  * overlap (in control flow), some can be eliminated.
