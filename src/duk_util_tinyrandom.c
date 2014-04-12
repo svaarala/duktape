@@ -52,7 +52,7 @@ duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 		DUK__UPDATE_RND(rnd);
 		t += DUK__RND_BIT(rnd);
 		t /= 2.0;
-	} while(--n);
+	} while (--n);
 
 	thr->heap->rnd_state = rnd;
 

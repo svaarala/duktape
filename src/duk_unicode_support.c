@@ -68,7 +68,7 @@ duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_uint8_t *out) 
 			 */
 			out[0] = (duk_uint8_t) (marker + x);
 		}
-	} while(i > 0);
+	} while (i > 0);
 
 	return len;
 }

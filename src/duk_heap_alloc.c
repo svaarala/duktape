@@ -379,7 +379,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 #ifdef DUK_USE_DEBUG
 #define DUK__DUMPSZ(t)  do { \
 		DUK_DPRINT("" #t "=%d", (int) sizeof(t)); \
-	} while(0)
+	} while (0)
 
 static void duk__dump_type_sizes(void) {
 	DUK_DPRINT("sizeofs()");
@@ -502,7 +502,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		volatile double dbl1 = 0.0;
 		volatile double dbl2 = 0.0;
 		duk_computed_nan = dbl1 / dbl2;
-	} while(0);
+	} while (0);
 #endif
 
 #ifdef DUK_USE_COMPUTED_INFINITY
@@ -511,7 +511,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		volatile double dbl1 = 1.0;
 		volatile double dbl2 = 0.0;
 		duk_computed_infinity = dbl1 / dbl2;
-	} while(0);
+	} while (0);
 #endif
 
 	/* use a raw call, all macros expect the heap to be initialized */

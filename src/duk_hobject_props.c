@@ -1654,7 +1654,7 @@ static int duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstrin
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "prototype chain max depth reached (loop?)");
 		}
 		curr = curr->prototype;
-	} while(curr);
+	} while (curr);
 
 	/* out_desc is left untouched (possibly garbage), caller must use return
 	 * value to determine whether out_desc can be looked up
@@ -2040,7 +2040,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "prototype chain max depth reached (loop?)");
 		}
 		curr = curr->prototype;
-	} while(curr);
+	} while (curr);
 
 	/*
 	 *  Not found
