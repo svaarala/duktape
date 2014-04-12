@@ -23,6 +23,7 @@ int set_timer_callback(duk_context *ctx) {
 stack
 stash
 object
+module
 
 =seealso
 duk_push_heap_stash

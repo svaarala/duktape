@@ -19,6 +19,7 @@ duk_push_heap_stash(ctx);
 stack
 stash
 object
+module
 
 =seealso
 duk_push_global_stash

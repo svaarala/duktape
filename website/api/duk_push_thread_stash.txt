@@ -20,6 +20,7 @@ duk_push_thread_stash(ctx, ctx2);
 stack
 stash
 object
+module
 
 =seealso
 duk_push_heap_stash
