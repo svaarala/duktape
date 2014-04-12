@@ -33,13 +33,24 @@ duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_p
 
 void duk_push_u32(duk_context *ctx, duk_uint32_t val);
 
+/* internal helper for looking up a tagged type */
+#define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1 << 24)
+#define  DUK_GETTAGGED_FLAG_CHECK_CLASS (1 << 25)
+#define  DUK_GETTAGGED_CLASS_SHIFT      16
+
+duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, int index, duk_int_t flags_and_tag);
+
 duk_hstring *duk_get_hstring(duk_context *ctx, int index);
 duk_hobject *duk_get_hobject(duk_context *ctx, int index);
-duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnum);
 duk_hbuffer *duk_get_hbuffer(duk_context *ctx, int index);
 duk_hthread *duk_get_hthread(duk_context *ctx, int index);
 duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, int index);
 duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, int index);
+
+#define duk_get_hobject_with_class(ctx,index,classnum) \
+	((duk_hobject *) duk_get_tagged_heaphdr_raw((ctx), (index), \
+		DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL | \
+		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
 
 /* XXX: add specific getters for e.g. thread; duk_get_hobject_with_flags()
  * could be the underlying primitive?
@@ -52,11 +63,15 @@ int duk_to_int_check_range(duk_context *ctx, int index, int minval, int maxval);
 
 duk_hstring *duk_require_hstring(duk_context *ctx, int index);
 duk_hobject *duk_require_hobject(duk_context *ctx, int index);
-duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int classnum);
 duk_hbuffer *duk_require_hbuffer(duk_context *ctx, int index);
 duk_hthread *duk_require_hthread(duk_context *ctx, int index);
 duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, int index);
 duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, int index);
+
+#define duk_require_hobject_with_class(ctx,index,classnum) \
+	((duk_hobject *) duk_get_tagged_heaphdr_raw((ctx), (index), \
+		DUK_TAG_OBJECT | \
+		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
 
 void duk_push_unused(duk_context *ctx);
 void duk_push_hstring(duk_context *ctx, duk_hstring *h);
