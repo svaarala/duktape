@@ -152,4 +152,3 @@ duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, int hobject_flags) {
 	}
 	return res;
 }
-

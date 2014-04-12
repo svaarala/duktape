@@ -88,6 +88,13 @@ static void duk__err_augment_user(duk_hthread *thr, int stridx_cb) {
 
 	/* [ ... errval ] */
 
+	if (thr->builtins[DUK_BIDX_DUKTAPE] == NULL) {
+		/* When creating built-ins, some of the built-ins may not be set
+		 * and we want to tolerate that when throwing errors.
+		 */
+		DUK_DDPRINT("error occurred when DUK_BIDX_DUKTAPE is NULL, ignoring");
+		return;
+	}
 	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
 	                                                  thr->strs[stridx_cb]);
 	if (tv_hnd == NULL) {
