@@ -65,7 +65,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 	duk_push_array(ctx);
 
 	if (nargs == 1 && duk_is_number(ctx, 0)) {
-		/* FIXME: expensive check */
+		/* FIXME: expensive check (also shared elsewhere - so add a shared internal API call?) */
 		d = duk_get_number(ctx, 0);
 		len = duk_to_uint32(ctx, 0);
 		if (((double) len) != d) {
@@ -123,7 +123,7 @@ int duk_bi_array_prototype_to_string(duk_context *ctx) {
 		 * function and use duk_call_method().
 		 */
 
-		/* FIXME: 'this' will be ToObject() coerced twice, which is incorrect
+		/* XXX: 'this' will be ToObject() coerced twice, which is incorrect
 		 * but should have no visible side effects.
 		 */
 		DUK_DDDPRINT("this.join is not callable, fall back to (original) Object.toString");
@@ -153,7 +153,7 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 	int idx, idx_last;
 	duk_hobject *h;
 
-	/* FIXME: the insert here is a bit expensive if there are a lot of items.
+	/* XXX: the insert here is a bit expensive if there are a lot of items.
 	 * It could also be special cased in the outermost for loop quite easily
 	 * (as the element is dup()'d anyway).
 	 */
@@ -163,12 +163,11 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	duk_push_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */
 
-	/* FIXME: the duk_def_prop_index() calls are currently slow as they intern
-	 * the index as a string.  Further, the Array special behaviors are NOT
-	 * invoked (which differs from the official algorithm).  If no error is
-	 * thrown, this doesn't matter as the length is updated at the end.  However,
-	 * if an error is thrown, the length will be unset.  That shouldn't matter
-	 * because the caller won't get a reference to the intermediate value.
+	/* NOTE: The Array special behaviors are NOT invoked by duk_def_prop_index()
+	 * (which differs from the official algorithm).  If no error is thrown, this
+	 * doesn't matter as the length is updated at the end.  However, if an error
+	 * is thrown, the length will be unset.  That shouldn't matter because the
+	 * caller won't get a reference to the intermediate value.
 	 */
 
 	idx = 0;
@@ -1121,7 +1120,7 @@ int duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 #define DUK__ITER_MAP      3
 #define DUK__ITER_FILTER   4
 
-/* FIXME: This helper is a bit awkward because the handling for the different iteration
+/* XXX: This helper is a bit awkward because the handling for the different iteration
  * callers is quite different.  This now compiles to a bit less than 500 bytes, so with
  * 5 callers the net result is about 100 bytes / caller.
  */
