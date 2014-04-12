@@ -107,6 +107,11 @@ int duk_bi_error_prototype_to_string(duk_context *ctx) {
  *  outputs.  It should be optimized for size, and may leave garbage on stack,
  *  only the topmost return value matters.  For instance, traceback separator
  *  and decoded strings are pushed even when looking for filename only.
+ *
+ *  NOTE: because user code can currently write to the tracedata array (or
+ *  replace it with something other than an array), the code below must
+ *  tolerate arbitrary tracedata.  It can throw errors etc, but cannot cause
+ *  a segfault or memory unsafe behavior.
  */
 
 /* constants arbitrary, chosen for small loads */
