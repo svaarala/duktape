@@ -159,8 +159,8 @@ function testBuffer2() {
         'foo', String('foo'), B('foo'), new B('foo')
     ];
     var values2 = [
-        B(), B('foo'), B('foo'), B('123'),
-        B('0'), B('1'), new B(), new B('foo'),
+        B(''), B('foo'), B('foo'), B('123'),
+        B('0'), B('1'), new B(''), new B('foo'),
         new B('foo')
     ];
     var i, j;
