@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: memory use results from test case runs (valgrind --tool=massif); stats and graphs so results can be checked after commits
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-12 13:50:04.134725 Z
+references: []
+
+id: 3b2eaac8ed5ac90400cde711a966031dc4e589a0
+log_events: 
+- - 2014-04-12 13:50:04.222914 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
