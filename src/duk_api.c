@@ -1044,11 +1044,12 @@ void *duk_require_buffer(duk_context *ctx, int index, size_t *out_size) {
 	return NULL;  /* not reachable */
 }
 
-/* internal */
-/* FIXME: allow_null can be baked into 'tag' */
-static duk_heaphdr *duk__get_tagged_heaphdr(duk_context *ctx, int index, int tag, int allow_null) {
+/* internal helper for looking up a tagged type */
+#define  DUK__GET_TAGGED_FLAG_ALLOW_NULL  (1 << 16)
+static duk_heaphdr *duk__get_tagged_heaphdr(duk_context *ctx, int index, duk_int_t flags_and_tag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
+	duk_int_t tag = flags_and_tag & 0xffff;  /* tags can be up to 16 bits */
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -1063,7 +1064,7 @@ static duk_heaphdr *duk__get_tagged_heaphdr(duk_context *ctx, int index, int tag
 		DUK_ASSERT(ret != NULL);  /* tagged null pointers should never occur */
 		return ret;
 	}
-	if (allow_null) {
+	if (flags_and_tag & DUK__GET_TAGGED_FLAG_ALLOW_NULL) {
 		return (duk_heaphdr *) NULL;
 	}
 
@@ -1073,22 +1074,22 @@ static duk_heaphdr *duk__get_tagged_heaphdr(duk_context *ctx, int index, int tag
 
 /* internal */
 duk_hstring *duk_get_hstring(duk_context *ctx, int index) {
-	return (duk_hstring *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_STRING, 1);
+	return (duk_hstring *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_STRING | DUK__GET_TAGGED_FLAG_ALLOW_NULL);
 }
 
 /* internal */
 duk_hstring *duk_require_hstring(duk_context *ctx, int index) {
-	return (duk_hstring *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_STRING, 0);
+	return (duk_hstring *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_STRING);
 }
 
 /* internal */
 duk_hobject *duk_get_hobject(duk_context *ctx, int index) {
-	return (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 1);
+	return (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT | DUK__GET_TAGGED_FLAG_ALLOW_NULL);
 }
 
 /* internal */
 duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnum) {
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 1);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT | DUK__GET_TAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && (int) DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
 		h = NULL;
 	}
@@ -1097,13 +1098,13 @@ duk_hobject *duk_get_hobject_with_class(duk_context *ctx, int index, int classnu
 
 /* internal */
 duk_hobject *duk_require_hobject(duk_context *ctx, int index) {
-	return (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	return (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 }
 
 /* internal */
 duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int classnum) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	DUK_ASSERT(h != NULL);
 	if ((int) DUK_HOBJECT_GET_CLASS_NUMBER(h) != classnum) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected object with class number %d", classnum);
@@ -1113,17 +1114,17 @@ duk_hobject *duk_require_hobject_with_class(duk_context *ctx, int index, int cla
 
 /* internal */
 duk_hbuffer *duk_get_hbuffer(duk_context *ctx, int index) {
-	return (duk_hbuffer *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_BUFFER, 1);
+	return (duk_hbuffer *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_BUFFER | DUK__GET_TAGGED_FLAG_ALLOW_NULL);
 }
 
 /* internal */
 duk_hbuffer *duk_require_hbuffer(duk_context *ctx, int index) {
-	return (duk_hbuffer *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_BUFFER, 0);
+	return (duk_hbuffer *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_BUFFER);
 }
 
 /* internal */
 duk_hthread *duk_get_hthread(duk_context *ctx, int index) {
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_THREAD(h)) {
 		return NULL;
 	}
@@ -1133,7 +1134,7 @@ duk_hthread *duk_get_hthread(duk_context *ctx, int index) {
 /* internal */
 duk_hthread *duk_require_hthread(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_THREAD(h)) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected thread");
 	}
@@ -1142,7 +1143,7 @@ duk_hthread *duk_require_hthread(duk_context *ctx, int index) {
 
 /* internal */
 duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, int index) {
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		return NULL;
 	}
@@ -1152,7 +1153,7 @@ duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, int index) {
 /* internal */
 duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected compiledfunction");
 	}
@@ -1161,7 +1162,7 @@ duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, int index
 
 /* internal */
 duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, int index) {
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		return NULL;
 	}
@@ -1171,7 +1172,7 @@ duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, int index) {
 /* internal */
 duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT, 0);
+	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr(ctx, index, DUK_TAG_OBJECT);
 	if (!DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected nativefunction");
 	}
