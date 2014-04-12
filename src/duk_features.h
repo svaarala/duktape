@@ -1291,6 +1291,14 @@ typedef FILE duk_file;
 #define DUK_STDOUT      stdout
 #define DUK_STDERR      stderr
 
+/* Special naming to avoid conflict with e.g. DUK_FREE() in duk_heap.h
+ * (which is unfortunately named).
+ */
+#define DUK_ANSI_MALLOC      malloc
+#define DUK_ANSI_REALLOC     realloc
+#define DUK_ANSI_CALLOC      calloc
+#define DUK_ANSI_FREE        free
+
 /* Old uclibcs have a broken memcpy so use memmove instead (this is overly
  * wide now on purpose):
  * http://lists.uclibc.org/pipermail/uclibc-cvs/2008-October/025511.html
