@@ -187,10 +187,7 @@ Released
   repo; simplify Makefiles etc accordingly (this change is not visible in
   the source distributable)
 
-Planned
-=======
-
-0.10.0 (2014-03-XX)
+0.10.0 (2014-04-XX)
 -------------------
 
 * Avoid "out of regs" for large expressions by adding more comprehensive
@@ -290,6 +287,9 @@ Planned
 * Duktape can now be compiled with Emscripten and executed with e.g. V8,
   "Dukweb" provides an example where Duktape runs on a web page, with
   Duktape and the browser Javascript environment interacting
+
+Planned
+=======
 
 0.11.0 (2014-XX-XX)
 -------------------
