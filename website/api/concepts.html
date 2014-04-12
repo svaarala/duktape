@@ -160,3 +160,14 @@ int my_func(duk_context *ctx) {
 }
 </pre>
 
+<h2>Stashes</h2>
+
+<p>A stash is an object reachable from C code using the Duktape/C API, but
+which is unreachable from Ecmascript code.  Stashes allow C code to store
+internal state which can be safely isolated from Ecmascript code.  There are
+three stashes:</p>
+<ul>
+<li>Heap stash: shared by all threads in the same heap.</li>
+<li>Global stash: shared by all threads which share a global object.</li>
+<li>Thread stash: specific to a certain thread.</li>
+</ul>
