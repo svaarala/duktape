@@ -54,7 +54,7 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 		curr = (duk_uint32_t) ((((duk_uint64_t) curr) * ((duk_uint64_t) DUK__HASH_SIZE_RATIO)) >> 10);
 #else
 		/* 32-bit x 11-bit = 43-bit, fits accurately into a double */
-		curr = (duk_uint32_t) floor(((double) curr) * ((double) DUK__HASH_SIZE_RATIO) / 1024.0);
+		curr = (duk_uint32_t) DUK_FLOOR(((double) curr) * ((double) DUK__HASH_SIZE_RATIO) / 1024.0);
 #endif
 
 		/* correction */

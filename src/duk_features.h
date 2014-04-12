@@ -1239,6 +1239,28 @@ extern double duk_computed_nan;
 #undef DUK_USE_MATH_ROUND
 #endif
 
+/* These functions don't currently need replacement but are wrapped for
+ * completeness.  Because these are used as function pointers, they need
+ * to be defined as concrete C functions (not macros).
+ */
+#define DUK_FABS             fabs
+#define DUK_FMIN             fmin
+#define DUK_FMAX             fmax
+#define DUK_FLOOR            floor
+#define DUK_CEIL             ceil
+#define DUK_FMOD             fmod
+#define DUK_POW              pow
+#define DUK_ACOS             acos
+#define DUK_ASIN             asin
+#define DUK_ATAN             atan
+#define DUK_ATAN2            atan2
+#define DUK_SIN              sin
+#define DUK_COS              cos
+#define DUK_TAN              tan
+#define DUK_EXP              exp
+#define DUK_LOG              log
+#define DUK_SQRT             sqrt
+
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,
  * see test-bug-netbsd-math-pow.js.  Use NetBSD specific workaround.
  * (This might be a wider problem; if so, generalize the define name.)

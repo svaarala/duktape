@@ -67,7 +67,7 @@ static double duk__compute_mod(double d1, double d2) {
 	 *  Compare E5 Section 11.5.3 and "man fmod".
 	 */
 
-	return fmod(d1, d2);
+	return DUK_FMOD(d1, d2);
 }
 
 static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z) {

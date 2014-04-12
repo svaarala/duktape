@@ -60,7 +60,7 @@ static double duk__fmin_fixed(double x, double y) {
 		}
 	}
 #ifdef DUK_USE_MATH_FMIN
-	return fmin(x, y);
+	return DUK_FMIN(x, y);
 #else
 	return (x < y ? x : y);
 #endif
@@ -78,7 +78,7 @@ static double duk__fmax_fixed(double x, double y) {
 		}
 	}
 #ifdef DUK_USE_MATH_FMAX
-	return fmax(x, y);
+	return DUK_FMAX(x, y);
 #else
 	return (x > y ? x : y);
 #endif
@@ -122,7 +122,7 @@ static double duk__round_fixed(double x) {
 		}
 	}
 
-	return floor(x + 0.5);
+	return DUK_FLOOR(x + 0.5);
 }
 
 static double duk__pow_fixed(double x, double y) {
@@ -141,7 +141,7 @@ static double duk__pow_fixed(double x, double y) {
 	if (cy == DUK_FP_NAN) {
 		goto ret_nan;
 	}
-	if (fabs(x) == 1.0 && cy == DUK_FP_INFINITE) {
+	if (DUK_FABS(x) == 1.0 && cy == DUK_FP_INFINITE) {
 		goto ret_nan;
 	}
 #if defined(DUK_USE_POW_NETBSD_WORKAROUND)
@@ -173,7 +173,7 @@ static double duk__pow_fixed(double x, double y) {
 			 * odd.  If x is -Infinity, NaN is returned and the odd check
 			 * always concludes "not odd" which results in desired outcome.
 			 */
-			double tmp = fmod(y, 2);
+			double tmp = DUK_FMOD(y, 2);
 			if (tmp == -1.0) {
 				return -DUK_DOUBLE_INFINITY;
 			} else {
@@ -183,7 +183,7 @@ static double duk__pow_fixed(double x, double y) {
 		}
 	}
 #endif
-	return pow(x, y);
+	return DUK_POW(x, y);
 
  ret_nan:
 	return DUK_DOUBLE_NAN;
@@ -191,24 +191,24 @@ static double duk__pow_fixed(double x, double y) {
 
 /* order must match constants in genbuiltins.py */
 static const duk__one_arg_func duk__one_arg_funcs[] = {
-	fabs,
-	acos,
-	asin,
-	atan,
-	ceil,
-	cos,
-	exp,
-	floor,
-	log,
+	DUK_FABS,
+	DUK_ACOS,
+	DUK_ASIN,
+	DUK_ATAN,
+	DUK_CEIL,
+	DUK_COS,
+	DUK_EXP,
+	DUK_FLOOR,
+	DUK_LOG,
 	duk__round_fixed,
-	sin,
-	sqrt,
-	tan
+	DUK_SIN,
+	DUK_SQRT,
+	DUK_TAN
 };
 
 /* order must match constants in genbuiltins.py */
 static const duk__two_arg_func duk__two_arg_funcs[] = {
-	atan2,
+	DUK_ATAN2,
 	duk__pow_fixed
 };
 

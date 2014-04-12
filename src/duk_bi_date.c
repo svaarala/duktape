@@ -105,7 +105,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 
 	d = ((double) tv.tv_sec) * 1000.0 +
 	    ((double) (tv.tv_usec / 1000));
-	DUK_ASSERT(floor(d) == d);  /* no fractions */
+	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions */
 
 	return d;
 }
@@ -850,9 +850,9 @@ static double duk__make_day(double year, double month, double day) {
 		return DUK_DOUBLE_NAN;
 	}
 	
-	year += floor(month / 12);
+	year += DUK_FLOOR(month / 12);
 
-	month = fmod(month, 12);
+	month = DUK_FMOD(month, 12);
 	if (month < 0) {
 		/* handle negative values */
 		month += 12;
@@ -894,17 +894,17 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 	int is_leap;
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
-	DUK_ASSERT(floor(d) == d);      /* no fractions in internal time */
+	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
 
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
 	 */
-	d1 = fmod(d, (double) DUK__MS_DAY);
+	d1 = DUK_FMOD(d, (double) DUK__MS_DAY);
 	if (d1 < 0.0) {
 		/* deal with negative values */
 		d1 += (double) DUK__MS_DAY;
 	}
-	d2 = floor(d / (double) DUK__MS_DAY);
+	d2 = DUK_FLOOR(d / (double) DUK__MS_DAY);
 	DUK_ASSERT(d2 * ((double) DUK__MS_DAY) + d1 == d);
 
 	/* now expected to fit into a 32-bit integer */

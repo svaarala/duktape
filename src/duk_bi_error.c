@@ -156,8 +156,8 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 			duk_get_prop_index(ctx, idx_td, i);
 			duk_get_prop_index(ctx, idx_td, i + 1);
 			d = duk_to_number(ctx, -1);
-			pc = (int) fmod(d, DUK_DOUBLE_2TO32);
-			flags = (int) floor(d / DUK_DOUBLE_2TO32);
+			pc = (int) DUK_FMOD(d, DUK_DOUBLE_2TO32);
+			flags = (int) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
 			t = duk_get_type(ctx, -2);
 
 			if (t == DUK_TYPE_OBJECT) {
