@@ -103,9 +103,9 @@ duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
 
 #ifdef DUK_USE_FILE_IO
 	data = (const char *) duk_require_buffer(ctx, 0, &data_len);
-	fwrite((const void *) data, 1, data_len, stderr);
-	fputc((int) '\n', stderr);
-	fflush(stderr);
+	DUK_FWRITE((const void *) data, 1, data_len, stderr);
+	DUK_FPUTC((int) '\n', stderr);
+	DUK_FFLUSH(stderr);
 #else
 	/* nop */
 #endif

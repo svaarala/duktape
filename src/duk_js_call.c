@@ -730,7 +730,7 @@ int duk_handle_call(duk_hthread *thr,
 	old_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
 	thr->heap->lj.jmpbuf_ptr = &our_jmpbuf;
 
-	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
+	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
 		DUK_DDDPRINT("setjmp catchpoint setup complete");
 		goto handle_call;
 	}
@@ -1507,7 +1507,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	old_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
 	thr->heap->lj.jmpbuf_ptr = &our_jmpbuf;
 
-	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
+	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
 		goto handle_call;
 	}
 

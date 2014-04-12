@@ -19,7 +19,7 @@ void duk_err_longjmp(duk_hthread *thr) {
 		DUK_UNREACHABLE();
 	}
 
-	longjmp(thr->heap->lj.jmpbuf_ptr->jb, DUK_LONGJMP_DUMMY_VALUE);
+	DUK_LONGJMP(thr->heap->lj.jmpbuf_ptr->jb, DUK_LONGJMP_DUMMY_VALUE);
 	DUK_UNREACHABLE();
 }
 

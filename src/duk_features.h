@@ -1308,8 +1308,19 @@ typedef FILE duk_file;
 #define DUK_FSEEK        fseek
 #define DUK_FTELL        ftell
 #define DUK_FFLUSH       fflush
+#define DUK_FPUTC        fputc
 
-#define DUK_MEMZERO(p,n)  DUK_MEMSET((p), 0, (n))
+#define DUK_MEMZERO(p,n) \
+	DUK_MEMSET((p), 0, (n))
+
+/*
+ *  Miscellaneous ANSI C or other platform wrappers.
+ */
+
+#define DUK_ABORT        abort
+#define DUK_EXIT         exit
+#define DUK_SETJMP       setjmp
+#define DUK_LONGJMP      longjmp
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,

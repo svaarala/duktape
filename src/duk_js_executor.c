@@ -1450,7 +1450,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	thr->heap->lj.jmpbuf_ptr = &jmpbuf;
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);
 
-	if (setjmp(thr->heap->lj.jmpbuf_ptr->jb)) {
+	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb)) {
 		/*
 		 *  Note: any local variables accessed here must have their value
 		 *  assigned *before* the setjmp() call, OR they must be declared
