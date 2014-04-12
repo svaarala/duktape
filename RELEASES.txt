@@ -260,10 +260,6 @@ Planned
 * Add a feature option to disable automatic zeroing of data areas of
   buffer values
 
-* C typing wrapped throughout to allow porting to more exotic platforms,
-  e.g. platforms where "int" is a 16-bit type
-  **FIXME: under work**
-
 * Improve self tests to include byte order validation
 
 * Allow the global eval() function to be called from C code (causes an
@@ -275,6 +271,9 @@ Planned
 
 * On platforms requiring a specific alignment, use an alternate object
   property table memory layout to reduce memory footprint
+
+* Wrap remaining platform calls through macro wrappers to allow easier
+  targeted fixes if necessary
 
 * Fix a regexp bug: non-capturing groups inside quantifier expressions
   were matched incorrectly
@@ -294,6 +293,9 @@ Planned
 
 0.11.0 (2014-XX-XX)
 -------------------
+
+* C typing wrapped throughout to allow porting to more exotic platforms,
+  e.g. platforms where "int" is a 16-bit type
 
 1.0.0 (2014-XX-XX)
 -------------------
