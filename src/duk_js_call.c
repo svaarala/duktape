@@ -1889,6 +1889,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	if (use_tailcall) {
 		duk_tval *tv1, *tv2;
 		duk_tval tv_tmp;
+		duk_size_t cs_index;
 		int i;
 
 		/*
@@ -1897,7 +1898,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		 *  Although the callstack entry is reused, we need to explicitly unwind
 		 *  the current activation (or simulate an unwind).  In particular, the
 		 *  current activation must be closed, otherwise something like
-		 *  test-bug-reduce-judofyr.js results.
+		 *  test-bug-reduce-judofyr.js results.  Also catchstack needs be unwound
+		 *  because there may be non-error-catching label entries in valid tailcalls.
 		 */
 
 		DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
@@ -1911,7 +1913,18 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 
-		/* There's no catchstack to unwind (a tailcall instruction is not emitted if there is) */
+		/* Unwind catchstack entries referring to the callstack entry we're reusing */
+		cs_index = thr->callstack_top - 1;
+		for (i = thr->catchstack_top - 1; i >= 0; i--) {
+			duk_catcher *cat = thr->catchstack + i;
+			if (cat->callstack_index != cs_index) {
+				/* 'i' is the first entry we'll keep */
+				break;
+			}
+		}
+		duk_hthread_catchstack_unwind(thr, i + 1);
+
+		/* Unwind the topmost callstack entry before reusing it */
 		DUK_ASSERT(thr->callstack_top > 0);
 		duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
 
