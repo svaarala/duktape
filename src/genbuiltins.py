@@ -1098,6 +1098,7 @@ bi_duktape = {
 	'functions': [
 		{ 'name': 'info',			'native': 'duk_bi_duktape_object_info',		'length': 1 },
 		{ 'name': 'line',			'native': 'duk_bi_duktape_object_line',		'length': 0 },
+		{ 'name': 'act',			'native': 'duk_bi_duktape_object_act',		'length': 1 },
 		{ 'name': 'gc',				'native': 'duk_bi_duktape_object_gc',		'length': 1 },
 		{ 'name': 'fin',			'native': 'duk_bi_duktape_object_fin',		'length': 0,	'varargs': True },
 		{ 'name': 'enc',			'native': 'duk_bi_duktape_object_enc',		'length': 0,	'varargs': True },

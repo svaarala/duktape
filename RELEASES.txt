@@ -216,7 +216,7 @@ Released
 * Add duk_put_function_list() and duk_put_number_list() to make it easier
   to define modules from C code
 
-* Add Duktape.compact() and Duktape.line()
+* Add Duktape.compact(), Duktape.line(), and Duktape.act()
 
 * Add a barebones built-in logging framework with both Ecmascript and C
   APIs and easy customization

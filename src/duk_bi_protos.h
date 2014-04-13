@@ -59,6 +59,7 @@ void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf);
 
 duk_ret_t duk_bi_duktape_object_info(duk_context *ctx);
 duk_ret_t duk_bi_duktape_object_line(duk_context *ctx);
+duk_ret_t duk_bi_duktape_object_act(duk_context *ctx);
 duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx);
 duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx);
 duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx);
