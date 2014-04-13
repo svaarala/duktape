@@ -194,6 +194,9 @@ struct duk_number_list_entry {
 #define DUK_COMPILE_SAFE                  (1 << 3)    /* (internal) catch compilation errors */
 #define DUK_COMPILE_NORESULT              (1 << 4)    /* (internal) omit eval result */
 
+/* Flags for duk_push_thread_raw() */
+#define DUK_THREAD_NEW_GLOBAL_ENV         (1 << 0)    /* create a new global environment */
+
 /* Duktape specific error codes */
 #define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
 #define DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */
@@ -372,8 +375,14 @@ void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
 int duk_push_object(duk_context *ctx);
 int duk_push_array(duk_context *ctx);
-int duk_push_thread(duk_context *ctx);
 int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);
+int duk_push_thread_raw(duk_context *ctx, int flags);
+
+#define duk_push_thread(ctx) \
+	duk_push_thread_raw((ctx), 0 /*flags*/)
+
+#define duk_push_thread_new_globalenv(ctx) \
+	duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
 
 int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
 #ifdef DUK_API_VARIADIC_MACROS

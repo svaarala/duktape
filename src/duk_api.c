@@ -2792,7 +2792,7 @@ int duk_push_array(duk_context *ctx) {
 	return ret;
 }
 
-int duk_push_thread(duk_context *ctx) {
+int duk_push_thread_raw(duk_context *ctx, int flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *obj;
 	int ret;
@@ -2814,23 +2814,29 @@ int duk_push_thread(duk_context *ctx) {
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 	obj->strs = thr->strs;
-	duk_hthread_copy_builtin_objects(thr, obj);
 	DUK_DDDPRINT("created thread object with flags: 0x%08x", obj->obj.hdr.h_flags);
 
+	/* make the new thread reachable */
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
-	DUK_HOBJECT_INCREF(thr, obj);
+	DUK_HTHREAD_INCREF(thr, obj);
 	ret = (int) (thr->valstack_top - thr->valstack_bottom);
 	thr->valstack_top++;
 
-	/* default prototype (Note: 'obj' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
-
 	/* important to do this *after* pushing, to make the thread reachable for gc */
-
 	if (!duk_hthread_init_stacks(thr->heap, obj)) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate thread");
 	}
+
+	/* initialize built-ins - either by copying or creating new ones */
+	if (flags & DUK_THREAD_NEW_GLOBAL_ENV) {
+		duk_hthread_create_builtin_objects(obj);
+	} else {
+		duk_hthread_copy_builtin_objects(thr, obj);
+	}
+
+	/* default prototype (Note: 'obj' must be reachable) */
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	/* Initial stack size satisfies the stack spare constraints so there
 	 * is no need to require stack here.

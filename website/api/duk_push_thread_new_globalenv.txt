@@ -1,5 +1,5 @@
 =proto
-int duk_push_thread(duk_context *ctx);
+int duk_push_thread_new_globalenv(duk_context *ctx);
 
 =stack
 [ ... ] -> [ ... thr! ]
@@ -8,8 +8,8 @@ int duk_push_thread(duk_context *ctx);
 <p>Push a new Duktape thread (context, coroutine) to the stack.  Returns
 non-negative index (relative to stack bottom) of the pushed thread.
 The new thread will be associated with the same Duktape heap as the
-argument <code>ctx</code>, and will share the same global object
-environment.</p>
+argument <code>ctx</code>, but will have a new global object environment
+(separate from the one used by <code>ctx</code>).</p>
 
 <p>To interact with the new thread with the Duktape API, use
 <code><a href="#duk_get_context">duk_get_context()</a></code> to get
@@ -19,11 +19,11 @@ a context pointer for API calls.</p>
 int thr_idx;
 duk_context *new_ctx;
 
-thr_idx = duk_push_thread(ctx);
+thr_idx = duk_push_thread_new_globalenv(ctx);
 new_ctx = duk_get_context(ctx, thr_idx);
 
 =tags
 stack
 
 =seealso
-duk_push_thread_new_globalenv
+duk_push_thread

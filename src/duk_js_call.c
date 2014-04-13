@@ -779,22 +779,25 @@ int duk_handle_call(duk_hthread *thr,
 		 *  catchpoint was set up to allow cleanup.  So, clean up
 		 *  and rethrow.
 		 *
+		 *  We must restore curr_thread here to ensure that its
+		 *  current value doesn't end up pointing to a thread object
+		 *  which has been freed.  This is now a problem because some
+		 *  call sites (namely duk_safe_call()) *first* unwind stacks
+		 *  and only then deal with curr_thread.  If those call sites
+		 *  were fixed, this wouldn't matter here.
+		 *
 		 *  Note: this case happens e.g. when heap->curr_thread is
 		 *  NULL on entry.
-		 *
-		 *  FIXME: maybe we should let the caller clean up instead.
 		 */
 
 		DUK_DDDPRINT("call is not protected -> clean up and rethrow");
 
-#if 0  /*FIXME*/
 		DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 		thr->state = entry_thread_state;
-
 		DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */
 		           (thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread != NULL) ||  /* other call */
 		           (thr->state == DUK_HTHREAD_STATE_RUNNING && thr->heap->curr_thread == thr));     /* current thread */
-#endif
+
 		/* XXX: should setjmp catcher be responsible for this instead? */
 		thr->heap->call_recursion_depth = entry_call_recursion_depth;
 		duk_err_longjmp(thr);
@@ -1689,6 +1692,12 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	DUK_DDDPRINT("setjmp catchpoint torn down");
 
+	/* FIXME: because we unwind stacks above, thr->heap->curr_thread is at
+	 * risk of pointing to an already freed thread.  This was indeed the
+	 * case in test-bug-multithread-valgrind.c, until duk_handle_call()
+	 * was fixed to restore thr->heap->curr_thread before rethrowing an
+	 * uncaught error.
+	 */
 	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 	thr->state = entry_thread_state;
 
