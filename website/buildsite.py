@@ -602,6 +602,25 @@ def generateApiDoc(apidocdir, apitestdir):
 	del title_elem['id']
 	title_elem.string = 'Duktape API'
 
+	# scan api doc files
+
+	used_tags = []
+	api_docs = []   # [ { 'parts': xxx, 'name': xxx } ]
+
+	for filename in apifiles:
+		parts = parseApiDoc(os.path.join(apidocdir, filename))
+		funcname = os.path.splitext(os.path.basename(filename))[0]
+		if parts.has_key('tags') and 'omit' in parts['tags']:
+			print 'Omit API doc: ' + str(funcname)
+			continue
+		if parts.has_key('tags'):
+			for i in parts['tags']:
+				if i not in used_tags:
+					used_tags.append(i)
+		api_docs.append({ 'parts': parts, 'name': funcname })
+
+	used_tags.sort()
+
 	# nav
 
 	res = []
@@ -612,8 +631,8 @@ def generateApiDoc(apidocdir, apitestdir):
 	navlinks.append(['#defines', 'Header definitions'])
 	navlinks.append(['#bytag', 'API calls by tag'])
 	navlinks.append(['', u'\u00a0'])  # XXX: force vertical space
-	for filename in apifiles:
-		funcname = os.path.splitext(os.path.basename(filename))[0]
+	for doc in api_docs:
+		funcname = doc['name']
 		navlinks.append(['#' + funcname, funcname])
 	res.append('<ul>')
 	for nav in navlinks:
@@ -636,25 +655,6 @@ def generateApiDoc(apidocdir, apitestdir):
 	res += processRawDoc('api/notation.html')
 	res += processRawDoc('api/concepts.html')
 	res += processRawDoc('api/defines.html')
-
-	# scan api doc files
-
-	used_tags = []
-	api_docs = []   # [ { 'parts': xxx, 'name': xxx } ]
-
-	for filename in apifiles:
-		parts = parseApiDoc(os.path.join(apidocdir, filename))
-		funcname = os.path.splitext(os.path.basename(filename))[0]
-		if parts.has_key('tags') and 'omit' in parts['tags']:
-			print 'Omit API doc: ' + str(funcname)
-			continue
-		if parts.has_key('tags'):
-			for i in parts['tags']:
-				if i not in used_tags:
-					used_tags.append(i)
-		api_docs.append({ 'parts': parts, 'name': funcname })
-
-	used_tags.sort()
 
 	# tag index
 	res += createTagIndex(api_docs, used_tags)
