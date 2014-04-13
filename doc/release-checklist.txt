@@ -64,6 +64,8 @@ Release checklist
   - Windows MinGW-w64
   - Windows MSVC (cl) x32
   - Windows MSVC (cl) x64
+  - Linux MIPS gcc
+  - Linux MIPS gcc + DUK_OPT_DEBUG
 
 * Ecmascript testcases
 
