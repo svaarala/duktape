@@ -3283,7 +3283,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_ASSERT(thr->catchstack[thr->catchstack_top - 1].callstack_index == thr->callstack_top - 1);
 
 				cat = &thr->catchstack[thr->catchstack_top - 1];
-				DUK_ASSERT(!DUK_CAT_HAS_CATCH_ENABLED(cat));
+
+				/* CATCH flag may be enabled or disabled here; it may be enabled if
+				 * the statement has a catch block but the try block does not throw
+				 * an error.
+				 */
 				DUK_ASSERT(!DUK_CAT_HAS_FINALLY_ENABLED(cat));  /* cleared before entering finally */
 				/* FIXME: assert idx_base */
 

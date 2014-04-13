@@ -284,6 +284,9 @@ Released
 * Fix a with statement bug which caused assertion failures when a break or
   continue jumped out of the with statement
 
+* Fix a try-catch-finally broken assertion when finally block had finished
+  (ENDFIN opcode)
+
 * Portability fixes for Crossbridge (Flash), NetBSD (endianness detection
   and a few Math.pow() fixes), OpenBSD (endianness detection),
   QNX (endianness and other fixes)
