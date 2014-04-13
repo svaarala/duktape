@@ -1162,6 +1162,8 @@ static int duk__to_string_helper(duk_context *ctx, int flags) {
 	int rc;
 	duk_uint8_t buf[DUK_BI_DATE_ISO8601_BUFSIZE];
 
+	DUK_UNREF(rc);  /* unreferenced with some options */
+
 	d = duk__push_this_get_timeval_tzoffset(ctx, flags, &tzoffset);
 	if (DUK_ISNAN(d)) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_INVALID_DATE);
