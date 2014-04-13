@@ -1783,9 +1783,15 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack[our_callstack_index].func != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(thr->callstack[our_callstack_index].func));
 
-		/* now checks entire callstack, would suffice to check just the top entry */
+		/* No entry in the catchstack which would actually catch a
+		 * throw can refer to the callstack entry being reused.
+		 * There *can* be catchstack entries referring to the current
+		 * callstack entry as long as they don't catch (e.g. label sites).
+		 */
+
 		for (i = 0; i < thr->catchstack_top; i++) {
-			DUK_ASSERT(thr->catchstack[i].callstack_index < our_callstack_index);
+			DUK_ASSERT(thr->catchstack[i].callstack_index < our_callstack_index ||  /* refer to callstack entries below current */
+			           DUK_CAT_GET_TYPE(&thr->catchstack[i]) == DUK_CAT_TYPE_LABEL); /* or a non-catching entry */
 		}
 	}
 #endif  /* DUK_USE_ASSERTIONS */
