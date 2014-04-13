@@ -21,6 +21,7 @@ Duktape.Thread function wc
 Duktape.Logger function wc
 Duktape.info function wc
 Duktape.line function wc
+Duktape.act function wc
 Duktape.gc function wc
 Duktape.fin function wc
 Duktape.enc function wc
@@ -96,6 +97,8 @@ Duktape.info.length number none
 Duktape.info.name string none
 Duktape.line.length number none
 Duktape.line.name string none
+Duktape.act.length number none
+Duktape.act.name string none
 Duktape.gc.length number none
 Duktape.gc.name string none
 Duktape.fin.length number none
