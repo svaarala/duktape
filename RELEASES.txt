@@ -278,6 +278,12 @@ Released
 * Fix a regexp bug: capture groups were not reset to 'undefined' when
   a quantified with capture groups was re-matched by a quantifier
 
+* Fix a tailcall bug which caused assertion failures when a tailcall was
+  made from inside a switch-case
+
+* Fix a with statement bug which caused assertion failures when a break or
+  continue jumped out of the with statement
+
 * Portability fixes for Crossbridge (Flash), NetBSD (endianness detection
   and a few Math.pow() fixes), OpenBSD (endianness detection),
   QNX (endianness and other fixes)
