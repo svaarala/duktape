@@ -1,10 +1,10 @@
 /*===
 -1 0 act
--2 10 test
+-2 10 basicTest
 -3 21 global
 ===*/
 
-function test() {
+function basicTest() {
     var i, t;
     for (i = -1; ; i--) {
         t = Duktape.act(i);
@@ -18,7 +18,20 @@ function test() {
 }
 
 try {
-    test();
+    basicTest();
 } catch (e) {
     print(e);
 }
+
+/*===
+running on line: 37
+===*/
+
+/* Simulate Duktape.line(). */
+
+function getCurrentLine() {
+    // indices: -1 = Duktape.act, -2 = getCurrentLine, -3 = caller
+    var a = Duktape.act(-3) || {};
+    return a.lineNumber;
+}
+print('running on line:', getCurrentLine());
