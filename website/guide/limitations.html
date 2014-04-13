@@ -197,7 +197,7 @@ There are a few limitations, though:</p>
     may be left in a non-<code>null</code> state even after coroutine call
     stacks have been fully unwound.  Also, if a coroutine is garbage collected
     before its call stack is unwound, the <code>caller</code> property of
-    functions in its callstack will not get updated now.</li>
+    functions in its call stack will not get updated now.</li>
 </ul>
 
 <p>See the internal <code>test-bi-function-nonstd-caller-prop.js</code> test
