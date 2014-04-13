@@ -78,6 +78,8 @@ Release checklist
 
   - Run testcases on all endianness targets
 
+  - Run with assertions enabled at least on x86-64
+
 * API testcases
 
   - On x86-64:
@@ -95,6 +97,8 @@ Release checklist
   - on x86-64
 
     - make test262test
+
+  - Run with assertions enabled at least on x86-64
 
 * emscripten (run emscripten-generated code with Duktape)
 
