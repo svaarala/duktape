@@ -33,6 +33,9 @@ Release checklist
 * Build candidate tar.xz files
 
   - These should remain the same so that their hash values are known
+  - NOTE: because README.txt.dist also contains a "git describe" of
+    the current commit, the describe string will refer to the previous
+    release tag (not the current release tag)
 
 * Check source dist contents
 
