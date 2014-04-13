@@ -948,8 +948,6 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 
 	sanity = DUK_HOBJECT_BOUND_CHAIN_SANITY;
 	do {
-		DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
-
 		/* check func supports [[HasInstance]] (this is checked for every function
 		 * in the bound chain, including the final one)
 		 */
