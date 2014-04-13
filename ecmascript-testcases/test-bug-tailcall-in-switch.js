@@ -1,21 +1,27 @@
 /*===
 test1 1
+tailcalled 1
 100
 test2 1
+tailcalled 1
 100
 test3 1
+tailcalled 1
 100
 ===*/
 
-/* In Duktape 0.9.0 a tailcall from inside a switch was allowed.
- * This means that the tailcall would be made even if the catch
- * stack contained catcher entries for the callstack entry being
- * reused by the tailcall.  With assertions enabled, the test below
- * would fail in duk_js_call.c:1788:
+/* Tailcall from inside a siwthc is allowed: even though the catch stack
+ * will contain entries referring to the callstack entry being reused,
+ * this is not a problem because the entries are not error catching.
+ * In Duktape 0.9.0 there was an incorrection assertion in duk_js_call.c
+ * which would also trigger an assertion error when tailcall was made
+ * from inside a switch:
  *
  *     for (i = 0; i < thr->catchstack_top; i++) {
  *         DUK_ASSERT(thr->catchstack[i].callstack_index < our_callstack_index);
  *     }
+ *
+ * This has been fixed in Duktape 0.10.0.
  */
 
 function tailcalled(x) {
