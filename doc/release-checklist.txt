@@ -6,6 +6,7 @@ Release checklist
 
   - ensure git commits are up-to-date
   - ensure branches are merged, unused branches deleted (also remotely)
+  - ensure branches are rebased where applicable
   - git fsck --full
   - git gc --aggressive
 
@@ -16,7 +17,7 @@ Release checklist
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
-* Check READMME.txt.dist
+* Check README.txt.dist
 
 * Ensure LICENSE.txt is up-to-date
 
