@@ -5434,6 +5434,8 @@ static void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_SYNTAX_ERROR, "with stmt in strict mode");
 	}
 
+	comp_ctx->curr_func.catch_depth++;
+
 	duk__advance(comp_ctx);  /* eat 'with' */
 
 	reg_catch = DUK__ALLOCTEMPS(comp_ctx, 2);
@@ -5454,6 +5456,8 @@ static void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	pc_finished = duk__get_current_pc(comp_ctx);
 
 	duk__patch_jump(comp_ctx, pc_trycatch + 2, pc_finished);
+
+	comp_ctx->curr_func.catch_depth--;
 }
 
 static int duk__stmt_label_site(duk_compiler_ctx *comp_ctx, int label_id) {
