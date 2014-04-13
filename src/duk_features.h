@@ -964,7 +964,7 @@ typedef double duk_double_t;
       defined(__BIG_ENDIAN__)
 /* Integer big endian */
 #if defined(__FLOAT_WORD_ORDER) && defined(__BIG_ENDIAN) && (__FLOAT_WORD_ORDER == __BIG_ENDIAN) || \
-    defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN) ||
+    defined(_FLOAT_WORD_ORDER) && defined(_BIG_ENDIAN) && (_FLOAT_WORD_ORDER == _BIG_ENDIAN)
 #define DUK_F_BYTEORDER 3
 #elif !defined(__FLOAT_WORD_ORDER) && !defined(_FLOAT_WORD_ORDER)
 /* Float word order not known, assume not a hybrid. */
