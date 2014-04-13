@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.10
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-02-18 15:29:56.019029 Z
 references: []
 
@@ -33,3 +33,7 @@ log_events:
     types also have additional interesting fields from an introspection
     perspective.  For instance, buffer values have a buffer fixed/dynamic
     type and a potential spare.
+- - 2014-04-13 01:05:33.886048 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
