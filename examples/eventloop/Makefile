@@ -6,5 +6,5 @@ evloop:
 		socket.c \
 		fileio.c \
 		ncurses.c \
-		../../src/duktape.c \
+		../../dist/src/duktape.c \
 		-lm -lncurses
