@@ -382,8 +382,8 @@ function setTimeout(func, delay) {
         throw new TypeError('callback is not a function/string');
     } else if (arguments.length > 2) {
         // Special case: callback arguments are provided.
-        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
-        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
+        bind_args = Array.prototype.slice.call(arguments, 2);  // [ arg1, arg2, ... ]
+        bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
         cb_func = func.bind.apply(func, bind_args);
     } else {
         // Normal case: callback given as a function without arguments.
@@ -430,8 +430,8 @@ function setInterval(func, delay) {
         throw new TypeError('callback is not a function/string');
     } else if (arguments.length > 2) {
         // Special case: callback arguments are provided.
-        bind_args = arguments.slice(2);  // [ arg1, arg2, ... ]
-        bind_args = bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
+        bind_args = Array.prototype.slice.call(arguments, 2);  // [ arg1, arg2, ... ]
+        bind_args.unshift(this);  // [ global(this), arg1, arg2, ... ]
         cb_func = func.bind.apply(func, bind_args);
     } else {
         // Normal case: callback given as a function without arguments.
