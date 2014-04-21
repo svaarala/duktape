@@ -10,8 +10,7 @@ int duk_is_object_coercible(duk_context *ctx, int index);
 otherwise returns 0.  If <code>index</code> is invalid, also returns 0.</p>
 
 <p>All Ecmascript types are object coercible except <code>undefined</code> and
-<code>null</code>.  The custom buffer and pointer types are currently not object
-coercible.</p>
+<code>null</code>.  The custom buffer and pointer types are object coercible.</p>
 
 =example
 if (duk_is_object_coercible(ctx, -3)) {
@@ -21,6 +20,3 @@ if (duk_is_object_coercible(ctx, -3)) {
 =tags
 stack
 object
-
-=fixme
-Make buffer and pointer object coercible, and give them a prototype object?

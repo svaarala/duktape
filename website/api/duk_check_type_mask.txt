@@ -14,3 +14,6 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_STRING |
                                  DUK_TYPE_MASK_NUMBER)) {
     printf("value is a string or a number\n");
 }
+
+=tags
+stack
