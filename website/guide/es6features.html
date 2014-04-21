@@ -1,0 +1,20 @@
+<h1 id="es6features">Ecmascript E6 features</h1>
+
+<p>This section describes the small set of features Duktape borrows from the
+<a href="https://people.mozilla.org/~jorendorff/es6-draft.html">current ES6 draft</a>.
+These features are not fully compliant; the intent is to minimize custom features
+and to align with the coming ES6 specification.</p>
+
+<h2>Object.setPrototypeOf and Object.prototype.__proto__</h2>
+
+<p><a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof">Object.setPrototypeOf</a>
+allows user to set the internal prototype of an object which is not supported in
+Ecmascript E5.  The Ecmascript E6 draft also provides
+<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.__proto__">Object.prototype.__proto__</a>
+which is an accessor property (setter/getter) which provides the same functionality
+but is compatible with existing code base which has relied on a non-standard
+<code>__proto__</code> property for a while.</p>
+
+<h2>Proxy object (subset)</h2>
+
+<p>FIXME.</p>
