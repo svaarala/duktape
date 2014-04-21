@@ -55,6 +55,53 @@ duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
 	return 1;
 }
 
+/* Borrowed from ES6: https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof */
+duk_ret_t duk_bi_object_constructor_set_prototype_of(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h_obj;
+	duk_hobject *h_new_proto;
+	duk_hobject *h_curr;
+
+	/* Preliminaries: E6 19.1.2.18, steps 1-4 */
+
+	duk_require_object_coercible(ctx, 0);
+	duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_OBJECT);
+	h_obj = duk_get_hobject(ctx, 0);
+	if (!h_obj) {
+		goto skip;
+	}
+	h_new_proto = duk_get_hobject(ctx, 1);
+	DUK_ASSERT(h_obj != NULL);
+	/* h_new_proto may be NULL */
+
+	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2 */
+	/* NOTE: steps 7-8 seem to be a cut-paste bug in the E6 draft */
+	/* TODO: implement Proxy object support here */
+
+	if (h_new_proto == h_obj->prototype) {
+		goto skip;
+	}
+	if (!DUK_HOBJECT_HAS_EXTENSIBLE(h_obj)) {
+		goto fail_nonextensible;
+	}
+	for (h_curr = h_new_proto; h_curr != NULL; h_curr = h_curr->prototype) {
+		/* Loop prevention */
+		if (h_curr == h_obj) {
+			goto fail_loop;
+		}
+	}
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h_obj, h_new_proto);
+	/* fall thru */
+
+ skip:
+	duk_set_top(ctx, 1);
+	return 1;
+
+ fail_nonextensible:
+ fail_loop:
+	return DUK_RET_TYPE_ERROR;
+}
+
 duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx) {
 	/* FIXME: no need for indirect call */
 	return duk_hobject_object_get_own_property_descriptor(ctx);

@@ -315,6 +315,7 @@ bi_object_constructor = {
 	'values': [],
 	'functions': [
 		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_constructor_get_prototype_of',			'length': 1 },
+		{ 'name': 'setPrototypeOf',		'native': 'duk_bi_object_constructor_set_prototype_of',			'length': 2 },  # ES6
 		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_bi_object_constructor_get_own_property_descriptor',	'length': 2 },
 		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_get_own_property_names', 		'length': 1 },
 		{ 'name': 'create',			'native': 'duk_bi_object_constructor_create',				'length': 2 },
