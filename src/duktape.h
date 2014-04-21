@@ -172,6 +172,7 @@ struct duk_number_list_entry {
 #define DUK_TYPE_MASK_OBJECT              (1 << DUK_TYPE_OBJECT)
 #define DUK_TYPE_MASK_BUFFER              (1 << DUK_TYPE_BUFFER)
 #define DUK_TYPE_MASK_POINTER             (1 << DUK_TYPE_POINTER)
+#define DUK_TYPE_MASK_THROW               (1 << 10)  /* internal flag value: throw if mask doesn't match */
 
 /* Coercion hints */
 #define DUK_HINT_NONE                     0    /* prefer number, unless input is a Date, in which
@@ -444,7 +445,13 @@ int duk_is_dynamic(duk_context *ctx, int index);
 int duk_is_fixed(duk_context *ctx, int index);
 
 int duk_is_primitive(duk_context *ctx, int index);
-int duk_is_object_coercible(duk_context *ctx, int index);
+#define duk_is_object_coercible(ctx,index) \
+	duk_check_type_mask((ctx), (index), DUK_TYPE_MASK_BOOLEAN | \
+	                                    DUK_TYPE_MASK_NUMBER | \
+	                                    DUK_TYPE_MASK_STRING | \
+	                                    DUK_TYPE_MASK_OBJECT | \
+	                                    DUK_TYPE_MASK_BUFFER | \
+	                                    DUK_TYPE_MASK_POINTER)
 
 /*
  *  Get operations: no coercion, returns default value for invalid
@@ -470,6 +477,9 @@ duk_size_t duk_get_length(duk_context *ctx, int index);
  *  is incorrect.  No defaulting.
  */
 
+#define duk_require_type_mask(ctx,index,mask) \
+	((void) duk_check_type_mask((ctx), (index), (mask) | DUK_TYPE_MASK_THROW))
+
 void duk_require_undefined(duk_context *ctx, int index);
 void duk_require_null(duk_context *ctx, int index);
 int duk_require_boolean(duk_context *ctx, int index);
@@ -481,6 +491,15 @@ void *duk_require_buffer(duk_context *ctx, int index, duk_size_t *out_size);
 void *duk_require_pointer(duk_context *ctx, int index);
 duk_c_function duk_require_c_function(duk_context *ctx, int index);
 duk_context *duk_require_context(duk_context *ctx, int index);
+
+#define duk_require_object_coercible(ctx,index) \
+	((void) duk_check_type_mask((ctx), (index), DUK_TYPE_MASK_BOOLEAN | \
+	                                            DUK_TYPE_MASK_NUMBER | \
+	                                            DUK_TYPE_MASK_STRING | \
+	                                            DUK_TYPE_MASK_OBJECT | \
+	                                            DUK_TYPE_MASK_BUFFER | \
+	                                            DUK_TYPE_MASK_POINTER | \
+	                                            DUK_TYPE_MASK_THROW))
 
 /*
  *  Coercion operations: in-place coercion, return coerced value where
