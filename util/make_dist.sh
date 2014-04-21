@@ -276,12 +276,20 @@ done
 cat src/duk_initjs.js \
 	| UglifyJS/bin/uglifyjs --ascii --no-dead-code --no-copyright \
 	> $DISTSRCSEP/duk_initjs_uglify.js.tmp
+if [ $? -ne 0 ]; then
+	echo "UglifyJS initjs step failed"
+	exit 1
+fi
 
 UglifyJS2/bin/uglifyjs \
 	src/duk_initjs.js \
 	--screw-ie8 \
 	--compress warnings=false \
 	> $DISTSRCSEP/duk_initjs_uglify2.js.tmp
+if [ $? -ne 0 ]; then
+	echo "UglifyJS2 initjs step failed"
+	exit 1
+fi
 
 java -jar compiler.jar \
 	--warning_level QUIET \
@@ -289,6 +297,10 @@ java -jar compiler.jar \
 	--compilation_level SIMPLE_OPTIMIZATIONS \
 	src/duk_initjs.js \
 	> $DISTSRCSEP/duk_initjs_closure.js.tmp
+if [ $? -ne 0 ]; then
+	echo "Closure initjs step failed"
+	exit 1
+fi
 
 INITJS_ORIG=`wc -c < src/duk_initjs.js`
 INITJS_UGLIFY=`wc -c < $DISTSRCSEP/duk_initjs_uglify.js.tmp`
