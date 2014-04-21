@@ -35,8 +35,19 @@ duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
+/* Shared helper to implement Object.getPrototypeOf and the ES6
+ * Object.prototype.__proto__ getter.
+ *
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
+ */
+duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hobject *h;
+
+	/* magic: 0=getter call, 1=Object.getPrototypeOf */
+	if (duk_get_magic(ctx) == 0) {
+		duk_push_this_coercible_to_object(ctx);
+		duk_insert(ctx, 0);
+	}
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
@@ -55,12 +66,29 @@ duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
 	return 1;
 }
 
-/* Borrowed from ES6: https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof */
-duk_ret_t duk_bi_object_constructor_set_prototype_of(duk_context *ctx) {
+/* Shared helper to implement ES6 Object.setPrototypeOf and
+ * Object.prototype.__proto__ setter.
+ *
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof
+ */
+duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_obj;
 	duk_hobject *h_new_proto;
 	duk_hobject *h_curr;
+	int ret_success = 1;
+
+	/* magic: 0=setter call, 1=Object.setPrototypeOf */
+	if (duk_get_magic(ctx) == 0) {
+		duk_push_this_coercible_to_object(ctx);
+		duk_insert(ctx, 0);
+
+		/* __proto__ setter returns 'undefined' on success unlike the
+		 * setPrototypeOf() call which returns the target object.
+		 */
+		ret_success = 0;
+	}
 
 	/* Preliminaries: E6 19.1.2.18, steps 1-4 */
 
@@ -95,7 +123,7 @@ duk_ret_t duk_bi_object_constructor_set_prototype_of(duk_context *ctx) {
 
  skip:
 	duk_set_top(ctx, 1);
-	return 1;
+	return ret_success;
 
  fail_nonextensible:
  fail_loop:

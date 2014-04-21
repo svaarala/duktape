@@ -185,6 +185,7 @@ standard_builtin_string_list = [
 	mkstr("hasOwnProperty"),
 	mkstr("isPrototypeOf"),
 	mkstr("propertyIsEnumerable"),
+	mkstr("__proto__", es6=True),
 
 	# Object instances
 	# no special properties
