@@ -265,7 +265,8 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_fatal_function fatal_handler);
 void duk_destroy_heap(duk_context *ctx);
 
-#define duk_create_heap_default()  (duk_create_heap(NULL, NULL, NULL, NULL, NULL))
+#define duk_create_heap_default() \
+	duk_create_heap(NULL, NULL, NULL, NULL, NULL)
 
 /*
  *  Memory management
