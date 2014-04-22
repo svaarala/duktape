@@ -9,12 +9,29 @@ literal {}: true
 literal []: true
 before: true 123 undefined
 after: true 123 321
+before: true 123 undefined
+after: true 123 321
 TypeError
+before: true 123 undefined function
+after: false 123 undefined undefined
+undefined 123 321
+boolean 123 321
+boolean 123 321
+number 123 321
+string 123 321
+undefined TypeError
+null TypeError
+boolean 123 undefined
+boolean 123 undefined
+number 123 undefined
+string 123 undefined
+object 123 321
 ===*/
 
 function test() {
     var o, pd;
     var a, b;
+    var getter;
 
     // __proto__ existence
     print('__proto__ exists in Object.prototype:', '__proto__' in Object.prototype);
@@ -46,11 +63,54 @@ function test() {
 
     // Attempt to set a prototype loop
     try {
+        a = { foo: 123 };
+        b = { bar: 321 };
+        print('before:', a.__proto__ === Object.prototype, a.foo, a.bar);
+        a.__proto__ = b;
+        print('after:', a.__proto__ === b, a.foo, a.bar);
         b.__proto__ = a;
         print('never here');
     } catch (e) {
         // Rhino throws InternalError, ES6 specifies TypeError
         print(e.name);
+    }
+
+    // Setting a prototype to null
+    a = { foo: 123 };
+    print('before:', a.__proto__ === Object.prototype, a.foo, a.bar, typeof a.toString);
+    a.__proto__ = null;
+    print('after:', a.__proto__ === b, a.foo, a.bar, typeof a.toString);
+
+    // Attempt to set prototype to something else than null/object:
+    // ES6 draft: ignore silently
+    [ undefined, true, false, 123, 'foo' ].forEach(function (x) {
+        try {
+            a = { foo: 123 };
+            b = { bar: 321 };
+            a.__proto__ = b;
+            a.__proto__ = x;  // ignored without changing prototype, so 'b' remains as prototype
+            print(x === null ? 'null' : typeof x, a.foo, a.bar);
+        } catch (e) {
+            print(x === null ? 'null' : typeof x, e.name);
+        }
+    });
+
+    // Attempt to set prototype with 'this' binding not an object (call setter directly):
+    // ES6 draft: TypeError for undefined and null (not object coercible), ignore for others
+    pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
+    setter = pd ? pd.set : null;
+    if (setter) {
+        a = { foo: 123 };
+        [ undefined, null, true, false, 123, 'foo', a ].forEach(function (x) {
+            try {
+                setter.call(x, { bar: 321 });
+                print(x === null ? 'null' : typeof x, a.foo, a.bar);
+            } catch (e) {
+                print(x === null ? 'null' : typeof x, e.name);
+            }
+        });
+    } else {
+        print('no setter');
     }
 }
 
