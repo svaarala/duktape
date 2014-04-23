@@ -1723,11 +1723,19 @@ typedef FILE duk_file;
 #undef DUK_USE_OBJECT_ES6_SETPROTOTYPEOF
 #endif
 
+/* ES6 Proxy object (subset for now). */
+#define DUK_USE_ES6_PROXY
+#if defined(DUK_OPT_NO_ES6_PROXY)
+#undef DUK_USE_ES6_PROXY
+#endif
+
+/* Record pc-to-line information. */
 #define DUK_USE_PC2LINE
 #if defined(DUK_OPT_NO_PC2LINE)
 #undef DUK_USE_PC2LINE
 #endif
 
+/* Non-standard function 'source' property. */
 #undef DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
 #if defined(DUK_OPT_FUNC_NONSTD_SOURCE_PROPERTY)
 #define DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
