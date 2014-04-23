@@ -300,13 +300,16 @@ Released
 Planned
 =======
 
-0.11.0 (2014-XX-XX)
+0.11.0 (2014-05-XX)
 -------------------
+
+* Add Object.setPrototypeOf() and Object.prototype.__proto__, both borrowed
+  from ES6 draft, to improve internal prototype handling
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
-1.0.0 (2014-XX-XX)
+1.0.0 (2014-06-XX)
 -------------------
 
 * Feature complete baseline release
