@@ -11,9 +11,10 @@ before: true 123 undefined
 after: true 123 321
 before: true 123 undefined
 after: true 123 321
-TypeError
+TypeError 123 321 undefined 321
 before: true 123 undefined function
 after: false 123 undefined undefined
+__proto__ in a: false
 undefined 123 321
 boolean 123 321
 boolean 123 321
@@ -21,10 +22,10 @@ number 123 321
 string 123 321
 undefined TypeError
 null TypeError
-boolean 123 undefined
-boolean 123 undefined
-number 123 undefined
-string 123 undefined
+boolean undefined undefined
+boolean undefined undefined
+number undefined undefined
+string undefined undefined
 object 123 321
 ===*/
 
@@ -72,14 +73,19 @@ function test() {
         print('never here');
     } catch (e) {
         // Rhino throws InternalError, ES6 specifies TypeError
-        print(e.name);
+        print(e.name, a.foo, a.bar, b.foo, b.bar);
     }
 
-    // Setting a prototype to null
+    // Setting a prototype to null.
+    // NOTE: evaluating a.__proto__ afterwards yields undefined (instead of null):
+    // 'a' no longer inherits from Object.prototype and thus has no __proto__
+    // accessor property.  This is the ES6 draft behavior right now, but e.g. Rhino
+    // disagrees.
     a = { foo: 123 };
     print('before:', a.__proto__ === Object.prototype, a.foo, a.bar, typeof a.toString);
     a.__proto__ = null;
-    print('after:', a.__proto__ === b, a.foo, a.bar, typeof a.toString);
+    print('after:', a.__proto__ === null, a.foo, a.bar, typeof a.toString);
+    print('__proto__ in a:', '__proto__' in a);  // false in Duktape/ES6, true in Rhino/V8
 
     // Attempt to set prototype to something else than null/object:
     // ES6 draft: ignore silently
@@ -104,7 +110,7 @@ function test() {
         [ undefined, null, true, false, 123, 'foo', a ].forEach(function (x) {
             try {
                 setter.call(x, { bar: 321 });
-                print(x === null ? 'null' : typeof x, a.foo, a.bar);
+                print(x === null ? 'null' : typeof x, x.foo, x.bar);
             } catch (e) {
                 print(x === null ? 'null' : typeof x, e.name);
             }
@@ -112,6 +118,8 @@ function test() {
     } else {
         print('no setter');
     }
+
+    // TODO: coercion order tests (side effect / error message if multiple errors)
 }
 
 try {
