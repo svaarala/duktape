@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: own property access functions in API?
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-13 20:44:10.326265 Z
+references: []
+
+id: 3148b1578e3d78bf5a346fb5449bbdcbe847a0be
+log_events: 
+- - 2014-04-13 20:44:10.532635 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

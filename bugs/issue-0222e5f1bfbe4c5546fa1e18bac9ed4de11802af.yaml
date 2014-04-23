@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Proxy object subset borrowed from ES6
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-21 19:48:38.080135 Z
+references: []
+
+id: 0222e5f1bfbe4c5546fa1e18bac9ed4de11802af
+log_events: 
+- - 2014-04-21 19:48:38.171595 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

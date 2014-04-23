@@ -28,3 +28,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - unassigned from release v0.10
   - ""
+- - 2014-04-23 22:46:31.796960 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - ES6 draft also has some sort of a loader mechanism.

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: best practice for writing C modules into guide
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-13 20:55:36.822908 Z
+references: []
+
+id: 163ac3c3977f3753b7ffda72e46385d67211d825
+log_events: 
+- - 2014-04-13 20:55:36.959617 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
