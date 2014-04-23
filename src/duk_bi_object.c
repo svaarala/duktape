@@ -35,8 +35,19 @@ duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
+/* Shared helper to implement Object.getPrototypeOf and the ES6
+ * Object.prototype.__proto__ getter.
+ *
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
+ */
+duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hobject *h;
+
+	/* magic: 0=getter call, 1=Object.getPrototypeOf */
+	if (duk_get_magic(ctx) == 0) {
+		duk_push_this_coercible_to_object(ctx);
+		duk_insert(ctx, 0);
+	}
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
@@ -53,6 +64,73 @@ duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx) {
 		duk_push_null(ctx);
 	}
 	return 1;
+}
+
+/* Shared helper to implement ES6 Object.setPrototypeOf and
+ * Object.prototype.__proto__ setter.
+ *
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
+ * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof
+ */
+duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h_obj;
+	duk_hobject *h_new_proto;
+	duk_hobject *h_curr;
+	int ret_success = 1;
+
+	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4);
+	 * magic: 0=setter call, 1=Object.setPrototypeOf
+	 */
+	if (duk_get_magic(ctx) == 0) {
+		duk_push_this_check_object_coercible(ctx);
+		duk_insert(ctx, 0);
+		if (!duk_check_type_mask(ctx, 1, DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_OBJECT)) {
+			return 0;
+		}
+
+		/* __proto__ setter returns 'undefined' on success unlike the
+		 * setPrototypeOf() call which returns the target object.
+		 */
+		ret_success = 0;
+	} else {
+		duk_require_object_coercible(ctx, 0);
+		duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_OBJECT);
+	}
+	h_obj = duk_get_hobject(ctx, 0);
+	if (!h_obj) {
+		goto skip;
+	}
+	h_new_proto = duk_get_hobject(ctx, 1);
+	DUK_ASSERT(h_obj != NULL);
+	/* h_new_proto may be NULL */
+
+	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2 */
+	/* NOTE: steps 7-8 seem to be a cut-paste bug in the E6 draft */
+	/* TODO: implement Proxy object support here */
+
+	if (h_new_proto == h_obj->prototype) {
+		goto skip;
+	}
+	if (!DUK_HOBJECT_HAS_EXTENSIBLE(h_obj)) {
+		goto fail_nonextensible;
+	}
+	for (h_curr = h_new_proto; h_curr != NULL; h_curr = h_curr->prototype) {
+		/* Loop prevention */
+		if (h_curr == h_obj) {
+			goto fail_loop;
+		}
+	}
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h_obj, h_new_proto);
+	/* fall thru */
+
+ skip:
+	duk_set_top(ctx, 1);
+	return ret_success;
+
+ fail_nonextensible:
+ fail_loop:
+	return DUK_RET_TYPE_ERROR;
 }
 
 duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx) {

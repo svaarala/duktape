@@ -453,6 +453,10 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  - Make DoubleError non-extensible.
 	 *
 	 *  - Add info about most important effective compile options to Duktape.
+	 *
+	 *  - Possibly remove some properties (values or methods) which are not
+	 *    desirable with current feature options but are not currently
+	 *    conditional in init data.
 	 */
 
 	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
@@ -461,6 +465,16 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_ASSERT(h != NULL);
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
+
+#if !defined(DUK_USE_OBJECT_ES6_PROTO_PROPERTY)
+	DUK_DDPRINT("delete Object.prototype.__proto__ built-in which is not enabled in features");
+	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE], DUK_HTHREAD_STRING___PROTO__(thr), 1 /*throw_flag*/);
+#endif
+
+#if !defined(DUK_USE_OBJECT_ES6_SETPROTOTYPEOF)
+	DUK_DDPRINT("delete Object.setPrototypeOf built-in which is not enabled in features");
+	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR], DUK_HTHREAD_STRING_SET_PROTOTYPE_OF(thr), 1 /*throw_flag*/);
+#endif
 
 	duk_push_string(ctx,
 #if defined(DUK_USE_INTEGER_LE)

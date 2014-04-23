@@ -1676,6 +1676,7 @@ typedef FILE duk_file;
 #undef DUK_USE_BROWSER_LIKE
 #endif
 
+/* E5/E5.1 Section B features. */
 #define DUK_USE_SECTION_B
 #if defined(DUK_OPT_NO_SECTION_B)
 #undef DUK_USE_SECTION_B
@@ -1704,6 +1705,22 @@ typedef FILE duk_file;
 #undef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
 #if defined(DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY)
 #define DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#endif
+
+/* Non-standard Object.prototype.__proto__ (ES6 draft), see
+ * test-bi-object-proto-__proto__.js.
+ */
+#define DUK_USE_OBJECT_ES6_PROTO_PROPERTY
+#if defined(DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY)
+#undef DUK_USE_OBJECT_ES6_PROTO_PROPERTY
+#endif
+
+/* Non-standard Object.setPrototypeOf (ES6 draft), see
+ * test-bi-object-setprototypeof.js.
+ */
+#define DUK_USE_OBJECT_ES6_SETPROTOTYPEOF
+#if defined(DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF)
+#undef DUK_USE_OBJECT_ES6_SETPROTOTYPEOF
 #endif
 
 #define DUK_USE_PC2LINE

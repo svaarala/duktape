@@ -94,7 +94,7 @@ int duk_require_normalize_index(duk_context *ctx, int index) {
 
 	ret = duk_normalize_index(ctx, index);
 	if (ret < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index: %d", index);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
 	}
 	return ret;
 }
@@ -111,7 +111,7 @@ void duk_require_valid_index(duk_context *ctx, int index) {
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
 	if (duk_normalize_index(ctx, index) < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index: %d", index);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
 	}
 }
 
@@ -197,7 +197,7 @@ void duk_set_top(duk_context *ctx, int index) {
 	return;
 
  invalid_index:
-	DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index: %d", index);
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
 }
 
 int duk_get_top_index(duk_context *ctx) {
@@ -2033,7 +2033,16 @@ int duk_get_type_mask(duk_context *ctx, int index) {
 }
 
 int duk_check_type_mask(duk_context *ctx, int index, int mask) {
-	return (duk_get_type_mask(ctx, index) & mask) ? 1 : 0;
+	duk_hthread *thr = (duk_hthread *) ctx;
+	DUK_ASSERT(ctx != NULL);
+	if (duk_get_type_mask(ctx, index) & mask) {
+		return 1;
+	}
+	if (mask & DUK_TYPE_MASK_THROW) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid type");
+		DUK_UNREACHABLE();
+	}
+	return 0;
 }
 
 int duk_is_undefined(duk_context *ctx, int index) {
@@ -2200,15 +2209,6 @@ int duk_is_fixed(duk_context *ctx, int index) {
 
 int duk_is_primitive(duk_context *ctx, int index) {
 	return !duk_is_object(ctx, index);
-}
-
-int duk_is_object_coercible(duk_context *ctx, int index) {
-	return duk_check_type_mask(ctx, index, DUK_TYPE_MASK_BOOLEAN |
-	                                       DUK_TYPE_MASK_NUMBER |
-	                                       DUK_TYPE_MASK_STRING |
-	                                       DUK_TYPE_MASK_OBJECT |
-	                                       DUK_TYPE_MASK_BUFFER |
-	                                       DUK_TYPE_MASK_POINTER);
 }
 
 /*

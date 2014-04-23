@@ -46,6 +46,7 @@ class BuiltinString:
 	name = None
 	section_b = None
 	browser_like = None
+	es6 = None
 	custom = None
 	internal = None
 	reserved_word = None
@@ -63,6 +64,7 @@ class BuiltinString:
 def mkstr(x,
           section_b=False,
           browser_like=False,
+          es6=False,
           custom=False,
           internal=False,
           reserved_word=False,
@@ -84,6 +86,7 @@ def mkstr(x,
 	ret.name = x
 	ret.section_b = section_b
 	ret.browser_like = browser_like
+	ret.es6 = es6
 	ret.custom = custom
 	ret.internal = internal
 	ret.reserved_word = reserved_word
@@ -152,6 +155,7 @@ standard_builtin_string_list = [
 	mkstr("length"),
 	mkstr("prototype"),
 	mkstr("getPrototypeOf"),
+	mkstr("setPrototypeOf", es6=True),
 	mkstr("getOwnPropertyDescriptor"),
 	mkstr("getOwnPropertyNames"),
 	mkstr("create"),
@@ -181,6 +185,7 @@ standard_builtin_string_list = [
 	mkstr("hasOwnProperty"),
 	mkstr("isPrototypeOf"),
 	mkstr("propertyIsEnumerable"),
+	mkstr("__proto__", es6=True),
 
 	# Object instances
 	# no special properties

@@ -227,6 +227,16 @@ The table below summarizes the available options, in no particular order:</p>
     (or 0) value.</td>
 </tr>
 <tr>
+<td class="propname">DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY</td>
+<td>Disable the non-standard (ES6 draft) <code>Object.prototype.__proto__</code>
+    property which is enabled by default.</td>
+</tr>
+<tr>
+<td class="propname">DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF</td>
+<td>Disable the non-standard (ES6 draft) <code>Object.setPrototypeOf</code>
+    method which is enabled by default.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_JSONX</td>
 <td>Disable support for the JSONX format.  Reduces code footprint.  Causes
     JSONX calls to throw an error.</td>

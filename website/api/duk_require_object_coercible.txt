@@ -1,0 +1,16 @@
+=proto
+void duk_require_object_coercible(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <code><a href="#duk_is_object_coercible">duk_is_object_coercible()</a></code>
+but throws a <code>TypeError</code> if <code>val</code> is not object coercible.</p>
+
+=example
+duk_require_object_coercible(ctx, -3);
+
+=tags
+stack
+object

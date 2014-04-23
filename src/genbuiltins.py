@@ -314,7 +314,8 @@ bi_object_constructor = {
 
 	'values': [],
 	'functions': [
-		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_constructor_get_prototype_of',			'length': 1 },
+		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_getprototype_shared',				'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
+		{ 'name': 'setPrototypeOf',		'native': 'duk_bi_object_setprototype_shared',				'length': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # ES6
 		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_bi_object_constructor_get_own_property_descriptor',	'length': 2 },
 		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_get_own_property_names', 		'length': 1 },
 		{ 'name': 'create',			'native': 'duk_bi_object_constructor_create',				'length': 2 },
@@ -333,8 +334,16 @@ bi_object_constructor = {
 bi_object_prototype = {
 	# internal prototype is null
 	'external_constructor': 'bi_object_constructor',
-	'values': [],
 	'class': 'Object',
+
+	'values': [
+		# ES6 (also non-standard legacy)
+		# NOTE: magic is not explicitly set and defaults to 0 (which is
+		# significant because the helper is shared)
+		{ 'name': '__proto__',
+		  'getter': 'duk_bi_object_getprototype_shared',
+		  'setter': 'duk_bi_object_setprototype_shared' }
+	],
 
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_object_prototype_to_string',			'length': 0 },

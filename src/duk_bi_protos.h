@@ -126,8 +126,9 @@ duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx);
 duk_ret_t duk_bi_number_prototype_to_exponential(duk_context *ctx);
 duk_ret_t duk_bi_number_prototype_to_precision(duk_context *ctx);
 
+duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx);
+duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx);
 duk_ret_t duk_bi_object_constructor(duk_context *ctx);
-duk_ret_t duk_bi_object_constructor_get_prototype_of(duk_context *ctx);
 duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx);
 duk_ret_t duk_bi_object_constructor_get_own_property_names(duk_context *ctx);
 duk_ret_t duk_bi_object_constructor_create(duk_context *ctx);
