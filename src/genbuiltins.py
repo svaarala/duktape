@@ -255,7 +255,10 @@ bi_global = {
 		{ 'name': 'Math',			'value': { 'type': 'builtin', 'id': 'bi_math' } },
 		{ 'name': 'JSON',			'value': { 'type': 'builtin', 'id': 'bi_json' } },
 
-		# DUK specific
+		# ES6 (draft)
+		{ 'name': 'Proxy',			'value': { 'type': 'builtin', 'id': 'bi_proxy_constructor' } },
+
+		# Duktape specific
 		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
 	],
 	'functions': [
@@ -1092,6 +1095,25 @@ bi_type_error_thrower = {
 	'functions': [],
 }
 
+# ES6 (draft)
+bi_proxy_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	# no external prototype
+	'class': 'Function',
+	'name': 'Proxy',
+
+	'length': 2,
+	'native': 'duk_bi_proxy_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
+	],
+}
+
+
 bi_duktape = {
 	'internal_prototype': 'bi_object_prototype',
 	'class': 'Object',
@@ -1318,6 +1340,9 @@ builtins_orig = [
 	{ 'id': 'bi_math',				'info': bi_math },
 	{ 'id': 'bi_json',				'info': bi_json },
 	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
+
+	# es6
+	{ 'id': 'bi_proxy_constructor',			'info': bi_proxy_constructor },
 
 	# custom
 	{ 'id': 'bi_duktape',				'info': bi_duktape },

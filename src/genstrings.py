@@ -155,7 +155,6 @@ standard_builtin_string_list = [
 	mkstr("length"),
 	mkstr("prototype"),
 	mkstr("getPrototypeOf"),
-	mkstr("setPrototypeOf", es6=True),
 	mkstr("getOwnPropertyDescriptor"),
 	mkstr("getOwnPropertyNames"),
 	mkstr("create"),
@@ -185,7 +184,6 @@ standard_builtin_string_list = [
 	mkstr("hasOwnProperty"),
 	mkstr("isPrototypeOf"),
 	mkstr("propertyIsEnumerable"),
-	mkstr("__proto__", es6=True),
 
 	# Object instances
 	# no special properties
@@ -475,6 +473,14 @@ standard_other_string_list = [
 
 	mkstr("get"),
 	mkstr("set"),
+]
+
+# ES6 (draft) specific strings
+es6_string_list = [
+	mkstr("Proxy", es6=True),
+	mkstr("revocable", es6=True),
+	mkstr("setPrototypeOf", es6=True),
+	mkstr("__proto__", es6=True),
 ]
 
 # Duktape specific strings
@@ -988,6 +994,7 @@ def gen_string_list():
 
 	str_lists = [ standard_builtin_string_list,
 	              standard_other_string_list,
+	              es6_string_list,
 	              duk_string_list ]
 
 	for lst in str_lists:
