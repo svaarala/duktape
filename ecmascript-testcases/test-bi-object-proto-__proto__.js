@@ -39,6 +39,7 @@ function test() {
 
     // Rhino and V8 print true above (Object.prototype.__proto__ exists) but
     // the descriptor here will be undefined for some reason!
+    // ES6 draft requires that the property be configurable but not enumerable.
     pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
     if (pd) {
         print('__proto__ property descriptor:', 'enumerable:', pd.enumerable,
