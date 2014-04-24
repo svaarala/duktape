@@ -306,6 +306,10 @@ Planned
 * Add Object.setPrototypeOf() and Object.prototype.__proto__, both borrowed
   from ES6 draft, to improve internal prototype handling
 
+* Add proxy objects borrowed from ES6 draft to allow property virtualization
+  (subset implementation limited to 'get', 'set', and 'deleteProperty'
+  handler methods)
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
