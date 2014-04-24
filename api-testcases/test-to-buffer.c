@@ -41,9 +41,9 @@ index 18, type 8 -> 7, ptr-is-NULL 0, size 10
 buffer: dynamic=0, size=10: 0xdeadbeef
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 void dump_buffer(duk_context *ctx) {

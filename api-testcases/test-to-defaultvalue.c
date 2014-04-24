@@ -8,9 +8,9 @@ index 2, type 6 -> 3, result: true
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: not object'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 /* FIXME: this test is missing a lot of coverage, like different hints,

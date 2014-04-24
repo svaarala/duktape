@@ -13,9 +13,9 @@ final top: 1
 *** test_3 (duk_safe_call)
 ==> rc=1, result='TypeError: incorrect type, expected tag 7'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_5 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 void dump_buffer(duk_context *ctx) {
@@ -106,6 +106,6 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
 	TEST_SAFE_CALL(test_4);
-	TEST_SAFE_CALL(test_5);  /* FIXME: exposes DUK_INVALID_INDEX number constant */
+	TEST_SAFE_CALL(test_5);
 }
 

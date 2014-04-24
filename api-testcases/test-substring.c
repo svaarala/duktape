@@ -9,9 +9,9 @@ final top: 1
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: incorrect type, expected tag 5'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2'
+==> rc=1, result='Error: invalid index'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 void dump_string(duk_context *ctx) {
@@ -112,6 +112,6 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
-	TEST_SAFE_CALL(test_4);  /* FIXME: exposes value of DUK_INVALID_INDEX */
+	TEST_SAFE_CALL(test_4);
 }
 

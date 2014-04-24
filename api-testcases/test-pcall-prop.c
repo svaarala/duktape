@@ -21,7 +21,7 @@ rc=1, result='TypeError: invalid base reference for property read'
 rc=1, result='RangeError: getter error'
 ==> rc=0, result='undefined'
 *** test_7 (duk_safe_call)
-rc=1, result='Error: invalid index: -6'
+rc=1, result='Error: invalid index'
 ==> rc=0, result='undefined'
 *** test_8 (duk_safe_call)
 rc=1, result='TypeError: call target not callable'

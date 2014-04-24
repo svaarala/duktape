@@ -26,9 +26,9 @@ arr.length -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_2b (duk_safe_call)
-==> rc=1, result='Error: invalid index: 234'
+==> rc=1, result='Error: invalid index'
 *** test_2c (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 *** test_3a (duk_safe_call)
 obj[31337] -> rc=0
 obj[123] -> rc=1
@@ -37,9 +37,9 @@ arr[2] -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_3b (duk_safe_call)
-==> rc=1, result='Error: invalid index: 234'
+==> rc=1, result='Error: invalid index'
 *** test_3c (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 void prep(duk_context *ctx) {
@@ -260,14 +260,10 @@ void test(duk_context *ctx) {
 
 	TEST_SAFE_CALL(test_2a);
 	TEST_SAFE_CALL(test_2b);
-	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
-	 * value, nonportable */
 	TEST_SAFE_CALL(test_2c);
 
 	TEST_SAFE_CALL(test_3a);
 	TEST_SAFE_CALL(test_3b);
-	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
-	 * value, nonportable */
 	TEST_SAFE_CALL(test_3c);
 }
 

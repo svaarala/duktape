@@ -23,9 +23,9 @@ index 17, ptr-is-NULL: 0, type: 8 -> 8
 pointer: 0xdeadbeef
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -89,9 +89,5 @@ int test_3(duk_context *ctx) {
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
-
-	/* FIXME: this test now results in an error string containing the
-	 * exact index, which is platform dependent.
-	 */
 	TEST_SAFE_CALL(test_3);
 }
