@@ -1952,7 +1952,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				duk_push_tval(ctx, tv_key);       /* P */
 				duk_push_tval(ctx, tv_obj);       /* Receiver: Proxy object */
 				duk_call_method(ctx, 3 /*nargs*/);
-				return 1;
+				return 1;  /* return value */
 			}
 
 			/* FIXME: currently assumes that the target is not a proxy,
@@ -2691,6 +2691,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(orig))) {
 			duk_hobject *h_target;
+			int tmp_bool;
 
 			if (duk__proxy_check(thr, orig, DUK_STRIDX_SET, &h_target)) {
 				/* -> [ ... func handler ] */
@@ -2700,16 +2701,17 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 				duk_push_tval(ctx, tv_val);       /* V */
 				duk_push_tval(ctx, tv_obj);       /* Receiver: Proxy object */
 				duk_call_method(ctx, 4 /*nargs*/);
-				if (!duk_to_boolean(ctx, -1)) {
-					return 1;
-				}
+				tmp_bool = duk_to_boolean(ctx, -1);
 				duk_pop(ctx);
+				if (!tmp_bool) {
+					return 0;  /* retval indicates putprop failed */
+				}
 			}
 
 			/* FIXME: currently assumes that the target is not a proxy,
 			 * proxy creation enforces this.
 			 */
-			orig = h_target;  /* resume lookup from target */
+			orig = h_target;  /* resume write to target */
 			DUK_TVAL_SET_OBJECT(tv_obj, orig);
 		}
 
@@ -3312,7 +3314,6 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
  */
 
 int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, int throw_flag) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_propdesc desc;
 	duk_tval *tv;
 	duk_tval tv_tmp;
@@ -3328,28 +3329,6 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	DUK_ASSERT(key != NULL);
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
-
-	/* FIXME: key is string coerced here, which is incorrect */
-	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(obj))) {
-		duk_hobject *h_target;
-
-		if (duk__proxy_check(thr, obj, DUK_STRIDX_DELETE_PROPERTY, &h_target)) {
-			/* -> [ ... func handler ] */
-			DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", tv_key);
-			duk_push_hobject(ctx, h_target);  /* target */
-			duk_push_hstring(ctx, key);       /* P */
-			duk_call_method(ctx, 2 /*nargs*/);
-			if (!duk_to_boolean(ctx, -1)) {
-				return 1;
-			}
-			duk_pop(ctx);
-		}
-
-		/* FIXME: currently assumes that the target is not a proxy,
-		 * proxy creation enforces this.
-		 */
-		obj = h_target;  /* resume lookup from target */
-	}
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
@@ -3496,15 +3475,39 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 	duk_push_tval(ctx, tv_obj);
 	duk_push_tval(ctx, tv_key);
 
-	duk_to_string(ctx, -1);
-	key = duk_get_hstring(ctx, -1);
-	DUK_ASSERT(key != NULL);
-
 	tv_obj = duk_get_tval(ctx, -2);
 	if (DUK_TVAL_IS_OBJECT(tv_obj)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_obj);
-
 		DUK_ASSERT(obj != NULL);
+
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(obj))) {
+			duk_hobject *h_target;
+			int tmp_bool;
+
+			/* Note: proxy handling must happen before key is string coerced. */
+
+			if (duk__proxy_check(thr, obj, DUK_STRIDX_DELETE_PROPERTY, &h_target)) {
+				/* -> [ ... func handler ] */
+				DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", tv_key);
+				duk_push_hobject(ctx, h_target);  /* target */
+				duk_push_tval(ctx, tv_key);       /* P */
+				duk_call_method(ctx, 2 /*nargs*/);
+				tmp_bool = duk_to_boolean(ctx, -1);
+				duk_pop(ctx);
+				if (!tmp_bool) {
+					return 0;  /* retval indicates delete failed */
+				}
+			}
+
+			/* FIXME: currently assumes that the target is not a proxy,
+			 * proxy creation enforces this.
+			 */
+			obj = h_target;  /* resume delete to target */
+		}
+
+		duk_to_string(ctx, -1);
+		key = duk_get_hstring(ctx, -1);
+		DUK_ASSERT(key != NULL);
 
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag);
 
@@ -3512,8 +3515,11 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 		return rc;
 	} else if (DUK_TVAL_IS_STRING(tv_obj)) {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
-
 		DUK_ASSERT(h != NULL);
+
+		duk_to_string(ctx, -1);
+		key = duk_get_hstring(ctx, -1);
+		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			goto fail_not_configurable;
