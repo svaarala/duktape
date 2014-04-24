@@ -36,9 +36,6 @@ function proxyExistenceTest() {
         print('Proxy.revocable desc:', 'writable=' + pd.writable, 'enumerable=' + pd.enumerable,
               'configurable=' + pd.configurable);
     }
-
-
-    // FIXME: lengths and names
 }
 
 print('proxy existence');
