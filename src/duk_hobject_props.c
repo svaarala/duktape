@@ -299,7 +299,7 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	 * are not realized now.)
 	 */
 
-	/* FIXME: C recursion limit */
+	/* XXX: C recursion limit if proxies are allowed as handler/target values */
 
 	duk_require_stack(ctx, DUK__VALSTACK_PROXY_LOOKUP);
 	duk_push_tval(ctx, tv_handler);
@@ -1958,7 +1958,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				return 1;  /* return value */
 			}
 
-			/* FIXME: currently assumes that the target is not a proxy,
+			/* XXX: currently assumes that the target is not a proxy,
 			 * proxy creation enforces this.
 			 */
 			curr = h_target;  /* resume lookup from target */
@@ -2713,7 +2713,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 				}
 			}
 
-			/* FIXME: currently assumes that the target is not a proxy,
+			/* XXX: currently assumes that the target is not a proxy,
 			 * proxy creation enforces this.
 			 */
 			orig = h_target;  /* resume write to target */
@@ -3506,7 +3506,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 				}
 			}
 
-			/* FIXME: currently assumes that the target is not a proxy,
+			/* XXX: currently assumes that the target is not a proxy,
 			 * proxy creation enforces this.
 			 */
 			obj = h_target;  /* resume delete to target */
