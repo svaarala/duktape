@@ -479,6 +479,12 @@ standard_other_string_list = [
 es6_string_list = [
 	mkstr("Proxy", es6=True),
 	mkstr("revocable", es6=True),
+
+	# Proxy handler methods
+	mkstr("set", es6=True),
+	mkstr("get", es6=True),
+	mkstr("deleteProperty", es6=True),
+
 	mkstr("setPrototypeOf", es6=True),
 	mkstr("__proto__", es6=True),
 ]
