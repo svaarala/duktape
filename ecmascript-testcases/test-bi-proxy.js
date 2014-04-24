@@ -53,6 +53,7 @@ try {
 subset proxy
 object
 [object Object]
+counts: get=0 set=0 del=0
 handler.get: true true string foo true
 get foo: fake-for-key-foo
 handler.get: true true string bar true
@@ -61,29 +62,149 @@ handler.get: true true string 1000 true
 get 1000 (string): fake-for-key-1000
 handler.get: true true number 1000 true
 get 1000 (number): 2000
+counts: get=4 set=0 del=0
+handler.get: true true string special true
+get special: specialValue
+handler.get: true true string special true
+get special: uncaughtValue
+target.special: uncaughtValue
+counts: get=6 set=0 del=0
+handler.set: true true string foo number 123 true
+handler.set: true true string bar number 234 true
+handler.set: true true string quux number 345 true
+handler.set: true true number 123 string foo true
+handler.set: true true string rejectSet1 string reject true
+handler.set: true true string rejectSet2 string reject true
+counts: get=6 set=6 del=0
+target.foo: 123
+target.bar: 234
+target.quux: 345
+target[123]: foo
+target.rejectSet1: undefined
+target.rejectSet2: undefined
+counts: get=6 set=6 del=0
+target.foo: undefined
+target.bar: 234
+counts: get=6 set=6 del=0
+handler.deleteProperty: true true string rejectSet1
+handler.deleteProperty: true true string rejectSet2
+handler.deleteProperty: true true string foo
+handler.deleteProperty: true true string 1234
+counts: get=6 set=6 del=4
+target.rejectSet1: reject1
+target.rejectSet2: reject2
+target.foo undefined
+target[1234] undefined
 ===*/
 
 function subsetProxyTest() {
-    var target = { foo: 123, '1000': 'thousand' };
-    var handler = {
-        get: function(targ, key, receiver) {
-            print('handler.get:', this === handler, targ === target, typeof key, key, receiver === proxy);
-            if (typeof key === 'number') {
-                return 2 * (+key);
-            } else {
-                return 'fake-for-key-' + key;
-            }
-        }
-    };
+    var getCount = 0;
+    var setCount = 0;
+    var deleteCount = 0;
+    var target = { foo: 123, '1000': 'thousand', special: 'specialValue' };
+    var handler = {};
     var proxy = new Proxy(target, handler);
+
+    function printCounts() {
+        print('counts:', 'get=' + getCount, 'set=' + setCount, 'del=' + deleteCount);
+    }
 
     print(typeof proxy);
     print(Object.prototype.toString.call(proxy));  // XXX: now class is 'Object'
 
+    // handler 'get' hook
+    handler.get = function(targ, key, receiver) {
+        print('handler.get:', this === handler, targ === target, typeof key, key, receiver === proxy);
+        getCount++;
+        if (typeof key === 'number') {
+            return 2 * (+key);
+        } else if (key === 'special') {
+            return targ.special;
+        } else {
+            return 'fake-for-key-' + key;
+        }
+    };
+
+    // Get tests
+    printCounts();
     print('get foo:', proxy.foo);
     print('get bar:', proxy.bar);
     print('get 1000 (string):', proxy['1000']);
     print('get 1000 (number):', proxy[1000]);
+    printCounts();
+
+    // without a 'set' hook, writes go through
+    print('get special:', proxy.special);
+    proxy.special = 'uncaughtValue';  // goes into 'target'
+    print('get special:', proxy.special);
+    print('target.special:', target.special);
+
+    // handler 'set' hook
+    handler.set = function(targ, key, val, receiver) {
+        print('handler.set:', this === handler, targ === target, typeof key, key, typeof val, val, receiver === proxy);
+        setCount++;
+        if (key === 'rejectSet1') {
+            // false return code prevents target object from being modified
+            return false;
+        }
+        if (key === 'rejectSet2') {
+            // same for any 'falsy' value
+            return 0;
+        }
+        return true;
+    };
+
+    // Set tests
+    printCounts();
+    proxy.foo = 123;
+    proxy.bar = 234;
+    proxy.quux = 345;
+    proxy[123] = 'foo';
+    proxy.rejectSet1 = 'reject';
+    proxy.rejectSet2 = 'reject';
+    printCounts();
+    print('target.foo:', target.foo);
+    print('target.bar:', target.bar);
+    print('target.quux:', target.quux);
+    print('target[123]:', target[123]);
+    print('target.rejectSet1:', target.rejectSet1);
+    print('target.rejectSet2:', target.rejectSet2);
+
+    // without a 'deleteProperty' hook, deletes go through
+    printCounts();
+    delete proxy.foo;
+    print('target.foo:', target.foo);
+    print('target.bar:', target.bar);
+    printCounts();
+
+    // handler 'deleteProperty' hook
+    handler.deleteProperty = function(targ, key) {
+        print('handler.deleteProperty:', this === handler, targ === target, typeof key, key);
+        deleteCount++;
+        if (key === 'rejectSet1') {
+            // false return code prevents target object from being modified
+            return false;
+        }
+        if (key === 'rejectSet2') {
+            // same for any 'falsy' value
+            return 0;
+        }
+        return true;
+    };
+
+    target.rejectSet1 = 'reject1';
+    target.rejectSet2 = 'reject2';
+    target.foo = 123;
+    target[1234] = 4321;
+    delete proxy.rejectSet1;
+    delete proxy.rejectSet2;
+    delete proxy.foo;  // allowed
+    delete proxy[1234];  // allowed
+    printCounts();
+    print('target.rejectSet1:', target.rejectSet1);
+    print('target.rejectSet2:', target.rejectSet2);
+    print('target.foo', target.foo);
+    print('target[1234]', target[1234]);
 }
 
 print('subset proxy');
@@ -240,7 +361,7 @@ function proxyRevocationTest() {
     var proxy = new Proxy(target, handler);
     print('proxy.foo:', proxy.foo);
 
-    print('FIXME, unimplemented');
+    // FIXME: unimplemented
 }
 
 print('proxy revocation');
