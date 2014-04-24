@@ -89,7 +89,7 @@ counts: get=6 set=6 del=0
 handler.deleteProperty: true true string rejectSet1
 handler.deleteProperty: true true string rejectSet2
 handler.deleteProperty: true true string foo
-handler.deleteProperty: true true string 1234
+handler.deleteProperty: true true number 1234
 counts: get=6 set=6 del=4
 target.rejectSet1: reject1
 target.rejectSet2: reject2
