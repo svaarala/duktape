@@ -2687,6 +2687,28 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		/* Note: no fast paths for property put now */
 		orig = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(orig != NULL);
+
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(orig))) {
+			duk_tval *tv_target;
+
+			if (duk__proxy_check(thr, orig, DUK_STRIDX_SET, &tv_target)) {
+				/* -> [ ... func handler ] */
+				DUK_DDDPRINT("-> proxy object 'set' for key %!T", tv_key);
+				duk_push_tval(ctx, tv_target);  /* target */
+				duk_push_tval(ctx, tv_key);     /* P */
+				duk_push_tval(ctx, tv_val);     /* V */
+				duk_push_tval(ctx, tv_obj);     /* Receiver: Proxy object */
+				duk_call_method(ctx, 4 /*nargs*/);
+				return 1;
+			}
+
+			/* FIXME: currently assumes that the target is not a proxy,
+			 * proxy creation enforces this.
+			 */
+			orig = DUK_TVAL_GET_OBJECT(tv_target);  /* resume lookup from target */
+			DUK_TVAL_SET_OBJECT(tv_obj, orig);
+		}
+
 		curr = orig;
 		break;
 	}
