@@ -366,6 +366,10 @@ The table below summarizes the available options, in no particular order:</p>
     <code>DUK_OPT_NO_PC2LINE</code>.</li>
 <li>If you don't need the Duktape-specific additional JSONX/JSONC formats,
     use both <code>DUK_OPT_NO_JSONX</code> and <code>DUK_OPT_NO_JSONC</code>.</li>
+<li>Features borrowed from Ecmascript E6 can usually be disabled:
+    <code>DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF</code>,
+    <code>DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY</code>,
+    <code>DUK_OPT_NO_ES6_PROXY</code>.</li>
 <li>If you don't need regexp support, use <code>DUK_OPT_NO_REGEXP_SUPPORT</code>.</li>
 <li>Duktape debug code uses a large, static temporary buffer for formatting debug
     log lines.  Use e.g. <code class="nobreak">-DDUK_OPT_DEBUG_BUFSIZE=2048</code> to reduce
