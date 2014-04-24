@@ -6,12 +6,30 @@
 
 #if defined(DUK_USE_ES6_PROXY)
 duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
+	duk_hobject *h_target;
+	duk_hobject *h_handler;
 
 	if (!duk_is_constructor_call(ctx)) {
 		return DUK_RET_TYPE_ERROR;
 	}
-	(void) duk_require_hobject(ctx, 0);
-	(void) duk_require_hobject(ctx, 1);
+
+	/* Reject a proxy object as the target because it would need
+	 * special handler in property lookups.  (ES6 has no such restriction)
+	 */
+	h_target = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h_target != NULL);
+	if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(h_target)) {
+		return DUK_RET_TYPE_ERROR;
+	}
+
+	/* Reject a proxy object as the handler because it would cause
+	 * potentially unbounded recursion.  (ES6 has no such restriction)
+	 */
+	h_handler = duk_require_hobject(ctx, 1);
+	DUK_ASSERT(h_handler != NULL);
+	if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(h_handler)) {
+		return DUK_RET_TYPE_ERROR;
+	}
 
 	/* XXX: the returned value is exotic in ES6 (draft), but we use a
 	 * simple object here with no prototype.
