@@ -6,10 +6,35 @@
 
 #if defined(DUK_USE_ES6_PROXY)
 duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
+
 	if (!duk_is_constructor_call(ctx)) {
 		return DUK_RET_TYPE_ERROR;
 	}
-	return DUK_RET_UNIMPLEMENTED_ERROR;  /*FIXME*/
+	(void) duk_require_hobject(ctx, 0);
+	(void) duk_require_hobject(ctx, 1);
+
+	/* XXX: the returned value is exotic in ES6 (draft), but we use a
+	 * simple object here with no prototype.
+	 */
+	(void) duk_push_object_helper_proto(ctx,
+	                                    DUK_HOBJECT_FLAG_SPECIAL_PROXYOBJ |
+	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),  /* FIXME: class? */
+	                                    NULL);
+
+	/* XXX: no callable check/handling now */
+	/* XXX: with no prototype, [[DefaultValue]] coercion will fail, which is confusing */
+
+	DUK_ASSERT_TOP(ctx, 3);
+
+	/* Proxy target */
+	duk_dup(ctx, 0);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_WC);
+
+	/* Proxy handler */
+	duk_dup(ctx, 1);
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_WC);
+
+	return 1;
 }
 #else  /* DUK_UES_ES6_PROXY */
 duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {

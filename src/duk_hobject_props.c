@@ -1882,6 +1882,12 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		curr = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(curr != NULL);
 
+		if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr)) {
+			duk_push_string(ctx, "proxy-get");  /*FIXME*/
+			DUK_DDDPRINT("-> proxy object 'get' invoked");
+			return 1;
+		}
+
 		tmp = duk__shallow_fast_path_array_check_tval(curr, tv_key);
 		if (tmp) {
 			duk_push_tval(ctx, tmp);

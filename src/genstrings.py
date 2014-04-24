@@ -549,6 +549,10 @@ duk_string_list = [
 	#mkstr("metatable", internal=True, custom=True),
 	mkstr("finalizer", internal=True, custom=True),
 
+	# internal properties for Proxy objects
+	mkstr("target", internal=True, custom=True),	# [[ProxyTarget]]
+	mkstr("handler", internal=True, custom=True),	# [[ProxyHandler]]
+
 	# internal properties for declarative environment records
 	mkstr("callee", internal=True, custom=True),	# to access varmap
 	mkstr("thread", internal=True, custom=True),	# to identify valstack
