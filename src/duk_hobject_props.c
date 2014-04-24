@@ -1955,6 +1955,10 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				duk_push_tval(ctx, tv_key);       /* P */
 				duk_push_tval(ctx, tv_obj);       /* Receiver: Proxy object */
 				duk_call_method(ctx, 3 /*nargs*/);
+
+				/* FIXME: this is incorrect now, [[Get]] algorithm needs to check
+				 * the target object for a conflicting 'own' property.
+				 */
 				return 1;  /* return value */
 			}
 
