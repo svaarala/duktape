@@ -50,10 +50,15 @@
 #define DUK__HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
 #define DUK__HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
 
-/* assert value that suffices for all local calls, including recursion of
- * other than Duktape calls (getters etc)
+/* valstack space that suffices for all local calls, including recursion
+ * of other than Duktape calls (getters etc)
  */
 #define DUK__VALSTACK_SPACE             10
+
+/* valstack space allocated especially for proxy lookup which does a
+ * recursive property lookup
+ */
+#define DUK__VALSTACK_PROXY_LOOKUP      20
 
 /*
  *  Local prototypes
@@ -252,7 +257,61 @@ static int duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint
 
 	return (arr_idx > DUK_HOBJECT_A_FAST_RESIZE_LIMIT * ((old_size + 7) >> 3));
 }
-	
+
+/*
+ *  Proxy helpers
+ */
+
+static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_funcname, duk_tval **out_tv_target) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_tval *tv_target;
+	duk_tval *tv_handler;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(out_tv_target != NULL);
+
+	tv_handler = duk_hobject_find_existing_entry_tval_ptr(obj, DUK_HTHREAD_STRING_INT_HANDLER(thr));
+	if (!tv_handler) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy revoked");
+		return 0;
+	}
+	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_handler));
+
+	tv_target = duk_hobject_find_existing_entry_tval_ptr(obj, DUK_HTHREAD_STRING_INT_TARGET(thr));
+	if (!tv_target) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy revoked");
+		return 0;
+	}
+	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
+	*out_tv_target = tv_target;
+
+	/* The handler is looked up with a normal property lookup; it may be an
+	 * accessor or the handler object itself may be a proxy object.  If the
+	 * handler is a proxy, we need to extend the valstack as we make a
+	 * recursive proxy check without a function call in between (in fact
+	 * there is no limit to the potential recursion here).
+	 *
+	 * (For sanity, proxy creation rejects another proxy object as either
+	 * the handler or the target at the moment so recursive proxy cases
+	 * are not realized now.)
+	 */
+
+	/* FIXME: C recursion limit */
+
+	duk_require_stack(ctx, DUK__VALSTACK_PROXY_LOOKUP);
+	duk_push_tval(ctx, tv_handler);
+	if (duk_get_prop_stridx(ctx, -1, stridx_funcname)) {
+		duk_remove(ctx, -2);
+		duk_push_tval(ctx, tv_handler);
+		/* stack prepped for func call: [ ... func handler ] */
+		return 1;
+	} else {
+		duk_pop_2(ctx);
+		return 0;
+	}
+}
+
 /*
  *  Reallocate property allocation, moving properties to the new allocation.
  *
@@ -1882,10 +1941,24 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		curr = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(curr != NULL);
 
-		if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr)) {
-			duk_push_string(ctx, "proxy-get");  /*FIXME*/
-			DUK_DDDPRINT("-> proxy object 'get' invoked");
-			return 1;
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr))) {
+			duk_tval *tv_target;
+
+			if (duk__proxy_check(thr, curr, DUK_STRIDX_GET, &tv_target)) {
+				/* -> [ ... func handler ] */
+				DUK_DDDPRINT("-> proxy object 'get' for key %!T", tv_key);
+				duk_push_tval(ctx, tv_target);  /* target */
+				duk_push_tval(ctx, tv_key);     /* P */
+				duk_push_tval(ctx, tv_obj);     /* Receiver: Proxy object */
+				duk_call_method(ctx, 3 /*nargs*/);
+				return 1;
+			}
+
+			/* FIXME: currently assumes that the target is not a proxy,
+			 * proxy creation enforces this.
+			 */
+			curr = DUK_TVAL_GET_OBJECT(tv_target);  /* resume lookup from target */
+			DUK_TVAL_SET_OBJECT(tv_obj, curr);
 		}
 
 		tmp = duk__shallow_fast_path_array_check_tval(curr, tv_key);
