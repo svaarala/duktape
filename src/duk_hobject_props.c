@@ -262,6 +262,7 @@ static int duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint
  *  Proxy helpers
  */
 
+#if defined(DUK_USE_ES6_PROXY)
 static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_funcname, duk_hobject **out_target) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_target;
@@ -312,6 +313,7 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 		return 0;
 	}
 }
+#endif  /* DUK_USE_ES6_PROXY */
 
 /*
  *  Reallocate property allocation, moving properties to the new allocation.
@@ -1942,6 +1944,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		curr = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(curr != NULL);
 
+#if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr))) {
 			duk_hobject *h_target;
 
@@ -1961,6 +1964,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			curr = h_target;  /* resume lookup from target */
 			DUK_TVAL_SET_OBJECT(tv_obj, curr);
 		}
+#endif  /* DUK_USE_ES6_PROXY */
 
 		tmp = duk__shallow_fast_path_array_check_tval(curr, tv_key);
 		if (tmp) {
@@ -2689,6 +2693,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		orig = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(orig != NULL);
 
+#if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(orig))) {
 			duk_hobject *h_target;
 			int tmp_bool;
@@ -2714,6 +2719,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			orig = h_target;  /* resume write to target */
 			DUK_TVAL_SET_OBJECT(tv_obj, orig);
 		}
+#endif  /* DUK_USE_ES6_PROXY */
 
 		curr = orig;
 		break;
@@ -3480,6 +3486,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(obj != NULL);
 
+#if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(obj))) {
 			duk_hobject *h_target;
 			int tmp_bool;
@@ -3504,6 +3511,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 			 */
 			obj = h_target;  /* resume delete to target */
 		}
+#endif  /* DUK_USE_ES6_PROXY */
 
 		duk_to_string(ctx, -1);
 		key = duk_get_hstring(ctx, -1);
