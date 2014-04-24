@@ -1,0 +1,204 @@
+<h2 id="propertyvirtualization">Property virtualization</h2>
+
+<p>This section describes the two different mechanisms Duktape provides
+for interacting with property accesses programmatically.</p>
+
+<h3 id="virtualization-accessors">Ecmascript E5 accessor properties (getters and setters)</h3>
+
+<p>Ecmascript Edition 5 provides <b>accessor properties</b> (also called
+"setters and getters") which allow property read/write operations to be
+captured by a user function.</p>
+
+<p>For example, to capture writes to <code>obj.color</code> so that you
+can validate the color value and trigger a redraw as a side effect:</p>
+<pre class="ecmascript-code">
+var obj = {};
+
+Object.defineProperty(obj, 'color', {
+    enumerable: false,
+    configurable: false,
+    get: function () {
+        // current color is stored in the raw _color property here
+        return this._color;
+    },
+    set: function (v) {
+        if (!validateColor(v)) {
+            // only allow valid color formats to be assigned
+            throw new TypeError('invalid color: ' + v);
+        }
+        this._color = v;
+        redraw();
+    }
+});
+
+// Change to red and trigger a redraw.
+obj.color = '#ff0000';
+</pre>
+
+<p>Setters and getters have the advantage of being part of the E5 standard
+and of being widely implemented.  However, they have significant limitations:</p>
+<ul>
+<li>They are limited to interacting with property read and write operations.
+    You cannot capture property deletions, interact with object enumeration, etc.</li>
+<li>They only apply to individual properties which you set up as accessors
+    beforehand.  You cannot capture all property accesses of a certain object,
+    which limits their usefulness in some scenarios.</li>
+</ul>
+
+<h3 id="virtualization-proxy-object">Ecmascript E6 (draft) Proxy subset</h3>
+
+<p>In addition to accessors, Duktape provides a subset implementation of the
+Ecmascript E6 (draft) <code>Proxy</code> concept (see
+<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects</a>).
+The subset is limited to <code>get</code>, <code>set</code>, and
+<code>deleteProperty</code> handler methods.</p>
+
+<p>For example, to simply print a line whenever any property is accessed:</p>
+<pre class="ecmascript-code">
+// Underlying plain object.
+var target = { foo: 'bar' };
+
+// Handler table, provides methods for interaction (can be modified on-the-fly).
+var handler = {
+    get: function (targ, key, recv) {
+        print('get called for key=' + key);
+        return targ[key];  // return unmodified value
+    },
+
+    set: function (targ, key, val, recv) {
+        print('set called for key=' + key + ', val=' + val);
+        return true;  // true: allow write to pass to target object
+    },
+
+    deleteProperty: function (targ, key) {
+        print('deleteProperty called for key=' + key);
+        return true;  // true: allow delete to pass to target object
+    }
+};
+
+// Create proxy object.
+var proxy = new Proxy(target, handler);
+
+// Proxy object is then accessed normally.
+proxy.foo = 321;
+print(proxy.foo);
+delete proxy.foo;
+</pre>
+
+<p>A Proxy object can also be used to create a read-only version of an
+underlying object (which is quite tedious otherwise):</p>
+<pre class="ecmascript-code">
+var proxy = new Proxy(target, {
+    // get is omitted: reads go through to the target object automatically
+
+    // set returns false: rejects write
+    set: function () { return false; },
+
+    // deleteProperty returns false: rejects delete
+    deleteProperty: function () { return false; }
+});
+</pre>
+
+<p>You can also create a write-only version of an object (which is not
+possible otherwise):</p>
+<pre class="ecmascript-code">
+var proxy = new Proxy(target, {
+    get: function() { throw new TypeError('read not allowed'); }
+
+    // set and deleteProperty are omitted: write/delete operations
+    // are allowed and go through to the target automatically
+});
+</pre>
+
+<p>The following is a more convoluted example combining multiple behaviors.
+The behaviors are quite odd, and are simply intended to illustrate available
+options:</p>
+<pre class="ecmascript-code">
+var target = { foo: 'bar' };
+
+/*
+ *  - 'color' behaves like in the getter/setter example, cannot be deleted
+ *    (attempt to do so causes a TypeError)
+ *
+ *  - all string values are uppercased when read
+ *
+ *  - property names beginning with an underscore are read/write/delete
+ *    protected in a few different ways
+ */
+
+var handler = {
+    get: function (targ, key, recv) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+        // key: key (can be any value, not just a string)
+        // recv: object being read from (= the proxy object)
+
+        if (typeof key === 'string' &amp;&amp; key[0] === '_') {
+            throw new TypeError('attempt to access a read-protected property');
+        }
+
+        var val = targ[key];
+        if (typeof val === 'string') {
+            val = val.toUpperCase();
+        }
+
+        // Return value: value provided as property lookup result.
+        return val;
+    },
+
+    set: function (targ, key, val, recv) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+        // key: key (can be any value, not just a string)
+        // val: value
+        // recv: object being read from (= the proxy object)
+
+        if (typeof key === 'string') {
+            if (key === 'color') {
+                if (!validateColor(val)) {
+                    throw new TypeError('invalid color: ' + val);
+                }
+                targ.color = val;
+                redraw();
+
+                // True: indicates that property write is allowed; the write
+                // proceeds to the target object (doesn't really matter because
+                // we already wrote targ.color above).  A false return value
+                // would indicate a failure which would then cause an error in
+                // strict mode.
+                return true;
+            } else if (key[0] === '_') {
+                // False: block property write.
+                return false;
+            }
+        }
+
+        // True return value indicates that property write is allowed to
+        // proceed to the target object.
+        return true;
+    },
+
+    deleteProperty: function (targ, key) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+        // key: key (can be any value, not just a string)
+
+        if (typeof key === 'string') {
+            if (key === 'color') {
+                // For 'color' a delete attempt causes an explicit error.
+                throw new TypeError('attempt to delete the color property');
+            } else if (key[0] === '_') {
+                // False: block property deletion.
+                return false;
+            }
+        }
+
+        // True return value indicates that property delete is allowed to
+        // proceed to the target object.
+        return true;
+    }
+};
+</pre>
+
+<p>See <a href="#es6-proxy">Proxy object (subset)</a> for a discussion of
+current limitations.</p>
