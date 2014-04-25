@@ -310,6 +310,10 @@ Planned
   (subset implementation limited to 'get', 'set', and 'deleteProperty'
   handler methods)
 
+* Fix a 'delete' bug: if delete target was a string and key was 'length' or
+  a valid character index, value stack was left in an inconsistent state in
+  non-strict mode (caused an assertion failure)
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
