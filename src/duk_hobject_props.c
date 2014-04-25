@@ -3649,7 +3649,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 
  fail_proxy_rejected:
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property delete rejected by proxy");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy rejected");
 	}
 	duk_set_top(ctx, entry_top);
 	return 0;
