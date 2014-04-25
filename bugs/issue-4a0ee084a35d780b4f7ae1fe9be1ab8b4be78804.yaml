@@ -8,8 +8,8 @@ type: :task
 component: duk
 release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2014-04-24 17:51:02.418466 Z
 references: []
 
@@ -19,3 +19,10 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-04-25 19:47:28.654688 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - |-
+    Not actually so.  The post-hook semantics only apply if the target object has
+    non-configurable conflicting properties.  It's easy to arrange the proxy methods
+    so that the target object has no such properties (e.g. has no properties at all).
