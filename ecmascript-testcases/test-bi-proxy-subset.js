@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6 draft)
+ *  Proxy (ES6 draft) subset
  */
 
 /*===
