@@ -1956,15 +1956,41 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				duk_push_tval(ctx, tv_obj);       /* Receiver: Proxy object */
 				duk_call_method(ctx, 3 /*nargs*/);
 
-				/* FIXME: this is incorrect now, [[Get]] algorithm needs to check
-				 * the target object for a conflicting 'own' property.
+				/* Target object must be checked for a conflicting
+				 * non-configurable property.
 				 */
+				arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+				DUK_ASSERT(key != NULL);
+
+				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 1 /*push_value*/)) {
+					duk_tval *tv_hook = duk_require_tval(ctx, -3);  /* value from hook */
+					duk_tval *tv_targ = duk_require_tval(ctx, -1);  /* value from target */
+
+					DUK_DPRINT("proxy 'get': target has matching property %!O, check for "
+					           "conflicting property; tv_hook=%!T, tv_targ=%!T, desc.flags=0x%08x, "
+					           "desc.get=%p, desc.set=%p",
+					           key, tv_hook, tv_targ, (int) desc.flags,
+					           (void *) desc.get, (void *) desc.set);
+
+					int datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                      !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                      !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
+					                      !duk_js_samevalue(tv_hook, tv_targ);
+					int accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                     !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                     (desc.get == NULL) &&
+					                     !DUK_TVAL_IS_UNDEFINED(tv_hook);
+					if (datadesc_reject || accdesc_reject) {
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy get rejected");
+					}
+
+					duk_pop_2(ctx);
+				} else {
+					duk_pop(ctx);
+				}
 				return 1;  /* return value */
 			}
 
-			/* XXX: currently assumes that the target is not a proxy,
-			 * proxy creation enforces this.
-			 */
 			curr = h_target;  /* resume lookup from target */
 			DUK_TVAL_SET_OBJECT(tv_obj, curr);
 		}
@@ -2713,13 +2739,42 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 				tmp_bool = duk_to_boolean(ctx, -1);
 				duk_pop(ctx);
 				if (!tmp_bool) {
-					return 0;  /* retval indicates putprop failed */
+					goto fail_proxy_rejected;
 				}
+
+				/* Target object must be checked for a conflicting
+				 * non-configurable property.
+				 */
+				arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+				DUK_ASSERT(key != NULL);
+
+				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 1 /*push_value*/)) {
+					duk_tval *tv_targ = duk_require_tval(ctx, -1);
+
+					DUK_DPRINT("proxy 'set': target has matching property %!O, check for "
+					           "conflicting property; tv_val=%!T, tv_targ=%!T, desc.flags=0x%08x, "
+					           "desc.get=%p, desc.set=%p",
+					           key, tv_val, tv_targ, (int) desc.flags,
+					           (void *) desc.get, (void *) desc.set);
+
+					int datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                      !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                      !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
+					                      !duk_js_samevalue(tv_val, tv_targ);
+					int accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                     !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                     (desc.set == NULL);
+					if (datadesc_reject || accdesc_reject) {
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy set rejected");
+					}
+
+					duk_pop_2(ctx);
+				} else {
+					duk_pop(ctx);
+				}
+				return 1;  /* success */
 			}
 
-			/* XXX: currently assumes that the target is not a proxy,
-			 * proxy creation enforces this.
-			 */
 			orig = h_target;  /* resume write to target */
 			DUK_TVAL_SET_OBJECT(tv_obj, orig);
 		}
@@ -3270,6 +3325,14 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	duk_pop(ctx);  /* remove key */
 	return 1;
 
+ fail_proxy_rejected:
+	DUK_DDDPRINT("result: error, proxy rejects");
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy rejected");
+	}
+	/* Note: no key on stack */
+	return 0;
+
  fail_base_primitive:
 	DUK_DDDPRINT("result: error, base primitive");
 	if (throw_flag) {
@@ -3460,6 +3523,10 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, int throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *key = NULL;
+#if defined(DUK_USE_ES6_PROXY)
+	duk_propdesc desc;
+#endif
+	duk_int_t entry_top;
 	duk_uint32_t arr_idx = DUK__NO_ARRAY_INDEX;
 	int rc;
 
@@ -3474,11 +3541,15 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	/* Storing the entry top is cheaper here to ensure stack is correct at exit,
+	 * as there are several paths out.
+	 */
+	entry_top = duk_get_top(ctx);
+
 	if (DUK_TVAL_IS_UNDEFINED(tv_obj) ||
 	    DUK_TVAL_IS_NULL(tv_obj)) {
-		/* Note: unconditional throw */
 		DUK_DDDPRINT("base object is undefined or null -> reject");
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid base reference for property delete");
+		goto fail_invalid_base_uncond;
 	}
 
 	/* FIXME: because we need to do this, just take args through stack? */
@@ -3506,13 +3577,31 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 				tmp_bool = duk_to_boolean(ctx, -1);
 				duk_pop(ctx);
 				if (!tmp_bool) {
-					return 0;  /* retval indicates delete failed */
+					goto fail_proxy_rejected;  /* retval indicates delete failed */
 				}
+
+				/* Target object must be checked for a conflicting
+				 * non-configurable property.
+				 */
+				arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+				DUK_ASSERT(key != NULL);
+
+				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 0 /*push_value*/)) {
+					DUK_DPRINT("proxy 'deleteProperty': target has matching property %!O, check for "
+					           "conflicting property; desc.flags=0x%08x, "
+					           "desc.get=%p, desc.set=%p",
+					           key, (int) desc.flags, (void *) desc.get, (void *) desc.set);
+
+					int desc_reject = !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE);
+					if (desc_reject) {
+						/* unconditional */
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy deleteProperty rejected");
+					}
+				}
+				duk_pop(ctx);
+				return 1;  /* success */
 			}
 
-			/* XXX: currently assumes that the target is not a proxy,
-			 * proxy creation enforces this.
-			 */
 			obj = h_target;  /* resume delete to target */
 		}
 #endif  /* DUK_USE_ES6_PROXY */
@@ -3522,9 +3611,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 		DUK_ASSERT(key != NULL);
 
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag);
-
-		duk_pop_2(ctx);  /* [obj key] -> [] */
-		return rc;
+		goto done_rc;
 	} else if (DUK_TVAL_IS_STRING(tv_obj)) {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		DUK_ASSERT(h != NULL);
@@ -3544,16 +3631,34 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 			goto fail_not_configurable;
 		}
 	}
+	/* FIXME: buffer virtual properties? */
 
-	/* string without matching properties, or any other primitive base */
+	/* non-object base, no offending virtual property */
+	rc = 1;
+	goto done_rc;
 
-	duk_pop_2(ctx);  /* [obj key] -> [] */
-	return 1;
+ done_rc:
+	duk_set_top(ctx, entry_top);
+	return rc;
+
+ fail_invalid_base_uncond:
+	/* Note: unconditional throw */
+	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid base reference for property delete");
+	return 0;
+
+ fail_proxy_rejected:
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property delete rejected by proxy");
+	}
+	duk_set_top(ctx, entry_top);
+	return 0;
 
  fail_not_configurable:
 	if (throw_flag) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "property not configurable");
 	}
+	duk_set_top(ctx, entry_top);
 	return 0;
 }
 
@@ -5113,4 +5218,3 @@ int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) 
 #undef DUK__HASH_UNUSED
 #undef DUK__HASH_DELETED
 #undef DUK__VALSTACK_SPACE
-
