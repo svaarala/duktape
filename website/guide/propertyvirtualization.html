@@ -67,12 +67,14 @@ var handler = {
 
     set: function (targ, key, val, recv) {
         print('set called for key=' + key + ', val=' + val);
-        return true;  // true: allow write to pass to target object
+        targ[key] = val;  // must perform write to target manually if 'set' defined
+        return true;      // true: indicate that property write was allowed
     },
 
     deleteProperty: function (targ, key) {
         print('deleteProperty called for key=' + key);
-        return true;  // true: allow delete to pass to target object
+        delete targ[key];  // must perform delete to target manually if 'deleteProperty' defined
+        return true;       // true: indicate that property delete was allowed
     }
 };
 
@@ -110,9 +112,8 @@ var proxy = new Proxy(target, {
 });
 </pre>
 
-<p>The following is a more convoluted example combining multiple behaviors.
-The behaviors are quite odd, and are simply intended to illustrate available
-options:</p>
+<p>The following is a more convoluted example combining multiple (somewhat
+artificial) behaviors:</p>
 <pre class="ecmascript-code">
 var target = { foo: 'bar' };
 
@@ -137,13 +138,9 @@ var handler = {
             throw new TypeError('attempt to access a read-protected property');
         }
 
-        var val = targ[key];
-        if (typeof val === 'string') {
-            val = val.toUpperCase();
-        }
-
         // Return value: value provided as property lookup result.
-        return val;
+        var val = targ[key];
+        return (typeof val === 'string' ? val.toUpperCase() : val);
     },
 
     set: function (targ, key, val, recv) {
@@ -161,20 +158,19 @@ var handler = {
                 targ.color = val;
                 redraw();
 
-                // True: indicates that property write is allowed; the write
-                // proceeds to the target object (doesn't really matter because
-                // we already wrote targ.color above).  A false return value
-                // would indicate a failure which would then cause an error in
-                // strict mode.
+                // True: indicates to caller that property write allowed.
                 return true;
             } else if (key[0] === '_') {
-                // False: block property write.
+                // False: indicates to caller that property write rejected.
+                // In non-strict mode this is ignored silently, but in strict
+                // mode a TypeError is thrown.
                 return false;
             }
         }
 
-        // True return value indicates that property write is allowed to
-        // proceed to the target object.
+        // Write to target.  We could also return true without writing to the
+        // target to simulate a successful write without changing the target.
+        targ[key] = val;
         return true;
     },
 
@@ -188,17 +184,27 @@ var handler = {
                 // For 'color' a delete attempt causes an explicit error.
                 throw new TypeError('attempt to delete the color property');
             } else if (key[0] === '_') {
-                // False: block property deletion.
+                // False: indicates to caller that property delete rejected.
+                // In non-strict mode this is ignored silently, but in strict
+                // mode a TypeError is thrown.
                 return false;
             }
         }
 
-        // True return value indicates that property delete is allowed to
-        // proceed to the target object.
+        // Delete from target.  We could also return true without deleting
+        // from the target to simulate a successful delete without changing
+        // the target.
+        delete targ[key];
         return true;
     }
 };
 </pre>
+
+<p>The ES6 draft semantics reject some property accesses even if the handler
+method would allow it.  This happens if the proxy's target object has a non-configurable
+conflicting property; see E6 draft Sections 9.5.8, 9.5.9, and 9.5.10 for details.
+You can easily avoid any such behaviors by keeping the target object empty and,
+if necessary, backing the virtual properties in an unrelated plain object.</p>
 
 <p>See <a href="#es6-proxy">Proxy object (subset)</a> for a discussion of
 current limitations.</p>
