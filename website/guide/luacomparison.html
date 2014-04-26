@@ -80,10 +80,10 @@ bytecode file.  Similarly, there is no equivalent to e.g. <code>lua_dump()</code
 
 <h2>Metatables</h2>
 
-<p>There is currently no equivalent of Lua metatables in Duktape (or
-Ecmascript).  The
-<a href="http://people.mozilla.org/~jorendorff/es6-draft.html#sec-8.5">ES6 proxy object</a>
-concept will most likely provide similar functionality at some point.</p>
+<p>There is no equivalent of Lua metatables in Ecmascript E5/E5.1, but
+<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Ecmascript E6 Proxy objects</a>
+provide similar functionality.  To allow property virtualization better than available in
+E5/E5.1, Duktape implements an <a href="#es6-proxy">ES6 Proxy subset</a>.</p>.
 
 <h2>lua_next() vs. duk_next()</h2>
 
