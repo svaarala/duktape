@@ -3598,8 +3598,8 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy deleteProperty rejected");
 					}
 				}
-				duk_pop(ctx);
-				return 1;  /* success */
+				rc = 1;  /* success */
+				goto done_rc;
 			}
 
 			obj = h_target;  /* resume delete to target */
