@@ -21,11 +21,12 @@ in your compiler):</p>
 
 <p>Duktape feature defaults are, at a high level:</p>
 <ul>
-<li>Full Ecmascript compliance
+<li>Full Ecmascript E5/E5.1 compliance
     (including the optional 
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>
     features), except for intentional real world compatibility deviations
     (see <a href="#custombehavior">Custom behavior</a>)</li>
+<li>Some <a href="#es6features">features borrowed from ES6</a></li>
 <li>Packed value representation (8 bytes per value) when available,
     unpacked value representation (12-16 bytes per value) when not</li>
 <li>Reference counting and mark-and-sweep garbage collection</li>
