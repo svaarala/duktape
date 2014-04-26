@@ -49,8 +49,9 @@ and of being widely implemented.  However, they have significant limitations:</p
 
 <p>In addition to accessors, Duktape provides a subset implementation of the
 Ecmascript E6 (draft) <code>Proxy</code> concept (see
-<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects</a>).
-The subset is limited to <code>get</code>, <code>set</code>, and
+<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>
+and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>).
+The current subset is limited to <code>get</code>, <code>set</code>, and
 <code>deleteProperty</code> handler methods.</p>
 
 <p>For example, to simply print a line whenever any property is accessed:</p>
@@ -206,5 +207,12 @@ conflicting property; see E6 draft Sections 9.5.8, 9.5.9, and 9.5.10 for details
 You can easily avoid any such behaviors by keeping the target object empty and,
 if necessary, backing the virtual properties in an unrelated plain object.</p>
 
-<p>See <a href="#es6-proxy">Proxy object (subset)</a> for a discussion of
-current limitations.</p>
+<p>Also see:</p>
+<ul>
+<li><a href="#es6-proxy">Proxy object (subset)</a>:
+    discussion of current limitations in Duktape's <code>Proxy</code> implementation.</li>
+<li><a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>:
+    ES6 draft specification for the <code>Proxy</code> object.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>:
+    Mozilla's description of the <code>Proxy</code> implemented in Firefox, contains a lot of examples.</li>
+</ul>
