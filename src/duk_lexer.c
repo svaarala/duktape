@@ -1278,8 +1278,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		duk__parse_input_element_raw(lex_ctx, out_token, strict_mode, regexp_mode);
 		tok = out_token->t;
 
-		DUK_DDDPRINT("RAWTOKEN: %d (line %d-%d)",
-		             tok, out_token->start_line, out_token->end_line);
+		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %d (line %d-%d)",
+		                     tok, out_token->start_line, out_token->end_line));
 
 		if (tok == DUK_TOK_COMMENT) {
 			/* single-line comment or multi-line comment without an internal lineterm */

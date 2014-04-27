@@ -294,11 +294,11 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 
 		duk_lexer_parse_re_token(&re_ctx->lex, &re_ctx->curr_token);
 
-		DUK_DDPRINT("re token: %d (num=%d, char=%c)",
-		            re_ctx->curr_token.t,
-		            re_ctx->curr_token.num,
-		            (re_ctx->curr_token.num >= 0x20 && re_ctx->curr_token.num <= 0x7e) ?
-		            (char) re_ctx->curr_token.num : '?');
+		DUK_DD(DUK_DDPRINT("re token: %d (num=%d, char=%c)",
+		                   re_ctx->curr_token.t,
+		                   re_ctx->curr_token.num,
+		                   (re_ctx->curr_token.num >= 0x20 && re_ctx->curr_token.num <= 0x7e) ?
+		                   (char) re_ctx->curr_token.num : '?'));
 
 		/* set by atom case clauses */
 		new_atom_start_offset = -1;
@@ -425,16 +425,16 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 				DUK_ASSERT(atom_start_captures <= re_ctx->captures);
 				if (atom_start_captures != re_ctx->captures) {
 					DUK_ASSERT(atom_start_captures < re_ctx->captures);
-					DUK_DDDPRINT("must wipe ]atom_start_captures,re_ctx->captures]: ]%d,%d]",
-					             (int) atom_start_captures, (int) re_ctx->captures);
+					DUK_DDD(DUK_DDDPRINT("must wipe ]atom_start_captures,re_ctx->captures]: ]%d,%d]",
+					                     (int) atom_start_captures, (int) re_ctx->captures));
 
 					/* insert (DUK_REOP_WIPERANGE, start, count) in reverse order so the order ends up right */
 					duk__insert_u32(re_ctx, atom_start_offset, (re_ctx->captures - atom_start_captures) * 2);
 					duk__insert_u32(re_ctx, atom_start_offset, (atom_start_captures + 1) * 2);
 					duk__insert_u32(re_ctx, atom_start_offset, DUK_REOP_WIPERANGE);
 				} else {
-					DUK_DDDPRINT("no need to wipe captures: atom_start_captures == re_ctx->captures == %d",
-					             (int) atom_start_captures);
+					DUK_DDD(DUK_DDDPRINT("no need to wipe captures: atom_start_captures == re_ctx->captures == %d",
+					                     (int) atom_start_captures));
 				}
 
 				atom_code_length = DUK__BUFLEN(re_ctx) - atom_start_offset;
@@ -735,8 +735,8 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 	out_atom_info->end_captures = re_ctx->captures;
 #endif
 	out_atom_info->charlen = res_charlen;
-	DUK_DDDPRINT("parse disjunction finished: charlen=%d",
-	             (int) out_atom_info->charlen);
+	DUK_DDD(DUK_DDDPRINT("parse disjunction finished: charlen=%d",
+	                     (int) out_atom_info->charlen));
 
 	re_ctx->recursion_depth--;
 }
@@ -920,8 +920,8 @@ void duk_regexp_compile(duk_hthread *thr) {
 	re_ctx.recursion_limit = DUK_RE_COMPILE_RECURSION_LIMIT;
 	re_ctx.re_flags = duk__parse_regexp_flags(thr, h_flags);
 
-	DUK_DDPRINT("regexp compiler ctx initialized, flags=0x%08x, recursion_limit=%d",
-	            (unsigned int) re_ctx.re_flags, (int) re_ctx.recursion_limit);
+	DUK_DD(DUK_DDPRINT("regexp compiler ctx initialized, flags=0x%08x, recursion_limit=%d",
+	                   (unsigned int) re_ctx.re_flags, (int) re_ctx.recursion_limit));
 
 	/*
 	 *  Init lexer
@@ -944,8 +944,8 @@ void duk_regexp_compile(duk_hthread *thr) {
 	duk__append_u32(&re_ctx, 1);
 	duk__append_u32(&re_ctx, DUK_REOP_MATCH);
 
-	DUK_DPRINT("regexp bytecode size (before header) is %d bytes",
-	           (int) DUK_HBUFFER_GET_SIZE(re_ctx.buf));
+	DUK_D(DUK_DPRINT("regexp bytecode size (before header) is %d bytes",
+	                 (int) DUK_HBUFFER_GET_SIZE(re_ctx.buf)));
 
 	/*
 	 *  Check for invalid backreferences; note that it is NOT an error
@@ -968,8 +968,8 @@ void duk_regexp_compile(duk_hthread *thr) {
 	duk__insert_u32(&re_ctx, 0, (re_ctx.captures + 1) * 2);
 	duk__insert_u32(&re_ctx, 0, re_ctx.re_flags);
 
-	DUK_DPRINT("regexp bytecode size (after header) is %d bytes",
-	           (int) DUK_HBUFFER_GET_SIZE(re_ctx.buf));
+	DUK_D(DUK_DPRINT("regexp bytecode size (after header) is %d bytes",
+	                 (int) DUK_HBUFFER_GET_SIZE(re_ctx.buf)));
 	DUK_DDD(DUK_DDDPRINT("compiled regexp: %!xO", re_ctx.buf));
 
 	/* [ ... pattern flags escaped_source buffer ] */
@@ -985,8 +985,8 @@ void duk_regexp_compile(duk_hthread *thr) {
 	duk_remove(ctx, -4);     /* -> [ ... flags escaped_source bytecode ] */
 	duk_remove(ctx, -3);     /* -> [ ... escaped_source bytecode ] */
 
-	DUK_DPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
-	           duk_get_tval(ctx, -1), duk_get_tval(ctx, -2));
+	DUK_D(DUK_DPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
+	                 duk_get_tval(ctx, -1), duk_get_tval(ctx, -2)));
 }
 
 /*
