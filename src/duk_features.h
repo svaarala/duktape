@@ -1781,9 +1781,9 @@ typedef FILE duk_file;
 #endif
 
 /* Non-standard function 'source' property. */
-#undef DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
-#if defined(DUK_OPT_FUNC_NONSTD_SOURCE_PROPERTY)
-#define DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY
+#undef DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
+#if defined(DUK_OPT_NONSTD_FUNC_SOURCE_PROPERTY)
+#define DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
 #endif
 
 /*

@@ -798,7 +798,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/* _source */
-#if defined(DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY)
+#if defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY)
 	if (0) {
 		/* FIXME: Currently function source code is not stored, as it is not
 		 * required by the standard.  Source code should not be stored by
@@ -840,7 +840,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 #endif
 	}
-#endif  /* DUK_USE_FUNC_NONSTD_SOURCE_PROPERTY */
+#endif  /* DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY */
 
 	/* _pc2line */
 #if defined(DUK_USE_PC2LINE)
