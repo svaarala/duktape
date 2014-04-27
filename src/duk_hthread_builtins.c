@@ -466,12 +466,12 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	DUK_ASSERT(h != NULL);
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
 
-#if !defined(DUK_USE_OBJECT_ES6_PROTO_PROPERTY)
+#if !defined(DUK_USE_ES6_OBJECT_PROTO_PROPERTY)
 	DUK_DD(DUK_DDPRINT("delete Object.prototype.__proto__ built-in which is not enabled in features"));
 	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE], DUK_HTHREAD_STRING___PROTO__(thr), 1 /*throw_flag*/);
 #endif
 
-#if !defined(DUK_USE_OBJECT_ES6_SETPROTOTYPEOF)
+#if !defined(DUK_USE_ES6_OBJECT_SETPROTOTYPEOF)
 	DUK_DD(DUK_DDPRINT("delete Object.setPrototypeOf built-in which is not enabled in features"));
 	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR], DUK_HTHREAD_STRING_SET_PROTOTYPE_OF(thr), 1 /*throw_flag*/);
 #endif

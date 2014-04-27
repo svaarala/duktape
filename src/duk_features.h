@@ -1755,17 +1755,17 @@ typedef FILE duk_file;
 /* Non-standard Object.prototype.__proto__ (ES6 draft), see
  * test-bi-object-proto-__proto__.js.
  */
-#define DUK_USE_OBJECT_ES6_PROTO_PROPERTY
-#if defined(DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY)
-#undef DUK_USE_OBJECT_ES6_PROTO_PROPERTY
+#define DUK_USE_ES6_OBJECT_PROTO_PROPERTY
+#if defined(DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY)
+#undef DUK_USE_ES6_OBJECT_PROTO_PROPERTY
 #endif
 
 /* Non-standard Object.setPrototypeOf (ES6 draft), see
  * test-bi-object-setprototypeof.js.
  */
-#define DUK_USE_OBJECT_ES6_SETPROTOTYPEOF
-#if defined(DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF)
-#undef DUK_USE_OBJECT_ES6_SETPROTOTYPEOF
+#define DUK_USE_ES6_OBJECT_SETPROTOTYPEOF
+#if defined(DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF)
+#undef DUK_USE_ES6_OBJECT_SETPROTOTYPEOF
 #endif
 
 /* ES6 Proxy object (subset for now). */

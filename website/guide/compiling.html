@@ -227,12 +227,12 @@ The table below summarizes the available options, in no particular order:</p>
     (or 0) value.</td>
 </tr>
 <tr>
-<td class="propname">DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY</td>
+<td class="propname">DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY</td>
 <td>Disable the non-standard (ES6 draft) <code>Object.prototype.__proto__</code>
     property which is enabled by default.</td>
 </tr>
 <tr>
-<td class="propname">DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF</td>
+<td class="propname">DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</td>
 <td>Disable the non-standard (ES6 draft) <code>Object.setPrototypeOf</code>
     method which is enabled by default.</td>
 </tr>
@@ -372,8 +372,8 @@ The table below summarizes the available options, in no particular order:</p>
 <li>If you don't need the Duktape-specific additional JSONX/JSONC formats,
     use both <code>DUK_OPT_NO_JSONX</code> and <code>DUK_OPT_NO_JSONC</code>.</li>
 <li>Features borrowed from Ecmascript E6 can usually be disabled:
-    <code>DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF</code>,
-    <code>DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY</code>,
+    <code>DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</code>,
+    <code>DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY</code>,
     <code>DUK_OPT_NO_ES6_PROXY</code>.</li>
 <li>If you don't need regexp support, use <code>DUK_OPT_NO_REGEXP_SUPPORT</code>.</li>
 <li>Duktape debug code uses a large, static temporary buffer for formatting debug
