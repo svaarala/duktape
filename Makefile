@@ -288,6 +288,10 @@ libduktaped.so.1.0.0: dist
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
+.PHONY: debuglogcheck
+debuglogcheck:
+	-python util/check_debuglog_calls.py src/*.c
+
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
@@ -707,7 +711,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
+dist:	debuglogcheck UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
