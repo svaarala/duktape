@@ -5156,7 +5156,7 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		 * fixed yet.
 		 */
 
-#if !defined(DUK_USE_FUNC_NONSTD_CALLER_PROPERTY)
+#if !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 		if (comp_ctx->curr_func.catch_depth == 0 &&   /* no catchers */
 		    pc_after_expr > pc_before_expr) {         /* at least one opcode emitted */
 			duk_compiler_instr *instr;
@@ -5178,7 +5178,7 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 				return;
 			}
 		}
-#endif  /* !DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
+#endif  /* !DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
 
 		ret_flags = DUK_BC_RETURN_FLAG_HAVE_RETVAL;
 	}

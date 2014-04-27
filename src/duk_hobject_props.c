@@ -2192,7 +2192,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
  found:
 	/* [key result] */
 
-#if !defined(DUK_USE_FUNC_NONSTD_CALLER_PROPERTY)
+#if !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	/* This special behavior is disabled when the non-standard 'caller' property
 	 * is enabled, as it conflicts with the free use of 'caller'.
 	 */
@@ -2223,7 +2223,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			}
 		}
 	}
-#endif   /* !DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
+#endif   /* !DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
 
 	duk_remove(ctx, -2);  /* [key result] -> [result] */
 

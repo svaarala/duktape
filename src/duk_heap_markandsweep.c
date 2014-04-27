@@ -112,7 +112,7 @@ static void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->func);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->var_env);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->lex_env);
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->prev_caller);
 #endif
 		}

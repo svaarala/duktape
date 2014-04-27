@@ -1747,9 +1747,9 @@ typedef FILE duk_file;
 /* Non-standard 'caller' property for function instances, see
  * test-bi-function-nonstd-caller-prop.js.
  */
-#undef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
-#if defined(DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY)
-#define DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#undef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY)
+#define DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 #endif
 
 /* Non-standard Object.prototype.__proto__ (ES6 draft), see

@@ -129,7 +129,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		p = &thr->callstack[idx];
 		DUK_ASSERT(p->func != NULL);
 
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		/*
 		 *  Restore 'caller' property for non-strict callee functions.
 		 */

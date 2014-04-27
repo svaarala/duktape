@@ -138,7 +138,7 @@ struct duk_activation {
 	duk_hobject *func;      /* function being executed; for bound function calls, this is the final, real function */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
 	duk_hobject *lex_env;   /* current lexical environment (may be NULL if delayed) */
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	/* Previous value of 'func' caller, restored when unwound.  Only in use
 	 * when 'func' is non-strict.
 	 */
@@ -173,7 +173,7 @@ struct duk_activation {
 	 * calls, which must not "cumulate" valstack temps.
 	 */
 
-#if defined(DUK_USE_32BIT_PTRS) && !defined(DUK_USE_FUNC_NONSTD_CALLER_PROPERTY)
+#if defined(DUK_USE_32BIT_PTRS) && !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	/* Minor optimization: pad structure to 2^N size on 32-bit platforms. */
 	int unused1;  /* pad to 2^N */
 #endif

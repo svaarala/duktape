@@ -1,6 +1,6 @@
 /*---
 {
-    "comment": "breaks with DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY"
+    "comment": "breaks with DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY"
 }
 ---*/
 
@@ -24,7 +24,7 @@ true
  * A non-strict function instance should not have a 'caller' nor an
  * 'arguments' property at all.
  *
- * This testcase breaks with DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY.
+ * This testcase breaks with DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY.
  */
 
 function f() { }

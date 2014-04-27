@@ -443,7 +443,7 @@ static void duk__handle_oldenv_for_call(duk_hthread *thr,
  *  Helper for updating callee 'caller' property.
  */
 
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 	duk_tval *tv_caller;
 	duk_hobject *h_tmp;
@@ -520,7 +520,7 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 		}
 	}
 }
-#endif  /* DUK_USE_FUNC_NONSTD_CALLER_PROPERTY */
+#endif  /* DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
 
 /*
  *  Determine the effective 'this' binding and coerce the current value
@@ -1020,7 +1020,7 @@ int duk_handle_call(duk_hthread *thr,
 	act->func = func;
 	act->var_env = NULL;
 	act->lex_env = NULL;
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	act->prev_caller = NULL;
 #endif
 	act->pc = 0;
@@ -1036,7 +1036,7 @@ int duk_handle_call(duk_hthread *thr,
 
 	DUK_HOBJECT_INCREF(thr, func);  /* act->func */
 
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	duk__update_func_caller_prop(thr, func);
 	act = thr->callstack + thr->callstack_top - 1;
 #endif
@@ -1878,7 +1878,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* XXX: some overlapping code; cleanup */
 	use_tailcall = call_flags & DUK_CALL_FLAG_IS_TAILCALL;
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	/* With 'caller' property, tail calls cannot be used without further
 	 * non-trivial fixes, so disable them.
 	 */
@@ -1935,7 +1935,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		/* Start filling in the activation */
 		act->func = func;  /* don't want an intermediate exposed state with func == NULL */
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		act->prev_caller = NULL;
 #endif
 		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
@@ -1944,9 +1944,9 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		act = thr->callstack + thr->callstack_top - 1;  /* side effects (currently none though) */
 #endif
 
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		/* This doesn't actually work properly for tail calls, so tail
-		 * calls are disabled when DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+		 * calls are disabled when DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		 * is in use.
 		 */
 		duk__update_func_caller_prop(thr, func);
@@ -2050,7 +2050,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->func = func;
 		act->var_env = NULL;
 		act->lex_env = NULL;
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		act->prev_caller = NULL;
 #endif
 		act->pc = 0;
@@ -2062,7 +2062,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		DUK_HOBJECT_INCREF(thr, func);  /* act->func */
 
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		duk__update_func_caller_prop(thr, func);
 		act = thr->callstack + thr->callstack_top - 1;
 #endif

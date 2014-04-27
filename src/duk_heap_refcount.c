@@ -122,7 +122,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->func);
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->var_env);
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->lex_env);
-#ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
+#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->prev_caller);
 #endif
 		}

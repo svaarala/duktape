@@ -16,7 +16,7 @@
 {
     "nonstandard": true,
     "custom": true,
-    "specialoptions": "DUK_OPT_FUNC_NONSTD_CALLER_PROPERTY"
+    "specialoptions": "DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY"
 }
 ---*/
 
