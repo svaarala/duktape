@@ -630,7 +630,7 @@ UglifyJS2:
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
 
 UglifyJS2/node_modules: UglifyJS2
-	cd UglifyJS2;npm install;cd -
+	cd UglifyJS2; npm install; cd -
 
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
