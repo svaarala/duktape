@@ -206,14 +206,14 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		duk_uint8_t *p = tfm_ctx->p;
 		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
-		DUK_DDDPRINT("percent encoding, left=%d", (int) left);
+		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%d", (int) left));
 
 		if (left < 2) {
 			goto uri_error;
 		}
 
 		t = duk__decode_hex_escape(p, 2);
-		DUK_DDDPRINT("first byte: %d", t);
+		DUK_DDD(DUK_DDDPRINT("first byte: %d", t));
 		if (t < 0) {
 			goto uri_error;
 		}
@@ -272,7 +272,7 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		for (i = 1; i < utf8_blen; i++) {
 			/* p points to digit part ('%xy', p points to 'x') */
 			t = duk__decode_hex_escape(p, 2);
-			DUK_DDDPRINT("i=%d utf8_blen=%d cp=%d t=0x%02x", i, utf8_blen, cp,t);
+			DUK_DDD(DUK_DDDPRINT("i=%d utf8_blen=%d cp=%d t=0x%02x", i, utf8_blen, cp, t));
 			if (t < 0) {
 				goto uri_error;
 			}
@@ -285,7 +285,7 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		p--;  /* p overshoots */
 		tfm_ctx->p = p;
 
-		DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp);
+		DUK_DDD(DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp));
 
 		if (cp < min_cp || cp > 0x10ffffL || (cp >= 0xd800L && cp <= 0xdfffL)) {
 			goto uri_error;
@@ -459,7 +459,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 		act = thr->callstack + thr->callstack_top - 2;  /* caller */
 		if (act->lex_env == NULL) {
 			DUK_ASSERT(act->var_env == NULL);
-			DUK_DDDPRINT("delayed environment initialization");
+			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 
 			/* this may have side effects, so re-lookup act */
 			duk_js_init_activation_environment_records_delayed(thr, act);
@@ -474,9 +474,9 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			duk_hobject *new_env;
 			duk_hobject *act_lex_env;
 
-			DUK_DDDPRINT("direct eval call to a strict function -> "
-			             "var_env and lex_env to a fresh env, "
-			             "this_binding to caller's this_binding");
+			DUK_DDD(DUK_DDDPRINT("direct eval call to a strict function -> "
+			                     "var_env and lex_env to a fresh env, "
+			                     "this_binding to caller's this_binding"));
 
 			act = thr->callstack + thr->callstack_top - 2;  /* caller */
 			act_lex_env = act->lex_env;
@@ -488,7 +488,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			                                    act_lex_env);
 			new_env = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(new_env != NULL);
-			DUK_DDDPRINT("new_env allocated: %!iO", new_env);
+			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", new_env));
 
 			outer_lex_env = new_env;
 			outer_var_env = new_env;
@@ -498,9 +498,9 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			/* compiler's responsibility */
 			DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV((duk_hobject *) func));
 		} else {
-			DUK_DDDPRINT("direct eval call to a non-strict function -> "
-			             "var_env and lex_env to caller's envs, "
-			             "this_binding to caller's this_binding");
+			DUK_DDD(DUK_DDDPRINT("direct eval call to a non-strict function -> "
+			                     "var_env and lex_env to caller's envs, "
+			                     "this_binding to caller's this_binding"));
 
 			outer_lex_env = act->lex_env;
 			outer_var_env = act->var_env;
@@ -509,8 +509,8 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 			DUK_ASSERT(!DUK_HOBJECT_HAS_NEWENV((duk_hobject *) func));
 		}
 	} else {
-		DUK_DDDPRINT("indirect eval call -> var_env and lex_env to "
-		             "global object, this_binding to global object");
+		DUK_DDD(DUK_DDDPRINT("indirect eval call -> var_env and lex_env to "
+		                     "global object, this_binding to global object"));
 
 		this_to_global = 1;
 		outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
@@ -532,8 +532,8 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 		duk_push_tval(ctx, tv);
 	}
 
-	DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
-	             outer_lex_env, outer_var_env, duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
+	                     outer_lex_env, outer_var_env, duk_get_tval(ctx, -1)));
 
 	duk_call_method(ctx, 0);
 

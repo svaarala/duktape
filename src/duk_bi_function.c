@@ -151,24 +151,24 @@ int duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	duk_push_this(ctx);
 	if (!duk_is_callable(ctx, -1)) {
-		DUK_DDDPRINT("func is not callable");
+		DUK_DDD(DUK_DDDPRINT("func is not callable"));
 		goto type_error;
 	}
 	duk_insert(ctx, 0);
 	DUK_ASSERT_TOP(ctx, 3);
 
-	DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_tval(ctx, 2));
+	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_tval(ctx, 2)));
 
 	/* [ func thisArg argArray ] */
 
 	if (duk_is_null_or_undefined(ctx, 2)) {
-		DUK_DDDPRINT("argArray is null/undefined, no args");
+		DUK_DDD(DUK_DDDPRINT("argArray is null/undefined, no args"));
 		len = 0;
 	} else if (!duk_is_object(ctx, 2)) {
 		goto type_error;
 	} else {
-		DUK_DDDPRINT("argArray is an object");
+		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
 		/* FIXME: make this an internal helper */
 		duk_get_prop_stridx(ctx, 2, DUK_STRIDX_LENGTH);
@@ -177,7 +177,7 @@ int duk_bi_function_prototype_apply(duk_context *ctx) {
 
 		duk_require_stack(ctx, len);  /* FIXME: more? */
 
-		DUK_DDDPRINT("argArray length is %d", len);
+		DUK_DDD(DUK_DDDPRINT("argArray length is %d", len));
 		for (i = 0; i < len; i++) {
 			duk_get_prop_index(ctx, 2, i);
 		}
@@ -187,8 +187,8 @@ int duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	/* [ func thisArg arg1 ... argN ] */
 	
-	DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len);
+	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%d",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), len));
 	duk_call_method(ctx, len);
 	return 1;
 
@@ -218,8 +218,8 @@ int duk_bi_function_prototype_call(duk_context *ctx) {
 
 	/* [ func thisArg arg1 ... argN ] */
 
-	DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argcount=%d, top=%d",
-	             duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), nargs - 1, duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argcount=%d, top=%d",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), nargs - 1, duk_get_top(ctx)));
 	duk_call_method(ctx, nargs - 1);	
 	return 1;
 }
@@ -247,7 +247,7 @@ int duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	duk_push_this(ctx);
 	if (!duk_is_callable(ctx, -1)) {
-		DUK_DDDPRINT("func is not callable");
+		DUK_DDD(DUK_DDDPRINT("func is not callable"));
 		goto type_error;
 	}
 
@@ -308,7 +308,7 @@ int duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
-	DUK_DDDPRINT("created bound function: %!iT", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", duk_get_tval(ctx, -1)));
 
 	return 1;
 

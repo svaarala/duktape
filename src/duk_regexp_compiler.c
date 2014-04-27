@@ -159,8 +159,8 @@ static duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int
 static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, int direct) {
 	duk_re_compiler_ctx *re_ctx = (duk_re_compiler_ctx *) userdata;
 
-	DUK_DDPRINT("duk__generate_ranges(): re_ctx=%p, range=[%d,%d] direct=%d",
-	            (void *) re_ctx, (int) r1, (int) r2, (int) direct);
+	DUK_DD(DUK_DDPRINT("duk__generate_ranges(): re_ctx=%p, range=[%d,%d] direct=%d",
+	                   (void *) re_ctx, (int) r1, (int) r2, (int) direct));
 
 	if (!direct && (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE)) {
 		/*
