@@ -110,7 +110,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 				break;
 			}
 			if (p_insert == keys) {
-				DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning");
+				DUK_DDD(DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning"));
 				break;
 			}
 			DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> search backwards",
@@ -118,7 +118,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 			p_insert--;
 		}
 
-		DUK_DDDPRINT("final p_insert=%p", (void *) p_insert);
+		DUK_DDD(DUK_DDDPRINT("final p_insert=%p", (void *) p_insert));
 
 		/*        .-- p_insert   .-- p_curr
 		 *        v              v
@@ -167,14 +167,14 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	DUK_DDDPRINT("create enumerator, stack top: %d", duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("create enumerator, stack top: %d", duk_get_top(ctx)));
 
 	target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(target != NULL);
 
 	duk_push_object_internal(ctx);
 
-	DUK_DDDPRINT("created internal object");
+	DUK_DDD(DUK_DDDPRINT("created internal object"));
 
 	/* [target res] */
 
@@ -348,14 +348,14 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 
 		/* FIXME: may need a 'length' filter for forEach()
 		 */
-		DUK_DDDPRINT("sort array indices by caller request");
+		DUK_DDD(DUK_DDDPRINT("sort array indices by caller request"));
 		duk__sort_array_indices(res);
 	}
 
 	/* compact; no need to seal because object is internal */
 	duk_hobject_compact_props(thr, res);
 
-	DUK_DDDPRINT("created enumerator object: %!iT", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("created enumerator object: %!iT", duk_get_tval(ctx, -1)));
 }
 
 /*
@@ -383,7 +383,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
 	idx = (duk_uint32_t) duk_require_number(ctx, -1);
 	duk_pop(ctx);
-	DUK_DDDPRINT("enumeration: index is: %d", idx);
+	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %d", idx));
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
 	target = duk_require_hobject(ctx, -1);
@@ -398,7 +398,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 		duk_hstring *k;
 
 		if (idx >= e->e_used) {
-			DUK_DDDPRINT("enumeration: ran out of elements");
+			DUK_DDD(DUK_DDDPRINT("enumeration: ran out of elements"));
 			break;
 		}
 
@@ -412,16 +412,16 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 
 		/* recheck that the property still exists */
 		if (!duk_hobject_hasprop_raw(thr, target, k)) {
-			DUK_DDDPRINT("property deleted during enumeration, skip");
+			DUK_DDD(DUK_DDDPRINT("property deleted during enumeration, skip"));
 			continue;
 		}
 
-		DUK_DDDPRINT("enumeration: found element, key: %!O", k);
+		DUK_DDD(DUK_DDDPRINT("enumeration: found element, key: %!O", k));
 		res = k;
 		break;
 	}
 
-	DUK_DDDPRINT("enumeration: updating next index to %d", idx);
+	DUK_DDD(DUK_DDDPRINT("enumeration: updating next index to %d", idx));
 
 	duk_push_number(ctx, (double) idx);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);

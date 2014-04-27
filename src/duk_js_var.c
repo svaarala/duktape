@@ -288,7 +288,7 @@ void duk_js_push_closure(duk_hthread *thr,
 #ifdef DUK_USE_DDDPRINT
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARENV);
 	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV);
-	DUK_DDDPRINT("closure varenv -> %!ipT, lexenv -> %!ipT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("closure varenv -> %!ipT, lexenv -> %!ipT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 	duk_pop_2(ctx);
 #endif
 
@@ -300,16 +300,16 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/* [ ... closure template ] */
 
-	DUK_DDDPRINT("copying properties: closure=%!iT, template=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("copying properties: closure=%!iT, template=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 	for (i = 0; i < (duk_small_uint_t) (sizeof(duk__closure_copy_proplist) / sizeof(duk_uint16_t)); i++) {
 		int stridx = (int) duk__closure_copy_proplist[i];
 		if (duk_get_prop_stridx(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
-			DUK_DDDPRINT("copying property, stridx=%d -> found", stridx);
+			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%d -> found", stridx));
 			duk_def_prop_stridx(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
 		} else {
-			DUK_DDDPRINT("copying property, stridx=%d -> not found", stridx);
+			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%d -> not found", stridx));
 			duk_pop(ctx);
 		}
 	}
@@ -379,11 +379,11 @@ void duk_js_push_closure(duk_hthread *thr,
 		duk_def_prop_stridx_thrower(ctx, -2, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
 	} else {
 #ifdef DUK_USE_FUNC_NONSTD_CALLER_PROPERTY
-		DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value");
+		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value"));
 		duk_push_null(ctx);
 		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
 #else
-		DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used");
+		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used"));
 #endif
 	}
 
@@ -522,12 +522,12 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
 	DUK_ASSERT(env != NULL);
 
-	DUK_DDDPRINT("created delayed fresh env: %!ipO", env);
+	DUK_DDD(DUK_DDDPRINT("created delayed fresh env: %!ipO", env));
 #ifdef DUK_USE_DDDPRINT
 	{
 		duk_hobject *p = env;
 		while (p) {
-			DUK_DDDPRINT("  -> %!ipO", p);
+			DUK_DDD(DUK_DDDPRINT("  -> %!ipO", p));
 			p = p->prototype;
 		}
 	}
@@ -565,11 +565,11 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 	DUK_ASSERT(func != NULL);
 
 	if (!DUK_HOBJECT_IS_DECENV(env) || DUK_HOBJECT_HAS_ENVRECCLOSED(env)) {
-		DUK_DDDPRINT("environment record not a declarative record, or already closed: %!iO", env);
+		DUK_DDD(DUK_DDDPRINT("environment record not a declarative record, or already closed: %!iO", env));
 		return;
 	}
 
-	DUK_DDDPRINT("closing environment record: %!iO, func: %!iO, regbase: %d", env, func, regbase);
+	DUK_DDD(DUK_DDDPRINT("closing environment record: %!iO, func: %!iO, regbase: %d", env, func, regbase));
 
 	duk_push_hobject(ctx, env);
 
@@ -624,7 +624,7 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 		/* [... env] */
 
 		if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_CALLEE)) {
-			DUK_DDDPRINT("env has no callee property, nothing to close; re-delete the control properties just in case");
+			DUK_DDD(DUK_DDDPRINT("env has no callee property, nothing to close; re-delete the control properties just in case"));
 			duk_pop(ctx);
 			goto skip_varmap;
 		}
@@ -632,18 +632,18 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 		/* [... env callee] */
 
 		if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VARMAP)) {
-			DUK_DDDPRINT("callee has no varmap property, nothing to close; delete the control properties");
+			DUK_DDD(DUK_DDDPRINT("callee has no varmap property, nothing to close; delete the control properties"));
 			duk_pop_2(ctx);
 			goto skip_varmap;
 		}
 		varmap = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(varmap != NULL);
 
-		DUK_DDDPRINT("varmap: %!O", varmap);
+		DUK_DDD(DUK_DDDPRINT("varmap: %!O", varmap));
 
 		/* [... env callee varmap] */
 
-		DUK_DDDPRINT("copying bound register values, %d bound regs", varmap->e_used);
+		DUK_DDD(DUK_DDDPRINT("copying bound register values, %d bound regs", varmap->e_used));
 
 		for (i = 0; i < (duk_uint_fast32_t) varmap->e_used; i++) {
 			key = DUK_HOBJECT_E_GET_KEY(varmap, i);
@@ -687,7 +687,7 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 
 	DUK_HOBJECT_SET_ENVRECCLOSED(env);
 
-	DUK_DDDPRINT("environment record after being closed: %!O", env);
+	DUK_DDD(DUK_DDDPRINT("environment record after being closed: %!O", env));
 }
 
 /*
@@ -903,7 +903,7 @@ static int duk__get_identifier_reference(duk_hthread *thr,
 			return 1;
 		}
 
-		DUK_DDDPRINT("not found in current activation regs");
+		DUK_DDD(DUK_DDDPRINT("not found in current activation regs"));
 
 		/*
 		 *  Not found in registers, proceed to the parent record.
@@ -939,7 +939,7 @@ static int duk__get_identifier_reference(duk_hthread *thr,
 			env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 		}
 
-		DUK_DDDPRINT("continue lookup from env: %!iO", env);
+		DUK_DDD(DUK_DDDPRINT("continue lookup from env: %!iO", env));
 	}
 
 	/*
@@ -1324,11 +1324,11 @@ static void duk__putvar_helper(duk_hthread *thr,
 	 */
 
 	if (strict) {
-		DUK_DDDPRINT("identifier binding not found, strict => reference error");
+		DUK_DDD(DUK_DDDPRINT("identifier binding not found, strict => reference error"));
 		DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR, "identifier not defined");
 	}
 
-	DUK_DDDPRINT("identifier binding not found, not strict => set to global");
+	DUK_DDD(DUK_DDDPRINT("identifier binding not found, not strict => set to global"));
 
 	DUK_TVAL_SET_OBJECT(&tv_tmp_obj, thr->builtins[DUK_BIDX_GLOBAL]);
 	DUK_TVAL_SET_STRING(&tv_tmp_key, name);
@@ -1540,7 +1540,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 		 */
 
 		if (!(is_func_decl && env == thr->builtins[DUK_BIDX_GLOBAL_ENV])) {
-			DUK_DDDPRINT("re-declare a binding, ignoring");
+			DUK_DDD(DUK_DDDPRINT("re-declare a binding, ignoring"));
 			return 1;  /* 1 -> needs a PUTVAR */
 		}
 
@@ -1619,7 +1619,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 			 * to handle a pre-existing accessor property, this would be
 			 * a simple call (like for the ancestor case).
 			 */
-			DUK_DDDPRINT("redefine, offending property in global object itself");
+			DUK_DDD(DUK_DDDPRINT("redefine, offending property in global object itself"));
 
 			if (flags & DUK_PROPDESC_FLAG_ACCESSOR) {
 				duk_hobject *tmp;
@@ -1655,7 +1655,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 			             DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(holder, e_idx),
 			             prop_flags);
 		} else {
-			DUK_DDDPRINT("redefine, offending property in ancestor");
+			DUK_DDD(DUK_DDDPRINT("redefine, offending property in ancestor"));
 
 			DUK_ASSERT(ref.holder == thr->builtins[DUK_BIDX_GLOBAL]);
 			duk_push_tval(ctx, tv_val);

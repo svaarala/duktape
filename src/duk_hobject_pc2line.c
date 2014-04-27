@@ -145,7 +145,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	n = pc - pc_base;
 
 	if (DUK_HBUFFER_FIXED_GET_SIZE(buf) <= sizeof(duk_uint32_t)) {
-		DUK_DDPRINT("pc2line lookup failed: buffer is smaller than minimal header");
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: buffer is smaller than minimal header"));
 		goto error;
 	}
 
@@ -177,7 +177,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 
 	while (n > 0) {
 #if 0
-		DUK_DDDPRINT("lookup: n=%d, curr_line=%d", (int) n, (int) curr_line);
+		DUK_DDD(DUK_DDDPRINT("lookup: n=%d, curr_line=%d", (int) n, (int) curr_line));
 #endif
 
 		if (duk_bd_decode_flag(bd_ctx)) {
@@ -207,11 +207,11 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 		n--;
 	}
 
-	DUK_DDDPRINT("pc2line lookup result: pc %d -> line %d", (int) pc, (int) curr_line);
+	DUK_DDD(DUK_DDDPRINT("pc2line lookup result: pc %d -> line %d", (int) pc, (int) curr_line));
 	return curr_line;
 
  error:
-	DUK_DPRINT("pc2line conversion failed for pc=%d", (int) pc);
+	DUK_D(DUK_DPRINT("pc2line conversion failed for pc=%d", (int) pc));
 	return 0;
 }
 

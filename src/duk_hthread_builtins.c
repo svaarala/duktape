@@ -50,7 +50,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_hobject *h;
 	int i, j;
 
-	DUK_DPRINT("INITBUILTINS BEGIN");
+	DUK_D(DUK_DPRINT("INITBUILTINS BEGIN"));
 
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_builtins_data;
@@ -67,7 +67,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 * is much less than the default space; assert for it.
 	 */
 
-	DUK_DDPRINT("create empty built-ins");
+	DUK_DD(DUK_DDPRINT("create empty built-ins"));
 	DUK_ASSERT_TOP(ctx, 0);
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		int class_num;
@@ -83,7 +83,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_c_function c_func;
 			duk_int16_t magic;
 
-			DUK_DDDPRINT("len=%d", len);
+			DUK_DDD(DUK_DDDPRINT("len=%d", len));
 			DUK_ASSERT(len >= 0);
 
 			natidx = duk_bd_decode(bd, DUK__NATIDX_BITS);
@@ -191,7 +191,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		/* DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(h));
 
-		DUK_DDDPRINT("created built-in %d, class=%d, length=%d", i, class_num, len);
+		DUK_DDD(DUK_DDDPRINT("created built-in %d, class=%d, length=%d", i, class_num, len));
 	}
 
 	/*
@@ -199,17 +199,17 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  init objects
 	 */
 
-	DUK_DDPRINT("initialize built-in object properties");
+	DUK_DD(DUK_DDPRINT("initialize built-in object properties"));
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		unsigned char t;
 		int num;
 
-		DUK_DDDPRINT("initializing built-in object at index %d", i);
+		DUK_DDD(DUK_DDDPRINT("initializing built-in object at index %d", i));
 		h = thr->builtins[i];
 
 		t = duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
-			DUK_DDDPRINT("set internal prototype: built-in %d", (int) t);
+			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %d", (int) t));
 			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[t]);
 		}
 
@@ -220,7 +220,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Enumerable]] = false,
 			 *  [[Configurable]] = false
 			 */
-			DUK_DDDPRINT("set external prototype: built-in %d", (int) t);
+			DUK_DDD(DUK_DDDPRINT("set external prototype: built-in %d", (int) t));
 			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
 		}
 
@@ -231,13 +231,13 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Enumerable]] = false,	
 			 *  [[Configurable]] = true
 			 */
-			DUK_DDDPRINT("set external constructor: built-in %d", (int) t);
+			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %d", (int) t));
 			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
 		}
 
 		/* normal valued properties */
 		num = duk_bd_decode(bd, DUK__NUM_NORMAL_PROPS_BITS);
-		DUK_DDDPRINT("built-in object %d, %d normal valued properties", i, num);
+		DUK_DDD(DUK_DDDPRINT("built-in object %d, %d normal valued properties", i, num));
 		for (j = 0; j < num; j++) {
 			int stridx;
 			int prop_flags;
@@ -367,7 +367,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		/* native function properties */
 		num = duk_bd_decode(bd, DUK__NUM_FUNC_PROPS_BITS);
-		DUK_DDDPRINT("built-in object %d, %d function valued properties", i, num);
+		DUK_DDD(DUK_DDDPRINT("built-in object %d, %d function valued properties", i, num));
 		for (j = 0; j < num; j++) {
 			int stridx;
 			int natidx;
@@ -427,7 +427,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* FIXME: other properties of function instances; 'arguments', 'caller'. */
 
-			DUK_DDPRINT("built-in object %d, function property %d -> %!T", i, j, duk_get_tval(ctx, -1));
+			DUK_DD(DUK_DDPRINT("built-in object %d, function property %d -> %!T", i, j, duk_get_tval(ctx, -1)));
 
 			/* [ (builtin objects) func ] */
 
@@ -467,12 +467,12 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
 
 #if !defined(DUK_USE_OBJECT_ES6_PROTO_PROPERTY)
-	DUK_DDPRINT("delete Object.prototype.__proto__ built-in which is not enabled in features");
+	DUK_DD(DUK_DDPRINT("delete Object.prototype.__proto__ built-in which is not enabled in features"));
 	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE], DUK_HTHREAD_STRING___PROTO__(thr), 1 /*throw_flag*/);
 #endif
 
 #if !defined(DUK_USE_OBJECT_ES6_SETPROTOTYPEOF)
-	DUK_DDPRINT("delete Object.setPrototypeOf built-in which is not enabled in features");
+	DUK_DD(DUK_DDPRINT("delete Object.setPrototypeOf built-in which is not enabled in features"));
 	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR], DUK_HTHREAD_STRING_SET_PROTOTYPE_OF(thr), 1 /*throw_flag*/);
 #endif
 
@@ -549,22 +549,22 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  Since built-ins are not often extended, compact them.
 	 */
 
-	DUK_DDPRINT("compact built-ins");
+	DUK_DD(DUK_DDPRINT("compact built-ins"));
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		duk_hobject_compact_props(thr, thr->builtins[i]);
 	}
 
-	DUK_DPRINT("INITBUILTINS END");
+	DUK_D(DUK_DPRINT("INITBUILTINS END"));
 
 #ifdef DUK_USE_DDPRINT
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		DUK_DDPRINT("built-in object %d after initialization and compacting: %!@iO", i, thr->builtins[i]);
+		DUK_DD(DUK_DDPRINT("built-in object %d after initialization and compacting: %!@iO", i, thr->builtins[i]));
 	}
 #endif
 	
 #ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		DUK_DDDPRINT("built-in object %d after initialization and compacting", i);
+		DUK_DDD(DUK_DDDPRINT("built-in object %d after initialization and compacting", i));
 		DUK_DEBUG_DUMP_HOBJECT(thr->builtins[i]);
 	}
 #endif

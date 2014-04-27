@@ -1331,7 +1331,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	x = DUK__L0();
 	y = DUK__L1();
 
-	DUK_DDDPRINT("parsing regexp token, L0=%d, L1=%d", x, y);
+	DUK_DDD(DUK_DDDPRINT("parsing regexp token, L0=%d, L1=%d", x, y));
 
 	switch (x) {
 	case '|': {
@@ -1654,7 +1654,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 	int dash = 0;
 	duk_int32_t ch;
 
-	DUK_DDPRINT("parsing regexp ranges");
+	DUK_DD(DUK_DDPRINT("parsing regexp ranges"));
 
 	for (;;) {
 		int x;

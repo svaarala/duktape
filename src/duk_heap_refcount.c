@@ -184,7 +184,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	 */
 
 	if (DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)) {
-		DUK_DDDPRINT("refzero free running, skip run");
+		DUK_DDD(DUK_DDDPRINT("refzero free running, skip run"));
 		return;
 	}
 
@@ -203,7 +203,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 		h1 = heap->refzero_list;
 		obj = (duk_hobject *) h1;
-		DUK_DDPRINT("refzero processing %p: %!O", h1, h1);
+		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", h1, h1));
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 
@@ -225,7 +225,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 		 */
 
 		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
-			DUK_DDDPRINT("object has a finalizer, run it");
+			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
 			DUK_ASSERT(h1->h_refcount == 0);
 			h1->h_refcount++;  /* bump refcount to prevent refzero during finalizer processing */
@@ -236,10 +236,10 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 			DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
 
 			if (h1->h_refcount != 0) {
-				DUK_DDDPRINT("-> object refcount after finalization non-zero, object will be rescued");
+				DUK_DDD(DUK_DDDPRINT("-> object refcount after finalization non-zero, object will be rescued"));
 				rescued = 1;
 			} else {
-				DUK_DDDPRINT("-> object refcount still zero after finalization, object will be freed");
+				DUK_DDD(DUK_DDDPRINT("-> object refcount still zero after finalization, object will be freed"));
 			}
 		}
 
@@ -270,7 +270,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 		if (rescued) {
 			/* yes -> move back to heap allocated */
-			DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1);
+			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
 			DUK_HEAPHDR_SET_PREV(h1, NULL);
 			DUK_HEAPHDR_SET_NEXT(h1, heap->heap_allocated);
 			heap->heap_allocated = h1;
@@ -284,7 +284,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	}
 	DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap);
 
-	DUK_DDDPRINT("refzero processed %d objects", count);
+	DUK_DDD(DUK_DDDPRINT("refzero processed %d objects", count));
 
 	/*
 	 *  Once the whole refzero cascade has been freed, check for
@@ -299,10 +299,10 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	if (heap->mark_and_sweep_trigger_counter <= 0) {
 		int rc;
 		int emergency = 0;
-		DUK_DPRINT("refcount triggering mark-and-sweep");
+		DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
 		rc = duk_heap_mark_and_sweep(heap, emergency);
 		DUK_UNREF(rc);
-		DUK_DPRINT("refcount triggered mark-and-sweep => rc %d", rc);
+		DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %d", rc));
 	}
 #endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
 }
@@ -399,7 +399,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	}
 
 	heap = thr->heap;
-	DUK_DDDPRINT("refzero %p: %!O", (void *) h, h);
+	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, h));
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/*
@@ -413,7 +413,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	 *  can do arbitrary operations and would use this decref variant anyway.
 	 */
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h);
+		DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h));
 		return;
 	}
 #endif
@@ -455,7 +455,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 		break;
 
 	default:
-		DUK_DPRINT("invalid heap type in decref: %d", (int) DUK_HEAPHDR_GET_TYPE(h));
+		DUK_D(DUK_DPRINT("invalid heap type in decref: %d", (int) DUK_HEAPHDR_GET_TYPE(h)));
 		DUK_UNREACHABLE();
 	}
 }

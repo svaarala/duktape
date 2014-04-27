@@ -20,19 +20,19 @@
 static int duk__finalize_helper(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 
-	DUK_DDDPRINT("protected finalization helper running");
+	DUK_DDD(DUK_DDDPRINT("protected finalization helper running"));
 
 	/* [... obj] */
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
 	if (!duk_is_callable(ctx, -1)) {
-		DUK_DDDPRINT("-> no finalizer or finalizer not callable");
+		DUK_DDD(DUK_DDDPRINT("-> no finalizer or finalizer not callable"));
 		return 0;
 	}
 	duk_dup(ctx, -2);  /* -> [... obj finalizer obj] */
-	DUK_DDDPRINT("-> finalizer found, calling finalizer");
+	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling finalizer"));
 	duk_call(ctx, 1);  /* -> [... obj retval] */
-	DUK_DDDPRINT("finalizer finished successfully");
+	DUK_DDD(DUK_DDDPRINT("finalizer finished successfully"));
 	return 0;
 
 	/* Note: we rely on duk_safe_call() to fix up the stack for the caller,
@@ -48,7 +48,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	int entry_top;
 #endif
 
-	DUK_DDDPRINT("running object finalizer for object: %p", (void *) obj);
+	DUK_DDD(DUK_DDDPRINT("running object finalizer for object: %p", (void *) obj));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -67,7 +67,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 
 	/* FIXME: use a NULL error handler for the finalizer call? */
 
-	DUK_DDDPRINT("-> finalizer found, calling wrapped finalize helper");
+	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling wrapped finalize helper"));
 	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */
 	rc = duk_safe_call(ctx, duk__finalize_helper, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
 	DUK_ASSERT_TOP(ctx, entry_top + 2);  /* duk_safe_call discipline */

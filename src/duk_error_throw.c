@@ -32,7 +32,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
 	             code, msg ? msg : "null", filename ? filename : "null", line);
 #else
-	DUK_DDPRINT("duk_err_create_and_throw(): code=%d", code);
+	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d", code));
 #endif
 
 	DUK_ASSERT(thr != NULL);
@@ -53,7 +53,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	if (double_error) {
 		if (thr->builtins[DUK_BIDX_DOUBLE_ERROR]) {
-			DUK_DPRINT("double fault detected -> push built-in fixed 'double error' instance");
+			DUK_D(DUK_DPRINT("double fault detected -> push built-in fixed 'double error' instance"));
 			duk_push_hobject(ctx, thr->builtins[DUK_BIDX_DOUBLE_ERROR]);
 		} else {
 			DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
@@ -85,10 +85,10 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	 */
 
 	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
-		DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble");
+		DUK_D(DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble"));
 	} else {
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-		DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", duk_get_tval(ctx, -1));
+		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", duk_get_tval(ctx, -1)));
 		duk_err_augment_error_throw(thr);
 #endif
 	}

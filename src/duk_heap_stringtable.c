@@ -99,17 +99,17 @@ static void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint3
 		
 		e = entries[i];
 		if (e == NULL) {
-			DUK_DDDPRINT("insert hit (null): %d", i);
+			DUK_DDD(DUK_DDDPRINT("insert hit (null): %d", i));
 			entries[i] = h;
 			(*p_used)++;
 			break;
 		} else if (e == DUK__DELETED_MARKER(heap)) {
 			/* st_used remains the same, DELETED is counted as used */
-			DUK_DDDPRINT("insert hit (deleted): %d", i);
+			DUK_DDD(DUK_DDDPRINT("insert hit (deleted): %d", i));
 			entries[i] = h;
 			break;
 		}
-		DUK_DDDPRINT("insert miss: %d", i);
+		DUK_DDD(DUK_DDDPRINT("insert miss: %d", i));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -134,11 +134,11 @@ static duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entr
 		}
 		if (e != DUK__DELETED_MARKER(heap) && DUK_HSTRING_GET_BYTELEN(e) == blen) {
 			if (DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(e), blen) == 0) {
-				DUK_DDDPRINT("find matching hit: %d (step %d, size %d)", i, step, size);
+				DUK_DDD(DUK_DDDPRINT("find matching hit: %d (step %d, size %d)", i, step, size));
 				return e;
 			}
 		}
-		DUK_DDDPRINT("find matching miss: %d (step %d, size %d)", i, step, size);
+		DUK_DDD(DUK_DDDPRINT("find matching miss: %d (step %d, size %d)", i, step, size));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -165,12 +165,12 @@ static void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, 
 		}
 		if (e == h) {
 			/* st_used remains the same, DELETED is counted as used */
-			DUK_DDDPRINT("free matching hit: %d", i);
+			DUK_DDD(DUK_DDDPRINT("free matching hit: %d", i));
 			entries[i] = DUK__DELETED_MARKER(heap);
 			break;
 		}
 
-		DUK_DDDPRINT("free matching miss: %d", i);
+		DUK_DDD(DUK_DDDPRINT("free matching miss: %d", i));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -415,7 +415,7 @@ duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t v
 
 /* find and remove string from stringtable; caller must free the string itself */
 void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
-	DUK_DDDPRINT("remove string from stringtable: %!O", h);
+	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", h));
 	duk__remove_matching_hstring(heap, heap->st, heap->st_size, h);
 }
 

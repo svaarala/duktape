@@ -17,18 +17,18 @@ static double duk__push_this_number_plain(duk_context *ctx) {
 
 	duk_push_this(ctx);
 	if (duk_is_number(ctx, -1)) {
-		DUK_DDDPRINT("plain number value: %!T", duk_get_tval(ctx, -1));
+		DUK_DDD(DUK_DDDPRINT("plain number value: %!T", duk_get_tval(ctx, -1)));
 		goto done;
 	}
 	h = duk_get_hobject(ctx, -1);
 	if (!h || 
 	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
-		DUK_DDDPRINT("unacceptable this value: %!T", duk_get_tval(ctx, -1));
+		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", duk_get_tval(ctx, -1)));
 		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "expected a number");
 	}
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(ctx, -1));
-	DUK_DDDPRINT("number object: %!T, internal value: %!T", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("number object: %!T, internal value: %!T", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 	duk_remove(ctx, -2);
 
  done:
@@ -101,7 +101,7 @@ int duk_bi_number_prototype_to_string(duk_context *ctx) {
 	} else {
 		radix = duk_to_int_check_range(ctx, 0, 2, 36);
 	}
-	DUK_DDDPRINT("radix=%d", radix);
+	DUK_DDD(DUK_DDDPRINT("radix=%d", radix));
 
 	n2s_flags = 0;
 

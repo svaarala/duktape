@@ -1307,11 +1307,11 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 
 	/* [ ... key val ] */
 
-	DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1)));
 
 	if (js_ctx->h_replacer) {
 		/* FIXME: here a "slice copy" would be useful */
-		DUK_DDDPRINT("replacer is set, call replacer");
+		DUK_DDD(DUK_DDDPRINT("replacer is set, call replacer"));
 		duk_push_hobject(ctx, js_ctx->h_replacer);  /* -> [ ... key val replacer ] */
 		duk_dup(ctx, idx_holder);                   /* -> [ ... key val replacer holder ] */
 		duk_dup(ctx, -4);                           /* -> [ ... key val replacer holder key ] */
@@ -1322,7 +1322,7 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 
 	/* [ ... key val ] */
 
-	DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1)));
 
 	tv = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv != NULL);
@@ -1333,11 +1333,11 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 		c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		switch (c) {
 		case DUK_HOBJECT_CLASS_NUMBER:
-			DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()");
+			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
 			duk_to_number(ctx, -1);
 			break;
 		case DUK_HOBJECT_CLASS_STRING:
-			DUK_DDDPRINT("value is a String object -> coerce with ToString()");
+			DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
 			duk_to_string(ctx, -1);
 			break;
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
@@ -1345,7 +1345,7 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 		case DUK_HOBJECT_CLASS_POINTER:
 #endif
 		case DUK_HOBJECT_CLASS_BOOLEAN:
-			DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value");
+			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
 			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 			duk_remove(ctx, -2);
 			break;
@@ -1354,11 +1354,11 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 
 	/* [ ... key val ] */
 
-	DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", duk_get_tval(ctx, -1)));
 
 	if (duk_check_type_mask(ctx, -1, js_ctx->mask_for_undefined)) {
 		/* will result in undefined */
-		DUK_DDDPRINT("-> will result in undefined (type mask check)");
+		DUK_DDD(DUK_DDDPRINT("-> will result in undefined (type mask check)"));
 		goto undef;
 	}
 
@@ -1370,12 +1370,12 @@ static int duk__enc_value1(duk_json_enc_ctx *js_ctx, int idx_holder) {
 			/* function will be serialized to custom format */
 		} else {
 			/* functions are not serialized, results in undefined */
-			DUK_DDDPRINT("-> will result in undefined (function)");
+			DUK_DDD(DUK_DDDPRINT("-> will result in undefined (function)"));
 			goto undef;
 		}
 	}
 
-	DUK_DDDPRINT("-> will not result in undefined");
+	DUK_DDD(DUK_DDDPRINT("-> will not result in undefined"));
 	return 0;
 
  undef:
@@ -1658,7 +1658,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	}
 
 	if (duk_is_callable(ctx, idx_reviver)) {
-		DUK_DDDPRINT("applying reviver: %!T", duk_get_tval(ctx, idx_reviver));
+		DUK_DDD(DUK_DDDPRINT("applying reviver: %!T", duk_get_tval(ctx, idx_reviver)));
 
 		js_ctx->idx_reviver = idx_reviver;
 
@@ -1813,13 +1813,13 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 				/* [ ... proplist enum_obj key val ] */
 				if (duk__enc_allow_into_proplist(duk_get_tval(ctx, -1))) {
 					/* FIXME: duplicates should be eliminated here */
-					DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> accept", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> accept", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 					duk_to_string(ctx, -1);  /* extra coercion of strings is OK */
 					duk_put_prop_index(ctx, -4, plist_idx);  /* -> [ ... proplist enum_obj key ] */
 					plist_idx++;
 					duk_pop(ctx);
 				} else {
-					DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> reject", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> reject", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 					duk_pop_2(ctx);
 				}
                         }

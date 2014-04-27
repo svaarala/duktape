@@ -126,10 +126,10 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 
 	if (use_cache) {
 #ifdef DUK_USE_DDDPRINT
-		DUK_DDDPRINT("stringcache before char2byte (using cache):");
+		DUK_DDD(DUK_DDDPRINT("stringcache before char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = &heap->strcache[i];
-			DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d", i, c->h, c->cidx, c->bidx);
+			DUK_DDD(DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d", i, c->h, c->cidx, c->bidx));
 		}
 #endif
 
@@ -229,7 +229,7 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 	DUK_ASSERT(p_found <= p_end);  /* may be equal */
 	byte_offset = (duk_uint32_t) (p_found - p_start);
 
-	DUK_DDDPRINT("-> string %p, cidx %d -> bidx %d", (void *) h, char_offset, byte_offset);
+	DUK_DDD(DUK_DDDPRINT("-> string %p, cidx %d -> bidx %d", (void *) h, char_offset, byte_offset));
 
 	/*
 	 *  Update cache entry (allocating if necessary), and move the
@@ -265,10 +265,10 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 			/* 'sce' points to the wrong entry here, but is no longer used */
 		}
 #ifdef DUK_USE_DDDPRINT
-		DUK_DDDPRINT("stringcache after char2byte (using cache):");
+		DUK_DDD(DUK_DDDPRINT("stringcache after char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = &heap->strcache[i];
-			DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d", i, c->h, c->cidx, c->bidx);
+			DUK_DDD(DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d", i, c->h, c->cidx, c->bidx));
 		}
 #endif
 	}

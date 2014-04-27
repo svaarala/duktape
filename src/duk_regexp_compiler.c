@@ -187,7 +187,7 @@ static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoi
 			if (t == r_end + 1) {
 				r_end = t;
 			} else {
-				DUK_DDPRINT("canonicalized, emit range: [%d,%d]", (int) r_start, (int) r_end);
+				DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%d,%d]", (int) r_start, (int) r_end));
 				duk__append_u32(re_ctx, (duk_uint32_t) r_start);
 				duk__append_u32(re_ctx, (duk_uint32_t) r_end);
 				re_ctx->nranges++;
@@ -195,12 +195,12 @@ static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoi
 				r_end = t;
 			}
 		}
-		DUK_DDPRINT("canonicalized, emit range: [%d,%d]", r_start, r_end);
+		DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%d,%d]", r_start, r_end));
 		duk__append_u32(re_ctx, (duk_uint32_t) r_start);
 		duk__append_u32(re_ctx, (duk_uint32_t) r_end);
 		re_ctx->nranges++;
 	} else {
-		DUK_DDPRINT("direct, emit range: [%d,%d]", r1, r2);
+		DUK_DD(DUK_DDPRINT("direct, emit range: [%d,%d]", r1, r2));
 		duk__append_u32(re_ctx, (duk_uint32_t) r1);
 		duk__append_u32(re_ctx, (duk_uint32_t) r2);
 		re_ctx->nranges++;
@@ -660,7 +660,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, int expect_eof, 
 
 			duk_uint32_t offset;
 
-			DUK_DDPRINT("character class");
+			DUK_DD(DUK_DDPRINT("character class"));
 
 			/* insert ranges instruction, range count patched in later */
 			new_atom_char_length = 1;
@@ -935,7 +935,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 	 *  Compilation
 	 */
 
-	DUK_DPRINT("starting regexp compilation");
+	DUK_D(DUK_DPRINT("starting regexp compilation"));
 
 	duk__append_u32(&re_ctx, DUK_REOP_SAVE);
 	duk__append_u32(&re_ctx, 0);
@@ -970,7 +970,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 
 	DUK_DPRINT("regexp bytecode size (after header) is %d bytes",
 	           (int) DUK_HBUFFER_GET_SIZE(re_ctx.buf));
-	DUK_DDDPRINT("compiled regexp: %!xO", re_ctx.buf);
+	DUK_DDD(DUK_DDDPRINT("compiled regexp: %!xO", re_ctx.buf));
 
 	/* [ ... pattern flags escaped_source buffer ] */
 

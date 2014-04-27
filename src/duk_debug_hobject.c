@@ -133,26 +133,26 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	const char *str_empty = "";
 	const char *str_excl = "!";
 
-	DUK_DPRINT("=== hobject %p ===", (void *) obj);
+	DUK_D(DUK_DPRINT("=== hobject %p ===", (void *) obj));
 	if (!obj) {
 		return;
 	}
 
-	DUK_DPRINT("  %sextensible", DUK_HOBJECT_HAS_EXTENSIBLE(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sconstructable", DUK_HOBJECT_HAS_CONSTRUCTABLE(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sbound", DUK_HOBJECT_HAS_BOUND(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %scompiledfunction", DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %snativefunction", DUK_HOBJECT_HAS_NATIVEFUNCTION(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sthread", DUK_HOBJECT_HAS_THREAD(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sarray_part", DUK_HOBJECT_HAS_ARRAY_PART(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sstrict", DUK_HOBJECT_HAS_STRICT(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %snewenv", DUK_HOBJECT_HAS_NEWENV(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %snamebinding", DUK_HOBJECT_HAS_NAMEBINDING(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %screateargs", DUK_HOBJECT_HAS_CREATEARGS(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %senvrecclosed", DUK_HOBJECT_HAS_ENVRECCLOSED(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sspecial_array", DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sspecial_stringobj", DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj) ? str_empty : str_excl);
-	DUK_DPRINT("  %sspecial_arguments", DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj) ? str_empty : str_excl);
+	DUK_D(DUK_DPRINT("  %sextensible", DUK_HOBJECT_HAS_EXTENSIBLE(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sconstructable", DUK_HOBJECT_HAS_CONSTRUCTABLE(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sbound", DUK_HOBJECT_HAS_BOUND(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %scompiledfunction", DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %snativefunction", DUK_HOBJECT_HAS_NATIVEFUNCTION(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sthread", DUK_HOBJECT_HAS_THREAD(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sarray_part", DUK_HOBJECT_HAS_ARRAY_PART(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sstrict", DUK_HOBJECT_HAS_STRICT(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %snewenv", DUK_HOBJECT_HAS_NEWENV(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %snamebinding", DUK_HOBJECT_HAS_NAMEBINDING(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %screateargs", DUK_HOBJECT_HAS_CREATEARGS(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %senvrecclosed", DUK_HOBJECT_HAS_ENVRECCLOSED(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sspecial_array", DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sspecial_stringobj", DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sspecial_arguments", DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj) ? str_empty : str_excl));
 
 	DUK_DPRINT("  class: number %d -> %s",
 	           (int) DUK_HOBJECT_GET_CLASS_NUMBER(obj),
@@ -177,10 +177,10 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(obj)) {
 		duk_hcompiledfunction *h = (duk_hcompiledfunction *) obj;
 
-		DUK_DPRINT("  hcompiledfunction");
-		DUK_DPRINT("  data: %!O", h->data);
-		DUK_DPRINT("  nregs: %d", (int) h->nregs);
-		DUK_DPRINT("  nargs: %d", (int) h->nargs);
+		DUK_D(DUK_DPRINT("  hcompiledfunction"));
+		DUK_D(DUK_DPRINT("  data: %!O", h->data));
+		DUK_D(DUK_DPRINT("  nregs: %d", (int) h->nregs));
+		DUK_D(DUK_DPRINT("  nargs: %d", (int) h->nargs));
 
 		if (h->data && DUK_HBUFFER_HAS_DYNAMIC(h->data) && DUK_HBUFFER_GET_DATA_PTR(h->data)) {
 			DUK_DPRINT("  consts: %p (%d, %d bytes)",
@@ -196,23 +196,23 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 			           (int) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(h),
 			           (int) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(h));
 		} else {
-			DUK_DPRINT("  consts: ???");
-			DUK_DPRINT("  funcs: ???");
-			DUK_DPRINT("  bytecode: ???");
+			DUK_D(DUK_DPRINT("  consts: ???"));
+			DUK_D(DUK_DPRINT("  funcs: ???"));
+			DUK_D(DUK_DPRINT("  bytecode: ???"));
 		}
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(obj)) {
 		duk_hnativefunction *h = (duk_hnativefunction *) obj;
 
-		DUK_DPRINT("  hnativefunction");
+		DUK_D(DUK_DPRINT("  hnativefunction"));
 		/* XXX: h->func, cannot print function pointers portably */
-		DUK_DPRINT("  nargs: %d", (int) h->nargs);
+		DUK_D(DUK_DPRINT("  nargs: %d", (int) h->nargs));
 	} else if (DUK_HOBJECT_IS_THREAD(obj)) {
 		duk_hthread *thr = (duk_hthread *) obj;
 		duk_tval *p;
 
-		DUK_DPRINT("  hthread");
-		DUK_DPRINT("  strict: %d", (int) thr->strict);
-		DUK_DPRINT("  state: %d", (int) thr->state);
+		DUK_D(DUK_DPRINT("  hthread"));
+		DUK_D(DUK_DPRINT("  strict: %d", (int) thr->strict));
+		DUK_D(DUK_DPRINT("  state: %d", (int) thr->state));
 
 		DUK_DPRINT("  valstack_max: %d, callstack_max:%d, catchstack_max: %d",
 		           thr->valstack_max, thr->callstack_max, thr->catchstack_max);
@@ -327,7 +327,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 #if 0  /* worth dumping? */
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-			DUK_DPRINT("  builtins[%d] -> %!@O", i, thr->builtins[i]);
+			DUK_D(DUK_DPRINT("  builtins[%d] -> %!@O", i, thr->builtins[i]));
 		}
 #endif
 	}
@@ -336,10 +336,10 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		DUK_DPRINT("  props alloc size: %d",
 		           (int) DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size));
 	} else {
-		DUK_DPRINT("  props alloc size: n/a");
+		DUK_D(DUK_DPRINT("  props alloc size: n/a"));
 	}
 
-	DUK_DPRINT("  prop entries:");
+	DUK_D(DUK_DPRINT("  prop entries:"));
 	for (i = 0; i < obj->e_size; i++) {
 		duk_hstring *k;
 		duk_propvalue *v;
@@ -348,12 +348,12 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		v = DUK_HOBJECT_E_GET_VALUE_PTR(obj, i);
 
 		if (i >= obj->e_used) {
-			DUK_DPRINT("    [%d]: UNUSED", i);
+			DUK_D(DUK_DPRINT("    [%d]: UNUSED", i));
 			continue;
 		}
 
 		if (!k) {
-			DUK_DPRINT("    [%d]: NULL", i);
+			DUK_D(DUK_DPRINT("    [%d]: NULL", i));
 			continue;
 		}
 
@@ -381,7 +381,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		}
 	}
 
-	DUK_DPRINT("  array entries:");
+	DUK_D(DUK_DPRINT("  array entries:"));
 	for (i = 0; i < obj->a_size; i++) {
 		DUK_DPRINT("    [%d]: [w=%d e=%d c=%d a=%d] %d -> %!T",
 		           i,
@@ -393,13 +393,13 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		           DUK_HOBJECT_A_GET_VALUE_PTR(obj, i));
 	}
 
-	DUK_DPRINT("  hash entries:");
+	DUK_D(DUK_DPRINT("  hash entries:"));
 	for (i = 0; i < obj->h_size; i++) {
 		duk_uint32_t t = DUK_HOBJECT_H_GET_INDEX(obj, i);
 		if (t == DUK_HOBJECT_HASHIDX_UNUSED) {
-			DUK_DPRINT("    [%d]: unused", i);
+			DUK_D(DUK_DPRINT("    [%d]: unused", i));
 		} else if (t == DUK_HOBJECT_HASHIDX_DELETED) {
-			DUK_DPRINT("    [%d]: deleted", i);
+			DUK_D(DUK_DPRINT("    [%d]: deleted", i));
 		} else {
 			DUK_DPRINT("    [%d]: %d",
 			           i,
@@ -442,7 +442,7 @@ void duk_debug_dump_callstack(duk_hthread *thr) {
 
 void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
 	if (!act) {
-		DUK_DPRINT("duk_activation: NULL");
+		DUK_D(DUK_DPRINT("duk_activation: NULL"));
 	} else {
 		duk_tval *this_binding = NULL;
 

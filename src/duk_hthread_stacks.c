@@ -43,7 +43,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "callstack limit");
 	}
 
-	DUK_DDPRINT("growing callstack %d -> %d", old_size, new_size);
+	DUK_DD(DUK_DDPRINT("growing callstack %d -> %d", old_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -71,7 +71,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	new_size = thr->callstack_top + DUK_CALLSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->callstack_top);
 
-	DUK_DDPRINT("shrinking callstack %d -> %d", thr->callstack_size, new_size);
+	DUK_DD(DUK_DDPRINT("shrinking callstack %d -> %d", thr->callstack_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -84,7 +84,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 		thr->callstack = p;
 		thr->callstack_size = new_size;
 	} else {
-		DUK_DPRINT("callstack shrink failed, ignoring");
+		DUK_D(DUK_DPRINT("callstack shrink failed, ignoring"));
 	}
 
 	/* note: any entries above the callstack top are garbage and not zeroed */
@@ -182,7 +182,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		 */
 
 		if (!DUK_HOBJECT_HAS_NEWENV(p->func)) {
-			DUK_DDDPRINT("skip closing environments, envs not owned by this activation");
+			DUK_DDD(DUK_DDDPRINT("skip closing environments, envs not owned by this activation"));
 			goto skip_env_close;
 		}
 
@@ -312,7 +312,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "catchstack limit");
 	}
 
-	DUK_DDPRINT("growing catchstack %d -> %d", old_size, new_size);
+	DUK_DD(DUK_DDPRINT("growing catchstack %d -> %d", old_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -340,7 +340,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	new_size = thr->catchstack_top + DUK_CATCHSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->catchstack_top);
 
-	DUK_DDPRINT("shrinking catchstack %d -> %d", thr->catchstack_size, new_size);
+	DUK_DD(DUK_DDPRINT("shrinking catchstack %d -> %d", thr->catchstack_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -353,7 +353,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 		thr->catchstack = p;
 		thr->catchstack_size = new_size;
 	} else {
-		DUK_DPRINT("catchstack shrink failed, ignoring");
+		DUK_D(DUK_DPRINT("catchstack shrink failed, ignoring"));
 	}
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */

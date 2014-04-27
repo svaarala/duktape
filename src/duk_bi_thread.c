@@ -73,7 +73,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	 */
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)");
+		DUK_DD(DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)"));
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -81,7 +81,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
 
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
-		DUK_DDPRINT("resume state invalid: caller must be Ecmascript code");
+		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}
 
@@ -91,7 +91,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	if (thr_resume->state != DUK_HTHREAD_STATE_INACTIVE &&
 	    thr_resume->state != DUK_HTHREAD_STATE_YIELDED) {
-		DUK_DDPRINT("resume state invalid: target thread must be INACTIVE or YIELDED");
+		DUK_DD(DUK_DDPRINT("resume state invalid: target thread must be INACTIVE or YIELDED"));
 		goto state_error;
 	}
 
@@ -226,13 +226,13 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	 */
 
 	if (!thr->resumer) {
-		DUK_DDPRINT("yield state invalid: current thread must have a resumer");
+		DUK_DD(DUK_DDPRINT("yield state invalid: current thread must have a resumer"));
 		goto state_error;
 	}
 	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)");
+		DUK_DD(DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)"));
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -240,7 +240,7 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
 
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
-		DUK_DDPRINT("yield state invalid: caller must be Ecmascript code");
+		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}
 
