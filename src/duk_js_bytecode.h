@@ -123,8 +123,8 @@ typedef duk_uint32_t duk_instr;
 #define DUK_OP_TRYCATCH             58
 #define DUK_OP_UNUSED59             59
 #define DUK_OP_UNUSED60             60
-#define DUK_OP_EXTRA                61
-#define DUK_OP_DEBUG                62
+#define DUK_OP_UNUSED61             61
+#define DUK_OP_EXTRA                62
 #define DUK_OP_INVALID              63
 
 /* DUK_OP_EXTRA, sub-operation in A */
@@ -156,11 +156,11 @@ typedef duk_uint32_t duk_instr;
 #define DUK_EXTRAOP_INC             25
 #define DUK_EXTRAOP_DEC             26
 
-/* DUK_OP_DEBUG, sub-operation in A */
-#define DUK_DEBUGOP_DUMPREG         0
-#define DUK_DEBUGOP_DUMPREGS        1
-#define DUK_DEBUGOP_DUMPTHREAD      2
-#define DUK_DEBUGOP_LOGMARK         3
+/* DUK_OP_EXTRA for debugging */
+#define DUK_EXTRAOP_DUMPREG         128
+#define DUK_EXTRAOP_DUMPREGS        129
+#define DUK_EXTRAOP_DUMPTHREAD      130
+#define DUK_EXTRAOP_LOGMARK         131
 
 /* DUK_OP_CALL flags in A */
 #define DUK_BC_CALL_FLAG_TAILCALL           (1 << 0)

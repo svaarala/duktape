@@ -3365,27 +3365,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk__vm_arith_unary_op(thr, DUK__REGCONSTP(c), b, extraop);
 				break;
 			}
-			default: {
-				DUK__INTERNAL_ERROR("invalid extra opcode");
-			}
 
-			}  /* end switch */
-
-			break;
-		}
-
-		case DUK_OP_DEBUG: {
 #ifdef DUK_USE_DEBUG
-			switch (DUK_DEC_A(ins)) {
-
-			case DUK_DEBUGOP_DUMPREG: {
+			case DUK_EXTRAOP_DUMPREG: {
 				DUK_DPRINT("DUMPREG: %d -> %!T",
 				           DUK_DEC_BC(ins),
 				           duk_get_tval((duk_context *) thr, DUK_DEC_BC(ins)));
 				break;
 			}
 
-			case DUK_DEBUGOP_DUMPREGS: {
+			case DUK_EXTRAOP_DUMPREGS: {
 				int i, i_top;
 				i_top = duk_get_top((duk_context *) thr);
 				DUK_DPRINT("DUMPREGS: %d regs", i_top);
@@ -3395,22 +3384,23 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				break;
 			}
 
-			case DUK_DEBUGOP_DUMPTHREAD: {
+			case DUK_EXTRAOP_DUMPTHREAD: {
 				DUK_DEBUG_DUMP_HTHREAD(thr);
 				break;
 			}
 
-			case DUK_DEBUGOP_LOGMARK: {
+			case DUK_EXTRAOP_LOGMARK: {
 				DUK_DPRINT("LOGMARK: mark %d at pc %d", DUK_DEC_BC(ins), act->pc - 1);  /* -1, autoinc */
 				break;
 			}
+#endif  /* DUK_USE_DEBUG */
 
 			default: {
-				DUK__INTERNAL_ERROR("invalid debug opcode");
+				DUK__INTERNAL_ERROR("invalid extra opcode");
 			}
 
 			}  /* end switch */
-#endif
+
 			break;
 		}
 
