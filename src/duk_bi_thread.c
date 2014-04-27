@@ -142,7 +142,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	}
 #endif
 
-#ifdef DUK_USE_DEBUG  /* debug logging */
+#ifdef DUK_USE_DEBUG
 	if (is_error) {
 		DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
 		             duk_get_tval(ctx, 0),

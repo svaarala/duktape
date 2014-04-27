@@ -27,13 +27,13 @@
 
 #define DUK_DPRINT(...)          DUK__DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
 
-#ifdef DUK_USE_DDEBUG
+#ifdef DUK_USE_DDPRINT
 #define DUK_DDPRINT(...)         DUK__DEBUG_LOG(DUK_LEVEL_DDEBUG, __VA_ARGS__)
 #else
 #define DUK_DDPRINT(...)
 #endif
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT
 #define DUK_DDDPRINT(...)        DUK__DEBUG_LOG(DUK_LEVEL_DDDEBUG, __VA_ARGS__)
 #else
 #define DUK_DDDPRINT(...)
@@ -54,19 +54,19 @@
  * prints.  This generates a lot of harmless warnings, unfortunately.
  */
 
-#ifdef DUK_USE_DEBUG
+#ifdef DUK_USE_DPRINT
 #define DUK_DPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define DUK_DPRINT  0 && /* args go here as a comma expression in parens */
 #endif
 
-#ifdef DUK_USE_DDEBUG
+#ifdef DUK_USE_DDPRINT
 #define DUK_DDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define DUK_DDPRINT  0 && 
 #endif
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT
 #define DUK_DDDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
 #define DUK_DDDPRINT  0 && 
@@ -140,7 +140,7 @@
 #define DUK_DEBUG_SUMMARY_CHAR(ch)
 #define DUK_DEBUG_SUMMARY_FINISH()
 
-#endif  /* DUK_DEBUG */
+#endif  /* DUK_USE_DEBUG */
 
 /*
  *  Structs
@@ -166,7 +166,7 @@ void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int 
 
 #ifdef DUK_USE_VARIADIC_MACROS
 void duk_debug_log(int level, const char *file, int line, const char *func, char *fmt, ...);
-#else
+#else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */
 #define DUK_DEBUG_STASH_SIZE  128
 extern char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
@@ -174,7 +174,7 @@ extern char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 extern char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
 extern int duk_debug_level_stash;
 extern void duk_debug_log(char *fmt, ...);
-#endif
+#endif  /* DUK_USE_VARIADIC_MACROS */
 
 void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_uint32_t length);
 void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x);

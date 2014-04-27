@@ -463,7 +463,7 @@ static void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep) {
 		count_free++;
 #endif
 
-#if defined(DUK_USE_DEBUG) && defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		/* Non-zero refcounts should not happen for unreachable strings,
 		 * because we refcount finalize all unreachable objects which
 		 * should have decreased unreachable string refcounts to zero
@@ -607,7 +607,7 @@ static void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_cou
 
 			DUK_DDDPRINT("sweep, not reachable: %p", (void *) curr);
 
-#if defined(DUK_USE_DEBUG) && defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_REFERENCE_COUNTING)
 			/* Non-zero refcounts should not happen because we refcount
 			 * finalize all unreachable objects which should cancel out
 			 * refcounts (even for cycles).

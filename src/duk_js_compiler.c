@@ -896,7 +896,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	 *  Debug dumping
 	 */
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT
 	{
 		duk_hcompiledfunction *h;
 		duk_instr *p, *p_start, *p_end;

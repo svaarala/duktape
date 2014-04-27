@@ -702,7 +702,7 @@ int duk_handle_call(duk_hthread *thr,
 	            (void *) entry_curr_thread,
 	            entry_thread_state);
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("callstack before call setup:");
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -1043,7 +1043,7 @@ int duk_handle_call(duk_hthread *thr,
 
 	/* [... func this arg1 ... argN] */
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("pushed new activation:");
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
@@ -1119,7 +1119,7 @@ int duk_handle_call(duk_hthread *thr,
 		/* 'func' wants stack "as is" */
 	}
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("callstack after call setup:");
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -1565,7 +1565,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	/* [ ... | ] or [ ... | errobj (M * undefined)] where M = num_stack_rets - 1 */
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DDPRINT("protected safe_call error handling finished, thread dump:");
 	DUK_DEBUG_DUMP_HTHREAD(thr);
 #endif
@@ -1812,7 +1812,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	            idx_args,
 	            entry_valstack_bottom_index);
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("callstack before call setup:");
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -2074,7 +2074,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 * idx_args updated to match
 	 */
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("pushed new activation:");
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
@@ -2141,7 +2141,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
 	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
 
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	DUK_DPRINT("callstack after call setup:");
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif

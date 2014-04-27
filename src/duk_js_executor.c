@@ -2704,8 +2704,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_ENDLABEL: {
 			duk_catcher *cat;
-#if defined(DUK_USE_DDDEBUG) || defined(DUK_USE_ASSERTIONS)
+#if defined(DUK_USE_DDDPRINT) || defined(DUK_USE_ASSERTIONS)
 			duk_int_t abc = DUK_DEC_ABC(ins);
+#endif
+#if defined(DUK_USE_DDDPRINT)
 			DUK_DDDPRINT("ENDLABEL %d", (int) abc);
 #endif
 

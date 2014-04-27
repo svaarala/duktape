@@ -186,7 +186,7 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	int prev_mark_and_sweep_base_flags;
 #endif
-#ifdef DUK_USE_DDEBUG
+#ifdef DUK_USE_DEBUG
 	duk_uint32_t old_used = heap->st_used;
 #endif
 	duk_uint32_t old_size = heap->st_size;
@@ -196,6 +196,10 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 	duk_uint32_t i;
 
 #ifdef DUK_USE_DEBUG
+	DUK_UNREF(old_used);  /* unused with some debug level combinations */
+#endif
+
+#ifdef DUK_USE_DDDPRINT
 	DUK_DDDPRINT("attempt to resize stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
 	             (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
 	             (int) (((double) old_used) / ((double) old_size) * 100.0),
@@ -254,7 +258,7 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 		duk__insert_hstring(heap, new_entries, new_size, &new_used, e);
 	}
 
-#ifdef DUK_USE_DEBUG
+#ifdef DUK_USE_DDPRINT
 	DUK_DDPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
 	            (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
 	            (int) (((double) old_used) / ((double) old_size) * 100.0),

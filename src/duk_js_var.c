@@ -285,7 +285,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_WC);
 		}
 	}
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARENV);
 	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV);
 	DUK_DDDPRINT("closure varenv -> %!ipT, lexenv -> %!ipT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
@@ -523,7 +523,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	DUK_ASSERT(env != NULL);
 
 	DUK_DDDPRINT("created delayed fresh env: %!ipO", env);
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT
 	{
 		duk_hobject *p = env;
 		while (p) {

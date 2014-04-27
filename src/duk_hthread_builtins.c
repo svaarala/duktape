@@ -556,13 +556,13 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	DUK_DPRINT("INITBUILTINS END");
 
-#ifdef DUK_USE_DDEBUG
+#ifdef DUK_USE_DDPRINT
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		DUK_DDPRINT("built-in object %d after initialization and compacting: %!@iO", i, thr->builtins[i]);
 	}
 #endif
 	
-#ifdef DUK_USE_DDDEBUG
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		DUK_DDDPRINT("built-in object %d after initialization and compacting", i);
 		DUK_DEBUG_DUMP_HOBJECT(thr->builtins[i]);
