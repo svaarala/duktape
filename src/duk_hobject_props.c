@@ -263,7 +263,7 @@ static int duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint
  */
 
 #if defined(DUK_USE_ES6_PROXY)
-static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_funcname, duk_hobject **out_target) {
+static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_funcname, duk_tval *tv_key, duk_hobject **out_target) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_target;
 	duk_tval *tv_handler;
@@ -287,6 +287,25 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
 	*out_target = DUK_TVAL_GET_OBJECT(tv_target);
 	DUK_ASSERT(*out_target != NULL);
+
+	/* XXX: At the moment Duktape accesses internal keys like _finalizer using a
+	 * normal property set/get which would allow a proxy handler to interfere with
+	 * such behavior and to get access to internal key strings.  This is not a problem
+	 * as such because internal key strings can be created in other ways too (e.g.
+	 * through buffers).  The best fix is to change Duktape internal lookups to
+	 * skip proxy behavior.  Until that, internal property accesses bypass the
+	 * proxy and are applied to the target (as if the handler did not exist).
+	 * This has some side effects, see test-bi-proxy-internal-keys.js.
+	 */
+
+	if (DUK_TVAL_IS_STRING(tv_key)) {
+		duk_hstring *h_key = (duk_hstring *) DUK_TVAL_GET_STRING(tv_key);
+		DUK_ASSERT(h_key != NULL);
+		if (DUK_HSTRING_HAS_INTERNAL(h_key)) {
+			DUK_DDDPRINT("internal key, skip proxy handler and apply to target");
+			return 0;
+		}
+	}
 
 	/* The handler is looked up with a normal property lookup; it may be an
 	 * accessor or the handler object itself may be a proxy object.  If the
@@ -1948,7 +1967,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr))) {
 			duk_hobject *h_target;
 
-			if (duk__proxy_check(thr, curr, DUK_STRIDX_GET, &h_target)) {
+			if (duk__proxy_check(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDDPRINT("-> proxy object 'get' for key %!T", tv_key);
 				duk_push_hobject(ctx, h_target);  /* target */
@@ -2728,7 +2747,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			duk_hobject *h_target;
 			int tmp_bool;
 
-			if (duk__proxy_check(thr, orig, DUK_STRIDX_SET, &h_target)) {
+			if (duk__proxy_check(thr, orig, DUK_STRIDX_SET, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDDPRINT("-> proxy object 'set' for key %!T", tv_key);
 				duk_push_hobject(ctx, h_target);  /* target */
@@ -3568,7 +3587,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 
 			/* Note: proxy handling must happen before key is string coerced. */
 
-			if (duk__proxy_check(thr, obj, DUK_STRIDX_DELETE_PROPERTY, &h_target)) {
+			if (duk__proxy_check(thr, obj, DUK_STRIDX_DELETE_PROPERTY, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", tv_key);
 				duk_push_hobject(ctx, h_target);  /* target */
