@@ -1,8 +1,8 @@
 /*===
 top=0
-rc=1, result=Error: invalid index: 536870912
+rc=1, result=Error: invalid index
 top=0
-rc=1, result=Error: invalid index: 357913942
+rc=1, result=Error: invalid index
 ===*/
 
 int test_1(duk_context *ctx) {

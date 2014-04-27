@@ -10,7 +10,7 @@ delete 'test_string'['5'] -> rc=0
 delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
-final top: 7
+final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
@@ -33,7 +33,7 @@ delete 'test_string'['5'] -> rc=0
 delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
-final top: 7
+final top: 3
 ==> rc=0, result='undefined'
 *** test_2b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
@@ -51,7 +51,7 @@ delete arr[2] -> rc=1
 delete 'test_string'[5] -> rc=0
 final object: {"foo":"fooval","bar":"barval"}
 final array: ["foo","bar",null]
-final top: 5
+final top: 3
 ==> rc=0, result='undefined'
 *** test_3b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
