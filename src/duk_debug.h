@@ -3,12 +3,45 @@
  *
  *  DUK_DPRINT() allows formatted debug prints, and supports standard
  *  and Duktape specific formatters.  See duk_debug_vsnprintf.c for details.
+ *
+ *  DUK_D(x), DUK_DD(x), and DUK_DDD(x) are used together with log macros
+ *  for technical reasons.  They are concretely used to hide 'x' from the
+ *  compiler when the corresponding log level is disabled.  This allows
+ *  clean builds on non-C99 compilers, at the cost of more verbose code.
+ *  Examples:
+ *
+ *    DUK_D(DUK_DPRINT("foo"));
+ *    DUK_DD(DUK_DDPRINT("foo"));
+ *    DUK_DDD(DUK_DDDPRINT("foo"));
+ *
+ *  This approach is preferable to the old "double parentheses" hack because
+ *  double parentheses make the C99 solution worse: __FILE__ and __LINE__ can
+ *  no longer be added transparently without going through globals, which
+ *  works poorly with threading.
  */
 
 #ifndef DUK_DEBUG_H_INCLUDED
 #define DUK_DEBUG_H_INCLUDED
 
 #ifdef DUK_USE_DEBUG
+
+#if defined(DUK_USE_DPRINT)
+#define DUK_D(x) x
+#else
+#define DUK_D(x) /* omit */
+#endif
+
+#if defined(DUK_USE_DDPRINT)
+#define DUK_DD(x) x
+#else
+#define DUK_DD(x) /* omit */
+#endif
+
+#if defined(DUK_USE_DDDPRINT)
+#define DUK_DDD(x) x
+#else
+#define DUK_DDD(x) /* omit */
+#endif
 
 /*
  *  Exposed debug macros: debugging enabled
@@ -51,7 +84,9 @@
 	(void) (duk_debug_level_stash = (lev))
 
 /* Without variadic macros resort to comma expression trickery to handle debug
- * prints.  This generates a lot of harmless warnings, unfortunately.
+ * prints.  This generates a lot of harmless warnings.  These hacks are not
+ * needed normally because DUK_D() and friends will hide the entire debug log
+ * statement from the compiler.
  */
 
 #ifdef DUK_USE_DPRINT
@@ -114,6 +149,10 @@
 /*
  *  Exposed debug macros: debugging disabled
  */
+
+#define DUK_D(x) /* omit */
+#define DUK_DD(x) /* omit */
+#define DUK_DDD(x) /* omit */
 
 #ifdef DUK_USE_VARIADIC_MACROS
 
