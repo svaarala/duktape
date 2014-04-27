@@ -612,6 +612,9 @@ UglifyJS:
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS.git
 
+.PHONY: UglifyJS2_setup
+UglifyJS2_setup: UglifyJS2 UglifyJS2/node_modules
+
 UglifyJS2:
 	# https://github.com/mishoo/UglifyJS2
 	# Use a specific release because UglifyJS2 is used in building Duktape
@@ -622,10 +625,12 @@ UglifyJS2:
 	tar xfz v2.4.12.tar.gz
 	mv UglifyJS2-2.4.12 UglifyJS2
 	-@rm -f v2.4.12.tar.gz
-	cd UglifyJS2; npm install
 
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
+
+UglifyJS2/node_modules: UglifyJS2
+	cd UglifyJS2;npm install;cd -
 
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
@@ -696,7 +701,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
+dist:	UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
