@@ -32,16 +32,14 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	}
 
 	/* XXX: the returned value is exotic in ES6 (draft), but we use a
-	 * simple object here with no prototype.
+	 * simple object here with no prototype.  Without a prototype,
+	 * [[DefaultValue]] coercion fails which is abit confusing.
+	 * No callable check/handling in the current Proxy subset.
 	 */
 	(void) duk_push_object_helper_proto(ctx,
 	                                    DUK_HOBJECT_FLAG_SPECIAL_PROXYOBJ |
-	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),  /* FIXME: class? */
+	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                                    NULL);
-
-	/* XXX: no callable check/handling now */
-	/* XXX: with no prototype, [[DefaultValue]] coercion will fail, which is confusing */
-
 	DUK_ASSERT_TOP(ctx, 3);
 
 	/* Proxy target */
@@ -52,7 +50,7 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_dup(ctx, 1);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_WC);
 
-	return 1;
+	return 1;  /* replacement handler */
 }
 #else  /* DUK_UES_ES6_PROXY */
 duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
