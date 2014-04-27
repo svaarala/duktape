@@ -478,7 +478,7 @@ standard_other_string_list = [
 # ES6 (draft) specific strings
 es6_string_list = [
 	mkstr("Proxy", es6=True),
-	mkstr("revocable", es6=True),
+	#mkstr("revocable", es6=True),
 
 	# Proxy handler methods
 	mkstr("set", es6=True),

@@ -1109,7 +1109,7 @@ bi_proxy_constructor = {
 
 	'values': [],
 	'functions': [
-		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
+#		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
 	],
 }
 
