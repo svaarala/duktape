@@ -5556,15 +5556,15 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 		 *  test-dev-func-decl-outside-top.js.
 		 */
 
-#if defined(DUK_USE_FUNC_STMT)
+#if defined(DUK_USE_NONSTD_FUNC_STMT)
 		/* Lenient: allow function declarations outside top level in
 		 * non-strict mode but reject them in strict mode.
 		 */
 		if (allow_source_elem || !comp_ctx->curr_func.is_strict)
-#else
+#else  /* DUK_USE_NONSTD_FUNC_STMT */
 		/* Strict: never allow function declarations outside top level. */
 		if (allow_source_elem)
-#endif
+#endif  /* DUK_USE_NONSTD_FUNC_STMT */
 		{
 			/* FunctionDeclaration: not strictly a statement but handled as such.
 			 *

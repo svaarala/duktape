@@ -30,7 +30,7 @@ try {
      * compliant implementation.
      *
      * V8 allows this in non-strict mode (as function statement).
-     * This is also Duktape behavior now (unless DUK_OPT_NO_FUNC_STMT
+     * This is also Duktape behavior now (unless DUK_OPT_NO_NONSTD_FUNC_STMT
      * is used).
      */
 

@@ -695,11 +695,11 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 	}
 	DUK_ASSERT(act_start >= 0 && act_start <= len);
 
-#ifdef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+#ifdef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
 	if (have_delcount) {
 #endif
 		del_count = duk_to_int_clamped(ctx, 1, 0, len - act_start);
-#ifdef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+#ifdef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
 	} else {
 		/* E5.1 standard behavior when deleteCount is not given would be
 		 * to treat it just like if 'undefined' was given, which coerces

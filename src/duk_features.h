@@ -1731,17 +1731,17 @@ typedef FILE duk_file;
  * Program or FunctionBody) same as normal function declarations.  This is
  * also V8 behavior.  See test-dev-func-decl-outside-top.js.
  */ 
-#define DUK_USE_FUNC_STMT
-#if defined(DUK_OPT_NO_FUNC_STMT)
-#undef DUK_USE_FUNC_STMT
+#define DUK_USE_NONSTD_FUNC_STMT
+#if defined(DUK_OPT_NO_NONSTD_FUNC_STMT)
+#undef DUK_USE_NONSTD_FUNC_STMT
 #endif
 
 /* Array.prototype.splice() non-standard but real world compatible behavior
  * when deleteCount is omitted.
  */
-#define DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
-#if defined(DUK_OPT_NO_ARRAY_SPLICE_NONSTD_DELCOUNT)
-#undef DUK_USE_ARRAY_SPLICE_NONSTD_DELCOUNT
+#define DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT)
+#undef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
 #endif
 
 /* Non-standard 'caller' property for function instances, see
