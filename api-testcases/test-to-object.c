@@ -35,9 +35,9 @@ index 0 OK
 index 0 OK
 ==> rc=0, result='undefined'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 int test_1(duk_context *ctx) {
@@ -151,9 +151,5 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_2g);
 	TEST_SAFE_CALL(test_2h);
 	TEST_SAFE_CALL(test_3);
-
-	/* FIXME: this testcase currently exposes the DUK_INVALID_INDEX
-	 * constant in the error message and is thus not portable.
-	 */
 	TEST_SAFE_CALL(test_4);
 }

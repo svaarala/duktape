@@ -155,7 +155,6 @@ standard_builtin_string_list = [
 	mkstr("length"),
 	mkstr("prototype"),
 	mkstr("getPrototypeOf"),
-	mkstr("setPrototypeOf", es6=True),
 	mkstr("getOwnPropertyDescriptor"),
 	mkstr("getOwnPropertyNames"),
 	mkstr("create"),
@@ -185,7 +184,6 @@ standard_builtin_string_list = [
 	mkstr("hasOwnProperty"),
 	mkstr("isPrototypeOf"),
 	mkstr("propertyIsEnumerable"),
-	mkstr("__proto__", es6=True),
 
 	# Object instances
 	# no special properties
@@ -477,6 +475,20 @@ standard_other_string_list = [
 	mkstr("set"),
 ]
 
+# ES6 (draft) specific strings
+es6_string_list = [
+	mkstr("Proxy", es6=True),
+	#mkstr("revocable", es6=True),
+
+	# Proxy handler methods
+	mkstr("set", es6=True),
+	mkstr("get", es6=True),
+	mkstr("deleteProperty", es6=True),
+
+	mkstr("setPrototypeOf", es6=True),
+	mkstr("__proto__", es6=True),
+]
+
 # Duktape specific strings
 duk_string_list = [
 	# non-standard global properties
@@ -542,6 +554,10 @@ duk_string_list = [
 	# internal properties for general objects
 	#mkstr("metatable", internal=True, custom=True),
 	mkstr("finalizer", internal=True, custom=True),
+
+	# internal properties for Proxy objects
+	mkstr("target", internal=True, custom=True),	# [[ProxyTarget]]
+	mkstr("handler", internal=True, custom=True),	# [[ProxyHandler]]
 
 	# internal properties for declarative environment records
 	mkstr("callee", internal=True, custom=True),	# to access varmap
@@ -988,6 +1004,7 @@ def gen_string_list():
 
 	str_lists = [ standard_builtin_string_list,
 	              standard_other_string_list,
+	              es6_string_list,
 	              duk_string_list ]
 
 	for lst in str_lists:

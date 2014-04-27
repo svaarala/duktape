@@ -10,7 +10,7 @@ delete 'test_string'['5'] -> rc=0
 delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
-final top: 7
+final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
@@ -33,16 +33,16 @@ delete 'test_string'['5'] -> rc=0
 delete 'test_string'.length -> rc=0
 final object: {"bar":"barval"}
 final array: ["foo","bar",null]
-final top: 7
+final top: 3
 ==> rc=0, result='undefined'
 *** test_2b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
 *** test_2c (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
 *** test_2d (duk_safe_call)
-==> rc=1, result='Error: invalid index: 234'
+==> rc=1, result='Error: invalid index'
 *** test_2e (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 *** test_3a (duk_safe_call)
 delete obj[31337] -> rc=1
 delete obj[123] -> rc=1
@@ -51,14 +51,14 @@ delete arr[2] -> rc=1
 delete 'test_string'[5] -> rc=0
 final object: {"foo":"fooval","bar":"barval"}
 final array: ["foo","bar",null]
-final top: 5
+final top: 3
 ==> rc=0, result='undefined'
 *** test_3b (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
 *** test_3c (duk_safe_call)
-==> rc=1, result='Error: invalid index: 234'
+==> rc=1, result='Error: invalid index'
 *** test_3d (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 void prep(duk_context *ctx) {
@@ -389,15 +389,11 @@ void test(duk_context *ctx) {
 	TEST_PCALL(test_2b);
 	TEST_PCALL(test_2c);
 	TEST_SAFE_CALL(test_2d);
-	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
-	 * value, nonportable */
 	TEST_SAFE_CALL(test_2e);
 
 	TEST_SAFE_CALL(test_3a);
 	TEST_PCALL(test_3b);
 	TEST_SAFE_CALL(test_3c);
-	/* FIXME: currently error message contains the actual DUK_INVALID_INDEX
-	 * value, nonportable */
 	TEST_SAFE_CALL(test_3d);
 }
 

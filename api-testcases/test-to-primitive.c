@@ -22,9 +22,9 @@ index 17, ToString(result): 'null', type: 8 -> 8
 index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 /* FIXME: coverage is pretty poor, e.g. different hints are not tested.
@@ -89,10 +89,6 @@ int test_3(duk_context *ctx) {
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
-
-	/* FIXME: this test now results in an error string containing the
-	 * exact index, which is platform dependent.
-	 */
 	TEST_SAFE_CALL(test_3);
 }
 

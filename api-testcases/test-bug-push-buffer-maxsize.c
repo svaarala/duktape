@@ -1,25 +1,26 @@
 /*===
 *** test_1a
 fixed size buffer, maximum size_t (should fail)
-rc=1, result='Error: failed to allocate buffer'
+rc=1, result='RangeError: buffer too long'
 *** test_1b
 fixed size buffer, maximum size_t - 8 (should fail)
-rc=1, result='Error: failed to allocate buffer'
+rc=1, result='RangeError: buffer too long'
 *** test_2a
 dynamic size buffer, maximum size_t (should fail)
-rc=1, result='Error: failed to allocate buffer'
+rc=1, result='RangeError: buffer too long'
 *** test_2b
 dynamic size buffer, maximum size_t - 8 (should fail)
-rc=1, result='Error: failed to allocate buffer'
+rc=1, result='RangeError: buffer too long'
 ===*/
 
-/* Attempt to allocate a buffer of maximum size_t (or anything so close that
- * when the heap header size is added, the result overflows) causes a spurious
- * successful allocation now.  The allocation will in fact be too little to
- * even contain the heap header but will appear to succeed.
+/* Before Duktape 0.9.0, an attempt to allocate a buffer of maximum size_t
+ * (or anything so close that when the heap header size is added, the result
+ * overflows) causes a spurious successful allocation now.  The allocation
+ * will in fact be too little to even contain the heap header but will appear
+ * to succeed.
  *
- * The fix is to check for a maximum size before adding the header size to
- * the requested size.
+ * The proper behavior is to check for a maximum size before adding the header
+ * size to the requested size (this is done now).
  */
 
 #ifndef  SIZE_MAX
@@ -96,4 +97,3 @@ void test(duk_context *ctx) {
 	TEST(test_2a);
 	TEST(test_2b);
 }
-

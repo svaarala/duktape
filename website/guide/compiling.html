@@ -21,11 +21,12 @@ in your compiler):</p>
 
 <p>Duktape feature defaults are, at a high level:</p>
 <ul>
-<li>Full Ecmascript compliance
+<li>Full Ecmascript E5/E5.1 compliance
     (including the optional 
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>
     features), except for intentional real world compatibility deviations
     (see <a href="#custombehavior">Custom behavior</a>)</li>
+<li>Some <a href="#es6features">features borrowed from ES6</a></li>
 <li>Packed value representation (8 bytes per value) when available,
     unpacked value representation (12-16 bytes per value) when not</li>
 <li>Reference counting and mark-and-sweep garbage collection</li>
@@ -237,6 +238,11 @@ The table below summarizes the available options, in no particular order:</p>
     method which is enabled by default.</td>
 </tr>
 <tr>
+<td class="propname">DUK_OPT_NO_ES6_PROXY</td>
+<td>Disable the non-standard (ES6 draft) <code>Proxy</code> object which
+    is enabled by default.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_JSONX</td>
 <td>Disable support for the JSONX format.  Reduces code footprint.  Causes
     JSONX calls to throw an error.</td>
@@ -361,6 +367,10 @@ The table below summarizes the available options, in no particular order:</p>
     <code>DUK_OPT_NO_PC2LINE</code>.</li>
 <li>If you don't need the Duktape-specific additional JSONX/JSONC formats,
     use both <code>DUK_OPT_NO_JSONX</code> and <code>DUK_OPT_NO_JSONC</code>.</li>
+<li>Features borrowed from Ecmascript E6 can usually be disabled:
+    <code>DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF</code>,
+    <code>DUK_OPT_NO_OBJECT_ES6_PROTO_PROPERTY</code>,
+    <code>DUK_OPT_NO_ES6_PROXY</code>.</li>
 <li>If you don't need regexp support, use <code>DUK_OPT_NO_REGEXP_SUPPORT</code>.</li>
 <li>Duktape debug code uses a large, static temporary buffer for formatting debug
     log lines.  Use e.g. <code class="nobreak">-DDUK_OPT_DEBUG_BUFSIZE=2048</code> to reduce

@@ -11,9 +11,9 @@ top=3, idx=3, duk_normalize_index -> DUK_INVALID_INDEX
 top=3, idx=4, duk_normalize_index -> DUK_INVALID_INDEX
 top=3, idx=5, duk_normalize_index -> DUK_INVALID_INDEX
 req_norm_idx: top 3 after popping arg
-idx=-5 -> duk_require_normalize_index -> Error: invalid index: -5
+idx=-5 -> duk_require_normalize_index -> Error: invalid index
 req_norm_idx: top 3 after popping arg
-idx=-4 -> duk_require_normalize_index -> Error: invalid index: -4
+idx=-4 -> duk_require_normalize_index -> Error: invalid index
 req_norm_idx: top 3 after popping arg
 idx=-3 -> duk_require_normalize_index -> 0
 req_norm_idx: top 3 after popping arg
@@ -27,11 +27,11 @@ idx=1 -> duk_require_normalize_index -> 1
 req_norm_idx: top 3 after popping arg
 idx=2 -> duk_require_normalize_index -> 2
 req_norm_idx: top 3 after popping arg
-idx=3 -> duk_require_normalize_index -> Error: invalid index: 3
+idx=3 -> duk_require_normalize_index -> Error: invalid index
 req_norm_idx: top 3 after popping arg
-idx=4 -> duk_require_normalize_index -> Error: invalid index: 4
+idx=4 -> duk_require_normalize_index -> Error: invalid index
 req_norm_idx: top 3 after popping arg
-idx=5 -> duk_require_normalize_index -> Error: invalid index: 5
+idx=5 -> duk_require_normalize_index -> Error: invalid index
 ===*/
 
 int req_norm_idx(duk_context *ctx) {

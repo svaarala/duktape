@@ -43,9 +43,9 @@ index 19, string: '0xdeadbeef', length 10
 index 19, string: '0xdeadbeef'
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid index: 3'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index: -2147483648'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 int test_1(duk_context *ctx) {

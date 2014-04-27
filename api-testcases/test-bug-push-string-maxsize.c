@@ -1,10 +1,15 @@
 /*===
-FIXME: check when fixed
+*** test_1a
+push string with maximum size_t (should fail)
+rc=1, result='RangeError: string too long'
+*** test_1b
+push string with maximum size_t - 8 (should fail)
+rc=1, result='RangeError: string too long'
 ===*/
 
 /* Same as test-bug-push-buffer-maxsize.c but for string pushing.
  *
- * There are actually two bugs in the current implementation:
+ * There were actually two bugs in the  implementation previously:
  * (1) the size computation for the header plus string may overflow,
  * and (2) the string size is passed as a duk_u32 internally which
  * clamps incorrectly on 64-bit platforms.
@@ -12,6 +17,9 @@ FIXME: check when fixed
  * The attempt to push a string of SIZE_MAX (or close) should fail
  * before the string data is actually read (there isn't enough data,
  * of course, if that were to happen).
+ *
+ * The fix, now implemented, is to check for string maximum size
+ * explicitly.
  */
 
 #ifndef  SIZE_MAX

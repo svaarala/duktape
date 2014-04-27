@@ -174,6 +174,12 @@ duk_ret_t duk_bi_string_prototype_trim(duk_context *ctx);
 #ifdef DUK_USE_SECTION_B
 duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx);
 #endif
+
+duk_ret_t duk_bi_proxy_constructor(duk_context *ctx);
+#if 0  /* unimplemented now */
+duk_ret_t duk_bi_proxy_constructor_revocable(duk_context *ctx);
+#endif
+
 duk_ret_t duk_bi_thread_constructor(duk_context *ctx);
 duk_ret_t duk_bi_thread_resume(duk_context *ctx);
 duk_ret_t duk_bi_thread_yield(duk_context *ctx);
