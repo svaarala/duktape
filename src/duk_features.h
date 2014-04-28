@@ -1298,6 +1298,19 @@ extern double duk_computed_nan;
  */
 #undef DUK_USE_PARANOID_MATH
 
+/* There was a curious bug where test-bi-date-canceling.js would fail e.g.
+ * on 64-bit Ubuntu, gcc-4.8.1, -m32, and no -std=c99.  Some date computations
+ * using doubles would be optimized which then broke some corner case tests.
+ * The problem goes away by adding 'volatile' to the datetime computations.
+ * Not sure what the actual triggering conditions are, but using this on
+ * non-C99 systems solves the known issues and has relatively little cost
+ * on other platforms.  See bugs/issue-2e9d9c2d761dabaf8136c0897b91a270d1a47147.yaml.
+ */
+#undef DUK_USE_PARANOID_DATE_COMPUTATION
+#if !defined(DUK_F_C99)
+#define DUK_USE_PARANOID_DATE_COMPUTATION
+#endif
+
 /*
  *  ANSI C string/memory function wrapper defines to allow easier workarounds.
  *  Also convenience macros like DUK_MEMZERO which may be mapped to existing

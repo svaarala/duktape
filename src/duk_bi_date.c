@@ -965,9 +965,16 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 
 /* Compute time value from (double) parts. */
 static double duk__get_timeval_from_dparts(double *dparts, int flags) {
+#if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
+	/* See comments below on MakeTime why these are volatile. */
+	volatile double tmp_time;
+	volatile double tmp_day;
+	volatile double d;
+#else
 	double tmp_time;
 	double tmp_day;
 	double d;
+#endif
 	int i;
 
 	/* Expects 'this' at top of stack on entry. */
@@ -992,10 +999,18 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
 	 * double values (instead of using something more accurate).
 	 * E.g. E5.1 Section 15.9.1.11 requires use of IEEE 754
 	 * rules (= Ecmascript '+' and '*' operators).
+	 *
+	 * Without 'volatile' even this approach fails on some platform
+	 * and compiler combinations.  For instance, gcc 4.8.1 on Ubuntu
+	 * 64-bit, with -m32 and without -std=c99, test-bi-date-canceling.js
+	 * would fail because of some optimizations when computing tmp_time
+	 * (MakeTime below).  Adding 'volatile' to tmp_time solved this
+	 * particular problem (annoyingly, also adding debug prints or
+	 * running the executable under valgrind hides it).
 	 */
 	
 	/* MakeTime */
-	tmp_time = 0;
+	tmp_time = 0.0;
 	tmp_time += dparts[DUK__IDX_HOUR] * ((double) DUK__MS_HOUR);
 	tmp_time += dparts[DUK__IDX_MINUTE] * ((double) DUK__MS_MINUTE);
 	tmp_time += dparts[DUK__IDX_SECOND] * ((double) DUK__MS_SECOND);
