@@ -76,8 +76,8 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 		/* Note: we ask for one return value from duk_safe_call to get this
 		 * error debugging here.
 		 */
-		DUK_DPRINT("wrapped finalizer call failed for object %p (ignored); error: %!T",
-		           (void *) obj, duk_get_tval(ctx, -1));
+		DUK_D(DUK_DPRINT("wrapped finalizer call failed for object %p (ignored); error: %!T",
+		                 (void *) obj, duk_get_tval(ctx, -1)));
 	}
 	duk_pop_2(ctx);  /* -> [...] */
 

@@ -57,11 +57,11 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 		hdr[hdr_index + 1] = (duk_uint32_t) curr_offset;
 
 #if 0
-		DUK_DDDPRINT("hdr[%d]: pc=%d line=%d offset=%d",
-		             (int) (curr_pc / DUK_PC2LINE_SKIP),
-		             (int) curr_pc,
-		             (int) hdr[hdr_index + 0],
-		             (int) hdr[hdr_index + 1]);
+		DUK_DDD(DUK_DDDPRINT("hdr[%d]: pc=%d line=%d offset=%d",
+		                     (int) (curr_pc / DUK_PC2LINE_SKIP),
+		                     (int) curr_pc,
+		                     (int) hdr[hdr_index + 0],
+		                     (int) hdr[hdr_index + 1]));
 #endif
 
 		DUK_MEMZERO(be_ctx, sizeof(*be_ctx));
@@ -79,8 +79,8 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 			diff_line = next_line - curr_line;
 
 #if 0
-			DUK_DDDPRINT("curr_line=%d, next_line=%d -> diff_line=%d",
-			             (int) curr_line, (int) next_line, (int) diff_line);
+			DUK_DDD(DUK_DDDPRINT("curr_line=%d, next_line=%d -> diff_line=%d",
+			                     (int) curr_line, (int) next_line, (int) diff_line));
 #endif
 
 			if (diff_line == 0) {
@@ -117,9 +117,9 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 
 	duk_to_fixed_buffer(ctx, -1);
 
-	DUK_DDDPRINT("final pc2line data: pc_limit=%d, length=%d, %lf bits/opcode --> %!ixT",
-	             (int) length, (int) new_size, (double) new_size * 8.0 / (double) length,
-	             duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("final pc2line data: pc_limit=%d, length=%d, %lf bits/opcode --> %!ixT",
+	                     (int) length, (int) new_size, (double) new_size * 8.0 / (double) length,
+	                     duk_get_tval(ctx, -1)));
 }
 
 /* PC is unsigned.  If caller does PC arithmetic and gets a negative result,
@@ -153,16 +153,16 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	pc_limit = hdr[0];
 	if (pc >= pc_limit) {
 		/* Note: pc is unsigned and cannot be negative */
-		DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%d, limit=%d)",
-		            (int) pc, (int) pc_limit);
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%d, limit=%d)",
+		                   (int) pc, (int) pc_limit));
 		goto error;
 	}
 
 	curr_line = hdr[1 + hdr_index * 2];
 	start_offset = hdr[1 + hdr_index * 2 + 1];
 	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
-		DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%d, buffer_size=%d)",
-		            (int) start_offset, (int) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf));
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%d, buffer_size=%d)",
+		                   (int) start_offset, (int) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
 		goto error;
 	}
 
@@ -171,8 +171,8 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_FIXED_GET_SIZE(buf) - start_offset);
 
 #if 0
-	DUK_DDDPRINT("pc2line lookup: pc=%d -> hdr_index=%d, pc_base=%d, n=%d, start_offset=%d",
-	             (int) pc, (int) hdr_index, (int) pc_base, (int) n, (int) start_offset);
+	DUK_DDD(DUK_DDDPRINT("pc2line lookup: pc=%d -> hdr_index=%d, pc_base=%d, n=%d, start_offset=%d",
+	                     (int) pc, (int) hdr_index, (int) pc_base, (int) n, (int) start_offset));
 #endif
 
 	while (n > 0) {

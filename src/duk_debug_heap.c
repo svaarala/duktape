@@ -41,20 +41,20 @@ static const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 
 static void duk__dump_indented(duk_heaphdr *obj, int index) {
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x, ref: %d) -> %!O",
-	           index,
-	           (void *) obj,
-	           duk__get_heap_type_string(obj),
-	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
-	           DUK_HEAPHDR_GET_REFCOUNT(obj),
-	           obj);
+	DUK_D(DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x, ref: %d) -> %!O",
+	                 index,
+	                 (void *) obj,
+	                 duk__get_heap_type_string(obj),
+	                 (int) DUK_HEAPHDR_GET_FLAGS(obj),
+	                 DUK_HEAPHDR_GET_REFCOUNT(obj),
+	                 obj));
 #else
-	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x) -> %!O",
-	           index,
-	           (void *) obj,
-	           duk__get_heap_type_string(obj),
-	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
-	           obj);
+	DUK_D(DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x) -> %!O",
+	                 index,
+	                 (void *) obj,
+	                 duk__get_heap_type_string(obj),
+	                 (int) DUK_HEAPHDR_GET_FLAGS(obj),
+	                 obj));
 #endif
 }
 
@@ -86,11 +86,11 @@ static void duk__dump_stringtable(duk_heap *heap) {
 	duk_uint32_t i;
 	char buf[64+1];
 
-	DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
-	           (void *) heap->st,
-	           (int) heap->st_used,
-	           (int) heap->st_size,
-	           (int) (((double) heap->st_used) / ((double) heap->st_size) * 100.0));
+	DUK_D(DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
+	                 (void *) heap->st,
+	                 (int) heap->st_used,
+	                 (int) heap->st_size,
+	                 (int) (((double) heap->st_used) / ((double) heap->st_size) * 100.0)));
 
 	for (i = 0; i < heap->st_size; i++) {
 		duk_hstring *e = heap->st[i];
@@ -103,36 +103,36 @@ static void duk__dump_stringtable(duk_heap *heap) {
 			duk__sanitize_snippet(buf, sizeof(buf), e);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
-			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			           i,
-			           (void *) e,
-			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
-			           (int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) e),
-			           buf,
-			           (int) e->hash,
-			           (int) e->blen,
-			           (int) e->clen,
-			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
+			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
+			                 i,
+			                 (void *) e,
+			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
+			                 (int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) e),
+			                 buf,
+			                 (int) e->hash,
+			                 (int) e->blen,
+			                 (int) e->clen,
+			                 DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0));
 #else
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
-			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			           i,
-			           (void *) e,
-			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
-			           buf,
-			           (int) e->hash,
-			           (int) e->blen,
-			           (int) e->clen,
-			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
+			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
+			                 i,
+			                 (void *) e,
+			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
+			                 buf,
+			                 (int) e->hash,
+			                 (int) e->blen,
+			                 (int) e->clen,
+			                 DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0));
 #endif
 		}
 	}
@@ -147,12 +147,12 @@ static void duk__dump_strcache(duk_heap *heap) {
 	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache *c = &heap->strcache[i];
 		if (!c->h) {
-			DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
-			           i, c->bidx, c->cidx);
+			DUK_D(DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
+			                 i, c->bidx, c->cidx));
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), c->h);
-			DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
-			           i, c->bidx, c->cidx, buf);
+			DUK_D(DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
+			                 i, c->bidx, c->cidx, buf));
 		}
 	} 
 }

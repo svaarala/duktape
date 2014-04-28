@@ -64,17 +64,17 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 	p_end = keys + h_obj->e_used;
 	keys += DUK__ENUM_START_INDEX;
 
-	DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
-	             (void *) keys, (void *) p_end);
+	DUK_DDD(DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
+	                     (void *) keys, (void *) p_end));
 
 #ifdef DUK_USE_DDDPRINT
 	{
 		duk_uint_fast32_t i;
 		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
-			DUK_DDDPRINT("initial: %d %p -> %!O",
-			             (int) i,
-			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
-			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
+			DUK_DDD(DUK_DDDPRINT("initial: %d %p -> %!O",
+			                     (int) i,
+			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
+			                     (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i)));
 		}
 	}
 #endif
@@ -85,16 +85,16 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 		val_curr = DUK_HSTRING_GET_ARRIDX_SLOW(*p_curr);
 
 		if (val_curr >= val_highest) {
-			DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
-			             "already in correct order, next",
-			             (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr);
+			DUK_DDD(DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
+			                     "already in correct order, next",
+			                     (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr));
 			val_highest = val_curr;
 			continue;
 		}
 
-		DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
-		             "needs to be inserted",
-		             (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr);
+		DUK_DDD(DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%d, val_curr=%d -> "
+		                     "needs to be inserted",
+		                     (void *) p_curr, (void *) p_end, (int) val_highest, (int) val_curr));
 	
 		/* Needs to be inserted; scan backwards, since we optimize
 		 * for the case where elements are nearly in order.
@@ -104,8 +104,8 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 		for (;;) {
 			val_insert = DUK_HSTRING_GET_ARRIDX_SLOW(*p_insert);
 			if (val_insert < val_curr) {
-				DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> insert after this",
-				             (void *) p_insert, (int) val_insert, (int) val_curr);
+				DUK_DDD(DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> insert after this",
+				                     (void *) p_insert, (int) val_insert, (int) val_curr));
 				p_insert++;
 				break;
 			}
@@ -113,8 +113,8 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 				DUK_DDD(DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning"));
 				break;
 			}
-			DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> search backwards",
-			             (void *) p_insert, (int) val_insert, (int) val_curr);
+			DUK_DDD(DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> search backwards",
+			                     (void *) p_insert, (int) val_insert, (int) val_curr));
 			p_insert--;
 		}
 
@@ -126,9 +126,9 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 		 */
 
 		h_curr = *p_curr;
-		DUK_DDDPRINT("memmove: dest=%p, src=%p, size=%d, h_curr=%p",
-		             (void *) (p_insert + 1), (void *) p_insert,
-		             (int) (p_curr - p_insert), (void *) h_curr);
+		DUK_DDD(DUK_DDDPRINT("memmove: dest=%p, src=%p, size=%d, h_curr=%p",
+		                     (void *) (p_insert + 1), (void *) p_insert,
+		                     (int) (p_curr - p_insert), (void *) h_curr));
 
 		DUK_MEMMOVE((void *) (p_insert + 1),
 		            (void *) p_insert,
@@ -141,10 +141,10 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 	{
 		duk_uint_fast32_t i;
 		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_used; i++) {
-			DUK_DDDPRINT("final: %d %p -> %!O",
-			             (int) i,
-			             (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
-			             (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i));
+			DUK_DDD(DUK_DDDPRINT("final: %d %p -> %!O",
+			                     (int) i,
+			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
+			                     (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i)));
 		}
 	}
 #endif
@@ -390,8 +390,8 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	DUK_ASSERT(target != NULL);
 	duk_pop(ctx);  /* still reachable */
 
-	DUK_DDDPRINT("getting next enum value, target=%!iO, enumerator=%!iT",
-	             target, duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("getting next enum value, target=%!iO, enumerator=%!iT",
+	                     target, duk_get_tval(ctx, -1)));
 
 	/* no array part */
 	for (;;) {
