@@ -110,8 +110,8 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 
 		res = heap->alloc_func(heap->alloc_udata, size);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, size);
+			DUK_D(DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, size));
 			return res;
 		}
 	}
@@ -218,8 +218,8 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 
 		res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, newsize);
+			DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, newsize));
 			return res;
 		}
 	}
@@ -330,8 +330,8 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 
 		res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, newsize);
+			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, newsize));
 			return res;
 		}
 	}

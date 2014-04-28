@@ -29,8 +29,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 	int double_error = thr->heap->handling_error;
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-	DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
-	             code, msg ? msg : "null", filename ? filename : "null", line);
+	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
+	                   code, msg ? msg : "null", filename ? filename : "null", line));
 #else
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d", code));
 #endif
@@ -56,8 +56,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 			DUK_D(DUK_DPRINT("double fault detected -> push built-in fixed 'double error' instance"));
 			duk_push_hobject(ctx, thr->builtins[DUK_BIDX_DOUBLE_ERROR]);
 		} else {
-			DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
-			           "-> push the error code as a number");
+			DUK_D(DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
+			                 "-> push the error code as a number"));
 			duk_push_int(ctx, code);
 		}
 	} else {
@@ -101,8 +101,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
-	DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
-	             &thr->heap->lj.value1, &thr->heap->lj.value2);
+	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
+	                     &thr->heap->lj.value1, &thr->heap->lj.value2));
 
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();

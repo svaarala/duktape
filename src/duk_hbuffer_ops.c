@@ -56,9 +56,9 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t new_s
 	if (res || new_alloc_size == 0) {
 		/* 'res' may be NULL if new allocation size is 0. */
 
-		DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
-		             buf->curr_alloc, buf->size, buf->usable_size,
-		             res, new_size, new_usable_size);
+		DUK_DDD(DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
+		                     buf->curr_alloc, buf->size, buf->usable_size,
+		                     res, new_size, new_usable_size));
 
 		/*
 		 *  The entire allocated buffer area, regardless of actual used

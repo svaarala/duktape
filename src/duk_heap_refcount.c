@@ -317,11 +317,11 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 void duk_heap_tval_incref(duk_tval *tv) {
 #if 0
-	DUK_DDDPRINT("tval incref %p (%d->%d): %!T",
-	             (void *) tv,
-	             (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
-	             (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1 : 0),
-	             tv);
+	DUK_DDD(DUK_DDDPRINT("tval incref %p (%d->%d): %!T",
+	                     (void *) tv,
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1 : 0),
+	                     tv));
 #endif
 
 	if (!tv) {
@@ -340,11 +340,11 @@ void duk_heap_tval_incref(duk_tval *tv) {
 
 void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 #if 0
-	DUK_DDDPRINT("tval decref %p (%d->%d): %!T",
-	             (void *) tv,
-	             (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
-	             (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1 : 0),
-	             tv);
+	DUK_DDD(DUK_DDDPRINT("tval decref %p (%d->%d): %!T",
+	                     (void *) tv,
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1 : 0),
+	                     tv));
 #endif
 
 	if (!tv) {
@@ -358,11 +358,11 @@ void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 
 void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 #if 0
-	DUK_DDDPRINT("heaphdr incref %p (%d->%d): %!O",
-	             (void *) h,
-	             (h != NULL ? h->h_refcount : 0),
-	             (h != NULL ? h->h_refcount + 1 : 0),
-	             h);
+	DUK_DDD(DUK_DDDPRINT("heaphdr incref %p (%d->%d): %!O",
+	                     (void *) h,
+	                     (h != NULL ? h->h_refcount : 0),
+	                     (h != NULL ? h->h_refcount + 1 : 0),
+	                     h));
 #endif
 
 	if (!h) {
@@ -378,11 +378,11 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	duk_heap *heap;
 
 #if 0
-	DUK_DDDPRINT("heaphdr decref %p (%d->%d): %!O",
-	             (void *) h,
-	             (h != NULL ? h->h_refcount : 0),
-	             (h != NULL ? h->h_refcount - 1 : 0),
-	             h);
+	DUK_DDD(DUK_DDDPRINT("heaphdr decref %p (%d->%d): %!O",
+	                     (void *) h,
+	                     (h != NULL ? h->h_refcount : 0),
+	                     (h != NULL ? h->h_refcount - 1 : 0),
+	                     h));
 #endif
 
 	DUK_ASSERT(thr != NULL);

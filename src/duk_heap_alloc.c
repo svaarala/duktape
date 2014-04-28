@@ -378,7 +378,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 
 #ifdef DUK_USE_DEBUG
 #define DUK__DUMPSZ(t)  do { \
-		DUK_DPRINT("" #t "=%d", (int) sizeof(t)); \
+		DUK_D(DUK_DPRINT("" #t "=%d", (int) sizeof(t))); \
 	} while (0)
 
 static void duk__dump_type_sizes(void) {
