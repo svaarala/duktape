@@ -1397,8 +1397,8 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_tval *tv;
 
-	DUK_DDDPRINT("duk__enc_value2: key=%!T, val=%!T",
-	             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("duk__enc_value2: key=%!T, val=%!T",
+	                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 	/* [ ... key val ] */
 
@@ -1617,9 +1617,9 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	int top_at_entry = duk_get_top(ctx);
 #endif
 
-	DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08x, stack_top=%d",
-	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
-	             flags, duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08x, stack_top=%d",
+	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
+	                     flags, duk_get_top(ctx)));
 
 	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
@@ -1667,21 +1667,21 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
 
-		DUK_DDDPRINT("start reviver walk, root=%!T, name=%!T",
-		             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+		DUK_DDD(DUK_DDDPRINT("start reviver walk, root=%!T, name=%!T",
+		                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 		duk__dec_reviver_walk(js_ctx);  /* [ ... val root "" ] -> [ ... val val' ] */
 		duk_remove(ctx, -2);            /* -> [ ... val' ] */
 	} else {
-		DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
-		             duk_get_tval(ctx, idx_reviver));
+		DUK_DDD(DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
+		                     duk_get_tval(ctx, idx_reviver)));
 	}
 
 	/* Final result is at stack top. */
 
-	DUK_DDDPRINT("JSON parse end: text=%!T, reviver=%!T, flags=0x%08x, result=%!T, stack_top=%d",
-	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
-	             flags, duk_get_tval(ctx, -1), duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("JSON parse end: text=%!T, reviver=%!T, flags=0x%08x, result=%!T, stack_top=%d",
+	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
+	                     flags, duk_get_tval(ctx, -1), duk_get_top(ctx)));
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry + 1);
 }
@@ -1699,9 +1699,9 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	int idx_holder;
 	int top_at_entry;
 
-	DUK_DDDPRINT("JSON stringify start: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, stack_top=%d",
-	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
-	             duk_get_tval(ctx, idx_space), flags, duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("JSON stringify start: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, stack_top=%d",
+	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
+	                     duk_get_tval(ctx, idx_space), flags, duk_get_top(ctx)));
 
 	top_at_entry = duk_get_top(ctx);
 
@@ -1899,15 +1899,15 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	duk_dup(ctx, idx_value);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 
-	DUK_DDDPRINT("before: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
-	             js_ctx->flags,
-	             js_ctx->h_buf,
-	             duk_get_tval(ctx, js_ctx->idx_loop),
-	             js_ctx->h_replacer,
-	             js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL,
-	             js_ctx->h_gap,
-	             js_ctx->h_indent,
-	             duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("before: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
+	                     js_ctx->flags,
+	                     js_ctx->h_buf,
+	                     duk_get_tval(ctx, js_ctx->idx_loop),
+	                     js_ctx->h_replacer,
+	                     js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL,
+	                     js_ctx->h_gap,
+	                     js_ctx->h_indent,
+	                     duk_get_tval(ctx, -1)));
 	
 	/* serialize the wrapper with empty string key */
 
@@ -1917,15 +1917,15 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	undef = duk__enc_value1(js_ctx, idx_holder);  /* [ ... holder key ] -> [ ... holder key val ] */
 
-	DUK_DDDPRINT("after: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
-	             js_ctx->flags,
-	             js_ctx->h_buf,
-	             duk_get_tval(ctx, js_ctx->idx_loop),
-	             js_ctx->h_replacer,
-	             js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL,
-	             js_ctx->h_gap,
-	             js_ctx->h_indent,
-	             duk_get_tval(ctx, -3));
+	DUK_DDD(DUK_DDDPRINT("after: flags=0x%08x, buf=%!O, loop=%!T, replacer=%!O, proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
+	                     js_ctx->flags,
+	                     js_ctx->h_buf,
+	                     duk_get_tval(ctx, js_ctx->idx_loop),
+	                     js_ctx->h_replacer,
+	                     js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL,
+	                     js_ctx->h_gap,
+	                     js_ctx->h_indent,
+	                     duk_get_tval(ctx, -3)));
 
 	if (undef) {
 		/*
@@ -1951,9 +1951,9 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	duk_replace(ctx, top_at_entry);
 	duk_set_top(ctx, top_at_entry + 1);
 
-	DUK_DDDPRINT("JSON stringify end: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, result=%!T, stack_top=%d",
-	             duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
-	             duk_get_tval(ctx, idx_space), flags, duk_get_tval(ctx, -1), duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("JSON stringify end: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, result=%!T, stack_top=%d",
+	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
+	                     duk_get_tval(ctx, idx_space), flags, duk_get_tval(ctx, -1), duk_get_top(ctx)));
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry + 1);
 }
