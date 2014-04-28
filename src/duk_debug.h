@@ -28,19 +28,19 @@
 #if defined(DUK_USE_DPRINT)
 #define DUK_D(x) x
 #else
-#define DUK_D(x) /* omit */
+#define DUK_D(x) do { } while (0) /* omit */
 #endif
 
 #if defined(DUK_USE_DDPRINT)
 #define DUK_DD(x) x
 #else
-#define DUK_DD(x) /* omit */
+#define DUK_DD(x) do { } while (0) /* omit */
 #endif
 
 #if defined(DUK_USE_DDDPRINT)
 #define DUK_DDD(x) x
 #else
-#define DUK_DDD(x) /* omit */
+#define DUK_DDD(x) do { } while (0) /* omit */
 #endif
 
 /*
@@ -150,9 +150,9 @@
  *  Exposed debug macros: debugging disabled
  */
 
-#define DUK_D(x) /* omit */
-#define DUK_DD(x) /* omit */
-#define DUK_DDD(x) /* omit */
+#define DUK_D(x) do { } while (0) /* omit */
+#define DUK_DD(x) do { } while (0) /* omit */
+#define DUK_DDD(x) do { } while (0) /* omit */
 
 #ifdef DUK_USE_VARIADIC_MACROS
 
