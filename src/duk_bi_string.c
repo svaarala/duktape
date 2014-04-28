@@ -983,10 +983,10 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 		 * stack[4] = regexp res_obj (if is_regexp)
 		 */
 
-		DUK_DDDPRINT("split; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
-		             (int) match_start_boff, (int) match_start_coff,
-		             (int) match_end_boff, (int) match_end_coff,
-		             (int) prev_match_end_boff, (int) prev_match_end_coff);
+		DUK_DDD(DUK_DDDPRINT("split; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
+		                     (int) match_start_boff, (int) match_start_coff,
+		                     (int) match_end_boff, (int) match_end_coff,
+		                     (int) prev_match_end_boff, (int) prev_match_end_coff));
 
 		duk_push_lstring(ctx,
 		                 (const char *) (DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff),
@@ -1027,8 +1027,8 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 
 	/* Combined step 11 (empty string special case) and 14-15. */
 
-	DUK_DDDPRINT("split trailer; prev_end b=%d,c=%d",
-	             (int) prev_match_end_boff, (int) prev_match_end_coff);
+	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%d,c=%d",
+	                     (int) prev_match_end_boff, (int) prev_match_end_coff));
 
 	if (DUK_HSTRING_GET_CHARLEN(h_input) > 0 || !matched) {
 		/* Add trailer if:

@@ -74,8 +74,8 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		/* [ ... pattern flags ] */
 	}
 
-	DUK_DDDPRINT("RegExp constructor/function call, pattern=%!T, flags=%!T",
-	             duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("RegExp constructor/function call, pattern=%!T, flags=%!T",
+	                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 	/* [ ... pattern flags ] */
 

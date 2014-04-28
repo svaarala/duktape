@@ -263,8 +263,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			t = duk_bd_decode(bd, DUK__PROP_TYPE_BITS);
 
-			DUK_DDDPRINT("built-in %d, normal-valued property %d, stridx %d, flags 0x%02x, type %d",
-			             i, j, stridx, prop_flags, (int) t);
+			DUK_DDD(DUK_DDDPRINT("built-in %d, normal-valued property %d, stridx %d, flags 0x%02x, type %d",
+			                     i, j, stridx, prop_flags, (int) t));
 
 			switch (t) {
 			case DUK__PROP_TYPE_DOUBLE: {
@@ -332,8 +332,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				/* XXX: this is a bit awkward because there is no exposed helper
 				 * in the API style, only this internal helper.
 				 */
-				DUK_DDDPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
-				             i, stridx, natidx_getter, natidx_setter, prop_flags);
+				DUK_DDD(DUK_DDDPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
+				                     i, stridx, natidx_getter, natidx_setter, prop_flags));
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
@@ -388,8 +388,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			c_func = duk_bi_native_functions[natidx];
 
-			DUK_DDDPRINT("built-in %d, function-valued property %d, stridx %d, natidx %d, length %d, nargs %d",
-			             i, j, stridx, natidx, c_length, (c_nargs == DUK_VARARGS ? -1 : c_nargs));
+			DUK_DDD(DUK_DDDPRINT("built-in %d, function-valued property %d, stridx %d, natidx %d, length %d, nargs %d",
+			                     i, j, stridx, natidx, c_length, (c_nargs == DUK_VARARGS ? -1 : c_nargs)));
 
 			/* [ (builtin objects) ] */
 
