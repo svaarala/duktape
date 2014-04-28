@@ -321,6 +321,10 @@ Planned
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
+* Fix a rare math optimization issue in the Date built-in, which caused a
+  corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,
+  gcc 4.8.1, -m32, and no -std=c99
+
 1.0.0 (2014-06-XX)
 -------------------
 
