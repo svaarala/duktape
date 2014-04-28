@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Proxy: Object.getPrototypeOf() should return prototype of target (not proxy)"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-27 15:07:01.183194 Z
+references: []
+
+id: ad8f6b006cd9c4bb3f41da2e1a6d24387c2a7eed
+log_events: 
+- - 2014-04-27 15:07:01.343116 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

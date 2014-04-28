@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Object.watch / Object.unwatch support
+desc: |-
+  https://gist.github.com/eligrey/384583
+  
+  Not sure if useful.
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-27 15:11:41.726801 Z
+references: []
+
+id: f66c632e9fd6c231390beaaaf0e8f84378b448d9
+log_events: 
+- - 2014-04-27 15:11:41.902683 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

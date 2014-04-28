@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Proxy: typeof proxy should return typeof target (unconditionally)"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-27 15:07:23.279167 Z
+references: []
+
+id: fed6e920d07f5a6070a4dae9c0121bd812f0a619
+log_events: 
+- - 2014-04-27 15:07:23.455091 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
