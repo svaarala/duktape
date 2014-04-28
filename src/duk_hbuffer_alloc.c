@@ -8,7 +8,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	duk_hbuffer *res = NULL;
 	size_t alloc_size;
 
-	DUK_DDDPRINT("allocate hbuffer");
+	DUK_DDD(DUK_DDDPRINT("allocate hbuffer"));
 
 	if (dynamic) {
 		alloc_size = sizeof(duk_hbuffer_dynamic);
@@ -35,7 +35,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
 		void *ptr;
 		if (size > 0) {
-			DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer");
+			DUK_DDD(DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer"));
 #ifdef DUK_USE_ZERO_BUFFER_DATA
 			ptr = DUK_ALLOC_ZEROED(heap, size);
 #else
@@ -64,11 +64,11 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 
-	DUK_DDDPRINT("allocated hbuffer: %p", res);
+	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", res));
 	return res;
 
  error:
-	DUK_DDPRINT("hbuffer allocation failed");
+	DUK_DD(DUK_DDPRINT("hbuffer allocation failed"));
 
 	DUK_FREE(heap, res);
 	return NULL;

@@ -77,7 +77,7 @@ void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg) {
 #else
 	/* omit print */
 #endif
-	DUK_DPRINT("default fatal handler called, code %d -> calling DUK_PANIC()", code);
+	DUK_D(DUK_DPRINT("default fatal handler called, code %d -> calling DUK_PANIC()", code));
 	DUK_PANIC(code, msg);
 	DUK_UNREACHABLE();
 }

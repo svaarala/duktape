@@ -70,7 +70,7 @@ static void duk__err_augment_user(duk_hthread *thr, int stridx_cb) {
 	DUK_ASSERT(stridx_cb >= 0 && stridx_cb < DUK_HEAP_NUM_STRINGS);
 
 	if (DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap)) {
-		DUK_DDPRINT("recursive call to error handler, ignore");
+		DUK_DD(DUK_DDPRINT("recursive call to error handler, ignore"));
 		return;
 	}
 
@@ -92,16 +92,16 @@ static void duk__err_augment_user(duk_hthread *thr, int stridx_cb) {
 		/* When creating built-ins, some of the built-ins may not be set
 		 * and we want to tolerate that when throwing errors.
 		 */
-		DUK_DDPRINT("error occurred when DUK_BIDX_DUKTAPE is NULL, ignoring");
+		DUK_DD(DUK_DDPRINT("error occurred when DUK_BIDX_DUKTAPE is NULL, ignoring"));
 		return;
 	}
 	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
 	                                                  thr->strs[stridx_cb]);
 	if (tv_hnd == NULL) {
-		DUK_DDPRINT("error handler does not exist or is not a plain value: %!T", tv_hnd);
+		DUK_DD(DUK_DDPRINT("error handler does not exist or is not a plain value: %!T", tv_hnd));
 		return;
 	}
-	DUK_DDDPRINT("error handler dump (callability not checked): %!T", tv_hnd);
+	DUK_DDD(DUK_DDDPRINT("error handler dump (callability not checked): %!T", tv_hnd));
 	duk_push_tval(ctx, tv_hnd);
 
 	/* [ ... errval errhandler ] */
@@ -173,7 +173,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 	 *  See doc/error-objects.txt.
 	 */
 
-	DUK_DDDPRINT("adding traceback to object: %!T", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("adding traceback to object: %!T", duk_get_tval(ctx, -1)));
 
 	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
 	arr_idx = 0;
@@ -291,7 +291,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 	 */
 
 	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_TRACEDATA(thr))) {
-		DUK_DDDPRINT("error value already has a 'tracedata' property, not modifying it");
+		DUK_DDD(DUK_DDDPRINT("error value already has a 'tracedata' property, not modifying it"));
 	} else {
 		duk__add_traceback(thr, thr_callstack, filename, line, noblame_fileline);
 	}
@@ -413,19 +413,19 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
 
 	obj = duk_get_hobject(ctx, -1);
 	if (!obj) {
-		DUK_DDDPRINT("value is not an object, skip both built-in and user augment");
+		DUK_DDD(DUK_DDDPRINT("value is not an object, skip both built-in and user augment"));
 		return;
 	}
 	if (!duk_hobject_prototype_chain_contains(thr, obj, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE])) {
-		DUK_DDDPRINT("value is not an error instance, skip both built-in and user augment");
+		DUK_DDD(DUK_DDDPRINT("value is not an error instance, skip both built-in and user augment"));
 		return;
 	}
 
 	if (DUK_HOBJECT_HAS_EXTENSIBLE(obj)) {
-		DUK_DDDPRINT("error meets criteria, built-in augment");
+		DUK_DDD(DUK_DDDPRINT("error meets criteria, built-in augment"));
 		duk__err_augment_builtin_throw(thr, thr_callstack, filename, line, noblame_fileline, obj);
 	} else {
-		DUK_DDDPRINT("error does not meet criteria, no built-in augment");
+		DUK_DDD(DUK_DDDPRINT("error does not meet criteria, no built-in augment"));
 	}
 
 	/* [ ... error ] */

@@ -1608,19 +1608,29 @@ typedef FILE duk_file;
  */
 
 #undef DUK_USE_DEBUG
-#undef DUK_USE_DDEBUG
-#undef DUK_USE_DDDEBUG
+#undef DUK_USE_DPRINT
+#undef DUK_USE_DDPRINT
+#undef DUK_USE_DDDPRINT
 #undef DUK_USE_DPRINT_RDTSC
 #undef DUK_USE_ASSERTIONS
 
+/* Global debug enable.  Compile must be clean on C99 regardless of whether or
+ * not debugging is enabled.  On non-C99 platforms compile should be clean with
+ * debugging disabled but may produce warnings with debugging enabled (related
+ * to debug macro hackery and such).
+ */
 #if defined(DUK_OPT_DEBUG)
 #define DUK_USE_DEBUG
 #endif
-#if defined(DUK_OPT_DDEBUG)
-#define DUK_USE_DDEBUG
+
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DPRINT)
+#define DUK_USE_DPRINT
 #endif
-#if defined(DUK_OPT_DDDEBUG)
-#define DUK_USE_DDDEBUG
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DDPRINT)
+#define DUK_USE_DDPRINT
+#endif
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DDDPRINT)
+#define DUK_USE_DDDPRINT
 #endif
 
 #undef DUK_USE_DPRINT_COLORS

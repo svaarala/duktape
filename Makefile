@@ -148,7 +148,10 @@ DUKTAPE_CMDLINE_SOURCES = \
 
 # Compiler setup for Linux
 CC	= gcc
-CCOPTS_SHARED = -pedantic -ansi -std=c99 -Wall -fstrict-aliasing
+CCOPTS_SHARED =
+CCOPTS_SHARED += -pedantic -ansi -std=c99
+CCOPTS_SHARED += -fstrict-aliasing
+CCOPTS_SHARED += -Wall
 CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
@@ -197,8 +200,9 @@ CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
 CCOPTS_DEBUG = $(CCOPTS_SHARED) -O0 -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
-#CCOPTS_DEBUG += -DDUK_OPT_DDEBUG
-#CCOPTS_DEBUG += -DDUK_OPT_DDDEBUG
+CCOPTS_DEBUG += -DDUK_OPT_DPRINT
+#CCOPTS_DEBUG += -DDUK_OPT_DDPRINT
+#CCOPTS_DEBUG += -DDUK_OPT_DDDPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 CCLIBS	= -lm
 CCLIBS += -lreadline
@@ -283,6 +287,10 @@ libduktaped.so.1.0.0: dist
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
+
+.PHONY: debuglogcheck
+debuglogcheck:
+	-python util/check_debuglog_calls.py src/*.c
 
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
@@ -703,7 +711,7 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
+dist:	debuglogcheck UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
 	sh util/make_dist.sh
 
 .PHONY:	dist-src

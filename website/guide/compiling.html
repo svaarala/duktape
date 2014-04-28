@@ -305,14 +305,21 @@ The table below summarizes the available options, in no particular order:</p>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_DEBUG</td>
+<td>Enable debug code in Duktape internals.  Without this option other
+    debugging options (such as <code>DUK_OPT_DPRINT</code>) have no effect.
+    When debugging is enabled, compile may no longer be clean, at least on
+    non-C99 platforms.</td>
+</tr>
+<tr>
+<td class="definename">DUK_OPT_DPRINT</td>
 <td>Enable debug printouts.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_DDEBUG</td>
+<td class="definename">DUK_OPT_DDPRINT</td>
 <td>Enable more debug printouts.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_DDDEBUG</td>
+<td class="definename">DUK_OPT_DDDPRINT</td>
 <td>Enable even more debug printouts.  Not recommended unless you have
     grep handy.</td>
 </tr>

@@ -58,7 +58,7 @@ static void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-		DUK_DDDPRINT("free dynamic buffer %p", g->curr_alloc);
+		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", g->curr_alloc));
 		DUK_FREE(heap, g->curr_alloc);
 	}
 }
@@ -67,7 +67,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(heap);
 	DUK_ASSERT(hdr);
 
-	DUK_DDDPRINT("free heaphdr %p, htype %d", (void *) hdr, (int) DUK_HEAPHDR_GET_TYPE(hdr));
+	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %d", (void *) hdr, (int) DUK_HEAPHDR_GET_TYPE(hdr)));
 
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
@@ -109,7 +109,7 @@ static void duk__free_allocated(duk_heap *heap) {
 		 * because they may happen with finalizer processing.
 		 */
 
-		DUK_DDDPRINT("FINALFREE (allocated): %!iO", curr);
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO", curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -123,7 +123,7 @@ static void duk__free_refzero_list(duk_heap *heap) {
 
 	curr = heap->refzero_list;
 	while (curr) {
-		DUK_DDDPRINT("FINALFREE (refzero_list): %!iO", curr);
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (refzero_list): %!iO", curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -138,7 +138,7 @@ static void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 
 	curr = heap->finalize_list;
 	while (curr) {
-		DUK_DDDPRINT("FINALFREE (finalize_list): %!iO", curr);
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO", curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -158,7 +158,7 @@ static void duk__free_stringtable(duk_heap *heap) {
 			}
 
 			/* strings have no inner allocations so free directly */
-			DUK_DDDPRINT("FINALFREE (string): %!iO", e);
+			DUK_DDD(DUK_DDDPRINT("FINALFREE (string): %!iO", e));
 			DUK_FREE(heap, e);
 #if 0  /* not strictly necessary */
 			heap->st[i] = NULL;
@@ -206,12 +206,12 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 
 	/* Note: count includes all objects, not only those with an actual finalizer. */
 #ifdef DUK_USE_DEBUG
-	DUK_DPRINT("checked %d objects for finalizers before freeing heap", (int) count_obj);
+	DUK_D(DUK_DPRINT("checked %d objects for finalizers before freeing heap", (int) count_obj));
 #endif
 }
 
 void duk_heap_free(duk_heap *heap) {
-	DUK_DPRINT("free heap: %p", heap);
+	DUK_D(DUK_DPRINT("free heap: %p", heap));
 
 	/* Execute finalizers before freeing the heap, even for reachable
 	 * objects, and regardless of whether or not mark-and-sweep is
@@ -221,7 +221,7 @@ void duk_heap_free(duk_heap *heap) {
 	 *
 	 * FIXME: this perhaps requires an execution time limit.
 	 */
-	DUK_DPRINT("execute finalizers before freeing heap");
+	DUK_D(DUK_DPRINT("execute finalizers before freeing heap"));
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/* run mark-and-sweep a few times just in case (unreachable
 	 * object finalizers run already here)
@@ -235,23 +235,23 @@ void duk_heap_free(duk_heap *heap) {
 	 * and heap->log_buffer are on the heap allocated list.
 	 */
 
-	DUK_DPRINT("freeing heap objects of heap: %p", heap);
+	DUK_D(DUK_DPRINT("freeing heap objects of heap: %p", heap));
 	duk__free_allocated(heap);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_DPRINT("freeing refzero list of heap: %p", heap);
+	DUK_D(DUK_DPRINT("freeing refzero list of heap: %p", heap));
 	duk__free_refzero_list(heap);
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-	DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", heap);
+	DUK_D(DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", heap));
 	duk__free_markandsweep_finalize_list(heap);
 #endif
 
-	DUK_DPRINT("freeing string table of heap: %p", heap);
+	DUK_D(DUK_DPRINT("freeing string table of heap: %p", heap));
 	duk__free_stringtable(heap);
 
-	DUK_DPRINT("freeing heap structure: %p", heap);
+	DUK_D(DUK_DPRINT("freeing heap structure: %p", heap));
 	heap->free_func(heap->alloc_udata, heap);
 }
 
@@ -306,7 +306,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 			tmp[j] = (duk_uint8_t) t;
 		}
 
-		DUK_DDDPRINT("intern built-in string %d", i);
+		DUK_DDD(DUK_DDDPRINT("intern built-in string %d", i));
 		h = duk_heap_string_intern(heap, tmp, len);
 		if (!h) {
 			goto error;
@@ -327,7 +327,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 			}
 		}
 
-		DUK_DDDPRINT("interned: %!O", h);
+		DUK_DDD(DUK_DDDPRINT("interned: %!O", h));
 
 		/* The incref macro takes a thread pointer but doesn't use it
 		 * right now.
@@ -346,13 +346,13 @@ static int duk__init_heap_strings(duk_heap *heap) {
 static int duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 	
-	DUK_DDPRINT("heap init: alloc heap thread");
+	DUK_DD(DUK_DDPRINT("heap init: alloc heap thread"));
 	thr = duk_hthread_alloc(heap,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (!thr) {
-		DUK_DPRINT("failed to alloc heap_thread");
+		DUK_D(DUK_DPRINT("failed to alloc heap_thread"));
 		return 0;
 	}
 	thr->state = DUK_HTHREAD_STATE_INACTIVE;
@@ -378,11 +378,11 @@ static int duk__init_heap_thread(duk_heap *heap) {
 
 #ifdef DUK_USE_DEBUG
 #define DUK__DUMPSZ(t)  do { \
-		DUK_DPRINT("" #t "=%d", (int) sizeof(t)); \
+		DUK_D(DUK_DPRINT("" #t "=%d", (int) sizeof(t))); \
 	} while (0)
 
 static void duk__dump_type_sizes(void) {
-	DUK_DPRINT("sizeofs()");
+	DUK_D(DUK_DPRINT("sizeofs()"));
 
 	/* basic platform types */
 	DUK__DUMPSZ(char);
@@ -475,7 +475,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_fatal_function fatal_func) {
 	duk_heap *res = NULL;
 
-	DUK_DPRINT("allocate heap");
+	DUK_D(DUK_DPRINT("allocate heap"));
 
 	/* Debug dump type sizes */
 #ifdef DUK_USE_DEBUG
@@ -484,9 +484,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* If selftests enabled, run them as early as possible. */
 #ifdef DUK_USE_SELF_TESTS
-	DUK_DPRINT("running self tests");
+	DUK_D(DUK_DPRINT("running self tests"));
 	duk_selftest_run_tests();
-	DUK_DPRINT("self tests passed");
+	DUK_D(DUK_DPRINT("self tests passed"));
 #endif
 
 #ifdef DUK_USE_COMPUTED_NAN
@@ -619,19 +619,19 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 	/* built-in strings */
-	DUK_DDPRINT("HEAP: INIT STRINGS");
+	DUK_DD(DUK_DDPRINT("HEAP: INIT STRINGS"));
 	if (!duk__init_heap_strings(res)) {
 		goto error;
 	}
 
 	/* heap thread */
-	DUK_DDPRINT("HEAP: INIT HEAP THREAD");
+	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP THREAD"));
 	if (!duk__init_heap_thread(res)) {
 		goto error;
 	}
 
 	/* heap object */
-	DUK_DDPRINT("HEAP: INIT HEAP OBJECT");
+	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP OBJECT"));
 	DUK_ASSERT(res->heap_thread != NULL);
 	res->heap_object = duk_hobject_alloc(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
@@ -641,7 +641,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_HOBJECT_INCREF(res->heap_thread, res->heap_object);
 
 	/* log buffer */
-	DUK_DDPRINT("HEAP: INIT LOG BUFFER");
+	DUK_DD(DUK_DDPRINT("HEAP: INIT LOG BUFFER"));
 	res->log_buffer = (duk_hbuffer_dynamic *) duk_hbuffer_alloc(res,
 	                                                            DUK_BI_LOGGER_SHORT_MSG_LIMIT,
 	                                                            1 /*dynamic*/);
@@ -650,11 +650,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	DUK_HBUFFER_INCREF(res->heap_thread, res->log_buffer);
 
-	DUK_DPRINT("allocated heap: %p", res);
+	DUK_D(DUK_DPRINT("allocated heap: %p", res));
 	return res;
 
  error:
-	DUK_DPRINT("heap allocation failed");
+	DUK_D(DUK_DPRINT("heap allocation failed"));
 
 	if (res) {
 		/* assumes that allocated pointers and alloc funcs are valid

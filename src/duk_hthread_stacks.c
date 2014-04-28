@@ -43,7 +43,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "callstack limit");
 	}
 
-	DUK_DDPRINT("growing callstack %d -> %d", old_size, new_size);
+	DUK_DD(DUK_DDPRINT("growing callstack %d -> %d", old_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -71,7 +71,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	new_size = thr->callstack_top + DUK_CALLSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->callstack_top);
 
-	DUK_DDPRINT("shrinking callstack %d -> %d", thr->callstack_size, new_size);
+	DUK_DD(DUK_DDPRINT("shrinking callstack %d -> %d", thr->callstack_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -84,7 +84,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 		thr->callstack = p;
 		thr->callstack_size = new_size;
 	} else {
-		DUK_DPRINT("callstack shrink failed, ignoring");
+		DUK_D(DUK_DPRINT("callstack shrink failed, ignoring"));
 	}
 
 	/* note: any entries above the callstack top are garbage and not zeroed */
@@ -93,10 +93,10 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 	int idx;  /* FIXME: typing of idx and new_top */
 
-	DUK_DDDPRINT("unwind callstack top of thread %p from %d to %d",
-	             (void *) thr,
-	             (thr != NULL ? (int) thr->callstack_top : (int) -1),
-	             (int) new_top);
+	DUK_DDD(DUK_DDDPRINT("unwind callstack top of thread %p from %d to %d",
+	                     (void *) thr,
+	                     (thr != NULL ? (int) thr->callstack_top : (int) -1),
+	                     (int) new_top));
 
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
@@ -182,14 +182,14 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		 */
 
 		if (!DUK_HOBJECT_HAS_NEWENV(p->func)) {
-			DUK_DDDPRINT("skip closing environments, envs not owned by this activation");
+			DUK_DDD(DUK_DDDPRINT("skip closing environments, envs not owned by this activation"));
 			goto skip_env_close;
 		}
 
 		DUK_ASSERT(p->lex_env == p->var_env);
 		if (p->var_env != NULL) {
-			DUK_DDDPRINT("closing var_env record %p -> %!O",
-			             (void *) p->var_env, (duk_heaphdr *) p->var_env);
+			DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
+			                     (void *) p->var_env, (duk_heaphdr *) p->var_env));
 			duk_js_close_environment_record(thr, p->var_env, p->func, p->idx_bottom);
 			p = &thr->callstack[idx];  /* avoid side effect issues */
 		}
@@ -198,12 +198,12 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top) {
 		if (p->lex_env != NULL) {
 			if (p->lex_env == p->var_env) {
 				/* common case, already closed, so skip */
-				DUK_DDPRINT("lex_env and var_env are the same and lex_env "
-				            "already closed -> skip closing lex_env");
+				DUK_DD(DUK_DDPRINT("lex_env and var_env are the same and lex_env "
+				                   "already closed -> skip closing lex_env"));
 				;
 			} else {
-				DUK_DDPRINT("closing lex_env record %p -> %!O",
-				            (void *) p->lex_env, (duk_heaphdr *) p->lex_env);
+				DUK_DD(DUK_DDPRINT("closing lex_env record %p -> %!O",
+				                   (void *) p->lex_env, (duk_heaphdr *) p->lex_env));
 				duk_js_close_environment_record(thr, p->lex_env, p->func, p->idx_bottom);
 				p = &thr->callstack[idx];  /* avoid side effect issues */
 			}
@@ -312,7 +312,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "catchstack limit");
 	}
 
-	DUK_DDPRINT("growing catchstack %d -> %d", old_size, new_size);
+	DUK_DD(DUK_DDPRINT("growing catchstack %d -> %d", old_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -340,7 +340,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	new_size = thr->catchstack_top + DUK_CATCHSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->catchstack_top);
 
-	DUK_DDPRINT("shrinking catchstack %d -> %d", thr->catchstack_size, new_size);
+	DUK_DD(DUK_DDPRINT("shrinking catchstack %d -> %d", thr->catchstack_size, new_size));
 
 	/*
 	 *  Note: must use indirect variant of DUK_REALLOC() because underlying
@@ -353,7 +353,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 		thr->catchstack = p;
 		thr->catchstack_size = new_size;
 	} else {
-		DUK_DPRINT("catchstack shrink failed, ignoring");
+		DUK_D(DUK_DPRINT("catchstack shrink failed, ignoring"));
 	}
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */
@@ -362,10 +362,10 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 	int idx;  /* FIXME: typing of 'new_top' and 'idx' */
 
-	DUK_DDDPRINT("unwind catchstack top of thread %p from %d to %d",
-	             (void *) thr,
-	             (thr != NULL ? (int) thr->catchstack_top : (int) -1),
-	             (int) new_top);
+	DUK_DDD(DUK_DDDPRINT("unwind catchstack top of thread %p from %d to %d",
+	                     (void *) thr,
+	                     (thr != NULL ? (int) thr->catchstack_top : (int) -1),
+	                     (int) new_top));
 
 	DUK_ASSERT(thr);
 	DUK_ASSERT(thr->heap);
@@ -392,8 +392,8 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 		p = &thr->catchstack[idx];
 
 		if (DUK_CAT_HAS_LEXENV_ACTIVE(p)) {
-			DUK_DDDPRINT("unwinding catchstack idx %d, callstack idx %d, callstack top %d: lexical environment active",
-			             idx, p->callstack_index, thr->callstack_top);
+			DUK_DDD(DUK_DDDPRINT("unwinding catchstack idx %d, callstack idx %d, callstack top %d: lexical environment active",
+			                     idx, p->callstack_index, thr->callstack_top));
 
 			/* FIXME: Here we have a nasty dependency: the need to manipulate
 			 * the callstack means that catchstack must always be unwound by
@@ -408,8 +408,8 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top) {
 			DUK_ASSERT(act >= thr->callstack);
 			DUK_ASSERT(act < &thr->callstack[thr->callstack_top]);
 
-			DUK_DDDPRINT("catchstack_index=%d, callstack_index=%d, lex_env=%!iO",
-			             (int) idx, (int) p->callstack_index, act->lex_env);
+			DUK_DDD(DUK_DDDPRINT("catchstack_index=%d, callstack_index=%d, lex_env=%!iO",
+			                     (int) idx, (int) p->callstack_index, act->lex_env));
 
 			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */

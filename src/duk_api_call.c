@@ -10,8 +10,8 @@
  * May currently throw an error e.g. when getting the property.
  */
 static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index, int nargs) {
-	DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
-	             normalized_obj_index, nargs, duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
+	                     normalized_obj_index, nargs, duk_get_top(ctx)));
 
 	/* [... key arg1 ... argN] */
 
@@ -19,7 +19,7 @@ static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index
 	duk_dup(ctx, -nargs - 1);  /* Note: -nargs alone would fail for nargs == 0, this is OK */
 	duk_get_prop(ctx, normalized_obj_index);
 
-	DUK_DDDPRINT("func: %!T", duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("func: %!T", duk_get_tval(ctx, -1)));
 
 	/* [... key arg1 ... argN func] */
 
@@ -265,7 +265,7 @@ void duk_new(duk_context *ctx, int nargs) {
 
 	idx_cons = duk_require_normalize_index(ctx, -nargs - 1);
 
-	DUK_DDDPRINT("top=%d, nargs=%d, idx_cons=%d", duk_get_top(ctx), nargs, idx_cons);
+	DUK_DDD(DUK_DDDPRINT("top=%d, nargs=%d, idx_cons=%d", duk_get_top(ctx), nargs, idx_cons));
 
 	/* FIXME: code duplication */
 
@@ -308,11 +308,11 @@ void duk_new(duk_context *ctx, int nargs) {
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE);
 	proto = duk_get_hobject(ctx, -1);
 	if (!proto) {
-		DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
-		             "-> leave standard Object prototype as fallback prototype");
+		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
+		                     "-> leave standard Object prototype as fallback prototype"));
 	} else {
-		DUK_DDDPRINT("constructor has 'prototype' property with object value "
-		             "-> set fallback prototype to that value: %!iO", proto);
+		DUK_DDD(DUK_DDDPRINT("constructor has 'prototype' property with object value "
+		                     "-> set fallback prototype to that value: %!iO", proto));
 		fallback = duk_get_hobject(ctx, -2);
 		DUK_ASSERT(fallback != NULL);
 		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
@@ -337,10 +337,10 @@ void duk_new(duk_context *ctx, int nargs) {
 	 * Note: idx_cons points to first 'fallback', not 'constructor'.
 	 */
 
-	DUK_DDDPRINT("before call, idx_cons+1 (constructor) -> %!T, idx_cons+2 (fallback/this) -> %!T, "
-	             "nargs=%d, top=%d",
-	             duk_get_tval(ctx, idx_cons + 1), duk_get_tval(ctx, idx_cons + 2),
-	             nargs, duk_get_top(ctx));
+	DUK_DDD(DUK_DDDPRINT("before call, idx_cons+1 (constructor) -> %!T, idx_cons+2 (fallback/this) -> %!T, "
+	                     "nargs=%d, top=%d",
+	                     duk_get_tval(ctx, idx_cons + 1), duk_get_tval(ctx, idx_cons + 2),
+	                     nargs, duk_get_top(ctx)));
 
 	/*
 	 *  Call the constructor function (called in "constructor mode").
@@ -355,8 +355,8 @@ void duk_new(duk_context *ctx, int nargs) {
 
 	/* [... fallback retval] */
 
-	DUK_DDDPRINT("constructor call finished, rc=%d, fallback=%!iT, retval=%!iT",
-	             rc, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	DUK_DDD(DUK_DDDPRINT("constructor call finished, rc=%d, fallback=%!iT, retval=%!iT",
+	                     rc, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Determine whether to use the constructor return value as the created

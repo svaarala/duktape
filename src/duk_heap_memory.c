@@ -22,12 +22,12 @@
 
 static void duk__run_voluntary_gc(duk_heap *heap) {
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now");
+		DUK_DD(DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now"));
 	} else {
 		int flags;
 		int rc;
 
-		DUK_DPRINT("triggering voluntary mark-and-sweep");
+		DUK_D(DUK_DPRINT("triggering voluntary mark-and-sweep"));
 		flags = 0;
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
@@ -63,7 +63,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 #ifdef DUK_USE_GC_TORTURE
 	/* simulate alloc failure on every alloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DDDPRINT("gc torture enabled, pretend that first alloc attempt fails");
+		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first alloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
 		goto skip_attempt;
@@ -78,7 +78,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
  skip_attempt:
 #endif
 
-	DUK_DPRINT("first alloc attempt failed, attempt to gc and retry");
+	DUK_D(DUK_DPRINT("first alloc attempt failed, attempt to gc and retry"));
 
 	/*
 	 *  Avoid a GC if GC is already running.  This can happen at a late
@@ -87,7 +87,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 	 */
 
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DPRINT("duk_heap_mem_alloc() failed, gc in progress (gc skipped), alloc size %d", size);
+		DUK_D(DUK_DPRINT("duk_heap_mem_alloc() failed, gc in progress (gc skipped), alloc size %d", size));
 		return NULL;
 	}
 
@@ -110,13 +110,13 @@ void *duk_heap_mem_alloc(duk_heap *heap, size_t size) {
 
 		res = heap->alloc_func(heap->alloc_udata, size);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, size);
+			DUK_D(DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, size));
 			return res;
 		}
 	}
 
-	DUK_DPRINT("duk_heap_mem_alloc() failed even after gc, alloc size %d", size);
+	DUK_D(DUK_DPRINT("duk_heap_mem_alloc() failed even after gc, alloc size %d", size));
 	return NULL;
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */
@@ -173,7 +173,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 #ifdef DUK_USE_GC_TORTURE
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails");
+		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
 		goto skip_attempt;
@@ -188,14 +188,14 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
  skip_attempt:
 #endif
 
-	DUK_DPRINT("first realloc attempt failed, attempt to gc and retry");
+	DUK_D(DUK_DPRINT("first realloc attempt failed, attempt to gc and retry"));
 
 	/*
 	 *  Avoid a GC if GC is already running.  See duk_heap_mem_alloc().
 	 */
 
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DPRINT("duk_heap_mem_realloc() failed, gc in progress (gc skipped), alloc size %d", newsize);
+		DUK_D(DUK_DPRINT("duk_heap_mem_realloc() failed, gc in progress (gc skipped), alloc size %d", newsize));
 		return NULL;
 	}
 
@@ -218,13 +218,13 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, size_t newsize) {
 
 		res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, newsize);
+			DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, newsize));
 			return res;
 		}
 	}
 
-	DUK_DPRINT("duk_heap_mem_realloc() failed even after gc, alloc size %d", newsize);
+	DUK_D(DUK_DPRINT("duk_heap_mem_realloc() failed even after gc, alloc size %d", newsize));
 	return NULL;
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */
@@ -266,7 +266,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 #ifdef DUK_USE_GC_TORTURE
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails");
+		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
 		goto skip_attempt;
@@ -281,14 +281,14 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
  skip_attempt:
 #endif
 
-	DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry");
+	DUK_D(DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry"));
 
 	/*
 	 *  Avoid a GC if GC is already running.  See duk_heap_mem_alloc().
 	 */
 
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DPRINT("duk_heap_mem_realloc_indirect() failed, gc in progress (gc skipped), alloc size %d", newsize);
+		DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() failed, gc in progress (gc skipped), alloc size %d", newsize));
 		return NULL;
 	}
 
@@ -320,7 +320,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 		ptr_post = cb(ud);
 		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
-			DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p", ptr_pre, ptr_post);
+			DUK_DD(DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p", ptr_pre, ptr_post));
 		}
 #endif
 	
@@ -330,13 +330,13 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 
 		res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 		if (res) {
-			DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %d), alloc size %d",
-			           i + 1, newsize);
+			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %d), alloc size %d",
+			                 i + 1, newsize));
 			return res;
 		}
 	}
 
-	DUK_DPRINT("duk_heap_mem_realloc_indirect() failed even after gc, alloc size %d", newsize);
+	DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() failed even after gc, alloc size %d", newsize));
 	return NULL;
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */

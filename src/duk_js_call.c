@@ -36,8 +36,8 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	int idx;
 	int need_map;
 
-	DUK_DDDPRINT("creating arguments object for func=%!iO, varenv=%!iO, idx_argbase=%d, num_stack_args=%d",
-	             (duk_heaphdr *) func, (duk_heaphdr *) varenv, idx_argbase, num_stack_args);
+	DUK_DDD(DUK_DDDPRINT("creating arguments object for func=%!iO, varenv=%!iO, idx_argbase=%d, num_stack_args=%d",
+	                     (duk_heaphdr *) func, (duk_heaphdr *) varenv, idx_argbase, num_stack_args));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
@@ -66,7 +66,7 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	DUK_ASSERT(n_formals >= 0);
 	DUK_ASSERT(formals != NULL || n_formals == 0);
 
-	DUK_DDDPRINT("func=%!O, formals=%!O, n_formals=%d", func, formals, n_formals);
+	DUK_DDD(DUK_DDDPRINT("func=%!O, formals=%!O, n_formals=%d", func, formals, n_formals));
 
 	/* [ ... formals ] */
 
@@ -100,13 +100,13 @@ static void duk__create_arguments_object(duk_hthread *thr,
 
 	/* [... formals arguments map mappedNames] */
 
-	DUK_DDDPRINT("created arguments related objects: "
-	             "arguments at index %d -> %!O "
-	             "map at index %d -> %!O "
-	             "mappednames at index %d -> %!O",
-	             i_arg, duk_get_hobject(ctx, i_arg),
-	             i_map, duk_get_hobject(ctx, i_map),
-	             i_mappednames, duk_get_hobject(ctx, i_mappednames));
+	DUK_DDD(DUK_DDDPRINT("created arguments related objects: "
+	                     "arguments at index %d -> %!O "
+	                     "map at index %d -> %!O "
+	                     "mappednames at index %d -> %!O",
+	                     i_arg, duk_get_hobject(ctx, i_arg),
+	                     i_map, duk_get_hobject(ctx, i_map),
+	                     i_mappednames, duk_get_hobject(ctx, i_mappednames)));
 
 	/*
 	 *  Init arguments properties, map, etc.
@@ -122,19 +122,19 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	/* step 11 */
 	idx = num_stack_args - 1;
 	while (idx >= 0) {
-		DUK_DDDPRINT("arg idx %d, argbase=%d, argidx=%d", idx, i_argbase, i_argbase + idx);
+		DUK_DDD(DUK_DDDPRINT("arg idx %d, argbase=%d, argidx=%d", idx, i_argbase, i_argbase + idx));
 
-		DUK_DDDPRINT("define arguments[%d]=arg", idx);
+		DUK_DDD(DUK_DDDPRINT("define arguments[%d]=arg", idx));
 		duk_push_int(ctx, idx);
 		duk_dup(ctx, i_argbase + idx);
 		duk_def_prop(ctx, i_arg, DUK_PROPDESC_FLAGS_WEC);
-		DUK_DDDPRINT("defined arguments[%d]=arg", idx);
+		DUK_DDD(DUK_DDDPRINT("defined arguments[%d]=arg", idx));
 
 		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
 		if (!DUK_HOBJECT_HAS_STRICT(func) && idx < n_formals) {
 			DUK_ASSERT(formals != NULL);
 
-			DUK_DDDPRINT("strict function, index within formals (%d < %d)", idx, n_formals);
+			DUK_DDD(DUK_DDDPRINT("strict function, index within formals (%d < %d)", idx, n_formals));
 
 			duk_get_prop_index(ctx, i_formals, idx);
 			DUK_ASSERT(duk_is_string(ctx, -1));
@@ -150,13 +150,13 @@ static void duk__create_arguments_object(duk_hthread *thr,
 
 				need_map = 1;
 
-				DUK_DDDPRINT("set mappednames[%s]=%d", duk_get_string(ctx, -1), idx);
+				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=%d", duk_get_string(ctx, -1), idx));
 				duk_dup(ctx, -1);         /* name */
 				duk_push_int(ctx, idx);   /* index */
 				duk_to_string(ctx, -1);
 				duk_def_prop(ctx, i_mappednames, DUK_PROPDESC_FLAGS_WEC);  /* out of spec, must be configurable */
 
-				DUK_DDDPRINT("set map[%d]=%s", idx, duk_get_string(ctx, -1));
+				DUK_DDD(DUK_DDDPRINT("set map[%d]=%s", idx, duk_get_string(ctx, -1)));
 				duk_push_int(ctx, idx);   /* index */
 				duk_to_string(ctx, -1);
 				duk_dup(ctx, -2);         /* name */
@@ -172,11 +172,11 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		idx--;
 	}
 
-	DUK_DDDPRINT("actual arguments processed");
+	DUK_DDD(DUK_DDDPRINT("actual arguments processed"));
 
 	/* step 12 */
 	if (need_map) {
-		DUK_DDDPRINT("adding 'map' and 'varenv' to arguments object");
+		DUK_DDD(DUK_DDDPRINT("adding 'map' and 'varenv' to arguments object"));
 
 		/* should never happen for a strict callee */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
@@ -213,12 +213,12 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		 *  thrower.  See test case test-arguments-throwers.js.
 		 */
 
-		DUK_DDDPRINT("strict function, setting caller/callee to throwers");
+		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
 		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
 		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
 	} else {
-		DUK_DDDPRINT("non-strict function, setting callee to actual value");
+		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
 		duk_push_hobject(ctx, func);
 		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
 	}
@@ -239,20 +239,20 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		/* cannot be strict (never mapped variables) */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
 
-		DUK_DDDPRINT("enabling special behavior for arguments object");
+		DUK_DDD(DUK_DDDPRINT("enabling special behavior for arguments object"));
 		DUK_HOBJECT_SET_SPECIAL_ARGUMENTS(arg);
 	} else {
-		DUK_DDDPRINT("not enabling special behavior for arguments object");
+		DUK_DDD(DUK_DDDPRINT("not enabling special behavior for arguments object"));
 	}
 
 	/* nice log */
-	DUK_DDDPRINT("final arguments related objects: "
-	             "arguments at index %d -> %!O "
-	             "map at index %d -> %!O "
-	             "mappednames at index %d -> %!O",
-	             i_arg, duk_get_hobject(ctx, i_arg),
-	             i_map, duk_get_hobject(ctx, i_map),
-	             i_mappednames, duk_get_hobject(ctx, i_mappednames));
+	DUK_DDD(DUK_DDDPRINT("final arguments related objects: "
+	                     "arguments at index %d -> %!O "
+	                     "map at index %d -> %!O "
+	                     "mappednames at index %d -> %!O",
+	                     i_arg, duk_get_hobject(ctx, i_arg),
+	                     i_map, duk_get_hobject(ctx, i_map),
+	                     i_mappednames, duk_get_hobject(ctx, i_mappednames)));
 
 	/* [args(n) [crud] formals arguments map mappednames] -> [args [crud] arguments] */
 	duk_pop_2(ctx);
@@ -269,7 +269,7 @@ static void duk__handle_createargs_for_call(duk_hthread *thr,
                                             int num_stack_args) {
 	duk_context *ctx = (duk_context *) thr;
 
-	DUK_DDDPRINT("creating arguments object for function call");
+	DUK_DDD(DUK_DDDPRINT("creating arguments object for function call"));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
@@ -336,21 +336,21 @@ static void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			break;
 		}
 
-		DUK_DDDPRINT("bound function encountered, ptr=%p", (void *) func);
+		DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p", (void *) func));
 
 		/* XXX: this could be more compact by accessing the internal properties
 		 * directly as own properties (they cannot be inherited, and are not
 		 * externally visible).
 		 */
 
-		DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%d",
-		             (void *) func, num_stack_args);
+		DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%d",
+		                     (void *) func, num_stack_args));
 
 		/* [ ... func this arg1 ... argN ] */
 
 		if (is_constructor_call) {
 			/* See: ecmascript-testcases/test-spec-bound-constructor.js */
-			DUK_DDDPRINT("constructor call: don't update this binding");
+			DUK_DDD(DUK_DDDPRINT("constructor call: don't update this binding"));
 		} else {
 			duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);
 			duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
@@ -382,15 +382,15 @@ static void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		duk_replace(ctx, idx_func);  /* replace also in stack; not strictly necessary */
 		func = duk_require_hobject(ctx, idx_func);
 
-		DUK_DDDPRINT("bound function handled, num_stack_args=%d, idx_func=%d",
-		             num_stack_args, idx_func);
+		DUK_DDD(DUK_DDDPRINT("bound function handled, num_stack_args=%d, idx_func=%d",
+		                     num_stack_args, idx_func));
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
 		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "function call bound chain sanity exceeded");
 	}
 
-	DUK_DDDPRINT("final non-bound function is: %p", (void *) func);
+	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %p", (void *) func));
 
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func) || DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
@@ -551,15 +551,15 @@ static void duk__coerce_effective_this_binding(duk_hthread *thr,
 	duk_context *ctx = (duk_context *) thr;
 
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
-		DUK_DDDPRINT("this binding: strict -> use directly");
+		DUK_DDD(DUK_DDDPRINT("this binding: strict -> use directly"));
 	} else {
 		duk_tval *tv_this = duk_require_tval(ctx, idx_this);
 		duk_hobject *obj_global;
 
 		if (DUK_TVAL_IS_OBJECT(tv_this)) {
-			DUK_DDDPRINT("this binding: non-strict, object -> use directly");
+			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, object -> use directly"));
 		} else if (DUK_TVAL_IS_UNDEFINED(tv_this) || DUK_TVAL_IS_NULL(tv_this)) {
-			DUK_DDDPRINT("this binding: non-strict, undefined/null -> use global object");
+			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, undefined/null -> use global object"));
 			obj_global = thr->builtins[DUK_BIDX_GLOBAL];
 			if (obj_global) {
 				duk_push_hobject(ctx, obj_global);
@@ -568,12 +568,12 @@ static void duk__coerce_effective_this_binding(duk_hthread *thr,
 				 *  This may only happen if built-ins are being "torn down".
 				 *  This behavior is out of specification scope.
 				 */
-				DUK_DPRINT("this binding: wanted to use global object, but it is NULL -> using undefined instead");
+				DUK_D(DUK_DPRINT("this binding: wanted to use global object, but it is NULL -> using undefined instead"));
 				duk_push_undefined(ctx);
 			}
 			duk_replace(ctx, idx_this);
 		} else {
-			DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)");
+			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)"));
 			duk_to_object(ctx, idx_this);  /* may have side effects */
 		}
 	}
@@ -678,32 +678,32 @@ int duk_handle_call(duk_hthread *thr,
 	 */
 	need_setjmp = ((call_flags & DUK_CALL_FLAG_PROTECTED) != 0) || (thr->heap->curr_thread != thr);
 
-	DUK_DDPRINT("duk_handle_call: thr=%p, num_stack_args=%d, "
-	            "call_flags=%d (protected=%d, ignorerec=%d, constructor=%d), need_setjmp=%d, "
-	            "valstack_top=%d, idx_func=%d, idx_args=%d, rec_depth=%d/%d, "
-	            "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
-	            "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
-	            (void *) thr,
-	            num_stack_args,
-	            call_flags,
-	            ((call_flags & DUK_CALL_FLAG_PROTECTED) != 0 ? 1 : 0),
-	            ((call_flags & DUK_CALL_FLAG_IGNORE_RECLIMIT) != 0 ? 1 : 0),
-	            ((call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) != 0 ? 1 : 0),
-	            need_setjmp,
-	            duk_get_top(ctx),
-	            idx_func,
-	            idx_args,
-	            thr->heap->call_recursion_depth,
-	            thr->heap->call_recursion_limit,
-	            entry_valstack_bottom_index,
-	            entry_callstack_top,
-	            entry_catchstack_top,
-	            entry_call_recursion_depth,
-	            (void *) entry_curr_thread,
-	            entry_thread_state);
+	DUK_DD(DUK_DDPRINT("duk_handle_call: thr=%p, num_stack_args=%d, "
+	                   "call_flags=%d (protected=%d, ignorerec=%d, constructor=%d), need_setjmp=%d, "
+	                   "valstack_top=%d, idx_func=%d, idx_args=%d, rec_depth=%d/%d, "
+	                   "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
+	                   "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
+	                   (void *) thr,
+	                   num_stack_args,
+	                   call_flags,
+	                   ((call_flags & DUK_CALL_FLAG_PROTECTED) != 0 ? 1 : 0),
+	                   ((call_flags & DUK_CALL_FLAG_IGNORE_RECLIMIT) != 0 ? 1 : 0),
+	                   ((call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) != 0 ? 1 : 0),
+	                   need_setjmp,
+	                   duk_get_top(ctx),
+	                   idx_func,
+	                   idx_args,
+	                   thr->heap->call_recursion_depth,
+	                   thr->heap->call_recursion_limit,
+	                   entry_valstack_bottom_index,
+	                   entry_callstack_top,
+	                   entry_catchstack_top,
+	                   entry_call_recursion_depth,
+	                   (void *) entry_curr_thread,
+	                   entry_thread_state));
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("callstack before call setup:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("callstack before call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
 
@@ -723,7 +723,7 @@ int duk_handle_call(duk_hthread *thr,
 	 */
 
 	if (!need_setjmp) {
-		DUK_DDDPRINT("don't need a setjmp catchpoint");
+		DUK_DDD(DUK_DDDPRINT("don't need a setjmp catchpoint"));
 		goto handle_call;
 	}
 
@@ -731,7 +731,7 @@ int duk_handle_call(duk_hthread *thr,
 	thr->heap->lj.jmpbuf_ptr = &our_jmpbuf;
 
 	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
-		DUK_DDDPRINT("setjmp catchpoint setup complete");
+		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint setup complete"));
 		goto handle_call;
 	}
 
@@ -755,8 +755,8 @@ int duk_handle_call(duk_hthread *thr,
 	 *  errors that should happen here are allocation errors.
 	 */
 
-	DUK_DDDPRINT("error caught during protected duk_handle_call(): %!T",
-	             &thr->heap->lj.value1);
+	DUK_DDD(DUK_DDDPRINT("error caught during protected duk_handle_call(): %!T",
+	                     &thr->heap->lj.value1));
 
 	DUK_ASSERT(thr->heap->lj.type == DUK_LJ_TYPE_THROW);
 	DUK_ASSERT(thr->callstack_top >= entry_callstack_top);
@@ -767,9 +767,9 @@ int duk_handle_call(duk_hthread *thr,
 	 */
 
 	/* Note: either pointer may be NULL (at entry), so don't assert */
-	DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
-	             (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-	             old_jmpbuf_ptr);
+	DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
+	                     (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
+	                     old_jmpbuf_ptr));
 
 	thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
 
@@ -790,7 +790,7 @@ int duk_handle_call(duk_hthread *thr,
 		 *  NULL on entry.
 		 */
 
-		DUK_DDDPRINT("call is not protected -> clean up and rethrow");
+		DUK_DDD(DUK_DDDPRINT("call is not protected -> clean up and rethrow"));
 
 		DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 		thr->state = entry_thread_state;
@@ -876,7 +876,7 @@ int duk_handle_call(duk_hthread *thr,
 	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
 
 	if (call_flags & DUK_CALL_FLAG_IGNORE_RECLIMIT) {
-		DUK_DDPRINT("ignoring reclimit for this call (probably an errhandler call)");
+		DUK_DD(DUK_DDPRINT("ignoring reclimit for this call (probably an errhandler call)"));
 	} else {	
 		if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
 			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "C call stack depth limit");
@@ -912,7 +912,7 @@ int duk_handle_call(duk_hthread *thr,
 	           DUK_HOBJECT_IS_NATIVEFUNCTION(func));
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
-	DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1));
+	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1)));
 
 	/* These base values are never used, but if the compiler doesn't know
 	 * that DUK_ERROR() won't return, these are needed to silence warnings.
@@ -1043,8 +1043,8 @@ int duk_handle_call(duk_hthread *thr,
 
 	/* [... func this arg1 ... argN] */
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("pushed new activation:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("pushed new activation:"));
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
 
@@ -1119,8 +1119,8 @@ int duk_handle_call(duk_hthread *thr,
 		/* 'func' wants stack "as is" */
 	}
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("callstack after call setup:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("callstack after call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
 
@@ -1205,7 +1205,7 @@ int duk_handle_call(duk_hthread *thr,
 	}
 	/* [... func this (crud) retval] */
 
-	DUK_DDDPRINT("native call retval -> %!T (rc=%d)", duk_get_tval(ctx, -1), rc);
+	DUK_DDD(DUK_DDDPRINT("native call retval -> %!T (rc=%d)", duk_get_tval(ctx, -1), rc));
 
 	duk_replace(ctx, idx_func);
 	duk_set_top(ctx, idx_func + 1);
@@ -1258,9 +1258,9 @@ int duk_handle_call(duk_hthread *thr,
 	 *
 	 */
 
-	DUK_DDDPRINT("entering bytecode execution");
+	DUK_DDD(DUK_DDDPRINT("entering bytecode execution"));
 	duk_js_execute_bytecode(thr);
-	DUK_DDDPRINT("returned from bytecode execution");
+	DUK_DDD(DUK_DDDPRINT("returned from bytecode execution"));
 
 	/*
 	 *  Unwind stack(s) and shift back to old valstack_bottom.
@@ -1316,9 +1316,9 @@ int duk_handle_call(duk_hthread *thr,
 		/* Note: either pointer may be NULL (at entry), so don't assert;
 		 * this is now done potentially twice, which is OK
 		 */
-		DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p (possibly already done)",
-		             (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-		             old_jmpbuf_ptr);
+		DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p (possibly already done)",
+		                     (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
+		                     old_jmpbuf_ptr));
 		thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
 
 		/* These are just convenience "wiping" of state */
@@ -1336,7 +1336,7 @@ int duk_handle_call(duk_hthread *thr,
 		DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value2);
 		DUK_TVAL_DECREF(thr, &tv_tmp);
 
-		DUK_DDDPRINT("setjmp catchpoint torn down");
+		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 	}
 
 	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
@@ -1377,9 +1377,9 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, in
 
 	idx_rcbase = duk_get_top(ctx) - num_actual_rets;  /* base of known return values */
 
-	DUK_DDDPRINT("adjust valstack after func call: "
-	             "num_stack_rets=%d, num_actual_rets=%d, stack_top=%d, idx_retbase=%d, idx_rcbase=%d",
-	             num_stack_rets, num_actual_rets, duk_get_top(ctx), idx_retbase, idx_rcbase);
+	DUK_DDD(DUK_DDDPRINT("adjust valstack after func call: "
+	                     "num_stack_rets=%d, num_actual_rets=%d, stack_top=%d, idx_retbase=%d, idx_rcbase=%d",
+	                     num_stack_rets, num_actual_rets, duk_get_top(ctx), idx_retbase, idx_rcbase));
 
 	DUK_ASSERT(idx_rcbase >= 0);  /* caller must check */
 
@@ -1397,8 +1397,8 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, in
 		int count = idx_rcbase - idx_retbase;
 		int i;
 
-		DUK_DDDPRINT("elements at/after idx_retbase have enough to cover func retvals "
-		             "(idx_retbase=%d, idx_rcbase=%d)", idx_retbase, idx_rcbase);
+		DUK_DDD(DUK_DDDPRINT("elements at/after idx_retbase have enough to cover func retvals "
+		                     "(idx_retbase=%d, idx_rcbase=%d)", idx_retbase, idx_rcbase));
 
 		/* nuke values at idx_retbase to get the first retval (initially
 		 * at idx_rcbase) to idx_retbase
@@ -1414,8 +1414,8 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, int idx_retbase, in
 		int count = idx_retbase - idx_rcbase;
 		int i;
 
-		DUK_DDDPRINT("not enough elements at/after idx_retbase to cover func retvals "
-		             "(idx_retbase=%d, idx_rcbase=%d)", idx_retbase, idx_rcbase);
+		DUK_DDD(DUK_DDDPRINT("not enough elements at/after idx_retbase to cover func retvals "
+		                     "(idx_retbase=%d, idx_rcbase=%d)", idx_retbase, idx_rcbase));
 
 		/* insert 'undefined' values at idx_rcbase to get the
 		 * return values to idx_retbase
@@ -1485,15 +1485,15 @@ int duk_handle_safe_call(duk_hthread *thr,
 	idx_retbase = duk_get_top(ctx) - num_stack_args;  /* Note: not a valid stack index if num_stack_args == 0 */
 
 	/* Note: cannot portably debug print a function pointer, hence 'func' not printed! */
-	DUK_DDPRINT("duk_handle_safe_call: thr=%p, num_stack_args=%d, num_stack_rets=%d, "
-	            "valstack_top=%d, idx_retbase=%d, rec_depth=%d/%d, "
-	            "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
-	            "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
-	            (void *) thr, num_stack_args, num_stack_rets,
-	            duk_get_top(ctx), idx_retbase, thr->heap->call_recursion_depth,
-	            thr->heap->call_recursion_limit, entry_valstack_bottom_index,
-	            entry_callstack_top, entry_catchstack_top, entry_call_recursion_depth,
-	            entry_curr_thread, entry_thread_state);
+	DUK_DD(DUK_DDPRINT("duk_handle_safe_call: thr=%p, num_stack_args=%d, num_stack_rets=%d, "
+	                   "valstack_top=%d, idx_retbase=%d, rec_depth=%d/%d, "
+	                   "entry_valstack_bottom_index=%d, entry_callstack_top=%d, entry_catchstack_top=%d, "
+	                   "entry_call_recursion_depth=%d, entry_curr_thread=%p, entry_thread_state=%d",
+	                   (void *) thr, num_stack_args, num_stack_rets,
+	                   duk_get_top(ctx), idx_retbase, thr->heap->call_recursion_depth,
+	                   thr->heap->call_recursion_limit, entry_valstack_bottom_index,
+	                   entry_callstack_top, entry_catchstack_top, entry_call_recursion_depth,
+	                   entry_curr_thread, entry_thread_state));
 
 	if (idx_retbase < 0) {
 		/*
@@ -1531,7 +1531,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	 *  errors that should happen here are allocation errors.
 	 */
 
-	DUK_DDDPRINT("error caught during protected duk_handle_safe_call()");
+	DUK_DDD(DUK_DDDPRINT("error caught during protected duk_handle_safe_call()"));
 
 	DUK_ASSERT(thr->heap->lj.type == DUK_LJ_TYPE_THROW);
 	DUK_ASSERT(thr->callstack_top >= entry_callstack_top);
@@ -1565,8 +1565,8 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	/* [ ... | ] or [ ... | errobj (M * undefined)] where M = num_stack_rets - 1 */
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DDPRINT("protected safe_call error handling finished, thread dump:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_DD(DUK_DDPRINT("protected safe_call error handling finished, thread dump:"));
 	DUK_DEBUG_DUMP_HTHREAD(thr);
 #endif
 
@@ -1579,7 +1579,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
  handle_call:
 
-	DUK_DDDPRINT("safe_call setjmp catchpoint setup complete");
+	DUK_DDD(DUK_DDDPRINT("safe_call setjmp catchpoint setup complete"));
 
 	/*
 	 *  Thread state check and book-keeping.
@@ -1635,7 +1635,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	rc = func(ctx);
 
-	DUK_DDDPRINT("safe_call, func rc=%d", rc);
+	DUK_DDD(DUK_DDDPRINT("safe_call, func rc=%d", rc));
 
 	/*
 	 *  Valstack manipulation for results
@@ -1690,7 +1690,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value2);
 	DUK_TVAL_DECREF(thr, &tv_tmp);
 
-	DUK_DDDPRINT("setjmp catchpoint torn down");
+	DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 
 	/* FIXME: because we unwind stacks above, thr->heap->curr_thread is at
 	 * risk of pointing to an already freed thread.  This was indeed the
@@ -1800,20 +1800,20 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	idx_func = duk_normalize_index(thr, -num_stack_args - 2);
 	idx_args = idx_func + 2;
 
-	DUK_DDPRINT("handle_ecma_call_setup: thr=%p, "
-	            "num_stack_args=%d, call_flags=%d (resume=%d, tailcall=%d), "
-	            "idx_func=%d, idx_args=%d, entry_valstack_bottom_index=%d",
-	            (void *) thr,
-	            num_stack_args,
-	            call_flags,
-	            ((call_flags & DUK_CALL_FLAG_IS_RESUME) != 0 ? 1 : 0),
-	            ((call_flags & DUK_CALL_FLAG_IS_TAILCALL) != 0 ? 1 : 0),
-	            idx_func,
-	            idx_args,
-	            entry_valstack_bottom_index);
+	DUK_DD(DUK_DDPRINT("handle_ecma_call_setup: thr=%p, "
+	                   "num_stack_args=%d, call_flags=%d (resume=%d, tailcall=%d), "
+	                   "idx_func=%d, idx_args=%d, entry_valstack_bottom_index=%d",
+	                   (void *) thr,
+	                   num_stack_args,
+	                   call_flags,
+	                   ((call_flags & DUK_CALL_FLAG_IS_RESUME) != 0 ? 1 : 0),
+	                   ((call_flags & DUK_CALL_FLAG_IS_TAILCALL) != 0 ? 1 : 0),
+	                   idx_func,
+	                   idx_args,
+	                   entry_valstack_bottom_index));
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("callstack before call setup:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("callstack before call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
 
@@ -1849,7 +1849,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func));  /* caller must ensure this */
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
-	DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1));
+	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1)));
 
 	nargs = ((duk_hcompiledfunction *) func)->nargs;
 	nregs = ((duk_hcompiledfunction *) func)->nregs;
@@ -1882,7 +1882,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	/* With 'caller' property, tail calls cannot be used without further
 	 * non-trivial fixes, so disable them.
 	 */
-	DUK_DDDPRINT("tailcall disabled because 'caller' property enabled and target is non-strict");
+	DUK_DDD(DUK_DDDPRINT("tailcall disabled because 'caller' property enabled and target is non-strict"));
 	DUK_ASSERT(use_tailcall == 0);  /* compiler ensures this */
 #endif
 
@@ -1902,8 +1902,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		 *  because there may be non-error-catching label entries in valid tailcalls.
 		 */
 
-		DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
-		             thr->callstack_top - 1);
+		DUK_DDD(DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
+		                     thr->callstack_top - 1));
 
 		act = thr->callstack + thr->callstack_top - 1;
 		DUK_UNREF(act);  /* unreferenced unless assertions used */
@@ -2009,8 +2009,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		                                DUK_VALSTACK_INTERNAL_EXTRA,                 /* + spare => min_new_size */
 		                            1);                                              /* allow_shrink */
 	} else {
-		DUK_DDDPRINT("not a tailcall, pushing a new activation to callstack, to index %d",
-		             thr->callstack_top);
+		DUK_DDD(DUK_DDDPRINT("not a tailcall, pushing a new activation to callstack, to index %d",
+		                     thr->callstack_top));
 
 		duk_hthread_callstack_grow(thr);
 
@@ -2024,9 +2024,9 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		                            1);                                              /* allow_shrink */
 
 		if (call_flags & DUK_CALL_FLAG_IS_RESUME) {
-			DUK_DDDPRINT("is resume -> no update to current activation (may not even exist)");
+			DUK_DDD(DUK_DDDPRINT("is resume -> no update to current activation (may not even exist)"));
 		} else {
-			DUK_DDDPRINT("update to current activation idx_retval");
+			DUK_DDD(DUK_DDDPRINT("update to current activation idx_retval"));
 			DUK_ASSERT(thr->callstack_top < thr->callstack_size);
 			DUK_ASSERT(thr->callstack_top >= 1);
 			act = thr->callstack + thr->callstack_top - 1;
@@ -2074,8 +2074,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 * idx_args updated to match
 	 */
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("pushed new activation:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("pushed new activation:"));
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
 
@@ -2141,8 +2141,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
 	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
 
-#ifdef DUK_USE_DDDEBUG
-	DUK_DPRINT("callstack after call setup:");
+#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+	DUK_D(DUK_DPRINT("callstack after call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
 

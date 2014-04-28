@@ -124,7 +124,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 static void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER *res) {
 	FILETIME ft;
 	if (SystemTimeToFileTime(st, &ft) == 0) {
-		DUK_DPRINT("SystemTimeToFileTime() failed, returning 0");
+		DUK_D(DUK_DPRINT("SystemTimeToFileTime() failed, returning 0"));
 		res->QuadPart = 0;
 	} else {
 		res->LowPart = ft.dwLowDateTime;
@@ -216,7 +216,7 @@ static int duk__get_local_tzoffset(double d) {
 	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
 	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0);  /* unsigned 31-bit range */
 	t = (size_t) (d / 1000.0);
-	DUK_DDDPRINT("timeval: %lf -> time_t %d", d, (int) t);
+	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %d", d, (int) t));
 
 	t1 = t;
 
@@ -232,11 +232,11 @@ static int duk__get_local_tzoffset(double d) {
 #endif
 	DUK_MEMCPY((void *) &tms[1], &tms[0], sizeof(struct tm));
 
-	DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
-	             "wday:%d,yday:%d,isdst:%d}",
-	             (int) tms[0].tm_sec, (int) tms[0].tm_min, (int) tms[0].tm_hour,
-	             (int) tms[0].tm_mday, (int) tms[0].tm_mon, (int) tms[0].tm_year,
-	             (int) tms[0].tm_wday, (int) tms[0].tm_yday, (int) tms[0].tm_isdst);
+	DUK_DDD(DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
+	                     "wday:%d,yday:%d,isdst:%d}",
+	                     (int) tms[0].tm_sec, (int) tms[0].tm_min, (int) tms[0].tm_hour,
+	                     (int) tms[0].tm_mday, (int) tms[0].tm_mon, (int) tms[0].tm_year,
+	                     (int) tms[0].tm_wday, (int) tms[0].tm_yday, (int) tms[0].tm_isdst));
 
 	(void) mktime(&tms[0]);
 	tms[1].tm_isdst = tms[0].tm_isdst;
@@ -251,12 +251,12 @@ static int duk__get_local_tzoffset(double d) {
 		goto error;
 	}
 
-	DUK_DDDPRINT("after mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
-	             "wday:%d,yday:%d,isdst:%d}",
-	             (int) tms[1].tm_sec, (int) tms[1].tm_min, (int) tms[1].tm_hour,
-	             (int) tms[1].tm_mday, (int) tms[1].tm_mon, (int) tms[1].tm_year,
-	             (int) tms[1].tm_wday, (int) tms[1].tm_yday, (int) tms[1].tm_isdst);
-	DUK_DDDPRINT("t2=%d", (int) t2);
+	DUK_DDD(DUK_DDDPRINT("after mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
+	                     "wday:%d,yday:%d,isdst:%d}",
+	                     (int) tms[1].tm_sec, (int) tms[1].tm_min, (int) tms[1].tm_hour,
+	                     (int) tms[1].tm_mday, (int) tms[1].tm_mon, (int) tms[1].tm_year,
+	                     (int) tms[1].tm_wday, (int) tms[1].tm_yday, (int) tms[1].tm_isdst));
+	DUK_DDD(DUK_DDDPRINT("t2=%d", (int) t2));
 
 	/* Positive if local time ahead of UTC. */
 
@@ -272,7 +272,7 @@ static int duk__get_local_tzoffset(double d) {
 
  error:
 	/* FIXME: return something more useful, so that caller can throw? */
-	DUK_DPRINT("mktime() failed, d=%lf", d);
+	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", d));
 	return 0;
 }
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
@@ -300,7 +300,7 @@ static int duk__get_local_tzoffset(double d) {
 	ft1.dwHighDateTime = tmp2.HighPart;
 	FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
 	if (SystemTimeToTzSpecificLocalTime((LPTIME_ZONE_INFORMATION) NULL, &st2, &st3) == 0) {
-		DUK_DPRINT("SystemTimeToTzSpecificLocalTime() failed, return tzoffset 0");
+		DUK_D(DUK_DPRINT("SystemTimeToTzSpecificLocalTime() failed, return tzoffset 0"));
 		return 0;
 	}
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
@@ -322,19 +322,19 @@ static int duk__parse_string_strptime(duk_context *ctx, const char *str) {
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
-	DUK_DDDPRINT("parsing: '%s'", buf);
+	DUK_DDD(DUK_DDDPRINT("parsing: '%s'", buf));
 
 	DUK_MEMZERO(&tm, sizeof(tm));
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
-		DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
-		             "wday:%d,yday:%d,isdst:%d}",
-		             (int) tm.tm_sec, (int) tm.tm_min, (int) tm.tm_hour,
-		             (int) tm.tm_mday, (int) tm.tm_mon, (int) tm.tm_year,
-		             (int) tm.tm_wday, (int) tm.tm_yday, (int) tm.tm_isdst);
+		DUK_DDD(DUK_DDDPRINT("before mktime: tm={sec:%d,min:%d,hour:%d,mday:%d,mon:%d,year:%d,"
+		                     "wday:%d,yday:%d,isdst:%d}",
+		                     (int) tm.tm_sec, (int) tm.tm_min, (int) tm.tm_hour,
+		                     (int) tm.tm_mday, (int) tm.tm_mon, (int) tm.tm_year,
+		                      (int) tm.tm_wday, (int) tm.tm_yday, (int) tm.tm_isdst));
 		tm.tm_isdst = -1;  /* negative: dst info not available */
 
 		t = mktime(&tm);
-		DUK_DDDPRINT("mktime() -> %d", (int) t);
+		DUK_DDD(DUK_DDDPRINT("mktime() -> %d", (int) t));
 		if (t >= 0) {
 			duk_push_number(ctx, ((double) t) * 1000.0);
 			return 1;
@@ -357,11 +357,11 @@ static int duk__parse_string_getdate(duk_context *ctx, const char *str) {
 
 	DUK_MEMZERO(&tm, sizeof(struct tm));
 	rc = getdate_r(str, &tm);
-	DUK_DDDPRINT("getdate_r() -> %d", rc);
+	DUK_DDD(DUK_DDDPRINT("getdate_r() -> %d", rc));
 
 	if (rc == 0) {
 		t = mktime(&tm);
-		DUK_DDDPRINT("mktime() -> %d", (int) t);
+		DUK_DDD(DUK_DDDPRINT("mktime() -> %d", (int) t));
 		if (t >= 0) {
 			duk_push_number(ctx, (double) t);
 			return 1;
@@ -544,12 +544,12 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 
 	for (;;) {
 		ch = *p++;
-		DUK_DDDPRINT("parsing, part_idx=%d, char=%d ('%c')", part_idx, (int) ch,
-		             (ch >= 0x20 && ch <= 0x7e) ? ch : '?');
+		DUK_DDD(DUK_DDDPRINT("parsing, part_idx=%d, char=%d ('%c')", part_idx, (int) ch,
+		                     (ch >= 0x20 && ch <= 0x7e) ? ch : '?'));
 
 		if (ch >= '0' && ch <= '9') {
 			if (ndigits >= 9) {
-				DUK_DDDPRINT("too many digits -> reject");
+				DUK_DDD(DUK_DDDPRINT("too many digits -> reject"));
 				goto reject;
 			}
 			if (part_idx == DUK__PI_MILLISECOND /*msec*/ && ndigits >= 3) {
@@ -573,7 +573,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				}
 			}
 			parts[part_idx] = accum;
-			DUK_DDDPRINT("wrote part %d -> value %d", part_idx, accum);
+			DUK_DDD(DUK_DDDPRINT("wrote part %d -> value %d", part_idx, accum));
 
 			accum = 0;
 			ndigits = 0;
@@ -584,7 +584,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				}
 			}
 			if (i == (int) sizeof(duk__parse_iso8601_seps)) {
-				DUK_DDDPRINT("separator character doesn't match -> reject");
+				DUK_DDD(DUK_DDDPRINT("separator character doesn't match -> reject"));
 				goto reject;
 			}
 
@@ -596,8 +596,8 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				int nextpart;
 				int cflags;
 
-				DUK_DDDPRINT("part_idx=%d, sep_idx=%d, match_val=0x%08x, considering rule=0x%08x",
-				           part_idx, sep_idx, match_val, rule);
+				DUK_DDD(DUK_DDDPRINT("part_idx=%d, sep_idx=%d, match_val=0x%08x, considering rule=0x%08x",
+				                     part_idx, sep_idx, match_val, rule));
 
 				if ((rule & match_val) != match_val) {
 					continue;
@@ -605,8 +605,8 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 
 				DUK__UNPACK_RULE(rule, nextpart, cflags);
 
-				DUK_DDDPRINT("rule match -> part_idx=%d, sep_idx=%d, match_val=0x%08x, rule=0x%08x -> nextpart=%d, cflags=0x%02x",
-				             part_idx, sep_idx, match_val, rule, nextpart, cflags);
+				DUK_DDD(DUK_DDDPRINT("rule match -> part_idx=%d, sep_idx=%d, match_val=0x%08x, rule=0x%08x -> nextpart=%d, cflags=0x%02x",
+				                     part_idx, sep_idx, match_val, rule, nextpart, cflags));
 
 				if (cflags & DUK__CF_NEG) {
 					neg_tzoffset = 1;
@@ -629,7 +629,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 			}  /* rule match */
 
 			if (i == (int) (sizeof(duk__parse_iso8601_control) / sizeof(int))) {
-				DUK_DDDPRINT("no rule matches -> reject");
+				DUK_DDD(DUK_DDDPRINT("no rule matches -> reject"));
 				goto reject;
 			}
 
@@ -637,7 +637,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				/* This shouldn't be necessary, but check just in case
 				 * to avoid any chance of overruns.
 				 */
-				DUK_DDDPRINT("NUL after rule matching (should not happen) -> reject");
+				DUK_DDD(DUK_DDDPRINT("NUL after rule matching (should not happen) -> reject"));
 				goto reject;
 			}
 		}  /* if-digit-else-ctrl */
@@ -646,14 +646,14 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	/* We should never exit the loop above, but if we do, reject
 	 * by falling through.
 	 */
-	DUK_DDDPRINT("fell out of char loop without explicit accept/reject -> reject");
+	DUK_DDD(DUK_DDDPRINT("fell out of char loop without explicit accept/reject -> reject"));
 
  reject:
-	DUK_DDDPRINT("reject");
+	DUK_DDD(DUK_DDDPRINT("reject"));
 	return 0;
 
  accept:
-	DUK_DDDPRINT("accept");
+	DUK_DDD(DUK_DDDPRINT("accept"));
 
 	/* Apply timezone offset to get the main parts in UTC */
 	if (neg_year) {
@@ -677,7 +677,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	 * potential for Valgrind issues.
 	 */
 	for (i = 0; i < DUK__NUM_PARTS; i++) {
-		DUK_DDDPRINT("part[%d] = %d", i, parts[i]);
+		DUK_DDD(DUK_DDDPRINT("part[%d] = %d", i, parts[i]));
 		dparts[i] = parts[i];
 	}
 
@@ -712,7 +712,7 @@ static int duk__parse_string(duk_context *ctx, const char *str) {
 	 */
 
 	DUK_ASSERT(str != NULL);
-	DUK_DDDPRINT("parse datetime from string '%s'", str);
+	DUK_DDD(DUK_DDDPRINT("parse datetime from string '%s'", str));
 
 	if (duk__parse_string_iso8601_subset(ctx, str) > 0) {
 		return 1;
@@ -816,11 +816,11 @@ static int duk__year_from_day(int day, int *out_day_within_year) {
 
 	for (;;) {
 		diff_days = duk__day_from_year(year) - day;
-		DUK_DDDPRINT("year=%d day=%d, diff_days=%d", year, day, diff_days);
+		DUK_DDD(DUK_DDDPRINT("year=%d day=%d, diff_days=%d", year, day, diff_days));
 		if (diff_days <= 0) {
 			*out_day_within_year = -diff_days;
-			DUK_DDDPRINT("--> year=%d, day-within-year=%d",
-			             year, *out_day_within_year);
+			DUK_DDD(DUK_DDDPRINT("--> year=%d, day-within-year=%d",
+			                     year, *out_day_within_year));
 			DUK_ASSERT(*out_day_within_year >= 0);
 			DUK_ASSERT(*out_day_within_year <= (duk__is_leap_year(year) ? 366 : 365));
 			return year;
@@ -937,13 +937,13 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 		if (month == 1 && is_leap) {
 			dim++;
 		}
-		DUK_DDDPRINT("month=%d, dim=%d, day=%d", month, dim, day);
+		DUK_DDD(DUK_DDDPRINT("month=%d, dim=%d, day=%d", month, dim, day));
 		if (day < dim) {
 			break;
 		}
 		day -= dim;
 	}
-	DUK_DDDPRINT("final month=%d", month);
+	DUK_DDD(DUK_DDDPRINT("final month=%d", month));
 	DUK_ASSERT(month >= 0 && month <= 11);
 	DUK_ASSERT(day >= 0 && day <= 31);
 
@@ -1007,7 +1007,7 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
 	/* MakeDate */
 	d = tmp_day * ((double) DUK__MS_DAY) + tmp_time;
 
-	DUK_DDDPRINT("time=%lf day=%lf --> timeval=%lf", tmp_time, tmp_day, d);
+	DUK_DDD(DUK_DDDPRINT("time=%lf day=%lf --> timeval=%lf", tmp_time, tmp_day, d));
 
 	/* Optional UTC conversion followed by TimeClip().
 	 * Note that this also handles Infinity -> NaN conversion.
@@ -1386,9 +1386,9 @@ static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs
 		dparts[idx] = d;
 	}
 
-	DUK_DDDPRINT("parts from args -> %lf %lf %lf %lf %lf %lf %lf %lf",
-	             dparts[0], dparts[1], dparts[2], dparts[3],
-	             dparts[4], dparts[5], dparts[6], dparts[7]);
+	DUK_DDD(DUK_DDDPRINT("parts from args -> %lf %lf %lf %lf %lf %lf %lf %lf",
+	                     dparts[0], dparts[1], dparts[2], dparts[3],
+	                     dparts[4], dparts[5], dparts[6], dparts[7]));
 }
 
 /*
@@ -1422,7 +1422,7 @@ int duk_bi_date_constructor(duk_context *ctx) {
 	double dparts[DUK__NUM_PARTS];
 	double d;
 
-	DUK_DDDPRINT("Date constructor, nargs=%d, is_cons=%d", nargs, is_cons);
+	DUK_DDD(DUK_DDDPRINT("Date constructor, nargs=%d, is_cons=%d", nargs, is_cons));
 
 	duk_push_object_helper(ctx,
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |

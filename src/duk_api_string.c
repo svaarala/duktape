@@ -53,7 +53,7 @@ static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, in
 		len = new_len;
 	}
 
-	DUK_DDDPRINT("join/concat %d strings, total length %d bytes", (int) count, (int) len);
+	DUK_DDD(DUK_DDDPRINT("join/concat %d strings, total length %d bytes", (int) count, (int) len));
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);
@@ -270,11 +270,11 @@ void duk_trim(duk_context *ctx, int index) {
 	DUK_ASSERT(q_end >= p_start && q_end <= p_end);
 	DUK_ASSERT(q_end >= q_start);
 
-	DUK_DDDPRINT("trim: p_start=%p, p_end=%p, q_start=%p, q_end=%p",
-	             (void *) p_start, (void *) p_end, (void *) q_start, (void *) q_end);
+	DUK_DDD(DUK_DDDPRINT("trim: p_start=%p, p_end=%p, q_start=%p, q_end=%p",
+	                     (void *) p_start, (void *) p_end, (void *) q_start, (void *) q_end));
 
 	if (q_start == p_start && q_end == p_end) {
-		DUK_DDDPRINT("nothing was trimmed: avoid interning (hashing etc)");
+		DUK_DDD(DUK_DDDPRINT("nothing was trimmed: avoid interning (hashing etc)"));
 		return;
 	}
 

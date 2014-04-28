@@ -59,4 +59,3 @@ int duk_fb_is_full(duk_fixedbuffer *fb) {
 }
 
 #endif  /* DUK_USE_DEBUG */
-

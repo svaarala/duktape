@@ -54,10 +54,10 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_hobject *func;
 	duk_small_int_t is_error;
 
-	DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
-	             duk_get_tval(ctx, 0),
-	             duk_get_tval(ctx, 1),
-	             duk_get_tval(ctx, 2));
+	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
+	                     duk_get_tval(ctx, 0),
+	                     duk_get_tval(ctx, 1),
+	                     duk_get_tval(ctx, 2)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -73,7 +73,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	 */
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)");
+		DUK_DD(DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)"));
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -81,7 +81,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
 
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
-		DUK_DDPRINT("resume state invalid: caller must be Ecmascript code");
+		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}
 
@@ -91,7 +91,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	if (thr_resume->state != DUK_HTHREAD_STATE_INACTIVE &&
 	    thr_resume->state != DUK_HTHREAD_STATE_YIELDED) {
-		DUK_DDPRINT("resume state invalid: target thread must be INACTIVE or YIELDED");
+		DUK_DD(DUK_DDPRINT("resume state invalid: target thread must be INACTIVE or YIELDED"));
 		goto state_error;
 	}
 
@@ -142,19 +142,19 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	}
 #endif
 
-#ifdef DUK_USE_DEBUG  /* debug logging */
+#ifdef DUK_USE_DEBUG
 	if (is_error) {
-		DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
-		             duk_get_tval(ctx, 0),
-		             duk_get_tval(ctx, 1));
+		DUK_DDD(DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
+		                     duk_get_tval(ctx, 0),
+		                     duk_get_tval(ctx, 1)));
 	} else if (thr_resume->state == DUK_HTHREAD_STATE_YIELDED) {
-		DUK_DDDPRINT("RESUME NORMAL: thread=%!T, value=%!T",
-		             duk_get_tval(ctx, 0),
-		             duk_get_tval(ctx, 1));
+		DUK_DDD(DUK_DDDPRINT("RESUME NORMAL: thread=%!T, value=%!T",
+		                     duk_get_tval(ctx, 0),
+		                     duk_get_tval(ctx, 1)));
 	} else {
-		DUK_DDDPRINT("RESUME INITIAL: thread=%!T, value=%!T",
-		             duk_get_tval(ctx, 0),
-		             duk_get_tval(ctx, 1));
+		DUK_DDD(DUK_DDDPRINT("RESUME INITIAL: thread=%!T, value=%!T",
+		                     duk_get_tval(ctx, 0),
+		                     duk_get_tval(ctx, 1)));
 	}
 #endif
 
@@ -209,9 +209,9 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_tval tv_tmp;
 	duk_small_int_t is_error;
 
-	DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
-	             duk_get_tval(ctx, 0),
-	             duk_get_tval(ctx, 1));
+	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
+	                     duk_get_tval(ctx, 0),
+	                     duk_get_tval(ctx, 1)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -226,13 +226,13 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	 */
 
 	if (!thr->resumer) {
-		DUK_DDPRINT("yield state invalid: current thread must have a resumer");
+		DUK_DD(DUK_DDPRINT("yield state invalid: current thread must have a resumer"));
 		goto state_error;
 	}
 	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
 	if (thr->callstack_top < 2) {
-		DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)");
+		DUK_DD(DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)"));
 		goto state_error;
 	}
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
@@ -240,15 +240,15 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
 
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
-		DUK_DDPRINT("yield state invalid: caller must be Ecmascript code");
+		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}
 
 	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
 	if (thr->callstack_preventcount != 1) {
 		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
-		DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
-		            (int) thr->callstack_preventcount);
+		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
+		                   (int) thr->callstack_preventcount));
 		goto state_error;
 	}
 
@@ -268,11 +268,11 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
-		DUK_DDDPRINT("YIELD ERROR: value=%!T",
-		             duk_get_tval(ctx, 0));
+		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T",
+		                     duk_get_tval(ctx, 0)));
 	} else {
-		DUK_DDDPRINT("YIELD NORMAL: value=%!T",
-		             duk_get_tval(ctx, 0));
+		DUK_DDD(DUK_DDDPRINT("YIELD NORMAL: value=%!T",
+		                     duk_get_tval(ctx, 0)));
 	}
 #endif
 

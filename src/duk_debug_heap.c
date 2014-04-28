@@ -41,20 +41,20 @@ static const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 
 static void duk__dump_indented(duk_heaphdr *obj, int index) {
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x, ref: %d) -> %!O",
-	           index,
-	           (void *) obj,
-	           duk__get_heap_type_string(obj),
-	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
-	           DUK_HEAPHDR_GET_REFCOUNT(obj),
-	           obj);
+	DUK_D(DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x, ref: %d) -> %!O",
+	                 index,
+	                 (void *) obj,
+	                 duk__get_heap_type_string(obj),
+	                 (int) DUK_HEAPHDR_GET_FLAGS(obj),
+	                 DUK_HEAPHDR_GET_REFCOUNT(obj),
+	                 obj));
 #else
-	DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x) -> %!O",
-	           index,
-	           (void *) obj,
-	           duk__get_heap_type_string(obj),
-	           (int) DUK_HEAPHDR_GET_FLAGS(obj),
-	           obj);
+	DUK_D(DUK_DPRINT("  [%d]: %p %s (flags: 0x%08x) -> %!O",
+	                 index,
+	                 (void *) obj,
+	                 duk__get_heap_type_string(obj),
+	                 (int) DUK_HEAPHDR_GET_FLAGS(obj),
+	                 obj));
 #endif
 }
 
@@ -71,7 +71,7 @@ static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char
 		curr = DUK_HEAPHDR_GET_NEXT(curr);
 	}
 
-	DUK_DPRINT("%s, %d objects", name, count);
+	DUK_D(DUK_DPRINT("%s, %d objects", name, count));
 
 	count = 0;
 	curr = root;
@@ -86,53 +86,53 @@ static void duk__dump_stringtable(duk_heap *heap) {
 	duk_uint32_t i;
 	char buf[64+1];
 
-	DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
-	           (void *) heap->st,
-	           (int) heap->st_used,
-	           (int) heap->st_size,
-	           (int) (((double) heap->st_used) / ((double) heap->st_size) * 100.0));
+	DUK_D(DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
+	                 (void *) heap->st,
+	                 (int) heap->st_used,
+	                 (int) heap->st_size,
+	                 (int) (((double) heap->st_used) / ((double) heap->st_size) * 100.0)));
 
 	for (i = 0; i < heap->st_size; i++) {
 		duk_hstring *e = heap->st[i];
 
 		if (!e) {
-			DUK_DPRINT("  [%d]: NULL", i);
+			DUK_D(DUK_DPRINT("  [%d]: NULL", i));
 		} else if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
-			DUK_DPRINT("  [%d]: DELETED", i);
+			DUK_D(DUK_DPRINT("  [%d]: DELETED", i));
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), e);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
-			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			           i,
-			           (void *) e,
-			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
-			           (int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) e),
-			           buf,
-			           (int) e->hash,
-			           (int) e->blen,
-			           (int) e->clen,
-			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
+			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
+			                 i,
+			                 (void *) e,
+			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
+			                 (int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) e),
+			                 buf,
+			                 (int) e->hash,
+			                 (int) e->blen,
+			                 (int) e->clen,
+			                 DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0));
 #else
-			DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
-			           "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			           i,
-			           (void *) e,
-			           (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
-			           buf,
-			           (int) e->hash,
-			           (int) e->blen,
-			           (int) e->clen,
-			           DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
-			           DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0);
+			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
+			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
+			                 i,
+			                 (void *) e,
+			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
+			                 buf,
+			                 (int) e->hash,
+			                 (int) e->blen,
+			                 (int) e->clen,
+			                 DUK_HSTRING_HAS_ARRIDX(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_INTERNAL(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_STRICT_RESERVED_WORD(e) ? 1 : 0,
+			                 DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(e) ? 1 : 0));
 #endif
 		}
 	}
@@ -142,17 +142,17 @@ static void duk__dump_strcache(duk_heap *heap) {
 	duk_uint32_t i;
 	char buf[64+1];
 
-	DUK_DPRINT("stringcache");
+	DUK_D(DUK_DPRINT("stringcache"));
 
 	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache *c = &heap->strcache[i];
 		if (!c->h) {
-			DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
-			           i, c->bidx, c->cidx);
+			DUK_D(DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
+			                 i, c->bidx, c->cidx));
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), c->h);
-			DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
-			           i, c->bidx, c->cidx, buf);
+			DUK_D(DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
+			                 i, c->bidx, c->cidx, buf));
 		}
 	} 
 }
@@ -160,8 +160,8 @@ static void duk__dump_strcache(duk_heap *heap) {
 void duk_debug_dump_heap(duk_heap *heap) {
 	char buf[64+1];
 
-	DUK_DPRINT("=== heap %p ===", (void *) heap);
-	DUK_DPRINT("  flags: 0x%08x", (int) heap->flags);
+	DUK_D(DUK_DPRINT("=== heap %p ===", (void *) heap));
+	DUK_D(DUK_DPRINT("  flags: 0x%08x", (int) heap->flags));
 
 	/* Note: there is no standard formatter for function pointers */
 #ifdef DUK_USE_GCC_PRAGMAS
@@ -169,44 +169,44 @@ void duk_debug_dump_heap(duk_heap *heap) {
 #pragma GCC diagnostic ignored "-pedantic"
 #endif
 	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->alloc_func, sizeof(heap->alloc_func));
-	DUK_DPRINT("  alloc_func: %s", buf);
+	DUK_D(DUK_DPRINT("  alloc_func: %s", buf));
 	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->realloc_func, sizeof(heap->realloc_func));
-	DUK_DPRINT("  realloc_func: %s", buf);
+	DUK_D(DUK_DPRINT("  realloc_func: %s", buf));
 	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->free_func, sizeof(heap->free_func));
-	DUK_DPRINT("  free_func: %s", buf);
+	DUK_D(DUK_DPRINT("  free_func: %s", buf));
 	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->fatal_func, sizeof(heap->fatal_func));
-	DUK_DPRINT("  fatal_func: %s", buf);
+	DUK_D(DUK_DPRINT("  fatal_func: %s", buf));
 #ifdef DUK_USE_GCC_PRAGMAS
 #pragma GCC diagnostic pop
 #endif
 
-	DUK_DPRINT("  alloc_udata: %p", (void *) heap->alloc_udata);
+	DUK_D(DUK_DPRINT("  alloc_udata: %p", (void *) heap->alloc_udata));
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 #ifdef DUK_USE_VOLUNTARY_GC
-	DUK_DPRINT("  mark-and-sweep trig counter: %d", heap->mark_and_sweep_trigger_counter);
+	DUK_D(DUK_DPRINT("  mark-and-sweep trig counter: %d", heap->mark_and_sweep_trigger_counter));
 #endif
-	DUK_DPRINT("  mark-and-sweep rec depth: %d", heap->mark_and_sweep_recursion_depth);
-	DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", heap->mark_and_sweep_base_flags);
+	DUK_D(DUK_DPRINT("  mark-and-sweep rec depth: %d", heap->mark_and_sweep_recursion_depth));
+	DUK_D(DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", heap->mark_and_sweep_base_flags));
 #endif
 
-	DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr);
-	DUK_DPRINT("  lj.type: %d", heap->lj.type);
-	DUK_DPRINT("  lj.value1: %!T", &heap->lj.value1);
-	DUK_DPRINT("  lj.value2: %!T", &heap->lj.value2);
-	DUK_DPRINT("  lj.iserror: %d", heap->lj.iserror);
+	DUK_D(DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr));
+	DUK_D(DUK_DPRINT("  lj.type: %d", heap->lj.type));
+	DUK_D(DUK_DPRINT("  lj.value1: %!T", &heap->lj.value1));
+	DUK_D(DUK_DPRINT("  lj.value2: %!T", &heap->lj.value2));
+	DUK_D(DUK_DPRINT("  lj.iserror: %d", heap->lj.iserror));
 
-	DUK_DPRINT("  handling_error: %d", heap->handling_error);
+	DUK_D(DUK_DPRINT("  handling_error: %d", heap->handling_error));
 
-	DUK_DPRINT("  heap_thread: %!@O", (duk_heaphdr *) heap->heap_thread);
-	DUK_DPRINT("  curr_thread: %!@O", (duk_heaphdr *) heap->curr_thread);
-	DUK_DPRINT("  heap_object: %!@O", (duk_heaphdr *) heap->heap_object);
+	DUK_D(DUK_DPRINT("  heap_thread: %!@O", (duk_heaphdr *) heap->heap_thread));
+	DUK_D(DUK_DPRINT("  curr_thread: %!@O", (duk_heaphdr *) heap->curr_thread));
+	DUK_D(DUK_DPRINT("  heap_object: %!@O", (duk_heaphdr *) heap->heap_object));
 
-	DUK_DPRINT("  call_recursion_depth: %d", heap->call_recursion_depth);
-	DUK_DPRINT("  call_recursion_limit: %d", heap->call_recursion_limit);
+	DUK_D(DUK_DPRINT("  call_recursion_depth: %d", heap->call_recursion_depth));
+	DUK_D(DUK_DPRINT("  call_recursion_limit: %d", heap->call_recursion_limit));
 
-	DUK_DPRINT("  hash_seed: 0x%08x", (int) heap->hash_seed);
-	DUK_DPRINT("  rnd_state: 0x%08x", (int) heap->rnd_state);
+	DUK_D(DUK_DPRINT("  hash_seed: 0x%08x", (int) heap->hash_seed));
+	DUK_D(DUK_DPRINT("  rnd_state: 0x%08x", (int) heap->rnd_state));
 
 	duk__dump_strcache(heap);
 

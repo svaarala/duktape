@@ -129,7 +129,7 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 
 	/* FIXME: faster implementation */
 
-	DUK_DDDPRINT("arg=%!T", duk_get_tval(ctx, 0));
+	DUK_DDD(DUK_DDDPRINT("arg=%!T", duk_get_tval(ctx, 0)));
 
 	h = duk_push_this_coercible_to_string(ctx);
 	DUK_ASSERT(h != NULL);
@@ -527,7 +527,7 @@ duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 				duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 				last_index = duk_get_int(ctx, -1);  /* FIXME: duk_get_uint32() */
-				DUK_DDDPRINT("empty match, bump lastIndex: %d -> %d", last_index, last_index + 1);
+				DUK_DDD(DUK_DDDPRINT("empty match, bump lastIndex: %d -> %d", last_index, last_index + 1));
 				duk_pop(ctx);
 				duk_push_int(ctx, last_index + 1);
 				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
@@ -983,10 +983,10 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 		 * stack[4] = regexp res_obj (if is_regexp)
 		 */
 
-		DUK_DDDPRINT("split; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
-		             (int) match_start_boff, (int) match_start_coff,
-		             (int) match_end_boff, (int) match_end_coff,
-		             (int) prev_match_end_boff, (int) prev_match_end_coff);
+		DUK_DDD(DUK_DDDPRINT("split; match_start b=%d,c=%d, match_end b=%d,c=%d, prev_end b=%d,c=%d",
+		                     (int) match_start_boff, (int) match_start_coff,
+		                     (int) match_end_boff, (int) match_end_coff,
+		                     (int) prev_match_end_boff, (int) prev_match_end_coff));
 
 		duk_push_lstring(ctx,
 		                 (const char *) (DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff),
@@ -1027,8 +1027,8 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 
 	/* Combined step 11 (empty string special case) and 14-15. */
 
-	DUK_DDDPRINT("split trailer; prev_end b=%d,c=%d",
-	             (int) prev_match_end_boff, (int) prev_match_end_coff);
+	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%d,c=%d",
+	                     (int) prev_match_end_boff, (int) prev_match_end_coff));
 
 	if (DUK_HSTRING_GET_CHARLEN(h_input) > 0 || !matched) {
 		/* Add trailer if:

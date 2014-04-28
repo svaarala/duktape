@@ -10,20 +10,16 @@
 #ifndef DUK_FEATURES_SANITY_H_INCLUDED
 #define DUK_FEATURES_SANITY_H_INCLUDED
 
-#if defined(DUK_DDEBUG) && !defined(DUK_DEBUG)
-#error DUK_DEBUG and DUK_DDEBUG should not be defined (obsolete)
+#if defined(DUK_USE_DPRINT) && !defined(DUK_USE_DEBUG)
+#error DUK_USE_DPRINT without DUK_USE_DEBUG
 #endif
 
-#if defined(DUK_USE_DDEBUG) && !defined(DUK_USE_DEBUG)
-#error DUK_USE_DDEBUG defined without DUK_USE_DEBUG
+#if defined(DUK_USE_DDPRINT) && !defined(DUK_USE_DEBUG)
+#error DUK_USE_DDPRINT without DUK_USE_DEBUG
 #endif
 
-#if defined(DUK_USE_DDDEBUG) && !defined(DUK_USE_DEBUG)
-#error DUK_USE_DDDEBUG defined without DUK_USE_DEBUG
-#endif
-
-#if defined(DUK_USE_DDDEBUG) && !defined(DUK_USE_DDEBUG)
-#error DUK_USE_DDDEBUG defined without DUK_USE_DDEBUG
+#if defined(DUK_USE_DDDPRINT) && !defined(DUK_USE_DEBUG)
+#error DUK_USE_DDDPRINT without DUK_USE_DEBUG
 #endif
 
 #if defined(DUK_USE_REFERENCE_COUNTING) && !defined(DUK_USE_DOUBLE_LINKED_HEAP)
