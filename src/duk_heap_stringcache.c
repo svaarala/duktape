@@ -22,8 +22,8 @@ void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
 	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache *c = &heap->strcache[i];
 		if (c->h == h) {
-			DUK_DDPRINT("deleting weak strcache reference to hstring %p from heap %p",
-			            (void *) h, (void *) heap);
+			DUK_DD(DUK_DDPRINT("deleting weak strcache reference to hstring %p from heap %p",
+			                   (void *) h, (void *) heap));
 			c->h = NULL;
 
 			/* XXX: the string shouldn't appear twice, but we now loop to the
@@ -116,9 +116,9 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 	 *  necessary, inserting a new cache entry if none exists.
 	 */
 
-	DUK_DDDPRINT("non-ascii string %p, char_offset=%d, clen=%d, blen=%d",
-	             (void *) h, char_offset, DUK_HSTRING_GET_CHARLEN(h),
-	             DUK_HSTRING_GET_BYTELEN(h));
+	DUK_DDD(DUK_DDDPRINT("non-ascii string %p, char_offset=%d, clen=%d, blen=%d",
+	                     (void *) h, char_offset, DUK_HSTRING_GET_CHARLEN(h),
+	                     DUK_HSTRING_GET_BYTELEN(h)));
 
 	heap = thr->heap;
 	sce = NULL;
@@ -163,11 +163,11 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 		if (char_offset >= sce->cidx) {
 			dist_sce = char_offset - sce->cidx;
 			if ((dist_sce <= dist_start) && (dist_sce <= dist_end)) {
-				DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-				             "dist_start=%d, dist_end=%d, dist_sce=%d => "
-				             "scan forwards from sce",
-				             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
-				             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
+				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
+				                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+				                     "scan forwards from sce",
+				                     (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+				                     (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce));
 
 				p_found = duk__scan_forwards(p_start + sce->bidx,
 				                             p_end,
@@ -177,11 +177,11 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 		} else {
 			dist_sce = sce->cidx - char_offset;
 			if ((dist_sce <= dist_start) && (dist_sce <= dist_end)) {
-				DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-				             "dist_start=%d, dist_end=%d, dist_sce=%d => "
-				             "scan backwards from sce",
-				             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
-				             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
+				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
+				                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+				                     "scan backwards from sce",
+				                     (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+				                     (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce));
 
 				p_found = duk__scan_backwards(p_start + sce->bidx,
 				                              p_start,
@@ -194,21 +194,21 @@ duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h
 	/* no sce, or sce scan not best */
 
 	if (dist_start <= dist_end) {
-		DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-		             "dist_start=%d, dist_end=%d, dist_sce=%d => "
-		             "scan forwards from string start",
-		             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
-		             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
+		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
+		                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+		                     "scan forwards from string start",
+		                     (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+		                     (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce));
 
 		p_found = duk__scan_forwards(p_start,
 		                             p_end,
 		                             dist_start);
 	} else {
-		DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-		             "dist_start=%d, dist_end=%d, dist_sce=%d => "
-		             "scan backwards from string end",
-		             (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
-		             (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce);
+		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
+		                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+		                     "scan backwards from string end",
+		                     (int) use_cache, (sce ? sce->h : NULL), (sce ? (int) sce->cidx : (int) -1),
+		                     (sce ? (int) sce->bidx : (int) -1), (int) dist_start, (int) dist_end, (int) dist_sce));
 
 		p_found = duk__scan_backwards(p_end,
 		                              p_start,

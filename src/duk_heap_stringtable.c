@@ -52,11 +52,11 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	DUK_MEMCPY(data, str, blen);
 	data[blen] = (duk_uint8_t) 0;
 
-	DUK_DDDPRINT("interned string, hash=0x%08x, blen=%d, clen=%d, arridx=%d",
-	             DUK_HSTRING_GET_HASH(res),
-	             DUK_HSTRING_GET_BYTELEN(res),
-	             DUK_HSTRING_GET_CHARLEN(res),
-	             DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0);
+	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08x, blen=%d, clen=%d, arridx=%d",
+	                     DUK_HSTRING_GET_HASH(res),
+	                     DUK_HSTRING_GET_BYTELEN(res),
+	                     DUK_HSTRING_GET_CHARLEN(res),
+	                     DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0));
 
 	return res;
 
@@ -200,11 +200,11 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 #endif
 
 #ifdef DUK_USE_DDDPRINT
-	DUK_DDDPRINT("attempt to resize stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
-	             (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
-	             (int) (((double) old_used) / ((double) old_size) * 100.0),
-	             (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) duk__count_used(heap),
-	             (int) (((double) duk__count_used(heap)) / ((double) new_size) * 100.0));
+	DUK_DDD(DUK_DDDPRINT("attempt to resize stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
+	                     (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
+	                     (int) (((double) old_used) / ((double) old_size) * 100.0),
+	                     (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) duk__count_used(heap),
+	                     (int) (((double) duk__count_used(heap)) / ((double) new_size) * 100.0)));
 #endif
 
 	DUK_ASSERT(new_size > (duk_uint32_t) duk__count_used(heap));  /* required for rehash to succeed, equality not that useful */
@@ -259,11 +259,11 @@ static int duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 	}
 
 #ifdef DUK_USE_DDPRINT
-	DUK_DDPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
-	            (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
-	            (int) (((double) old_used) / ((double) old_size) * 100.0),
-	            (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) new_used,
-	            (int) (((double) new_used) / ((double) new_size) * 100.0));
+	DUK_DD(DUK_DDPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
+	                   (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
+	                   (int) (((double) old_used) / ((double) old_size) * 100.0),
+	                   (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) new_used,
+	                   (int) (((double) new_used) / ((double) new_size) * 100.0)));
 #endif
 
 	DUK_FREE(heap, heap->st);
