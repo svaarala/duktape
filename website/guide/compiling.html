@@ -9,8 +9,7 @@ in your compiler):</p>
 <ul>
 <li><code>-std=c99</code>: recommended to ensure C99 semantics
     which improve C type detection and allows Duktape to use variadic
-    macros (without these you may get harmless compiler warnings because
-    of the way Duktape works around the lack of variadic macros)</li>
+    macros</li>
 <li><code>-Os</code>: optimize for smallest footprint, which is usually
     desired when embedding Duktape</li>
 <li><code>-fomit-frame-pointer</code>: omit frame pointer, further reduces
@@ -306,9 +305,7 @@ The table below summarizes the available options, in no particular order:</p>
 <tr>
 <td class="definename">DUK_OPT_DEBUG</td>
 <td>Enable debug code in Duktape internals.  Without this option other
-    debugging options (such as <code>DUK_OPT_DPRINT</code>) have no effect.
-    When debugging is enabled, compile may no longer be clean, at least on
-    non-C99 platforms.</td>
+    debugging options (such as <code>DUK_OPT_DPRINT</code>) have no effect.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_DPRINT</td>
@@ -521,8 +518,5 @@ See <a href="#limitations">Limitations</a>.</p>
 <p>There are still some warnings present when you compile with
 <code>-Wextra</code> or equivalent option.</p>
 
-<p>When your compiler is not C99 compliant, Duktape uses an awkward
-replacement for variadic macros.  This may cause, as a side effect, a
-lot of harmless warnings if you set the compiler warning level too high.
-This is difficult to fix, so C99 compilation may not be clean at the
-moment.</p>
+<p>There may be some warnings when compiling with a pre-C99 compiler
+(or a C99 compiler without a <code>-std=c99</code> option or similar).</p>

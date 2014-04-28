@@ -314,7 +314,8 @@ Planned
   a valid character index, value stack was left in an inconsistent state in
   non-strict mode (caused an assertion failure)
 
-* Improve non-C99 build: non-debug build should now generate much fewer
+* Improve non-C99 build: type detection should now work on (some) 64-bit
+  platforms too, and non-debug build should now generate much fewer (or no)
   warnings
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
