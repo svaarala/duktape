@@ -23,6 +23,6 @@ function hugeCancelingComponents() {
 try {
     hugeCancelingComponents();
 } catch (e) {
-    print(e.name);
+    print(e);
 }
 
