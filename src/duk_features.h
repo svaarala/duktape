@@ -130,6 +130,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* MIPS */
+/* FIXME: 32-bit vs. 64-bit MIPS */
 #if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
     defined(_R3000) || defined(_R4000) || defined(_R5900) || \
     defined(_MIPS_ISA_MIPS1) || defined(_MIPS_ISA_MIPS2) || \
@@ -435,8 +436,8 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  Duktape public API is problematic from type detection perspective and must
  *  be taken into account here.
  *
- *  Type detection when C99 is not supported is quite simplistic now and will
- *  only work on 32-bit platforms (64-bit platforms are OK with C99 types).
+ *  Type detection when C99 is not supported is best effort and may end up
+ *  detecting some types incorrectly.
  *
  *  Pointer sizes are a portability problem: pointers to different types may
  *  have a different size and function pointers are very difficult to manage
@@ -450,9 +451,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  being able to compare DUK_SIZE_MAX against a limit.
  */
 
-/* FIXME: How to do reasonable automatic detection on older compilers,
- * and how to allow user override?
- */
+/* FIXME: add feature options to force basic types from outside? */
 
 /* FIXME: this assumption must be in place until no 'int' variables are
  * used anywhere, including the public Duktape API.  Also all printf()
@@ -475,6 +474,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 #else
 #error cannot check complement of two
+#endif
+
+/* Pointer size determination based on architecture. */
+#if defined(DUK_F_X86) || \
+    (defined(__WORDSIZE) && (__WORDSIZE == 32))
+#define DUK_F_32BIT_PTRS
+#elif defined(DUK_F_X64) || \
+      (defined(__WORDSIZE) && (__WORDSIZE == 64))
+#define DUK_F_64BIT_PTRS
+#else
+/* not sure, not needed with C99 anyway */
 #endif
 
 /* Intermediate define for 'have inttypes.h' */
@@ -586,18 +596,16 @@ typedef intmax_t duk_intmax_t;
 
 #else  /* C99 types */
 
-/* When C99 types are not available, we use simplistic detection to get
- * the basic 8, 16, and 32 bit types.  The fast/least types are then
- * assumed to be exactly the same for now: these could be improved per
- * platform but C99 types are very often now available.  64-bit types
- * are not defined at all now (duk_uint64_t etc).
+/* When C99 types are not available, we use heuristic detection to get
+ * the basic 8, 16, 32, and (possibly) 64 bit types.  The fast/least
+ * types are then assumed to be exactly the same for now: these could
+ * be improved per platform but C99 types are very often now available.
+ * 64-bit types are not available on all platforms; this is OK at least
+ * on 32-bit platforms.
  *
  * This detection code is necessarily a bit hacky and can provide typedefs
- * and defines that won't work correctly on some exotic platform.  It only
- * really works on 32-bit platforms.
+ * and defines that won't work correctly on some exotic platform.
  */
-
-#undef DUK_F_HAVE_64BIT
 
 #if (defined(CHAR_BIT) && (CHAR_BIT == 8)) || \
     (defined(UCHAR_MAX) && (UCHAR_MAX == 255))
@@ -607,22 +615,42 @@ typedef signed char duk_int8_t;
 #error cannot detect 8-bit type
 #endif
 
-#if defined(USHRT_MAX) && (USHRT_MAX == 65535)
+#if defined(USHRT_MAX) && (USHRT_MAX == 65535UL)
 typedef unsigned short duk_uint16_t;
 typedef signed short duk_int16_t;
+#elif defined(UINT_MAX) && (UINT_MAX == 65535UL)
+/* On some platforms int is 16-bit but long is 32-bit (e.g. PureC) */
+typedef unsigned int duk_uint16_t;
+typedef signed int duk_int16_t;
 #else
 #error cannot detect 16-bit type
 #endif
 
-#if defined(UINT_MAX) && (UINT_MAX == 4294967295)
+#if defined(UINT_MAX) && (UINT_MAX == 4294967295UL)
 typedef unsigned int duk_uint32_t;
 typedef signed int duk_int32_t;
-#elif defined(ULONG_MAX) && (ULONG_MAX == 4294967295)
+#elif defined(ULONG_MAX) && (ULONG_MAX == 4294967295UL)
 /* On some platforms int is 16-bit but long is 32-bit (e.g. PureC) */
 typedef unsigned long duk_uint32_t;
 typedef signed long duk_int32_t;
 #else
 #error cannot detect 32-bit type
+#endif
+
+#define DUK_F_HAVE_64BIT
+#if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+typedef unsigned long duk_uint64_t;
+typedef signed long duk_int64_t;
+#elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL)
+typedef unsigned long long duk_uint64_t;
+typedef signed long long duk_int64_t;
+#elif defined(DUK_F_MINGW) || defined(DUK_F_MSVC)
+/* Both MinGW and MSVC have a 64-bit type. */
+typedef unsigned long duk_uint64_t;
+typedef signed long duk_int64_t;
+#else
+/* cannot detect 64-bit type, not always needed so don't error */
+#undef DUK_F_HAVE_64BIT
 #endif
 
 typedef duk_uint8_t duk_uint_least8_t;
@@ -640,19 +668,13 @@ typedef duk_int32_t duk_int_fast32_t;
 typedef duk_int32_t duk_intmax_t;
 typedef duk_uint32_t duk_uintmax_t;
 
-/* This detection is not very reliable, and only supports 32-bit platforms
- * now (64-bit platforms work if C99 types are available).
- */
-#if (defined(__WORDSIZE) && (__WORDSIZE == 32)) || \
-    (defined(DUK_F_MINGW) && defined(_X86_)) || \
-    (defined(DUK_F_MSVC) && defined(_M_IX86))
+/* This detection is not very reliable. */
+#if defined(DUK_F_32BIT_PTRS)
 typedef duk_int32_t duk_intptr_t;
 typedef duk_uint32_t duk_uintptr_t;
-#elif (defined(DUK_F_MINGW) && defined(_WIN64)) || \
-      (defined(DUK_F_MSVC) && defined(_WIN64))
-/* Both MinGW and MSVC have a 64-bit type. */
-typedef long long duk_intptr_t;
-typedef unsigned long long duk_uintptr_t;
+#elif defined(DUK_F_64BIT_PTRS) && defined(DUK_F_HAVE_64BIT)
+typedef duk_int64_t duk_intptr_t;
+typedef duk_uint64_t duk_uintptr_t;
 #else
 #error cannot determine intptr type
 #endif
@@ -778,8 +800,9 @@ typedef double duk_double_t;
 #endif
 #endif
 
-/* Convenience define: 32-bit pointers.  This is an important optimization
- * target (e.g. for struct sizing).
+/* Convenience define: 32-bit pointers.  32-bit platforms are an important
+ * footprint optimization target, and this define allows e.g. struct sizes
+ * to be organized for compactness.
  */
 #undef DUK_USE_32BIT_PTRS
 #if DUK_UINTPTR_MAX <= 0xffffffffUL
@@ -790,10 +813,9 @@ typedef double duk_double_t;
  *  Check whether we should use 64-bit integers
  */
 
-/* Quite incomplete now: require C99, avoid 64-bit types on VBCC because
- * they seem to misbehave.  Should use 64-bit operations at least on 64-bit
- * platforms even when C99 not available (perhaps integrate to bit type
- * detection?).
+/* Quite incomplete now.  Use 64-bit types if detected (C99 or other detection)
+ * unless they are known to be unreliable.  For instance, 64-bit types are
+ * available on VBCC but seem to misbehave.
  */
 #if defined(DUK_F_HAVE_64BIT) && !defined(__VBCC__)
 #define DUK_USE_64BIT_OPS
