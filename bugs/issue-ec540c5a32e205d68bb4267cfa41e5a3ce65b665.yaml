@@ -48,3 +48,9 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - unassigned from release v0.10
   - ""
+- - 2014-04-28 21:32:08.761202 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    ArrayBuffer slice() makes a copy of the bytes requested while V8 Buffer
+    slice() is a 'view' into the original buffer.  This is quite confusing.
