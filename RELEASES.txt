@@ -312,6 +312,9 @@ Planned
 
 * Serialize negative zero as '-0' in JSONX and JSONC
 
+* Rename some feature options (DUK_OPT_xxx) for consistency, please check
+  any options you use against the up-to-date options list
+
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings
