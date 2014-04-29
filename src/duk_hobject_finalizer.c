@@ -24,6 +24,11 @@ static int duk__finalize_helper(duk_context *ctx) {
 
 	/* [... obj] */
 
+	/* FIXME: finalizer lookup should traverse the prototype chain (to allow
+	 * inherited finalizers) but should not invoke accessors or proxy object
+	 * behavior.
+	 */
+
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
 	if (!duk_is_callable(ctx, -1)) {
 		DUK_DDD(DUK_DDDPRINT("-> no finalizer or finalizer not callable"));

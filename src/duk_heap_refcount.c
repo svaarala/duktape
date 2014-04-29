@@ -224,6 +224,9 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 		 * checking for FINALIZED would happen here.
 		 */
 
+		/* A finalizer is looked up from the object and up its prototype chain
+		 * (which allows inherited finalizers).
+		 */
 		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
