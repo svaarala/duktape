@@ -52,14 +52,14 @@ Ecmascript E6 (draft) <code>Proxy</code> concept (see
 <a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>
 and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>).
 The current subset is limited to <code>get</code>, <code>set</code>, and
-<code>deleteProperty</code> handler methods.</p>
+<code>deleteProperty</code> traps.</p>
 
 <p>For example, to simply print a line whenever any property is accessed:</p>
 <pre class="ecmascript-code">
 // Underlying plain object.
 var target = { foo: 'bar' };
 
-// Handler table, provides methods for interaction (can be modified on-the-fly).
+// Handler table, provides traps for interaction (can be modified on-the-fly).
 var handler = {
     get: function (targ, key, recv) {
         print('get called for key=' + key);
@@ -201,8 +201,8 @@ var handler = {
 };
 </pre>
 
-<p>The ES6 draft semantics reject some property accesses even if the handler
-method would allow it.  This happens if the proxy's target object has a non-configurable
+<p>The ES6 draft semantics reject some property accesses even if the trap would
+allow it.  This happens if the proxy's target object has a non-configurable
 conflicting property; see E6 draft Sections 9.5.8, 9.5.9, and 9.5.10 for details.
 You can easily avoid any such behaviors by keeping the target object empty and,
 if necessary, backing the virtual properties in an unrelated plain object.</p>

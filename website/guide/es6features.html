@@ -30,9 +30,9 @@ ES6 draft (Rev 23).</p>
 <p>Limitations include:</p>
 <ul>
 <li>Limited to <code>get</code>, <code>set</code>, <code>deleteProperty</code>
-    handler methods; ES6 draft allows a lot more, e.g. to interact with
-    properties being called or constructed, enumeration, etc.  This causes
-    odd behavior if you enumerate a proxy object, call
+    traps; ES6 draft allows a lot more, e.g. to interact with properties being
+    called or constructed, enumeration, etc.  This causes odd behavior if you
+    enumerate a proxy object, call
     <code>Object.defineProperty()</code> with the proxy object as an argument,
     etc.</li>
 <li>Proxy revocation feature of ES6 draft is not supported.</li>
