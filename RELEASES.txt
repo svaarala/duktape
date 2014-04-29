@@ -310,9 +310,7 @@ Planned
   (subset implementation limited to 'get', 'set', and 'deleteProperty'
   handler methods)
 
-* Fix a 'delete' bug: if delete target was a string and key was 'length' or
-  a valid character index, value stack was left in an inconsistent state in
-  non-strict mode (caused an assertion failure)
+* Serialize negative zero as '-0' in JSONX and JSONC
 
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
@@ -320,6 +318,10 @@ Planned
 
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+
+* Fix a 'delete' bug: if delete target was a string and key was 'length' or
+  a valid character index, value stack was left in an inconsistent state in
+  non-strict mode (caused an assertion failure)
 
 * Fix a rare math optimization issue in the Date built-in, which caused a
   corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,

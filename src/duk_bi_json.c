@@ -1546,11 +1546,23 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 		s = DUK_SIGNBIT(d);
 		DUK_UNREF(s);
 
-		if (!(c == DUK_FP_INFINITE || c == DUK_FP_NAN)) {
+		if (DUK_LIKELY(!(c == DUK_FP_INFINITE || c == DUK_FP_NAN))) {
 			DUK_ASSERT(DUK_ISFINITE(d));
-			n2s_flags = 0;
-			/* [ ... number ] -> [ ... string ] */
-			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
+
+#if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
+			/* Negative zero needs special handling in JSONX/JSONC because
+			 * it would otherwise serialize to '0', not '-0'.
+			 */
+			if (DUK_UNLIKELY(c == DUK_FP_ZERO && s != 0 &&
+			                 (js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible))) {
+				duk_push_hstring_stridx(ctx, DUK_STRIDX_MINUS_ZERO);  /* '-0' */
+			} else
+#endif  /* DUK_USE_JSONX || DUK_USE_JSONC */
+			{
+				n2s_flags = 0;
+				/* [ ... number ] -> [ ... string ] */
+				duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
+			}
 			h_str = duk_to_hstring(ctx, -1);
 			DUK_ASSERT(h_str != NULL);
 			DUK__EMIT_HSTR(js_ctx, h_str);
