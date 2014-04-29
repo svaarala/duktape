@@ -2911,13 +2911,6 @@ static int duk__push_c_function_raw(duk_context *ctx, duk_c_function func, int n
 		goto api_error;
 	}
 
-	/* DUK_HOBJECT_FLAG_CONSTRUCTABLE is not currently set; native functions
-	 * are not constructable unless explicitly defined as such.
-	 *
-	 * DUK_HOBJECT_FLAG_NEWENV is currently always set; native functions
-	 * cannot e.g. declare variables to caller's scope.
-	 */
-
 	obj = duk_hnativefunction_alloc(thr->heap, flags);
 	if (!obj) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate a function object");
