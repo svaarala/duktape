@@ -3,25 +3,33 @@
 <h2>Overview of finalization</h2>
 
 <p>An object which has an internal finalizer property in its prototype
-chain (or in the object itself) is subject to finalization before being freed.
-The internal finalizer property is set using <code>Duktape.fin()</code>
+chain (or in the object itself) is subject to finalization before being
+freed.  The internal finalizer property is set using the <code>Duktape.fin()</code>
 method with the object and the finalizer function as call arguments.
 The current finalizer is read back by calling <code>Duktape.fin()</code>
-with only the object as a call argument.</p>
+with only the object as a call argument.  A finalizer may be an Ecmascript
+function but can also be a Duktape/C function.</p>
 
-<p>The finalizer method is called with the target object as its sole
-argument.  The method may rescue the object by creating a live reference
-to the object before returning.  The return value is ignored; similarly,
-any errors thrown by the finalizer are ignored.  The finalizer may be
-triggered by either reference counting or mark-and-sweep.</p>
+<p>A finalizer is triggered when an unreachable object is detected by
+reference counting or mark-and-sweep.  Finalizers are also executed for all
+remaining objects (regardless of their reachability status) when a heap is destroyed.
+This guarantees that a finalizer gets executed at some point before a heap
+is destroyed, which allows native resources (such as sockets and files) to
+be freed reliably.</p>
+
+<p>The finalizer function is called with the target object as its sole
+argument.  The finalizer may rescue the object by creating a live reference
+to the object before returning.  The return value is ignored, and any errors
+thrown by the finalizer are silently ignored.  A finalizer may be called
+multiple times (this may happen in special cases even when the object is not
+rescued by the finalizer).  A finalizer should be careful to avoid e.g.
+freeing a native resource twice in such cases.</p>
 
 <p>Finalizers cannot currently yield.  The context executing the finalization
 can currently be any coroutine in the heap.  (This will be fixed in the future.)
 </p>
 
-<!-- FIXME: comment on whether or not finalizers are run multiple times -->
-
-<h2>Example</h2>
+<h2>Simple example</h2>
 
 <p>Finalization example:</p>
 <pre class="ecmascript-code">
@@ -32,7 +40,11 @@ function init() {
     a = { foo: 123 };
 
     Duktape.fin(a, function (x) {
-        print('finalizer, foo -&gt;', x.foo);
+        try {
+            print('finalizer, foo -&gt;', x.foo);
+        } catch (e) {
+            print('WARNING: finalizer failed (ignoring): ' + e);
+        }
     });
 }
 
@@ -49,6 +61,11 @@ print('mark-and-sweep finalizer')
 Duktape.gc();
 </pre>
 
+<p>The <code>try-catch</code> wrapper inside the finalizer of the above
+example is strongly recommended.  An uncaught finalizer error is silently
+ignored which can be confusing, as it may seem like the finalizer is not
+getting executed at all.</p>
+
 <p>If you run this with the Duktape command line tool (with the default
 Duktape profile), you'll get:</p>
 <pre>
@@ -59,3 +76,36 @@ mark-and-sweep finalizer
 Cleaning up...
 </pre>
 
+<h2>Adding a finalizer to a prototype object</h2>
+
+<p>If you have many objects of the same type, you can add a finalizer to the
+prototype to minimize the property count of object instances:</p>
+<pre class="ecmascript-code">
+// Example of a hypothetical Socket object which is associated with a
+// platform specific file descriptor.
+
+function Socket(host, port) {
+    this.host = host;
+    this.port = port;
+    this.fd = Platform.openSocket(host, port);
+}
+Duktape.fin(Socket.prototype, function (x) {
+    if (x === Socket.prototype) {
+        return;  // called for the prototype itself
+    }
+    if (typeof x.fd !== 'number') {
+        return;  // already freed
+    }
+    try {
+        Platform.closeSocket(x.fd);
+    } catch (e) {
+        print('WARNING: finalizer failed for fd ' + x.fd + ' (ignoring): ' + e);
+    }
+    delete x.fd;
+});
+
+// Any Socket instances are now finalized without registering explicit
+// finalizers for them:
+
+var sock = new Socket('localhost', 8080);
+</pre>
