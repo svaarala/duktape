@@ -48,6 +48,8 @@ object null null
 boolean true true
 boolean false false
 number 123 123
+number -0 -0
+number 0 0
 number NaN {"_nan":true}
 number -Infinity {"_ninf":true}
 number Infinity {"_inf":true}
@@ -108,7 +110,7 @@ function typeEncodeTest() {
     var func = function() { print('hello world'); };
 
     var values = [
-        undefined, null, true, false, 123.0, 0 / 0, -1 / 0, 1 / 0,
+        undefined, null, true, false, 123.0, -0, +0, 0 / 0, -1 / 0, 1 / 0,
         'foo', [1,2,3], { test_key: 123, 'foo bar': 321 },
         Duktape.dec('hex', 'deadbeef'),                      // plain buf
         new Duktape.Buffer(Duktape.dec('hex', 'deadbeef')),  // object buf
@@ -231,6 +233,58 @@ try {
 print('primitive type decode');
 try {
     typeDecodeTest();
+} catch (e) {
+    print(e);
+}
+
+/*===
+signed zero
+0
+0
+-0
+0
+-0
+0
+number 0 neg
+number 0 pos
+number 0 neg
+number 0 pos
+number 0 neg
+number 0 pos
+===*/
+
+/* Although JSON syntax allows negative zero, the standard algorithm serializes
+ * negative zero as "0".  Curiously, the standard algorithm still parses a '-0'
+ * back as a negative zero.
+ *
+ * JSONX/JSONC serialize a negative zero as '-0' and should parse it back also
+ * without losing the sign.
+ */
+
+function signedZeroTest() {
+    function prVal(v) {
+        print(typeof v, v, (1 / v > 0 ? 'pos' : 'neg'));
+    }
+
+    print(JSON.stringify(-0));
+    print(JSON.stringify(+0));
+    print(Duktape.enc('jsonx', -0));
+    print(Duktape.enc('jsonx', +0));
+    print(Duktape.enc('jsonc', -0));
+    print(Duktape.enc('jsonc', +0));
+
+    prVal(JSON.parse('-0'));
+    prVal(JSON.parse('0'));
+    prVal(Duktape.dec('jsonx', '-0'));
+    prVal(Duktape.dec('jsonx', '0'));
+    prVal(Duktape.dec('jsonc', '-0'));
+    prVal(Duktape.dec('jsonc', '0'));
+}
+
+print('signed zero');
+
+try {
+    signedZeroTest();
 } catch (e) {
     print(e);
 }
