@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add API call to push a constructor vs. non-constructor C function separately
+desc: |-
+  Construct function should get a .prototype().
+  
+  Prevent constructor calls for other Duktape/C functions (incompatible change)?
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-04-30 06:13:42.537856 Z
+references: []
+
+id: b7ea42621996178f793eadeae8a4691ca2c9e8f0
+log_events: 
+- - 2014-04-30 06:13:42.702770 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
