@@ -740,7 +740,8 @@ site: dukweb.js jquery-1.11.0.js
 	cp -r site /tmp/  # FIXME
 
 .PHONY:	dist-site
-dist-site:	site
+dist-site:	tidy-site site
+	# When doing a final dist build, run html tidy
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED).tar*
 	mkdir duktape-site-$(DUK_VERSION_FORMATTED)
