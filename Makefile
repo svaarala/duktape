@@ -727,6 +727,10 @@ dist-src:	dist
 	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 
+.PHONY: tidy-site
+tidy-site:
+	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
+
 # Website
 site: dukweb.js jquery-1.11.0.js
 	rm -rf site
