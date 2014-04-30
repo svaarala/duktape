@@ -105,4 +105,7 @@ if [ "x$WARNINGS" != "x0" ]; then
 	exit 0
 fi
 
+# 'tidy' is intentionally not checked as it only relates to website development
+# and is not mandatory to website build.
+
 exit 0

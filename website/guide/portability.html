@@ -162,6 +162,7 @@ detail below the table.</p>
 <td>Emscripten</td>
 <td>n/a</td>
 <td>Requires additional options, see below. At least V8/NodeJs works.</td>
+</tr>
 <tr>
 <td>Adobe Flash Runtime</td>
 <td>CrossBridge<br />(GCC-4.2 with Flash backend)</td>
@@ -215,7 +216,7 @@ V8, the following seem to work:</p>
 <li><code>-O2</code></li>
 <li><code>-s ASM_JS=0</code></li>
 <li><code>-s MAX_SETJMPS=1000</code></li>
-<li><code>-s OUTLINING_LIMIT=20000</li>
+<li><code>-s OUTLINING_LIMIT=20000</code></li>
 </ul>
 
 <p>Dukweb is compiled using Emscripten, so you can also check out the Duktape
