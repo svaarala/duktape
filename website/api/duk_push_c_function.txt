@@ -23,6 +23,18 @@ will be called using the Duktape/C function interface.  Returns non-negative ind
     count with <code><a href="#duk_get_top">duk_get_top()</a></code>.</li>
 </ul>
 
+<p>The function created will be callable both as a normal function (<code>func()</code>)
+and as a constructor (<code>new func()</code>).  You can differentiate between the two
+call styles using <code><a href="#duk_is_constructor_call">duk_is_constructor_call()</a></code>.
+Although the function can be used as a constructor, it doesn't have an automatic
+<code>prototype</code> property like Ecmascript functions.</p>
+
+<div class="note">
+If you intend to use the pushed function as a constructor, you should usually
+create a prototype object and set the <code>prototype</code> property of the
+function manually.
+</div>
+
 =example
 int my_addtwo(duk_context *ctx) {
     double a, b;
