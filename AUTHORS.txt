@@ -39,3 +39,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Conrad Pankoff
 * Jim Schimpf
 * Rajaran Gaunker (https://github.com/zimbabao)
+* Andreas Öman
