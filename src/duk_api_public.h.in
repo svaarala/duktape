@@ -682,6 +682,22 @@ int duk_compile_raw(duk_context *ctx, int flags);
 
 void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 
+/*
+ *  Debugging
+ */
+
+void duk_dump_context_raw(duk_context *ctx);
+
+/* FIXME: fprintf() requires stdio.h which is unportable; this macro and including
+ * stdio.h must be conditional to features.
+ */
+#define duk_dump_context_stdout(ctx) \
+	do { \
+		duk_dump_context_raw((ctx)); \
+		fprintf(stdout, "%s\n", duk_safe_to_string(ctx, -1)); \
+		duk_pop(ctx); \
+	} while (0)
+
 #ifdef __cplusplus
 /* end 'extern "C"' wrapper */
 }
