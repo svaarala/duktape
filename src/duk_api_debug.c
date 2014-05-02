@@ -19,6 +19,9 @@ void duk_dump_context_raw(duk_context *ctx) {
 		duk_put_prop_index(ctx, -2, idx);
 	}
 
+	/* FIXME: conversion errors should not propagate outwards.
+	 * Perhaps values need to be coerced individually?
+	 */
 	duk_bi_json_stringify_helper(ctx,
 	                             duk_get_top_index(ctx),  /*idx_value*/
 	                             DUK_INVALID_INDEX,  /*idx_replacer*/
