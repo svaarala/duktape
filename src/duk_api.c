@@ -693,7 +693,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
 	}
 	src = (void *) ((duk_uint8_t *) from_thr->valstack_top - nbytes);
-	if (src < (void *) thr->valstack_bottom) {
+	if (src < (void *) from_thr->valstack_bottom) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "source stack does not contain enough elements");
 	}
 
