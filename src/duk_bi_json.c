@@ -1629,6 +1629,10 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	int top_at_entry = duk_get_top(ctx);
 #endif
 
+	/* negative top-relative indices not allowed now */
+	DUK_ASSERT(idx_value == DUK_INVALID_INDEX || idx_value >= 0);
+	DUK_ASSERT(idx_reviver == DUK_INVALID_INDEX || idx_reviver >= 0);
+
 	DUK_DDD(DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08x, stack_top=%d",
 	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_reviver),
 	                     flags, duk_get_top(ctx)));
@@ -1710,6 +1714,11 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	int undef;
 	int idx_holder;
 	int top_at_entry;
+
+	/* negative top-relative indices not allowed now */
+	DUK_ASSERT(idx_value == DUK_INVALID_INDEX || idx_value >= 0);
+	DUK_ASSERT(idx_replacer == DUK_INVALID_INDEX || idx_replacer >= 0);
+	DUK_ASSERT(idx_space == DUK_INVALID_INDEX || idx_space >= 0);
 
 	DUK_DDD(DUK_DDDPRINT("JSON stringify start: value=%!T, replacer=%!T, space=%!T, flags=0x%08x, stack_top=%d",
 	                     duk_get_tval(ctx, idx_value), duk_get_tval(ctx, idx_replacer),
