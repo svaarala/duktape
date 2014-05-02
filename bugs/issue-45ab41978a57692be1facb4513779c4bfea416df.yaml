@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "feature option rework: add handling of on/off for all flags, add high level flags like \"strictly standard\", \"minimal footprint\", etc"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-02 09:01:30.399764 Z
+references: []
+
+id: 45ab41978a57692be1facb4513779c4bfea416df
+log_events: 
+- - 2014-05-02 09:01:30.543686 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
