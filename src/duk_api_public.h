@@ -81,11 +81,13 @@ extern "C" {
  *  Currently only primitive typedefs have a '_t' suffix.
  */
 
-/* FIXME: proper detection */
-typedef int duk_idx_t;
+/* Index values must have at least 32-bit range. */
+typedef duk_int_t duk_idx_t;
+
+/* Duktape/C function return value, platform int is enough for now to
+ * represent 0, 1, or negative error code.
+ */
 typedef int duk_ret_t;
-typedef int duk_bool_t;
-typedef size_t duk_size_t;
 
 struct duk_memory_functions;
 struct duk_function_list_entry;
@@ -545,8 +547,8 @@ void duk_json_decode(duk_context *ctx, int index);
  *  Buffer
  */
 
-void *duk_resize_buffer(duk_context *ctx, int index, duk_size_t new_size);
-void duk_to_fixed_buffer(duk_context *ctx, int index);
+void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size);
+void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index);
 
 /*
  *  Property access

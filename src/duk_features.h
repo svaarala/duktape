@@ -751,6 +751,9 @@ typedef duk_int32_t duk_intmax_t;
 
 #endif  /* C99 types */
 
+/* size_t is assumed to always exist. */
+typedef size_t duk_size_t;
+
 /* The best type for an "all around int" in Duktape internals is "at least
  * 32 bit signed integer" which is fastest.  Same for unsigned type.
  */
@@ -770,6 +773,9 @@ typedef unsigned int duk_small_uint_t;
 #define DUK_SMALL_INT_MAX     INT_MAX
 #define DUK_SMALL_UINT_MIN    0
 #define DUK_SMALL_UINT_MAX    UINT_MAX
+
+/* Boolean values are represented with the platform 'int'. */
+typedef duk_small_int_t duk_bool_t;
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
