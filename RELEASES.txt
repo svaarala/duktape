@@ -315,6 +315,9 @@ Planned
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
 
+* Rename Duktape.errcreate and Duktape.errthrow to Duktape.errCreate and
+  Duktape.errThrow for naming consistency
+
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings
