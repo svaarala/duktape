@@ -1,22 +1,22 @@
 /*
  *  Testcases for error handler behavior from Ecmascript code point of view.
- *  Checks both Duktape.errcreate and Duktape.errthrow.
+ *  Checks both Duktape.errCreate and Duktape.errThrow.
  */
 
 /*===
-errcreate
-- no errcreate
+errCreate
+- no errCreate
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- plain errcreate (sets foo and bar)
+- plain errCreate (sets foo and bar)
 error: ReferenceError: identifier 'aiee' undefined, foo: 1, bar: 2
 error: URIError: fake uri error, foo: 1, bar: 2
-- errcreate gets only error instances
-errcreate: object true foo
-errcreate: object true bar
-errcreate: object true quux
-errcreate: object true quux
-errcreate: object true baz
+- errCreate gets only error instances
+errCreate: object true foo
+errCreate: object true bar
+errCreate: object true quux
+errCreate: object true quux
+errCreate: object true baz
 catch: undefined
 catch: null
 catch: boolean
@@ -35,22 +35,22 @@ catch: object
 catch: object
 catch: object
 catch: object
-- errcreate throws an error
+- errCreate throws an error
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
-- non-callable errcreate
+- non-callable errCreate
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: TypeError: call target not callable, foo: undefined, bar: undefined
-- "undefined" (but set) errcreate
+- "undefined" (but set) errCreate
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: TypeError: call target not callable, foo: undefined, bar: undefined
-- delete errcreate property
+- delete errCreate property
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- errcreate as an accessor property is ignored
+- errCreate as an accessor property is ignored
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- recursive errcreate
+- recursive errCreate
 error: RangeError: test error, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'aiee' undefined, foo: 1, bar: 2
 error: RangeError: test error, foo: undefined, bar: undefined
@@ -58,8 +58,8 @@ error: URIError: fake uri error, foo: 1, bar: 2
 ===*/
 
 function errCreateTest() {
-    delete Duktape.errthrow;
-    delete Duktape.errcreate;
+    delete Duktape.errThrow;
+    delete Duktape.errCreate;
 
     function errPrint(err) {
         print('error: ' + String(err) + ', foo: ' + String(err.foo) +
@@ -88,19 +88,19 @@ function errCreateTest() {
     // with API test cases.
 
     /*
-     *  Normal, default case: no errcreate
+     *  Normal, default case: no errCreate
      */
 
-    print('- no errcreate');
+    print('- no errCreate');
     errTest1();
     errTest2();
 
     /*
-     *  Basic errcreate.
+     *  Basic errCreate.
      */
 
-    print('- plain errcreate (sets foo and bar)');
-    Duktape.errcreate = function (err) {
+    print('- plain errCreate (sets foo and bar)');
+    Duktape.errCreate = function (err) {
         err.foo = 1;
         err.bar = 2;
         return err;  // NOTE: the error must be returned; if you don't, 'undefined' will replace the error
@@ -117,16 +117,16 @@ function errCreateTest() {
      *  Error instances.
      *
      *  Constructor2 test also illustrates a corner case: the 'quux'
-     *  Error gets errcreate processed twice: (1) when it is created
+     *  Error gets errCreate processed twice: (1) when it is created
      *  inside Constructor2, and (2) when Constructor2 returns and
      *  the final constructed value gets checked.
      */
 
-    print('- errcreate gets only error instances');
-    Duktape.errcreate = function (err) {
-        if (err === null) { print('errcreate:', null); }
-        else if (typeof err === 'object') { print('errcreate:', typeof err, err instanceof Error, err.message); }
-        else { print('errcreate:', typeof err); }
+    print('- errCreate gets only error instances');
+    Duktape.errCreate = function (err) {
+        if (err === null) { print('errCreate:', null); }
+        else if (typeof err === 'object') { print('errCreate:', typeof err, err instanceof Error, err.message); }
+        else { print('errCreate:', typeof err); }
         return err;
     };
     function Constructor1() {
@@ -159,18 +159,18 @@ function errCreateTest() {
     });
 
     /*
-     *  If an errcreate causes an error, that error won't be augmented.
+     *  If an errCreate causes an error, that error won't be augmented.
      *
      *  There is some inconsistent behavior here now.  If the original error
      *  is thrown by Duktape itself (referencing 'aiee') the second error
      *  causes the error to be replaced with a DoubleError.  However, if the
      *  original error is thrown by Ecmascript code (throw X) the error from
-     *  errcreate will replace the original error as is (here it will be
+     *  errCreate will replace the original error as is (here it will be
      *  a ReferenceError caused by referencing 'zork').
      */
 
-    print('- errcreate throws an error');
-    Duktape.errcreate = function (err) {
+    print('- errCreate throws an error');
+    Duktape.errCreate = function (err) {
         err.foo = 1;
         zork;
         return err;
@@ -179,7 +179,7 @@ function errCreateTest() {
     errTest2();
 
     /*
-     *  If errcreate is set but is not callable, original error is
+     *  If errCreate is set but is not callable, original error is
      *  replaced with another error - either DoubleError or TypeError.
      *
      *  The same inconsistency appears here as well: if original error
@@ -187,36 +187,36 @@ function errCreateTest() {
      *  otherwise a TypeError.
      */
 
-    print('- non-callable errcreate');
-    Duktape.errcreate = 123;
+    print('- non-callable errCreate');
+    Duktape.errCreate = 123;
     errTest1();
     errTest2();
 
     /*
-     *  Setting to undefined/null does *not* remove the errcreate, but
+     *  Setting to undefined/null does *not* remove the errCreate, but
      *  will still cause DoubleError/TypeError.
      */
 
-    print('- "undefined" (but set) errcreate');
-    Duktape.errcreate = undefined;
+    print('- "undefined" (but set) errCreate');
+    Duktape.errCreate = undefined;
     errTest1();
     errTest2();
 
     /*
-     *  The proper way to remove an errcreate is to delete the property.
+     *  The proper way to remove an errCreate is to delete the property.
      */
 
-    print('- delete errcreate property');
-    delete Duktape.errcreate;
+    print('- delete errCreate property');
+    delete Duktape.errCreate;
     errTest1();
     errTest2();
 
     /*
-     *  An accessor errcreate is ignored.
+     *  An accessor errCreate is ignored.
      */
 
-    print('- errcreate as an accessor property is ignored');
-    Object.defineProperty(Duktape, 'errcreate', {
+    print('- errCreate as an accessor property is ignored');
+    Object.defineProperty(Duktape, 'errCreate', {
         get: function () {
             return function(err) {
                 err.foo = 'called';
@@ -231,15 +231,15 @@ function errCreateTest() {
     });
     errTest1();
     errTest2();
-    delete Duktape.errcreate;
+    delete Duktape.errCreate;
 
     /*
-     *  If an error is created within an errcreate, it won't get augmented
-     *  with errcreate.
+     *  If an error is created within an errCreate, it won't get augmented
+     *  with errCreate.
      */
 
-    print('- recursive errcreate');
-    Duktape.errcreate = function (err) {
+    print('- recursive errCreate');
+    Duktape.errCreate = function (err) {
         err.foo = 1;
         err.bar = 2;
         var test = new RangeError('test error');  // won't be augmented
@@ -250,13 +250,13 @@ function errCreateTest() {
     errTest2();
 
     /*
-     *  Unlike errthrow, errcreate does not have any interaction with coroutines,
+     *  Unlike errThrow, errCreate does not have any interaction with coroutines,
      *  so no yield/resume tests here.
      */
 }
 
 print
-print('errcreate');
+print('errCreate');
 
 try {
     errCreateTest();
@@ -265,71 +265,71 @@ try {
 }
 
 /*===
-errthrow
-- no errthrow
+errThrow
+- no errThrow
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- plain errthrow (sets foo and bar)
+- plain errThrow (sets foo and bar)
 error: ReferenceError: identifier 'aiee' undefined, foo: 1, bar: 2
 error: URIError: fake uri error, foo: 1, bar: 2
-- errthrow gets all value types
-errthrow: undefined
+- errThrow gets all value types
+errThrow: undefined
 catch: undefined
-errthrow: null
+errThrow: null
 catch: null
-errthrow: boolean
+errThrow: boolean
 catch: boolean
-errthrow: number
+errThrow: number
 catch: number
-errthrow: string
+errThrow: string
 catch: string
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: function
+errThrow: function
 catch: function
-errthrow: buffer
+errThrow: buffer
 catch: buffer
-errthrow: pointer
+errThrow: pointer
 catch: pointer
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: object true foo
+errThrow: object true foo
 catch: object
-errthrow: object true bar
+errThrow: object true bar
 catch: object
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: object true quux
+errThrow: object true quux
 catch: object
-errthrow: object false undefined
+errThrow: object false undefined
 catch: object
-errthrow: object true baz
+errThrow: object true baz
 catch: object
-- errthrow throws an error
+- errThrow throws an error
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
-- non-callable errthrow
+- non-callable errThrow
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: TypeError: call target not callable, foo: undefined, bar: undefined
-- "undefined" (but set) errthrow
+- "undefined" (but set) errThrow
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: TypeError: call target not callable, foo: undefined, bar: undefined
-- delete errthrow property
+- delete errThrow property
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- errthrow as an accessor property is ignored
+- errThrow as an accessor property is ignored
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
-- plain errthrow, follows into resumed thread
+- plain errThrow, follows into resumed thread
 error: ReferenceError: identifier 'aiee' undefined, foo: bar, bar: quux
 error: URIError: fake uri error, foo: bar, bar: quux
 error: ReferenceError: identifier 'aiee' undefined, foo: bar, bar: quux
 error: URIError: fake uri error, foo: bar, bar: quux
-- plain errthrow, called in yield/resume when isError is true
+- plain errThrow, called in yield/resume when isError is true
 caught in resume
 error: URIError: fake uri error (resume), foo: bar, bar: quux
 caught yield
@@ -339,8 +339,8 @@ error: URIError: fake uri error (yield), foo: bar, bar: quux
 function errThrowTest() {
     var thr;
 
-    delete Duktape.errthrow;
-    delete Duktape.errcreate;
+    delete Duktape.errThrow;
+    delete Duktape.errCreate;
 
     function errPrint(err) {
         print('error: ' + String(err) + ', foo: ' + String(err.foo) +
@@ -370,19 +370,19 @@ function errThrowTest() {
     // with API test cases.
 
     /*
-     *  Normal, default case: no errthrow
+     *  Normal, default case: no errThrow
      */
 
-    print('- no errthrow');
+    print('- no errThrow');
     errTest1();
     errTest2();
 
     /*
-     *  Basic errthrow.
+     *  Basic errThrow.
      */
 
-    print('- plain errthrow (sets foo and bar)');
-    Duktape.errthrow = function (err) {
+    print('- plain errThrow (sets foo and bar)');
+    Duktape.errThrow = function (err) {
         if (!(err instanceof Error)) { return err; }
         err.foo = 1;
         err.bar = 2;
@@ -392,15 +392,15 @@ function errThrowTest() {
     errTest2();
 
     /*
-     *  An errthrow handler gets whatever values are thrown and must deal
+     *  An errThrow handler gets whatever values are thrown and must deal
      *  with them properly.
      */
 
-    print('- errthrow gets all value types');
-    Duktape.errthrow = function (err) {
-        if (err === null) { print('errthrow:', null); }
-        else if (typeof err === 'object') { print('errthrow:', typeof err, err instanceof Error, err.message); }
-        else { print('errthrow:', typeof err); }
+    print('- errThrow gets all value types');
+    Duktape.errThrow = function (err) {
+        if (err === null) { print('errThrow:', null); }
+        else if (typeof err === 'object') { print('errThrow:', typeof err, err instanceof Error, err.message); }
+        else { print('errThrow:', typeof err); }
         return err;
     };
     function Constructor1() {
@@ -433,18 +433,18 @@ function errThrowTest() {
     });
 
     /*
-     *  If an errthrow causes an error, that error won't be augmented.
+     *  If an errThrow causes an error, that error won't be augmented.
      *
      *  There is some inconsistent behavior here now.  If the original error
      *  is thrown by Duktape itself (referencing 'aiee') the second error
      *  causes the error to be replaced with a DoubleError.  However, if the
      *  original error is thrown by Ecmascript code (throw X) the error from
-     *  errthrow will replace the original error as is (here it will be
+     *  errThrow will replace the original error as is (here it will be
      *  a ReferenceError caused by referencing 'zork').
      */
 
-    print('- errthrow throws an error');
-    Duktape.errthrow = function (err) {
+    print('- errThrow throws an error');
+    Duktape.errThrow = function (err) {
         if (!(err instanceof Error)) { return err; }
         err.foo = 1;
         zork;
@@ -454,7 +454,7 @@ function errThrowTest() {
     errTest2();
 
     /*
-     *  If errthrow is set but is not callable, original error is
+     *  If errThrow is set but is not callable, original error is
      *  replaced with another error - either DoubleError or TypeError.
      *
      *  The same inconsistency appears here as well: if original error
@@ -462,36 +462,36 @@ function errThrowTest() {
      *  otherwise a TypeError.
      */
 
-    print('- non-callable errthrow');
-    Duktape.errthrow = 123;
+    print('- non-callable errThrow');
+    Duktape.errThrow = 123;
     errTest1();
     errTest2();
 
     /*
-     *  Setting to undefined/null does *not* remove the errthrow, but
+     *  Setting to undefined/null does *not* remove the errThrow, but
      *  will still cause DoubleError/TypeError.
      */
 
-    print('- "undefined" (but set) errthrow');
-    Duktape.errthrow = undefined;
+    print('- "undefined" (but set) errThrow');
+    Duktape.errThrow = undefined;
     errTest1();
     errTest2();
 
     /*
-     *  The proper way to remove an errthrow is to delete the property.
+     *  The proper way to remove an errThrow is to delete the property.
      */
 
-    print('- delete errthrow property');
-    delete Duktape.errthrow;
+    print('- delete errThrow property');
+    delete Duktape.errThrow;
     errTest1();
     errTest2();
 
     /*
-     *  An accessor errthrow is ignored.
+     *  An accessor errThrow is ignored.
      */
 
-    print('- errthrow as an accessor property is ignored');
-    Object.defineProperty(Duktape, 'errthrow', {
+    print('- errThrow as an accessor property is ignored');
+    Object.defineProperty(Duktape, 'errThrow', {
         get: function () {
             return function(err) {
                 if (!(err instanceof Error)) { return err; }
@@ -505,14 +505,14 @@ function errThrowTest() {
     });
     errTest1();
     errTest2();
-    delete Duktape.errthrow;
+    delete Duktape.errThrow;
 
     /*
-     *  An errthrow follows into a resumed thread.
+     *  An errThrow follows into a resumed thread.
      */
 
-    print('- plain errthrow, follows into resumed thread')
-    Duktape.errthrow = function (err) {
+    print('- plain errThrow, follows into resumed thread')
+    Duktape.errThrow = function (err) {
         if (!(err instanceof Error)) { return err; }
         err.foo = 'bar';
         err.bar = 'quux';
@@ -549,12 +549,12 @@ function errThrowTest() {
     /*
      *  In addition to Duktape internal errors and explicit Ecmascript
      *  throws, coroutine yield() / resume() errors are processed with
-     *  the errthrow.
+     *  the errThrow.
      */
 
-    print('- plain errthrow, called in yield/resume when isError is true');
+    print('- plain errThrow, called in yield/resume when isError is true');
 
-    Duktape.errthrow = function (err) {
+    Duktape.errThrow = function (err) {
         if (!(err instanceof Error)) { return err; }
         err.foo = 'bar';
         err.bar = 'quux';
@@ -583,7 +583,7 @@ function errThrowTest() {
     }
 }
 
-print('errthrow');
+print('errThrow');
 
 try {
     errThrowTest();
@@ -592,33 +592,33 @@ try {
 }
 
 /*===
-errcreate + errthrow
-enter errcreate: Error: initial error undefined undefined
-error: URIError: fake error (in errcreate), foo: undefined, bar: undefined
+errCreate + errThrow
+enter errCreate: Error: initial error undefined undefined
+error: URIError: fake error (in errCreate), foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
 e1 tracedata existence matches: true
 e2 tracedata existence matches: true
-exit errcreate: Error: initial error added-by-errcreate undefined
-enter errthrow Error: initial error added-by-errcreate undefined
-error: URIError: fake error (in errthrow), foo: undefined, bar: undefined
+exit errCreate: Error: initial error added-by-errCreate undefined
+enter errThrow Error: initial error added-by-errCreate undefined
+error: URIError: fake error (in errThrow), foo: undefined, bar: undefined
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 e1 tracedata existence matches: true
 e2 tracedata existence matches: true
-exit errthrow: Error: initial error added-by-errcreate added-by-errthrow
+exit errThrow: Error: initial error added-by-errCreate added-by-errThrow
 in catch
-error: Error: initial error, foo: added-by-errcreate, bar: added-by-errthrow
+error: Error: initial error, foo: added-by-errCreate, bar: added-by-errThrow
 ===*/
 
-/* When errcreate is running, errors created and thrown inside the handler
- * will not trigger further errcreate/errthrow calls.  Similarly, when
- * errthrow is running, recursive errcreate/errthrow calls are not made.
+/* When errCreate is running, errors created and thrown inside the handler
+ * will not trigger further errCreate/errThrow calls.  Similarly, when
+ * errThrow is running, recursive errCreate/errThrow calls are not made.
  *
  * The built-in error augmentation (tracedata) still happens.
  */
 
 function errCreateAndErrThrowTest() {
-    delete Duktape.errthrow;
-    delete Duktape.errcreate;
+    delete Duktape.errThrow;
+    delete Duktape.errCreate;
 
     function errPrint(err) {
         print('error: ' + String(err) + ', foo: ' + String(err.foo) +
@@ -626,11 +626,11 @@ function errCreateAndErrThrowTest() {
         //print(err.stack);
     }
 
-    Duktape.errthrow = function (err) {
-        print('enter errthrow', err, err.foo, err.bar);
-        err.bar = 'added-by-errthrow';
+    Duktape.errThrow = function (err) {
+        print('enter errThrow', err, err.foo, err.bar);
+        err.bar = 'added-by-errThrow';
 
-        var e1 = new URIError('fake error (in errthrow)');
+        var e1 = new URIError('fake error (in errThrow)');
         try {
             aiee;
         } catch (e) {
@@ -641,14 +641,14 @@ function errCreateAndErrThrowTest() {
         print('e1 tracedata existence matches:', ('tracedata' in err === 'tracedata' in e1));
         print('e2 tracedata existence matches:', ('tracedata' in err === 'tracedata' in e2));
 
-        print('exit errthrow:', err, err.foo, err.bar);
+        print('exit errThrow:', err, err.foo, err.bar);
         return err;
     }
-    Duktape.errcreate = function (err) {
-        print('enter errcreate:', err, err.foo, err.bar);
-        err.foo = 'added-by-errcreate';
+    Duktape.errCreate = function (err) {
+        print('enter errCreate:', err, err.foo, err.bar);
+        err.foo = 'added-by-errCreate';
 
-        var e1 = new URIError('fake error (in errcreate)');
+        var e1 = new URIError('fake error (in errCreate)');
         try {
             zork;
         } catch (e) {
@@ -659,7 +659,7 @@ function errCreateAndErrThrowTest() {
         print('e1 tracedata existence matches:', ('tracedata' in err === 'tracedata' in e1));
         print('e2 tracedata existence matches:', ('tracedata' in err === 'tracedata' in e2));
 
-        print('exit errcreate:', err, err.foo, err.bar);
+        print('exit errCreate:', err, err.foo, err.bar);
         return err;
     }
 
@@ -671,7 +671,7 @@ function errCreateAndErrThrowTest() {
     }
 }
 
-print('errcreate + errthrow');
+print('errCreate + errThrow');
 
 try {
     errCreateAndErrThrowTest();

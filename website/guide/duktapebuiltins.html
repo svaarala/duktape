@@ -60,8 +60,8 @@ does not block.</p>
 <tr><td class="propname">act</td><td>Get information about call stack entry.</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">compact</td><td>Compact the memory allocated for a value (object).</td></tr>
-<tr><td class="propname">errcreate</td><td>Callback to modify/replace a created error.</td></tr>
-<tr><td class="propname">errthrow</td><td>Callback to modify/replace an error about to be thrown.</td></tr>
+<tr><td class="propname">errCreate</td><td>Callback to modify/replace a created error.</td></tr>
+<tr><td class="propname">errThrow</td><td>Callback to modify/replace an error about to be thrown.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
@@ -456,14 +456,14 @@ var obj = {
 <p>This call is useful when you know that an object is unlikely to gain new
 properties, but you don't want to seal or freeze the object in case it does.</p>
 
-<h3>errcreate() and errthrow()</h3>
+<h3>errCreate() and errThrow()</h3>
 
 <p>These can be set by user code to process/replace errors when they are created
-(<code>errcreate</code>) or thrown (<code>errthrow</code>).  Both values are
+(<code>errCreate</code>) or thrown (<code>errThrow</code>).  Both values are
 initially non-existent.</p>
 
 <p>See
-<a href="#error-handlers">Error handlers (errcreate and errthrow)</a> for
+<a href="#error-handlers">Error handlers (errCreate and errThrow)</a> for
 details.</p>
 
 <h2>Duktape.Buffer (constructor)</h2>

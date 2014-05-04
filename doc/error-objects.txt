@@ -29,7 +29,7 @@ When an instance of ``Error`` is created:
 * Duktape first adds traceback or file/line information (depending on
   activated features) to the error object.
 
-* Then, if ``Duktape.errcreate`` is set, it is called to augment the error
+* Then, if ``Duktape.errCreate`` is set, it is called to augment the error
   further (or replace it completely).  The callback is called an **error
   handler** inside the implementation.   The user can set an error handler
   if desired, by default it is not set.
@@ -40,11 +40,11 @@ only gets called with ``Error`` instances.
 
 When **any value** is thrown (or re-thrown):
 
-* If ``Duktape.errthrow`` is set, it is called to augment or replace the
+* If ``Duktape.errThrow`` is set, it is called to augment or replace the
   value thrown.  The user can set an error handler, by default it is not
   set.
 
-Note that all values are given to ``Duktape.errthrow`` to process, not just
+Note that all values are given to ``Duktape.errThrow`` to process, not just
 ``Error`` instances, so the user error handler must be careful to handle all
 value types properly.  The error handler also needs to handle re-throwing
 in whatever way is appropriate in the user context.
@@ -121,7 +121,7 @@ prototype chain contains ``Error.prototype``:
 * If the object is also extensible, the value gets augmented with error
   information (e.g. tracedata) by Duktape's built-in augmentation.
 
-* If ``Duktape.errcreate`` is set, the error gets further processed by
+* If ``Duktape.errCreate`` is set, the error gets further processed by
   a user callback; note that the object doesn't need to be extensible
   for this to happen, but it still must be an ``Error`` instance.
 
@@ -144,7 +144,7 @@ Here, error augmentation (including Duktape's own augmentation handling and
 a user error handler) would happen twice:
 
   1. When ``new Error('my error')`` executes, the result gets augmented.
-     If a user error handler (``errcreate``) exists, it is called.
+     If a user error handler (``errCreate``) exists, it is called.
 
   2. When the ``new Constructor()`` call returns, the returned error value
      replaces the default object given to the constructor.  The replacement
@@ -152,11 +152,11 @@ a user error handler) would happen twice:
 
 To avoid issues with this behavior, Duktape's augmentation code refuses
 to add any field to an error if it's already present.  This ensures that
-traceback data is not overwritten in step 2 above.  A user ``errcreate``
+traceback data is not overwritten in step 2 above.  A user ``errCreate``
 error handler must also deal properly with multiple calls for the same
 error object.  It is easiest to do something like::
 
-  Duktape.errcreate = function (e) {
+  Duktape.errCreate = function (e) {
       if ('timestamp' in e) {
           return e;  // only touch once
       }
@@ -213,7 +213,7 @@ Error throwing
 ==============
 
 When **any error value** is thrown, an optional user error handler set to
-``Duktape.errthrow`` can process or replace the error value.  This applies
+``Duktape.errThrow`` can process or replace the error value.  This applies
 to all types, because any value can be thrown.
 
 The user error handler must deal with the following:
@@ -226,7 +226,7 @@ The user error handler must deal with the following:
 For example, the following would add a timestamp to an error object on their
 first throw::
 
-  Duktape.errthrow = function (e) {
+  Duktape.errThrow = function (e) {
       if (!(e instanceof Error)) {
           return e;  // only touch errors
       }
@@ -240,8 +240,8 @@ first throw::
 Specifying error handlers
 =========================
 
-The current create/throw error handlers are stored in ``Duktape.errcreate``
-and ``Duktape.errthrow``.  This has several advantages:
+The current create/throw error handlers are stored in ``Duktape.errCreate``
+and ``Duktape.errThrow``.  This has several advantages:
 
 * The ``Duktape`` object is easy to access from both C and Ecmascript code
   without additional API bindings.

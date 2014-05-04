@@ -45,8 +45,8 @@
  *  a DoubleError which is not ideal).  This would be easy to change and
  *  even signal to the caller.
  *
- *  The user error handler is stored in 'Duktape.errcreate' or
- *  'Duktape.errthrow' depending on whether we're augmenting the error at
+ *  The user error handler is stored in 'Duktape.errCreate' or
+ *  'Duktape.errThrow' depending on whether we're augmenting the error at
  *  creation or throw time.  There are several alternatives to this approach,
  *  see doc/error-objects.txt for discussion.
  *
@@ -431,7 +431,7 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* [ ... error ] */
 
 #if defined(DUK_USE_ERRCREATE)
-	duk__err_augment_user(thr, DUK_STRIDX_ERRCREATE);
+	duk__err_augment_user(thr, DUK_STRIDX_ERR_CREATE);
 #endif
 }
 #endif  /* DUK_USE_AUGMENT_ERROR_CREATE */
@@ -445,7 +445,7 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 void duk_err_augment_error_throw(duk_hthread *thr) {
 #if defined(DUK_USE_ERRTHROW)
-	duk__err_augment_user(thr, DUK_STRIDX_ERRTHROW);
+	duk__err_augment_user(thr, DUK_STRIDX_ERR_THROW);
 #endif  /* DUK_USE_ERRTHROW */
 }
 #endif  /* DUK_USE_AUGMENT_ERROR_THROW */

@@ -111,9 +111,9 @@ with <code>Object.defineProperty()</code>.  This behavior differs from V8 where
 <code>stack</code> is an own property of the Error instance, and if you assign a
 value to <code>stack</code>, the value reads back as assigned.</p>
 
-<h2 id="error-handlers">Error handlers (errcreate and errthrow)</h2>
+<h2 id="error-handlers">Error handlers (errCreate and errThrow)</h2>
 
-<p>If <code>Duktape.errcreate</code> has been set, it is called right after
+<p>If <code>Duktape.errCreate</code> has been set, it is called right after
 Duktape has added traceback information to an object, and can process the
 error further or even replace the error value entirely.  The error handler
 only gets called with <code>Error</code> instances, and its return value is
@@ -132,9 +132,9 @@ object, as that would cause a <code>TypeError</code>.</p>
 <p>Below is an example error handler for adding a creation timestamp to
 errors at their creation:</p>
 <pre class="ecmascript-code">
-Duktape.errcreate = function (e) {
+Duktape.errCreate = function (e) {
     if (!(e instanceof Error)) {
-        // this check is not really needed because errcreate only gets
+        // this check is not really needed because errCreate only gets
         // called with Error instances
         return e;
     }
@@ -156,10 +156,10 @@ does not work and causes a <code>TypeError</code> when Duktape attempts to
 call the <code>null</code> value):</p>
 <pre class="ecmascript-code">
 // Remove error handler for error creation
-delete Duktape.errcreate;
+delete Duktape.errCreate;
 </pre>
 
-<p>Similarly, if <code>Duktape.errthrow</code> has been set, it is called
+<p>Similarly, if <code>Duktape.errThrow</code> has been set, it is called
 right before an error is thrown, and can process or replace the error value.
 Because Ecmascript allows any value type to be thrown, the error handler
 may get called with arbitrary input values (not just <code>Error</code>
@@ -169,7 +169,7 @@ an error can be re-thrown multiple times.</p>
 <p>For example, to add a throw timestamp (recording the first time the object
 has been thrown) to errors:</p>
 <pre class="ecmascript-code">
-Duktape.errcreate = function (e) {
+Duktape.errCreate = function (e) {
     if (!(e instanceof Error)) {
         // refuse to touch anything but Error instances
         return e;
@@ -190,7 +190,7 @@ Duktape.errcreate = function (e) {
 <p>Again, to remove the handler, delete the property:</p>
 <pre class="ecmascript-code">
 // Remove error handler for error throwing
-delete Duktape.errthrow;
+delete Duktape.errThrow;
 </pre>
 
 <h2>Current limitations</h2>

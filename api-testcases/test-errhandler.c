@@ -18,7 +18,7 @@ final top: 0
 ===*/
 
 static void remove_handlers(duk_context *ctx) {
-	duk_eval_string(ctx, "delete Duktape.errcreate; delete Duktape.errthrow;");
+	duk_eval_string(ctx, "delete Duktape.errCreate; delete Duktape.errThrow;");
 	duk_pop(ctx);
 }
 
@@ -26,7 +26,7 @@ int test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
-	duk_eval_string(ctx, "Duktape.errthrow = function (err) { err.name = 'ForcedName'; return err; }");
+	duk_eval_string(ctx, "Duktape.errThrow = function (err) { err.name = 'ForcedName'; return err; }");
 	duk_pop(ctx);
 
 	/* Throw with duk_throw(). */
@@ -42,7 +42,7 @@ int test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
-	duk_eval_string(ctx, "Duktape.errthrow = function (err) { err.name = 'ForcedName'; return err; }");
+	duk_eval_string(ctx, "Duktape.errThrow = function (err) { err.name = 'ForcedName'; return err; }");
 	duk_pop(ctx);
 
 	/* Throw with duk_error(). */
@@ -61,7 +61,7 @@ int test_3(duk_context *ctx) {
 	 */
 
 	remove_handlers(ctx);
-	duk_eval_string(ctx, "Duktape.errthrow = function (err) { zork; }");
+	duk_eval_string(ctx, "Duktape.errThrow = function (err) { zork; }");
 	duk_pop(ctx);
 
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, NULL);
@@ -74,7 +74,7 @@ int test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
-	duk_eval_string(ctx, "Duktape.errcreate = function (err) { err.name = 'ForcedName'; return err; }");
+	duk_eval_string(ctx, "Duktape.errCreate = function (err) { err.name = 'ForcedName'; return err; }");
 	duk_pop(ctx);
 
 	/* Create without throwing. */
@@ -91,7 +91,7 @@ int test_5(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
-	duk_eval_string(ctx, "Duktape.errcreate = function (err) { err.name = 'ForcedName'; return err; }");
+	duk_eval_string(ctx, "Duktape.errCreate = function (err) { err.name = 'ForcedName'; return err; }");
 
 	/* Create (and throw) with duk_error(). */
 
