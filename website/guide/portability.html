@@ -240,9 +240,6 @@ headers are different (especially for pre C99/C++11).</p>
     incorrect even on some platforms which provide a 32-bit type.</li>
 <li>Pointer less-than/greater-than comparisons are expected to work like
     pointers were unsigned.  This is incorrect on some platforms.</li>
-<li>On platforms requiring aligned accesses, Duktape guarantees 4-byte
-    alignment.  In particular, 64-bit integers and IEEE double values are
-    not guaranteed to be 8-byte aligned.  This is not always correct.</li>
 </ul>
 
 <h2>Troubleshooting</h2>
