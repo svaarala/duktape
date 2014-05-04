@@ -532,17 +532,17 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  JS code to be evaluated at startup.
 	 */
 
-#ifdef DUK_USE_INITJS
-	/* FIXME: compression */
+#ifdef DUK_USE_BUILTIN_INITJS
+	/* XXX: compression */
+	DUK_DD(DUK_DDPRINT("running built-in initjs"));
 	duk_eval_string(ctx, (const char *) duk_initjs_data);  /* initjs data is NUL terminated */
 	duk_pop(ctx);
-#endif  /* DUK_USE_INITJS */
+#endif  /* DUK_USE_BUILTIN_INITJS */
 
 #ifdef DUK_USE_USER_INITJS
-	/* FIXME: compression, at least as an option? */
-	/* FIXME: unused now */
-	duk_eval_string(ctx, (const char *) DUK_USE_USER_INITJS);
-	duk_pop(ctx);
+	/* XXX: compression (as an option) */
+	DUK_DD(DUK_DDPRINT("running user initjs"));
+	duk_eval_string_noresult(ctx, (const char *) DUK_USE_USER_INITJS);
 #endif  /* DUK_USE_USER_INITJS */
 
 	/*

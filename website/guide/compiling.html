@@ -275,6 +275,18 @@ The table below summarizes the available options, in no particular order:</p>
     this to disable the zeroing (perhaps for performance reasons).</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_USER_INITJS</td>
+<td>Provide a string to evaluate when a thread with new built-ins
+    (a new global environment) is created.  This allows you to make minor
+    modifications to the global environment before any code is executed
+    in it.  The value must be a string, e.g.
+    <code>-DDUK_OPT_USER_INITJS='"this.foo = 123"'</code>.
+    Errors in the initialization code result in a fatal error.
+    (This option will most likely be deprecated in favor of an
+    actual callback which provides much more flexibility for
+    extending the global environment, implementing sandboxing, etc.)</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_PANIC_HANDLER(code,msg)</td>
 <td>Provide a custom panic handler, see detailed description below.</td>
 </tr>
