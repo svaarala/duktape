@@ -691,12 +691,20 @@ void duk_dump_context_raw(duk_context *ctx);
 /* FIXME: fprintf() requires stdio.h which is unportable; this macro and including
  * stdio.h must be conditional to features.
  */
-#define duk_dump_context_stdout(ctx) \
+
+/* internal use */
+#define duk_dump_context_filehandle(ctx,fh) \
 	do { \
 		duk_dump_context_raw((ctx)); \
 		fprintf(stdout, "%s\n", duk_safe_to_string(ctx, -1)); \
 		duk_pop(ctx); \
 	} while (0)
+
+/* external use */
+#define duk_dump_context_stdout(ctx) \
+	duk_dump_context_filehandle(ctx,stdout)
+#define duk_dump_context_stderr(ctx) \
+	duk_dump_context_filehandle(ctx,stderr)
 
 #ifdef __cplusplus
 /* end 'extern "C"' wrapper */

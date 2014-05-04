@@ -30,7 +30,7 @@ void duk_dump_context_raw(duk_context *ctx) {
 	                             DUK_JSON_FLAG_ASCII_ONLY |
 	                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
 
-	duk_push_sprintf(ctx, "ctx %p: top=%d, stack=%s", (void *) ctx, (int) top, duk_safe_to_string(ctx, -1));
+	duk_push_sprintf(ctx, "ctx: top=%d, stack=%s", (int) top, duk_safe_to_string(ctx, -1));
 	duk_replace(ctx, -3);  /* [ ... arr jsonx(arr) res ] -> [ ... res jsonx(arr) ] */
 	duk_pop(ctx);
 	DUK_ASSERT(duk_is_string(ctx, -1));
