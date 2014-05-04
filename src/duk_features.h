@@ -1859,7 +1859,14 @@ typedef FILE duk_file;
  *  InitJS code
  */
 
-#define DUK_USE_INITJS
+/* Always use the built-in InitJS code for now. */
+#define DUK_USE_BUILTIN_INITJS
+
+/* User provided InitJS. */
+#undef DUK_USE_USER_INITJS
+#if defined(DUK_OPT_USER_INITJS)
+#define DUK_USE_USER_INITJS (DUK_OPT_USER_INITJS)
+#endif
 
 /*
  *  Miscellaneous
