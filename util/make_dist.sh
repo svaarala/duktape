@@ -92,7 +92,6 @@ for i in	\
 	duk_bi_proxy.c		\
 	duk_bi_thread.c		\
 	duk_bi_thrower.c	\
-	duk_dblunion.h		\
 	duk_debug_fixedbuffer.c	\
 	duk_debug.h		\
 	duk_debug_heap.c	\
@@ -105,8 +104,6 @@ for i in	\
 	duk_error_macros.c	\
 	duk_error_misc.c	\
 	duk_error_throw.c	\
-	duk_features.h		\
-	duk_features_sanity.h	\
 	duk_forwdecl.h		\
 	duk_hbuffer_alloc.c	\
 	duk_hbuffer.h		\
@@ -268,7 +265,11 @@ done
 
 # Build duktape.h from parts.
 
-cat src/duk_api_public.h \
+cat \
+	src/duk_features.h \
+	src/duk_api_public.h \
+	src/duk_features_sanity.h \
+	src/duk_dblunion.h \
 	> $DISTSRCSEP/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
