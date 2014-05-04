@@ -23,3 +23,22 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-05-04 20:07:20.649497 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Worked on something like this on the heap-thread-init branch.
+    
+    This might not be very useful: since new global environments are created
+    by the user from C code, the user can simply eval some code after creating
+    a new context with fresh globals.
+    
+    The only reason to be able to use a heap-level globInit() callback would
+    be so that some existing code didn't need to be changed.  Rather, one would
+    just register the callback and it would automatically get called without
+    co-operation of the existing code.  This is not a very big use case.
+    
+    The same argument applies to user initjs code.  The use case for that is
+    more along the lines of adding some compatibility wrappers and such (like
+    console.log or perhaps replacements for features removed from Duktape in
+    a newer version), so it might still be worth keeping.

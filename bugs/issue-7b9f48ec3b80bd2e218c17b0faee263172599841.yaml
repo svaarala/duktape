@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: move errcreate/errthrow hooks to stash objects? (if so, only C code can init them)
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-04 17:14:32.512356 Z
+references: []
+
+id: 7b9f48ec3b80bd2e218c17b0faee263172599841
+log_events: 
+- - 2014-05-04 17:14:32.620088 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
