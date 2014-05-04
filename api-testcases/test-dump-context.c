@@ -1,10 +1,9 @@
 /*===
-FIXME
+*** test_1 (duk_safe_call)
+ctx: top=4, stack=[123,"foo\u1234bar",{foo:123,bar:[1,2,3]},[1,2,3]]
+final top: 4
+==> rc=0, result='undefined'
 ===*/
-
-/* FIXME: at the moment a deterministic testcase is not possible because
- * the debug line contains the context pointer (%p formatted).
- */
 
 static int test_1(duk_context *ctx) {
 	duk_push_int(ctx, 123);
