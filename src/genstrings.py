@@ -623,15 +623,15 @@ duk_string_list = [
 	mkstr("clog", custom=True),  # C logger
 
 	# for controlling log formatting of objects
-	mkstr("toLogString"),
+	mkstr("toLogString", custom=True),
 
 	# special literals for custom json encodings
-	mkstr('{"_undef":true}'),
-	mkstr('{"_nan":true}'),
-	mkstr('{"_inf":true}'),
-	mkstr('{"_ninf":true}'),
-	mkstr('{"_func":true}'),
-	mkstr('{_func:true}'),
+	mkstr('{"_undef":true}', custom=True),
+	mkstr('{"_nan":true}', custom=True),
+	mkstr('{"_inf":true}', custom=True),
+	mkstr('{"_ninf":true}', custom=True),
+	mkstr('{"_func":true}', custom=True),
+	mkstr('{_func:true}', custom=True),
 ]
 
 # Standard reserved words (non-strict mode + strict mode)
