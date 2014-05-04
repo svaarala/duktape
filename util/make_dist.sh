@@ -23,9 +23,9 @@ DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
 
-# DUK_VERSION is grepped from duktape.h: it is needed for the public API
-# and we want to avoid defining it in two places.
-DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
+# DUK_VERSION is grepped from duk_api_public.h: it is needed for the
+# public API and we want to avoid defining it in two places.
+DUK_VERSION=`cat src/duk_api_public.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
 DUK_MAJOR=`echo "$DUK_VERSION / 10000" | bc`
 DUK_MINOR=`echo "$DUK_VERSION % 10000 / 100" | bc`
 DUK_PATCH=`echo "$DUK_VERSION % 100" | bc`
@@ -65,6 +65,7 @@ for i in	\
 	duk_api_codec.c		\
 	duk_api_compile.c	\
 	duk_api_internal.h	\
+	duk_api_public.h	\
 	duk_api_memory.c	\
 	duk_api_object.c	\
 	duk_api_string.c	\
@@ -171,14 +172,13 @@ for i in	\
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do
-	cp src/$i $DISTSRCSEP/
+	# This replacement set is only needed for duk_api_public.h at the moment.
+	cat src/$i | sed \
+		-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
+		-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+		-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+		> $DISTSRCSEP/$i
 done
-
-cat src/duktape.h | sed \
-	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
-	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
-	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
-	> $DISTSRCSEP/duktape.h
 
 for i in \
 	README.txt \
@@ -266,6 +266,11 @@ for i in \
 	cp licenses/$i $DIST/licenses/
 done
 
+# Build duktape.h from parts.
+
+cat src/duk_api_public.h \
+	> $DISTSRCSEP/duktape.h
+
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  UglifyJS or the closure compiler is
 # used to compact the source.  Obfuscating the code is not a goal, although
@@ -318,8 +323,6 @@ echo "Using closure minified version"; cp $DISTSRCSEP/duk_initjs_closure.js.tmp 
 #
 # There are currently no profile specific variants of strings/builtins, but
 # this will probably change when functions are added/removed based on profile.
-
-# FIXME: byte order
 
 python src/genbuildparams.py \
 	--version=$DUK_VERSION \
