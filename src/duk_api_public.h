@@ -16,68 +16,20 @@ extern "C" {
 #endif
 
 /*
- *  Feature detection needed by this public header
- *
- *  DUK_API_NORETURN: macro for declaring a 'noreturn' function.
- *  Unfortunately the noreturn declaration may appear in various
- *  places of a function declaration, so the solution is to wrap
- *  the entire declaration inside the macro.  Compiler support
- *  for using a noreturn declaration on function pointers varies;
- *  this macro must only be used for actual function declarations.
- *
- *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
- *  http://clang.llvm.org/docs/LanguageExtensions.html
+ *  Some defines forwarded from feature detection
  */
 
-#if defined(__GNUC__)
-#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
-/* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
-#define DUK_API_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#else
-#error cannot figure out gcc version
-#endif
-#endif
-
-#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || \
-    (defined(__cplusplus) && (__cplusplus >= 201103L) && defined(__GNUC__))
-#define DUK_API_VARIADIC_MACROS
-#else
 #undef DUK_API_VARIADIC_MACROS
+#ifdef DUK_USE_VARIADIC_MACROS
+#define DUK_API_VARIADIC_MACROS
 #endif
 
-#if defined(DUK_API_GCC_VERSION) && (DUK_API_GCC_VERSION >= 20500)
-/* since gcc-2.5 */
-#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(__clang__)
-/* syntax same as gcc */
-#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(_MSC_VER)
-/* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
-#define DUK_API_NORETURN(decl)  __declspec(noreturn) decl
-#else
-/* Don't know how to declare a noreturn function, so don't do it; this
- * may cause some spurious compilation warnings (e.g. "variable used
- * uninitialized").
- */
-#define DUK_API_NORETURN(decl)  decl
-#endif
+#define DUK_API_NORETURN(decl) DUK_NORETURN(decl)
 
 /*
- *  Includes
+ *  API typedefs
  *
- *  Keep the set of includes minimal to serve tihs header only to avoid
- *  portability issues.  For instance, we can't rely on any C99 here.
- */
-
-#include <limits.h>  /* INT_MIN, INT_MAX */
-#include <stdarg.h>  /* va_list, etc */
-#include <stdlib.h>  /* size_t (defined by stdlib.h and stddef.h) */
-#include <stddef.h>
-
-/*
- *  Typedefs; avoid all dependencies on internal types
- *
- *  (duk_context *) currently maps directly to internal type (duk_hthread *).
+ *  (duk_context *) maps directly to internal type (duk_hthread *).
  *  Currently only primitive typedefs have a '_t' suffix.
  */
 

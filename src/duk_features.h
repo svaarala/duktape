@@ -1427,10 +1427,33 @@ typedef FILE duk_file;
 	} while (0)
 
 /*
- *  Macro for declaring a 'noreturn' function, detection in duktape.h.
+ *  DUK_NORETURN: macro for declaring a 'noreturn' function.
+ *  Unfortunately the noreturn declaration may appear in various
+ *  places of a function declaration, so the solution is to wrap
+ *  the entire declaration inside the macro.  Compiler support
+ *  for using a noreturn declaration on function pointers varies;
+ *  this macro must only be used for actual function declarations.
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
+ *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#define DUK_NORETURN(decl) DUK_API_NORETURN(decl)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
+/* since gcc-2.5 */
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(__clang__)
+/* syntax same as gcc */
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(_MSC_VER)
+/* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
+#define DUK_NORETURN(decl)  __declspec(noreturn) decl
+#else
+/* Don't know how to declare a noreturn function, so don't do it; this
+ * may cause some spurious compilation warnings (e.g. "variable used
+ * uninitialized").
+ */
+#define DUK_NORETURN(decl)  decl
+#endif
 
 /*
  *  Macro for stating that a certain line cannot be reached.

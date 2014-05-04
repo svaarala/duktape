@@ -68,13 +68,4 @@
 #error DUK_USE_GC_TORTURE defined without DUK_USE_MARK_AND_SWEEP
 #endif
 
-/*
- *  Misc
- */
-
-#if (defined(DUK_USE_VARIADIC_MACROS) && !defined(DUK_API_VARIADIC_MACROS)) || \
-    (!defined(DUK_USE_VARIADIC_MACROS) && defined(DUK_API_VARIADIC_MACROS))
-#error DUK_USE_VARIADIC_MACROS and DUK_API_VARIADIC_MACROS must agree
-#endif
-
 #endif  /* DUK_FEATURES_SANITY_H_INCLUDED */
