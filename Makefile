@@ -156,6 +156,7 @@ CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparis
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
+#CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
 #CCOPTS_SHARED += -DDUK_OPT_NO_PACKED_TVAL
 #CCOPTS_SHARED += -DDUK_OPT_FORCE_ALIGN=4
 #CCOPTS_SHARED += -DDUK_OPT_FORCE_ALIGN=8
