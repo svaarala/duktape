@@ -322,6 +322,8 @@ Planned
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings
 
+* Add support for X32 ABI (gcc -mx32 option)
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
