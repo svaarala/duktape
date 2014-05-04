@@ -120,9 +120,18 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_X64
 #endif
 
-/* FIXME: X32: pointers are 32-bit so packed format can be used, but X32
- * support is not yet mature.
+/* X32: 64-bit with 32-bit pointers (allows packed tvals).  X32 support is
+ * not very mature yet.
+ *
+ * https://sites.google.com/site/x32abi/
  */
+#if defined(DUK_F_X64) && \
+    (defined(_ILP32) || defined(__ILP32__))
+#define DUK_F_X32
+/* define only one of: DUK_F_X86, DUK_F_X32, or DUK_F_X64 */
+#undef DUK_F_X64
+#undef DUK_F_X86
+#endif
 
 /* ARM */
 #if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
@@ -477,7 +486,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Pointer size determination based on architecture. */
-#if defined(DUK_F_X86) || \
+#if defined(DUK_F_X86) || defined(DUK_F_X32) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32))
 #define DUK_F_32BIT_PTRS
 #elif defined(DUK_F_X64) || \
@@ -850,7 +859,7 @@ typedef double duk_double_t;
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
 #define DUK_USE_ALIGN_4
-#elif defined(DUK_F_X86) || defined(DUK_F_X64)
+#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* unknown, use safe default */
@@ -1552,6 +1561,8 @@ typedef FILE duk_file;
 
 #if defined(DUK_F_X86)
 #define DUK_USE_ARCH_STRING "x86"
+#elif defined(DUK_F_X32)
+#define DUK_USE_ARCH_STRING "x32"
 #elif defined(DUK_F_X64)
 #define DUK_USE_ARCH_STRING "x64"
 #elif defined(DUK_F_ARM)
