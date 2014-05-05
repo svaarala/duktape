@@ -147,6 +147,34 @@ Be careful especially of assertions, debug prints, and other macros::
   DUK_UNREF(y);
   int flags = 0;  /* problem: DUK_UNREF() */
 
+Note that even **disabled** debug prints break the variable declaration
+part because disabled debug prints are replaced with ``do {} while (0)``
+(this is intentional to flush out this kind of errors even in release
+builds)::
+
+  {
+    int x;
+
+    DUK_DDD(DUK_DDDPRINT("debug print"));
+
+    int y;  /* error here */
+
+    x = 123;
+    ...
+  }
+
+The fix is::
+
+  {
+    int x;
+    int y;
+
+    DUK_DDD(DUK_DDDPRINT("debug print"));
+
+    x = 123;
+    ...
+  }
+
 Include guards
 --------------
 
@@ -626,6 +654,118 @@ EBCDIC
 
 See separate section below.
 
+Portability issues on very old compilers
+========================================
+
+Initialization of auto arrays
+-----------------------------
+
+Some old compilers (such as bcc) refuse to compile the following (error
+message is something along the lines of: initialization of auto arrays
+is illegal)::
+
+  int myarray[] = { 123, 234 };
+
+or even::
+
+  int myarray[2] = { 123, 234 };
+
+Apparently the following would be legal::
+
+  static int myarray[2] = { 123, 234 };
+
+The workaround is to use a static array or initialize explicitly::
+
+  int myarray[2];
+
+  myarray[0] = 123;
+  myarray[1] = 234;
+
+Initializer is too complicated (bcc)
+------------------------------------
+
+BCC complains about "initializer is too complicated" when a function pointer
+array contains casts::
+
+  ...
+  (duk_c_function) my_function,
+  ...
+
+This works::
+
+  ...
+  my_function,
+  ...
+
+Non-integral selector in switch (bcc)
+-------------------------------------
+
+For some reason BCC fails to compile switch statements where the value is
+obtained with a macro such as::
+
+  switch (DUK_DEC_OP(ins)) {
+    ...
+  }
+
+This is probably caused by the fact that ``DUK_DEC_OP(ins)`` is a 32-bit value
+while BCC's integer type is 16 bits.  Switch argument needs to be ``int``, so
+one needs to::
+
+  switch ((int) DUK_DEC_OP(ins)) {
+    ...
+  }
+
+Or perhaps (using type wrappers)::
+
+  switch ((duk_small_int_t) DUK_DEC_OP(ins)) {
+    ...
+  }
+
+Division by zero is a compile error
+-----------------------------------
+
+Attempting to create NaN or infinity values with expressions like ``0/0`` and
+``1/0`` are treated as compile errors by some compilers (such as BCC) while
+others will just replace them with an incorrect value (e.g. VBCC replaces them
+with zero).  Run-time computed NaN / infinity values are needed on such platforms.
+
+ULL integer constants may cause an error
+----------------------------------------
+
+The following may cause a compilation error (e.g. BCC)::
+
+  #if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+
+The error happens even if ``ULONG_MAX`` is not defined.  Instead, this needs
+to be restructured in one of several ways.  For instance, old compilers can be
+rejected explicitly::
+
+  #if defined(DUK_F_BCC)
+  /* cannot check ULONG_MAX */
+  #else
+  #if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+  /* ... */
+  #endif
+  #endif
+
+The important point is that the old compiler cannot process the preprocessor
+line containing the integer constant; if it processes even part of the line,
+it may choke on a syntax error.
+
+Comments inside macro arguments may cause an error (BCC)
+--------------------------------------------------------
+
+The following causes an error on BCC::
+
+  DUK_ASSERT(FOO ||   /* foo happens */
+             BAR);
+
+The comment causes BCC to produce an error like "incorrect number of macro
+arguments".  The fix is to remove the comment from inside the macro::
+
+  DUK_ASSERT(FOO ||
+             BAR);
+
 Character values in char literals and strings, EBCDIC
 =====================================================
 
@@ -839,3 +979,10 @@ clang
 -----
 
 Clang has some issues with union aliasing.  See ``misc/clang_aliasing.c``.
+
+bcc
+---
+
+BCC is not a realistic compilation target at the moment but serves as a nice
+"torture target".  Various issues have been documented above in portability
+issues.
