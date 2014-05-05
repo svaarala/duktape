@@ -223,7 +223,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_GCC
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
 /* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
-#define DUK_F_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#define DUK_F_GCC_VERSION  (__GNUC__ * 10000L + __GNUC_MINOR__ * 100L + __GNUC_PATCHLEVEL__)
 #else
 #error cannot figure out gcc version
 #endif
@@ -310,7 +310,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #if defined(DUK_F_QNX) && defined(DUK_COMPILING_DUKTAPE)
 /* See: /opt/qnx650/target/qnx6/usr/include/sys/platform.h */
 #define _XOPEN_SOURCE    600
-#define _POSIX_C_SOURCE  200112
+#define _POSIX_C_SOURCE  200112L
 #endif
 
 #if defined(__APPLE__)
@@ -491,7 +491,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * format characters need to be changed.
  */
 #if defined(INT_MAX)
-#if INT_MAX < 2147483647
+#if INT_MAX < 2147483647L
 #error INT_MAX too small, expected int to be 32 bits at least
 #endif
 #else
@@ -1490,7 +1490,7 @@ typedef FILE duk_file;
  *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500L)
 /* since gcc-2.5 */
 #define DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(__clang__)
@@ -1514,7 +1514,7 @@ typedef FILE duk_file;
  *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500L)
 /* since gcc-4.5 */
 #define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
 #elif defined(__clang__) && defined(__has_builtin)
@@ -1563,7 +1563,7 @@ typedef FILE duk_file;
 #endif
 
 #if defined(DUK_USE_BRANCH_HINTS)
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERISON >= 40500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERISON >= 40500L)
 /* GCC: test not very accurate; enable only in relatively recent builds
  * because of bugs in gcc-4.4 (http://lists.debian.org/debian-gcc/2010/04/msg00000.html)
  */
