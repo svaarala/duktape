@@ -6,19 +6,14 @@
  *  feature detection, user supplied DUK_OPT_xxx defines, and optionally
  *  a "duk_custom.h" user header (if DUK_OPT_HAVE_CUSTOM_H is defined).
  *
- *  This file is included by duk_internal.h before anything else is
- *  included.  Feature selection defines (e.g. _XOPEN_SOURCE) are defined
- *  here before any system headers are included (which is a requirement for
- *  system headers to work correctly).  This file is responsible for including
- *  all system headers and contains all platform dependent cruft in general.
- *
- *  The public duktape.h has minimal feature detection required by the public
- *  API (for instance use of variadic macros is detected there).  Duktape.h
- *  exposes its detection results as DUK_API_xxx.  The public header and the
- *  implementation must agree on e.g. names and argument lists of exposed
- *  calls; these are checked by duk_features_sanity.h (duktape.h is not yet
- *  included when this file is included to avoid fouling up feature selection
- *  defines).
+ *  When compiling Duktape, DUK_COMPILING_DUKTAPE is set, and this file
+ *  is included before any system headers are included.  Feature selection
+ *  defines (e.g. _XOPEN_SOURCE) are defined here before any system headers
+ *  are included (which is a requirement for system headers to work correctly).
+ *  This file is responsible for including all system headers and contains
+ *  all platform dependent cruft in general.  When compiling user code,
+ *  DUK_COMPILING_DUKTAPE is not defined, and we must avoid e.g. defining
+ *  unnecessary feature selection defines.
  *
  *  The general order of handling:
  *    - Compiler feature detection (require no includes)
@@ -1997,4 +1992,3 @@ typedef FILE duk_file;
 #endif
 
 #endif  /* DUK_FEATURES_H_INCLUDED */
-

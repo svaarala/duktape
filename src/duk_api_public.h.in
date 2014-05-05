@@ -1,3 +1,7 @@
+/*
+ *  BEGIN PUBLIC API
+ */
+
 #ifndef DUK_API_PUBLIC_H_INCLUDED
 #define DUK_API_PUBLIC_H_INCLUDED
 
@@ -17,7 +21,7 @@ extern "C" {
 #define DUK_API_NORETURN(decl) DUK_NORETURN(decl)
 
 /*
- *  API typedefs
+ *  Public API specific typedefs
  *
  *  (duk_context *) maps directly to internal type (duk_hthread *).
  *  Currently only primitive typedefs have a '_t' suffix.
@@ -684,3 +688,6 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 
 #endif  /* DUK_API_PUBLIC_H_INCLUDED */
 
+/*
+ *  END PUBLIC API
+ */
