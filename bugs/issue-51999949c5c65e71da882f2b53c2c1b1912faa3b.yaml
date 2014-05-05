@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Proxy: make the ES6 proxy subset disabled by default because it has a lot of limitations?"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-05 14:12:45.659081 Z
+references: []
+
+id: 51999949c5c65e71da882f2b53c2c1b1912faa3b
+log_events: 
+- - 2014-05-05 14:12:45.835058 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
