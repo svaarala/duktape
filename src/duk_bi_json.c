@@ -1860,7 +1860,8 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	if (duk_is_number(ctx, idx_space)) {
 		double d;
 		int nspace;
-		char spaces[10] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };  /* FIXME:helper */
+		/* spaces[] must be static to allow initializer with old compilers like BCC */
+		static const char spaces[10] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };  /* FIXME:helper */
 
 		/* ToInteger() coercion; NaN -> 0, infinities are clamped to 0 and 10 */
 		/* FIXME: get_clamped_int; double arithmetic is expensive */

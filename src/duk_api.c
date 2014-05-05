@@ -1383,10 +1383,14 @@ static int duk__defaultvalue_coerce_attempt(duk_context *ctx, int index, int fun
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
-	int coercers[] = { DUK_STRIDX_VALUE_OF, DUK_STRIDX_TO_STRING };
+	/* inline initializer for coercers[] is not allowed by old compilers like BCC */
+	int coercers[2];
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
+
+	coercers[0] = DUK_STRIDX_VALUE_OF;
+	coercers[1] = DUK_STRIDX_TO_STRING;
 
 	index = duk_require_normalize_index(ctx, index);
 
