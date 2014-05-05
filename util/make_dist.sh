@@ -23,9 +23,9 @@ DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
 
-# DUK_VERSION is grepped from duk_api_public.h: it is needed for the
+# DUK_VERSION is grepped from duk_api_public.h.in: it is needed for the
 # public API and we want to avoid defining it in two places.
-DUK_VERSION=`cat src/duk_api_public.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
+DUK_VERSION=`cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
 DUK_MAJOR=`echo "$DUK_VERSION / 10000" | bc`
 DUK_MINOR=`echo "$DUK_VERSION % 10000 / 100" | bc`
 DUK_PATCH=`echo "$DUK_VERSION % 100" | bc`
@@ -59,13 +59,12 @@ mkdir $DIST/examples/coffee
 for i in	\
 	duk_alloc_default.c	\
 	duk_alloc_torture.c	\
+	duk_api_internal.h	\
 	duk_api_buffer.c	\
 	duk_api.c		\
 	duk_api_call.c		\
 	duk_api_codec.c		\
 	duk_api_compile.c	\
-	duk_api_internal.h	\
-	duk_api_public.h	\
 	duk_api_memory.c	\
 	duk_api_object.c	\
 	duk_api_string.c	\
@@ -265,21 +264,21 @@ done
 
 # Build duktape.h from parts.
 
-cat src/duktape.h | sed -e '
+cat src/duktape.h.in | sed -e '
 /^@DUK_FEATURES_H@$/ {
-    r src/duk_features.h
+    r src/duk_features.h.in
     d
 }
 /^@DUK_API_PUBLIC_H@$/ {
-    r src/duk_api_public.h
+    r src/duk_api_public.h.in
     d
 }
 /^@DUK_FEATURES_SANITY_H@$/ {
-    r src/duk_features_sanity.h
+    r src/duk_features_sanity.h.in
     d
 }
 /^@DUK_DBLUNION_H@$/ {
-    r src/duk_dblunion.h
+    r src/duk_dblunion.h.in
     d
 }' | cat > $DISTSRCSEP/duktape.h
 

@@ -37,7 +37,7 @@ VALGRIND=$(shell which valgrind)
 PYTHON=$(shell which python)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
-DUK_VERSION=$(shell cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_VERSION=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
 DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
