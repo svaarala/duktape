@@ -338,6 +338,10 @@ Planned
   corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,
   gcc 4.8.1, -m32, and no -std=c99
 
+* Portability fixes for uclibc, use a replacement for e.g. fpclassify()
+  because it is broken in some uclibc versions still in use (affected at
+  least some mixed endian ARM environments)
+
 1.0.0 (2014-06-XX)
 -------------------
 
