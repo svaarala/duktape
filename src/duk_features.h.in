@@ -249,6 +249,14 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_BCC
 #endif
 
+#if defined(DUK_F_BCC)
+/* preprocessor does not understand ULL constants (12345ULL) so we can't
+ * evaluate any expressions with them (e.g. BCC).
+ */
+#else
+#define DUK_F_ULL_CONSTS
+#endif
+
 /*
  *  Platform detection, system includes, Date provider selection.
  *
@@ -662,6 +670,7 @@ typedef signed long duk_int32_t;
 #endif
 
 #undef DUK_F_HAVE_64BIT
+#if defined(DUK_F_ULL_CONSTS)
 #if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
 #define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
@@ -678,6 +687,7 @@ typedef signed long duk_int64_t;
 #else
 /* cannot detect 64-bit type, not always needed so don't error */
 #endif
+#endif  /* DUK_F_ULL_CONSTS */
 
 typedef duk_uint8_t duk_uint_least8_t;
 typedef duk_int8_t duk_int_least8_t;
@@ -745,6 +755,7 @@ typedef duk_int32_t duk_intmax_t;
 #define DUK_UINT_FAST32_MAX   0xffffffffUL
 #define DUK_INT_FAST32_MIN    (-0x80000000L)
 #define DUK_INT_FAST32_MAX    0x7fffffffL
+#if defined(DUK_F_HAVE_64BIT)
 #define DUK_UINT64_MIN        0ULL
 #define DUK_UINT64_MAX        0xffffffffffffffffULL
 #define DUK_INT64_MIN         (-0x8000000000000000LL)
@@ -757,6 +768,7 @@ typedef duk_int32_t duk_intmax_t;
 #define DUK_UINT_FAST64_MAX   0xffffffffffffffffULL
 #define DUK_INT_FAST64_MIN    (-0x8000000000000000LL)
 #define DUK_INT_FAST64_MAX    0x7fffffffffffffffULL
+#endif
 #define DUK_UINTPTR_MIN       0UL
 #define DUK_UINTPTR_MAX       0xffffffffUL
 #define DUK_INTPTR_MIN        (-0x80000000L)
