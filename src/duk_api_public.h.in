@@ -678,6 +678,7 @@ int duk_compile_raw(duk_context *ctx, int flags);
 void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 
 #ifdef __cplusplus
+/* end 'extern "C"' wrapper */
 }
 #endif
 
