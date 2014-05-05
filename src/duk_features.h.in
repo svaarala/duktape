@@ -249,7 +249,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_BCC
 #endif
 
-#if defined(__VBCC_)
+#if defined(__VBCC__)
 #define DUK_F_VBCC
 #endif
 
@@ -526,7 +526,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* Intermediate define for 'have inttypes.h' */
 #undef DUK_F_HAVE_INTTYPES
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
-    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__))
+    !(defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC))
 /* vbcc + AmigaOS has C99 but no inttypes.h */
 #define DUK_F_HAVE_INTTYPES
 #elif defined(__cplusplus) && (__cplusplus >= 201103L)
@@ -869,7 +869,7 @@ typedef double duk_double_t;
  * unless they are known to be unreliable.  For instance, 64-bit types are
  * available on VBCC but seem to misbehave.
  */
-#if defined(DUK_F_HAVE_64BIT) && !defined(__VBCC__)
+#if defined(DUK_F_HAVE_64BIT) && !defined(DUK_F_VBCC)
 #define DUK_USE_64BIT_OPS
 #else
 #undef DUK_USE_64BIT_OPS
@@ -1215,7 +1215,7 @@ typedef double duk_double_t;
 #define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
 #define DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#elif !defined(__VBCC__) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
@@ -1230,7 +1230,7 @@ extern double duk_computed_infinity;
 #undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
 #define DUK_DOUBLE_NAN       NAN
-#elif !defined(__VBCC__) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
@@ -1259,7 +1259,7 @@ extern double duk_computed_nan;
       defined(FP_SUBNORMAL) && defined(FP_NORMAL))
 /* missing some obvious constants */
 #define DUK_F_USE_REPL_ALL
-#elif defined(DUK_F_AMIGAOS) && defined(__VBCC__)
+#elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
 /* VBCC is missing the built-ins even in C99 mode (perhaps a header issue) */
 #define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_FREEBSD) && defined(DUK_F_CLANG)
@@ -1309,7 +1309,7 @@ extern double duk_computed_nan;
  */
 #if defined(DUK_F_C99) && \
     !defined(__UCLIBC__) /* uclibc may be missing these */ && \
-    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS may be missing these */
+    !(defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)) /* vbcc + AmigaOS may be missing these */
 #define DUK_USE_MATH_FMIN
 #define DUK_USE_MATH_FMAX
 #define DUK_USE_MATH_ROUND
@@ -1496,7 +1496,7 @@ typedef FILE duk_file;
 #elif defined(__clang__)
 /* syntax same as gcc */
 #define DUK_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(_MSC_VER)
+#elif defined(DUK_F_MSVC)
 /* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
 #define DUK_NORETURN(decl)  __declspec(noreturn) decl
 #else
@@ -1592,7 +1592,7 @@ typedef FILE duk_file;
 
 #define DUK_LINE_MACRO  __LINE__
 
-#if !defined(__VBCC__) && !defined(_MSC_VER)
+#if !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC)
 #define DUK_FUNC_MACRO  __func__
 #else
 #define DUK_FUNC_MACRO  "unknown"
