@@ -701,8 +701,13 @@ typedef duk_uint16_t duk_uint_fast16_t;
 typedef duk_int16_t duk_int_fast16_t;
 typedef duk_uint32_t duk_uint_fast32_t;
 typedef duk_int32_t duk_int_fast32_t;
+#if defined(DUK_F_HAVE_64BIT)
+typedef duk_int64_t duk_intmax_t;
+typedef duk_uint64_t duk_uintmax_t;
+#else
 typedef duk_int32_t duk_intmax_t;
 typedef duk_uint32_t duk_uintmax_t;
+#endif
 
 /* This detection is not very reliable. */
 #if defined(DUK_F_32BIT_PTRS)
@@ -714,10 +719,6 @@ typedef duk_uint64_t duk_uintptr_t;
 #else
 #error cannot determine intptr type
 #endif
-
-/* Pretend that maximum int is 32 bits. */
-typedef duk_uint32_t duk_uintmax_t;
-typedef duk_int32_t duk_intmax_t;
 
 #define DUK_UINT8_MIN         0UL
 #define DUK_UINT8_MAX         0xffUL
