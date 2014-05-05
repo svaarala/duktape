@@ -27,8 +27,8 @@ extern "C" {
  *  Currently only primitive typedefs have a '_t' suffix.
  *
  *  Many types are wrapped by Duktape for portability to rare platforms
- *  where e.g. 'int' is a 16-bit type.  See typing discussion in Duktape
- *  web guide.
+ *  where e.g. 'int' is a 16-bit type.  See practical typing discussion
+ *  in Duktape web documentation.
  */
 
 /* Index values must have at least 32-bit range. */
