@@ -272,7 +272,7 @@ int handle_interactive(duk_context *ctx) {
 	duk_eval_string(ctx, GREET_CODE(" [no readline]"));
 	duk_pop(ctx);
 
-	buffer = malloc(LINEBUF_SIZE);
+	buffer = (char *) malloc(LINEBUF_SIZE);
 	if (!buffer) {
 		fprintf(stderr, "failed to allocated a line buffer\n");
 		fflush(stderr);
