@@ -661,20 +661,22 @@ typedef signed long duk_int32_t;
 #error cannot detect 32-bit type
 #endif
 
-#define DUK_F_HAVE_64BIT
+#undef DUK_F_HAVE_64BIT
 #if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+#define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
 #elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL)
+#define DUK_F_HAVE_64BIT
 typedef unsigned long long duk_uint64_t;
 typedef signed long long duk_int64_t;
 #elif defined(DUK_F_MINGW) || defined(DUK_F_MSVC)
 /* Both MinGW and MSVC have a 64-bit type. */
+#define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
 #else
 /* cannot detect 64-bit type, not always needed so don't error */
-#undef DUK_F_HAVE_64BIT
 #endif
 
 typedef duk_uint8_t duk_uint_least8_t;
