@@ -621,6 +621,86 @@ input values are known to be constrained (e.g. year values are kept between
 [-999999,999999]).  However, if there is a bug, it's better to corrupt a
 printed output value than to cause a memory error.
 
+EBCDIC
+------
+
+See separate section below.
+
+Character values in char literals and strings, EBCDIC
+=====================================================
+
+**FIXME: under work**
+
+Overview
+--------
+
+Character constants in C code are integers whose value depends on the
+platform.  On the vast majority of platforms the constants are ASCII but
+there are also e.g. EBCDIC platforms:
+
+* http://en.wikipedia.org/wiki/EBCDIC#Codepage_layout
+
+If you read a character value from a platform specific text file, then
+code such as the following would be appropriate::
+
+  if (c == 'x') {
+    ...
+  }
+
+However, if you have a character value which must be interpreted as ASCII,
+then the above would not be portable because ``'x'`` would not necessarily
+have the value 120 ('x' in ASCII) but might have the value 167 ('x' in
+EBCDIC).  To correctly compare the value as ASCII::
+
+  if (c == 120) {
+    ...
+  }
+
+The same applies to string constants, this would be unportable::
+
+  const char *msg = "hello there";  /* content bytes depend on platform */
+
+In practice the string terminator (NUL) seems to be guaranteed to have
+a zero integer value.
+
+In Duktape code we always deal with (extended) UTF-8 data, so we never have
+the need to use platform specific character constants.  In other words, we
+want the ASCII constant values.
+
+Character literals
+------------------
+
+You should never use a character constant in Duktape code (e.g. ``'x'``).
+Its value is not portable.  Use either an integer, or more preferably,
+character constants (``DUK_ASC_xxx``) defined in Duktape internal headers.
+
+String literals
+---------------
+
+C strings which end up visible to user code (either through Ecmascript
+or through the C API) must be converted to UTF-8 at some point.
+
+Ideally the strings would be written directly in UTF-8 (ASCII in practice)
+format, but this would be very awkward.  The next best thing would be to
+translate the strings with some sort of macro which would be a no-op on
+ASCII platforms, e.g. ``DUK_STR("hello there")``.  This approach doesn't
+work well: a buffer would need to be allocated (and freed) or some maximum
+size imposed silently.
+
+These rules are very inconvenient, but unfortunately the only portable choice.
+
+**FIXME: exact code rules to be defined.**
+
+Testing
+-------
+
+The Hercules emulator together with IBM zLinux provides an EBCDIC
+platform where you can test this particular portability issue.
+
+GCC can also be used to play with EBCDIC portability to some extent,
+but because libc will be ASCII oriented, the tests will not match
+an actual EBCDIC platform.  See ``misc/ebcdic_test.c``.
+
 Calling platform functions
 ==========================
 
