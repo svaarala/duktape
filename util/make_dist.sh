@@ -23,9 +23,9 @@ DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
 
-# DUK_VERSION is grepped from duktape.h: it is needed for the public API
-# and we want to avoid defining it in two places.
-DUK_VERSION=`cat src/duktape.h | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
+# DUK_VERSION is grepped from duk_api_public.h.in: it is needed for the
+# public API and we want to avoid defining it in two places.
+DUK_VERSION=`cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L'`
 DUK_MAJOR=`echo "$DUK_VERSION / 10000" | bc`
 DUK_MINOR=`echo "$DUK_VERSION % 10000 / 100" | bc`
 DUK_PATCH=`echo "$DUK_VERSION % 100" | bc`
@@ -59,12 +59,12 @@ mkdir $DIST/examples/coffee
 for i in	\
 	duk_alloc_default.c	\
 	duk_alloc_torture.c	\
+	duk_api_internal.h	\
 	duk_api_buffer.c	\
 	duk_api.c		\
 	duk_api_call.c		\
 	duk_api_codec.c		\
 	duk_api_compile.c	\
-	duk_api_internal.h	\
 	duk_api_memory.c	\
 	duk_api_object.c	\
 	duk_api_string.c	\
@@ -91,7 +91,6 @@ for i in	\
 	duk_bi_proxy.c		\
 	duk_bi_thread.c		\
 	duk_bi_thrower.c	\
-	duk_dblunion.h		\
 	duk_debug_fixedbuffer.c	\
 	duk_debug.h		\
 	duk_debug_heap.c	\
@@ -104,8 +103,6 @@ for i in	\
 	duk_error_macros.c	\
 	duk_error_misc.c	\
 	duk_error_throw.c	\
-	duk_features.h		\
-	duk_features_sanity.h	\
 	duk_forwdecl.h		\
 	duk_hbuffer_alloc.c	\
 	duk_hbuffer.h		\
@@ -173,12 +170,6 @@ for i in	\
 	; do
 	cp src/$i $DISTSRCSEP/
 done
-
-cat src/duktape.h | sed \
-	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
-	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
-	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
-	> $DISTSRCSEP/duktape.h
 
 for i in \
 	README.txt \
@@ -266,6 +257,30 @@ for i in \
 	cp licenses/$i $DIST/licenses/
 done
 
+# Build duktape.h from parts, with some git-related replacements.
+
+cat src/duktape.h.in | sed -e '
+/^@DUK_FEATURES_H@$/ {
+    r src/duk_features.h.in
+    d
+}
+/^@DUK_API_PUBLIC_H@$/ {
+    r src/duk_api_public.h.in
+    d
+}
+/^@DUK_FEATURES_SANITY_H@$/ {
+    r src/duk_features_sanity.h.in
+    d
+}
+/^@DUK_DBLUNION_H@$/ {
+    r src/duk_dblunion.h.in
+    d
+}' | sed \
+	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
+	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+	> $DISTSRCSEP/duktape.h
+
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  UglifyJS or the closure compiler is
 # used to compact the source.  Obfuscating the code is not a goal, although
@@ -318,8 +333,6 @@ echo "Using closure minified version"; cp $DISTSRCSEP/duk_initjs_closure.js.tmp 
 #
 # There are currently no profile specific variants of strings/builtins, but
 # this will probably change when functions are added/removed based on profile.
-
-# FIXME: byte order
 
 python src/genbuildparams.py \
 	--version=$DUK_VERSION \

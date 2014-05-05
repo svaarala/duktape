@@ -46,6 +46,13 @@ account by the internal <code>duk_features.h</code> file, which resolves the
 final internal features based on feature requests, compiler features, and
 platform features.</p>
 
+<div class="note">
+If you use Duktape feature options, you should define the feature options both
+when compiling Duktape and when compiling any application code using the
+<code>duktape.h</code> header.  This is necessary because some feature options
+affect the binary compatibility of the Duktape API.
+</div>
+
 <p>The available feature options can be found in <code>duk_features.h</code>.
 The table below summarizes the available options, in no particular order:</p>
 

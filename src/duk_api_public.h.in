@@ -1,91 +1,43 @@
 /*
- *  Duktape public API for Duktape @DUK_VERSION_FORMATTED@.
- *  See the API reference for documentation on call semantics.
- *
- *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
- *
- *  See Duktape AUTHORS.txt and LICENSE.txt for copyright and
- *  licensing information.
+ *  BEGIN PUBLIC API
  */
 
-#ifndef DUKTAPE_H_INCLUDED
-#define DUKTAPE_H_INCLUDED
+#ifndef DUK_API_PUBLIC_H_INCLUDED
+#define DUK_API_PUBLIC_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- *  Feature detection needed by this public header
- *
- *  DUK_API_NORETURN: macro for declaring a 'noreturn' function.
- *  Unfortunately the noreturn declaration may appear in various
- *  places of a function declaration, so the solution is to wrap
- *  the entire declaration inside the macro.  Compiler support
- *  for using a noreturn declaration on function pointers varies;
- *  this macro must only be used for actual function declarations.
- *
- *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
- *  http://clang.llvm.org/docs/LanguageExtensions.html
+ *  Some defines forwarded from feature detection
  */
 
-#if defined(__GNUC__)
-#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
-/* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
-#define DUK_API_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#else
-#error cannot figure out gcc version
-#endif
-#endif
-
-#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || \
-    (defined(__cplusplus) && (__cplusplus >= 201103L) && defined(__GNUC__))
-#define DUK_API_VARIADIC_MACROS
-#else
 #undef DUK_API_VARIADIC_MACROS
+#ifdef DUK_USE_VARIADIC_MACROS
+#define DUK_API_VARIADIC_MACROS
 #endif
 
-#if defined(DUK_API_GCC_VERSION) && (DUK_API_GCC_VERSION >= 20500)
-/* since gcc-2.5 */
-#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(__clang__)
-/* syntax same as gcc */
-#define DUK_API_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(_MSC_VER)
-/* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
-#define DUK_API_NORETURN(decl)  __declspec(noreturn) decl
-#else
-/* Don't know how to declare a noreturn function, so don't do it; this
- * may cause some spurious compilation warnings (e.g. "variable used
- * uninitialized").
- */
-#define DUK_API_NORETURN(decl)  decl
-#endif
+#define DUK_API_NORETURN(decl) DUK_NORETURN(decl)
 
 /*
- *  Includes
+ *  Public API specific typedefs
  *
- *  Keep the set of includes minimal to serve tihs header only to avoid
- *  portability issues.  For instance, we can't rely on any C99 here.
- */
-
-#include <limits.h>  /* INT_MIN, INT_MAX */
-#include <stdarg.h>  /* va_list, etc */
-#include <stdlib.h>  /* size_t (defined by stdlib.h and stddef.h) */
-#include <stddef.h>
-
-/*
- *  Typedefs; avoid all dependencies on internal types
- *
- *  (duk_context *) currently maps directly to internal type (duk_hthread *).
+ *  (duk_context *) maps directly to internal type (duk_hthread *).
  *  Currently only primitive typedefs have a '_t' suffix.
+ *
+ *  Many types are wrapped by Duktape for portability to rare platforms
+ *  where e.g. 'int' is a 16-bit type.  See practical typing discussion
+ *  in Duktape web documentation.
  */
 
-/* FIXME: proper detection */
-typedef int duk_idx_t;
+/* Index values must have at least 32-bit range. */
+typedef duk_int_t duk_idx_t;
+
+/* Duktape/C function return value, platform int is enough for now to
+ * represent 0, 1, or negative error code.
+ */
 typedef int duk_ret_t;
-typedef int duk_bool_t;
-typedef size_t duk_size_t;
 
 struct duk_memory_functions;
 struct duk_function_list_entry;
@@ -100,10 +52,10 @@ typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
 typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
-typedef void (*duk_fatal_function) (duk_context *ctx, int code, const char *msg);
-typedef void (*duk_decode_char_function) (void *udata, int codepoint);
-typedef int (*duk_map_char_function) (void *udata, int codepoint);
-typedef int (*duk_safe_call_function) (duk_context *ctx);
+typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code, const char *msg);
+typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
 
 struct duk_memory_functions {
 	duk_alloc_function alloc;
@@ -115,12 +67,12 @@ struct duk_memory_functions {
 struct duk_function_list_entry {
 	const char *key;
 	duk_c_function value;
-	int nargs;
+	duk_int_t nargs;
 };
 
 struct duk_number_list_entry {
 	const char *key;
-	double value;
+	duk_double_t value;
 };
 
 /*
@@ -144,7 +96,7 @@ struct duk_number_list_entry {
 /* Indicates that a native function does not have a fixed number of args,
  * and the argument stack should not be capped/extended at all.
  */
-#define DUK_VARARGS                       (-1)
+#define DUK_VARARGS                       ((duk_int_t) (-1))
 
 /* Number of value stack entries (in addition to actual call arguments)
  * guaranteed to be allocated on entry to a Duktape/C function.
@@ -251,7 +203,7 @@ struct duk_number_list_entry {
 
 #ifndef DUK_API_VARIADIC_MACROS
 extern const char *duk_api_global_filename;
-extern int duk_api_global_line;
+extern duk_int_t duk_api_global_line;
 #endif
 
 /*
@@ -545,8 +497,8 @@ void duk_json_decode(duk_context *ctx, int index);
  *  Buffer
  */
 
-void *duk_resize_buffer(duk_context *ctx, int index, duk_size_t new_size);
-void duk_to_fixed_buffer(duk_context *ctx, int index);
+void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size);
+void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index);
 
 /*
  *  Property access
@@ -730,8 +682,12 @@ int duk_compile_raw(duk_context *ctx, int flags);
 void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 
 #ifdef __cplusplus
+/* end 'extern "C"' wrapper */
 }
 #endif
 
-#endif  /* DUKTAPE_H_INCLUDED */
+#endif  /* DUK_API_PUBLIC_H_INCLUDED */
 
+/*
+ *  END PUBLIC API
+ */

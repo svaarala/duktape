@@ -16,7 +16,7 @@
 
 #ifndef DUK_USE_VARIADIC_MACROS
 const char *duk_api_global_filename = NULL;
-int duk_api_global_line = 0;
+duk_int_t duk_api_global_line = 0;
 #endif
 
 /*

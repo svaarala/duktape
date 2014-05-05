@@ -9,17 +9,21 @@
 #define DUK_INTERNAL_H_INCLUDED
 
 /*
- *  Platform specific handling: detection of features, system headers are
- *  included etc.  Duktape.h contains its own feature detection for those
- *  features the external API absolutely needs.  Duktape.h detection results
- *  must match duk_features.h, so duk_features_sanity.h is included to check
- *  for consistency.
+ *  The 'duktape.h' header provides the public API, but also handles all
+ *  compiler and platform specific feature detection, Duktape feature
+ *  resolution, inclusion of system headers, etc.  These have been merged
+ *  because the public API is also dependent on e.g. detecting appropriate
+ *  C types which is quite platform/compiler specific especially for a non-C99
+ *  build.  The public API is also dependent on the resolved feature set.
+ *
+ *  Some actions taken by the merged header (such as including system headers)
+ *  are not appropriate for building a user application.  The define
+ *  DUK_COMPILING_DUKTAPE allows the merged header to skip/include some
+ *  sections depending on what is being built.
  */
 
-#include "duk_features.h"
+#define DUK_COMPILING_DUKTAPE
 #include "duktape.h"
-#include "duk_features_sanity.h"
-#include "duk_dblunion.h"
 
 /*
  *  User declarations, e.g. prototypes for user functions used by Duktape

@@ -169,8 +169,8 @@ See:
 
 ``#pragma once`` is not portable, and is not used.
 
-FIXME, TODO, XXX, NOTE markers
-------------------------------
+FIXME, TODO, XXX, NOTE, etc markers
+-----------------------------------
 
 The following markers are used inside comments:
 
@@ -269,7 +269,8 @@ The source code is meant to be C++ compatible so that you can both:
 
 1. Compile Duktape with C but use it from C++.
 
-2. Compile Duktape with C++ and use it from C++.
+2. Compile Duktape with C++ and use it from C++ (preferred when
+   using C++).
 
 To achieve this:
 
@@ -278,8 +279,55 @@ To achieve this:
 
 * Use explicit casts for all pointer conversions.
 
-(Compiling Duktape as a C++ program doesn't currently work fully due to
-feature detection issues.)
+Debug macros
+============
+
+Debug macros unfortunately need double wrapping to deal with lack of variadic
+macros on pre-C99 platforms::
+
+  DUK_D(DUK_DPRINT("foo"));
+  DUK_DD(DUK_DDPRINT("bar"));
+  DUK_DDD(DUK_DDDPRINT("quux"));
+
+The outer and inner defines must match in their debug level.  On non-C99
+platforms the outer macro allows a debug log write to be omitted entirely.
+If the log writes are not omitted, the workaround for lack of variadic
+macros causes a lot of warnings with some compilers.  With this wrapping,
+at least the non-debug build will be clean on non-C99 compilers.
+
+Feature detection in duktape.h
+==============================
+
+The ``duktape.h`` header which provides the Duktape public API defines and
+also handles portability, such as:
+
+* Detecting compiler / platform combinations and choosing appropriate
+  values for byte order, alignment requirements, availability of variadic
+  macros, etc.
+
+* Provides type wrappers (typedefs) for all types required by Duktape both
+  in its public API and internally.
+
+* Resolve user feature options (``DUK_OPT_xxx``) into effective feature
+  options used internally (``DUK_USE_xxx``).
+
+* Includes system headers needed for e.g. type detection.
+
+* When compiling Duktape itself (distinguished through the ``DUK_COMPILING_DUKTAPE``
+  define provided by ``duk_internal.h``) defines critical feature selection
+  defines (like ``_POSIX_C_SOURCE``) needed by e.g. system date headers.
+  When compiling user code, avoids defining feature selection defines to
+  minimize conflicts with application code.
+
+The ``duktape.h`` header is built from individual parts to make it easier to
+manage during development.
+
+Originally public and internal feature detection were done separately, but
+increasingly the public API started needing typedefs and also became
+dependent on effective feature options.  The initial workaround was to do a
+minimal platform and feature detection in the public header and consistency
+check it against internal feature detection, but this became more and more
+unwieldy.
 
 Portability concerns
 ====================
@@ -303,16 +351,14 @@ C data types, especially integer types, are a bit of a hassle: the best choice
 of types depends on the platform and the compiler, and also the C specification
 version.  Types also affect e.g. printf() and scanf() format specifiers which
 are, of course, potentially compiler specific.  To remain portable, (almost)
-all C types are wrapped behind a typedef.  Because both Duktape internals and
-the public ``duktape.h`` header need type wrappers, the current approach is that
-``duktape.h`` performs whatever feature detection is necessary to define types
-needed in the public API.  ``duk_features.h`` then completes the process for the
-remaining internal types.
+all C types are wrapped behind a typedef.  The ``duktape.h`` header handles all
+platform and feature detection and provides all necessary type wrappers, both
+for the public API and for internal use.
 
 Basic rules in implementation:
 
-* ``duktape.h`` and ``duk_features.h`` perform all the detection needed and
-  provide typedefs for types used in the public API and inside Duktape.
+* ``duktape.h`` performs all the detection needed and provide typedefs for
+  types used in the public API and inside Duktape.
 
 * C99 types are **not** used directly, wrapper types are used instead.  For
   instance, use ``duk_uint32_t`` instead of ``uint32_t``.  Wrapper types are
@@ -371,8 +417,6 @@ Basic rules in implementation:
 * **FIXME**: flags field type (storage vs. internal APIs)
 
 * **FIXME**: avoid casting when unnecessary
-
-* **FIXME**: type names, end in _t for internal types, no _t for public API
 
 Random notes:
 
@@ -459,7 +503,8 @@ Forcing a struct size to a multiple of 4 or 8 can be done in a compiler
 specific manner with pragmas or struct attributes.  The only somewhat
 portable solution is to add a suitably sized dummy member to the end of
 the struct (e.g. a ``duk_uint64_t`` to force the struct size to be a
-multiple of 8).  See ``duk_hbuffer.h`` for a concrete example.
+multiple of 8) or somewhere inside the struct.  See ``duk_hbuffer.h`` for
+a concrete example.
 
 64-bit arithmetic
 -----------------
@@ -575,6 +620,86 @@ implementation.  Sometimes the output size is known to be limited because
 input values are known to be constrained (e.g. year values are kept between
 [-999999,999999]).  However, if there is a bug, it's better to corrupt a
 printed output value than to cause a memory error.
+
+EBCDIC
+------
+
+See separate section below.
+
+Character values in char literals and strings, EBCDIC
+=====================================================
+
+**FIXME: under work**
+
+Overview
+--------
+
+Character constants in C code are integers whose value depends on the
+platform.  On the vast majority of platforms the constants are ASCII but
+there are also e.g. EBCDIC platforms:
+
+* http://en.wikipedia.org/wiki/EBCDIC#Codepage_layout
+
+If you read a character value from a platform specific text file, then
+code such as the following would be appropriate::
+
+  if (c == 'x') {
+    ...
+  }
+
+However, if you have a character value which must be interpreted as ASCII,
+then the above would not be portable because ``'x'`` would not necessarily
+have the value 120 ('x' in ASCII) but might have the value 167 ('x' in
+EBCDIC).  To correctly compare the value as ASCII::
+
+  if (c == 120) {
+    ...
+  }
+
+The same applies to string constants, this would be unportable::
+
+  const char *msg = "hello there";  /* content bytes depend on platform */
+
+In practice the string terminator (NUL) seems to be guaranteed to have
+a zero integer value.
+
+In Duktape code we always deal with (extended) UTF-8 data, so we never have
+the need to use platform specific character constants.  In other words, we
+want the ASCII constant values.
+
+Character literals
+------------------
+
+You should never use a character constant in Duktape code (e.g. ``'x'``).
+Its value is not portable.  Use either an integer, or more preferably,
+character constants (``DUK_ASC_xxx``) defined in Duktape internal headers.
+
+String literals
+---------------
+
+C strings which end up visible to user code (either through Ecmascript
+or through the C API) must be converted to UTF-8 at some point.
+
+Ideally the strings would be written directly in UTF-8 (ASCII in practice)
+format, but this would be very awkward.  The next best thing would be to
+translate the strings with some sort of macro which would be a no-op on
+ASCII platforms, e.g. ``DUK_STR("hello there")``.  This approach doesn't
+work well: a buffer would need to be allocated (and freed) or some maximum
+size imposed silently.
+
+These rules are very inconvenient, but unfortunately the only portable choice.
+
+**FIXME: exact code rules to be defined.**
+
+Testing
+-------
+
+The Hercules emulator together with IBM zLinux provides an EBCDIC
+platform where you can test this particular portability issue.
+
+GCC can also be used to play with EBCDIC portability to some extent,
+but because libc will be ASCII oriented, the tests will not match
+an actual EBCDIC platform.  See ``misc/ebcdic_test.c``.
 
 Calling platform functions
 ==========================

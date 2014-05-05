@@ -41,7 +41,7 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
 		/* new buffer with string contents */
 		src_data = (const duk_uint8_t *) duk_get_lstring(ctx, 0, &buf_size);
 		DUK_ASSERT(src_data != NULL);  /* even for zero-length string */
-		buf_data = duk_push_buffer(ctx, buf_size, buf_dynamic);
+		buf_data = (duk_uint8_t *) duk_push_buffer(ctx, buf_size, buf_dynamic);
 		DUK_MEMCPY((void *) buf_data, (const void *) src_data, (size_t) buf_size);
 		break;
 	case DUK_TYPE_OBJECT:

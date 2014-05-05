@@ -50,7 +50,7 @@
 #ifdef DUK_USE_VARIADIC_MACROS
 
 /* __VA_ARGS__ has comma issues for empty lists, so we mandate at least 1 argument for '...' (format string) */
-#define DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (int) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
+#define DUK_ERROR(thr,err,...)                    duk_err_handle_error(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (err), __VA_ARGS__)
 #define DUK_ERROR_RAW(file,line,thr,err,...)      duk_err_handle_error((file), (line), (thr), (err), __VA_ARGS__)
 
 #else  /* DUK_USE_VARIADIC_MACROS */
@@ -61,7 +61,7 @@
 
 #define DUK_ERROR  \
 	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
-	duk_err_line_stash = (int) DUK_LINE_MACRO, \
+	duk_err_line_stash = (duk_int_t) DUK_LINE_MACRO, \
 	(void) duk_err_handle_error_stash  /* arguments follow */
 #define DUK_ERROR_RAW                             duk_err_handle_error
 
@@ -203,32 +203,32 @@
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_NORETURN(void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
+DUK_NORETURN(void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #else  /* DUK_USE_VARIADIC_MACROS */
 extern const char *duk_err_file_stash;
-extern int duk_err_line_stash;
-DUK_NORETURN(void duk_err_handle_error(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_error_stash(duk_hthread *thr, int code, const char *fmt, ...));
+extern duk_int_t duk_err_line_stash;
+DUK_NORETURN(void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #else  /* DUK_USE_VERBOSE_ERRORS */
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_NORETURN(void duk_err_handle_error(duk_hthread *thr, int code));
+DUK_NORETURN(void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code));
 #else  /* DUK_USE_VARIADIC_MACROS */
-DUK_NORETURN(void duk_err_handle_error_nonverbose1(duk_hthread *thr, int code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_error_nonverbose2(const char *filename, int line, duk_hthread *thr, int code, const char *fmt, ...));
+DUK_NORETURN(void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code, const char *msg, const char *filename, int line));
+DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line));
 #else
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code));
+DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code));
 #endif
 
-DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc));
+DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc));
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, int line, int noblame_fileline);
+void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, int noblame_fileline);
 #endif
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 void duk_err_augment_error_throw(duk_hthread *thr);
@@ -236,15 +236,15 @@ void duk_err_augment_error_throw(duk_hthread *thr);
 
 DUK_NORETURN(void duk_err_longjmp(duk_hthread *thr));
 
-DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, int code, const char *msg));
+DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg));
 
 #if !defined(DUK_USE_PANIC_HANDLER)
-DUK_NORETURN(void duk_default_panic_handler(int code, const char *msg));
+DUK_NORETURN(void duk_default_panic_handler(duk_errcode_t code, const char *msg));
 #endif
 
 void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type);
 
-duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, int err_code);
+duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t err_code);
 
 #endif  /* DUK_ERROR_H_INCLUDED */
 

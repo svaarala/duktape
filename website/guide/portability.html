@@ -33,6 +33,12 @@ detail below the table.</p>
 <tr>
 <td>Linux</td>
 <td>GCC</td>
+<td>x32</td>
+<td>No known issues, use <code>-mx32</code>.</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>GCC</td>
 <td>ARM</td>
 <td>No known issues.</td>
 </tr>
@@ -222,16 +228,54 @@ V8, the following seem to work:</p>
 <p>Dukweb is compiled using Emscripten, so you can also check out the Duktape
 git repository to see how Dukweb is compiled.</p>
 
-<h2>Using Duktape from a C++ program</h2>
+<h2 id="duktape-cplusplus">Duktape and C++</h2>
 
-<p>To use Duktape from a C++ program, simply compile Duktape in plain C and use
-<code>duktape.h</code> normally in your C++ program; <code>duktape.h</code>
-contains the necessary glue to make this work.  Specifically, it contains
-<code>extern "C" { ... }</code> to avoid name mangling issues.</p>
+<p>Duktape works with both C and C++ compilers and applications.  You can
+compile Duktape and the application with a C or a C++ compiler in any
+combination.  Even so, it is recommended to compile both Duktape and the
+application with the same compiler (i.e. both with a C compiler or both
+with a C++ compiler) and with the same compiler options.</p>
 
-<p>Currently Duktape itself cannot be compiled in C++ mode.  This is under
-work but is not a trivial issue because many of the compiler defines and
-headers are different (especially for pre C99/C++11).</p>
+<p>The <code>duktape.h</code> header contains the necessary glue to make all
+of these combinations work.  Specifically, all symbols needed by Duktape
+public API are inside a <code>extern "C" { ... }</code> wrapper (active only
+if compiled with a C++ compiler).  This ensures that such symbols are defined
+and used without C++ name mangling.  Specifically:</p>
+
+<ul>
+<li>When compiling Duktape itself with a C++ compiler, symbols needed by
+    Duktape public API are not mangled.  Other Duktape internal symbols will
+    be mangled, but are not externally visible and should thus cause no
+    problems even if the application is compiled with a C compiler.</li>
+<li>When compiling an application with a C++ compiler, the wrapper ensures
+    that Duktape public API symbols used by the application are looked up
+    without mangling.</li>
+</ul>
+
+<p>If you mix C and C++ compilation, you should do the final linking with the
+C++ toolchain.  At least when mixing gcc/g++ you may encounter something like:</p>
+<pre>
+$ g++ -c -o duktape.o -Isrc/ src/duktape.c
+$ gcc -c -o duk_cmdline.o -Isrc/ examples/cmdline/duk_cmdline.c
+$ gcc -o duk duktape.o duk_cmdline.o -lm -lreadline -lncurses
+duktape.o:(.eh_frame+0x1ab): undefined reference to `__gxx_personality_v0'
+collect2: error: ld returned 1 exit status
+</pre>
+
+<p>One fix is to use <code>g++</code> for linking:</p>
+<pre>
+$ g++ -c -o duktape.o -Isrc/ src/duktape.c
+$ gcc -c -o duk_cmdline.o -Isrc/ examples/cmdline/duk_cmdline.c
+$ g++ -o duk duktape.o duk_cmdline.o -lm -lreadline -lncurses
+</pre>
+
+<p>Because <code>duktape.h</code> selects C/C++ data types needed by
+Duktape and also does other feature detection, mixing C and C++ compilers
+could theoretically cause the C and C++ compilers to end up with different
+active features or data types.  If that were to happen, Duktape and the
+application would be binary incompatible (which would be difficult to
+diagnose).  This is usually not an issue, but to avoid the potential, compile
+Duktape and the application with the same compiler.</p>
 
 <h2>Limitations</h2>
 

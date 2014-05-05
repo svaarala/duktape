@@ -6,19 +6,14 @@
  *  feature detection, user supplied DUK_OPT_xxx defines, and optionally
  *  a "duk_custom.h" user header (if DUK_OPT_HAVE_CUSTOM_H is defined).
  *
- *  This file is included by duk_internal.h before anything else is
- *  included.  Feature selection defines (e.g. _XOPEN_SOURCE) are defined
- *  here before any system headers are included (which is a requirement for
- *  system headers to work correctly).  This file is responsible for including
- *  all system headers and contains all platform dependent cruft in general.
- *
- *  The public duktape.h has minimal feature detection required by the public
- *  API (for instance use of variadic macros is detected there).  Duktape.h
- *  exposes its detection results as DUK_API_xxx.  The public header and the
- *  implementation must agree on e.g. names and argument lists of exposed
- *  calls; these are checked by duk_features_sanity.h (duktape.h is not yet
- *  included when this file is included to avoid fouling up feature selection
- *  defines).
+ *  When compiling Duktape, DUK_COMPILING_DUKTAPE is set, and this file
+ *  is included before any system headers are included.  Feature selection
+ *  defines (e.g. _XOPEN_SOURCE) are defined here before any system headers
+ *  are included (which is a requirement for system headers to work correctly).
+ *  This file is responsible for including all system headers and contains
+ *  all platform dependent cruft in general.  When compiling user code,
+ *  DUK_COMPILING_DUKTAPE is not defined, and we must avoid e.g. defining
+ *  unnecessary feature selection defines.
  *
  *  The general order of handling:
  *    - Compiler feature detection (require no includes)
@@ -120,9 +115,18 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_X64
 #endif
 
-/* FIXME: X32: pointers are 32-bit so packed format can be used, but X32
- * support is not yet mature.
+/* X32: 64-bit with 32-bit pointers (allows packed tvals).  X32 support is
+ * not very mature yet.
+ *
+ * https://sites.google.com/site/x32abi/
  */
+#if defined(DUK_F_X64) && \
+    (defined(_ILP32) || defined(__ILP32__))
+#define DUK_F_X32
+/* define only one of: DUK_F_X86, DUK_F_X32, or DUK_F_X64 */
+#undef DUK_F_X64
+#undef DUK_F_X86
+#endif
 
 /* ARM */
 #if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
@@ -244,7 +248,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  Platform detection, system includes, Date provider selection.
  *
  *  Feature selection (e.g. _XOPEN_SOURCE) must happen before any system
- *  headers are included.
+ *  headers are included.  This header should avoid providing any feature
+ *  selection defines when compiling user code (only when compiling Duktape
+ *  itself).  If a feature selection option is required for user code to
+ *  compile correctly (e.g. it is needed for type detection), it should
+ *  probably be -checked- here, not defined here.
  *
  *  Date provider selection seems a bit out-of-place here, but since
  *  the date headers and provider functions are heavily platform
@@ -270,7 +278,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  (rather than muck with Duktape internals).
  */
 
-#if defined(DUK_F_LINUX)
+#if defined(DUK_F_LINUX) && defined(DUK_COMPILING_DUKTAPE)
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE  200809L
 #endif
@@ -282,7 +290,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 #endif
 
-#if defined(DUK_F_QNX)
+#if defined(DUK_F_QNX) && defined(DUK_COMPILING_DUKTAPE)
 /* See: /opt/qnx650/target/qnx6/usr/include/sys/platform.h */
 #define _XOPEN_SOURCE    600
 #define _POSIX_C_SOURCE  200112
@@ -477,7 +485,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Pointer size determination based on architecture. */
-#if defined(DUK_F_X86) || \
+#if defined(DUK_F_X86) || defined(DUK_F_X32) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32))
 #define DUK_F_32BIT_PTRS
 #elif defined(DUK_F_X64) || \
@@ -751,6 +759,9 @@ typedef duk_int32_t duk_intmax_t;
 
 #endif  /* C99 types */
 
+/* size_t is assumed to always exist. */
+typedef size_t duk_size_t;
+
 /* The best type for an "all around int" in Duktape internals is "at least
  * 32 bit signed integer" which is fastest.  Same for unsigned type.
  */
@@ -770,6 +781,12 @@ typedef unsigned int duk_small_uint_t;
 #define DUK_SMALL_INT_MAX     INT_MAX
 #define DUK_SMALL_UINT_MIN    0
 #define DUK_SMALL_UINT_MAX    UINT_MAX
+
+/* Boolean values are represented with the platform 'int'. */
+typedef duk_small_int_t duk_bool_t;
+
+/* Error codes are represented with platform int. */
+typedef duk_small_int_t duk_errcode_t;
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
@@ -844,7 +861,7 @@ typedef double duk_double_t;
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
 #define DUK_USE_ALIGN_4
-#elif defined(DUK_F_X86) || defined(DUK_F_X64)
+#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* unknown, use safe default */
@@ -1421,10 +1438,33 @@ typedef FILE duk_file;
 	} while (0)
 
 /*
- *  Macro for declaring a 'noreturn' function, detection in duktape.h.
+ *  DUK_NORETURN: macro for declaring a 'noreturn' function.
+ *  Unfortunately the noreturn declaration may appear in various
+ *  places of a function declaration, so the solution is to wrap
+ *  the entire declaration inside the macro.  Compiler support
+ *  for using a noreturn declaration on function pointers varies;
+ *  this macro must only be used for actual function declarations.
+ *
+ *  http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Function-Attributes.html
+ *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#define DUK_NORETURN(decl) DUK_API_NORETURN(decl)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
+/* since gcc-2.5 */
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(__clang__)
+/* syntax same as gcc */
+#define DUK_NORETURN(decl)  decl __attribute__((noreturn))
+#elif defined(_MSC_VER)
+/* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
+#define DUK_NORETURN(decl)  __declspec(noreturn) decl
+#else
+/* Don't know how to declare a noreturn function, so don't do it; this
+ * may cause some spurious compilation warnings (e.g. "variable used
+ * uninitialized").
+ */
+#define DUK_NORETURN(decl)  decl
+#endif
 
 /*
  *  Macro for stating that a certain line cannot be reached.
@@ -1523,6 +1563,8 @@ typedef FILE duk_file;
 
 #if defined(DUK_F_X86)
 #define DUK_USE_ARCH_STRING "x86"
+#elif defined(DUK_F_X32)
+#define DUK_USE_ARCH_STRING "x32"
 #elif defined(DUK_F_X64)
 #define DUK_USE_ARCH_STRING "x64"
 #elif defined(DUK_F_ARM)
@@ -1950,4 +1992,3 @@ typedef FILE duk_file;
 #endif
 
 #endif  /* DUK_FEATURES_H_INCLUDED */
-
