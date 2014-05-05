@@ -144,7 +144,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 	DUK_ASSERT(hdr);
 
-	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_OBJECT:
 		duk__refcount_finalize_hobject(thr, (duk_hobject *) hdr);
 		break;
@@ -421,7 +421,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	}
 #endif
 
-	switch (DUK_HEAPHDR_GET_TYPE(h)) {
+	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING:
 		/*
 		 *  Strings have no internal references but do have "weak"

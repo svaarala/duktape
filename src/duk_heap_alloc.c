@@ -69,7 +69,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 
 	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %d", (void *) hdr, (int) DUK_HEAPHDR_GET_TYPE(hdr)));
 
-	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
 		/* no inner refs to free */
 		break;

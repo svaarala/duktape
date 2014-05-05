@@ -1656,7 +1656,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		ins = bcode[act->pc++];
 
-		switch (DUK_DEC_OP(ins)) {
+		switch ((duk_small_int_t) DUK_DEC_OP(ins)) {
 
 		case DUK_OP_LDREG: {
 			int t;

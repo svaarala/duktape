@@ -655,7 +655,7 @@ duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				}
 
 				ch2 = r[0];
-				switch (ch2) {
+				switch ((duk_small_int_t) ch2) {
 				case (duk_int_t) '$': {
 					ch1 = (1 << 8) + (duk_int_t) '$';
 					goto repl_write;
