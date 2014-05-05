@@ -32,8 +32,8 @@ void dukweb_panic_handler(int code, const char *msg) {
 	abort();
 }
 
-void dukweb_fatal_handler(duk_context *ctx, int code, const char *msg) {
-	printf("dukweb_fatal_handler(), code=%d, msg=%s\n", code, msg);
+void dukweb_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
+	printf("dukweb_fatal_handler(), code=%d, msg=%s\n", (int) code, msg);
 	fflush(stdout);
 	/* FIXME: add code/msg to alert */
 	EM_ASM(
