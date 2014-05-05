@@ -394,7 +394,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
+#if defined(DUK_F_BCC)
+/* no endian.h */
+#else
 #include <endian.h>
+#endif  /* DUK_F_BCC */
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/time.h>
@@ -418,7 +422,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
+#if defined(DUK_F_BCC)
+/* no endian.h */
+#else
 #include <endian.h>
+#endif  /* DUK_F_BCC */
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/time.h>
@@ -432,10 +440,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
-#ifdef DUK_F_TOS
-/*FIXME*/
+#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+/* stdint.h not available */
 #else
-/* XXX: technically C99 (C++11) but found in many systems */
+/* technically C99 (C++11) but found in many systems */
 #include <stdint.h>
 #endif
 #include <math.h>
@@ -869,7 +877,8 @@ typedef double duk_double_t;
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
 #define DUK_USE_ALIGN_4
-#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64)
+#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64) || \
+      defined(DUK_F_BCC)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* unknown, use safe default */
@@ -1108,6 +1117,11 @@ typedef double duk_double_t;
 #elif defined(__BIGENDIAN__)
 #define DUK_F_BYTEORDER 3
 #endif
+#endif
+
+/* Bruce's C Compiler (BCC), assume we're on x86. */
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_BCC)
+#define DUK_F_BYTEORDER 1
 #endif
 
 /* Check whether or not byte order detection worked based on the intermediate
