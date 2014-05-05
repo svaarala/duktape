@@ -895,7 +895,7 @@ def writeFile(name, data):
 	f.close()
 
 def scrapeDuktapeVersion():
-	f = open(os.path.join('..', 'src', 'duk_api_public.h'))
+	f = open(os.path.join('..', 'src', 'duk_api_public.h.in'))
 	re_ver = re.compile(r'^#define DUK_VERSION\s+(\d+)L?\s*$')
 	for line in f:
 		line = line.strip()
