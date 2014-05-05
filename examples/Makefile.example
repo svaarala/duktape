@@ -25,6 +25,7 @@ DEFINES =
 # Optional feature defines, see: http://www.duktape.org/guide.html#compiling
 DEFINES += -DDUK_OPT_SELF_TESTS
 #DEFINES += -DDUK_OPT_DEBUG
+#DEFINES += -DDUK_OPT_DPRINT
 #DEFINES += -DDUK_OPT_NO_TRACEBACKS
 # ...
 

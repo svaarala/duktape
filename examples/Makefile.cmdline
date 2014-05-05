@@ -26,6 +26,7 @@ CCLIBS += -lncurses
 # Optional feature defines, see: http://www.duktape.org/guide.html#compiling
 CCOPTS += -DDUK_OPT_SELF_TESTS
 #CCOPTS += -DDUK_OPT_DEBUG
+#CCOPTS += -DDUK_OPT_DPRINT
 # ...
 
 duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
