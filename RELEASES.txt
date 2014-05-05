@@ -324,6 +324,9 @@ Planned
 
 * Add support for X32 ABI (gcc -mx32 option)
 
+* Move platform and feature detection into duktape.h, also for internal
+  types, which allows type wrappers to be applied to the public API
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
