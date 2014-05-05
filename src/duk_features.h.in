@@ -244,6 +244,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_MINGW
 #endif
 
+/* BCC (Bruce's C compiler): this is a "torture target" for compilation */
+#if defined(__BCC__) || defined(__BCC_VERSION__)
+#define DUK_F_BCC
+#endif
+
 /*
  *  Platform detection, system includes, Date provider selection.
  *
@@ -484,8 +489,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error cannot check complement of two
 #endif
 
-/* Pointer size determination based on architecture. */
+/* Pointer size determination based on architecture.
+ * XXX: unsure about BCC correctness.
+ */
 #if defined(DUK_F_X86) || defined(DUK_F_X32) || \
+    defined(DUK_F_BCC) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32))
 #define DUK_F_32BIT_PTRS
 #elif defined(DUK_F_X64) || \
