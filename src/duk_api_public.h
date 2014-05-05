@@ -1,15 +1,5 @@
-/*
- *  Duktape public API for Duktape @DUK_VERSION_FORMATTED@.
- *  See the API reference for documentation on call semantics.
- *
- *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
- *
- *  See Duktape AUTHORS.txt and LICENSE.txt for copyright and
- *  licensing information.
- */
-
-#ifndef DUKTAPE_H_INCLUDED
-#define DUKTAPE_H_INCLUDED
+#ifndef DUK_API_PUBLIC_H_INCLUDED
+#define DUK_API_PUBLIC_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -687,5 +677,5 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...);
 }
 #endif
 
-#endif  /* DUKTAPE_H_INCLUDED */
+#endif  /* DUK_API_PUBLIC_H_INCLUDED */
 
