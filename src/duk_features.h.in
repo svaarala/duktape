@@ -254,7 +254,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 #if defined(DUK_F_BCC)
-/* preprocessor does not understand ULL constants (12345ULL) so we can't
+/* Preprocessor does not understand ULL constants (12345ULL) so we can't
  * evaluate any expressions with them (e.g. BCC).
  */
 #else
@@ -459,6 +459,15 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdint.h>
 #endif
 #include <math.h>
+
+/*
+ *  Detection for specific libc variants (like uclibc), depends on the
+ *  #includes above.
+ */
+
+#if defined(__UCLIBC__)
+#define DUK_F_UCLIBC
+#endif
 
 /*
  *  Wrapper typedefs and constants for integer types, also sanity check types.
@@ -1253,11 +1262,11 @@ extern double duk_computed_nan;
 #undef DUK_USE_REPL_ISNAN
 #undef DUK_USE_REPL_ISINF
 
-/* complex condition broken into separate parts */
+/* Complex condition broken into separate parts. */
 #undef DUK_F_USE_REPL_ALL
 #if !(defined(FP_NAN) && defined(FP_INFINITE) && defined(FP_ZERO) && \
       defined(FP_SUBNORMAL) && defined(FP_NORMAL))
-/* missing some obvious constants */
+/* Missing some obvious constants. */
 #define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
 /* VBCC is missing the built-ins even in C99 mode (perhaps a header issue) */
@@ -1265,6 +1274,12 @@ extern double duk_computed_nan;
 #elif defined(DUK_F_FREEBSD) && defined(DUK_F_CLANG)
 /* Placeholder fix for (detection is wider than necessary):
  * http://llvm.org/bugs/show_bug.cgi?id=17788
+ */
+#define DUK_F_USE_REPL_ALL
+#elif defined(DUK_F_UCLIBC)
+/* At least some uclibc versions have broken floating point math.  For
+ * example, fpclassify() can incorrectly classify certain NaN formats.
+ * To be safe, use replacements.
  */
 #define DUK_F_USE_REPL_ALL
 #endif
@@ -1307,16 +1322,20 @@ extern double duk_computed_nan;
  * not to provide some functions.  For now, use replacements whenever
  * using uclibc.
  */
-#if defined(DUK_F_C99) && \
-    !defined(__UCLIBC__) /* uclibc may be missing these */ && \
-    !(defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)) /* vbcc + AmigaOS may be missing these */
-#define DUK_USE_MATH_FMIN
-#define DUK_USE_MATH_FMAX
-#define DUK_USE_MATH_ROUND
-#else
 #undef DUK_USE_MATH_FMIN
 #undef DUK_USE_MATH_FMAX
 #undef DUK_USE_MATH_ROUND
+#if defined(DUK_F_UCLIBC)
+/* uclibc may be missing these */
+#elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
+/* vbcc + AmigaOS may be missing these */
+#elif !defined(DUK_F_C99) && !defined(DUK_F_CPP11)
+/* build is not C99 or C++11, play it safe */
+#else
+/* C99 or C++11, no known issues */
+#define DUK_USE_MATH_FMIN
+#define DUK_USE_MATH_FMAX
+#define DUK_USE_MATH_ROUND
 #endif
 
 /* These functions don't currently need replacement but are wrapped for
@@ -1396,7 +1415,7 @@ typedef FILE duk_file;
  * wide now on purpose):
  * http://lists.uclibc.org/pipermail/uclibc-cvs/2008-October/025511.html
  */
-#if defined(__UCLIBC__)
+#if defined(DUK_F_UCLIBC)
 #define DUK_MEMCPY       memmove
 #else
 #define DUK_MEMCPY       memcpy
