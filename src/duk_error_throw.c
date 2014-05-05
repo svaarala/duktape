@@ -21,18 +21,18 @@
  */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code, const char *msg, const char *filename, int line) {
+void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line) {
 #else
-void duk_err_create_and_throw(duk_hthread *thr, duk_uint32_t code) {
+void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
 	duk_context *ctx = (duk_context *) thr;
 	int double_error = thr->heap->handling_error;
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
-	                   code, msg ? msg : "null", filename ? filename : "null", line));
+	                   (int) code, msg ? msg : "null", filename ? filename : "null", (int) line));
 #else
-	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d", code));
+	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d", (int) code));
 #endif
 
 	DUK_ASSERT(thr != NULL);

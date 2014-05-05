@@ -21,6 +21,10 @@ extern "C" {
  *
  *  (duk_context *) maps directly to internal type (duk_hthread *).
  *  Currently only primitive typedefs have a '_t' suffix.
+ *
+ *  Many types are wrapped by Duktape for portability to rare platforms
+ *  where e.g. 'int' is a 16-bit type.  See typing discussion in Duktape
+ *  web guide.
  */
 
 /* Index values must have at least 32-bit range. */
@@ -44,10 +48,10 @@ typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
 typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
-typedef void (*duk_fatal_function) (duk_context *ctx, int code, const char *msg);
-typedef void (*duk_decode_char_function) (void *udata, int codepoint);
-typedef int (*duk_map_char_function) (void *udata, int codepoint);
-typedef int (*duk_safe_call_function) (duk_context *ctx);
+typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code, const char *msg);
+typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
 
 struct duk_memory_functions {
 	duk_alloc_function alloc;
@@ -59,12 +63,12 @@ struct duk_memory_functions {
 struct duk_function_list_entry {
 	const char *key;
 	duk_c_function value;
-	int nargs;
+	duk_int_t nargs;
 };
 
 struct duk_number_list_entry {
 	const char *key;
-	double value;
+	duk_double_t value;
 };
 
 /*
@@ -88,7 +92,7 @@ struct duk_number_list_entry {
 /* Indicates that a native function does not have a fixed number of args,
  * and the argument stack should not be capped/extended at all.
  */
-#define DUK_VARARGS                       (-1)
+#define DUK_VARARGS                       ((duk_int_t) (-1))
 
 /* Number of value stack entries (in addition to actual call arguments)
  * guaranteed to be allocated on entry to a Duktape/C function.
@@ -195,7 +199,7 @@ struct duk_number_list_entry {
 
 #ifndef DUK_API_VARIADIC_MACROS
 extern const char *duk_api_global_filename;
-extern int duk_api_global_line;
+extern duk_int_t duk_api_global_line;
 #endif
 
 /*

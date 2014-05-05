@@ -786,6 +786,9 @@ typedef unsigned int duk_small_uint_t;
 /* Boolean values are represented with the platform 'int'. */
 typedef duk_small_int_t duk_bool_t;
 
+/* Error codes are represented with platform int. */
+typedef duk_small_int_t duk_errcode_t;
+
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
  * are used as internal markers (e.g. to mark EOF or missing argument).

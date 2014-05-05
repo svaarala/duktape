@@ -389,7 +389,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, int line, int noblame_fileline) {
+void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, int noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *obj;
 
