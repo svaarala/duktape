@@ -688,7 +688,13 @@ typedef signed long duk_int32_t;
 #define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
-#elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL)
+#elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL) || \
+      defined(__ULONG_LONG_MAX__) && (__ULONG_LONG_MAX__ == 18446744073709551615ULL) || \
+      defined(__LONG_LONG_MAX__) && (__LONG_LONG_MAX__ == 9223372036854775807LL)
+/* ULLONG_MAX is a standard define.  __LONG_LONG_MAX__ and __ULONG_LONG_MAX__
+ * are used by at least GCC (even if system headers don't provide ULLONG_MAX).
+ * Some GCC variants may provide __LONG_LONG_MAX__ but not __ULONG_LONG_MAX__.
+ */
 #define DUK_F_HAVE_64BIT
 typedef unsigned long long duk_uint64_t;
 typedef signed long long duk_int64_t;
