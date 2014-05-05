@@ -279,6 +279,22 @@ To achieve this:
 
 * Use explicit casts for all pointer conversions.
 
+Debug macros
+============
+
+Debug macros unfortunately need double wrapping to deal with lack of variadic
+macros on pre-C99 platforms::
+
+  DUK_D(DUK_DPRINT("foo"));
+  DUK_DD(DUK_DDPRINT("bar"));
+  DUK_DDD(DUK_DDDPRINT("quux"));
+
+The outer and inner defines must match in their debug level.  On non-C99
+platforms the outer macro allows a debug log write to be omitted entirely.
+If the log writes are not omitted, the workaround for lack of variadic
+macros causes a lot of warnings with some compilers.  With this wrapping,
+at least the non-debug build will be clean on non-C99 compilers.
+
 Feature detection in duktape.h
 ==============================
 
