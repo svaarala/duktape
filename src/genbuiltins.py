@@ -1443,7 +1443,10 @@ class GenBuiltins:
 		genc.emitLine('/* native functions: %d */' % len(self.native_func_list))
 		genc.emitLine('const duk_c_function duk_bi_native_functions[] = {')
 		for i in self.native_func_list:
-			genc.emitLine('\t(duk_c_function) %s,' % i)
+			# The function pointer cast here makes BCC complain about
+			# "initializer too complicated", so omit the cast.
+			#genc.emitLine('\t(duk_c_function) %s,' % i)
+			genc.emitLine('\t%s,' % i)
 		genc.emitLine('};')
 
 	def generateDefineNames(self, id):

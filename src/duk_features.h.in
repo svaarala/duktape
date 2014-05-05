@@ -223,7 +223,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_GCC
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
 /* Convenience, e.g. gcc 4.5.1 == 40501; http://stackoverflow.com/questions/6031819/emulating-gccs-builtin-unreachable */
-#define DUK_F_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#define DUK_F_GCC_VERSION  (__GNUC__ * 10000L + __GNUC_MINOR__ * 100L + __GNUC_PATCHLEVEL__)
 #else
 #error cannot figure out gcc version
 #endif
@@ -242,6 +242,23 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* MinGW */
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #define DUK_F_MINGW
+#endif
+
+/* BCC (Bruce's C compiler): this is a "torture target" for compilation */
+#if defined(__BCC__) || defined(__BCC_VERSION__)
+#define DUK_F_BCC
+#endif
+
+#if defined(__VBCC__)
+#define DUK_F_VBCC
+#endif
+
+#if defined(DUK_F_BCC)
+/* preprocessor does not understand ULL constants (12345ULL) so we can't
+ * evaluate any expressions with them (e.g. BCC).
+ */
+#else
+#define DUK_F_ULL_CONSTS
 #endif
 
 /*
@@ -293,7 +310,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #if defined(DUK_F_QNX) && defined(DUK_COMPILING_DUKTAPE)
 /* See: /opt/qnx650/target/qnx6/usr/include/sys/platform.h */
 #define _XOPEN_SOURCE    600
-#define _POSIX_C_SOURCE  200112
+#define _POSIX_C_SOURCE  200112L
 #endif
 
 #if defined(__APPLE__)
@@ -389,7 +406,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
+#if defined(DUK_F_BCC)
+/* no endian.h */
+#else
 #include <endian.h>
+#endif  /* DUK_F_BCC */
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/time.h>
@@ -413,7 +434,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
+#if defined(DUK_F_BCC)
+/* no endian.h */
+#else
 #include <endian.h>
+#endif  /* DUK_F_BCC */
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/time.h>
@@ -427,10 +452,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
-#ifdef DUK_F_TOS
-/*FIXME*/
+#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+/* stdint.h not available */
 #else
-/* XXX: technically C99 (C++11) but found in many systems */
+/* technically C99 (C++11) but found in many systems */
 #include <stdint.h>
 #endif
 #include <math.h>
@@ -466,7 +491,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * format characters need to be changed.
  */
 #if defined(INT_MAX)
-#if INT_MAX < 2147483647
+#if INT_MAX < 2147483647L
 #error INT_MAX too small, expected int to be 32 bits at least
 #endif
 #else
@@ -484,8 +509,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #error cannot check complement of two
 #endif
 
-/* Pointer size determination based on architecture. */
+/* Pointer size determination based on architecture.
+ * XXX: unsure about BCC correctness.
+ */
 #if defined(DUK_F_X86) || defined(DUK_F_X32) || \
+    defined(DUK_F_BCC) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32))
 #define DUK_F_32BIT_PTRS
 #elif defined(DUK_F_X64) || \
@@ -498,7 +526,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* Intermediate define for 'have inttypes.h' */
 #undef DUK_F_HAVE_INTTYPES
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
-    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__))
+    !(defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC))
 /* vbcc + AmigaOS has C99 but no inttypes.h */
 #define DUK_F_HAVE_INTTYPES
 #elif defined(__cplusplus) && (__cplusplus >= 201103L)
@@ -645,21 +673,25 @@ typedef signed long duk_int32_t;
 #error cannot detect 32-bit type
 #endif
 
-#define DUK_F_HAVE_64BIT
+#undef DUK_F_HAVE_64BIT
+#if defined(DUK_F_ULL_CONSTS)
 #if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+#define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
 #elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL)
+#define DUK_F_HAVE_64BIT
 typedef unsigned long long duk_uint64_t;
 typedef signed long long duk_int64_t;
 #elif defined(DUK_F_MINGW) || defined(DUK_F_MSVC)
 /* Both MinGW and MSVC have a 64-bit type. */
+#define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
 #else
 /* cannot detect 64-bit type, not always needed so don't error */
-#undef DUK_F_HAVE_64BIT
 #endif
+#endif  /* DUK_F_ULL_CONSTS */
 
 typedef duk_uint8_t duk_uint_least8_t;
 typedef duk_int8_t duk_int_least8_t;
@@ -673,8 +705,13 @@ typedef duk_uint16_t duk_uint_fast16_t;
 typedef duk_int16_t duk_int_fast16_t;
 typedef duk_uint32_t duk_uint_fast32_t;
 typedef duk_int32_t duk_int_fast32_t;
+#if defined(DUK_F_HAVE_64BIT)
+typedef duk_int64_t duk_intmax_t;
+typedef duk_uint64_t duk_uintmax_t;
+#else
 typedef duk_int32_t duk_intmax_t;
 typedef duk_uint32_t duk_uintmax_t;
+#endif
 
 /* This detection is not very reliable. */
 #if defined(DUK_F_32BIT_PTRS)
@@ -686,10 +723,6 @@ typedef duk_uint64_t duk_uintptr_t;
 #else
 #error cannot determine intptr type
 #endif
-
-/* Pretend that maximum int is 32 bits. */
-typedef duk_uint32_t duk_uintmax_t;
-typedef duk_int32_t duk_intmax_t;
 
 #define DUK_UINT8_MIN         0UL
 #define DUK_UINT8_MAX         0xffUL
@@ -727,6 +760,7 @@ typedef duk_int32_t duk_intmax_t;
 #define DUK_UINT_FAST32_MAX   0xffffffffUL
 #define DUK_INT_FAST32_MIN    (-0x80000000L)
 #define DUK_INT_FAST32_MAX    0x7fffffffL
+#if defined(DUK_F_HAVE_64BIT)
 #define DUK_UINT64_MIN        0ULL
 #define DUK_UINT64_MAX        0xffffffffffffffffULL
 #define DUK_INT64_MIN         (-0x8000000000000000LL)
@@ -739,6 +773,7 @@ typedef duk_int32_t duk_intmax_t;
 #define DUK_UINT_FAST64_MAX   0xffffffffffffffffULL
 #define DUK_INT_FAST64_MIN    (-0x8000000000000000LL)
 #define DUK_INT_FAST64_MAX    0x7fffffffffffffffULL
+#endif
 #define DUK_UINTPTR_MIN       0UL
 #define DUK_UINTPTR_MAX       0xffffffffUL
 #define DUK_INTPTR_MIN        (-0x80000000L)
@@ -834,7 +869,7 @@ typedef double duk_double_t;
  * unless they are known to be unreliable.  For instance, 64-bit types are
  * available on VBCC but seem to misbehave.
  */
-#if defined(DUK_F_HAVE_64BIT) && !defined(__VBCC__)
+#if defined(DUK_F_HAVE_64BIT) && !defined(DUK_F_VBCC)
 #define DUK_USE_64BIT_OPS
 #else
 #undef DUK_USE_64BIT_OPS
@@ -861,7 +896,8 @@ typedef double duk_double_t;
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
 #define DUK_USE_ALIGN_4
-#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64)
+#elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64) || \
+      defined(DUK_F_BCC)
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* unknown, use safe default */
@@ -1102,6 +1138,11 @@ typedef double duk_double_t;
 #endif
 #endif
 
+/* Bruce's C Compiler (BCC), assume we're on x86. */
+#if !defined(DUK_F_BYTEORDER) && defined(DUK_F_BCC)
+#define DUK_F_BYTEORDER 1
+#endif
+
 /* Check whether or not byte order detection worked based on the intermediate
  * define, and define final values.  If detection failed, #error out.
  */
@@ -1174,7 +1215,7 @@ typedef double duk_double_t;
 #define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
 #define DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#elif !defined(__VBCC__) && !defined(_MSC_VER)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
@@ -1189,7 +1230,7 @@ extern double duk_computed_infinity;
 #undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
 #define DUK_DOUBLE_NAN       NAN
-#elif !defined(__VBCC__) && !defined(_MSC_VER)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
@@ -1218,7 +1259,7 @@ extern double duk_computed_nan;
       defined(FP_SUBNORMAL) && defined(FP_NORMAL))
 /* missing some obvious constants */
 #define DUK_F_USE_REPL_ALL
-#elif defined(DUK_F_AMIGAOS) && defined(__VBCC__)
+#elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
 /* VBCC is missing the built-ins even in C99 mode (perhaps a header issue) */
 #define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_FREEBSD) && defined(DUK_F_CLANG)
@@ -1268,7 +1309,7 @@ extern double duk_computed_nan;
  */
 #if defined(DUK_F_C99) && \
     !defined(__UCLIBC__) /* uclibc may be missing these */ && \
-    !(defined(DUK_F_AMIGAOS) && defined(__VBCC__)) /* vbcc + AmigaOS may be missing these */
+    !(defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)) /* vbcc + AmigaOS may be missing these */
 #define DUK_USE_MATH_FMIN
 #define DUK_USE_MATH_FMAX
 #define DUK_USE_MATH_ROUND
@@ -1449,13 +1490,13 @@ typedef FILE duk_file;
  *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500L)
 /* since gcc-2.5 */
 #define DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #elif defined(__clang__)
 /* syntax same as gcc */
 #define DUK_NORETURN(decl)  decl __attribute__((noreturn))
-#elif defined(_MSC_VER)
+#elif defined(DUK_F_MSVC)
 /* http://msdn.microsoft.com/en-us/library/aa235362(VS.60).aspx */
 #define DUK_NORETURN(decl)  __declspec(noreturn) decl
 #else
@@ -1473,7 +1514,7 @@ typedef FILE duk_file;
  *  http://clang.llvm.org/docs/LanguageExtensions.html
  */
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500L)
 /* since gcc-4.5 */
 #define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while(0)
 #elif defined(__clang__) && defined(__has_builtin)
@@ -1522,7 +1563,7 @@ typedef FILE duk_file;
 #endif
 
 #if defined(DUK_USE_BRANCH_HINTS)
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERISON >= 40500)
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERISON >= 40500L)
 /* GCC: test not very accurate; enable only in relatively recent builds
  * because of bugs in gcc-4.4 (http://lists.debian.org/debian-gcc/2010/04/msg00000.html)
  */
@@ -1551,7 +1592,7 @@ typedef FILE duk_file;
 
 #define DUK_LINE_MACRO  __LINE__
 
-#if !defined(__VBCC__) && !defined(_MSC_VER)
+#if !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC)
 #define DUK_FUNC_MACRO  __func__
 #else
 #define DUK_FUNC_MACRO  "unknown"
@@ -1737,6 +1778,12 @@ typedef FILE duk_file;
 /*
  *  Ecmascript features / compliance options
  */
+
+#if defined(DUK_F_BCC)
+/* Math built-in is stubbed out on BCC to allow compiler torture testing. */
+#else
+#define DUK_USE_MATH_BUILTIN
+#endif
 
 #define DUK_USE_REGEXP_SUPPORT
 #if defined(DUK_OPT_NO_REGEXP_SUPPORT)

@@ -6,6 +6,8 @@
  *  mimics the standard prototypes.
  */
 
+#include "duk_internal.h"
+
 #ifdef DUK_USE_COMPUTED_NAN
 double duk_computed_nan;
 #endif

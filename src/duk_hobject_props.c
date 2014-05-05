@@ -1984,6 +1984,8 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 1 /*push_value*/)) {
 					duk_tval *tv_hook = duk_require_tval(ctx, -3);  /* value from hook */
 					duk_tval *tv_targ = duk_require_tval(ctx, -1);  /* value from target */
+					int datadesc_reject;
+					int accdesc_reject;
 
 					DUK_DDD(DUK_DDDPRINT("proxy 'get': target has matching property %!O, check for "
 					                     "conflicting property; tv_hook=%!T, tv_targ=%!T, desc.flags=0x%08x, "
@@ -1991,14 +1993,14 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 					                     key, tv_hook, tv_targ, (int) desc.flags,
 					                     (void *) desc.get, (void *) desc.set));
 
-					int datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
-					                      !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
-					                      !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
-					                      !duk_js_samevalue(tv_hook, tv_targ);
-					int accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
-					                     !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
-					                     (desc.get == NULL) &&
-					                     !DUK_TVAL_IS_UNDEFINED(tv_hook);
+					datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                  !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                  !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
+					                  !duk_js_samevalue(tv_hook, tv_targ);
+					accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                 !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                 (desc.get == NULL) &&
+					                 !DUK_TVAL_IS_UNDEFINED(tv_hook);
 					if (datadesc_reject || accdesc_reject) {
 						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy get rejected");
 					}
@@ -2769,6 +2771,8 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 
 				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 1 /*push_value*/)) {
 					duk_tval *tv_targ = duk_require_tval(ctx, -1);
+					int datadesc_reject;
+					int accdesc_reject;
 
 					DUK_DDD(DUK_DDDPRINT("proxy 'set': target has matching property %!O, check for "
 					                     "conflicting property; tv_val=%!T, tv_targ=%!T, desc.flags=0x%08x, "
@@ -2776,13 +2780,13 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 					                     key, tv_val, tv_targ, (int) desc.flags,
 					                     (void *) desc.get, (void *) desc.set));
 
-					int datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
-					                      !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
-					                      !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
-					                      !duk_js_samevalue(tv_val, tv_targ);
-					int accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
-					                     !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
-					                     (desc.set == NULL);
+					datadesc_reject = !(desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                  !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                  !(desc.flags & DUK_PROPDESC_FLAG_WRITABLE) &&
+					                  !duk_js_samevalue(tv_val, tv_targ);
+					accdesc_reject = (desc.flags & DUK_PROPDESC_FLAG_ACCESSOR) &&
+					                 !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
+					                 (desc.set == NULL);
 					if (datadesc_reject || accdesc_reject) {
 						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy set rejected");
 					}
@@ -3606,12 +3610,14 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 				DUK_ASSERT(key != NULL);
 
 				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 0 /*push_value*/)) {
+					int desc_reject;
+
 					DUK_DDD(DUK_DDDPRINT("proxy 'deleteProperty': target has matching property %!O, check for "
 					                     "conflicting property; desc.flags=0x%08x, "
 					                     "desc.get=%p, desc.set=%p",
 					                     key, (int) desc.flags, (void *) desc.get, (void *) desc.set));
 
-					int desc_reject = !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE);
+					desc_reject = !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE);
 					if (desc_reject) {
 						/* unconditional */
 						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy deleteProperty rejected");

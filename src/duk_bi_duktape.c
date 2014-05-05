@@ -49,7 +49,7 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	/* heaphdr size and additional allocation size, followed by
 	 * type specific stuff (with varying value count)
 	 */
-	switch (DUK_HEAPHDR_GET_TYPE(h)) {
+	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING: {
 		duk_hstring *h_str = (duk_hstring *) h;
 		duk_push_int(ctx, (int) (sizeof(duk_hstring) + DUK_HSTRING_GET_BYTELEN(h_str) + 1));

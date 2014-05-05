@@ -15,7 +15,8 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	va_list ap;
 	char buf[DUK__LOGFMT_BUFSIZE];
-	duk_uint16_t stridx_logfunc[6] = {
+	/* stridx_logfunc[] must be static to allow initializer with old compilers like BCC */
+	static const duk_uint16_t stridx_logfunc[6] = {
 		DUK_STRIDX_LC_TRACE, DUK_STRIDX_LC_DEBUG, DUK_STRIDX_LC_INFO,
 		DUK_STRIDX_LC_WARN, DUK_STRIDX_LC_ERROR, DUK_STRIDX_LC_FATAL
 	};
