@@ -265,12 +265,23 @@ done
 
 # Build duktape.h from parts.
 
-cat \
-	src/duk_features.h \
-	src/duk_api_public.h \
-	src/duk_features_sanity.h \
-	src/duk_dblunion.h \
-	> $DISTSRCSEP/duktape.h
+cat src/duktape.h | sed -e '
+/^@DUK_FEATURES_H@$/ {
+    r src/duk_features.h
+    d
+}
+/^@DUK_API_PUBLIC_H@$/ {
+    r src/duk_api_public.h
+    d
+}
+/^@DUK_FEATURES_SANITY_H@$/ {
+    r src/duk_features_sanity.h
+    d
+}
+/^@DUK_DBLUNION_H@$/ {
+    r src/duk_dblunion.h
+    d
+}' | cat > $DISTSRCSEP/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  UglifyJS or the closure compiler is
