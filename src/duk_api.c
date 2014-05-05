@@ -24,6 +24,8 @@ duk_int_t duk_api_global_line = 0;
  */
 
 static int duk__api_coerce_d2i(double d) {
+	int c;
+
 	/*
 	 *  Special cases like NaN and +/- Infinity are handled explicitly
 	 *  because a plain C coercion from double to int handles these cases
@@ -37,7 +39,8 @@ static int duk__api_coerce_d2i(double d) {
 	 *  on platforms with a 64-bit int type, the full range is allowed.
 	 */
 
-	if (DUK_FPCLASSIFY(d) == DUK_FP_NAN) {
+	c = DUK_FPCLASSIFY(d);
+	if (c == DUK_FP_NAN) {
 		return 0;
 	} else if (d < INT_MIN) {
 		/* covers -Infinity */
