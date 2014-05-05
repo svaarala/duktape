@@ -168,12 +168,7 @@ for i in	\
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do
-	# This replacement set is only needed for duk_api_public.h at the moment.
-	cat src/$i | sed \
-		-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
-		-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
-		-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
-		> $DISTSRCSEP/$i
+	cp src/$i $DISTSRCSEP/
 done
 
 for i in \
@@ -262,7 +257,7 @@ for i in \
 	cp licenses/$i $DIST/licenses/
 done
 
-# Build duktape.h from parts.
+# Build duktape.h from parts, with some git-related replacements.
 
 cat src/duktape.h.in | sed -e '
 /^@DUK_FEATURES_H@$/ {
@@ -280,7 +275,11 @@ cat src/duktape.h.in | sed -e '
 /^@DUK_DBLUNION_H@$/ {
     r src/duk_dblunion.h.in
     d
-}' | cat > $DISTSRCSEP/duktape.h
+}' | sed \
+	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
+	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+	> $DISTSRCSEP/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  UglifyJS or the closure compiler is
