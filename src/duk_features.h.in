@@ -1779,6 +1779,12 @@ typedef FILE duk_file;
  *  Ecmascript features / compliance options
  */
 
+#if defined(DUK_F_BCC)
+/* Math built-in is stubbed out on BCC to allow compiler torture testing. */
+#else
+#define DUK_USE_MATH_BUILTIN
+#endif
+
 #define DUK_USE_REGEXP_SUPPORT
 #if defined(DUK_OPT_NO_REGEXP_SUPPORT)
 #undef DUK_USE_REGEXP_SUPPORT

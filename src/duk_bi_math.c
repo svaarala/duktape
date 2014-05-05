@@ -4,6 +4,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_MATH_BUILTIN)
+
 /*
  *  Use static helpers which can work with math.h functions matching
  *  the following signatures. This is not portable if any of these math
@@ -248,3 +250,34 @@ duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
 	duk_push_number(ctx, (duk_double_t) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
 	return 1;
 }
+
+#else  /* DUK_USE_MATH_BUILTIN */
+
+/* A stubbed built-in is useful for e.g. compilation torture testing with BCC. */
+
+duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+
+duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+
+duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+
+duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+
+duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNIMPLEMENTED_ERROR;
+}
+
+#endif  /* DUK_USE_MATH_BUILTIN */
