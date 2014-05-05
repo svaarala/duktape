@@ -4,6 +4,7 @@
 *.strip
 build/
 doc/*.pdf
+src/*.pyc
 UglifyJS/
 UglifyJS2/
 emscripten/
