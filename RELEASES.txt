@@ -320,7 +320,7 @@ Planned
 
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
-  warnings
+  warnings; this also improves C++ build
 
 * Add support for X32 ABI (gcc -mx32 option)
 
