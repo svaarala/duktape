@@ -756,8 +756,8 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		            DUK_HOBJECT_IS_COMPILEDFUNCTION((resumee->callstack + resumee->callstack_top - 2)->func)));      /* an Ecmascript function */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
 		           (resumee->callstack + resumee->callstack_top - 2)->idx_retval >= 0);                              /* waiting for a value */
-		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||                                                   /* INACTIVE: no activation, single function value on valstack */
-		           resumee->callstack_top == 0);
+		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
+		           resumee->callstack_top == 0);                                                                     /* INACTIVE: no activation, single function value on valstack */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
 		           (resumee->valstack_top == resumee->valstack + 1 &&
 		            DUK_TVAL_IS_OBJECT(resumee->valstack_top - 1) &&
