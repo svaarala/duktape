@@ -249,6 +249,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_BCC
 #endif
 
+#if defined(__VBCC_)
+#define DUK_F_VBCC
+#endif
+
 #if defined(DUK_F_BCC)
 /* preprocessor does not understand ULL constants (12345ULL) so we can't
  * evaluate any expressions with them (e.g. BCC).
@@ -1211,7 +1215,7 @@ typedef double duk_double_t;
 #define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
 #define DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#elif !defined(__VBCC__) && !defined(_MSC_VER)
+#elif !defined(__VBCC__) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
@@ -1226,7 +1230,7 @@ extern double duk_computed_infinity;
 #undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
 #define DUK_DOUBLE_NAN       NAN
-#elif !defined(__VBCC__) && !defined(_MSC_VER)
+#elif !defined(__VBCC__) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
 #define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
