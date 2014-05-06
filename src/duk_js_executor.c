@@ -2628,9 +2628,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				/*
 				 *  Other cases, use C recursion.
 				 *
-				 *  If a tailcall was requested, we must handle it inline as there will
-				 *  be no RETURN in the bytecode.  The RETURN is always a fast one, as
-				 *  the compiler won't emit a tailcall otherwise.
+				 *  If a tailcall was requested we ignore it and execute a normal call.
+				 *  Since Duktape 0.11.0 the compiler emits a RETURN opcode even after
+				 *  a tailcall to avoid test-bug-tailcall-thread-yield-resume.js.
 				 *
 				 *  Direct eval call: (1) call target (before following bound function
 				 *  chain) is the built-in eval() function, and (2) call was made with
@@ -2657,24 +2657,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, fun->nregs);
 
-				if (flag_tailcall) {
-					DUK_DDD(DUK_DDDPRINT("tailcall requested but needed to do a recursive call "
-					                     "instead; now perform a fast return"));
-					DUK_DDD(DUK_DDDPRINT("FIXME: SLOW RETURN NOW"));
-
-					duk_dup(ctx, b);
-					duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
-
-					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
-					duk_err_longjmp(thr);
-					DUK_UNREACHABLE();
-				}
-
-				/* must reinit setjmp() catchpoint */  /* FIXME: why */
-				goto reset_setjmp_catchpoint;
+				/* No need to reinit setjmp() catchpoint, as call handling
+				 * will store and restore our state.
+				 */
 			}
-
-			DUK_UNREACHABLE();
 			break;
 		}
 
