@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: document compiling duktape as a dll
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-06 07:32:21.807170 Z
+references: []
+
+id: 7798b3f968453194cb9884a8cc60e574fcf31bed
+log_events: 
+- - 2014-05-06 07:32:21.979924 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
