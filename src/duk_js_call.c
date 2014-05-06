@@ -1887,7 +1887,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 #endif
 	act = thr->callstack + thr->callstack_top - 1;
 	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
-		/* See: ecmascript-testcases/test-bug-tailcall-thread-yield-resume.js */
+		/* See: test-bug-tailcall-preventyield-assert.c. */
 		DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
 		use_tailcall = 0;
 	}
