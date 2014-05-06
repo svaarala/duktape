@@ -2613,8 +2613,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 
 				/* FIXME: optimize flag handling, by coordinating with bytecode */
+
 				call_flags = 0;
 				if (flag_tailcall) {
+					/* We request a tailcall, but in some corner cases
+					 * call handling can decide that a tailcall is
+					 * actually not possible.
+					 * See: test-bug-tailcall-preventyield-assert.c.
+					 */
 					call_flags |= DUK_CALL_FLAG_IS_TAILCALL;
 				}
 
