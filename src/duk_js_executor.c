@@ -2657,11 +2657,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, fun->nregs);
 
-				/* must reinit setjmp() catchpoint */  /* FIXME: why */
-				goto reset_setjmp_catchpoint;
+				/* No need to reinit setjmp() catchpoint, as call handling
+				 * will store and restore our state.
+				 */
 			}
-
-			DUK_UNREACHABLE();
 			break;
 		}
 
