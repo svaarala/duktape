@@ -5171,11 +5171,19 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				                     "and last instruction is a CALL "
 				                     "-> set TAILCALL flag"));
-				/* just flip the single bit */
+				/* Just flip the single bit. */
 				instr->ins |= DUK_ENC_OP_A_B_C(0, DUK_BC_CALL_FLAG_TAILCALL, 0, 0);
 
-				/* no need to emit a RETURN */
-				return;
+				/* In Duktape 0.10.0 no RETURN was emitted; the executor would
+				 * simulate a RETURN if a tailcall could not actually be performed
+				 * (e.g. if the target was a native function).  This would break
+				 * during execution if the target function turned out to be
+				 * thread yield/resume.  So now we just omit the RETURN which
+				 * also obviates the need for a simulated return in the executor
+				 * when a tailcall cannot be actually done as requested.
+				 *
+				 * See test-bug-tailcall-thread-yield-resume.js for discussion.
+				 */
 			}
 		}
 #endif  /* !DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
