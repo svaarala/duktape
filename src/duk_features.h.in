@@ -1901,6 +1901,19 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Tailcalls
+ */
+
+/* Tailcalls are enabled by default.  The non-standard function 'caller'
+ * property feature conflicts with tailcalls quite severely so tailcalls
+ * are disabled if the 'caller' property is enabled.
+ */
+#define DUK_USE_TAILCALL
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
+#undef DUK_USE_TAILCALL
+#endif
+
+/*
  *  Deep vs. shallow stack.
  *
  *  Some embedded platforms have very shallow stack (e.g. 64kB); default to

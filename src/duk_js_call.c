@@ -1878,11 +1878,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* XXX: some overlapping code; cleanup */
 	use_tailcall = call_flags & DUK_CALL_FLAG_IS_TAILCALL;
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
-	/* With 'caller' property, tail calls cannot be used without further
-	 * non-trivial fixes, so disable them.
-	 */
-	DUK_DDD(DUK_DDDPRINT("tailcall disabled because 'caller' property enabled and target is non-strict"));
+#if !defined(DUK_USE_TAILCALL)
 	DUK_ASSERT(use_tailcall == 0);  /* compiler ensures this */
 #endif
 	act = thr->callstack + thr->callstack_top - 1;
@@ -1950,8 +1946,11 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 #endif
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
-		/* This doesn't actually work properly for tail calls, so tail
-		 * calls are disabled when DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#ifdef DUK_USE_TAILCALL
+#error incorrect options: tailcalls enabled with function caller property
+#endif
+		/* XXX: this doesn't actually work properly for tail calls, so
+		 * tail calls are disabled when DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		 * is in use.
 		 */
 		duk__update_func_caller_prop(thr, func);
