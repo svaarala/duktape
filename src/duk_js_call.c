@@ -1885,6 +1885,12 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_DDD(DUK_DDDPRINT("tailcall disabled because 'caller' property enabled and target is non-strict"));
 	DUK_ASSERT(use_tailcall == 0);  /* compiler ensures this */
 #endif
+	act = thr->callstack + thr->callstack_top - 1;
+	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
+		/* See: test-bug-tailcall-preventyield-assert.c. */
+		DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
+		use_tailcall = 0;
+	}
 
 	if (use_tailcall) {
 		duk_tval *tv1, *tv2;
@@ -1905,8 +1911,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %d",
 		                     thr->callstack_top - 1));
 
-		act = thr->callstack + thr->callstack_top - 1;
-		DUK_UNREF(act);  /* unreferenced unless assertions used */
+		/* 'act' already set above */
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
