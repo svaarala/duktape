@@ -3,7 +3,7 @@ title: eliminate remaining FIXMEs
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2013-12-25 19:51:45.759396 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-05-07 21:10:50.535648 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""

@@ -3,7 +3,7 @@ title: Object.observe() support?
 desc: http://wiki.ecmascript.org/doku.php?id=harmony:observe
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,3 +27,7 @@ log_events:
       list of changed objects (if not already there).
     
     * Allow user code to query / clear this list of objects when appropriate.
+- - 2014-05-07 21:10:53.630900 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
+  - ""

@@ -19,3 +19,12 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-05-07 21:02:24.611888 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Taking the byte value of the first byte of a string would actually work quite
+    well.  Because strings are guaranteed to have NUL terminator, empty strings
+    would cause a zero to be written which is reasonably intuitive.  For non-ASCII
+    characters the first byte of the extended UTF-8 representation would be used:
+    not great (better might be codepoint & 0xff) but probably good enough.
