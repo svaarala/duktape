@@ -342,15 +342,21 @@ Planned
   because it is broken in some uclibc versions still in use (affected at
   least some mixed endian ARM environments)
 
-1.0.0 (2014-06-XX)
+0.12.0 (2014-06-XX)
 -------------------
+
+* Beta release for stabilization: feature freeze until 1.0.0 release, most
+  work will be testing, bug fixes, and documentation
+
+1.0.0 (2014-07-XX)
+------------------
 
 * Feature complete baseline release
 
 1.1.0 (2014-XX-XX)
 ------------------
 
-* Debugger
+* Debugger?
 
 2.0.0 (XXXX-XX-XX)
 ------------------
