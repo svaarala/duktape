@@ -8,7 +8,7 @@ desc: |-
   to cover the different cases.
 type: :task
 component: duk
-release: 
+release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -37,3 +37,7 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - commented
   - Update test-bi-string-proto-tolowercase.js and other case conversion tests.
+- - 2014-05-07 21:36:25.259488 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from unassigned
+  - ""

@@ -5,7 +5,7 @@ type: :task
 component: duk
 release: 
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
+status: :unstarted
 disposition: 
 creation_time: 2013-12-01 20:56:34.164645 Z
 references: []
