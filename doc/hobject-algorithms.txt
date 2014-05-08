@@ -27,6 +27,10 @@ operations.
 Call and constructor related algorithms (``[[Call]]`` and ``[[Construct]]``)
 are covered in ``execution.txt``.
 
+.. note:: This document is not completely up-to-date: some special behaviors
+   (like buffer and proxy objects) have been added on top of the algorithms
+   described here.
+
 Related sections of E5 specification
 ------------------------------------
 
