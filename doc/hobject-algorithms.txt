@@ -12,8 +12,8 @@ This document discusses, in detail, the internal algorithms for dealing
 with objects, in particular for object property access.  These algorithms
 are based on the algorithm descriptions in the E5 specification, which
 have been refined towards the practical implementation needs e.g. by
-combining multiple algorithms, inlining calls, and inlining "special
-behaviors".
+combining multiple algorithms, inlining calls, and inlining "exotic
+behaviors" (term borrowed from ES6).
 
 The intent is to describe versions of the conceptual algorithms most suited
 for implementation, without actually going into implementation level details.
@@ -33,7 +33,7 @@ Related sections of E5 specification
 For raw property algorithms:
 
 * E5 Section 8.12: the default algorithms
-* E5 Section 8.6.2: one paragraph lists special behaviors (page 33, PDF page 43)
+* E5 Section 8.6.2: one paragraph lists exotic behaviors (page 33, PDF page 43)
 * E5 Section 10.6: arguments object
 * E5 Section 15.5.5.2: String object
 * E5 Section 15.3.4.5.3, 15.3.5.3, 15.3.5.4: Function object
@@ -60,9 +60,9 @@ Algorithm overview
 
 Ecmascript object property access behavior is described by internal property
 handling algorithms.  The default algorithms are described in E5 Section 8.12.
-There are some objects with special behaviors; these have variants of the
+There are some objects with exotic behaviors; these have variants of the
 default property handling algorithms.  See ``hobject-design.txt`` for a
-detailed discussion of special behaviors.
+detailed discussion of exotic behaviors.
 
 The "raw" property algorithms are:
 
@@ -80,7 +80,7 @@ The "raw" property algorithms are:
 
   * Modified behavior for: Function object (E5 Section 15.3.5.4)
 
-  * Note that special behaviors of ``[[Get]]`` are '''not''' visible through property
+  * Note that exotic behaviors of ``[[Get]]`` are '''not''' visible through property
     descriptors at all.
 
 * The default ``[[CanPut]](P)`` algorithm (E5 Section 8.12.1)
@@ -105,7 +105,7 @@ The "raw" property algorithms are:
 
 The following figure illustrates the caller-callee relationship between the
 default property algorithms (the figure would be somewhat different for
-special behavior variants)::
+exotic behavior variants)::
 
                                        [[Put]]
                                          |
@@ -155,9 +155,9 @@ an easy answer in the E5 specification, e.g.:
 * What do the internal algorithms look like after you "inline" the calls
   used in the specification (which often obscure the true semantics)?
 
-* What do the internal algorithms look like if special behaviors are
+* What do the internal algorithms look like if exotic behaviors are
   "inlined" into one algorithm which supports both the default and all the
-  special behaviors?
+  exotic behaviors?
 
 * What do the internal algorithms look like once we add "fast paths" for
   array index access (where the fast path avoids string interning if
@@ -425,16 +425,16 @@ Notes
   + Variable declaration initializer
   + ``for`` and ``for-in`` statements
 
-Special behaviors
-=================
+Exotic behaviors
+================
 
-This section covers the standard algorithms with special behaviors inlined.
-For each algorithm, a single algorithm with all special behaviors inlined
+This section covers the standard algorithms with exotic behaviors inlined.
+For each algorithm, a single algorithm with all exotic behaviors inlined
 is presented.  Calls to other internal algorithms are not inlined; the
-purpose is to clarify how the special behaviors can be implemented
+purpose is to clarify how the exotic behaviors can be implemented
 reasonably.
 
-Note: the ``String`` object has no special behaviors as such, but the
+Note: the ``String`` object has no exotic behaviors as such, but the
 ``length`` and array index properties are implemented as virtual properties,
 so they are inlined into the algorithms below.
 
@@ -474,12 +474,12 @@ Default algorithm
 
 8. Return ``D``.
 
-Adding String object special behavior
-:::::::::::::::::::::::::::::::::::::
+Adding String object exotic behavior
+::::::::::::::::::::::::::::::::::::
 
 Now consider the ``String`` variant in E5 Section 15.5.5.2.  Step 2 states that if
-the default algorithm returns a descriptor (not undefined), the special behavior
-does not execute at all.  That, is the special algorithm is skipped if ``O`` has
+the default algorithm returns a descriptor (not undefined), the exotic behavior
+does not execute at all.  That, is the exotic algorithm is skipped if ``O`` has
 an "own property" for key ``P``.
 
 If the default algorithm fails to find an own property, the variant kicks in
@@ -494,14 +494,14 @@ value.
           array index, any number-like value will do.  This allows strings
           longer than 4G.  The algorithms here don't reflect this correctly.
 
-The ``String`` object ``length`` property is an ordinary (non-special)
+The ``String`` object ``length`` property is an ordinary (non-exotic)
 property, see E5 Section 15.5.5.1.  However, it is non-writable and
 non-configurable (and even non-enumerable), so it too is nice and easy
-to implement as a special property.  We'll thus incorporate the ``length``
+to implement as a exotic property.  We'll thus incorporate the ``length``
 property into the algorithm.
 
 Finally note that from an implementation perspective it might be easier
-to check for the special (virtual) properties before looking at the actual
+to check for the exotic (virtual) properties before looking at the actual
 ones (i.e. reverse the order of checking).  This seems perfectly OK to do,
 because *if* the property name matches a virtual property, the object cannot
 have a "normal" property of the same name: the initial ``String`` object
@@ -518,7 +518,7 @@ after the normal property check is as follows:
 
   a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
-  b. (``String`` object special behavior.)
+  b. (``String`` object exotic behavior.)
      Let ``str`` be the String value of the ``[[PrimitiveValue]]``
      internal property of ``O`` and ``len`` be the number of
      characters in ``str``.
@@ -570,11 +570,11 @@ after the normal property check is as follows:
 
 8. Return ``D``.
 
-Adding arguments object special behavior
-::::::::::::::::::::::::::::::::::::::::
+Adding arguments object exotic behavior
+:::::::::::::::::::::::::::::::::::::::
 
-Next, consider the special ``[[GetOwnProperty]]`` behavior for a non-strict
-arguments object described in E5 Section 10.6.  The special behavior only
+Next, consider the exotic ``[[GetOwnProperty]]`` behavior for a non-strict
+arguments object described in E5 Section 10.6.  The exotic behavior only
 applies if the object *did* contain the own property ``P``, and possibly
 modifies the looked up value if the key ``P`` matches a numeric index
 magically "bound" to a formal.
@@ -583,16 +583,16 @@ Note that the property descriptors for such variables are initially data
 property descriptors, so the default algorithm will find a data property
 descriptor (and not an accessor property descriptor).  If the property is
 later converted to an accessor, the magical variable binding is also
-dropped.  So, if the special behavior activates, the property is always
+dropped.  So, if the exotic behavior activates, the property is always
 a data property.
 
-The special behavior can be appended to the above algorithm as follows:
+The exotic behavior can be appended to the above algorithm as follows:
 
 1. If ``O`` doesn’t have an own property with name ``P``:
 
   a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
-  b. (``String`` object special behavior.)
+  b. (``String`` object exotic behavior.)
      Let ``str`` be the String value of the ``[[PrimitiveValue]]``
      internal property of ``O`` and ``len`` be the number of
      characters in ``str``.
@@ -645,7 +645,7 @@ The special behavior can be appended to the above algorithm as follows:
 8. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. Let ``isMapped`` be the result of calling the ``[[GetOwnProperty]]``
@@ -661,14 +661,14 @@ The special behavior can be appended to the above algorithm as follows:
 Notes:
 
 * Step 1.b: if the object is a ``String`` object, there is no need for the
-  arguments object special behavior check in step 8: an object can never be
+  arguments object exotic behavior check in step 8: an object can never be
   a ``String`` object and an arguments object simultaenously.
 
-* Step 8: arguments objects for strict mode functions don't have the special
+* Step 8: arguments objects for strict mode functions don't have the exotic
   behavior (or a ``[[ParameterMap]]``).  Arguments objects for non-strict
-  functions don't always have special behavior either: they only do, if there
+  functions don't always have exotic behavior either: they only do, if there
   is at least one mapped variable.  If so, ``[[ParameterMap]]`` is added, and
-  special behavior is enabled.  See the main algorithm in E5 Section 10.6,
+  exotic behavior is enabled.  See the main algorithm in E5 Section 10.6,
   step 12.
 
 * Step 8.c.1: this step invokes an internal getter function which looks up
@@ -680,7 +680,7 @@ Notes:
   at this point the property is always a data property, so setting the
   ``[[Value]]`` is correct.  If a magically bound value is converted into an
   accessor, the property is deleted from the ``[[ParameterMap]]`` so it no
-  longer has special behavior.
+  longer has exotic behavior.
 
 Final version
 :::::::::::::
@@ -692,7 +692,7 @@ Final version with some cleanup and simplification:
 
   a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
-  b. (``String`` object special behavior.)
+  b. (``String`` object exotic behavior.)
      Let ``str`` be the String value of the ``[[PrimitiveValue]]``
      internal property of ``O`` and ``len`` be the number of
      characters in ``str``.
@@ -743,7 +743,7 @@ Final version with some cleanup and simplification:
 3. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -787,14 +787,14 @@ Default algorithm
 6. Return the result calling the ``[[Call]]`` internal method of ``getter``
    providing ``O`` as the ``this`` value and providing no arguments.
 
-Adding Function object special behavior
-:::::::::::::::::::::::::::::::::::::::
+Adding Function object exotic behavior
+::::::::::::::::::::::::::::::::::::::
 
 Consider the ``Function`` variant in E5 Section 15.3.5.4.  The behavior only
 applies if ``P`` is ``caller`` and the resulting return *value* of the default
 function is a strict mode function.
 
-The special behavior does not need to be checked in steps 2 or 5 of the
+The exotic behavior does not need to be checked in steps 2 or 5 of the
 default algorithm, because ``undefined`` is never a strict mode function
 value.
 
@@ -824,15 +824,15 @@ So, we can reformulate into:
 
 6. Return ``res``.
 
-Adding arguments object special behavior
-::::::::::::::::::::::::::::::::::::::::
+Adding arguments object exotic behavior
+:::::::::::::::::::::::::::::::::::::::
 
-Next, consider the special ``[[Get]]`` behavior for a non-strict arguments
-object described in E5 Section 10.6.  To be exact, the special behaviors
+Next, consider the exotic ``[[Get]]`` behavior for a non-strict arguments
+object described in E5 Section 10.6.  To be exact, the exotic behaviors
 are only enabled for objects with a non-empty initial ``[[ParameterMap]]``
 (see E5 Section 10.6, main algorithm, step 12).
 
-There are two special behaviors:
+There are two exotic behaviors:
 
 1. If the property name ``P`` is magically bound to an identifier
    (through the ``[[ParameterMap]]``) the default ``[[Get]]`` is
@@ -841,7 +841,7 @@ There are two special behaviors:
    case, so no side effects are lost by this behavior.)
 
 2. If the property name ``P`` is *not bound* to an identifier,
-   the ``"caller"`` property has special behavior essentially
+   the ``"caller"`` property has exotic behavior essentially
    identical to that of ``Function``.
 
 These can be incorporated as follows:
@@ -849,7 +849,7 @@ These can be incorporated as follows:
 1. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. Let ``isMapped`` be the result of calling the ``[[GetOwnProperty]]``
@@ -882,7 +882,7 @@ These can be incorporated as follows:
 6. If ``O`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -894,7 +894,7 @@ Note:
   the property value is an own data property.  Magically bound properties
   are initially own data properties, and if they're changed to accessors
   (or deleted), the binding is removed.  Because of this, the arguments
-  special behavior could just as well be moved to the end of the algorithm.
+  exotic behavior could just as well be moved to the end of the algorithm.
 
 Final version
 :::::::::::::
@@ -904,7 +904,7 @@ Final version with some cleanup and simplification:
 1. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -935,7 +935,7 @@ Final version with some cleanup and simplification:
 6. If ``O`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -950,14 +950,14 @@ Related E5 sections:
 * E5 Section 15.4.5: ``Array``
 * E5 Section 10.5: arguments object
 
-Note that ``String`` special properties are taken into account by
+Note that ``String`` exotic properties are taken into account by
 ``[[DefineOwnProperty]]`` through ``[[GetOwnProperty]]`` which
 returns a property descriptor prohibiting any property value or
 attribute changes.  However, no explicit checks are needed for
 these (virtual) properties.
 
 This is by the far the most complex property algorithm, especially
-with special behaviors incorporated.  The algorithm itself is
+with exotic behaviors incorporated.  The algorithm itself is
 complex, but the ``Array`` variant actually makes multiple calls to
 the default variant which is even trickier for "inlining".
 
@@ -1081,7 +1081,7 @@ Notes:
   from the description.
 
 * There are multiple exit points for both Reject (throw or return false) and
-  true.  For incorporating inline special behaviors, these are turned to
+  true.  For incorporating inline exotic behaviors, these are turned to
   "gotos" below.
 
 Default algorithm reformulated
@@ -1207,7 +1207,7 @@ However, it's much more complex than that, because the variant algorithm
 makes multiple calls to the default algorithm.
 
 Let's look at the variant algorithm first (here we assume ``O`` is an
-``Array`` with special behavior, so no check is made for special behavior):
+``Array`` with exotic behavior, so no check is made for exotic behavior):
 
 1. Let ``oldLenDesc`` be the result of calling the ``[[GetOwnProperty]]``
    internal method of ``O`` passing ``"length"`` as the argument.  The
@@ -1492,8 +1492,8 @@ and outputs:
 * success flag (``false`` if some element couldn't be deleted)
 * final array length to be updated into ``"length"`` property
 
-Adding ``Array`` object special behavior
-::::::::::::::::::::::::::::::::::::::::
+Adding ``Array`` object exotic behavior
+:::::::::::::::::::::::::::::::::::::::
 
 Incorporating the approach for adding a pre- and post-processing phase
 we get something like:
@@ -1681,10 +1681,10 @@ we get something like:
     Throw a ``RangeError`` exception.  Note that this is unconditional
     (thrown even if ``Throw`` is ``false``).
 
-Adding arguments object special behavior
-::::::::::::::::::::::::::::::::::::::::
+Adding arguments object exotic behavior
+:::::::::::::::::::::::::::::::::::::::
 
-The special ``[[DefineOwnProperty]]`` behavior for an arguments object
+The exotic ``[[DefineOwnProperty]]`` behavior for an arguments object
 containing a ``[[ParameterMap]]`` is described in E5 Section 10.6.
 
 The variant algorithm essentially first runs the default algorithm.
@@ -1938,10 +1938,10 @@ Default algorithm
 
 5. Return ``false``.
 
-Adding arguments object special behavior
-::::::::::::::::::::::::::::::::::::::::
+Adding arguments object exotic behavior
+:::::::::::::::::::::::::::::::::::::::
 
-The special ``[[Delete]]`` behavior for an arguments object containing a
+The exotic ``[[Delete]]`` behavior for an arguments object containing a
 ``[[ParameterMap]]`` is described in E5 Section 10.6.
 
 The variant algorithm essentially first runs the default algorithm.
@@ -2181,7 +2181,7 @@ GetProperty
 ``[[GetOwnProperty]]`` which follows the prototype chain.  Like
 ``[[GetOwnProperty]]``, it returns a descriptor.
 
-There is no special behavior for ``[[GetProperty]]``, the special behaviors
+There is no exotic behavior for ``[[GetProperty]]``, the exotic behaviors
 only affect ``[[GetOwnProperty]]`` which is called during ``[[GetProperty]]``.
 
 Original algorithm
@@ -2250,7 +2250,7 @@ GetProperty with default GetOwnProperty inlined
 :::::::::::::::::::::::::::::::::::::::::::::::
 
 ``[[GetOwnProperty]]`` is just creating the descriptor from whatever form
-properties are stored.  It has special behaviors, so the resulting function
+properties are stored.  It has exotic behaviors, so the resulting function
 is a bit complicated.
 
 The inlined form for default ``[[GetOwnProperty]]`` is essentially:
@@ -2291,12 +2291,12 @@ The inlined form for default ``[[GetOwnProperty]]`` is essentially:
 
 5. Return ``undefined``
 
-This is a relatively useless form, because special behaviors are missing.
+This is a relatively useless form, because exotic behaviors are missing.
 
 GetProperty with complete GetOwnProperty inlined
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
-The following inlines ``[[GetOwnProperty]]`` with all special behaviors:
+The following inlines ``[[GetOwnProperty]]`` with all exotic behaviors:
 
 1. ``curr`` = ``O``
 
@@ -2306,7 +2306,7 @@ The following inlines ``[[GetOwnProperty]]`` with all special behaviors:
 
   a. If ``curr`` is not a ``String`` instance, goto NOTFOUND.
 
-  b. (``String`` object special behavior.)
+  b. (``String`` object exotic behavior.)
      Let ``str`` be the String value of the ``[[PrimitiveValue]]``
      internal property of ``O`` and ``len`` be the number of
      characters in ``str``.
@@ -2357,7 +2357,7 @@ The following inlines ``[[GetOwnProperty]]`` with all special behaviors:
 4. If ``curr`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -2389,7 +2389,7 @@ Get
 Get with GetProperty inlined
 ----------------------------
 
-``[[Get]]`` was covered above when discussion special behaviors, so we'll
+``[[Get]]`` was covered above when discussion exotic behaviors, so we'll
 skip discussing it again here.
 
 ``[[Get]]`` is essentially a ``[[GetProperty]]`` followed by coercion of
@@ -2399,12 +2399,12 @@ function.  The descriptor does not need to be created at all, as we're
 just interested in the final value.
 
 The following combines both ``[[GetOwnProperty]]`` and ``[[Get]]`` with
-special behaviors:
+exotic behaviors:
 
 1. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -2421,7 +2421,7 @@ special behaviors:
 
   a. If ``curr`` is not a ``String`` instance, goto NOTFOUND.
 
-  b. (``String`` object special behavior.)
+  b. (``String`` object exotic behavior.)
      Let ``str`` be the String value of the ``[[PrimitiveValue]]``
      internal property of ``O`` and ``len`` be the number of
      characters in ``str``.
@@ -2429,8 +2429,8 @@ special behaviors:
   c. If ``P`` is ``"length"``:
 
     1. Return ``len`` (a primitive number).
-       (No need to check for arguments object special
-       behavior or ``"caller"`` property special behavior.)
+       (No need to check for arguments object exotic
+       behavior or ``"caller"`` property exotic behavior.)
 
   d. If ``P`` is an array index (E5 Section 15.4):
 
@@ -2440,8 +2440,8 @@ special behaviors:
 
       a. Return a primitive string of length 1, containing one character
          from ``str`` at position ``index`` (zero based index).
-         (No need to check for arguments object special behavior or
-         ``"caller"`` property special behavior.)
+         (No need to check for arguments object exotic behavior or
+         ``"caller"`` property exotic behavior.)
 
   e. Goto NOTFOUND.
 
@@ -2458,9 +2458,9 @@ special behaviors:
   b. If ``getter`` is ``undefined``:
 
     1. Return ``undefined``.
-       (Note: arguments object special behavior for mapped variables cannot
+       (Note: arguments object exotic behavior for mapped variables cannot
        apply: if the property is an accessor, it can never be in the arguments
-       object ``[[ParameterMap]]``.  Also, the ``"caller"`` special behavior
+       object ``[[ParameterMap]]``.  Also, the ``"caller"`` exotic behavior
        does not apply, since the result ``undefined`` is not a strict mode
        function.  Thus, no "goto FOUND1" here.)
 
@@ -2469,16 +2469,16 @@ special behaviors:
      providing no arguments.
 
   d. Goto FOUND2.
-     (Note: arguments object special behavior for mapped variables cannot
+     (Note: arguments object exotic behavior for mapped variables cannot
      apply: if the property is an accessor, it can never be in the arguments
-     object ``[[ParameterMap]]``.  However, the ``"caller"`` special behavior
+     object ``[[ParameterMap]]``.  However, the ``"caller"`` exotic behavior
      might apply, at FOUND2.)
 
 6. **FOUND1**:
    If ``curr`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -2491,7 +2491,7 @@ special behaviors:
    If ``O`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -2504,7 +2504,7 @@ special behaviors:
 10. If ``curr`` is not ``null``, goto NEXT.
 
 11. Return ``undefined``.
-    (Note: no need for special behavior checks here; e.g. result is not a
+    (Note: no need for exotic behavior checks here; e.g. result is not a
     strict mode function.)
 
 .. note:: The step 5.c gives the object as the ``this`` binding for the
@@ -2547,10 +2547,10 @@ internal algorithms:
 
 * ``[[Put]]``, E5 Section 8.12.5
 
-* Array's special ``[[DefineOwnProperty]]`` relies on the default one, E5
+* Array's exotic ``[[DefineOwnProperty]]`` relies on the default one, E5
   Section 15.4.5.1
 
-* Argument object's special ``[[DefineOwnProperty]]`` relies on the default
+* Argument object's exotic ``[[DefineOwnProperty]]`` relies on the default
   one, E5 Section 10.6
 
 It is used less fundamentally in many places, e.g. to initialize values
@@ -2630,7 +2630,7 @@ More specifically, we know that in the ``[[DefineOwnProperty]]`` algorithm:
  * ``IsDataDescriptor(Desc)`` is ``true``
  * ``IsAccessorDescriptor(Desc)`` is ``false``
 
-Taking the ``[[DefineOwnProperty]]`` with all special behaviors included,
+Taking the ``[[DefineOwnProperty]]`` with all exotic behaviors included,
 using the above assumptions, eliminating any unnecessary steps, cleaning
 up and clarifying, we get:
 
@@ -2687,7 +2687,7 @@ up and clarifying, we get:
 4. Return ``true``.
 
 Note that step 1 combines the pre-step and post-step for an ``Array``
-object ``length`` special behavior.  This is only possible if we know
+object ``length`` exotic behavior.  This is only possible if we know
 beforehand that the ``"length"`` property is writable (so that the
 write never fails and we always reach the post-step).
 
@@ -2777,7 +2777,7 @@ More specifically, we know that in the ``[[DefineOwnProperty]]`` algorithm:
 
  * ``current`` is ``undefined``
 
-Taking the ``[[DefineOwnProperty]]`` with all special behaviors included,
+Taking the ``[[DefineOwnProperty]]`` with all exotic behaviors included,
 using the above assumptions, and then eliminating any unnecessary steps,
 cleaning up and clarifying, we get:
 
@@ -2829,7 +2829,7 @@ cleaning up and clarifying, we get:
     If ``Throw`` is ``true``, then throw a ``TypeError`` exception,
     otherwise return ``false``.
 
-This can be refined further by noticing that the arguments object special
+This can be refined further by noticing that the arguments object exotic
 behavior cannot be triggered if the property does not exist: all magically
 bound properties exist initially, and if they are deleted, the magic
 variable binding is also deleted.
@@ -2932,7 +2932,7 @@ the possibilities a great deal.  Here we assume that:
 
 * Object is extensible
 * Property does not exist
-* Property does not have special behavior and is not virtual
+* Property does not have exotic behavior and is not virtual
 * Property descriptor is a data descriptor, which is fully populated
 
 With these assumptions, eliminating any unnecessary steps, the algorithm is
@@ -3325,7 +3325,7 @@ be non-null in the first loop):
 Note about PutValue
 :::::::::::::::::::
 
-Note that ``PutValue()`` has a ``[[Put]]`` variant with two special
+Note that ``PutValue()`` has a ``[[Put]]`` variant with two exotic
 behaviors related to object coercion.  The above algorithm does not
 take those into account.
 
@@ -3704,7 +3704,7 @@ Section 9.9, ``ToObject()``).
 Note: the replacement ``[[Get]]`` overrides whatever ``[[Get]]`` function
 would normally be used for the target object.  For instance, if there were
 some primitive-to-object coercion which created an arguments object, the
-arguments object special ``[[Get]]`` behavior would be skipped.  However,
+arguments object exotic ``[[Get]]`` behavior would be skipped.  However,
 since the arguments and ``Function`` objects are the only objects with
 non-default ``[[Get]]``, this is not an issue in practice.
 
@@ -3741,7 +3741,7 @@ and property name value ``P``):
 5. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -3774,7 +3774,7 @@ and property name value ``P``):
 10. If ``orig`` is a ``Function`` object or an ``arguments`` object which
     contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -3792,7 +3792,7 @@ Notes:
 
 * Step 4 comes from ``GetValue()``.
 
-* Steps 5 and forward come from ``[[Get]]``; here with special behaviors
+* Steps 5 and forward come from ``[[Get]]``; here with exotic behaviors
   inlined, but ``[[GetProperty]]`` not inlined.
 
 We could inline the ``[[GetProperty]]`` call to the algorithm.  However,
@@ -3828,7 +3828,7 @@ A variant where steps 3 and 4 are reversed and expanded is as follows:
 4. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -3861,7 +3861,7 @@ A variant where steps 3 and 4 are reversed and expanded is as follows:
 9. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -3928,7 +3928,7 @@ can be worked into the algorithm e.g. as follows:
 4. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -3961,7 +3961,7 @@ can be worked into the algorithm e.g. as follows:
 9. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -4022,7 +4022,7 @@ This variant is as follows:
    If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -4055,7 +4055,7 @@ This variant is as follows:
 9. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -4077,7 +4077,7 @@ A simple "shallow fast path" could be:
 
 * If ``P`` is a whole number in the range [0,2**32-2] (a valid array index)
   AND ``O`` has an array part
-  AND ``O`` has no conflicting "special behaviors", then:
+  AND ``O`` has no conflicting "exotic behaviors", then:
 
   + Let ``idx`` be the array index represented by ``P``
 
@@ -4094,8 +4094,8 @@ Some notes:
   assumption of a number as a property name, with the target property
   present as an "own data property" of the target object.
 
-* The conflicting special behaviors are currently: ``String`` object special
-  behavior, and arguments object special behavior.  Array special behaviors
+* The conflicting exotic behaviors are currently: ``String`` object exotic
+  behavior, and arguments object exotic behavior.  Array exotic behaviors
   are not conflicting for read operations.
 
 * A certain key in the array can be defined even if the value is ``undefined``.
@@ -4168,8 +4168,8 @@ altogether produces:
     1. Array fast path: If ``O`` is an object (always true here)
        AND ``P`` is a number and a valid array index (whole number in [0,2**32-2])
        AND ``O`` internal representation has an array part
-       AND ``O`` does not have conflicting special behaviors (cannot have
-       ``String`` or arguments special behaviors, may have ``Array``
+       AND ``O`` does not have conflicting exotic behaviors (cannot have
+       ``String`` or arguments exotic behaviors, may have ``Array``
        behavior), then:
 
       a. Let ``idx`` be the array index represented by ``P``
@@ -4193,7 +4193,7 @@ altogether produces:
    If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -4226,7 +4226,7 @@ altogether produces:
 9. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -4284,8 +4284,8 @@ is a primitive string (in step 2.d):
     1. Array fast path: If ``O`` is an object (always true here)
        AND ``P`` is a number and a valid array index (whole number in [0,2**32-2])
        AND ``O`` internal representation has an array part
-       AND ``O`` does not have conflicting special behaviors (cannot have
-       ``String`` or arguments special behaviors, may have ``Array``
+       AND ``O`` does not have conflicting exotic behaviors (cannot have
+       ``String`` or arguments exotic behaviors, may have ``Array``
        behavior), then:
 
       a. Let ``idx`` be the array index represented by ``P``
@@ -4309,7 +4309,7 @@ is a primitive string (in step 2.d):
    If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
 
-  a. (Arguments object special behavior.) Let ``map`` be the value of
+  a. (Arguments object exotic behavior.) Let ``map`` be the value of
      the ``[[ParameterMap]]`` internal property of the arguments object.
 
   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -4342,13 +4342,13 @@ is a primitive string (in step 2.d):
 9. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
 10. Return ``res``.
 
-We can also move step 4 (arguments special behavior) to step 2.e.  This has
+We can also move step 4 (arguments exotic behavior) to step 2.e.  This has
 the problem that step 4 assumes ``P`` has been string coerced already.  So,
 a duplicate coercion is needed (like for strings):
 
@@ -4401,8 +4401,8 @@ a duplicate coercion is needed (like for strings):
     1. Array fast path: If ``O`` is an object (always true here)
        AND ``P`` is a number and a valid array index (whole number in [0,2**32-2])
        AND ``O`` internal representation has an array part
-       AND ``O`` does not have conflicting special behaviors (cannot have
-       ``String`` or arguments special behaviors, may have ``Array``
+       AND ``O`` does not have conflicting exotic behaviors (cannot have
+       ``String`` or arguments exotic behaviors, may have ``Array``
        behavior), then:
 
       a. Let ``idx`` be the array index represented by ``P``.
@@ -4419,7 +4419,7 @@ a duplicate coercion is needed (like for strings):
 
       a. Set ``P`` to ``ToString(P)``.
 
-      b. (Arguments object special behavior.) Let ``map`` be the value of
+      b. (Arguments object exotic behavior.) Let ``map`` be the value of
          the ``[[ParameterMap]]`` internal property of the arguments object.
 
       c. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -4463,7 +4463,7 @@ a duplicate coercion is needed (like for strings):
 8. If ``orig`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -4530,8 +4530,8 @@ and using ``curr`` instead of ``O`` otherwise, we get:
     2. Array fast path: If ``O`` is an object (always true here)
        AND ``P`` is a number and a valid array index (whole number in [0,2**32-2])
        AND ``O`` internal representation has an array part
-       AND ``O`` does not have conflicting special behaviors (cannot have
-       ``String`` or arguments special behaviors, may have ``Array``
+       AND ``O`` does not have conflicting exotic behaviors (cannot have
+       ``String`` or arguments exotic behaviors, may have ``Array``
        behavior), then:
 
       a. Let ``idx`` be the array index represented by ``P``.
@@ -4548,7 +4548,7 @@ and using ``curr`` instead of ``O`` otherwise, we get:
 
       a. Set ``P`` to ``ToString(P)``.
 
-      b. (Arguments object special behavior.) Let ``map`` be the value of
+      b. (Arguments object exotic behavior.) Let ``map`` be the value of
          the ``[[ParameterMap]]`` internal property of the arguments object.
 
       c. If the result of calling the ``[[GetOwnProperty]]`` internal method
@@ -4599,7 +4599,7 @@ and using ``curr`` instead of ``O`` otherwise, we get:
 8. If ``O`` is a ``Function`` object or an ``arguments`` object which
    contains a ``[[ParameterMap]]`` internal property:
 
-  a. (Arguments or Function object special behavior.)
+  a. (Arguments or Function object exotic behavior.)
      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
      object, throw a ``TypeError`` exception.
 
@@ -4637,7 +4637,7 @@ The property accessor coercions are the same as for ``GetValue``:
 The ``PutValue()`` call is simple:
 
 * If the base reference is primitive, it is coerced to an object, and a
-  special variant of ``[[Put]]`` is used.
+  exotic variant of ``[[Put]]`` is used.
 
 * Otherwise, standard ``[[Put]]`` is used.
 
@@ -4901,7 +4901,7 @@ the section on preliminary algorithm work).
 
 Before inlining, the cases for "update old property" and "create new property"
 are isolated into goto labels (as there are two places where a new property
-is created).  The ``[[DefineOwnProperty]]`` calls with special behaviors
+is created).  The ``[[DefineOwnProperty]]`` calls with exotic behaviors
 inlined are then substituted.  "Reject" is also made an explicit label.
 
 The resulting algorithm is:
@@ -5059,21 +5059,21 @@ Notes:
 * In step 8, we don't need to check for array index updates: the property
   already exists, so array ``length`` will not need an update.
 
-* In step 8, the original ``[[DefineOwnProperty]]`` special behavior is
+* In step 8, the original ``[[DefineOwnProperty]]`` exotic behavior is
   split into a pre-step and a post-step because the ``"length"`` write
   may fail.  However, because we've inlined ``[[CanPut]]``, we know that
   the write will succeed, so both the pre- and post-behaviors can be
   handled in step 8 internally.
 
-* In step 8, we don't need to check for arguments special behavior, as
+* In step 8, we don't need to check for arguments exotic behavior, as
   only number-like indices have magic bindings (not ``"length"``).
 
-* In steps 12-14, we don't need to check for arguments special behavior: any
+* In steps 12-14, we don't need to check for arguments exotic behavior: any
   "magically bound" property must always be present in the arguments
   object.  If a bound property is deleted, the binding is also deleted
   from the argument parameter map.
 
-* In step 12, we don't need to check for ``length`` special behavior: the
+* In step 12, we don't need to check for ``length`` exotic behavior: the
   ``length`` property always exists for arrays so we cannot get here with
   arrays.
 
@@ -5274,7 +5274,7 @@ Avoiding temporaries altogether:
 
 Notes:
 
-* Step 7: if array special behavior exists, we can return right after
+* Step 7: if array exotic behavior exists, we can return right after
   processing the ``length`` update; in particular, step 9 is not
   necessary as an object cannot be simultaneously an array and an
   arguments object.
@@ -5487,7 +5487,7 @@ Implementation notes
 * Property writes may fail for out of memory or other internal reasons.
   In such cases the algorithm should just throw an error and avoid making
   any updates to the object state.  This is easy for normal properties,
-  but there are some subtle issues when dealing with special behaviors
+  but there are some subtle issues when dealing with exotic behaviors
   which link multiple properties together and should be updated either
   atomically or in some consistent manner.  In particular:
 
@@ -6127,7 +6127,7 @@ First draft
 
 Starting from the original algorithm and inlining both
 ``ToPropertyDescriptor()`` and the ``[[DefineOwnProperty]]`` algorithm
-with special behaviors, we get:
+with exotic behaviors, we get:
 
 1. If ``Type(O)`` is not ``Object`` throw a ``TypeError`` exception.
 

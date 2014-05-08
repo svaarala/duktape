@@ -265,8 +265,8 @@ Test 3 shows that even though the object itself is forced to be of
 length 2, prototype enumeration still lists all keys of the prototype,
 including "2" which is beyond the array length.
 
-Test 4 shows that 'length' is not special for an object which has an
-array as a prototype.  Special semantics of 'length' do not apply to
+Test 4 shows that 'length' is not exotic for an object which has an
+array as a prototype.  Exotic semantics of 'length' do not apply to
 the object because the property write goes to the object, which is not
 an array.  This also explains the result of test 3.
 
