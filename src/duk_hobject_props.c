@@ -1753,7 +1753,7 @@ static int duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstrin
  *  Interning is avoided but only for a very narrow set of cases:
  *    - Object has array part, index is within array allocation, and
  *      value is not unused (= key exists)
- *    - Object has no interfering exotic behavior (arguments or
+ *    - Object has no interfering exotic behavior (e.g. arguments or
  *      string object exotic behaviors interfere, array exotic
  *      behavior does not).
  *
@@ -1771,6 +1771,7 @@ static duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_ui
 	if ((!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj)) &&
 	    (key_idx < obj->a_size)) {
 		/* technically required to check, but obj->a_size check covers this */
@@ -1809,6 +1810,7 @@ static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_t
 	    (!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj))) {
 		duk_uint32_t idx;
 
