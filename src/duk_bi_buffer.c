@@ -67,7 +67,7 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		duk_push_object_helper(ctx,
 		                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                       DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ |
+		                       DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ |
 		                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
 		                       DUK_BIDX_BUFFER_PROTOTYPE);
 

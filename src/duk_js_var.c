@@ -185,9 +185,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (DUK_HOBJECT_HAS_CREATEARGS(&fun_temp->obj)) {
 		DUK_HOBJECT_SET_CREATEARGS(&fun_clos->obj);
 	}
-	DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARRAY(&fun_clos->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(&fun_clos->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(&fun_clos->obj));
 
 	/*
 	 *  Setup environment record properties based on the template
@@ -1571,7 +1571,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 		 * where the property was found (see duk__get_identifier_reference()).
 		 */
 		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(holder) == DUK_HOBJECT_CLASS_GLOBAL);
-		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARRAY(holder));  /* global object doesn't have array part */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(holder));  /* global object doesn't have array part */
 
 		/* FIXME: use a helper for prototype traversal; no loop check here */
 		/* must be found: was found earlier, and cannot be inherited */

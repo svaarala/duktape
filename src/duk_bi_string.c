@@ -28,7 +28,7 @@ duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		duk_push_object_helper(ctx,
 		                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                       DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ |
+		                       DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
 		                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING),
 		                       DUK_BIDX_STRING_PROTOTYPE);
 

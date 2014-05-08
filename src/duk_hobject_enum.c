@@ -199,19 +199,19 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		 *  object props have special behavior but are concrete.
 		 */
 
-		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr) ||
-		    DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr)) {
+		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr) ||
+		    DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr)) {
 			/* String and buffer enumeration behavior is identical now,
 			 * so use shared handler.
 			 */
-			if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(curr)) {
+			if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr)) {
 				duk_hstring *h_val;
 				h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
 				DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
 				len = DUK_HSTRING_GET_CHARLEN(h_val);
 			} else {
 				duk_hbuffer *h_val;
-				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr));
+				DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr));
 				h_val = duk_hobject_get_internal_value_buffer(thr->heap, curr);
 				DUK_ASSERT(h_val != NULL);  /* buffer objects must not created without internal value */
 				len = DUK_HBUFFER_GET_SIZE(h_val);
@@ -241,7 +241,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 				duk_push_true(ctx);
 				duk_put_prop(ctx, -3);
 			}
-		} else if (DUK_HOBJECT_HAS_SPECIAL_DUKFUNC(curr)) {
+		} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(curr)) {
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
 				duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 				duk_push_true(ctx);

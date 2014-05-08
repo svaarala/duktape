@@ -96,7 +96,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			/* FIXME: set magic directly here? (it could share the c_nargs arg) */
-			duk_push_c_function_nospecial(ctx, c_func, c_nargs);
+			duk_push_c_function_noexotic(ctx, c_func, c_nargs);
 
 			h = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(h != NULL);
@@ -163,13 +163,13 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			                     DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE));
 		}
 
-		/* enable special behaviors last */
+		/* enable exotic behaviors last */
 
 		if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
-			DUK_HOBJECT_SET_SPECIAL_ARRAY(h);
+			DUK_HOBJECT_SET_EXOTIC_ARRAY(h);
 		}
 		if (class_num == DUK_HOBJECT_CLASS_STRING) {
-			DUK_HOBJECT_SET_SPECIAL_STRINGOBJ(h);
+			DUK_HOBJECT_SET_EXOTIC_STRINGOBJ(h);
 		}
 
 		/* some assertions */
@@ -187,9 +187,9 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ENVRECCLOSED(h));
-		/* DUK_HOBJECT_FLAG_SPECIAL_ARRAY varies */
-		/* DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ varies */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(h));
+		/* DUK_HOBJECT_FLAG_EXOTIC_ARRAY varies */
+		/* DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ varies */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h));
 
 		DUK_DDD(DUK_DDDPRINT("created built-in %d, class=%d, length=%d", i, class_num, len));
 	}
@@ -337,8 +337,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
-				duk_push_c_function_noconstruct_nospecial(ctx, c_func_getter, 0);  /* always 0 args */
-				duk_push_c_function_noconstruct_nospecial(ctx, c_func_setter, 1);  /* always 1 arg */
+				duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
+				duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
 
 				/* FIXME: magic for getter/setter? */
 
@@ -393,7 +393,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* [ (builtin objects) ] */
 
-			duk_push_c_function_noconstruct_nospecial(ctx, c_func, c_nargs);
+			duk_push_c_function_noconstruct_noexotic(ctx, c_func, c_nargs);
 			h_func = duk_require_hnativefunction(ctx, -1);
 			DUK_UNREF(h_func);
 

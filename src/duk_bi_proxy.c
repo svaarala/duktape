@@ -18,7 +18,7 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	 */
 	h_target = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h_target != NULL);
-	if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(h_target)) {
+	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_target)) {
 		return DUK_RET_TYPE_ERROR;
 	}
 
@@ -27,7 +27,7 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	 */
 	h_handler = duk_require_hobject(ctx, 1);
 	DUK_ASSERT(h_handler != NULL);
-	if (DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(h_handler)) {
+	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_handler)) {
 		return DUK_RET_TYPE_ERROR;
 	}
 
@@ -37,7 +37,7 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	 * No callable check/handling in the current Proxy subset.
 	 */
 	(void) duk_push_object_helper_proto(ctx,
-	                                    DUK_HOBJECT_FLAG_SPECIAL_PROXYOBJ |
+	                                    DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ |
 	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                                    NULL);
 	DUK_ASSERT_TOP(ctx, 3);

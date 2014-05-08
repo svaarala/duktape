@@ -14,9 +14,9 @@
  *  Arguments object creation.
  *
  *  Creating arguments objects is a bit finicky, see E5 Section 10.6 for the
- *  specific requirements.  Much of the arguments object special behavior is
+ *  specific requirements.  Much of the arguments object exotic behavior is
  *  implemented in duk_hobject_props.c, and is enabled by the object flag
- *  DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS.
+ *  DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS.
  */
 
 static void duk__create_arguments_object(duk_hthread *thr,
@@ -223,15 +223,15 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
 	}
 
-	/* set special behavior only after we're done */
+	/* set exotic behavior only after we're done */
 	if (need_map) {
 		/*
-		 *  Note: special behaviors are only enabled for arguments
+		 *  Note: exotic behaviors are only enabled for arguments
 		 *  objects which have a parameter map (see E5 Section 10.6
 		 *  main algorithm, step 12).
 		 *
 		 *  In particular, a non-strict arguments object with no
-		 *  mapped formals does *NOT* get special behavior, even
+		 *  mapped formals does *NOT* get exotic behavior, even
 		 *  for e.g. "caller" property.  This seems counterintuitive
 		 *  but seems to be the case.
 		 */
@@ -239,10 +239,10 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		/* cannot be strict (never mapped variables) */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
 
-		DUK_DDD(DUK_DDDPRINT("enabling special behavior for arguments object"));
-		DUK_HOBJECT_SET_SPECIAL_ARGUMENTS(arg);
+		DUK_DDD(DUK_DDDPRINT("enabling exotic behavior for arguments object"));
+		DUK_HOBJECT_SET_EXOTIC_ARGUMENTS(arg);
 	} else {
-		DUK_DDD(DUK_DDDPRINT("not enabling special behavior for arguments object"));
+		DUK_DDD(DUK_DDDPRINT("not enabling exotic behavior for arguments object"));
 	}
 
 	/* nice log */
@@ -469,7 +469,7 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 		/* If caller is global/eval code, 'caller' should be set to
 		 * 'null'.
 		 *
-		 * XXX: there is no special flag to infer this correctly now.
+		 * XXX: there is no exotic flag to infer this correctly now.
 		 * The NEWENV flag is used now which works as intended for
 		 * everything (global code, non-strict eval code, and functions)
 		 * except strict eval code.  Bound functions are never an issue
