@@ -12,7 +12,7 @@ int test_put(duk_context *ctx) {
 
 	/* In Ecmascript, '(0).foo = "bar"' should work and evaluate to "bar"
 	 * in non-strict mode, but cause an error to be thrown in strict mode
-	 * (E5.1, Section 8.7.2, special [[Put]] variant, step 7.
+	 * (E5.1, Section 8.7.2, exotic [[Put]] variant, step 7.
 	 */
 
 	duk_push_int(ctx, 0);

@@ -893,7 +893,7 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 #ifdef DUK_USE_ASSERTIONS
 		h_res = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_res));
-		DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_ARRAY(h_res));
+		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(h_res));
 		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_res) == DUK_HOBJECT_CLASS_ARRAY);
 #endif
 

@@ -1212,7 +1212,7 @@ duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *
 /*
  *  Arguments handling helpers (argument map mainly).
  *
- *  An arguments object has special behavior for some numeric indices.
+ *  An arguments object has exotic behavior for some numeric indices.
  *  Accesses may translate to identifier operations which may have
  *  arbitrary side effects (potentially invalidating any duk_tval
  *  pointers).
@@ -1288,7 +1288,7 @@ static int duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!duk__lookup_arguments_map(thr, obj, key, temp_desc, &map, &varenv)) {
-		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no special get behavior"));
+		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no exotic get behavior"));
 		return 0;
 	}
 
@@ -1326,7 +1326,7 @@ static void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj,
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!duk__lookup_arguments_map(thr, obj, key, temp_desc, &map, &varenv)) {
-		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no special put behavior"));
+		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no exotic put behavior"));
 		return;
 	}
 
@@ -1368,7 +1368,7 @@ static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *o
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	if (!duk__get_own_property_desc(thr, obj, DUK_HTHREAD_STRING_INT_MAP(thr), temp_desc, 1)) {  /* push_value = 1 */
-		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no special delete behavior"));
+		DUK_DDD(DUK_DDDPRINT("arguments: key not mapped, no exotic delete behavior"));
 		return;
 	}
 
@@ -1379,7 +1379,7 @@ static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *o
 	DUK_DDD(DUK_DDDPRINT("-> have 'map', delete key %!O from map (if exists)); ignore result", key));
 
 	/* Note: no recursion issue, we can trust 'map' to behave */
-	DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_BEHAVIOR(map));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_BEHAVIOR(map));
 	DUK_DDD(DUK_DDDPRINT("map before deletion: %!O", map));
 	(void) duk_hobject_delprop_raw(thr, map, key, 0);  /* ignore result */
 	DUK_DDD(DUK_DDDPRINT("map after deletion: %!O", map));
@@ -1510,8 +1510,8 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 
  prop_not_found_concrete:
 
-	if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) {
-		DUK_DDD(DUK_DDDPRINT("string object special property get for key: %!O, arr_idx: %d", key, arr_idx));
+	if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) {
+		DUK_DDD(DUK_DDDPRINT("string object exotic property get for key: %!O, arr_idx: %d", key, arr_idx));
 
 		if (arr_idx != DUK__NO_ARRAY_INDEX) {
 			duk_hstring *h_val;
@@ -1529,8 +1529,8 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 				out_desc->flags = DUK_PROPDESC_FLAG_ENUMERABLE |  /* E5 Section 15.5.5.2 */
 				                  DUK_PROPDESC_FLAG_VIRTUAL;
 
-				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
-				return 1;  /* cannot be e.g. arguments special, since special 'traits' are mutually exclusive */
+				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
 			} else {
 				/* index is above internal string length -> property is fully normal */
 				DUK_DDD(DUK_DDDPRINT("array index outside string -> normal property"));
@@ -1538,7 +1538,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 		} else if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			duk_hstring *h_val;
 
-			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length special behavior"));
+			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
  			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
 			DUK_ASSERT(h_val != NULL);
@@ -1547,11 +1547,11 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* E5 Section 15.5.5.1 */
 
-			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments special */
+			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) {
-		DUK_DDD(DUK_DDDPRINT("buffer object special property get for key: %!O, arr_idx: %d", key, arr_idx));
+	} else if (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) {
+		DUK_DDD(DUK_DDDPRINT("buffer object exotic property get for key: %!O, arr_idx: %d", key, arr_idx));
 
 		if (arr_idx != DUK__NO_ARRAY_INDEX) {
 			duk_hbuffer *h_val;
@@ -1574,8 +1574,8 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 				                  DUK_PROPDESC_FLAG_ENUMERABLE |
 				                  DUK_PROPDESC_FLAG_VIRTUAL;
 
-				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
-				return 1;  /* cannot be e.g. arguments special, since special 'traits' are mutually exclusive */
+				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
 			} else {
 				/* index is above internal buffer length -> property is fully normal */
 				DUK_DDD(DUK_DDDPRINT("array index outside buffer -> normal property"));
@@ -1583,9 +1583,9 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 		} else if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			duk_hbuffer *h_val;
 
-			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length special behavior"));
+			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
-			/* XXX: buffer length should be writable and have special behavior
+			/* XXX: buffer length should be writable and have exotic behavior
 			 * like arrays.  For now, make it read-only and use explicit methods
 			 * to operate on buffer length.
 			 */
@@ -1597,14 +1597,14 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 
-			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments special */
+			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_HAS_SPECIAL_DUKFUNC(obj)) {
-		DUK_DDD(DUK_DDDPRINT("duktape/c object special property get for key: %!O, arr_idx: %d", key, arr_idx));
+	} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj)) {
+		DUK_DDD(DUK_DDDPRINT("duktape/c object exotic property get for key: %!O, arr_idx: %d", key, arr_idx));
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
-			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length special behavior"));
+			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
 			if (push_value) {
 				duk_int16_t func_nargs = ((duk_hnativefunction *) obj)->nargs;
@@ -1612,15 +1612,15 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* not enumerable */
 
-			DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments special */
+			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments exotic */
 		}
 	}
 
-	/* Array properties have special behavior but they are concrete,
+	/* Array properties have exotic behavior but they are concrete,
 	 * so no special handling here.
 	 *
-	 * Arguments special behavior (E5 Section 10.6, [[GetOwnProperty]]
+	 * Arguments exotic behavior (E5 Section 10.6, [[GetOwnProperty]]
 	 * is only relevant as a post-check implemented below; hence no
 	 * check here.
 	 */
@@ -1635,12 +1635,12 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 	/*
 	 *  Found
 	 *
-	 *  Arguments object has special post-processing, see E5 Section 10.6,
+	 *  Arguments object has exotic post-processing, see E5 Section 10.6,
 	 *  description of [[GetOwnProperty]] variant for arguments.
 	 */
 
  prop_found:
-	DUK_DDD(DUK_DDDPRINT("-> property found, checking for arguments special post-behavior"));
+	DUK_DDD(DUK_DDDPRINT("-> property found, checking for arguments exotic post-behavior"));
 
 	/* Notes:
 	 *  - only numbered indices are relevant, so arr_idx fast reject is good
@@ -1649,7 +1649,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 	 *    push_value == 0.
 	 */
 
-	if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj) &&
+	if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
 	    arr_idx != DUK__NO_ARRAY_INDEX &&
 	    push_value) {
 		duk_propdesc temp_desc;
@@ -1665,7 +1665,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 		DUK_ASSERT(push_value != 0);
 
 		if (duk__check_arguments_map_for_get(thr, obj, key, &temp_desc)) {
-			DUK_DDD(DUK_DDDPRINT("-> arguments special behavior overrides result: %!T -> %!T",
+			DUK_DDD(DUK_DDDPRINT("-> arguments exotic behavior overrides result: %!T -> %!T",
 			                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 			/* [... old_result result] -> [... result] */
 			duk_remove(ctx, -2);
@@ -1753,8 +1753,8 @@ static int duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstrin
  *  Interning is avoided but only for a very narrow set of cases:
  *    - Object has array part, index is within array allocation, and
  *      value is not unused (= key exists)
- *    - Object has no interfering special behavior (arguments or
- *      string object special behaviors interfere, array special
+ *    - Object has no interfering exotic behavior (e.g. arguments or
+ *      string object exotic behaviors interfere, array exotic
  *      behavior does not).
  *
  *  Current shortcoming: if key does not exist (even if it is within
@@ -1768,15 +1768,16 @@ static int duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstrin
 static duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_uint32_t key_idx) {
 	duk_tval *tv;
 
-	if ((!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) &&
-	    (!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) &&
-	    (!DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) &&
+	if ((!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj)) &&
 	    (key_idx < obj->a_size)) {
 		/* technically required to check, but obj->a_size check covers this */
 		DUK_ASSERT(key_idx != 0xffffffffU);
 
-		DUK_DDD(DUK_DDDPRINT("fast path attempt (key is an array index, no special "
+		DUK_DDD(DUK_DDDPRINT("fast path attempt (key is an array index, no exotic "
 		                     "string/arguments/buffer behavior, object has array part, key "
 		                     "inside array size)"));
 
@@ -1806,13 +1807,14 @@ static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_t
 	duk_tval *tv;
 
 	if (DUK_TVAL_IS_NUMBER(key_tv) &&
-	    (!DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) &&
-	    (!DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj)) &&
-	    (!DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj))) {
 		duk_uint32_t idx;
 
-		DUK_DDD(DUK_DDDPRINT("fast path attempt (key is a number, no special string/arguments/buffer "
+		DUK_DDD(DUK_DDDPRINT("fast path attempt (key is a number, no exotic string/arguments/buffer "
 		                     "behavior, object has array part)"));
 
 		idx = duk__tval_number_to_arr_idx(key_tv);
@@ -1964,7 +1966,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		DUK_ASSERT(curr != NULL);
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(curr))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(curr))) {
 			duk_hobject *h_target;
 
 			if (duk__proxy_check(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
@@ -2027,12 +2029,12 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			return 1;
 		}
 
-		if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(curr)) {
+		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(curr)) {
 			arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 			DUK_ASSERT(key != NULL);
 
 			if (duk__check_arguments_map_for_get(thr, curr, key, &desc)) {
-				DUK_DDD(DUK_DDDPRINT("-> %!T (base is object with arguments special behavior, "
+				DUK_DDD(DUK_DDDPRINT("-> %!T (base is object with arguments exotic behavior, "
 				                     "key matches magically bound property -> skip standard "
 				                     "Get with replacement value)",
 				                     duk_get_tval(ctx, -1)));
@@ -2162,7 +2164,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			           duk_is_undefined(ctx, -1));
 
 			/* Note: for an accessor without getter, falling through to
-			 * check for "caller" special behavior is unnecessary as
+			 * check for "caller" exotic behavior is unnecessary as
 			 * "undefined" will never activate the behavior.  But it does
 			 * no harm, so we'll do it anyway.
 			 */
@@ -2195,7 +2197,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	/* [key result] */
 
 #if !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	/* This special behavior is disabled when the non-standard 'caller' property
+	/* This exotic behavior is disabled when the non-standard 'caller' property
 	 * is enabled, as it conflicts with the free use of 'caller'.
 	 */
 	if (key == DUK_HTHREAD_STRING_CALLER(thr) &&
@@ -2203,7 +2205,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		duk_hobject *orig = DUK_TVAL_GET_OBJECT(tv_obj);
 
 		if (DUK_HOBJECT_IS_NONBOUND_FUNCTION(orig) ||
-		    DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(orig)) {
+		    DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(orig)) {
 			duk_hobject *h;
 
 			/* FIXME: is this behavior desired for bound functions too?
@@ -2320,7 +2322,7 @@ static duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj
 	 * can create an array whose length is above 2**32.
 	 */
 
-	/* Call only for objects with array special behavior, as we assume
+	/* Call only for objects with array exotic behavior, as we assume
 	 * that the length property always exists, and always contains a
 	 * valid number value (in unsigned 32-bit range).
 	 */
@@ -2509,7 +2511,7 @@ static int duk__handle_put_array_length_smaller(duk_hthread *thr,
 
 			/*
 			 *  Slow delete, but we don't care as we're already in a very slow path.
-			 *  The delete always succeeds: key has no special behavior, property
+			 *  The delete always succeeds: key has no exotic behavior, property
 			 *  is configurable, and no resize occurs.
 			 */
 			rc = duk_hobject_delprop_raw(thr, obj, key, 0);
@@ -2545,7 +2547,7 @@ static int duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_tval *tv;
 	int rc;
 
-	DUK_DDD(DUK_DDDPRINT("handling a put operation to array 'length' special property, "
+	DUK_DDD(DUK_DDDPRINT("handling a put operation to array 'length' exotic property, "
 	                     "new val: %!T",
 	                     duk_get_tval(ctx, -1)));
 
@@ -2632,7 +2634,7 @@ static int duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
  *      property allocation.  Consequently, any entry indices (e_idx) will
  *      be potentially invalidated by a decref.
  *
- *    * Special behaviors (strings, arrays, arguments object) require,
+ *    * Exotic behaviors (strings, arrays, arguments object) require,
  *      among other things:
  *
  *      - Preprocessing before and postprocessing after an actual property
@@ -2745,7 +2747,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		DUK_ASSERT(orig != NULL);
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(orig))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(orig))) {
 			duk_hobject *h_target;
 			int tmp_bool;
 
@@ -2900,7 +2902,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			 *  Found existing accessor property (own or inherited).
 			 *  Call setter with 'this' set to orig, and value as the only argument.
 			 *
-			 *  Note: no special arguments object behavior, because [[Put]] never
+			 *  Note: no exotic arguments object behavior, because [[Put]] never
 			 *  calls [[DefineOwnProperty]] (E5 Section 8.12.5, step 5.b).
 			 */
 
@@ -2917,7 +2919,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			duk_push_tval(ctx, tv_val);  /* [key setter this val] */
 			duk_call_method(ctx, 1);     /* -> [key retval] */
 			duk_pop(ctx);                /* ignore retval -> [key] */
-			goto success_no_arguments_special;
+			goto success_no_arguments_exotic;
 		}
 
 		if (orig == NULL) {
@@ -2957,7 +2959,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			}
 			if (desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
 				DUK_DD(DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable"));
-				if (DUK_HOBJECT_HAS_SPECIAL_BUFFEROBJ(curr)) {
+				if (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr)) {
 					duk_hbuffer *h;
 
 					DUK_DD(DUK_DDPRINT("writable virtual property is in buffer object"));
@@ -2972,7 +2974,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 						duk_push_tval(ctx, tv_val);
 						data[arr_idx] = (duk_uint8_t) duk_to_number(ctx, -1);
 						duk_pop(ctx);
-						goto success_no_arguments_special;
+						goto success_no_arguments_exotic;
 					}
 				}
 
@@ -3027,7 +3029,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	DUK_ASSERT((desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) == 0);
 	DUK_ASSERT(desc.a_idx >= 0 || desc.e_idx >= 0);
 
-	if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(orig) &&
+	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig) &&
 	    key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 		/*
 		 *  Write to 'length' of an array is a very complex case
@@ -3040,7 +3042,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 		 *  for 'length', we already know it is writable.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array special, invoke complex helper"));
+		DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array exotic, invoke complex helper"));
 
 		/* FIXME: the helper currently assumes stack top contains new
 		 * 'length' value and the whole calling convention is not very
@@ -3054,8 +3056,8 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			goto fail_array_length_partial;
 		}
 
-		/* key is 'length', cannot match argument special behavior */
-		goto success_no_arguments_special;
+		/* key is 'length', cannot match argument exotic behavior */
+		goto success_no_arguments_exotic;
 	}
 
 	if (desc.e_idx >= 0) {
@@ -3087,20 +3089,20 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	}
 
 	/* Regardless of whether property is found in entry or array part,
-	 * it may have arguments special behavior (array indices may reside
+	 * it may have arguments exotic behavior (array indices may reside
 	 * in entry part for abandoned / non-existent array parts).
 	 */
-	goto success_with_arguments_special;
+	goto success_with_arguments_exotic;
 
  create_new:
 
 	/*
 	 *  Create a new property in the original object.
 	 *
-	 *  Special properties need to be reconsidered here from a write
+	 *  Exotic properties need to be reconsidered here from a write
 	 *  perspective (not just property attributes perspective).
 	 *  However, the property does not exist in the object already,
-	 *  so this limits the kind of special properties that apply.
+	 *  so this limits the kind of exotic properties that apply.
 	 */
 
 	/* [key] */
@@ -3113,10 +3115,10 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	 * from its creation and cannot be deleted, and is thus
 	 * caught as an existing property above.
 	 */
-	DUK_ASSERT(!(DUK_HOBJECT_HAS_SPECIAL_ARRAY(orig) &&
+	DUK_ASSERT(!(DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig) &&
 	             key == DUK_HTHREAD_STRING_LENGTH(thr)));
 
-	if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(orig) &&
+	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig) &&
 	    arr_idx != DUK__NO_ARRAY_INDEX) {
 		/* automatic length update */
 		duk_uint32_t old_len;
@@ -3299,18 +3301,18 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	}
 
 	/*
-	 *  Arguments special behavior not possible for new properties: all
+	 *  Arguments exotic behavior not possible for new properties: all
 	 *  magically bound properties are initially present in the arguments
 	 *  object, and if they are deleted, the binding is also removed from
 	 *  parameter map.
 	 */
 
-	goto success_no_arguments_special;
+	goto success_no_arguments_exotic;
 
- success_with_arguments_special:
+ success_with_arguments_exotic:
 
 	/*
-	 *  Arguments objects have special [[DefineOwnProperty]] which updates
+	 *  Arguments objects have exotic [[DefineOwnProperty]] which updates
 	 *  the internal 'map' of arguments for writes to currently mapped
 	 *  arguments.  More conretely, writes to mapped arguments generate
 	 *  a write to a bound variable.
@@ -3323,12 +3325,12 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	 */
 
 	if (arr_idx != DUK__NO_ARRAY_INDEX &&
-	    DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(orig)) {
+	    DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(orig)) {
 		/* Note: only numbered indices are relevant, so arr_idx fast reject
 		 * is good (this is valid unless there are more than 4**32-1 arguments).
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("putprop successful, arguments special behavior needed"));
+		DUK_DDD(DUK_DDDPRINT("putprop successful, arguments exotic behavior needed"));
 
 		/* Note: we can reuse 'desc' here */
 
@@ -3342,7 +3344,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	}
 	/* fall thru */
 
- success_no_arguments_special:
+ success_no_arguments_exotic:
 	/* shared exit path now */
 	DUK_DDD(DUK_DDDPRINT("result: success"));
 	duk_pop(ctx);  /* remove key */
@@ -3504,7 +3506,7 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	
  success:
 	/*
-	 *  Argument special [[Delete]] behavior (E5 Section 10.6) is
+	 *  Argument exotic [[Delete]] behavior (E5 Section 10.6) is
 	 *  a post-check, keeping arguments internal 'map' in sync with
 	 *  any successful deletes (note that property does not need to
 	 *  exist for delete to 'succeed').
@@ -3513,14 +3515,14 @@ int duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 	 *  keys, we can use arr_idx for a fast skip.
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("delete successful, check for arguments special behavior"));
+	DUK_DDD(DUK_DDDPRINT("delete successful, check for arguments exotic behavior"));
 
-	if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
+	if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) {
 		/* Note: only numbered indices are relevant, so arr_idx fast reject
 		 * is good (this is valid unless there are more than 4**32-1 arguments).
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("delete successful, arguments special behavior needed"));
+		DUK_DDD(DUK_DDDPRINT("delete successful, arguments exotic behavior needed"));
 
 		/* Note: we can reuse 'desc' here */
 		(void) duk__check_arguments_map_for_delete(thr, obj, key, &desc);
@@ -3585,7 +3587,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 		DUK_ASSERT(obj != NULL);
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_SPECIAL_PROXYOBJ(obj))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
 			duk_hobject *h_target;
 			int tmp_bool;
 
@@ -4101,7 +4103,7 @@ static void duk__normalize_property_descriptor(duk_context *ctx) {
 /*
  *  Object.defineProperty()  (E5 Section 15.2.3.6)
  *
- *  Inlines ToPropertyDescriptor() and all [[DefineOwnProperty]] special
+ *  Inlines ToPropertyDescriptor() and all [[DefineOwnProperty]] exotic
  *  behaviors.
  *
  *  Note: Ecmascript compliant [[DefineOwnProperty]](P, Desc, Throw) is not
@@ -4261,23 +4263,23 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	                     has_set, (void *) set, (duk_heaphdr *) set));
 
 	/*
-	 *  Array special behaviors can be implemented at this point.  The local variables
+	 *  Array exotic behaviors can be implemented at this point.  The local variables
 	 *  are essentially a 'value copy' of the input descriptor (Desc), which is modified
 	 *  by the Array [[DefineOwnProperty]] (E5 Section 15.4.5.1).
 	 */
 
-	if (!DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj)) {
-		goto skip_array_special;
+	if (!DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+		goto skip_array_exotic;
 	}
 
 	if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 		/* E5 Section 15.4.5.1, step 3, steps a - i are implemented here, j - n at the end */
 		if (!has_value) {
-			DUK_DDD(DUK_DDDPRINT("special array behavior for 'length', but no value in descriptor -> normal behavior"));
-			goto skip_array_special;
+			DUK_DDD(DUK_DDDPRINT("exotic array behavior for 'length', but no value in descriptor -> normal behavior"));
+			goto skip_array_exotic;
 		}
 	
-		DUK_DDD(DUK_DDDPRINT("special array behavior for 'length', value present in descriptor -> special behavior"));
+		DUK_DDD(DUK_DDDPRINT("exotic array behavior for 'length', value present in descriptor -> exotic behavior"));
 
 		/*
 		 *  Get old and new length
@@ -4295,9 +4297,9 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		if (arrlen_new_len >= arrlen_old_len) {
 			/* standard behavior, step 3.f.i */
 			DUK_DDD(DUK_DDDPRINT("new length is same or higher as previous => standard behavior"));
-			goto skip_array_special;
+			goto skip_array_exotic;
 		}
-		DUK_DDD(DUK_DDDPRINT("new length is smaller than previous => special post behavior"));
+		DUK_DDD(DUK_DDDPRINT("new length is smaller than previous => exotic post behavior"));
 
 		/* FIXME: consolidated algorithm step 15.f -> redundant? */
 		if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
@@ -4343,7 +4345,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			                     arr_idx, old_len));
 		}
 	}
- skip_array_special:
+ skip_array_exotic:
 
 	/*
 	 *  Actual Object.defineProperty() default algorithm.
@@ -4400,7 +4402,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_HOBJECT_INCREF(thr, set);
 
 			DUK_HOBJECT_E_SET_FLAGS(obj, e_idx, new_flags);
-			goto success_specials;
+			goto success_exotics;
 		} else {
 			int e_idx;
 			duk_tval *tv2;
@@ -4451,7 +4453,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_TVAL_INCREF(thr, tv2);
 
 			DUK_HOBJECT_E_SET_FLAGS(obj, e_idx, new_flags);
-			goto success_specials;
+			goto success_exotics;
 		}
 		DUK_UNREACHABLE();
 	}
@@ -4541,7 +4543,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	/* property exists, either 'desc' is empty, or all values
 	 * match (SameValue)
 	 */
-	goto success_no_specials;
+	goto success_no_exotics;
 
  need_check:
 
@@ -4759,7 +4761,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_TVAL_SET_TVAL(tv1, tv2);
 			DUK_TVAL_INCREF(thr, tv1);
 			DUK_TVAL_DECREF(thr, &tv_tmp);
-			goto success_specials;
+			goto success_exotics;
 		}
 
 		DUK_DDD(DUK_DDDPRINT("array index, new property attributes do not match array defaults, abandon array and re-lookup"));
@@ -4819,22 +4821,22 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 	}
 
 	/*
-	 *  Standard algorithm succeeded without errors, check for special post-behaviors.
+	 *  Standard algorithm succeeded without errors, check for exotic post-behaviors.
 	 *
-	 *  Arguments special behavior in E5 Section 10.6 occurs after the standard
+	 *  Arguments exotic behavior in E5 Section 10.6 occurs after the standard
 	 *  [[DefineOwnProperty]] has completed successfully.
 	 *
-	 *  Array special behavior in E5 Section 15.4.5.1 is implemented partly
+	 *  Array exotic behavior in E5 Section 15.4.5.1 is implemented partly
 	 *  prior to the default [[DefineOwnProperty]], but:
 	 *    - for an array index key (e.g. "10") the final 'length' update occurs here
 	 *    - for 'length' key the element deletion and 'length' update occurs here
 	 */
 
- success_specials:
+ success_exotics:
 
 	/* [obj key desc value get set curr_value] */
 
-	if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj)) {
+	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
 		if (arridx_new_array_length > 0) {
 			duk_tval *tmp;
 			int rc;
@@ -4875,7 +4877,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			duk_uint32_t result_len;
 			int rc;
 
-			DUK_DDD(DUK_DDDPRINT("defineProperty successful, key is 'length', special array behavior, "
+			DUK_DDD(DUK_DDDPRINT("defineProperty successful, key is 'length', exotic array behavior, "
 			                     "doing array element deletion and length update"));
 
 			rc = duk__handle_put_array_length_smaller(thr, obj, arrlen_old_len, arrlen_new_len, &result_len);
@@ -4903,17 +4905,17 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 				goto fail_array_length_partial;
 			}
 		}
-	} else if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj)) {
+	} else if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) {
 		duk_hobject *map;
 		duk_hobject *varenv;
 
 		DUK_ASSERT(arridx_new_array_length == 0);
-		DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj));  /* traits are separate; in particular, arguments not an array */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj));  /* traits are separate; in particular, arguments not an array */
 
 		map = NULL;
 		varenv = NULL;
 		if (!duk__lookup_arguments_map(thr, obj, key, &curr, &map, &varenv)) {
-			goto success_no_specials;
+			goto success_no_exotics;
 		}
 		DUK_ASSERT(map != NULL);
 		DUK_ASSERT(varenv != NULL);
@@ -4962,7 +4964,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 		 */
 	}
 
- success_no_specials:
+ success_no_exotics:
 	/* no need to unwind stack (rewound automatically) */
 	duk_set_top(ctx, 1);  /* -> [ obj ] */
 	return 1;

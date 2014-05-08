@@ -22,7 +22,7 @@ function f(x) {
     //
     // However, this is not externally visible.  Looking up arguments[0]
     // prints '2'.  The initial property lookup returns 1, but the
-    // special [[GetOwnProperty]] behavior overwrites the value with
+    // exotic [[GetOwnProperty]] behavior overwrites the value with
     // the current value of 'x'.
 
     x = 2;

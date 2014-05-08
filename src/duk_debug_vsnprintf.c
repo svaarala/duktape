@@ -487,18 +487,33 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		} else {
 			;
 		}
-		if (DUK_HOBJECT_HAS_SPECIAL_ARRAY(h)) {
+		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__special_array:true");
 		} else {
 			;
 		}
-		if (DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(h)) {
+		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__special_stringobj:true");
 		} else {
 			;
 		}
-		if (DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(h)) {
+		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__special_arguments:true");
+		} else {
+			;
+		}
+		if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_dukfunc:true");
+		} else {
+			;
+		}
+		if (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_bufferobj:true");
+		} else {
+			;
+		}
+		if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__special_proxyobj:true");
 		} else {
 			;
 		}

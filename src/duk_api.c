@@ -1902,7 +1902,7 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	case DUK_TAG_STRING: {
 		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ |
+		               DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
 		shared_proto = DUK_BIDX_STRING_PROTOTYPE;
 		goto create_object;
@@ -1913,7 +1913,7 @@ void duk_to_object(duk_context *ctx, int index) {
 	}
 	case DUK_TAG_BUFFER: {
 		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_FLAG_SPECIAL_BUFFEROBJ |
+		               DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER);
 		shared_proto = DUK_BIDX_BUFFER_PROTOTYPE;
 		goto create_object;
@@ -2794,7 +2794,7 @@ int duk_push_array(duk_context *ctx) {
 	                                     obj,
 	                                     DUK_HTHREAD_STRING_LENGTH(thr),
 	                                     DUK_PROPDESC_FLAGS_W);
-	DUK_HOBJECT_SET_SPECIAL_ARRAY(obj);
+	DUK_HOBJECT_SET_EXOTIC_ARRAY(obj);
 
 	return ret;
 }
@@ -2952,13 +2952,13 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
-	        DUK_HOBJECT_FLAG_SPECIAL_DUKFUNC |
+	        DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
 	
 	return duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
-void duk_push_c_function_nospecial(duk_context *ctx, duk_c_function func, int nargs) {
+void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, int nargs) {
 	duk_uint32_t flags;
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -2971,7 +2971,7 @@ void duk_push_c_function_nospecial(duk_context *ctx, duk_c_function func, int na
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
-void duk_push_c_function_noconstruct_nospecial(duk_context *ctx, duk_c_function func, int nargs) {
+void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, int nargs) {
 	duk_uint32_t flags;
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |

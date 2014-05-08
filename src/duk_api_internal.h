@@ -83,8 +83,8 @@ int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int pr
 int duk_push_object_helper_proto(duk_context *ctx, int hobject_flags_and_class, duk_hobject *proto);
 int duk_push_object_internal(duk_context *ctx);
 int duk_push_compiledfunction(duk_context *ctx);
-void duk_push_c_function_nospecial(duk_context *ctx, duk_c_function func, int nargs);
-void duk_push_c_function_noconstruct_nospecial(duk_context *ctx, duk_c_function func, int nargs);
+void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, int nargs);
+void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, int nargs);
 
 int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [val] */
 int duk_put_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [val] -> [] */

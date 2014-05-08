@@ -10,9 +10,9 @@ and is the most important type from an implementation point of view.
 It provides objects for various purposes:
 
 * Objects with E5 normal object semantics
-* Objects with E5 array object special behavior
-* Objects with E5 string object special behavior
-* Objects with E5 arguments object special behavior
+* Objects with E5 array object exotic behavior
+* Objects with E5 string object exotic behavior
+* Objects with E5 arguments object exotic behavior
 * Objects with no E5 semantics, for internal use
 
 This document discusses the ``duk_hobject`` object in detail, including:
@@ -21,7 +21,7 @@ This document discusses the ``duk_hobject`` object in detail, including:
 * Features of Ecmascript E5 objects
 * Internal data structure and algorithms
 * Enumeration guarantees
-* Ecmascript property behavior (default and special)
+* Ecmascript property behavior (default and exotic)
 * Design notes, future work
 
 The details of property-related algorithms in E5 are pretty intricate
@@ -38,11 +38,11 @@ The following parts of Ecmascript E5 are useful background:
 +-----------+-------------------------------------------------------------+
 | 8.12      | Default property access methods                             |
 +-----------+-------------------------------------------------------------+
-| 10.6      | Arguments object special behavior                           |
+| 10.6      | Arguments object exotic behavior                            |
 +-----------+-------------------------------------------------------------+
-| 15.4.5.1  | Array object special behavior                               |
+| 15.4.5.1  | Array object exotic behavior                                |
 +-----------+-------------------------------------------------------------+
-| 15.5.5.2  | String object special behavior                              |
+| 15.5.5.2  | String object exotic behavior                               |
 +-----------+-------------------------------------------------------------+
 
 See also the following documentation:
@@ -916,14 +916,14 @@ Notes:
 * The array part is an optimized structure for reading and writing
   array indexed properties efficiently.  It can be used for *any* object,
   not just the Ecmascript ``Array`` object, and Ecmascript ``Array``
-  special behaviors are unrelated to the array part's existence.
+  exotic behaviors are unrelated to the array part's existence.
 
 * A non-\ ``Array`` object with an array part does not get the ``Array``
-  related special behaviors (like automatic interaction between array
+  related exotic behaviors (like automatic interaction between array
   indexed elements and the ``length`` property).
 
 * An ``Array`` object may be created without an array part, or may have its
-  array part abandoned.  The ``Array`` special behaviors must keep on
+  array part abandoned.  The ``Array`` exotic behaviors must keep on
   working even if the ``Array`` object has no array part.
 
 * The ``Array`` ``length`` property is stored as an ordinary property in
@@ -1600,8 +1600,8 @@ double brackets are omitted from the specification property names
 +-------------------+------------------------------------------------------+
 
 
-Special behavior and virtual properties
-=======================================
+Exotic behavior and virtual properties
+======================================
 
 Terminology
 -----------
@@ -1609,7 +1609,7 @@ Terminology
 The E5 specification defines default property access algorithms like
 ``[[GetProperty]]`` and ``[[DefineOwnProperty]]`` in E5 Section 8.12.
 Some objects have behavior which differs from default behavior; we call
-these *special properties* (or properties with *special behavior*), as
+these *exotic properties* (or properties with *exotic behavior*), as
 opposed to *normal properties* (or properties with *normal behavior* or
 *default behavior*).
 
@@ -1617,7 +1617,7 @@ Conceptually each object has a number of algorithms "stored" in its
 internal properties (E5 Section 8.6.2), including all the property access
 algorithms.  The current implementation of property access is completely
 different: there are fixed algorithms for property access, which change
-their behavior based on object type and flags.  The special behaviors are
+their behavior based on object type and flags.  The exotic behaviors are
 thus "inlined" into a single algorithm.
 
 From a purely implementation viewpoint some properties are stored in a data
@@ -1625,19 +1625,19 @@ structure as concrete key-value pairs, while others are computed
 on-the-fly.  The former are called *concrete properties* and the latter
 *virtual properties*.  Whether a property is concrete or virtual should
 have no externally visible impact with respect to compliance. 
-Note that these two concepts ("being special" and "being virtual") are
-indepedent: a special property can be implemented with a concrete property
+Note that these two concepts ("being exotic" and "being virtual") are
+indepedent: a exotic property can be implemented with a concrete property
 storing its value, and a normal property can be implemented as a virtual
 property.
 
-Special behaviors in E5 specification
--------------------------------------
+Exotic behaviors in E5 specification
+------------------------------------
 
-Special behaviors are discussed at least in the following places in the E5
+Exotic behaviors are discussed at least in the following places in the E5
 specification (page numbers refer to page numbers on the page contents, not
 the "PDF page number").
 
-Section 8.6.2, pages 32-33 summarizes special behavior and refers to:
+Section 8.6.2, pages 32-33 summarizes exotic behavior and refers to:
 
 * Array objects: ``[[DefineOwnProperty]]``, E5 Section 15.4.5.1
 
@@ -1645,28 +1645,28 @@ Section 8.6.2, pages 32-33 summarizes special behavior and refers to:
 
 * Arguments objects: ``[[Get]]``, ``[[GetOwnProperty]]``,
   ``[DefineOwnProperty]]``, ``[[Delete]]``, E5 Section 10.6
-  (the special behavior of a non-strict arguments object is pretty
+  (the exotic behavior of a non-strict arguments object is pretty
   intricate and is discussed separately in ``arguments-object.txt``)
 
 * Function objects: ``[[Get]]``, E5 Section 15.3
 
-Special behavior for ``[[Get]]``:
+Exotic behavior for ``[[Get]]``:
 
 * The ``arguments`` object: E5 Section 10.5
 
   + If ``arguments.caller`` has a value, which is a strict function object,
     the ``[[Get]]`` operation fails after standard lookup is complete.
-  + Note that the special behavior occurs at the level of ``[[Get]]`` and
+  + Note that the exotic behavior occurs at the level of ``[[Get]]`` and
     is *not* visible through property descriptors, e.g. through
     ``[[GetProperty]]`` or ``[[GetOwnProperty]]``.
-  + Special behavior only applies to non-strict arguments objects.
+  + Exotic behavior only applies to non-strict arguments objects.
 
 * The ``Function`` object: E5 Section 15.3.5.4
 
-  + Same special behavior for ``caller`` property as for ``arguments``
+  + Same exotic behavior for ``caller`` property as for ``arguments``
     object.
 
-Special behavior for ``[[GetOwnProperty]]``:
+Exotic behavior for ``[[GetOwnProperty]]``:
 
 * ``String`` object array-index properties: E5 Section 15.5.5.2
 
@@ -1686,9 +1686,9 @@ Special behavior for ``[[GetOwnProperty]]``:
 
   + The ``[[Value]]`` of a property descriptor may be overridden for
     "magically bound" properties (some numeric indices).
-  + Special behavior only applies to non-strict arguments objects.
+  + Exotic behavior only applies to non-strict arguments objects.
 
-Special behavior for ``[[DefineOwnProperty]]``:
+Exotic behavior for ``[[DefineOwnProperty]]``:
 
 * ``Array`` ``length`` property: E5 Section 15.4.5.1
 
@@ -1703,18 +1703,18 @@ Special behavior for ``[[DefineOwnProperty]]``:
 
   + Automatic interaction with "magically bound" variables (some
     numeric indices).  May also remove magic binding.
-  + Special behavior only applies to non-strict arguments objects.
+  + Exotic behavior only applies to non-strict arguments objects.
 
-Special behavior for ``[[Delete]]``:
+Exotic behavior for ``[[Delete]]``:
 
 * The ``arguments`` object: E5 Section 10.6
 
   + Automatic interaction with "magically" bound variables (some
     numeric indices), may remove magic binding.
-  + Special behavior only applies to non-strict arguments objects.
+  + Exotic behavior only applies to non-strict arguments objects.
 
-When implementing special or virtual properties, property attributes must
-be respected normally.  Special or virtual properties may have specific
+When implementing exotic or virtual properties, property attributes must
+be respected normally.  Exotic or virtual properties may have specific
 initial attributes, but these are not fixed and may be changed later by
 user code.  The *only* properties which are "truly fixed" are:
 
@@ -1727,10 +1727,10 @@ cannot be changed back to writable after that.  This has the practical
 implication that only "truly fixed" properties can be easily implemented
 as stateless virtual properties.
 
-Summary of special properties
------------------------------
+Summary of exotic properties
+----------------------------
 
-The following table summarizes special properties defined in the E5
+The following table summarizes exotic properties defined in the E5
 specification, along with their (initial) property attributes in the
 columns W(ritable), E(numerable), and C(onfigurable): 
 ``y`` means "true", ``n`` means "false", ``a`` means "any":
@@ -1746,12 +1746,12 @@ columns W(ritable), E(numerable), and C(onfigurable):
 | instance   | indices    |   |   |   | ``length`` (if new index is above |
 |            |            |   |   |   | existing length)                  |
 +------------+------------+---+---+---+-----------------------------------+
-| ``String`` | ``length`` | n | n | n | No special behavior as such, but  |
+| ``String`` | ``length`` | n | n | n | No exotic behavior as such, but   |
 | instance   |            |   |   |   | easy to implement as a virtual    |
 |            |            |   |   |   | property because not writable     |
 |            |            |   |   |   | or configurable.                  |
 +------------+------------+---+---+---+-----------------------------------+
-| ``String`` | array      | n | y | n | No special behavior as such, but  |
+| ``String`` | array      | n | y | n | No exotic behavior as such, but   |
 | instance   | indices    |   |   |   | maps individual characters to     |
 |            | inside     |   |   |   | indicates; affects enumeration.   |
 |            | string     |   |   |   |                                   |
@@ -1781,75 +1781,75 @@ columns W(ritable), E(numerable), and C(onfigurable):
 
 Notes:
 
-* The special properties for ``String`` instances (which are objects) also
+* The exotic properties for ``String`` instances (which are objects) also
   apply in practice to plain strings, because properties of plain strings
   can also be accessed (the string is automatically promoted to a temporary
   object; the implementation handles this without an actual temporary object
   being created).
 
 * The ``caller`` property of a non-strict arguments object is curious: it has
-  special behavior but no such property is established for non-strict argument
+  exotic behavior but no such property is established for non-strict argument
   objects.  (This is why its property attributes are listed as "any" above.)
 
-* The only special properties which are easy to implement as fully virtual,
+* The only exotic properties which are easy to implement as fully virtual,
   stateless properties are the ``String`` instance ``length`` and
   array index properties, because they are non-configurable and non-writable.
   They are enumerable, though, which must be taken into account in enumeration.
 
 * The array ``length`` property has an initial value which is a valid array
-  length (32-bit unsigned integer).  The special behavior of the property
+  length (32-bit unsigned integer).  The exotic behavior of the property
   ensures that whatever values are assigned to it, they are either rejected
   or coerced into a valid array length (32-bit unsigned integer).
 
-Implementation of special properties
-------------------------------------
+Implementation of exotic properties
+-----------------------------------
 
-The following table summarizes the implementation of special properties at
+The following table summarizes the implementation of exotic properties at
 the moment.
 
 +------------+------------+-----------------------------------------------+
 | Object     | Property   | Description                                   |
 +============+============+===============================================+
 | ``Array``  | ``length`` | Stored as a concrete property.                |
-| instance   |            | ``DUK_HOBJECT_FLAG_SPECIAL_ARRAY`` enables    |
-|            |            | special behavior in:                          |
+| instance   |            | ``DUK_HOBJECT_FLAG_EXOTIC_ARRAY`` enables     |
+|            |            | exotic behavior in:                           |
 |            |            | ``duk_hobject_put_value()``,                  |
 |            |            | ``duk_hobject_object_define_property()``.     |
 +------------+------------+-----------------------------------------------+
 | ``Array``  | array      | Stored as conrete properties in array part    |
 | instance   | indices    | or entry part (if array part abandoned).      |
-|            |            | ``DUK_HOBJECT_FLAG_SPECIAL_ARRAY`` enables    |
-|            |            | special behavior in:                          |
+|            |            | ``DUK_HOBJECT_FLAG_EXOTIC_ARRAY`` enables     |
+|            |            | exotic behavior in:                           |
 |            |            | ``duk_hobject_put_value()``,                  |
 |            |            | ``duk_hobject_object_define_property()``.     |
 +------------+------------+-----------------------------------------------+
 | ``String`` | ``length`` | Virtual property computed from the string     |
 | instance   |            | length of the internal ``_value`` property.   |
-|            |            | ``DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ`` enables|
-|            |            | special behavior in:                          |
+|            |            | ``DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ`` enables |
+|            |            | exotic behavior in:                           |
 |            |            | ``get_own_property_desc()``.                  |
 +------------+------------+-----------------------------------------------+
 | ``String`` | array      | Virtual properties computed by looking up     |
 | instance   | indices    | characters of the internal ``_value``         |
 |            | inside     | property.                                     |
-|            | string     | ``DUK_HOBJECT_FLAG_SPECIAL_STRINGOBJ`` enables|
-|            | length     | special behavior in:                          |
+|            | string     | ``DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ`` enables |
+|            | length     | exotic behavior in:                           |
 |            |            | ``get_own_property_desc()``.                  |
 +------------+------------+-----------------------------------------------+
-| plain      | ``length`` | Special handling in property access code,     |
+| plain      | ``length`` | Exotic handling in property access code,      |
 | string     |            | return string character length without        |
 | value      |            | promoting the plain string value to a         |
 |            |            | temporary ``String`` instance.                |
 +------------+------------+-----------------------------------------------+
-| plain      | array      | Special handling in property access code,     |
+| plain      | array      | Exotic handling in property access code,      |
 | string     | indices    | return individual character value without     |
 | value      | inside     | promoting the plain string value to a         |
 |            | string     | temporary ``String`` instance.                |
 |            | length     |                                               |
 +------------+------------+-----------------------------------------------+
 | Arguments  | some       | Stored as concrete property values.           |
-| object,    | numeric    | ``DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS`` enables|
-| non-strict | indices    | special behavior in:                          |
+| object,    | numeric    | ``DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS`` enables |
+| non-strict | indices    | exotic behavior in:                           |
 |            |            | ``get_own_property_desc()``,                  |
 |            |            | ``duk_hobject_get_value()``,                  |
 |            |            | ``duk_hobject_put_value()``,                  |
@@ -1857,10 +1857,10 @@ the moment.
 |            |            | ``duk_hobject_object_define_property()``.     |
 +------------+------------+-----------------------------------------------+
 | Arguments  | ``caller`` | Stored as a concrete property.                |
-| object,    |            | ``DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS`` enables|
-| non-strict |            | special behavior in:                          |
+| object,    |            | ``DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS`` enables |
+| non-strict |            | exotic behavior in:                           |
 |            |            | ``duk_hobject_get_value()``.                  |
-|            |            | This special behavior only affects            |
+|            |            | This exotic behavior only affects             |
 |            |            | ``[[Get]]``, it is not visible through e.g.   |
 |            |            | property descriptors or                       |
 |            |            | ``[[GetOwnProperty]]``.                       |
@@ -1873,16 +1873,16 @@ Notes:
   because they are non-configurable and non-writable.  However, they *are*
   enumerable which affects enumeration handling.
 
-* If array ``length`` becomes non-writable, the special behavior ensures
+* If array ``length`` becomes non-writable, the exotic behavior ensures
   no elements above the specified length can ever be inserted.  The array
   part could thus be compacted without risk of it being extended afterwards.
 
 Notes on array length and array indices
 ---------------------------------------
 
-The special array semantics only apply to valid array indices.  Nothing
+The exotic array semantics only apply to valid array indices.  Nothing
 prevents user code from writing to numeric array indices higher than the
-maximum valid array index, but such writes will get no special behavior::
+maximum valid array index, but such writes will get no exotic behavior::
 
   var x = [];
   x["4294967294"] = 1;    // has array semantics, updates length
@@ -2260,7 +2260,7 @@ There used to be a separate object type for internal objects.
 
 The differences to standard objects include: no need to support
 array part, no property attributes, no accessor properties,
-no need to preserve property ordering, no special behaviors, etc.
+no need to preserve property ordering, no exotic behaviors, etc.
 
 However, the extra cost of having another object data structure
 does not seem worth it.  The effects are:
@@ -2361,7 +2361,7 @@ in practice.  Their prototype chain is::
        |
   Array instance (see E5 Section 15.4.2)
 
-The special flag based approach would work if the object and array prototypes
+The exotic flag based approach would work if the object and array prototypes
 have no array indexed keys.
 
 Existing Ecmascript implementations do not seem to implement the
@@ -2472,10 +2472,10 @@ three basic approaches to manage these:
 The current approach is to create a snapshot of keys and then re-check them
 to see whether they've been deleted during enumeration.
 
-More modular virtual/special properties
+More modular virtual/exotic properties
 ---------------------------------------
 
-More modular (but still compact) way of implementing virtual and special
+More modular (but still compact) way of implementing virtual and exotic
 properties?
 
 Test cases

@@ -150,9 +150,12 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	DUK_D(DUK_DPRINT("  %snamebinding", DUK_HOBJECT_HAS_NAMEBINDING(obj) ? str_empty : str_excl));
 	DUK_D(DUK_DPRINT("  %screateargs", DUK_HOBJECT_HAS_CREATEARGS(obj) ? str_empty : str_excl));
 	DUK_D(DUK_DPRINT("  %senvrecclosed", DUK_HOBJECT_HAS_ENVRECCLOSED(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sspecial_array", DUK_HOBJECT_HAS_SPECIAL_ARRAY(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sspecial_stringobj", DUK_HOBJECT_HAS_SPECIAL_STRINGOBJ(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sspecial_arguments", DUK_HOBJECT_HAS_SPECIAL_ARGUMENTS(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_array", DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_stringobj", DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_arguments", DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_dukfunc", DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_bufferobj", DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sexotic_proxyobj", DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj) ? str_empty : str_excl));
 
 	DUK_D(DUK_DPRINT("  class: number %d -> %s",
 	                 (int) DUK_HOBJECT_GET_CLASS_NUMBER(obj),

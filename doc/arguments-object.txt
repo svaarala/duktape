@@ -12,7 +12,7 @@ The arguments object is created during function entry, as part of declaration
 binding instantiation (Section 10.5), and is bound to the ``arguments``
 identifier unless a shadowing declaration exists.  It is then accessed by
 program code through the bound identifier ``arguments``.  The arguments
-object and its special properties and behavior is described in E5 Section
+object and its exotic properties and behavior is described in E5 Section
 10.6.
 
 An arguments object created for a strict callee (referred to as a
@@ -25,7 +25,7 @@ An arguments object created for a non-strict callee (referred to as a
 It has non-standard variants for many core algorithms:
 ``[[Get]]``, ``[[GetOwnProperty]]``, ``[[DefineOwnProperty]]``,
 ``[[Delete]]``.  The non-standard variants provide the following main
-special behaviors:
+exotic behaviors:
 
 * **Magic argument bindings**: numbered indices ("0", "1", ...) matching
   formal arguments are "magically" bound to the corresponding variables.
@@ -66,8 +66,8 @@ Object type and internal flags
 
 * Object class: ``Arguments``
 * Internal prototype: standard built-in Object prototype
-* The ``DUK_HOBJECT_FLAG_SPECIAL_ARGUMENTS`` flag needs to be set for
-  non-strict arguments object instances.  This flag enables the special
+* The ``DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS`` flag needs to be set for
+  non-strict arguments object instances.  This flag enables the exotic
   variable map and ``caller`` post-check behaviors.
 
 Although the arguments object looks like an array, it is a normal object.
@@ -85,7 +85,7 @@ formal arguments declared):
 | Property    | Non-strict mode           | Strict mode                    |
 +=============+===========================+================================+
 | indexes     | Actual call arguments.    | Actual call arguments.         |
-| [0,nargs[   | Special behavior for those| No special behavior.           |
+| [0,nargs[   | Exotic behavior for those | No exotic behavior.            |
 |             | magically bound to formal |                                |
 |             | arguments.                |                                |
 +-------------+---------------------------+--------------------------------+
@@ -101,7 +101,7 @@ formal arguments declared):
 |             |                           | shared function.               |
 +-------------+---------------------------+--------------------------------+
 | ``caller``  | Not set.                  | Accessor property with setter  |
-|             | Still, special behavior   | and getter set to the          |
+|             | Still, exotic behavior    | and getter set to the          |
 |             | for ``[[Get]]`` if later  | ``[[ThrowTypeError]]``         |
 |             | assigned value is a strict| shared function.               |
 |             | function instance.        |                                |
@@ -208,7 +208,7 @@ The arguments object and its parameter map would be something like::
   }
 
 Note that the magic bindings *do not keep* variables and the corresponding
-arguments object entries in perfect sync, although the special behavior
+arguments object entries in perfect sync, although the exotic behavior
 tries to hide this from the program.  For instance::
 
   function f(x) {
@@ -222,7 +222,7 @@ tries to hide this from the program.  For instance::
 
     // ... however, this is not externally visible.  The following
     // prints '2'.  The initial property lookup returns 1, but the
-    // special [[GetOwnProperty]] behavior overwrites the value with
+    // exotic [[GetOwnProperty]] behavior overwrites the value with
     // the current value of 'x'.
 
     print(arguments[0]);
@@ -339,17 +339,17 @@ deletions), it could be deleted from the arguments object along with
 the variable environment reference.  This is not worth while: this
 does not happen in relevant cases and would require additional checks.
 
-Special [[Get]] behavior
-========================
+Exotic [[Get]] behavior
+=======================
 
-A non-strict arguments object has a special ``[[Get]]`` implementation.
-This is unusual, because most special behaviors are defined through a
+A non-strict arguments object has a exotic ``[[Get]]`` implementation.
+This is unusual, because most exotic behaviors are defined through a
 custom ``[[GetOwnProperty]]`` or ``[[DefineOwnProperty]``.  Because
-this special behavior operates at the ``[[Get]]`` level, it affects
+this exotic behavior operates at the ``[[Get]]`` level, it affects
 the reading of property values, but is not visible through property
 descriptors or e.g. ``[[GetOwnProperty]]``.
 
-The special behavior is covered in E5 Section 10.6, description for
+The exotic behavior is covered in E5 Section 10.6, description for
 ``[[Get]]``.  To summarize, if:
 
   * the property being looked up is not currently mapped in the
@@ -373,7 +373,7 @@ strict.
 
 However, the ``caller`` property *can* be read through e.g.
 ``Object.getOwnPropertyDescriptor()`` (which uses
-``[[GetOwnProperty]]``).  The special behavior does not protect
+``[[GetOwnProperty]]``).  The exotic behavior does not protect
 against this because the check is at the ``[[Get]]`` level.
 Example::
 
@@ -386,15 +386,15 @@ Example::
   // this is OK
   print(Object.getOwnPropertyDescriptor(a, "caller"));
 
-  // this fails due to special behavior
+  // this fails due to exotic behavior
   // (though doesn't in Rhino, V8, or Smjs)
   print(a.caller);
 
-Finally, this special behavior is puzzling because a non-strict
+Finally, this exotic behavior is puzzling because a non-strict
 mode arguments object *does not even have* a ``caller`` property.
 The strict mode arguments object does have a ``caller`` property,
 but it is a "``TypeError`` thrower", and strict mode arguments
-objects don't have any special behavior (like ``[[Get]]`` here).
+objects don't have any exotic behavior (like ``[[Get]]`` here).
 
 Function objects and argument creation
 ======================================
@@ -569,6 +569,6 @@ of an arguments object are beyond the range of "valid array indices"
 (see ``hobject-design.txt`` for detailed discussion).
 
 The current implementation assumes that this never happens in practice.
-As a result, arguments special behavior can do a fast reject if the
+As a result, arguments exotic behavior can do a fast reject if the
 key being accessed is not a valid array index.
 
