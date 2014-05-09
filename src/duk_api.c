@@ -1817,6 +1817,9 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 		h_str = duk_get_hstring(ctx, index);
 		DUK_ASSERT(h_str != NULL);
 
+		/* SCANBUILD: NULL pointer dereference warning, never triggered,
+		 * asserted above.
+		 */
 		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
 		DUK_ASSERT(buf != NULL);
 		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
