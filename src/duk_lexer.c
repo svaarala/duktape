@@ -397,12 +397,14 @@ void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt) {
 
 /* numeric value of a hex digit (also covers octal and decimal digits) */
 static int duk__hexval(duk_lexer_ctx *lex_ctx, int x) {
-	if (x >= '0' && x <= '9') {
-		return ((int) x) - ((int) '0');
-	} else if (x >= 'a' && x <= 'f') {
-		return ((int) x) - ((int) 'a') + 0x0a;
-	} else if (x >= 'A' && x <= 'F') {
-		return ((int) x) - ((int) 'A') + 0x0a;
+	duk_small_int_t t;
+
+	/* Here 'x' is a Unicode codepoint */
+	if (DUK_LIKELY(x >= 0 && x <= 0xff)) {
+		t = duk_hex_dectab[x];
+		if (DUK_LIKELY(t >= 0)) {
+			return t;
+		}
 	}
 
 	/* Throwing an error this deep makes the error rather vague, but
@@ -414,9 +416,10 @@ static int duk__hexval(duk_lexer_ctx *lex_ctx, int x) {
 
 /* having this as a separate function provided a size benefit */
 static int duk__is_hex_digit(int x) {
-	return (x >= '0' && x <= '9') ||
-	       (x >= 'a' && x <= 'f') ||
-	       (x >= 'A' && x <= 'F');
+	if (DUK_LIKELY(x >= 0 && x <= 0xff)) {
+		return (duk_hex_dectab[x] >= 0);
+	}
+	return 0;
 }
 
 static int duk__decode_hexesc_from_window(duk_lexer_ctx *lex_ctx, int lookup_offset) {

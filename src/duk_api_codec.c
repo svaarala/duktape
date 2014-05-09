@@ -276,44 +276,40 @@ const char *duk_hex_encode(duk_context *ctx, int index) {
 
 void duk_hex_decode(duk_context *ctx, int index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	const char *str;
+	const duk_uint8_t *str;
 	size_t len;
 	size_t i;
 	int t;
-	unsigned char *buf;
+	duk_uint8_t *buf;
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
 	 */
 
 	index = duk_require_normalize_index(ctx, index);
-	str = duk_to_lstring(ctx, index, &len);
+	str = (const duk_uint8_t *) duk_to_lstring(ctx, index, &len);
 	DUK_ASSERT(str != NULL);
 
 	if (len & 0x01) {
 		goto type_error;
 	}
 
-	buf = (unsigned char *) duk_push_fixed_buffer(ctx, len / 2);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len / 2);
 	DUK_ASSERT(buf != NULL);
 	/* buf is always zeroed */
 
 	for (i = 0; i < len; i++) {
 		t = str[i];
-		if (t >= '0' && t <= '9') {
-			t = t - '0' + 0x00;
-		} else if (t >= 'a' && t <= 'f') {
-			t = t - 'a' + 0x0a;
-		} else if (t >= 'A' && t <= 'F') {
-			t = t - 'A' + 0x0a;
-		} else {
+		DUK_ASSERT(t >= 0 && t <= 0xff);
+		t = duk_hex_dectab[t];
+		if (DUK_UNLIKELY(t < 0)) {
 			goto type_error;
 		}
 
 		if (i & 0x01) {
-			buf[i >> 1] += (unsigned char) t;
+			buf[i >> 1] += (duk_uint8_t) t;
 		} else {
-			buf[i >> 1] = (unsigned char) (t << 4);
+			buf[i >> 1] = (duk_uint8_t) (t << 4);
 		}
 	}
 

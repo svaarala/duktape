@@ -116,19 +116,18 @@ static duk_uint32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, int n) 
 		/* FIXME: share helper from lexer; duk_lexer.c / hexval(). */
 
 		x = duk__dec_get(js_ctx);
+		DUK_ASSERT((x >= 0 && x <= 0xff) || (x == -1));
 
 		DUK_DDD(DUK_DDDPRINT("decode_hex_escape: i=%d, n=%d, res=%d, x=%d",
 		                     i, n, (int) res, x));
 
 		res *= 16;
-		if (x >= (int) '0' && x <= (int) '9') {
-			res += x - (int) '0';
-		} else if (x >= 'a' && x <= 'f') {
-			res += x - (int) 'a' + 0x0a;
-		} else if (x >= 'A' && x <= 'F') {
-			res += x - (int) 'A' + 0x0a;
+		/* x == -1 will map to 0xff, dectab returns -1 which causes syntax_error */
+		x = duk_hex_dectab[x & 0xff];
+		if (DUK_LIKELY(x >= 0)) {
+			res += x;
 		} else {
-			/* catches EOF */
+			/* catches EOF and invalid digits */
 			goto syntax_error;
 		}
 	}
