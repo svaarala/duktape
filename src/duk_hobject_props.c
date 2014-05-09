@@ -267,6 +267,7 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_target;
 	duk_tval *tv_handler;
+	duk_hobject *h_handler;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
@@ -278,6 +279,9 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_handler));
+	h_handler = DUK_TVAL_GET_OBJECT(tv_handler);
+	DUK_ASSERT(h_handler != NULL);
+	tv_handler = NULL;  /* avoid issues with relocation */
 
 	tv_target = duk_hobject_find_existing_entry_tval_ptr(obj, DUK_HTHREAD_STRING_INT_TARGET(thr));
 	if (!tv_target) {
@@ -287,6 +291,7 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
 	*out_target = DUK_TVAL_GET_OBJECT(tv_target);
 	DUK_ASSERT(*out_target != NULL);
+	tv_target = NULL;  /* avoid issues with relocation */
 
 	/* XXX: At the moment Duktape accesses internal keys like _finalizer using a
 	 * normal property set/get which would allow a proxy handler to interfere with
@@ -321,10 +326,10 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	/* XXX: C recursion limit if proxies are allowed as handler/target values */
 
 	duk_require_stack(ctx, DUK__VALSTACK_PROXY_LOOKUP);
-	duk_push_tval(ctx, tv_handler);
+	duk_push_hobject(ctx, h_handler);
 	if (duk_get_prop_stridx(ctx, -1, stridx_funcname)) {
 		duk_remove(ctx, -2);
-		duk_push_tval(ctx, tv_handler);
+		duk_push_hobject(ctx, h_handler);
 		/* stack prepped for func call: [ ... func handler ] */
 		return 1;
 	} else {
