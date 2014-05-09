@@ -680,6 +680,11 @@ duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *
 /* hobject management functions */
 void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
+/* ES6 proxy */
+#if defined(DUK_USE_ES6_PROXY)
+duk_small_int_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
+#endif
+
 /* enumeration */
 void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags);
 int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
