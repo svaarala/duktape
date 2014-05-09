@@ -988,6 +988,11 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
 	 * if the value is uninitialized.
 	 */
 	for (i = 0; i <= DUK__IDX_MILLISECOND; i++) {
+		/* SCANBUILD: scan-build complains here about assigned value
+		 * being garbage or undefined.  This is correct but operating
+		 * on undefined values has no ill effect and is ignored by the
+		 * caller in the case where this happens.
+		 */
 		d = dparts[i];
 		if (DUK_ISFINITE(d)) {
 			dparts[i] = duk_js_tointeger_number(d);
@@ -1324,6 +1329,11 @@ static int duk__set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 			/* Day-of-month is one-based in the API, but zero-based
 			 * internally, so fix here.  Note that month is zero-based
 			 * both in the API and internally.
+			 */
+			/* SCANBUILD: complains about use of uninitialized values.
+			 * The complaint is correct, but operating in undefined
+			 * values here is intentional in some cases and the caller
+			 * ignores the results.
 			 */
 			dparts[idx] -= 1.0;
 		}

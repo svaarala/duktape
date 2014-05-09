@@ -111,7 +111,7 @@ void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 	DUK_EXIT(-1);
 #elif defined(DUK_USE_PANIC_SEGFAULT)
 	/* exit() afterwards to satisfy "noreturn" */
-	DUK_CAUSE_SEGFAULT();
+	DUK_CAUSE_SEGFAULT();  /* SCANBUILD: "Dereference of null pointer", normal */
 	DUK_EXIT(-1);
 #else
 #error no DUK_USE_PANIC_xxx macro defined

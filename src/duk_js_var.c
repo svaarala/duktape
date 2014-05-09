@@ -1581,6 +1581,9 @@ static int duk__declvar_helper(duk_hthread *thr,
 			if (e_idx >= 0) {
 				break;
 			}
+			/* SCANBUILD: NULL pointer dereference, doesn't actually trigger,
+			 * asserted above.
+			 */
 			holder = holder->prototype;
 		}
 		DUK_ASSERT(holder != NULL);
