@@ -49,14 +49,17 @@ To make a code contribution to Duktape
   - If test case status changes (tests are broken / fixed, test cases
     themselves needed fixing, test cases were added, etc), mention that.
 
-To report bugs
---------------
+To report bugs or request features
+----------------------------------
 
-For now, e-mail to <sami.vaarala@iki.fi> to report bugs:
+Use GitHub issues to report bugs or request features:
 
-* Please attach a compilation or execution log to help diagnosis.
+* Please include a compilation or execution log to help diagnosis.
 
 * For portability related compilation errors, such as endianness detection,
-  please attach a list of the preprocessor defines provided by your compiler
+  please include a list of the preprocessor defines provided by your compiler
   (if possible).  For GCC and Clang there are helpful Makefile targets,
   `gccpredefs` and `clangpredefs`.
+
+If you don't think your request needs a wide audience, you can also
+send e-mail to <sami.vaarala@iki.fi>.
