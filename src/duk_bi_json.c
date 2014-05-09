@@ -647,11 +647,11 @@ static void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_FALSE);
 		duk_push_false(ctx);
 	} else if (x == 'n') {
-		duk__dec_req_stridx(js_ctx, DUK_STRIDX_NULL);
+		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_NULL);
 		duk_push_null(ctx);
 #ifdef DUK_USE_JSONX
 	} else if (js_ctx->flag_ext_custom && x == 'u') {
-		duk__dec_req_stridx(js_ctx, DUK_STRIDX_UNDEFINED);
+		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_UNDEFINED);
 		duk_push_undefined(ctx);
 	} else if (js_ctx->flag_ext_custom && x == 'N') {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_NAN);
@@ -1245,7 +1245,7 @@ static void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 		undef = duk__enc_value1(js_ctx, idx_arr);
 
 		if (undef) {
-			DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
+			DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
 		} else {
 			/* [ ... key val ] */
 			duk__enc_value2(js_ctx);
@@ -1414,7 +1414,7 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 	}
 #endif
 	case DUK_TAG_NULL: {
-		DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_NULL);
+		DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
@@ -1572,7 +1572,7 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 		if (!(js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
 		                       DUK_JSON_FLAG_EXT_COMPATIBLE))) {
-			stridx = DUK_STRIDX_NULL;
+			stridx = DUK_STRIDX_LC_NULL;
 		} else if (c == DUK_FP_NAN) {
 			stridx = js_ctx->stridx_custom_nan;
 		} else if (s == 0) {
@@ -1581,7 +1581,7 @@ static void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 			stridx = js_ctx->stridx_custom_neginf;
 		}
 #else
-		stridx = DUK_STRIDX_NULL;
+		stridx = DUK_STRIDX_LC_NULL;
 #endif
 		DUK__EMIT_STRIDX(js_ctx, stridx);
 		break;
@@ -1751,7 +1751,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 #if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
 #if defined(DUK_USE_JSONX)
 	if (flags & DUK_JSON_FLAG_EXT_CUSTOM) {
-		js_ctx->stridx_custom_undefined = DUK_STRIDX_UNDEFINED;
+		js_ctx->stridx_custom_undefined = DUK_STRIDX_LC_UNDEFINED;
 		js_ctx->stridx_custom_nan = DUK_STRIDX_NAN;
 		js_ctx->stridx_custom_neginf = DUK_STRIDX_MINUS_INFINITY;
 		js_ctx->stridx_custom_posinf = DUK_STRIDX_INFINITY;

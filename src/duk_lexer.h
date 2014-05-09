@@ -282,7 +282,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #if (DUK_STRIDX_TO_TOK(DUK_STRIDX_SUPER) != DUK_TOK_SUPER)
 #error mismatch in token defines
 #endif
-#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_NULL) != DUK_TOK_NULL)
+#if (DUK_STRIDX_TO_TOK(DUK_STRIDX_LC_NULL) != DUK_TOK_NULL)
 #error mismatch in token defines
 #endif
 #if (DUK_STRIDX_TO_TOK(DUK_STRIDX_TRUE) != DUK_TOK_TRUE)

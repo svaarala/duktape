@@ -104,6 +104,8 @@ def mkstr(x,
 # Standard built-in object related strings
 standard_builtin_string_list = [
 	# internal class values
+	mkstr("Undefined", class_name=True),   # sort of
+	mkstr("Null", class_name=True),        # sort of
 	mkstr("Object", class_name=True),
 	mkstr("Function", class_name=True),
 	mkstr("Array", class_name=True),
@@ -717,6 +719,10 @@ standard_reserved_words_strict_string_list = [
 special_define_names = {
 	# typeof has name conflicts like "object" and "Object", broken with
 	# these unfortunately hacky defines
+	'undefined': 'LC_UNDEFINED',
+	'Undefined': 'UC_UNDEFINED',
+	'null': 'LC_NULL',
+	'Null': 'UC_NULL',
 	'object': 'LC_OBJECT',
 	'Object': 'UC_OBJECT',
 	'boolean': 'LC_BOOLEAN',
