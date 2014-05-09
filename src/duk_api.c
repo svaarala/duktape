@@ -1722,11 +1722,11 @@ const char *duk_to_string(duk_context *ctx, int index) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_UNDEFINED);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_LC_UNDEFINED);
 		break;
 	}
 	case DUK_TAG_NULL: {
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_NULL);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_LC_NULL);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
@@ -1765,7 +1765,7 @@ const char *duk_to_string(duk_context *ctx, int index) {
 			 * the JSONX format variant.  Native '%p' format for a NULL
 			 * pointer may be e.g. '(nil)'.
 			 */
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_NULL);
+			duk_push_hstring_stridx(ctx, DUK_STRIDX_LC_NULL);
 		}
 		break;
 	}

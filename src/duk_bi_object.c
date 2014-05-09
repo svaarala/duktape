@@ -269,9 +269,9 @@ duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx) {
 	duk_push_string(ctx, "[object ");
 
 	if (duk_is_undefined(ctx, -2)) {
-		duk_push_string(ctx, "Undefined");
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_UNDEFINED);
 	} else if (duk_is_null(ctx, -2)) {
-		duk_push_string(ctx, "Null");
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_NULL);
 	} else {
 		duk_hobject *h_this;
 		duk_hstring *h_classname;
