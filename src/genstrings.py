@@ -487,6 +487,7 @@ es6_string_list = [
 	mkstr("get", es6=True),
 	mkstr("deleteProperty", es6=True),
 	mkstr("enumerate", es6=True),
+	mkstr("ownKeys", es6=True),
 
 	mkstr("setPrototypeOf", es6=True),
 	mkstr("__proto__", es6=True),

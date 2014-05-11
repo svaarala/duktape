@@ -161,36 +161,123 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 
 void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *target;
+	duk_hobject *enum_target;
 	duk_hobject *curr;
 	duk_hobject *res;
+#if defined(DUK_USE_ES6_PROXY)
+	duk_hobject *h_proxy_target;
+	duk_hobject *h_proxy_handler;
+	duk_hobject *h_trap_result;
+#endif
+	duk_uint32_t i, len;
 
 	DUK_ASSERT(ctx != NULL);
 
 	DUK_DDD(DUK_DDDPRINT("create enumerator, stack top: %d", duk_get_top(ctx)));
 
-	target = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(target != NULL);
+	enum_target = duk_require_hobject(ctx, -1);
+	DUK_ASSERT(enum_target != NULL);
 
 	duk_push_object_internal(ctx);
+	res = duk_require_hobject(ctx, -1);
 
 	DUK_DDD(DUK_DDDPRINT("created internal object"));
 
-	/* [target res] */
+	/* [enum_target res] */
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_INT_TARGET);
-	duk_push_hobject(ctx, target);
-	duk_put_prop(ctx, -3);
+	/* Target must be stored so that we can recheck whether or not
+	 * keys still exist when we enumerate.  This is not done if the
+	 * enumeration result comes from a proxy trap as there is no
+	 * real object to check against.
+	 */
+	duk_push_hobject(ctx, enum_target);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET);
 
-	/* initialize index so that we skip internal control keys */
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_INT_NEXT);
+	/* Initialize index so that we skip internal control keys. */
 	duk_push_int(ctx, DUK__ENUM_START_INDEX);
-	duk_put_prop(ctx, -3);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
 
-	curr = target;
+	/*
+	 *  Proxy object handling
+	 */
+
+#if defined(DUK_USE_ES6_PROXY)
+	if (DUK_LIKELY((enum_flags & DUK_ENUM_NO_PROXY_BEHAVIOR) != 0)) {
+		goto skip_proxy;
+	}
+	if (DUK_LIKELY(!duk_hobject_proxy_check(thr,
+	                                        enum_target,
+	                                        &h_proxy_target,
+	                                        &h_proxy_handler))) {
+		goto skip_proxy;
+	}
+
+	DUK_DDD(DUK_DDDPRINT("proxy enumeration"));
+	duk_push_hobject(ctx, h_proxy_handler);
+	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ENUMERATE)) {
+		/* No need to replace the 'enum_target' value in stack, only the
+		 * enum_target reference.  This also ensures that the original
+		 * enum target is reachable, which keeps the proxy and the proxy
+		 * target reachable.  We do need to replace the internal _target.
+		 */
+		DUK_DDD(DUK_DDDPRINT("no enumerate trap, enumerate proxy target instead"));
+		DUK_DDD(DUK_DDDPRINT("h_proxy_target=%!O", h_proxy_target));
+		enum_target = h_proxy_target;
+
+		duk_push_hobject(ctx, enum_target);  /* -> [ ... enum_target res handler undefined target ] */
+		duk_put_prop_stridx(ctx, -4, DUK_STRIDX_INT_TARGET);
+
+		duk_pop_2(ctx);  /* -> [ ... enum_target res ] */
+		goto skip_proxy;
+	}
+
+	/* [ ... enum_target res handler trap ] */
+	duk_insert(ctx, -2);
+	duk_push_hobject(ctx, h_proxy_target);    /* -> [ ... enum_target res trap handler target ] */
+	duk_call_method(ctx, 1 /*nargs*/);        /* -> [ ... enum_target res trap_result ] */
+	h_trap_result = duk_require_hobject(ctx, -1);
+	DUK_UNREF(h_trap_result);
+
+	/* Copy trap result keys into the enumerator object. */
+	len = duk_get_length(ctx, -1);
+	for (i = 0; i < len; i++) {
+		/* XXX: not sure what the correct semantic details are here,
+		 * e.g. handling of missing values (gaps), handling of non-array
+		 * trap results, etc.
+		 *
+		 * For keys, we simply skip non-string keys which seems to be
+		 * consistent with how e.g. Object.keys() will process proxy trap
+		 * results (ES6 draft, Section 19.1.2.14).
+		 */
+		if (duk_get_prop_index(ctx, -1, i) && duk_is_string(ctx, -1)) {
+			/* [ ... enum_target res trap_result val ] */
+			duk_push_true(ctx);
+			/* [ ... enum_target res trap_result val true ] */
+			duk_put_prop(ctx, -4);
+		} else {
+			duk_pop(ctx);
+		}
+	}
+	/* [ ... enum_target res trap_result ] */
+	duk_pop(ctx);
+	duk_remove(ctx, -2);
+
+	/* [ ... res ] */
+
+	/* The internal _target property is kept pointing to the original
+	 * enumeration target (the proxy object), so that the enumerator
+	 * 'next' operation can read property values if so requested.  The
+	 * fact that the _target is a proxy disables key existence check
+	 * during enumeration.
+	 */
+	DUK_DDD(DUK_DDDPRINT("proxy enumeration, final res: %!O", res));
+	goto compact_and_return;
+
+ skip_proxy:
+#endif  /* DUK_USE_ES6_PROXY */
+
+	curr = enum_target;
 	while (curr) {
-		duk_uint32_t i, len;
-
 		/*
 		 *  Virtual properties.
 		 *
@@ -226,10 +313,10 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 				duk_push_hstring(ctx, k);
 				duk_push_true(ctx);
 
-				/* [target res key true] */
+				/* [enum_target res key true] */
 				duk_put_prop(ctx, -3);
 
-				/* [target res] */	
+				/* [enum_target res] */
 			}
 
 			/* 'length' property is not enumerable, but is included if
@@ -271,10 +358,10 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 			duk_push_hstring(ctx, k);
 			duk_push_true(ctx);
 
-			/* [target res key true] */
+			/* [enum_target res key true] */
 			duk_put_prop(ctx, -3);
 
-			/* [target res] */
+			/* [enum_target res] */
 		}
 
 		/*
@@ -307,10 +394,10 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 			duk_push_hstring(ctx, k);
 			duk_push_true(ctx);
 
-			/* [target res key true] */
+			/* [enum_target res key true] */
 			duk_put_prop(ctx, -3);
 
-			/* [target res] */
+			/* [enum_target res] */
 		}
 
 		if (enum_flags & DUK_ENUM_OWN_PROPERTIES_ONLY) {
@@ -320,10 +407,9 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		curr = curr->prototype;
 	}
 
-	/* [target res] */
+	/* [enum_target res] */
 
 	duk_remove(ctx, -2);
-	res = duk_require_hobject(ctx, -1);
 
 	/* [res] */
 
@@ -341,7 +427,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		 *  here.
 		 */
 
-		/* FIXME: avoid this at least when target is an Array, it has an
+		/* FIXME: avoid this at least when enum_target is an Array, it has an
 		 * array part, and no ancestor properties were included?  Not worth
 		 * it for JSON, but maybe worth it for forEach().
 		 */
@@ -352,6 +438,9 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		duk__sort_array_indices(res);
 	}
 
+#if defined(DUK_USE_ES6_PROXY)
+ compact_and_return:
+#endif
 	/* compact; no need to seal because object is internal */
 	duk_hobject_compact_props(thr, res);
 
@@ -369,9 +458,10 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *e;
-	duk_hobject *target;
+	duk_hobject *enum_target;
 	duk_hstring *res = NULL;
 	duk_uint32_t idx;
+	int check_existence;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -385,13 +475,23 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	duk_pop(ctx);
 	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %d", idx));
 
+	/* Enumeration keys are checked against the enumeration target (to see
+	 * that they still exist).  In the proxy enumeration case _target will
+	 * be the proxy, and checking key existence against the proxy is not
+	 * done at the moment.
+	 */
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
-	target = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(target != NULL);
+	enum_target = duk_require_hobject(ctx, -1);
+	DUK_ASSERT(enum_target != NULL);
+#if defined(DUK_USE_ES6_PROXY)
+	check_existence = (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(enum_target));
+#else
+	check_existence = 1;
+#endif
 	duk_pop(ctx);  /* still reachable */
 
-	DUK_DDD(DUK_DDDPRINT("getting next enum value, target=%!iO, enumerator=%!iT",
-	                     target, duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("getting next enum value, enum_target=%!iO, enumerator=%!iT",
+	                     enum_target, duk_get_tval(ctx, -1)));
 
 	/* no array part */
 	for (;;) {
@@ -411,7 +511,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 		idx++;
 
 		/* recheck that the property still exists */
-		if (!duk_hobject_hasprop_raw(thr, target, k)) {
+		if (check_existence && !duk_hobject_hasprop_raw(thr, enum_target, k)) {
 			DUK_DDD(DUK_DDDPRINT("property deleted during enumeration, skip"));
 			continue;
 		}
@@ -431,9 +531,9 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	if (res) {
 		duk_push_hstring(ctx, res);
 		if (get_value) {
-			duk_push_hobject(ctx, target);
-			duk_dup(ctx, -2);      /* -> [... enum key target key] */
-			duk_get_prop(ctx, -2); /* -> [... enum key target val] */
+			duk_push_hobject(ctx, enum_target);
+			duk_dup(ctx, -2);      /* -> [... enum key enum_target key] */
+			duk_get_prop(ctx, -2); /* -> [... enum key enum_target val] */
 			duk_remove(ctx, -2);   /* -> [... enum key val] */
 			duk_remove(ctx, -3);   /* -> [... key val] */
 		} else {
@@ -467,7 +567,7 @@ int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	duk_hobject_enumerator_create(ctx, enum_flags);
 	duk_push_array(ctx);
 
-	/* [target enum res] */
+	/* [enum_target enum res] */
 
 	e = duk_require_hobject(ctx, -2);
 	DUK_ASSERT(e != NULL);
@@ -479,17 +579,16 @@ int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 		k = DUK_HOBJECT_E_GET_KEY(e, i);
 		DUK_ASSERT(k);  /* enumerator must have no keys deleted */
 
-		/* [target enum res] */
+		/* [enum_target enum res] */
 		duk_push_hstring(ctx, k);
 		duk_put_prop_index(ctx, -2, idx);
 		idx++;
 	}
 
-	/* [target enum res] */
+	/* [enum_target enum res] */
 	duk_remove(ctx, -2);
 
-	/* [target res] */
+	/* [enum_target res] */
 
 	return 1;  /* return 1 to allow callers to tail call */
 }
-
