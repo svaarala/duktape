@@ -25,16 +25,39 @@ but is compatible with existing code base which has relied on a non-standard
 <p>The Ecmascript E6 <code>Proxy</code> object allows property virtualization
 and fine-grained access control for accessing an underlying plain object.
 Duktape implements a strict subset of the <code>Proxy</code> object from the
-ES6 draft (Rev 23).</p>
+ES6 draft (Rev 23).  The following traps are implemented:</p>
+
+<table>
+<thead>
+<tr><th>Trap</th><th>Implemented</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td class="propname">getPrototypeOf</td><td>no</td><td></td></tr>
+<tr><td class="propname">setPrototypeOf</td><td>no</td><td></td></tr>
+<tr><td class="propname">isExtensible</td><td>no</td><td></td></tr>
+<tr><td class="propname">preventExtension</td><td>no</td><td></td></tr>
+<tr><td class="propname">getOwnPropertyDescriptor</td><td>no</td><td></td></tr>
+<tr><td class="propname">defineProperty</td><td>no</td><td></td></tr>
+<tr><td class="propname">has</td><td>no</td><td></td></tr>
+<tr><td class="propname">get</td><td>yes</td><td></td></tr>
+<tr><td class="propname">set</td><td>yes</td><td></td></tr>
+<tr><td class="propname">deleteProperty</td><td>yes</td><td></td></tr>
+<tr><td class="propname">enumerate</td><td>yes</td><td></td></tr>
+<tr><td class="propname">ownKeys</td><td>yes</td><td><code>Object.keys()</code> enumerability check limitation</td></tr>
+<tr><td class="propname">apply</td><td>no</td><td></td></tr>
+<tr><td class="propname">construct</td><td>no</td><td></td></tr>
+</tbody>
+</table>
 
 <p>Limitations include:</p>
 <ul>
-<li>Limited to <code>get</code>, <code>set</code>, <code>deleteProperty</code>
-    traps; ES6 draft allows a lot more, e.g. to interact with properties being
-    called or constructed, enumeration, etc.  This causes odd behavior if you
-    enumerate a proxy object, call
-    <code>Object.defineProperty()</code> with the proxy object as an argument,
-    etc.</li>
+<li>Only about half of the ES6 traps have been implemented.  This causes odd behavior
+    if you e.g. call <code>Object.defineProperty()</code> on a proxy object.</li>
+<li><code>Object.keys()</code> invokes the <code>ownKeys</code> trap, cleans up the trap
+    result to a gap-free string list, but does not check that the property names returned
+    by the trap are enumerable.  <code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>
+    thus currently return the same value for a proxy object implementing the <code>ownKeys</code>
+    trap.</li>
 <li>Proxy revocation feature of ES6 draft is not supported.</li>
 <li>The target and handler objects given to <code>new Proxy()</code> cannot
     be proxy objects themselves.  ES6 poses no such limitation, but Duktape

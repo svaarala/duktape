@@ -1,9 +1,9 @@
-<h2 id="propertyvirtualization">Property virtualization</h2>
+<h1 id="propertyvirtualization">Property virtualization</h1>
 
 <p>This section describes the two different mechanisms Duktape provides
 for interacting with property accesses programmatically.</p>
 
-<h3 id="virtualization-accessors">Ecmascript E5 accessor properties (getters and setters)</h3>
+<h2 id="virtualization-accessors">Ecmascript E5 accessor properties (getters and setters)</h2>
 
 <p>Ecmascript Edition 5 provides <b>accessor properties</b> (also called
 "setters and getters") which allow property read/write operations to be
@@ -45,16 +45,22 @@ and of being widely implemented.  However, they have significant limitations:</p
     which limits their usefulness in some scenarios.</li>
 </ul>
 
-<h3 id="virtualization-proxy-object">Ecmascript E6 (draft) Proxy subset</h3>
+<h2 id="virtualization-proxy-object">Ecmascript E6 (draft) Proxy subset</h2>
 
 <p>In addition to accessors, Duktape provides a subset implementation of the
-Ecmascript E6 (draft) <code>Proxy</code> concept (see
-<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>
-and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>).
-The current subset is limited to <code>get</code>, <code>set</code>, and
-<code>deleteProperty</code> traps.</p>
+Ecmascript E6 (draft) <code>Proxy</code> concept, see:</p>
+<ul>
+<li><a href="#es6-proxy">Proxy object (subset)</a>:
+    discussion of current limitations in Duktape's <code>Proxy</code> implementation.</li>
+<li><a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>:
+    ES6 draft specification for the <code>Proxy</code> object.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>:
+    Mozilla's description of the <code>Proxy</code> implemented in Firefox, contains a lot of examples.</li>
+</ul>
 
-<p>For example, to simply print a line whenever any property is accessed:</p>
+<h3>Examples of get, set, and deleteProperty traps</h3>
+
+<p>To print a line whenever any property is accessed:</p>
 <pre class="ecmascript-code">
 // Underlying plain object.
 var target = { foo: 'bar' };
@@ -207,12 +213,45 @@ conflicting property; see E6 draft Sections 9.5.8, 9.5.9, and 9.5.10 for details
 You can easily avoid any such behaviors by keeping the target object empty and,
 if necessary, backing the virtual properties in an unrelated plain object.</p>
 
-<p>Also see:</p>
-<ul>
-<li><a href="#es6-proxy">Proxy object (subset)</a>:
-    discussion of current limitations in Duktape's <code>Proxy</code> implementation.</li>
-<li><a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-objects">Proxy Objects (E6 draft)</a>:
-    ES6 draft specification for the <code>Proxy</code> object.</li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>:
-    Mozilla's description of the <code>Proxy</code> implemented in Firefox, contains a lot of examples.</li>
-</ul>
+<h3>Examples of enumerate and ownKeys traps</h3>
+
+<p>The <code>enumerate</code> trap is invoked for enumeration
+(<code>for (k in obj) { ... }</code>) while the <code>ownKeys</code> trap is
+invoked by <code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>.</p>
+
+<p>To hide property names beginning with an underscore from enumeration and
+<code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>:</p>
+
+<pre class="ecmascript-code">
+var target = {
+    foo: 1,
+    bar: 2,
+    _quux: 3,
+    _baz: 4
+};
+
+var proxy = new Proxy(target, {
+    enumerate: function (targ) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+
+        return Object.getOwnPropertyNames(targ)
+                     .filter(function (v) { return v[0] !== '_'; });
+    },
+
+    ownKeys: function (targ) {
+        return Object.getOwnPropertyNames(targ)
+                     .filter(function (v) { return v[0] !== '_'; });
+    }
+});
+
+function test() {
+    for (var k in proxy) {
+        print(k);  // prints 'foo' and 'bar'
+    }
+}
+test();
+
+print(Object.keys(proxy));                 // prints 'foo,bar'
+print(Object.getOwnPropertyNames(proxy));  // prints 'foo,bar'
+</pre>
