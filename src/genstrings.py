@@ -483,6 +483,7 @@ es6_string_list = [
 	#mkstr("revocable", es6=True),
 
 	# Proxy trap names
+	mkstr("has", es6=True),
 	mkstr("set", es6=True),
 	mkstr("get", es6=True),
 	mkstr("deleteProperty", es6=True),

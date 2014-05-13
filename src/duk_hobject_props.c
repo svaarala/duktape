@@ -2006,7 +2006,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			duk_hobject *h_target;
 
 			if (duk__proxy_check_prop(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
-				/* -> [ ... func handler ] */
+				/* -> [ ... trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'get' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
 				duk_push_tval(ctx, tv_key);       /* P */
@@ -2040,7 +2040,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 					                 (desc.get == NULL) &&
 					                 !DUK_TVAL_IS_UNDEFINED(tv_hook);
 					if (datadesc_reject || accdesc_reject) {
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy get rejected");
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy 'get' rejected");
 					}
 
 					duk_pop_2(ctx);
@@ -2281,10 +2281,12 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_context *ctx = (duk_context *) thr;
+	duk_tval tv_key_copy;
 	duk_hobject *obj;
 	duk_hstring *key;
+	duk_uint32_t arr_idx;
 	int rc;
-	duk_propdesc dummy;
+	duk_propdesc desc;
 
 	DUK_DDD(DUK_DDDPRINT("hasprop: thr=%p, obj=%p, key=%p (obj -> %!T, key -> %!T)",
 	                     (void *) thr, (void *) tv_obj, (void *) tv_key, tv_obj, tv_key));
@@ -2293,10 +2295,10 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
-
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	/* No need to make a copy of the input duk_tvals here. */
+	DUK_TVAL_SET_TVAL(&tv_key_copy, tv_key);
+	tv_key = &tv_key_copy;
 
 	if (!DUK_TVAL_IS_OBJECT(tv_obj)) {
 		/* Note: unconditional throw */
@@ -2306,23 +2308,73 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	obj = DUK_TVAL_GET_OBJECT(tv_obj);
 	DUK_ASSERT(obj != NULL);
 
-	duk_push_tval(ctx, tv_key);
-	duk_to_string(ctx, -1);
-	key = duk_get_hstring(ctx, -1);
+	/* XXX: fast path for arrays? */
+
+	arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 	DUK_ASSERT(key != NULL);
+	DUK_UNREF(arr_idx);
+
+#if defined(DUK_USE_ES6_PROXY)
+	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+		duk_hobject *h_target;
+		duk_small_int_t tmp_bool;
+
+		/* XXX: the key in 'key in obj' is string coerced before we're called
+		 * (which is the required behavior in E5/E5.1/E6) so the key is a string
+		 * here already.
+		 */
+
+		if (duk__proxy_check_prop(thr, obj, DUK_STRIDX_HAS, tv_key, &h_target)) {
+			/* [ ... key trap handler ] */
+			DUK_DDD(DUK_DDDPRINT("-> proxy object 'has' for key %!T", tv_key));
+			duk_push_hobject(ctx, h_target);  /* target */
+			duk_push_tval(ctx, tv_key);       /* P */
+			duk_call_method(ctx, 2 /*nargs*/);
+			tmp_bool = duk_to_boolean(ctx, -1);
+			if (!tmp_bool) {
+				/* Target object must be checked for a conflicting
+				 * non-configurable property.
+				 */
+
+				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 0 /*push_value*/)) {
+					DUK_DDD(DUK_DDDPRINT("proxy 'has': target has matching property %!O, check for "
+					                     "conflicting property; desc.flags=0x%08x, "
+					                     "desc.get=%p, desc.set=%p",
+					                     key, (int) desc.flags,
+					                     (void *) desc.get, (void *) desc.set));
+					/* XXX: Extensibility check for target uses IsExtensible().  If we
+					 * implemented the isExtensible trap and didn't reject proxies as
+					 * proxy targets, it should be respected here.
+					 */
+					if (!((desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&  /* property is configurable and */
+					      DUK_HOBJECT_HAS_EXTENSIBLE(h_target))) {          /* ... target is extensible */
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy 'has' rejected");
+					}
+				}
+			}
+
+			duk_pop_2(ctx);  /* [ key trap_result ] -> [] */
+			return tmp_bool;
+		}
+
+		obj = h_target;  /* resume check from proxy target */
+	}
+#endif  /* DUK_USE_ES6_PROXY */
 
 	/* XXX: inline into a prototype walking loop? */
 
-	rc = duk__get_property_desc(thr, obj, key, &dummy, 0);  /* push_value = 0 */
+	rc = duk__get_property_desc(thr, obj, key, &desc, 0);  /* push_value = 0 */
 
-	duk_pop(ctx);  /* [key] -> [] */
+	duk_pop(ctx);  /* [ key ] -> [] */
 	return rc;
 }
 
 /*
  *  HASPROP variant used internally.
  *
- *  This primitive must never throw an error, caller's rely on this.
+ *  This primitive must never throw an error, callers rely on this.
+ *  Does not implement proxy behavior: if applied to a proxy object,
+ *  returns key existence on the proxy object itself.
  */
 
 int duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
@@ -2337,7 +2389,6 @@ int duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key
 
 	return duk__get_property_desc(thr, obj, key, &dummy, 0);  /* push_value = 0 */
 }
-
 
 /*
  *  Helper: handle Array object 'length' write which automatically
@@ -2785,10 +2836,10 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(orig))) {
 			duk_hobject *h_target;
-			int tmp_bool;
+			duk_small_int_t tmp_bool;
 
 			if (duk__proxy_check_prop(thr, orig, DUK_STRIDX_SET, tv_key, &h_target)) {
-				/* -> [ ... func handler ] */
+				/* -> [ ... trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'set' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
 				duk_push_tval(ctx, tv_key);       /* P */
@@ -2826,7 +2877,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 					                 !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
 					                 (desc.set == NULL);
 					if (datadesc_reject || accdesc_reject) {
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy set rejected");
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy 'set' rejected");
 					}
 
 					duk_pop_2(ctx);
@@ -3625,12 +3676,12 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
 			duk_hobject *h_target;
-			int tmp_bool;
+			duk_small_int_t tmp_bool;
 
 			/* Note: proxy handling must happen before key is string coerced. */
 
 			if (duk__proxy_check_prop(thr, obj, DUK_STRIDX_DELETE_PROPERTY, tv_key, &h_target)) {
-				/* -> [ ... func handler ] */
+				/* -> [ ... trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
 				duk_push_tval(ctx, tv_key);       /* P */
@@ -3658,7 +3709,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 					desc_reject = !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE);
 					if (desc_reject) {
 						/* unconditional */
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy deleteProperty rejected");
+						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "proxy 'deleteProperty' rejected");
 					}
 				}
 				rc = 1;  /* success */

@@ -1067,6 +1067,14 @@ int duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	 *  lval is already a string).
 	 */
 
+	/* XXX: The ES5/5.1/6 specifications require that the key in 'key in obj'
+	 * must be string coerced before the internal HasProperty() algorithm is
+	 * invoked.  A fast path skipping coercion could be safely implemented for
+	 * numbers (as number-to-string coercion has no side effects).  For ES6
+	 * proxy behavior, the trap 'key' argument must be in a string coerced
+	 * form (which is a shame).
+	 */
+
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
 	(void) duk_require_hobject(ctx, -1);  /* TypeError if rval not object */
