@@ -58,7 +58,7 @@ Ecmascript E6 (draft) <code>Proxy</code> concept, see:</p>
     Mozilla's description of the <code>Proxy</code> implemented in Firefox, contains a lot of examples.</li>
 </ul>
 
-<h3>Examples of get, set, and deleteProperty traps</h3>
+<h3>Examples of has, get, set, and deleteProperty traps</h3>
 
 <p>To print a line whenever any property is accessed:</p>
 <pre class="ecmascript-code">
@@ -67,6 +67,11 @@ var target = { foo: 'bar' };
 
 // Handler table, provides traps for interaction (can be modified on-the-fly).
 var handler = {
+    has: function (targ, key) {
+        print('has called for key=' + key);
+        return key in targ;  // return unmodified existence status
+    }
+
     get: function (targ, key, recv) {
         print('get called for key=' + key);
         return targ[key];  // return unmodified value
@@ -89,6 +94,7 @@ var handler = {
 var proxy = new Proxy(target, handler);
 
 // Proxy object is then accessed normally.
+print('foo' in proxy);
 proxy.foo = 321;
 print(proxy.foo);
 delete proxy.foo;
@@ -98,7 +104,8 @@ delete proxy.foo;
 underlying object (which is quite tedious otherwise):</p>
 <pre class="ecmascript-code">
 var proxy = new Proxy(target, {
-    // get is omitted: reads go through to the target object automatically
+    // has and get are omitted: existence checks and reads go through to the
+    // target object automatically
 
     // set returns false: rejects write
     set: function () { return false; },
@@ -112,9 +119,10 @@ var proxy = new Proxy(target, {
 possible otherwise):</p>
 <pre class="ecmascript-code">
 var proxy = new Proxy(target, {
+    has: function() { throw new TypeError('has not allowed'); },
     get: function() { throw new TypeError('read not allowed'); }
 
-    // set and deleteProperty are omitted: write/delete operations
+    // set and deleteProperty are omitted: set/delete operations
     // are allowed and go through to the target automatically
 });
 </pre>
@@ -131,10 +139,22 @@ var target = { foo: 'bar' };
  *  - all string values are uppercased when read
  *
  *  - property names beginning with an underscore are read/write/delete
- *    protected in a few different ways
+ *    protected in a few different ways, and their existence is denied
  */
 
 var handler = {
+    has: function (targ, key) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+
+        if (typeof key === 'string' &amp;&amp; key[0] === '_') {
+            // pretend that property doesn't exist
+            return false;
+        }
+
+        return key in targ;
+    },
+
     get: function (targ, key, recv) {
         // this binding: handler table
         // targ: underlying plain object (= target, above)
@@ -209,7 +229,7 @@ var handler = {
 
 <p>The ES6 draft semantics reject some property accesses even if the trap would
 allow it.  This happens if the proxy's target object has a non-configurable
-conflicting property; see E6 draft Sections 9.5.8, 9.5.9, and 9.5.10 for details.
+conflicting property; see E6 draft Sections 9.5.7, 9.5.8, 9.5.9, and 9.5.10 for details.
 You can easily avoid any such behaviors by keeping the target object empty and,
 if necessary, backing the virtual properties in an unrelated plain object.</p>
 
