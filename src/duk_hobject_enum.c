@@ -478,7 +478,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	/* Enumeration keys are checked against the enumeration target (to see
 	 * that they still exist).  In the proxy enumeration case _target will
 	 * be the proxy, and checking key existence against the proxy is not
-	 * done at the moment.
+	 * required (or sensible, as the keys may be fully virtual).
 	 */
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
 	enum_target = duk_require_hobject(ctx, -1);
