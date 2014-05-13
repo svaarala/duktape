@@ -2281,6 +2281,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 
 int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_context *ctx = (duk_context *) thr;
+	duk_tval tv_key_copy;
 	duk_hobject *obj;
 	duk_hstring *key;
 	duk_uint32_t arr_idx;
@@ -2296,9 +2297,8 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	DUK_ASSERT(tv_key != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	DUK_UNREF(arr_idx);
-
-	/* No need to make a copy of the input duk_tvals here. */
+	DUK_TVAL_SET_TVAL(&tv_key_copy, tv_key);
+	tv_key = &tv_key_copy;
 
 	if (!DUK_TVAL_IS_OBJECT(tv_obj)) {
 		/* Note: unconditional throw */
@@ -2307,6 +2307,12 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	}
 	obj = DUK_TVAL_GET_OBJECT(tv_obj);
 	DUK_ASSERT(obj != NULL);
+
+	/* XXX: fast path for arrays? */
+
+	arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+	DUK_ASSERT(key != NULL);
+	DUK_UNREF(arr_idx);
 
 #if defined(DUK_USE_ES6_PROXY)
 	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
@@ -2319,19 +2325,16 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		 */
 
 		if (duk__proxy_check_prop(thr, obj, DUK_STRIDX_HAS, tv_key, &h_target)) {
-			/* [ ... trap handler ] */
+			/* [ ... key trap handler ] */
 			DUK_DDD(DUK_DDDPRINT("-> proxy object 'has' for key %!T", tv_key));
 			duk_push_hobject(ctx, h_target);  /* target */
 			duk_push_tval(ctx, tv_key);       /* P */
 			duk_call_method(ctx, 2 /*nargs*/);
 			tmp_bool = duk_to_boolean(ctx, -1);
-			duk_pop(ctx);
 			if (!tmp_bool) {
 				/* Target object must be checked for a conflicting
 				 * non-configurable property.
 				 */
-				arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
-				DUK_ASSERT(key != NULL);
 
 				if (duk__get_own_property_desc_raw(thr, h_target, key, arr_idx, &desc, 0 /*push_value*/)) {
 					DUK_DDD(DUK_DDDPRINT("proxy 'has': target has matching property %!O, check for "
@@ -2350,6 +2353,7 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 				}
 			}
 
+			duk_pop_2(ctx);  /* [ key trap_result ] -> [] */
 			return tmp_bool;
 		}
 
@@ -2357,16 +2361,11 @@ int duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	}
 #endif  /* DUK_USE_ES6_PROXY */
 
-	duk_push_tval(ctx, tv_key);
-	duk_to_string(ctx, -1);
-	key = duk_get_hstring(ctx, -1);
-	DUK_ASSERT(key != NULL);
-
 	/* XXX: inline into a prototype walking loop? */
 
 	rc = duk__get_property_desc(thr, obj, key, &desc, 0);  /* push_value = 0 */
 
-	duk_pop(ctx);  /* [key] -> [] */
+	duk_pop(ctx);  /* [ key ] -> [] */
 	return rc;
 }
 
