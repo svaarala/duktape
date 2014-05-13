@@ -307,8 +307,8 @@ Planned
   from ES6 draft, to improve internal prototype handling
 
 * Add proxy objects borrowed from ES6 draft to allow property virtualization,
-  subset limited to the following traps: get, set, deleteProperty, enumerate,
-  ownKeys
+  subset limited to the following traps: has, get, set, deleteProperty,
+  enumerate, ownKeys
 
 * Serialize negative zero as '-0' in JSONX and JSONC
 
