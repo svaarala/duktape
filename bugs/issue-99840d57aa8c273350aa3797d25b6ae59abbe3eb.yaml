@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: "Proxy: enumeration semantics"
+title: add ES6 proxy 'has' trap
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2014-04-28 15:16:38.419044 Z
+creation_time: 2014-05-11 19:17:05.351801 Z
 references: []
 
-id: 055da218c71466682cc9ef272b85e624f905e38a
+id: 99840d57aa8c273350aa3797d25b6ae59abbe3eb
 log_events: 
-- - 2014-04-28 15:16:38.594968 Z
+- - 2014-05-11 19:17:05.463600 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-05-13 22:15:26.206741 Z
+- - 2014-05-13 22:15:05.419822 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

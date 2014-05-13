@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: optional bytecode load/save primitives
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-13 20:41:40.423599 Z
+references: []
+
+id: b39a1fec201f4a846d611fff8735f52388b9f13b
+log_events: 
+- - 2014-05-13 20:41:40.574073 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-05-13 20:42:49.555987 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - Also make the compiler configurable, to reduce footprint.

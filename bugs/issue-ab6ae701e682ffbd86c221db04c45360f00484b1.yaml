@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update to rev24 ES6 draft
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-11 18:02:33.799212 Z
+references: []
+
+id: ab6ae701e682ffbd86c221db04c45360f00484b1
+log_events: 
+- - 2014-05-11 18:02:33.918440 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
