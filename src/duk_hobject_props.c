@@ -263,15 +263,23 @@ static int duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint
  */
 
 #if defined(DUK_USE_ES6_PROXY)
-static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_funcname, duk_tval *tv_key, duk_hobject **out_target) {
-	duk_context *ctx = (duk_context *) thr;
+duk_small_int_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler) {
 	duk_tval *tv_target;
 	duk_tval *tv_handler;
+	duk_hobject *h_target;
 	duk_hobject *h_handler;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(out_target != NULL);
+	DUK_ASSERT(out_handler != NULL);
+
+	/* Caller doesn't need to check exotic proxy behavior (but does so for
+	 * some fast paths).
+	 */
+	if (DUK_LIKELY(!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+		return 0;
+	}
 
 	tv_handler = duk_hobject_find_existing_entry_tval_ptr(obj, DUK_HTHREAD_STRING_INT_HANDLER(thr));
 	if (!tv_handler) {
@@ -281,6 +289,7 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_handler));
 	h_handler = DUK_TVAL_GET_OBJECT(tv_handler);
 	DUK_ASSERT(h_handler != NULL);
+	*out_handler = h_handler;
 	tv_handler = NULL;  /* avoid issues with relocation */
 
 	tv_target = duk_hobject_find_existing_entry_tval_ptr(obj, DUK_HTHREAD_STRING_INT_TARGET(thr));
@@ -289,9 +298,30 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
-	*out_target = DUK_TVAL_GET_OBJECT(tv_target);
-	DUK_ASSERT(*out_target != NULL);
+	h_target = DUK_TVAL_GET_OBJECT(tv_target);
+	DUK_ASSERT(h_target != NULL);
+	*out_target = h_target;
 	tv_target = NULL;  /* avoid issues with relocation */
+
+	return 1;
+}
+#endif
+
+#if defined(DUK_USE_ES6_PROXY)
+static duk_small_int_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, duk_small_int_t stridx_trap, duk_tval *tv_key, duk_hobject **out_target) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_hobject *h_handler;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(tv_key != NULL);
+	DUK_ASSERT(out_target != NULL);
+
+	if (!duk_hobject_proxy_check(thr, obj, out_target, &h_handler)) {
+		return 0;
+	}
+	DUK_ASSERT(*out_target != NULL);
+	DUK_ASSERT(h_handler != NULL);
 
 	/* XXX: At the moment Duktape accesses internal keys like _finalizer using a
 	 * normal property set/get which would allow a proxy handler to interfere with
@@ -327,10 +357,11 @@ static duk_small_int_t duk__proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 
 	duk_require_stack(ctx, DUK__VALSTACK_PROXY_LOOKUP);
 	duk_push_hobject(ctx, h_handler);
-	if (duk_get_prop_stridx(ctx, -1, stridx_funcname)) {
-		duk_remove(ctx, -2);
-		duk_push_hobject(ctx, h_handler);
-		/* stack prepped for func call: [ ... func handler ] */
+	if (duk_get_prop_stridx(ctx, -1, stridx_trap)) {
+		/* -> [ ... handler trap ] */
+		duk_insert(ctx, -2);  /* -> [ ... trap handler ] */
+
+		/* stack prepped for func call: [ ... trap handler ] */
 		return 1;
 	} else {
 		duk_pop_2(ctx);
@@ -1974,7 +2005,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(curr))) {
 			duk_hobject *h_target;
 
-			if (duk__proxy_check(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
+			if (duk__proxy_check_prop(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'get' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
@@ -2756,7 +2787,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			duk_hobject *h_target;
 			int tmp_bool;
 
-			if (duk__proxy_check(thr, orig, DUK_STRIDX_SET, tv_key, &h_target)) {
+			if (duk__proxy_check_prop(thr, orig, DUK_STRIDX_SET, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'set' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
@@ -3598,7 +3629,7 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
 
 			/* Note: proxy handling must happen before key is string coerced. */
 
-			if (duk__proxy_check(thr, obj, DUK_STRIDX_DELETE_PROPERTY, tv_key, &h_target)) {
+			if (duk__proxy_check_prop(thr, obj, DUK_STRIDX_DELETE_PROPERTY, tv_key, &h_target)) {
 				/* -> [ ... func handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */

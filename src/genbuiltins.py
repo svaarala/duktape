@@ -320,7 +320,7 @@ bi_object_constructor = {
 		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_getprototype_shared',				'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
 		{ 'name': 'setPrototypeOf',		'native': 'duk_bi_object_setprototype_shared',				'length': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # ES6
 		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_bi_object_constructor_get_own_property_descriptor',	'length': 2 },
-		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_get_own_property_names', 		'length': 1 },
+		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_keys_shared',	 		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },
 		{ 'name': 'create',			'native': 'duk_bi_object_constructor_create',				'length': 2 },
 		{ 'name': 'defineProperty',		'native': 'duk_bi_object_constructor_define_property',			'length': 3 },
 		{ 'name': 'defineProperties',		'native': 'duk_bi_object_constructor_define_properties',		'length': 2 },
@@ -330,7 +330,7 @@ bi_object_constructor = {
 		{ 'name': 'isSealed',			'native': 'duk_bi_object_constructor_is_sealed_frozen_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },
 		{ 'name': 'isFrozen',			'native': 'duk_bi_object_constructor_is_sealed_frozen_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
 		{ 'name': 'isExtensible',		'native': 'duk_bi_object_constructor_is_extensible',			'length': 1 },
-		{ 'name': 'keys',			'native': 'duk_bi_object_constructor_keys',				'length': 1 },
+		{ 'name': 'keys',			'native': 'duk_bi_object_constructor_keys_shared',			'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
 	],
 }
 

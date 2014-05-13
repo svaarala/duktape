@@ -138,13 +138,6 @@ duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx
 	return duk_hobject_object_get_own_property_descriptor(ctx);
 }
 
-duk_ret_t duk_bi_object_constructor_get_own_property_names(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 1);
-	(void) duk_require_hobject(ctx, 0);
-	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_INCLUDE_NONENUMERABLE |
-	                                            DUK_ENUM_OWN_PROPERTIES_ONLY);
-}
-
 duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 	duk_tval *tv;
 	duk_hobject *proto = NULL;
@@ -256,10 +249,99 @@ duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_object_constructor_keys(duk_context *ctx) {
+/* Shared helper for Object.getOwnPropertyNames() and Object.keys().
+ * Magic: 0=getOwnPropertyNames, 1=Object.keys.
+ */
+duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *obj;
+#if defined(DUK_USE_ES6_PROXY)
+	duk_hobject *h_proxy_target;
+	duk_hobject *h_proxy_handler;
+	duk_hobject *h_trap_result;
+	duk_uint32_t i, len, idx;
+#endif
+	duk_small_int_t enum_flags;
+
 	DUK_ASSERT_TOP(ctx, 1);
-	(void) duk_require_hobject(ctx, 0);
-	return duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY);
+
+	obj = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(obj != NULL);
+	DUK_UNREF(obj);
+
+#if defined(DUK_USE_ES6_PROXY)
+	if (DUK_LIKELY(!duk_hobject_proxy_check(thr,
+	                                        obj,
+	                                        &h_proxy_target,
+	                                        &h_proxy_handler))) {
+		goto skip_proxy;
+	}
+
+	duk_push_hobject(ctx, h_proxy_handler);
+	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_OWN_KEYS)) {
+		/* Careful with reachability here: don't pop 'obj' before pushing
+		 * proxy target.
+		 */
+		DUK_DDD(DUK_DDDPRINT("no ownKeys trap, get keys of target instead"));
+		duk_pop_2(ctx);
+		duk_push_hobject(ctx, h_proxy_target);
+		duk_replace(ctx, 0);
+		DUK_ASSERT_TOP(ctx, 1);
+		goto skip_proxy;
+	}
+
+	/* [ obj handler trap ] */
+	duk_insert(ctx, -2);
+	duk_push_hobject(ctx, h_proxy_target);  /* -> [ obj trap handler target ] */
+	duk_call_method(ctx, 1 /*nargs*/);      /* -> [ obj trap_result ] */
+	h_trap_result = duk_require_hobject(ctx, -1);
+	DUK_UNREF(h_trap_result);
+
+	len = (duk_uint32_t) duk_get_length(ctx, -1);
+	idx = 0;
+	duk_push_array(ctx);
+	for (i = 0; i < len; i++) {
+		/* [ obj trap_result res_arr ] */
+		if (duk_get_prop_index(ctx, -2, i) && duk_is_string(ctx, -1)) {
+			/* XXX: for Object.keys() we should check enumerability of key */
+			/* [ obj trap_result res_arr propname ] */
+			duk_put_prop_index(ctx, -2, idx);
+			idx++;
+		} else {
+			duk_pop(ctx);
+		}
+	}
+
+	/* XXX: for Object.keys() the [[OwnPropertyKeys]] result (trap result)
+	 * should be filtered so that only enumerable keys remain.  Enumerability
+	 * should be checked with [[GetOwnProperty]] on the original object
+	 * (i.e., the proxy in this case).  If the proxy has a getOwnPropertyDescriptor
+	 * trap, it should be triggered for every property.  If the proxy doesn't have
+	 * the trap, enumerability should be checked against the target object instead.
+	 * We don't do any of this now, so Object.keys() and Object.getOwnPropertyNames()
+	 * return the same result now for proxy traps.  We still do clean up the trap
+	 * result, so that Object.keys() and Object.getOwnPropertyNames() will return a
+	 * clean array of strings without gaps.
+	 */
+	return 1;
+
+ skip_proxy:
+#endif  /* DUK_USE_ES6_PROXY */
+
+	DUK_ASSERT_TOP(ctx, 1);
+
+	if (duk_get_magic(ctx)) {
+		/* Object.keys */
+		enum_flags = DUK_ENUM_OWN_PROPERTIES_ONLY |
+		             DUK_ENUM_NO_PROXY_BEHAVIOR;
+	} else {
+		/* Object.getOwnPropertyNames */
+		enum_flags = DUK_ENUM_INCLUDE_NONENUMERABLE |
+		             DUK_ENUM_OWN_PROPERTIES_ONLY |
+		             DUK_ENUM_NO_PROXY_BEHAVIOR;
+	}
+
+	return duk_hobject_get_enumerated_keys(ctx, enum_flags);
 }
 
 duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx) {
