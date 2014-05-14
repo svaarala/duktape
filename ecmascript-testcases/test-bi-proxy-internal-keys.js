@@ -19,7 +19,7 @@ function test1() {
     var target = {};
     var proxy = new Proxy(target, {
         get: function(targ, key, receiver) {
-            print('get for key:', Duktape.enc('jsonx', key));
+            print('get for key:', Duktape.enc('jx', key));
             return targ[key];
         }
     });
@@ -53,7 +53,7 @@ function test2() {
     var target = {};
     var proxy = new Proxy(target, {
         set: function(targ, key, val, receiver) {
-            print('set for key:', Duktape.enc('jsonx', key));
+            print('set for key:', Duktape.enc('jx', key));
             targ[key] = val;
             return true;
         }

@@ -23,7 +23,7 @@ function randomPropTest() {
     for (i = 0; i < 10000000; i++) {
         if (i % 1000000 === 0) {
             print(i);
-            //print(Duktape.enc('jsonx', obj));
+            //print(Duktape.enc('jx', obj));
         }
 
         k = Math.floor(Math.random() * 10000);

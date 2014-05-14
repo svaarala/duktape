@@ -20,7 +20,7 @@ function objDump(obj) {
     // If no such trap exists, enumerable property names of the *proxy*
     // object are listed (not the proxy target).
     try {
-        print('Object.keys:', Duktape.enc('jsonx', Object.keys(obj)));
+        print('Object.keys:', Duktape.enc('jx', Object.keys(obj)));
     } catch (e) {
         print('Object.keys:', e.name);
     }
@@ -29,7 +29,7 @@ function objDump(obj) {
     // trap.  If no such trap exists, property names (enumerable or not)
     // of the *proxy* object are listed (not the proxy target).
     try {
-        print('Object.getOwnPropertyNames:', Duktape.enc('jsonx', Object.getOwnPropertyNames(obj)));
+        print('Object.getOwnPropertyNames:', Duktape.enc('jx', Object.getOwnPropertyNames(obj)));
     } catch (e) {
         print('Object.getOwnPropertyNames:', e.name);
     }
@@ -236,7 +236,7 @@ function trapResultTest() {
         };
         var proxy;
 
-        print('fake trap result:', Duktape.enc('jsonx', trapResult))
+        print('fake trap result:', Duktape.enc('jx', trapResult))
 
         proxy = new Proxy(target, {
             enumerate: function (targ) { return trapResult; },
