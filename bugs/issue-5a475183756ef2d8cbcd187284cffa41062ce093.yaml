@@ -3,7 +3,7 @@ title: option to memzero freed memory blocks
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -42,3 +42,7 @@ log_events:
     then called the user function.  When zeroing is not in use, the size argument
     can be dropped during compilation so that call site size does not increase
     unnecessarily.
+- - 2014-05-14 17:05:31.156827 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
+  - ""
