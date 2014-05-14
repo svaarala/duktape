@@ -8,16 +8,16 @@ provides:
 * The standard, very strict JSON encoding and decoding required by the
   Ecmascript standard.
 
-* An extended custom format (JSONX) which encodes all value types and is
+* An extended custom format (JX) which encodes all value types and is
   optimized for readability.  The custom encodings parse back into proper
   values (except for function values).  This format is most useful for
   dumping values, logging, and the like.  The format is not JSON compatible
   but rather JSON-like.
 
-* An extended compatible format (JSONC) which also encodes all value types
+* An extended compatible format (JC) which also encodes all value types
   into standard JSON.  A standard JSON parser can parse the result but
   special values need to be revived manually.  The result is not as
-  readable as JSONX, but can be parsed by other JSON implementations.
+  readable as JX, but can be parsed by other JSON implementations.
 
 Overview of JSON
 ================
@@ -55,9 +55,9 @@ Duktape also has custom types not supported by Ecmascript: buffers and
 pointers.  These are now skipped when encoding (just like function objects).
 There is currently no syntax for expressing them for parsing.
 
-The custom JSONX and JSONC formats provide support for encoding and decoding
+The custom JX and JC formats provide support for encoding and decoding
 "undefined" values, function values, special numbers like NaN, buffer values,
-and pointer values.  Separate API entrypoints are used for JSONX and JSONC
+and pointer values.  Separate API entrypoints are used for JX and JC
 because JSON.parse() and JSON.stringify() are intended to be strict interfaces.
 
 See also:
@@ -184,7 +184,7 @@ Handling codepoints above U+FFFF
 Codepoints above U+FFFF don't occur in standard Ecmascript string values,
 so there is no mandatory behavior when they are encountered during JSON
 serialization.  The current solution is to encode them into plain string
-data (this matches JSONC behavior)::
+data (this matches JC behavior)::
 
   "foo bar: U+12345678"
 
@@ -438,11 +438,11 @@ JSONBooleanLiteral
 
 Trivially the same as BooleanLiteral.
 
-Extended custom encoding (JSONX)
-================================
+Extended custom encoding (JX)
+=============================
 
-The extended custom encoding format (JSONX, controlled by the define
-``DUK_USE_JSONX``) extends the JSON syntax in an incompatible way, with
+The extended custom encoding format (JX, controlled by the define
+``DUK_USE_JX``) extends the JSON syntax in an incompatible way, with
 the goal of serializing as many values as faithfully and readably as
 possible, with as many values as possible parsing back into an accurate
 representation of the original value.  All results are printable ASCII
@@ -528,10 +528,10 @@ an error.
 ASCII only output
 -----------------
 
-The output for JSONX encoding is always ASCII only.  The standard
-Ecmascript JSON encoding retains Unicode characters outside the ASCII
-range as is (deviating from this would be non-compliant) which is often
-awkward in embedded environments.
+The output for JX encoding is always ASCII only.  The standard Ecmascript
+JSON encoding retains Unicode characters outside the ASCII range as is
+(deviating from this would be non-compliant) which is often awkward in
+embedded environments.
 
 The codepoint U+007F, normally not escaped by Ecmascript JSON functions,
 is also escaped for better compatibility.
@@ -565,11 +565,11 @@ improving readability a great deal.
 When parsing, keys matching the identifier format are of course accepted
 both with and without quotes.
 
-Compatible custom encoding (JSONC)
-==================================
+Compatible custom encoding (JC)
+===============================
 
-The compatible custom encoding format (JSONC, controlled by the define
-``DUK_USE_JSONC``) is intended to provide a JSON interface which is more
+The compatible custom encoding format (JC, controlled by the define
+``DUK_USE_JC``) is intended to provide a JSON interface which is more
 useful than the standard Ecmascript one, while producing JSON values
 compatible with the Ecmascript and other JSON parsers.
 
@@ -635,20 +635,19 @@ specific form, using the format ``%p``, but wrapped in a marker table::
 
   {"_ptr":"null"}
 
-Note that compared to JSONX, the difference is that there are no surrounding
+Note that compared to JX, the difference is that there are no surrounding
 parentheses outside the pointer value.
 
 ASCII only output
 -----------------
 
-Like JSONX, the output for JSONC encoding is always ASCII only, and the
-codepoint U+007F is also escaped.
+Like JX, the output for JC encoding is always ASCII only, and the codepoint
+U+007F is also escaped.
 
 Key quoting
 -----------
 
-Unlike JSONX, keys are always quoted to remain compatible with standard
-JSON.
+Unlike JX, keys are always quoted to remain compatible with standard JSON.
 
 Custom formats used by other implementations
 ============================================
@@ -744,7 +743,7 @@ Future work
 Hex constants
 -------------
 
-Parse hex constants in JSONX::
+Parse hex constants in JX::
 
   { foo: 0x1234 }
 
@@ -769,11 +768,11 @@ Serialization depth limit
 Allow caller to impose a serialization depth limit.  Attempt to go too
 deep into object structure needs some kind of marker in the output, e.g.::
 
-  // JSONX
+  // JX
   { foo: { bar: { quux: ... } } }
   { foo: { bar: { quux: {_limit:true} } } }
 
-  // JSONC
+  // JC
   { foo: { bar: { quux: {"_limit":true} } } }
 
 Serialization size limit
@@ -828,12 +827,11 @@ Currently RegExps serialize quite poorly::
   duk> JSON.stringify(/foo/)
   = {}
 
-Automatic revival of special values when parsing JSONC
-------------------------------------------------------
+Automatic revival of special values when parsing JC
+---------------------------------------------------
 
 It would be nice to have an option for reviving special values parsed
-from JSONC data.  With this, JSONC and JSONX formats would round trip
-equally well.
+from JC data.  With this, JC and JX formats would round trip equally well.
 
 Expose encode/decode primitives in a more low level manner
 ----------------------------------------------------------

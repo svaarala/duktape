@@ -148,19 +148,19 @@ objects.
 Lazy formatting is easily achievable by using the ``toLogString()`` method.
 The simplest but not very efficient approach is::
 
-  function lazyJsonx1(obj) {
-    return { toLogString: function() { return Duktape.enc('jsonx', obj); } };
+  function lazyJx1(obj) {
+    return { toLogString: function() { return Duktape.enc('jx', obj); } };
   }
 
-  logger.debug('complex object:', lazyJsonx1(obj));
+  logger.debug('complex object:', lazyJx1(obj));
 
 One can use ``bind()`` for the same effect (in this particular case)::
 
-  function lazyJsonx2(obj) {
-    return { toLogString: Duktape.bind(null, 'jsonx', obj) };
+  function lazyJx2(obj) {
+    return { toLogString: Duktape.bind(null, 'jx', obj) };
   }
 
-  logger.debug('complex object:', lazyJsonx2(obj));
+  logger.debug('complex object:', lazyJx2(obj));
 
 Creating a function instance per lazy-logged value is quite expensive.
 Because the ``toLogString()`` is called as a method, lazy values can
@@ -170,18 +170,18 @@ inherit from a prototype which is reasonably efficient::
     this.v = val;
   }
   LazyValue.prototype.toLogString = function () {
-    return Duktape.enc('jsonx', this.v);
+    return Duktape.enc('jx', this.v);
   }
-  function lazyJsonx3(val) {
+  function lazyJx3(val) {
     // Per lazy value creation, only creates an object with one property.
     return new LazyValue(val);
   }
 
-  logger.debug('complex object:', lazyJsonx3(obj));
+  logger.debug('complex object:', lazyJx3(obj));
 
 Lazy formatting can also be done inline, though not very readably::
 
-  logger.debug('data:', { toLogString: function() { return Duktape.enc('jsonx', data); } });
+  logger.debug('data:', { toLogString: function() { return Duktape.enc('jx', data); } });
 
 Customizing logging
 ===================
@@ -249,9 +249,8 @@ Future work
 Format all value types in a useful manner by default
 ----------------------------------------------------
 
-Like JSONX, the logger should write useful log entries for all available
-value types by default.  Currently this is not the case for e.g. buffer
-values.
+Like JX, the logger should write useful log entries for all available value
+types by default.  Currently this is not the case for e.g. buffer values.
 
 Reduce memory churn
 -------------------
@@ -284,7 +283,7 @@ or the final writer function.
 Buffer formatting
 -----------------
 
-Buffer data should maybe be formatted in hex encoded form (like JSONX does).
+Buffer data should maybe be formatted in hex encoded form (like JX does).
 Since buffers are plain objects, they don't currently go through the formatter,
 but that would be easy to change.
 
