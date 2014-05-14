@@ -41,10 +41,10 @@ EventLoop = {
 EventLoop.dumpState = function() {
     print('TIMER STATE:');
     this.timers.forEach(function(t) {
-        print('    ' + Duktape.enc('jsonx', t));
+        print('    ' + Duktape.enc('jx', t));
     });
     if (this.expiring) {
-        print('    EXPIRING: ' + Duktape.enc('jsonx', this.expiring));
+        print('    EXPIRING: ' + Duktape.enc('jx', this.expiring));
     }
 }
 
@@ -245,7 +245,7 @@ EventLoop.run = function() {
             poll_set[fd] = { events: POLLOUT, revents: 0 };
             poll_count++;
         }
-        //print(new Date(), 'poll_set IN:', Duktape.enc('jsonx', poll_set));
+        //print(new Date(), 'poll_set IN:', Duktape.enc('jx', poll_set));
 
         /*
          *  Wait timeout for timer closest to expiry.  Since the poll
@@ -280,7 +280,7 @@ EventLoop.run = function() {
          *  next round.
          */
 
-        //print(new Date(), 'poll_set OUT:', Duktape.enc('jsonx', poll_set));
+        //print(new Date(), 'poll_set OUT:', Duktape.enc('jx', poll_set));
         for (fd in poll_set) {
             t = poll_set[fd];
             rev = t.revents;
@@ -289,7 +289,7 @@ EventLoop.run = function() {
                 cb = this.socketReading[fd];
                 if (cb) {
                     data = Socket.read(fd);  // no size control now
-                    //print('READ', Duktape.enc('jsonx', data));
+                    //print('READ', Duktape.enc('jx', data));
                     if (data.length === 0) {
                         //print('zero read for fd ' + fd + ', closing forcibly');
                         rc = Socket.close(fd);  // ignore result
@@ -302,7 +302,7 @@ EventLoop.run = function() {
                     cb = this.socketListening[fd];
                     if (cb) {
                         acc_res = Socket.accept(fd);
-                        //print('ACCEPT:', Duktape.enc('jsonx', acc_res));
+                        //print('ACCEPT:', Duktape.enc('jx', acc_res));
                         cb(acc_res.fd, acc_res.addr, acc_res.port);
                     } else {
                         //print('UNKNOWN');
