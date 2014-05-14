@@ -591,8 +591,8 @@ duk_string_list = [
 	mkstr("dec", custom=True),
 	mkstr("hex", custom=True),      # enc/dec alg
 	mkstr("base64", custom=True),   # enc/dec alg
-	mkstr("jsonx", custom=True),    # enc/dec alg
-	mkstr("jsonc", custom=True),    # enc/dec alg
+	mkstr("jx", custom=True),       # enc/dec alg
+	mkstr("jc", custom=True),       # enc/dec alg
 	mkstr("compact", custom=True),
 
 	# Buffer constructor
