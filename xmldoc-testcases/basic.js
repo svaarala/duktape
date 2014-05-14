@@ -23,6 +23,6 @@ print(doc)
 
 print('=== loop over "foo" children')
 doc.eachChild(function (x) {
-    print(Duktape.enc('jsonx', x));
+    print(Duktape.enc('jx', x));
     print(x);
 });
