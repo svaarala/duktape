@@ -318,6 +318,10 @@ Planned
 * Rename Duktape.errcreate and Duktape.errthrow to Duktape.errCreate and
   Duktape.errThrow for naming consistency
 
+* Rename Duktape's custom JSONX format to avoid confusion with JSONx
+  (XML encoding for JSON); new names are JX and JC ('jx' and 'jc' in APIs,
+  DUK_OPT_NO_JX and DUK_OPT_NO_JC in feature options)
+
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings; this also improves C++ build

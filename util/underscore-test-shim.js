@@ -97,13 +97,13 @@ var notStrictEqual = function(x, y, msg) {
 var deepEqual = function(x, y, msg) {
     // FIXME: incorrect as key ordering matters, but close enough maybe?
     assert_count++;
-    handleResult(Duktape.enc('jsonx', x) === Duktape.enc('jsonx', y), msg);
+    handleResult(Duktape.enc('jx', x) === Duktape.enc('jx', y), msg);
 };
 
 var notDeepEqual = function(x, y, msg) {
     // FIXME: incorrect as key ordering matters, but close enough maybe?
     assert_count++;
-    handleResult(Duktape.enc('jsonx', x) !== Duktape.enc('jsonx', y), msg);
+    handleResult(Duktape.enc('jx', x) !== Duktape.enc('jx', y), msg);
 };
 
 var raises = function(fn, expect_err, msg) {

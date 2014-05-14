@@ -53,8 +53,8 @@ does not block.</p>
 <tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
 <tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
 <tr><td class="propname">fin</td><td>Set or get finalizer of an object.</td></tr>
-<tr><td class="propname">enc</td><td>Encode a value (hex, base-64, JSONX, JSONC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
-<tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JSONX, JSONC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
+<tr><td class="propname">enc</td><td>Encode a value (hex, base-64, JX, JC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
+<tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JX, JC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
 <tr><td class="propname">line</td><td>Get current line number.</td></tr>
 <tr><td class="propname">act</td><td>Get information about call stack entry.</td></tr>
@@ -142,8 +142,8 @@ Duktape.fin(o, undefined);  // disable
 
 <p><code>enc()</code> encodes its argument value into chosen format.
 The first argument is a format (currently supported are "hex", "base64",
-"jsonx" and "jsonc"), second argument is the value to encode, and any
-further arguments are format specific.</p>
+"jx" and "jc"), second argument is the value to encode, and any further
+arguments are format specific.</p>
 
 <p>For "hex" and "base64", buffer values are encoded as is, other values
 are string coerced and the internal byte representation (extended UTF-8)
@@ -154,12 +154,12 @@ var result = Duktape.enc('base64', 'foo');
 print(result);  // prints 'Zm9v'
 </pre>
 
-<p>For "jsonx" and "jsonc" the argument list following the format name is
-the same as for <code>JSON.stringify()</code>: value, replacer (optional),
+<p>For "jx" and "jc" the argument list following the format name is the
+same as for <code>JSON.stringify()</code>: value, replacer (optional),
 space (optional).  For example:</p>
 <pre class="ecmascript-code">
-var result = Duktape.enc('jsonx', { foo: 123 }, null, 4);
-print(result);  // prints JSONX encoded {foo:123} with 4-space indent
+var result = Duktape.enc('jx', { foo: 123 }, null, 4);
+print(result);  // prints JX encoded {foo:123} with 4-space indent
 </pre>
 
 <h3>dec()</h3>
@@ -179,11 +179,10 @@ var result = String(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
 
-<p>For "jsonx" and "jsonc" the argument list following the format name is
-the same as for <code>JSON.parse()</code>: text, reviver (optional).
-For example:</p>
+<p>For "jx" and "jc" the argument list following the format name is the same
+as for <code>JSON.parse()</code>: text, reviver (optional).  For example:</p>
 <pre class="ecmascript-code">
-var result = Duktape.dec('jsonx', "{foo:123}");
+var result = Duktape.dec('jx', "{foo:123}");
 print(result.foo);  // prints 123
 </pre>
 
@@ -403,7 +402,7 @@ function dump() {
     for (i = -1; ; i--) {
         t = Duktape.act(i);
         if (!t) { break; }
-        print(i, t.lineNumber, t.function.name, Duktape.enc('jsonx', t));
+        print(i, t.lineNumber, t.function.name, Duktape.enc('jx', t));
     }
 }
 

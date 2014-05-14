@@ -1972,14 +1972,14 @@ typedef FILE duk_file;
  *  Codecs
  */
 
-#define DUK_USE_JSONX
-#if defined(DUK_OPT_NO_JSONX)
-#undef DUK_USE_JSONX
+#define DUK_USE_JX
+#if defined(DUK_OPT_NO_JX)
+#undef DUK_USE_JX
 #endif
 
-#define DUK_USE_JSONC
-#if defined(DUK_OPT_NO_JSONC)
-#undef DUK_USE_JSONC
+#define DUK_USE_JC
+#if defined(DUK_OPT_NO_JC)
+#undef DUK_USE_JC
 #endif
 
 /*

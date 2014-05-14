@@ -250,14 +250,14 @@ The table below summarizes the available options, in no particular order:</p>
     is enabled by default.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_NO_JSONX</td>
-<td>Disable support for the JSONX format.  Reduces code footprint.  Causes
-    JSONX calls to throw an error.</td>
+<td class="definename">DUK_OPT_NO_JX</td>
+<td>Disable support for the JX format.  Reduces code footprint.  An attempt
+    to encode or decode the format causes an error.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_NO_JSONC</td>
-<td>Disable support for the JSONC format.  Reduces code footprint.  Causes
-    JSONC calls to throw an error.</td>
+<td class="definename">DUK_OPT_NO_JC</td>
+<td>Disable support for the JC format.  Reduces code footprint.  An attempt
+    to encode or decode the format causes an error.</td>
 </tr>
 <tr>
 <td class="definename">DUK_OPT_NO_FILE_IO</td>
@@ -389,8 +389,8 @@ The table below summarizes the available options, in no particular order:</p>
     <code>DUK_OPT_NO_TRACEBACKS</code>,
     <code>DUK_OPT_NO_VERBOSE_ERRORS</code>,
     <code>DUK_OPT_NO_PC2LINE</code>.</li>
-<li>If you don't need the Duktape-specific additional JSONX/JSONC formats,
-    use both <code>DUK_OPT_NO_JSONX</code> and <code>DUK_OPT_NO_JSONC</code>.</li>
+<li>If you don't need the Duktape-specific additional JX/JC formats,
+    use both <code>DUK_OPT_NO_JX</code> and <code>DUK_OPT_NO_JC</code>.</li>
 <li>Features borrowed from Ecmascript E6 can usually be disabled:
     <code>DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</code>,
     <code>DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY</code>,

@@ -155,4 +155,4 @@ Duktape.eval('print = Dukweb.print;');
 Duktape.eval('alert = Dukweb.print;');  // intentionally bound to print()
 
 Duktape.initSuccess = !!Duktape.dukweb_is_open();
-//console.log('=== ' + Duktape.eval('Duktape.enc("jsonx", { env: Duktape.env, version: Duktape.version })') + ' ===');
+//console.log('=== ' + Duktape.eval('Duktape.enc("jx", { env: Duktape.env, version: Duktape.version })') + ' ===');

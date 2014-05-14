@@ -266,8 +266,8 @@ duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 		duk_set_top(ctx, 2);
 		duk_base64_encode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-#ifdef DUK_USE_JSONX
-	} else if (h_str == DUK_HTHREAD_STRING_JSONX(thr)) {
+#ifdef DUK_USE_JX
+	} else if (h_str == DUK_HTHREAD_STRING_JX(thr)) {
 		duk_bi_json_stringify_helper(ctx,
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
@@ -276,8 +276,8 @@ duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 		                             DUK_JSON_FLAG_ASCII_ONLY |
 		                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
 #endif
-#ifdef DUK_USE_JSONC
-	} else if (h_str == DUK_HTHREAD_STRING_JSONC(thr)) {
+#ifdef DUK_USE_JC
+	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
 		duk_bi_json_stringify_helper(ctx,
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
@@ -311,15 +311,15 @@ duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx) {
 		duk_set_top(ctx, 2);
 		duk_base64_decode(ctx, 1);
 		DUK_ASSERT_TOP(ctx, 2);
-#ifdef DUK_USE_JSONX
-	} else if (h_str == DUK_HTHREAD_STRING_JSONX(thr)) {
+#ifdef DUK_USE_JX
+	} else if (h_str == DUK_HTHREAD_STRING_JX(thr)) {
 		duk_bi_json_parse_helper(ctx,
 		                         1 /*idx_value*/,
 		                         2 /*idx_replacer*/,
 		                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
 #endif
-#ifdef DUK_USE_JSONC
-	} else if (h_str == DUK_HTHREAD_STRING_JSONC(thr)) {
+#ifdef DUK_USE_JC
+	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
 		duk_bi_json_parse_helper(ctx,
 		                         1 /*idx_value*/,
 		                         2 /*idx_replacer*/,

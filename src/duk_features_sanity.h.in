@@ -36,6 +36,14 @@
 #error DUK_OPT_NO_OBJECT_ES6_SETPROTOTYPEOF is deprecated, use DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF
 #endif
 
+#if defined(DUK_OPT_NO_JSONX)
+#error DUK_OPT_NO_JSONX is deprecated, use DUK_OPT_NO_JX
+#endif
+
+#if defined(DUK_OPT_NO_JSONC)
+#error DUK_OPT_NO_JSONC is deprecated, use DUK_OPT_NO_JC
+#endif
+
 /*
  *  Debug print consistency
  */

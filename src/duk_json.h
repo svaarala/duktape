@@ -38,14 +38,14 @@ typedef struct {
 	int flags;
 	int flag_ascii_only;
 	int flag_avoid_key_quotes;
-#if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	int flag_ext_custom;
 	int flag_ext_compatible;
 #endif
 	int recursion_depth;
 	int recursion_limit;
 	int mask_for_undefined;      /* type bit mask: types which certainly produce 'undefined' */
-#if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	int stridx_custom_undefined;
 	int stridx_custom_nan;
 	int stridx_custom_neginf;
@@ -60,7 +60,7 @@ typedef struct {
 	duk_uint8_t *p_end;
 	int idx_reviver;
 	int flags;
-#if defined(DUK_USE_JSONX) || defined(DUK_USE_JSONC)
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	int flag_ext_custom;
 	int flag_ext_compatible;
 #endif
