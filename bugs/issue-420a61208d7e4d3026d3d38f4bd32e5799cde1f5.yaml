@@ -3,7 +3,7 @@ title: compile-time optimize more unary and binary operations (e.g. !0 and !1 ar
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -16,3 +16,11 @@ log_events:
   - sva <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-05-15 13:48:37.360207 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
+  - ""
+- - 2014-05-15 13:48:47.824046 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - "!0, !1, !false, !true are now inlined"
