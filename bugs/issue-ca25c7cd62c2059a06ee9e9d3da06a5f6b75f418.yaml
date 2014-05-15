@@ -12,8 +12,8 @@ type: :task
 component: duk
 release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :wontfix
 creation_time: 2014-05-04 14:20:35.277977 Z
 references: []
 
@@ -42,3 +42,9 @@ log_events:
     more along the lines of adding some compatibility wrappers and such (like
     console.log or perhaps replacements for features removed from Duktape in
     a newer version), so it might still be worth keeping.
+- - 2014-05-15 20:49:42.701037 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - |-
+    Rejected because does not really provide anything useful after all.
+    Archived into archive/rejected-globinit.
