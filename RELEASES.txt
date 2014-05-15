@@ -331,6 +331,9 @@ Planned
 * Move platform and feature detection into duktape.h, also for internal
   types, which allows type wrappers to be applied to the public API
 
+* The expressions !0 and !1 are now constant folded by the compiler as they're
+  often found in minified code; also !true and !false are constant folded
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
