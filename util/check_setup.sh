@@ -44,6 +44,15 @@ if [ $? != 0 ]; then
 fi
 #echo "Git version: $GIT_VERSION"
 
+UNZIP_VERSION=`unzip -v 2>/dev/null`
+if [ $? != 0 ]; then
+	echo "*** Missing unzip:"
+	echo "  $ sudo apt-get install unzip"
+	echo ""
+	ERRORS=1
+fi
+#echo "UNZIP_VERSION: $UNZIP_VERSION"
+
 PERL_VERSION=`perl -version 2>/dev/null`
 if [ $? != 0 ]; then
 	echo "*** Missing perl:"
