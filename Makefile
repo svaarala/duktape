@@ -44,7 +44,7 @@ DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
 DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 
 # Ditz release (next release name)
-DITZ_RELEASE=v0.10
+DITZ_RELEASE=v0.11
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
@@ -341,7 +341,7 @@ issuecount:
 	@echo "TODO:      `grep TODO: src/*.c src/*.h | wc -l | tr -d ' '`"
 	@echo "NOTE:      `grep NOTE: src/*.c src/*.h | wc -l | tr -d ' '`"
 	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h | wc -l | tr -d ' '`"
-	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo v0.10 | wc -l | tr -d ' '`"
+	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo $(DITZ_RELEASE) | wc -l | tr -d ' '`"
 
 .PHONY: dukscanbuild
 dukscanbuild: dist
