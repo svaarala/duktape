@@ -1570,16 +1570,19 @@ static void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_iv
 
 /* FIXME: to util */
 static int duk__is_whole_get_i32(double x, duk_int32_t *ival) {
+	duk_small_int_t c;
 	duk_int32_t t;
 
-	if (DUK_FPCLASSIFY(x) != DUK_FP_NORMAL) {
-		return 0;
-	}
-
-	t = (duk_int32_t) x;
-	if ((double) t == x) {
-		*ival = t;
-		return 1;
+	c = DUK_FPCLASSIFY(x);
+	if (c == DUK_FP_NORMAL || (c == DUK_FP_ZERO && !DUK_SIGNBIT(x))) {
+		/* Don't allow negative zero as it will cause trouble with
+		 * LDINT+LDINTX.  But positive zero is OK.
+		 */
+		t = (duk_int32_t) x;
+		if ((double) t == x) {
+			*ival = t;
+			return 1;
+		}
 	}
 
 	return 0;
@@ -3178,11 +3181,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		    duk_is_number(ctx, res->x1.valstack_idx)) {
 			/* unary plus of a number is identity */
 			;
-		} else {
-			args = (DUK_EXTRAOP_UNP << 8) + 0;
-			goto unary_extraop;
+			return;
 		}
-		return;
+		args = (DUK_EXTRAOP_UNP << 8) + 0;
+		goto unary_extraop;
 	}
 	case DUK_TOK_SUB: {
 		/* unary minus */
@@ -3201,11 +3203,10 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			du.d = -du.d;
 			DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 			DUK_TVAL_SET_NUMBER(tv_num, du.d);
-		} else {
-			args = (DUK_EXTRAOP_UNM << 8) + 0;
-			goto unary_extraop;
+			return;
 		}
-		return;
+		args = (DUK_EXTRAOP_UNM << 8) + 0;
+		goto unary_extraop;
 	}
 	case DUK_TOK_BNOT: {
 		duk__expr(comp_ctx, res, DUK__BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
@@ -3214,11 +3215,40 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	}
 	case DUK_TOK_LNOT: {
 		duk__expr(comp_ctx, res, DUK__BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
+		if (res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_VALUE) {
+			/* Very minimal inlining to handle common idioms '!0' and '!1',
+			 * and also boolean arguments like '!false' and '!true'.
+			 */
+			duk_tval *tv_val = duk_get_tval(ctx, res->x1.valstack_idx);
+
+			DUK_ASSERT(tv_val != NULL);
+			if (DUK_TVAL_IS_NUMBER(tv_val)) {
+				duk_double_t d;
+				d = DUK_TVAL_GET_NUMBER(tv_val);
+				if (d == 0.0) {
+					/* Matches both +0 and -0 on purpose. */
+					DUK_D(DUK_DPRINT("inlined lnot: !0 -> true"));
+					DUK_TVAL_SET_BOOLEAN_TRUE(tv_val);
+					return;
+				} else if (d == 1.0) {
+					DUK_D(DUK_DPRINT("inlined lnot: !1 -> false"));
+					DUK_TVAL_SET_BOOLEAN_FALSE(tv_val);
+					return;
+				}
+			} else if (DUK_TVAL_IS_BOOLEAN(tv_val)) {
+				duk_small_int_t v;
+				v = DUK_TVAL_GET_BOOLEAN(tv_val);
+				DUK_D(DUK_DPRINT("inlined lnot boolean: %d", (int) v));
+				DUK_ASSERT(v == 0 || v == 1);
+				DUK_TVAL_SET_BOOLEAN(tv_val, v ^ 0x01);
+				return;
+			}
+		}
 		args = (DUK_OP_LNOT << 8) + 0;
 		goto unary;
 	}
 
-	}
+	}  /* end switch */
 
 	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "unexpected token to duk__expr_nud(): %d", tok);
 	return;
