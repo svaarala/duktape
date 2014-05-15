@@ -3227,18 +3227,18 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				d = DUK_TVAL_GET_NUMBER(tv_val);
 				if (d == 0.0) {
 					/* Matches both +0 and -0 on purpose. */
-					DUK_D(DUK_DPRINT("inlined lnot: !0 -> true"));
+					DUK_DDD(DUK_DDDPRINT("inlined lnot: !0 -> true"));
 					DUK_TVAL_SET_BOOLEAN_TRUE(tv_val);
 					return;
 				} else if (d == 1.0) {
-					DUK_D(DUK_DPRINT("inlined lnot: !1 -> false"));
+					DUK_DDD(DUK_DDDPRINT("inlined lnot: !1 -> false"));
 					DUK_TVAL_SET_BOOLEAN_FALSE(tv_val);
 					return;
 				}
 			} else if (DUK_TVAL_IS_BOOLEAN(tv_val)) {
 				duk_small_int_t v;
 				v = DUK_TVAL_GET_BOOLEAN(tv_val);
-				DUK_D(DUK_DPRINT("inlined lnot boolean: %d", (int) v));
+				DUK_DDD(DUK_DDDPRINT("inlined lnot boolean: %d", (int) v));
 				DUK_ASSERT(v == 0 || v == 1);
 				DUK_TVAL_SET_BOOLEAN(tv_val, v ^ 0x01);
 				return;
