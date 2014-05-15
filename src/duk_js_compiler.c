@@ -3193,12 +3193,14 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			 * provided by the lexical grammar
 			 */
 			duk_tval *tv_num = duk_get_tval(ctx, res->x1.valstack_idx);
-			double d;
+			duk_double_union du;
 
 			DUK_ASSERT(tv_num != NULL);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_num));
-			d = DUK_TVAL_GET_NUMBER(tv_num);
-			DUK_TVAL_SET_NUMBER(tv_num, -d);  /* FIXME: OK for NaN, Infinity?  NaN normalization? */
+			du.d = DUK_TVAL_GET_NUMBER(tv_num);
+			du.d = -du.d;
+			DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
+			DUK_TVAL_SET_NUMBER(tv_num, du.d);
 		} else {
 			args = (DUK_EXTRAOP_UNM << 8) + 0;
 			goto unary_extraop;
