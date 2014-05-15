@@ -227,6 +227,8 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	/* fall thru */
 
  error:
+	fprintf(stderr, "error in reading input from file %s\n", filename);
+	fflush(stderr);
 	if (buf) {
 		free(buf);
 	}
@@ -251,14 +253,6 @@ int handle_file(duk_context *ctx, const char *filename) {
 
  error:
 	return -1;
-}
-
-int handle_stdin(duk_context *ctx) {
-	int retval;
-
-	retval = handle_fh(ctx, stdin, "stdin");
-
-	return retval;
 }
 
 #ifdef NO_READLINE
@@ -391,10 +385,14 @@ int handle_interactive(duk_context *ctx) {
 int main(int argc, char *argv[]) {
 	duk_context *ctx = NULL;
 	int retval = 0;
-	const char *filename = NULL;
+	int have_files = 0;
 	int interactive = 0;
 	int memlimit_high = 1;
 	int i;
+
+	/*
+	 *  Signal handling setup
+	 */
 
 #ifndef NO_SIGNAL
 	set_sigint_handler();
@@ -403,6 +401,10 @@ int main(int argc, char *argv[]) {
 	/*signal(SIGPIPE, SIG_IGN);*/
 #endif
 
+	/*
+	 *  Parse options
+	 */
+
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (!arg) {
@@ -410,18 +412,21 @@ int main(int argc, char *argv[]) {
 		}
 		if (strcmp(arg, "-r") == 0) {
 			memlimit_high = 0;
-		} else if (strlen(arg) > 1 && arg[0] == '-') {
+		} else if (strcmp(arg, "-i") == 0) {
+			interactive = 1;
+		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
-			if (filename) {
-				goto usage;
-			}
-			filename = arg;
+			have_files = 1;
 		}
 	}
-	if (!filename) {
+	if (!have_files) {
 		interactive = 1;
 	}
+
+	/*
+	 *  Memory limit
+	 */
 
 #ifndef NO_RLIMIT
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
@@ -429,27 +434,34 @@ int main(int argc, char *argv[]) {
 	(void) memlimit_high;  /* suppress warning */
 #endif
 
-	ctx = duk_create_heap_default();
+	/*
+	 *  Create context and execute any argument file(s)
+	 */
 
+	ctx = duk_create_heap_default();
 #if 0
 	duk_ncurses_register(ctx);
 	duk_socket_register(ctx);
 	duk_fileio_register(ctx);
 #endif
 
-	if (filename) {
-		if (strcmp(filename, "-") == 0) {
-			if (handle_stdin(ctx) != 0) {
-				retval = 1;
-				goto cleanup;
-			}
-		} else {
-			if (handle_file(ctx, filename) != 0) {
-				retval = 1;
-				goto cleanup;
-			}
+	for (i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (!arg) {
+			continue;
+		} else if (strlen(arg) >= 1 && arg[0] == '-') {
+			continue;
+		}
+
+		if (handle_file(ctx, arg) != 0) {
+			retval = 1;
+			goto cleanup;
 		}
 	}
+
+	/*
+	 *  Enter interactive mode if options indicate it
+	 */
 
 	if (interactive) {
 		if (handle_interactive(ctx) != 0) {
@@ -457,6 +469,10 @@ int main(int argc, char *argv[]) {
 			goto cleanup;
 		}
 	}
+
+	/*
+	 *  Cleanup and exit
+	 */
 
  cleanup:
 	if (interactive) {
@@ -470,14 +486,22 @@ int main(int argc, char *argv[]) {
 
 	return retval;
 
+	/*
+	 *  Usage
+	 */
+
  usage:
-	fprintf(stderr, "Usage: duk [-r] <filename>\n");
-	fprintf(stderr, "where\n");
-	fprintf(stderr, "   -r      use lower memory limit\n");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
-	fprintf(stderr, "If <filename> is omitted, interactive mode is started.\n");
+	fprintf(stderr, "Usage: duk [-i] [-r] [<filenames>]\n"
+	                "\n"
+	                "   -i      enter interactive mode after executing argument file(s)\n"
+	                "   -r      use lower memory limit (used by test runner)"
+#ifdef NO_RLIMIT
+	                " (disabled)\n"
+#else
+	                "\n"
+#endif
+	                "\n"
+	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);
 	exit(1);
 }
-
