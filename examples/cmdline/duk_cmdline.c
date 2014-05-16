@@ -226,13 +226,16 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	}
 	/* fall thru */
 
- error:
-	fprintf(stderr, "error in reading input from file %s\n", filename);
-	fflush(stderr);
+ cleanup:
 	if (buf) {
 		free(buf);
 	}
 	return retval;
+
+ error:
+	fprintf(stderr, "error in reading input from file %s\n", filename);
+	fflush(stderr);
+	goto cleanup;
 }
 
 int handle_file(duk_context *ctx, const char *filename) {
