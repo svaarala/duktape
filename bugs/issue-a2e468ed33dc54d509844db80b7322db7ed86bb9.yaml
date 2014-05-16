@@ -1,0 +1,25 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: more compact api call layout in api docs
+desc: |-
+  For example:
+  
+  * Omit big headings, use shadowed texts going to 'negative margin'
+    of the paragraph?
+  
+  * At least Prototype, Stack, and Summary headings are redundant, as the
+    meaning is apparent anyway
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-16 14:41:32.344299 Z
+references: []
+
+id: a2e468ed33dc54d509844db80b7322db7ed86bb9
+log_events: 
+- - 2014-05-16 14:41:32.520240 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
