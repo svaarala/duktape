@@ -690,9 +690,9 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...);
  *  Debugging
  */
 
-#if defined(DUK_USE_FILE_IO)
 void duk_dump_context_raw(duk_context *ctx);
 
+#if defined(DUK_USE_FILE_IO)
 /* internal use */
 #define duk_dump_context_filehandle(ctx,fh) \
 	do { \
@@ -707,7 +707,6 @@ void duk_dump_context_raw(duk_context *ctx);
 #define duk_dump_context_stderr(ctx) \
 	duk_dump_context_filehandle(ctx,stderr)
 #else  /* DUK_USE_FILE_IO */
-#define duk_dump_context_raw(ctx)  do {} while (0)
 #define duk_dump_context_stdout(ctx)  do {} while (0)
 #define duk_dump_context_stderr(ctx)  do {} while (0)
 #endif  /* DUK_USE_FILE_IO */

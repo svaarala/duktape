@@ -4,7 +4,6 @@
 
 #include "duk_internal.h"
 
-#if defined(DUK_USE_FILE_IO)
 void duk_dump_context_raw(duk_context *ctx) {
 	int idx;
 	int top;
@@ -36,4 +35,3 @@ void duk_dump_context_raw(duk_context *ctx) {
 	duk_pop(ctx);
 	DUK_ASSERT(duk_is_string(ctx, -1));
 }
-#endif  /* DUK_USE_FILE_IO */
