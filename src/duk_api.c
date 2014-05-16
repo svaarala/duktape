@@ -2403,6 +2403,7 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
+	DUK_UNREF(path);
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "file I/O disabled");
 	return NULL;
 }
