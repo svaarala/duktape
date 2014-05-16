@@ -690,13 +690,13 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...);
  *  Debugging
  */
 
-void duk_dump_context_raw(duk_context *ctx);
+void duk_push_context_dump(duk_context *ctx);
 
 #if defined(DUK_USE_FILE_IO)
 /* internal use */
 #define duk_dump_context_filehandle(ctx,fh) \
 	do { \
-		duk_dump_context_raw((ctx)); \
+		duk_push_context_dump((ctx)); \
 		fprintf(stdout, "%s\n", duk_safe_to_string(ctx, -1)); \
 		duk_pop(ctx); \
 	} while (0)
