@@ -223,7 +223,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('proto'):
 		p = parts['proto']
-		#res.append('<h2>Prototype</h2>')
+		res.append('<h2 class="api-proto">Prototype</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
@@ -234,20 +234,20 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('stack'):
 		p = parts['stack']
-		#res.append('<h2>Stack</h2>')
+		res.append('<h2 class="api-stack">Stack</h2>')
 		for line in p:
 			res.append('<pre class="stack">' + \
 			           '%s' % htmlEscape(line) + \
 			           '</pre>')
 		res.append('')
 	else:
-		#res.append('<h2>Stack</h2>')
+		res.append('<h2 class="api-stack">Stack</h2>')
 		res.append('<p>(No effect on value stack.)</p>')
 		res.append('')
 
 	if parts.has_key('summary'):
 		p = parts['summary']
-		#res.append('<h2>Summary</h2>')
+		res.append('<h2 class="api-summary">Summary</h2>')
 
 		# If text contains a '<p>', assume it is raw HTML; otherwise
 		# assume it is a single paragraph (with no markup) and generate
@@ -270,7 +270,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('example'):
 		p = parts['example']
-		res.append('<h2>Example</h2>')
+		res.append('<h2 class="api-example">Example</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
@@ -279,14 +279,14 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	if parts.has_key('seealso'):
 		p = parts['seealso']
-		res.append('<h2>See also</h2>')
+		res.append('<h2 class="api-seealso">See also</h2>')
 		res.append('<ul>')
 		for i in p:
 			res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(i), htmlEscape(i)))
 		res.append('</ul>')
 
 	if testcase_refs:
-		res.append('<h2>Related test cases</h2>')
+		res.append('<h2 class="api-testcases">Related test cases</h2>')
 		if testrefs.has_key(funcname):
 			res.append('<ul>')
 			for i in testrefs[funcname]:
@@ -300,7 +300,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		
 	if list_tags and parts.has_key('tags'):
 		# FIXME: placeholder
-		res.append('<h2>Tags</h2>')
+		res.append('<h2 class="api-tags">Tags</h2>')
 		res.append('<p>')
 		p = parts['tags']
 		for idx, val in enumerate(p):
@@ -518,7 +518,7 @@ def transformAddHeadingLinks(soup):
 
 	for elem, new_elem in changes:
 		if elem.has_key('class'):
-			elem['class'] = elem['class'] + ' sectiontitle'
+			elem['class'].append('sectiontitle')
 		else:
 			elem['class'] = 'sectiontitle'
 		elem.append(' ')
