@@ -103,6 +103,8 @@ void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */
+	DUK_UNREF(code);
+	DUK_UNREF(msg);
 #endif
 
 #if defined(DUK_USE_PANIC_ABORT)

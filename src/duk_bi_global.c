@@ -734,10 +734,12 @@ int duk_bi_global_object_alert(duk_context *ctx) {
 #else  /* DUK_USE_FILE_IO */
 /* Supported but no file I/O -> silently ignore, no error */
 int duk_bi_global_object_print(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return 0;
 }
 
 int duk_bi_global_object_alert(duk_context *ctx) {
+	DUK_UNREF(ctx);
 	return 0;
 }
 #endif  /* DUK_USE_FILE_IO */
