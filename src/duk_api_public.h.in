@@ -5,6 +5,10 @@
 #ifndef DUK_API_PUBLIC_H_INCLUDED
 #define DUK_API_PUBLIC_H_INCLUDED
 
+/*
+ *  Avoid C++ name mangling
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -686,11 +690,8 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...);
  *  Debugging
  */
 
+#if defined(DUK_USE_FILE_IO)
 void duk_dump_context_raw(duk_context *ctx);
-
-/* FIXME: fprintf() requires stdio.h which is unportable; this macro and including
- * stdio.h must be conditional to features.
- */
 
 /* internal use */
 #define duk_dump_context_filehandle(ctx,fh) \
@@ -705,6 +706,15 @@ void duk_dump_context_raw(duk_context *ctx);
 	duk_dump_context_filehandle(ctx,stdout)
 #define duk_dump_context_stderr(ctx) \
 	duk_dump_context_filehandle(ctx,stderr)
+#else  /* DUK_USE_FILE_IO */
+#define duk_dump_context_raw(ctx)  do {} while (0)
+#define duk_dump_context_stdout(ctx)  do {} while (0)
+#define duk_dump_context_stderr(ctx)  do {} while (0)
+#endif  /* DUK_USE_FILE_IO */
+
+/*
+ *  C++ name mangling
+ */
 
 #ifdef __cplusplus
 /* end 'extern "C"' wrapper */
