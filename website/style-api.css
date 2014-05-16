@@ -1,3 +1,28 @@
 /*
  *  API specific CSS rules
  */
+
+@media screen and (min-width:801px) {
+	/* On wide screens, slide API entry section headings to the side
+	 * to make the entries more compact.
+	 *
+	 * Specificity must override normal section heading rules.
+	 */
+	/* FIXME: layout is pretty inconsistent now */
+	h2.api-proto,
+	h2.api-stack,
+	h2.api-summary,
+	h2.api-example,
+	h2.api-seealso {
+		position: absolute;
+		left: 10px;
+		margin: 0;
+		padding: 5px 0 0 0;
+		width: 200px;
+		text-align: right;
+		height: 0;
+		overflow: visible;
+		color: #ccccdd;
+		font-size: 100%;
+	}
+}
