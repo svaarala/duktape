@@ -1,0 +1,99 @@
+=======
+Buffers
+=======
+
+Overview
+========
+
+Ecmascript did not originally have a binary array (or binary string) data
+type so various approaches are used:
+
+* Khronos typed array:
+  https://www.khronos.org/registry/typedarray/specs/latest/
+
+* NodeJS Buffer:
+  http://nodejs.org/api/buffer.html
+
+* Duktape has its own low level buffer data type.
+
+More tangential:
+
+* https://developer.mozilla.org/en-US/docs/Web/API/Blob
+
+Duktape buffer types
+====================
+
+Duktape has a low level buffer data type which provides:
+
+* A plain non-object buffer value, which can be either fixed or dynamic.
+  Dynamic buffers can be resizes and can have an internal spare area.
+  Has virtual properties for buffer indices and 'length'.
+
+* A Duktape.Buffer object which is a wrapper around a plain buffer value.
+  It provides a means to create Buffer values and convert a value to a
+  buffer.  Duktape.Buffer.prototype provides buffer handling methods
+  which are also usable for plain buffer values due to automatic object
+  promotion.
+
+This buffer type is designed to be as friendly as possible for low level
+embedded programming, and is mostly intended to be accessed from C code.
+Duktape also uses buffers internally.
+
+NodeJS buffer
+=============
+
+The NodeJS ``Buffer`` type is widely used in server-side programming.
+Specification notes:
+
+* A Buffer may point to a slice of an underlying buffer.
+
+* Buffer prototype's ``slice()`` does not copy contents of the slice, but
+  creates a new Buffer which points to the same buffer data.  This differs
+  from Khronos typed array slice operation.
+
+* There are virtual index properties.
+
+* The 'length' virtual property is incompatible with Duktape buffer
+  virtual 'length' property.
+
+Implementation approach:
+
+* Share buffer exotic behavior for indices.  For 'length': FIXME.
+
+* Internal _value points to a plain buffer.  Need internal _offset and
+  _length properties, too.
+
+* For fast operations, guaranteed property slots should be used.
+
+* Should be optional and disabled by default (footprint)?
+
+Khronos typed array
+===================
+
+Specification notes:
+
+* ArrayBuffer wraps an underlying buffer object, ArrayBufferView and DataView
+  classes provide "windowed" access to some underlying ArrayBuffer.  A buffer
+  object can be "neutered" (apparently happens when "transferring" an ArrayBuffer
+  which is HTML specific).
+
+* ArrayBufferView classes are host endian.  DataView can be endian independent.
+
+* NaN handling is rather fortunate, as it is compatible with packed ``duk_tval``.
+
+Implementation approach:
+
+* ArrayBuffer wraps an underlying buffer object.  A buffer object can be
+  "neutered".  ArrayBuffer is similar to Duktape.Buffer; eliminate
+  Duktape.Buffer?
+
+* ArrayBufferView classes and DataView refer to an underlying ArrayBuffer,
+  and may have an offset.  These could be implemented similar to NodeJS
+  Buffer: refer to a plain underlying buffer, byte offset, and byte length
+  in internal properties.  Reference to the original ArrayBuffer (boxed
+  buffer) is not needed?
+
+* There are a lot of classes in the typed array specification.  Each class
+  is an object, so this is rather heavyweight.
+
+* Should be optional and disabled by default (footprint)?

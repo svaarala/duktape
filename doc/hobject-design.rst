@@ -2224,32 +2224,7 @@ For instance:
 * http://www.khronos.org/registry/typedarray/specs/latest/
 * http://nodejs.org/docs/v0.4.7/api/buffers.html
 
-There is no implementation for any kind of typed arrays which behave
-like normal arrays now.  There probably should be, as such an interface
-provides a good match for low level memory manipulation in parsing,
-serializing, etc.
-
-Notes:
-
-* The interface model provided does not need to implement any of the full
-  APIs above, but must provide the core "virtual property" behavior
-  somehow.  Setup wrappers etc can be added as ordinary code.
-
-* The underlying should be bindable to either a "buffer" object (which can
-  either be fixed or reallocatable, and its allocation may move in memory
-  from time to time) or a "raw" pointer (and length) for general C code
-  interfacing.
-
-  + Allowing a caller to specify a length is nice to provide some memory
-    protection guarantees.  The desired behavior could either be silent
-    errors or error throwing (RangeError?) for out-of-bound accesses.
-
-* Could be implemented as virtual properties as for ``String`` objects,
-  but writable.
-
-  + Keys should probably be non-enumerable for practical reasons.
-
-* Could also be implemented using "metatables", with some performance hit.
+See ``buffers.txt``.
 
 WindowProxy
 -----------
@@ -2257,6 +2232,8 @@ WindowProxy
 The HTML5 WindowProxy object seems to require behavior outside E5.
 
 See: http://www.w3.org/TR/html5/browsers.html#windowproxy.
+
+The ES6 Proxy object probably addresses this.
 
 Script origin for security checks
 ---------------------------------
