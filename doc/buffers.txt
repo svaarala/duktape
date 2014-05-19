@@ -9,16 +9,27 @@ Ecmascript did not originally have a binary array (or binary string) data
 type so various approaches are used:
 
 * Khronos typed array:
-  https://www.khronos.org/registry/typedarray/specs/latest/
+
+  - https://www.khronos.org/registry/typedarray/specs/latest/
+  - http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/
+  - http://clokep.blogspot.fi/2012/11/javascript-typed-arrays-pain.html
+  - http://blogs.msdn.com/b/ie/archive/2011/12/01/working-with-binary-data-using-typed-arrays.aspx
+  - https://www.inkling.com/read/javascript-definitive-guide-david-flanagan-6th/chapter-22/typed-arrays-and-arraybuffers
 
 * NodeJS Buffer:
-  http://nodejs.org/api/buffer.html
+
+  - http://nodejs.org/api/buffer.html
+  - https://github.com/joyent/node/blob/master/lib/buffer.js
 
 * Duktape has its own low level buffer data type.
 
-More tangential:
+* Blob (not very relevant):
 
-* https://developer.mozilla.org/en-US/docs/Web/API/Blob
+  - https://developer.mozilla.org/en-US/docs/Web/API/Blob
+
+This document describes how various buffer types have been implemented in
+Duktape.  The goal is to minimize footprint, so the internal buffer type
+implementation shares a lot of code even though multiple APIs are provided.
 
 Duktape buffer types
 ====================
@@ -35,6 +46,8 @@ Duktape has a low level buffer data type which provides:
   which are also usable for plain buffer values due to automatic object
   promotion.
 
+* Assignment has modulo semantics (e.g. 0x101 is written as 0x01).
+
 This buffer type is designed to be as friendly as possible for low level
 embedded programming, and is mostly intended to be accessed from C code.
 Duktape also uses buffers internally.
@@ -42,46 +55,219 @@ Duktape also uses buffers internally.
 NodeJS buffer
 =============
 
-The NodeJS ``Buffer`` type is widely used in server-side programming.
+The NodeJS ``Buffer`` type is widely used in server-side programming
+but is not standardized as such.
+
+Specification notes
+-------------------
+
 Specification notes:
 
 * A Buffer may point to a slice of an underlying buffer.
 
+* String-to-buffer coercion has a set of encoding values (other than UTF-8).
+
 * Buffer prototype's ``slice()`` does not copy contents of the slice, but
   creates a new Buffer which points to the same buffer data.  This differs
-  from Khronos typed array slice operation.
+  from Khronos typed array slice operation.  With typed arrays a non-copying
+  slice would just be a new view on top of a previous one.
 
-* There are virtual index properties.
-
-* The 'length' virtual property is incompatible with Duktape buffer
+* Buffers have virtual index properties and a virtual 'length' property.
+  The 'length' virtual property is incompatible with Duktape buffer
   virtual 'length' property.
 
-Implementation approach:
+* Reads and writes have an optional offset and value range check which
+  causes an error for out-of-bounds indices (RangeError) and values
+  (TypeError).  If disabled, behavior is quite interesting:
+
+  - Out-of-bounds writes are allowed and seem to work (partial values
+    get assigned to buffer).  However, the clipped parts seem to be stored
+    and automatically extend the buffer internally (see below).  As a
+    consequence the "clipped" bytes can actually be read back with an
+    unchecked out-of-bounds read.
+
+  - Out-of-bounds reads are allowed and return zero bytes, unless something
+    has been written out-of-bounds.
+
+  - Values outside data type range are treated with modulo semantics.
+
+* Read and write offsets are byte offsets regardless of data type being
+  accessed.  Khronos typed array view indices are not byte-based but
+  element-based.
+
+* Newly created buffers don't seem to be zeroed automatically.
+
+* Buffer inspect() provides a limited hex dump of buffer contents.
+
+* SlowBuffer: probably not needed.
+
+Implementation approach
+-----------------------
 
 * Share buffer exotic behavior for indices.  For 'length': FIXME.
 
 * Internal _value points to a plain buffer.  Need internal _offset and
-  _length properties, too.
+  _length properties, too.  Offset can default to zero, _length can default
+  to the number of available bytes from the offset (zero or otherwise).
 
 * For fast operations, guaranteed property slots should be used.
 
 * Should be optional and disabled by default (footprint)?
 
+* Should have a toLogString() which prints inspect() output or some other
+  useful oneliner.
+
+Buffers are not automatically zeroed
+------------------------------------
+
+::
+
+  > b = new Buffer(16)
+  <Buffer 00 99 f2 00 00 00 00 00 00 00 00 00 00 00 00 00>
+  > b.fill(0)
+  undefined
+  > b
+  <Buffer 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+
+Range checks and partial writes
+-------------------------------
+
+By default offset and value ranges are checked::
+
+  > b.writeUInt8(0x101, 0)
+  TypeError: value is out of bounds
+      at TypeError (<anonymous>)
+      at checkInt (buffer.js:784:11)
+      [...]
+
+With an explicit option asserts can be turned off.  With assertions
+disabled invalid offsets are ignored and values are treated with
+modulo semantics::
+
+  > b.writeUInt8(0x101, 0, true)
+  undefined
+  > b
+  <Buffer 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+
+When writing values larger than a byte, partial writes are allowed::
+
+  > b.fill(0)
+  undefined
+  > b.writeUInt32BE(0xdeadbeef, 13)
+  RangeError: Trying to write outside buffer length
+      at RangeError (<anonymous>)
+      at checkInt (buffer.js:788:11)
+      [...]
+  > b.writeUInt32BE(0xdeadbeef, 13, true)
+  undefined
+  > b
+  <Buffer 00 00 00 00 00 00 00 00 00 00 00 00 00 de ad be>
+  > b.fill(0)
+  undefined
+  > b.writeUInt32BE(0xdeadbeef, -1, true)
+  undefined
+  > b
+  <Buffer ad be ef 00 00 00 00 00 00 00 00 00 00 00 00 00>
+
+However, such values are not actually "dropped" but can actually be read
+back with an unchecked out-of-bounds read::
+
+  > b = new Buffer(16); b.fill(0); b.writeUInt32BE(0xdeadbeef, -1, true); b
+  <Buffer ad be ef 00 00 00 00 00 00 00 00 00 00 00 00 00>
+  > b.readUInt32BE(-1, true).toString(16)
+  'deadbeef'
+  > b.fill(1); b
+  <Buffer 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01>
+  > b.readUInt32BE(-1, true).toString(16)
+  'de010101'
+
+This is not just a "safe zone" to avoid implementing partial writes: the
+out-of-bounds offsets can be large::
+
+  > b = new Buffer(16); b.fill(0); b.writeUInt32BE(0xdeadbeef, -10000, true); b
+  <Buffer 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+  > b.readUInt32BE(-10003, true).toString(16)
+  'de'
+  > b.readUInt32BE(-10000, true).toString(16)
+  'deadbeef'
+
+Running under valgrind this causes no valgrind gripes, so apparently this is
+supported behavior.
+
+This behavior is difficult to implement in Duktape, so probably the best
+approach is to either ignore partial reads/writes, or implement them in
+an actual "clipping" manner.
+
 Khronos typed array
 ===================
 
-Specification notes:
+The Khronos typed array specification is related to HTML canvas and WebGL
+programming.  Some of the design choices are affected by this, e.g. the
+endianness handling and clamped byte write support.
+
+Specification notes
+-------------------
 
 * ArrayBuffer wraps an underlying buffer object, ArrayBufferView and DataView
   classes provide "windowed" access to some underlying ArrayBuffer.  A buffer
   object can be "neutered" (apparently happens when "transferring" an ArrayBuffer
   which is HTML specific).
 
+* ArrayBuffer does not have virtual indices or 'length' behavior, but views do.
+
+* ArrayBuffer has 'byteLength' and 'byteOffset' but no 'length'.  Views have
+  a 'byteLength' and a 'length', where 'length' refers to number of elements,
+  not bytes.  For example a Uint32Array view with length 4 would have
+  byteLength 16.
+
 * ArrayBufferView classes are host endian.  DataView can be endian independent.
 
-* NaN handling is rather fortunate, as it is compatible with packed ``duk_tval``.
+* NaN handling is rather fortunate, as it is compatible with packed ``duk_tval``
+  (in other words, NaNs can be substituted with one another).  When coerced to
+  integer, NaN is coerced to zero.
 
-Implementation approach:
+* Modulo semantics for number writes, except Uint8ClampedArray which provides
+  clamped semantics (when setting values).  Both module and clamping coerces
+  NaN to zero.  With modulo semantics flooring seems to be used (1.999 writes
+  as 1) while clamped semantics seems to use rounding (1.999 writes as 2, at
+  least on V8).
+
+* For the clamping behavior, see:
+
+  - http://heycam.github.io/webidl/#Clamp
+  - http://heycam.github.io/webidl/#es-type-mapping
+  - http://heycam.github.io/webidl/#es-byte
+
+  Steps for unsigned byte (octet) clamped coercion:
+
+  - Set x to min(max(x, 0), 2^8 − 1).
+
+  - Round x to the nearest integer, choosing the even integer if it lies
+    halfway between two, and choosing +0 rather than −0.
+
+  - Return the IDL octet value that represents the same numeric value as x.
+
+* Error is thrown for out-of-bounds accesses.
+
+* When using ``set()`` the arrays may refer to the same underlying array and
+  the write source and destination may overlap.  Must handle as if a temporary
+  copy was made, i.e. like ``memmove()``.
+
+* DataView and NodeJS buffer have similar (but not identical) methods, which
+  can share the same underlying implementation.  Endianness is specified with
+  an argument in DataView but is implicit in NodeJS buffer::
+
+    // DataView
+    setUint16(unsigned long byteOffset, unsigned short value, optional boolean littleEndian)
+
+    // NodeJS buffer
+    buf.writeUInt16LE(value, offset, [noAssert])
+    buf.writeUInt16BE(value, offset, [noAssert])
+
+  Unfortunately also the argument order (value/offset) are swapped.
+
+Implementation approach
+-----------------------
 
 * ArrayBuffer wraps an underlying buffer object.  A buffer object can be
   "neutered".  ArrayBuffer is similar to Duktape.Buffer; eliminate
@@ -91,9 +277,12 @@ Implementation approach:
   and may have an offset.  These could be implemented similar to NodeJS
   Buffer: refer to a plain underlying buffer, byte offset, and byte length
   in internal properties.  Reference to the original ArrayBuffer (boxed
-  buffer) is not needed?
+  buffer) is unfortunately also needed, via the '.buffer' property.
 
 * There are a lot of classes in the typed array specification.  Each class
   is an object, so this is rather heavyweight.
 
 * Should be optional and disabled by default (footprint)?
+
+* Should have a toLogString() which prints inspect() output or some other
+  useful oneliner.
