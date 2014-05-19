@@ -288,10 +288,11 @@ bi_global = {
 		{ 'name': 'print',			'native': 'duk_bi_global_object_print',			'length': 0,	'varargs': True,	'browser': True },
 		{ 'name': 'alert',			'native': 'duk_bi_global_object_alert',			'length': 0,	'varargs': True,	'browser': True },
 
-		# XXX: built-ins which are nice for compatibility?  E.g. 'print'
+		# CommonJS module loading
+		#
+		#  require:  not required to be in the global environment but useful
 
-		# XXX: built-in stuff here for browser-like methods (setTimeout & co,
-		# alert, etc)?
+		{ 'name': 'require',			'native': 'duk_bi_global_object_require',		'length': 1,	'varargs': False,	'commonjs': True },
 	],
 }
 

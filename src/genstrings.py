@@ -65,6 +65,7 @@ def mkstr(x,
           section_b=False,
           browser_like=False,
           es6=False,
+          commonjs=False,
           custom=False,
           internal=False,
           reserved_word=False,
@@ -87,6 +88,7 @@ def mkstr(x,
 	ret.section_b = section_b
 	ret.browser_like = browser_like
 	ret.es6 = es6
+	ret.commonjs = commonjs
 	ret.custom = custom
 	ret.internal = internal
 	ret.reserved_word = reserved_word
@@ -492,6 +494,12 @@ es6_string_list = [
 
 	mkstr("setPrototypeOf", es6=True),
 	mkstr("__proto__", es6=True),
+]
+
+# CommonJS related strings
+commonjs_string_list = [
+	mkstr("require", commonjs=True),
+	mkstr("id", commonjs=True),
 ]
 
 # Duktape specific strings
@@ -1014,6 +1022,7 @@ def gen_string_list():
 	str_lists = [ standard_builtin_string_list,
 	              standard_other_string_list,
 	              es6_string_list,
+	              commonjs_string_list,
 	              duk_string_list ]
 
 	for lst in str_lists:

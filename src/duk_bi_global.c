@@ -754,3 +754,92 @@ int duk_bi_global_object_alert(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_BROWSER_LIKE */
+
+/*
+ *  CommonJS require()
+ */
+
+#if defined(DUK_USE_COMMONJS_MODULES)
+int duk_bi_global_object_require(duk_context *ctx) {
+	const char *raw_id;
+
+	raw_id = duk_require_string(ctx, 0);
+
+	/* FIXME: normalize/resolve */
+
+	/*
+	 *  Cached module check.
+	 *
+	 *  If module has been loaded or its loading has already begun without
+	 *  finishing, return the same cached value ('exports').  The value is
+	 *  registered when module load starts so that circular references can
+	 *  be supported to some extent.
+	 */
+
+	duk_push_current_function(ctx);
+	duk_get_prop_string(ctx, -1, "loaded");  /* FIXME */
+	(void) duk_require_hobject(ctx, -1);
+
+	/* [ id require require.loaded ] */
+
+	duk_dup(ctx, 0);
+	if (duk_get_prop(ctx, -2)) {
+		/* [ id require require.loaded require.loaded[id] ] */
+		DUK_D(DUK_DPRINT("module already loaded: %!T", duk_get_tval(ctx, 0)));
+		return 1;
+	}
+
+	/*
+	 *  Module not loaded (and loading not started previously).
+	 *
+	 *  Resolve the module: a user callback provided in require.find()
+	 *  needs to provide the source code for the module.  The module
+	 *  environment is built using a pretty trivial function wrapper
+	 *  for now.
+	 */
+
+	DUK_D(DUK_DPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 0)));
+
+	/* [ id require require.loaded undefined ] */
+
+	duk_push_object(ctx);  /* exports */
+
+	duk_push_string(ctx, "(function(require,exports,module){");
+	duk_get_prop_string(ctx, -5, "find");  /* require.find */
+	duk_dup(ctx, 0);
+	duk_call(ctx, 1 /*nargs*/);  /* [ ... require.find resolved_id ] -> [ ... source ] */
+	(void) duk_require_hstring(ctx, -1);
+	duk_push_string(ctx, "})");
+	duk_concat(ctx, 3);
+	duk_eval(ctx);
+
+	/* [ id require require.loaded undefined exports mod_func ] */
+
+	duk_dup(ctx, 0);
+	duk_dup(ctx, -3);
+	duk_def_prop(ctx, -6, DUK_PROPDESC_FLAGS_C);  /* require.loaded[resolved_id] = exports */
+
+	/* [ id require require.loaded undefined exports mod_func ] */
+
+	duk_dup(ctx, -2);
+	duk_push_current_function(ctx);
+	duk_dup(ctx, -2);
+	duk_push_object(ctx);  /* module */
+	duk_dup(ctx, 0);  /* resolved id: require(id) must return this same module */
+	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+
+	/* [ id require require.loaded undefined exports mod_func exports(this) require exports module ] */
+
+	duk_call_method(ctx, 3 /*nargs*/);
+
+	/* [ id require require.loaded undefined exports result(ignored) ] */
+
+	duk_pop(ctx);
+	return 1;  /* return exports */
+}
+#else
+int duk_bi_global_object_require(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_COMMONJS_MODULES */

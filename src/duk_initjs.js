@@ -41,4 +41,9 @@
     if (true) {
         def(D.Logger, 'clog', new D.Logger('C'));
     }
+
+    // Tracking table for CommonJS module loading.
+    if (true) {
+        def(this.require, 'loaded', {});
+    }
 })(this, Duktape);

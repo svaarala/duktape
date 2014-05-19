@@ -90,14 +90,11 @@ duk_ret_t duk_bi_global_object_decode_uri(duk_context *ctx);
 duk_ret_t duk_bi_global_object_decode_uri_component(duk_context *ctx);
 duk_ret_t duk_bi_global_object_encode_uri(duk_context *ctx);
 duk_ret_t duk_bi_global_object_encode_uri_component(duk_context *ctx);
-#ifdef DUK_USE_SECTION_B
 duk_ret_t duk_bi_global_object_escape(duk_context *ctx);
 duk_ret_t duk_bi_global_object_unescape(duk_context *ctx);
-#endif
-#ifdef DUK_USE_BROWSER_LIKE
 duk_ret_t duk_bi_global_object_print(duk_context *ctx);
 duk_ret_t duk_bi_global_object_alert(duk_context *ctx);
-#endif
+duk_ret_t duk_bi_global_object_require(duk_context *ctx);
 
 /* FIXME: typing */
 void duk_bi_json_parse_helper(duk_context *ctx,
