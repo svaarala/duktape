@@ -760,6 +760,9 @@ duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
  */
 
 #if defined(DUK_USE_COMMONJS_MODULES)
+#endif  /* DUK_USE_COMMONJS_MODULES */
+
+#if defined(DUK_USE_COMMONJS_MODULES)
 duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	const char *raw_id;
 
@@ -821,14 +824,19 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	/* [ id require require.loaded undefined exports mod_func ] */
 
-	duk_dup(ctx, -2);
-	duk_push_current_function(ctx);
-	duk_dup(ctx, -2);
+	duk_dup(ctx, -2);  /* exports (this binding) */
+
+	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
+	duk_dup(ctx, 0);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
+
+	duk_dup(ctx, -2);  /* exports (argument) */
+
 	duk_push_object(ctx);  /* module */
 	duk_dup(ctx, 0);  /* resolved id: require(id) must return this same module */
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
-	/* [ id require require.loaded undefined exports mod_func exports(this) require exports module ] */
+	/* [ id require require.loaded undefined exports mod_func exports(this) fresh_require exports module ] */
 
 	duk_call_method(ctx, 3 /*nargs*/);
 
