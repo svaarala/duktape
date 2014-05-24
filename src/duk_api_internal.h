@@ -78,7 +78,7 @@ void duk_push_hstring(duk_context *ctx, duk_hstring *h);
 void duk_push_hstring_stridx(duk_context *ctx, int stridx);
 void duk_push_hobject(duk_context *ctx, duk_hobject *h);
 void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
-void duk_push_builtin(duk_context *ctx, int builtin_idx);
+void duk_push_hobject_bidx(duk_context *ctx, int builtin_idx);
 int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int prototype_bidx);
 int duk_push_object_helper_proto(duk_context *ctx, int hobject_flags_and_class, duk_hobject *proto);
 int duk_push_object_internal(duk_context *ctx);

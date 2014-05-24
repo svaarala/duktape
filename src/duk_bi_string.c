@@ -825,7 +825,7 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 		return 1;
 	} else if (duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
 #ifdef DUK_USE_REGEXP_SUPPORT
-		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_REGEXP_CONSTRUCTOR]);
+		duk_push_hobject_bidx(ctx, DUK_BIDX_REGEXP_CONSTRUCTOR);
 		duk_dup(ctx, 0);
 		duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
 		duk_replace(ctx, 0);
@@ -1061,7 +1061,6 @@ int duk_bi_string_prototype_split(duk_context *ctx) {
 
 #ifdef DUK_USE_REGEXP_SUPPORT
 static void duk__to_regexp_helper(duk_context *ctx, duk_idx_t index, int force_new) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
 	/* Shared helper for match() steps 3-4, search() steps 3-4. */
@@ -1079,7 +1078,7 @@ static void duk__to_regexp_helper(duk_context *ctx, duk_idx_t index, int force_n
 	return;
 
  do_new:
-	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_REGEXP_CONSTRUCTOR]);
+	duk_push_hobject_bidx(ctx, DUK_BIDX_REGEXP_CONSTRUCTOR);
 	duk_dup(ctx, index);
 	duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
 	duk_replace(ctx, index);

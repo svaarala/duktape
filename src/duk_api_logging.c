@@ -12,7 +12,6 @@
 #define DUK__LOGFMT_BUFSIZE  256  /* size for formatting buffers */
 
 void duk_log(duk_context *ctx, int level, const char *fmt, ...) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	va_list ap;
 	char buf[DUK__LOGFMT_BUFSIZE];
 	/* stridx_logfunc[] must be static to allow initializer with old compilers like BCC */
@@ -32,7 +31,7 @@ void duk_log(duk_context *ctx, int level, const char *fmt, ...) {
 	buf[sizeof(buf) - 1] = (char) 0;
 	va_end(ap);
 
-	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_LOGGER_CONSTRUCTOR]);
+	duk_push_hobject_bidx(ctx, DUK_BIDX_LOGGER_CONSTRUCTOR);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_CLOG);
 	duk_get_prop_stridx(ctx, -1, stridx_logfunc[level]);
 

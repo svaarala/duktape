@@ -3144,7 +3144,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * given the guarantees above.
 				 */
 
-				duk_push_hobject(ctx, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR]);
+				duk_push_hobject_bidx(ctx, DUK_BIDX_OBJECT_CONSTRUCTOR);
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_DEFINE_PROPERTY);
 				duk_push_undefined(ctx);
 				duk_dup(ctx, b);
