@@ -522,7 +522,7 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 
 	if (this_to_global) {
 		DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
-		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+		duk_push_hobject_bidx(ctx, DUK_BIDX_GLOBAL);
 	} else {
 		duk_tval *tv;
 		DUK_ASSERT(thr->callstack_top >= 2);
@@ -760,15 +760,40 @@ duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
  */
 
 #if defined(DUK_USE_COMMONJS_MODULES)
+static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_id, const char *mod_id) {
+	DUK_ASSERT(req_id != NULL);
+	/* mod_id may be NULL */
+
+	duk_dup(ctx, 0);  /* FIXME */
+}
 #endif  /* DUK_USE_COMMONJS_MODULES */
 
 #if defined(DUK_USE_COMMONJS_MODULES)
 duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
-	const char *raw_id;
+	const char *str_req_id;  /* requested identifier */
+	const char *str_mod_id;  /* require.id of current module */
 
-	raw_id = duk_require_string(ctx, 0);
+	/* NOTE: we try to minimize code size by avoiding unnecessary pops,
+	 * so the stack looks a bit cluttered in this function.  DUK_ASSERT_TOP()
+	 * assertions are used to ensure stack configuration is correct at each
+	 * step.
+	 */
 
-	/* FIXME: normalize/resolve */
+	/*
+	 *  Resolve module identifier into canonical absolute form.
+	 */
+
+	str_req_id = duk_require_string(ctx, 0);
+	duk_push_current_function(ctx);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
+	str_mod_id = duk_get_string(ctx, -1);  /* ignore non-strings */
+	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
+	str_req_id = NULL;
+	str_mod_id = NULL;
+	DUK_D(DUK_DPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
+	                 duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+	/* [ requested_id require require.id resolved_id ] */
+	DUK_ASSERT_TOP(ctx, 4);
 
 	/*
 	 *  Cached module check.
@@ -779,16 +804,20 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  be supported to some extent.
 	 */
 
-	duk_push_current_function(ctx);
-	duk_get_prop_string(ctx, -1, "loaded");  /* FIXME */
-	(void) duk_require_hobject(ctx, -1);
+	/* [ requested_id require require.id resolved_id ] */
+	DUK_ASSERT_TOP(ctx, 4);
 
-	/* [ id require require.loaded ] */
+	duk_push_hobject_bidx(ctx, DUK_BIDX_DUKTAPE);
+	duk_get_prop_string(ctx, 4, "loaded");  /* FIXME */
+	(void) duk_require_hobject(ctx, 5);
 
-	duk_dup(ctx, 0);
-	if (duk_get_prop(ctx, -2)) {
-		/* [ id require require.loaded require.loaded[id] ] */
-		DUK_D(DUK_DPRINT("module already loaded: %!T", duk_get_tval(ctx, 0)));
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded ] */
+	DUK_ASSERT_TOP(ctx, 6);
+
+	duk_dup(ctx, 3);
+	if (duk_get_prop(ctx, 5)) {
+		/* [ requested_id require require.id resolved_id Duktape Duktape.loaded require.loaded[id] ] */
+		DUK_D(DUK_DPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
 		return 1;
 	}
 
@@ -801,46 +830,61 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  for now.
 	 */
 
-	DUK_D(DUK_DPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 0)));
+	DUK_D(DUK_DPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
 
-	/* [ id require require.loaded undefined ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined ] */
+	DUK_ASSERT_TOP(ctx, 7);
 
 	duk_push_object(ctx);  /* exports */
 
 	duk_push_string(ctx, "(function(require,exports,module){");
-	duk_get_prop_string(ctx, -5, "find");  /* require.find */
-	duk_dup(ctx, 0);
-	duk_call(ctx, 1 /*nargs*/);  /* [ ... require.find resolved_id ] -> [ ... source ] */
-	(void) duk_require_hstring(ctx, -1);
+	duk_get_prop_string(ctx, 4, "find");  /* Duktape.find */  /* FIXME: stridx */
+	duk_dup(ctx, 3);
+	duk_call(ctx, 1 /*nargs*/);  /* [ ... Duktape.find resolved_id ] -> [ ... source ] */
+	DUK_ASSERT_TOP(ctx, 10);
+	(void) duk_require_hstring(ctx, 9);  /* type of retval */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
 	duk_eval(ctx);
 
-	/* [ id require require.loaded undefined exports mod_func ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func ] */
+	DUK_ASSERT_TOP(ctx, 9);
 
-	duk_dup(ctx, 0);
-	duk_dup(ctx, -3);
-	duk_def_prop(ctx, -6, DUK_PROPDESC_FLAGS_C);  /* require.loaded[resolved_id] = exports */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 7);
+	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_C);  /* require.loaded[resolved_id] = exports */
 
-	/* [ id require require.loaded undefined exports mod_func ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func ] */
+	DUK_ASSERT_TOP(ctx, 9);
 
-	duk_dup(ctx, -2);  /* exports (this binding) */
+	duk_dup(ctx, 6);  /* exports (this binding) */
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports ] */
+	DUK_ASSERT_TOP(ctx, 10);
 
 	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
-	duk_dup(ctx, 0);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
+	duk_dup(ctx, 3);
+	duk_put_prop_stridx(ctx, 10, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
 
-	duk_dup(ctx, -2);  /* exports (argument) */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require ] */
+	DUK_ASSERT_TOP(ctx, 11);
+
+	duk_dup(ctx, 7);  /* exports (argument) */
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require exports ] */
+	DUK_ASSERT_TOP(ctx, 12);
 
 	duk_push_object(ctx);  /* module */
-	duk_dup(ctx, 0);  /* resolved id: require(id) must return this same module */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
+	duk_def_prop_stridx(ctx, 12, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
-	/* [ id require require.loaded undefined exports mod_func exports(this) fresh_require exports module ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require exports module ] */
+	DUK_ASSERT_TOP(ctx, 13);
 
 	duk_call_method(ctx, 3 /*nargs*/);
 
-	/* [ id require require.loaded undefined exports result(ignored) ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports result(ignored) ] */
+	DUK_ASSERT_TOP(ctx, 9);
 
 	duk_pop(ctx);
 	return 1;  /* return exports */
