@@ -44,6 +44,6 @@
 
     // Tracking table for CommonJS module loading.
     if (true) {
-        def(this.require, 'loaded', {});
+        def(D, 'loaded', {});
     }
 })(this, Duktape);
