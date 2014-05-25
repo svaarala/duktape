@@ -18,6 +18,12 @@
  */
 #define  DUK_BI_LOGGER_SHORT_MSG_LIMIT  256
 
+/* Maximum length of CommonJS module identifier to resolve.  Length includes
+ * both current module ID, requested (possibly relative) module ID, and a
+ * slash in between.
+ */
+#define  DUK_BI_COMMONJS_MODULE_ID_LIMIT  256
+
 duk_ret_t duk_bi_array_constructor(duk_context *ctx);
 duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx);
 duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx);

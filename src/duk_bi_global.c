@@ -761,10 +761,148 @@ duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
 
 #if defined(DUK_USE_COMMONJS_MODULES)
 static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_id, const char *mod_id) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_size_t mod_id_len;
+	duk_size_t req_id_len;
+	duk_uint8_t buf_in[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
+	duk_uint8_t buf_out[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
+	duk_uint8_t *p;
+	duk_uint8_t *q;
+
 	DUK_ASSERT(req_id != NULL);
 	/* mod_id may be NULL */
+	DUK_ASSERT(sizeof(buf_out) >= sizeof(buf_in));  /* bound checking requires this */
 
-	duk_dup(ctx, 0);  /* FIXME */
+	/*
+	 *  A few notes on the algorithm:
+	 *
+	 *    - Terms are not allowed to begin with a period unless the term
+	 *      is either '.' or '..'.  This simplifies implementation (and
+	 *      is within CommonJS modules specification).
+	 *
+	 *    - There are few output bound checks here.  This is on purpose:
+	 *      we check the input length and rely on the output never being
+	 *      longer than the input, so we cannot run out of output space.
+	 *
+	 *    - Non-ASCII characters are processed as individual bytes and
+	 *      need no special treatment.  However, U+0000 terminates the
+	 *      algorithm; this is not an issue because U+0000 is not a
+	 *      desirable term character anyway.
+	 */
+
+	/*
+	 *  Set up the resolution input which is the requested ID directly
+	 *  (if absolute or no current module path) or with current module
+	 *  ID prepended (if relative and current module path exists).
+	 */
+
+	req_id_len = DUK_STRLEN(req_id);
+	if (mod_id != NULL && req_id[0] == '.') {
+		mod_id_len = DUK_STRLEN(mod_id);
+		if (mod_id_len + 1 + req_id_len + 1 >= sizeof(buf_in)) {
+			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
+			goto resolve_error;
+		}
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", mod_id, req_id);
+	} else {
+		if (req_id_len + 1 >= sizeof(buf_in)) {
+			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
+			goto resolve_error;
+		}
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", req_id);
+	}
+	buf_in[sizeof(buf_in) - 1] = (duk_uint8_t) 0;
+
+	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", buf_in));
+
+	/*
+	 *  Resolution loop.  At the top of the loop we're expecting a valid
+	 *  term: '.', '..', or a non-empty identifier not starting with a period.
+	 */
+
+	p = buf_in;
+	q = buf_out;
+	for (;;) {
+		duk_uint8_t c;
+
+		/* Here 'p' always points to the start of a term. */
+		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p", p, (void *) q, (void *) buf_out));
+
+		c = *p++;
+		if (DUK_UNLIKELY(c == 0)) {
+			DUK_DD(DUK_DDPRINT("resolve error: requested ID must end with a non-empty term"));
+			goto resolve_error;
+		} else if (DUK_UNLIKELY(c == '.')) {
+			c = *p++;
+			if (c == '/') {
+				/* Term was '.' and is eaten entirely (including dup slashes). */
+				goto eat_dup_slashes;
+			}
+			if (c == '.' && *p == '/') {
+				/* Term was '..', backtrack resolved name by one component.
+				 *  q[-1] = previous slash (or beyond start of buffer)
+				 *  q[-2] = last char of previous component (or beyond start of buffer)
+				 */
+				p++;  /* eat (first) input slash */
+				DUK_ASSERT(q >= buf_out);
+				if (q == buf_out) {
+					DUK_DD(DUK_DDPRINT("resolve error: term was '..' but nothing to backtrack"));
+					goto resolve_error;
+				}
+				DUK_ASSERT(*(q - 1) == '/');
+				q--;  /* backtrack to last output slash */
+				for (;;) {
+					/* Backtrack to previous slash or start of buffer. */
+					DUK_ASSERT(q >= buf_out);
+					if (q == buf_out) {
+						break;
+					}
+					if (*(q - 1) == '/') {
+						break;
+					}
+					q--;
+				}
+				goto eat_dup_slashes;
+			}
+			DUK_DD(DUK_DDPRINT("resolve error: term begins with '.' but is not '.' or '..' (not allowed now)"));
+			goto resolve_error;
+		} else if (DUK_UNLIKELY(c == '/')) {
+			/* e.g. require('/foo'), empty terms not allowed */
+			DUK_DD(DUK_DDPRINT("resolve error: empty term (not allowed now)"));
+			goto resolve_error;
+		} else {
+			for (;;) {
+				/* Copy term name until end or '/'. */
+				*q++ = c;
+				c = *p++;
+				if (DUK_UNLIKELY(c == 0)) {
+					goto loop_done;
+				} else if (DUK_UNLIKELY(c == '/')) {
+					*q++ = '/';
+					break;
+				} else {
+					/* write on next loop */
+				}
+			}
+		}
+
+	 eat_dup_slashes:
+		for (;;) {
+			/* eat dup slashes */
+			c = *p;
+			if (DUK_LIKELY(c != '/')) {
+				break;
+			}
+			p++;
+		}
+	}
+ loop_done:
+
+	duk_push_lstring(ctx, (const char *) buf_out, (size_t) (q - buf_out));
+	return;
+
+ resolve_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", req_id);
 }
 #endif  /* DUK_USE_COMMONJS_MODULES */
 
@@ -786,12 +924,14 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	str_req_id = duk_require_string(ctx, 0);
 	duk_push_current_function(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
-	str_mod_id = duk_get_string(ctx, -1);  /* ignore non-strings */
+	str_mod_id = duk_get_string(ctx, 2);  /* ignore non-strings */
+	DUK_DDD(DUK_DDDPRINT("resolve module id: requested=%!T, currentmodule=%!T",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2)));
 	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
 	str_req_id = NULL;
 	str_mod_id = NULL;
-	DUK_D(DUK_DPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
-	                 duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
 	/* [ requested_id require require.id resolved_id ] */
 	DUK_ASSERT_TOP(ctx, 4);
 
@@ -817,7 +957,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);
 	if (duk_get_prop(ctx, 5)) {
 		/* [ requested_id require require.id resolved_id Duktape Duktape.loaded require.loaded[id] ] */
-		DUK_D(DUK_DPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
+		DUK_DD(DUK_DDPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
 		return 1;
 	}
 
@@ -830,7 +970,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  for now.
 	 */
 
-	DUK_D(DUK_DPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
+	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined ] */
 	DUK_ASSERT_TOP(ctx, 7);
