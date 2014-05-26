@@ -997,7 +997,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func ] */
 	DUK_ASSERT_TOP(ctx, 9);
 
-	duk_dup(ctx, 6);  /* exports (this binding) */
+	duk_dup(ctx, 7);  /* exports (this binding) */
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports ] */
 	DUK_ASSERT_TOP(ctx, 10);
