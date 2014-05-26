@@ -1,4 +1,6 @@
 /*
+ *  Tests for CommonJS module environment bindings and scope behavior.
+ *
  *  A module environment is isolated from the global environment.  Variable
  *  and function declarations do not pollute the global object (although
  *  plain assignments do).  In the current implementation a module is wrapped
@@ -6,6 +8,48 @@
  */
 
 /*===
+basic bindings
+require: function false
+module: object foo/bar false false false
+exports: object true
+===*/
+
+/* Check 'require', 'exports', and 'module'. */
+
+var global_require = require;
+
+Duktape.find = function (id) {
+    if (id === 'foo') {
+        return 'var mod = require("./bar");\n'
+    }
+    if (id === 'foo/bar') {
+        return 'var pd;\n' +
+               'print("require:", typeof require, require === global_require);\n' +
+               'pd = Object.getOwnPropertyDescriptor(module, "id");\n' +
+               'print("module:", typeof module, module.id, pd.writable, pd.enumerable, pd.configurable);\n' +
+               'print("exports:", typeof exports, exports === this);\n'
+               ;
+    }
+    throw new Error('cannot find module');
+};
+
+print('basic bindings');
+
+function bindingTest() {
+    var mod = require('foo');
+
+    // module.id must be a resolved absolute path so that it can be used
+    // to require the correct module from any other module
+}
+
+try {
+    bindingTest();
+} catch (e) {
+    print(e);
+}
+
+/*===
+scoping
 before global require
 module: global-module
 exports: global-exports
@@ -41,6 +85,8 @@ myVar2: global-myVar2
 myVar3: module-myVar3
 foo: global-foo
 ===*/
+
+/* Assignment / scope tests. */
 
 // These shouldn't get overwritten.
 var module;
@@ -101,6 +147,8 @@ function moduleEnvironmentTest() {
     print('after module require');
     dumpVars();
 }
+
+print('scoping');
 
 /* Using a require() from a global program. */
 print('before global require');
