@@ -24,9 +24,11 @@ testModule: Error
 Duktape.find = function (id) {
     print('Duktape.find', id);
     if (id == 'testModule') {
+        // require.id is non-writable but is configurable, so its value must
+        // be changed with Object.defineProperty().
         return 'var mod;\n' +
                'exports.name = "testModule";\n' +
-               'require.id = "./././testModule/foo/../../test";\n' +   // same as 'test' but non-canonical
+               'Object.defineProperty(require, "id", { value: "./././testModule/foo/../../test" });\n' +   // same as 'test' but non-canonical
                'mod = require("./innerRequire");\n';
     }
     throw new Error('cannot find module');
