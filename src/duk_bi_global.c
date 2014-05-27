@@ -979,7 +979,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
 	duk_dup(ctx, 3);
-	duk_put_prop_stridx(ctx, 7, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
+	duk_def_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_WC);  /* a fresh require() with require.id = resolved target module id */
 
 	duk_push_object(ctx);  /* exports */
 
