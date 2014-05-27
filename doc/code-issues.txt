@@ -360,6 +360,28 @@ unwieldy.
 Portability concerns
 ====================
 
+Missing or broken platform functions
+------------------------------------
+
+Sometimes platform functions are missing, even when they're supposed to be
+present.  For instance, a compiler might advertise as being C99 compliant
+but lack some mandatory functions.
+
+Sometimes platform functions may be present but broken.  For instance,
+some old uclibc versions have a broken ``memcpy()`` but a working
+``memmove()``.
+
+va_copy
+-------
+
+Duktape needs ``va_copy()`` to implement ``duk_push_sprintf()`` which needs
+trial printing of a formatted string into a buffer whose required size is
+not known beforehand.
+
+Most vararg macros are C89 but ``va_copy()`` is C99 / C++11, so a replacement
+is needed for older environments.  This replacement is difficult to implement
+in a portable fashion because the type of ``va_list`` varies a lot.
+
 Strict aliasing rules
 ---------------------
 
