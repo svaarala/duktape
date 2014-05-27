@@ -3,7 +3,7 @@ title: NodeJS like module.exports assignment support
 desc: http://stackoverflow.com/questions/7137397/module-exports-vs-exports-in-nodejs
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -20,3 +20,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - http://timnew.github.io/blog/2012/04/20/exports_vs_module_exports_in_node_js/
+- - 2014-05-27 22:27:38.381876 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
+  - ""
