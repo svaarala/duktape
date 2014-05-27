@@ -977,13 +977,22 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
 
+	/* Fresh require: require.id is left configurable (but not writable)
+	 * so that is not easy to accidentally tweak it, but it can still be
+	 * done with Object.defineProperty().  (This could also be just made
+	 * non-configurable, as there is no practical reason to touch it.)
+	 */
 	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
 	duk_dup(ctx, 3);
-	duk_def_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_WC);  /* a fresh require() with require.id = resolved target module id */
+	duk_def_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
 
-	duk_push_object(ctx);  /* exports */
+	/* Exports table. */
+	duk_push_object(ctx);
 
-	duk_push_object(ctx);  /* module */
+	/* Module table: module.id is non-writable and non-configurable, as
+	 * the CommonJS spec suggests this if possible.
+	 */
+	duk_push_object(ctx);
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
 	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
