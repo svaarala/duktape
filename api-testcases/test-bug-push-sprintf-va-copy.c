@@ -2,6 +2,8 @@
  *  Duktape 0.10.0 reused a va_list argument when pushing a formatted string
  *  and the initial buffer size was not enough.  This bug testcase tries to
  *  trigger that issue.  Unfortunately it is not triggered with every compiler.
+ *
+ *  Reported by Andreas Öman.
  */
 
 /*===
