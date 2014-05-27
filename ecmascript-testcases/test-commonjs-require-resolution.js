@@ -184,6 +184,7 @@ Duktape.find: "foo\u1234\x01/\u1234"
 function nonAsciiTest() {
     Duktape.find = function (id) {
         print('Duktape.find:', Duktape.enc('jx', id));
+        throw Error('module not found');
     };
 
     function test(id) {
