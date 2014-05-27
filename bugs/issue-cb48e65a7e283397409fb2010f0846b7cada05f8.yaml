@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: reuse of vararg list in duk_push_vsprintf(); needs va_copy which is not C99
+desc: "Github issue #10."
+type: :bugfix
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-27 21:19:58.325960 Z
+references: []
+
+id: cb48e65a7e283397409fb2010f0846b7cada05f8
+log_events: 
+- - 2014-05-27 21:19:58.409911 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

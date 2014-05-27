@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: NodeJS like module.exports assignment support
+desc: http://stackoverflow.com/questions/7137397/module-exports-vs-exports-in-nodejs
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-05-26 16:31:34.907883 Z
+references: []
+
+id: ba2575a87ee209509ad6ce521a759c36d30155d7
+log_events: 
+- - 2014-05-26 16:31:35.085998 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-05-26 19:51:06.066987 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - http://timnew.github.io/blog/2012/04/20/exports_vs_module_exports_in_node_js/
