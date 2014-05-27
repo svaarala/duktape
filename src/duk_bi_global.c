@@ -756,7 +756,7 @@ duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
 #endif  /* DUK_USE_BROWSER_LIKE */
 
 /*
- *  CommonJS require()
+ *  CommonJS require() and modules support
  */
 
 #if defined(DUK_USE_COMMONJS_MODULES)
@@ -932,6 +932,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	str_mod_id = NULL;
 	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
 	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+
 	/* [ requested_id require require.id resolved_id ] */
 	DUK_ASSERT_TOP(ctx, 4);
 
@@ -961,72 +962,106 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		return 1;
 	}
 
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined ] */
+	DUK_ASSERT_TOP(ctx, 7);
+
 	/*
 	 *  Module not loaded (and loading not started previously).
 	 *
-	 *  Resolve the module: a user callback provided in require.find()
-	 *  needs to provide the source code for the module.  The module
-	 *  environment is built using a pretty trivial function wrapper
-	 *  for now.
+	 *  Create a new require() function with 'id' set to resolved ID
+	 *  of module being loaded.  Also create 'exports' and 'module'
+	 *  tables but don't register exports to the loaded table yet.
+	 *  We don't want to do that unless the user module search callbacks
+	 *  succeeds in finding the module.
 	 */
 
 	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined ] */
-	DUK_ASSERT_TOP(ctx, 7);
+	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
+	duk_dup(ctx, 3);
+	duk_put_prop_stridx(ctx, 7, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
 
 	duk_push_object(ctx);  /* exports */
 
+	duk_push_object(ctx);  /* module */
+	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
+	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module ] */
+	DUK_ASSERT_TOP(ctx, 10);
+
+	/*
+	 *  Call user provided module search function and build the wrapped
+	 *  module source code (if necessary).  The module search function
+	 *  can be used to implement pure Ecmacsript, pure C, and mixed
+	 *  Ecmascript/C modules.
+	 *
+	 *  The module search function can operate on the exports table directly
+	 *  (e.g. DLL code can register values to it).  It can also return a
+	 *  string which is interpreted as module source code (if a non-string
+	 *  is returned the module is assumed to be a pure C one).  If a module
+	 *  cannot be found, an error must be thrown by the user callback.
+	 *
+	 *  NOTE: the current arrangement allows C modules to be implemented
+	 *  but since the exports table is registered to Duktape.loaded only
+	 *  after the search function returns, circular requires / partially
+	 *  loaded modules don't work for C modules.  This is rarely an issue,
+	 *  as C modules usually simply expose a set of helper functions.
+	 */
+
 	duk_push_string(ctx, "(function(require,exports,module){");
+
+	/* Duktape.find(resolved_id, fresh_require, exports, module). */
 	duk_get_prop_string(ctx, 4, "find");  /* Duktape.find */  /* FIXME: stridx */
 	duk_dup(ctx, 3);
-	duk_call(ctx, 1 /*nargs*/);  /* [ ... Duktape.find resolved_id ] -> [ ... source ] */
-	DUK_ASSERT_TOP(ctx, 10);
-	(void) duk_require_hstring(ctx, 9);  /* type of retval */
+	duk_dup(ctx, 7);
+	duk_dup(ctx, 8);
+	duk_dup(ctx, 9);  /* [ ... Duktape.find resolved_id fresh_require exports module ] */
+	duk_call(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
+	DUK_ASSERT_TOP(ctx, 12);
+
+	/* Because user callback did not throw an error, remember exports table. */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 8);
+	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.loaded[resolved_id] = exports */
+
+	/* If user callback did not return source code, module loading
+	 * is finished (user callback initialized exports table directly).
+	 */
+	if (!duk_is_string(ctx, 11)) {
+		/* User callback did not return source code, so
+		 * module loading is finished.
+		 */
+		duk_dup(ctx, 8);
+		return 1;
+	}
+
+	/* Finish the wrapped module source. */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
 	duk_eval(ctx);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func ] */
-	DUK_ASSERT_TOP(ctx, 9);
+	/*
+	 *  Call the wrapped module function.
+	 */
 
-	duk_dup(ctx, 3);
-	duk_dup(ctx, 7);
-	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_C);  /* require.loaded[resolved_id] = exports */
-
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func ] */
-	DUK_ASSERT_TOP(ctx, 9);
-
-	duk_dup(ctx, 7);  /* exports (this binding) */
-
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports ] */
-	DUK_ASSERT_TOP(ctx, 10);
-
-	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
-	duk_dup(ctx, 3);
-	duk_put_prop_stridx(ctx, 10, DUK_STRIDX_ID);  /* a fresh require() with require.id = resolved target module id */
-
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module mod_func ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
-	duk_dup(ctx, 7);  /* exports (argument) */
+	duk_dup(ctx, 8);  /* exports (this binding) */
+	duk_dup(ctx, 7);  /* fresh require (argument) */
+	duk_dup(ctx, 8);  /* exports (argument) */
+	duk_dup(ctx, 9);  /* module (argument) */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require exports ] */
-	DUK_ASSERT_TOP(ctx, 12);
-
-	duk_push_object(ctx);  /* module */
-	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
-	duk_def_prop_stridx(ctx, 12, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
-
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports mod_func exports fresh_require exports module ] */
-	DUK_ASSERT_TOP(ctx, 13);
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
+	DUK_ASSERT_TOP(ctx, 15);
 
 	duk_call_method(ctx, 3 /*nargs*/);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined exports result(ignored) ] */
-	DUK_ASSERT_TOP(ctx, 9);
+	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module result(ignored) ] */
+	DUK_ASSERT_TOP(ctx, 11);
 
-	duk_pop(ctx);
+	duk_pop_2(ctx);
 	return 1;  /* return exports */
 }
 #else
