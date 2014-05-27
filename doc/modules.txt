@@ -5,19 +5,22 @@ Modules
 Introduction
 ============
 
-This document discusses the barebone module framework built into Duktape:
-
-* There is a module search function which must be provided by user code.
-  The search function maps a module ID into a source code string or throws
-  an error.  To remain portable and unaware of file systems and such,
-  Duktape does not provide a default module search function.
+This document discusses the barebone CommonJS-based module framework
+built into Duktape:
 
 * Ecmascript modules are defined using the CommonJS module format:
 
   - http://wiki.commonjs.org/wiki/Modules/1.1.1
 
-* C modules loaded from DLL files have a custom convention to allow
-  module initialization code to run when a C module is loaded.
+* The user must provide a *module search function* which locates a module
+  corresponding to a resolved module ID, and can register module symbols
+  directly and/or return module source code as a string.  To remain portable
+  and unaware of file systems and such, Duktape does not provide a default
+  module search function.
+
+* C modules, static or DLL-based, can be implemented on top of the module
+  search function by user code.  Because DLL handling is inherently
+  unportable, there is no built-in DLL support at the moment.
 
 Using modules from Ecmascript code (require)
 ============================================
@@ -49,13 +52,54 @@ partially loaded, mapping a resolved identifier to the module's ``exports``
 table.  If a required module has already been (fully or partially) loaded,
 the same ``exports`` value is returned without further action.
 
-If a module has not yet been loaded Duktape calls ``Duktape.find()``, a module
-search function which must be provided by the user (there is no default).
-The search function is given the resolved identifier of the module, and is
-expected to return the module source code as a string or throw an error.
-If the module is found, a fresh ``exports`` object is created and registered
-to ``Duktape.loaded``.  This registration is done before evaluating the module
-source code, so that circular dependencies work as required.
+If a module has not yet been registered to ``Duktape.loaded``, Duktape calls
+``Duktape.find()``, a module search function which must be provided by the
+user (there is no default)::
+
+  Duktape.find = function (id, require, exports, module) {
+    // ...
+  };
+
+If the search function cannot locate a module based on its identifier, it is
+expected to throw an error.  If a module is found, the search function can
+register symbols directly to 'exports' (this is used to implement C modules),
+and can also return a string to be used as the module Ecmascript source code::
+
+  /* An actual implementation would usually scan and return module sources
+   * e.g. from the filesystem or a compressed source pack.  This example
+   * illustrates the return value options.
+   */
+
+  Duktape.find = function (id, require, exports, module) {
+    if (id === 'foo') {
+      /* 'foo' is a native module, register symbols to 'exports' in a
+       * platform specific way.
+       */
+      return;  // undefined: no Ecmascript source
+    }
+    if (id === 'bar') {
+      /* 'bar' is a pure Ecmascript module. */
+      return 'exports.hello = function () { print("Hello world from bar!"); };';
+    }
+    if (id === 'quux') {
+      /* 'quux' is a mixed C/Ecmascript module.  C code provides the
+       * exports.rawFunc() binding while Ecmascript code implements
+       * a safe variant on top of that.
+       */
+      return 'exports.func = function () {\n' +
+             '    try { exports.rawFunc(); } catch (e) { print(e); }\n' +
+             '};\n';
+    }
+
+    /* If a module is not found, an error must be thrown. */
+    throw new Error('cannot find module: ' + id);
+  };
+
+If the search function returns without throwing an error, the exports value
+is registered to ``Duktape.loaded`` before evaluating module source code
+possibly returned by the search function.  This is important so that circular
+requires are properly supported (the current barebones mechanism does not
+support circular references for C modules, though).
 
 The user ``Duktape.find()`` function encapsulates functionality such as
 module search paths and file I/O.  This is a nice division of labor as it
@@ -97,25 +141,23 @@ which is then called (more or less) like::
          exports,                 /* exports */
          { id: 'package/lib' });  /* module */
 
-The return value of this call is ignored.
+A few notes:
 
-The first argument is a new function object whose underlying native function
-is the same as the global ``require()`` function.  This fresh function is
-needed to facilitate resolution of relative module identifiers: relative
-identifers are resolved relative to the current module.  This is easiest
-to manage by providing a new function and storing the resolution path in a
-property of that function.  Native code can then pick up the resolution path
-from the function object.
+* The return value of this call is ignored.
 
-The second argument is an initially empty object.  The module code adds
-all exported symbols into the object which is then registered into
-``Duktape.mods[id]`` and returned from ``require()``.
+* The first argument is a new function object whose underlying native function
+  is the same as the global ``require()`` function.  This fresh function is
+  needed to facilitate resolution of relative module identifiers: relative
+  identifers are resolved relative to the current module.  The resolved
+  absolute identifier of the current module is tracked in ``require.id``.
+  Native code can then pick up the resolution path from the current function
+  object.
 
-The third argument provides the module with its own, resolved identifier.
-The value in ``module.id`` is guaranteed to be in absolute form, and resolve
-to the module itself if required from any other module.  Duktape doesn't
-currently support ``module.exports`` like NodeJS, as it is not required by
-CommonJS.
+* The third argument provides the module with its own, resolved identifier.
+  The value in ``module.id`` is guaranteed to be in absolute form, and resolve
+  to the module itself if required from any other module.  Duktape doesn't
+  currently support ``module.exports`` like NodeJS, as it is not required by
+  CommonJS.
 
 CommonJS module identifier resolution
 =====================================
@@ -155,15 +197,24 @@ which initially has the same value as ``exports``:
 
 Duktape doesn't currently support assignment to ``module.exports``.
 
-Using modules from C (duk_require_module)
-=========================================
-
-**FIXME**
-
 C modules (DLLs)
 ================
 
-**FIXME**
+The user provided module search function can be used to implement DLL support.
+Simply load the DLL based on the module identifier, and call some kind of init
+function in the DLL to register module symbols into the 'exports' table given
+to the module loader.
+
+Mixed C/Ecmascript modules are also possible by first registering symbols
+provided by C code into the 'exports' table, and then returning the Ecmascript
+part of the module.  The Ecmascript part can access the symbols provided by C
+code through the shared 'exports' table.
+
+Because the module is not yet registered into ``Duktape.loaded`` when the
+module search function executes, circular requires are not handled correctly
+for C modules.
+
+At the moment there are no recommended DLL conventions, see future work.
 
 Background
 ==========
@@ -249,6 +300,34 @@ module.exports
 --------------
 
 Could add support to ``module.exports``.
+
+Ability to load modules from C code
+-----------------------------------
+
+For instance, implement something like::
+
+  // Pushes the 'exports' table of 'foo/bar' module to the stack.
+  duk_require_module(ctx, "foo/bar");
+
+This is not a high priority thing as one can simply::
+
+  duk_eval_string(ctx, "require('foo/bar')");
+
+Eval invokes the compiler which is not ideal, but modules are usually
+imported during initialization so this should rarely matter.
+
+Better C module support
+-----------------------
+
+Several ideas to improve the C module support:
+
+* Allow C modules to participate in circular requires.  Module search and
+  C module init need to be separated for this to be possible, so that the
+  ``Duktape.loaded`` registration can be done in-between.
+
+* Provide a default DLL loading helper for at least POSIX and Windows.
+
+* Provide suggested module initialization conventions.
 
 Lua-like module loader
 ----------------------
