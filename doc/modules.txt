@@ -210,11 +210,18 @@ provided by C code into the 'exports' table, and then returning the Ecmascript
 part of the module.  The Ecmascript part can access the symbols provided by C
 code through the shared 'exports' table.
 
-Because the module is not yet registered into ``Duktape.loaded`` when the
-module search function executes, circular requires are not handled correctly
-for C modules.
+Limitations:
 
-At the moment there are no recommended DLL conventions, see future work.
+* Because the module is not yet registered into ``Duktape.loaded`` when the
+  module search function executes, circular requires are not handled correctly
+  for C modules.
+
+* There is no automatic mechanism to know when a DLL can be unloaded from
+  memory.  Tracking the reachability of the exports table of the module
+  (e.g. through a finalizer) is **not** enough because other modules can
+  copy references to individual exported values.
+
+* At the moment there are no recommended DLL conventions, see future work.
 
 Background
 ==========
