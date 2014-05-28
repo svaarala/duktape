@@ -47,16 +47,16 @@ module, i.e. the module calling ``require()``, see separate section on the
 resolution algorithm.
 
 A module with a certain resolved identifier is loaded only once per a global
-environment: ``Duktape.loaded`` keeps track of modules which are fully or
+environment: ``Duktape.modLoaded`` keeps track of modules which are fully or
 partially loaded, mapping a resolved identifier to the module's ``exports``
 table.  If a required module has already been (fully or partially) loaded,
 the same ``exports`` value is returned without further action.
 
-If a module has not yet been registered to ``Duktape.loaded``, Duktape calls
-``Duktape.find()``, a module search function which must be provided by the
-user (there is no default)::
+If a module has not yet been registered to ``Duktape.modLoaded``, Duktape
+calls ``Duktape.modSearch()``, a module search function which must be
+provided by the user (there is no default)::
 
-  Duktape.find = function (id, require, exports, module) {
+  Duktape.modSearch = function (id, require, exports, module) {
     // ...
   };
 
@@ -70,7 +70,7 @@ and can also return a string to be used as the module Ecmascript source code::
    * illustrates the return value options.
    */
 
-  Duktape.find = function (id, require, exports, module) {
+  Duktape.modSearch = function (id, require, exports, module) {
     if (id === 'foo') {
       /* 'foo' is a native module, register symbols to 'exports' in a
        * platform specific way.
@@ -96,12 +96,12 @@ and can also return a string to be used as the module Ecmascript source code::
   };
 
 If the search function returns without throwing an error, the exports value
-is registered to ``Duktape.loaded`` before evaluating module source code
+is registered to ``Duktape.modLoaded`` before evaluating module source code
 possibly returned by the search function.  This is important so that circular
 requires are properly supported (the current barebones mechanism does not
 support circular references for C modules, though).
 
-The user ``Duktape.find()`` function encapsulates functionality such as
+The user ``Duktape.modSearch()`` function encapsulates functionality such as
 module search paths and file I/O.  This is a nice division of labor as it
 encapsulates practically all of the platform dependent parts of module
 loading, while keeping the user callback unaware of almost every other
@@ -212,7 +212,7 @@ code through the shared 'exports' table.
 
 Limitations:
 
-* Because the module is not yet registered into ``Duktape.loaded`` when the
+* Because the module is not yet registered into ``Duktape.modLoaded`` when the
   module search function executes, circular requires are not handled correctly
   for C modules.
 
@@ -330,11 +330,23 @@ Several ideas to improve the C module support:
 
 * Allow C modules to participate in circular requires.  Module search and
   C module init need to be separated for this to be possible, so that the
-  ``Duktape.loaded`` registration can be done in-between.
+  ``Duktape.modLoaded`` registration can be done in-between.
 
 * Provide a default DLL loading helper for at least POSIX and Windows.
 
 * Provide suggested module initialization conventions.
+
+Isolating a module from the global object
+-----------------------------------------
+
+Currently ``this`` is bound to ``exports`` so writes through ``this`` do
+not pollute globals.  Variable and function declarations also currently
+go to the module wrapper function and do not pollute globals.  However,
+plain assignments do write to globals, and reads not matching identifiers
+declared in scope are read from globals::
+
+    fooBar = 123;  // if 'fooBar' not in scope, write to global
+    print(barFoo); // if 'barFoo' not in scope, read from global
 
 Lua-like module loader
 ----------------------
