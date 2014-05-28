@@ -1050,6 +1050,21 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_concat(ctx, 3);
 	duk_eval(ctx);
 
+	/* Force 'fileName' property of the module function so that if the
+	 * module creates a logger, the logger name defaults to the module
+	 * name.
+	 */
+	duk_dup(ctx, 3);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
+
+	/* XXX: The name of the module wrapper function is shown in stack
+	 * traces so it would be nice to force it to match the module name
+	 * (perhaps just the last term in the name, and even that should be
+	 * cleaned up).  At the moment 'name' is write protected so we can't
+	 * change it directly.  The 'fileName' property also shows up in a
+	 * traceback so it's good enough for now.
+	 */
+
 	/*
 	 *  Call the wrapped module function.
 	 */
