@@ -185,6 +185,17 @@ If user code wishes to impose further limits, the module search function
 can check a resolved identifier and throw an error if it is not of a
 desirable form.
 
+Logger names and tracebacks
+===========================
+
+Logger name defaulting uses the calling function's ``fileName`` property.
+The ``fileName`` of the internal module wrapper function is set to the
+resolved module identifier to make the logger default name come out right.
+
+Tracebacks show both ``name`` and ``fileName`` of the internal wrapper
+function.  The ``name`` property is currently not set, so the wrapper
+function appears anonymous.  It could also be set to the module name.
+
 module.exports
 ==============
 
