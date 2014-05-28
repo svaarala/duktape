@@ -588,6 +588,8 @@ duk_string_list = [
 	# Duktape object
 	mkstr("errCreate", custom=True),
 	mkstr("errThrow", custom=True),
+	mkstr("modSearch", custom=True),
+	mkstr("modLoaded", custom=True),
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
 	mkstr("info", custom=True),

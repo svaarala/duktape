@@ -949,20 +949,20 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 4);
 
 	duk_push_hobject_bidx(ctx, DUK_BIDX_DUKTAPE);
-	duk_get_prop_string(ctx, 4, "loaded");  /* FIXME */
+	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_LOADED);  /* Duktape.modLoaded */
 	(void) duk_require_hobject(ctx, 5);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded ] */
 	DUK_ASSERT_TOP(ctx, 6);
 
 	duk_dup(ctx, 3);
 	if (duk_get_prop(ctx, 5)) {
-		/* [ requested_id require require.id resolved_id Duktape Duktape.loaded require.loaded[id] ] */
+		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
 		DUK_DD(DUK_DDPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
 		return 1;
 	}
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined ] */
 	DUK_ASSERT_TOP(ctx, 7);
 
 	/*
@@ -996,7 +996,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
 	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 10);
 
 	/*
@@ -1012,7 +1012,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  cannot be found, an error must be thrown by the user callback.
 	 *
 	 *  NOTE: the current arrangement allows C modules to be implemented
-	 *  but since the exports table is registered to Duktape.loaded only
+	 *  but since the exports table is registered to Duktape.modLoaded only
 	 *  after the search function returns, circular requires / partially
 	 *  loaded modules don't work for C modules.  This is rarely an issue,
 	 *  as C modules usually simply expose a set of helper functions.
@@ -1020,19 +1020,19 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	duk_push_string(ctx, "(function(require,exports,module){");
 
-	/* Duktape.find(resolved_id, fresh_require, exports, module). */
-	duk_get_prop_string(ctx, 4, "find");  /* Duktape.find */  /* FIXME: stridx */
+	/* Duktape.modSearch(resolved_id, fresh_require, exports, module). */
+	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_SEARCH);  /* Duktape.modSearch */
 	duk_dup(ctx, 3);
 	duk_dup(ctx, 7);
 	duk_dup(ctx, 8);
-	duk_dup(ctx, 9);  /* [ ... Duktape.find resolved_id fresh_require exports module ] */
+	duk_dup(ctx, 9);  /* [ ... Duktape.modSearch resolved_id fresh_require exports module ] */
 	duk_call(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
 	DUK_ASSERT_TOP(ctx, 12);
 
 	/* Because user callback did not throw an error, remember exports table. */
 	duk_dup(ctx, 3);
 	duk_dup(ctx, 8);
-	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.loaded[resolved_id] = exports */
+	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.modLoaded[resolved_id] = exports */
 
 	/* If user callback did not return source code, module loading
 	 * is finished (user callback initialized exports table directly).
@@ -1054,7 +1054,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  Call the wrapped module function.
 	 */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module mod_func ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
 	duk_dup(ctx, 8);  /* exports (this binding) */
@@ -1062,12 +1062,12 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 8);  /* exports (argument) */
 	duk_dup(ctx, 9);  /* module (argument) */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 15);
 
 	duk_call_method(ctx, 3 /*nargs*/);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.loaded undefined fresh_require exports module result(ignored) ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
 	duk_pop_2(ctx);
