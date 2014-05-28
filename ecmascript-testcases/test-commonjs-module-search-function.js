@@ -17,42 +17,42 @@
  */
 
 /*===
-Duktape.find dummy1
+Duktape.modSearch dummy1
 require function false
 require.id true string dummy1 false false true
 exports object [object Object]
 module object [object Object]
 module.id true string dummy1 false false false
 Error: module not found
-Duktape.find foo
+Duktape.modSearch foo
 Error: module not found
-Duktape.find foo
+Duktape.modSearch foo
 Error: module not found
 false
-Duktape.find dummy2
+Duktape.modSearch dummy2
 bar
-Duktape.find dummy3
+Duktape.modSearch dummy3
 function
 hello world
-Duktape.find dummy4
+Duktape.modSearch dummy4
 function
 function
 caught Error: funcRaw throws
-Duktape.find retval/mod0
+Duktape.modSearch retval/mod0
 0 object [object Object] true
-Duktape.find retval/mod1
+Duktape.modSearch retval/mod1
 1 object [object Object] true
-Duktape.find retval/mod2
+Duktape.modSearch retval/mod2
 2 object [object Object] true
-Duktape.find retval/mod3
+Duktape.modSearch retval/mod3
 3 object [object Object] true
-Duktape.find retval/mod4
+Duktape.modSearch retval/mod4
 4 object [object Object] true
-Duktape.find retval/mod5
+Duktape.modSearch retval/mod5
 5 object [object Object] true
-Duktape.find retval/mod6
+Duktape.modSearch retval/mod6
 6 object [object Object] true
-Duktape.find retval/mod7
+Duktape.modSearch retval/mod7
 7 object [object Object] true
 ===*/
 
@@ -76,9 +76,9 @@ function moduleSearchTest() {
      *  First just check the arguments.
      */
 
-    Duktape.find = function (id, require, exports, module) {
+    Duktape.modSearch = function (id, require, exports, module) {
         var pd;
-        print('Duktape.find', id);
+        print('Duktape.modSearch', id);
         print('require', typeof require, require === global_require);
         pd = Object.getOwnPropertyDescriptor(require, 'id');
         print('require.id', 'id' in require, typeof require.id, require.id, pd.writable, pd.enumerable, pd.configurable);
@@ -93,17 +93,17 @@ function moduleSearchTest() {
 
     /*
      *  Module search function can throw an error to indicate module is not
-     *  found; module won't get registered to Duktape.loaded.
+     *  found; module won't get registered to Duktape.modLoaded.
      */
 
-    Duktape.find = function (id) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
         throw new Error('module not found');
     };
 
     catchRequire('./foo');
     catchRequire('./foo');  // throws again because not registered
-    print('foo' in Duktape.loaded);
+    print('foo' in Duktape.modLoaded);
 
     /*
      *  Module search function can return source code which is interpreted
@@ -112,8 +112,8 @@ function moduleSearchTest() {
      *  for the environment specifics.
      */
 
-    Duktape.find = function (id) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
         return 'exports.foo = "bar";';
     };
 
@@ -125,8 +125,8 @@ function moduleSearchTest() {
      *  and return a non-string: this behavior is needed for C modules.
      */
 
-    Duktape.find = function (id, require, exports, module) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id, require, exports, module) {
+        print('Duktape.modSearch', id);
         exports.func1 = function() { print('hello world'); };
         return;  // undefined is treated as 'no source' but module is found
     };
@@ -141,8 +141,8 @@ function moduleSearchTest() {
      *  wrapper around it.
      */
 
-    Duktape.find = function (id, require, exports, module) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id, require, exports, module) {
+        print('Duktape.modSearch', id);
         exports.funcRaw = function () { throw new Error('funcRaw throws'); };
         return 'exports.func = function () { try { exports.funcRaw(); } catch (e) { print("caught", e); } };';
     };
@@ -160,8 +160,8 @@ function moduleSearchTest() {
 
     var retVals = [ undefined, null, true, false, 123, {foo:1}, [1,2], function (){} ];
 
-    Duktape.find = function (id) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
         return retVals.shift();
     };
 
@@ -169,10 +169,10 @@ function moduleSearchTest() {
     for (i = 0; i < 8; i++) {
         modId = 'retval/mod' + i;
         mod = require(modId);
-        print(i, typeof mod, mod, modId in Duktape.loaded);
+        print(i, typeof mod, mod, modId in Duktape.modLoaded);
     }
 
-    //print(Duktape.enc('jx', Duktape.loaded));
+    //print(Duktape.enc('jx', Duktape.modLoaded));
 }
 
 try {

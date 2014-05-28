@@ -10,19 +10,19 @@
  */
 
 /*===
-Duktape.find quux
+Duktape.modSearch quux
 quux: Error
-Duktape.find foo/bar/quux
+Duktape.modSearch foo/bar/quux
 ./quux: Error
-Duktape.find foo/quux
+Duktape.modSearch foo/quux
 ../quux: Error
-Duktape.find testModule
-Duktape.find test/innerRequire
+Duktape.modSearch testModule
+Duktape.modSearch test/innerRequire
 testModule: Error
 ===*/
 
-Duktape.find = function (id) {
-    print('Duktape.find', id);
+Duktape.modSearch = function (id) {
+    print('Duktape.modSearch', id);
     if (id == 'testModule') {
         // require.id is non-writable but is configurable, so its value must
         // be changed with Object.defineProperty().

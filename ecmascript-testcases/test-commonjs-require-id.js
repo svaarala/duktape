@@ -24,7 +24,7 @@ function string foo/bar
 
 var global_require = require;
 
-Duktape.find = function (id) {
+Duktape.modSearch = function (id) {
     if (id === 'foo/bar') {
         return 'print("foo/bar");' +
                'print(require === global_require);' +

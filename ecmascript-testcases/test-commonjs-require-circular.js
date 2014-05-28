@@ -9,17 +9,17 @@
 ---*/
 
 /*===
-Duktape.find foo
+Duktape.modSearch foo
 loading foo
-Duktape.find bar
+Duktape.modSearch bar
 loading bar
 foo.val=123
 foo.val + bar.val = 357
 123
 ===*/
 
-Duktape.find = function (id) {
-    print('Duktape.find', id);
+Duktape.modSearch = function (id) {
+    print('Duktape.modSearch', id);
     if (id == 'foo') {
         return "print('loading foo');\n" +
                "exports.val = 123;\n" +

@@ -46,7 +46,7 @@ function randomizedTest() {
     var i, n;
     var succ = 0;
 
-    Duktape.find = function (id) {
+    Duktape.modSearch = function (id) {
         succ++;
         throw new Error('module not found');
     };

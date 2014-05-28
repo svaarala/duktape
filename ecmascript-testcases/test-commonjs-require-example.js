@@ -3,14 +3,14 @@
  */
 
 /*===
-Duktape.find program
-Duktape.find increment
-Duktape.find math
+Duktape.modSearch program
+Duktape.modSearch increment
+Duktape.modSearch math
 2
 ===*/
 
-Duktape.find = function (id) {
-    print('Duktape.find', id);
+Duktape.modSearch = function (id) {
+    print('Duktape.modSearch', id);
     return {
         math: 'exports.add = function() {\n' +
               '    var sum = 0, i = 0, args = arguments, l = args.length;\n' +

@@ -18,7 +18,7 @@ exports: object true
 
 var global_require = require;
 
-Duktape.find = function (id) {
+Duktape.modSearch = function (id) {
     if (id === 'foo') {
         return 'var mod = require("./bar");\n'
     }
@@ -119,7 +119,7 @@ function dumpVars() {
     print('foo:', foo);
 }
 
-Duktape.find = function (id) {
+Duktape.modSearch = function (id) {
     var ret;
 
     if (id === 'test1' || id === 'test2') {

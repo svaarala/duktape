@@ -28,6 +28,7 @@ Duktape.enc function wc
 Duktape.dec function wc
 Duktape.compact function wc
 Duktape.env string wc
+Duktape.modLoaded object wc
 Duktape.Buffer.name string none
 Duktape.Buffer.length number none
 Duktape.Buffer.prototype object none

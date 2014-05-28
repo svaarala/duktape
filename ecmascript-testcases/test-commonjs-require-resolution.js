@@ -29,15 +29,15 @@
  */
 
 /*
- *  NOTE: be careful with module caching; if module find() is successful,
- *  Duktape won't find() the module twice.  Different names need to be used
- *  in different tests to avoid this.  Alternatively, Duktape.loaded could
+ *  NOTE: be careful with module caching; if module modSearch() is successful,
+ *  Duktape won't modSearch() the module twice.  Different names need to be used
+ *  in different tests to avoid this.  Alternatively, Duktape.modLoaded could
  *  be emptied.
  */
 
 /*===
 basic resolution
-Duktape.find foo/mod1
+Duktape.modSearch foo/mod1
 global require: foo/mod1 -> foo/mod1
 global require: foo//mod1 -> foo/mod1
 global require: foo/./mod1 -> foo/mod1
@@ -45,10 +45,10 @@ global require: foo//.//mod1 -> foo/mod1
 global require: ./foo/./mod1 -> foo/mod1
 global require: ./foo/././/.///./////////////mod1 -> foo/mod1
 global require: ./foo/../foo/mod1 -> foo/mod1
-Duktape.find bar/a
+Duktape.modSearch bar/a
 global require: bar/a -> bar/a
 global require: bar/a/ -> TypeError
-Duktape.find bar/a/b
+Duktape.modSearch bar/a/b
 global require: bar/a/b -> bar/a/b
 global require: ../bar -> TypeError
 global require: foo/../../bar -> TypeError
@@ -59,12 +59,12 @@ global require: foo/.bar -> TypeError
 global require: foo/.../bar -> TypeError
 global require: foo/mod1/. -> TypeError
 global require: foo/mod1/.. -> TypeError
-Duktape.find baz
-Duktape.find xxx
-Duktape.find baz/xxx
-Duktape.find baz/xxx/yyy
-Duktape.find zzz
-Duktape.find www
+Duktape.modSearch baz
+Duktape.modSearch xxx
+Duktape.modSearch baz/xxx
+Duktape.modSearch baz/xxx/yyy
+Duktape.modSearch zzz
+Duktape.modSearch www
 ===*/
 
 function basicResolutionTest() {
@@ -87,11 +87,11 @@ function basicResolutionTest() {
         "bar/a/b": "exports.name='bar/a/b';",
         "quux": "exports.name='quux';",
     };
-    Duktape.find = function (id) {
+    Duktape.modSearch = function (id) {
         var ret;
 
-        // The identifier given to find() is a resolved absolute identifier
-        print('Duktape.find', id);
+        // The identifier given to modSearch() is a resolved absolute identifier
+        print('Duktape.modSearch', id);
         ret = moduleSources[id];
         if (ret) { return ret; }
         throw new Error('cannot find module: ' + id);
@@ -140,8 +140,8 @@ function basicResolutionTest() {
      *  Require from inside a module, both relative and absolute paths.
      */
 
-    Duktape.find = function (id) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
         if (id === 'baz') {
             return 'require("xxx");\n' +           // absolute
                    'require("./xxx");\n' +         // relative
@@ -166,11 +166,11 @@ try {
 
 /*===
 non-ascii
-Duktape.find: "foo"
-Duktape.find: "foo\u1234"
-Duktape.find: "foo\u1234\x01/\udead\ubeef"
-Duktape.find: "foo\u1234\x01/\u1234"
-Duktape.find: "foo\u1234\x01/\u1234"
+Duktape.modSearch: "foo"
+Duktape.modSearch: "foo\u1234"
+Duktape.modSearch: "foo\u1234\x01/\udead\ubeef"
+Duktape.modSearch: "foo\u1234\x01/\u1234"
+Duktape.modSearch: "foo\u1234\x01/\u1234"
 ===*/
 
 /* Non-ASCII characters are allowed in terms; Duktape places no requirements
@@ -182,8 +182,8 @@ Duktape.find: "foo\u1234\x01/\u1234"
  */
 
 function nonAsciiTest() {
-    Duktape.find = function (id) {
-        print('Duktape.find:', Duktape.enc('jx', id));
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch:', Duktape.enc('jx', id));
         throw Error('module not found');
     };
 
@@ -218,7 +218,7 @@ try {
 
 /*===
 length
-Duktape.find foo/bar
+Duktape.modSearch foo/bar
 230: foo/bar
 231: foo/bar
 232: foo/bar
@@ -331,8 +331,8 @@ function lengthTest() {
      *  Test the limit for the current global require() id
      */
 
-    Duktape.find = function (id) {
-        print('Duktape.find', id);
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
         return 'exports.name="' + id + '"';
     }
 
@@ -352,9 +352,9 @@ function lengthTest() {
      *  with the requested relative ID with a slash.
      */
 
-    Duktape.find = function (id) {
+    Duktape.modSearch = function (id) {
         // Disable to avoid spam; each id is dynamic and long
-        //print('Duktape.find', id);
+        //print('Duktape.modSearch', id);
         if (id == 'bar') {
             return 'exports.name = "' + id + '";';
         } else {
