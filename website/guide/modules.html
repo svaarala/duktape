@@ -1,0 +1,156 @@
+<h1 id="modules">Modules</h1>
+
+<h2>Overview</h2>
+
+<p>Duktape has a built-in minimal module loading framework based on
+<a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>.
+You can load modules from Ecmascript code with the global <code>require()</code> function:</p>
+<pre class="ecmascript-code">
+var mod = require('foo/bar');
+mod.hello();
+</pre>
+
+<p>Modules are defined by Ecmascript code running in a special environment
+defined by the CommonJS modules specification.  Inside this environment,
+variable/function declarations are local to the module and don't affect the
+global object.  The environment also provides three special symbols related
+to module loading: <code>exports</code> for exporting module symbols,
+<code>module</code> for providing module metadata (<code>module.id</code>
+in particular), and <code>require()</code> for loading further modules with
+relative module identifiers resolved in the context of the current module.
+Example:</p>
+<pre class="ecmascript-code">
+// foo/bar.js
+var text = 'Hello world!';     // not visible outside the module
+var quux = require('./quux');  // loads foo/quux
+exports.hello = function () {
+    print(text);
+};
+</pre>
+
+<p>Because Duktape is embeddable and portable to different environments there
+is no standard way to search for modules.  <b>User code must provide a module
+search function</b> in <code>Duktape.modSearch</code> for module loading to work.
+The module search function essentially maps a module identifier to the source
+code of the module (see below for more details).  Example:</p>
+<pre class="ecmascript-code">
+// See module search function details below.
+Duktape.modSearch = function (id) {
+    print('loading module:', id);
+    // Return source code for module or throw an error.
+};
+</pre>
+
+<h2>Module search function</h2>
+
+<p>The module search function encapsulates all platform specific concerns,
+such as module search paths and file system access, related to finding a
+module matching a certain identifier:</p>
+<pre class="ecmascript-code">
+Duktape.modSearch = function (id, require, exports, module) {
+    // ...
+};
+</pre>
+
+<p>The arguments of the module search function are:</p>
+<ul>
+<li>A fully resolved module ID.  Relative IDs are converted to absolute
+    IDs and there are no unresolved <code>.</code> or <code>..</code>
+    ID terms.</li>
+<li>A <code>require()</code> function for loading further modules.
+    Relative module IDs are resolved relative to the current module.
+    For instance, if <code>foo/bar</code> is being loaded, the
+    <code>require()</code> function given to the module search function
+    would resolve <code>./quux</code> to <code>foo/quux</code>.</li>
+<li>A <code>exports</code> object to export symbols during module search.
+    Writing to exports within the module search function is only needed
+    when loading native (Duktape/C) modules.</li>
+<li>A <code>module</code> object which provides metadata about the module
+    being loaded.  The only property provided now is <code>module.id</code>,
+    a resolved absolute identifier for the module being loaded.</li>
+</ul>
+
+<p>If a module is not found, the module search function is expected to throw
+an error.  This error will propagate out to the code which originally called
+<code>require()</code> so it should have a useful error message containing the
+module identifier.  Any changes made to <code>exports</code> before throwing
+the error are thrown away.</p>
+
+<p>If a module is found, the module search function can return a string
+providing the source code for the module.  Duktape will then take care of
+compiling and executing the module code so that module symbols get registered
+into the <code>exports</code> object.</p>
+
+<p>The module search function can also add symbols directly to the
+<code>exports</code> object.  This can be used to implement native (Duktape/C)
+modules and platform specific DLL loading support.  For example, the module
+search function could call a native module initializer (provided by a DLL)
+which registered all the native functions and constants into the
+<code>exports</code> object.</p>
+
+<p>To support the native module case, the module search function can also
+return <code>undefined</code> (or any non-string value), in which case
+Duktape will assume that the module was found but has no Ecmascript source
+to execute.  Symbols written to <code>exports</code> in the module search
+function are the only symbols provided by the module.</p>
+
+<p>Hybrid modules containing both C and Ecmascript code are also supported:
+simply write native symbols into the <code>exports</code> table inside the
+module search function, and return the module's Ecmascript code.  Duktape
+will then execute the Ecmascript code, which can access symbols already
+registered into the <code>exports</code> table and register further symbols.</p>
+
+<p>The module search function can be either an Ecmascript function or a
+Duktape/C function.</p>
+
+<h2>Implementing a module search function</h2>
+
+<p>Here's a simply module search stub which provides two modules:</p>
+<pre class="ecmascript-code">
+Duktape.modSearch = function (id) {
+    if (id === 'foo') {
+        return 'exports.hello = function() { print("Hello from foo!"); };';
+    } else if (id === 'bar') {
+        return 'exports.hello = function() { print("Hello from bar!"); };';
+    }
+    throw new Error('module not found: ' + id);
+};
+</pre>
+
+<p>A more practical module search function is almost always platform dependent
+because modules are most often loaded from disk.  Usually a Duktape/C binding
+is needed to access the file system.  The example below loads modules using a
+hypothetical <code>readFile</code> function:</p>
+<pre class="ecmascript-code">
+Duktape.modSearch = function (id) {
+    /* readFile() reads a file from disk, and returns a string or undefined.
+     * 'id' is in resolved canonical form so it only contains terms and
+     * slashes, and no '.' or '..' terms.
+     */
+
+    print('loading module: ' + id);
+    var res = readFile('/modules/' + id + '.js');
+    if (typeof res !== 'string') {
+        throw new Error('module not found: ' + id);
+    }
+    return res;
+}
+</pre>
+
+<p>The module search function could also load modules from a compressed
+in-memory store, or load the modules over the network.  However, a module
+search function cannot do a coroutine yield, so network access will block the
+application; it is most useful for testing.</p>
+
+<h2>Limitations</h2>
+
+<ul>
+<li>Duktape does not support <code>module.export</code>.  This also means that
+    the return value from <code>require()</code> is always an object, and cannot
+    be e.g. a constructor function.</li>
+<li>When implementing native modules in the module search function, circular
+    module references are not supported because the module's <code>exports</code>
+    table is not registered by Duktape as a "module being loaded" before the
+    module search function exits.  Circular module references are supported for
+    pure Ecmascript modules.</li>
+</ul>
