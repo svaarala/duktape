@@ -1057,12 +1057,14 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
 
-	/* XXX: The name of the module wrapper function is shown in stack
-	 * traces so it would be nice to force it to match the module name
-	 * (perhaps just the last term in the name, and even that should be
-	 * cleaned up).  At the moment 'name' is write protected so we can't
-	 * change it directly.  The 'fileName' property also shows up in a
-	 * traceback so it's good enough for now.
+	/* XXX: The module wrapper function is currently anonymous and is shown
+	 * in stack traces.  It would be nice to force it to match the module
+	 * name (perhaps just the cleaned up last term).  At the moment 'name'
+	 * is write protected so we can't change it directly.  Note that we must
+	 * not introduce an actual name binding into the function scope (which
+	 * is usually the case with a named function) because it would affect
+	 * the scope seen by the module and shadow accesses to globals of the
+	 * same name.
 	 */
 
 	/*
