@@ -1,3 +1,7 @@
+===============
+Duktape license
+===============
+
 (http://opensource.org/licenses/MIT)
 
 Copyright (c) 2013-2014 by Duktape authors (see AUTHORS.txt)
