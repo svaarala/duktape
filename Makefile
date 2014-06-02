@@ -477,6 +477,9 @@ emscripten:
 
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
+# Recent Emscripten will assume typed array support unless EMCC_FAST_COMPILER=0
+# is given through the environment:
+# https://github.com/kripken/emscripten/wiki/LLVM-Backend
 #EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
 EMCCOPTS=-s USE_TYPED_ARRAYS=0
 
@@ -485,7 +488,7 @@ emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
@@ -511,7 +514,7 @@ MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9
 emscriptenduktest: emscripten dist
 	@echo "### emscriptenduktest"
 	-@rm -f /tmp/duk-emcc-duktest.js
-	emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
+	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
 	$(NODE) /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
@@ -526,7 +529,7 @@ EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS '-DDUK_OPT_DEC
 
 # FIXME: need to be able to declare dukweb_panic_handler to avoid warnings
 dukweb.js: emscripten dist
-	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) $(EMCCOPTS_DUKWEB_DEFINES) \
+	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) $(EMCCOPTS_DUKWEB_DEFINES) \
 		-Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
@@ -561,7 +564,7 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 emscriptenluatest: emscripten duk lua-5.2.3
 	@echo "### emscriptenluatest"
 	-@rm -f /tmp/duk-emcc-luatest*
-	emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	./duk /tmp/duk-emcc-luatest-fixed.js
