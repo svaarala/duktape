@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: multiple minor issues with recent Emscripten (GH-11)
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-02 08:32:33.326470 Z
+references: []
+
+id: f92801acf998bc8e6b43206c73fe669addb88a0d
+log_events: 
+- - 2014-06-02 08:32:33.502425 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
