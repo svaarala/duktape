@@ -347,6 +347,21 @@ Several ideas to improve the C module support:
 
 * Provide suggested module initialization conventions.
 
+Module unloading support
+------------------------
+
+Currently modules cannot be unloaded: once loaded, they're registered to
+``Duktape.modLoaded`` permanently, which keeps the exported object permanently
+reachable (unless removed manually).  Adding a finalizer to the exports table
+is not a solution: another module might hold a reference to a specific symbol
+within the module but not the exports table itself, e.g.::
+
+  var helloFunc = require('hello').func;
+
+Collecting a module exports table and executing some unload code is not
+trivial.  Just removing an unused exports object probably requires weak
+reference support.
+
 Isolating a module from the global object
 -----------------------------------------
 
