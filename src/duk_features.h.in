@@ -1998,6 +1998,15 @@ typedef FILE duk_file;
 #define DUK_USE_SELF_TESTS
 #endif
 
+/* Double aliasing testcase fails when Emscripten-generated code is run
+ * on Firefox.  This is not fatal because it only affects packed duk_tval
+ * which we avoid with Emscripten.
+ */
+#undef DUK_USE_NO_DOUBLE_ALIASING_SELFTEST
+#if defined(DUK_F_EMSCRIPTEN)
+#define DUK_USE_NO_DOUBLE_ALIASING_SELFTEST
+#endif
+
 /*
  *  Codecs
  */
