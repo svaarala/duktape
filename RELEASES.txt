@@ -305,6 +305,7 @@ Planned
 
 * Add a built-in module loader (i.e. a require() function) based on CommonJS
   modules v1.1.1; user must always provide a module search function
+  (Duktape.modSearch)
 
 * Add Object.setPrototypeOf() and Object.prototype.__proto__, both borrowed
   from ES6 draft, to improve internal prototype handling
