@@ -11,6 +11,12 @@
  *  licensing information.
  */
 
+/* LICENSE.txt */
+@LICENSE_TXT@
+
+/* AUTHORS.txt */
+@AUTHORS_TXT@
+
 #ifndef DUKTAPE_H_INCLUDED
 #define DUKTAPE_H_INCLUDED
 
