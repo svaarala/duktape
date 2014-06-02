@@ -131,7 +131,7 @@ def processDeclarations(f):
 		elif line.data.startswith('extern int') or line.data.startswith('extern void '):
 			line.data = 'static ' + line.data[7:]  # replace extern with static
 
-def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe):
+def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, license_file, authors_file):
 	res = []
 
 	emit_state = [ None, None ]  # curr_filename, curr_lineno
@@ -151,6 +151,20 @@ def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe)
 	res.append(' *  licensing information.')
 	res.append(' */')
 	res.append('')
+
+	# Add LICENSE.txt and AUTHORS.txt to combined source so that they're automatically
+	# included and are up-to-date.
+
+	res.append('/* LICENSE.txt */')
+	f = open(license_file, 'rb')
+	for line in f:
+		res.append(line.strip())
+	f.close()
+	res.append('/* AUTHORS.txt */')
+	f = open(authors_file, 'rb')
+	for line in f:
+		res.append(line.strip())
+	f.close()
 
 	def emit(line):
 		if isinstance(line, (str, unicode)):
@@ -228,6 +242,8 @@ def main():
 	duk_version = int(sys.argv[3])
 	git_commit = sys.argv[4]
 	git_describe = sys.argv[5]
+	license_file = sys.argv[6]
+	authors_file = sys.argv[7]
 
 	print 'Read input files'
 	files = []
@@ -263,7 +279,7 @@ def main():
 		pass
 
 	print 'Output final file'
-	final = createCombined(files, extinc, intinc, duk_version, git_commit, git_describe)
+	final = createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, license_file, authors_file)
 	f = open(outname, 'wb')
 	f.write(final)
 	f.close()
