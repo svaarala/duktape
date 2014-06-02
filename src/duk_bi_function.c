@@ -117,7 +117,7 @@ int duk_bi_function_prototype_to_string(duk_context *ctx) {
 			DUK_ASSERT(func_name != NULL);
 
 			if (func_name[0] == (char) 0) {
-				func_name = "empty";
+				func_name = "anon";
 			}
 		}
 
