@@ -130,13 +130,58 @@ Duktape.modSearch = function (id) {
      * 'id' is in resolved canonical form so it only contains terms and
      * slashes, and no '.' or '..' terms.
      */
+    var res;
 
-    print('loading module: ' + id);
-    var res = readFile('/modules/' + id + '.js');
-    if (typeof res !== 'string') {
+    print('loading module:', id);
+
+    res = readFile('/modules/' + id + '.js');
+    if (typeof res === 'string') {
+        return res;
+    }
+
+    throw new Error('module not found: ' + id);
+}
+</pre>
+
+<p>The following module search function supports pure C, pure Ecmascript, and
+mixed modules.  C modules are loaded and initialized with a hypothetical
+<code>loadAndInitDll</code> function which loads a DLL, and if found, calls an
+init function so that the DLL initializer can register exported symbols:</p>
+<pre class="ecmascript-code">
+Duktape.modSearch = function (id, require, exports, module) {
+    /* readFile(): as above.
+     * loadAndInitDll(): load DLL, call its init function, return true/false.
+     */
+    var name;
+    var src;
+    var found = false;
+
+    print('loading module:', id);
+
+    /* DLL check.  DLL init function is platform specific.  It gets 'exports'
+     * but also 'require' so that it can require further modules if necessary.
+     */
+    name = '/modules/' + id + '.so';
+    if (loadAndInitDll(name, require, exports, module)) {
+        print('loaded DLL:', name);
+        found = true;
+    }
+
+    /* Ecmascript check. */
+    name = '/modules/' + id + '.js';
+    src = readFile(name);
+    if (typeof src === 'string') {
+        print('loaded Ecmascript:', name);
+        found = true;
+    }
+
+    /* Must find either a DLL or an Ecmascript file (or both) */
+    if (!found) {
         throw new Error('module not found: ' + id);
     }
-    return res;
+
+    /* For pure C modules, 'src' may be undefined which is OK. */
+    return src;
 }
 </pre>
 
