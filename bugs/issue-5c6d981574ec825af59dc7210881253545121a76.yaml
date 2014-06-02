@@ -3,10 +3,10 @@ title: decide on a module import mechanism
 desc: ""
 type: :task
 component: duk
-release: 
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-09-13 21:17:10.688901 Z
 references: []
 
@@ -32,3 +32,11 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - ES6 draft also has some sort of a loader mechanism.
+- - 2014-06-02 14:50:08.552414 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from unassigned
+  - ""
+- - 2014-06-02 14:50:25.145614 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - CommonJS modules are now supported in a minimal fashion.
