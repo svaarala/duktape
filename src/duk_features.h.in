@@ -295,7 +295,11 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  (rather than muck with Duktape internals).
  */
 
-#if defined(DUK_F_LINUX) && defined(DUK_COMPILING_DUKTAPE)
+#if defined(DUK_COMPILING_DUKTAPE) && \
+ (defined(DUK_F_LINUX) || defined(DUK_F_EMSCRIPTEN))
+/* A more recent Emscripten (2014-05) seems to lack "linux" environment
+ * defines, so check for Emscripten explicitly.
+ */
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE  200809L
 #endif
