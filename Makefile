@@ -489,10 +489,10 @@ emscriptentest: emscripten duk
 	-@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
-	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
-	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js
+	./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js
 
 # Compile Duktape with Emscripten and execute it with NodeJS.
 # Current status: requires Duktape alignment fixes (alignment by 8).
