@@ -332,6 +332,9 @@ Planned
 * Compact the automatic function .prototype property, which previously had
   1 unused property slot
 
+* Use 'anon' instead of 'empty' for the function name in toString() coercion
+  of an anonymous function, matching traceback behavior
+
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings; this also improves C++ build
