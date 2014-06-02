@@ -108,6 +108,17 @@ static void duk__selftest_double_union_size(void) {
 static void duk__selftest_double_aliasing(void) {
 	duk__test_double_union a, b;
 
+	/* This testcase fails when Emscripten-generated code runs on Firefox.
+	 * It's not an issue because the failure should only affect packed
+	 * duk_tval representation, which is not used with Emscripten.
+	 */
+#if defined(DUK_USE_NO_DOUBLE_ALIASING_SELFTEST)
+#if defined(DUK_USE_PACKED_TVAL)
+#error inconsistent defines: skipping double aliasing selftest when using packed duk_tval
+#endif
+	return;
+#endif
+
 	/* Test signaling NaN and alias assignment in all
 	 * endianness combinations.
 	 */

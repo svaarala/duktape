@@ -355,8 +355,8 @@ Planned
   because it is broken in some uclibc versions still in use (affected at
   least some mixed endian ARM environments)
 
-* Portability fixes for newer Emscripten version, which prevented Duktape
-  from being compiled with Emscripten
+* Portability fixes for newer Emscripten version, Dukweb.js now works with
+  Firefox
 
 0.12.0 (2014-06-XX)
 -------------------
