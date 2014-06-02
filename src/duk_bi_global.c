@@ -395,7 +395,7 @@ static void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, vo
  *  calling activation at all which needs careful handling.
  */
 
-int duk_bi_global_object_eval(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_activation *act_caller;
@@ -522,7 +522,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
 
 	if (this_to_global) {
 		DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
-		duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+		duk_push_hobject_bidx(ctx, DUK_BIDX_GLOBAL);
 	} else {
 		duk_tval *tv;
 		DUK_ASSERT(thr->callstack_top >= 2);
@@ -544,7 +544,7 @@ int duk_bi_global_object_eval(duk_context *ctx) {
  *  Parsing of ints and floats
  */
 
-int duk_bi_global_object_parse_int(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 	int strip_prefix;
 	duk_int32_t radix;
 	int s2n_flags;
@@ -592,7 +592,7 @@ int duk_bi_global_object_parse_int(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_global_object_parse_float(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 	int s2n_flags;
 	duk_int32_t radix;
 
@@ -620,13 +620,13 @@ int duk_bi_global_object_parse_float(duk_context *ctx) {
 /*
  *  Number checkers
  */
-int duk_bi_global_object_is_nan(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_is_nan(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
 
-int duk_bi_global_object_is_finite(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_is_finite(duk_context *ctx) {
 	double d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
@@ -636,37 +636,37 @@ int duk_bi_global_object_is_finite(duk_context *ctx) {
  *  URI handling
  */
 
-int duk_bi_global_object_decode_uri(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_decode_uri(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_decode_uri, (void *) duk__decode_uri_reserved_table);
 }
 
-int duk_bi_global_object_decode_uri_component(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_decode_uri_component(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_decode_uri, (void *) duk__decode_uri_component_reserved_table);
 }
 
-int duk_bi_global_object_encode_uri(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_encode_uri(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_encode_uri, (void *) duk__encode_uriunescaped_table);
 }
 
-int duk_bi_global_object_encode_uri_component(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_encode_uri_component(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_encode_uri, (void *) duk__encode_uricomponent_unescaped_table);
 }
 
 #ifdef DUK_USE_SECTION_B
-int duk_bi_global_object_escape(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_escape(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_escape, (void *) NULL);
 }
 
-int duk_bi_global_object_unescape(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_unescape, (void *) NULL);
 }
 #else  /* DUK_USE_SECTION_B */
-int duk_bi_global_object_escape(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_escape(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-int duk_bi_global_object_unescape(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
@@ -724,33 +724,377 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 	return 0;
 }
 
-int duk_bi_global_object_print(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_print(duk_context *ctx) {
 	return duk__print_alert_helper(ctx, DUK_STDOUT);
 }
 
-int duk_bi_global_object_alert(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
 	return duk__print_alert_helper(ctx, DUK_STDERR);
 }
 #else  /* DUK_USE_FILE_IO */
 /* Supported but no file I/O -> silently ignore, no error */
-int duk_bi_global_object_print(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_print(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return 0;
 }
 
-int duk_bi_global_object_alert(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return 0;
 }
 #endif  /* DUK_USE_FILE_IO */
 #else  /* DUK_USE_BROWSER_LIKE */
-int duk_bi_global_object_print(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_print(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-int duk_bi_global_object_alert(duk_context *ctx) {
+duk_ret_t duk_bi_global_object_alert(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_BROWSER_LIKE */
+
+/*
+ *  CommonJS require() and modules support
+ */
+
+#if defined(DUK_USE_COMMONJS_MODULES)
+static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_id, const char *mod_id) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_size_t mod_id_len;
+	duk_size_t req_id_len;
+	duk_uint8_t buf_in[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
+	duk_uint8_t buf_out[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
+	duk_uint8_t *p;
+	duk_uint8_t *q;
+
+	DUK_ASSERT(req_id != NULL);
+	/* mod_id may be NULL */
+	DUK_ASSERT(sizeof(buf_out) >= sizeof(buf_in));  /* bound checking requires this */
+
+	/*
+	 *  A few notes on the algorithm:
+	 *
+	 *    - Terms are not allowed to begin with a period unless the term
+	 *      is either '.' or '..'.  This simplifies implementation (and
+	 *      is within CommonJS modules specification).
+	 *
+	 *    - There are few output bound checks here.  This is on purpose:
+	 *      we check the input length and rely on the output never being
+	 *      longer than the input, so we cannot run out of output space.
+	 *
+	 *    - Non-ASCII characters are processed as individual bytes and
+	 *      need no special treatment.  However, U+0000 terminates the
+	 *      algorithm; this is not an issue because U+0000 is not a
+	 *      desirable term character anyway.
+	 */
+
+	/*
+	 *  Set up the resolution input which is the requested ID directly
+	 *  (if absolute or no current module path) or with current module
+	 *  ID prepended (if relative and current module path exists).
+	 */
+
+	req_id_len = DUK_STRLEN(req_id);
+	if (mod_id != NULL && req_id[0] == '.') {
+		mod_id_len = DUK_STRLEN(mod_id);
+		if (mod_id_len + 1 + req_id_len + 1 >= sizeof(buf_in)) {
+			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
+			goto resolve_error;
+		}
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", mod_id, req_id);
+	} else {
+		if (req_id_len + 1 >= sizeof(buf_in)) {
+			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
+			goto resolve_error;
+		}
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", req_id);
+	}
+	buf_in[sizeof(buf_in) - 1] = (duk_uint8_t) 0;
+
+	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", buf_in));
+
+	/*
+	 *  Resolution loop.  At the top of the loop we're expecting a valid
+	 *  term: '.', '..', or a non-empty identifier not starting with a period.
+	 */
+
+	p = buf_in;
+	q = buf_out;
+	for (;;) {
+		duk_uint8_t c;
+
+		/* Here 'p' always points to the start of a term. */
+		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p", p, (void *) q, (void *) buf_out));
+
+		c = *p++;
+		if (DUK_UNLIKELY(c == 0)) {
+			DUK_DD(DUK_DDPRINT("resolve error: requested ID must end with a non-empty term"));
+			goto resolve_error;
+		} else if (DUK_UNLIKELY(c == '.')) {
+			c = *p++;
+			if (c == '/') {
+				/* Term was '.' and is eaten entirely (including dup slashes). */
+				goto eat_dup_slashes;
+			}
+			if (c == '.' && *p == '/') {
+				/* Term was '..', backtrack resolved name by one component.
+				 *  q[-1] = previous slash (or beyond start of buffer)
+				 *  q[-2] = last char of previous component (or beyond start of buffer)
+				 */
+				p++;  /* eat (first) input slash */
+				DUK_ASSERT(q >= buf_out);
+				if (q == buf_out) {
+					DUK_DD(DUK_DDPRINT("resolve error: term was '..' but nothing to backtrack"));
+					goto resolve_error;
+				}
+				DUK_ASSERT(*(q - 1) == '/');
+				q--;  /* backtrack to last output slash */
+				for (;;) {
+					/* Backtrack to previous slash or start of buffer. */
+					DUK_ASSERT(q >= buf_out);
+					if (q == buf_out) {
+						break;
+					}
+					if (*(q - 1) == '/') {
+						break;
+					}
+					q--;
+				}
+				goto eat_dup_slashes;
+			}
+			DUK_DD(DUK_DDPRINT("resolve error: term begins with '.' but is not '.' or '..' (not allowed now)"));
+			goto resolve_error;
+		} else if (DUK_UNLIKELY(c == '/')) {
+			/* e.g. require('/foo'), empty terms not allowed */
+			DUK_DD(DUK_DDPRINT("resolve error: empty term (not allowed now)"));
+			goto resolve_error;
+		} else {
+			for (;;) {
+				/* Copy term name until end or '/'. */
+				*q++ = c;
+				c = *p++;
+				if (DUK_UNLIKELY(c == 0)) {
+					goto loop_done;
+				} else if (DUK_UNLIKELY(c == '/')) {
+					*q++ = '/';
+					break;
+				} else {
+					/* write on next loop */
+				}
+			}
+		}
+
+	 eat_dup_slashes:
+		for (;;) {
+			/* eat dup slashes */
+			c = *p;
+			if (DUK_LIKELY(c != '/')) {
+				break;
+			}
+			p++;
+		}
+	}
+ loop_done:
+
+	duk_push_lstring(ctx, (const char *) buf_out, (size_t) (q - buf_out));
+	return;
+
+ resolve_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", req_id);
+}
+#endif  /* DUK_USE_COMMONJS_MODULES */
+
+#if defined(DUK_USE_COMMONJS_MODULES)
+duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
+	const char *str_req_id;  /* requested identifier */
+	const char *str_mod_id;  /* require.id of current module */
+
+	/* NOTE: we try to minimize code size by avoiding unnecessary pops,
+	 * so the stack looks a bit cluttered in this function.  DUK_ASSERT_TOP()
+	 * assertions are used to ensure stack configuration is correct at each
+	 * step.
+	 */
+
+	/*
+	 *  Resolve module identifier into canonical absolute form.
+	 */
+
+	str_req_id = duk_require_string(ctx, 0);
+	duk_push_current_function(ctx);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
+	str_mod_id = duk_get_string(ctx, 2);  /* ignore non-strings */
+	DUK_DDD(DUK_DDDPRINT("resolve module id: requested=%!T, currentmodule=%!T",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2)));
+	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
+	str_req_id = NULL;
+	str_mod_id = NULL;
+	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+
+	/* [ requested_id require require.id resolved_id ] */
+	DUK_ASSERT_TOP(ctx, 4);
+
+	/*
+	 *  Cached module check.
+	 *
+	 *  If module has been loaded or its loading has already begun without
+	 *  finishing, return the same cached value ('exports').  The value is
+	 *  registered when module load starts so that circular references can
+	 *  be supported to some extent.
+	 */
+
+	/* [ requested_id require require.id resolved_id ] */
+	DUK_ASSERT_TOP(ctx, 4);
+
+	duk_push_hobject_bidx(ctx, DUK_BIDX_DUKTAPE);
+	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_LOADED);  /* Duktape.modLoaded */
+	(void) duk_require_hobject(ctx, 5);
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded ] */
+	DUK_ASSERT_TOP(ctx, 6);
+
+	duk_dup(ctx, 3);
+	if (duk_get_prop(ctx, 5)) {
+		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
+		DUK_DD(DUK_DDPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
+		return 1;
+	}
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined ] */
+	DUK_ASSERT_TOP(ctx, 7);
+
+	/*
+	 *  Module not loaded (and loading not started previously).
+	 *
+	 *  Create a new require() function with 'id' set to resolved ID
+	 *  of module being loaded.  Also create 'exports' and 'module'
+	 *  tables but don't register exports to the loaded table yet.
+	 *  We don't want to do that unless the user module search callbacks
+	 *  succeeds in finding the module.
+	 */
+
+	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
+
+	/* Fresh require: require.id is left configurable (but not writable)
+	 * so that is not easy to accidentally tweak it, but it can still be
+	 * done with Object.defineProperty().
+	 *
+	 * XXX: require.id could also be just made non-configurable, as there
+	 * is no practical reason to touch it.
+	 */
+	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
+	duk_dup(ctx, 3);
+	duk_def_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
+
+	/* Exports table. */
+	duk_push_object(ctx);
+
+	/* Module table: module.id is non-writable and non-configurable, as
+	 * the CommonJS spec suggests this if possible.
+	 */
+	duk_push_object(ctx);
+	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
+	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
+	DUK_ASSERT_TOP(ctx, 10);
+
+	/*
+	 *  Call user provided module search function and build the wrapped
+	 *  module source code (if necessary).  The module search function
+	 *  can be used to implement pure Ecmacsript, pure C, and mixed
+	 *  Ecmascript/C modules.
+	 *
+	 *  The module search function can operate on the exports table directly
+	 *  (e.g. DLL code can register values to it).  It can also return a
+	 *  string which is interpreted as module source code (if a non-string
+	 *  is returned the module is assumed to be a pure C one).  If a module
+	 *  cannot be found, an error must be thrown by the user callback.
+	 *
+	 *  NOTE: the current arrangement allows C modules to be implemented
+	 *  but since the exports table is registered to Duktape.modLoaded only
+	 *  after the search function returns, circular requires / partially
+	 *  loaded modules don't work for C modules.  This is rarely an issue,
+	 *  as C modules usually simply expose a set of helper functions.
+	 */
+
+	duk_push_string(ctx, "(function(require,exports,module){");
+
+	/* Duktape.modSearch(resolved_id, fresh_require, exports, module). */
+	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_SEARCH);  /* Duktape.modSearch */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 7);
+	duk_dup(ctx, 8);
+	duk_dup(ctx, 9);  /* [ ... Duktape.modSearch resolved_id fresh_require exports module ] */
+	duk_call(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
+	DUK_ASSERT_TOP(ctx, 12);
+
+	/* Because user callback did not throw an error, remember exports table. */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 8);
+	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.modLoaded[resolved_id] = exports */
+
+	/* If user callback did not return source code, module loading
+	 * is finished (user callback initialized exports table directly).
+	 */
+	if (!duk_is_string(ctx, 11)) {
+		/* User callback did not return source code, so
+		 * module loading is finished.
+		 */
+		duk_dup(ctx, 8);
+		return 1;
+	}
+
+	/* Finish the wrapped module source. */
+	duk_push_string(ctx, "})");
+	duk_concat(ctx, 3);
+	duk_eval(ctx);
+
+	/* Force 'fileName' property of the module function so that if the
+	 * module creates a logger, the logger name defaults to the module
+	 * name.
+	 */
+	duk_dup(ctx, 3);
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
+
+	/* XXX: The module wrapper function is currently anonymous and is shown
+	 * in stack traces.  It would be nice to force it to match the module
+	 * name (perhaps just the cleaned up last term).  At the moment 'name'
+	 * is write protected so we can't change it directly.  Note that we must
+	 * not introduce an actual name binding into the function scope (which
+	 * is usually the case with a named function) because it would affect
+	 * the scope seen by the module and shadow accesses to globals of the
+	 * same name.
+	 */
+
+	/*
+	 *  Call the wrapped module function.
+	 */
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
+	DUK_ASSERT_TOP(ctx, 11);
+
+	duk_dup(ctx, 8);  /* exports (this binding) */
+	duk_dup(ctx, 7);  /* fresh require (argument) */
+	duk_dup(ctx, 8);  /* exports (argument) */
+	duk_dup(ctx, 9);  /* module (argument) */
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
+	DUK_ASSERT_TOP(ctx, 15);
+
+	duk_call_method(ctx, 3 /*nargs*/);
+
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
+	DUK_ASSERT_TOP(ctx, 11);
+
+	duk_pop_2(ctx);
+	return 1;  /* return exports */
+}
+#else
+duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_COMMONJS_MODULES */

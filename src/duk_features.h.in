@@ -1930,6 +1930,12 @@ typedef FILE duk_file;
 #define DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
 #endif
 
+/* CommonJS modules */
+#define DUK_USE_COMMONJS_MODULES
+#if defined(DUK_OPT_NO_COMMONJS_MODULES)
+#undef DUK_USE_COMMONJS_MODULES
+#endif
+
 /*
  *  Tailcalls
  */

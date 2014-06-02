@@ -54,7 +54,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 	if (double_error) {
 		if (thr->builtins[DUK_BIDX_DOUBLE_ERROR]) {
 			DUK_D(DUK_DPRINT("double fault detected -> push built-in fixed 'double error' instance"));
-			duk_push_hobject(ctx, thr->builtins[DUK_BIDX_DOUBLE_ERROR]);
+			duk_push_hobject_bidx(ctx, DUK_BIDX_DOUBLE_ERROR);
 		} else {
 			DUK_D(DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
 			                 "-> push the error code as a number"));

@@ -2590,12 +2590,9 @@ void duk_push_current_thread(duk_context *ctx) {
 }
 
 void duk_push_global_object(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-
-	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 
-	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+	duk_push_hobject_bidx(ctx, DUK_BIDX_GLOBAL);
 }
 
 /* XXX: size optimize */
@@ -3151,7 +3148,7 @@ void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h) {
 }
 
 /* internal */
-void duk_push_builtin(duk_context *ctx, int builtin_idx) {
+void duk_push_hobject_bidx(duk_context *ctx, int builtin_idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);

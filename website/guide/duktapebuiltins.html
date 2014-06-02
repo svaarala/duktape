@@ -62,6 +62,8 @@ does not block.</p>
 <tr><td class="propname">compact</td><td>Compact the memory allocated for a value (object).</td></tr>
 <tr><td class="propname">errCreate</td><td>Callback to modify/replace a created error.</td></tr>
 <tr><td class="propname">errThrow</td><td>Callback to modify/replace an error about to be thrown.</td></tr>
+<tr><td class="propname">modSearch</td><td>Module search function, must be provided by user code if using modules.</td></tr>
+<tr><td class="propname">modLoaded</td><td>Internal tracking table for loaded modules, maps resolved identifier to exported symbols.</td></tr>
 <tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
 <tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
 <tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
@@ -464,6 +466,17 @@ initially non-existent.</p>
 <p>See
 <a href="#error-handlers">Error handlers (errCreate and errThrow)</a> for
 details.</p>
+
+<h3>modSearch() and modLoaded</h3>
+
+<p><code>modSearch()</code> is a module search function which must be provided
+by user code to support module loading.
+<code>modLoaded</code> is an internal module loading tracking table
+maintained by Duktape which maps a resolved absolute module identifier to the
+module's <code>exports</code> object for modules which are either fully loaded
+or currently being loaded.</p>
+
+<p>See <a href="#modules">Modules</a> for details.</p>
 
 <h2>Duktape.Buffer (constructor)</h2>
 
