@@ -362,6 +362,10 @@ Planned
 * Portability fixes for newer Emscripten version, Dukweb.js now works with
   Firefox
 
+* AUTHORS.txt is now included in distributable, and both LICENSE.txt and
+  AUTHORS.txt are embedded into duktape.c and duktape.h to ensure they're
+  automatically included when used in another project
+
 0.12.0 (2014-06-XX)
 -------------------
 
