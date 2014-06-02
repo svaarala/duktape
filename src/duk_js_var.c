@@ -362,6 +362,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
 	duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
+	duk_compact(ctx, -1);  /* compact the prototype */
 	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
 
 	/*
