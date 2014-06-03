@@ -3,7 +3,7 @@ title: multiple minor issues with recent Emscripten (GH-11)
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-06-02 08:32:33.502425 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-06-03 21:03:52.725582 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""

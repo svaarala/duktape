@@ -3,7 +3,7 @@ title: "Proxy: some way to control handler/target on-the-fly (more flexibility t
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-04-24 15:55:43.552980 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-06-03 21:05:09.950805 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
   - ""

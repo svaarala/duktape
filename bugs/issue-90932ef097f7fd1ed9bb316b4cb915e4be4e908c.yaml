@@ -3,7 +3,7 @@ title: add a duk_to_boolean_pop() helper and check internal use
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-04-24 16:30:18.464607 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-06-03 21:01:39.350661 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
   - ""

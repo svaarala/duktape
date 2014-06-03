@@ -3,7 +3,7 @@ title: add a 'webapp' for duktape.org, so that it can be bookmarked/installed of
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-05-14 13:37:49.092269 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-06-03 20:56:28.343493 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""
