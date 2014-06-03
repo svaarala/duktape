@@ -14,7 +14,7 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
  *  Helper for finding the final non-bound function in a "bound function" chain.
  */
 
-/* FIXME: overlap with other helpers, rework */
+/* XXX: overlap with other helpers, rework */
 static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint32_t sanity;
@@ -457,7 +457,7 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
  *    2   rethrow longjmp
  */
 
-/* FIXME: duk_api operations for cross-thread reg manipulation? */
+/* XXX: duk_api operations for cross-thread reg manipulation? */
 /* FIXME: post-condition: value stack must be correct; for ecmascript functions, clamped to 'nregs' */
 
 #define DUK__LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
