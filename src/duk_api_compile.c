@@ -56,7 +56,7 @@ static int duk__do_compile(duk_context *ctx) {
 
 	/* [ ... source filename ] */
 
-	/* FIXME: unnecessary translation of flags */
+	/* XXX: unnecessary translation of flags */
 	comp_flags = 0;
 	if (flags & DUK_COMPILE_EVAL) {
 		comp_flags = DUK_JS_COMPILE_FLAG_EVAL;

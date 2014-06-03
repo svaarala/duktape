@@ -106,7 +106,7 @@ void duk_join(duk_context *ctx, unsigned int count) {
 	duk__concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
-/* FIXME: could map/decode be unified with duk_unicode_support.c code?
+/* XXX: could map/decode be unified with duk_unicode_support.c code?
  * Case conversion needs also the character surroundings though.
  */
 
@@ -144,7 +144,7 @@ void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback,
 	h_input = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h_input != NULL);
 
-	/* FIXME: should init with a spare of at least h_input->blen? */
+	/* XXX: should init with a spare of at least h_input->blen? */
 	duk_push_dynamic_buffer(ctx, 0);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
@@ -206,7 +206,7 @@ void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_
 	duk_replace(ctx, index);
 }
 
-/* FIXME: this is quite clunky.  Add Unicode helpers to scan backwards and
+/* XXX: this is quite clunky.  Add Unicode helpers to scan backwards and
  * forwards with a callback to process codepoints?
  */
 void duk_trim(duk_context *ctx, int index) {
