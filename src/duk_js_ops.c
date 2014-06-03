@@ -384,27 +384,13 @@ int duk_js_iscallable(duk_tval *tv_x) {
  *  Loose equality, strict equality, and SameValue (E5 Sections 11.9.1, 11.9.4,
  *  9.12).  These have much in common so they can share some helpers.
  *
- *  FIXME notes:
+ *  Future work notes:
  *
  *    - Current implementation (and spec definition) has recursion; this should
  *      be fixed if possible.
  *
  *    - String-to-number coercion should be possible without going through the
  *      value stack (and be more compact) if a shared helper is invoked.
- *
- *    - Non-standard coercion rules for internal types?  For instance:
- *
- *      + Pointer -> convert to number? or string?
- *      + Buffer vs. string -> compare contents
- *      + Buffer vs. buffer -> compare contents?  (not for strict mode)
- *
- *    - The beginning of loose and strict equality are identical: if the type
- *      tags are the same, comparison logic is the same -> implement a single
- *      helper with a strictness flag?
- *
- *    - SameValue and strict equals are identical except that zero signs are
- *      significant for SameValue but not for strict equals, so it can also go
- *      into the same helper.
  */
 
 /* Note that this is the same operation for strict and loose equality:
@@ -622,7 +608,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 		tv_y = tv_tmp;
 	}
 	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		/* FIXME: this is possible without resorting to the value stack */
+		/* XXX: this is possible without resorting to the value stack */
 		double d1, d2;
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		duk_push_tval(ctx, tv_x);
@@ -710,7 +696,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
  *  flags to get the rest.
  */
 
-/* FIXME: this should probably just operate on the stack top, because it
+/* XXX: this should probably just operate on the stack top, because it
  * needs to push stuff on the stack anyway...
  */
 
@@ -737,7 +723,7 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
 	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
 
-	/* FIXME: this special case can now be removed with DUK_MEMCMP */
+	/* XXX: this special case can now be removed with DUK_MEMCMP */
 	/* memcmp() should return zero (equal) for zero length, but avoid
 	 * it because there are some platform specific bugs.  Don't use
 	 * strncmp() because it stops comparing at a NUL.
@@ -910,14 +896,6 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_
  *      E5 Section 15.3.4.5.3
  *
  *  For other objects, a TypeError is thrown.
- *
- *  FIXME: TypeError descriptions are bad (automatic from API).
- *
- */
-
-/* FIXME: refactoring -> helper to extract duk_hobject * from a tval would
- * be useful here; that function should throw TypeErrors if type expectations
- * are incorrect.
  */
 
 int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
@@ -942,7 +920,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	 *  we find a non-bound Function object.
 	 */
 
-	/* FIXME: this bound function resolution also happens elsewhere,
+	/* XXX: this bound function resolution also happens elsewhere,
 	 * move into a shared helper.
 	 */
 
@@ -1053,8 +1031,6 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
  *  E5 Sections 11.8.7, 8.12.6.
  *
  *  Basically just a property existence check using [[HasProperty]].
- *
- *  FIXME: TypeError descriptions are bad (automatic from API).
  */
 	
 int duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
