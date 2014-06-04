@@ -483,7 +483,7 @@ emscripten:
 #EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
 EMCCOPTS=-s USE_TYPED_ARRAYS=0
 
-PHONY: emscriptentest
+.PHONY: emscriptentest
 emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	-@rm -f /tmp/duk-emcc-test*

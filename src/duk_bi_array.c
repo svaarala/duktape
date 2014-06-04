@@ -7,10 +7,15 @@
  *  property, for instance.
  *
  *  FIXME: the "Throw" flag should be set for (almost?) all [[Put]] and
- *  [[Delete]] operations, but it's currently false throughout.  C typing
- *  is incorrect in several places, and array lengths above 2G won't work
- *  reliably.  Further, some valid array length values may be above 2**32-1,
- *  and this is not always correctly handled.
+ *  [[Delete]] operations, but it's currently false throughout.  Go through
+ *  all put/delete cases and check throw flag use.  Need a new API primitive
+ *  which allows throws flag to be specified.
+ *
+ *  FIXME: C typing is incorrect in several places.
+ *
+ *  FIXME: array lengths above 2G won't work reliably.  Further, some valid
+ *  array length values may be above 2**32-1, and this is not always correctly
+ *  handled (duk_uint32_t is not enough).
  *
  *  On using "put" vs. "def" prop
  *  =============================
@@ -72,7 +77,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 			return DUK_RET_RANGE_ERROR;
 		}
 
-		/* FIXME: if 'len' is low, may want to ensure array part is kept:
+		/* XXX: if 'len' is low, may want to ensure array part is kept:
 		 * the caller is likely to want a dense array.
 		 */
 		duk_dup(ctx, 0);
@@ -80,7 +85,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 		return 1;
 	}
 
-	/* FIXME: optimize by creating array into correct size directly, and
+	/* XXX: optimize by creating array into correct size directly, and
 	 * operating on the array part directly; values can be memcpy()'d from
 	 * value stack directly as long as refcounts are increased.
 	 */
@@ -89,7 +94,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 		duk_def_prop_index(ctx, -2, i, DUK_PROPDESC_FLAGS_WEC);
 	}
 
-	duk_push_number(ctx, (double) nargs);  /* FIXME: push_u32 */
+	duk_push_u32(ctx, (duk_uint32_t) nargs);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 	return 1;
 }
@@ -187,7 +192,7 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 
 		/* [ ToObject(this) item1 ... itemN arr item(i) ] */
 
-		/* FIXME: an array can have length higher than 32 bits; this is not handled
+		/* XXX: an array can have length higher than 32 bits; this is not handled
 		 * correctly now (also len is signed so length above 2**31-1 will have trouble.
 		 */
 		len = duk_get_length(ctx, -1);
@@ -317,15 +322,15 @@ int duk_bi_array_prototype_pop(duk_context *ctx) {
 	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		duk_push_int(ctx, 0);
-		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
+		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
 		return 0;
 	}
 	idx = len - 1;
 
 	duk_get_prop_index(ctx, 0, idx);
-	duk_del_prop_index(ctx, 0, idx);  /* FIXME: Throw */
-	duk_push_int(ctx, idx);  /* FIXME: unsigned */
-	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
+	duk_del_prop_index(ctx, 0, idx);
+	duk_push_u32(ctx, (duk_uint32_t) idx);
+	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
 	return 1;
 }
 
@@ -352,7 +357,7 @@ int duk_bi_array_prototype_push(duk_context *ctx) {
 	for (i = 0; i < n; i++) {
 		duk_push_number(ctx, len);
 		duk_dup(ctx, i);
-		duk_put_prop(ctx, -4);  /* FIXME: "Throw" */
+		duk_put_prop(ctx, -4);
 		len += 1.0;
 	}
 
@@ -454,7 +459,7 @@ static int duk__array_sort_compare(duk_context *ctx, int idx1, int idx2) {
 		 * ToNumber().
 		 */
 
-		/* FIXME: best behavior for real world compatibility? */
+		/* XXX: best behavior for real world compatibility? */
 
 		d = duk_to_number(ctx, -1);
 		if (d < 0.0) {
@@ -618,7 +623,7 @@ static void duk__array_qsort(duk_context *ctx, int lo, int hi) {
 	DUK_ASSERT(l >= lo && l <= hi);
 	DUK_ASSERT(r >= lo && r <= hi);
 
-	/* FIXME: there's no explicit recursion bound here now.  For the average
+	/* XXX: there's no explicit recursion bound here now.  For the average
 	 * qsort recursion depth O(log n) that's not really necessary: e.g. for
 	 * 2**32 recursion depth would be about 32 which is OK.  However, qsort
 	 * worst case recursion depth is O(n) which may be a problem.
@@ -658,11 +663,11 @@ int duk_bi_array_prototype_sort(duk_context *ctx) {
  *  splice()
  */
 
-/* FIXME: this compiles to over 500 bytes now, even without special handling
+/* XXX: this compiles to over 500 bytes now, even without special handling
  * for an array part.  Uses signed ints so does not handle full array range correctly.
  */
 
-/* FIXME: can shift() / unshift() use the same helper?
+/* XXX: can shift() / unshift() use the same helper?
  *   shift() is (close to?) <--> splice(0, 1)
  *   unshift is (close to?) <--> splice(0, 0, [items])?
  */
@@ -734,7 +739,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 			duk_pop(ctx);
 		}
 	}
-	duk_push_int(ctx, del_count);  /* FIXME: typing */
+	duk_push_u32(ctx, (duk_uint32_t) del_count);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
@@ -752,10 +757,10 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 
 		for (i = act_start; i < len - del_count; i++) {
 			if (duk_get_prop_index(ctx, -3, i + del_count)) {
-				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: Throw */
+				duk_put_prop_index(ctx, -4, i + item_count);
 			} else {
 				duk_pop(ctx);
-				duk_del_prop_index(ctx, -3, i + item_count);  /* FIXME: Throw */
+				duk_del_prop_index(ctx, -3, i + item_count);
 			}
 		}
 
@@ -763,7 +768,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 
 		/* loop iterator init and limit changed from standard algorithm */
 		for (i = len - 1; i >= len - del_count + item_count; i--) {
-			duk_del_prop_index(ctx, -3, i);  /* FIXME: Throw */
+			duk_del_prop_index(ctx, -3, i);
 		}
 
 		DUK_ASSERT_TOP(ctx, nargs + 3);
@@ -779,10 +784,10 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 		/* loop iterator init and limit changed from standard algorithm */
 		for (i = len - del_count - 1; i >= act_start; i--) {
 			if (duk_get_prop_index(ctx, -3, i + del_count)) {
-				duk_put_prop_index(ctx, -4, i + item_count);  /* FIXME: Throw */
+				duk_put_prop_index(ctx, -4, i + item_count);
 			} else {
 				duk_pop(ctx);
-				duk_del_prop_index(ctx, -3, i + item_count);  /* FIXME: Throw */
+				duk_del_prop_index(ctx, -3, i + item_count);
 			}
 		}
 
@@ -800,7 +805,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 
 	for (i = 0; i < item_count; i++) {
 		duk_dup(ctx, i + 2);  /* args start at index 2 */
-		duk_put_prop_index(ctx, -4, act_start + i);  /* FIXME: Throw */
+		duk_put_prop_index(ctx, -4, act_start + i);
 	}
 
 	/* Step 16: update length; note that the final length may be above 32 bit range */
@@ -837,7 +842,7 @@ int duk_bi_array_prototype_reverse(duk_context *ctx) {
 		/* [ ToObject(this) ToUint32(length) lowerValue upperValue ] */
 
 		if (have_upper) {
-			duk_put_prop_index(ctx, -4, lower);  /* FIXME: Throw */
+			duk_put_prop_index(ctx, -4, lower);
 		} else {
 			duk_del_prop_index(ctx, -4, lower);
 			duk_pop(ctx);
@@ -910,7 +915,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 	}
 
-	duk_push_int(ctx, res_length);  /* FIXME */
+	duk_push_u32(ctx, res_length);
 	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(ctx, 5);
@@ -928,7 +933,7 @@ int duk_bi_array_prototype_shift(duk_context *ctx) {
 	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		duk_push_int(ctx, 0);
-		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
+		duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
 		return 0;
 	}
 
@@ -943,16 +948,16 @@ int duk_bi_array_prototype_shift(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 3);
 		if (duk_get_prop_index(ctx, 0, i)) {
 			/* fromPresent = true */
-			duk_put_prop_index(ctx, 0, i - 1);  /* FIXME: Throw */
+			duk_put_prop_index(ctx, 0, i - 1);
 		} else {
 			/* fromPresent = false */
 			duk_del_prop_index(ctx, 0, i - 1);
 			duk_pop(ctx);
 		}
 	}
-	duk_del_prop_index(ctx, 0, len - 1);  /* FIXME: Throw */
+	duk_del_prop_index(ctx, 0, len - 1);
 
-	duk_push_number(ctx, (double) (len - 1));  /* FIXME: push uint */
+	duk_push_u32(ctx, (duk_uint32_t) (len - 1));
 	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LENGTH);
 
 	DUK_ASSERT_TOP(ctx, 3);
@@ -993,12 +998,12 @@ int duk_bi_array_prototype_unshift(duk_context *ctx) {
 		if (duk_get_prop_index(ctx, -3, i)) {
 			/* fromPresent = true */
 			/* [ ... ToObject(this) ToUint32(length) to val ] */
-			duk_put_prop(ctx, -4);  /* -> [ ... ToObject(this) ToUint32(length) ] */  /* FIXME: Throw */
+			duk_put_prop(ctx, -4);  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		} else {
 			/* fromPresent = false */
 			/* [ ... ToObject(this) ToUint32(length) to val ] */
 			duk_pop(ctx);
-			duk_del_prop(ctx, -3);  /* -> [ ... ToObject(this) ToUint32(length) ] */  /* FIXME: Throw */
+			duk_del_prop(ctx, -3);  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		}
 		DUK_ASSERT_TOP(ctx, nargs + 2);
 	}
@@ -1006,7 +1011,7 @@ int duk_bi_array_prototype_unshift(duk_context *ctx) {
 	for (i = 0; i < nargs; i++) {
 		DUK_ASSERT_TOP(ctx, nargs + 2);
 		duk_dup(ctx, i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
-		duk_put_prop_index(ctx, -3, i);  /* FIXME: Throw */
+		duk_put_prop_index(ctx, -3, i);
 		DUK_ASSERT_TOP(ctx, nargs + 2);
 	}
 
@@ -1014,7 +1019,7 @@ int duk_bi_array_prototype_unshift(duk_context *ctx) {
 	final_len = ((double) len) + ((double) nargs);
 	duk_push_number(ctx, final_len);
 	duk_dup_top(ctx);  /* -> [ ... ToObject(this) ToUint32(length) final_len final_len ] */
-	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);  /* FIXME: Throw */
+	duk_put_prop_stridx(ctx, -4, DUK_STRIDX_LENGTH);
 	return 1;
 }
 
@@ -1231,7 +1236,7 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	case DUK__ITER_FILTER:
 		DUK_ASSERT_TOP(ctx, 5);
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
-		duk_push_number(ctx, (double) res_length);  /* FIXME */
+		duk_push_u32(ctx, res_length);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 		break;
 	default:
