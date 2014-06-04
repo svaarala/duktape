@@ -1,0 +1,114 @@
+===================
+Tagged integer type
+===================
+
+Overview
+========
+
+Ecmascript has a single number type which is assumed in many places to be
+an IEEE double.  Unfortunately in many (if not most) embedded environments
+hardware floating point numbers are not available (at least for IEEE doubles),
+and software floating point performance is often a significant issue.
+Duktape plain types are represented by a ``duk_tval`` type which normally
+has a single IEEE double type for numbers.
+
+There are several main approaches to avoid this issue:
+
+* Replace the tagged IEEE double number type with an integer type.
+  Optimal integer size for embedded environments is 48 bits, as it fits
+  into the 8-byte packed representation.  Integer or fixed point are both
+  possible.  This will necessarily break Ecmascript compliance to some
+  extent, but it would be nice if at least number range was sufficient
+  to represent e.g. Dates.
+
+* Same as above, but also reserve a few bits for one or more special
+  values like NaNs, to maintain compatibility better.
+
+* Extend the tagged type to support both an IEEE double and an integer
+  type.  Convert between the two either fully transparently (to maintain
+  full Ecmascript semantics) or in selected situations, chosen for either
+  convenience or performance.
+
+This document outlines various approaches and issues with each.  Ultimately
+the chosen solution will be described here.
+
+Implementation issues
+=====================
+
+* Should there be a C typedef for a Duktape number?  Currently the public
+  API and Duktape internals assume numbers can be read/written as doubles.
+  Changing the public API will break compilation (or at least cause warnings)
+  for user code, if the integer changes are visible in the API.
+
+* Does the integer change need to be made everywhere at once, so that all
+  code (including the compiler, etc) must support the underlying integer
+  type before the change is complete?
+
+  Alternatively, Duktape could read and write numbers as doubles by default
+  internally (with automatic conversion back and forth as needed) and
+  integer-aware optimizations would only be applied in places where it matters,
+  such as arithmetic.  In particular, there would be no need to deal with
+  integer representation in the compiler as it would normally have a minimal
+  impact.
+
+* Integer representations above 32 bits would normally use a 64-bit integer
+  type for arithmetic.  However, some older platforms don't have such a type
+  (there are workarounds for this e.g. in ``duk_numconv.c``).  So either the
+  integer arithmetic must also be implemented with 32-bit replacements, or
+  the representation won't be available if 64-bit types are not available.
+
+Dependencies on IEEE double
+===========================
+
+Specification and Duktape dependencies:
+
+* Range of numbers:
+
+  - At least 32 bit integers are needed for array and string lengths
+
+  - Date uses millisecond resolution and requires at least 41 bits (40.35
+    bits to represent 2014-06-04) to represent a useful date range.
+    A 41.7 fixed point representation, for instance, could represent dates
+    up to September 2039.  Smallest non-zero fraction would be 1/128 =
+    0.0078125.
+
+  - Another way out of the Date range issue is to change the way Date stores
+    its internal value.  The specification requires the use of an integer
+    number of milliseconds, but with a slight compliance violation it could
+    shift this value (in other words use e.g. 2 or 4 ms increments).  This
+    would then allow a more natural fixed point value to be used, e.g. 40.8.
+
+* Signed zero semantics (separation of negative and positive zero) are
+  are required and explicitly specified, but Ecmascript itself doesn't
+  really depend on being able to use a negative zero, and neither does
+  Duktape.
+
+* NaN values are used in several places as significant internal or
+  external values.  Invalid Date values are represented by having a
+  NaN as the Date object's internal time value.  String-to-number
+  coercion relies on using a NaN to indicate a coercion error
+  (``Number('foo') === NaN``).  If a NaN value is not available, the
+  best replacement is probably zero.
+
+* Infinities are used in math functions but Ecmascript itself doesn't
+  rely on being able to use them, and neither does Duktape.
+
+* Duktape packs some internal values into double representation, this is
+  used at least by:
+
+  - The compiler for declaration book-keeping.  The needed bit count is
+    not large (32 bits should more than suffice, for 2**24 inner functions).
+
+  - Error object tracedata format, which needs 32 bits + a few flags;
+    40 bits should suffice.
+
+In addition to these, user code may have some practical dependencies, such as:
+
+* Being able to represent at least signed and unsigned 32 bits, so that all
+  Ecmascript bit operations work as expected.
+
+* Being able to represent at least some fractional values.  For instance,
+  suppose a custom scheduler used second-based timestamps for timers; it
+  would then require a reasonable number of fractions to work properly.
+  40.8 fixed point provides a fractional increment of 0.00390625; for the
+  scheduler, this would mean an about 3.9ms resolution.
