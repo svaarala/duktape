@@ -64,19 +64,23 @@ Specification and Duktape dependencies:
 
 * Range of numbers:
 
-  - At least 32 bit integers are needed for array and string lengths
+  - Signed integers are quite widely required.
+
+  - At least 32 bit integers are needed for array and string lengths.
 
   - Date uses millisecond resolution and requires at least 41 bits (40.35
     bits to represent 2014-06-04) to represent a useful date range.
-    A 41.7 fixed point representation, for instance, could represent dates
-    up to September 2039.  Smallest non-zero fraction would be 1/128 =
-    0.0078125.
+    An unsigned 41.7 fixed point representation, for instance, could represent
+    dates up to September 2039.  To support signed integers, a signed 41.6
+    representation is more useful; smallest non-zero fraction would be
+    1/64 = 0.015625.
 
   - Another way out of the Date range issue is to change the way Date stores
     its internal value.  The specification requires the use of an integer
     number of milliseconds, but with a slight compliance violation it could
     shift this value (in other words use e.g. 2 or 4 ms increments).  This
-    would then allow a more natural fixed point value to be used, e.g. 40.8.
+    would then allow a more natural fixed point value to be used, e.g. signed
+    40.7 or 39.8.
 
 * Signed zero semantics (separation of negative and positive zero) are
   are required and explicitly specified, but Ecmascript itself doesn't
@@ -110,5 +114,5 @@ In addition to these, user code may have some practical dependencies, such as:
 * Being able to represent at least some fractional values.  For instance,
   suppose a custom scheduler used second-based timestamps for timers; it
   would then require a reasonable number of fractions to work properly.
-  40.8 fixed point provides a fractional increment of 0.00390625; for the
-  scheduler, this would mean an about 3.9ms resolution.
+  Signed 40.7 fixed point provides a fractional increment of 0.0078125;
+  for the scheduler, this would mean about 7.8ms resolution.
