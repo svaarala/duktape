@@ -3,6 +3,12 @@
 NaN
 ===*/
 
+/*---
+{
+    "knownissue": true
+}
+---*/
+
 /* An empty string ToNumber() coerces to +0 (this is explicitly specified).
  * A string which cannot be interpreted as a StringNumericLiteral must
  * produce a NaN.
