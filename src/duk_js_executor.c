@@ -458,7 +458,7 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
  */
 
 /* XXX: duk_api operations for cross-thread reg manipulation? */
-/* FIXME: post-condition: value stack must be correct; for ecmascript functions, clamped to 'nregs' */
+/* XXX: post-condition: value stack must be correct; for ecmascript functions, clamped to 'nregs' */
 
 #define DUK__LONGJMP_RESTART   0  /* state updated, restart bytecode execution */
 #define DUK__LONGJMP_FINISHED  1  /* exit bytecode executor with return value */
@@ -945,8 +945,8 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_top >= 1);
 		DUK_ASSERT(thr->catchstack != NULL);
 
-		/* FIXME: does not work if thr->catchstack is NULL */
-		/* FIXME: does not work if thr->catchstack is allocated but lowest pointer */
+		/* XXX: does not work if thr->catchstack is NULL */
+		/* XXX: does not work if thr->catchstack is allocated but lowest pointer */
 
 		cat = thr->catchstack + thr->catchstack_top - 1;  /* may be < thr->catchstack initially */
 		DUK_ASSERT(thr->callstack_top > 0);  /* ensures callstack_top - 1 >= 0 */
@@ -1304,7 +1304,7 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 	ctr = DUK_HEAP_INTCTR_DEFAULT;
 
 #if 0
-	/* FIXME: cumulative instruction count example */
+	/* XXX: cumulative instruction count example */
 	static int step_count = 0;
 	step_count += thr->heap->interrupt_init;
 	if (step_count >= 1000000) {
@@ -1322,7 +1322,7 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 #endif
 
 #if 0
-	/* FIXME: debugger integration: single step, breakpoint checks, etc */
+	/* XXX: debugger integration: single step, breakpoint checks, etc */
 	if (0) {
 		/* Cause an interrupt after executing one instruction. */
 		ctr = 1;
@@ -1416,7 +1416,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	int valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
 #endif
 
-	/* FIXME: document assumptions on setjmp and volatile variables
+	/* XXX: document assumptions on setjmp and volatile variables
 	 * (see duk_handle_call()).
 	 */
 
@@ -1463,7 +1463,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		int lj_ret;
 
-		/* FIXME: signalling the need to shrink check (only if unwound) */
+		/* XXX: signalling the need to shrink check (only if unwound) */
 
 		DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor, thr=%p, curr_thread=%p",
 		                     thr, (thr && thr->heap) ? thr->heap->curr_thread : NULL));
@@ -1514,7 +1514,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 */
 			DUK_ASSERT(lj_ret == DUK__LONGJMP_FINISHED);
 
-			/* FIXME: return assertions for valstack, callstack, catchstack */
+			/* XXX: return assertions for valstack, callstack, catchstack */
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
 			return;
@@ -1548,7 +1548,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 1)->func));
 
-	/* FIXME: shrink check flag? */
+	/* XXX: shrink check flag? */
 
 	/* assume that thr->valstack_bottom has been set-up before getting here */
 	act = thr->callstack + thr->callstack_top - 1;
@@ -1839,7 +1839,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 */
 
 				/*
-				 * FIXME: because we're dealing with 'own' properties of a fresh array,
+				 * XXX: because we're dealing with 'own' properties of a fresh array,
 				 * the array initializer should just ensure that the array has a large
 				 * enough array part and write the values directly into array part,
 				 * and finally set 'length' manually in the end (as already happens now).
@@ -1881,7 +1881,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * even if the constructor is an Ecmascript function.
 			 */
 
-			/* FIXME: unnecessary copying of values?  Just set 'top' to
+			/* XXX: unnecessary copying of values?  Just set 'top' to
 			 * b + c, and let the return handling fix up the stack frame?
 			 */
 
@@ -1948,7 +1948,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * B -> register containing target function (not type checked here)
 			 */
 
-			/* FIXME: direct manipulation, or duk_replace_tval() */
+			/* XXX: direct manipulation, or duk_replace_tval() */
 
 			/* Note: target registers a and a+1 may overlap with DUK__REGP(b).
 			 * Careful here.
@@ -2002,7 +2002,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 
-			/* FIXME: putvar takes a duk_tval pointer, which is awkward and
+			/* XXX: putvar takes a duk_tval pointer, which is awkward and
 			 * should be reworked.
 			 */
 
@@ -2032,7 +2032,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			flag_undef_value = a & DUK_BC_DECLVAR_FLAG_UNDEF_VALUE;
 			flag_func_decl = a & DUK_BC_DECLVAR_FLAG_FUNC_DECL;
 
-			/* FIXME: declvar takes an duk_tval pointer, which is awkward and
+			/* XXX: declvar takes an duk_tval pointer, which is awkward and
 			 * should be reworked.
 			 */
 
@@ -2381,7 +2381,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		 * actually not the case, because there are also run-time coercions
 		 * of the arguments (with potential side effects).
 		 *
-		 * FIXME: can be combined; check code size.
+		 * XXX: can be combined; check code size.
 		 */
 
 		case DUK_OP_GT: {
@@ -2513,10 +2513,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* A -> flags
 			 * B -> return value reg/const
-			 * C -> currently unused: FIXME
+			 * C -> currently unused
 			 */
 
 			/* FIXME: fast return not implemented, always do a slow return now */
+			/* FIXME: limit fast return to the case with no catchstack at all (not even labels)?) */
 			if (a & DUK_BC_RETURN_FLAG_FAST && 0 /*FIXME*/) {
 				/* fast return: no TCF catchers (but may have e.g. labels) */
 				DUK__INTERNAL_ERROR("FIXME: fast return unimplemented");
@@ -2612,7 +2613,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 *   - ignore recursion limit: never
 				 */
 
-				/* FIXME: optimize flag handling, by coordinating with bytecode */
+				/* XXX: optimize flag handling, by coordinating with bytecode */
 
 				call_flags = 0;
 				if (flag_tailcall) {
@@ -2780,7 +2781,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * catch or finally parts.
 			 */
 
-			/* FIXME: side effect handling is quite awkward here */
+			/* XXX: side effect handling is quite awkward here */
 
 			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%d, var_name/with_target=%d, have_catch=%d, have_finally=%d, catch_binding=%d, with_binding=%d (flags=0x%02x)",
 			                     DUK_DEC_B(ins),
@@ -2797,8 +2798,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			DUK_ASSERT(thr->callstack_top >= 1);
 
-			/* with target must be created first, in case we run out of memory */
-			/* FIXME: refactor out? */
+			/* 'with' target must be created first, in case we run out of memory */
+			/* XXX: refactor out? */
 
 			if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
 				DUK_DDD(DUK_DDDPRINT("need to initialize a with binding object"));
@@ -2892,7 +2893,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_EXTRA: {
-			/* FIXME: shared decoding of 'b' and 'c'? */
+			/* XXX: shared decoding of 'b' and 'c'? */
 
 			int extraop = DUK_DEC_A(ins);
 			switch (extraop) {
@@ -3139,7 +3140,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					c = (int) DUK_TVAL_GET_NUMBER(tv_ind);
 				}
 
-				/* FIXME: this is now a very unoptimal implementation -- this can be
+				/* XXX: this is now a very unoptimal implementation -- this can be
 				 * made very simple by direct manipulation of the object internals,
 				 * given the guarantees above.
 				 */
@@ -3283,7 +3284,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * an error.
 				 */
 				DUK_ASSERT(!DUK_CAT_HAS_FINALLY_ENABLED(cat));  /* cleared before entering finally */
-				/* FIXME: assert idx_base */
+				/* XXX: assert idx_base */
 
 				DUK_DDD(DUK_DDDPRINT("ENDFIN: completion value=%!T, type=%!T",
 				                     &thr->valstack[cat->idx_base + 0],
@@ -3305,7 +3306,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 					duk_push_tval(ctx, &thr->valstack[cat->idx_base]);
 
-					/* FIXME: assert lj type valid */
+					/* XXX: assert lj type valid */
 					duk_err_setup_heap_ljstate(thr, cont_type);
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */

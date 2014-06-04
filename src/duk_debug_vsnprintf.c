@@ -407,7 +407,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			if (!st->internal &&
 			    DUK_HSTRING_GET_BYTELEN(key) > 0 &&
 			    DUK_HSTRING_GET_DATA(key)[0] == 0xff) {
-				/* FIXME: cleanup to use DUK_HSTRING_FLAG_INTERNAL? */
+				/* XXX: use DUK_HSTRING_FLAG_INTERNAL? */
 				continue;
 			}
 			DUK__COMMA();
@@ -746,7 +746,7 @@ static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
 	op = DUK_DEC_OP(ins);
 	op_name = duk__bc_optab[op];
 
-	/* FIXME: option to fix opcode length so it lines up nicely */
+	/* XXX: option to fix opcode length so it lines up nicely */
 
 	if (op == DUK_OP_EXTRA) {
 		extraop_name = duk__bc_extraoptab[DUK_DEC_A(ins)];
@@ -877,7 +877,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				 * depends on type though.
 				 */
 
-				/* FIXME: check size for other types.. actually it would be best to switch
+				/* XXX: check size for other types.. actually it would be best to switch
 				 * for supported standard formats and get args explicitly
 				 */
 				if (ch == 'f' || ch == 'g' || ch == 'e') {

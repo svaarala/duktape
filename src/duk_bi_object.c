@@ -134,7 +134,7 @@ duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx) {
-	/* FIXME: no need for indirect call */
+	/* XXX: no need for indirect call */
 	return duk_hobject_object_get_own_property_descriptor(ctx);
 }
 
@@ -180,12 +180,12 @@ duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_object_constructor_define_property(duk_context *ctx) {
-	/* FIXME: no need for indirect call */
+	/* XXX: no need for indirect call */
 	return duk_hobject_object_define_property(ctx);
 }
 
 duk_ret_t duk_bi_object_constructor_define_properties(duk_context *ctx) {
-	/* FIXME: no need for indirect call */
+	/* XXX: no need for indirect call */
 	return duk_hobject_object_define_properties(ctx);
 }
 
@@ -381,7 +381,7 @@ duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx) {
 		return DUK_RET_TYPE_ERROR;
 	}
 	duk_dup(ctx, 0);  /* -> [ O toString O ] */
-	duk_call_method(ctx, 0);  /* FIXME: call method tailcall? */
+	duk_call_method(ctx, 0);  /* XXX: call method tailcall? */
 	return 1;
 }
 
@@ -399,7 +399,7 @@ duk_ret_t duk_bi_object_prototype_is_prototype_of(duk_context *ctx) {
 
 	h_v = duk_get_hobject(ctx, 0);
 	if (!h_v) {
-		duk_push_false(ctx);  /* FIXME: tail call: return duk_push_false(ctx) */
+		duk_push_false(ctx);  /* XXX: tail call: return duk_push_false(ctx) */
 		return 1;
 	}
 

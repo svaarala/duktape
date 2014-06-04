@@ -12,7 +12,7 @@
 
 #define DUK__CLASS_BITS                  5
 #define DUK__BIDX_BITS                   6
-#define DUK__STRIDX_BITS                 9  /* FIXME: try to optimize to 8 */
+#define DUK__STRIDX_BITS                 9  /* XXX: try to optimize to 8 */
 #define DUK__NATIDX_BITS                 8
 #define DUK__NUM_NORMAL_PROPS_BITS       6
 #define DUK__NUM_FUNC_PROPS_BITS         6
@@ -95,7 +95,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				c_nargs = DUK_VARARGS;
 			}
 
-			/* FIXME: set magic directly here? (it could share the c_nargs arg) */
+			/* XXX: set magic directly here? (it could share the c_nargs arg) */
 			duk_push_c_function_noexotic(ctx, c_func, c_nargs);
 
 			h = duk_require_hobject(ctx, -1);
@@ -107,7 +107,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 			DUK_ASSERT(DUK_HOBJECT_HAS_STRICT(h));
 
-			/* FIXME: function properties */
+			/* XXX: function properties */
 
 			duk_push_hstring_stridx(ctx, stridx);
 			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
@@ -126,7 +126,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0 /*def_value*/);
 			((duk_hnativefunction *) h)->magic = magic;
 		} else {
-			/* FIXME: ARRAY_PART for Array prototype? */
+			/* XXX: ARRAY_PART for Array prototype? */
 
 			duk_push_object_helper(ctx,
 			                       DUK_HOBJECT_FLAG_EXTENSIBLE,
@@ -340,7 +340,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
 
-				/* FIXME: magic for getter/setter? */
+				/* XXX: magic for getter/setter? */
 
 				prop_flags |= DUK_PROPDESC_FLAG_ACCESSOR;  /* accessor flag not encoded explicitly */
 				duk_hobject_define_accessor_internal(thr,
@@ -410,7 +410,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 			DUK_ASSERT(!DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_func));
 
-			/* FIXME: any way to avoid decoding magic bit; there are quite
+			/* XXX: any way to avoid decoding magic bit; there are quite
 			 * many function properties and relatively few with magic values.
 			 */
 			/* Cast converts magic to 16-bit signed value */
@@ -425,7 +425,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_hstring_stridx(ctx, stridx);
 			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
-			/* FIXME: other properties of function instances; 'arguments', 'caller'. */
+			/* XXX: other properties of function instances; 'arguments', 'caller'. */
 
 			DUK_DD(DUK_DDPRINT("built-in object %d, function property %d -> %!T", i, j, duk_get_tval(ctx, -1)));
 
