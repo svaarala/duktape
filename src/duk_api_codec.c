@@ -171,7 +171,7 @@ const char *duk_base64_encode(duk_context *ctx, int index) {
 	unsigned char *dst;
 	const char *ret;
 
-	/* FIXME: optimize for string inputs: no need to coerce to a buffer
+	/* XXX: optimize for string inputs: no need to coerce to a buffer
 	 * which makes a copy of the input.
 	 */
 
@@ -211,7 +211,7 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	unsigned char *dst_final;
 	int retval;
 
-	/* FIXME: optimize for buffer inputs: no need to coerce to a string
+	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
 	 */
 
@@ -253,7 +253,7 @@ const char *duk_hex_encode(duk_context *ctx, int index) {
 	unsigned char *buf;
 	const char *ret;
 
-	/* FIXME: special case for input string, no need to coerce to buffer */
+	/* XXX: special case for input string, no need to coerce to buffer */
 
 	index = duk_require_normalize_index(ctx, index);
 	data = (unsigned char *) duk_to_buffer(ctx, index, &len);
@@ -282,7 +282,7 @@ void duk_hex_decode(duk_context *ctx, int index) {
 	int t;
 	unsigned char *buf;
 
-	/* FIXME: optimize for buffer inputs: no need to coerce to a string
+	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
 	 */
 

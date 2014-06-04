@@ -29,7 +29,7 @@
 #define DUK__MAX_ARRAY_INIT_VALUES        20
 #define DUK__MAX_OBJECT_INIT_PAIRS        10
 
-/* FIXME: hack, remove when const lookup is not O(n) */
+/* XXX: hack, remove when const lookup is not O(n) */
 #define DUK__GETCONST_MAX_CONSTS_CHECK    256
 
 /* these limits are based on bytecode limits */
@@ -111,12 +111,10 @@ static void duk__emit_if_false_skip(duk_compiler_ctx *comp_ctx, int regconst);
 static void duk__emit_if_true_skip(duk_compiler_ctx *comp_ctx, int regconst);
 static void duk__emit_invalid(duk_compiler_ctx *comp_ctx);
 
-/* FIXME */
-static void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst);
-static void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst);
-static int duk__is_whole_get_i32(double x, duk_int32_t *ival);
-
 /* ivalue/ispec helpers */
+static void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst);
+static void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst);
+static int duk__is_whole_get_i32(double x, duk_int32_t *ival);
 static int duk__alloctemps(duk_compiler_ctx *comp_ctx, int num);
 static int duk__alloctemp(duk_compiler_ctx *comp_ctx);
 static void duk__settemp_checkmax(duk_compiler_ctx *comp_ctx, int temp_next);
@@ -218,7 +216,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
  *  flags).
  */
 
-/* FIXME: actually single step levels would work just fine, clean up */
+/* XXX: actually single step levels would work just fine, clean up */
 
 /* binding power "levels" (see doc/compiler.txt) */
 #define DUK__BP_INVALID                0             /* always terminates led() */
@@ -244,7 +242,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 
 #define DUK__TOKEN_LBP_BP_MASK         0x1f
 #define DUK__TOKEN_LBP_FLAG_NO_REGEXP  (1 << 5)   /* regexp literal must not follow this token */
-#define DUK__TOKEN_LBP_FLAG_TERMINATES (1 << 6)   /* FIXME: terminates expression; e.g. post-increment/-decrement */
+#define DUK__TOKEN_LBP_FLAG_TERMINATES (1 << 6)   /* terminates expression; e.g. post-increment/-decrement */
 #define DUK__TOKEN_LBP_FLAG_UNUSED     (1 << 7)   /* spare */
 
 #define DUK__TOKEN_LBP_GET_BP(x)       ((int) (((x) & DUK__TOKEN_LBP_BP_MASK) * 2))
@@ -392,7 +390,7 @@ static int duk__hstring_is_eval_or_arguments_in_strict_mode(duk_compiler_ctx *co
  *  Parser duk__advance() token eating functions
  */
 
-/* FIXME: valstack handling is awkward.  Add a valstack helper which
+/* XXX: valstack handling is awkward.  Add a valstack helper which
  * avoids dup():ing; valstack_copy(src, dst)?
  */
 
@@ -495,7 +493,7 @@ static void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	duk_require_stack(ctx, DUK__FUNCTION_INIT_REQUIRE_SLOTS);
 
-	/* FIXME: getter for dynamic buffer */
+	/* XXX: getter for dynamic buffer */
 
 	duk_push_dynamic_buffer(ctx, 0);
 	func->code_idx = entry_top + 0;
@@ -546,7 +544,7 @@ static void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
 
-	/* FIXME: reset buffers while keeping existing spare */
+	/* XXX: reset buffers while keeping existing spare */
 
 	duk_hbuffer_reset(thr, func->h_code);
 	duk_hobject_set_length_zero(thr, func->h_consts);
@@ -611,7 +609,7 @@ static int duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 /* convert duk_compiler_func into a function template, leaving the result
  * on top of stack.
  */
-/* FIXME: awkward and bloated asm -- use faster internal accesses */
+/* XXX: awkward and bloated asm -- use faster internal accesses */
 static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
@@ -640,7 +638,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	/* Valstack should suffice here, required on function valstack init */
 
 	(void) duk_push_compiledfunction(ctx);
-	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* FIXME: specific getter */
+	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* XXX: specific getter */
 
 	if (func->is_function) {
 		DUK_DDD(DUK_DDDPRINT("function -> set NEWENV"));
@@ -961,10 +959,10 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 #define DUK__EMIT_FLAG_B_IS_TARGET   (1 << 12)  /* slot B is a target (default: source) */
 #define DUK__EMIT_FLAG_C_IS_TARGET   (1 << 13)  /* slot C is a target (default: source) */
 
-/* FIXME: clarify on when and where DUK__CONST_MARKER is allowed */
-/* FIXME: opcode specific assertions on when consts are allowed */
+/* XXX: clarify on when and where DUK__CONST_MARKER is allowed */
+/* XXX: opcode specific assertions on when consts are allowed */
 
-/* FIXME: macro smaller than call? */
+/* XXX: macro smaller than call? */
 static int duk__get_current_pc(duk_compiler_ctx *comp_ctx) {
 	return DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_code) / sizeof(duk_compiler_instr);
 }
@@ -1416,11 +1414,11 @@ static void duk__patch_jump(duk_compiler_ctx *comp_ctx, int jump_pc, int target_
 	}
 	DUK_ASSERT(jump_pc >= 0);
 
-	/* FIXME: range assert */
+	/* XXX: range assert */
 	instr = duk__get_instr_ptr(comp_ctx, jump_pc);
 	DUK_ASSERT(instr != NULL);
 
-	/* FIXME: range assert */
+	/* XXX: range assert */
 	offset = target_pc - jump_pc - 1;
 
 	instr->ins = DUK_ENC_OP_ABC(DUK_OP_JUMP, offset + DUK_BC_JUMP_BIAS);
@@ -1540,12 +1538,12 @@ static void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 #define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
 #define DUK__IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
 
-/* FIXME: some code might benefit from DUK__SETTEMP_IFTEMP(ctx,x) */
+/* XXX: some code might benefit from DUK__SETTEMP_IFTEMP(ctx,x) */
 
 static void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst) {
 	duk_context *ctx = (duk_context *) comp_ctx->thr;
 
-	/* FIXME: use "dup+replace" primitive */
+	/* XXX: use "dup+replace" primitive */
 	dst->t = src->t;
 	dst->regconst = src->regconst;
 	duk_dup(ctx, src->valstack_idx);
@@ -1555,7 +1553,7 @@ static void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispe
 static void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst) {
 	duk_context *ctx = (duk_context *) comp_ctx->thr;
 
-	/* FIXME: use "dup+replace" primitive */
+	/* XXX: use "dup+replace" primitive */
 	dst->t = src->t;
 	dst->op = src->op;
 	dst->x1.t = src->x1.t;
@@ -1568,7 +1566,7 @@ static void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_iv
 	duk_replace(ctx, dst->x2.valstack_idx);
 }
 
-/* FIXME: to util */
+/* XXX: to util */
 static int duk__is_whole_get_i32(double x, duk_int32_t *ival) {
 	duk_small_int_t c;
 	duk_int32_t t;
@@ -1731,7 +1729,7 @@ static int duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			DUK_UNREF(h);
 			DUK_ASSERT(h != NULL);
 
-#if 0  /* FIXME: to be implemented? */
+#if 0  /* XXX: to be implemented? */
 			/* Use special opcodes to load short strings */
 			if (DUK_HSTRING_GET_BYTELEN(h) <= 2) {
 				/* Encode into a single opcode (18 bits can encode 1-2 bytes + length indicator) */
@@ -1823,7 +1821,7 @@ static int duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	}
 
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "duk__ispec_toregconst_raw() internal error");
-	return 0;	/* FIXME: notreached */
+	return 0;
 }
 
 static int duk__ispec_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ispec *x, int forced_reg) {
@@ -1850,7 +1848,7 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, i
 	case DUK_IVAL_PLAIN: {
 		return;
 	}
-	/* FIXME: support unary arithmetic ivalues (useful?) */
+	/* XXX: support unary arithmetic ivalues (useful?) */
 	case DUK_IVAL_ARITH: {
 		int arg1;
 		int arg2;
@@ -1861,7 +1859,7 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, i
 		DUK_DDD(DUK_DDDPRINT("arith to plain conversion"));
 
 		/* inline arithmetic check for constant values */
-		/* FIXME: use the exactly same arithmetic function here as in executor */
+		/* XXX: use the exactly same arithmetic function here as in executor */
 		if (x->x1.t == DUK_ISPEC_VALUE && x->x2.t == DUK_ISPEC_VALUE) {
 			tv1 = duk_get_tval(ctx, x->x1.valstack_idx);
 			tv2 = duk_get_tval(ctx, x->x2.valstack_idx);
@@ -1932,7 +1930,7 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, i
 		return;
 	}
 	case DUK_IVAL_PROP: {
-		/* FIXME: very similar to DUK_IVAL_ARITH - merge? */
+		/* XXX: very similar to DUK_IVAL_ARITH - merge? */
 		int arg1;
 		int arg2;
 		int dest;
@@ -1987,7 +1985,7 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, i
 	}
 
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "duk__ivalue_toplain_raw() internal error");
-	return;	/* FIXME: unreachable */
+	return;
 }
 
 /* evaluate to plain value, no forced register (temp/bound reg both ok) */
@@ -2062,8 +2060,8 @@ static int duk__ivalue_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
 
 /* The issues below can be solved with better flags */
 
-/* FIXME: many operations actually want toforcedtemp() -- brand new temp? */
-/* FIXME: need a toplain_ignore() which will only coerce a value to a temp
+/* XXX: many operations actually want toforcedtemp() -- brand new temp? */
+/* XXX: need a toplain_ignore() which will only coerce a value to a temp
  * register if it might have a side effect.  Side-effect free values do not
  * need to be coerced.
  */
@@ -2201,7 +2199,7 @@ static void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, int
 
 	new_size = (n + 1) * sizeof(duk_labelinfo);
 	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);
-	/* FIXME: spare handling, slow now */
+	/* XXX: spare handling, slow now */
 
 	/* relookup after possible realloc */
 	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
@@ -2267,7 +2265,7 @@ static void duk__update_label_flags(duk_compiler_ctx *comp_ctx, int label_id, in
  * continue slot of the switch's LABEL statement.
  */
 
-/* FIXME: awkward, especially the bunch of separate output values -> output struct? */
+/* XXX: awkward, especially the bunch of separate output values -> output struct? */
 static void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, int is_break, int *out_label_id, int *out_label_catch_depth, int *out_label_pc, int *out_is_closest) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -2323,7 +2321,7 @@ static void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_
 			}
 		}
 	}
-	/* FIXME: match flag is awkward, rework */
+	/* XXX: match flag is awkward, rework */
 	if (!match) {
 		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "cannot resolve label");
 	}
@@ -2342,11 +2340,11 @@ static void duk__reset_labels_to_length(duk_compiler_ctx *comp_ctx, int len) {
 	duk_context *ctx = (duk_context *) thr;
 	size_t new_size;
 
-	/* FIXME: duk_set_length */
+	/* XXX: duk_set_length */
 	new_size = sizeof(duk_labelinfo) * len;
 	duk_push_int(ctx, len);
 	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_STRIDX_LENGTH);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);  /* FIXME: spare handling */
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);  /* XXX: spare handling */
 }
 
 /*
@@ -3270,7 +3268,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
  unary_extraop:
 	{
-		/* FIXME: refactor into unary2: above? */
+		/* XXX: refactor into unary2: above? */
 		int tr;
 		tr = duk__ivalue_toregconst_raw(comp_ctx, res, -1 /*forced_reg*/, DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 		duk__emit_extraop_b_c(comp_ctx,
@@ -3368,7 +3366,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "invalid expression");
 }
 
-/* FIXME: add flag to indicate whether caller cares about return value; this
+/* XXX: add flag to indicate whether caller cares about return value; this
  * affects e.g. handling of assignment expressions.  This change needs API
  * changes elsewhere too.
  */
@@ -3393,14 +3391,14 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 	DUK_DDD(DUK_DDDPRINT("duk__expr_led(), prev_token.t=%d, allow_in=%d, paren_level=%d",
 	                     tk->t, comp_ctx->curr_func.allow_in, comp_ctx->curr_func.paren_level));
 
-	/* FIXME: default priority for infix operators is duk__expr_lbp(tok) -> get it here? */
+	/* XXX: default priority for infix operators is duk__expr_lbp(tok) -> get it here? */
 
 	switch (tok) {
 
 	/* PRIMARY EXPRESSIONS */
 
 	case DUK_TOK_PERIOD: {
-		/* FIXME: this now coerces an identifier into a GETVAR to a temp, which
+		/* XXX: this now coerces an identifier into a GETVAR to a temp, which
 		 * causes an extra LDREG in call setup.  It's sufficient to coerce to a
 		 * unary ivalue?
 		 */
@@ -3411,7 +3409,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "expecting identifier name");
 		}
 
-		/* FIXME: use "dup+replace" primitive */
+		/* XXX: use "dup+replace" primitive */
 		res->t = DUK_IVAL_PROP;
 		duk__copy_ispec(comp_ctx, &left->x1, &res->x1);  /* left.x1 -> res.x1 */
 		DUK_ASSERT(comp_ctx->curr_token.str1 != NULL);
@@ -3426,8 +3424,8 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		return;
 	}
 	case DUK_TOK_LBRACKET: {
-		/* FIXME: optimize temp reg use */
-		/* FIXME: similar coercion issue as in DUK_TOK_PERIOD */
+		/* XXX: optimize temp reg use */
+		/* XXX: similar coercion issue as in DUK_TOK_PERIOD */
 
 		duk__ivalue_toplain(comp_ctx, left);
 
@@ -3435,7 +3433,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 
 		duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
 
-		/* FIXME: coerce to regs? it might be better for enumeration use, where the
+		/* XXX: coerce to regs? it might be better for enumeration use, where the
 		 * same PROP ivalue is used multiple times.  Or perhaps coerce PROP further
 		 * there?
 		 */
@@ -3452,10 +3450,10 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		int call_flags = 0;
 
 		/*
-		 *  FIXME: attempt to get the call result to "next temp" whenever
+		 *  XXX: attempt to get the call result to "next temp" whenever
 		 *  possible to avoid unnecessary register shuffles.
 		 *
-		 *  FIXME: CSPROP (and CSREG) can overwrite the call target register, and save one temp,
+		 *  XXX: CSPROP (and CSREG) can overwrite the call target register, and save one temp,
 		 *  if the call target is a temporary register and at the top of the temp reg "stack".
 		 */
 
@@ -3676,7 +3674,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 	/* CONDITIONAL EXPRESSION */
 
 	case DUK_TOK_QUESTION: {
-		/* FIXME: common reg allocation need is to reuse a sub-expression's temp reg,
+		/* XXX: common reg allocation need is to reuse a sub-expression's temp reg,
 		 * but only if it really is a temp.  Nothing fancy here now.
 		 */
 		int reg_temp;
@@ -3713,7 +3711,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		 *  Right associativiness is reflected in the BP for recursion,
 		 *  "-1" ensures assignment operations are allowed.
 		 *
-		 *  FIXME: just use DUK__BP_COMMA (i.e. no need for 2-step bp levels)?
+		 *  XXX: just use DUK__BP_COMMA (i.e. no need for 2-step bp levels)?
 		 */
 		args = (DUK_OP_INVALID << 8) + DUK__BP_ASSIGNMENT - 1;   /* DUK_OP_INVALID marks a 'plain' assignment */
 		goto assign;
@@ -3795,7 +3793,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 	return;
 
 #if 0
-	/* FIXME: shared handling for 'duk__expr_lhs'? */
+	/* XXX: shared handling for 'duk__expr_lhs'? */
 	if (comp_ctx->curr_func.paren_level == 0 && XXX) {
 		comp_ctx->curr_func.duk__expr_lhs = 0;
 	}
@@ -3858,7 +3856,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		int args_truthval = args >> 8;
 		int args_rbp = args & 0xff;
 
-		/* FIXME: unoptimal use of temps, resetting */
+		/* XXX: unoptimal use of temps, resetting */
 
 		reg_temp = DUK__ALLOCTEMP(comp_ctx);
 
@@ -3890,7 +3888,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		int args_op = args >> 8;
 		int args_rbp = args & 0xff;
 
-		/* FIXME: here we need to know if 'left' is left-hand-side compatible.
+		/* XXX: here we need to know if 'left' is left-hand-side compatible.
 		 * That information is no longer available from current expr parsing
 		 * state; it would need to be carried into the 'left' ivalue or by
 		 * some other means.
@@ -4013,7 +4011,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 	
 			duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_INVLHS);
 
-			/* FIXME: this value is irrelevant because of INVLHS? */
+			/* XXX: this value is irrelevant because of INVLHS? */
 
 			res->t = DUK_IVAL_PLAIN;
 			res->x1.t = DUK_ISPEC_REGCONST;
@@ -4030,7 +4028,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 		 *  result value.  However, even that value will be coerced using
 		 *  ToNumber().
 		 *
-		 *  FIXME: the current solution for this is very ugly.
+		 *  XXX: the current solution for this is very ugly.
 		 *
 		 *  Note that post increment/decrement has a "no LineTerminator here"
 		 *  restriction.  This is handled by duk__expr_lbp(), which forcibly terminates
@@ -4135,7 +4133,7 @@ static int duk__expr_lbp(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(tok >= DUK_TOK_MINVAL && tok <= DUK_TOK_MAXVAL);
 	DUK_ASSERT(sizeof(duk__token_lbp) == DUK_TOK_MAXVAL + 1);
 
-	/* FIXME: integrate support for this into led() instead?
+	/* XXX: integrate support for this into led() instead?
 	 * Similar issue as post-increment/post-decrement.
 	 */
 
@@ -4195,17 +4193,17 @@ static void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int rbp_flags
 	duk_push_undefined(ctx);
 	duk_push_undefined(ctx);
 
-	/* FIXME: where to release temp regs in intermediate expressions?
+	/* XXX: where to release temp regs in intermediate expressions?
 	 * e.g. 1+2+3 -> don't inflate temp register count when parsing this.
 	 * that particular expression temp regs can be forced here.
 	 */
 
-	/* FIXME: increase ctx->expr_tokens here for every consumed token
+	/* XXX: increase ctx->expr_tokens here for every consumed token
 	 * (this would be a nice statistic)?
 	 */
 
 	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON || comp_ctx->curr_token.t == DUK_TOK_RPAREN) {
-		/* FIXME: incorrect hack for testing */
+		/* XXX: possibly incorrect handling of empty expression */
 		DUK_DDD(DUK_DDDPRINT("empty expression"));
 		if (!(rbp_flags & DUK__EXPR_FLAG_ALLOW_EMPTY)) {
 			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "empty expression not allowed");
@@ -4399,7 +4397,7 @@ static void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 	if (comp_ctx->curr_func.in_scanning) {
 		int n;
 		DUK_DDD(DUK_DDDPRINT("register variable declaration %!O in pass 1", h_varname));
-		n = duk_get_length(ctx, comp_ctx->curr_func.decls_idx);  /*FIXME: primitive for pushing*/
+		n = duk_get_length(ctx, comp_ctx->curr_func.decls_idx);
 		duk_push_hstring(ctx, h_varname);
 		duk_put_prop_index(ctx, comp_ctx->curr_func.decls_idx, n);
 		duk_push_int(ctx, DUK_DECL_TYPE_VAR + (0 << 8));
@@ -4558,8 +4556,9 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 
 		pc_v34_lhs = duk__get_current_pc(comp_ctx);  /* jump is inserted here (variant 3) */
 
-		/* FIXME: note that duk__exprtop() here can clobber any reg above current temp_next,
-		 * so any loop variables (e.g. enumerator) must be *preallocated* ... */
+		/* Note that duk__exprtop() here can clobber any reg above current temp_next,
+		 * so any loop variables (e.g. enumerator) must be "preallocated".
+		 */
 
 		/* don't coerce yet to a plain value (variant 3 needs special handling) */
 		duk__exprtop(comp_ctx, res, DUK__BP_FOR_EXPR | DUK__EXPR_FLAG_REJECT_IN | DUK__EXPR_FLAG_ALLOW_EMPTY /*rbp_flags*/);  /* Expression */
@@ -4568,7 +4567,7 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int
 			 *  Variant 3
 			 */
 
-			/* FIXME: need to determine LHS type, and check that it is LHS compatible */
+			/* XXX: need to determine LHS type, and check that it is LHS compatible */
 			DUK_DDD(DUK_DDDPRINT("detected for variant 3: for (LeftHandSideExpression in Expression) Statement"));
 			if (duk__expr_is_empty(comp_ctx)) {
 				goto syntax_error;  /* LeftHandSideExpression does not allow empty expression */
@@ -4932,7 +4931,7 @@ static void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 		/* fall-through jump to next code of next case (backpatched) */
 		pc_prevstmt = duk__emit_jump_empty(comp_ctx);
 
-		/* FIXME: would be nice to omit this jump when the jump is not
+		/* XXX: would be nice to omit this jump when the jump is not
 		 * reachable, at least in the obvious cases (such as the case
 		 * ending with a 'break'.
 		 *
@@ -5246,8 +5245,6 @@ static void duk__parse_throw_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDUNDEF, reg_val);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("throw with a value"));
-
-		/* FIXME: currently must be a register, not a const */
 		reg_val = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 	}
 
@@ -5315,7 +5312,7 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 *
 		 *  See: test-bug-catch-binding-2.js.
 		 *
-		 *  FIXME: improve to get fast path access to most catch clauses.
+		 *  XXX: improve to get fast path access to most catch clauses.
 		 */
 
 		duk_hstring *h_var;
@@ -5408,7 +5405,7 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_ENDCATCH);
 
 		/*
-		 *  FIXME: for now, indicate that an expensive catch binding
+		 *  XXX: for now, indicate that an expensive catch binding
 		 *  declarative environment is always needed.  If we don't
 		 *  need it, we don't need the const_varname either.
 		 */
@@ -5631,7 +5628,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				DUK_ASSERT(h_funcname != NULL);
 
 				DUK_DDD(DUK_DDDPRINT("register function declaration %!O in pass 1, fnum %d", h_funcname, fnum));
-				n = duk_get_length(ctx, comp_ctx->curr_func.decls_idx);  /*FIXME: primitive for pushing*/
+				n = duk_get_length(ctx, comp_ctx->curr_func.decls_idx);
 				duk_push_hstring(ctx, h_funcname);
 				duk_put_prop_index(ctx, comp_ctx->curr_func.decls_idx, n);
 				duk_push_int(ctx, DUK_DECL_TYPE_FUNC + (fnum << 8));
@@ -5877,7 +5874,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				DUK_DDD(DUK_DDDPRINT("directive contains escapes: valid directive "
 				                     "but we ignore such directives"));
 			} else {
-				/* FIXME: how to compare 'use strict' most compactly?
+				/* XXX: how to compare 'use strict' most compactly?
 				 * We don't necessarily want to add it to the built-ins
 				 * because it's not needed at run time.
 				 */
@@ -5917,7 +5914,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 	 *  any side effects out (consider e.g. "foo.bar;").
 	 */
 
-	/* FIXME: what about statements which leave a half-cooked value in 'res'
+	/* XXX: what about statements which leave a half-cooked value in 'res'
 	 * but have no stmt value?  Any such statements?
 	 */
 
@@ -5946,7 +5943,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 			if (comp_ctx->curr_token.allow_auto_semi) {
 				DUK_DDD(DUK_DDDPRINT("automatic semicolon terminates statement"));
 			} else if (stmt_flags & DUK__ALLOW_AUTO_SEMI_ALWAYS) {
-				/* FIXME: make this lenience dependent on flags or strictness? */
+				/* XXX: make this lenience dependent on flags or strictness? */
 				DUK_DDD(DUK_DDDPRINT("automatic semicolon terminates statement (allowed for compatibility "
 				                     "even though no lineterm present before next token)"));
 			} else {
@@ -5981,7 +5978,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 
 	duk__reset_labels_to_length(comp_ctx, labels_len_at_entry);
 
-	/* FIXME: return indication of "terminalness" (e.g. a 'throw' is terminal) */
+	/* XXX: return indication of "terminalness" (e.g. a 'throw' is terminal) */
 
 	DUK__RECURSION_DECREASE(comp_ctx, thr);
 }
@@ -6011,7 +6008,7 @@ static void duk__parse_stmts(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
 
 	duk_require_stack(ctx, DUK__PARSE_STATEMENTS_SLOTS);
 
-	/* FIXME: 'res' setup can be moved to function body level; in fact, two 'res'
+	/* XXX: 'res' setup can be moved to function body level; in fact, two 'res'
 	 * intermediate values suffice for parsing of each function.  Nesting is needed
 	 * for nested functions (which may occur inside expressions).
 	 */
@@ -6085,7 +6082,7 @@ static void duk__parse_stmts(duk_compiler_ctx *comp_ctx, int allow_source_elem, 
  *      handled through an explicit slow path environment record.
  */
 
-/* FIXME: add support for variables to not be register bound always, to 
+/* XXX: add support for variables to not be register bound always, to 
  * handle cases with a very large number of variables?
  */
 
@@ -6123,7 +6120,7 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 
 	num_args = duk_get_length(ctx, comp_ctx->curr_func.argnames_idx);
 	DUK_DDD(DUK_DDDPRINT("num_args=%d", num_args));
-	/* FIXME: check num_args */
+	/* XXX: check num_args */
 
 	for (i = 0; i < num_args; i++) {
 		duk_get_prop_index(ctx, comp_ctx->curr_func.argnames_idx, i);
@@ -6204,7 +6201,7 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 
 		duk_get_prop_index(ctx, comp_ctx->curr_func.decls_idx, i + 1);  /* decl type */
 		decl_type = duk_to_int(ctx, -1);
-		fnum = decl_type >> 8;  /* FIXME: macros */
+		fnum = decl_type >> 8;  /* XXX: macros */
 		decl_type = decl_type & 0xff;
 		duk_pop(ctx);
 
@@ -6214,7 +6211,7 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 
 		duk_get_prop_index(ctx, comp_ctx->curr_func.decls_idx, i);  /* decl name */
 
-		/* FIXME: spilling */
+		/* XXX: spilling */
 		if (comp_ctx->curr_func.is_function) {
 			int reg_bind;
 			duk_dup_top(ctx);
@@ -6316,7 +6313,7 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 				continue;
 			}
 
-			/* FIXME: spilling */
+			/* XXX: spilling */
 			if (comp_ctx->curr_func.is_function) {
 				int reg_bind = DUK__ALLOCTEMP(comp_ctx);
 				/* no need to init reg, it will be undefined on entry */
@@ -6425,7 +6422,7 @@ static void duk__parse_func_body(duk_compiler_ctx *comp_ctx, int expect_eof, int
 	 *  allocated here, and used in the implicit return statement below.
 	 */
 
-	/* FIXME: this is pointless here because pass 1 is throw-away */
+	/* XXX: this is pointless here because pass 1 is throw-away */
 	if (implicit_return_value) {
 		reg_stmt_value = DUK__ALLOCTEMP(comp_ctx);
 
@@ -6507,7 +6504,7 @@ static void duk__parse_func_body(duk_compiler_ctx *comp_ctx, int expect_eof, int
 	func->stmt_next = 0;
 	func->label_next = 0;
 
-	/* FIXME: init or assert catch depth etc -- all values */
+	/* XXX: init or assert catch depth etc -- all values */
 	func->id_access_arguments = 0;
 	func->id_access_slow = 0;
 
@@ -6562,7 +6559,7 @@ static void duk__parse_func_body(duk_compiler_ctx *comp_ctx, int expect_eof, int
 	 *  case for iteration and conditional statements, for instance).
 	 */
 
-	/* FIXME: request a "last statement is terminal" from duk__parse_stmt() and duk__parse_stmts();
+	/* XXX: request a "last statement is terminal" from duk__parse_stmt() and duk__parse_stmts();
 	 * we could avoid the last RETURN if we could ensure there is no way to get here
 	 * (directly or via a jump)
 	 */
@@ -6650,7 +6647,7 @@ static void duk__parse_func_formals(duk_compiler_ctx *comp_ctx) {
 		DUK_ASSERT(comp_ctx->curr_token.str1 != NULL);
 		DUK_DDD(DUK_DDDPRINT("formal argument: %!O", comp_ctx->curr_token.str1));
 
-		/* FIXME: append primitive */
+		/* XXX: append primitive */
 		duk_push_hstring(ctx, comp_ctx->curr_token.str1);
 		n = duk_get_length(ctx, comp_ctx->curr_func.argnames_idx);
 		duk_put_prop_index(ctx, comp_ctx->curr_func.argnames_idx, n);
@@ -6837,7 +6834,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 	                     comp_ctx->prev_token.start_offset, comp_ctx->curr_token.start_offset));
 	DUK_ASSERT(comp_ctx->lex.input[comp_ctx->prev_token.start_offset] == (duk_uint8_t) '}');
 
-	/* FIXME: append primitive */
+	/* XXX: append primitive */
 	DUK_ASSERT(duk_get_length(ctx, old_func.funcs_idx) == (duk_uint32_t) (old_func.fnum_next * 3));
 	fnum = old_func.fnum_next++;
 
@@ -6863,16 +6860,6 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 	return fnum;
 }
 
-#if 0
-	/* FIXME: avoid two-pass parsing for parent functions both two passes
-	 * (leading to fourfold parsing of second level functions)?  If we want
-	 * do fancy parent variable lookups, the parent must be in its second
-	 * pass for us to know all statically declared variables and functions.
-	 * So perhaps do a single pass if parent is in its first pass, throw
-	 * away the results and do two passes on parent's second pass.
-	 */
-#endif
-
 /*
  *  Compile input string into an executable function template without
  *  arguments.
@@ -6885,7 +6872,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
  *  Output stack: [ ... func_template ]
  */
 
-/* FIXME: source code property */
+/* XXX: source code property */
 
 static int duk__js_compile_raw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;

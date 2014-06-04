@@ -50,7 +50,7 @@ duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t le
 		hash = duk_util_hashbytes(str, (duk_size_t) DUK__STRHASH_SHORTSTRING, str_seed);
 		off = DUK__STRHASH_SHORTSTRING + (skip * (hash % 256)) / 256;
 
-		/* FIXME: inefficient loop */
+		/* XXX: inefficient loop */
 		while (off < len) {
 			duk_size_t left = len - off;
 			duk_size_t now = (duk_size_t) (left > DUK__STRHASH_BLOCKSIZE ? DUK__STRHASH_BLOCKSIZE : left);

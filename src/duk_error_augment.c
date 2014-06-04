@@ -183,17 +183,15 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 	 * the line and flags.
 	 */
 
-	/* FIXME: optimize: allocate an array part to the necessary size (upwards
+	/* XXX: optimize: allocate an array part to the necessary size (upwards
 	 * estimate) and fill in the values directly into the array part; finally
 	 * update 'length'.
 	 */
 
-	/* FIXME: using duk_put_prop_index() would cause obscure error cases when Array.prototype
+	/* XXX: using duk_put_prop_index() would cause obscure error cases when Array.prototype
 	 * has write-protected array index named properties.  This was seen as DoubleErrors
-	 * in e.g. some test262 test cases.  Using duk_def_prop_index() is better but currently
-	 * there is no fast path variant for that; the current implementation interns the array
-	 * index as a string.  This can be fixed directly, or perhaps the traceback can be fixed
-	 * altogether to fill in the tracedata directly into the array part.
+	 * in e.g. some test262 test cases.  Using duk_def_prop_index() is better but heavier.
+	 * The best fix is to fill in the tracedata directly into the array part.
 	 */
 
 	/* [ ... error arr ] */
@@ -258,7 +256,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 		arr_idx++;
 	}
 
-	/* FIXME: set with duk_hobject_set_length() when tracedata is filled directly */
+	/* XXX: set with duk_hobject_set_length() when tracedata is filled directly */
 	duk_push_int(ctx, (int) arr_idx);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
@@ -305,7 +303,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 	 */
 
 	if (filename && !noblame_fileline) {
-		/* FIXME: file/line is disabled in minimal builds, so disable this too
+		/* XXX: file/line is disabled in minimal builds, so disable this too
 		 * when appropriate.
 		 */
 		duk_push_string(ctx, filename);

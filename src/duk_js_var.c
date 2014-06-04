@@ -20,12 +20,12 @@
  *  Care must be taken to avoid duk_tval pointer invalidation caused by
  *  e.g. value stack or object resizing.
  *
- *  FIXME: properties for function instances could be initialized much more
+ *  TODO: properties for function instances could be initialized much more
  *  efficiently by creating a property allocation for a certain size and
  *  filling in keys and values directly (and INCREFing both with "bulk incref"
  *  primitives.
  *
- *  FIXME: duk_hobject_getprop() and duk_hobject_putprop() calls are a bit
+ *  XXX: duk_hobject_getprop() and duk_hobject_putprop() calls are a bit
  *  awkward (especially because they follow the prototype chain); rework
  *  if "raw" own property helpers are added.
  */
@@ -167,7 +167,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  Some flags (like NEWENV) are processed separately below.
 	 */
 
-	/* FIXME: copy flags using a mask */
+	/* XXX: copy flags using a mask */
 
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_HOBJECT_SET_CONSTRUCTABLE(&fun_clos->obj);  /* Note: not set in template (has no "prototype") */
@@ -325,7 +325,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	len_value = 0;
 
-	/* FIXME: use helper for size optimization */
+	/* XXX: use helper for size optimization */
 	if (duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS)) {
 		/* [ ... closure template formals ] */
 		DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH));
@@ -334,8 +334,8 @@ void duk_js_push_closure(duk_hthread *thr,
 		len_value = duk_to_int(ctx, -1);
 		duk_pop_2(ctx);
 	} else {
-		duk_pop(ctx);  /* FIXME: this is tedious.. another wrapper function? */
-		/* FIXME: what to do if _formals is not empty but compiler has optimized
+		duk_pop(ctx);
+		/* XXX: what to do if _formals is not empty but compiler has optimized
 		 * it away -- read length from an explicit property then?
 		 */
 	}
@@ -490,10 +490,9 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	/* open scope information, for compiled functions only */
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
-		/* FIXME: duk_push_hthread etc -> macros at least */
-		duk_push_hobject(ctx, (duk_hobject *) thr);
+		duk_push_hthread(ctx, thr);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THREAD, DUK_PROPDESC_FLAGS_WEC);
-		duk_push_hobject(ctx, (duk_hobject *) func);
+		duk_push_hobject(ctx, func);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_CALLEE, DUK_PROPDESC_FLAGS_WEC);
 		duk_push_int(ctx, idx_bottom);  /* FIXME: type */
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_REGBASE, DUK_PROPDESC_FLAGS_WEC);
@@ -536,7 +535,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 
 	act->lex_env = env;
 	act->var_env = env;
-	DUK_HOBJECT_INCREF(thr, env);  /* FIXME: incref by count (here 2 times) */
+	DUK_HOBJECT_INCREF(thr, env);  /* XXX: incref by count (here 2 times) */
 	DUK_HOBJECT_INCREF(thr, env);
 
 	duk_pop(ctx);
@@ -554,7 +553,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
  *
  *  These are not looked up from the env to minimize code size.
  *
- *  FIXME: should access the own properties directly instead of using the API
+ *  XXX: should access the own properties directly instead of using the API
  */
 
 void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, int regbase) {
@@ -1020,7 +1019,7 @@ static int duk__get_identifier_reference(duk_hthread *thr,
 			 *  an accessor.
 			 */
 
-			/* FIXME: we could save space by using _target OR _this.  If _target, assume
+			/* XXX: we could save space by using _target OR _this.  If _target, assume
 			 * this binding is undefined.  If _this, assumes this binding is _this, and
 			 * target is also _this.  One property would then be enough.
 			 */
@@ -1559,7 +1558,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 		 *  if the conflicting property might be a virtual one.  Object
 		 *  prototype has no virtual properties, though.
 		 *
-		 *  FIXME: this is now very awkward, rework.
+		 *  XXX: this is now very awkward, rework.
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("re-declare a function binding in global object, "
@@ -1574,7 +1573,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(holder) == DUK_HOBJECT_CLASS_GLOBAL);
 		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(holder));  /* global object doesn't have array part */
 
-		/* FIXME: use a helper for prototype traversal; no loop check here */
+		/* XXX: use a helper for prototype traversal; no loop check here */
 		/* must be found: was found earlier, and cannot be inherited */
 		for (;;) {
 			DUK_ASSERT(holder != NULL);
@@ -1619,7 +1618,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 		}
 
 		if (holder == ref.holder) {
-			/* FIXME: if duk_hobject_define_property_internal() was updated
+			/* XXX: if duk_hobject_define_property_internal() was updated
 			 * to handle a pre-existing accessor property, this would be
 			 * a simple call (like for the ancestor case).
 			 */
@@ -1696,7 +1695,7 @@ static int duk__declvar_helper(duk_hthread *thr,
 	 *  Note: this may fail if the holder is not extensible.
 	 */
 
-	/* FIXME: this is awkward as we use an internal method which doesn't handle
+	/* XXX: this is awkward as we use an internal method which doesn't handle
 	 * extensibility etc correctly.  Basically we'd want to do a [[DefineOwnProperty]]
 	 * or Object.defineProperty() here.
 	 */

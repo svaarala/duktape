@@ -5,8 +5,8 @@
  *  in duk_api_internal.h, with semantics similar to the public API.
  */
 
-/* FIXME: repetition of stack pre-checks -> helper or macro or inline */
-/* FIXME: shared api error strings, and perhaps even throw code for rare cases? */
+/* XXX: repetition of stack pre-checks -> helper or macro or inline */
+/* XXX: shared api error strings, and perhaps even throw code for rare cases? */
 
 #include "duk_internal.h"
 
@@ -178,7 +178,7 @@ void duk_set_top(duk_context *ctx, int index) {
 		/* each DECREF potentially invalidates valstack pointers, careful */
 		ptrdiff_t pdiff = ((char *) thr->valstack_top) - ((char *) tv_new_top);  /* byte diff (avoid shift/div) */
 
-		/* FIXME: inlined DECREF macro would be nice here: no NULL check,
+		/* XXX: inlined DECREF macro would be nice here: no NULL check,
 		 * refzero queueing but no refzero algorithm run (= no pointer
 		 * instability), inline code.
 		 */
@@ -233,7 +233,7 @@ int duk_require_top_index(duk_context *ctx) {
 	return ret;
 }
 
-/* FIXME: perhaps refactor this to allow caller to specify some parameters, or
+/* XXX: perhaps refactor this to allow caller to specify some parameters, or
  * at least a 'compact' flag which skips any spare or round-up .. useful for
  * emergency gc.
  */
@@ -1177,91 +1177,6 @@ duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, int index) {
 	return (duk_hnativefunction *) h;
 }
 
-#if 0  /* FIXME: unused */
-/* about 300 bytes, worth it? */
-void duk_get_multiple(duk_context *ctx, int start_index, const char *types, ...) {
-	va_list ap;
-	duk_hthread *thr;
-	const char *p;
-	int index;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(types != NULL);
-
-	thr = (duk_hthread *) ctx;
-	index = duk_require_normalize_index(ctx, start_index);
-
-	va_start(ap, types);
-
-	p = types;
-	for (;;) {
-		unsigned int ch = (unsigned int) (*p++);
-		switch (ch) {
-		case 'u': {
-			/* no effect */
-			break;
-		}
-		case 'n': {
-			/* no effect */
-			break;
-		}
-		case 'b': {
-			int *out = va_arg(ap, int *);
-			DUK_ASSERT(out);
-			*out = duk_get_boolean(ctx, index);
-			break;
-		}
-		case 'd': {
-			double *out = va_arg(ap, double *);
-			DUK_ASSERT(out);
-			*out = duk_get_number(ctx, index);
-			break;
-		}
-		case 'i': {
-			int *out = va_arg(ap, int *);
-			DUK_ASSERT(out);
-			*out = duk_get_int(ctx, index);
-			break;
-		}
-		case 's': {
-			const char **out = va_arg(ap, const char **);
-			DUK_ASSERT(out);
-			*out = duk_get_string(ctx, index);
-			break;
-		}
-		case 'l': {
-			const char **out1 = va_arg(ap, const char **);
-			size_t *out2 = va_arg(ap, size_t *);
-			DUK_ASSERT(out1);
-			DUK_ASSERT(out2);
-			*out1 = duk_get_lstring(ctx, index, out2);
-			break;
-		}
-		case 'p': {
-			void **out = va_arg(ap, void **);
-			DUK_ASSERT(out);
-			*out = duk_get_pointer(ctx, index);
-			break;
-		}
-		case '-': {
-			break;
-		}
-		case 0: {
-			goto done;
-		}
-		default: {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid type char: %d", ch);
-		}
-		}
-
-		index++;
-	}
- done:
-
-	va_end(ap);
-}
-#endif  /* FIXME: unused */
-
 duk_c_function duk_get_c_function(duk_context *ctx, int index) {
 	duk_tval *tv;
 	duk_hobject *h;
@@ -1524,7 +1439,7 @@ double duk_to_number(duk_context *ctx, int index) {
 	return d;
 }
 
-/* FIXME: combine all the integer conversions: they share everything
+/* XXX: combine all the integer conversions: they share everything
  * but the helper function for coercion.
  */
 
@@ -1661,7 +1576,7 @@ const char *duk_safe_to_lstring(duk_context *ctx, int index, size_t *out_len) {
 	return duk_require_lstring(ctx, index, out_len);
 }
 
-/* FIXME: other variants like uint, u32 etc */
+/* XXX: other variants like uint, u32 etc */
 int duk_to_int_clamped_raw(duk_context *ctx, int index, int minval, int maxval, int *out_clamped) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
@@ -2417,76 +2332,6 @@ void duk_push_pointer(duk_context *ctx, void *val) {
 	duk_push_tval(ctx, &tv);
 }
 
-#if 0  /* FIXME: unused */
-void duk_push_multiple(duk_context *ctx, const char *types, ...) {
-	va_list ap;
-	duk_hthread *thr;
-	const char *p;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(types != NULL);
-
-	thr = (duk_hthread *) ctx;
-
-	va_start(ap, types);
-
-	p = types;
-	for (;;) {
-		unsigned int ch = (unsigned int) (*p++);
-		switch (ch) {
-		case 'u': {
-			(void) duk_push_undefined(ctx);
-			break;
-		}
-		case 'n': {
-			(void) duk_push_null(ctx);
-			break;
-		}
-		case 'b': {
-			int val = va_arg(ap, int);
-			(void) duk_push_boolean(ctx, val);
-			break;
-		}
-		case 'd': {
-			double val = va_arg(ap, double);
-			(void) duk_push_number(ctx, val);
-			break;
-		}
-		case 'i': {
-			int val = va_arg(ap, int);
-			(void) duk_push_int(ctx, val);
-			break;
-		}
-		case 's': {
-			const char *val = va_arg(ap, const char *);
-			(void) duk_push_string(ctx, val);
-			break;
-		}
-		case 'l': {
-			const char *val = va_arg(ap, const char *);
-			size_t len = va_arg(ap, size_t);
-			(void) duk_push_lstring(ctx, val, len);
-			break;
-		}
-		case 'p': {
-			void *val = va_arg(ap, void *);
-			(void) duk_push_pointer(ctx, val);
-			break;
-		}
-		case 0: {
-			goto done;
-		}
-		default: {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid type char: %d", ch);
-		}
-		}
-	}
- done:
-
-	va_end(ap);
-}
-#endif  /* FIXME: unused */
-
 #define DUK__PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
 #define DUK__PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
 #define DUK__PUSH_THIS_FLAG_TO_STRING    (1 << 2)
@@ -3068,7 +2913,7 @@ int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt,
 }
 #endif
 
-/* FIXME: repetition, see duk_push_object */
+/* XXX: repetition, see duk_push_object */
 void *duk_push_buffer(duk_context *ctx, size_t size, int dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
@@ -3175,7 +3020,7 @@ void duk_pop_n(duk_context *ctx, unsigned int count) {
 	 *  of our valstack.
 	 */
 
-	/* FIXME: inlined DECREF macro would be nice here: no NULL check,
+	/* XXX: inlined DECREF macro would be nice here: no NULL check,
 	 * refzero queueing but no refzero algorithm run (= no pointer
 	 * instability), inline code.
 	 */
@@ -3353,7 +3198,7 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
 	 * cases will now be unsafe.
 	 */
 
-	/* FIXME: just assert non-NULL values here and make caller arguments
+	/* XXX: just assert non-NULL values here and make caller arguments
 	 * do the defaulting to the default implementations (smaller code)?
 	 */
 

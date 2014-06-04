@@ -1059,7 +1059,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			DUK__ADVANCE(lex_ctx, 1);
 		}
 
-		/* FIXME: better coercion */
+		/* XXX: better coercion */
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 
 		s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
@@ -1077,7 +1077,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		if (DUK_ISNAN(val)) {
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid numeric literal");
 		}
-		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* FIXME: or pop? */
+		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* could also just pop? */
 
 		DUK__INITBUFFER(lex_ctx);	/* free some memory */
 
@@ -1265,7 +1265,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
  *      called in practice.
  */
 
-/* FIXME: change mode flags into one flags argument? */
+/* XXX: change mode flags into one flags argument? */
 
 void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
@@ -1512,7 +1512,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 				out_token->num = 0x0000;
 				advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);
 			} else {
-				/* FIXME: shared parsing? */
+				/* XXX: shared parsing? */
 				duk_uint32_t val = 0;
 				int i;
 				for (i = 0; ; i++) {
@@ -1617,16 +1617,16 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
  *  range parsed and returns the number of ranges present.
  */
 
-/* FIXME: this duplicates functionality in duk_regexp.c where a similar loop is
+/* XXX: this duplicates functionality in duk_regexp.c where a similar loop is
  * required anyway.  We could use that BUT we need to update the regexp compiler
  * 'nranges' too.  Work this out a bit more cleanly to save space.
  */
 
-/* FIXME: the handling of character range detection is a bit convoluted.
+/* XXX: the handling of character range detection is a bit convoluted.
  * Try to simplify and make smaller.
  */
 
-/* FIXME: logic for handling character ranges is now incorrect, it will accept
+/* XXX: logic for handling character ranges is now incorrect, it will accept
  * e.g. [\d-z] whereas it should croak from it?  SMJS accepts this too, though.
  *
  * Needs a read through and a lot of additional tests.

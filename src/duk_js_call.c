@@ -304,7 +304,7 @@ static void duk__handle_createargs_for_call(duk_hthread *thr,
  *  updated if necessary (at idx_func + 1).  Note that for constructor calls
  *  the 'this' binding is never updated by [[BoundThis]].
  *
- *  FIXME: bound function chains could be collapsed at bound function creation
+ *  XXX: bound function chains could be collapsed at bound function creation
  *  time so that each bound function would point directly to a non-bound
  *  function.  This would make call time handling much easier.
  */
@@ -364,7 +364,7 @@ static void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		len = duk_require_int(ctx, -1);
 		duk_pop(ctx);
 		for (i = 0; i < len; i++) {
-			/* FIXME: very slow - better to bulk allocate a gap, and copy
+			/* XXX: very slow - better to bulk allocate a gap, and copy
 			 * from args_array directly (we know it has a compact array
 			 * part, etc).
 			 */
@@ -1325,8 +1325,10 @@ int duk_handle_call(duk_hthread *thr,
 		thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
 		thr->heap->lj.iserror = 0;
 
-		/* FIXME: what about side effects here? finalizer runs should be shielded
-		 * from errors so even out-of-memory should not be an issue here.
+		/* Side effects should not be an issue here: tv_tmp is local and
+		 * thr->heap (and thr->heap->lj) have a stable pointer.  Finalizer
+		 * runs etc capture even out-of-memory errors so nothing should
+		 * throw here.
 		 */
 		DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
 		DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value1);
@@ -1679,8 +1681,10 @@ int duk_handle_safe_call(duk_hthread *thr,
 	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
 	thr->heap->lj.iserror = 0;
 
-	/* FIXME: what about side effects here? finalizer runs should be shielded
-	 * from errors so even out-of-memory should not be an issue here.
+	/* Side effects should not be an issue here: tv_tmp is local and
+	 * thr->heap (and thr->heap->lj) have a stable pointer.  Finalizer
+	 * runs etc capture even out-of-memory errors so nothing should
+	 * throw here.
 	 */
 	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
 	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value1);
@@ -1692,7 +1696,7 @@ int duk_handle_safe_call(duk_hthread *thr,
 
 	DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 
-	/* FIXME: because we unwind stacks above, thr->heap->curr_thread is at
+	/* XXX: because we unwind stacks above, thr->heap->curr_thread is at
 	 * risk of pointing to an already freed thread.  This was indeed the
 	 * case in test-bug-multithread-valgrind.c, until duk_handle_call()
 	 * was fixed to restore thr->heap->curr_thread before rethrowing an
