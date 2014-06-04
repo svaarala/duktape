@@ -337,11 +337,11 @@ duksizes: duk.raw
 
 .PHONY: issuecount
 issuecount:
-	@echo "FIXME:     `grep FIXME: src/*.c src/*.h | wc -l | tr -d ' '`"
-	@echo "XXX:       `grep XXX: src/*.c src/*.h | wc -l | tr -d ' '`"
-	@echo "TODO:      `grep TODO: src/*.c src/*.h | wc -l | tr -d ' '`"
-	@echo "NOTE:      `grep NOTE: src/*.c src/*.h | wc -l | tr -d ' '`"
-	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h | wc -l | tr -d ' '`"
+	@echo "FIXME:     `grep FIXME: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
+	@echo "XXX:       `grep XXX: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
+	@echo "TODO:      `grep TODO: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
+	@echo "NOTE:      `grep NOTE: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
+	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
 	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo $(DITZ_RELEASE) | wc -l | tr -d ' '`"
 
 .PHONY: dukscanbuild
