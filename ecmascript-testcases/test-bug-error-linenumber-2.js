@@ -7,6 +7,12 @@
 
 "use strict";
 
+/*---
+{
+    "knownissue": true
+}
+---*/
+
 /*===
 Error 2
 Error 2

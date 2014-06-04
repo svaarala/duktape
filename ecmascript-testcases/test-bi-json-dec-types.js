@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": true
+}
+---*/
+
 /*===
 typeof, class, etc
 typeof: object
