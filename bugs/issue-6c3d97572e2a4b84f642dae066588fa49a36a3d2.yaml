@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: merge the duk_hobject_props.c getprop/putprop/etc functions with Duktape API functions
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-04 11:09:58.830405 Z
+references: []
+
+id: 6c3d97572e2a4b84f642dae066588fa49a36a3d2
+log_events: 
+- - 2014-06-04 11:09:58.990351 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
