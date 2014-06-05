@@ -54,6 +54,8 @@
 #define DUK_ACT_FLAG_PREVENT_YIELD   (1 << 3)  /* activation prevents yield (native call or "new") */
 #define DUK_ACT_FLAG_DIRECT_EVAL     (1 << 4)  /* activation is a direct eval call */
 
+#define DUK_ACT_GET_FUNC(act)        ((act)->func)
+
 /*
  *  Flags for __FILE__ / __LINE__ registered into tracedata
  */
@@ -133,9 +135,14 @@
  *  Struct defines
  */
 
-/* Note: it's nice if size is 2^N (now 32 bytes on 32 bit without 'caller' property) */
+/* FIXME: for a memory-code tradeoff, remove 'func' and make it's access either a function
+ * or a macro.  This would make the activation 32 bytes long on 32-bit platforms again.
+ */
+
+/* Note: it's nice if size is 2^N (at least for 32-bit platforms). */
 struct duk_activation {
-	duk_hobject *func;      /* function being executed; for bound function calls, this is the final, real function */
+	duk_tval tv_func;       /* borrowed: full duk_tval for function being executed; for lightfuncs */
+	duk_hobject *func;      /* borrowed: function being executed; for bound function calls, this is the final, real function, NULL for lightfuncs */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
 	duk_hobject *lex_env;   /* current lexical environment (may be NULL if delayed) */
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
@@ -179,11 +186,6 @@ struct duk_activation {
 	 * (calling) valstack.  This works for everything except tail
 	 * calls, which must not "cumulate" valstack temps.
 	 */
-
-#if defined(DUK_USE_32BIT_PTRS) && !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	/* Minor optimization: pad structure to 2^N size on 32-bit platforms. */
-	duk_int_t unused1;  /* pad to 2^N */
-#endif
 };
 
 /* Note: it's nice if size is 2^N (not 4x4 = 16 bytes on 32 bit) */

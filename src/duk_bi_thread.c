@@ -52,6 +52,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_tval tv_tmp;
 	duk_tval *tv;
 	duk_hobject *func;
+	duk_hobject *caller_func;
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
@@ -76,11 +77,12 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 		DUK_DD(DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)"));
 		goto state_error;
 	}
-	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
-	DUK_ASSERT(DUK_HOBJECT_IS_NATIVEFUNCTION((thr->callstack + thr->callstack_top - 1)->func));
-	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);  /* us */
+	DUK_ASSERT(DUK_HOBJECT_IS_NATIVEFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2) != NULL);  /* caller */
 
-	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
+	caller_func = DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2);
+	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(caller_func)) {
 		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}
@@ -207,6 +209,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval tv_tmp;
+	duk_hobject *caller_func;
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
@@ -235,11 +238,12 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 		DUK_DD(DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)"));
 		goto state_error;
 	}
-	DUK_ASSERT((thr->callstack + thr->callstack_top - 1)->func != NULL);  /* us */
-	DUK_ASSERT(DUK_HOBJECT_IS_NATIVEFUNCTION((thr->callstack + thr->callstack_top - 1)->func));
-	DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);  /* us */
+	DUK_ASSERT(DUK_HOBJECT_IS_NATIVEFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2) != NULL);  /* caller */
 
-	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func)) {
+	caller_func = DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2);
+	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(caller_func)) {
 		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be Ecmascript code"));
 		goto state_error;
 	}

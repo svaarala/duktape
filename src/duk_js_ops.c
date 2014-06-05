@@ -87,6 +87,9 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 		void *p = DUK_TVAL_GET_POINTER(tv);
 		return (p != NULL ? 1 : 0);
 	}
+	case DUK_TAG_LIGHTFUNC: {
+		return 1;
+	}
 	default: {
 		/* number */
 		int c;
@@ -219,6 +222,10 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		 */
 		void *p = DUK_TVAL_GET_POINTER(tv);
 		return (p != NULL ? 1.0 : 0.0);
+	}
+	case DUK_TAG_LIGHTFUNC: {
+		/* +(function(){}) -> NaN */
+		return DUK_DOUBLE_NAN;
 	}
 	default: {
 		/* number */
@@ -573,6 +580,19 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 				DUK_ASSERT(len_y == 0 || buf_y != NULL);
 				return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
 			}
+		}
+		case DUK_TAG_LIGHTFUNC: {
+			/* At least 'magic' has a significant impact on function
+			 * identity.
+			 */
+			duk_small_uint_t lf_flags_x;
+			duk_small_uint_t lf_flags_y;
+			duk_c_function func_x;
+			duk_c_function func_y;
+
+			DUK_TVAL_GET_LIGHTFUNC(tv_x, func_x, lf_flags_x);
+			DUK_TVAL_GET_LIGHTFUNC(tv_y, func_y, lf_flags_y);
+			return ((func_x == func_y) && (lf_flags_x == lf_flags_y)) ? 1 : 0;
 		}
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
@@ -943,7 +963,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
-	func = duk_require_hobject(ctx, -1);
+	func = duk_require_hobject(ctx, -1);  /* FIXME: lightfunc */
 
 	/*
 	 *  For bound objects, [[HasInstance]] just calls the target function
@@ -1082,9 +1102,12 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	 * form (which is a shame).
 	 */
 
+	/* TypeError if rval is not an object (or lightfunc which should behave
+	 * like a Function instance).
+	 */
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
-	(void) duk_require_hobject(ctx, -1);  /* TypeError if rval not object */
+	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC);
 	duk_to_string(ctx, -2);               /* coerce lval with ToString() */
 
 	retval = duk_hobject_hasprop(thr, duk_get_tval(ctx, -1), duk_get_tval(ctx, -2));
@@ -1146,6 +1169,10 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	case DUK_TAG_BUFFER: {
 		/* implementation specific */
 		stridx = DUK_STRIDX_LC_BUFFER;
+		break;
+	}
+	case DUK_TAG_LIGHTFUNC: {
+		stridx = DUK_STRIDX_LC_FUNCTION;
 		break;
 	}
 	default: {

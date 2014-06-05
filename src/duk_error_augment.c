@@ -224,6 +224,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
 	for (i = (duk_int_t) (thr_callstack->callstack_top - 1); i >= i_min; i--) {
 		duk_uint32_t pc;
+		duk_hobject *func;
 
 		/*
 		 *  Note: each API operation potentially resizes the callstack,
@@ -235,17 +236,24 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 
 		/* [... arr] */
 
+		/* FIXME: proper lightfunc support */
+#if 0
 		DUK_ASSERT(thr_callstack->callstack[i].func != NULL);
 		DUK_ASSERT_DISABLE(thr_callstack->callstack[i].pc >= 0);  /* unsigned */
+#endif
 
-		/* add function */
-		duk_push_hobject(ctx, thr_callstack->callstack[i].func);  /* -> [... arr func] */
+		/* Add function object. */
+		func = DUK_ACT_GET_FUNC(thr_callstack->callstack + i);
+		if (func) {
+			duk_push_hobject(ctx, func);        /* -> [... arr func] */
+		} else {
+			duk_tval *tv = &(thr_callstack->callstack + i)->tv_func;
+			duk_push_tval(ctx, tv);
+		}
 		duk_def_prop_index_wec(ctx, -2, arr_idx);
 		arr_idx++;
 
-		/* add a number containing: pc, activation flags */
-
-		/* Add a number containing: pc, activation flag
+		/* Add a number containing: pc, activation flags.
 		 *
 		 * PC points to next instruction, find offending PC.  Note that
 		 * PC == 0 for native code.
@@ -322,7 +330,7 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 
 		act = thr_callstack->callstack + thr_callstack->callstack_top - 1;
 		DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
-		func = act->func;
+		func = DUK_ACT_GET_FUNC(act);
 		if (func) {
 			duk_uint32_t pc;
 			duk_uint32_t line;

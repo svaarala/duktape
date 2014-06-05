@@ -1,4 +1,5 @@
 /*===
+*** test_1 (duk_safe_call)
 00:  und=1 null=0 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=1 objcoerc=0
 01:  und=0 null=1 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=1 objcoerc=0
 02:  und=0 null=0 noru=0 bool=1 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=0 prim=1 objcoerc=1
@@ -19,6 +20,7 @@
 17:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=1 ptr=0 prim=1 objcoerc=1
 18:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=1 fix=0 ptr=0 prim=1 objcoerc=1
 19:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ptr=1 prim=1 objcoerc=1
+==> rc=0, result='undefined'
 ===*/
 
 #include <math.h>
@@ -27,7 +29,7 @@ static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
-void test(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_idx_t i, n;
 
 	/*
@@ -126,4 +128,10 @@ void test(duk_context *ctx) {
 		printf(" objcoerc=%d", (int) duk_is_object_coercible(ctx, i));
 		printf("\n");
 	}
+
+	return 0;
+}
+
+void test(duk_context *ctx) {
+	TEST_SAFE_CALL(test_1);
 }

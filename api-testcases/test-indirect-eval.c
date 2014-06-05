@@ -22,6 +22,10 @@ void test(duk_context *ctx) {
 	duk_get_prop_string(ctx, -1, "testFunc");
 	rc = duk_pcall(ctx, 0);
 	printf("rc=%d\n", (int) rc);
+	if (rc != 0) {
+		/* unexpected error */
+		printf("error=%s\n", duk_safe_to_string(ctx, -1));
+	}
 	duk_pop_2(ctx);
 
         printf("final top: %ld\n", (long) duk_get_top(ctx));

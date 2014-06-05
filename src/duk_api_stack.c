@@ -13,6 +13,12 @@
 #include "duk_internal.h"
 
 /*
+ *  Forward declarations
+ */
+
+static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags);
+
+/*
  *  Global state for working around missing variadic macros
  */
 
@@ -1420,7 +1426,8 @@ DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(ctx != NULL);
 
 	tv = duk_require_tval(ctx, index);
-	if (tv && DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
 		ret = (void *) DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(ret != NULL);
 		return ret;
@@ -1428,6 +1435,49 @@ DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
 	return (void *) NULL;  /* not reachable */
+}
+
+/* Useful for internal call sites where we either expect an object (function)
+ * or a lightfunc.  Returns NULL for a lightfunc.
+ */
+DUK_INTERNAL duk_hobject *duk_require_hobject_or_lfunc(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_require_tval(ctx, index);
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		return DUK_TVAL_GET_OBJECT(tv);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		return NULL;
+	}
+
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+	return NULL;  /* not reachable */
+}
+
+/* Useful for internal call sites where we either expect an object (function)
+ * or a lightfunc.  Accepts an object (returned as is) or a lightfunc (coerced
+ * to an object).  Return value is never NULL.
+ */
+DUK_INTERNAL duk_hobject *duk_require_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_require_tval(ctx, index);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		return DUK_TVAL_GET_OBJECT(tv);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_to_object(ctx, index);
+		return duk_require_hobject(ctx, index);
+	}
+
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+	return NULL;  /* not reachable */
 }
 
 DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
@@ -1460,6 +1510,10 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
 		return (duk_size_t) DUK_HBUFFER_GET_SIZE(h);
+	}
+	case DUK_TAG_LIGHTFUNC: {
+		/* FIXME: return value for virtual length property */
+		return 0;
 	}
 	default:
 		/* number */
@@ -1902,6 +1956,11 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 		}
 		break;
 	}
+	case DUK_TAG_LIGHTFUNC: {
+		/* Should match Function.prototype.toString() */
+		duk_push_lightfunc_tostring(ctx, tv);
+		break;
+	}
 	default: {
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2021,6 +2080,12 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
 		 */
 		res = (void *) DUK_TVAL_GET_HEAPHDR(tv);
 		break;
+	case DUK_TAG_LIGHTFUNC:
+		/* FIXME: function pointers may not cast correctly to void *,
+		 * but try anyway?
+		 */
+		res = NULL;
+		break;
 	default:
 		/* number */
 		res = NULL;
@@ -2035,8 +2100,8 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_uint_t shared_flags = 0;   /* shared flags for a subset of types */
-	duk_small_int_t shared_proto = 0;
+	duk_uint_t flags = 0;   /* shared flags for a subset of types */
+	duk_small_int_t proto = 0;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -2052,16 +2117,16 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
-		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BOOLEAN);
-		shared_proto = DUK_BIDX_BOOLEAN_PROTOTYPE;
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BOOLEAN);
+		proto = DUK_BIDX_BOOLEAN_PROTOTYPE;
 		goto create_object;
 	}
 	case DUK_TAG_STRING: {
-		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
-		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
-		shared_proto = DUK_BIDX_STRING_PROTOTYPE;
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
+		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
+		proto = DUK_BIDX_STRING_PROTOTYPE;
 		goto create_object;
 	}
 	case DUK_TAG_OBJECT: {
@@ -2069,29 +2134,78 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ |
-		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER);
-		shared_proto = DUK_BIDX_BUFFER_PROTOTYPE;
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ |
+		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER);
+		proto = DUK_BIDX_BUFFER_PROTOTYPE;
 		goto create_object;
 	}
 	case DUK_TAG_POINTER: {
-		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER);
-		shared_proto = DUK_BIDX_POINTER_PROTOTYPE;
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER);
+		proto = DUK_BIDX_POINTER_PROTOTYPE;
 		goto create_object;
 	}
+	case DUK_TAG_LIGHTFUNC: {
+		/* Lightfunc coerces to a Function instance with concrete
+		 * properties.  Since 'length' is virtual for Duktape/C
+		 * functions, don't need to define that.
+		 *
+		 * The result is made extensible to mimic what happens to
+		 * strings:
+		 *   > Object.isExtensible(Object('foo'))
+		 *   true
+		 */
+		duk_small_uint_t lf_flags;
+		duk_small_uint_t nargs;
+		duk_small_uint_t lf_len;
+		duk_c_function func;
+		duk_hnativefunction *nf;
+
+		DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);
+
+		nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
+		if (nargs == 0x0f) {
+			nargs = DUK_VARARGS;
+		}
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+		        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	                DUK_HOBJECT_FLAG_NEWENV |
+	                DUK_HOBJECT_FLAG_STRICT |
+	                DUK_HOBJECT_FLAG_NOTAIL |
+			/* DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC: omitted here intentionally */
+	                DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
+		(void) duk__push_c_function_raw(ctx, func, (duk_idx_t) nargs, flags);
+
+		lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
+		if (lf_len != nargs) {
+			/* Explicit length is only needed if it differs from 'nargs'. */
+			duk_push_int(ctx, (duk_int_t) lf_len);
+			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+		}
+		duk_push_lightfunc_name(ctx, tv);
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+
+		nf = duk_get_hnativefunction(ctx, -1);
+		DUK_ASSERT(nf != NULL);
+		nf->magic = (duk_int16_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
+
+		/* Enable DUKFUNC exotic behavior once properties are set up. */
+		DUK_HOBJECT_SET_EXOTIC_DUKFUNC((duk_hobject *) nf);
+		goto replace_value;
+	}
 	default: {
-		shared_flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER);
-		shared_proto = DUK_BIDX_NUMBER_PROTOTYPE;
+		proto = DUK_BIDX_NUMBER_PROTOTYPE;
 		goto create_object;
 	}
 	}
 	return;
 
  create_object:
-	(void) duk_push_object_helper(ctx, shared_flags, shared_proto);
+	(void) duk_push_object_helper(ctx, flags, proto);
 
 	/* Note: Boolean prototype's internal value property is not writable,
 	 * but duk_def_prop_stridx() disregards the write protection.  Boolean
@@ -2103,6 +2217,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	duk_dup(ctx, index);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
+ replace_value:
 	duk_replace(ctx, index);
 }
 
@@ -2154,6 +2269,8 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index) {
 		return DUK_TYPE_BUFFER;
 	case DUK_TAG_POINTER:
 		return DUK_TYPE_POINTER;
+	case DUK_TAG_LIGHTFUNC:
+		return DUK_TYPE_LIGHTFUNC;
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2188,6 +2305,8 @@ DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index) {
 		return DUK_TYPE_MASK_BUFFER;
 	case DUK_TAG_POINTER:
 		return DUK_TYPE_MASK_POINTER;
+	case DUK_TAG_LIGHTFUNC:
+		return DUK_TYPE_MASK_LIGHTFUNC;
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2304,6 +2423,10 @@ DUK_EXTERNAL duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t index) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t index) {
+	duk_tval *tv = duk_get_tval(ctx, index);
+	if (tv && DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		return 1;
+	}
 	return duk__obj_flag_any_default_false(ctx,
 	                                       index,
 	                                       DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
@@ -2337,11 +2460,7 @@ DUK_EXTERNAL duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t index) {
 
 DUK_EXTERNAL duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index) {
 	/* XXX: currently same as duk_is_function() */
-	return duk__obj_flag_any_default_false(ctx,
-	                                       index,
-	                                       DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
-	                                       DUK_HOBJECT_FLAG_NATIVEFUNCTION |
-	                                       DUK_HOBJECT_FLAG_BOUND);
+	return duk_is_function(ctx, index);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
@@ -2704,16 +2823,27 @@ DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 DUK_EXTERNAL void duk_push_current_function(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
+	duk_hobject *func;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
+	/* FIXME: lightfunc handling: perhaps we'll need the lightfunc
+	 * ptr after all... with all the duk_tval fields.
+	 */
+
 	act = duk_hthread_get_current_activation(thr);
 	if (act) {
-		DUK_ASSERT(act->func != NULL);
-		duk_push_hobject(ctx, act->func);
+		/* FIXME: change if tv_func gets always initialized */
+		func = DUK_ACT_GET_FUNC(act);
+		if (func) {
+			duk_push_hobject(ctx, func);
+		} else {
+			DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(&act->tv_func));
+			duk_push_tval(ctx, &act->tv_func);
+		}
 	} else {
 		duk_push_undefined(ctx);
 	}
@@ -3494,6 +3624,10 @@ DUK_EXTERNAL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, cons
 }
 #endif
 
+/*
+ *  Comparison
+ */
+
 DUK_EXTERNAL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1, *tv2;
@@ -3527,4 +3661,79 @@ DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, du
 
 	/* No coercions or other side effects, so safe */
 	return duk_js_strict_equals(tv1, tv2);
+}
+
+/*
+ *  Lightfunc
+ */
+
+void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
+	/* FIXME: add pointer, and perhaps flags here? */
+	duk_c_function func;
+
+	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
+
+	/* Lightfunc name, includes Duktape/C native function pointer, which
+	 * can often be used to locate the function from a symbol table.
+	 * The name also includes the 16-bit duk_tval flags field because it
+	 * includes the magic value.  Because a single native function often
+	 * provides different functionality depending on the magic value, it
+	 * seems reasonably to include it in the name.
+	 *
+	 * On the other hand, a complicated name increases string table
+	 * pressure in low memory environments (but only when function name
+	 * is accessed).
+	 */
+#if 1
+	func = DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv);
+	duk_push_sprintf(ctx, "light_");
+	duk_push_string_funcptr(ctx, (duk_uint8_t *) &func, sizeof(func));
+	duk_push_sprintf(ctx, "_%04x", (unsigned int) DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv));
+	duk_concat(ctx, 3);
+#else
+	duk_push_string(ctx, "light");
+#endif
+}
+
+void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
+	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
+
+	duk_push_string(ctx, "function ");
+	duk_push_lightfunc_name(ctx, tv);
+	duk_push_string(ctx, "() {/* light */}");
+	duk_concat(ctx, 3);
+}
+
+/*
+ *  Function pointers
+ *
+ *  Printing function pointers is non-portable, so we do that by hex printing
+ *  bytes from memory.
+ */
+
+void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz) {
+	duk_uint8_t buf[32 * 2];
+	duk_uint8_t *p, *q;
+	duk_small_uint_t i;
+	duk_small_uint_t t;
+
+	DUK_ASSERT(sz <= 32);  /* sanity limit for function pointer size */
+
+	p = buf;
+#if defined(DUK_USE_INTEGER_LE)
+	q = ptr + sz;
+#else
+	q = ptr;
+#endif
+	for (i = 0; i < sz; i++) {
+#if defined(DUK_USE_INTEGER_LE)
+		t = *(--q);
+#else
+		t = *(q++);
+#endif
+		*p++ = duk_lc_digits[t >> 4];
+		*p++ = duk_lc_digits[t & 0x0f];
+	}
+
+	duk_push_lstring(ctx, (const char *) buf, sz * 2);
 }

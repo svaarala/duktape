@@ -49,6 +49,15 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 		duk_insert(ctx, 0);
 	}
 
+	/* FIXME: lightfunc hack, rework */
+	{
+		duk_tval *tv = duk_get_tval(ctx, 0);
+		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+			duk_push_hobject_bidx(ctx, DUK_BIDX_FUNCTION_PROTOTYPE);
+			return 1;
+		}
+	}
+
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
@@ -194,6 +203,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context 
 	duk_hobject *h;
 	duk_bool_t is_freeze;
 
+	/* FIXME: lightfunc */
+
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
@@ -211,6 +222,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
+
+	/* FIXME: lightfunc */
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
@@ -230,22 +243,30 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 	duk_bool_t is_frozen;
 	duk_bool_t rc;
 
-	h = duk_require_hobject(ctx, 0);
-	DUK_ASSERT(h != NULL);
+	/* FIXME: lightfunc */
 
-	is_frozen = duk_get_current_magic(ctx);
-	rc = duk_hobject_object_is_sealed_frozen_helper(h, is_frozen /*is_frozen*/);
-	duk_push_boolean(ctx, rc);
+	h = duk_require_hobject_or_lfunc(ctx, 0);
+	if (!h) {
+		duk_push_true(ctx);  /* frozen and sealed */
+	} else {
+		is_frozen = duk_get_current_magic(ctx);
+		rc = duk_hobject_object_is_sealed_frozen_helper(h, is_frozen /*is_frozen*/);
+		duk_push_boolean(ctx, rc);
+	}
 	return 1;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx) {
 	duk_hobject *h;
 
-	h = duk_require_hobject(ctx, 0);
-	DUK_ASSERT(h != NULL);
+	/* FIXME: lightfunc */
 
-	duk_push_boolean(ctx, DUK_HOBJECT_HAS_EXTENSIBLE(h));
+	h = duk_require_hobject_or_lfunc(ctx, 0);
+	if (!h) {
+		duk_push_false(ctx);
+	} else {
+		duk_push_boolean(ctx, DUK_HOBJECT_HAS_EXTENSIBLE(h));
+	}
 	return 1;
 }
 
@@ -265,7 +286,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 
-	obj = duk_require_hobject(ctx, 0);
+	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
 	DUK_ASSERT(obj != NULL);
 	DUK_UNREF(obj);
 

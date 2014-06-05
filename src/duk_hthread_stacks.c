@@ -128,7 +128,8 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 
 	idx = thr->callstack_top;
 	while (idx > new_top) {
-		duk_activation *p;
+		duk_activation *act;
+		duk_hobject *func;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		duk_hobject *tmp;
 #endif
@@ -137,48 +138,49 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		DUK_ASSERT_DISABLE(idx >= 0);  /* unsigned */
 		DUK_ASSERT((duk_size_t) idx < thr->callstack_size);  /* true, despite side effect resizes */
 
-		p = thr->callstack + idx;
-		DUK_ASSERT(p->func != NULL);
+		act = thr->callstack + idx;
+		/* With lightfuncs, act 'func' may be NULL */
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		/*
 		 *  Restore 'caller' property for non-strict callee functions.
 		 */
 
-		if (!DUK_HOBJECT_HAS_STRICT(p->func)) {
+		func = DUK_ACT_GET_FUNC(act);
+		if (func != NULL && !DUK_HOBJECT_HAS_STRICT(func)) {
 			duk_tval *tv_caller;
 			duk_tval tv_tmp;
 			duk_hobject *h_tmp;
 
-			tv_caller = duk_hobject_find_existing_entry_tval_ptr(p->func, DUK_HTHREAD_STRING_CALLER(thr));
+			tv_caller = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_CALLER(thr));
 
-			/* The p->prev_caller should only be set if the entry for 'caller'
+			/* The act->prev_caller should only be set if the entry for 'caller'
 			 * exists (as it is only set in that case, and the property is not
 			 * configurable), but handle all the cases anyway.
 			 */
 
 			if (tv_caller) {
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv_caller);
-				if (p->prev_caller) {
-					/* Just transfer the refcount from p->prev_caller to tv_caller,
+				if (act->prev_caller) {
+					/* Just transfer the refcount from act->prev_caller to tv_caller,
 					 * so no need for a refcount update.  This is the expected case.
 					 */
-					DUK_TVAL_SET_OBJECT(tv_caller, p->prev_caller);
-					p->prev_caller = NULL;
+					DUK_TVAL_SET_OBJECT(tv_caller, act->prev_caller);
+					act->prev_caller = NULL;
 				} else {
 					DUK_TVAL_SET_NULL(tv_caller);   /* no incref needed */
-					DUK_ASSERT(p->prev_caller == NULL);
+					DUK_ASSERT(act->prev_caller == NULL);
 				}
 				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 			} else {
-				h_tmp = p->prev_caller;
+				h_tmp = act->prev_caller;
 				if (h_tmp) {
-					p->prev_caller = NULL;
+					act->prev_caller = NULL;
 					DUK_HOBJECT_DECREF(thr, h_tmp);  /* side effects */
 				}
 			}
-			p = thr->callstack + idx;  /* avoid side effects */
-			DUK_ASSERT(p->prev_caller == NULL);
+			act = thr->callstack + idx;  /* avoid side effects */
+			DUK_ASSERT(act->prev_caller == NULL);
 		}
 #endif
 
@@ -192,46 +194,49 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		 *  environment is created for e.g. an eval call, it must not be closed.
 		 */
 
-		if (!DUK_HOBJECT_HAS_NEWENV(p->func)) {
+		func = DUK_ACT_GET_FUNC(act);
+		if (func != NULL && !DUK_HOBJECT_HAS_NEWENV(func)) {
 			DUK_DDD(DUK_DDDPRINT("skip closing environments, envs not owned by this activation"));
 			goto skip_env_close;
 		}
 
-		DUK_ASSERT(p->lex_env == p->var_env);
-		if (p->var_env != NULL) {
+		/* FIXME: lightfunc handling, explicit check or comment */
+
+		DUK_ASSERT(act->lex_env == act->var_env);
+		if (act->var_env != NULL) {
 			DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
-			                     (void *) p->var_env, (duk_heaphdr *) p->var_env));
-			duk_js_close_environment_record(thr, p->var_env, p->func, p->idx_bottom);
-			p = thr->callstack + idx;  /* avoid side effect issues */
+			                     (void *) act->var_env, (duk_heaphdr *) act->var_env));
+			duk_js_close_environment_record(thr, act->var_env, DUK_ACT_GET_FUNC(act), act->idx_bottom);
+			act = thr->callstack + idx;  /* avoid side effect issues */
 		}
 
 #if 0
-		if (p->lex_env != NULL) {
-			if (p->lex_env == p->var_env) {
+		if (act->lex_env != NULL) {
+			if (act->lex_env == act->var_env) {
 				/* common case, already closed, so skip */
 				DUK_DD(DUK_DDPRINT("lex_env and var_env are the same and lex_env "
 				                   "already closed -> skip closing lex_env"));
 				;
 			} else {
 				DUK_DD(DUK_DDPRINT("closing lex_env record %p -> %!O",
-				                   (void *) p->lex_env, (duk_heaphdr *) p->lex_env));
-				duk_js_close_environment_record(thr, p->lex_env, p->func, p->idx_bottom);
-				p = thr->callstack + idx;  /* avoid side effect issues */
+				                   (void *) act->lex_env, (duk_heaphdr *) act->lex_env));
+				duk_js_close_environment_record(thr, act->lex_env, DUK_ACT_GET_FUNC(act), act->idx_bottom);
+				act = thr->callstack + idx;  /* avoid side effect issues */
 			}
 		}
 #endif
 
-		DUK_ASSERT((p->lex_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->lex_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
+		DUK_ASSERT((act->lex_env == NULL) ||
+		           ((duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
-		DUK_ASSERT((p->var_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(p->var_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
+		DUK_ASSERT((act->var_env == NULL) ||
+		           ((duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
 	 skip_env_close:
 
@@ -239,7 +244,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		 *  Update preventcount
 		 */
 
-		if (p->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
+		if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 			DUK_ASSERT(thr->callstack_preventcount >= 1);
 			thr->callstack_preventcount--;
 		}
@@ -254,34 +259,34 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		 */
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = p->var_env;
+		tmp = act->var_env;
 #endif
-		p->var_env = NULL;
+		act->var_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = thr->callstack + idx;  /* avoid side effect issues */
+		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = p->lex_env;
+		tmp = act->lex_env;
 #endif
-		p->lex_env = NULL;
+		act->lex_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = thr->callstack + idx;  /* avoid side effect issues */
+		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
 		/* Note: this may cause a corner case situation where a finalizer
 		 * may see a currently reachable activation whose 'func' is NULL.
 		 */
 #ifdef DUK_USE_REFERENCE_COUNTING
-		tmp = p->func;
+		tmp = DUK_ACT_GET_FUNC(act);
 #endif
-		p->func = NULL;
+		act->func = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = thr->callstack + idx;  /* avoid side effect issues */
-		DUK_UNREF(p);
+		act = thr->callstack + idx;  /* avoid side effect issues */
+		DUK_UNREF(act);
 #endif
 	}
 
@@ -293,8 +298,8 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	 */
 #if 0
 	if (thr->callstack_top > 0) {
-		duk_activation *p = thr->callstack + thr->callstack_top - 1;
-		p->idx_retval = 0;
+		duk_activation *act = thr->callstack + thr->callstack_top - 1;
+		act->idx_retval = 0;
 	}
 #endif
 

@@ -357,8 +357,8 @@ DUK_EXTERNAL void duk_compact(duk_context *ctx, duk_idx_t obj_index) {
 DUK_EXTERNAL void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags) {
 	DUK_ASSERT(ctx != NULL);
 
-	duk_require_hobject(ctx, obj_index);
 	duk_dup(ctx, obj_index);
+	duk_require_hobject_or_lfunc_coerce(ctx, -1);
 	duk_hobject_enumerator_create(ctx, enum_flags);   /* [target] -> [enum] */
 }
 

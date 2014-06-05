@@ -115,6 +115,7 @@ struct duk_number_list_entry {
 #define DUK_TYPE_OBJECT                   6    /* Ecmascript object: includes objects, arrays, functions, threads */
 #define DUK_TYPE_BUFFER                   7    /* fixed or dynamic, garbage collected byte buffer */
 #define DUK_TYPE_POINTER                  8    /* raw void pointer */
+#define DUK_TYPE_LIGHTFUNC                9    /* lightweight function pointer */
 
 /* Value mask types, used by e.g. duk_get_type_mask() */
 #define DUK_TYPE_MASK_NONE                (1 << DUK_TYPE_NONE)
@@ -126,6 +127,7 @@ struct duk_number_list_entry {
 #define DUK_TYPE_MASK_OBJECT              (1 << DUK_TYPE_OBJECT)
 #define DUK_TYPE_MASK_BUFFER              (1 << DUK_TYPE_BUFFER)
 #define DUK_TYPE_MASK_POINTER             (1 << DUK_TYPE_POINTER)
+#define DUK_TYPE_MASK_LIGHTFUNC           (1 << DUK_TYPE_LIGHTFUNC)
 #define DUK_TYPE_MASK_THROW               (1 << 10)  /* internal flag value: throw if mask doesn't match */
 
 /* Coercion hints */
@@ -436,7 +438,8 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index)
 	                                    DUK_TYPE_MASK_STRING | \
 	                                    DUK_TYPE_MASK_OBJECT | \
 	                                    DUK_TYPE_MASK_BUFFER | \
-	                                    DUK_TYPE_MASK_POINTER)
+	                                    DUK_TYPE_MASK_POINTER | \
+	                                    DUK_TYPE_MASK_LIGHTFUNC)
 
 DUK_EXTERNAL_DECL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index);
 #define duk_is_error(ctx,index) \

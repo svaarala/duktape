@@ -139,9 +139,16 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 
 	duk_push_object(ctx);
 
-	h_func = act->func;
-	DUK_ASSERT(h_func != NULL);
-	duk_push_hobject(ctx, h_func);
+	/* FIXME: push act->tv_func for lightfuncs, or perhaps tv_func just
+	 * directly if it is changed to be always initialized.
+	 */
+	h_func = DUK_ACT_GET_FUNC(act);
+	if (!h_func) {
+		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(&act->tv_func));
+		duk_push_tval(ctx, &act->tv_func);
+	} else {
+		duk_push_hobject(ctx, h_func);
+	}
 
 	pc = (duk_uint_fast32_t) act->pc;
 	duk_push_uint(ctx, (duk_uint_t) pc);

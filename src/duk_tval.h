@@ -49,9 +49,10 @@ typedef union duk_double_union duk_tval;
 #define DUK_TAG_BOOLEAN           0xfff3UL   /* embed: 0 or 1 (false or true) */
 /* DUK_TAG_NUMBER would logically go here, but it has multiple 'tags' */
 #define DUK_TAG_POINTER           0xfff4UL   /* embed: void ptr */
-#define DUK_TAG_STRING            0xfff5UL   /* embed: duk_hstring ptr */
-#define DUK_TAG_OBJECT            0xfff6UL   /* embed: duk_hobject ptr */
-#define DUK_TAG_BUFFER            0xfff7UL   /* embed: duk_hbuffer ptr */
+#define DUK_TAG_LIGHTFUNC         0xfff5UL   /* embed: func ptr */
+#define DUK_TAG_STRING            0xfff6UL   /* embed: duk_hstring ptr */
+#define DUK_TAG_OBJECT            0xfff7UL   /* embed: duk_hobject ptr */
+#define DUK_TAG_BUFFER            0xfff8UL   /* embed: duk_hbuffer ptr */
 
 /* for convenience */
 #define DUK_XTAG_UNDEFINED_ACTUAL 0xfff10000UL
@@ -98,6 +99,28 @@ typedef union duk_double_union duk_tval;
 	} while (0)
 #endif  /* DUK_USE_64BIT_OPS */
 
+#ifdef DUK_USE_64BIT_OPS
+/* Double casting for pointer to avoid gcc warning (cast from pointer to integer of different size) */
+#ifdef DUK_USE_DOUBLE_ME
+#define DUK__TVAL_SET_LIGHTFUNC(v,fp,flags)  do { \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_LIGHTFUNC) << 16) | \
+		                             ((duk_uint64_t) (flags)) | \
+		                             (((duk_uint64_t) (duk_uint32_t) (fp)) << 32); \
+	} while (0)
+#else
+#define DUK__TVAL_SET_LIGHTFUNC(v,fp,flags)  do { \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_LIGHTFUNC) << 48) | \
+		                             (((duk_uint64_t) (flags)) << 32) | \
+		                             ((duk_uint64_t) (duk_uint32_t) (fp)); \
+	} while (0)
+#endif
+#else  /* DUK_USE_64BIT_OPS */
+#define DUK__TVAL_SET_LIGHTFUNC(v,fp,flags)  do { \
+		(v)->ui[DUK_DBL_IDX_UI0] = (((duk_uint32_t) DUK_TAG_LIGHTFUNC) << 16) | ((duk_uint32_t) (flags)); \
+		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (fp); \
+	} while (0)
+#endif  /* DUK_USE_64BIT_OPS */
+
 /* select actual setters */
 #ifdef DUK_USE_FULL_TVAL
 #define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL((v))
@@ -115,6 +138,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_SET_NAN(v)                 DUK__TVAL_SET_NAN_NOTFULL((v))
 #endif
 
+#define DUK_TVAL_SET_LIGHTFUNC(v,fp,flags)  DUK__TVAL_SET_LIGHTFUNC((v),(fp),(flags))
 #define DUK_TVAL_SET_STRING(v,h)            DUK__TVAL_SET_TAGGEDPOINTER((v),(h),DUK_TAG_STRING)
 #define DUK_TVAL_SET_OBJECT(v,h)            DUK__TVAL_SET_TAGGEDPOINTER((v),(h),DUK_TAG_OBJECT)
 #define DUK_TVAL_SET_BUFFER(v,h)            DUK__TVAL_SET_TAGGEDPOINTER((v),(h),DUK_TAG_BUFFER)
@@ -125,6 +149,12 @@ typedef union duk_double_union duk_tval;
 /* getters */
 #define DUK_TVAL_GET_BOOLEAN(v)             ((int) (v)->us[DUK_DBL_IDX_US1])
 #define DUK_TVAL_GET_NUMBER(v)              ((v)->d)
+#define DUK_TVAL_GET_LIGHTFUNC(v,out_fp,out_flags)  do { \
+		(out_flags) = (v)->ui[DUK_DBL_IDX_UI0] & 0xffffUL; \
+		(out_fp) = (duk_c_function) (v)->ui[DUK_DBL_IDX_UI1]; \
+	} while (0)
+#define DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(v)   ((duk_c_function) ((v)->ui[DUK_DBL_IDX_UI1]))
+#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(v)     (((int) (v)->ui[DUK_DBL_IDX_UI0]) & 0xffffUL)
 #define DUK_TVAL_GET_STRING(v)              ((duk_hstring *) (v)->vp[DUK_DBL_IDX_VP1])
 #define DUK_TVAL_GET_OBJECT(v)              ((duk_hobject *) (v)->vp[DUK_DBL_IDX_VP1])
 #define DUK_TVAL_GET_BUFFER(v)              ((duk_hbuffer *) (v)->vp[DUK_DBL_IDX_VP1])
@@ -141,6 +171,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_IS_BOOLEAN(v)              (DUK_TVAL_GET_TAG((v)) == DUK_TAG_BOOLEAN)
 #define DUK_TVAL_IS_BOOLEAN_TRUE(v)         ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_BOOLEAN_TRUE)
 #define DUK_TVAL_IS_BOOLEAN_FALSE(v)        ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_BOOLEAN_FALSE)
+#define DUK_TVAL_IS_LIGHTFUNC(v)            (DUK_TVAL_GET_TAG((v)) == DUK_TAG_LIGHTFUNC)
 #define DUK_TVAL_IS_STRING(v)               (DUK_TVAL_GET_TAG((v)) == DUK_TAG_STRING)
 #define DUK_TVAL_IS_OBJECT(v)               (DUK_TVAL_GET_TAG((v)) == DUK_TAG_OBJECT)
 #define DUK_TVAL_IS_BUFFER(v)               (DUK_TVAL_GET_TAG((v)) == DUK_TAG_BUFFER)
@@ -165,6 +196,7 @@ typedef struct duk_tval_struct duk_tval;
 
 struct duk_tval_struct {
 	duk_small_uint_t t;
+	duk_small_uint_t v_flags;
 	union {
 		duk_double_t d;
 		duk_small_int_t i;
@@ -176,6 +208,7 @@ struct duk_tval_struct {
 		duk_hthread *hthread;
 		duk_hbuffer *hbuffer;
 		duk_heaphdr *heaphdr;
+		duk_c_function lightfunc;
 	} v;
 };
 
@@ -184,9 +217,10 @@ struct duk_tval_struct {
 #define DUK_TAG_NULL                  2
 #define DUK_TAG_BOOLEAN               3
 #define DUK_TAG_POINTER               4
-#define DUK_TAG_STRING                5
-#define DUK_TAG_OBJECT                6
-#define DUK_TAG_BUFFER                7
+#define DUK_TAG_LIGHTFUNC             5
+#define DUK_TAG_STRING                6
+#define DUK_TAG_OBJECT                7
+#define DUK_TAG_BUFFER                8
 
 /* DUK__TAG_NUMBER is intentionally first, as it is the default clause in code
  * to support the 8-byte representation.  Further, it is a non-heap-allocated
@@ -219,6 +253,17 @@ struct duk_tval_struct {
 		(tv)->v.d = (val); \
 	} while (0)
 
+#define DUK_TVAL_SET_POINTER(tv,hptr)  do { \
+		(tv)->t = DUK_TAG_POINTER; \
+		(tv)->v.voidptr = (hptr); \
+	} while (0)
+
+#define DUK_TVAL_SET_LIGHTFUNC(tv,fp,flags)  do { \
+		(tv)->t = DUK_TAG_LIGHTFUNC; \
+		(tv)->v_flags = (flags); \
+		(tv)->v.lightfunc = (duk_c_function) (fp); \
+	} while (0)
+
 #define DUK_TVAL_SET_STRING(tv,hptr)  do { \
 		(tv)->t = DUK_TAG_STRING; \
 		(tv)->v.hstring = (hptr); \
@@ -234,11 +279,6 @@ struct duk_tval_struct {
 		(tv)->v.hbuffer = (hptr); \
 	} while (0)
 
-#define DUK_TVAL_SET_POINTER(tv,hptr)  do { \
-		(tv)->t = DUK_TAG_POINTER; \
-		(tv)->v.voidptr = (hptr); \
-	} while (0)
-
 #define DUK_TVAL_SET_NAN(tv)  do { \
 		/* in non-packed representation we don't care about which NaN is used */ \
 		(tv)->t = DUK__TAG_NUMBER; \
@@ -250,15 +290,20 @@ struct duk_tval_struct {
 /* getters */
 #define DUK_TVAL_GET_BOOLEAN(tv)           ((tv)->v.i)
 #define DUK_TVAL_GET_NUMBER(tv)            ((tv)->v.d)
+#define DUK_TVAL_GET_POINTER(tv)           ((tv)->v.voidptr)
+#define DUK_TVAL_GET_LIGHTFUNC(tv,out_fp,out_flags)  do { \
+		(out_flags) = (duk_uint32_t) (tv)->v_flags; \
+		(out_fp) = (tv)->v.lightfunc; \
+	} while (0)
+#define DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv) ((tv)->v.lightfunc)
+#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv)   ((duk_uint32_t) ((tv)->v_flags))
 #define DUK_TVAL_GET_STRING(tv)            ((tv)->v.hstring)
 #define DUK_TVAL_GET_OBJECT(tv)            ((tv)->v.hobject)
 #define DUK_TVAL_GET_BUFFER(tv)            ((tv)->v.hbuffer)
-#define DUK_TVAL_GET_POINTER(tv)           ((tv)->v.voidptr)
 #define DUK_TVAL_GET_HEAPHDR(tv)           ((tv)->v.heaphdr)
 
 /* decoding */
 #define DUK_TVAL_GET_TAG(tv)               ((tv)->t)
-#define DUK_TVAL_IS_NUMBER(tv)             ((tv)->t == DUK__TAG_NUMBER)
 #define DUK_TVAL_IS_UNDEFINED(tv)          ((tv)->t == DUK_TAG_UNDEFINED)
 #define DUK_TVAL_IS_UNDEFINED_ACTUAL(tv)   (((tv)->t == DUK_TAG_UNDEFINED) && ((tv)->v.i == 0))
 #define DUK_TVAL_IS_UNDEFINED_UNUSED(tv)   (((tv)->t == DUK_TAG_UNDEFINED) && ((tv)->v.i != 0))
@@ -266,10 +311,12 @@ struct duk_tval_struct {
 #define DUK_TVAL_IS_BOOLEAN(tv)            ((tv)->t == DUK_TAG_BOOLEAN)
 #define DUK_TVAL_IS_BOOLEAN_TRUE(tv)       (((tv)->t == DUK_TAG_BOOLEAN) && ((tv)->v.i != 0))
 #define DUK_TVAL_IS_BOOLEAN_FALSE(tv)      (((tv)->t == DUK_TAG_BOOLEAN) && ((tv)->v.i == 0))
+#define DUK_TVAL_IS_NUMBER(tv)             ((tv)->t == DUK__TAG_NUMBER)
+#define DUK_TVAL_IS_POINTER(tv)            ((tv)->t == DUK_TAG_POINTER)
+#define DUK_TVAL_IS_LIGHTFUNC(tv)          ((tv)->t == DUK_TAG_LIGHTFUNC)
 #define DUK_TVAL_IS_STRING(tv)             ((tv)->t == DUK_TAG_STRING)
 #define DUK_TVAL_IS_OBJECT(tv)             ((tv)->t == DUK_TAG_OBJECT)
 #define DUK_TVAL_IS_BUFFER(tv)             ((tv)->t == DUK_TAG_BUFFER)
-#define DUK_TVAL_IS_POINTER(tv)            ((tv)->t == DUK_TAG_POINTER)
 
 #define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t >= DUK_TAG_STRING)
 
@@ -281,5 +328,16 @@ struct duk_tval_struct {
 
 #define DUK_TVAL_SET_BOOLEAN_TRUE(v)        DUK_TVAL_SET_BOOLEAN(v, 1)
 #define DUK_TVAL_SET_BOOLEAN_FALSE(v)       DUK_TVAL_SET_BOOLEAN(v, 0)
+
+/* Lightfunc flags packing and unpacking. */
+/* Sign extend: 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss## */
+#define DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags) \
+	((((duk_int32_t) (lf_flags)) << 16) >> 24)
+#define DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags) \
+	(((lf_flags) >> 4) & 0x0f)
+#define DUK_LFUNC_FLAGS_GET_NARGS(lf_flags) \
+	((lf_flags) & 0x0f)
+#define DUK_LFUNC_FLAGS_PACK(magic,length,nargs) \
+	((magic) << 8) | ((length) << 4) | (nargs)
 
 #endif  /* DUK_TVAL_H_INCLUDED */

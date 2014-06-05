@@ -449,7 +449,13 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 
 	act = duk_hthread_get_current_activation(thr);
 	if (act) {
-		func = act->func;
+		func = DUK_ACT_GET_FUNC(act);
+		if (!func) {
+			duk_tval *tv = &act->tv_func;
+			duk_small_uint_t lf_flags;
+			lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
+			return (duk_int_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
+		}
 		DUK_ASSERT(func != NULL);
 
 		if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
@@ -461,13 +467,33 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 }
 
 DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
-	duk_hnativefunction *nf;
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	duk_hobject *h;
 
 	DUK_ASSERT(ctx != NULL);
 
-	nf = duk_require_hnativefunction(ctx, index);
-	DUK_ASSERT(nf != NULL);
-	return (duk_int_t) nf->magic;
+	/* FIXME: hardcoded values for flag partitioning */
+
+	tv = duk_require_tval(ctx, index);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (!DUK_HOBJECT_HAS_NATIVEFUNCTION(h)) {
+			goto type_error;
+		}
+		return (duk_int_t) ((duk_hnativefunction *) h)->magic;
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		/* FIXME: use shared macro */
+		duk_int32_t tmp = (duk_int32_t) (DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv) >> 8);
+		tmp = (tmp << 16) >> 24;  /* 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss## */
+		return (duk_int_t) tmp;
+	}
+
+	/* fall through */
+ type_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+	return 0;
 }
 
 DUK_EXTERNAL void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic) {

@@ -513,9 +513,9 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	duk_hobject *func;
 	duk_hobject *env;
 
-	func = act->func;
+	func = DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound functions are never in act->func */
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound functions are never in act 'func' */
 
 	/*
 	 *  Delayed initialization only occurs for 'NEWENV' functions.
@@ -568,7 +568,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(env != NULL);
-	DUK_ASSERT(func != NULL);
+	/* FIXME: DUK_ASSERT(func != NULL); */
 
 	if (!DUK_HOBJECT_IS_DECENV(env) || DUK_HOBJECT_HAS_ENVRECCLOSED(env)) {
 		DUK_DDD(DUK_DDDPRINT("environment record not a declarative record, "
@@ -609,7 +609,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	}
 #endif
 
-	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (func != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		duk_hobject *varmap;
 		duk_hstring *key;
 		duk_tval *tv;
@@ -828,7 +828,7 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	DUK_ASSERT(act != NULL);
 	DUK_ASSERT(out != NULL);
 
-	func = act->func;
+	func = DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV(func));
 
@@ -945,7 +945,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			goto fail_not_found;
 		}
 
-		func = act->func;
+		func = DUK_ACT_GET_FUNC(act);
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV(func));
 

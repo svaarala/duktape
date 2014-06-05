@@ -165,15 +165,14 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 			flags = (duk_int_t) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
 			t = (duk_small_int_t) duk_get_type(ctx, -2);
 
-			if (t == DUK_TYPE_OBJECT) {
+			if (t == DUK_TYPE_OBJECT || t == DUK_TYPE_LIGHTFUNC) {
 				/*
-				 *  Ecmascript/native function call
+				 *  Ecmascript/native function call or lightfunc call
 				 */
 
 				/* [ ... v1(func) v2(pc+flags) ] */
 
-				h_func = duk_get_hobject(ctx, -2);
-				DUK_ASSERT(h_func != NULL);
+				h_func = duk_get_hobject(ctx, -2);  /* NULL for lightfunc */
 
 				duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
 				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
@@ -201,7 +200,15 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 				DUK_ASSERT(funcname != NULL);
 				DUK_ASSERT(filename != NULL);
 
-				if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
+				if (h_func == NULL) {
+					duk_push_sprintf(ctx, "%s light%s%s%s%s%s",
+					                 (const char *) funcname,
+					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
+				} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
 					duk_push_sprintf(ctx, "%s %s native%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) filename,
@@ -210,7 +217,6 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
-
 				} else {
 					duk_push_sprintf(ctx, "%s %s:%ld%s%s%s%s%s",
 					                 (const char *) funcname,
