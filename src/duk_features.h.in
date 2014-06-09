@@ -1473,6 +1473,7 @@ typedef FILE duk_file;
 #define DUK_PRINTF       printf
 #define DUK_FPRINTF      fprintf
 #define DUK_SPRINTF      sprintf
+
 #if defined(DUK_F_MSVC)
 /* _snprintf() does NOT NUL terminate on truncation, but Duktape code never
  * assumes that.
@@ -1482,8 +1483,20 @@ typedef FILE duk_file;
 #else
 #define DUK_SNPRINTF     snprintf
 #endif
+
 #define DUK_VSPRINTF     vsprintf
+
+#if defined(DUK_F_MSVC)
+#if (_MSC_VER < 1600)
+/* Older MSVC version are missing vsnprintf() but have _vsnprintf(). */
+#define DUK_VSNPRINTF    _vsnprintf
+#else
 #define DUK_VSNPRINTF    vsnprintf
+#endif
+#else
+#define DUK_VSNPRINTF    vsnprintf
+#endif  /* DUK_F_MSVC */
+
 #define DUK_SSCANF       sscanf
 #define DUK_VSSCANF      vsscanf
 #define DUK_FOPEN        fopen
