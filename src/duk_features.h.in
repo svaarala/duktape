@@ -321,6 +321,35 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define _POSIX_C_SOURCE  200112L
 #endif
 
+#undef DUK_F_MSVC_CRT_SECURE
+#if defined(DUK_F_WINDOWS) && defined(_MSC_VER)
+/* http://msdn.microsoft.com/en-us/library/8ef0s5kh.aspx
+ * http://msdn.microsoft.com/en-us/library/wd3wzwts.aspx
+ * Seem to be available since VS2005.
+ */
+#if (_MSC_VER >= 1400)
+/* VS2005+, secure CRT functions are preferred.  Windows Store applications
+ * (and probably others) should use these.
+ */
+#define DUK_F_MSVC_CRT_SECURE
+#endif
+#if (_MSC_VER < 1700)
+/* VS2012+ has stdint.h, < VS2012 does not (but it's available for download). */
+#define DUK_F_NO_STDINT_H
+#endif
+/* Initial fix: disable secure CRT related warnings when compiling Duktape
+ * itself (must be defined before including Windows headers).  Don't define
+ * for user code including duktape.h.
+ */
+#if defined(DUK_COMPILING_DUKTAPE)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#endif  /* DUK_F_WINDOWS && _MSC_VER */
+
+#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+#define DUK_F_NO_STDINT_H
+#endif
+
 #if defined(__APPLE__)
 /* Mac OSX, iPhone, Darwin */
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
@@ -460,7 +489,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
-#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+#if defined(DUK_F_NO_STDINT_H)
 /* stdint.h not available */
 #else
 /* technically C99 (C++11) but found in many systems */
@@ -475,27 +504,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 #if defined(__UCLIBC__)
 #define DUK_F_UCLIBC
-#endif
-
-#undef DUK_F_MSVC_CRT_SECURE
-#if defined(DUK_F_WINDOWS) && defined(_MSC_VER)
-/* http://msdn.microsoft.com/en-us/library/8ef0s5kh.aspx
- * http://msdn.microsoft.com/en-us/library/wd3wzwts.aspx
- * Seem to be available since VS2005.
- */
-#if _MSC_VER >= 1400
-/* VS2005+, secure CRT functions are preferred.  Windows Store applications
- * (and probably others) should use these.
- */
-#define DUK_F_MSVC_CRT_SECURE
-#endif
-
-/* Initial fix: disable secure CRT related warnings when compiling Duktape
- * itself.  Don't define for user code including duktape.h.
- */
-#if defined(DUK_COMPILING_DUKTAPE)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
 #endif
 
 /*
