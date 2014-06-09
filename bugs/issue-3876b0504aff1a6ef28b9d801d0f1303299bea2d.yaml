@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-03-15 23:34:54.827025 Z
 references: []
 
@@ -29,3 +29,7 @@ log_events:
     so this problem won't be triggered.
     
     So, at the moment there are no known issues to document.
+- - 2014-06-09 10:13:44.896261 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
