@@ -236,6 +236,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 /* MSVC */
 #if defined(_MSC_VER)
+/* MSVC preprocessor defines: http://msdn.microsoft.com/en-us/library/b0084kay.aspx
+ * _MSC_FULL_VER includes the build number, but it has at least two formats, see e.g.
+ * BOOST_MSVC_FULL_VER in http://www.boost.org/doc/libs/1_52_0/boost/config/compiler/visualc.hpp
+ */
 #define DUK_F_MSVC
 #endif
 
@@ -487,7 +491,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* Initial fix: disable secure CRT related warnings when compiling Duktape
- * itself.
+ * itself.  Don't define for user code including duktape.h.
  */
 #if defined(DUK_COMPILING_DUKTAPE)
 #define _CRT_SECURE_NO_WARNINGS
