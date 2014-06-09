@@ -2802,6 +2802,7 @@ int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs) {
 	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
 	
@@ -2816,6 +2817,7 @@ void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, int nar
 	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
 	
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
@@ -2828,6 +2830,7 @@ void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function f
 	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
+	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
 	
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);

@@ -218,6 +218,9 @@ Released
 
 * Add Duktape.compact(), Duktape.line(), and Duktape.act()
 
+* Add a "use duk notail" directive which indicates that an Ecmascript
+  function should never be tail called
+
 * Add a barebones built-in logging framework with both Ecmascript and C
   APIs and easy customization
 
@@ -316,6 +319,8 @@ Planned
 
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
+
+* Remove Duktape.line() as redundant to Duktape.act()
 
 * Serialize negative zero as '-0' in JSONX and JSONC
 
