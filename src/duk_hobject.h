@@ -702,7 +702,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)
 void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
-duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc);
+duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
 /* misc */	

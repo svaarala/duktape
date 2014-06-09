@@ -179,16 +179,7 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
 
 #if defined(DUK_USE_PC2LINE)
-				duk_get_prop_stridx(ctx, -4, DUK_STRIDX_INT_PC2LINE);
-				if (duk_is_buffer(ctx, -1)) {
-					duk_hbuffer_fixed *pc2line;
-					pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
-					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
-					line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
-				} else {
-					line = 0;
-				}
-				duk_pop(ctx);
+				line = duk_hobject_pc2line_query(ctx, -4, (duk_uint_fast32_t) pc);
 #else
 				line = 0;
 #endif

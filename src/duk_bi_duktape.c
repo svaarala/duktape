@@ -116,7 +116,6 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *h_func;
-	duk_hbuffer_fixed *pc2line;
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 	duk_int_t level;
@@ -140,17 +139,7 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	pc = (duk_uint_fast32_t) act->pc;
 	duk_push_int(ctx, (int) pc);  /* FIXME: typing */
 
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE);
-	if (duk_is_buffer(ctx, -1)) {
-		pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
-		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
-		pc = (duk_uint_fast32_t) act->pc;
-		line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
-	} else {
-		line = 0;
-	}
-	duk_pop(ctx);
-
+	line = duk_hobject_pc2line_query(ctx, -2, pc);
 	duk_push_int(ctx, (int) line);  /* FIXME: typing */
 
 	/* Providing access to e.g. act->lex_env would be dangerous: these
