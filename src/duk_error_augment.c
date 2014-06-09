@@ -313,7 +313,6 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 	} else if (thr_callstack->callstack_top > 0) {
 		duk_activation *act;
 		duk_hobject *func;
-		duk_hbuffer *pc2line;
 
 		act = thr_callstack->callstack + thr_callstack->callstack_top - 1;
 		DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
@@ -343,17 +342,11 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 				duk_push_number(ctx, pc);
 				duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PC, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAGS_NO_OVERWRITE);
 #endif
-
-				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_PC2LINE);
-				if (duk_is_buffer(ctx, -1)) {
-					pc2line = duk_get_hbuffer(ctx, -1);
-					DUK_ASSERT(pc2line != NULL);
-					DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(pc2line));
-					line = duk_hobject_pc2line_query((duk_hbuffer_fixed *) pc2line, (duk_uint_fast32_t) pc);
-					duk_push_number(ctx, (double) line); /* -> [ ... error func pc2line line ] */  /* FIXME: u32 */
-					duk_def_prop_stridx(ctx, -4, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+				line = duk_hobject_pc2line_query(ctx, -1, (duk_uint_fast32_t) pc);
+				if (line > 0) {
+					duk_push_u32(ctx, (duk_uint32_t) line); /* -> [ ... error func line ] */
+					duk_def_prop_stridx(ctx, -3, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 				}
-				duk_pop(ctx);
 			} else {
 				/* Native function, no relevant lineNumber. */
 			}

@@ -126,7 +126,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
  * it will map to a large PC which is out of bounds and causes a zero to be
  * returned.
  */
-duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
+static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
 	duk_bitdecoder_ctx bd_ctx_alloc;
 	duk_bitdecoder_ctx *bd_ctx = &bd_ctx_alloc;
 	duk_uint32_t *hdr;
@@ -215,4 +215,20 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fas
 	return 0;
 }
 
+duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc) {
+	duk_hbuffer_fixed *pc2line;
+	duk_uint_fast32_t line;
+
+	duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_PC2LINE);
+	pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
+	if (pc2line != NULL) {
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
+		line = duk__hobject_pc2line_query_raw(pc2line, (duk_uint_fast32_t) pc);
+	} else {
+		line = 0;
+	}
+	duk_pop(ctx);
+
+	return line;
+}
 #endif  /* DUK_USE_PC2LINE */
