@@ -21,7 +21,7 @@ static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, in
 
 	if (is_join) {
 		size_t t1, t2, limit;
-		h = duk_to_hstring(ctx, -count-1);
+		h = duk_to_hstring(ctx, -((duk_idx_t) count) - 1);
 		DUK_ASSERT(h != NULL);
 
 		/* A bit tricky overflow test, see doc/code-issues.txt. */
@@ -39,8 +39,8 @@ static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, in
 
 	for (i = count; i >= 1; i--) {
 		size_t new_len;
-		duk_to_string(ctx, -i);
-		h = duk_require_hstring(ctx, -i);
+		duk_to_string(ctx, -((duk_idx_t) i));
+		h = duk_require_hstring(ctx, -((duk_idx_t) i));
 		new_len = len + (size_t) DUK_HSTRING_GET_BYTELEN(h);
 
 		/* Impose a string maximum length, need to handle overflow
@@ -64,11 +64,11 @@ static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, in
 	idx = 0;
 	for (i = count; i >= 1; i--) {
 		if (is_join && i != count) {
-			h = duk_require_hstring(ctx, -count-2);  /* extra -1 for buffer */
+			h = duk_require_hstring(ctx, -((duk_idx_t) count) - 2);  /* extra -1 for buffer */
 			DUK_MEMCPY(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 			idx += DUK_HSTRING_GET_BYTELEN(h);
 		}
-		h = duk_require_hstring(ctx, -i-1);  /* extra -1 for buffer */
+		h = duk_require_hstring(ctx, -((duk_idx_t) i) - 1);  /* extra -1 for buffer */
 		DUK_MEMCPY(buf + idx, DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 		idx += DUK_HSTRING_GET_BYTELEN(h);
 	}
@@ -80,10 +80,10 @@ static void duk__concat_and_join_helper(duk_context *ctx, unsigned int count, in
 	/* get rid of the strings early to minimize memory use before intern */
 
 	if (is_join) {
-		duk_replace(ctx, -count-2);  /* overwrite sep */
+		duk_replace(ctx, -((duk_idx_t) count) - 2);  /* overwrite sep */
 		duk_pop_n(ctx, count);
 	} else {
-		duk_replace(ctx, -count-1);  /* overwrite str1 */
+		duk_replace(ctx, -((duk_idx_t) count) - 1);  /* overwrite str1 */
 		duk_pop_n(ctx, count-1);
 	}
 
