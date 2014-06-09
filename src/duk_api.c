@@ -2209,11 +2209,11 @@ void duk_push_number(duk_context *ctx, double val) {
 	duk_push_tval(ctx, &tv);
 }
 
-void duk_push_int(duk_context *ctx, int val) {
+void duk_push_int(duk_context *ctx, duk_int_t val) {
 	duk_push_number(ctx, (double) val);
 }
 
-void duk_push_u32(duk_context *ctx, duk_uint32_t val) {
+void duk_push_uint(duk_context *ctx, duk_uint_t val) {
 	duk_push_number(ctx, (double) val);
 }
 
