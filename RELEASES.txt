@@ -218,6 +218,9 @@ Released
 
 * Add Duktape.compact(), Duktape.line(), and Duktape.act()
 
+* Add a "use duk notail" directive which indicates that an Ecmascript
+  function should never be tail called
+
 * Add a barebones built-in logging framework with both Ecmascript and C
   APIs and easy customization
 
