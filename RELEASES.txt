@@ -317,6 +317,8 @@ Planned
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
 
+* Remove Duktape.line() as redundant to Duktape.act()
+
 * Serialize negative zero as '-0' in JSONX and JSONC
 
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
