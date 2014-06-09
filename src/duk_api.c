@@ -23,7 +23,7 @@ duk_int_t duk_api_global_line = 0;
  *  Helpers
  */
 
-static int duk__api_coerce_d2i(double d) {
+static duk_int_t duk__api_coerce_d2i(double d) {
 	int c;
 
 	/*
@@ -42,15 +42,35 @@ static int duk__api_coerce_d2i(double d) {
 	c = DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN) {
 		return 0;
-	} else if (d < INT_MIN) {
+	} else if (d < DUK_INT_MIN) {
 		/* covers -Infinity */
-		return INT_MIN;
-	} else if (d > INT_MAX) {
+		return DUK_INT_MIN;
+	} else if (d > DUK_INT_MAX) {
 		/* covers +Infinity */
-		return INT_MAX;
+		return DUK_INT_MAX;
 	} else {
 		/* coerce towards zero */
-		return (int) d;
+		return (duk_int_t) d;
+	}
+}
+
+static duk_uint_t duk__api_coerce_d2ui(double d) {
+	int c;
+
+	/* Same as above but for unsigned int range. */
+
+	c = DUK_FPCLASSIFY(d);
+	if (c == DUK_FP_NAN) {
+		return 0;
+	} else if (d < 0.0) {
+		/* covers -Infinity */
+		return (duk_uint_t) 0;
+	} else if (d > DUK_UINT_MAX) {
+		/* covers +Infinity */
+		return (duk_uint_t) DUK_UINT_MAX;
+	} else {
+		/* coerce towards zero */
+		return (duk_uint_t) d;
 	}
 }
 
@@ -881,14 +901,24 @@ double duk_require_number(duk_context *ctx, int index) {
 	return DUK_DOUBLE_NAN;  /* not reachable */
 }
 
-int duk_get_int(duk_context *ctx, int index) {
+duk_int_t duk_get_int(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return duk__api_coerce_d2i(duk_get_number(ctx, index));
+	return (duk_int_t) duk__api_coerce_d2i(duk_get_number(ctx, index));
 }
 
-int duk_require_int(duk_context *ctx, int index) {
+duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return duk__api_coerce_d2i(duk_require_number(ctx, index));
+	return (duk_uint_t) duk__api_coerce_d2ui(duk_get_number(ctx, index));
+}
+
+duk_int_t duk_require_int(duk_context *ctx, duk_idx_t index) {
+	/* Custom coercion for API */
+	return (duk_int_t) duk__api_coerce_d2i(duk_require_number(ctx, index));
+}
+
+duk_uint_t duk_require_uint(duk_context *ctx, duk_idx_t index) {
+	/* Custom coercion for API */
+	return (duk_uint_t) duk__api_coerce_d2ui(duk_require_number(ctx, index));
 }
 
 const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len) {
@@ -1443,7 +1473,7 @@ double duk_to_number(duk_context *ctx, int index) {
  * but the helper function for coercion.
  */
 
-int duk_to_int(duk_context *ctx, int index) {
+duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
@@ -1462,10 +1492,10 @@ int duk_to_int(duk_context *ctx, int index) {
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
 	/* Custom coercion for API */
-	return duk__api_coerce_d2i(d);
+	return (duk_int_t) duk__api_coerce_d2i(d);
 }
 
-int duk_to_int32(duk_context *ctx, int index) {
+duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
@@ -1484,12 +1514,12 @@ int duk_to_int32(duk_context *ctx, int index) {
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
 	/* ToInt32() should already have restricted the result to
-	 * an acceptable range (unless 'int' is less than 32 bits).
+	 * an acceptable range.
 	 */
-	return (int) d;
+	return (duk_int32_t) d;
 }
 
-unsigned int duk_to_uint32(duk_context *ctx, int index) {
+duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
@@ -1508,12 +1538,12 @@ unsigned int duk_to_uint32(duk_context *ctx, int index) {
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
 	/* ToUint32() should already have restricted the result to
-	 * an acceptable range (unless 'unsigned int' is less than 32 bits).
+	 * an acceptable range.
 	 */
-	return (unsigned int) d;
+	return (duk_uint32_t) d;
 }
 
-unsigned int duk_to_uint16(duk_context *ctx, int index) {
+duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
@@ -1531,10 +1561,10 @@ unsigned int duk_to_uint16(duk_context *ctx, int index) {
 	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
-	/* ToUint32() should already have restricted the result to
-	 * an acceptable range (unless 'unsigned int' is less than 32 bits).
+	/* ToUint16() should already have restricted the result to
+	 * an acceptable range.
 	 */
-	return (unsigned int) d;
+	return (duk_uint16_t) d;
 }
 
 const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
