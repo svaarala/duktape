@@ -1890,6 +1890,9 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		/* See: test-bug-tailcall-preventyield-assert.c. */
 		DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
 		use_tailcall = 0;
+	} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
+		DUK_D(DUK_DPRINT("tailcall prevented by function having a notail flag"));
+		use_tailcall = 0;
 	}
 
 	if (use_tailcall) {

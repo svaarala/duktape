@@ -129,6 +129,7 @@ struct duk_compiler_func {
 	int is_setget;                      /* is a setter/getter */
 	int is_decl;                        /* is a function declaration (as opposed to function expression) */
 	int is_strict;                      /* function is strict */
+	int is_notail;                      /* function must not be tailcalled */
 	int in_directive_prologue;          /* parsing in "directive prologue", recognize directives */
 	int in_scanning;                    /* parsing in "scanning" phase (first pass) */
 	int may_direct_eval;                /* function may call direct eval */
