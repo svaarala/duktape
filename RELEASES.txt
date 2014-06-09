@@ -352,6 +352,9 @@ Planned
 * The expressions !0 and !1 are now constant folded by the compiler as they're
   often found in minified code; also !true and !false are constant folded
 
+* Add a safety limit for compiled bytecode byte size and maximum line number
+  used to ensure pc-to-line internal data structure limits are not exceeded
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 

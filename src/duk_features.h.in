@@ -1964,6 +1964,20 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Ecmascript compiler
+ */
+
+/* Ensure final bytecode never exceeds a certain byte size and never uses
+ * line numbers above a certain limit.  This ensures that there is no need
+ * to deal with unbounded ranges in e.g. pc2line data structures.  For now,
+ * limits are set so that signed 32-bit values can represent line number
+ * and byte offset with room to spare.
+ */
+#define DUK_USE_ESBC_LIMITS
+#define DUK_USE_ESBC_MAX_LINENUMBER  0x7fff0000L
+#define DUK_USE_ESBC_MAX_BYTES       0x7fff0000L
+
+/*
  *  User panic handler, panic exit behavior for default panic handler
  */
 
