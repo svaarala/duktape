@@ -465,12 +465,33 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <math.h>
 
 /*
- *  Detection for specific libc variants (like uclibc), depends on the
- *  #includes above.
+ *  Detection for specific libc variants (like uclibc) and other libc specific
+ *  features.  Potentially depends on the #includes above.
  */
 
 #if defined(__UCLIBC__)
 #define DUK_F_UCLIBC
+#endif
+
+#undef DUK_F_MSVC_CRT_SECURE
+#if defined(DUK_F_WINDOWS) && defined(_MSC_VER)
+/* http://msdn.microsoft.com/en-us/library/8ef0s5kh.aspx
+ * http://msdn.microsoft.com/en-us/library/wd3wzwts.aspx
+ * Seem to be available since VS2005.
+ */
+#if _MSC_VER >= 1400
+/* VS2005+, secure CRT functions are preferred.  Windows Store applications
+ * (and probably others) should use these.
+ */
+#define DUK_F_MSVC_CRT_SECURE
+#endif
+
+/* Initial fix: disable secure CRT related warnings when compiling Duktape
+ * itself.
+ */
+#if defined(DUK_COMPILING_DUKTAPE)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #endif
 
 /*
