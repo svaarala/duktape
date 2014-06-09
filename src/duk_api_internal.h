@@ -31,7 +31,9 @@ void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the curre
 duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx);       /* duk_push_this() + CheckObjectCoercible() + duk_to_object() */
 duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_push_this() + CheckObjectCoercible() + duk_to_string() */
 
-void duk_push_u32(duk_context *ctx, duk_uint32_t val);
+/* duk_push_uint() is guaranteed to support at least unsigned 32-bit range */
+#define duk_push_u32(ctx,val) \
+	duk_push_uint((ctx),(duk_uint_t) (val))
 
 /* internal helper for looking up a tagged type */
 #define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1 << 24)
