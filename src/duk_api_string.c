@@ -259,8 +259,8 @@ void duk_trim(duk_context *ctx, int index) {
 	q_end = p;
 
  scan_done:
-	/* This may happen when forward and backward scanning disagree.
-	 * This may happen for non-extended-UTF-8 strings.
+	/* This may happen when forward and backward scanning disagree
+	 * (possible for non-extended-UTF-8 strings).
 	 */
 	if (q_end < q_start) {
 		q_end = q_start;
