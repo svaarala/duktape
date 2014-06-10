@@ -74,7 +74,8 @@ void test(duk_context *ctx) {
 			/* [ ... func <args> ] */
 			duk_call(ctx, argcount);
 
-			printf("funcidx=%d, argcount=%d -> result=%d\n", funcidx, argcount, duk_to_int(ctx, -1));
+			printf("funcidx=%ld, argcount=%ld -> result=%ld\n",
+			       (long) funcidx, (long) argcount, (long) duk_to_int(ctx, -1));
 			duk_pop(ctx);
 		}
 	}

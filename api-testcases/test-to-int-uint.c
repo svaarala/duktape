@@ -29,7 +29,7 @@ index 12, int: 0, number before: nan, number after: 0.000000
 index 12, uint: 0, number before: nan, number after: 0.000000
 index 13, int: 0, number before: nan, number after: 0.000000
 index 13, uint: 0, number before: nan, number after: 0.000000
-index 14, int: 122, number before: nan, number after: 123.000000
+index 14, int: 123, number before: nan, number after: 123.000000
 index 14, uint: 123, number before: nan, number after: 123.000000
 index 15, int: 123, number before: nan, number after: 123.000000
 index 15, uint: 123, number before: nan, number after: 123.000000
