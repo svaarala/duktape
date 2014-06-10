@@ -480,7 +480,7 @@ static int duk__check_valstack_resize_helper(duk_context *ctx,
 }
 
 #if 0  /* XXX: unused */
-int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink) {
+int duk_check_valstack_resize(duk_context *ctx, size_t min_new_size, int allow_shrink) {
 	return duk__check_valstack_resize_helper(ctx,
 	                                         min_new_size,  /* min_new_size */
 	                                         allow_shrink,  /* shrink_flag */
@@ -489,7 +489,7 @@ int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int a
 }
 #endif
 
-void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink) {
+void duk_require_valstack_resize(duk_context *ctx, size_t min_new_size, int allow_shrink) {
 	(void) duk__check_valstack_resize_helper(ctx,
 	                                         min_new_size,  /* min_new_size */
 	                                         allow_shrink,  /* shrink_flag */
@@ -499,7 +499,7 @@ void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, in
 
 int duk_check_stack(duk_context *ctx, unsigned int extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	unsigned int min_new_size;
+	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -514,7 +514,7 @@ int duk_check_stack(duk_context *ctx, unsigned int extra) {
 
 void duk_require_stack(duk_context *ctx, unsigned int extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	unsigned int min_new_size;
+	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -528,7 +528,7 @@ void duk_require_stack(duk_context *ctx, unsigned int extra) {
 }
 
 int duk_check_stack_top(duk_context *ctx, unsigned int top) {
-	unsigned int min_new_size;
+	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -541,7 +541,7 @@ int duk_check_stack_top(duk_context *ctx, unsigned int top) {
 }
 
 void duk_require_stack_top(duk_context *ctx, unsigned int top) {
-	unsigned int min_new_size;
+	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 

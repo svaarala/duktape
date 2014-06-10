@@ -15,8 +15,8 @@
  */
 #define DUK_ERRCODE_FLAG_NOBLAME_FILELINE  (1 << 24)
 
-int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
-void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
+int duk_check_valstack_resize(duk_context *ctx, duk_size_t min_new_size, int allow_shrink);
+void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, int allow_shrink);
 
 int duk_check_stack_raw(duk_context *ctx, unsigned int extra);
 void duk_require_stack_raw(duk_context *ctx, unsigned int extra);
