@@ -37,3 +37,7 @@ printf("int value: %d\n", duk_get_int(ctx, -3));
 
 =tags
 stack
+
+=FIXME
+The limits are actually DUK_INT_MIN and DUK_INT_MAX, which are almost always the same
+as INT_MIN and INT_MAX.
