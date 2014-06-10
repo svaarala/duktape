@@ -326,6 +326,9 @@ Planned
 
 * Serialize negative zero as '-0' in JSONX and JSONC
 
+* Some typing changes in the public API to improve portability; may require
+  changes to calling code
+
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
 
