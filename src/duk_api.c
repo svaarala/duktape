@@ -1473,7 +1473,9 @@ double duk_to_number(duk_context *ctx, int index) {
  * but the helper function for coercion.
  */
 
-duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index) {
+typedef double (*duk__toint_coercer)(duk_hthread *thr, duk_tval *tv);
+
+duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index, duk__toint_coercer coerce_func) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
@@ -1483,88 +1485,95 @@ duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index) {
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	d = duk_js_tointeger(thr, tv);  /* E5 Section 9.4, ToInteger() */
+	d = coerce_func(thr, tv);
 
-	/* relookup in case duk_js_tointeger() ends up e.g. coercing an object */
+	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_temp, tv);
 	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
-	/* Custom coercion for API */
-	return (duk_int_t) duk__api_coerce_d2i(d);
+	return d;
+}
+
+duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index) {
+	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
+	 * API return value coercion: custom
+	 */
+	return (duk_int_t) duk__api_coerce_d2i(duk__to_int_uint_helper(ctx, index, duk_js_tointeger));
+}
+
+duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t index) {
+	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
+	 * API return value coercion: custom
+	 */
+	return (duk_uint_t) duk__api_coerce_d2ui(duk__to_int_uint_helper(ctx, index, duk_js_tointeger));
 }
 
 duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
-	double d;
+	duk_int32_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	d = (double) duk_js_toint32(thr, tv);
+	ret = duk_js_toint32(thr, tv);
 
-	/* must relookup */
+	/* XXX: avoid double coercion with fastints */
+	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_temp, tv);
-	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
+	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
-	/* ToInt32() should already have restricted the result to
-	 * an acceptable range.
-	 */
-	return (duk_int32_t) d;
+	return ret;
 }
 
 duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
-	double d;
+	duk_uint32_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	d = (double) duk_js_touint32(thr, tv);
+	ret = duk_js_touint32(thr, tv);
 
-	/* must relookup */
+	/* XXX: avoid double coercion with fastints */
+	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_temp, tv);
-	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
+	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
-	/* ToUint32() should already have restricted the result to
-	 * an acceptable range.
-	 */
-	return (duk_uint32_t) d;
+	return ret;
 }
 
 duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_temp;
-	double d;
+	duk_uint16_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	d = (double) duk_js_touint16(thr, tv);
+	ret = duk_js_touint16(thr, tv);
 
-	/* must relookup */
+	/* XXX: avoid double coercion with fastints */
+	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_temp, tv);
-	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
+	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_temp);
 
-	/* ToUint16() should already have restricted the result to
-	 * an acceptable range.
-	 */
-	return (duk_uint16_t) d;
+	return ret;
 }
 
 const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len) {
