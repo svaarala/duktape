@@ -29,7 +29,7 @@ void dump_stack(duk_context *ctx) {
 	printf("[");
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf(" %d", duk_get_int(ctx, i));
+		printf(" %ld", (long) duk_get_int(ctx, i));
 	}
 	printf(" ]\n");
 }

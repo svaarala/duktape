@@ -1,0 +1,20 @@
+=proto
+unsigned int duk_to_uint(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ] -> [ ... ToNumber(val)! ... ]
+
+=summary
+<p>Like <code><a href="#duk_to_int">duk_to_int()</a></code> but the return value
+coercion is the same as in <code><a href="#duk_get_uint">duk_get_uint()</a></code>.</p>
+
+=example
+printf("ToInteger() + uint coercion: %ld\n", (long) duk_to_uint(ctx, -3));
+printf("ToInteger() coercion: %lf\n", duk_get_number(ctx, -3));
+
+=tags
+stack
+
+=FIXME
+The limits are actually DUK_INT_MIN and DUK_INT_MAX, which are almost always the same
+as INT_MIN and INT_MAX.
