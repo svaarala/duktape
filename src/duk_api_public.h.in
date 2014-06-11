@@ -530,6 +530,8 @@ int duk_has_prop(duk_context *ctx, int obj_index);
 int duk_has_prop_string(duk_context *ctx, int obj_index, const char *key);
 int duk_has_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
 
+int duk_get_global_string(duk_context *ctx, const char *key);
+
 /*
  *  Module helpers: put multiple function or constant properties
  */
