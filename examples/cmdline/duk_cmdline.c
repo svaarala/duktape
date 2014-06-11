@@ -233,7 +233,7 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	return retval;
 
  error:
-	fprintf(stderr, "error in reading input from file %s\n", filename);
+	fprintf(stderr, "error in executing file %s\n", filename);
 	fflush(stderr);
 	goto cleanup;
 }
