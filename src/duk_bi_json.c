@@ -537,7 +537,7 @@ static void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... obj key val ] */
 
-		duk_put_prop(ctx, -3);
+		duk_def_prop_wec(ctx, -3);
 
 		/* [ ... obj ] */
 
@@ -600,7 +600,7 @@ static void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... arr val ] */
 
-		duk_put_prop_index(ctx, -2, arr_idx);
+		duk_def_prop_index_wec(ctx, -2, arr_idx);
 		arr_idx++;
 	}
 
