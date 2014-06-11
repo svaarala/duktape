@@ -358,6 +358,8 @@ void duk_enum(duk_context *ctx, int obj_index, int enum_flags) {
 }
 
 int duk_next(duk_context *ctx, int enum_index, int get_value) {
+	DUK_ASSERT(ctx != NULL);
+
 	duk_require_hobject(ctx, enum_index);
 	duk_dup(ctx, enum_index);
 	return duk_hobject_enumerator_next(ctx, get_value);
@@ -369,6 +371,8 @@ int duk_next(duk_context *ctx, int enum_index, int get_value) {
 
 void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs) {
 	const duk_function_list_entry *ent = funcs;
+
+	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	if (ent != NULL) {
@@ -383,6 +387,8 @@ void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_l
 void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers) {
 	const duk_number_list_entry *ent = numbers;
 
+	DUK_ASSERT(ctx != NULL);
+
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	if (ent != NULL) {
 		while (ent->key != NULL) {
@@ -391,4 +397,23 @@ void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_
 			ent++;
 		}
 	}
+}
+
+/*
+ *  Shortcut for accessing global object properties
+ */
+
+int duk_get_global_string(duk_context *ctx, const char *key) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	int ret;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+	ret = duk_get_prop_string(ctx, -1, key);
+	duk_remove(ctx, -2);
+	return ret;
 }

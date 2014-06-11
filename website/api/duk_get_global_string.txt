@@ -1,0 +1,28 @@
+=proto
+void duk_get_global_string(duk_context *ctx, const char *key);
+
+=stack
+[ ... ] -> [ ... val! ]  (if key exists)
+[ ... ] -> [ ... undefined! ]  (if key doesn't exist)
+
+=summary
+<p>Get property named <code>key</code> from the global object.
+Returns non-zero if the property exists and zero otherwise.
+This is a convenience function which does the equivalent of:</p>
+<pre class="c-code">
+int ret;
+duk_push_global_object(ctx);
+ret = duk_get_prop_string(ctx, -1, key);
+duk_remove(ctx, -2);
+/* 'ret' would be the return value from duk_get_global_string() */
+</pre>
+
+=example
+(void) duk_get_global_string(ctx, "encodeURIComponent");
+duk_push_string(ctx, "foo bar");
+duk_call(ctx, 1);  /* [ ... encodeURIComponent "foo bar" ] -> [ "foo%20bar" ] */
+printf("encoded: %s\n", duk_to_string(ctx, -1));
+duk_pop(ctx);
+
+=tags
+property

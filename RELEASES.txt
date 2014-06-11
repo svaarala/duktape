@@ -320,7 +320,7 @@ Planned
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
 
-* Add a duk_push_uint() convenience API call
+* Add convenience API calls: duk_push_uint(), duk_get_global_string()
 
 * Remove Duktape.line() as redundant to Duktape.act()
 
