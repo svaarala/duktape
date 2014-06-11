@@ -127,7 +127,7 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("define arguments[%d]=arg", idx));
 		duk_push_int(ctx, idx);
 		duk_dup(ctx, i_argbase + idx);
-		duk_def_prop(ctx, i_arg, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_wec(ctx, i_arg);
 		DUK_DDD(DUK_DDDPRINT("defined arguments[%d]=arg", idx));
 
 		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
@@ -154,13 +154,13 @@ static void duk__create_arguments_object(duk_hthread *thr,
 				duk_dup(ctx, -1);         /* name */
 				duk_push_int(ctx, idx);   /* index */
 				duk_to_string(ctx, -1);
-				duk_def_prop(ctx, i_mappednames, DUK_PROPDESC_FLAGS_WEC);  /* out of spec, must be configurable */
+				duk_def_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%d]=%s", idx, duk_get_string(ctx, -1)));
 				duk_push_int(ctx, idx);   /* index */
 				duk_to_string(ctx, -1);
 				duk_dup(ctx, -2);         /* name */
-				duk_def_prop(ctx, i_map, DUK_PROPDESC_FLAGS_WEC);  /* out of spec, must be configurable */
+				duk_def_prop_wec(ctx, i_map);  /* out of spec, must be configurable */
 			} else {
 				/* duk_has_prop() popped the second 'name' */
 			}

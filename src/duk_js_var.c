@@ -494,11 +494,11 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		duk_push_hthread(ctx, thr);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THREAD, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_CALLEE, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
 		duk_push_int(ctx, idx_bottom);  /* FIXME: type */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_REGBASE, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
 	}
 
 	return env;

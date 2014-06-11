@@ -105,8 +105,17 @@ void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags);  /* [key val
 void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags);  /* [val] -> [] */
 void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [val] -> [] */
 void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int stridx, unsigned int builtin_idx, int desc_flags);  /* [] -> [] */
-
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [] -> [] */
+
+/* These are macros for now, but could be separate functions to reduce code
+ * footprint (check call site count before refactoring).
+ */
+#define duk_def_prop_wec(ctx,obj_index) \
+	duk_def_prop((ctx), (obj_index), DUK_PROPDESC_FLAGS_WEC)
+#define duk_def_prop_index_wec(ctx,obj_index,arr_index) \
+	duk_def_prop_index((ctx), (obj_index), (arr_index), DUK_PROPDESC_FLAGS_WEC)
+#define duk_def_prop_stridx_wec(ctx,obj_index,stridx) \
+	duk_def_prop_stridx((ctx), (obj_index), (stridx), DUK_PROPDESC_FLAGS_WEC)
 
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */
 
