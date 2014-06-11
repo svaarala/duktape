@@ -41,3 +41,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Jim Schimpf
 * Rajaran Gaunker (https://github.com/zimbabao)
 * Andreas Öman
+* Doug Sanden

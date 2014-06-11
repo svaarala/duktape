@@ -874,6 +874,9 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	int i;
 	duk_uint32_t res_length = 0;
 
+	/* FIXME: len >= 0x80000000 won't work below because we need to be
+	 * able to represent -len.
+	 */
 	len = duk__push_this_obj_len_u32(ctx);
 	duk_push_array(ctx);
 
@@ -884,7 +887,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	 * stack[4] = result array
 	 */
 
-	start = duk_to_int_clamped(ctx, 0, -len, len);  /* FIXME: does not support full 32-bit range */
+	start = duk_to_int_clamped(ctx, 0, -((duk_int_t) len), (duk_int_t) len);
 	if (start < 0) {
 		start = len + start;
 	}
@@ -894,7 +897,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	if (duk_is_undefined(ctx, 1)) {
 		end = len;
 	} else {
-		end = duk_to_int_clamped(ctx, 1, -len, len);
+		end = duk_to_int_clamped(ctx, 1, -((duk_int_t) len), (duk_int_t) len);
 		if (end < 0) {
 			end = len + end;
 		}

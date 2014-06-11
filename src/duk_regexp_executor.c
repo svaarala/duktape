@@ -35,9 +35,9 @@ static duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc)
 	/* signed integer encoding needed to work with UTF-8 */
 	t = (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 	if (t & 1) {
-		return -(t >> 1);
+		return -((duk_int32_t) (t >> 1));
 	} else {
-		return (t >> 1);
+		return (duk_int32_t) (t >> 1);
 	}
 }
 

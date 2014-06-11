@@ -42,6 +42,7 @@ DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
 DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+GIT_DESCRIBE=$(shell git describe)
 
 # Ditz release (next release name)
 DITZ_RELEASE=v0.11
@@ -727,11 +728,15 @@ dist-src:	dist
 	mkdir duktape-$(DUK_VERSION_FORMATTED)
 	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.gz
 	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.bz2
 	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.xz
 	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
+	cp duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).iso
 
 .PHONY: tidy-site
 tidy-site:

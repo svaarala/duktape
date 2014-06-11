@@ -320,7 +320,7 @@ static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 		} else {
 			tz = 0;
 		}
-		tmp = (int64_t) ty - (int64_t) tz + tmp;
+		tmp = (duk_int64_t) ty - (duk_int64_t) tz + tmp;
 		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffUL);
 		tmp = tmp >> 32;  /* 0 or -1 */
 	}
