@@ -604,6 +604,12 @@ static void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 		arr_idx++;
 	}
 
+	/* Must set 'length' explicitly when using duk_def_prop_xxx() to
+	 * set the values.
+	 */
+
+	duk_set_length(ctx, -1, arr_idx);
+
 	/* [ ... arr ] */
 
 	DUK_DDD(DUK_DDDPRINT("parse_array: final array is %!T", duk_get_tval(ctx, -1)));
