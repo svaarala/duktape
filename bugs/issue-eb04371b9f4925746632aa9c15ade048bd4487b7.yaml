@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: improve windows build to use secure CRT functions (at least if user desires)
+desc: |-
+  The secure CRT functions allow better debugging on Windows and catch issues
+  such as missing NUL terminators in strings (well, at least sometimes).
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-11 08:01:27.709603 Z
+references: []
+
+id: eb04371b9f4925746632aa9c15ade048bd4487b7
+log_events: 
+- - 2014-06-11 08:01:27.869432 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
