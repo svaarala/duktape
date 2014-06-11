@@ -720,6 +720,10 @@ static void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					duk_pop(ctx);
 					duk_del_prop_index(ctx, -1, i);
 				} else {
+					/* XXX: duk_def_prop_index_wec() would be more appropriate
+					 * here but it currently makes some assumptions that might
+					 * not hold (e.g. that previous property is not an accessor).
+					 */
 					duk_put_prop_index(ctx, -2, i);
 				}
 			}
@@ -744,6 +748,15 @@ static void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					duk_pop(ctx);
 					duk_del_prop(ctx, -3);
 				} else {
+					/* XXX: duk_def_prop_index_wec() would be more appropriate
+					 * here but it currently makes some assumptions that might
+					 * not hold (e.g. that previous property is not an accessor).
+					 *
+					 * Using duk_put_prop() works incorrectly with '__proto__'
+					 * if the own property with that name has been deleted.  This
+					 * does not happen normally, but a clever reviver can trigger
+					 * that, see complex reviver case in: test-bug-json-parse-__proto__.js.
+					 */
 					duk_put_prop(ctx, -4);
 				}
 			}
