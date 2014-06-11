@@ -117,5 +117,8 @@ void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int s
 #define duk_def_prop_stridx_wec(ctx,obj_index,stridx) \
 	duk_def_prop_stridx((ctx), (obj_index), (stridx), DUK_PROPDESC_FLAGS_WEC)
 
+/* Set object 'length'. */
+void duk_set_length(duk_context *ctx, duk_idx_t index, duk_size_t length);
+
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */
 

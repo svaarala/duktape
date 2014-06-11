@@ -1301,6 +1301,20 @@ size_t duk_get_length(duk_context *ctx, int index) {
 	DUK_UNREACHABLE();
 }
 
+void duk_set_length(duk_context *ctx, duk_idx_t index, duk_size_t length) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h;
+
+	DUK_ASSERT(ctx != NULL);
+
+	h = duk_get_hobject(ctx, index);
+	if (!h) {
+		return;
+	}
+
+	duk_hobject_set_length(thr, h, (duk_uint32_t) length);  /* XXX: typing */
+}
+
 /*
  *  Conversions and coercions
  *
