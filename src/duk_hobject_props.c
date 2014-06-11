@@ -3780,13 +3780,14 @@ int duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, in
  *  Internal helper to define a property with specific flags, ignoring
  *  normal semantics such as extensibility, write protection etc.
  *  Overwrites any existing value and attributes unless caller requests
- *  that value only be updated if it doesn't already exists.  If target
- *  has an array part, asserts that propflags are correct (WEC).
+ *  that value only be updated if it doesn't already exists.
  *
  *  Does not support:
- *    - virtual properties
- *    - getter/setter properties
+ *    - virtual properties (error if write attempted)
+ *    - getter/setter properties (error if write attempted)
+ *    - non-default (!= WEC) attributes for array entries (error if attempted)
  *    - array abandoning: if array part exists, it is always extended
+ *    - array 'length' updating
  *
  *  Stack: [... in_val] -> []
  *
@@ -3821,30 +3822,35 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 		if (desc.e_idx >= 0) {
 			if (flags & DUK_PROPDESC_FLAG_NO_OVERWRITE) {
 				DUK_DDD(DUK_DDDPRINT("property already exists in the entry part -> skip as requested"));
-				goto skip_write;
+				goto pop_exit;
 			}
 			DUK_DDD(DUK_DDDPRINT("property already exists in the entry part -> update value and attributes"));
-			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, desc.e_idx));
+			if (DUK_UNLIKELY(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, desc.e_idx))) {
+				DUK_D(DUK_DPRINT("existing property is an accessor, not supported"));
+				goto error_internal;
+			}
 
 			DUK_HOBJECT_E_SET_FLAGS(obj, desc.e_idx, propflags);
 			tv1 = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(obj, desc.e_idx);
 		} else if (desc.a_idx >= 0) {
 			if (flags & DUK_PROPDESC_FLAG_NO_OVERWRITE) {
 				DUK_DDD(DUK_DDDPRINT("property already exists in the array part -> skip as requested"));
-				goto skip_write;
+				goto pop_exit;
 			}
 			DUK_DDD(DUK_DDDPRINT("property already exists in the array part -> update value (assert attributes)"));
-			DUK_ASSERT(propflags == DUK_PROPDESC_FLAGS_WEC);
+			if (propflags != DUK_PROPDESC_FLAGS_WEC) {
+				DUK_D(DUK_DPRINT("existing property in array part, but propflags not WEC (%d)", (int) propflags));
+				goto error_internal;
+			}
 
 			tv1 = DUK_HOBJECT_A_GET_VALUE_PTR(obj, desc.a_idx);
 		} else {
 			if (flags & DUK_PROPDESC_FLAG_NO_OVERWRITE) {
 				DUK_DDD(DUK_DDDPRINT("property already exists but is virtual -> skip as requested"));
-				goto skip_write;
+				goto pop_exit;
 			}
 			DUK_DDD(DUK_DDDPRINT("property already exists but is virtual -> failure"));
-			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "attempt to redefine virtual property");
-			DUK_UNREACHABLE();
+			goto error_virtual;
 		}
 
 		goto write_value;
@@ -3885,9 +3891,19 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	DUK_TVAL_SET_TVAL(tv1, tv2);
 	DUK_TVAL_INCREF(thr, tv1);
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	goto pop_exit;
 
- skip_write:
+ pop_exit:
 	duk_pop(ctx);  /* remove in_val */
+	return;
+
+ error_internal:
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error");
+	return;
+
+ error_virtual:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "attempt to redefine virtual property");
+	return;
 }
 
 /*
