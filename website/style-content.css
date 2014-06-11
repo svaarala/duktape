@@ -276,6 +276,8 @@ ul.breakdown li {
 
 .content .stack-wrapper {
 	display: block;
+	margin-top: 1ex;
+	margin-bottom: 2ex;
 }
 
 /* narrow layout: smaller font */
@@ -289,26 +291,16 @@ ul.breakdown li {
  * them aligned
  */
 .content .stack-wrapper .arrow {
-	display: inline-block;  /* for "shrink-to-fit" */
-	overflow: auto;  /* clear fix */
-	width: auto;
-	background: #ffffff;
-	margin: 1ex 0.1em 1ex 0.1em;
-	border: 2px solid #ffffff;
-	border-radius: 10px;
-	box-shadow: 3px 3px 5px #ffffff;
-	padding: 1ex 0.1em 1ex 0.1em;
+	display: inline-block;
+	margin: 0 0.1em 0 0.1em;
+	padding: 0;
 	vertical-align: middle;
 }
 
 .content .stack-wrapper .arrow b {
-	float: left;
+	display: inline-block;
 	min-width: 1.25em;
-	background: #ffffff;
-	margin: 0.1ex 0.1em 0.1ex 0.1em;
-	border: 1px solid #ffffff;
-	border-radius: 5px;
-	box-shadow: 1px 1px 3px #ffffff;
+	margin: 0;
 	padding: 0;
 	vertical-align: middle;
 	text-align: center;
@@ -316,27 +308,25 @@ ul.breakdown li {
 }
 
 .content .stack-wrapper .stack {
-	display: inline-block;  /* for "shrink-to-fit" */
-	overflow: auto;  /* clear fix */
-	width: auto;
+	display: inline-block;
 	background: #eeeeee;
-	margin: 1ex 0px 1ex 0px;
+	margin: 0;
 	border: 2px solid #888888;
 	border-radius: 10px;
 	box-shadow: 3px 3px 5px #bbbbbb;
-	padding: 1ex 1em 1ex 1em;
+	padding: 0.7ex 1ex 0.7ex 1ex;
 	vertical-align: middle;
 }
 
 .content .stack-wrapper .stack .elem {
-	float: left;
+	display: inline-block;
 	min-width: 1.25em;
 	background: #cccccc;
-	margin: 0.1ex 0.1em 0.1ex 0.1em;
+	margin: 0;  /* space chars between spans are enough */
 	border: 1px solid #888888;
 	border-radius: 5px;
 	box-shadow: 1px 1px 3px #bbbbbb;
-	padding: 0.5ex 0.5em 0.5ex 0.5em;
+	padding: 0.5ex 0.35em 0.5ex 0.35em;
 	vertical-align: middle;
 	text-align: center;
 }
@@ -372,10 +362,12 @@ ul.breakdown li {
 }
 
 .content .stack-wrapper .stack-comment {
-	float: right;
-	margin: 0.1ex 0.3em 0.1ex 2em;
-	padding-top: 3ex;
-	width: 20em;
+	display: inline-block;
+	margin: 0 0 0 2em;
+	padding: 0;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 12pt;
 	color: #888888;
 }
 

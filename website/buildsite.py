@@ -221,32 +221,41 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	# the 'hidechar' span is to allow browser search without showing the char
 	res.append('<h1 id="%s"><a href="#%s"><span class="hidechar">.</span>%s()</a></h1>' % (funcname, funcname, funcname))
 
+	res.append('<div class="api-call">')
+
 	if parts.has_key('proto'):
 		p = parts['proto']
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-proto">Prototype</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
 		res.append('</pre>')
+		res.append('</div>')  # api-part
 		res.append('')
 	else:
 		pass
 
 	if parts.has_key('stack'):
 		p = parts['stack']
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-stack">Stack</h2>')
 		for line in p:
 			res.append('<pre class="stack">' + \
 			           '%s' % htmlEscape(line) + \
 			           '</pre>')
+		res.append('</div>')
 		res.append('')
 	else:
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-stack">Stack</h2>')
 		res.append('<p>(No effect on value stack.)</p>')
+		res.append('</div>')  # api-part
 		res.append('')
 
 	if parts.has_key('summary'):
 		p = parts['summary']
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-summary">Summary</h2>')
 
 		# If text contains a '<p>', assume it is raw HTML; otherwise
@@ -266,26 +275,33 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 			for i in p:
 				res.append(htmlEscape(i))
 			res.append('</p>')
+		res.append('</div>')  # api-part
 		res.append('')
 
 	if parts.has_key('example'):
 		p = parts['example']
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-example">Example</h2>')
 		res.append('<pre class="c-code">')
 		for i in p:
 			res.append(htmlEscape(i))
 		res.append('</pre>')
+		res.append('</div>')  # api-part
 		res.append('')
 
 	if parts.has_key('seealso'):
 		p = parts['seealso']
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-seealso">See also</h2>')
 		res.append('<ul>')
 		for i in p:
 			res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(i), htmlEscape(i)))
 		res.append('</ul>')
+		res.append('</div>')  # api-part
+		res.append('')
 
 	if testcase_refs:
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-testcases">Related test cases</h2>')
 		if testrefs.has_key(funcname):
 			res.append('<ul>')
@@ -294,12 +310,15 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 			res.append('</ul>')
 		else:
 			res.append('<p>None.</p>')
+		res.append('</div>')  # api-part
+		res.append('')
 
 	if not testrefs.has_key(funcname):
 		res.append('<div class="fixme">This API call has no test cases.</div>')
 		
 	if list_tags and parts.has_key('tags'):
 		# FIXME: placeholder
+		res.append('<div class="api-part">')
 		res.append('<h2 class="api-tags">Tags</h2>')
 		res.append('<p>')
 		p = parts['tags']
@@ -308,6 +327,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 				res.append(' ')
 			res.append(htmlEscape(val))
 		res.append('</p>')
+		res.append('</div>')  # api-part
 		res.append('')
 
 	if parts.has_key('fixme'):
@@ -318,6 +338,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')
 		res.append('')
 
+	res.append('</div>')  # api-call div
 	return res
 
 def processRawDoc(filename):
