@@ -363,6 +363,13 @@ Planned
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
 
+* Fix a number conversion related incorrect assertion triggered by the
+  test262 test suite
+
+* Fix JSON.parse() handling for '__proto__' named own property, which
+  should be parsed as a normal property of that name instead of changing
+  the object's prototype
+
 * Fix a duk_push_sprintf() bug: for long formatted strings Duktape would
   reuse a va_list without copying it, which lead to memory unsafe behavior
 
