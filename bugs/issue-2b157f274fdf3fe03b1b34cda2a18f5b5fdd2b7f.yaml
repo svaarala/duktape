@@ -3,7 +3,7 @@ title: move explicit repo checkouts into git subtrees or git submodules
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-06-10 08:54:37.851487 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-06-11 20:12:01.788741 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""
