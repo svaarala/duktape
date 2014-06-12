@@ -1613,7 +1613,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 	for (;;) {
 		DUK_ASSERT(thr->callstack_top >= 1);
-		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= fun->nregs);  /* FIXME == nregs? */
+		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
 		DUK_ASSERT((int) (thr->valstack_top - thr->valstack) == valstack_top_base);
 
 		/* Executor interrupt counter check, used to implement breakpoints,
