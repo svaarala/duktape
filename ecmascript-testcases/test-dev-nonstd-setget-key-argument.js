@@ -6,7 +6,7 @@
 /*---
 {
     "custom": true,
-    "specialoptions": "requires non-standard behavior to be turned on"
+    "specialoptions": "should work with default options, but will break with DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT"
 }
 ---*/
 
