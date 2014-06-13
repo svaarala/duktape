@@ -23,10 +23,14 @@ myGetter true string 1
 obj[1] 1
 myGetter true string 1
 obj["1"] 1
+typeof getter: function
+myGetter false undefined undefined
 ===*/
 
 function nonStandardAccessorKeyArgumentTest() {
     var obj;
+    var desc;
+    var getter;
 
     function myGetter(key) {
         // 'this' binding: target object (standard)
@@ -68,6 +72,18 @@ function nonStandardAccessorKeyArgumentTest() {
 
     print('obj[1]', obj[1]);
     print('obj["1"]', obj['1']);
+
+    // A setter/getter can also be called directly "out of context" of
+    // a property access; in this case the setter/getter won't get a key
+    // because Duktape has no way of providing one.  In fact the user can
+    // provide an arbitrary key name or none at all.  The 'this' binding
+    // will also be incorrect etc (this is the case without the non-standard
+    // key argument, too).
+
+    desc = Object.getOwnPropertyDescriptor(obj, 'foo');
+    getter = desc.get;
+    print('typeof getter:', typeof getter);
+    getter();
 }
 
 try {
