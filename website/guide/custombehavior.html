@@ -102,6 +102,20 @@ the splice operation to the end of the array.</p>
 Duktape uses this behavior by default.  The strict standards compliant behavior can
 be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT</code>.</p>
 
+<h2>Setter/getter key argument</h2>
+
+<p>Ecmascript standard behavior is that setters and getters are not given
+the name of the property being accessed.  This prevents reusing a single
+setter or a getter for multiple properties; separate functions are needed
+for each property which is sometimes inconvenient and wastes memory.</p>
+
+<p>Duktape provides the property key name as a non-standard additional
+argument to setter and getter functions.  See
+<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-nonstd-setget-key-argument.js">test-dev-nonstd-setget-key-argument.js</a>
+and <a href="#propertyvirtualization">Property virtualization</a>
+for more discussion.  The strict standards compliant behavior can be enabled
+with the feature option <code>DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT</code>.</p>
+
 <h2>Object.setPrototypeOf and Object.prototype.__proto__ (ES6 draft)</h2>
 
 <p>See <a href="#es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</a>.</p>

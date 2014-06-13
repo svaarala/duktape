@@ -202,6 +202,12 @@ The table below summarizes the available options, in no particular order:</p>
     <code>String.prototype.substr()</code> to throw an error.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT</td>
+<td>Don't give setter/getter calls the property name being accessed as
+    an additional, non-standard property.  See
+    <a href="#propertyvirtualization">Property virtualization</a>.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_NONSTD_FUNC_STMT</td>
 <td>Disable support for function declarations outside program or function top
     level (also known as "function statements").  Such declarations are

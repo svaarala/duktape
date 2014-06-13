@@ -2187,7 +2187,12 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 			duk_pop(ctx);                     /* [key undefined] -> [key] */
 			duk_push_hobject(ctx, desc.get);
 			duk_push_tval(ctx, tv_obj);       /* note: original, uncoerced base */
+#ifdef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+			duk_dup(ctx, -3);
+			duk_call_method(ctx, 1);          /* [key getter this key] -> [key retval] */
+#else
 			duk_call_method(ctx, 0);          /* [key getter this] -> [key retval] */
+#endif
 		} else {
 			/* [key value] or [key undefined] */
 
@@ -3004,7 +3009,12 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 			duk_push_hobject(ctx, setter);
 			duk_push_tval(ctx, tv_obj);  /* note: original, uncoerced base */
 			duk_push_tval(ctx, tv_val);  /* [key setter this val] */
-			duk_call_method(ctx, 1);     /* -> [key retval] */
+#ifdef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+			duk_dup(ctx, -4);
+			duk_call_method(ctx, 2);     /* [key setter this val key] -> [key retval] */
+#else
+			duk_call_method(ctx, 1);     /* [key setter this val] -> [key retval] */
+#endif
 			duk_pop(ctx);                /* ignore retval -> [key] */
 			goto success_no_arguments_exotic;
 		}
