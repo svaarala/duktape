@@ -1982,6 +1982,14 @@ typedef FILE duk_file;
 #undef DUK_USE_COMMONJS_MODULES
 #endif
 
+/* Additional key argument to setter/getter calls when triggered by property
+ * accesses.
+ */
+
+/* FIXME: feature option to disable? */
+#define DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+#define DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+
 /*
  *  Tailcalls
  */
