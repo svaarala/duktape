@@ -52,20 +52,67 @@ and of being widely implemented.  However, they have significant limitations:</p
     beforehand.  You cannot capture all property accesses of a certain object,
     which limits their usefulness in some scenarios, such as virtualizing arrays.</li>
 <li>A standard property setter/getter function doesn't get the property key as an
-    argument (this behavior is defined by the Ecmascript specification) which often
-    means that separate setter/getter functions are needed for each virtualized
-    property key.  See below for workarounds.</li>
+    argument (this behavior is defined by the Ecmascript specification) which
+    prevents sharing of setter/getter functions for multiple properties.  Duktape
+    provides setter/getter functions with the property name as an additional,
+    non-standard argument; see more discussion below.</li>
 </ul>
 
-<h3>Shared Duktape/C setter/getter for multiple properties</h3>
+<h3>Non-standard getter/setter key argument</h3>
 
-<p>A single pair of Duktape/C functions can be used to virtualize multiple
-property keys as follows.  First, a separate Ecmascript function is created
-for each setter/getter, with each such function using the same underlying
-Duktape/C functions.  Second, the Duktape/C function uses properties stored
-on the Ecmascript function instance "through" which it was called to specialize
-its behavior.  Below, a <code>key</code> property is stored in the Ecmascript
-function instance.</p>
+<p>Duktape provides the property key as a non-standard setter/getter function
+argument when the setter/getter is triggered by a property access.  For instance,
+when running <code>print(foo.bar)</code> the getter for the "bar" property would
+get called, and that function would get "bar" as a (non-standard) argument:</p>
+<pre class="ecmascript-code">
+var obj = {};
+function myGetter(key) {
+    // 'this' binding is the target object, 'key' is a non-standard argument
+}
+function mySetter(val, key) {
+    // 'this' binding is the target object, 'key' is a non-standard argument
+}
+Object.defineProperties(obj, {
+    // Same getter/setter can be used here
+    key1: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
+    key2: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
+    key3: { enumerable: true, configurable: true, get: myGetter, set: mySetter }
+    // ...
+});
+</pre>
+
+<p>However, setters and getters can be also called without doing a property
+access; in these cases the argument will of course be missing:</p>
+
+<pre class="ecmascript-code">
+var desc = Object.getOwnPropertyDescriptor(obj, 'key1');
+var getter = desc.get;
+print(getter());  // invoke getter directly; key name will be 'undefined'
+</pre>
+
+<p>With this technique you can share setter/getter functions, but you still need
+to define each accessor property beforehand.  In particular, you can't virtualize
+array elements in a reasonable manner, except for very small, fixed size arrays.</p>
+
+<p>Also see
+<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-nonstd-setget-key-argument.js">test-dev-nonstd-setget-key-argument.js</a>.</p>
+
+<h3>Sharing a Duktape/C setter/getter without the non-standard key argument</h3>
+
+<div class="note">
+This section should only be useful if you have disabled the non-standard
+setter/getter key argument feature, which provides a much easier way of
+sharing a setter/getter pair than the approach described in this section.
+</div>
+
+<p>You can also share a single pair of Duktape/C functions to virtualize
+multiple property keys as follows.</p>
+
+<p>First, a separate Ecmascript function is created for each setter/getter,
+with each such function using the same underlying Duktape/C functions.  Second,
+the Duktape/C function uses properties stored on the Ecmascript function
+instance "through" which it was called to specialize its behavior.  Below, a
+<code>key</code> property is stored in the Ecmascript function instance.</p>
 
 <p>For each property, the setter/getter functions would be created as follows:</p>
 
@@ -117,46 +164,6 @@ static int my_getter(duk_context *ctx) {
 
 <p>Separate Ecmascript function objects and pre-defined accessor properties on
 the target object are still needed for each virtualized property.</p>
-
-<!-- FIXME: not yet implemented
-
-<h3>Non-standard getter/setter arguments</h3>
-
-<p>Duktape provides the property key as a non-standard setter/getter function
-argument when the setter/getter is triggered by a property access.  For instance,
-when running <code>print(foo.bar)</code> the getter for the "bar" property would
-get called, and that function would get "bar" as a (non-standard) argument:</p>
-<pre class="ecmascript-code">
-var obj = {};
-function myGetter(key) {
-    // 'this' binding is the target object, 'key' is a non-standard argument
-}
-function mySetter(val, key) {
-    // 'this' binding is the target object, 'key' is a non-standard argument
-}
-Object.defineProperties(obj, {
-    // Same getter/setter can be used here
-    key1: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
-    key2: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
-    key3: { enumerable: true, configurable: true, get: myGetter, set: mySetter }
-    // ...
-});
-</pre>
-
-<p>However, setters and getters can be also called without doing a property
-access; in these cases the argument will of course be missing:</p>
-
-<pre class="ecmascript-code">
-var desc = Object.getOwnPropertyDescriptor(obj, 'key1');
-var getter = desc.get;
-print(getter());  // invoke getter directly; key name will be 'undefined'
-</pre>
-
-<p>With this technique you can share setter/getter functions, but you still need
-to define each accessor property beforehand.  In particular, you can't virtualize
-array elements in a reasonable manner, except for very small, fixed size arrays.</p>
-
--->
 
 <h2 id="virtualization-proxy-object">Ecmascript E6 (draft) Proxy subset</h2>
 
