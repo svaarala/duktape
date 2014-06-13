@@ -317,6 +317,9 @@ Planned
   subset limited to the following traps: has, get, set, deleteProperty,
   enumerate, ownKeys
 
+* Add property name as a non-standard setter/getter argument to make it
+  possible to share a single setter/getter pair for multiple properties
+
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
 
