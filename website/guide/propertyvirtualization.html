@@ -1,16 +1,22 @@
 <h1 id="propertyvirtualization">Property virtualization</h1>
 
 <p>This section describes the two different mechanisms Duktape provides
-for interacting with property accesses programmatically.</p>
+for interacting with property accesses programmatically: accessor
+properties and the <code>Proxy</code> object.</p>
 
 <h2 id="virtualization-accessors">Ecmascript E5 accessor properties (getters and setters)</h2>
 
+<h3>Overview of accessors</h3>
+
 <p>Ecmascript Edition 5 provides <b>accessor properties</b> (also called
 "setters and getters") which allow property read/write operations to be
-captured by a user function.</p>
+captured by a user function.  Setter/getter functions can be both Ecmascript
+and Duktape/C functions.</p>
 
-<p>For example, to capture writes to <code>obj.color</code> so that you
-can validate the color value and trigger a redraw as a side effect:</p>
+<h3>Example</h3>
+
+<p>To capture writes to <code>obj.color</code> so that you can validate the
+color value and trigger a redraw as a side effect:</p>
 <pre class="ecmascript-code">
 var obj = {};
 
@@ -35,6 +41,8 @@ Object.defineProperty(obj, 'color', {
 obj.color = '#ff0000';
 </pre>
 
+<h3>Limitations</h3>
+
 <p>Setters and getters have the advantage of being part of the E5 standard
 and of being widely implemented.  However, they have significant limitations:</p>
 <ul>
@@ -42,10 +50,117 @@ and of being widely implemented.  However, they have significant limitations:</p
     You cannot capture property deletions, interact with object enumeration, etc.</li>
 <li>They only apply to individual properties which you set up as accessors
     beforehand.  You cannot capture all property accesses of a certain object,
-    which limits their usefulness in some scenarios.</li>
+    which limits their usefulness in some scenarios, such as virtualizing arrays.</li>
+<li>A standard property setter/getter function doesn't get the property key as an
+    argument (this behavior is defined by the Ecmascript specification) which often
+    means that separate setter/getter functions are needed for each virtualized
+    property key.  See below for workarounds.</li>
 </ul>
 
+<h3>Shared Duktape/C setter/getter for multiple properties</h3>
+
+<p>A single pair of Duktape/C functions can be used to virtualize multiple
+property keys as follows.  First, a separate Ecmascript function is created
+for each setter/getter, with each such function using the same underlying
+Duktape/C functions.  Second, the Duktape/C function uses properties stored
+on the Ecmascript function instance "through" which it was called to specialize
+its behavior.  Below, a <code>key</code> property is stored in the Ecmascript
+function instance.</p>
+
+<p>For each property, the setter/getter functions would be created as follows:</p>
+
+<pre class="c-code">
+/* Create Ecmascript function objects for 'key1' setter/getter. */
+duk_push_c_function(my_setter, 1 /*nargs*/);
+duk_push_string(ctx, "key1");
+duk_put_prop_string(ctx, -2, "key");
+duk_push_c_function(my_getter, 0 /*nargs*/);
+duk_push_string(ctx, "key1");
+duk_put_prop_string(ctx, -2, "key");
+/* ... add accessor property to target object */
+
+/* Create Ecmascript function objects for 'key2' setter/getter in
+ * the same way, and so on for remaining properties.
+ */
+</pre>
+
+<p>The Duktape/C getter function would then (similarly for the setter):</p>
+
+<pre class="c-code">
+static int my_getter(duk_context *ctx) {
+    const char *key;
+
+    /* There are no positional arguments for the getter. */
+
+    /* Get the target object (e.g. if "foo.bar" is accessed, gets "foo")
+     * from the 'this' binding.
+     */
+    duk_push_this(ctx);
+
+    /* Get the 'key' being accessed from the Ecmascript function which
+     * "wraps" the my_getter native function.
+     */
+    duk_push_current_function(ctx);
+    duk_get_prop_string(ctx, -1, "key");
+    key = duk_require_string(ctx, -1);
+
+    /* -&gt; [ this func key ] */
+
+    if (strcmp(key, "key1") == 0) {
+        /* Behavior for 'key1' */
+    } else if (strcmp(key, "key2") == 0) {
+        /* Behavior for 'key2' */
+    }
+    /*...*/
+}
+</pre>
+
+<p>Separate Ecmascript function objects and pre-defined accessor properties on
+the target object are still needed for each virtualized property.</p>
+
+<!-- FIXME: not yet implemented
+
+<h3>Non-standard getter/setter arguments</h3>
+
+<p>Duktape provides the property key as a non-standard setter/getter function
+argument when the setter/getter is triggered by a property access.  For instance,
+when running <code>print(foo.bar)</code> the getter for the "bar" property would
+get called, and that function would get "bar" as a (non-standard) argument:</p>
+<pre class="ecmascript-code">
+var obj = {};
+function myGetter(key) {
+    // 'this' binding is the target object, 'key' is a non-standard argument
+}
+function mySetter(val, key) {
+    // 'this' binding is the target object, 'key' is a non-standard argument
+}
+Object.defineProperties(obj, {
+    // Same getter/setter can be used here
+    key1: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
+    key2: { enumerable: true, configurable: true, get: myGetter, set: mySetter },
+    key3: { enumerable: true, configurable: true, get: myGetter, set: mySetter }
+    // ...
+});
+</pre>
+
+<p>However, setters and getters can be also called without doing a property
+access; in these cases the argument will of course be missing:</p>
+
+<pre class="ecmascript-code">
+var desc = Object.getOwnPropertyDescriptor(obj, 'key1');
+var getter = desc.get;
+print(getter());  // invoke getter directly; key name will be 'undefined'
+</pre>
+
+<p>With this technique you can share setter/getter functions, but you still need
+to define each accessor property beforehand.  In particular, you can't virtualize
+array elements in a reasonable manner, except for very small, fixed size arrays.</p>
+
+-->
+
 <h2 id="virtualization-proxy-object">Ecmascript E6 (draft) Proxy subset</h2>
+
+<h3>Overview of Proxy</h3>
 
 <p>In addition to accessors, Duktape provides a subset implementation of the
 Ecmascript E6 (draft) <code>Proxy</code> concept, see:</p>
@@ -57,6 +172,9 @@ Ecmascript E6 (draft) <code>Proxy</code> concept, see:</p>
 <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy (Mozilla)</a>:
     Mozilla's description of the <code>Proxy</code> implemented in Firefox, contains a lot of examples.</li>
 </ul>
+
+<p>The Proxy object is much more powerful than setters/getters, but is not yet
+a widely used feature of Ecmascript engines.</p>
 
 <h3>Examples of has, get, set, and deleteProperty traps</h3>
 
@@ -275,3 +393,11 @@ test();
 print(Object.keys(proxy));                 // prints 'foo,bar'
 print(Object.getOwnPropertyNames(proxy));  // prints 'foo,bar'
 </pre>
+
+<h2>Mechanisms not supported by Duktape</h2>
+
+<p>There are various non-standard mechanisms for property virtualization.
+These are <b>not supported</b> by Duktape:</p>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/watch">Object.prototype.watch()</a></li>
+</ul>
