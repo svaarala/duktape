@@ -1986,9 +1986,12 @@ typedef FILE duk_file;
  * accesses.
  */
 
-/* FIXME: feature option to disable? */
 #define DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
 #define DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+#if defined(DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT)
+#undef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+#undef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+#endif
 
 /*
  *  Tailcalls
