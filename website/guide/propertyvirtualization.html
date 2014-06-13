@@ -394,6 +394,32 @@ print(Object.keys(proxy));                 // prints 'foo,bar'
 print(Object.getOwnPropertyNames(proxy));  // prints 'foo,bar'
 </pre>
 
+<h3>Using Proxy with a constructor function</h3>
+
+<p>If a constructor returns an object value, that value replaces the
+automatically created default instance available to the constructor
+as the <code>this</code> binding
+(<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-13.2.2">E5.1 Section 13.2.2</a>).
+This allows a Proxy object to be returned from a constructor as the result
+of a constructor call.</p>
+
+<p>It's also possible to initialize the <code>this</code> object normally, and
+then wrap it behind a proxy (see
+<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-proxy-in-constructor.js">test-bi-proxy-in-constructor.js</a>):</p>
+<pre class="ecmascript-code">
+function MyConstructor() {
+    // Initialize 'this' normally
+    this.foo = 'bar';
+
+    // Wrap it behind a proxy
+    return new Proxy(this, {
+        // proxy traps
+    });
+}
+
+var obj = new MyConstructor();
+</pre>
+
 <h2>Mechanisms not supported by Duktape</h2>
 
 <p>There are various non-standard mechanisms for property virtualization.
