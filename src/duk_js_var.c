@@ -180,6 +180,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (DUK_HOBJECT_HAS_STRICT(&fun_temp->obj)) {
 		DUK_HOBJECT_SET_STRICT(&fun_clos->obj);
 	}
+	if (DUK_HOBJECT_HAS_NOTAIL(&fun_temp->obj)) {
+		DUK_HOBJECT_SET_NOTAIL(&fun_clos->obj);
+	}
 	/* DUK_HOBJECT_FLAG_NEWENV: handled below */
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(&fun_clos->obj));
 	if (DUK_HOBJECT_HAS_CREATEARGS(&fun_temp->obj)) {
@@ -491,11 +494,11 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		duk_push_hthread(ctx, thr);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THREAD, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_CALLEE, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
 		duk_push_int(ctx, idx_bottom);  /* FIXME: type */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_REGBASE, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
 	}
 
 	return env;

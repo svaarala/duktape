@@ -1,0 +1,21 @@
+=proto
+unsigned int duk_require_uint(duk_context *ctx, int index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Like <code><a href="#duk_get_uint">duk_get_uint()</a></code>,
+but throws an error if the value at <code>index</code> is not a number
+or if the index is invalid.</p>
+
+<!--
+<p>The number is coerced as for <code><a href="#duk_get_uint">duk_get_uint()</a></code>
+with only numeric inputs allowed.</p>
+-->
+
+=example
+printf("unsigned int value: %u\n", duk_require_uint(ctx, -3));
+
+=tags
+stack

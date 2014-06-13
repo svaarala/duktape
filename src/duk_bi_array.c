@@ -91,7 +91,7 @@ int duk_bi_array_constructor(duk_context *ctx) {
 	 */
 	for (i = 0; i < nargs; i++) {
 		duk_dup(ctx, i);
-		duk_def_prop_index(ctx, -2, i, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_index_wec(ctx, -2, i);
 	}
 
 	duk_push_u32(ctx, (duk_uint32_t) nargs);
@@ -185,7 +185,7 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 		duk_dup(ctx, i);
 		h = duk_get_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_ARRAY);
 		if (!h) {
-			duk_def_prop_index(ctx, -2, idx++, DUK_PROPDESC_FLAGS_WEC);
+			duk_def_prop_index_wec(ctx, -2, idx++);
 			idx_last = idx;
 			continue;
 		}
@@ -199,7 +199,7 @@ int duk_bi_array_prototype_concat(duk_context *ctx) {
 		for (j = 0; j < len; j++) {
 			if (duk_get_prop_index(ctx, -1, j)) {
 				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
-				duk_def_prop_index(ctx, -3, idx++, DUK_PROPDESC_FLAGS_WEC);
+				duk_def_prop_index_wec(ctx, -3, idx++);
 				idx_last = idx;
 			} else {
 				/* XXX: according to E5.1 Section 15.4.4.4 nonexistent trailing
@@ -734,7 +734,7 @@ int duk_bi_array_prototype_splice(duk_context *ctx) {
 
 	for (i = 0; i < del_count; i++) {
 		if (duk_get_prop_index(ctx, -3, act_start + i)) {
-			duk_def_prop_index(ctx, -2, i, DUK_PROPDESC_FLAGS_WEC);  /* throw flag irrelevant (false in std alg) */
+			duk_def_prop_index_wec(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
 		} else {
 			duk_pop(ctx);
 		}
@@ -874,6 +874,9 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	int i;
 	duk_uint32_t res_length = 0;
 
+	/* FIXME: len >= 0x80000000 won't work below because we need to be
+	 * able to represent -len.
+	 */
 	len = duk__push_this_obj_len_u32(ctx);
 	duk_push_array(ctx);
 
@@ -884,7 +887,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	 * stack[4] = result array
 	 */
 
-	start = duk_to_int_clamped(ctx, 0, -len, len);  /* FIXME: does not support full 32-bit range */
+	start = duk_to_int_clamped(ctx, 0, -((duk_int_t) len), (duk_int_t) len);
 	if (start < 0) {
 		start = len + start;
 	}
@@ -894,7 +897,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	if (duk_is_undefined(ctx, 1)) {
 		end = len;
 	} else {
-		end = duk_to_int_clamped(ctx, 1, -len, len);
+		end = duk_to_int_clamped(ctx, 1, -((duk_int_t) len), (duk_int_t) len);
 		if (end < 0) {
 			end = len + end;
 		}
@@ -906,7 +909,7 @@ int duk_bi_array_prototype_slice(duk_context *ctx) {
 	for (i = start; i < end; i++) {
 		DUK_ASSERT_TOP(ctx, 5);
 		if (duk_get_prop_index(ctx, 2, i)) {
-			duk_def_prop_index(ctx, 4, idx, DUK_PROPDESC_FLAGS_WEC);
+			duk_def_prop_index_wec(ctx, 4, idx);
 			res_length = idx + 1;
 		} else {
 			duk_pop(ctx);
@@ -1201,14 +1204,14 @@ int duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			break;
 		case DUK__ITER_MAP:
 			duk_dup(ctx, -1);
-			duk_def_prop_index(ctx, 4, i, DUK_PROPDESC_FLAGS_WEC);  /* retval to result[i] */
+			duk_def_prop_index_wec(ctx, 4, i);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
 		case DUK__ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				duk_dup(ctx, -2);  /* orig value */
-				duk_def_prop_index(ctx, 4, k, DUK_PROPDESC_FLAGS_WEC);
+				duk_def_prop_index_wec(ctx, 4, k);
 				k++;
 				res_length = k;
 			}

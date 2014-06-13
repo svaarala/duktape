@@ -1,10 +1,24 @@
 /*===
-9
-true on line 12
-constructor on line 16
-getter on line 21
+23
+true on line 26
+constructor on line 30
+getter on line 35
 123
 ===*/
+
+/* Duktape.line() was removed in Duktape 0.11.0, so this test was changed to ensure
+ * that a simple replacement can provide the same functionality.
+ */
+
+Duktape.line = function () {
+    'use duk notail';
+
+    /* Tail calls are prevented to ensure calling activation exists.
+     * Call stack indices: -1 = Duktape.act, -2 = getCurrentLine, -3 = caller
+     */
+
+    return (Duktape.act(-3) || {}).lineNumber;
+};
 
 print(Duktape.line())
 

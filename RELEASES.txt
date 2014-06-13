@@ -218,6 +218,9 @@ Released
 
 * Add Duktape.compact(), Duktape.line(), and Duktape.act()
 
+* Add a "use duk notail" directive which indicates that an Ecmascript
+  function should never be tail called
+
 * Add a barebones built-in logging framework with both Ecmascript and C
   APIs and easy customization
 
@@ -317,7 +320,14 @@ Planned
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
 
+* Add a duk_push_uint() convenience API call
+
+* Remove Duktape.line() as redundant to Duktape.act()
+
 * Serialize negative zero as '-0' in JSONX and JSONC
+
+* Some typing changes in the public API to improve portability; may require
+  changes to calling code
 
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
@@ -347,8 +357,18 @@ Planned
 * The expressions !0 and !1 are now constant folded by the compiler as they're
   often found in minified code; also !true and !false are constant folded
 
+* Add a safety limit for compiled bytecode byte size and maximum line number
+  used to ensure pc-to-line internal data structure limits are not exceeded
+
 * C typing wrapped throughout to allow porting to more exotic platforms,
   e.g. platforms where "int" is a 16-bit type
+
+* Fix a number conversion related incorrect assertion triggered by the
+  test262 test suite
+
+* Fix JSON.parse() handling for '__proto__' named own property, which
+  should be parsed as a normal property of that name instead of changing
+  the object's prototype
 
 * Fix a duk_push_sprintf() bug: for long formatted strings Duktape would
   reuse a va_list without copying it, which lead to memory unsafe behavior
@@ -360,6 +380,9 @@ Planned
 * Fix a rare math optimization issue in the Date built-in, which caused a
   corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,
   gcc 4.8.1, -m32, and no -std=c99
+
+* Portability fixes for MSVC, avoid secure CRT warnings to work better with
+  Windows Store apps
 
 * Portability fixes for uclibc, use a replacement for e.g. fpclassify()
   because it is broken in some uclibc versions still in use (affected at

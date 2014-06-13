@@ -45,13 +45,13 @@ int duk_eval_raw(duk_context *ctx, int flags) {
 /* Helper which can be called both directly and with duk_safe_call(). */
 static int duk__do_compile(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int flags;
-	int comp_flags;
+	duk_int_t flags;
+	duk_int_t comp_flags;
 	duk_hcompiledfunction *h_templ;
 
 	/* [ ... source filename flags ] */
 
-	flags = duk_get_number(ctx, -1);
+	flags = (duk_int_t) duk_get_int(ctx, -1);
 	duk_pop(ctx);
 
 	/* [ ... source filename ] */

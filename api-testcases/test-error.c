@@ -79,7 +79,7 @@ void dump_error(duk_context *ctx) {
 	duk_pop(ctx);
 
 	duk_get_prop_string(ctx, -1, "lineNumber");
-	printf("lineNumber: %d\n", duk_get_int(ctx, -1));
+	printf("lineNumber: %ld\n", (long) duk_get_int(ctx, -1));
 	duk_pop(ctx);
 
 	/* 'isNative' has also been removed, check that it reads back as 'undefined' */

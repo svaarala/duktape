@@ -41,17 +41,17 @@
 #define DUK_HOBJECT_FLAG_THREAD                DUK_HEAPHDR_USER_FLAG(6)   /* object is a thread (duk_hthread) */
 #define DUK_HOBJECT_FLAG_ARRAY_PART            DUK_HEAPHDR_USER_FLAG(7)   /* object has an array part (a_size may still be 0) */
 #define DUK_HOBJECT_FLAG_STRICT                DUK_HEAPHDR_USER_FLAG(8)   /* function: function object is strict */
-#define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(9)   /* function: create new environment when called (see duk_hcompiledfunction) */
-#define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(10)  /* function: create binding for func name (function templates only, used for named function expressions) */
-#define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(11)  /* function: create an arguments object on function call */
-#define DUK_HOBJECT_FLAG_ENVRECCLOSED          DUK_HEAPHDR_USER_FLAG(12)  /* envrec: (declarative) record is closed */
-#define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(13)  /* 'Array' object, array length and index exotic behavior */
-#define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(14)  /* 'String' object, array index exotic behavior */
-#define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(15)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
-#define DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC        DUK_HEAPHDR_USER_FLAG(16)  /* Duktape/C (nativefunction) object, exotic 'length' */
-#define DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ      DUK_HEAPHDR_USER_FLAG(17)  /* 'Buffer' object, array index exotic behavior, virtual 'length' */
-#define DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ       DUK_HEAPHDR_USER_FLAG(18)  /* 'Proxy' object */
-/* bit 19 unused */
+#define DUK_HOBJECT_FLAG_NOTAIL                DUK_HEAPHDR_USER_FLAG(9)   /* function: function must not be tailcalled */
+#define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(10)  /* function: create new environment when called (see duk_hcompiledfunction) */
+#define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(11)  /* function: create binding for func name (function templates only, used for named function expressions) */
+#define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(12)  /* function: create an arguments object on function call */
+#define DUK_HOBJECT_FLAG_ENVRECCLOSED          DUK_HEAPHDR_USER_FLAG(13)  /* envrec: (declarative) record is closed */
+#define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(14)  /* 'Array' object, array length and index exotic behavior */
+#define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(15)  /* 'String' object, array index exotic behavior */
+#define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(16)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
+#define DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC        DUK_HEAPHDR_USER_FLAG(17)  /* Duktape/C (nativefunction) object, exotic 'length' */
+#define DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ      DUK_HEAPHDR_USER_FLAG(18)  /* 'Buffer' object, array index exotic behavior, virtual 'length' */
+#define DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ       DUK_HEAPHDR_USER_FLAG(19)  /* 'Proxy' object */
 /* bit 20 unused */
 
 #define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(21)
@@ -126,6 +126,7 @@
 #define DUK_HOBJECT_HAS_THREAD(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_HAS_ARRAY_PART(h)          DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_HAS_STRICT(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
+#define DUK_HOBJECT_HAS_NOTAIL(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NOTAIL)
 #define DUK_HOBJECT_HAS_NEWENV(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_HAS_NAMEBINDING(h)         DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_HAS_CREATEARGS(h)          DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
@@ -145,6 +146,7 @@
 #define DUK_HOBJECT_SET_THREAD(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_SET_ARRAY_PART(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_SET_STRICT(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
+#define DUK_HOBJECT_SET_NOTAIL(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NOTAIL)
 #define DUK_HOBJECT_SET_NEWENV(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_SET_NAMEBINDING(h)         DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_SET_CREATEARGS(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
@@ -164,6 +166,7 @@
 #define DUK_HOBJECT_CLEAR_THREAD(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_CLEAR_ARRAY_PART(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_CLEAR_STRICT(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
+#define DUK_HOBJECT_CLEAR_NOTAIL(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NOTAIL)
 #define DUK_HOBJECT_CLEAR_NEWENV(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_CLEAR_NAMEBINDING(h)       DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_CLEAR_CREATEARGS(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
@@ -699,7 +702,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)
 void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
-duk_uint_fast32_t duk_hobject_pc2line_query(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc);
+duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
 /* misc */	

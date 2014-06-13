@@ -1775,7 +1775,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					DUK__INTERNAL_ERROR("MPUTOBJ key not a string");
 				}
 				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
-				duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_WEC);  /* -> [... obj] */
+				duk_def_prop_wec(ctx, -3);               /* -> [... obj] */
 
 				count--;
 				idx += 2;
@@ -1845,8 +1845,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * and finally set 'length' manually in the end (as already happens now).
 				 */
 
-				duk_push_tval(ctx, DUK__REGP(idx));                              /* -> [... obj value] */
-				duk_def_prop_index(ctx, -2, arr_idx, DUK_PROPDESC_FLAGS_WEC);    /* -> [... obj] */
+				duk_push_tval(ctx, DUK__REGP(idx));          /* -> [... obj value] */
+				duk_def_prop_index_wec(ctx, -2, arr_idx);    /* -> [... obj] */
 
 				count--;
 				idx++;

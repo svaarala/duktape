@@ -1,3 +1,54 @@
 /*
  *  API specific CSS rules
  */
+
+@media screen and (min-width:801px) {
+	/* On wide screens, slide API entry section headings to the side
+	 * to make the entries more compact.
+	 *
+	 * Specificity must override normal section heading rules.
+	 *
+	 * The challenge here is to keep the section heading vertically
+	 * aligned with the content on the right.  To do this, we need
+	 * to avoid top margins in the elements on the right (paragraphs,
+	 * stacks, <pre>-blocks) which is a bit hackish.  The api-part
+	 * div margins are then used to provide spacing between the API
+	 * documentation parts.
+	 */
+
+	.api-call h2.api-proto,
+	.api-call h2.api-stack,
+	.api-call h2.api-summary,
+	.api-call h2.api-example,
+	.api-call h2.api-seealso {
+		position: absolute;
+		left: 10px;
+		margin: 0;
+		padding: 0 0 0 0;
+		width: 200px;
+		text-align: right;
+		height: 0;
+		overflow: visible;
+		color: #ccccdd;
+		font-size: 100%;
+	}
+
+	.api-part {
+		margin: 3ex 0 3ex 0;
+	}
+
+	.content .api-call .stack-wrapper {
+		margin-top: 0;
+		margin-bottom: 2ex;
+	}
+	.content .api-call .stack {
+		margin-top: 0;
+	}
+
+	.content .api-call p {
+		margin-top: 0;
+	}
+	.content .api-call pre {
+		margin-top: 0;
+	}
+}

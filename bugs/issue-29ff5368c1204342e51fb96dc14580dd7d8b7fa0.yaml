@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: format strings for duktape types"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-10 13:18:38.039863 Z
+references: []
+
+id: 29ff5368c1204342e51fb96dc14580dd7d8b7fa0
+log_events: 
+- - 2014-06-10 13:18:38.216343 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

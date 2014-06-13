@@ -112,53 +112,10 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	return 1;
 }
 
-#if defined(DUK_USE_PC2LINE)
-duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_activation *act_caller;
-	duk_hobject *h_func;
-	duk_hbuffer_fixed *pc2line;
-	duk_uint_fast32_t pc;
-	duk_uint_fast32_t line;
-
-	if (thr->callstack_top < 2) {
-		return 0;
-	}
-	act_caller = thr->callstack + thr->callstack_top - 2;
-
-	h_func = act_caller->func;
-	DUK_ASSERT(h_func != NULL);
-	if (!DUK_HOBJECT_HAS_COMPILEDFUNCTION(h_func)) {
-		return 0;
-	}
-
-	/* FIXME: shared helper */
-	duk_push_hobject(ctx, h_func);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_PC2LINE);
-	if (duk_is_buffer(ctx, -1)) {
-		pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
-		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
-		pc = (duk_uint_fast32_t) act_caller->pc;
-		line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
-	} else {
-		line = 0;
-	}
-
-	duk_push_int(ctx, (int) line);  /* FIXME: typing */
-	return 1;
-}
-#else  /* DUK_USE_PC2LINE */
-duk_ret_t duk_bi_duktape_object_line(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return 0;
-}
-#endif  /* DUK_USE_PC2LINE */
-
 duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *h_func;
-	duk_hbuffer_fixed *pc2line;
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 	duk_int_t level;
@@ -182,17 +139,7 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	pc = (duk_uint_fast32_t) act->pc;
 	duk_push_int(ctx, (int) pc);  /* FIXME: typing */
 
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE);
-	if (duk_is_buffer(ctx, -1)) {
-		pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
-		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
-		pc = (duk_uint_fast32_t) act->pc;
-		line = duk_hobject_pc2line_query(pc2line, (duk_uint_fast32_t) pc);
-	} else {
-		line = 0;
-	}
-	duk_pop(ctx);
-
+	line = duk_hobject_pc2line_query(ctx, -2, pc);
 	duk_push_int(ctx, (int) line);  /* FIXME: typing */
 
 	/* Providing access to e.g. act->lex_env would be dangerous: these
@@ -204,9 +151,9 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	/* [ level obj func pc line ] */
 
 	/* FIXME: version specific array format instead? */
-	duk_def_prop_stridx(ctx, -4, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WEC);
-	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PC, DUK_PROPDESC_FLAGS_WEC);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LC_FUNCTION, DUK_PROPDESC_FLAGS_WEC);
+	duk_def_prop_stridx_wec(ctx, -4, DUK_STRIDX_LINE_NUMBER);
+	duk_def_prop_stridx_wec(ctx, -3, DUK_STRIDX_PC);
+	duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_LC_FUNCTION);
 	return 1;
 }
 

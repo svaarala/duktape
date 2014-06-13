@@ -1008,3 +1008,8 @@ bcc
 BCC is not a realistic compilation target at the moment but serves as a nice
 "torture target".  Various issues have been documented above in portability
 issues.
+
+Resources
+=========
+
+* http://graphics.stanford.edu/~seander/bithacks.html

@@ -15,8 +15,8 @@
  */
 #define DUK_ERRCODE_FLAG_NOBLAME_FILELINE  (1 << 24)
 
-int duk_check_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
-void duk_require_valstack_resize(duk_context *ctx, unsigned int min_new_size, int allow_shrink);
+int duk_check_valstack_resize(duk_context *ctx, duk_size_t min_new_size, int allow_shrink);
+void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, int allow_shrink);
 
 int duk_check_stack_raw(duk_context *ctx, unsigned int extra);
 void duk_require_stack_raw(duk_context *ctx, unsigned int extra);
@@ -31,7 +31,9 @@ void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the curre
 duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx);       /* duk_push_this() + CheckObjectCoercible() + duk_to_object() */
 duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_push_this() + CheckObjectCoercible() + duk_to_string() */
 
-void duk_push_u32(duk_context *ctx, duk_uint32_t val);
+/* duk_push_uint() is guaranteed to support at least unsigned 32-bit range */
+#define duk_push_u32(ctx,val) \
+	duk_push_uint((ctx),(duk_uint_t) (val))
 
 /* internal helper for looking up a tagged type */
 #define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1 << 24)
@@ -103,8 +105,20 @@ void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags);  /* [key val
 void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags);  /* [val] -> [] */
 void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [val] -> [] */
 void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int stridx, unsigned int builtin_idx, int desc_flags);  /* [] -> [] */
-
 void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [] -> [] */
+
+/* These are macros for now, but could be separate functions to reduce code
+ * footprint (check call site count before refactoring).
+ */
+#define duk_def_prop_wec(ctx,obj_index) \
+	duk_def_prop((ctx), (obj_index), DUK_PROPDESC_FLAGS_WEC)
+#define duk_def_prop_index_wec(ctx,obj_index,arr_index) \
+	duk_def_prop_index((ctx), (obj_index), (arr_index), DUK_PROPDESC_FLAGS_WEC)
+#define duk_def_prop_stridx_wec(ctx,obj_index,stridx) \
+	duk_def_prop_stridx((ctx), (obj_index), (stridx), DUK_PROPDESC_FLAGS_WEC)
+
+/* Set object 'length'. */
+void duk_set_length(duk_context *ctx, duk_idx_t index, duk_size_t length);
 
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */
 

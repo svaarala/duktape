@@ -56,7 +56,6 @@ does not block.</p>
 <tr><td class="propname">enc</td><td>Encode a value (hex, base-64, JX, JC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
 <tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JX, JC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
 <tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
-<tr><td class="propname">line</td><td>Get current line number.</td></tr>
 <tr><td class="propname">act</td><td>Get information about call stack entry.</td></tr>
 <tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname">compact</td><td>Compact the memory allocated for a value (object).</td></tr>
@@ -380,18 +379,6 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 </table>
 </div>
 
-<h3>line()</h3>
-
-<p>Get the line number of the call site.  This may be useful for debugging, e.g.:</p>
-<pre class="ecmascript-code">
-log.info('reached line:', Duktape.line());
-</pre>
-
-<div class="note">
-As <code>Duktape.act()</code> provides more information, this function
-will probably be removed.
-</div>
-
 <h3>act()</h3>
 
 <p>Get information about a call stack entry.  Takes a single number argument
@@ -426,7 +413,12 @@ which provides e.g. the function name.</p>
 <code>Duktape.act()</code>:</p>
 <pre class="ecmascript-code">
 function getCurrentLine() {
-    // indices: -1 = Duktape.act, -2 = getCurrentLine, -3 = caller
+    'use duk notail';
+
+    /* Tail calls are prevented to ensure calling activation exists.
+     * Call stack indices: -1 = Duktape.act, -2 = getCurrentLine, -3 = caller
+     */
+
     var a = Duktape.act(-3) || {};
     return a.lineNumber;
 }

@@ -320,7 +320,7 @@ static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 		} else {
 			tz = 0;
 		}
-		tmp = (int64_t) ty - (int64_t) tz + tmp;
+		tmp = (duk_int64_t) ty - (duk_int64_t) tz + tmp;
 		x->v[i] = (duk_uint32_t) (tmp & 0xffffffffUL);
 		tmp = tmp >> 32;  /* 0 or -1 */
 	}
@@ -1399,7 +1399,11 @@ void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t
 	duk_uint32_t t, v;
 
 	DUK_ASSERT(nc_ctx->count == 53 + 1);
-	DUK_ASSERT(nc_ctx->digits[0] == 1);  /* zero handled by caller */
+
+	/* Sometimes this assert is not true right now; it will be true after
+	 * rounding.  See: test-bug-numconv-mantissa-assert.js.
+	 */
+	DUK_ASSERT_DISABLE(nc_ctx->digits[0] == 1);  /* zero handled by caller */
 
 	/* Should not be required because the code below always sets both high
 	 * and low parts, but at least gcc-4.4.5 fails to deduce this correctly

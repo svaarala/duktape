@@ -35,9 +35,9 @@ static duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc)
 	/* signed integer encoding needed to work with UTF-8 */
 	t = (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 	if (t & 1) {
-		return -(t >> 1);
+		return -((duk_int32_t) (t >> 1));
 	} else {
-		return (t >> 1);
+		return (duk_int32_t) (t >> 1);
 	}
 }
 
@@ -900,10 +900,10 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_number(ctx, (double) char_offset);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INDEX, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INDEX);
 
 		duk_dup(ctx, -4);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INPUT, DUK_PROPDESC_FLAGS_WEC);
+		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INPUT);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {
 			/* Captures which are undefined have NULL pointers and are returned

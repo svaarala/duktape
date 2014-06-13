@@ -677,6 +677,11 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		DUK_HOBJECT_SET_STRICT((duk_hobject *) h_res);
 	}
 
+	if (func->is_notail) {
+		DUK_DDD(DUK_DDDPRINT("function is notail -> set NOTAIL"));
+		DUK_HOBJECT_SET_NOTAIL((duk_hobject *) h_res);
+	}
+
 	/*
 	 *  Build function fixed size 'data' buffer, which contains bytecode,
 	 *  constants, and inner function references.
@@ -1004,6 +1009,14 @@ static void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr ins) {
 	instr.ins = ins;
 #if defined(DUK_USE_PC2LINE)
 	instr.line = line;
+#endif
+
+	/* Limit checks for bytecode byte size and line number. */
+#if defined(DUK_USE_ESBC_LIMITS)
+	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER ||
+	                 DUK_HBUFFER_GET_SIZE((duk_hbuffer *) h) > DUK_USE_ESBC_MAX_BYTES)) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, "bytecode limit");
+	}
 #endif
 
 	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
@@ -5877,6 +5890,8 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 				/* XXX: how to compare 'use strict' most compactly?
 				 * We don't necessarily want to add it to the built-ins
 				 * because it's not needed at run time.
+				 * The length comparisons are present to handle
+				 * strings like "use strict\u0000foo" as required.
 				 */
 
 				if (DUK_HSTRING_GET_BYTELEN(h_dir) == 10 &&
@@ -5884,6 +5899,11 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, int all
 					DUK_DDD(DUK_DDDPRINT("use strict directive detected: strict flag %d -> %d",
 					                     comp_ctx->curr_func.is_strict, 1));
 					comp_ctx->curr_func.is_strict = 1;
+				} else if (DUK_HSTRING_GET_BYTELEN(h_dir) == 14 &&
+				           DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use duk notail", 14) == 0) {
+					DUK_DDD(DUK_DDDPRINT("use duk notail directive detected: notail flag %d -> %d",
+					                     comp_ctx->curr_func.is_notail, 1));
+					comp_ctx->curr_func.is_notail = 1;
 				} else {
 					DUK_DD(DUK_DDPRINT("unknown directive: '%!O', ignoring but not terminating "
 					                   "directive prologue", (duk_hobject *) h_dir));
@@ -6814,9 +6834,10 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 	/* inherit initial strictness from parent */
 	comp_ctx->curr_func.is_strict = old_func.is_strict;
 
+	DUK_ASSERT(comp_ctx->curr_func.is_notail == 0);
 	comp_ctx->curr_func.is_function = 1;
-	comp_ctx->curr_func.is_eval = 0;
-	comp_ctx->curr_func.is_global = 0;
+	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
+	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
 	comp_ctx->curr_func.is_setget = is_setget;
 	comp_ctx->curr_func.is_decl = is_decl;
 

@@ -236,6 +236,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 /* MSVC */
 #if defined(_MSC_VER)
+/* MSVC preprocessor defines: http://msdn.microsoft.com/en-us/library/b0084kay.aspx
+ * _MSC_FULL_VER includes the build number, but it has at least two formats, see e.g.
+ * BOOST_MSVC_FULL_VER in http://www.boost.org/doc/libs/1_52_0/boost/config/compiler/visualc.hpp
+ */
 #define DUK_F_MSVC
 #endif
 
@@ -315,6 +319,35 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* See: /opt/qnx650/target/qnx6/usr/include/sys/platform.h */
 #define _XOPEN_SOURCE    600
 #define _POSIX_C_SOURCE  200112L
+#endif
+
+#undef DUK_F_MSVC_CRT_SECURE
+#if defined(DUK_F_WINDOWS) && defined(_MSC_VER)
+/* http://msdn.microsoft.com/en-us/library/8ef0s5kh.aspx
+ * http://msdn.microsoft.com/en-us/library/wd3wzwts.aspx
+ * Seem to be available since VS2005.
+ */
+#if (_MSC_VER >= 1400)
+/* VS2005+, secure CRT functions are preferred.  Windows Store applications
+ * (and probably others) should use these.
+ */
+#define DUK_F_MSVC_CRT_SECURE
+#endif
+#if (_MSC_VER < 1700)
+/* VS2012+ has stdint.h, < VS2012 does not (but it's available for download). */
+#define DUK_F_NO_STDINT_H
+#endif
+/* Initial fix: disable secure CRT related warnings when compiling Duktape
+ * itself (must be defined before including Windows headers).  Don't define
+ * for user code including duktape.h.
+ */
+#if defined(DUK_COMPILING_DUKTAPE)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#endif  /* DUK_F_WINDOWS && _MSC_VER */
+
+#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+#define DUK_F_NO_STDINT_H
 #endif
 
 #if defined(__APPLE__)
@@ -456,7 +489,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <stdarg.h>  /* varargs */
 #include <setjmp.h>
 #include <stddef.h>  /* e.g. ptrdiff_t */
-#if defined(DUK_F_TOS) || defined(DUK_F_BCC)
+#if defined(DUK_F_NO_STDINT_H)
 /* stdint.h not available */
 #else
 /* technically C99 (C++11) but found in many systems */
@@ -465,8 +498,8 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <math.h>
 
 /*
- *  Detection for specific libc variants (like uclibc), depends on the
- *  #includes above.
+ *  Detection for specific libc variants (like uclibc) and other libc specific
+ *  features.  Potentially depends on the #includes above.
  */
 
 #if defined(__UCLIBC__)
@@ -1440,6 +1473,7 @@ typedef FILE duk_file;
 #define DUK_PRINTF       printf
 #define DUK_FPRINTF      fprintf
 #define DUK_SPRINTF      sprintf
+
 #if defined(DUK_F_MSVC)
 /* _snprintf() does NOT NUL terminate on truncation, but Duktape code never
  * assumes that.
@@ -1449,8 +1483,20 @@ typedef FILE duk_file;
 #else
 #define DUK_SNPRINTF     snprintf
 #endif
+
 #define DUK_VSPRINTF     vsprintf
+
+#if defined(DUK_F_MSVC)
+#if (_MSC_VER < 1600)
+/* Older MSVC version are missing vsnprintf() but have _vsnprintf(). */
+#define DUK_VSNPRINTF    _vsnprintf
+#else
 #define DUK_VSNPRINTF    vsnprintf
+#endif
+#else
+#define DUK_VSNPRINTF    vsnprintf
+#endif  /* DUK_F_MSVC */
+
 #define DUK_SSCANF       sscanf
 #define DUK_VSSCANF      vsscanf
 #define DUK_FOPEN        fopen
@@ -1962,6 +2008,20 @@ typedef FILE duk_file;
 #else
 #undef DUK_USE_DEEP_C_STACK
 #endif
+
+/*
+ *  Ecmascript compiler
+ */
+
+/* Ensure final bytecode never exceeds a certain byte size and never uses
+ * line numbers above a certain limit.  This ensures that there is no need
+ * to deal with unbounded ranges in e.g. pc2line data structures.  For now,
+ * limits are set so that signed 32-bit values can represent line number
+ * and byte offset with room to spare.
+ */
+#define DUK_USE_ESBC_LIMITS
+#define DUK_USE_ESBC_MAX_LINENUMBER  0x7fff0000L
+#define DUK_USE_ESBC_MAX_BYTES       0x7fff0000L
 
 /*
  *  User panic handler, panic exit behavior for default panic handler

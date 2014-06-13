@@ -593,7 +593,6 @@ duk_string_list = [
 	mkstr("env", custom=True),
 	mkstr("version", custom=True),
 	mkstr("info", custom=True),
-	mkstr("line", custom=True),
 	mkstr("act", custom=True),
 	mkstr("gc", custom=True),
 	mkstr("fin", custom=True),
