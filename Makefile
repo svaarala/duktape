@@ -25,6 +25,10 @@
 #  (--depth 1) whenever possible.  With build-critical resources, use a
 #  specific version instead of "trunk".
 #
+#  The makefile should work with -jN except for the 'clean' target, use:
+#
+#    $ make clean; make -j4
+#
 
 # A few commands which may need to be edited.  NodeJS is sometimes found
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
@@ -630,9 +634,6 @@ UglifyJS:
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS.git
 
-.PHONY: UglifyJS2_setup
-UglifyJS2_setup: UglifyJS2 UglifyJS2/node_modules
-
 UglifyJS2:
 	# https://github.com/mishoo/UglifyJS2
 	# Use a specific release because UglifyJS2 is used in building Duktape
@@ -647,7 +648,6 @@ UglifyJS2:
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
 
-UglifyJS2/node_modules: UglifyJS2
 	cd UglifyJS2; npm install; cd -
 
 cloc-1.60.pl:
@@ -719,7 +719,10 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-dist:	debuglogcheck UglifyJS UglifyJS2_setup compiler.jar cloc-1.60.pl
+# XXX: want to run debuglogcheck when dist gets built, but don't want to depend on it.
+# XXX: make prints a harmless warning related to the sub-make.
+dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
+	@make debuglogcheck
 	sh util/make_dist.sh
 
 .PHONY:	dist-src
