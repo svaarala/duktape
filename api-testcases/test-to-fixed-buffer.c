@@ -1,17 +1,27 @@
 /*===
 *** test_1 (duk_safe_call)
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
+q is NULL: 0
+sz=16
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
+r is NULL: 0
+q == r: 1
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
 final top: 1
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
+q is NULL: 0
+p == q: 1
+sz=16
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
 final top: 1
 ==> rc=0, result='undefined'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected tag 7'
+q is NULL: 0
+sz=3
+final top: 1
+==> rc=0, result='undefined'
 *** test_4 (duk_safe_call)
 ==> rc=1, result='Error: invalid index'
 *** test_5 (duk_safe_call)
@@ -33,6 +43,8 @@ void dump_buffer(duk_context *ctx) {
 /* dynamic buffer */
 int test_1(duk_context *ctx) {
 	unsigned char *p;
+	void *q, *r;
+	duk_size_t sz;
 
 	duk_set_top(ctx, 0);
 
@@ -41,11 +53,16 @@ int test_1(duk_context *ctx) {
 	p[15] = 2;
 	dump_buffer(ctx);
 
-	duk_to_fixed_buffer(ctx, -1);
+	sz = (duk_size_t) 1234;
+	q = duk_to_fixed_buffer(ctx, -1, &sz);
+	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("sz=%d\n", (int) sz);
 	dump_buffer(ctx);
 
 	/* second time should be a no-op */
-	duk_to_fixed_buffer(ctx, -1);
+	r = duk_to_fixed_buffer(ctx, -1, NULL);
+	printf("r is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("q == r: %d\n", (q == r ? 1 : 0));
 	dump_buffer(ctx);
 
 	printf("final top: %d\n", duk_get_top(ctx));
@@ -55,6 +72,8 @@ int test_1(duk_context *ctx) {
 /* fixed buffer */
 int test_2(duk_context *ctx) {
 	unsigned char *p;
+	void *q;
+	duk_size_t sz;
 
 	duk_set_top(ctx, 0);
 
@@ -63,7 +82,10 @@ int test_2(duk_context *ctx) {
 	p[15] = 2;
 	dump_buffer(ctx);
 
-	duk_to_fixed_buffer(ctx, -1);
+	q = duk_to_fixed_buffer(ctx, -1, &sz);
+	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("p == q: %d\n", (p == q ? 1 : 0));
+	printf("sz=%d\n", (int) sz);
 	dump_buffer(ctx);
 
 	printf("final top: %d\n", duk_get_top(ctx));
@@ -72,10 +94,15 @@ int test_2(duk_context *ctx) {
 
 /* non-buffer */
 int test_3(duk_context *ctx) {
+	void *q;
+	duk_size_t sz;
+
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
 
-	duk_to_fixed_buffer(ctx, -1);
+	q = duk_to_fixed_buffer(ctx, -1, &sz);
+	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("sz=%d\n", (int) sz);
 
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
@@ -83,9 +110,14 @@ int test_3(duk_context *ctx) {
 
 /* invalid index */
 int test_4(duk_context *ctx) {
+	void *q;
+	duk_size_t sz;
+
 	duk_set_top(ctx, 0);
 
-	duk_to_fixed_buffer(ctx, 3);
+	q = duk_to_fixed_buffer(ctx, 3, &sz);
+	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("sz=%d\n", (int) sz);
 
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
@@ -93,9 +125,14 @@ int test_4(duk_context *ctx) {
 
 /* DUK_INVALID_INDEX */
 int test_5(duk_context *ctx) {
+	void *q;
+	duk_size_t sz;
+
 	duk_set_top(ctx, 0);
 
-	duk_to_fixed_buffer(ctx, DUK_INVALID_INDEX);
+	q = duk_to_fixed_buffer(ctx, DUK_INVALID_INDEX, &sz);
+	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
+	printf("sz=%d\n", (int) sz);
 
 	printf("final top: %d\n", duk_get_top(ctx));
 	return 0;
