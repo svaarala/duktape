@@ -623,6 +623,7 @@ void duk_insert(duk_context *ctx, int to_index) {
 	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d", to_index, p, q, nbytes));
 	if (nbytes > 0) {
 		DUK_TVAL_SET_TVAL(&tv, q);
+		DUK_ASSERT(nbytes > 0);
 		DUK_MEMMOVE((void *) (p + 1), (void *) p, nbytes);
 		DUK_TVAL_SET_TVAL(p, &tv);
 	} else {
@@ -674,10 +675,10 @@ void duk_remove(duk_context *ctx, int index) {
 
 	DUK_ASSERT(q >= p);
 
-	/*              nbytes
+	/*              nbytes            zero size case
 	 *           <--------->
-	 *    [ ... | p | x | x | q ]
-	 * => [ ... | x | x | q ]
+	 *    [ ... | p | x | x | q ]     [ ... | p==q ]
+	 * => [ ... | x | x | q ]         [ ... ]
 	 */
 
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -686,9 +687,8 @@ void duk_remove(duk_context *ctx, int index) {
 #endif
 
 	nbytes = (size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
-	if (nbytes > 0) {
-		DUK_MEMMOVE(p, p + 1, nbytes);
-	}
+	DUK_MEMMOVE(p, p + 1, nbytes);  /* zero size not an issue: pointers are valid */
+
 	DUK_TVAL_SET_UNDEFINED_UNUSED(q);
 	thr->valstack_top--;
 
@@ -721,6 +721,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, unsigned int count) {
 	}
 
 	/* copy values (no overlap even if ctx == from_ctx) */
+	DUK_ASSERT(nbytes > 0);
 	DUK_MEMCPY((void *) thr->valstack_top, src, nbytes);
 
 	/* incref them */
@@ -1789,8 +1790,8 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 		 * asserted above.
 		 */
 		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
-		DUK_ASSERT(buf != NULL);
-		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));
+		DUK_ASSERT(buf != NULL);  /* true even for zero-size fixed buffers */
+		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));  /* zero size not an issue: pointers are valid */
 		duk_replace(ctx, index);
 	}
 
