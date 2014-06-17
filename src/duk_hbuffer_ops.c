@@ -140,12 +140,13 @@ void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	if (offset < DUK_HBUFFER_GET_SIZE(buf)) {
 		/* not an append */
 
-		DUK_ASSERT(DUK_HBUFFER_GET_SIZE(buf) - offset > 0);  /* not a zero byte memmove */
+		DUK_ASSERT(DUK_HBUFFER_GET_SIZE(buf) - offset > 0);
 		DUK_MEMMOVE((void *) (p + offset + length),
 		            (void *) (p + offset),
 		            DUK_HBUFFER_GET_SIZE(buf) - offset);
 	}
 
+	DUK_ASSERT(length > 0);
 	DUK_MEMCPY((void *) (p + offset),
 	           data,
 	           length);
@@ -385,16 +386,18 @@ void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 
 	if (end_offset < DUK_HBUFFER_GET_SIZE(buf)) {
 		/* not strictly from end of buffer; need to shuffle data */
+		DUK_ASSERT(DUK_HBUFFER_GET_SIZE(buf) - end_offset > 0);
 		DUK_MEMMOVE(p + offset,
 		            p + end_offset,
-	                    DUK_HBUFFER_GET_SIZE(buf) - end_offset);  /* always > 0 */
+		            DUK_HBUFFER_GET_SIZE(buf) - end_offset);
 	}
 
 	/* Here we want to zero data even with automatic buffer zeroing
 	 * disabled as we depend on this internally too.
 	 */
+	DUK_ASSERT(length > 0);
 	DUK_MEMZERO(p + DUK_HBUFFER_GET_SIZE(buf) - length,
-	            length);  /* always > 0 */
+	            length);
 
 	buf->size -= length;
 
@@ -429,6 +432,7 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
 	p = (char *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf);
+	DUK_ASSERT(p != NULL);  /* must be the case because length > 0, and buffer has been resized if necessary */
 
 	/*
 	 *  src_offset and dst_offset refer to the state of the buffer
@@ -442,11 +446,9 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t
 
 	/* create a hole for the insert */
 	len = DUK_HBUFFER_GET_SIZE(buf) - dst_offset;
-	if (len > 0) {
-		DUK_MEMMOVE(p + dst_offset + length,
-		            p + dst_offset,
-		            len);
-	}
+	DUK_MEMMOVE(p + dst_offset + length,
+	            p + dst_offset,
+	            len);  /* zero size is not an issue: pointers are valid */
 
 	if (src_offset < dst_offset) {
 		if (src_end_offset <= dst_offset) {

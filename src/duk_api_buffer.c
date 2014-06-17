@@ -38,8 +38,13 @@ void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 
 	size = DUK_HBUFFER_GET_SIZE(h_src);
 	data = (duk_uint8_t *) duk_push_fixed_buffer(ctx, size);
-	if (size > 0U) {
-		DUK_ASSERT(data != NULL);
+	DUK_ASSERT(data != NULL);  /* true even for zero size fixed buffers */
+	if (size > 0) {
+		/* Must check for zero size explicitly: a zero-size DUK_MEMCPY()
+		 * requires valid data pointers.  Although 'data' is a valid pointer,
+		 * DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_src) might not be (it may
+		 * be NULL.
+		 */
 		DUK_MEMCPY(data, DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_src), size);
 	}
 
