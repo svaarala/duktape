@@ -1768,44 +1768,42 @@ duk_hstring *duk_to_hstring(duk_context *ctx, int index) {
 
 void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 	duk_hbuffer *h_buf;
+	const duk_uint8_t *src_data;
+	duk_size_t src_size;
+	duk_uint8_t *dst_data;
 
 	index = duk_require_normalize_index(ctx, index);
 
-	if (duk_is_buffer(ctx, index)) {
+	h_buf = duk_get_hbuffer(ctx, index);
+	if (h_buf != NULL) {
 		/* Buffer is kept as is: note that fixed/dynamic nature of
 		 * the buffer is not changed.
 		 */
+
+		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_buf);
+		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
+		dst_data = (duk_uint8_t *) src_data;  /* no copy */
 	} else {
-		/* Non-buffer value is first ToString() coerced, then converted to
-		 * a fixed size buffer.
+		/* Non-buffer value is first ToString() coerced, then converted
+		 * to a fixed size buffer.
 		 */
-		duk_hstring *h_str;
-		void *buf;
 
-		duk_to_string(ctx, index);
-		h_str = duk_get_hstring(ctx, index);
-		DUK_ASSERT(h_str != NULL);
+		src_data = (const duk_uint8_t *) duk_to_lstring(ctx, index, &src_size);
+		dst_data = NULL;  /* need to create a new buffer */
+	}
 
-		/* SCANBUILD: NULL pointer dereference warning, never triggered,
-		 * asserted above.
-		 */
-		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
-		DUK_ASSERT(buf != NULL);  /* true even for zero-size fixed buffers */
-		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));  /* zero size not an issue: pointers are valid */
+	if (dst_data == NULL) {
+		dst_data = duk_push_fixed_buffer(ctx, src_size);
+		DUK_ASSERT(dst_data != NULL);  /* true even for zero-size fixed buffers */
+		DUK_ASSERT(src_data != NULL);  /* true because src_data comes from string coercion */
+		DUK_MEMCPY(dst_data, src_data, src_size);  /* zero size not an issue: pointers are valid */
 		duk_replace(ctx, index);
 	}
 
-	h_buf = duk_get_hbuffer(ctx, index);
-	DUK_ASSERT(h_buf != NULL);
-	/* SCANBUILD: scan-build produces a NULL pointer dereference warning
-	 * below; it never actually triggers because h_buf is actually never
-	 * NULL.
-	 */
-
 	if (out_size) {
-		*out_size = DUK_HBUFFER_GET_SIZE(h_buf);
+		*out_size = src_size;
 	}
-	return DUK_HBUFFER_GET_DATA_PTR(h_buf);
+	return dst_data;
 }
 
 void *duk_to_pointer(duk_context *ctx, int index) {
