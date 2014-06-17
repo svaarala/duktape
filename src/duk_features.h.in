@@ -1451,6 +1451,17 @@ extern double duk_computed_nan;
  *
  *    http://stackoverflow.com/questions/5243012/is-it-guaranteed-to-be-safe-to-perform-memcpy0-0-0
  *    http://lists.cs.uiuc.edu/pipermail/llvmdev/2007-October/011065.html
+ *
+ *  Not sure what's the required behavior when a pointer points just past the
+ *  end of a buffer, which often happens in practice (e.g. zero size memmoves).
+ *  For example, if allocation size is 3, the following pointer would not
+ *  technically point to a valid memory byte:
+ *
+ *    <-- alloc -->
+ *    | 0 | 1 | 2 | .....
+ *                  ^-- p=3, points after last valid byte (2)
+ *
+ *  If this is a practical issue, wrappers are again needed.
  */
 
 typedef FILE duk_file;
