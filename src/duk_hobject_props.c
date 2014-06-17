@@ -678,7 +678,7 @@ static void duk__realloc_props(duk_hthread *thr,
 			 * when copy size is zero.
 			 */
 			DUK_ASSERT(obj->p != NULL);
-			DUK_ASSERT(obj_>a_size > 0);
+			DUK_ASSERT(obj->a_size > 0);
 			DUK_MEMCPY((void *) new_a, (void *) DUK_HOBJECT_A_GET_BASE(obj), sizeof(duk_tval) * obj->a_size);
 		}
 
