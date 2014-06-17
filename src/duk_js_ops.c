@@ -764,6 +764,35 @@ duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	duk_small_int_t rc;
 	duk_bool_t retval;
 
+	/* Very often compared values are plain numbers, so handle that case
+	 * as the fast path without any stack operations and such.
+	 */
+#if 1
+	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
+		d1 = DUK_TVAL_GET_NUMBER(tv_x);
+		d2 = DUK_TVAL_GET_NUMBER(tv_y);
+		c1 = fpclassify(d1);
+		c2 = fpclassify(d2);
+
+		if (c1 == FP_NORMAL && c2 == FP_NORMAL) {
+			/* FIXME: this is a very narrow check, and doesn't cover
+			 * zeroes, subnormals, infinities, which compare normally.
+			 */
+
+			if (d1 < d2) {
+				/* 'lt is true' */
+				retval = 1;
+			} else {
+				retval = 0;
+			}
+			if (flags & DUK_COMPARE_FLAG_NEGATE) {
+				retval ^= 1;
+			}
+			return retval;
+		}
+	}
+#endif
+
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
 
