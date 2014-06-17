@@ -29,3 +29,7 @@ printf("coerced data at %p, size %u\n", ptr, (unsigned int) sz);
 =tags
 stack
 buffer
+
+=seealso
+duk_to_fixed_buffer
+duk_to_dynamic_buffer

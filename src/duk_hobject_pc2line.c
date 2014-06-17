@@ -115,7 +115,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 	new_size = (duk_size_t) curr_offset;
 	duk_hbuffer_resize(thr, h_buf, new_size, new_size);
 
-	duk_to_fixed_buffer(ctx, -1);
+	(void) duk_to_fixed_buffer(ctx, -1, NULL);
 
 	DUK_DDD(DUK_DDDPRINT("final pc2line data: pc_limit=%d, length=%d, %lf bits/opcode --> %!ixT",
 	                     (int) length, (int) new_size, (double) new_size * 8.0 / (double) length,

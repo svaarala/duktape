@@ -325,6 +325,9 @@ Planned
 
 * Add convenience API calls: duk_push_uint(), duk_get_global_string()
 
+* Align duk_to_fixed_buffer() arguments and return value with duk_to_buffer()
+  (this is an API incompatible change); add duk_to_dynamic_buffer()
+
 * Remove Duktape.line() as redundant to Duktape.act()
 
 * Serialize negative zero as '-0' in JSONX and JSONC

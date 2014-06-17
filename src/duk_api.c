@@ -1766,46 +1766,68 @@ duk_hstring *duk_to_hstring(duk_context *ctx, int index) {
 	return ret;
 }
 
-void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
+static void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_small_int_t buf_dynamic, duk_small_int_t buf_dontcare) {
 	duk_hbuffer *h_buf;
+	const duk_uint8_t *src_data;
+	duk_size_t src_size;
+	duk_uint8_t *dst_data;
 
 	index = duk_require_normalize_index(ctx, index);
 
-	if (duk_is_buffer(ctx, index)) {
+	h_buf = duk_get_hbuffer(ctx, index);
+	if (h_buf != NULL) {
 		/* Buffer is kept as is: note that fixed/dynamic nature of
 		 * the buffer is not changed.
 		 */
+		duk_small_int_t tmp;
+
+		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_buf);
+		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
+
+		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? 1 : 0);
+		if (((tmp ^ buf_dynamic) == 0) || buf_dontcare) {
+			/* Note: src_data may be NULL if input is a zero-size
+			 * dynamic buffer.
+			 */
+			dst_data = (duk_uint8_t *) src_data;
+			goto skip_copy;
+		}
 	} else {
-		/* Non-buffer value is first ToString() coerced, then converted to
-		 * a fixed size buffer.
+		/* Non-buffer value is first ToString() coerced, then converted
+		 * to a fixed size buffer.
 		 */
-		duk_hstring *h_str;
-		void *buf;
 
-		duk_to_string(ctx, index);
-		h_str = duk_get_hstring(ctx, index);
-		DUK_ASSERT(h_str != NULL);
-
-		/* SCANBUILD: NULL pointer dereference warning, never triggered,
-		 * asserted above.
-		 */
-		buf = duk_push_fixed_buffer(ctx, DUK_HSTRING_GET_BYTELEN(h_str));
-		DUK_ASSERT(buf != NULL);  /* true even for zero-size fixed buffers */
-		DUK_MEMCPY(buf, DUK_HSTRING_GET_DATA(h_str), DUK_HSTRING_GET_BYTELEN(h_str));  /* zero size not an issue: pointers are valid */
-		duk_replace(ctx, index);
+		src_data = (const duk_uint8_t *) duk_to_lstring(ctx, index, &src_size);
 	}
 
-	h_buf = duk_get_hbuffer(ctx, index);
-	DUK_ASSERT(h_buf != NULL);
-	/* SCANBUILD: scan-build produces a NULL pointer dereference warning
-	 * below; it never actually triggers because h_buf is actually never
-	 * NULL.
-	 */
+	dst_data = duk_push_buffer(ctx, src_size, buf_dynamic);
+	if (DUK_LIKELY(src_size > 0)) {
+		/* When src_size == 0, src_data may be NULL (if source
+		 * buffer is dynamic), and dst_data may be NULL (if
+		 * target buffer is dynamic).  Avoid zero-size memcpy()
+		 * with an invalid pointer.
+		 */
+		DUK_MEMCPY(dst_data, src_data, src_size);
+	}
+	duk_replace(ctx, index);
+ skip_copy:
 
 	if (out_size) {
-		*out_size = DUK_HBUFFER_GET_SIZE(h_buf);
+		*out_size = src_size;
 	}
-	return DUK_HBUFFER_GET_DATA_PTR(h_buf);
+	return dst_data;
+}
+
+void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 1 /*buf_dontcare*/);
+}
+
+void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 0 /*buf_dontcare*/);
+}
+
+void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__to_buffer_raw(ctx, index, out_size, 1 /*buf_dynamic*/, 0 /*buf_dontcare*/);
 }
 
 void *duk_to_pointer(duk_context *ctx, int index) {

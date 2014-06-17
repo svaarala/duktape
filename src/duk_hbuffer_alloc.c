@@ -39,7 +39,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 #ifdef DUK_USE_ZERO_BUFFER_DATA
 			ptr = DUK_ALLOC_ZEROED(heap, size);
 #else
-			ptr = DUK_ALLOC(heap, size);  /* +1 for a safety nul term */
+			ptr = DUK_ALLOC(heap, size);
 #endif
 			if (!ptr) {
 				/* Because size > 0, NULL check is correct */
@@ -80,4 +80,3 @@ void *duk_hbuffer_get_dynalloc_ptr(void *ud) {
 	duk_hbuffer_dynamic *buf = (duk_hbuffer_dynamic *) ud;
 	return (void *) buf->curr_alloc;
 }
-

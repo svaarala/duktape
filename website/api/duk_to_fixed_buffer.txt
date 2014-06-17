@@ -1,22 +1,18 @@
 =proto
-void duk_to_fixed_buffer(duk_context *ctx, int index);
+void *duk_to_fixed_buffer(duk_context *ctx, int index, size_t *out_size);
 
 =stack
 [ ... val! ... ]
 
 =summary
-<p>Convert buffer at <code>index</code> to a fixed buffer.  If the buffer is
-already fixed, does nothing.  If conversion fails, the value at <code>index</code>
-is not a buffer, or <code>index</code> is invalid, throws an error.</p>
+<p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but if
+the value is a dynamic buffer, convert it to a fixed buffer.  The result
+is thus always a fixed buffer (unless an error is thrown).</p>
 
 =example
-duk_to_fixed_buffer(ctx, -3);
+size_t sz;
+void *buf = duk_to_fixed_buffer(ctx, -3, &sz);
 
 =tags
 stack
 buffer
-
-=fixme
-Naming: duk_fixate_buffer?
-Reverse operation: convert buffer to dynamic?
-Return value, void pointer for consistency?
