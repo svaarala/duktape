@@ -1439,6 +1439,18 @@ extern double duk_computed_nan;
  *  For instance, some platforms don't support zero-size memcpy correctly,
  *  some arcane uclibc versions have a buggy memcpy (but working memmove)
  *  and so on.  Such broken platforms can be dealt with here.
+ *
+ *  NOTE: ANSI C (various versions) and some implementations require that the
+ *  pointer arguments to memset(), memcpy(), and memmove() be valid values
+ *  even when byte size is 0 (even a NULL pointer is considered invalid in
+ *  this context).  Zero-size operations as such are allowed, as long as their
+ *  pointer arguments point to a valid memory area.  The DUK_MEMSET(),
+ *  DUK_MEMCPY(), and DUK_MEMMOVE() macros require this same behavior, i.e.:
+ *  (1) pointers must be valid and non-NULL, (2) zero size must otherwise be
+ *  allowed.  If these are not fulfilled, a macro wrapper is needed.
+ *
+ *    http://stackoverflow.com/questions/5243012/is-it-guaranteed-to-be-safe-to-perform-memcpy0-0-0
+ *    http://lists.cs.uiuc.edu/pipermail/llvmdev/2007-October/011065.html
  */
 
 typedef FILE duk_file;
