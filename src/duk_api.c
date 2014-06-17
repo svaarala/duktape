@@ -1766,7 +1766,7 @@ duk_hstring *duk_to_hstring(duk_context *ctx, int index) {
 	return ret;
 }
 
-void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_small_int_t buf_dynamic, duk_small_int_t buf_dontcare) {
+static void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_small_int_t buf_dynamic, duk_small_int_t buf_dontcare) {
 	duk_hbuffer *h_buf;
 	const duk_uint8_t *src_data;
 	duk_size_t src_size;
@@ -1819,15 +1819,15 @@ void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size,
 }
 
 void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
-	return duk_to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 1 /*buf_dontcare*/);
+	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 1 /*buf_dontcare*/);
 }
 
-void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index) {
-	(void) duk_to_buffer_raw(ctx, index, NULL, 0 /*buf_dynamic*/, 0 /*buf_dontcare*/);
+void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 0 /*buf_dontcare*/);
 }
 
-void duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
-	(void) duk_to_buffer_raw(ctx, index, NULL, 1 /*buf_dynamic*/, 0 /*buf_dontcare*/);
+void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__to_buffer_raw(ctx, index, out_size, 1 /*buf_dynamic*/, 0 /*buf_dontcare*/);
 }
 
 void *duk_to_pointer(duk_context *ctx, int index) {

@@ -481,6 +481,8 @@ duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index);
 const char *duk_to_string(duk_context *ctx, int index);
 const char *duk_to_lstring(duk_context *ctx, int index, duk_size_t *out_len);
 void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 void *duk_to_pointer(duk_context *ctx, int index);
 void duk_to_object(duk_context *ctx, int index);
 void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
@@ -507,8 +509,6 @@ void duk_json_decode(duk_context *ctx, int index);
  */
 
 void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size);
-void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index);
-void duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index);
 
 /*
  *  Property access
