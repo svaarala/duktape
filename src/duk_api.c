@@ -1766,7 +1766,7 @@ duk_hstring *duk_to_hstring(duk_context *ctx, int index) {
 	return ret;
 }
 
-void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
+void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_small_int_t buf_dynamic, duk_small_int_t buf_dontcare) {
 	duk_hbuffer *h_buf;
 	const duk_uint8_t *src_data;
 	duk_size_t src_size;
@@ -1779,31 +1779,55 @@ void *duk_to_buffer(duk_context *ctx, int index, size_t *out_size) {
 		/* Buffer is kept as is: note that fixed/dynamic nature of
 		 * the buffer is not changed.
 		 */
+		duk_small_int_t tmp;
 
 		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_buf);
 		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
-		dst_data = (duk_uint8_t *) src_data;  /* no copy */
+
+		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? 1 : 0);
+		if (((tmp ^ buf_dynamic) == 0) || buf_dontcare) {
+			/* Note: src_data may be NULL if input is a zero-size
+			 * dynamic buffer.
+			 */
+			dst_data = (duk_uint8_t *) src_data;
+			goto skip_copy;
+		}
 	} else {
 		/* Non-buffer value is first ToString() coerced, then converted
 		 * to a fixed size buffer.
 		 */
 
 		src_data = (const duk_uint8_t *) duk_to_lstring(ctx, index, &src_size);
-		dst_data = NULL;  /* need to create a new buffer */
 	}
 
-	if (dst_data == NULL) {
-		dst_data = duk_push_fixed_buffer(ctx, src_size);
-		DUK_ASSERT(dst_data != NULL);  /* true even for zero-size fixed buffers */
-		DUK_ASSERT(src_data != NULL);  /* true because src_data comes from string coercion */
-		DUK_MEMCPY(dst_data, src_data, src_size);  /* zero size not an issue: pointers are valid */
-		duk_replace(ctx, index);
+	dst_data = duk_push_buffer(ctx, src_size, buf_dynamic);
+	if (DUK_LIKELY(src_size > 0)) {
+		/* When src_size == 0, src_data may be NULL (if source
+		 * buffer is dynamic), and dst_data may be NULL (if
+		 * target buffer is dynamic).  Avoid zero-size memcpy()
+		 * with an invalid pointer.
+		 */
+		DUK_MEMCPY(dst_data, src_data, src_size);
 	}
+	duk_replace(ctx, index);
+ skip_copy:
 
 	if (out_size) {
 		*out_size = src_size;
 	}
 	return dst_data;
+}
+
+void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk_to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 1 /*buf_dontcare*/);
+}
+
+void duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index) {
+	(void) duk_to_buffer_raw(ctx, index, NULL, 0 /*buf_dynamic*/, 0 /*buf_dontcare*/);
+}
+
+void duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
+	(void) duk_to_buffer_raw(ctx, index, NULL, 1 /*buf_dynamic*/, 0 /*buf_dontcare*/);
 }
 
 void *duk_to_pointer(duk_context *ctx, int index) {
