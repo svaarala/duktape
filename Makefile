@@ -739,6 +739,7 @@ dist-src:	dist
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.xz
 	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
+	cp duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).zip
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 	cp duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).iso
 
