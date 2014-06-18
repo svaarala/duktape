@@ -1242,26 +1242,28 @@ typedef double duk_double_t;
 
 #undef DUK_USE_PACKED_TVAL_POSSIBLE
 
-#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_HAVE_INTTYPES) && defined(DUK_UINTPTR_MAX)
 /* Strict C99 case: DUK_UINTPTR_MAX (= UINTPTR_MAX) should be very reliable */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_HAVE_INTTYPES) && defined(DUK_UINTPTR_MAX)
 #if (DUK_UINTPTR_MAX <= 0xffffffffUL)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 #endif
 
-#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_UINTPTR_MAX)
 /* Non-C99 case, still relying on DUK_UINTPTR_MAX */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_UINTPTR_MAX)
 #if (DUK_UINTPTR_MAX <= 0xffffffffUL)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 #endif
 
+/* DUK_SIZE_MAX (= SIZE_MAX) is often reliable */
 #if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_SIZE_MAX) && !defined(DUK_SIZE_MAX_COMPUTED)
 #if DUK_SIZE_MAX <= 0xffffffffUL
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 #endif
 
+/* M68K: packed always possible */
 #if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_M68K)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
@@ -1270,7 +1272,14 @@ typedef double duk_double_t;
  * break at least on Firefox (probably IEEE double arithmetic is not 100%
  * supported, especially for NaNs).
  */
-#if defined(DUK_F_EMSCRIPTEN) && defined(DUK_USE_PACKED_TVAL_POSSIBLE)
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_EMSCRIPTEN)
+#undef DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
+/* Microsoft Visual Studio 2010 on x64 fails the above rules and tries to
+ * use a packed type.  Force unpacked on x64 in general.
+ */
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_X64)
 #undef DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
