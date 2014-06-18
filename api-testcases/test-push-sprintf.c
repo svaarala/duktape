@@ -4,6 +4,7 @@
 
 /*===
 length sum: 2147713027.000000
+final top: 0
 ===*/
 
 void test(duk_context *ctx) {
@@ -38,4 +39,5 @@ void test(duk_context *ctx) {
 	 */
 
 	printf("length sum: %lf\n", len_sum);
+	printf("final top: %d\n", (int) duk_get_top(ctx));
 }
