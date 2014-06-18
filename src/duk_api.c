@@ -1078,7 +1078,9 @@ void *duk_require_buffer(duk_context *ctx, int index, size_t *out_size) {
 	return NULL;  /* not reachable */
 }
 
-/* Raw helper for getting a value from the stack, checking its tag, and possible its object class. */
+/* Raw helper for getting a value from the stack, checking its tag, and possible its object class.
+ * The tag cannot be a number because numbers don't have an internal tag in the packed representation.
+ */
 duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, int index, duk_int_t flags_and_tag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
