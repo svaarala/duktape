@@ -385,7 +385,7 @@ struct duk_lexer_ctx {
 	duk_hthread *thr;                       /* thread; minimizes argument passing */
 
 	duk_uint8_t *input;
-	int input_length;
+	duk_int_t input_length;
 	int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
 	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input byte offset for each char */
 	int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
