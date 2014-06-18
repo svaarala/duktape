@@ -33,6 +33,14 @@ typedef union {
 	duk_uint8_t c[8];
 } duk__test_u32_union;
 
+static void duk__selftest_packed_tval(void) {
+#if defined(DUK_USE_PACKED_TVAL)
+	if (sizeof(void *) > 4) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: packed duk_tval in use but sizeof(void *) > 4");
+	}
+#endif
+}
+
 /*
  *  Two's complement arithmetic.
  */
@@ -180,6 +188,7 @@ static void duk__selftest_struct_align(void) {
  */
 
 void duk_selftest_run_tests(void) {
+	duk__selftest_packed_tval();
 	duk__selftest_twos_complement();
 	duk__selftest_byte_order();
 	duk__selftest_double_union_size();
