@@ -351,6 +351,13 @@ Planned
 * Use 'anon' instead of 'empty' for the function name in toString() coercion
   of an anonymous function, matching traceback behavior
 
+* The expressions !0 and !1 are now constant folded by the compiler as they're
+  often found in minified code; also !true and !false are constant folded
+
+* Remove the 256 character limitation for duk_log(), log messages can now be
+  arbitrarily long but short messages (<= 256) are still formatted efficiently
+  using a stack buffer
+
 * Improve non-C99 build: type detection should now work on (some) 64-bit
   platforms too, and non-debug build should now generate much fewer (or no)
   warnings; this also improves C++ build
@@ -359,9 +366,6 @@ Planned
 
 * Move platform and feature detection into duktape.h, also for internal
   types, which allows type wrappers to be applied to the public API
-
-* The expressions !0 and !1 are now constant folded by the compiler as they're
-  often found in minified code; also !true and !false are constant folded
 
 * Add a safety limit for compiled bytecode byte size and maximum line number
   used to ensure pc-to-line internal data structure limits are not exceeded

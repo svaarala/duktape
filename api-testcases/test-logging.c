@@ -10,8 +10,14 @@ TIMESTAMP TRC C: clamped trace: 123
 TIMESTAMP TRC C: clamped trace: 123
 TIMESTAMP FTL C: clamped fatal: 123
 TIMESTAMP FTL C: clamped fatal: 123
+TIMESTAMP INF C: long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long and formatted: 123
+final top: 0
 ==> rc=0, result='undefined'
 ===*/
+
+#define  CHARS_100 \
+	"long long long long long long long long long long " \
+	"long long long long long long long long long long "
 
 int test_1(duk_context *ctx) {
 	/* Force log level to output all logs. */
@@ -43,6 +49,14 @@ int test_1(duk_context *ctx) {
 	duk_log(ctx, 6, "clamped fatal: %d", 123);
 	duk_log(ctx, 123, "clamped fatal: %d", 123);
 
+	/* Very long test log messages are also (now) supported */
+	duk_log(ctx, DUK_LOG_INFO,
+	        /* 1000 chars prefix */
+	        CHARS_100 CHARS_100 CHARS_100 CHARS_100 CHARS_100
+	        CHARS_100 CHARS_100 CHARS_100 CHARS_100 CHARS_100
+	        "and formatted: %d", 123);
+
+	printf("final top: %d\n", (int) duk_get_top(ctx));
 	return 0;
 }
 

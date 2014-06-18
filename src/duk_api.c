@@ -2566,6 +2566,9 @@ static int duk__try_push_vsprintf(duk_context *ctx, void *buf, size_t sz, const 
 	/* NUL terminator handling doesn't matter here */
 	len = DUK_VSNPRINTF((char *) buf, sz, fmt, ap);
 	if ((size_t) len < sz) {
+		/* Return value of 'sz' or more indicates output was (potentially)
+		 * truncated.
+		 */
 		return len;
 	}
 	return -1;
@@ -2573,7 +2576,9 @@ static int duk__try_push_vsprintf(duk_context *ctx, void *buf, size_t sz, const 
 
 const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_uint8_t stack_buf[DUK_PUSH_SPRINTF_INITIAL_SIZE];
 	size_t sz = DUK_PUSH_SPRINTF_INITIAL_SIZE;
+	int pushed_buf = 0;
 	void *buf;
 	int len;
 	const char *res;
@@ -2595,10 +2600,21 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 	}
 	DUK_ASSERT(sz > 0);
 
-	buf = duk_push_dynamic_buffer(ctx, sz);
-
+	/* Try to make do with a stack buffer to avoid allocating a temporary buffer.
+	 * This works 99% of the time which is quite nice.
+	 */
 	for (;;) {
 		va_list ap_copy;  /* copied so that 'ap' can be reused */
+
+		if (sz <= sizeof(stack_buf)) {
+			buf = stack_buf;
+		} else if (!pushed_buf) {
+			pushed_buf = 1;
+			buf = duk_push_dynamic_buffer(ctx, sz);
+		} else {
+			buf = duk_resize_buffer(ctx, -1, sz);
+		}
+		DUK_ASSERT(buf != NULL);
 
 		DUK_VA_COPY(ap_copy, ap);
 		len = duk__try_push_vsprintf(ctx, buf, sz, fmt, ap_copy);
@@ -2612,16 +2628,15 @@ const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap) {
 		if (sz >= DUK_PUSH_SPRINTF_SANITY_LIMIT) {
 			DUK_ERROR(thr, DUK_ERR_API_ERROR, "cannot sprintf, required buffer insanely long");
 		}
-
-		buf = duk_resize_buffer(ctx, -1, sz);
-		DUK_ASSERT(buf != NULL);
 	}
 
 	/* Cannot use duk_to_string() on the buffer because it is usually
-	 * larger than 'len'.
+	 * larger than 'len'.  Also, 'buf' is usually a stack buffer.
 	 */
-	res = duk_push_lstring(ctx, (const char *) buf, (size_t) len);  /* [buf res] */
-	duk_remove(ctx, -2);
+	res = duk_push_lstring(ctx, (const char *) buf, (size_t) len);  /* [ buf? res ] */
+	if (pushed_buf) {
+		duk_remove(ctx, -2);
+	}
 	return res;
 }
 
