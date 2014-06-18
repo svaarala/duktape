@@ -173,7 +173,9 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 		return -1;
 	}
 
-	p = &lex_ctx->input[lex_ctx->input_offset];
+	DUK_ASSERT(lex_ctx->input_offset >= 0);
+	DUK_ASSERT(lex_ctx->input_offset < lex_ctx->input_length);
+	p = lex_ctx->input + lex_ctx->input_offset;
 	x = (int) *p++;
 
 	if (x < 0x80) {
