@@ -511,18 +511,32 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *
  *  C99 typedefs are quite good but not always available, and we want to avoid
  *  forcibly redefining the C99 typedefs.  So, there are Duktape wrappers for
- *  all C99 typedefs and Duktape code should only use these typedefs.  The
- *  Duktape public API is problematic from type detection perspective and must
- *  be taken into account here.
- *
- *  Type detection when C99 is not supported is best effort and may end up
- *  detecting some types incorrectly.
+ *  all C99 typedefs and Duktape code should only use these typedefs.  Type
+ *  detection when C99 is not supported is best effort and may end up detecting
+ *  some types incorrectly.
  *
  *  Pointer sizes are a portability problem: pointers to different types may
  *  have a different size and function pointers are very difficult to manage
  *  portably.
  *
  *  http://en.wikipedia.org/wiki/C_data_types#Fixed-width_integer_types
+ *
+ *  Note: there's an interesting corner case when trying to define minimum
+ *  signed integer value constants.  You may get warnings when using
+ *  "-0x80000000L" on a 32-bit platform; the compiler will first evaluate
+ *  0x80000000L and decide it won't fit into an 'int' so it must be an
+ *  'unsigned int', and the unary minus will then convert an unsigned value
+ *  to signed (-0x7fffffffL would work fine).  The same issue happens with
+ *  decimal constants.  Workarounds without resorting to 64-bit constants
+ *  (which may not be supported):
+ *
+ *    (1) (-0x7fffffffL - 1)
+ *    (2) ((int) -2147483648.0)
+ *
+ *  Both have the downside of being computed, which means that the CPP will
+ *  not be able to compare against them.
+ *
+ *  http://stackoverflow.com/questions/6728900/hexadecimal-constant-in-c-is-unsigned-even-though-i-used-the-l-suffix
  *
  *  Note: avoid typecasts and computations in macro integer constants as they
  *  can then no longer be used in macro relational expressions (such as
