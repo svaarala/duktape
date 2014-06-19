@@ -63,8 +63,8 @@ static void duk__base64_encode_helper(const unsigned char *src, const unsigned c
 	}
 }
 
-static int duk__base64_decode_helper(const unsigned char *src, const unsigned char *src_end,
-                                     unsigned char *dst, unsigned char *dst_end, unsigned char **out_dst_final) {
+static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsigned char *src_end,
+                                            unsigned char *dst, unsigned char *dst_end, unsigned char **out_dst_final) {
 	unsigned int t;
 	unsigned int x, y;
 	int group_idx;
@@ -163,7 +163,7 @@ static int duk__base64_decode_helper(const unsigned char *src, const unsigned ch
 	return 0;
 }
 
-const char *duk_base64_encode(duk_context *ctx, int index) {
+const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	unsigned char *src;
 	size_t srclen;
@@ -202,14 +202,14 @@ const char *duk_base64_encode(duk_context *ctx, int index) {
 	return NULL;  /* never here */
 }
 
-void duk_base64_decode(duk_context *ctx, int index) {
+void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const char *src;
 	size_t srclen;
 	size_t dstlen;
 	unsigned char *dst;
 	unsigned char *dst_final;
-	int retval;
+	duk_bool_t retval;
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
@@ -245,10 +245,10 @@ void duk_base64_decode(duk_context *ctx, int index) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "base64 decode failed");
 }
 
-const char *duk_hex_encode(duk_context *ctx, int index) {
+const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	unsigned char *data;
-	size_t len;
-	size_t i;
+	duk_size_t len;
+	duk_size_t i;
 	int t;
 	unsigned char *buf;
 	const char *ret;
@@ -274,7 +274,7 @@ const char *duk_hex_encode(duk_context *ctx, int index) {
 	return ret;
 }
 
-void duk_hex_decode(duk_context *ctx, int index) {
+void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *str;
 	size_t len;
@@ -320,7 +320,7 @@ void duk_hex_decode(duk_context *ctx, int index) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "hex decode failed");
 }
 
-const char *duk_json_encode(duk_context *ctx, int index) {
+const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
 	int top_at_entry = duk_get_top(ctx);
 #endif
@@ -341,7 +341,7 @@ const char *duk_json_encode(duk_context *ctx, int index) {
 	return ret;
 }
 
-void duk_json_decode(duk_context *ctx, int index) {
+void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
 	int top_at_entry = duk_get_top(ctx);
 #endif

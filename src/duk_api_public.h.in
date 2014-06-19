@@ -378,34 +378,34 @@ void duk_pop_3(duk_context *ctx);
  *  is not needed; duk_is_valid_index() gives the same information.
  */
 
-int duk_get_type(duk_context *ctx, int index);
-int duk_check_type(duk_context *ctx, int index, int type);
-int duk_get_type_mask(duk_context *ctx, int index);
-int duk_check_type_mask(duk_context *ctx, int index, int mask);
+duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index);  /* FIXME: a small int suffices here */
+duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t index, duk_int_t type);  /* FIXME: small int for type? */
+duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, duk_uint_t mask);
 
-int duk_is_undefined(duk_context *ctx, int index);
-int duk_is_null(duk_context *ctx, int index);
-int duk_is_null_or_undefined(duk_context *ctx, int index);
-int duk_is_boolean(duk_context *ctx, int index);
-int duk_is_number(duk_context *ctx, int index);
-int duk_is_nan(duk_context *ctx, int index);
-int duk_is_string(duk_context *ctx, int index);
-int duk_is_object(duk_context *ctx, int index);
-int duk_is_buffer(duk_context *ctx, int index);
-int duk_is_pointer(duk_context *ctx, int index);
+duk_bool_t duk_is_undefined(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_null(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_null_or_undefined(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_boolean(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_number(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_nan(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_string(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_object(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_buffer(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_pointer(duk_context *ctx, duk_idx_t index);
 
-int duk_is_array(duk_context *ctx, int index);
-int duk_is_function(duk_context *ctx, int index);
-int duk_is_c_function(duk_context *ctx, int index);
-int duk_is_ecmascript_function(duk_context *ctx, int index);
-int duk_is_bound_function(duk_context *ctx, int index);
-int duk_is_thread(duk_context *ctx, int index);
+duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t index);
 
-int duk_is_callable(duk_context *ctx, int index);
-int duk_is_dynamic(duk_context *ctx, int index);
-int duk_is_fixed(duk_context *ctx, int index);
+duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_dynamic(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_fixed(duk_context *ctx, duk_idx_t index);
 
-int duk_is_primitive(duk_context *ctx, int index);
+duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index);
 #define duk_is_object_coercible(ctx,index) \
 	duk_check_type_mask((ctx), (index), DUK_TYPE_MASK_BOOLEAN | \
 	                                    DUK_TYPE_MASK_NUMBER | \
@@ -422,17 +422,17 @@ int duk_is_primitive(duk_context *ctx, int index);
  *  are not included.
  */
 
-int duk_get_boolean(duk_context *ctx, int index);
-double duk_get_number(duk_context *ctx, int index);
+duk_bool_t duk_get_boolean(duk_context *ctx, duk_idx_t index);
+duk_double_t duk_get_number(duk_context *ctx, duk_idx_t index);
 duk_int_t duk_get_int(duk_context *ctx, duk_idx_t index);
 duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t index);
-const char *duk_get_string(duk_context *ctx, int index);
-const char *duk_get_lstring(duk_context *ctx, int index, duk_size_t *out_len);
-void *duk_get_buffer(duk_context *ctx, int index, duk_size_t *out_size);
-void *duk_get_pointer(duk_context *ctx, int index);
-duk_c_function duk_get_c_function(duk_context *ctx, int index);
-duk_context *duk_get_context(duk_context *ctx, int index);
-duk_size_t duk_get_length(duk_context *ctx, int index);
+const char *duk_get_string(duk_context *ctx, duk_idx_t index);
+const char *duk_get_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+void *duk_get_pointer(duk_context *ctx, duk_idx_t index);
+duk_c_function duk_get_c_function(duk_context *ctx, duk_idx_t index);
+duk_context *duk_get_context(duk_context *ctx, duk_idx_t index);
+duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index);
 
 /*
  *  Require operations: no coercion, throw error if index or type
@@ -442,18 +442,18 @@ duk_size_t duk_get_length(duk_context *ctx, int index);
 #define duk_require_type_mask(ctx,index,mask) \
 	((void) duk_check_type_mask((ctx), (index), (mask) | DUK_TYPE_MASK_THROW))
 
-void duk_require_undefined(duk_context *ctx, int index);
-void duk_require_null(duk_context *ctx, int index);
-int duk_require_boolean(duk_context *ctx, int index);
-double duk_require_number(duk_context *ctx, int index);
+void duk_require_undefined(duk_context *ctx, duk_idx_t index);
+void duk_require_null(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t index);
+duk_double_t duk_require_number(duk_context *ctx, duk_idx_t index);
 duk_int_t duk_require_int(duk_context *ctx, duk_idx_t index);
 duk_uint_t duk_require_uint(duk_context *ctx, duk_idx_t index);
-const char *duk_require_string(duk_context *ctx, int index);
-const char *duk_require_lstring(duk_context *ctx, int index, duk_size_t *out_len);
-void *duk_require_buffer(duk_context *ctx, int index, duk_size_t *out_size);
-void *duk_require_pointer(duk_context *ctx, int index);
-duk_c_function duk_require_c_function(duk_context *ctx, int index);
-duk_context *duk_require_context(duk_context *ctx, int index);
+const char *duk_require_string(duk_context *ctx, duk_idx_t index);
+const char *duk_require_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+void *duk_require_pointer(duk_context *ctx, duk_idx_t index);
+duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index);
+duk_context *duk_require_context(duk_context *ctx, duk_idx_t index);
 
 #define duk_require_object_coercible(ctx,index) \
 	((void) duk_check_type_mask((ctx), (index), DUK_TYPE_MASK_BOOLEAN | \
@@ -471,27 +471,27 @@ duk_context *duk_require_context(duk_context *ctx, int index);
  *  or an internal error (e.g. from out of memory).
  */
 
-void duk_to_undefined(duk_context *ctx, int index);
-void duk_to_null(duk_context *ctx, int index);
-int duk_to_boolean(duk_context *ctx, int index);
-double duk_to_number(duk_context *ctx, int index);
+void duk_to_undefined(duk_context *ctx, duk_idx_t index);
+void duk_to_null(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_to_boolean(duk_context *ctx, duk_idx_t index);
+duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index);
 duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index);
 duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t index);
 duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index);
 duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index);
 duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index);
-const char *duk_to_string(duk_context *ctx, int index);
-const char *duk_to_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+const char *duk_to_string(duk_context *ctx, duk_idx_t index);
+const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
-void *duk_to_pointer(duk_context *ctx, int index);
-void duk_to_object(duk_context *ctx, int index);
-void duk_to_defaultvalue(duk_context *ctx, int index, int hint);
-void duk_to_primitive(duk_context *ctx, int index, int hint);
+void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
+void duk_to_object(duk_context *ctx, duk_idx_t index);
+void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int_t hint);  /* FIXME: small int? */
+void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t hint);  /* FIXME: small int? */
 
 /* safe variants of a few coercion operations */
-const char *duk_safe_to_lstring(duk_context *ctx, int index, duk_size_t *out_len);
+const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 #define duk_safe_to_string(ctx,index) \
 	duk_safe_to_lstring((ctx), (index), NULL)
 
@@ -499,12 +499,12 @@ const char *duk_safe_to_lstring(duk_context *ctx, int index, duk_size_t *out_len
  *  Misc conversion
  */
 
-const char *duk_base64_encode(duk_context *ctx, int index);
-void duk_base64_decode(duk_context *ctx, int index);
-const char *duk_hex_encode(duk_context *ctx, int index);
-void duk_hex_decode(duk_context *ctx, int index);
-const char *duk_json_encode(duk_context *ctx, int index);
-void duk_json_decode(duk_context *ctx, int index);
+const char *duk_base64_encode(duk_context *ctx, duk_idx_t index);
+void duk_base64_decode(duk_context *ctx, duk_idx_t index);
+const char *duk_hex_encode(duk_context *ctx, duk_idx_t index);
+void duk_hex_decode(duk_context *ctx, duk_idx_t index);
+const char *duk_json_encode(duk_context *ctx, duk_idx_t index);
+void duk_json_decode(duk_context *ctx, duk_idx_t index);
 
 /*
  *  Buffer
