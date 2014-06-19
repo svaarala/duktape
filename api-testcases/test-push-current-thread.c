@@ -15,8 +15,8 @@ int my_func(duk_context *ctx) {
 	duk_context *ctx2;
 
 	duk_push_current_thread(ctx);
-	printf("type: %d\n", duk_get_type(ctx, -1));
-	printf("duk_is_thread: %d\n", duk_is_thread(ctx, -1));
+	printf("type: %d\n", (int) duk_get_type(ctx, -1));
+	printf("duk_is_thread: %d\n", (int) duk_is_thread(ctx, -1));
 
 	ctx2 = duk_get_context(ctx, -1);
 #if 0

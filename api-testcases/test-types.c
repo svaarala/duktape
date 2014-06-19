@@ -58,7 +58,7 @@ void test(duk_context *ctx) {
 		case DUK_TYPE_OBJECT:		printf("object"); break;
 		case DUK_TYPE_BUFFER:		printf("buffer"); break;
 		case DUK_TYPE_POINTER:		printf("pointer"); break;
-		default:			printf("unknown(%d)", duk_get_type(ctx, i)); break;
+		default:			printf("unknown(%d)", (int) duk_get_type(ctx, i)); break;
 		}
 
 		printf(" bool=%d num=%lf str=%s buf-is-null=%d ptr=%p",

@@ -119,7 +119,7 @@ void test(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		duk_dup(ctx, i);
-		printf("index %d -> type %d, value '%s'\n", i, duk_get_type(ctx, i), duk_to_string(ctx, -1));
+		printf("index %d -> type %d, value '%s'\n", i, (int) duk_get_type(ctx, i), duk_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 
