@@ -499,6 +499,78 @@ Random notes:
   exact unsigned overflows / underflows.  The wrapped C99 types are used in
   these cases.
 
+Numeric constants
+-----------------
+
+For the most part the rules are simple:
+
+* For signed values, use "L" if the value is at most 32 bits wide and "LL"
+  if at most 64 bits wide (keeping in mind that 64-bit constants are not
+  always available).
+
+* For unsigned values, use "UL" and "ULL", similarly.
+
+There is an interesting corner case when trying to define minimum signed
+integer value constants.  For instance, trying to define a constant for
+the minimum 32-bit signed integer as follows is non-portable::
+
+  #define  MIN_VALUE  (-0x80000000L)
+
+Apparently the compiler will first evaluate "0x80000000L" and, despite being
+a signed constant, determine that it won't fit into a signed integer so it
+must be an unsigned value.  Applying a unary minus to this unsigned value
+may then cause a warning and cause the negated value to be 0x80000000, i.e.
+a positive value (this happens on at least 64-bit VS2010).
+
+This may then result in very unintuitive behavior.  For instance::
+
+  /* 'd' is an input double to be clamped */
+  if (d < (double) MIN_VALUE) {
+      return (duk_int_t) MIN_VALUE;
+  }
+
+The compiler will actually end up doing::
+
+  if (d < (double) 0x80000000) {  /* positive! */
+      return (duk_int_t) 0x80000000;
+  }
+
+Given zero as an input, the comparison will match (which is undesired), and
+the return statement will also contain a positive constant which is coerced
+to a signed integer.  Although the input to the coercion is unsigned, the
+final result is -0x80000000.  So, zero would "clip" to -0x80000000.  This
+actually caused a non-trivial lexer bug in practice.
+
+There seem to be only bad alternatives for defining signed integer minimum
+constants:
+
+* ``(-0x7fffffffL - 1L)``: works, but constant will be computed and the
+  C preprocessor won't necessarily be able to compare against it.
+
+* ``((int) -2147483648.0)``: same problem as above
+
+* ``(-0x80000000LL)``: works if 64-bit constants are available, but since
+  this is not always the case, not really an option
+
+Linux ``stdint.h`` seems to be using the first option::
+
+  # define INT8_MIN               (-128)
+  # define INT16_MIN              (-32767-1)
+  # define INT32_MIN              (-2147483647-1)
+  # define INT64_MIN              (-__INT64_C(9223372036854775807)-1)
+
+The fix should be applied to at least 32-bit and 64-bit constants, but the
+``stdint.h`` header also applies to 16-bit constants.
+
+For now:
+
+* Use a computed value for minimum signed int value for 16, 32, and 64 bit
+  constants.
+
+Also see:
+
+* http://stackoverflow.com/questions/6728900/hexadecimal-constant-in-c-is-unsigned-even-though-i-used-the-l-suffix
+
 Alignment
 ---------
 
