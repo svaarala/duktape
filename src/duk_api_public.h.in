@@ -39,7 +39,8 @@ extern "C" {
 typedef duk_int_t duk_idx_t;
 
 /* Duktape/C function return value, platform int is enough for now to
- * represent 0, 1, or negative error code.
+ * represent 0, 1, or negative error code.  Must be compatible with
+ * assigning truth values (e.g. duk_ret_t rc = (foo == bar);).
  */
 typedef int duk_ret_t;
 
@@ -240,7 +241,7 @@ void *duk_alloc(duk_context *ctx, duk_size_t size);
 void duk_free(duk_context *ctx, void *ptr);
 void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
 void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
-void duk_gc(duk_context *ctx, int flags);
+void duk_gc(duk_context *ctx, duk_int_t flags);
 
 /*
  *  Error handling
@@ -248,15 +249,15 @@ void duk_gc(duk_context *ctx, int flags);
 
 DUK_API_NORETURN(void duk_throw(duk_context *ctx));
 
-DUK_API_NORETURN(void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...));
+DUK_API_NORETURN(void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...));
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_error(ctx,err_code,...)  \
-	duk_error_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
+	duk_error_raw((ctx), (duk_errcode_t) (err_code), __FILE__, (duk_int_t) __LINE__, __VA_ARGS__)
 #else
-DUK_API_NORETURN(void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...));
+DUK_API_NORETURN(void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
 #define duk_error  \
 	duk_api_global_filename = __FILE__, \
-	duk_api_global_line = __LINE__, \
+	duk_api_global_line = (duk_int_t) __LINE__, \
 	duk_error_stash  /* arguments follow */
 #endif
 
@@ -266,28 +267,32 @@ DUK_API_NORETURN(void duk_fatal(duk_context *ctx, int err_code, const char *err_
  *  Other state related functions
  */
 
-int duk_is_strict_call(duk_context *ctx);
-int duk_is_constructor_call(duk_context *ctx);
-int duk_get_magic(duk_context *ctx);
+duk_ret_t duk_is_strict_call(duk_context *ctx);
+duk_ret_t duk_is_constructor_call(duk_context *ctx);
+duk_int_t duk_get_magic(duk_context *ctx);
 
 /*
  *  Stack management
  */
 
-int duk_normalize_index(duk_context *ctx, int index);
-int duk_require_normalize_index(duk_context *ctx, int index);
-int duk_is_valid_index(duk_context *ctx, int index);
-void duk_require_valid_index(duk_context *ctx, int index);
+duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index);
+duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index);
+duk_ret_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
+void duk_require_valid_index(duk_context *ctx, duk_idx_t index);
 
-int duk_get_top(duk_context *ctx);
-void duk_set_top(duk_context *ctx, int index);
-int duk_get_top_index(duk_context *ctx);
-int duk_require_top_index(duk_context *ctx);
+duk_idx_t duk_get_top(duk_context *ctx);
+void duk_set_top(duk_context *ctx, duk_idx_t index);
+duk_idx_t duk_get_top_index(duk_context *ctx);
+duk_idx_t duk_require_top_index(duk_context *ctx);
 
-int duk_check_stack(duk_context *ctx, unsigned int extra);
-void duk_require_stack(duk_context *ctx, unsigned int extra);
-int duk_check_stack_top(duk_context *ctx, unsigned int top);
-void duk_require_stack_top(duk_context *ctx, unsigned int top);
+/* FIXME: although unsigned value is correct, it might be better to use a signed
+ * value so that if user accidentally uses a negative value, it gets flagged as
+ * an error instead of being interpreted as a large unsigned number.
+ */
+duk_ret_t duk_check_stack(duk_context *ctx, duk_uint_t extra);
+void duk_require_stack(duk_context *ctx, duk_uint_t extra);
+duk_ret_t duk_check_stack_top(duk_context *ctx, duk_uint_t top);
+void duk_require_stack_top(duk_context *ctx, duk_uint_t top);
 
 /*
  *  Stack manipulation (other than push/pop)

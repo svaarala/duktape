@@ -78,7 +78,7 @@ static duk_uint_t duk__api_coerce_d2ui(duk_double_t d) {
  *  Stack indexes and stack size management
  */
 
-int duk_normalize_index(duk_context *ctx, int index) {
+duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
@@ -102,16 +102,16 @@ int duk_normalize_index(duk_context *ctx, int index) {
 		}
 	}
 
-	DUK_ASSERT((int) (tv - thr->valstack_bottom) >= 0);
-	return (int) (tv - thr->valstack_bottom);
+	DUK_ASSERT((duk_idx_t) (tv - thr->valstack_bottom) >= 0);
+	return (duk_idx_t) (tv - thr->valstack_bottom);
 
  fail:
 	return DUK_INVALID_INDEX;
 }
 
-int duk_require_normalize_index(duk_context *ctx, int index) {
+duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int ret;
+	duk_idx_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -122,12 +122,12 @@ int duk_require_normalize_index(duk_context *ctx, int index) {
 	return ret;
 }
 
-int duk_is_valid_index(duk_context *ctx, int index) {
+duk_ret_t duk_is_valid_index(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 	return (duk_normalize_index(ctx, index) >= 0);
 }
 
-void duk_require_valid_index(duk_context *ctx, int index) {
+void duk_require_valid_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -138,16 +138,16 @@ void duk_require_valid_index(duk_context *ctx, int index) {
 	}
 }
 
-int duk_get_top(duk_context *ctx) {
+duk_idx_t duk_get_top(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
 
-	return (int) (thr->valstack_top - thr->valstack_bottom);
+	return (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 }
 
 /* set stack top within currently allocated range, but don't reallocate */
-void duk_set_top(duk_context *ctx, int index) {
+void duk_set_top(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_new_top;
 
@@ -223,13 +223,13 @@ void duk_set_top(duk_context *ctx, int index) {
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
 }
 
-int duk_get_top_index(duk_context *ctx) {
+duk_idx_t duk_get_top_index(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int ret;
+	duk_idx_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 
-	ret = ((int) (thr->valstack_top - thr->valstack_bottom)) - 1;
+	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
 	if (ret < 0) {
 		/* Return invalid index; if caller uses this without checking
 		 * in another API call, the index will never (practically)
@@ -240,13 +240,13 @@ int duk_get_top_index(duk_context *ctx) {
 	return ret;
 }
 
-int duk_require_top_index(duk_context *ctx) {
+duk_idx_t duk_require_top_index(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int ret;
 
 	DUK_ASSERT(ctx != NULL);
 
-	ret = ((int) (thr->valstack_top - thr->valstack_bottom)) - 1;
+	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
 	if (ret < 0) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
 	}
@@ -389,11 +389,11 @@ static int duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	return 1;
 }
 
-static int duk__check_valstack_resize_helper(duk_context *ctx,
-                                             size_t min_new_size,
-                                             int shrink_flag,
-                                             int compact_flag,
-                                             int throw_flag) {
+static duk_ret_t duk__check_valstack_resize_helper(duk_context *ctx,
+                                                   size_t min_new_size,
+                                                   int shrink_flag,
+                                                   int compact_flag,
+                                                   int throw_flag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	size_t old_size;
 	size_t new_size;
@@ -480,7 +480,7 @@ static int duk__check_valstack_resize_helper(duk_context *ctx,
 }
 
 #if 0  /* XXX: unused */
-int duk_check_valstack_resize(duk_context *ctx, size_t min_new_size, int allow_shrink) {
+duk_ret_t duk_check_valstack_resize(duk_context *ctx, size_t min_new_size, int allow_shrink) {
 	return duk__check_valstack_resize_helper(ctx,
 	                                         min_new_size,  /* min_new_size */
 	                                         allow_shrink,  /* shrink_flag */
@@ -497,9 +497,9 @@ void duk_require_valstack_resize(duk_context *ctx, size_t min_new_size, int allo
 	                                         1);            /* throw flag */
 }
 
-int duk_check_stack(duk_context *ctx, unsigned int extra) {
+duk_ret_t duk_check_stack(duk_context *ctx, duk_uint_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	size_t min_new_size;
+	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -512,9 +512,9 @@ int duk_check_stack(duk_context *ctx, unsigned int extra) {
 	                                         0);            /* throw flag */
 }
 
-void duk_require_stack(duk_context *ctx, unsigned int extra) {
+void duk_require_stack(duk_context *ctx, duk_uint_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	size_t min_new_size;
+	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -527,7 +527,7 @@ void duk_require_stack(duk_context *ctx, unsigned int extra) {
 	                                         1);            /* throw flag */
 }
 
-int duk_check_stack_top(duk_context *ctx, unsigned int top) {
+duk_ret_t duk_check_stack_top(duk_context *ctx, duk_uint_t top) {
 	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
@@ -540,7 +540,7 @@ int duk_check_stack_top(duk_context *ctx, unsigned int top) {
 	                                         0);            /* throw flag */
 }
 
-void duk_require_stack_top(duk_context *ctx, unsigned int top) {
+void duk_require_stack_top(duk_context *ctx, duk_uint_t top) {
 	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
@@ -2929,7 +2929,7 @@ void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function f
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
-static int duk__push_error_object_vsprintf(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, va_list ap) {
+static int duk__push_error_object_vsprintf(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	int retval;
 	duk_hobject *proto;
@@ -3218,7 +3218,7 @@ void duk_fatal(duk_context *ctx, int err_code, const char *err_msg) {
 	DUK_PANIC(DUK_ERR_API_ERROR, "fatal handler returned");
 }
 
-void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...) {
+void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	duk__push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
@@ -3227,7 +3227,7 @@ void duk_error_raw(duk_context *ctx, int err_code, const char *filename, int lin
 }
 
 #ifndef DUK_USE_VARIADIC_MACROS
-void duk_error_stash(duk_context *ctx, int err_code, const char *fmt, ...) {
+void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
 	const char *filename = duk_api_global_filename;
 	int line = duk_api_global_line;
 	va_list ap;

@@ -78,7 +78,7 @@ void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs)
 	out_funcs->udata = heap->alloc_udata;
 }
 
-void duk_gc(duk_context *ctx, int flags) {
+void duk_gc(duk_context *ctx, duk_int_t flags) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
