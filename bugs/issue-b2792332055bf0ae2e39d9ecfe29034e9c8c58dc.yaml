@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: platform/compiler notes in separate doc files?
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-18 22:38:12.258440 Z
+references: []
+
+id: b2792332055bf0ae2e39d9ecfe29034e9c8c58dc
+log_events: 
+- - 2014-06-18 22:38:12.383759 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
