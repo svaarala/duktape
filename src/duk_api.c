@@ -23,7 +23,7 @@ duk_int_t duk_api_global_line = 0;
  *  Helpers
  */
 
-static duk_int_t duk__api_coerce_d2i(double d) {
+static duk_int_t duk__api_coerce_d2i(duk_double_t d) {
 	int c;
 
 	/*
@@ -42,10 +42,10 @@ static duk_int_t duk__api_coerce_d2i(double d) {
 	c = DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN) {
 		return 0;
-	} else if (d < DUK_INT_MIN) {
+	} else if (d < (duk_double_t) DUK_INT_MIN) {
 		/* covers -Infinity */
 		return DUK_INT_MIN;
-	} else if (d > DUK_INT_MAX) {
+	} else if (d > (duk_double_t) DUK_INT_MAX) {
 		/* covers +Infinity */
 		return DUK_INT_MAX;
 	} else {
@@ -54,7 +54,7 @@ static duk_int_t duk__api_coerce_d2i(double d) {
 	}
 }
 
-static duk_uint_t duk__api_coerce_d2ui(double d) {
+static duk_uint_t duk__api_coerce_d2ui(duk_double_t d) {
 	int c;
 
 	/* Same as above but for unsigned int range. */
@@ -65,7 +65,7 @@ static duk_uint_t duk__api_coerce_d2ui(double d) {
 	} else if (d < 0.0) {
 		/* covers -Infinity */
 		return (duk_uint_t) 0;
-	} else if (d > DUK_UINT_MAX) {
+	} else if (d > (duk_double_t) DUK_UINT_MAX) {
 		/* covers +Infinity */
 		return (duk_uint_t) DUK_UINT_MAX;
 	} else {
