@@ -168,12 +168,26 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
 	int mincp;
 #endif
+	duk_int_t input_offset;
 
-	if (lex_ctx->input_offset >= lex_ctx->input_length) {
+	/* The case where input_offset < 0 should never happen, but it's
+	 * worth checking because lexer "points" are stored and restored
+	 * to/from duk_tvals by the compiler.  It's nice if any duk_tval issue
+	 * is caught cleanly rather than leading to memory unsafe behavior.
+	 */
+	input_offset = lex_ctx->input_offset;
+	if (DUK_UNLIKELY(input_offset >= lex_ctx->input_length ||
+	                 input_offset < 0))  {
+		if (input_offset < 0) {
+			/* Log negative offset to ease detection w/o asserts. */
+			DUK_D(DUK_DPRINT("negative input_offset, should never happen"));
+			goto error_internal;
+		}
+		DUK_ASSERT(input_offset >= 0);
 		return -1;
 	}
 
-	p = &lex_ctx->input[lex_ctx->input_offset];
+	p = lex_ctx->input + input_offset;
 	x = (int) *p++;
 
 	if (x < 0x80) {
@@ -182,7 +196,7 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 		goto fastpath;
 	} else if (x < 0xc0) {
 		/* 10xx xxxx -> invalid */
-		goto error;
+		goto error_encoding;
 	} else if (x < 0xe0) {
 		/* 110x xxxx   10xx xxxx  */
 		len = 2;
@@ -206,18 +220,18 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 		x = x & 0x07;
 	} else {
 		/* no point in supporting encodings of 5 or more bytes */
-		goto error;
+		goto error_encoding;
 	}
 
 	if (len > lex_ctx->input_length - lex_ctx->input_offset) {
-		goto error;
+		goto error_clipped;
 	}
 
 	for (i = 1; i < len; i++) {
 		int y = *p++;
 		if ((y & 0xc0) != 0x80) {
 			/* check that byte has the form 10xx xxxx */
-			goto error;
+			goto error_encoding;
 		}
 		x = x << 6;
 		x += y & 0x3f;
@@ -226,11 +240,11 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	/* check final character validity */
 
 	if (x > 0x10ffff) {
-		goto error;
+		goto error_encoding;
 	}
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
 	if (x < mincp || (x >= 0xd800 && x <= 0xdfff) || x == 0xfffe) {
-		goto error;
+		goto error_encoding;
 	}
 #endif
 
@@ -262,8 +276,13 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 
 	return x;
 
- error:
-	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "invalid char encoding in source");
+ error_internal:  /* internal error */
+	DUK_ERROR(lex_ctx->thr, DUK_ERR_INTERNAL_ERROR, "internal error");
+	return 0;
+
+ error_clipped:   /* clipped codepoint */
+ error_encoding:  /* invalid codepoint encoding or codepoint */
+	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "char decode failed");
 	return 0;
 }
 
