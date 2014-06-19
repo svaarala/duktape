@@ -37,7 +37,7 @@ int test_1a(duk_context *ctx) {
 	p = duk_push_lstring(ctx, dummy, SIZE_MAX);
 	printf("ptr is non-NULL: %d\n", (p != NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -50,13 +50,13 @@ int test_1b(duk_context *ctx) {
 	p = duk_push_lstring(ctx, dummy, SIZE_MAX - 8);
 	printf("ptr is non-NULL: %d\n", (p != NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 #define  TEST(func)  do { \
 		printf("*** %s\n", #func); \
 		rc = duk_safe_call(ctx, (func), 0, 1); \
-		printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1)); \
+		printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1)); \
 		duk_pop(ctx); \
 	} while (0)
 

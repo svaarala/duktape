@@ -59,9 +59,9 @@ void print_top(duk_context *ctx) {
 	if (duk_is_string(ctx, -1)) {
 		clen = duk_get_length(ctx, -1);
 	}
-	printf("top=%d type=%d bool=%d num=%.6lf clen=%d str='%s' str-is-NULL=%d ptr-is-NULL=%d\n",
-	       duk_get_top(ctx), duk_get_type(ctx, -1), duk_get_boolean(ctx, -1),
-	       duk_get_number(ctx, -1), clen, duk_get_string(ctx, -1),
+	printf("top=%ld type=%ld bool=%d num=%.6lf clen=%ld str='%s' str-is-NULL=%d ptr-is-NULL=%d\n",
+	       (long) duk_get_top(ctx), (long) duk_get_type(ctx, -1), (int) duk_get_boolean(ctx, -1),
+	       (double) duk_get_number(ctx, -1), (long) clen, duk_get_string(ctx, -1),
 	       (duk_get_string(ctx, -1) ? 0 : 1),
 	       (duk_get_pointer(ctx, -1) ? 0 : 1));
 }
@@ -126,7 +126,7 @@ void test(duk_context *ctx) {
 	res = duk_push_lstring(ctx, NULL, 10); PRINTRESTOP(); /* pushes empty */
 
 	res = duk_push_sprintf(ctx, "foo"); PRINTRESTOP();
-	res = duk_push_sprintf(ctx, "foo %d %s 0x%08x", 123, "bar", 0x1234cafe); PRINTRESTOP();
+	res = duk_push_sprintf(ctx, "foo %d %s 0x%08lx", 123, "bar", (long) 0x1234cafe); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, ""); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, NULL); PRINTRESTOP();
 	

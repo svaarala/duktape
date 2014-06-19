@@ -11,7 +11,7 @@ static int test_1(duk_context *ctx) {
 	duk_eval_string(ctx, "({ foo: 123, bar: [ 1, 2, 3 ]})");
 	duk_eval_string(ctx, "([ 1, 2, 3 ])");
 	duk_dump_context_stdout(ctx);
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

@@ -31,7 +31,7 @@ int test_1(duk_context *ctx) {
 		printf("%d: %s\n", i, duk_to_string(ctx, i));
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -42,7 +42,7 @@ int test_2a(duk_context *ctx) {
 	duk_push_int(ctx, 234);
 	duk_dup(ctx, -3);  /* out of bounds */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -53,7 +53,7 @@ int test_2b(duk_context *ctx) {
 	duk_push_int(ctx, 234);
 	duk_dup(ctx, 2);  /* out of bounds */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -64,7 +64,7 @@ int test_2c(duk_context *ctx) {
 	duk_push_int(ctx, 234);
 	duk_dup(ctx, DUK_INVALID_INDEX);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -73,7 +73,7 @@ int test_3a(duk_context *ctx) {
 
 	duk_dup_top(ctx);  /* empty */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

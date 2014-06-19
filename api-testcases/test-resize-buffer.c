@@ -34,7 +34,7 @@ void dump_buffer(duk_context *ctx) {
 	size_t i, s;
 
 	p = (unsigned char *) duk_require_buffer(ctx, -1, &s);
-	printf("%d bytes:", (int) s);
+	printf("%ld bytes:", (long) s);
 	for (i = 0; i < s; i++) {
 		printf(" %d", (int) p[i]);
 	}
@@ -65,7 +65,7 @@ int test_1(duk_context *ctx) {
 	p = (unsigned char *) duk_resize_buffer(ctx, -1, 0);
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -86,7 +86,7 @@ int test_2(duk_context *ctx) {
 	p[63] = 3;
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -100,7 +100,7 @@ int test_3(duk_context *ctx) {
 	printf("resize (non-buffer) to 64\n");
 	(void) duk_resize_buffer(ctx, -1, 64);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -114,7 +114,7 @@ int test_4(duk_context *ctx) {
 	printf("resize (invalid index) to 64\n");
 	(void) duk_resize_buffer(ctx, 3, 64);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -128,7 +128,7 @@ int test_5(duk_context *ctx) {
 	printf("resize (DUK_INVALID_INDEX) to 64\n");
 	(void) duk_resize_buffer(ctx, DUK_INVALID_INDEX, 64);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

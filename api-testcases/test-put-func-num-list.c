@@ -19,21 +19,21 @@ final top: 0
 
 static int do_tweak(duk_context *ctx) {
 	/* nargs=0 */
-	printf("tweak, top=%d\n", duk_get_top(ctx));
+	printf("tweak, top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 0) + duk_get_int(ctx, 1));
 	return 1;
 }
 
 static int do_adjust(duk_context *ctx) {
 	/* nargs=3 */
-	printf("adjust, top=%d\n", duk_get_top(ctx));
+	printf("adjust, top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 0) + duk_get_int(ctx, 2));
 	return 1;
 }
 
 static int do_frobnicate(duk_context *ctx) {
 	/* nargs=VARARGS */
-	printf("frobnicate, top=%d\n", duk_get_top(ctx));
+	printf("frobnicate, top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_int(ctx, duk_get_int(ctx, 1) + duk_get_int(ctx, 2));
 	return 1;
 }
@@ -68,7 +68,7 @@ int test_1(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "MyModule");
 	duk_pop_3(ctx);  /* global, dummy, object */
 
-	printf("after definition, top=%d\n", duk_get_top(ctx));
+	printf("after definition, top=%ld\n", (long) duk_get_top(ctx));
 
 	/* Eval test. */
 	duk_eval_string_noresult(ctx,
@@ -83,7 +83,7 @@ int test_1(duk_context *ctx) {
 	    "print(MyModule.frobnicate(1, 2, 3, 4, 5, 6));\n"
 	);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

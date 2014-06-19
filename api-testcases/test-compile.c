@@ -30,7 +30,7 @@ int test_1(duk_context *ctx) {
 	printf("program result: %lf\n", duk_get_number(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -44,7 +44,7 @@ int test_2(duk_context *ctx) {
 	printf("eval result: %lf\n", duk_get_number(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -60,12 +60,12 @@ int test_3(duk_context *ctx) {
 	printf("function result: %lf\n", duk_get_number(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 int test_4(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
 
@@ -76,10 +76,10 @@ int test_4(duk_context *ctx) {
 	                     "123; obj={");
 	duk_push_string(ctx, "program");
 	rc = duk_pcompile(ctx, 0);
-	printf("compile result: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("compile result: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

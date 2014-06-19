@@ -22,7 +22,7 @@ int test1(duk_context *ctx) {
 	duk_eval_string(ctx, "var obj = new MyConstructor(); print(obj.inherited);");
 	duk_pop(ctx);
 
-	printf("top at end: %d\n", duk_get_top(ctx));
+	printf("top at end: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

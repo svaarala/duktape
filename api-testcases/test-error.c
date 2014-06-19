@@ -33,7 +33,7 @@ int test_1(duk_context *ctx) {
 
 	duk_error(ctx, DUK_ERR_RANGE_ERROR, "range error: %d", 123);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -42,7 +42,7 @@ int test_2(duk_context *ctx) {
 
 	duk_error(ctx, 1234567, "arbitrary error code");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -52,7 +52,7 @@ int test_3(duk_context *ctx) {
 	/* error code replaces message automatically now if message is NULL */
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, NULL);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -75,7 +75,7 @@ void dump_error(duk_context *ctx) {
 	duk_pop(ctx);
 
 	duk_get_prop_string(ctx, -1, "fileName");
-	printf("fileName is a string: %d\n", duk_is_string(ctx, -1));
+	printf("fileName is a string: %d\n", (int) duk_is_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_get_prop_string(ctx, -1, "lineNumber");
@@ -92,7 +92,7 @@ void dump_error(duk_context *ctx) {
 #define  TEST(func)  do {  \
 		printf("*** %s (duk_pcall)\n", #func); \
 		rc = duk_safe_call(ctx, (func), 0, 1); \
-		printf("==> rc=%d\n", rc); \
+		printf("==> rc=%d\n", (int) rc); \
 		dump_error(ctx); \
 		duk_pop(ctx); \
 	} while (0)

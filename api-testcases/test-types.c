@@ -40,12 +40,13 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n + 1; i++) {  /* end on invalid index on purpose */
-		int typeval, typemask;
+		duk_int_t typeval, typemask;
 
 		typeval = duk_get_type(ctx, i);
 		typemask = duk_get_type_mask(ctx, i);
 
-		printf("stack[%d] --> type=%d mask=0x%08x ", i, typeval, typemask);
+		printf("stack[%ld] --> type=%ld mask=0x%08lx ",
+		       (long) i, (long) typeval, (long) typemask);
 
 		switch(duk_get_type(ctx, i)) {
 		case DUK_TYPE_NONE:		printf("none"); break;
@@ -61,16 +62,16 @@ void test(duk_context *ctx) {
 		}
 
 		printf(" bool=%d num=%lf str=%s buf-is-null=%d ptr=%p",
-		       duk_get_boolean(ctx, i),
+		       (int) duk_get_boolean(ctx, i),
 		       duk_get_number(ctx, i),
 		       duk_get_string(ctx, i),
 		       (duk_get_buffer(ctx, i, NULL) == NULL ? 1 : 0),
 		       duk_get_pointer(ctx, i));
 
 		printf(" isobj=%d isarr=%d isfunc=%d",
-		       duk_is_object(ctx, i),
-		       duk_is_array(ctx, i),
-		       duk_is_function(ctx, i));
+		       (int) duk_is_object(ctx, i),
+		       (int) duk_is_array(ctx, i),
+		       (int) duk_is_function(ctx, i));
 
 		printf("\n");
 	}

@@ -67,81 +67,81 @@ void prep(duk_context *ctx) {
 
 /* duk_get_prop(), success cases */
 int test_1a(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	duk_push_string(ctx, "foo");
 	rc = duk_get_prop(ctx, 0);
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_string(ctx, "nonexistent");
 	rc = duk_get_prop(ctx, 0);
-	printf("obj.nonexistent -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_int(ctx, 123);
 	rc = duk_get_prop(ctx, 0);
-	printf("obj[123] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj[123] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_string(ctx, "nonexistent");
 	rc = duk_get_prop(ctx, 1);
-	printf("arr.nonexistent -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_int(ctx, 2);
 	rc = duk_get_prop(ctx, 1);
-	printf("arr[2] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr[2] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_string(ctx, "length");
 	rc = duk_get_prop(ctx, 1);
-	printf("arr.length -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_int(ctx, 5);
 	rc = duk_get_prop(ctx, 2);
-	printf("'test_string'[5] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("'test_string'[5] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_push_string(ctx, "length");
 	rc = duk_get_prop(ctx, 2);
-	printf("'test_string'.length -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("'test_string'.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop(), invalid index */
 int test_1b(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	duk_push_string(ctx, "foo");
 	rc = duk_get_prop(ctx, 234);
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop(), DUK_INVALID_INDEX */
 int test_1c(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	duk_push_string(ctx, "foo");
 	rc = duk_get_prop(ctx, DUK_INVALID_INDEX);
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -177,151 +177,151 @@ int test_1d(duk_context *ctx) {
 	}
 	duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop(), not object coercible */
 int test_1e(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
 
 	duk_push_null(ctx);
 	duk_push_string(ctx, "foo");
 	rc = duk_get_prop(ctx, -2);
-	printf("null.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("null.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_string(), success cases */
 int test_2a(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_string(ctx, 0, "foo");
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 0, "nonexistent");
-	printf("obj.nonexistent -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 0, "123");
-	printf("obj['123'] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj['123'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 1, "nonexistent");
-	printf("arr.nonexistent -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 1, "2");
-	printf("arr['2'] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr['2'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 1, "length");
-	printf("arr.length -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 2, "5");
-	printf("'test_string'['5'] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("'test_string'['5'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_string(ctx, 2, "length");
-	printf("'test_string'.length -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("'test_string'.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_string(), invalid index */
 int test_2b(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_string(ctx, 234, "foo");
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_string(), DUK_INVALID_INDEX */
 int test_2c(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_string(ctx, DUK_INVALID_INDEX, "foo");
-	printf("obj.foo -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_index(), success cases */
 int test_3a(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_index(ctx, 0, 31337);
-	printf("obj[31337] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj[31337] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_index(ctx, 0, 123);
-	printf("obj[123] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj[123] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_index(ctx, 1, 31337);
-	printf("arr[31337] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr[31337] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_index(ctx, 1, 2);
-	printf("arr[2] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("arr[2] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_get_prop_index(ctx, 2, 5);
-	printf("'test_string'[5] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("'test_string'[5] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_index(), invalid index */
 int test_3b(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_index(ctx, 234, 123);
-	printf("obj[123] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj[123] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* duk_get_prop_index(), DUK_INVALID_INDEX */
 int test_3c(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	prep(ctx);
 
 	rc = duk_get_prop_index(ctx, DUK_INVALID_INDEX, 123);
-	printf("obj[123] -> rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("obj[123] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

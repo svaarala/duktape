@@ -30,7 +30,7 @@ int test_1(duk_context *ctx) {
 		duk_push_int(ctx, 123);
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -39,23 +39,23 @@ int test_1(duk_context *ctx) {
  */
 int check_1(duk_context *ctx) {
 	int i;
-	int rc;
+	duk_ret_t rc;
 
 	rc = duk_check_stack_top(ctx, 1000);
-	printf("rc=%d\n", rc);
+	printf("rc=%d\n", (int) rc);
 
 	for (i = 0; i < 1000; i++) {
 		duk_push_int(ctx, 123);
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* same test but with one element checks, once per loop */
 int check_2(duk_context *ctx) {
 	int i;
-	int rc;
+	duk_ret_t rc;
 
 	for (i = 0; i < 1000; i++) {
 		rc = duk_check_stack_top(ctx, i + 1);
@@ -65,18 +65,18 @@ int check_2(duk_context *ctx) {
 		duk_push_int(ctx, 123);
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* try to extend value stack too much with duk_check_stack_top */
 int check_3(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	rc = duk_check_stack_top(ctx, 1000*1000*1000);
-	printf("rc=%d\n", rc);  /* should print 0: fail */
+	printf("rc=%d\n", (int) rc);  /* should print 0: fail */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -90,7 +90,7 @@ int require_1(duk_context *ctx) {
 		duk_push_int(ctx, 123);
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -103,7 +103,7 @@ int require_2(duk_context *ctx) {
 		duk_push_int(ctx, 123);
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -111,7 +111,7 @@ int require_2(duk_context *ctx) {
 int require_3(duk_context *ctx) {
 	duk_require_stack_top(ctx, 1000*1000*1000);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

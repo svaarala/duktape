@@ -9,7 +9,7 @@ rc=0, ret=undefined
 ===*/
 
 int my_func_1(duk_context *ctx) {
-	printf("duk_is_constructor_call: %d\n", duk_is_constructor_call(ctx));
+	printf("duk_is_constructor_call: %d\n", (int) duk_is_constructor_call(ctx));
 
 	/* check 'this'; it should have internal prototype set below to
 	 * constructor's "prototype" property.
@@ -29,7 +29,7 @@ int my_func_1(duk_context *ctx) {
 }
 
 int my_func_2(duk_context *ctx) {
-	printf("duk_is_constructor_call: %d\n", duk_is_constructor_call(ctx));
+	printf("duk_is_constructor_call: %d\n", (int) duk_is_constructor_call(ctx));
 
 	/* this replaces the freshly constructed object, and does NOT have
 	 * the same internal prototype as the fresh object.
@@ -65,14 +65,14 @@ int test_raw(duk_context *ctx) {
 	duk_pop(ctx);
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	rc = duk_safe_call(ctx, test_raw, 0, 1);
-	printf("rc=%d, ret=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, ret=%s\n", (int) rc, duk_to_string(ctx, -1));
 }
 

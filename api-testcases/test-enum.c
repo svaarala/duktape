@@ -79,15 +79,15 @@ int test_1(duk_context *ctx) {
 	 * not exposed or stable.
 	 */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result='%s'\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 

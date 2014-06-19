@@ -61,7 +61,7 @@ int test_1(duk_context *ctx) {
 	init_test_values(ctx);
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf("top=%d\n", duk_get_top(ctx));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		printf("duk_safe_to_string[%d] = '%s'\n", i, duk_safe_to_string(ctx, i));
 	}
 
@@ -70,7 +70,7 @@ int test_1(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		const char *str;
-		printf("top=%d\n", duk_get_top(ctx));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, i, NULL);
 		printf("duk_safe_to_lstring_null[%d] = '%s'\n", i, str);
 	}
@@ -81,9 +81,9 @@ int test_1(duk_context *ctx) {
 	for (i = 0; i < n; i++) {
 		const char *str;
 		size_t len;
-		printf("top=%d\n", duk_get_top(ctx));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, i, &len);
-		printf("duk_safe_to_lstring[%d] = '%s', len %d\n", i, str, (int) len);
+		printf("duk_safe_to_lstring[%d] = '%s', len %ld\n", i, str, (long) len);
 	}
 
 	/* duk_safe_to_lstring() with negative stack indices */
@@ -92,9 +92,9 @@ int test_1(duk_context *ctx) {
 	for (i = 0; i < n; i++) {
 		const char *str;
 		size_t len;
-		printf("top=%d\n", duk_get_top(ctx));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, -4 + i, &len);
-		printf("duk_safe_to_lstring[%d] = '%s', len %d\n", i, str, (int) len);
+		printf("duk_safe_to_lstring[%d] = '%s', len %ld\n", i, str, (long) len);
 	}
 
 	return 0;
@@ -104,7 +104,7 @@ void test(duk_context *ctx) {
 	int rc;
 
 	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 

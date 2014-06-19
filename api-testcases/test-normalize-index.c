@@ -39,7 +39,7 @@ int req_norm_idx(duk_context *ctx) {
 	int norm_idx;
 
 	duk_pop(ctx);
-	printf("req_norm_idx: top %d after popping arg\n", duk_get_top(ctx));
+	printf("req_norm_idx: top %ld after popping arg\n", (long) duk_get_top(ctx));
 
 	norm_idx = duk_require_normalize_index(ctx, idx);
 	duk_push_int(ctx, norm_idx);
@@ -57,9 +57,11 @@ void test(duk_context *ctx) {
 	for (idx = -5; idx <= 5; idx++) {
 		norm_idx = duk_normalize_index(ctx, idx);
 		if (norm_idx == DUK_INVALID_INDEX) {
-			printf("top=%d, idx=%d, duk_normalize_index -> DUK_INVALID_INDEX\n", duk_get_top(ctx), idx);
+			printf("top=%ld, idx=%d, duk_normalize_index -> DUK_INVALID_INDEX\n",
+			       (long) duk_get_top(ctx), idx);
 		} else {
-			printf("top=%d, idx=%d, duk_normalize_index -> %d\n", duk_get_top(ctx), idx, norm_idx);
+			printf("top=%ld, idx=%d, duk_normalize_index -> %d\n",
+			       (long) duk_get_top(ctx), idx, norm_idx);
 		}
 	}
 

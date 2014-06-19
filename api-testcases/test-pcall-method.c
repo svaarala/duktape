@@ -8,7 +8,7 @@ final top: 0
 ===*/
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	/* basic success case, non-strict target function (this gets coerced) */
 	duk_eval_string(ctx, "(function (x,y) { print(typeof this, this); return x+y; })");
@@ -16,7 +16,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", (int) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	/* basic success case, strict target function (this not coerced)) */
@@ -25,7 +25,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", (int) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	/* basic error case */
@@ -34,8 +34,8 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	rc = duk_pcall_method(ctx, 2);
-	printf("rc=%d, result='%s'\n", rc, duk_safe_to_string(ctx, -1));
+	printf("rc=%d, result='%s'\n", (int) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

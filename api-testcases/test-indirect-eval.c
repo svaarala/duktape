@@ -13,7 +13,7 @@ final top: 0
 ===*/
 
 void test(duk_context *ctx) {
-        int rc;
+	duk_ret_t rc;
 
         duk_eval_string(ctx, "this.testFunc = eval.bind(this, 'print(\\'hello from eval\\')');");
 	duk_pop(ctx);
@@ -21,9 +21,9 @@ void test(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "testFunc");
 	rc = duk_pcall(ctx, 0);
-	printf("rc=%d\n", rc);
+	printf("rc=%d\n", (int) rc);
 	duk_pop_2(ctx);
 
-        printf("final top: %d\n", duk_get_top(ctx));
+        printf("final top: %ld\n", (long) duk_get_top(ctx));
 }
 

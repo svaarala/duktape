@@ -6,7 +6,7 @@ rc=1, result=Error: invalid index
 ===*/
 
 int test_1(duk_context *ctx) {
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* duk_set_top() uses pointer arithmetic internally, and because
 	 * duk_tval is a multibyte structure, it's possible to wrap the
@@ -22,12 +22,12 @@ int test_1(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_set_top(ctx, 0x20000000);
 
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 int test_2(duk_context *ctx) {
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* On a 32-bit platform and 12-byte values there is no zero-
 	 * equivalent value: (2**32 / 12) = 0x15555555, but 0x1555555 * 12
@@ -38,7 +38,7 @@ int test_2(duk_context *ctx) {
 	duk_push_string(ctx, "foo");
 	duk_set_top(ctx, 0x15555556);
 
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -46,11 +46,11 @@ void test(duk_context *ctx) {
 	int rc;
 
 	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 

@@ -3,17 +3,19 @@ FIXME
 ===*/
 
 void print_stack(duk_context *ctx) {
-	int i, n, t;
+	int t;
+	duk_idx_t i, top;
 
-	n = duk_get_top(ctx);
-	printf("--- top=%d\n", n);
-	for (i = 0; i <= n; i++) {
+	top = duk_get_top(ctx);
+	printf("--- top=%ld\n", (long) top);
+	for (i = 0; i <= top; i++) {
 		/* Go one over top intentionally */
 		t = duk_get_type(ctx, i);  /* before coercion */
-		if (i < n) {
+		if (i < top) {
 			duk_to_string(ctx, i);
 		}
-		printf("top=%d, idx=%d, type %d -> %s\n", n, i, t, duk_get_string(ctx, i));
+		printf("top=%ld, idx=%ld, type %d -> %s\n",
+		       (long) top, (long) i, (int) t, duk_get_string(ctx, i));
 	}
 }
 
@@ -91,26 +93,26 @@ int test_5(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_safe_call(ctx, test_4, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	rc = duk_safe_call(ctx, test_5, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
+	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 

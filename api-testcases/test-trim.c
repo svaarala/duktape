@@ -39,11 +39,11 @@ int test_1(duk_context *ctx) {
 
 		sz = duk_get_length(ctx, i);
 		duk_trim(ctx, i);
-		printf("%d: clen=%d, trimmed='%s'\n",
-		       i, (int) sz, duk_get_string(ctx, i));
+		printf("%d: clen=%ld, trimmed='%s'\n",
+		       i, (long) sz, duk_get_string(ctx, i));
 	}
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -54,7 +54,7 @@ int test_2(duk_context *ctx) {
 	duk_trim(ctx, -1);
 	printf("trimmed non-string, should not happen\n");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -65,7 +65,7 @@ int test_3(duk_context *ctx) {
 	duk_trim(ctx, 4);
 	printf("trimmed invalid index, should not happen\n");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -76,7 +76,7 @@ int test_4(duk_context *ctx) {
 	duk_trim(ctx, DUK_INVALID_INDEX);
 	printf("trimmed DUK_INVALID_INDEX, should not happen\n");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

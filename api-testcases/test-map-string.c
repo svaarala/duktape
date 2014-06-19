@@ -6,13 +6,13 @@ result: 'FOOXBAR'
 final top: 0
 ===*/
 
-static int map_char(void *udata, int codepoint) {
-	if (codepoint >= (int) 'a' && codepoint <= (int) 'z') {
+static duk_codepoint_t map_char(void *udata, duk_codepoint_t codepoint) {
+	if (codepoint >= (duk_codepoint_t) 'a' && codepoint <= (duk_codepoint_t) 'z') {
 		/* Convert ASCII to uppercase. */
-		return codepoint - (int) 'a' + (int) 'A';
+		return codepoint - (duk_codepoint_t) 'a' + (duk_codepoint_t) 'A';
 	} else if (codepoint == 0x1234) {
 		/* Convert U+1234 to 'X' */
-		return (int) 'X';
+		return (duk_codepoint_t) 'X';
 	}
 	return codepoint;
 }
@@ -32,5 +32,5 @@ void test(duk_context *ctx) {
 
 	/* FIXME: error cases */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

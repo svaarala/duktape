@@ -21,7 +21,7 @@ int test_1(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, -1);
 	printf("duk_require_c_function == my_func: %d\n", (funcptr == my_func ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -33,7 +33,7 @@ int test_2(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, 3);
 	printf("index 3 -> NULL: %d\n", (funcptr == NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -45,7 +45,7 @@ int test_3(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX -> NULL: %d\n", (funcptr == NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

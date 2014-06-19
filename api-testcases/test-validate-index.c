@@ -35,10 +35,10 @@ idx=5, duk_require_valid_index -> Error: invalid index
 ===*/
 
 int req_valid_idx(duk_context *ctx) {
-	int idx = duk_get_int(ctx, -1);
+	duk_idx_t idx = duk_get_int(ctx, -1);
 
 	duk_pop(ctx);
-	printf("req_valid_idx: top %d after popping arg\n", duk_get_top(ctx));
+	printf("req_valid_idx: top %ld after popping arg\n", (long) duk_get_top(ctx));
 
 	duk_require_valid_index(ctx, idx);
 	duk_push_true(ctx);
@@ -46,21 +46,23 @@ int req_valid_idx(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int idx;
+	duk_idx_t idx;
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_push_int(ctx, 345);
 
 	for (idx = -5; idx <= 5; idx++) {
-		printf("top=%d, idx=%d, duk_is_valid_index -> %d\n", duk_get_top(ctx), idx,
-		       duk_is_valid_index(ctx, idx));
+		printf("top=%ld, idx=%ld, duk_is_valid_index -> %d\n",
+		       (long) duk_get_top(ctx), (long) idx,
+		       (int) duk_is_valid_index(ctx, idx));
 	}
 
 	for (idx = -5; idx <= 5; idx++) {
 		duk_push_int(ctx, idx);
 		duk_safe_call(ctx, req_valid_idx, 1, 1);
-		printf("idx=%d, duk_require_valid_index -> %s\n", idx, duk_to_string(ctx, -1));
+		printf("idx=%ld, duk_require_valid_index -> %s\n",
+		       (long) idx, duk_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 }

@@ -25,7 +25,7 @@ int test_2(duk_context *ctx) {
 
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
 
@@ -59,6 +59,6 @@ void test(duk_context *ctx) {
 
 	/* FIXME: also test invalid input stack shapes (like not enough args) */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }
 

@@ -55,7 +55,8 @@ int my_type_error_ret(duk_context *ctx) {
 void test(duk_context *ctx) {
 	int argcount;
 	int funcidx;
-	int i, rc;
+	int i;
+	duk_ret_t rc;
 
 	/* test C function arg count variants */
 
@@ -85,18 +86,21 @@ void test(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_zero_ret, 0);
 	duk_call(ctx, 0);
-	printf("top after calling my_zero_ret: %d, retval='%s'\n", duk_get_top(ctx), duk_to_string(ctx, -1));
+	printf("top after calling my_zero_ret: %ld, retval='%s'\n",
+	       (long) duk_get_top(ctx), duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_neg_ret, 0);
 	rc = duk_pcall(ctx, 0);
-	printf("top after calling my_neg_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
+	printf("top after calling my_neg_ret: %ld, rc=%d, retval='%s'\n",
+	       (long) duk_get_top(ctx), (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_type_error_ret, 0);
 	rc = duk_pcall(ctx, 0);
-	printf("top after calling my_type_error_ret: %d, rc=%d, retval='%s'\n", duk_get_top(ctx), rc, duk_to_string(ctx, -1));
+	printf("top after calling my_type_error_ret: %ld, rc=%d, retval='%s'\n",
+	       (long) duk_get_top(ctx), (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }

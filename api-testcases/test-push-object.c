@@ -15,11 +15,11 @@ void test(duk_context *ctx) {
 
 	/* object is now: { "meaningOfLife": 42 } */
 
-	printf("duk_is_object(%d) = %d\n", obj_idx, duk_is_object(ctx, obj_idx));
+	printf("duk_is_object(%ld) = %d\n", (long) obj_idx, (int) duk_is_object(ctx, obj_idx));
 
 	duk_json_encode(ctx, obj_idx);  /* in-place */
 
 	printf("json encoded: %s\n", duk_get_string(ctx, obj_idx));
 
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 }

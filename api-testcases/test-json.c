@@ -17,7 +17,7 @@ void test_encode(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "bar");
 	duk_push_int(ctx, 123);  /* dummy */
 	printf("json encode: %s\n", duk_json_encode(ctx, -2));
-	printf("top after: %d\n", duk_get_top(ctx));  /* value + dummy */
+	printf("top after: %ld\n", (long) duk_get_top(ctx));  /* value + dummy */
 	duk_set_top(ctx, 0);
 }
 
@@ -27,7 +27,7 @@ void test_encode_apidoc(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "meaningOfLife");
 	printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));
 	duk_pop(ctx);
-	printf("top after: %d\n", duk_get_top(ctx));  /* value + dummy + get_prop result */
+	printf("top after: %ld\n", (long) duk_get_top(ctx));  /* value + dummy + get_prop result */
 	duk_set_top(ctx, 0);
 }
 
@@ -37,7 +37,7 @@ void test_decode(duk_context *ctx) {
 	duk_json_decode(ctx, -2);
 	duk_get_prop_string(ctx, -2, "foo");
 	printf("json decode, result.foo=%s\n", duk_get_string(ctx, -1));
-	printf("top after: %d\n", duk_get_top(ctx));  /* value + dummy + get_prop result */
+	printf("top after: %ld\n", (long) duk_get_top(ctx));  /* value + dummy + get_prop result */
 	duk_set_top(ctx, 0);
 }
 
@@ -47,7 +47,7 @@ void test_decode_apidoc(duk_context *ctx) {
 	duk_get_prop_string(ctx, -1, "meaningOfLife");
 	printf("JSON decoded meaningOfLife is: %s\n", duk_to_string(ctx, -1));
 	duk_pop_2(ctx);
-	printf("top after: %d\n", duk_get_top(ctx));  /* value + dummy + get_prop result */
+	printf("top after: %ld\n", (long) duk_get_top(ctx));  /* value + dummy + get_prop result */
 	duk_set_top(ctx, 0);
 }
 

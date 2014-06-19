@@ -37,37 +37,37 @@ void test(duk_context *ctx) {
 	/* Protected eval with success */
 	duk_push_string(ctx, "print('Hello world!'); 123;");
 	rc = duk_peval(ctx);
-	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
 	/* Protected eval with failure */
 	duk_push_string(ctx, "throw new Error('eval error');");
 	rc = duk_peval(ctx);
-	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
 	/* Protected eval with syntax error */
 	duk_push_string(ctx, "obj = {");
 	rc = duk_peval(ctx);
-	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
 	/* Plain eval with no result */
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "print('doing eval');");
 	duk_eval_noresult(ctx);
 
 	/* Protected eval with no result, no error */
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "print('doing peval');");
 	rc = duk_peval_noresult(ctx);
-	printf("rc=%d\n", rc);
+	printf("rc=%d\n", (int) rc);
 
 	/* Protected eval with no result, syntax error */
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "print('doing peval'); obj = {");
 	rc = duk_peval_noresult(ctx);
-	printf("rc=%d\n", rc);
+	printf("rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 }

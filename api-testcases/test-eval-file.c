@@ -52,42 +52,42 @@ static int test_raw(duk_context *ctx) {
 	const char *data1 = "print('Hello world from a file!'); 123;";
 	const char *data2 = "print('Hello world from a file, with exception'); throw new Error('eval error');";
 	const char *data3 = "print('Hello world from a file, with syntax error'); obj = {";
-	int rc;
+	duk_ret_t rc;
 
 	write_file(TMPFILE, data1);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_eval_file(ctx, TMPFILE);
 	printf("return value is: %lf\n", duk_get_number(ctx, -1));
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_eval_file_noresult(ctx, TMPFILE);
 	printf("no result\n");
 
 	write_file(TMPFILE, data2);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_peval_file(ctx, TMPFILE);
-	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_peval_file_noresult(ctx, TMPFILE);
-	printf("no result, rc=%d\n", rc);
+	printf("no result, rc=%d\n", (int) rc);
 
 	write_file(TMPFILE, data3);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_peval_file(ctx, TMPFILE);
-	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), rc);
+	printf("return value is: %s (rc=%d)\n", duk_safe_to_string(ctx, -1), (int) rc);
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_peval_file_noresult(ctx, TMPFILE);
-	printf("no result, rc=%d\n", rc);
+	printf("no result, rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

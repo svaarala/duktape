@@ -19,7 +19,7 @@ void dump_string(duk_context *ctx) {
 	size_t i, len;
 
 	buf = duk_get_lstring(ctx, -1, &len);
-	printf("blen=%d, clen=%d, str=\"", (int) len, (int) duk_get_length(ctx, -1));
+	printf("blen=%ld, clen=%ld, str=\"", (long) len, (long) duk_get_length(ctx, -1));
 	for (i = 0; i < len; i++) {
 		char c = buf[i];
 		if (c >= 0x20 && c <= 0x7e) {
@@ -71,7 +71,7 @@ int test_1(duk_context *ctx) {
 	duk_substring(ctx, -1, 4, 2);
 	dump_string(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -82,7 +82,7 @@ int test_2(duk_context *ctx) {
 	duk_push_int(ctx, 123456);
 	duk_substring(ctx, -1, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -93,7 +93,7 @@ int test_3(duk_context *ctx) {
 	duk_push_string(ctx, "foobar");
 	duk_substring(ctx, -2, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -104,7 +104,7 @@ int test_4(duk_context *ctx) {
 	duk_push_string(ctx, "foobar");
 	duk_substring(ctx, DUK_INVALID_INDEX, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

@@ -85,7 +85,7 @@ int test_1a(duk_context *ctx) {
 	printf("ptr is non-NULL: %d\n", (buf != NULL ? 1 : 0));
 	rw_test((unsigned char *) buf, 1024);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -113,7 +113,7 @@ int test_1b(duk_context *ctx) {
 	printf("ptr is non-NULL: %d\n", (buf != NULL ? 1 : 0));
 	rw_test((unsigned char *) buf, 1024);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -132,7 +132,7 @@ int test_2(duk_context *ctx) {
 	buf = duk_push_buffer(ctx, SIZE_MAX - 1024, 0);
 	printf("ptr is non-NULL: %d\n", (buf != NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -145,7 +145,7 @@ int test_3(duk_context *ctx) {
 	buf = duk_push_buffer(ctx, SIZE_MAX - 1024, 1);
 	printf("ptr is non-NULL: %d\n", (buf != NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
