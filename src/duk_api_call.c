@@ -387,7 +387,7 @@ void duk_new(duk_context *ctx, int nargs) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not constructable");
 }
 
-duk_ret_t duk_is_constructor_call(duk_context *ctx) {
+duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 
@@ -403,7 +403,7 @@ duk_ret_t duk_is_constructor_call(duk_context *ctx) {
 	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
 }
 
-duk_ret_t duk_is_strict_call(duk_context *ctx) {
+duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 

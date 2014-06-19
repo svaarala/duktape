@@ -21,8 +21,8 @@ void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, int 
 int duk_check_stack_raw(duk_context *ctx, unsigned int extra);
 void duk_require_stack_raw(duk_context *ctx, unsigned int extra);
 
-duk_tval *duk_get_tval(duk_context *ctx, int index);
-duk_tval *duk_require_tval(duk_context *ctx, int index);
+duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index);
+duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index);
 void duk_push_tval(duk_context *ctx, duk_tval *tv);
 
 void duk_push_this_check_object_coercible(duk_context *ctx);   /* push the current 'this' binding; throw TypeError
@@ -87,10 +87,10 @@ void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
 #define duk_push_hnativefunction(ctx,h) \
 	duk_push_hobject((ctx), (duk_hobject *) (h))
 void duk_push_hobject_bidx(duk_context *ctx, int builtin_idx);
-int duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int prototype_bidx);
-int duk_push_object_helper_proto(duk_context *ctx, int hobject_flags_and_class, duk_hobject *proto);
-int duk_push_object_internal(duk_context *ctx);
-int duk_push_compiledfunction(duk_context *ctx);
+duk_idx_t duk_push_object_helper(duk_context *ctx, int hobject_flags_and_class, int prototype_bidx);
+duk_idx_t duk_push_object_helper_proto(duk_context *ctx, int hobject_flags_and_class, duk_hobject *proto);
+duk_idx_t duk_push_object_internal(duk_context *ctx);
+duk_idx_t duk_push_compiledfunction(duk_context *ctx);
 void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, int nargs);
 void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, int nargs);
 

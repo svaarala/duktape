@@ -35,15 +35,6 @@ extern "C" {
  *  in Duktape web documentation.
  */
 
-/* Index values must have at least 32-bit range. */
-typedef duk_int_t duk_idx_t;
-
-/* Duktape/C function return value, platform int is enough for now to
- * represent 0, 1, or negative error code.  Must be compatible with
- * assigning truth values (e.g. duk_ret_t rc = (foo == bar);).
- */
-typedef int duk_ret_t;
-
 struct duk_memory_functions;
 struct duk_function_list_entry;
 struct duk_number_list_entry;
@@ -261,14 +252,14 @@ DUK_API_NORETURN(void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, 
 	duk_error_stash  /* arguments follow */
 #endif
 
-DUK_API_NORETURN(void duk_fatal(duk_context *ctx, int err_code, const char *err_msg));
+DUK_API_NORETURN(void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg));
 
 /*
  *  Other state related functions
  */
 
-duk_ret_t duk_is_strict_call(duk_context *ctx);
-duk_ret_t duk_is_constructor_call(duk_context *ctx);
+duk_bool_t duk_is_strict_call(duk_context *ctx);
+duk_bool_t duk_is_constructor_call(duk_context *ctx);
 duk_int_t duk_get_magic(duk_context *ctx);
 
 /*
@@ -277,7 +268,7 @@ duk_int_t duk_get_magic(duk_context *ctx);
 
 duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index);
 duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index);
-duk_ret_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
 void duk_require_valid_index(duk_context *ctx, duk_idx_t index);
 
 duk_idx_t duk_get_top(duk_context *ctx);
@@ -289,23 +280,27 @@ duk_idx_t duk_require_top_index(duk_context *ctx);
  * value so that if user accidentally uses a negative value, it gets flagged as
  * an error instead of being interpreted as a large unsigned number.
  */
-duk_ret_t duk_check_stack(duk_context *ctx, duk_uint_t extra);
+duk_bool_t duk_check_stack(duk_context *ctx, duk_uint_t extra);
 void duk_require_stack(duk_context *ctx, duk_uint_t extra);
-duk_ret_t duk_check_stack_top(duk_context *ctx, duk_uint_t top);
+duk_bool_t duk_check_stack_top(duk_context *ctx, duk_uint_t top);
 void duk_require_stack_top(duk_context *ctx, duk_uint_t top);
 
 /*
  *  Stack manipulation (other than push/pop)
  */
 
-void duk_swap(duk_context *ctx, int index1, int index2);
-void duk_swap_top(duk_context *ctx, int index);
-void duk_dup(duk_context *ctx, int from_index);
+void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+void duk_swap_top(duk_context *ctx, duk_idx_t index);
+void duk_dup(duk_context *ctx, duk_idx_t from_index);
 void duk_dup_top(duk_context *ctx);
-void duk_insert(duk_context *ctx, int to_index);
-void duk_replace(duk_context *ctx, int to_index);
-void duk_remove(duk_context *ctx, int index);
-void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count);  /* FIXME: undocumented */
+void duk_insert(duk_context *ctx, duk_idx_t to_index);
+void duk_replace(duk_context *ctx, duk_idx_t to_index);
+void duk_remove(duk_context *ctx, duk_idx_t index);
+/* FIXME: undocumented */
+/* FIXME: make count signed - otherwise if user code calls with a negative value,
+ * it will coerce to a large unsigned value which is confusing.
+ */
+void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, duk_uint_t count);
 
 /*
  *  Push operations
@@ -318,15 +313,15 @@ void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, unsigned int count); 
 
 void duk_push_undefined(duk_context *ctx);
 void duk_push_null(duk_context *ctx);
-void duk_push_boolean(duk_context *ctx, int val);
+void duk_push_boolean(duk_context *ctx, duk_bool_t val);
 void duk_push_true(duk_context *ctx);
 void duk_push_false(duk_context *ctx);
-void duk_push_number(duk_context *ctx, double val);
+void duk_push_number(duk_context *ctx, duk_double_t val);
 void duk_push_nan(duk_context *ctx);
 void duk_push_int(duk_context *ctx, duk_int_t val);
 void duk_push_uint(duk_context *ctx, duk_uint_t val);
 const char *duk_push_string(duk_context *ctx, const char *str);
-const char *duk_push_string_file(duk_context *ctx, const char *path);
+const char *duk_push_string_file(duk_context *ctx, const char *path);  /* FIXME: wide char paths? path encoding? */
 const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
 void duk_push_pointer(duk_context *ctx, void *p);
 const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
@@ -340,10 +335,10 @@ void duk_push_heap_stash(duk_context *ctx);
 void duk_push_global_stash(duk_context *ctx);
 void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
-int duk_push_object(duk_context *ctx);
-int duk_push_array(duk_context *ctx);
-int duk_push_c_function(duk_context *ctx, duk_c_function func, int nargs);
-int duk_push_thread_raw(duk_context *ctx, int flags);
+duk_idx_t duk_push_object(duk_context *ctx);
+duk_idx_t duk_push_array(duk_context *ctx);
+duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_int_t nargs);
+duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_int_t flags);  /* FIXME: flag field typing? duk_uint_t? */
 
 #define duk_push_thread(ctx) \
 	duk_push_thread_raw((ctx), 0 /*flags*/)
@@ -351,19 +346,19 @@ int duk_push_thread_raw(duk_context *ctx, int flags);
 #define duk_push_thread_new_globalenv(ctx) \
 	duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
 
-int duk_push_error_object_raw(duk_context *ctx, int err_code, const char *filename, int line, const char *fmt, ...);
+duk_idx_t duk_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...);
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_push_error_object(ctx,err_code,...)  \
 	duk_push_error_object_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
 #else
-int duk_push_error_object_stash(duk_context *ctx, int err_code, const char *fmt, ...);
+duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
 #define duk_push_error_object  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = __LINE__, \
 	duk_push_error_object_stash  /* arguments follow */
 #endif
 
-void *duk_push_buffer(duk_context *ctx, duk_size_t size, int dynamic);
+void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
 void *duk_push_fixed_buffer(duk_context *ctx, duk_size_t size);
 void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
 
@@ -372,7 +367,7 @@ void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
  */
 
 void duk_pop(duk_context *ctx);
-void duk_pop_n(duk_context *ctx, unsigned int count);
+void duk_pop_n(duk_context *ctx, duk_uint_t count);  /* FIXME: use signed count for robustness? use duk_idx_t for count? */
 void duk_pop_2(duk_context *ctx);
 void duk_pop_3(duk_context *ctx);
 
