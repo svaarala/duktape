@@ -94,18 +94,18 @@ duk_idx_t duk_push_compiledfunction(duk_context *ctx);
 void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, int nargs);
 void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, int nargs);
 
-int duk_get_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [val] */
-int duk_put_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [val] -> [] */
-int duk_del_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [] */
-int duk_has_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx);     /* [] -> [] */
+duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [] -> [val] */
+duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [val] -> [] */
+duk_bool_t duk_del_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [] -> [] */
+duk_bool_t duk_has_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [] -> [] */
 
-int duk_get_prop_stridx_boolean(duk_context *ctx, int obj_index, duk_small_int_t stridx, int *out_has_prop);  /* [] -> [] */
+duk_bool_t duk_get_prop_stridx_boolean(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_bool_t *out_has_prop);  /* [] -> [] */
 
-void duk_def_prop(duk_context *ctx, int obj_index, int desc_flags);  /* [key val] -> [] */
-void duk_def_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index, int desc_flags);  /* [val] -> [] */
-void duk_def_prop_stridx(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [val] -> [] */
-void duk_def_prop_stridx_builtin(duk_context *ctx, int obj_index, unsigned int stridx, unsigned int builtin_idx, int desc_flags);  /* [] -> [] */
-void duk_def_prop_stridx_thrower(duk_context *ctx, int obj_index, unsigned int stridx, int desc_flags);  /* [] -> [] */
+void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t desc_flags);  /* [key val] -> [] */
+void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index, duk_small_int_t desc_flags);  /* [val] -> [] */
+void duk_def_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t desc_flags);  /* [val] -> [] */
+void duk_def_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t builtin_idx, duk_small_int_t desc_flags);  /* [] -> [] */
+void duk_def_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t desc_flags);  /* [] -> [] */
 
 /* These are macros for now, but could be separate functions to reduce code
  * footprint (check call site count before refactoring).

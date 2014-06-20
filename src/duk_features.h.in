@@ -892,6 +892,9 @@ typedef duk_small_int_t duk_bool_t;
 /* Index values must have at least 32-bit signed range. */
 typedef duk_int_t duk_idx_t;
 
+/* Array index values, currently same type, could be exact 32 bits. */
+typedef duk_int_t duk_arridx_t;
+
 /* Duktape/C function return value, platform int is enough for now to
  * represent 0, 1, or negative error code.  Must be compatible with
  * assigning truth values (e.g. duk_ret_t rc = (foo == bar);).

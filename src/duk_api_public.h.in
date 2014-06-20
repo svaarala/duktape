@@ -520,27 +520,27 @@ void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size);
  *  index as a property name (e.g. 123 is equivalent to the key "123").
  */
 
-int duk_get_prop(duk_context *ctx, int obj_index);
-int duk_get_prop_string(duk_context *ctx, int obj_index, const char *key);
-int duk_get_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
-int duk_put_prop(duk_context *ctx, int obj_index);
-int duk_put_prop_string(duk_context *ctx, int obj_index, const char *key);
-int duk_put_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
-int duk_del_prop(duk_context *ctx, int obj_index);
-int duk_del_prop_string(duk_context *ctx, int obj_index, const char *key);
-int duk_del_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
-int duk_has_prop(duk_context *ctx, int obj_index);
-int duk_has_prop_string(duk_context *ctx, int obj_index, const char *key);
-int duk_has_prop_index(duk_context *ctx, int obj_index, unsigned int arr_index);
+duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_index);
+duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index);
+duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_index);
+duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index);
+duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_index);
+duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index);
+duk_bool_t duk_has_prop(duk_context *ctx, duk_idx_t obj_index);
+duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index);
 
-int duk_get_global_string(duk_context *ctx, const char *key);
+duk_bool_t duk_get_global_string(duk_context *ctx, const char *key);
 
 /*
  *  Module helpers: put multiple function or constant properties
  */
 
-void duk_put_function_list(duk_context *ctx, int obj_index, const duk_function_list_entry *funcs);
-void duk_put_number_list(duk_context *ctx, int obj_index, const duk_number_list_entry *numbers);
+void duk_put_function_list(duk_context *ctx, duk_idx_t obj_index, const duk_function_list_entry *funcs);
+void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number_list_entry *numbers);
 
 /*
  *  Variable access
@@ -556,9 +556,9 @@ duk_bool_t duk_has_var(duk_context *ctx);
  *  Object operations
  */
 
-void duk_compact(duk_context *ctx, int obj_index);
-void duk_enum(duk_context *ctx, int obj_index, int enum_flags);
-int duk_next(duk_context *ctx, int enum_index, int get_value);
+void duk_compact(duk_context *ctx, duk_idx_t obj_index);
+void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_int_t enum_flags);
+duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_bool_t get_value);
 
 /*
  *  String manipulation
