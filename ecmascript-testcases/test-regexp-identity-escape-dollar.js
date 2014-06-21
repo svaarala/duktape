@@ -1,10 +1,3 @@
-/*===
-object
-object $
-object
-object $
-===*/
-
 /* E5.1 Section 15.5.4.11 (String.prototype.replace) contains the following
  * example:
  *
@@ -28,20 +21,54 @@ object $
  * numeric character escape which is quite awkward.
  *
  * Real world code seems to contain these '\$' escapes, so the current
- * expectation is to allow them.
+ * expectation is to allow them, both inside and outside of character
+ * classes.
  */
 
+/*===
+object
+object $
+object
+object $xx$
+object
+object $
+object
+object $xx$
+object
+object $xx$
+===*/
+
 function invalidDollarEscape() {
-    var re = eval("/\\$/");
+    var re, m;
+
+    re = eval("/\\$/");
     print(typeof re);
-    var m = re.exec('foo$bar');
+    m = re.exec('foo$bar');
+    print(typeof m, m[0]);
+
+    re = eval("/[\\$x]+/");
+    print(typeof re);
+    m = re.exec('$xx$');
     print(typeof m, m[0]);
 }
 
 function validDollarEscape() {
-    var re = eval("/\\u0024/");
+    var re, m;
+
+    re = eval("/\\u0024/");
     print(typeof re);
-    var m = re.exec('foo$bar');
+    m = re.exec('foo$bar');
+    print(typeof m, m[0]);
+
+    re = eval("/[\\u0024x]+/");
+    print(typeof re);
+    m = re.exec('$xx$');
+    print(typeof m, m[0]);
+
+    // a literal dollar is also allowed inside character classes
+    re = eval("/[$x]+/");
+    print(typeof re);
+    m = re.exec('$xx$');
     print(typeof m, m[0]);
 }
 
