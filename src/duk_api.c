@@ -3243,7 +3243,7 @@ void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, 
 }
 #endif
 
-int duk_equals(duk_context *ctx, int index1, int index2) {
+duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1, *tv2;
 
@@ -3263,7 +3263,7 @@ int duk_equals(duk_context *ctx, int index1, int index2) {
 
 }
 
-int duk_strict_equals(duk_context *ctx, int index1, int index2) {
+duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
 	duk_tval *tv1, *tv2;
 
 	tv1 = duk_get_tval(ctx, index1);

@@ -564,33 +564,36 @@ duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_bool_t get_value
  *  String manipulation
  */
 
-void duk_concat(duk_context *ctx, unsigned int count);
-void duk_join(duk_context *ctx, unsigned int count);
-void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
-void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
-void duk_substring(duk_context *ctx, int index, duk_size_t start_offset, duk_size_t end_offset);
-void duk_trim(duk_context *ctx, int index);
-int duk_char_code_at(duk_context *ctx, int index, duk_size_t char_offset);
+void duk_concat(duk_context *ctx, duk_uint_t count);  /* FIXME: duk_idx_t? */
+void duk_join(duk_context *ctx, duk_uint_t count);    /* FIXME: duk_idx_t? */
+void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata);
+void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata);
+void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, duk_size_t end_offset);
+void duk_trim(duk_context *ctx, duk_idx_t index);
+duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset);
 
 /*
  *  Ecmascript operators
  */
 
-int duk_equals(duk_context *ctx, int index1, int index2);
-int duk_strict_equals(duk_context *ctx, int index1, int index2);
+duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
 
 /*
  *  Function (method) calls
  */
 
-void duk_call(duk_context *ctx, int nargs);
-void duk_call_method(duk_context *ctx, int nargs);
-void duk_call_prop(duk_context *ctx, int obj_index, int nargs);
-int duk_pcall(duk_context *ctx, int nargs);
-int duk_pcall_method(duk_context *ctx, int nargs);
-int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs);
-void duk_new(duk_context *ctx, int nargs);
-int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets);
+/* FIXME: duk_idx_t for nargs/nrets here, as they refer to things on the stack?
+ * Elsewhere duk_uint_t is used for counts.
+ */
+void duk_call(duk_context *ctx, duk_int_t nargs);
+void duk_call_method(duk_context *ctx, duk_int_t nargs);
+void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_int_t nargs);
+duk_int_t duk_pcall(duk_context *ctx, duk_int_t nargs);
+duk_int_t duk_pcall_method(duk_context *ctx, duk_int_t nargs);
+duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_int_t nargs);
+void duk_new(duk_context *ctx, duk_int_t nargs);
+duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_int_t nargs, duk_int_t nrets);
 
 /*
  *  Thread management
@@ -727,7 +730,8 @@ duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t s
  *  Logging
  */
 
-void duk_log(duk_context *ctx, int level, const char *fmt, ...);
+/* FIXME: here a small integer type would be proper */
+void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...);
 
 /*
  *  Debugging
