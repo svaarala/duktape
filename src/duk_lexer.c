@@ -1801,7 +1801,11 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid decimal escape");
 				}
-			} else if (!duk_unicode_is_identifier_part(x)) {
+			} else if (!duk_unicode_is_identifier_part(x)
+#if defined(DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE)
+			           || x == '$'
+#endif
+			          ) {
 				/* IdentityEscape */
 				ch = x;
 			} else {
