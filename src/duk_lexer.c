@@ -1551,9 +1551,11 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 				out_token->num = val;
 			}
 		} else if ((y >= 0 && !duk_unicode_is_identifier_part(y)) ||
+#if defined(DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE)
+		           y == '$' ||
+#endif
 		           y == DUK_UNICODE_CP_ZWNJ ||
-		           y == DUK_UNICODE_CP_ZWJ ||
-		           y == '$') {
+		           y == DUK_UNICODE_CP_ZWJ) {
 			/* IdentityEscape, with dollar added as a valid additional
 			 * non-standard escape (see test-regexp-identity-escape-dollar.js).
 			 * Careful not to match end-of-buffer (<0) here.

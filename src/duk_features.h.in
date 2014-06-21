@@ -1981,6 +1981,9 @@ typedef FILE duk_file;
 #undef DUK_USE_SECTION_B
 #endif
 
+/* Non-standard regexp parsing features. */
+#define DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE
+
 /* Treat function statements (function declarations outside top level of
  * Program or FunctionBody) same as normal function declarations.  This is
  * also V8 behavior.  See test-dev-func-decl-outside-top.js.
