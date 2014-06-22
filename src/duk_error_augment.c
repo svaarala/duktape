@@ -152,7 +152,7 @@ static void duk__err_augment_user(duk_hthread *thr, int stridx_cb) {
  */
 
 #ifdef DUK_USE_TRACEBACKS
-static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, int line, int noblame_fileline) {
+static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	int depth;
 	int i, i_min;
@@ -267,7 +267,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 #endif  /* DUK_USE_TRACEBACKS */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, int line, int noblame_fileline, duk_hobject *obj) {
+static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 #ifdef DUK_USE_ASSERTIONS
 	duk_int_t entry_top;
@@ -380,7 +380,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, int noblame_fileline) {
+void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *obj;
 

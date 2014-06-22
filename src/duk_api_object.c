@@ -410,7 +410,7 @@ void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number
 
 duk_bool_t duk_get_global_string(duk_context *ctx, const char *key) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int ret;
+	duk_bool_t ret;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);

@@ -197,7 +197,7 @@ duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_int_t nargs)
 
 duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_int_t nargs, duk_int_t nrets) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int rc;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);

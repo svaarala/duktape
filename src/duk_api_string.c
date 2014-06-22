@@ -6,9 +6,9 @@
 
 static void duk__concat_and_join_helper(duk_context *ctx, duk_uint_t count, duk_bool_t is_join) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	unsigned int i;
-	unsigned int idx;
-	size_t len;
+	duk_uint_t i;
+	duk_size_t idx;
+	duk_size_t len;
 	duk_hstring *h;
 	duk_uint8_t *buf;
 
@@ -20,34 +20,34 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_uint_t count, duk_
 	}
 
 	if (is_join) {
-		size_t t1, t2, limit;
+		duk_size_t t1, t2, limit;
 		h = duk_to_hstring(ctx, -((duk_idx_t) count) - 1);
 		DUK_ASSERT(h != NULL);
 
 		/* A bit tricky overflow test, see doc/code-issues.txt. */
-		t1 = (size_t) DUK_HSTRING_GET_BYTELEN(h);
-		t2 = (size_t) (count - 1);
-		limit = (size_t) DUK_HSTRING_MAX_BYTELEN;
+		t1 = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
+		t2 = (duk_size_t) (count - 1);
+		limit = (duk_size_t) DUK_HSTRING_MAX_BYTELEN;
 		if (DUK_UNLIKELY(t2 != 0 && t1 > limit / t2)) {
 			/* Combined size of separators already overflows */
 			goto error_overflow;
 		}
-		len = (size_t) (t1 * t2);
+		len = (duk_size_t) (t1 * t2);
 	} else {
-		len = (size_t) 0;
+		len = (duk_size_t) 0;
 	}
 
 	for (i = count; i >= 1; i--) {
-		size_t new_len;
+		duk_size_t new_len;
 		duk_to_string(ctx, -((duk_idx_t) i));
 		h = duk_require_hstring(ctx, -((duk_idx_t) i));
-		new_len = len + (size_t) DUK_HSTRING_GET_BYTELEN(h);
+		new_len = len + (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 
 		/* Impose a string maximum length, need to handle overflow
 		 * correctly.
 		 */
 		if (new_len < len ||  /* wrapped */
-		    new_len > (size_t) DUK_HSTRING_MAX_BYTELEN) {
+		    new_len > (duk_size_t) DUK_HSTRING_MAX_BYTELEN) {
 			goto error_overflow;
 		}
 		len = new_len;

@@ -7,10 +7,11 @@
 #include "duk_internal.h"
 
 /* dst length must be exactly ceil(len/3)*4 */
-static void duk__base64_encode_helper(const unsigned char *src, const unsigned char *src_end,
-                                      unsigned char *dst, unsigned char *dst_end) {
-	unsigned int i, snip;
-	unsigned int x, y, t;
+static void duk__base64_encode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
+                                      duk_uint8_t *dst, duk_uint8_t *dst_end) {
+	duk_small_uint_t i, snip;
+	duk_uint_fast32_t t;
+	duk_uint_fast8_t x, y;
 
 	DUK_UNREF(dst_end);
 
@@ -23,7 +24,7 @@ static void duk__base64_encode_helper(const unsigned char *src, const unsigned c
 			if (src >= src_end) {
 				snip--;
 			} else {
-				t += (unsigned int) (*src++);
+				t += (duk_uint_fast32_t) (*src++);
 			}
 		}
 
@@ -37,7 +38,7 @@ static void duk__base64_encode_helper(const unsigned char *src, const unsigned c
 		DUK_ASSERT(snip >= 2 && snip <= 4);
 
 		for (i = 0; i < 4; i++) {
-			x = (t >> 18) & 0x3f;
+			x = (duk_uint_fast8_t) ((t >> 18) & 0x3f);
 			t = t << 6;
 
 			/* A straightforward 64-byte lookup would be faster
@@ -58,16 +59,16 @@ static void duk__base64_encode_helper(const unsigned char *src, const unsigned c
 			}
 
 			DUK_ASSERT(dst < dst_end);
-			*dst++ = (unsigned char) y;
+			*dst++ = (duk_uint8_t) y;
 		}
 	}
 }
 
-static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsigned char *src_end,
-                                            unsigned char *dst, unsigned char *dst_end, unsigned char **out_dst_final) {
-	unsigned int t;
-	unsigned int x, y;
-	int group_idx;
+static duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
+                                            duk_uint8_t *dst, duk_uint8_t *dst_end, duk_uint8_t **out_dst_final) {
+	duk_uint_fast32_t t;
+	duk_uint_fast8_t x, y;
+	duk_small_uint_t group_idx;
 
 	DUK_UNREF(dst_end);
 
@@ -96,7 +97,7 @@ static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsi
 				/* xx== -> 1 byte, t contains 12 bits, 4 on right are zero */
 				t = t >> 4;
 				DUK_ASSERT(dst < dst_end);
-				*dst++ = (unsigned char) t;
+				*dst++ = (duk_uint8_t) t;
 
 				if (src >= src_end) {
 					goto error;
@@ -109,9 +110,9 @@ static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsi
 				/* xxx= -> 2 bytes, t contains 18 bits, 2 on right are zero */
 				t = t >> 2;
 				DUK_ASSERT(dst < dst_end);
-				*dst++ = (unsigned char) ((t >> 8) & 0xff);
+				*dst++ = (duk_uint8_t) ((t >> 8) & 0xff);
 				DUK_ASSERT(dst < dst_end);
-				*dst++ = (unsigned char) (t & 0xff);
+				*dst++ = (duk_uint8_t) (t & 0xff);
 			} else {
 				goto error;
 			}
@@ -136,11 +137,11 @@ static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsi
 		if (group_idx == 3) {
 			/* output 3 bytes from 't' */
 			DUK_ASSERT(dst < dst_end);
-			*dst++ = (unsigned char) ((t >> 16) & 0xff);
+			*dst++ = (duk_uint8_t) ((t >> 16) & 0xff);
 			DUK_ASSERT(dst < dst_end);
-			*dst++ = (unsigned char) ((t >> 8) & 0xff);
+			*dst++ = (duk_uint8_t) ((t >> 8) & 0xff);
 			DUK_ASSERT(dst < dst_end);
-			*dst++ = (unsigned char) (t & 0xff);
+			*dst++ = (duk_uint8_t) (t & 0xff);
 			t = 0;
 			group_idx = 0;
 		} else {
@@ -165,10 +166,10 @@ static duk_bool_t duk__base64_decode_helper(const unsigned char *src, const unsi
 
 const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	unsigned char *src;
-	size_t srclen;
-	size_t dstlen;
-	unsigned char *dst;
+	duk_uint8_t *src;
+	duk_size_t srclen;
+	duk_size_t dstlen;
+	duk_uint8_t *dst;
 	const char *ret;
 
 	/* XXX: optimize for string inputs: no need to coerce to a buffer
@@ -176,7 +177,7 @@ const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	 */
 
 	index = duk_require_normalize_index(ctx, index);
-	src = (unsigned char *) duk_to_buffer(ctx, index, &srclen);
+	src = (duk_uint8_t *) duk_to_buffer(ctx, index, &srclen);
 	/* Note: for srclen=0, src may be NULL */
 
 	/* Computation must not wrap; this limit works for 32-bit size_t:
@@ -184,14 +185,14 @@ const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	 * >>> '%x' % ((srclen + 2) / 3 * 4)
 	 * 'fffffffc'
 	 */
-	if (srclen > 3221225469U) {
+	if (srclen > 3221225469UL) {
 		goto type_error;
 	}
 	dstlen = (srclen + 2) / 3 * 4;
-	dst = (unsigned char *) duk_push_fixed_buffer(ctx, dstlen);
+	dst = (duk_uint8_t *) duk_push_fixed_buffer(ctx, dstlen);
 
-	duk__base64_encode_helper((const unsigned char *) src, (const unsigned char *) (src + srclen),
-	                          (unsigned char *) dst, (unsigned char *) (dst + dstlen));
+	duk__base64_encode_helper((const duk_uint8_t *) src, (const duk_uint8_t *) (src + srclen),
+	                          dst, (dst + dstlen));
 
 	ret = duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
@@ -204,11 +205,11 @@ const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 
 void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	const char *src;
-	size_t srclen;
-	size_t dstlen;
-	unsigned char *dst;
-	unsigned char *dst_final;
+	const duk_uint8_t *src;
+	duk_size_t srclen;
+	duk_size_t dstlen;
+	duk_uint8_t *dst;
+	duk_uint8_t *dst_final;
 	duk_bool_t retval;
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
@@ -216,28 +217,28 @@ void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	 */
 
 	index = duk_require_normalize_index(ctx, index);
-	src = duk_to_lstring(ctx, index, &srclen);
+	src = (const duk_uint8_t *) duk_to_lstring(ctx, index, &srclen);
 
 	/* Computation must not wrap, only srclen + 3 is at risk of
 	 * wrapping because after that the number gets smaller.
 	 * This limit works for 32-bit size_t:
 	 * 0x100000000 - 3 - 1 = 4294967292
 	 */
-	if (srclen > 4294967292U) {
+	if (srclen > 4294967292UL) {
 		goto type_error;
 	}
 	dstlen = (srclen + 3) / 4 * 3;  /* upper limit */
-	dst = (unsigned char *) duk_push_dynamic_buffer(ctx, dstlen);
+	dst = (duk_uint8_t *) duk_push_dynamic_buffer(ctx, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
-	retval = duk__base64_decode_helper((unsigned char *) src, (unsigned char *) (src + srclen),
+	retval = duk__base64_decode_helper((const duk_uint8_t *) src, (const duk_uint8_t *) (src + srclen),
 	                                   dst, dst + dstlen, &dst_final);
 	if (!retval) {
 		goto type_error;
 	}
 
 	/* XXX: convert to fixed buffer? */
-	(void) duk_resize_buffer(ctx, -1, (size_t) (dst_final - dst));
+	(void) duk_resize_buffer(ctx, -1, (duk_size_t) (dst_final - dst));
 	duk_replace(ctx, index);
 	return;
 
@@ -246,17 +247,17 @@ void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 }
 
 const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
-	unsigned char *data;
+	duk_uint8_t *data;
 	duk_size_t len;
 	duk_size_t i;
-	int t;
-	unsigned char *buf;
+	duk_uint_fast8_t t;
+	duk_uint8_t *buf;
 	const char *ret;
 
 	/* XXX: special case for input string, no need to coerce to buffer */
 
 	index = duk_require_normalize_index(ctx, index);
-	data = (unsigned char *) duk_to_buffer(ctx, index, &len);
+	data = (duk_uint8_t *) duk_to_buffer(ctx, index, &len);
 	DUK_ASSERT(data != NULL);
 
 	buf = (unsigned char *) duk_push_fixed_buffer(ctx, len * 2);
@@ -264,7 +265,7 @@ const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	/* buf is always zeroed */
 
 	for (i = 0; i < len; i++) {
-		t = data[i];
+		t = (duk_uint_fast8_t) data[i];
 		buf[i*2 + 0] = duk_lc_digits[t >> 4];
 		buf[i*2 + 1] = duk_lc_digits[t & 0x0f];
 	}
@@ -277,9 +278,9 @@ const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *str;
-	size_t len;
-	size_t i;
-	int t;
+	duk_size_t len;
+	duk_size_t i;
+	duk_uint_fast8_t t;
 	duk_uint8_t *buf;
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
@@ -322,7 +323,7 @@ void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 
 const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
-	int top_at_entry = duk_get_top(ctx);
+	duk_idx_t top_at_entry = duk_get_top(ctx);
 #endif
 	const char *ret;
 
@@ -343,7 +344,7 @@ const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 
 void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
-	int top_at_entry = duk_get_top(ctx);
+	duk_idx_t top_at_entry = duk_get_top(ctx);
 #endif
 
 	index = duk_require_normalize_index(ctx, index);
@@ -355,4 +356,3 @@ void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
 }
-

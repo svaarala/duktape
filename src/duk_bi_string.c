@@ -125,7 +125,7 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t pos;  /* FIXME: type, duk_to_int() needs to be fixed */
 	duk_hstring *h;
-	int clamped;  /* FIXME: type */
+	duk_bool_t clamped;
 
 	/* FIXME: faster implementation */
 
@@ -138,7 +138,7 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	                             0 /*index*/,
 	                             0 /*min(incl)*/,
 	                             DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl)*/,
-	                             &clamped /*clamped*/);
+	                             &clamped /*out_clamped*/);
 	if (clamped) {
 		duk_push_number(ctx, DUK_DOUBLE_NAN);
 		return 1;
