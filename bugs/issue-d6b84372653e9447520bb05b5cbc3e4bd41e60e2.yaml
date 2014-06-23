@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: document duk_get_magic(); may need an API to set it
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-19 11:27:39.307979 Z
+references: []
+
+id: d6b84372653e9447520bb05b5cbc3e4bd41e60e2
+log_events: 
+- - 2014-06-19 11:27:39.452024 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
