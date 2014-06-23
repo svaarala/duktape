@@ -863,8 +863,9 @@ typedef duk_uint64_t duk_uintptr_t;
 
 #endif  /* C99 types */
 
-/* size_t is assumed to always exist. */
+/* A few types are assumed to always exist. */
 typedef size_t duk_size_t;
+typedef ptrdiff_t duk_ptrdiff_t;
 
 /* The best type for an "all around int" in Duktape internals is "at least
  * 32 bit signed integer" which is fastest.  Same for unsigned type.

@@ -196,7 +196,7 @@ void duk_set_top(duk_context *ctx, duk_idx_t index) {
 		}
 	} else {
 		/* each DECREF potentially invalidates valstack pointers, careful */
-		ptrdiff_t pdiff = ((char *) thr->valstack_top) - ((char *) tv_new_top);  /* byte diff (avoid shift/div) */
+		duk_ptrdiff_t pdiff = ((char *) thr->valstack_top) - ((char *) tv_new_top);  /* byte diff (avoid shift/div) */
 
 		/* XXX: inlined DECREF macro would be nice here: no NULL check,
 		 * refzero queueing but no refzero algorithm run (= no pointer
@@ -270,11 +270,11 @@ duk_idx_t duk_require_top_index(duk_context *ctx) {
  */
 static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	ptrdiff_t old_bottom_offset;
-	ptrdiff_t old_top_offset;
-	ptrdiff_t old_end_offset_post;
+	duk_ptrdiff_t old_bottom_offset;
+	duk_ptrdiff_t old_top_offset;
+	duk_ptrdiff_t old_end_offset_post;
 #ifdef DUK_USE_DEBUG
-	ptrdiff_t old_end_offset_pre;
+	duk_ptrdiff_t old_end_offset_pre;
 	duk_tval *old_valstack_pre;
 	duk_tval *old_valstack_post;
 #endif
