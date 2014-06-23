@@ -399,6 +399,10 @@ Planned
   constants internally (e.g. use 0x7fffffffL - 1L instead of -0x80000000L);
   this fixed a concrete problem with at least VS2010 + x64
 
+* Portability fix for avoiding direct function pointers to built-in functions
+  (especially math functions) because they may be implemented as inline
+  functions or macros on some platforms or polyfill headers
+
 * Portability fixes for MSVC, avoid secure CRT warnings to work better with
   Windows Store apps
 
