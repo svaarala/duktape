@@ -1576,6 +1576,27 @@ typedef FILE duk_file;
 	DUK_MEMSET((p), 0, (n))
 
 /*
+ *  Avoiding platform function pointers.
+ *
+ *  On some platforms built-in functions may be implemented as macros or
+ *  inline functions, so they can't be necessarily addressed by function
+ *  pointers.  This is certainly the case with some platform "polyfills"
+ *  which provide missing C99/C++11 functions through macros.
+ */
+
+#undef DUK_USE_AVOID_PLATFORM_FUNCPTRS
+
+#if !defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS) && defined(DUK_F_MSVC)
+/* VS2013 users have sometimes encountered a "error C2099: initializer
+ * is not a constant" which may be related to some built-in functions
+ * being macros/inline functions with specific options.  For instance,
+ * with GH-17 the problem disappeared in debug build or with the
+ * /fp:strict option.  So, use wrappers one MSVC.
+ */
+#define DUK_USE_AVOID_PLATFORM_FUNCPTRS
+#endif
+
+/*
  *  Vararg macro wrappers.  We need va_copy() which is defined in C99 / C++11,
  *  so an awkward replacement is needed for pre-C99 / pre-C++11 environments.
  *  This will quite likely need portability hacks for some non-C99 environments.
