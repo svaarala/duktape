@@ -372,6 +372,24 @@ Sometimes platform functions may be present but broken.  For instance,
 some old uclibc versions have a broken ``memcpy()`` but a working
 ``memmove()``.
 
+Platform functions which cannot be referred to using function pointers
+----------------------------------------------------------------------
+
+On some platforms built-in functions may be defined as inline functions or
+macros.  Any code which assumes that built-in functions can be used as
+function pointers will then break.  There are some platform "polyfills"
+which use macros in this way, and it seems that Microsoft VS2013 may behave
+like this at least with some options.
+
+This problem can be avoided by using explicit function wrappers when a
+function pointer is needed::
+
+  double duk__acos(double x) {
+      return acos(x);
+  }
+
+  /* ... use duk__acos as a function pointer */
+
 va_copy
 -------
 
@@ -765,8 +783,10 @@ It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
 duk_bool_t
 ----------
 
-The ``duk_bool_t`` should be used for boolean values.  (Currently some
-internal code uses ``duk_small_int_t`` for that.)
+The ``duk_bool_t`` should be used for boolean values.  It must be wide
+enough to accommodate results from C comparisons (e.g. ``x == y``).  In
+practice it's defined as an ``int``.  (Currently some internal code uses
+``duk_small_int_t`` for booleans, but this will be fixed.)
 
 duk_uint8_t
 -----------
