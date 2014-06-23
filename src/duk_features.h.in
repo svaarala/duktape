@@ -1581,20 +1581,12 @@ typedef FILE duk_file;
  *  On some platforms built-in functions may be implemented as macros or
  *  inline functions, so they can't be necessarily addressed by function
  *  pointers.  This is certainly the case with some platform "polyfills"
- *  which provide missing C99/C++11 functions through macros.
+ *  which provide missing C99/C++11 functions through macros, and may be
+ *  the case with VS2013 (see GH-17).
  */
 
-#undef DUK_USE_AVOID_PLATFORM_FUNCPTRS
-
-#if !defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS) && defined(DUK_F_MSVC)
-/* VS2013 users have sometimes encountered a "error C2099: initializer
- * is not a constant" which may be related to some built-in functions
- * being macros/inline functions with specific options.  For instance,
- * with GH-17 the problem disappeared in debug build or with the
- * /fp:strict option.  So, use wrappers one MSVC.
- */
+/* This is now the default: the cost in footprint is negligible. */
 #define DUK_USE_AVOID_PLATFORM_FUNCPTRS
-#endif
 
 /*
  *  Vararg macro wrappers.  We need va_copy() which is defined in C99 / C++11,
