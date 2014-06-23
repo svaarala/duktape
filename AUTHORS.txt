@@ -42,3 +42,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Rajaran Gaunker (https://github.com/zimbabao)
 * Andreas Öman
 * Doug Sanden
+* Remo Eichenberger (https://github.com/remoe)
