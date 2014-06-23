@@ -1576,6 +1576,19 @@ typedef FILE duk_file;
 	DUK_MEMSET((p), 0, (n))
 
 /*
+ *  Avoiding platform function pointers.
+ *
+ *  On some platforms built-in functions may be implemented as macros or
+ *  inline functions, so they can't be necessarily addressed by function
+ *  pointers.  This is certainly the case with some platform "polyfills"
+ *  which provide missing C99/C++11 functions through macros, and may be
+ *  the case with VS2013 (see GH-17).
+ */
+
+/* This is now the default: the cost in footprint is negligible. */
+#define DUK_USE_AVOID_PLATFORM_FUNCPTRS
+
+/*
  *  Vararg macro wrappers.  We need va_copy() which is defined in C99 / C++11,
  *  so an awkward replacement is needed for pre-C99 / pre-C++11 environments.
  *  This will quite likely need portability hacks for some non-C99 environments.
