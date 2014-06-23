@@ -28,3 +28,10 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
   - ""
+- - 2014-06-23 06:56:50.041306 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Because ssize_t is not a standard type (it is POSIX) it may be better to use
+    ptrdiff_t where signed sizes are needed.  It could theoretically be that
+    sizeof(size_t) > sizeof(ptrdiff_t) but that's quite unlikely in practice.
