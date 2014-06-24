@@ -568,7 +568,7 @@ void duk_concat(duk_context *ctx, duk_uint_t count);  /* FIXME: duk_idx_t? */
 void duk_join(duk_context *ctx, duk_uint_t count);    /* FIXME: duk_idx_t? */
 void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata);
 void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata);
-void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, duk_size_t end_offset);
+void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_char_offset, duk_size_t end_char_offset);
 void duk_trim(duk_context *ctx, duk_idx_t index);
 duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset);
 
