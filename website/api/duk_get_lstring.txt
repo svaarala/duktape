@@ -1,5 +1,5 @@
 =proto
-const char *duk_get_lstring(duk_context *ctx, int index, size_t *out_len);
+const char *duk_get_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 
 =stack
 [ ... val! ... ]
@@ -23,11 +23,11 @@ this differs from how buffer data pointers are handled (for technical reasons).
 
 =example
 const char *buf;
-size_t len;
+duk_size_t len;
 
 buf = duk_get_lstring(ctx, -3, &len);
 if (buf) {
-    printf("value is a string, %d bytes\n", (int) len);
+    printf("value is a string, %lu bytes\n", (unsigned long) len);
 }
 
 =tags

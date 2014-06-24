@@ -13,7 +13,7 @@ of the caller.</p>
 
 <p>This is essentially a shortcut for:</p>
 <pre class="c-code">
-int flags = DUK_COMPILE_EVAL;
+duk_int_t flags = DUK_COMPILE_EVAL;
 if (duk_is_strict_call(ctx)) {
     flags |= DUK_COMPILE_STRICT;
 }
@@ -32,7 +32,7 @@ duk_call(ctx, 0);
 
 duk_push_string(ctx, "print('Hello world!'); 123;");
 duk_eval(ctx);
-printf("return value is: %lf\n", duk_get_number(ctx, -1));
+printf("return value is: %lf\n", (double) duk_get_number(ctx, -1));
 duk_pop(ctx);
 
 =tags

@@ -1,5 +1,5 @@
 =proto
-int duk_char_code_at(duk_context *ctx, int index, size_t char_offset);
+duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset);
 
 =stack
 [ ... str! ... ]
@@ -11,7 +11,7 @@ a string, an error is thrown.  If <code>char_offset</code> is invalid (outside
 the string) a zero is returned.</p>
 
 =example
-printf("char code at char index 12: %d\n", duk_char_code_at(ctx, -3, 12));
+printf("char code at char index 12: %ld\n", (long) duk_char_code_at(ctx, -3, 12));
 
 =tags
 string

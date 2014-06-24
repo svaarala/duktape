@@ -1,5 +1,5 @@
 =proto
-int duk_require_int(duk_context *ctx, int index);
+duk_int_t duk_require_int(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ]
@@ -15,7 +15,7 @@ with only numeric inputs allowed.</p>
 -->
 
 =example
-printf("int value: %d\n", duk_require_int(ctx, -3));
+printf("int value: %ld\n", (long) duk_require_int(ctx, -3));
 
 =tags
 stack

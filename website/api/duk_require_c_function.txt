@@ -1,5 +1,5 @@
 =proto
-duk_c_function duk_require_c_function(duk_context *ctx, int index);
+duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ]

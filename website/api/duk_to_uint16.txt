@@ -1,5 +1,5 @@
 =proto
-unsigned int duk_to_uint16(duk_context *ctx, int index);
+duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... ToUint16(val)! ... ]
@@ -16,19 +16,8 @@ an error.</p>
 <li>Pointer: <code>0</code> for <code>NULL</code> pointer, <code>1</code> otherwise</li>
 </ul>
 
-<div class="note">
-The result of <code>ToUint16()</code> is an unsigned 16-bit integer and is assumed to
-fit into the C <code>unsigned int</code> type.  If the C type is smaller, the value will be
-coerced by the C compiler (<code>double</code> to <code>unsigned int</code>).
-</div>
-
 =example
-printf("ToUint16(): %u\n", duk_to_uint16(ctx, -3));
+printf("ToUint16(): %u\n", (unsigned int) duk_to_uint16(ctx, -3));
 
 =tags
 stack
-
-=fixme
-Apply the duk_get_int() coercion to the result just in case?  It would clamp
-output values to INT_MIN and INT_MAX.  This is not very relevant because if
-int is smaller than 16 bits, everything will break anyway.

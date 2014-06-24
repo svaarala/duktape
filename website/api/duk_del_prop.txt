@@ -1,5 +1,5 @@
 =proto
-int duk_del_prop(duk_context *ctx, int obj_index);
+duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_index);
 
 =stack
 [ ... obj! ... key! ] -> [ ... obj! ... ]
@@ -60,11 +60,11 @@ Similarly, if the key is an array index, you can use the
 <code><a href="#duk_del_prop_index">duk_del_prop_index()</a></code> variant.</p>
 
 =example
-int rc;
+duk_bool_t rc;
 
 duk_push_string(ctx, "myProperty");
 rc = duk_del_prop(ctx, -3);
-printf("delete obj.myProperty -> rc=%d\n", rc);
+printf("delete obj.myProperty -> rc=%d\n", (int) rc);
 
 =tags
 property

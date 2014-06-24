@@ -1,5 +1,5 @@
 =proto
-void duk_trim(duk_context *ctx, int index);
+void duk_trim(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... str! ... ] -> [ ... trimmed_str! ... ]

@@ -2,7 +2,8 @@
 void duk_push_current_thread(duk_context *ctx);
 
 =stack
-[ ... ] -> [ ... thread! ]
+[ ... ] -> [ ... thread! ]  (if current thread exists)
+[ ... ] -> [ ... undefined! ]  (if no current thread)
 
 =summary
 <p>Push the currently running Duktape thread to the stack.  The value pushed

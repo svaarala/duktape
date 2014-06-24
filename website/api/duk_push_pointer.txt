@@ -9,7 +9,7 @@ void duk_push_pointer(duk_context *ctx, void *p);
 interpret the pointer in any manner.</p>
 
 =example
-struct mystruct *p;
+struct mystruct *p = /* ... */;
 
 duk_push_pointer(ctx, (void *) p);
 

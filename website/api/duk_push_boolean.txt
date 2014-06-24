@@ -1,5 +1,5 @@
 =proto
-void duk_push_boolean(duk_context *ctx, int val);
+void duk_push_boolean(duk_context *ctx, duk_bool_t val);
 
 =stack
 [ ... ] -> [ ... true! ] (if val != 0)

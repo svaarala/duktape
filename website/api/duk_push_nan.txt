@@ -10,7 +10,7 @@ Pushes a <code>NaN</code> (not-a-number) to the stack.
 =example
 duk_push_nan(ctx);
 
-printf("NaN is number: %d\n", duk_is_number(ctx, -1));
+printf("NaN is number: %d\n", (int) duk_is_number(ctx, -1));
 
 =tags
 stack

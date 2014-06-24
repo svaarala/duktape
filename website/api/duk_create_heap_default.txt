@@ -13,8 +13,7 @@ ctx = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
 </pre>
 
 =example
-duk_context *ctx;
-ctx = duk_create_heap_default();
+duk_context *ctx = duk_create_heap_default();
 if (ctx) {
     /* success */
 

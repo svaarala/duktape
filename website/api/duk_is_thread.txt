@@ -1,5 +1,5 @@
 =proto
-int duk_is_thread(duk_context *ctx, int index);
+duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ]

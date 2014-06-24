@@ -1,5 +1,5 @@
 =proto
-void duk_join(duk_context *ctx, unsigned int count);
+void duk_join(duk_context *ctx, duk_uint_t count);
 
 =stack
 [ ... sep! val1! ...! valN! ] -> [ ... result! ]

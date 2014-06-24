@@ -1,5 +1,5 @@
 =proto
-void *duk_to_pointer(duk_context *ctx, int index);
+void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... pointer(val)! ... ]
@@ -15,7 +15,7 @@ error.</p>
 <li>All heap allocated objects (string, object, buffer): coerce to a pointer
     which points to the Duktape internal heap header (use for debugging only,
     do not read/write)</li>
-<li>Other types: coerces to NULL</li>
+<li>Other types: coerce to NULL</li>
 </ul>
 
 <div class="note">

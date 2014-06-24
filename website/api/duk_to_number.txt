@@ -1,5 +1,5 @@
 =proto
-double duk_to_number(duk_context *ctx, int index);
+duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
@@ -17,11 +17,7 @@ an error.</p>
 </ul>
 
 =example
-printf("coerced number: %lf\n", duk_to_number(ctx, -3));
+printf("coerced number: %lf\n", (double) duk_to_number(ctx, -3));
 
 =tags
 stack
-
-=fixme
-Are the current custom coercions sensible?  For instance, should pointer
-coerce to its numeric value?

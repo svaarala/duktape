@@ -1,5 +1,5 @@
 =proto
-void *duk_realloc_raw(duk_context *ctx, void *ptr, size_t size);
+void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size);
 
 =summary
 <p>Resize a previous allocation made with the allocation functions
@@ -8,7 +8,7 @@ previous allocation while <code>size</code> is the new allocation size.
 The call returns a pointer to the new allocation which may have a
 different pointer than the previous one.  If the reallocation fails,
 a <code>NULL</code> is returned and the previous allocation is still valid.
-Relocation failure should only be possible when the new size is larger
+Reallocation failure should only be possible when the new size is larger
 than the previous size (i.e. caller tries to grow the allocation).
 The attempt to reallocate cannot trigger a garbage collection,
 and the allocated memory is not automatically garbage collected.</p>

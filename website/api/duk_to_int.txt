@@ -1,5 +1,5 @@
 =proto
-int duk_to_int(duk_context *ctx, int index);
+duk_int_t duk_to_int(duk_context *ctx, duk_int_t index);
 
 =stack
 [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
@@ -7,7 +7,7 @@ int duk_to_int(duk_context *ctx, int index);
 =summary
 <p>Replace the value at <code>index</code> with an Ecmascript
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.4">ToInteger()</a>
-coerced value.  Returns an <code>int</code> further coerced from the <code>ToInteger()</code>
+coerced value.  Returns an <code>duk_int_t</code> further coerced from the <code>ToInteger()</code>
 result using the algorithm described in
 <code><a href="#duk_get_int">duk_get_int()</a></code> (this second coercion is not
 reflected in the new stack value).  If <code>index</code> is invalid, throws an error.</p>
@@ -24,23 +24,19 @@ use:</p>
 double d;
 
 (void) duk_to_int(ctx, -3);
-d = duk_get_number(ctx, -3);
+d = (double) duk_get_number(ctx, -3);
 </pre>
 
 <div class="note">
 <code>duk_get_int()</code> int coercion is applied only to the return value, it is not
 reflected on the value stack.  For instance, if value stack contains the string
 <code>"Infinity"</code>, the value on the stack will be coerced to the number
-<code>Infinity</code> and <code>INT_MAX</code> will be returned from the API call.
+<code>Infinity</code> and <code>DUK_INT_MAX</code> will be returned from the API call.
 </div>
 
 =example
 printf("ToInteger() + int coercion: %ld\n", (long) duk_to_int(ctx, -3));
-printf("ToInteger() coercion: %lf\n", duk_get_number(ctx, -3));
+printf("ToInteger() coercion: %lf\n", (double) duk_get_number(ctx, -3));
 
 =tags
 stack
-
-=FIXME
-The limits are actually DUK_INT_MIN and DUK_INT_MAX, which are almost always the same
-as INT_MIN and INT_MAX.

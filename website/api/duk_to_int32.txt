@@ -1,5 +1,5 @@
 =proto
-int duk_to_int32(duk_context *ctx, int index);
+duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... ToInt32(val)! ... ]
@@ -16,19 +16,8 @@ an error.</p>
 <li>Pointer: <code>0</code> for <code>NULL</code> pointer, <code>1</code> otherwise</li>
 </ul>
 
-<div class="note">
-The result of <code>ToInt32()</code> is a signed 32-bit integer and is assumed to
-fit into the C <code>int</code> type.  If the C type is smaller, the value will be
-coerced by the C compiler (<code>double</code> to <code>int</code>).
-</div>
-
 =example
-printf("ToInt32(): %d\n", duk_to_int32(ctx, -3));
+printf("ToInt32(): %ld\n", (long) duk_to_int32(ctx, -3));
 
 =tags
 stack
-
-=fixme
-Apply the duk_get_int() coercion to the result just in case?  It would clamp
-output values to INT_MIN and INT_MAX.  This is not very relevant because if
-int is smaller than 32 bits, everything will break anyway.

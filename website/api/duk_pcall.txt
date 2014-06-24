@@ -1,5 +1,5 @@
 =proto
-int duk_pcall(duk_context *ctx, int nargs);
+duk_int_t duk_pcall(duk_context *ctx, duk_int_t nargs);
 
 =stack
 [ ... func! arg1! ...! argN! ] -> [ ... retval! ]  (if success, return value == 0)
@@ -40,17 +40,17 @@ If you want to control the <code>this</code> binding, you can use
  * function adds arguments and returns the result.
  */
 
-int func_idx;
-int rc;
+duk_idx_t func_idx;
+duk_int_t rc;
 
 duk_dup(ctx, func_idx);
 duk_push_int(ctx, 2);
 duk_push_int(ctx, 3);
 rc = duk_pcall(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
 if (rc == DUK_EXEC_SUCCESS) {
-  printf("2+3=%d\n", duk_get_int(ctx, -1));
+    printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
 } else {
-  printf("error: %s\n", duk_to_string(ctx, -1));
+    printf("error: %s\n", duk_to_string(ctx, -1));
 }
 duk_pop(ctx);
 

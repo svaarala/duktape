@@ -1,5 +1,5 @@
 =proto
-void duk_map_string(duk_context *ctx, int index, duk_map_char_function callback, void *udata);
+void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata);
 
 =stack
 [ ... val! ... ] -> [ ... val! ... ]
@@ -12,10 +12,10 @@ the replacement codepoints replaces the original.  If the value is not a string 
 the index is invalid, throws an error.</p>
 
 =example
-static int map_char(void *udata, int codepoint) {
+static duk_codepoint_t map_char(void *udata, duk_codepoint_t codepoint) {
     /* Convert ASCII to uppercase. */
-    if (codepoint >= (int) 'a' && codepoint <= (int) 'z') {
-        return codepoint - (int) 'a' + (int) 'A';
+    if (codepoint >= (duk_codepoint_t) 'a' && codepoint <= (duk_codepoint_t) 'z') {
+        return codepoint - (duk_codepoint_t) 'a' + (duk_codepoint_t) 'A';
     }
     return codepoint;
 }

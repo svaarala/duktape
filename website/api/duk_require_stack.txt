@@ -1,5 +1,5 @@
 =proto
-void duk_require_stack(duk_context *ctx, unsigned int extra);
+void duk_require_stack(duk_context *ctx, duk_uint_t extra);
 
 =summary
 <p>Like <code><a href="#duk_check_stack">duk_check_stack()</a></code> but an
@@ -11,7 +11,7 @@ stack space.  If value stack cannot be extended, there is almost never a
 useful recovery strategy except to throw an error and unwind.</p>
 
 =example
-int nargs;
+duk_idx_t nargs;
 
 nargs = duk_get_top(ctx);  /* number or arguments */
 

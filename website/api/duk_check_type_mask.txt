@@ -1,5 +1,5 @@
 =proto
-int duk_check_type_mask(duk_context *ctx, int index, int mask);
+duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, duk_uint_t mask);
 
 =stack
 [ ... val! ... ]

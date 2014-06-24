@@ -1,5 +1,5 @@
 =proto
-void duk_compact(duk_context *ctx, int obj_index);
+void duk_compact(duk_context *ctx, duk_idx_t obj_index);
 
 =summary
 <p>
@@ -23,8 +23,9 @@ property addition.
 <p>
 Compacting an object saves a small amount of memory per object.  It is
 generally useful when (1) memory footprint is very important, (2) an object
-is unlikely to gain new properties, and (3) when compaction can be applied
-to enough many objects to make a significant difference.
+is unlikely to gain new properties, (3) an object is relatively long-lived,
+and (4) when compaction can be applied to enough many objects to make a
+significant difference.
 </p>
 
 <p>

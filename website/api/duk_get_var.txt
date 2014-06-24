@@ -38,7 +38,7 @@ outer lexical environment is always the global environment.
 duk_push_string(ctx, "Math");
 duk_get_var(ctx);  /* [ ... "Math" ] -> [ ... Math ] */
 duk_get_prop_string(ctx, -1, "PI");  /* -> [ ... Math PI ] */
-printf("Math.PI=%lf\n", duk_get_number(ctx, -1));
+printf("Math.PI=%lf\n", (double) duk_get_number(ctx, -1));
 duk_pop_2(ctx);
 
 =tags

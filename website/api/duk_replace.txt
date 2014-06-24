@@ -1,5 +1,5 @@
 =proto
-void duk_replace(duk_context *ctx, int to_index);
+void duk_replace(duk_context *ctx, duk_idx_t to_index);
 
 =stack
 [ ... old(to_index)! ... val! ] -> [ ... val(to_index)! ... ]

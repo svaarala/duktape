@@ -1,5 +1,5 @@
 =proto
-int duk_is_strict_call(duk_context *ctx);
+duk_bool_t duk_is_strict_call(duk_context *ctx);
 
 =summary
 <p>Check whether the current (Duktape/C) function call is strict or not.
