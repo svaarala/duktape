@@ -32,3 +32,9 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
   - ""
+- - 2014-06-24 18:59:09.701566 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Initial implementation in api-compile-function.  Perhaps improve to
+    compile directly without creating an intermediate source string.
