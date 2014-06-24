@@ -6,13 +6,13 @@
 
 typedef struct duk__compile_raw_args duk__compile_raw_args;
 struct duk__compile_raw_args {
-	duk_size_t user_length;  /* should be first on 64-bit platforms */
-	const char *user_buffer;
+	duk_size_t src_length;  /* should be first on 64-bit platforms */
+	const duk_uint8_t *src_buffer;
 	duk_int_t flags;
 };
 
 /* Eval is just a wrapper now. */
-duk_int_t duk_eval_raw(duk_context *ctx, duk_int_t flags) {
+duk_int_t duk_eval_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags) {
 	duk_int_t comp_flags;
 	duk_int_t rc;
 
@@ -23,7 +23,7 @@ duk_int_t duk_eval_raw(duk_context *ctx, duk_int_t flags) {
 	if (duk_is_strict_call(ctx)) {
 		comp_flags |= DUK_COMPILE_STRICT;
 	}
-	rc = duk_compile_raw(ctx, comp_flags);  /* may be safe, or non-safe depending on flags */
+	rc = duk_compile_raw(ctx, user_buffer, user_length, comp_flags);  /* may be safe, or non-safe depending on flags */
 
 	/* [ ... closure/error ] */
 
@@ -65,69 +65,66 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 
 	/* [ ... source filename ] */
 
-	/* XXX: barebones initial implementation for compiling a function:
-	 * simply evaluate a parenthesis wrapped function expression.
-	 */
-	if (flags & DUK_COMPILE_FUNCTION) {
-		duk_push_string(ctx, "(");
-		duk_dup(ctx, -3);
-		duk_push_string(ctx, ")");
-		duk_concat(ctx, 3);
-		duk_replace(ctx, -3);
+	if (!comp_args->src_buffer) {
+		duk_hstring *h_sourcecode = duk_require_hstring(ctx, -2);
+		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);
+		comp_args->src_length = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode);
 	}
+	DUK_ASSERT(comp_args->src_buffer != NULL);
 
 	/* XXX: unnecessary translation of flags */
 	comp_flags = 0;
 	if (flags & DUK_COMPILE_EVAL) {
-		comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
+		comp_flags |= DUK_JS_COMPILE_FLAG_EVAL;
 	}
 	if (flags & DUK_COMPILE_FUNCTION) {
-		comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
+		comp_flags |= DUK_JS_COMPILE_FLAG_EVAL |
+		              DUK_JS_COMPILE_FLAG_FUNCEXPR;
 	}
 	if (flags & DUK_COMPILE_STRICT) {
-		comp_flags = DUK_JS_COMPILE_FLAG_STRICT;
+		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 	}
 
-	duk_js_compile(thr, comp_flags);
+	/* [ ... source filename ] */
 
-	/* [ ... func_template ] */
+	duk_js_compile(thr, comp_args->src_buffer, comp_args->src_length, comp_flags);
+
+	/* [ ... source func_template ] */
 
 	h_templ = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
-        duk_js_push_closure(thr,
+	DUK_ASSERT(h_templ != NULL);
+	duk_js_push_closure(thr,
 	                   h_templ,
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV]);
-
-	/* [ ... func_template closure ] */
-
-	duk_remove(ctx, -2);  /* -> [ ... closure ] */
+	duk_replace(ctx, -3);  /* -> [ ... closure func_template ] */
+	duk_pop(ctx);          /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
-
-	if (flags & DUK_COMPILE_FUNCTION) {
-		/* Evaluate the function expression to get the function. */
-		duk_call(ctx, 0);
-	}
 
 	return 1;
 }
 
-duk_int_t duk_compile_raw(duk_context *ctx, duk_int_t flags) {
+duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags) {
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 
-#if 0
-	comp_args->user_buffer = user_buffer;
-	comp_args->user_length = user_length;
-#endif
+	comp_args->src_buffer = (const duk_uint8_t *) user_buffer;
+	comp_args->src_length = user_length;
 	comp_args->flags = flags;
 	duk_push_pointer(ctx, (void *) comp_args);
 
+	/* [ ... source filename &comp_args ] */
+
 	if (flags & DUK_COMPILE_SAFE) {
 		duk_int_t rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/);
+
+		/* [ ... closure ] */
 		return rc;
 	}
 
 	(void) duk__do_compile(ctx);
+
+	/* [ ... closure ] */
 	return DUK_EXEC_SUCCESS;
 }

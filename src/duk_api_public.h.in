@@ -602,90 +602,124 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
  *  Compilation and evaluation
  */
 
-duk_int_t duk_eval_raw(duk_context *ctx, duk_int_t flags);
-duk_int_t duk_compile_raw(duk_context *ctx, duk_int_t flags);
+duk_int_t duk_eval_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags);
+duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags);
 
+/* plain */
 #define duk_eval(ctx)  \
 	((void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL))
 
 #define duk_eval_noresult(ctx)  \
 	((void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
 
 #define duk_peval(ctx)  \
 	((void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_peval_noresult(ctx)  \
 	((void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile(ctx,flags)  \
-	((void) duk_compile_raw((ctx), (flags)))
+	((void) duk_compile_raw((ctx), NULL, 0, (flags)))
 
 #define duk_pcompile(ctx,flags)  \
-	(duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
+	(duk_compile_raw((ctx), NULL, 0, (flags) | DUK_COMPILE_SAFE))
 
+/* string */
 #define duk_eval_string(ctx,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL))
 
 #define duk_eval_string_noresult(ctx,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
 
 #define duk_peval_string(ctx,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_peval_string_noresult(ctx,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_string(ctx,flags,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_compile_raw((ctx), (flags)))
+	 (void) duk_compile_raw((ctx), NULL, 0, (flags)))
 
 #define duk_pcompile_string(ctx,flags,src)  \
 	((void) duk_push_string((ctx), (src)), \
 	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
+	 duk_compile_raw((ctx), NULL, 0, (flags) | DUK_COMPILE_SAFE))
 
+/* userbuffer */
+#define duk_eval_userbuffer(ctx,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL))
+
+#define duk_eval_userbuffer_noresult(ctx,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+
+#define duk_peval_userbuffer(ctx,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+
+#define duk_peval_userbuffer_noresult(ctx,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+
+#define duk_compile_userbuffer(ctx,flags,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_compile_raw((ctx), buf, len, (flags)))
+
+#define duk_pcompile_userbuffer(ctx,flags,buf,len)  \
+	((void) duk_push_undefined((ctx)), \
+	 (void) duk_push_string((ctx), __FILE__), \
+	 duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_SAFE))
+
+/* file */
 #define duk_eval_file(ctx,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL))
 
 #define duk_eval_file_noresult(ctx,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 (void) duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
 
 #define duk_peval_file(ctx,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_peval_file_noresult(ctx,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 duk_eval_raw((ctx), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_file(ctx,flags,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 (void) duk_compile_raw((ctx), (flags)))
+	 (void) duk_compile_raw((ctx), NULL, 0, (flags)))
 
 #define duk_pcompile_file(ctx,flags,path)  \
 	((void) duk_push_string_file((ctx), (path)), \
 	 (void) duk_push_string((ctx), (path)), \
-	 duk_compile_raw((ctx), (flags) | DUK_COMPILE_SAFE))
+	 duk_compile_raw((ctx), NULL, 0, (flags) | DUK_COMPILE_SAFE))
 
 /*
  *  Logging
