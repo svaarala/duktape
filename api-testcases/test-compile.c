@@ -11,6 +11,7 @@ final top: 0
 *** test_3 (duk_safe_call)
 function result: 11.000000
 final top: 0
+==> rc=0, result='undefined'
 *** test_4 (duk_safe_call)
 compile result: SyntaxError: invalid object literal (line 3) (rc=1)
 final top: 0
