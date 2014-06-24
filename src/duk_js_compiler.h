@@ -215,7 +215,7 @@ struct duk_compiler_ctx {
 #define DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
 #define DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
 
-void duk_js_compile(duk_hthread *thr, duk_small_int_t flags);
+void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_int_t flags);
 
 #endif  /* DUK_JS_COMPILER_H_INCLUDED */
 

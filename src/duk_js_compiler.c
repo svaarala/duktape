@@ -6889,7 +6889,7 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
  *  Compilation context can be either global code or eval code (see E5
  *  Sections 14 and 15.1.2.1).
  *
- *  Input stack:  [ ... sourcecode filename ]
+ *  Input stack:  [ ... filename ]
  *  Output stack: [ ... func_template ]
  */
 
@@ -6897,7 +6897,6 @@ static int duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, int is_decl, in
 
 static int duk__js_compile_raw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hstring *h_sourcecode;
 	duk_hstring *h_filename;
 	duk__compiler_stkstate *comp_stk;
 	duk_compiler_ctx *comp_ctx;
@@ -6916,7 +6915,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	 */
 
 	entry_top = duk_get_top(ctx);
-	DUK_ASSERT(entry_top >= 3);
+	DUK_ASSERT(entry_top >= 2);
 
 	comp_stk = (duk__compiler_stkstate *) duk_require_pointer(ctx, -1);
 	comp_ctx = &comp_stk->comp_ctx_alloc;
@@ -6929,7 +6928,6 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
 	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
 
-	h_sourcecode = duk_require_hstring(ctx, -3);
 	h_filename = duk_get_hstring(ctx, -2);  /* may be undefined */
 
 	/*
@@ -6962,10 +6960,11 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	comp_ctx->tok22_idx = entry_top + 4;
 	comp_ctx->recursion_limit = DUK_COMPILER_RECURSION_LIMIT;
 
-	DUK_LEXER_INITCTX(&comp_ctx->lex);   /* just zeroes/NULLs */
+	/* comp_ctx->lex has been pre-initialized by caller: it has been
+	 * zeroed and input/input_length has been set.
+	 */
 	comp_ctx->lex.thr = thr;
-	comp_ctx->lex.input = DUK_HSTRING_GET_DATA(h_sourcecode);
-	comp_ctx->lex.input_length = DUK_HSTRING_GET_BYTELEN(h_sourcecode);
+	/* comp_ctx->lex.input and comp_ctx->lex.input_length filled by caller */
 	comp_ctx->lex.slot1_idx = comp_ctx->tok11_idx;
 	comp_ctx->lex.slot2_idx = comp_ctx->tok12_idx;
 	comp_ctx->lex.buf_idx = entry_top + 0;
@@ -6986,7 +6985,11 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	DUK_ASSERT(func->num_formals == 0);
 
 	if (is_funcexpr) {
-		/* funcexpr is now used for Function constructor, anonymous */
+		/* Name will be filled from function expression, not by caller.
+		 * This case is used by Function constructor and duk_compile()
+		 * API with the DUK_COMPILE_FUNCTION option.
+		 */
+		DUK_ASSERT(func->h_name == NULL);
 	} else {
 		duk_push_hstring_stridx(ctx, (is_eval ? DUK_STRIDX_EVAL :
 		                                        DUK_STRIDX_GLOBAL));
@@ -7032,12 +7035,12 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	 *  Wrapping duk_safe_call() will mangle the stack, just return stack top
 	 */
 
-	/* [ ... sourcecode filename (temps) func ] */
+	/* [ ... filename (temps) func ] */
 
 	return 1;
 }
 
-void duk_js_compile(duk_hthread *thr, duk_small_int_t flags) {
+void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk__compiler_stkstate comp_stk;
 
@@ -7046,11 +7049,21 @@ void duk_js_compile(duk_hthread *thr, duk_small_int_t flags) {
 	 * Alternatives would be nice.
 	 */
 
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(src_buffer != NULL);
+
+	/* preinitialize lexer state partially */
 	DUK_MEMZERO(&comp_stk, sizeof(comp_stk));
 	comp_stk.flags = flags;
+	DUK_LEXER_INITCTX(&comp_stk.comp_ctx_alloc.lex);
+	comp_stk.comp_ctx_alloc.lex.input = src_buffer;
+	comp_stk.comp_ctx_alloc.lex.input_length = src_length;
+
 	duk_push_pointer(ctx, (void *) &comp_stk);
 
-	if (duk_safe_call(ctx, duk__js_compile_raw, 3 /*nargs*/, 1 /*nret*/) != DUK_EXEC_SUCCESS) {
+	/* [ ... filename &comp_stk ] */
+
+	if (duk_safe_call(ctx, duk__js_compile_raw, 2 /*nargs*/, 1 /*nret*/) != DUK_EXEC_SUCCESS) {
 		/* This now adds a line number to -any- error thrown during compilation.
 		 * Usually compilation errors are SyntaxErrors but they could also be
 		 * out-of-memory errors and the like.
@@ -7069,4 +7082,6 @@ void duk_js_compile(duk_hthread *thr, duk_small_int_t flags) {
 		DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T", duk_get_tval(ctx, -1)));
 		duk_throw(ctx);
 	}
+
+	/* [ ... template ] */
 }
