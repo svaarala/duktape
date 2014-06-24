@@ -416,46 +416,7 @@ aliasing rules enforced.
 Numeric types
 -------------
 
-C data types, especially integer types, are a bit of a hassle: the best choice
-of types depends on the platform and the compiler, and also the C specification
-version.  Types also affect e.g. printf() and scanf() format specifiers which
-are, of course, potentially compiler specific.  To remain portable, (almost)
-all C types are wrapped behind a typedef.  The ``duktape.h`` header handles all
-platform and feature detection and provides all necessary type wrappers, both
-for the public API and for internal use.
-
-Current internal typing rules are covered in a separate section below.
-
-Random notes:
-
-* The public API uses types at least for these (example type in parentheses):
-
-  - allocation size, entry count, etc (size_t)
-  - Unicode codepoint (int_fast32_t)
-  - value stack index (int_fast32_t, ssize_t)
-  - value stack count (uint_fast32_t, size_t)
-  - flag field (uint_fast32_t)
-  - boolean flag (int)
-  - Ecmascript array index (uint_fast32_t)
-  - Ecmascript number (double)
-  - Void and char pointers; easy, but sign of ``char`` varies:
-    explicit use of ``unsigned char`` is more portable but
-    more verbose
-
-* A large amount of code needs an integer type which is fastest on the platform
-  but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
-  choice because it may be 16 bits even on platforms with a 32-bit type and
-  even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
-  good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
-  long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
-  ``duk_uint_t``.  For small integers, like flags, there are typedefs
-  ``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
-  a small integer (16 bits or more) suffices.
-
-* Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
-  Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
-  exact unsigned overflows / underflows.  The wrapped C99 types are used in
-  these cases.
+This is a complicated topic covered in a separate section below.
 
 Numeric constants
 -----------------
@@ -706,11 +667,66 @@ EBCDIC
 
 See separate section below.
 
-Typedefs used in Duktape
-========================
+Numeric types
+=============
 
-Basic rules
------------
+C data types, especially integer types, are a bit of a hassle: the best choice
+of types depends on the platform and the compiler, and also the C specification
+version.  Types also affect e.g. printf() and scanf() format specifiers which
+are, of course, potentially compiler specific.  To remain portable, (almost)
+all C types are wrapped behind a typedef.
+
+The ``duktape.h`` header handles all platform and feature detection and provides
+all necessary type wrappers, both for the public API and for internal use.
+
+Fast integer type with at least 32 bits
+---------------------------------------
+
+A large amount of code needs an integer type which is fastest on the platform
+but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
+choice because it may be 16 bits even on platforms with a 32-bit type and
+even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
+good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
+long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
+``duk_uint_t``.  For small integers, like flags, there are typedefs
+``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
+a small integer (16 bits or more) suffices.
+
+Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
+Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
+exact unsigned overflows / underflows.  The wrapped C99 types are used in
+these cases.
+
+Format specifiers
+-----------------
+
+Format specifiers are more or less standardized, e.g. ``%d`` is used to format
+an ``int`` in decimal, but:
+
+* When typedef wrappers are used, how can calling code know the correct format
+  specifier for the wrapped type?  The target type may be differ between
+  platforms.  In practice there are two reasonable strategies:
+
+  1. Define preprocessor macros for the format specifiers (C99 uses this approach,
+     e.g. ``PRId32``).
+
+  2. Cast upwards to a reasonable guess, e.g. all signed integers to ``long``
+     or (if C99 can be assumed) ``maxint_t`` (``unsigned long`` and ``umaxint_t``
+     for unsigned integers) and use a known format specifier.
+
+* There are separate format codes for ``printf()`` and ``scanf()``.  They are
+  sometimes different.  As a concrete example, the proper print format code for
+  an IEEE double is ``%f`` while the scan format code is ``%lf``.
+
+* Some useful format codes:
+
+  - ``%d``: int
+  - ``%ld``: long
+  - ``%zu``: size_t
+  - ``%jd``: maxint_t (C99)
+
+Types used inside Duktape
+-------------------------
 
 * ``duktape.h`` performs all the detection needed and provide typedefs for
   types used in the public API and inside Duktape.
@@ -750,38 +766,38 @@ Basic rules
 * **FIXME**: avoid casting when unnecessary
 
 duk_size_t
-----------
+::::::::::
 
 Use ``duk_size_t`` for internal uses of ``size_t``.  Coerce it explicitly
 to ``size_t`` for library API calls.
 
 duk_double_t
-------------
+::::::::::::
 
 Use ``duk_double_t`` for IEEE double precision float.  This is slight
 paranoia but may be handy if e.g. built-in soft float library is introduced.
 
 void
-----
+::::
 
 The ``void`` type is used as is, cannot imagine a reason why it would need
 to be reassigned for portability.
 
 duk_int_t
----------
+:::::::::
 
 Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
 unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
 ``duk_uint_t`` should be used as an ``unsigned int`` replacement.
 
 duk_small_int_t
----------------
+:::::::::::::::
 
 The ``duk_small_int_t`` should be used in internal code e.g. for flags.
 It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
 
 duk_bool_t
-----------
+::::::::::
 
 The ``duk_bool_t`` should be used for boolean values.  It must be wide
 enough to accommodate results from C comparisons (e.g. ``x == y``).  In
@@ -789,7 +805,7 @@ practice it's defined as an ``int``.  (Currently some internal code uses
 ``duk_small_int_t`` for booleans, but this will be fixed.)
 
 duk_uint8_t
------------
+:::::::::::
 
 ``duk_uint8_t`` should be used as a replacement for ``unsigned char`` and
 often for ``char`` too.  Since ``char`` may be signed, it is often a
@@ -799,12 +815,12 @@ proper string comparison of UTF-8 character strings, for instance, relies
 on unsigned byte comparisons.
 
 duk_idx_t
----------
+:::::::::
 
 ``duk_idx_t`` is used for value stack indices.
 
 duk_arridx_t
-------------
+::::::::::::
 
 ``duk_arridx_t`` is used for array indices.
 
