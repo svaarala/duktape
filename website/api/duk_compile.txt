@@ -98,10 +98,6 @@ eval("{ myfunc: 1 }");   /* block with -label- "myfunc" and statement "1" (!) */
 eval("({ myfunc: 1 })";  /* object literal { myfunc: 1 } */
 </pre>
 
-<div class="note">
-DUK_COMPILE_FUNCTION is currently unimplemented.
-</div>
-
 =example
 /* Program code.  Note that the hello() function is a function
  * declaration which gets registered into the global object when
