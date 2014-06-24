@@ -215,6 +215,65 @@ def parseApiDoc(filename):
 
 	return parts
 
+# C99: these are used if available
+type_repl_c99 = [
+	['duk_int_t', 'int_fast32_t' ],
+	['duk_uint_t', 'uint_fast32_t' ],
+	['duk_int32_t', 'int32_t' ],
+	['duk_uint32_t', 'uint32_t' ],
+	['duk_uint16_t', 'uint16_t' ],
+	['duk_idx_t', 'int_fast32_t' ],
+	['duk_arridx_t', 'uint_fast32_t' ],
+	['duk_codepoint_t', 'int_fast32_t' ],
+	['duk_errcode_t', 'int_fast32_t' ],
+	['duk_bool_t', 'int' ],
+	['duk_ret_t', 'int' ],
+	['duk_size_t', 'size_t' ],
+	['duk_double_t', 'double' ],
+]
+
+# Typical 32-bit legacy/embedded platform (32-bit int)
+type_repl_legacy32 = [
+	['duk_int_t', 'int' ],
+	['duk_uint_t', 'unsigned int' ],
+	['duk_int32_t', 'int' ],
+	['duk_uint32_t', 'unsigned int' ],
+	['duk_uint16_t', 'unsigned short' ],
+	['duk_idx_t', 'int' ],
+	['duk_arridx_t', 'unsigned int' ],
+	['duk_codepoint_t', 'int' ],
+	['duk_errcode_t', 'int' ],
+	['duk_bool_t', 'int' ],
+	['duk_ret_t', 'int' ],
+	['duk_size_t', 'size_t' ],
+	['duk_double_t', 'double' ],
+]
+
+# Typical 16-bit legacy/embedded platform (16-bit int/short, 32-bit long)
+type_repl_legacy16 = [
+	['duk_int_t', 'long' ],
+	['duk_uint_t', 'unsigned long' ],
+	['duk_int32_t', 'long' ],
+	['duk_uint32_t', 'unsigned long' ],
+	['duk_uint16_t', 'unsigned short' ],
+	['duk_idx_t', 'long' ],
+	['duk_arridx_t', 'unsigned long' ],
+	['duk_codepoint_t', 'long' ],
+	['duk_errcode_t', 'long' ],
+	['duk_bool_t', 'int' ],
+	['duk_ret_t', 'int' ],
+	['duk_size_t', 'size_t' ],
+	['duk_double_t', 'double' ],
+]
+
+def substitutePrototypeTypes(line, repl):
+	# Replace Duktape custom wrapped types with more concrete counterparts
+
+	line = unicode(line)
+	for t in repl:
+		line = line.replace(t[0], t[1])
+	return line
+
 def processApiDoc(parts, funcname, testrefs, used_tags):
 	res = []
 
@@ -227,7 +286,22 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		p = parts['proto']
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-proto">Prototype</h2>')
-		res.append('<pre class="c-code">')
+		alt_typing_c99 = []
+		alt_typing_legacy32 = []
+		alt_typing_legacy16 = []
+		for i in p:
+			alt_typing_c99.append(substitutePrototypeTypes(i, type_repl_c99))
+			alt_typing_legacy32.append(substitutePrototypeTypes(i, type_repl_legacy32))
+			alt_typing_legacy16.append(substitutePrototypeTypes(i, type_repl_legacy16))
+		# Long tooltips are a bad idea in most browsers, so just put the C99 typing there for now
+		#res.append('<pre class="c-code" title="' +
+		#           'C99/C++11: ' + '\n'.join(alt_typing_c99) + '\n' +
+		#           'Legacy 32-bit: ' + '\n'.join(alt_typing_legacy32) + '\n' +
+		#           'Legacy 16-bit: ' + '\n'.join(alt_typing_legacy16) + '\n'
+		#           '">')
+		res.append('<pre class="c-code" title="' +
+		           'C99/C++11: ' + '\n'.join(alt_typing_c99) +
+		           '">')
 		for i in p:
 			res.append(htmlEscape(i))
 		res.append('</pre>')
@@ -360,10 +434,16 @@ def transformColorizeCode(soup, cssClass, sourceLang):
 
 		colorized = sourceHighlight(input_str, sourceLang)
 
+		origTitle = elem.get('title', None)
+
 		# source-highlight generates <pre><tt>...</tt></pre>, get rid of <tt>
 		new_elem = BeautifulSoup(colorized).tt    # XXX: parse just a fragment - how?
 		new_elem.name = 'pre'
 		new_elem['class'] = cssClass
+
+		if origTitle is not None:
+			# Preserve title (hover tool tip)
+			new_elem['title'] = origTitle
 
 		elem.replace_with(new_elem)
 
@@ -686,6 +766,7 @@ def generateApiDoc(apidocdir, apitestdir):
 		# that they don't e.g. have unbalanced tags.  Or at least normalize them so
 		# that they don't break the entire page.
 
+		data = None
 		try:
 			data = processApiDoc(doc['parts'], doc['name'], testrefs, used_tags)
 			res += data
@@ -787,7 +868,8 @@ def generateGuide():
 	navlinks.append(['#introduction', 'Introduction'])
 	navlinks.append(['#gettingstarted', 'Getting started'])
 	navlinks.append(['#programming', 'Programming model'])
-	navlinks.append(['#types', 'Stack types'])
+	navlinks.append(['#stacktypes', 'Stack types'])
+	navlinks.append(['#ctypes', 'C types'])
 	navlinks.append(['#typealgorithms', 'Type algorithms'])
 	navlinks.append(['#duktapebuiltins', 'Duktape built-ins'])
 	navlinks.append(['#es6features', 'Ecmascript E6 features'])
@@ -826,6 +908,7 @@ def generateGuide():
 	res += processRawDoc('guide/gettingstarted.html')
 	res += processRawDoc('guide/programming.html')
 	res += processRawDoc('guide/stacktypes.html')
+	res += processRawDoc('guide/ctypes.html')
 	res += processRawDoc('guide/typealgorithms.html')
 	res += processRawDoc('guide/duktapebuiltins.html')
 	res += processRawDoc('guide/es6features.html')
