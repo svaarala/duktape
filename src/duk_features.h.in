@@ -902,8 +902,10 @@ typedef duk_uint_t duk_arridx_t;
  */
 typedef duk_small_int_t duk_ret_t;
 
-/* Error codes are represented with platform int. */
-typedef duk_small_int_t duk_errcode_t;
+/* Error codes are represented with platform int.  High bits are used
+ * for flags and such, so 32 bits are needed.
+ */
+typedef duk_int_t duk_errcode_t;
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
