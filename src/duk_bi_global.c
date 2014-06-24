@@ -405,7 +405,7 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
 	int this_to_global = 1;
-	int comp_flags;
+	duk_small_int_t comp_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
@@ -424,6 +424,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	if (!h) {
 		return 1;  /* return arg as-is */
 	}
+
+	/* [ source ] */
 
 	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
 	act_eval = thr->callstack + thr->callstack_top - 1;    /* this function */
@@ -446,10 +448,15 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	act_eval = NULL;
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_INPUT);  /* XXX: copy from caller? */
-	duk_js_compile(thr, comp_flags);
+	duk_js_compile(thr,
+	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h),
+	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h),
+	               comp_flags);
 	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
+
+	/* [ source template ] */
 
 	/* E5 Section 10.4.2 */
 	DUK_ASSERT(thr->callstack_top >= 1);
@@ -520,6 +527,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 
 	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
 
+	/* [ source template closure ] */
+
 	if (this_to_global) {
 		DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
 		duk_push_hobject_bidx(ctx, DUK_BIDX_GLOBAL);
@@ -535,7 +544,11 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
 	                     outer_lex_env, outer_var_env, duk_get_tval(ctx, -1)));
 
+	/* [ source template closure this ] */
+
 	duk_call_method(ctx, 0);
+
+	/* [ source template result ] */
 
 	return 1;
 }
