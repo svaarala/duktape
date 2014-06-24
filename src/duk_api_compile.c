@@ -4,10 +4,17 @@
 
 #include "duk_internal.h"
 
+typedef struct duk__compile_raw_args duk__compile_raw_args;
+struct duk__compile_raw_args {
+	duk_size_t user_length;  /* should be first on 64-bit platforms */
+	const char *user_buffer;
+	duk_int_t flags;
+};
+
 /* Eval is just a wrapper now. */
-int duk_eval_raw(duk_context *ctx, int flags) {
-	int comp_flags;
-	int rc;
+duk_int_t duk_eval_raw(duk_context *ctx, duk_int_t flags) {
+	duk_int_t comp_flags;
+	duk_int_t rc;
 
 	/* [ ... source filename ] */
 
@@ -43,15 +50,17 @@ int duk_eval_raw(duk_context *ctx, int flags) {
 }
 
 /* Helper which can be called both directly and with duk_safe_call(). */
-static int duk__do_compile(duk_context *ctx) {
+static duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk__compile_raw_args *comp_args;
 	duk_int_t flags;
-	duk_int_t comp_flags;
+	duk_small_int_t comp_flags;
 	duk_hcompiledfunction *h_templ;
 
 	/* [ ... source filename flags ] */
 
-	flags = (duk_int_t) duk_get_int(ctx, -1);
+	comp_args = (duk__compile_raw_args *) duk_require_pointer(ctx, -1);
+	flags = comp_args->flags;
 	duk_pop(ctx);
 
 	/* [ ... source filename ] */
@@ -80,10 +89,10 @@ static int duk__do_compile(duk_context *ctx) {
 	}
 
 	duk_js_compile(thr, comp_flags);
-	h_templ = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 
 	/* [ ... func_template ] */
 
+	h_templ = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
         duk_js_push_closure(thr,
 	                   h_templ,
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
@@ -103,15 +112,22 @@ static int duk__do_compile(duk_context *ctx) {
 	return 1;
 }
 
-int duk_compile_raw(duk_context *ctx, int flags) {
-	duk_push_int(ctx, flags);
+duk_int_t duk_compile_raw(duk_context *ctx, duk_int_t flags) {
+	duk__compile_raw_args comp_args_alloc;
+	duk__compile_raw_args *comp_args = &comp_args_alloc;
+
+#if 0
+	comp_args->user_buffer = user_buffer;
+	comp_args->user_length = user_length;
+#endif
+	comp_args->flags = flags;
+	duk_push_pointer(ctx, (void *) comp_args);
 
 	if (flags & DUK_COMPILE_SAFE) {
-		int rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/);
+		duk_int_t rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/);
 		return rc;
 	}
 
 	(void) duk__do_compile(ctx);
 	return DUK_EXEC_SUCCESS;
 }
-

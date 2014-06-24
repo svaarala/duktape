@@ -7037,7 +7037,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	return 1;
 }
 
-void duk_js_compile(duk_hthread *thr, int flags) {
+void duk_js_compile(duk_hthread *thr, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk__compiler_stkstate comp_stk;
 
