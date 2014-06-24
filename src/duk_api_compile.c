@@ -56,13 +56,24 @@ static int duk__do_compile(duk_context *ctx) {
 
 	/* [ ... source filename ] */
 
+	/* XXX: barebones initial implementation for compiling a function:
+	 * simply evaluate a parenthesis wrapped function expression.
+	 */
+	if (flags & DUK_COMPILE_FUNCTION) {
+		duk_push_string(ctx, "(");
+		duk_dup(ctx, -3);
+		duk_push_string(ctx, ")");
+		duk_concat(ctx, 3);
+		duk_replace(ctx, -3);
+	}
+
 	/* XXX: unnecessary translation of flags */
 	comp_flags = 0;
 	if (flags & DUK_COMPILE_EVAL) {
 		comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
 	}
 	if (flags & DUK_COMPILE_FUNCTION) {
-		duk_error(ctx, DUK_ERR_UNIMPLEMENTED_ERROR, "unimplemented");
+		comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
 	}
 	if (flags & DUK_COMPILE_STRICT) {
 		comp_flags = DUK_JS_COMPILE_FLAG_STRICT;
@@ -83,6 +94,11 @@ static int duk__do_compile(duk_context *ctx) {
 	duk_remove(ctx, -2);  /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
+
+	if (flags & DUK_COMPILE_FUNCTION) {
+		/* Evaluate the function expression to get the function. */
+		duk_call(ctx, 0);
+	}
 
 	return 1;
 }
