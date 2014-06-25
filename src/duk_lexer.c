@@ -164,26 +164,19 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	int x;
 	int len;
 	int i;
-	duk_uint8_t *p;
+	const duk_uint8_t *p;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
 	int mincp;
 #endif
-	duk_int_t input_offset;
+	duk_size_t input_offset;
 
-	/* The case where input_offset < 0 should never happen, but it's
-	 * worth checking because lexer "points" are stored and restored
-	 * to/from duk_tvals by the compiler.  It's nice if any duk_tval issue
-	 * is caught cleanly rather than leading to memory unsafe behavior.
-	 */
 	input_offset = lex_ctx->input_offset;
-	if (DUK_UNLIKELY(input_offset >= lex_ctx->input_length ||
-	                 input_offset < 0))  {
-		if (input_offset < 0) {
-			/* Log negative offset to ease detection w/o asserts. */
-			DUK_D(DUK_DPRINT("negative input_offset, should never happen"));
-			goto error_internal;
-		}
-		DUK_ASSERT(input_offset >= 0);
+	if (DUK_UNLIKELY(input_offset >= lex_ctx->input_length)) {
+		/* If input_offset were assigned a negative value, it would
+		 * result in a large positive value.  Most likely it would be
+		 * larger than input_length and be caught here.  In any case
+		 * no memory unsafe behavior would happen.
+		 */
 		return -1;
 	}
 
@@ -223,7 +216,8 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 		goto error_encoding;
 	}
 
-	if (len > lex_ctx->input_length - lex_ctx->input_offset) {
+	DUK_ASSERT(lex_ctx->input_length >= lex_ctx->input_offset);
+	if (len > (int) (lex_ctx->input_length - lex_ctx->input_offset)) {
 		goto error_clipped;
 	}
 
@@ -275,10 +269,6 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	}
 
 	return x;
-
- error_internal:  /* internal error */
-	DUK_ERROR(lex_ctx->thr, DUK_ERR_INTERNAL_ERROR, "internal error");
-	return 0;
 
  error_clipped:   /* clipped codepoint */
  error_encoding:  /* invalid codepoint encoding or codepoint */
@@ -394,7 +384,7 @@ void duk_lexer_initctx(duk_lexer_ctx *lex_ctx) {
 /* NB: duk_lexer_getpoint() is a macro only */
 
 void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt) {
-	DUK_ASSERT(pt->offset >= 0);
+	DUK_ASSERT_DISABLE(pt->offset >= 0);  /* unsigned */
 	DUK_ASSERT(pt->line >= 1);
 	lex_ctx->input_offset = pt->offset;
 	lex_ctx->input_line = pt->line;
@@ -1860,4 +1850,3 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 }
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */
-

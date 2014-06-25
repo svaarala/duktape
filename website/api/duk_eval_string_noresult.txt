@@ -1,13 +1,18 @@
 =proto
-void duk_eval_string_noresult(duk_context *ctx, const char *str);
+void duk_eval_string_noresult(duk_context *ctx, const char *src);
 
 =stack
-[ ... ] -> [ ...  ]
+[ ... ] -> [ ... ]
 
 =summary
 <p>Like
 <code><a href="#duk_eval_string">duk_eval_string()</a></code>, but leaves no
 result on the value stack.</p>
+
+<div class="note">
+With this variant, the input source code is not interned by Duktape which is
+useful in low memory environments.
+</div>
 
 =example
 duk_eval_string_noresult(ctx, "print('testString'.toUpperCase())");

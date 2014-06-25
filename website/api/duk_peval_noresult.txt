@@ -1,5 +1,5 @@
 =proto
-int duk_peval_noresult(duk_context *ctx);
+duk_int_t duk_peval_noresult(duk_context *ctx);
 
 =stack
 [ ... source! ] -> [ ... ]
@@ -21,4 +21,5 @@ compile
 
 =seealso
 duk_peval_string_noresult
+duk_peval_lstring_noresult
 duk_peval_file_noresult

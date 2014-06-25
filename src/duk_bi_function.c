@@ -6,9 +6,10 @@
 
 int duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h_sourcecode;
 	int num_args;
 	int i;
-	int comp_flags;
+	duk_small_int_t comp_flags;
 	duk_hcompiledfunction *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
@@ -47,6 +48,8 @@ int duk_bi_function_constructor(duk_context *ctx) {
 	duk_push_string(ctx, "}");
 	duk_concat(ctx, 5);
 
+	/* [ body formals source ] */
+
 	DUK_ASSERT_TOP(ctx, 3);
 
 	/* FIXME: uses internal API */
@@ -54,11 +57,17 @@ int duk_bi_function_constructor(duk_context *ctx) {
 	/* strictness is not inherited, intentional */
 	comp_flags = DUK_JS_COMPILE_FLAG_FUNCEXPR;
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */
-	duk_js_compile(thr, comp_flags);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* FIXME: ignored now */
+	h_sourcecode = duk_require_hstring(ctx, -2);
+	duk_js_compile(thr,
+	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
+	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
+	               comp_flags);
 	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
+
+	/* [ body formals source template ] */
 
 	/* only outer_lex_env matters, as functions always get a new
 	 * variable declaration environment.
@@ -68,6 +77,8 @@ int duk_bi_function_constructor(duk_context *ctx) {
 	outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 
 	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
+
+	/* [ body formals source template closure ] */
 
 	return 1;
 }

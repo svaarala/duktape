@@ -376,21 +376,21 @@ struct duk_re_token {
 
 /* A structure for 'snapshotting' a point for rewinding */
 struct duk_lexer_point {
-	int offset;
-	int line;
+	duk_size_t offset;
+	duk_int_t line;
 };
 
 /* Lexer context.  Same context is used for Ecmascript and Regexp parsing. */
 struct duk_lexer_ctx {
 	duk_hthread *thr;                       /* thread; minimizes argument passing */
 
-	duk_uint8_t *input;
-	duk_int_t input_length;
+	const duk_uint8_t *input;
+	duk_size_t input_length;
+	duk_size_t input_offset;                /* input offset for window leading edge (not window[0]) */
 	int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
 	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input byte offset for each char */
 	int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
-	int input_offset;                       /* input offset for window leading edge (not window[0]) */
-	int input_line;                         /* input linenumber at input_offset (not window[0]), init to 1 */
+	duk_int_t input_line;                   /* input linenumber at input_offset (not window[0]), init to 1 */
 
 	int slot1_idx;                          /* valstack slot for 1st token value */
 	int slot2_idx;                          /* valstack slot for 2nd token value */

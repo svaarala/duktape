@@ -1,5 +1,5 @@
 =proto
-duk_int_t duk_pcompile_string(duk_context *ctx, duk_int_t flags, const char *src);
+duk_int_t duk_pcompile_lstring(duk_context *ctx, duk_int_t flags, const char *src, duk_size_t len);
 
 =stack
 [ ... ] -> [ ... function! ]  (if success, return value == 0)
@@ -8,9 +8,9 @@ duk_int_t duk_pcompile_string(duk_context *ctx, duk_int_t flags, const char *src
 =summary
 <p>Like
 <code><a href="#duk_pcompile">duk_pcompile()</a></code>, but the compile input
-is given as a C string.  The filename associated with the function is
-automatically provided from the <code>__FILE__</code> preprocessor define
-of the caller.</p>
+is given as a C string with explicit length.  The filename associated with the
+function is automatically provided from the <code>__FILE__</code> preprocessor
+define of the caller.</p>
 
 <div class="note">
 With this variant, the input source code is not interned by Duktape which is
@@ -18,7 +18,10 @@ useful in low memory environments.
 </div>
 
 =example
-if (duk_pcompile_string(ctx, 0, "print('program code'); syntax error here=") != 0) {
+const char *src = /* ... */;
+duk_size_t len = /* ... */;
+
+if (duk_pcompile_lstring(ctx, 0, src, len) != 0) {
     printf("compile failed: %s\n", duk_safe_to_string(ctx, -1));
 } else {
     duk_call(ctx, 0);      /* [ func ] -> [ result ] */

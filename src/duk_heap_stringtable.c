@@ -333,6 +333,23 @@ static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_
 		return NULL;
 	}
 
+	/* For manual testing only. */
+#if 0
+	{
+		duk_size_t i;
+		printf("INTERN: \"");
+		for (i = 0; i < blen; i++) {
+			duk_uint8_t x = str[i];
+			if (x >= 0x20 && x <= 0x7e && x != '"' && x != '\\') {
+				printf("%c", (char) x);
+			} else {
+				printf("\\x%02x", (int) x);
+			}
+		}
+		printf("\"\n");
+	}
+#endif
+
 	res = duk__alloc_init_hstring(heap, str, blen, strhash);
 	if (!res) {
 		return NULL;
