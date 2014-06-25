@@ -121,6 +121,13 @@ duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t 
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 
+	if ((flags & DUK_COMPILE_STRLEN) && (user_buffer != NULL)) {
+		/* String length is computed here to avoid multiple evaluation
+		 * of a macro argument in the calling side.
+		 */
+		user_length = DUK_STRLEN(user_buffer);
+	}
+
 	comp_args->src_buffer = (const duk_uint8_t *) user_buffer;
 	comp_args->src_length = user_length;
 	comp_args->flags = flags;
