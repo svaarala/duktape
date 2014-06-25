@@ -12,7 +12,7 @@ struct duk__compile_raw_args {
 };
 
 /* Eval is just a wrapper now. */
-duk_int_t duk_eval_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags) {
+duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags) {
 	duk_int_t comp_flags;
 	duk_int_t rc;
 
@@ -23,7 +23,7 @@ duk_int_t duk_eval_raw(duk_context *ctx, const char *user_buffer, duk_size_t use
 	if (duk_is_strict_call(ctx)) {
 		comp_flags |= DUK_COMPILE_STRICT;
 	}
-	rc = duk_compile_raw(ctx, user_buffer, user_length, comp_flags);  /* may be safe, or non-safe depending on flags */
+	rc = duk_compile_raw(ctx, src_buffer, src_length, comp_flags);  /* may be safe, or non-safe depending on flags */
 
 	/* [ ... closure/error ] */
 
@@ -117,19 +117,19 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	return 1;
 }
 
-duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t user_length, duk_int_t flags) {
+duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags) {
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 
-	if ((flags & DUK_COMPILE_STRLEN) && (user_buffer != NULL)) {
+	if ((flags & DUK_COMPILE_STRLEN) && (src_buffer != NULL)) {
 		/* String length is computed here to avoid multiple evaluation
 		 * of a macro argument in the calling side.
 		 */
-		user_length = DUK_STRLEN(user_buffer);
+		src_length = DUK_STRLEN(src_buffer);
 	}
 
-	comp_args->src_buffer = (const duk_uint8_t *) user_buffer;
-	comp_args->src_length = user_length;
+	comp_args->src_buffer = (const duk_uint8_t *) src_buffer;
+	comp_args->src_length = src_length;
 	comp_args->flags = flags;
 	duk_push_pointer(ctx, (void *) comp_args);
 
