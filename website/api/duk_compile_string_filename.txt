@@ -1,0 +1,22 @@
+=proto
+void duk_compile_string_filename(duk_context *ctx, duk_int_t flags, const char *src);
+
+=stack
+[ ... filename! ] -> [ ... function! ]
+
+=summary
+<p>Like
+<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+is given as a C string.</p>
+
+<div class="note">
+With this variant, the input source code is not interned by Duktape which is
+useful in low memory environments.
+</div>
+
+=example
+duk_push_string(ctx, "myFile.js");
+duk_compile_string_filename(ctx, 0, "print('program code');");
+
+=tags
+compile

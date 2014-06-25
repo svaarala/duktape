@@ -1,5 +1,5 @@
 =proto
-int duk_pcompile(duk_context *ctx, int flags);
+duk_int_t duk_pcompile(duk_context *ctx, duk_int_t flags);
 
 =stack
 [ ... source! filename! ] -> [ ... function! ]  (if success, return value == 0)
@@ -28,4 +28,7 @@ compile
 =seealso
 duk_compile
 duk_pcompile_string
+duk_pcompile_string_filename
+duk_pcompile_lstring
+duk_pcompile_lstring_filename
 duk_pcompile_file

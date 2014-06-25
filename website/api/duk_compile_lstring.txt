@@ -1,0 +1,26 @@
+=proto
+void duk_compile_lstring(duk_context *ctx, duk_int_t flags, const char *src, duk_size_t len);
+
+=stack
+[ ... ] -> [ ... function! ]
+
+=summary
+<p>Like
+<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+is given as a C string with explicit length.  The filename associated with the
+function is automatically provided from the <code>__FILE__</code> preprocessor
+define of the caller.</p>
+
+<div class="note">
+With this variant, the input source code is not interned by Duktape which is
+useful in low memory environments.
+</div>
+
+=example
+const char *src = /* ... */;
+duk_size_t len = /* ... */;
+
+duk_compile_lstring(ctx, 0, src, len);
+
+=tags
+compile

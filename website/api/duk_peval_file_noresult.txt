@@ -1,5 +1,5 @@
 =proto
-int duk_peval_file_noresult(duk_context *ctx, const char *path);
+duk_int_t duk_peval_file_noresult(duk_context *ctx, const char *path);
 
 =stack
 [ ... ] -> [ ... ]
