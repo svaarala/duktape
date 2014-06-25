@@ -97,13 +97,9 @@ static duk_small_int_t duk__decode_hex_escape(duk_uint8_t *p, duk_small_int_t n)
 
 	while (n > 0) {
 		t = t * 16;
-		ch = (int) (*p++);
-		if (ch >= (int) '0' && ch <= (int) '9') {
-			t += ch - ((int) '0');
-		} else if (ch >= (int) 'a' && ch <= (int) 'f') {
-			t += ch - ((int) 'a') + 0x0a;
-		} else if (ch >= (int) 'A' && ch <= (int) 'F') {
-			t += ch - ((int) 'A') + 0x0a;
+		ch = (duk_small_int_t) duk_hex_dectab[*p++];
+		if (DUK_LIKELY(ch >= 0)) {
+			t += ch;
 		} else {
 			return -1;
 		}

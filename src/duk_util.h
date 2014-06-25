@@ -40,6 +40,7 @@ struct duk_bitencoder_ctx {
 
 extern duk_uint8_t duk_lc_digits[36];
 extern duk_uint8_t duk_uc_nybbles[16];
+extern duk_int8_t duk_hex_dectab[256];
 
 /* Note: assumes that duk_util_probe_steps size is 32 */
 extern duk_uint8_t duk_util_probe_steps[32];
