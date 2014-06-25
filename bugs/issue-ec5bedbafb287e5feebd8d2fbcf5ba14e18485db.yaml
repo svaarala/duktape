@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api inconsistency: duk_compile() variant flags vs. other arguments"
+desc: |-
+  For instance: duk_compile_string(ctx, flags, src).  Argument order does
+  not match other API calls where flags are last.
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-24 19:29:50.518618 Z
+references: []
+
+id: ec5bedbafb287e5feebd8d2fbcf5ba14e18485db
+log_events: 
+- - 2014-06-24 19:29:50.928161 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

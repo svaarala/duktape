@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-08-05 12:10:12.804181 Z
 references: []
 
@@ -38,3 +38,7 @@ log_events:
   - |-
     Initial implementation in api-compile-function.  Perhaps improve to
     compile directly without creating an intermediate source string.
+- - 2014-06-25 12:45:03.367214 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
