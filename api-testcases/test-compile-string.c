@@ -2,6 +2,8 @@
 *** test_string (duk_safe_call)
 program code
 return value is: '123'
+myFile.js
+return value is: '234'
 compile rc=0
 program code
 return value is: '123'
@@ -14,6 +16,8 @@ top: 0
 *** test_lstring (duk_safe_call)
 program code
 return value is: '123'
+myFile.js
+return value is: '234'
 compile rc=0
 program code
 return value is: '123'
@@ -30,6 +34,13 @@ static duk_ret_t test_string(duk_context *ctx) {
 
 	/* Normal compile */
 	duk_compile_string(ctx, 0, "print('program code'); 123");
+	duk_call(ctx, 0);
+	printf("return value is: '%s'\n", duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	/* Normal compile with explicit filename */
+	duk_push_string(ctx, "myFile.js");
+	duk_compile_string_filename(ctx, 0, "print(Duktape.act(-2).function.fileName); 234");
 	duk_call(ctx, 0);
 	printf("return value is: '%s'\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
@@ -66,6 +77,13 @@ static duk_ret_t test_lstring(duk_context *ctx) {
 
 	/* Normal compile */
 	duk_compile_lstring(ctx, 0, src1, strlen(src1) - 1);
+	duk_call(ctx, 0);
+	printf("return value is: '%s'\n", duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	/* Normal compile with explicit filename */
+	duk_push_string(ctx, "myFile.js");
+	duk_compile_lstring_filename(ctx, 0, src2, strlen(src2) - 1);
 	duk_call(ctx, 0);
 	printf("return value is: '%s'\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
