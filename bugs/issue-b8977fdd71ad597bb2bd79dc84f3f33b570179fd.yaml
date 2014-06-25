@@ -3,7 +3,7 @@ title: make heap->fatal_func noreturn
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,14 @@ log_events:
 - - 2014-02-11 22:38:53.616043 Z
   - sva <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
+  - ""
+- - 2014-06-25 13:18:27.525320 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Making a function typedef noreturn is challenging portability-wise, so
+    moving this back to backlog.
+- - 2014-06-25 13:18:32.613509 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
   - ""
