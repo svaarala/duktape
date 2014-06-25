@@ -151,6 +151,7 @@ struct duk_number_list_entry {
 #define DUK_COMPILE_STRICT                (1 << 2)    /* use strict (outer) context for program, eval, or function */
 #define DUK_COMPILE_SAFE                  (1 << 3)    /* (internal) catch compilation errors */
 #define DUK_COMPILE_NORESULT              (1 << 4)    /* (internal) omit eval result */
+#define DUK_COMPILE_NOSOURCE              (1 << 5)    /* (internal) no source string on stack */
 
 /* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 << 0)    /* create a new global environment */
@@ -630,65 +631,53 @@ duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t 
 
 /* string */
 #define duk_eval_string(ctx,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE))
 
 #define duk_eval_string_noresult(ctx,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_peval_string(ctx,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE))
 
 #define duk_peval_string_noresult(ctx,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), (src), DUK_STRLEN((src)), DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_string(ctx,flags,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_compile_raw((ctx), (src), DUK_STRLEN((src)), (flags)))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_compile_raw((ctx), (src), DUK_STRLEN((src)), (flags) | DUK_COMPILE_NOSOURCE))
 
 #define duk_pcompile_string(ctx,flags,src)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_compile_raw((ctx), (src), DUK_STRLEN((src)), (flags) | DUK_COMPILE_SAFE))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_compile_raw((ctx), (src), DUK_STRLEN((src)), (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE))
 
 /* userbuffer */
 #define duk_eval_userbuffer(ctx,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE))
 
 #define duk_eval_userbuffer_noresult(ctx,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_peval_userbuffer(ctx,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_SAFE))
 
 #define duk_peval_userbuffer_noresult(ctx,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_userbuffer(ctx,flags,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 (void) duk_compile_raw((ctx), buf, len, (flags)))
+	((void) duk_push_string((ctx), __FILE__), \
+	 (void) duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_NOSOURCE))
 
 #define duk_pcompile_userbuffer(ctx,flags,buf,len)  \
-	((void) duk_push_undefined((ctx)), \
-	 (void) duk_push_string((ctx), __FILE__), \
-	 duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_SAFE))
+	((void) duk_push_string((ctx), __FILE__), \
+	 duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE))
 
 /* file */
 #define duk_eval_file(ctx,path)  \

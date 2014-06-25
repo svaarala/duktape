@@ -16,7 +16,7 @@ duk_int_t duk_eval_raw(duk_context *ctx, const char *user_buffer, duk_size_t use
 	duk_int_t comp_flags;
 	duk_int_t rc;
 
-	/* [ ... source filename ] */
+	/* [ ... source? filename ] (depends on flags) */
 
 	comp_flags = flags;
 	comp_flags |= DUK_COMPILE_EVAL;
@@ -57,16 +57,21 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_small_int_t comp_flags;
 	duk_hcompiledfunction *h_templ;
 
-	/* [ ... source filename flags ] */
+	/* [ ... source? filename &comp_args ] (depends on flags) */
 
 	comp_args = (duk__compile_raw_args *) duk_require_pointer(ctx, -1);
 	flags = comp_args->flags;
 	duk_pop(ctx);
 
-	/* [ ... source filename ] */
+	/* [ ... source? filename ] */
 
 	if (!comp_args->src_buffer) {
-		duk_hstring *h_sourcecode = duk_require_hstring(ctx, -2);
+		duk_hstring *h_sourcecode;
+
+		if (flags & DUK_COMPILE_NOSOURCE) {
+			DUK_ERROR(thr, DUK_ERR_API_ERROR, "no sourcecode");
+		}
+		h_sourcecode = duk_require_hstring(ctx, -2);
 		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);
 		comp_args->src_length = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode);
 	}
@@ -85,11 +90,19 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 	}
 
-	/* [ ... source filename ] */
+	/* [ ... source? filename ] */
 
 	duk_js_compile(thr, comp_args->src_buffer, comp_args->src_length, comp_flags);
 
-	/* [ ... source func_template ] */
+	/* [ ... source? func_template ] */
+
+	if (flags & DUK_COMPILE_NOSOURCE) {
+		;
+	} else {
+		duk_remove(ctx, -2);
+	}
+
+	/* [ ... func_template ] */
 
 	h_templ = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h_templ != NULL);
@@ -97,8 +110,7 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	                   h_templ,
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV]);
-	duk_replace(ctx, -3);  /* -> [ ... closure func_template ] */
-	duk_pop(ctx);          /* -> [ ... closure ] */
+	duk_remove(ctx, -2);   /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
 
@@ -114,10 +126,16 @@ duk_int_t duk_compile_raw(duk_context *ctx, const char *user_buffer, duk_size_t 
 	comp_args->flags = flags;
 	duk_push_pointer(ctx, (void *) comp_args);
 
-	/* [ ... source filename &comp_args ] */
+	/* [ ... source? filename &comp_args ] (depends on flags) */
 
 	if (flags & DUK_COMPILE_SAFE) {
-		duk_int_t rc = duk_safe_call(ctx, duk__do_compile, 3 /*nargs*/, 1 /*nrets*/);
+		duk_int_t rc;
+		duk_int_t nargs;
+		duk_int_t nrets = 1;
+
+		/* Arguments are either: [ filename &comp_args ] or [ source filename &comp_args ] */
+		nargs = (flags & DUK_COMPILE_NOSOURCE) ? 2 : 3;
+		rc = duk_safe_call(ctx, duk__do_compile, nargs, nrets);
 
 		/* [ ... closure ] */
 		return rc;
