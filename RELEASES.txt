@@ -329,9 +329,9 @@ Planned
 
 * Add convenience API calls: duk_push_uint(), duk_get_global_string()
 
-* Add duk_eval_userbuffer() and duk_compile_userbuffer() (and variants
-  of these) to allow eval/compile without interning the source code;
-  this is useful in low memory environments
+* Add more variants for eval/compile (such as duk_eval_lstring() and
+  duk_compile_lstring()) and avoid interning the source code when compiling
+  from a user provided string (useful in low memory environments)
 
 * Align duk_to_fixed_buffer() arguments and return value with duk_to_buffer()
   (this is an API incompatible change); add duk_to_dynamic_buffer()
