@@ -721,7 +721,7 @@ doc/%.html: doc/%.txt
 # Source distributable for end users
 # XXX: want to run debuglogcheck when dist gets built, but don't want to depend on it.
 # XXX: make prints a harmless warning related to the sub-make.
-dist:	UglifyJS UglifyJS2 compiler.jar cloc-1.60.pl
+dist:	compiler.jar cloc-1.60.pl
 	@make debuglogcheck
 	sh util/make_dist.sh
 
