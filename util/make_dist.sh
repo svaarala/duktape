@@ -303,30 +303,30 @@ cat src/duktape.h.in | sed -e '
 	> $DISTSRCSEP/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
-# a new global context is created.  UglifyJS or the closure compiler is
-# used to compact the source.  Obfuscating the code is not a goal, although
-# that happens as an unwanted side effect.
+# a new global context is created.  There are multiple minifiers, closure
+# seems to be doing the best job so only that is enabled now.  Obfuscating
+# the code is not a goal, although that happens as an unwanted side effect.
 #
 # Closure compiler --compilation_level ADVANCED_OPTIMIZATIONS breaks some
 # of the existing code, so don't use it.
 
-cat src/duk_initjs.js \
-	| UglifyJS/bin/uglifyjs --ascii --no-dead-code --no-copyright \
-	> $DISTSRCSEP/duk_initjs_uglify.js.tmp
-if [ $? -ne 0 ]; then
-	echo "UglifyJS initjs step failed"
-	exit 1
-fi
+#cat src/duk_initjs.js \
+#	| UglifyJS/bin/uglifyjs --ascii --no-dead-code --no-copyright \
+#	> $DISTSRCSEP/duk_initjs_uglify.js.tmp
+#if [ $? -ne 0 ]; then
+#	echo "UglifyJS initjs step failed"
+#	exit 1
+#fi
 
-UglifyJS2/bin/uglifyjs \
-	src/duk_initjs.js \
-	--screw-ie8 \
-	--compress warnings=false \
-	> $DISTSRCSEP/duk_initjs_uglify2.js.tmp
-if [ $? -ne 0 ]; then
-	echo "UglifyJS2 initjs step failed"
-	exit 1
-fi
+#UglifyJS2/bin/uglifyjs \
+#	src/duk_initjs.js \
+#	--screw-ie8 \
+#	--compress warnings=false \
+#	> $DISTSRCSEP/duk_initjs_uglify2.js.tmp
+#if [ $? -ne 0 ]; then
+#	echo "UglifyJS2 initjs step failed"
+#	exit 1
+#fi
 
 java -jar compiler.jar \
 	--warning_level QUIET \
@@ -340,8 +340,10 @@ if [ $? -ne 0 ]; then
 fi
 
 INITJS_ORIG=`wc -c < src/duk_initjs.js`
-INITJS_UGLIFY=`wc -c < $DISTSRCSEP/duk_initjs_uglify.js.tmp`
-INITJS_UGLIFY2=`wc -c < $DISTSRCSEP/duk_initjs_uglify2.js.tmp`
+INITJS_UGLIFY=DISABLED
+INITJS_UGLIFY2=DISABLED
+#INITJS_UGLIFY=`wc -c < $DISTSRCSEP/duk_initjs_uglify.js.tmp`
+#INITJS_UGLIFY2=`wc -c < $DISTSRCSEP/duk_initjs_uglify2.js.tmp`
 INITJS_CLOSURE=`wc -c < $DISTSRCSEP/duk_initjs_closure.js.tmp`
 echo "Minified initjs size: original=$INITJS_ORIG, UglifyJS=$INITJS_UGLIFY, UglifyJS2=$INITJS_UGLIFY2, closure=$INITJS_CLOSURE"
 
