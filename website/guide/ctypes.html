@@ -72,6 +72,10 @@ arithmetic.</p>
     duk_push_int(ctx, 1234567L);
     </pre>
     </li>
+<li>Duktape API calls with a filesystem path argument simply pass the
+    path to <code>fopen()</code>.  There is no way to specify an encoding
+    or support a wide character set.  To do that, you need to implement a
+    platform specific helper yourself.</li>
 </ul>
 
 <h2>Wrapped types used in the Duktape API</h2>
@@ -98,7 +102,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <th>Legacy 32-bit</th>
 <th>Legacy 16-bit</th>
 <th><code>printf</code></th>
-<th><code>scanff</code></th>
+<th><code>scanf</code></th>
 <th>Notes</th>
 </tr>
 <tr>
