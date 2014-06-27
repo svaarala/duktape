@@ -69,7 +69,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-/* non-coercible types */
+/* Non-coercible types */
 static duk_ret_t test_2a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);
@@ -84,6 +84,8 @@ static duk_ret_t test_2b(duk_context *ctx) {
 	printf("index 0 OK\n");
 	return 0;
 }
+
+/* Buffers and pointers are coercible */
 static duk_ret_t test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_fixed_buffer(ctx, 0);
