@@ -11,9 +11,7 @@ the value stack.</p>
 
 <p>If file I/O has been disabled, this call is a NOP.</p>
 
-<div class="note">
-You should not leave dump calls in production code.
-</div>
+<div include="no-production-dump-calls.html" />
 
 =example
 duk_push_int(ctx, 123);

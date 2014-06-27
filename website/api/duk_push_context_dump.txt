@@ -17,9 +17,7 @@ values.  The example below would print something like:</p>
 ctx: top=2, stack=[123,"foo"]
 </pre>
 
-<div class="note">
-You should not leave dump calls in production code.
-</div>
+<div include="no-production-dump-calls.html" />
 
 =example
 duk_push_int(ctx, 123);
