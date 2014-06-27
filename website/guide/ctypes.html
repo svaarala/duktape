@@ -113,10 +113,10 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <tr>
 <td>duk_uint_t</td>
 <td>uint_fast32_t</td>
-<td>unsigned&nbsp;int</td>
-<td>unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
+<td>unsigned int</td>
+<td>unsigned long</td>
+<td>%lu<br />unsigned long</td>
+<td>%lu<br />unsigned long</td>
 <td>All around unsigned integer type, range is [<code>0</code>, <code>DUK_UINT_MAX</code>]</td>
 </tr>
 <tr>
@@ -131,19 +131,19 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <tr>
 <td>duk_uint32_t</td>
 <td>uint32_t</td>
-<td>unsigned&nbsp;int</td>
-<td>unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
+<td>unsigned int</td>
+<td>unsigned long</td>
+<td>%lu<br />unsigned long</td>
+<td>%lu<br />unsigned long</td>
 <td>Exact type for <code>ToUint32()</code> coercion</td>
 </tr>
 <tr>
 <td>duk_uint16_t</td>
 <td>uint16_t</td>
-<td>unsigned&nbsp;short</td>
-<td>unsigned&nbsp;short</td>
-<td>%u<br />unsigned&nbsp;int</td>
-<td>%u<br />unsigned&nbsp;int</td>
+<td>unsigned short</td>
+<td>unsigned short</td>
+<td>%u<br />unsigned int</td>
+<td>%u<br />unsigned int</td>
 <td>Exact type for <code>ToUint16()</code> coercion</td>
 </tr>
 <tr>
@@ -158,10 +158,10 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <tr>
 <td>duk_arridx_t</td>
 <td>uint_fast32_t</td>
-<td>unsigned&nbsp;int</td>
-<td>unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
+<td>unsigned int</td>
+<td>unsigned long</td>
+<td>%lu<br />unsigned long</td>
+<td>%lu<br />unsigned long</td>
 <td>Ecmascript array index</td>
 </tr>
 <tr>
@@ -205,8 +205,8 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <td>size_t</td>
 <td>size_t</td>
 <td>size_t</td>
-<td>%lu<br />unsigned&nbsp;long</td>
-<td>%lu<br />unsigned&nbsp;long</td>
+<td>%lu<br />unsigned long</td>
+<td>%lu<br />unsigned long</td>
 <td>1:1 mapping now, wrapped for future use.  Range is [<code>0, <code>DUK_SIZE_MAX</code>].
     C99 format specifier is <code>%zu</code>.</td>
 </tr>
@@ -217,7 +217,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <td>double</td>
 <td>%f or %lf<br />double</td>
 <td>%lf<br />double</td>
-<td>(1:1 mapping now, wrapped for future use, e.g. custom software floating point library)</td>
+<td>1:1 mapping now, wrapped for future use, e.g. custom software floating point library.</td>
 </tr>
 </table>
 
