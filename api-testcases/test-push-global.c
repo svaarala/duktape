@@ -12,7 +12,6 @@ void test(duk_context *ctx) {
 
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "escape");
-	printf("duk_is_function(global.escape)=%d\n", duk_is_function(ctx, -1));
+	printf("duk_is_function(global.escape)=%d\n", (int) duk_is_function(ctx, -1));
 	duk_pop(ctx);
 }
-

@@ -5,7 +5,7 @@ base64 decode: test string
 top after: 2
 ===*/
 
-void test_encode(duk_context *ctx) {
+static void test_encode(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 123);  /* dummy */
@@ -13,7 +13,7 @@ void test_encode(duk_context *ctx) {
 	printf("top after: %ld\n", (long) duk_get_top(ctx));  /* value + dummy */
 }
 
-void test_decode(duk_context *ctx) {
+static void test_decode(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "dGVzdCBzdHJpbmc=");
 	duk_push_int(ctx, 321);  /* dummy */
@@ -28,4 +28,3 @@ void test(duk_context *ctx) {
 	test_decode(ctx);
 	/* FIXME: test decode error */
 }
-

@@ -94,4 +94,3 @@ static int test_raw(duk_context *ctx) {
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_raw);
 }
-

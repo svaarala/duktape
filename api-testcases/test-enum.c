@@ -1,9 +1,45 @@
 /*===
-FIXME
+*** test_1 (duk_safe_call)
+object with own properties only, enum with get_value=0
+key: '1'
+key: 'foo'
+key: 'bar'
+key: 'quux'
+key: '2'
+object with own properties only, enum with get_value=1
+key: '1', value: '1'
+key: 'foo', value: '2'
+key: 'bar', value: '3'
+key: 'quux', value: '4'
+key: '2', value: '5'
+object with inherited, enumerable properties, enum with get_value=1
+key: 'foo', value: 'bar'
+key: 'parent', value: 'inherited'
+object with own non-enumerable properties, enum with get_value=1, don't enum inherited properties
+- enum only enumerable own properties
+key: 'enumerable_prop', value: '123'
+- enum all own properties
+key: 'enumerable_prop', value: '123'
+key: 'nonenumerable_prop', value: '234'
+object with string and array index keys, enum with get_value=1
+- enum array indices only, not sorted
+key: '999', value: 'val2'
+key: '1', value: 'val3'
+key: '123', value: 'val4'
+key: '234', value: 'val5'
+key: '2', value: 'val6'
+- enum array indices only, sorted
+key: '1', value: 'val3'
+key: '2', value: 'val6'
+key: '123', value: 'val4'
+key: '234', value: 'val5'
+key: '999', value: 'val2'
+final top: 0
+==> rc=0, result='undefined'
 ===*/
 
 /* basic enum success cases */
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	printf("object with own properties only, enum with get_value=0\n");
@@ -84,10 +120,5 @@ int test_1(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	duk_ret_t rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
 }
-

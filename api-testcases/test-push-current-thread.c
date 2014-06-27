@@ -11,7 +11,7 @@ final top: 1
 rc=0, result='undefined'
 ===*/
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	duk_context *ctx2;
 
 	duk_push_current_thread(ctx);
@@ -52,4 +52,3 @@ void test(duk_context *ctx) {
 	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
-

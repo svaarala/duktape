@@ -6,10 +6,10 @@
 length sum: 2147713027.000000
 ===*/
 
-char buf[65536 + 1024];
-double len_sum = 0.0;
+static char buf[65536 + 1024];
+static double len_sum = 0.0;
 
-void test_2(duk_context *ctx, int fmt_len, va_list ap) {
+static void test_2(duk_context *ctx, int fmt_len, va_list ap) {
 	int i;
 
 	for (i = 0; i < fmt_len; i++) {
@@ -24,7 +24,7 @@ void test_2(duk_context *ctx, int fmt_len, va_list ap) {
 	duk_pop(ctx);
 }
 
-void test_1(duk_context *ctx, int fmt_len, ...) {
+static void test_1(duk_context *ctx, int fmt_len, ...) {
 	va_list ap;
 
 	va_start(ap, fmt_len);
@@ -33,7 +33,7 @@ void test_1(duk_context *ctx, int fmt_len, ...) {
 }
 
 void test(duk_context *ctx) {
-	int fmt_len;
+	duk_size_t fmt_len;
 
 	/* Note: don't reuse 'ap' in multiple calls, so the fmt_len loop
 	 * is here.
@@ -50,4 +50,3 @@ void test(duk_context *ctx) {
 	 */
 	printf("length sum: %lf\n", len_sum);
 }
-

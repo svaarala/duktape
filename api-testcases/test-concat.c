@@ -11,4 +11,3 @@ void test(duk_context *ctx) {
 	printf("result: %s\n", duk_get_string(ctx, -1));
 	duk_pop(ctx);
 }
-

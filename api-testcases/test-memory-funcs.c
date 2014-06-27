@@ -33,12 +33,12 @@ bytes: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ===*/
 
 /* Very basic test of API memory alloc/realloc/free functions.
- * Does not cover all argument combinations, just ensurer that
+ * Does not cover all argument combinations, just ensures that
  * basic alloc/realloc/free sequences work and don't cause
  * valgrind issues.
  */
 
-void test_gc_variants(duk_context *ctx) {
+static void test_gc_variants(duk_context *ctx) {
 	void *p, *new_p;
 
 	printf("basic duk_alloc + duk_free\n");
@@ -94,7 +94,7 @@ void test_gc_variants(duk_context *ctx) {
 	}
 }
 
-void test_raw_variants(duk_context *ctx) {
+static void test_raw_variants(duk_context *ctx) {
 	void *p, *new_p;
 
 	printf("basic duk_alloc_raw + duk_free_raw\n");
@@ -150,7 +150,7 @@ void test_raw_variants(duk_context *ctx) {
 	}
 }
 
-void test_mixed_use(duk_context *ctx) {
+static void test_mixed_use(duk_context *ctx) {
 	void *p, *new_p;
 
 	printf("duk_alloc + duk_realloc_raw + duk_free_raw\n");
@@ -196,7 +196,7 @@ void test_mixed_use(duk_context *ctx) {
 	}
 }
 
-void test_alloc_zeroed(duk_context *ctx) {
+static void test_alloc_zeroed(duk_context *ctx) {
 	void *p;
 	size_t sz = 64;
 
@@ -232,4 +232,3 @@ void test(duk_context *ctx) {
 	test_mixed_use(ctx);
 	test_alloc_zeroed(ctx);
 }
-

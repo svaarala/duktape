@@ -56,11 +56,10 @@ int test_1(duk_context *ctx) {
 	        CHARS_100 CHARS_100 CHARS_100 CHARS_100 CHARS_100
 	        "and formatted: %d", 123);
 
-	printf("final top: %d\n", (int) duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 }
-

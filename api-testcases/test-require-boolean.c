@@ -11,31 +11,31 @@ boolean: 0
 ==> rc=1, result='TypeError: not boolean'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_true(ctx);
 	duk_push_false(ctx);
-	printf("boolean: %d\n", duk_require_boolean(ctx, 0));
-	printf("boolean: %d\n", duk_require_boolean(ctx, 1));
+	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 0));
+	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 1));
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
-	printf("boolean: %d\n", duk_require_boolean(ctx, 0));
+	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 0));
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("boolean: %d\n", duk_require_boolean(ctx, 0));
+	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 0));
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("boolean: %d\n", duk_require_boolean(ctx, DUK_INVALID_INDEX));
+	printf("boolean: %d\n", (int) duk_require_boolean(ctx, DUK_INVALID_INDEX));
 	return 0;
 }
 

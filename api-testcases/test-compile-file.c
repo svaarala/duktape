@@ -35,7 +35,7 @@ static void write_file(const char *filename, const char *data) {
 	}
 }
 
-static int test_raw(duk_context *ctx) {
+static duk_ret_t test_raw(duk_context *ctx) {
 	const char *data1 = "print('Hello world from a file!'); 123;";
 	const char *data2 = "print('Hello world from a file, with syntax error'); obj = {";
 	duk_ret_t rc;
@@ -58,4 +58,3 @@ static int test_raw(duk_context *ctx) {
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_raw);
 }
-

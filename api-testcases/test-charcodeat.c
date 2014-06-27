@@ -25,7 +25,7 @@ i=18, n=19, charcode=0
 ===*/
 
 static int test_1(duk_context *ctx) {
-	int i, n;
+	duk_size_t i, n;
 
 	/* Simple test, intentional out-of-bounds access at the end. */
 
@@ -33,7 +33,7 @@ static int test_1(duk_context *ctx) {
 
 	n = duk_get_length(ctx, -1) + 3;  /* access 3 times out-of-bounds */
 	for (i = 0; i < n; i++) {
-		printf("i=%d, n=%d, charcode=%d\n", i, n, (int) duk_char_code_at(ctx, -1, i));
+		printf("i=%ld, n=%ld, charcode=%d\n", (long) i, (long) n, (int) duk_char_code_at(ctx, -1, i));
 	}
 
 	duk_pop(ctx);

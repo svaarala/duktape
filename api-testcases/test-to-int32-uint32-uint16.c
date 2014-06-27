@@ -145,8 +145,8 @@ index 42, uint16: 1, number before: nan, number after: 1.000000
 ==> rc=1, result='Error: index out of bounds'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	duk_set_top(ctx, 0);
 
@@ -199,74 +199,77 @@ int test_1(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		double dval_pre;
-		double dval_post;
-		int ival;
-		unsigned int uval;
+		duk_double_t dval_pre;
+		duk_double_t dval_post;
+		duk_int_t ival;
+		duk_uint_t uval;
 
 		duk_dup(ctx, i);
 		dval_pre = duk_get_number(ctx, -1);
 		ival = duk_to_int32(ctx, -1);
 		dval_post = duk_get_number(ctx, -1);
-		printf("index %d, int32: %d, number before: %lf, number after: %lf\n", i, ival, dval_pre, dval_post);
+		printf("index %ld, int32: %ld, number before: %lf, number after: %lf\n",
+		       (long) i, (long) ival, (double) dval_pre, (double) dval_post);
 		duk_pop(ctx);
 
 		duk_dup(ctx, i);
 		dval_pre = duk_get_number(ctx, -1);
 		uval = duk_to_uint32(ctx, -1);
 		dval_post = duk_get_number(ctx, -1);
-		printf("index %d, uint32: %u, number before: %lf, number after: %lf\n", i, uval, dval_pre, dval_post);
+		printf("index %ld, uint32: %lu, number before: %lf, number after: %lf\n",
+		       (long) i, (unsigned long) uval, (double) dval_pre, (double) dval_post);
 		duk_pop(ctx);
 
 		duk_dup(ctx, i);
 		dval_pre = duk_get_number(ctx, -1);
 		uval = duk_to_uint16(ctx, -1);
 		dval_post = duk_get_number(ctx, -1);
-		printf("index %d, uint16: %u, number before: %lf, number after: %lf\n", i, uval, dval_pre, dval_post);
+		printf("index %ld, uint16: %lu, number before: %lf, number after: %lf\n",
+		       (long) i, (unsigned long) uval, (double) dval_pre, (double) dval_post);
 		duk_pop(ctx);
 	}
 
 	return 0;
 }
 
-int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_int32(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_uint32(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_uint16(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_int32(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
 	return 0;
 }
 
-int test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_uint32(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
 	return 0;
 }
 
-int test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_uint16(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
@@ -282,4 +285,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_3b);
 	TEST_SAFE_CALL(test_3c);
 }
-

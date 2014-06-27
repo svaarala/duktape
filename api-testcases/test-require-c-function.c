@@ -9,11 +9,11 @@ final top: 1
 ==> rc=1, result='TypeError: incorrect type, expected c function'
 ===*/
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);
@@ -25,7 +25,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);
@@ -37,7 +37,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);

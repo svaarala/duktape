@@ -29,19 +29,19 @@ resize (DUK_INVALID_INDEX) to 64
 ==> rc=1, result='TypeError: incorrect type, expected tag 7'
 ===*/
 
-void dump_buffer(duk_context *ctx) {
+static void dump_buffer(duk_context *ctx) {
 	unsigned char *p;
-	size_t i, s;
+	duk_size_t i, sz;
 
-	p = (unsigned char *) duk_require_buffer(ctx, -1, &s);
-	printf("%ld bytes:", (long) s);
-	for (i = 0; i < s; i++) {
+	p = (unsigned char *) duk_require_buffer(ctx, -1, &sz);
+	printf("%ld bytes:", (long) sz);
+	for (i = 0; i < sz; i++) {
 		printf(" %d", (int) p[i]);
 	}
 	printf("\n");
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	unsigned char *p;
 
 	duk_set_top(ctx, 0);
@@ -70,7 +70,7 @@ int test_1(duk_context *ctx) {
 }
 
 /* fixed buffer */
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	unsigned char *p;
 
 	duk_set_top(ctx, 0);
@@ -91,7 +91,7 @@ int test_2(duk_context *ctx) {
 }
 
 /* non-buffer */
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");
@@ -105,7 +105,7 @@ int test_3(duk_context *ctx) {
 }
 
 /* invalid index */
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");
@@ -119,7 +119,7 @@ int test_4(duk_context *ctx) {
 }
 
 /* DUK_INVALID_INDEX */
-int test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");
@@ -139,4 +139,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_4);
 	TEST_SAFE_CALL(test_5);
 }
-

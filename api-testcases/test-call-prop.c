@@ -1,19 +1,22 @@
 /*===
+*** test_1 (duk_safe_call)
 [object Object]
 result=33
 final top: 1
-rc=0, result='undefined'
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
 [object Object]
-rc=1, result='Error: my error'
+==> rc=1, result='Error: my error'
+*** test_3 (duk_safe_call)
 object 1 [object Number]
 result=undefined
 number 1 [object Number]
 result=undefined
 final top: 1
-rc=0, result='undefined'
+==> rc=0, result='undefined'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_eval_string(ctx, "({ myfunc: function(x,y,z) { print(this); return x+y+z; } })");
@@ -37,7 +40,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_eval_string(ctx, "({ myfunc: function(x,y,z) { print(this); throw new Error('my error'); } })");
@@ -63,7 +66,7 @@ int test_2(duk_context *ctx) {
 }
 
 /* test this coercion in strict/non-strict functions */
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* Use Number.prototype to stash new functions, and call "through" a
@@ -93,19 +96,8 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-
 void test(duk_context *ctx) {
-	duk_ret_t rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }

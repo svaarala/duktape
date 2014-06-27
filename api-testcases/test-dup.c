@@ -16,8 +16,8 @@ final top: 4
 ==> rc=1, result='Error: index out of bounds'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	duk_set_top(ctx, 0);
 
@@ -28,14 +28,14 @@ int test_1(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf("%d: %s\n", i, duk_to_string(ctx, i));
+		printf("%ld: %s\n", (long) i, duk_to_string(ctx, i));
 	}
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -46,7 +46,7 @@ int test_2a(duk_context *ctx) {
 	return 0;
 }
 
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -57,7 +57,7 @@ int test_2b(duk_context *ctx) {
 	return 0;
 }
 
-int test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -68,7 +68,7 @@ int test_2c(duk_context *ctx) {
 	return 0;
 }
 
-int test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_dup_top(ctx);  /* empty */

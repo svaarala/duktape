@@ -11,7 +11,7 @@ top: 0
 ===*/
 
 void test(duk_context *ctx) {
-	int ret;
+	duk_bool_t ret;
 
 	printf("top: %d\n", (int) duk_get_top(ctx));
 	ret = duk_get_global_string(ctx, "encodeURIComponent");

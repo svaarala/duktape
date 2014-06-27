@@ -13,7 +13,7 @@ final top: 2
 rc=0, result='undefined'
 ===*/
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	printf("my_func, top=%ld\n", (long) duk_get_top(ctx));
@@ -51,4 +51,3 @@ void test(duk_context *ctx) {
 	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 }
-

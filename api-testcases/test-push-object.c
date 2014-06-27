@@ -5,7 +5,7 @@ top=2
 ===*/
 
 void test(duk_context *ctx) {
-	int obj_idx;
+	duk_idx_t obj_idx;
 
 	duk_push_int(ctx, 123);  /* dummy */
 

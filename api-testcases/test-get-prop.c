@@ -50,7 +50,7 @@ final top: 3
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-void prep(duk_context *ctx) {
+static void prep(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* 0: object with both string and number keys */
@@ -66,7 +66,7 @@ void prep(duk_context *ctx) {
 }
 
 /* duk_get_prop(), success cases */
-int test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -116,7 +116,7 @@ int test_1a(duk_context *ctx) {
 }
 
 /* duk_get_prop(), invalid index */
-int test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -131,7 +131,7 @@ int test_1b(duk_context *ctx) {
 }
 
 /* duk_get_prop(), DUK_INVALID_INDEX */
-int test_1c(duk_context *ctx) {
+static duk_ret_t test_1c(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -146,7 +146,7 @@ int test_1c(duk_context *ctx) {
 }
 
 /* duk_get_prop(), test in API doc (more or less) */
-int test_1d(duk_context *ctx) {
+static duk_ret_t test_1d(duk_context *ctx) {
 	int cfg_idx;
 
 	prep(ctx);
@@ -182,7 +182,7 @@ int test_1d(duk_context *ctx) {
 }
 
 /* duk_get_prop(), not object coercible */
-int test_1e(duk_context *ctx) {
+static duk_ret_t test_1e(duk_context *ctx) {
 	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
@@ -198,7 +198,7 @@ int test_1e(duk_context *ctx) {
 }
 
 /* duk_get_prop_string(), success cases */
-int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -240,7 +240,7 @@ int test_2a(duk_context *ctx) {
 }
 
 /* duk_get_prop_string(), invalid index */
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -254,7 +254,7 @@ int test_2b(duk_context *ctx) {
 }
 
 /* duk_get_prop_string(), DUK_INVALID_INDEX */
-int test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -268,7 +268,7 @@ int test_2c(duk_context *ctx) {
 }
 
 /* duk_get_prop_index(), success cases */
-int test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -298,7 +298,7 @@ int test_3a(duk_context *ctx) {
 }
 
 /* duk_get_prop_index(), invalid index */
-int test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -312,7 +312,7 @@ int test_3b(duk_context *ctx) {
 }
 
 /* duk_get_prop_index(), DUK_INVALID_INDEX */
-int test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx) {
 	duk_ret_t rc;
 
 	prep(ctx);
@@ -340,4 +340,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_3b);
 	TEST_SAFE_CALL(test_3c);
 }
-

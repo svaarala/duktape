@@ -17,7 +17,7 @@ top: 0
 ===*/
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_int_t rc;
 
 	/* From API doc */
 	duk_push_string(ctx, "print('Hello world!'); 123;");

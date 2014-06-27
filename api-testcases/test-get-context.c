@@ -10,7 +10,7 @@ new_ctx is NULL: 1
 ==> rc=0, result='undefined'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	duk_set_top(ctx, 0);
@@ -33,7 +33,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	/* non-thread value */

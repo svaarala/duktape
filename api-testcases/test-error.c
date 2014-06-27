@@ -28,7 +28,7 @@ lineNumber: 53
 isNative: undefined
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_error(ctx, DUK_ERR_RANGE_ERROR, "range error: %d", 123);
@@ -37,7 +37,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_error(ctx, 1234567, "arbitrary error code");
@@ -46,7 +46,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* error code replaces message automatically now if message is NULL */
@@ -98,10 +98,10 @@ void dump_error(duk_context *ctx) {
 	} while (0)
 
 void test(duk_context *ctx) {
-	int rc;
+	duk_int_t rc;
 
+	/* special test macro because of dump_error() */
 	TEST(test_1);
 	TEST(test_2);
 	TEST(test_3);
 }
-

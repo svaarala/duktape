@@ -12,8 +12,8 @@ final top: 2
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	duk_set_top(ctx, 0);
 
@@ -35,19 +35,19 @@ int test_1(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		size_t sz;
+		duk_size_t sz;
 
 		sz = duk_get_length(ctx, i);
 		duk_trim(ctx, i);
-		printf("%d: clen=%ld, trimmed='%s'\n",
-		       i, (long) sz, duk_get_string(ctx, i));
+		printf("%ld: clen=%lu, trimmed='%s'\n",
+		       (long) i, (unsigned long) sz, duk_get_string(ctx, i));
 	}
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -58,7 +58,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -69,7 +69,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);

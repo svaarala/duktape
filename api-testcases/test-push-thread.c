@@ -14,8 +14,8 @@ context b: undefined
 ===*/
 
 /* Some basic tests. */
-static int test_1(duk_context *ctx) {
-	int thr_idx;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t thr_idx;
 	duk_context *new_ctx;
 
 	duk_push_int(ctx, 123);  /* dummy */

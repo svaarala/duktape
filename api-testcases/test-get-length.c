@@ -22,7 +22,7 @@ index 18: length 0
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	/* 0 */
 	duk_push_string(ctx, "foo");
@@ -102,9 +102,9 @@ void test(duk_context *ctx) {
 	duk_push_false(ctx);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		printf("index %d: length %u\n", i, (unsigned int) duk_get_length(ctx, i));
+		printf("index %ld: length %lu\n", (long) i,
+		       (unsigned long) duk_get_length(ctx, i));
 	}
 }
-

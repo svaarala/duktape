@@ -45,7 +45,7 @@ dynamic size buffer, close to maximum size_t (should fail)
 #define  SIZE_MAX  ((size_t) -1)
 #endif
 
-void rw_test(unsigned char *p, size_t sz) {
+static void rw_test(unsigned char *p, size_t sz) {
 	int i;
 
 	printf("buffer should be all zeroes\n");
@@ -62,7 +62,7 @@ void rw_test(unsigned char *p, size_t sz) {
 }
 
 /* Basic success test. */
-int test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx) {
 	void *buf;
 
 	duk_set_top(ctx, 0);
@@ -90,7 +90,7 @@ int test_1a(duk_context *ctx) {
 }
 
 /* Same test, using shortcut functions. */
-int test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx) {
 	void *buf;
 
 	duk_set_top(ctx, 0);
@@ -123,7 +123,7 @@ int test_1b(duk_context *ctx) {
  * other trouble (separate bug testcase exists for that:
  * test-bug-push-buffer-maxsize.c).
  */
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	void *buf;
 
 	duk_set_top(ctx, 0);
@@ -136,7 +136,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	void *buf;
 
 	duk_set_top(ctx, 0);
@@ -150,11 +150,10 @@ int test_3(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	/*printf("SIZE_MAX=%lf\n", (double) SIZE_MAX);*/
+	/*printf("DUK_SIZE_MAX=%lf\n", (double) DUK_SIZE_MAX);*/
 
 	TEST_SAFE_CALL(test_1a);
 	TEST_SAFE_CALL(test_1b);
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
 }
-

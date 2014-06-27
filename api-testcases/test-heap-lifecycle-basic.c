@@ -38,4 +38,3 @@ void test(duk_context *ctx) {
 	duk_destroy_heap(NULL);
 	printf("still here\n");
 }
-

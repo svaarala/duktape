@@ -18,7 +18,7 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "print('program');\n"
@@ -34,7 +34,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "2+3");
@@ -48,7 +48,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "function (x,y) { return x+y; }");
@@ -64,7 +64,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
@@ -89,4 +89,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_3);
 	TEST_SAFE_CALL(test_4);
 }
-

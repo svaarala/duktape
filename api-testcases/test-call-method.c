@@ -1,14 +1,16 @@
 /*===
+*** test_1 (duk_safe_call)
 this binding: 'my this binding'
 result=33
 final top: 0
-rc=0, result='undefined'
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
 this binding: 'my this binding'
-rc=1, result='TypeError: argument 2 is not a number'
+==> rc=1, result='TypeError: argument 2 is not a number'
 ===*/
 
-int my_adder(duk_context *ctx) {
-	int i, n;
+static duk_ret_t my_adder(duk_context *ctx) {
+	duk_idx_t i, n;
 	double res = 0.0;
 
 	duk_push_this(ctx);
@@ -18,7 +20,7 @@ int my_adder(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		if (!duk_is_number(ctx, i)) {
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "argument %d is not a number", i);
+			duk_error(ctx, DUK_ERR_TYPE_ERROR, "argument %ld is not a number", (long) i);
 		}
 		res += duk_get_number(ctx, i);
 	}
@@ -27,7 +29,7 @@ int my_adder(duk_context *ctx) {
 	return 1;
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);
@@ -46,7 +48,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);
@@ -66,13 +68,6 @@ int test_2(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	duk_ret_t rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
 }

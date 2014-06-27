@@ -23,7 +23,7 @@ final top: 1000
 ===*/
 
 /* demonstrate how pushing too many elements causes an error */
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	int i;
 
 	for (i = 0; i < 1000; i++) {
@@ -37,7 +37,7 @@ int test_1(duk_context *ctx) {
 /* demonstrate how using one large duk_check_stack() before such
  * a loop works.
  */
-int check_1(duk_context *ctx) {
+static duk_ret_t check_1(duk_context *ctx) {
 	int i;
 	duk_ret_t rc;
 
@@ -53,7 +53,7 @@ int check_1(duk_context *ctx) {
 }
 
 /* same test but with one element checks, once per loop */
-int check_2(duk_context *ctx) {
+static duk_ret_t check_2(duk_context *ctx) {
 	int i;
 	duk_ret_t rc;
 
@@ -70,7 +70,7 @@ int check_2(duk_context *ctx) {
 }
 
 /* try to extend value stack too much with duk_check_stack */
-int check_3(duk_context *ctx) {
+static duk_ret_t check_3(duk_context *ctx) {
 	duk_ret_t rc;
 
 	rc = duk_check_stack(ctx, 1000*1000*1000);
@@ -81,7 +81,7 @@ int check_3(duk_context *ctx) {
 }
 
 /* same as check_1 but with duk_require_stack() */
-int require_1(duk_context *ctx) {
+static duk_ret_t require_1(duk_context *ctx) {
 	int i;
 
 	duk_require_stack(ctx, 1000);
@@ -95,7 +95,7 @@ int require_1(duk_context *ctx) {
 }
 
 /* same as check_2 but with duk_require_stack() */
-int require_2(duk_context *ctx) {
+static duk_ret_t require_2(duk_context *ctx) {
 	int i;
 
 	for (i = 0; i < 1000; i++) {
@@ -108,7 +108,7 @@ int require_2(duk_context *ctx) {
 }
 
 /* same as check_3 but with duk_require_stack */
-int require_3(duk_context *ctx) {
+static duk_ret_t require_3(duk_context *ctx) {
 	duk_require_stack(ctx, 1000*1000*1000);
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));

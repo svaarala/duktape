@@ -14,15 +14,15 @@ stack[11] --> mask=0
 stack[12] --> mask=0
 ===*/
 
-int my_c_func(duk_context *ctx) {
+static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int mask = DUK_TYPE_MASK_STRING |
-	           DUK_TYPE_MASK_NUMBER |
-	           DUK_TYPE_MASK_OBJECT;
-	int i, n;
+	duk_uint_t mask = DUK_TYPE_MASK_STRING |
+	                  DUK_TYPE_MASK_NUMBER |
+	                  DUK_TYPE_MASK_OBJECT;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -39,7 +39,8 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n + 1; i++) {  /* end on invalid index on purpose */
-		printf("stack[%d] --> mask=%d\n", i, duk_check_type_mask(ctx, i, mask));
+		printf("stack[%ld] --> mask=%d\n", (long) i,
+		       (int) duk_check_type_mask(ctx, i, mask));
 	}
 }
 

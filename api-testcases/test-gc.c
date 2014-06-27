@@ -8,4 +8,3 @@ void test(duk_context *ctx) {
 	duk_gc(ctx, 0);
 	printf("still here\n");
 }
-

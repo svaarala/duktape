@@ -1,16 +1,20 @@
 /*===
+*** test_1 (duk_safe_call)
 0: 123
 1: foo
 2: 345
-rc=0 -> undefined
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
 replace at 3 ok
-rc=1 -> Error: index out of bounds
+==> rc=1, result='Error: index out of bounds'
+*** test_3 (duk_safe_call)
 replace at -4 ok
-rc=1 -> Error: index out of bounds
-rc=1 -> Error: index out of bounds
+==> rc=1, result='Error: index out of bounds'
+*** test_4 (duk_safe_call)
+==> rc=1, result='Error: index out of bounds'
 ===*/
 
-void prep(duk_context *ctx) {
+static void prep(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
@@ -18,20 +22,20 @@ void prep(duk_context *ctx) {
 	duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
 }
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	prep(ctx);
 	duk_replace(ctx, -3);         /* -> [ 123 "foo" 345 ] */
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf("%d: %s\n", i, duk_to_string(ctx, i));
+		printf("%ld: %s\n", (long) i, duk_to_string(ctx, i));
 	}
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	prep(ctx);
 	duk_replace(ctx, 3);          /* -> [ 123 234 "foo" ]  (legal) */
 	printf("replace at 3 ok\n");
@@ -40,7 +44,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	prep(ctx);
 	duk_replace(ctx, -4);         /* -> [ "foo" 234 345 ]  (legal) */
 	printf("replace at -4 ok\n");
@@ -49,7 +53,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	prep(ctx);
 	duk_replace(ctx, DUK_INVALID_INDEX);  /* (illegal: invalid index) */
 	printf("replace at DUK_INVALID_INDEX ok\n");
@@ -57,22 +61,8 @@ int test_4(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d -> %s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d -> %s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d -> %s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_4, 0, 1);
-	printf("rc=%d -> %s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
 }
-

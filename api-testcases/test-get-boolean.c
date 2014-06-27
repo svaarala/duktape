@@ -14,7 +14,7 @@ index 10: boolean 0
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -29,9 +29,8 @@ void test(duk_context *ctx) {
 	duk_push_object(ctx);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		printf("index %d: boolean %d\n", i, duk_get_boolean(ctx, i));
+		printf("index %ld: boolean %d\n", (long) i, (int) duk_get_boolean(ctx, i));
 	}
 }
-

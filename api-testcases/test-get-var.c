@@ -30,7 +30,7 @@ strict: 1
 ===*/
 
 /* existing property */
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
@@ -46,7 +46,7 @@ int test_1(duk_context *ctx) {
 }
 
 /* nonexistent -> throw, even in non-strict mode */
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
@@ -61,7 +61,7 @@ int test_2(duk_context *ctx) {
 }
 
 /* Variable name is not a string */
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
@@ -75,7 +75,7 @@ int test_3(duk_context *ctx) {
 }
 
 /* Value stack is empty (no varname at all) */
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
@@ -98,4 +98,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_4);
 	TEST_PCALL(test_4);
 }
-

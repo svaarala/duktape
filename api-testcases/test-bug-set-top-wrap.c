@@ -1,11 +1,13 @@
 /*===
+*** test_1 (duk_safe_call)
 top=0
-rc=1, result=Error: invalid index
+==> rc=1, result='Error: invalid index'
+*** test_2 (duk_safe_call)
 top=0
-rc=1, result=Error: invalid index
+==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* duk_set_top() uses pointer arithmetic internally, and because
@@ -26,7 +28,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* On a 32-bit platform and 12-byte values there is no zero-
@@ -43,14 +45,6 @@ int test_2(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
 }
-

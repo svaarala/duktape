@@ -9,7 +9,7 @@ final top: 0
 
 void test(duk_context *ctx) {
 	char buf[65536 + 1024];
-	int fmt_len, i;
+	duk_size_t fmt_len, i;
 	double len_sum = 0.0;
 
 	for (fmt_len = 0;
@@ -39,5 +39,5 @@ void test(duk_context *ctx) {
 	 */
 
 	printf("length sum: %lf\n", len_sum);
-	printf("final top: %d\n", (int) duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

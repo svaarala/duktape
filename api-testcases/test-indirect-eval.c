@@ -26,4 +26,3 @@ void test(duk_context *ctx) {
 
         printf("final top: %ld\n", (long) duk_get_top(ctx));
 }
-

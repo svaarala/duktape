@@ -4,7 +4,7 @@ index 3 -> NULL: 1
 index DUK_INVALID_INDEX -> NULL: 1
 ===*/
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
@@ -22,4 +22,3 @@ void test(duk_context *ctx) {
 	funcptr = duk_get_c_function(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX -> NULL: %d\n", (funcptr == NULL ? 1 : 0));
 }
-

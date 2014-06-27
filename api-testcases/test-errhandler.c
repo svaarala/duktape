@@ -22,7 +22,7 @@ static void remove_handlers(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -38,7 +38,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -53,7 +53,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* Causes a ReferenceError when error handler runs.  The
@@ -70,7 +70,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -87,7 +87,7 @@ int test_4(duk_context *ctx) {
 	return 0;
 }
 
-int test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -108,4 +108,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_4);
 	TEST_SAFE_CALL(test_5);
 }
-

@@ -1,10 +1,74 @@
 /*===
-FIXME
+*** test_1 (duk_safe_call)
+test_1
+--- top=0
+top=0, idx=0, type 0 -> (null)
+--- top=3
+top=3, idx=0, type 5 -> foo
+top=3, idx=1, type 5 -> bar
+top=3, idx=2, type 5 -> quux
+top=3, idx=3, type 0 -> (null)
+--- top=5
+top=5, idx=0, type 5 -> foo
+top=5, idx=1, type 5 -> bar
+top=5, idx=2, type 5 -> quux
+top=5, idx=3, type 1 -> undefined
+top=5, idx=4, type 1 -> undefined
+top=5, idx=5, type 0 -> (null)
+--- top=2
+top=2, idx=0, type 5 -> foo
+top=2, idx=1, type 5 -> bar
+top=2, idx=2, type 0 -> (null)
+--- top=0
+top=0, idx=0, type 0 -> (null)
+==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+test_2
+--- top=0
+top=0, idx=0, type 0 -> (null)
+--- top=3
+top=3, idx=0, type 5 -> foo
+top=3, idx=1, type 5 -> bar
+top=3, idx=2, type 5 -> quux
+top=3, idx=3, type 0 -> (null)
+==> rc=1, result='Error: invalid index'
+*** test_3 (duk_safe_call)
+test_3
+--- top=0
+top=0, idx=0, type 0 -> (null)
+--- top=3
+top=3, idx=0, type 5 -> foo
+top=3, idx=1, type 5 -> bar
+top=3, idx=2, type 5 -> quux
+top=3, idx=3, type 0 -> (null)
+==> rc=1, result='Error: invalid index'
+*** test_4 (duk_safe_call)
+test_4
+--- top=0
+top=0, idx=0, type 0 -> (null)
+--- top=3
+top=3, idx=0, type 5 -> foo
+top=3, idx=1, type 5 -> bar
+top=3, idx=2, type 5 -> quux
+top=3, idx=3, type 0 -> (null)
+==> rc=1, result='Error: invalid index'
+*** test_5 (duk_safe_call)
+test_5
+--- top=0
+top=0, idx=0, type 0 -> (null)
+--- top=3
+top=3, idx=0, type 5 -> foo
+top=3, idx=1, type 5 -> bar
+top=3, idx=2, type 5 -> quux
+top=3, idx=3, type 0 -> (null)
+duk_set_top for 500 ok
+==> rc=0, result='undefined'
 ===*/
 
-void print_stack(duk_context *ctx) {
-	int t;
+static void print_stack(duk_context *ctx) {
+	duk_int_t t;
 	duk_idx_t i, top;
+	const char *str;
 
 	top = duk_get_top(ctx);
 	printf("--- top=%ld\n", (long) top);
@@ -14,12 +78,13 @@ void print_stack(duk_context *ctx) {
 		if (i < top) {
 			duk_to_string(ctx, i);
 		}
+		str = duk_get_string(ctx, i);
 		printf("top=%ld, idx=%ld, type %d -> %s\n",
-		       (long) top, (long) i, (int) t, duk_get_string(ctx, i));
+		       (long) top, (long) i, (int) t, (str != NULL ? str : "(null)"));
 	}
 }
 
-void prep(duk_context *ctx) {
+static void prep(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	print_stack(ctx);
 	duk_push_string(ctx, "foo");
@@ -28,7 +93,7 @@ void prep(duk_context *ctx) {
 	print_stack(ctx);
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	printf("test_1\n");
 	prep(ctx);
 
@@ -47,7 +112,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	printf("test_2\n");
 	prep(ctx);
 
@@ -58,7 +123,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	printf("test_3\n");
 	prep(ctx);
 
@@ -69,7 +134,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	printf("test_4\n");
 	prep(ctx);
 
@@ -80,7 +145,7 @@ int test_4(duk_context *ctx) {
 	return 0;
 }
 
-int test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx) {
 	printf("test_5\n");
 	prep(ctx);
 
@@ -93,26 +158,9 @@ int test_5(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	duk_ret_t rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_2, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_3, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_4, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
-
-	rc = duk_safe_call(ctx, test_5, 0, 1);
-	printf("rc=%d, result=%s\n", (int) rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
+	TEST_SAFE_CALL(test_5);
 }
-

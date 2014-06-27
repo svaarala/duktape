@@ -48,8 +48,8 @@ index 19, string: '0xdeadbeef'
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, j, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_int_t i, j, n;
 	char *ptr;
 
 	duk_set_top(ctx, 0);
@@ -81,15 +81,15 @@ int test_1(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		const unsigned char *p;
-		size_t sz;
+		duk_size_t sz;
 
 		duk_dup(ctx, i);
-		sz = (size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeef;
 		p = (const unsigned char *) duk_to_lstring(ctx, -1, &sz);
-		printf("index %d, string: '", i);
+		printf("index %ld, string: '", (long) i);
 		for (j = 0; j < sz; j++) {
 			if (p[j] >= 0x20 && p[j] <= 0x7e) {
 				printf("%c", (int) p[j]);
@@ -97,36 +97,36 @@ int test_1(duk_context *ctx) {
 				printf("\\x%02x", (int) p[j]);
 			}
 		}
-		printf("', length %d\n", (int) sz);
+		printf("', length %lu\n", (unsigned long) sz);
 		duk_pop(ctx);
 
 		duk_dup(ctx, i);
-		sz = (size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeef;
 		p = (const unsigned char *) duk_to_lstring(ctx, -1, NULL);
-		printf("index %d, string: '%s'\n", i, (const char *) p);
+		printf("index %ld, string: '%s'\n", (long) i, (const char *) p);
 		duk_pop(ctx);
 	}
 
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	const char *p;
-	size_t sz;
+	duk_size_t sz;
 
 	duk_set_top(ctx, 0);
 	p = duk_to_lstring(ctx, 3, &sz);
-	printf("index 3: %p, %d\n", (void *) p, (int) sz);  /* ok to print, not shown in expected case */
+	printf("index 3: %p, %lu\n", (void *) p, (unsigned long) sz);  /* ok to print, not shown in expected case */
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	const char *p;
-	size_t sz;
+	duk_size_t sz;
 
 	duk_set_top(ctx, 0);
 	p = duk_to_lstring(ctx, DUK_INVALID_INDEX, &sz);
-	printf("index DUK_INVALID_INDEX: %p, %d\n", (void *) p, (int) sz);  /* ok to print, not shown in expected case */
+	printf("index DUK_INVALID_INDEX: %p, %ld\n", (void *) p, (unsigned long) sz);  /* ok to print, not shown in expected case */
 	return 0;
 }
 

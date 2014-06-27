@@ -30,7 +30,7 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static int handle_get(duk_context *ctx) {
+static duk_ret_t handle_get(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -52,7 +52,7 @@ static int handle_get(duk_context *ctx) {
 	return 1;
 }
 
-static int handle_set(duk_context *ctx) {
+static duk_ret_t handle_set(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -74,7 +74,7 @@ static int handle_set(duk_context *ctx) {
 	return 1;
 }
 
-static int handle_delete(duk_context *ctx) {
+static duk_ret_t handle_delete(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -100,7 +100,7 @@ static const duk_function_list_entry handler_funcs[] = {
         { NULL, NULL, 0 }
 };
 
-static int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_ret_t rc;
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));

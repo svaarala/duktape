@@ -23,12 +23,12 @@
 
 #include <math.h>
 
-int my_c_func(duk_context *ctx) {
+static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	/*
 	 *  push test values
@@ -102,29 +102,28 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf("%02d: ", i);
-		printf(" und=%d", duk_is_undefined(ctx, i));
-		printf(" null=%d", duk_is_null(ctx, i));
-		printf(" noru=%d", duk_is_null_or_undefined(ctx, i));
-		printf(" bool=%d", duk_is_boolean(ctx, i));
-		printf(" num=%d", duk_is_number(ctx, i));
-		printf(" nan=%d", duk_is_nan(ctx, i));
-		printf(" str=%d", duk_is_string(ctx, i));
-		printf(" obj=%d", duk_is_object(ctx, i));
-		printf(" arr=%d", duk_is_array(ctx, i));
-		printf(" fun=%d", duk_is_function(ctx, i));
-		printf(" cfun=%d", duk_is_c_function(ctx, i));
-		printf(" efun=%d", duk_is_ecmascript_function(ctx, i));
-		printf(" bfun=%d", duk_is_bound_function(ctx, i));
-		printf(" call=%d", duk_is_callable(ctx, i));
-		printf(" thr=%d", duk_is_thread(ctx, i));
-		printf(" buf=%d", duk_is_buffer(ctx, i));
-		printf(" dyn=%d", duk_is_dynamic(ctx, i));
-		printf(" fix=%d", duk_is_fixed(ctx, i));
-		printf(" ptr=%d", duk_is_pointer(ctx, i));
-		printf(" prim=%d", duk_is_primitive(ctx, i));
-		printf(" objcoerc=%d", duk_is_object_coercible(ctx, i));
+		printf("%02ld: ", (long) i);
+		printf(" und=%d", (int) duk_is_undefined(ctx, i));
+		printf(" null=%d", (int) duk_is_null(ctx, i));
+		printf(" noru=%d", (int) duk_is_null_or_undefined(ctx, i));
+		printf(" bool=%d", (int) duk_is_boolean(ctx, i));
+		printf(" num=%d", (int) duk_is_number(ctx, i));
+		printf(" nan=%d", (int) duk_is_nan(ctx, i));
+		printf(" str=%d", (int) duk_is_string(ctx, i));
+		printf(" obj=%d", (int) duk_is_object(ctx, i));
+		printf(" arr=%d", (int) duk_is_array(ctx, i));
+		printf(" fun=%d", (int) duk_is_function(ctx, i));
+		printf(" cfun=%d", (int) duk_is_c_function(ctx, i));
+		printf(" efun=%d", (int) duk_is_ecmascript_function(ctx, i));
+		printf(" bfun=%d", (int) duk_is_bound_function(ctx, i));
+		printf(" call=%d", (int) duk_is_callable(ctx, i));
+		printf(" thr=%d", (int) duk_is_thread(ctx, i));
+		printf(" buf=%d", (int) duk_is_buffer(ctx, i));
+		printf(" dyn=%d", (int) duk_is_dynamic(ctx, i));
+		printf(" fix=%d", (int) duk_is_fixed(ctx, i));
+		printf(" ptr=%d", (int) duk_is_pointer(ctx, i));
+		printf(" prim=%d", (int) duk_is_primitive(ctx, i));
+		printf(" objcoerc=%d", (int) duk_is_object_coercible(ctx, i));
 		printf("\n");
 	}
 }
-

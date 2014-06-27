@@ -24,11 +24,11 @@ top after calling my_neg_ret: 1, rc=1, retval='Error: unknown error (rc -1)'
 top after calling my_type_error_ret: 1, rc=1, retval='TypeError: type error (rc -105)'
 ===*/
 
-int my_int_adder(duk_context *ctx) {
-	int i;
-	int n = duk_get_top(ctx);
-	int res = 0;
+static duk_ret_t my_int_adder(duk_context *ctx) {
+	duk_idx_t i, n;
+	duk_int_t res = 0;
 
+	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		res += duk_to_int(ctx, i);
 	}
@@ -37,25 +37,23 @@ int my_int_adder(duk_context *ctx) {
 	return 1;
 }
 
-int my_zero_ret(duk_context *ctx) {
+static duk_ret_t my_zero_ret(duk_context *ctx) {
 	duk_push_int(ctx, 123);  /* ignored */
 	return 0;
 }
 
-int my_neg_ret(duk_context *ctx) {
+static duk_ret_t my_neg_ret(duk_context *ctx) {
 	duk_push_int(ctx, 123);  /* ignored */
 	return -1;
 }
 
-int my_type_error_ret(duk_context *ctx) {
+static duk_ret_t my_type_error_ret(duk_context *ctx) {
 	duk_push_int(ctx, 123);  /* ignored */
 	return DUK_RET_TYPE_ERROR;
 }
 
 void test(duk_context *ctx) {
-	int argcount;
-	int funcidx;
-	int i;
+	duk_idx_t i, funcidx, argcount;
 	duk_ret_t rc;
 
 	/* test C function arg count variants */

@@ -14,8 +14,8 @@ number: inf -> int: DUK_INT_MAX
 ==> rc=1, result='TypeError: not number'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i;
 
 	duk_set_top(ctx, 0);
 	duk_push_int(ctx, 123);
@@ -26,9 +26,9 @@ int test_1(duk_context *ctx) {
 
 	for (i = 0; i < 5; i++) {
 		duk_int_t ival = duk_require_int(ctx, i);
-		double dval = duk_get_number(ctx, i);
+		duk_double_t dval = duk_get_number(ctx, i);
 
-		printf("number: %lf -> int: ", dval);
+		printf("number: %lf -> int: ", (double) dval);
 		if (ival == DUK_INT_MIN) {
 			printf("DUK_INT_MIN");
 		} else if (ival == DUK_INT_MAX) {
@@ -41,20 +41,20 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
 	printf("int: %ld\n", (long) duk_require_int(ctx, 0));
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	printf("int: %ld\n", (long) duk_require_int(ctx, 0));
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	printf("int: %ld\n", (long) duk_require_int(ctx, DUK_INVALID_INDEX));
 	return 0;

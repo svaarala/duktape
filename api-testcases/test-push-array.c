@@ -19,7 +19,7 @@ void test(duk_context *ctx) {
 	 * updated for Ecmascript arrays).
 	 */
 
-	printf("duk_is_array(%ld) = %d\n", (long) arr_idx, duk_is_array(ctx, arr_idx));
+	printf("duk_is_array(%ld) = %d\n", (long) arr_idx, (int) duk_is_array(ctx, arr_idx));
 
 	duk_json_encode(ctx, arr_idx);  /* in-place */
 

@@ -28,4 +28,3 @@ void test(duk_context *ctx) {
 	printf("%s\n", duk_json_encode(ctx, -1));
 	duk_pop(ctx);
 }
-

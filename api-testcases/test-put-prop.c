@@ -147,7 +147,7 @@ top after eval: 1
  */
 
 /* success */
-int test_ex_writable(duk_context *ctx) {
+static duk_ret_t test_ex_writable(duk_context *ctx) {
 	duk_ret_t rc;
 
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
@@ -171,7 +171,7 @@ int test_ex_writable(duk_context *ctx) {
 /* strict: error
  * non-strict: return 0
  */
-int test_ex_nonwritable(duk_context *ctx) {
+static duk_ret_t test_ex_nonwritable(duk_context *ctx) {
 	duk_ret_t rc;
 
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
@@ -203,7 +203,7 @@ int test_ex_nonwritable(duk_context *ctx) {
 /* strict: error
  * non-strict: return 0
  */
-int test_ex_accessor_wo_setter(duk_context *ctx) {
+static duk_ret_t test_ex_accessor_wo_setter(duk_context *ctx) {
 	const char *src;
 	duk_ret_t rc;
 
@@ -241,7 +241,7 @@ int test_ex_accessor_wo_setter(duk_context *ctx) {
 /* strict: setter error propagates
  * non-strict: same
  */
-int test_ex_setter_throws(duk_context *ctx) {
+static duk_ret_t test_ex_setter_throws(duk_context *ctx) {
 	const char *src;
 	duk_ret_t rc;
 
@@ -282,7 +282,7 @@ int test_ex_setter_throws(duk_context *ctx) {
 }
 
 /* success */
-int test_new_extensible(duk_context *ctx) {
+static duk_ret_t test_new_extensible(duk_context *ctx) {
 	duk_ret_t rc;
 
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
@@ -306,7 +306,7 @@ int test_new_extensible(duk_context *ctx) {
 /* strict: error
  * non-strict: return 0
  */
-int test_new_not_extensible(duk_context *ctx) {
+static duk_ret_t test_new_not_extensible(duk_context *ctx) {
 	const char *src;
 	duk_ret_t rc;
 
@@ -355,4 +355,3 @@ void test(duk_context *ctx) {
 	TEST(test_new_extensible);
 	TEST(test_new_not_extensible);
 }
-

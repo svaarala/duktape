@@ -34,7 +34,7 @@ req_valid_idx: top 3 after popping arg
 idx=5, duk_require_valid_index -> Error: invalid index
 ===*/
 
-int req_valid_idx(duk_context *ctx) {
+static duk_ret_t req_valid_idx(duk_context *ctx) {
 	duk_idx_t idx = duk_get_int(ctx, -1);
 
 	duk_pop(ctx);

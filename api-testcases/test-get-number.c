@@ -17,7 +17,7 @@ index 13: number nan, FP_NAN=1, FP_INFINITE=0, FP_ZERO=0, FP_SUBNORMAL=0, FP_NOR
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -35,13 +35,12 @@ void test(duk_context *ctx) {
 	duk_push_object(ctx);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		double d = duk_get_number(ctx, i);
 		int c = fpclassify(d);
-		printf("index %d: number %lf, FP_NAN=%d, FP_INFINITE=%d, FP_ZERO=%d, FP_SUBNORMAL=%d, FP_NORMAL=%d, signbit=%d\n",
-		       i, d, (c == FP_NAN ? 1 : 0), (c == FP_INFINITE ? 1 : 0), (c == FP_ZERO ? 1 : 0),
+		printf("index %ld: number %lf, FP_NAN=%d, FP_INFINITE=%d, FP_ZERO=%d, FP_SUBNORMAL=%d, FP_NORMAL=%d, signbit=%d\n",
+		       (long) i, d, (c == FP_NAN ? 1 : 0), (c == FP_INFINITE ? 1 : 0), (c == FP_ZERO ? 1 : 0),
 		       (c == FP_SUBNORMAL ? 1 : 0), (c == FP_NORMAL ? 1 : 0), (signbit(d) ? 1 : 0));
 	}
 }
-

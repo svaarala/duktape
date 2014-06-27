@@ -18,12 +18,12 @@ stack[12] --> type=0 mask=0x00000001 none bool=0 num=nan str=(null) buf-is-null=
  * values of API constants.  This is intentional, although not very ideal.
  */
 
-int my_c_func(duk_context *ctx) {
+static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -63,7 +63,7 @@ void test(duk_context *ctx) {
 
 		printf(" bool=%d num=%lf str=%s buf-is-null=%d ptr=%p",
 		       (int) duk_get_boolean(ctx, i),
-		       duk_get_number(ctx, i),
+		       (double) duk_get_number(ctx, i),
 		       duk_get_string(ctx, i),
 		       (duk_get_buffer(ctx, i, NULL) == NULL ? 1 : 0),
 		       duk_get_pointer(ctx, i));
@@ -76,4 +76,3 @@ void test(duk_context *ctx) {
 		printf("\n");
 	}
 }
-

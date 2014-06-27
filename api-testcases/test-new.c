@@ -1,14 +1,15 @@
 /*===
+*** test_1 (duk_safe_call)
 duk_is_constructor_call: 1
 key='own_key', value='own_value'
 key='name', value='my prototype'
 duk_is_constructor_call: 1
 key='name', value='replacement'
 final top: 0
-rc=0, ret=undefined
+==> rc=0, result='undefined'
 ===*/
 
-int my_func_1(duk_context *ctx) {
+static duk_ret_t my_func_1(duk_context *ctx) {
 	printf("duk_is_constructor_call: %d\n", (int) duk_is_constructor_call(ctx));
 
 	/* check 'this'; it should have internal prototype set below to
@@ -28,7 +29,7 @@ int my_func_1(duk_context *ctx) {
 	return 0;
 }
 
-int my_func_2(duk_context *ctx) {
+static duk_ret_t my_func_2(duk_context *ctx) {
 	printf("duk_is_constructor_call: %d\n", (int) duk_is_constructor_call(ctx));
 
 	/* this replaces the freshly constructed object, and does NOT have
@@ -38,7 +39,7 @@ int my_func_2(duk_context *ctx) {
 	return 1;
 }
 
-int test_raw(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	/* Create a constructor (function object).  Its "prototype" property
 	 * controls the internal prototype of created instances.
 	 */
@@ -70,9 +71,5 @@ int test_raw(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	duk_ret_t rc;
-
-	rc = duk_safe_call(ctx, test_raw, 0, 1);
-	printf("rc=%d, ret=%s\n", (int) rc, duk_to_string(ctx, -1));
+	TEST_SAFE_CALL(test_1);
 }
-

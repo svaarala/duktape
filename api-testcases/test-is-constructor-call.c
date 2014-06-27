@@ -1,15 +1,16 @@
 /*===
+*** test_1 (duk_safe_call)
 duk_is_constructor_call: 0
 duk_is_constructor_call: 1
-rc=0, ret=undefined
+==> rc=0, result='undefined'
 ===*/
 
-int my_func(duk_context *ctx) {
-	printf("duk_is_constructor_call: %d\n", duk_is_constructor_call(ctx));
+static duk_ret_t my_func(duk_context *ctx) {
+	printf("duk_is_constructor_call: %d\n", (int) duk_is_constructor_call(ctx));
 	return 0;
 }
 
-int test_raw(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_push_c_function(ctx, my_func, 0);
 
 	duk_dup(ctx, 0);   /* -> [ func func ] */
@@ -26,9 +27,5 @@ int test_raw(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_raw, 0, 1);
-	printf("rc=%d, ret=%s\n", rc, duk_to_string(ctx, -1));
+	TEST_SAFE_CALL(test_1);
 }
-
