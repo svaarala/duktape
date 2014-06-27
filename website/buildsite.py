@@ -461,15 +461,28 @@ def transformRemoveClass(soup, cssClass):
 	for elem in soup.select('.' + cssClass):
 		elem.extract()
 
-def transformReadIncludes(soup, includeDir):
-	for elem in soup.select('pre'):
+def transformReadIncludes(soup, includeDirs):
+	for elem in soup.select('*'):
 		if not elem.has_key('include'):
 			continue
 		filename = elem['include']
 		del elem['include']
-		f = open(os.path.join(includeDir, filename), 'rb')
-		elem.string = f.read()
-		f.close()
+		d = None
+		for incdir in includeDirs:
+			fn = os.path.join(incdir, filename)
+			if os.path.exists(fn):
+				f = open(fn, 'rb')
+				d = f.read()
+				f.close()
+				break
+		if d is None:
+			raise Exception('cannot find include file: ' + repr(filename))
+
+		if filename.endswith('.html'):
+			new_elem = BeautifulSoup(d).div
+			elem.replace_with(new_elem)
+		else:
+			elem.string = d
 
 def transformVersionNumber(soup, verstr):
 	for elem in soup.select('.duktape-version'):
@@ -959,10 +972,10 @@ def generateStyleCss():
 
 	return style
 
-def postProcess(soup, includeDir, autoAnchors=False, headingLinks=False, duktapeVersion=None):
+def postProcess(soup, includeDirs, autoAnchors=False, headingLinks=False, duktapeVersion=None):
 	# read in source snippets from include files
 	if True:
-		transformReadIncludes(soup, includeDir)
+		transformReadIncludes(soup, includeDirs)
 
 	# version number
 	if True:
@@ -1021,8 +1034,8 @@ def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
 	apitestdir = '../api-testcases'
-	guideincdir = '../examples/guide'
-	apiincdir = '../examples/api'
+	guideincdirs = [ './guide', '../examples/guide' ]
+	apiincdirs = [ './api', '../examples/api' ]
 	out_charset = 'utf-8'
 	releases_filename = '../RELEASES.txt'
 
@@ -1037,12 +1050,12 @@ def main():
 
 	print 'Generating api.html'
 	soup = generateApiDoc(apidocdir, apitestdir)
-	soup = postProcess(soup, apiincdir, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
+	soup = postProcess(soup, apiincdirs, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'api.html'), soup.encode(out_charset))
 
 	print 'Generating guide.html'
 	soup = generateGuide()
-	soup = postProcess(soup, guideincdir, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
+	soup = postProcess(soup, guideincdirs, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
 	writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
 	print 'Generating index.html'
