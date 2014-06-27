@@ -12,6 +12,8 @@ operation fails, throws an error.</p>
 
 <p>If <code>path</code> is NULL, throws an error.</p>
 
+<div include="path-encoding.html" />
+
 =example
 duk_push_string_file(ctx, "test.js");
 

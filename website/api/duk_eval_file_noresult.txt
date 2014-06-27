@@ -9,6 +9,8 @@ void duk_eval_file_noresult(duk_context *ctx, const char *path);
 <code><a href="#duk_eval_file">duk_eval_file()</a></code>, but leaves no
 result on the value stack.</p>
 
+<div include="path-encoding.html" />
+
 =example
 duk_eval_file_noresult(ctx, "test.js");
 
