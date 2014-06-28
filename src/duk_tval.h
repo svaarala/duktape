@@ -132,7 +132,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_GET_HEAPHDR(v)             ((duk_heaphdr *) (v)->vp[DUK_DBL_IDX_VP1])
 
 /* decoding */
-#define DUK_TVAL_GET_TAG(v)                 ((int) (v)->us[DUK_DBL_IDX_US0])
+#define DUK_TVAL_GET_TAG(v)                 ((duk_small_uint_t) (v)->us[DUK_DBL_IDX_US0])
 
 #define DUK_TVAL_IS_UNDEFINED(v)            (DUK_TVAL_GET_TAG((v)) == DUK_TAG_UNDEFINED)
 #define DUK_TVAL_IS_UNDEFINED_ACTUAL(v)     ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_UNDEFINED_ACTUAL)
@@ -164,10 +164,10 @@ typedef union duk_double_union duk_tval;
 typedef struct duk_tval_struct duk_tval;
 
 struct duk_tval_struct {
-	int t;
+	duk_small_uint_t t;
 	union {
-		double d;
-		int i;
+		duk_double_t d;
+		duk_small_int_t i;
 		void *voidptr;
 		duk_hstring *hstring;
 		duk_hobject *hobject;
