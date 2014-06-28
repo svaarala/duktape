@@ -29,7 +29,7 @@ top: 10
 top: 0
 test_pop_na -> top=1, rc=0, ret='undefined'
 top: 11
-test_pop_nb -> top=1, rc=1, ret='Error: attempt to pop too many entries'
+test_pop_nb -> top=1, rc=1, ret='Error: invalid count'
 top: 1
 ===*/
 
@@ -110,9 +110,6 @@ static duk_ret_t test_pop_na(duk_context *ctx) {
 }
 
 static duk_ret_t test_pop_nb(duk_context *ctx) {
-	/* Since duk_pop_n() count argument is unsigned int, this will attempt
-	 * to pop too many entries and result in an error.
-	 */
 	duk_pop_n(ctx, -1);
 	PRINTTOP();
 	return 0;
