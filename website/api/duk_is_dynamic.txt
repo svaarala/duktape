@@ -16,3 +16,4 @@ if (duk_is_dynamic(ctx, -3)) {
 
 =tags
 stack
+buffer
