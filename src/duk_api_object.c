@@ -44,7 +44,7 @@ duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_index, const char
 	return duk_get_prop(ctx, obj_index);
 }
 
-duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index) {
+duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index) {
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
@@ -118,7 +118,7 @@ duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_index, const char
 	return duk_put_prop(ctx, obj_index);
 }
 
-duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index) {
+duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index) {
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
@@ -173,7 +173,7 @@ duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_index, const char
 	return duk_del_prop(ctx, obj_index);
 }
 
-duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index) {
+duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index) {
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
@@ -224,7 +224,7 @@ duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_index, const char
 	return duk_has_prop(ctx, obj_index);
 }
 
-duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index) {
+duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index) {
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
@@ -267,7 +267,7 @@ void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t desc_fl
 	duk_pop(ctx);  /* pop key */
 }
 
-void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_arridx_t arr_index, duk_small_int_t desc_flags) {
+void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index, duk_small_int_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 
