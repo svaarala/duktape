@@ -497,12 +497,19 @@ void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, duk_
 	                                         1);            /* throw flag */
 }
 
-duk_bool_t duk_check_stack(duk_context *ctx, duk_uint_t extra) {
+duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
+
+	if (DUK_UNLIKELY(extra < 0)) {
+		/* Clamping to zero makes the API more robust to calling code
+		 * calculation errors.
+		 */
+		extra = 0;
+	}
 
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
 	return duk__check_valstack_resize_helper(ctx,
@@ -512,12 +519,19 @@ duk_bool_t duk_check_stack(duk_context *ctx, duk_uint_t extra) {
 	                                         0);            /* throw flag */
 }
 
-void duk_require_stack(duk_context *ctx, duk_uint_t extra) {
+void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
+
+	if (DUK_UNLIKELY(extra < 0)) {
+		/* Clamping to zero makes the API more robust to calling code
+		 * calculation errors.
+		 */
+		extra = 0;
+	}
 
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
 	(void) duk__check_valstack_resize_helper(ctx,
@@ -527,10 +541,17 @@ void duk_require_stack(duk_context *ctx, duk_uint_t extra) {
 	                                         1);            /* throw flag */
 }
 
-duk_bool_t duk_check_stack_top(duk_context *ctx, duk_uint_t top) {
+duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
+
+	if (DUK_UNLIKELY(top < 0)) {
+		/* Clamping to zero makes the API more robust to calling code
+		 * calculation errors.
+		 */
+		top = 0;
+	}
 
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
 	return duk__check_valstack_resize_helper(ctx,
@@ -540,10 +561,17 @@ duk_bool_t duk_check_stack_top(duk_context *ctx, duk_uint_t top) {
 	                                         0);            /* throw flag */
 }
 
-void duk_require_stack_top(duk_context *ctx, duk_uint_t top) {
+void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 	size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
+
+	if (DUK_UNLIKELY(top < 0)) {
+		/* Clamping to zero makes the API more robust to calling code
+		 * calculation errors.
+		 */
+		top = 0;
+	}
 
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
 	(void) duk__check_valstack_resize_helper(ctx,
@@ -697,7 +725,7 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
 #endif
 }
 
-void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_uint_t count) {
+void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *from_thr = (duk_hthread *) from_ctx;
 	void *src;
@@ -706,6 +734,11 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_uint_t count) {
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(from_ctx != NULL);
+
+	if (count < 0) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+		return;
+	}
 
 	nbytes = sizeof(duk_tval) * count;
 	if (nbytes == 0) {
@@ -3104,12 +3137,17 @@ void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builtin_idx) {
  *  Poppers
  */
 
-void duk_pop_n(duk_context *ctx, duk_uint_t count) {
+void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
 
+	if (count < 0) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+		return;
+	}
+
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-	if ((size_t) (thr->valstack_top - thr->valstack_bottom) < (size_t) count) {
+	if ((duk_size_t) (thr->valstack_top - thr->valstack_bottom) < (duk_size_t) count) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to pop too many entries");
 	}
 

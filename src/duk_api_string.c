@@ -4,8 +4,9 @@
 
 #include "duk_internal.h"
 
-static void duk__concat_and_join_helper(duk_context *ctx, duk_uint_t count, duk_bool_t is_join) {
+static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, duk_bool_t is_join) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_uint_t count;
 	duk_uint_t i;
 	duk_size_t idx;
 	duk_size_t len;
@@ -14,10 +15,16 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_uint_t count, duk_
 
 	DUK_ASSERT(ctx != NULL);
 
-	if (count <= 0) {
+	if (DUK_UNLIKELY(count_in <= 0)) {
+		if (count_in < 0) {
+			DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+			return;
+		}
+		DUK_ASSERT(count_in == 0);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 		return;
 	}
+	count = (duk_uint_t) count_in;
 
 	if (is_join) {
 		duk_size_t t1, t2, limit;
@@ -98,11 +105,11 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_uint_t count, duk_
 	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "concat result too long");
 }
 
-void duk_concat(duk_context *ctx, duk_uint_t count) {
+void duk_concat(duk_context *ctx, duk_idx_t count) {
 	duk__concat_and_join_helper(ctx, count, 0 /*is_join*/);
 }
 
-void duk_join(duk_context *ctx, duk_uint_t count) {
+void duk_join(duk_context *ctx, duk_idx_t count) {
 	duk__concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 

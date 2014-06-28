@@ -276,14 +276,17 @@ void duk_set_top(duk_context *ctx, duk_idx_t index);
 duk_idx_t duk_get_top_index(duk_context *ctx);
 duk_idx_t duk_require_top_index(duk_context *ctx);
 
-/* FIXME: although unsigned value is correct, it might be better to use a signed
- * value so that if user accidentally uses a negative value, it gets flagged as
- * an error instead of being interpreted as a large unsigned number.
+/* Although extra/top could be an unsigned type here, using a signed type
+ * makes the API more robust to calling code calculation errors or corner
+ * cases (where caller might occasionally come up with negative values).
+ * Negative values are treated as zero, which is better than casting them
+ * to a large unsigned number.  (This principle is used elsewhere in the
+ * API too.)
  */
-duk_bool_t duk_check_stack(duk_context *ctx, duk_uint_t extra);
-void duk_require_stack(duk_context *ctx, duk_uint_t extra);
-duk_bool_t duk_check_stack_top(duk_context *ctx, duk_uint_t top);
-void duk_require_stack_top(duk_context *ctx, duk_uint_t top);
+duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra);
+void duk_require_stack(duk_context *ctx, duk_idx_t extra);
+duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top);
+void duk_require_stack_top(duk_context *ctx, duk_idx_t top);
 
 /*
  *  Stack manipulation (other than push/pop)
@@ -297,10 +300,7 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index);
 void duk_replace(duk_context *ctx, duk_idx_t to_index);
 void duk_remove(duk_context *ctx, duk_idx_t index);
 /* FIXME: undocumented */
-/* FIXME: make count signed - otherwise if user code calls with a negative value,
- * it will coerce to a large unsigned value which is confusing.
- */
-void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, duk_uint_t count);
+void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, duk_idx_t count);
 
 /*
  *  Push operations
@@ -367,7 +367,7 @@ void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
  */
 
 void duk_pop(duk_context *ctx);
-void duk_pop_n(duk_context *ctx, duk_uint_t count);  /* FIXME: use signed count for robustness? use duk_idx_t for count? */
+void duk_pop_n(duk_context *ctx, duk_idx_t count);
 void duk_pop_2(duk_context *ctx);
 void duk_pop_3(duk_context *ctx);
 
@@ -378,8 +378,9 @@ void duk_pop_3(duk_context *ctx);
  *  is not needed; duk_is_valid_index() gives the same information.
  */
 
-duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index);  /* FIXME: a small int suffices here */
-duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t index, duk_int_t type);  /* FIXME: small int for type? */
+/* FIXME: a duk_small_int_t suffices to represent type and type mask (at least now). */
+duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t index, duk_int_t type);
 duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index);
 duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, duk_uint_t mask);
 
@@ -564,8 +565,8 @@ duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_bool_t get_value
  *  String manipulation
  */
 
-void duk_concat(duk_context *ctx, duk_uint_t count);  /* FIXME: duk_idx_t? */
-void duk_join(duk_context *ctx, duk_uint_t count);    /* FIXME: duk_idx_t? */
+void duk_concat(duk_context *ctx, duk_idx_t count);
+void duk_join(duk_context *ctx, duk_idx_t count);
 void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata);
 void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata);
 void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_char_offset, duk_size_t end_char_offset);
@@ -583,17 +584,14 @@ duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index
  *  Function (method) calls
  */
 
-/* FIXME: duk_idx_t for nargs/nrets here, as they refer to things on the stack?
- * Elsewhere duk_uint_t is used for counts.
- */
-void duk_call(duk_context *ctx, duk_int_t nargs);
-void duk_call_method(duk_context *ctx, duk_int_t nargs);
-void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_int_t nargs);
-duk_int_t duk_pcall(duk_context *ctx, duk_int_t nargs);
-duk_int_t duk_pcall_method(duk_context *ctx, duk_int_t nargs);
-duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_int_t nargs);
-void duk_new(duk_context *ctx, duk_int_t nargs);
-duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_int_t nargs, duk_int_t nrets);
+void duk_call(duk_context *ctx, duk_idx_t nargs);
+void duk_call_method(duk_context *ctx, duk_idx_t nargs);
+void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs);
+duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs);
+duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs);
+duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs);
+void duk_new(duk_context *ctx, duk_idx_t nargs);
+duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_idx_t nargs, duk_idx_t nrets);
 
 /*
  *  Thread management

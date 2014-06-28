@@ -283,4 +283,3 @@ struct duk_tval_struct {
 #define DUK_TVAL_SET_BOOLEAN_FALSE(v)       DUK_TVAL_SET_BOOLEAN(v, 0)
 
 #endif  /* DUK_TVAL_H_INCLUDED */
-
