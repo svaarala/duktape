@@ -1,5 +1,5 @@
 =proto
-void *duk_realloc(duk_context *ctx, void *ptr, size_t size);
+void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
 
 =summary
 <p>Like <code><a href="#duk_realloc_raw">duk_realloc_raw()</a></code> but may

@@ -28,8 +28,8 @@ index 19, string: '0xdeadbeef'
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_int_t i, n;
 	char *ptr;
 
 	duk_set_top(ctx, 0);
@@ -61,22 +61,22 @@ int test_1(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		printf("index %d, string: '%s'\n", i, duk_to_string(ctx, i));
+		printf("index %ld, string: '%s'\n", (long) i, duk_to_string(ctx, i));
 	}
 
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_string(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_string(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
@@ -88,4 +88,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
 }
-

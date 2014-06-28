@@ -1,5 +1,5 @@
 =proto
-const char *duk_to_lstring(duk_context *ctx, int index, size_t *out_len);
+const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 
 =stack
 [ ... val! ... ] -> [ ... ToString(val)! ... ]
@@ -21,10 +21,10 @@ an error.</p>
 
 =example
 const char *ptr;
-size_t sz;
+duk_size_t sz;
 
 ptr = duk_to_lstring(ctx, -3, &sz);
-printf("coerced string: %s (length %d)\n", ptr, (int) sz);
+printf("coerced string: %s (length %lu)\n", ptr, (unsigned long) sz);
 
 =tags
 stack

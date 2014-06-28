@@ -1,5 +1,5 @@
 =proto
-int duk_push_thread(duk_context *ctx);
+duk_idx_t duk_push_thread(duk_context *ctx);
 
 =stack
 [ ... ] -> [ ... thr! ]
@@ -16,7 +16,7 @@ environment.</p>
 a context pointer for API calls.</p>
 
 =example
-int thr_idx;
+duk_idx_t thr_idx;
 duk_context *new_ctx;
 
 thr_idx = duk_push_thread(ctx);
@@ -24,6 +24,7 @@ new_ctx = duk_get_context(ctx, thr_idx);
 
 =tags
 stack
+thread
 
 =seealso
 duk_push_thread_new_globalenv

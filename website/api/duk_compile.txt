@@ -1,5 +1,5 @@
 =proto
-void duk_compile(duk_context *ctx, duk_int_t flags);
+void duk_compile(duk_context *ctx, duk_uint_t flags);
 
 =stack
 [ ... source! filename! ] -> [ ... function! ]
@@ -72,7 +72,7 @@ of returning a plain function value:</p>
 <p>The bytecode generated for program and eval code is currently slower
 than that generated for functions: a "slow path" is used for all variable
 accesses in program and eval code, and the implicit return value handling
-of program and eval code generates much unnecessary bytecode.  From a
+of program and eval code generates some unnecessary bytecode.  From a
 performance point of view (both memory and execution performance) it is
 thus preferable to have as much code inside functions as possible.</p>
 
@@ -110,7 +110,7 @@ duk_push_string(ctx, "print('program');\n"
 duk_push_string(ctx, "hello");
 duk_compile(ctx, 0);   /* [ source filename ] -> [ func ] */
 duk_call(ctx, 0);      /* [ func ] -> [ result ] */
-printf("program result: %lf\n", duk_get_number(ctx, -1));
+printf("program result: %lf\n", (double) duk_get_number(ctx, -1));
 duk_pop(ctx);
 
 /* Eval code */
@@ -119,7 +119,7 @@ duk_push_string(ctx, "2+3");
 duk_push_string(ctx, "eval");
 duk_compile(ctx, DUK_COMPILE_EVAL);
 duk_call(ctx, 0);      /* [ func ] -> [ result ] */
-printf("eval result: %lf\n", duk_get_number(ctx, -1));
+printf("eval result: %lf\n", (double) duk_get_number(ctx, -1));
 duk_pop(ctx);
 
 /* Function code */
@@ -130,7 +130,7 @@ duk_compile(ctx, DUK_COMPILE_FUNCTION);
 duk_push_int(ctx, 5);
 duk_push_int(ctx, 6);
 duk_call(ctx, 2);      /* [ func 5 6 ] -> [ result ] */
-printf("function result: %lf\n", duk_get_number(ctx, -1));
+printf("function result: %lf\n", (double) duk_get_number(ctx, -1));
 duk_pop(ctx);
 
 =tags

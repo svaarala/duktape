@@ -17,16 +17,16 @@ this binding: type=8, value='0xdeadbeef'
  * happens.
  */
 
-int func(duk_context *ctx) {
-	int t;
+static duk_ret_t func(duk_context *ctx) {
+	duk_int_t t;
 	duk_push_this(ctx);
 	t = duk_get_type(ctx, -1);
-	printf("this binding: type=%d, value='%s'\n", t, duk_to_string(ctx, -1));
+	printf("this binding: type=%ld, value='%s'\n", (long) t, duk_to_string(ctx, -1));
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_c_function(ctx, func, 0);
 
@@ -42,7 +42,7 @@ void test(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 1; i < n; i++) {
 		duk_dup(ctx, 0);
 		duk_dup(ctx, i);
@@ -50,4 +50,3 @@ void test(duk_context *ctx) {
 		duk_pop(ctx);
 	}
 }
-

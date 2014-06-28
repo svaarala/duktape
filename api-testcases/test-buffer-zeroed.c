@@ -23,4 +23,3 @@ void test(duk_context *ctx) {
 	}
 	printf("\n");
 }
-

@@ -17,24 +17,24 @@ top: 1
 ==> rc=1, result='ReferenceError: identifier 'zork' undefined'
 ===*/
 
-static int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_context *ctx2;
 
 	duk_push_thread(ctx);
 	ctx2 = duk_require_context(ctx, -1);
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 
 	duk_eval_string_noresult(ctx2, "aiee;");  /* ReferenceError */
 
 	return 0;
 }
 
-static int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_context *ctx2;
 
 	duk_push_thread_new_globalenv(ctx);
 	ctx2 = duk_require_context(ctx, -1);
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 
 	duk_eval_string_noresult(ctx2, "zork;");  /* ReferenceError */
 

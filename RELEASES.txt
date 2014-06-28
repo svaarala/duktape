@@ -342,8 +342,9 @@ Planned
 
 * Serialize negative zero as '-0' in JSONX and JSONC
 
-* Some typing changes in the public API to improve portability; may require
-  changes to calling code
+* Public API C typing wrapped behind typedefs to allow porting to more exotic
+  platforms, e.g. platforms where "int" is a 16-bit type; API docs updated to
+  describe how type wrapping affects calling code (see new section "C types")
 
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
@@ -379,9 +380,6 @@ Planned
 
 * Add a safety limit for compiled bytecode byte size and maximum line number
   used to ensure pc-to-line internal data structure limits are not exceeded
-
-* C typing wrapped throughout to allow porting to more exotic platforms,
-  e.g. platforms where "int" is a 16-bit type
 
 * Fix a number conversion related incorrect assertion triggered by the
   test262 test suite
@@ -432,6 +430,9 @@ Planned
 
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
+
+* Internal C typing wrapped throughout to allow porting to more exotic
+  platforms, e.g. platforms where "int" is a 16-bit type
 
 1.0.0 (2014-07-XX)
 ------------------

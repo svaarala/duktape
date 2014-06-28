@@ -1,15 +1,17 @@
 <h1 id="customdirectives">Custom directives</h1>
 
-<p>Ecmascript E5/E5.1 employs a <b>directive prologue</b> to allow version or
-implementation specific features be activated.  The standard only provides one
-such directive, <code>"use strict"</code>, while asm.js uses <code>"use asm"</code>.
-Duktape custom directives are discussed in this section.</p>
+<p>Ecmascript E5/E5.1 employs a
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-14.1">directive prologue</a>
+to allow version or implementation specific features be activated.
+The standard only provides one such directive, <code>"use strict"</code>, while
+asm.js uses <code>"use asm"</code>.  Duktape custom directives are discussed
+in this section.</p>
 
 <h2 id="use-duk-notail">use duk notail</h2>
 
-<p>The <code>use duk notail</code> indicates that the function should never be
-tail called.  Tail calls affect the call stack so they are visible in stack
-traces (usually harmless) and affect functions which inspect the call stack
+<p>The <code>use duk notail</code> directive indicates that the function should
+never be tail called.  Tail calls affect the call stack so they are visible in
+stack traces (usually harmless) and affect functions which inspect the call stack
 using e.g. <code>Duktape.act()</code>.  This directive may be useful in special
 cases to ensure call stack has a known shape.  Example:</p>
 

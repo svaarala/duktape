@@ -11,10 +11,7 @@ is given as a C string.  The filename associated with the temporary
 is automatically provided from the <code>__FILE__</code> preprocessor define
 of the caller.</p>
 
-<div class="note">
-With this variant, the input source code is not interned by Duktape which is
-useful in low memory environments.
-</div>
+<div include="no-string-intern.html" />
 
 =example
 duk_eval_string(ctx, "'testString'.toUpperCase()");

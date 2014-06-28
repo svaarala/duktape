@@ -12,7 +12,7 @@ index 8, pointer 0xdeadbeef
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -25,10 +25,9 @@ void test(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		void *ptr = duk_get_pointer(ctx, i);
-		printf("index %d, pointer %p\n", i, ptr);
+		printf("index %ld, pointer %p\n", (long) i, ptr);
 	}
 }
-

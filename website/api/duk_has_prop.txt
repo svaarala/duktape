@@ -1,5 +1,5 @@
 =proto
-int duk_has_prop(duk_context *ctx, int obj_index);
+duk_bool_t duk_has_prop(duk_context *ctx, duk_idx_t obj_index);
 
 =stack
 [ ... obj! ... key! ] -> [ ... obj! ... ]
@@ -47,8 +47,6 @@ Similarly, if the key is an array index, you can use the
 <code><a href="#duk_has_prop_index">duk_has_prop_index()</a></code> variant.</p>
 
 =example
-int rc;
-
 duk_push_string(ctx, "myProperty");
 if (duk_has_prop(ctx, -3)) {
     printf("obj has 'myProperty'\n");

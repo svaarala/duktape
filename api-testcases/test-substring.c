@@ -14,12 +14,12 @@ final top: 1
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-void dump_string(duk_context *ctx) {
+static void dump_string(duk_context *ctx) {
 	const char *buf;
-	size_t i, len;
+	duk_size_t i, len;
 
 	buf = duk_get_lstring(ctx, -1, &len);
-	printf("blen=%d, clen=%d, str=\"", (int) len, (int) duk_get_length(ctx, -1));
+	printf("blen=%lu, clen=%lu, str=\"", (unsigned long) len, (unsigned long) duk_get_length(ctx, -1));
 	for (i = 0; i < len; i++) {
 		char c = buf[i];
 		if (c >= 0x20 && c <= 0x7e) {
@@ -33,7 +33,7 @@ void dump_string(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	/*
 	 *  Test with a string containing non-ASCII to ensure indices are
 	 *  treated correctly as char indices.
@@ -71,40 +71,40 @@ int test_1(duk_context *ctx) {
 	duk_substring(ctx, -1, 4, 2);
 	dump_string(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* non-string -> error */
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123456);
 	duk_substring(ctx, -1, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* invalid index */
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "foobar");
 	duk_substring(ctx, -2, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* invalid index */
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "foobar");
 	duk_substring(ctx, DUK_INVALID_INDEX, 2, 4);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -114,4 +114,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_3);
 	TEST_SAFE_CALL(test_4);
 }
-

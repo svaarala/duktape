@@ -6,11 +6,11 @@
 2+3 is 5
 ===*/
 
-int my_adder(duk_context *ctx) {
-	int i;
-	int n = duk_get_top(ctx);  /* number of args */
+static duk_ret_t my_adder(duk_context *ctx) {
+	duk_idx_t i, n;
 	double res = 0.0;
 
+	n = duk_get_top(ctx);  /* number of args */
 	for (i = 0; i < n; i++) {
 		res += duk_to_number(ctx, i);
 	}
@@ -29,4 +29,3 @@ void test(duk_context *ctx) {
 	duk_eval(ctx);
 	duk_pop(ctx);  /* pop eval result */
 }
-

@@ -11,31 +11,31 @@ number: nan
 ==> rc=1, result='TypeError: not number'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_int(ctx, 123);
 	duk_push_nan(ctx);
-	printf("number: %lf\n", duk_require_number(ctx, 0));
-	printf("number: %lf\n", duk_require_number(ctx, 1));
+	printf("number: %lf\n", (double) duk_require_number(ctx, 0));
+	printf("number: %lf\n", (double) duk_require_number(ctx, 1));
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
-	printf("number: %lf\n", duk_require_number(ctx, 0));
+	printf("number: %lf\n", (double) duk_require_number(ctx, 0));
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("number: %lf\n", duk_require_number(ctx, 0));
+	printf("number: %lf\n", (double) duk_require_number(ctx, 0));
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("number: %lf\n", duk_require_number(ctx, DUK_INVALID_INDEX));
+	printf("number: %lf\n", (double) duk_require_number(ctx, DUK_INVALID_INDEX));
 	return 0;
 }
 

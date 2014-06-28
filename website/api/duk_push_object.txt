@@ -1,5 +1,5 @@
 =proto
-int duk_push_object(duk_context *ctx);
+duk_idx_t duk_push_object(duk_context *ctx);
 
 =stack
 [ ... ] -> [ ... obj! ]
@@ -9,7 +9,7 @@ int duk_push_object(duk_context *ctx);
 of the pushed object.</p>
 
 =example
-int obj_idx;
+duk_idx_t obj_idx;
 
 obj_idx = duk_push_object(ctx);
 duk_push_int(ctx, 42);

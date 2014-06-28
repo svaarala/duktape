@@ -1,5 +1,5 @@
 =proto
-int duk_next(duk_context *ctx, int enum_index, int get_value);
+duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_bool_t get_value);
 
 =stack
 [ ... enum! ... ] -> [ ... enum! ... ]             (if enum empty; function returns zero)

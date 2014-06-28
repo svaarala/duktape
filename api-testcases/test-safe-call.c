@@ -5,7 +5,7 @@ error: Error: test_2 error
 final top: 1
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	double a, b, c;
 
 	a = duk_get_number(ctx, -3);
@@ -18,14 +18,13 @@ int test_1(duk_context *ctx) {
 	return 1;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_error(ctx, DUK_ERR_INTERNAL_ERROR, "test_2 error");
 	return 0;
 }
 
-
 void test(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	duk_set_top(ctx, 0);
 
@@ -59,6 +58,5 @@ void test(duk_context *ctx) {
 
 	/* FIXME: also test invalid input stack shapes (like not enough args) */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }
-

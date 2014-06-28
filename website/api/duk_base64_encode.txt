@@ -1,12 +1,12 @@
 =proto
-const char *duk_base64_encode(duk_context *ctx, int index);
+const char *duk_base64_encode(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... base64_val! ... ]
 
 =summary
 <p>Coerces an arbitrary value into a buffer and then encodes the result
-into base-64 as an in-place operation.  Returns pointer to the resulting
+into base-64 as an in-place operation.  Returns a pointer to the resulting
 string for convenience.</p>
 
 <div class="note">

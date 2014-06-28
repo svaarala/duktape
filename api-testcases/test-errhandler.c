@@ -22,7 +22,7 @@ static void remove_handlers(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -34,11 +34,11 @@ int test_1(duk_context *ctx) {
 	duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "range error: %d", 123);
 	duk_throw(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -49,11 +49,11 @@ int test_2(duk_context *ctx) {
 
 	duk_error(ctx, 1234567, "arbitrary error code");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* Causes a ReferenceError when error handler runs.  The
@@ -66,11 +66,11 @@ int test_3(duk_context *ctx) {
 
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, NULL);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -83,11 +83,11 @@ int test_4(duk_context *ctx) {
 	printf("string coerced: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -97,7 +97,7 @@ int test_5(duk_context *ctx) {
 
 	duk_error(ctx, 1234567, "arbitrary error code");
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -108,4 +108,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_4);
 	TEST_SAFE_CALL(test_5);
 }
-

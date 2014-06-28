@@ -22,8 +22,8 @@ codepoint: 114
 final top: 0
 ===*/
 
-static void decode_char(void *udata, int codepoint) {
-	printf("codepoint: %d\n", codepoint);
+static void decode_char(void *udata, duk_codepoint_t codepoint) {
+	printf("codepoint: %ld\n", (long) codepoint);
 }
 
 void test(duk_context *ctx) {
@@ -39,5 +39,5 @@ void test(duk_context *ctx) {
 
 	/* FIXME: error cases */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

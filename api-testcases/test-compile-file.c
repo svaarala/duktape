@@ -35,10 +35,10 @@ static void write_file(const char *filename, const char *data) {
 	}
 }
 
-static int test_raw(duk_context *ctx) {
+static duk_ret_t test_raw(duk_context *ctx) {
 	const char *data1 = "print('Hello world from a file!'); 123;";
 	const char *data2 = "print('Hello world from a file, with syntax error'); obj = {";
-	int rc;
+	duk_ret_t rc;
 
 	write_file(TMPFILE, data1);
 	duk_compile_file(ctx, 0, TMPFILE);
@@ -48,14 +48,13 @@ static int test_raw(duk_context *ctx) {
 
 	write_file(TMPFILE, data2);
 	rc = duk_pcompile_file(ctx, 0, TMPFILE);
-	printf("compile rc=%d -> %s\n", rc, duk_safe_to_string(ctx, -1));
+	printf("compile rc=%d -> %s\n", (int) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_raw);
 }
-

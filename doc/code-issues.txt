@@ -63,7 +63,8 @@ may be multiple spaces between the a macro name and its definition.  There
 is no strict rule on the alignment of a macro value; successive definitions
 usually keep values in the same column.
 
-Comments are always traditional C comments, never ``//``::
+Comments are always traditional C comments, never ``//``, as they are not
+portable to older compilers::
 
   /* always used traditional C comments */
 
@@ -137,9 +138,9 @@ Variable declarations
 ---------------------
 
 C variables should only be declared in the beginning of the block.  Although
-this is usually not a portability concern but some older still compilers
-require it.  In particular, MSVC (at least Visual Studio 2010 Express) seems
-to require this.
+this is usually not a portability concern, some older still compilers require
+it.  In particular, MSVC (at least Visual Studio 2010 Express) seems to
+require this.
 
 Be careful especially of assertions, debug prints, and other macros::
 
@@ -153,26 +154,26 @@ part because disabled debug prints are replaced with ``do {} while (0)``
 builds)::
 
   {
-    int x;
+          int x;
 
-    DUK_DDD(DUK_DDDPRINT("debug print"));
+          DUK_DDD(DUK_DDDPRINT("debug print"));
 
-    int y;  /* error here */
+          int y;  /* error here */
 
-    x = 123;
-    ...
+          x = 123;
+          ...
   }
 
 The fix is::
 
   {
-    int x;
-    int y;
+          int x;
+          int y;
 
-    DUK_DDD(DUK_DDDPRINT("debug print"));
+          DUK_DDD(DUK_DDDPRINT("debug print"));
 
-    x = 123;
-    ...
+          x = 123;
+          ...
   }
 
 Include guards
@@ -371,6 +372,24 @@ Sometimes platform functions may be present but broken.  For instance,
 some old uclibc versions have a broken ``memcpy()`` but a working
 ``memmove()``.
 
+Platform functions which cannot be referred to using function pointers
+----------------------------------------------------------------------
+
+On some platforms built-in functions may be defined as inline functions or
+macros.  Any code which assumes that built-in functions can be used as
+function pointers will then break.  There are some platform "polyfills"
+which use macros in this way, and it seems that Microsoft VS2013 may behave
+like this at least with some options.
+
+This problem can be avoided by using explicit function wrappers when a
+function pointer is needed::
+
+  double duk__acos(double x) {
+      return acos(x);
+  }
+
+  /* ... use duk__acos as a function pointer */
+
 va_copy
 -------
 
@@ -397,107 +416,7 @@ aliasing rules enforced.
 Numeric types
 -------------
 
-C data types, especially integer types, are a bit of a hassle: the best choice
-of types depends on the platform and the compiler, and also the C specification
-version.  Types also affect e.g. printf() and scanf() format specifiers which
-are, of course, potentially compiler specific.  To remain portable, (almost)
-all C types are wrapped behind a typedef.  The ``duktape.h`` header handles all
-platform and feature detection and provides all necessary type wrappers, both
-for the public API and for internal use.
-
-Basic rules in implementation:
-
-* ``duktape.h`` performs all the detection needed and provide typedefs for
-  types used in the public API and inside Duktape.
-
-* C99 types are **not** used directly, wrapper types are used instead.  For
-  instance, use ``duk_uint32_t`` instead of ``uint32_t``.  Wrapper types are
-  used because we don't want to rely on C99 types or define them if they are
-  missing.
-
-* Only use ``duk_XXX_t`` typedefs for integer types unless there is a special
-  reason not to.  For instance, if a platform API requires a specific type,
-  that type must of course be used (or casted to).
-
-* Use ``duk_size_t`` for internal uses of ``size_t``.  Coerce it explicitly
-  to ``size_t`` for library API calls.
-
-* Use ``duk_double_t`` for IEEE double precision float.  This is slight
-  paranoia but may be handy if e.g. built-in soft float library is introduced.
-
-* The ``void`` type is used as is, cannot imagine a reason why it would need
-  to be reassigned for portability.
-
-* Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
-  unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
-  ``duk_uint_t`` should be used as an ``unsigned int`` replacement.
-
-* The ``duk_small_int_t`` should be used in internal code e.g. for flags.
-  It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
-
-* The ``duk_bool_t`` should be used for boolean values.  (Currently some
-  internal code uses ``duk_small_int_t`` for that.)
-
-* ``duk_uint8_t`` should be used as a replacement for ``unsigned char`` and
-  often for ``char`` too.  Since ``char`` may be signed, it is often a
-  problematic type when comparing ranges, indexing lookup tables, etc, so
-  a ``char`` or a ``signed char`` is often not the best type.  Note that
-  proper string comparison of UTF-8 character strings, for instance, relies
-  on unsigned byte comparisons.
-
-* Integer constants should generally use ``L`` or ``UL`` suffix, i.e.
-  makes them ``long int`` or ``unsigned long int``, and they are
-  guaranteed to be 32 bits or more.  Without a suffix integer constants
-  may be only 16 bits.  64-bit constants need ``LL`` or ``ULL`` suffix.
-  Small constants (16 bits or less) don't need a suffix and are still
-  portable.  This is convenient for codepoint constants and such.
-
-* Integer constant sign should match the type the constant is related to.
-  For instance, ``duk_codepoint_t`` is a signed type, so a signed constant
-  should be used.  This is more than a style issue: suppose signed codepoint
-  ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
-  the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
-
-* **FIXME:** Format specifiers are under work.
-
-* **FIXME:** normal vs. fast variables: use tight values in structs,
-  "fast" values as e.g. loop counters in fast paths (character / byte
-  iteration loops etc)
-
-* **FIXME**: flags field type (storage vs. internal APIs)
-
-* **FIXME**: avoid casting when unnecessary
-
-Random notes:
-
-* The public API uses types at least for these (example type in parentheses):
-
-  - allocation size, entry count, etc (size_t)
-  - Unicode codepoint (int_fast32_t)
-  - value stack index (int_fast32_t, ssize_t)
-  - value stack count (uint_fast32_t, size_t)
-  - flag field (uint_fast32_t)
-  - boolean flag (int)
-  - Ecmascript array index (uint_fast32_t)
-  - Ecmascript number (double)
-  - Void and char pointers; easy, but sign of ``char`` varies:
-    explicit use of ``unsigned char`` is more portable but
-    more verbose
-
-* A large amount of code needs an integer type which is fastest on the platform
-  but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
-  choice because it may be 16 bits even on platforms with a 32-bit type and
-  even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
-  good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
-  long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
-  ``duk_uint_t``.  For small integers, like flags, there are typedefs
-  ``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
-  a small integer (16 bits or more) suffices.
-
-* Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
-  Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
-  exact unsigned overflows / underflows.  The wrapped C99 types are used in
-  these cases.
+This is a complicated topic covered in a separate section below.
 
 Numeric constants
 -----------------
@@ -747,6 +666,163 @@ EBCDIC
 ------
 
 See separate section below.
+
+Numeric types
+=============
+
+C data types, especially integer types, are a bit of a hassle: the best choice
+of types depends on the platform and the compiler, and also the C specification
+version.  Types also affect e.g. printf() and scanf() format specifiers which
+are, of course, potentially compiler specific.  To remain portable, (almost)
+all C types are wrapped behind a typedef.
+
+The ``duktape.h`` header handles all platform and feature detection and provides
+all necessary type wrappers, both for the public API and for internal use.
+
+Fast integer type with at least 32 bits
+---------------------------------------
+
+A large amount of code needs an integer type which is fastest on the platform
+but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
+choice because it may be 16 bits even on platforms with a 32-bit type and
+even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
+good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
+long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
+``duk_uint_t``.  For small integers, like flags, there are typedefs
+``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
+a small integer (16 bits or more) suffices.
+
+Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
+Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
+exact unsigned overflows / underflows.  The wrapped C99 types are used in
+these cases.
+
+Format specifiers
+-----------------
+
+Format specifiers are more or less standardized, e.g. ``%d`` is used to format
+an ``int`` in decimal, but:
+
+* When typedef wrappers are used, how can calling code know the correct format
+  specifier for the wrapped type?  The target type may be differ between
+  platforms.  In practice there are two reasonable strategies:
+
+  1. Define preprocessor macros for the format specifiers (C99 uses this approach,
+     e.g. ``PRId32``).
+
+  2. Cast upwards to a reasonable guess, e.g. all signed integers to ``long``
+     or (if C99 can be assumed) ``maxint_t`` (``unsigned long`` and ``umaxint_t``
+     for unsigned integers) and use a known format specifier.
+
+* There are separate format codes for ``printf()`` and ``scanf()``.  They are
+  sometimes different.  As a concrete example, the proper print format code for
+  an IEEE double is ``%f`` while the scan format code is ``%lf``.
+
+* Some useful format codes:
+
+  - ``%d``: int
+  - ``%ld``: long
+  - ``%zu``: size_t
+  - ``%jd``: maxint_t (C99)
+
+Types used inside Duktape
+-------------------------
+
+* ``duktape.h`` performs all the detection needed and provide typedefs for
+  types used in the public API and inside Duktape.
+
+* C99 types are **not** used directly, wrapper types are used instead.  For
+  instance, use ``duk_uint32_t`` instead of ``uint32_t``.  Wrapper types are
+  used because we don't want to rely on C99 types or define them if they are
+  missing.
+
+* Only use ``duk_XXX_t`` typedefs for integer types unless there is a special
+  reason not to.  For instance, if a platform API requires a specific type,
+  that type must of course be used (or casted to).
+
+* Integer constants should generally use ``L`` or ``UL`` suffix, i.e.
+  makes them ``long int`` or ``unsigned long int``, and they are
+  guaranteed to be 32 bits or more.  Without a suffix integer constants
+  may be only 16 bits.  64-bit constants need ``LL`` or ``ULL`` suffix.
+  Small constants (16 bits or less) don't need a suffix and are still
+  portable.  This is convenient for codepoint constants and such.
+  Note the absurd corner case when trying to represent the smallest signed
+  integer value for 32 and 64 bits (see separate section).
+
+* Integer constant sign should match the type the constant is related to.
+  For instance, ``duk_codepoint_t`` is a signed type, so a signed constant
+  should be used.  This is more than a style issue: suppose signed codepoint
+  ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
+  the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
+
+* **FIXME:** Format specifiers are under work.
+
+* **FIXME:** normal vs. fast variables: use tight values in structs,
+  "fast" values as e.g. loop counters in fast paths (character / byte
+  iteration loops etc)
+
+* **FIXME**: flags field type (storage vs. internal APIs)
+
+* **FIXME**: avoid casting when unnecessary
+
+duk_size_t
+::::::::::
+
+Use ``duk_size_t`` for internal uses of ``size_t``.  Coerce it explicitly
+to ``size_t`` for library API calls.
+
+duk_double_t
+::::::::::::
+
+Use ``duk_double_t`` for IEEE double precision float.  This is slight
+paranoia but may be handy if e.g. built-in soft float library is introduced.
+
+void
+::::
+
+The ``void`` type is used as is, cannot imagine a reason why it would need
+to be reassigned for portability.
+
+duk_int_t
+:::::::::
+
+Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
+unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
+``duk_uint_t`` should be used as an ``unsigned int`` replacement.
+
+duk_small_int_t
+:::::::::::::::
+
+The ``duk_small_int_t`` should be used in internal code e.g. for flags.
+It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
+
+duk_bool_t
+::::::::::
+
+The ``duk_bool_t`` should be used for boolean values.  It must be wide
+enough to accommodate results from C comparisons (e.g. ``x == y``).  In
+practice it's defined as an ``int``.  (Currently some internal code uses
+``duk_small_int_t`` for booleans, but this will be fixed.)
+
+duk_uint8_t
+:::::::::::
+
+``duk_uint8_t`` should be used as a replacement for ``unsigned char`` and
+often for ``char`` too.  Since ``char`` may be signed, it is often a
+problematic type when comparing ranges, indexing lookup tables, etc, so
+a ``char`` or a ``signed char`` is often not the best type.  Note that
+proper string comparison of UTF-8 character strings, for instance, relies
+on unsigned byte comparisons.
+
+duk_idx_t
+:::::::::
+
+``duk_idx_t`` is used for value stack indices.
+
+duk_arridx_t
+::::::::::::
+
+``duk_arridx_t`` is used for array indices.
 
 Portability issues on very old compilers
 ========================================

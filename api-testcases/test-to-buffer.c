@@ -46,14 +46,13 @@ buffer: dynamic=0, size=10: 0xdeadbeef
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-void dump_buffer(duk_context *ctx) {
+static void dump_buffer(duk_context *ctx) {
 	unsigned char *ptr;
-	size_t sz;
-	int i;
+	duk_size_t i, sz;
 
 	ptr = (unsigned char *) duk_get_buffer(ctx, -1, &sz);
-	printf("buffer: dynamic=%d, size=%d: ", duk_is_dynamic(ctx, -1), (int) sz);
-	for (i = 0; i < (int) sz; i++) {
+	printf("buffer: dynamic=%d, size=%lu: ", (int) duk_is_dynamic(ctx, -1), (unsigned long) sz);
+	for (i = 0; i < sz; i++) {
 		unsigned char c = ptr[i];
 		if (c >= 0x20 && c <= 0x7e) {
 			printf("%c", c);
@@ -64,8 +63,8 @@ void dump_buffer(duk_context *ctx) {
 	printf("\n");
 }
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_size_t i, n;
 	char *buf;
 
 	duk_set_top(ctx, 0);
@@ -98,19 +97,21 @@ int test_1(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		int t1, t2;
+		duk_int_t t1, t2;
 		void *ptr;
-		size_t sz;
+		duk_size_t sz;
 
 		duk_dup(ctx, i);
 		t1 = duk_get_type(ctx, -1);
-		sz = (size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeef;
 		ptr = duk_to_buffer(ctx, -1, &sz);
 		t2 = duk_get_type(ctx, -1);
-		printf("index %d, type %d -> %d, ptr-is-NULL %d, size %u\n",
-		       i, t1, t2, (sz == 0 ? -1 : (ptr == NULL ? 1 : 0)), (unsigned int) sz);
+		printf("index %ld, type %ld -> %ld, ptr-is-NULL %d, size %lu\n",
+		       (long) i, (long) t1, (long) t2,
+		       (sz == 0 ? -1 : (ptr == NULL ? 1 : 0)),
+		       (unsigned long) sz);
 		dump_buffer(ctx);
 		duk_pop(ctx);
 
@@ -123,14 +124,14 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	(void) duk_to_buffer(ctx, 3, NULL);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	(void) duk_to_buffer(ctx, DUK_INVALID_INDEX, NULL);
 	printf("index DUK_INVALID_INDEX OK\n");

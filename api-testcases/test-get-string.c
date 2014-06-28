@@ -13,7 +13,7 @@ index 9: string '(null)'
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -27,9 +27,8 @@ void test(duk_context *ctx) {
 	duk_push_object(ctx);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		printf("index %d: string '%s'\n", i, duk_get_string(ctx, i));
+		printf("index %ld: string '%s'\n", (long) i, duk_get_string(ctx, i));
 	}
 }
-

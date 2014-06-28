@@ -14,16 +14,16 @@ context b: undefined
 ===*/
 
 /* Some basic tests. */
-static int test_1(duk_context *ctx) {
-	int thr_idx;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t thr_idx;
 	duk_context *new_ctx;
 
 	duk_push_int(ctx, 123);  /* dummy */
 
 	thr_idx = duk_push_thread(ctx);
-	printf("duk_is_object(%d) = %d\n", thr_idx, duk_is_object(ctx, thr_idx));
-	printf("duk_is_thread(%d) = %d\n", thr_idx, duk_is_thread(ctx, thr_idx));
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("duk_is_object(%ld) = %d\n", (long) thr_idx, (int) duk_is_object(ctx, thr_idx));
+	printf("duk_is_thread(%ld) = %d\n", (long) thr_idx, (int) duk_is_thread(ctx, thr_idx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* use the thread (context) value stack */
 	new_ctx = duk_get_context(ctx, thr_idx);
@@ -51,7 +51,7 @@ static int test_2(duk_context *ctx) {
 	duk_push_thread_new_globalenv(ctx);
 	ctx_b = duk_require_context(ctx, -1);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 
 	/* index 0: thread with globals shared with 'ctx' (has globalFoo)
 	 * index 1: thread with globals separate with 'ctx'

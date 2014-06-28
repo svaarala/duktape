@@ -5,7 +5,7 @@ top=2
 ===*/
 
 void test(duk_context *ctx) {
-	int arr_idx;
+	duk_idx_t arr_idx;
 
 	duk_push_int(ctx, 123);  /* dummy */
 
@@ -19,11 +19,11 @@ void test(duk_context *ctx) {
 	 * updated for Ecmascript arrays).
 	 */
 
-	printf("duk_is_array(%d) = %d\n", arr_idx, duk_is_array(ctx, arr_idx));
+	printf("duk_is_array(%ld) = %d\n", (long) arr_idx, (int) duk_is_array(ctx, arr_idx));
 
 	duk_json_encode(ctx, arr_idx);  /* in-place */
 
 	printf("json encoded: %s\n", duk_get_string(ctx, arr_idx));
 
-	printf("top=%d\n", duk_get_top(ctx));
+	printf("top=%ld\n", (long) duk_get_top(ctx));
 }

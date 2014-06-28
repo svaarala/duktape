@@ -28,8 +28,8 @@ pointer: 0xdeadbeef
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);
@@ -52,17 +52,17 @@ int test_1(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		void *ptr;
-		int t1, t2;
+		duk_int_t t1, t2;
 
 		t1 = duk_get_type(ctx, i);
 		ptr = duk_to_pointer(ctx, i);
 		t2 = duk_get_type(ctx, i);
 
-		printf("index %d, ptr-is-NULL: %d, type: %d -> %d\n",
-		       i, (ptr == NULL ? 1 : 0), t1, t2);
+		printf("index %ld, ptr-is-NULL: %d, type: %ld -> %ld\n",
+		       (long) i, (ptr == NULL ? 1 : 0), (long) t1, (long) t2);
 		if (t1 == DUK_TYPE_POINTER) {
 			/* check that pointer is retained as is (can safely print) */
 			printf("pointer: %p\n", ptr);
@@ -72,14 +72,14 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_pointer(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_pointer(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");

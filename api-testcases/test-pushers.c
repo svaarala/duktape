@@ -50,23 +50,23 @@ top=29 type=8 bool=0 num=nan clen=0 str='(null)' str-is-NULL=1 ptr-is-NULL=0
 #define  PRINTTOP()     print_top(ctx)
 #define  PRINTRESTOP()  do { print_res(res); print_top(ctx); } while(0)
 
-void print_res(const char *res) {
+static void print_res(const char *res) {
 	printf("-> res is %s\n", (res ? "non-NULL" : "NULL"));
 }
 
-void print_top(duk_context *ctx) {
-	int clen = 0;
+static void print_top(duk_context *ctx) {
+	duk_size_t clen = 0;
 	if (duk_is_string(ctx, -1)) {
 		clen = duk_get_length(ctx, -1);
 	}
-	printf("top=%d type=%d bool=%d num=%.6lf clen=%d str='%s' str-is-NULL=%d ptr-is-NULL=%d\n",
-	       duk_get_top(ctx), duk_get_type(ctx, -1), duk_get_boolean(ctx, -1),
-	       duk_get_number(ctx, -1), clen, duk_get_string(ctx, -1),
+	printf("top=%ld type=%ld bool=%d num=%.6lf clen=%ld str='%s' str-is-NULL=%d ptr-is-NULL=%d\n",
+	       (long) duk_get_top(ctx), (long) duk_get_type(ctx, -1), (int) duk_get_boolean(ctx, -1),
+	       (double) duk_get_number(ctx, -1), (long) clen, duk_get_string(ctx, -1),
 	       (duk_get_string(ctx, -1) ? 0 : 1),
 	       (duk_get_pointer(ctx, -1) ? 0 : 1));
 }
 
-const char *test_vsprintf_3x_int(duk_context *ctx, ...) {
+static const char *test_vsprintf_3x_int(duk_context *ctx, ...) {
 	va_list ap;
 	const char *res;
 
@@ -77,7 +77,7 @@ const char *test_vsprintf_3x_int(duk_context *ctx, ...) {
 	return res;
 }
 
-const char *test_vsprintf_empty(duk_context *ctx, ...) {
+static const char *test_vsprintf_empty(duk_context *ctx, ...) {
 	va_list ap;
 	const char *res;
 
@@ -88,7 +88,7 @@ const char *test_vsprintf_empty(duk_context *ctx, ...) {
 	return res;
 }
 
-const char *test_vsprintf_null(duk_context *ctx, ...) {
+static const char *test_vsprintf_null(duk_context *ctx, ...) {
 	va_list ap;
 	const char *res;
 
@@ -126,7 +126,7 @@ void test(duk_context *ctx) {
 	res = duk_push_lstring(ctx, NULL, 10); PRINTRESTOP(); /* pushes empty */
 
 	res = duk_push_sprintf(ctx, "foo"); PRINTRESTOP();
-	res = duk_push_sprintf(ctx, "foo %d %s 0x%08x", 123, "bar", 0x1234cafe); PRINTRESTOP();
+	res = duk_push_sprintf(ctx, "foo %d %s 0x%08lx", 123, "bar", (long) 0x1234cafe); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, ""); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, NULL); PRINTRESTOP();
 	
@@ -137,4 +137,3 @@ void test(duk_context *ctx) {
 	duk_push_pointer(ctx, (void *) 0); PRINTTOP();
 	duk_push_pointer(ctx, (void *) 0xdeadbeef); PRINTTOP();
 }
-

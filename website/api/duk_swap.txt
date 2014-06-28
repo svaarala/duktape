@@ -1,5 +1,5 @@
 =proto
-void duk_swap(duk_context *ctx, int index1, int index2);
+void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
 
 =stack
 [ ... val1! ... val2! ... ] -> [ ... val2! ... val1! ... ]

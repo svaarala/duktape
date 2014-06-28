@@ -760,11 +760,17 @@ typedef duk_int16_t duk_int_fast16_t;
 typedef duk_uint32_t duk_uint_fast32_t;
 typedef duk_int32_t duk_int_fast32_t;
 #if defined(DUK_F_HAVE_64BIT)
-typedef duk_int64_t duk_intmax_t;
+typedef duk_uint64_t duk_uint_least64_t;
+typedef duk_int64_t duk_int_least64_t;
+typedef duk_uint64_t duk_uint_fast64_t;
+typedef duk_int64_t duk_int_fast64_t;
+#endif
+#if defined(DUK_F_HAVE_64BIT)
 typedef duk_uint64_t duk_uintmax_t;
+typedef duk_int64_t duk_intmax_t;
 #else
-typedef duk_int32_t duk_intmax_t;
 typedef duk_uint32_t duk_uintmax_t;
+typedef duk_int32_t duk_intmax_t;
 #endif
 
 /* This detection is not very reliable. */
@@ -863,8 +869,9 @@ typedef duk_uint64_t duk_uintptr_t;
 
 #endif  /* C99 types */
 
-/* size_t is assumed to always exist. */
+/* A few types are assumed to always exist. */
 typedef size_t duk_size_t;
+typedef ptrdiff_t duk_ptrdiff_t;
 
 /* The best type for an "all around int" in Duktape internals is "at least
  * 32 bit signed integer" which is fastest.  Same for unsigned type.
@@ -889,8 +896,23 @@ typedef unsigned int duk_small_uint_t;
 /* Boolean values are represented with the platform 'int'. */
 typedef duk_small_int_t duk_bool_t;
 
-/* Error codes are represented with platform int. */
-typedef duk_small_int_t duk_errcode_t;
+/* Index values must have at least 32-bit signed range. */
+typedef duk_int_t duk_idx_t;
+
+/* Array index values, could be exact 32 bits. */
+typedef duk_uint_t duk_uarridx_t;
+/* currently no need for signed duk_arridx_t */
+
+/* Duktape/C function return value, platform int is enough for now to
+ * represent 0, 1, or negative error code.  Must be compatible with
+ * assigning truth values (e.g. duk_ret_t rc = (foo == bar);).
+ */
+typedef duk_small_int_t duk_ret_t;
+
+/* Error codes are represented with platform int.  High bits are used
+ * for flags and such, so 32 bits are needed.
+ */
+typedef duk_int_t duk_errcode_t;
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
@@ -899,8 +921,8 @@ typedef duk_small_int_t duk_errcode_t;
  * ensure duk_uint32_t casts back and forth nicely.  Almost everything
  * else uses the signed one.
  */
-typedef duk_int32_t duk_codepoint_t;
-typedef duk_uint32_t duk_ucodepoint_t;
+typedef duk_int_fast32_t duk_codepoint_t;
+typedef duk_uint_fast32_t duk_ucodepoint_t;
 
 /* IEEE double typedef. */
 typedef double duk_double_t;

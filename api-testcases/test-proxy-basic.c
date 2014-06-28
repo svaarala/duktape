@@ -30,7 +30,7 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static int handle_get(duk_context *ctx) {
+static duk_ret_t handle_get(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -52,7 +52,7 @@ static int handle_get(duk_context *ctx) {
 	return 1;
 }
 
-static int handle_set(duk_context *ctx) {
+static duk_ret_t handle_set(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -74,7 +74,7 @@ static int handle_set(duk_context *ctx) {
 	return 1;
 }
 
-static int handle_delete(duk_context *ctx) {
+static duk_ret_t handle_delete(duk_context *ctx) {
 	/* 'this' binding: handler
 	 * [0]: target
 	 * [1]: key
@@ -100,10 +100,10 @@ static const duk_function_list_entry handler_funcs[] = {
         { NULL, NULL, 0 }
 };
 
-static int test_1(duk_context *ctx) {
-	int rc;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_ret_t rc;
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 
 	/* new Proxy(target, handler) */
 	duk_push_global_object(ctx);
@@ -115,37 +115,37 @@ static int test_1(duk_context *ctx) {
 	duk_put_function_list(ctx, -1, handler_funcs);
 	duk_new(ctx, 2);  /* [ global Proxy target handler ] -> [ global proxy_object ] */
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_get_prop_string(ctx, -1, "getTest");
-	printf("get result: rc=%d, value=%s\n", rc, duk_to_string(ctx, -1));
+	printf("get result: rc=%d, value=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_get_prop_string(ctx, -1, "_getTest");
-	printf("get result: rc=%d, value=%s\n", rc, duk_to_string(ctx, -1));
+	printf("get result: rc=%d, value=%s\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "testValue");
 	rc = duk_put_prop_string(ctx, -2, "setTest");
-	printf("set result: rc=%d\n", rc);
+	printf("set result: rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "testValue");
 	rc = duk_put_prop_string(ctx, -2, "_setTest");
-	printf("set result: rc=%d\n", rc);
+	printf("set result: rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_del_prop_string(ctx, -1, "deleteTest");
-	printf("delete result: rc=%d\n", rc);
+	printf("delete result: rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	rc = duk_del_prop_string(ctx, -1, "_deleteTest");
-	printf("delete result: rc=%d\n", rc);
+	printf("delete result: rc=%d\n", (int) rc);
 
-	printf("top: %d\n", duk_get_top(ctx));
+	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_pop_2(ctx);
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 
 	return 0;
 }

@@ -9,11 +9,11 @@ final top: 1
 ==> rc=1, result='TypeError: incorrect type, expected c function'
 ===*/
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);
@@ -21,11 +21,11 @@ int test_1(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, -1);
 	printf("duk_require_c_function == my_func: %d\n", (funcptr == my_func ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);
@@ -33,11 +33,11 @@ int test_2(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, 3);
 	printf("index 3 -> NULL: %d\n", (funcptr == NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_c_function funcptr;
 
 	duk_set_top(ctx, 0);
@@ -45,7 +45,7 @@ int test_3(duk_context *ctx) {
 	funcptr = duk_require_c_function(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX -> NULL: %d\n", (funcptr == NULL ? 1 : 0));
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

@@ -1,5 +1,5 @@
 =proto
-int duk_push_array(duk_context *ctx);
+duk_idx_t duk_push_array(duk_context *ctx);
 
 =stack
 [ ... ] -> [ ... arr! ]
@@ -9,7 +9,7 @@ int duk_push_array(duk_context *ctx);
 of the pushed array.</p>
 
 =example
-int arr_idx;
+duk_idx_t arr_idx;
 
 arr_idx = duk_push_array(ctx);
 duk_push_string(ctx, "foo");

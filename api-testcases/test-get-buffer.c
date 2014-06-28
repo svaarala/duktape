@@ -15,7 +15,7 @@ index 11: length 2048, ptr-is-NULL 0
 ===*/
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -31,19 +31,19 @@ void test(duk_context *ctx) {
 	duk_push_dynamic_buffer(ctx, 2048);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		void *buf;
-		size_t len;
+		duk_size_t len;
 
-		len = (size_t) 0xdeadbeef;
+		len = (duk_size_t) 0xdeadbeef;
 		buf = duk_get_buffer(ctx, i, &len);
 		if (len == 0) {
 			/* avoid printing 'buf' if len is zero, as it is not predictable */
-			printf("index %d: length 0\n", i);
+			printf("index %ld: length 0\n", (long) i);
 		} else {
-			printf("index %d: length %u, ptr-is-NULL %d\n", i, (unsigned int) len, (buf == NULL ? 1 : 0));
+			printf("index %ld: length %lu, ptr-is-NULL %d\n",
+			       (long) i, (unsigned long) len, (buf == NULL ? 1 : 0));
 		}
 	}
 }
-

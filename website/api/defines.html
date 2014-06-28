@@ -20,14 +20,14 @@ the next official release.</p>
 <pre class="c-code">
 typedef void duk_context;
 
-typedef int (*duk_c_function)(duk_context *ctx);
-typedef void *(*duk_alloc_function) (void *udata, size_t size);
-typedef void *(*duk_realloc_function) (void *udata, void *ptr, size_t size);
+typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
+typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
+typedef void *(*duk_realloc_function) (void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function) (void *udata, void *ptr);
-typedef void (*duk_fatal_function) (duk_context *ctx, int code);
-typedef void (*duk_decode_char_function) (void *udata, int codepoint);
-typedef int (*duk_map_char_function) (void *udata, int codepoint);
-typedef int (*duk_safe_call_function) (duk_context *ctx);
+typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code);
+typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
+typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
 
 struct duk_memory_functions {
         duk_alloc_function alloc;
@@ -40,13 +40,13 @@ typedef struct duk_memory_functions duk_memory_functions;
 struct duk_function_list_entry {
 	const char *key;
 	duk_c_function value;
-	int nargs;
+	duk_int_t nargs;
 };
 typedef struct duk_function_list_entry duk_function_list_entry;
 
 struct duk_number_list_entry {
 	const char *key;
-	double value;
+	duk_double_t value;
 };
 typedef struct duk_number_list_entry duk_number_list_entry;
 </pre>

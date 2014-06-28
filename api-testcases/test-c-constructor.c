@@ -5,11 +5,11 @@ top at end: 0
 ==> rc=0, result='undefined'
 ===*/
 
-int my_constructor(duk_context *ctx) {
+static duk_ret_t my_constructor(duk_context *ctx) {
 	return 1;
 }
 
-int test1(duk_context *ctx) {
+static duk_ret_t test1(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_push_c_function(ctx, my_constructor, 0);   /* constructor (function) */
 	duk_push_object(ctx);                          /* prototype object -> [ global cons proto ] */
@@ -22,7 +22,7 @@ int test1(duk_context *ctx) {
 	duk_eval_string(ctx, "var obj = new MyConstructor(); print(obj.inherited);");
 	duk_pop(ctx);
 
-	printf("top at end: %d\n", duk_get_top(ctx));
+	printf("top at end: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

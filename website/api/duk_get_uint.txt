@@ -1,39 +1,39 @@
 =proto
-unsigned int duk_get_uint(duk_context *ctx, int index);
+duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ]
 
 =summary
-<p>Get the number at <code>index</code> and convert it to a C <code>unsigned int</code>
-by first clamping the value between [0, UINT_MAX] and then
+<p>Get the number at <code>index</code> and convert it to a C <code>duk_uint_t</code>
+by first clamping the value between [0, DUK_UINT_MAX] and then
 truncating towards zero.  The value on the stack is not modified.
 If the value is a NaN, is not a number, or the index is invalid,
 returns 0.</p>
 
 <p>Conversion examples:</p>
-<ul>
-<li>-Infinity => 0</li>
-<li>-1 => 0</li>
-<li>-3.9 => 0</li>
-<li>3.9 => 3</li>
-<li>UINT_MAX + 1 => UINT_MAX</li>
-<li>+Infinity => UINT_MAX</li>
-<li>NaN => 0</li>
-<li>"123" => 0 (non-number)</li>
-</ul>
+<table>
+<tr><th>Input</th><th>Output</th></tr>
+<tr><td>-Infinity</td><td>0</td></tr>
+<tr><td>-1</td><td>0</td></tr>
+<tr><td>-3.9</td><td>0</td></tr>
+<tr><td>3.9</td><td>3</td></tr>
+<tr><td>DUK_UINT_MAX + 1</td><td>DUK_UINT_MAX</td></tr>
+<tr><td>+Infinity</td><td>DUK_UINT_MAX</td></tr>
+<tr><td>NaN</td><td>0</td></tr>
+<tr><td>"123"</td><td>0 (non-number)</td></tr>
+</table>
 
 <div class="note">
 The coercion is different from a basic C cast from <code>double</code> to
-<code>unsigned int</code>, which may have counterintuitive behavior for
-e.g. NaN values.  The coercion is also different from Ecmascript
+unsigned integer, which may have counterintuitive (and non-portable) behavior
+for e.g. NaN values.  The coercion is also different from Ecmascript
 <code>ToUint32()</code> coercion because the full range of the native
-<code>unsigned int</code> is allowed, which is useful on platforms with a 64-bit
-<code>unsigned int</code> type.
+<code>duk_uint_t</code> is allowed (which may be more than 32 bits).
 </div>
 
 =example
-printf("unsigned int value: %u\n", duk_get_uint(ctx, -3));
+printf("unsigned int value: %lu\n", (unsigned long) duk_get_uint(ctx, -3));
 
 =tags
 stack

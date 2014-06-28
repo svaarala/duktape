@@ -1,5 +1,5 @@
 =proto
-const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len);
+const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
 
 =stack
 [ ... ] -> [ ... str! ]

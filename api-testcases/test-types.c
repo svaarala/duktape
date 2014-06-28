@@ -18,12 +18,12 @@ stack[12] --> type=0 mask=0x00000001 none bool=0 num=nan str=(null) buf-is-null=
  * values of API constants.  This is intentional, although not very ideal.
  */
 
-int my_c_func(duk_context *ctx) {
+static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -40,12 +40,13 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n + 1; i++) {  /* end on invalid index on purpose */
-		int typeval, typemask;
+		duk_int_t typeval, typemask;
 
 		typeval = duk_get_type(ctx, i);
 		typemask = duk_get_type_mask(ctx, i);
 
-		printf("stack[%d] --> type=%d mask=0x%08x ", i, typeval, typemask);
+		printf("stack[%ld] --> type=%ld mask=0x%08lx ",
+		       (long) i, (long) typeval, (long) typemask);
 
 		switch(duk_get_type(ctx, i)) {
 		case DUK_TYPE_NONE:		printf("none"); break;
@@ -57,22 +58,21 @@ void test(duk_context *ctx) {
 		case DUK_TYPE_OBJECT:		printf("object"); break;
 		case DUK_TYPE_BUFFER:		printf("buffer"); break;
 		case DUK_TYPE_POINTER:		printf("pointer"); break;
-		default:			printf("unknown(%d)", duk_get_type(ctx, i)); break;
+		default:			printf("unknown(%d)", (int) duk_get_type(ctx, i)); break;
 		}
 
 		printf(" bool=%d num=%lf str=%s buf-is-null=%d ptr=%p",
-		       duk_get_boolean(ctx, i),
-		       duk_get_number(ctx, i),
+		       (int) duk_get_boolean(ctx, i),
+		       (double) duk_get_number(ctx, i),
 		       duk_get_string(ctx, i),
 		       (duk_get_buffer(ctx, i, NULL) == NULL ? 1 : 0),
 		       duk_get_pointer(ctx, i));
 
 		printf(" isobj=%d isarr=%d isfunc=%d",
-		       duk_is_object(ctx, i),
-		       duk_is_array(ctx, i),
-		       duk_is_function(ctx, i));
+		       (int) duk_is_object(ctx, i),
+		       (int) duk_is_array(ctx, i),
+		       (int) duk_is_function(ctx, i));
 
 		printf("\n");
 	}
 }
-

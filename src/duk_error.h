@@ -228,7 +228,7 @@ DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc));
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, int noblame_fileline);
+void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline);
 #endif
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 void duk_err_augment_error_throw(duk_hthread *thr);

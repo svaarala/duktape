@@ -1,5 +1,5 @@
 =proto
-void duk_to_object(duk_context *ctx, int index);
+void duk_to_object(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... ToObject(val)! ... ]
@@ -16,8 +16,6 @@ or if <code>index</code> is invalid.</p>
 <ul>
 <li><code>undefined</code></li>
 <li><code>null</code></li>
-<li>buffer</li>
-<li>pointer</li>
 </ul>
 
 =example
@@ -26,7 +24,3 @@ duk_to_object(ctx, -3);
 =tags
 stack
 object
-
-=fixme
-Buffer and pointer may become object coercible in a future version (they'll then
-have a prototype object etc, like Number).

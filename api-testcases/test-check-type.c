@@ -14,12 +14,12 @@ stack[11] --> DUK_TYPE_NUMBER=0 DUK_TYPE_NONE=0
 stack[12] --> DUK_TYPE_NUMBER=0 DUK_TYPE_NONE=1
 ===*/
 
-int my_c_func(duk_context *ctx) {
+static duk_ret_t my_c_func(duk_context *ctx) {
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int i, n;
+	duk_idx_t i, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -36,8 +36,8 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n + 1; i++) {  /* end on invalid index on purpose */
-		printf("stack[%d] --> DUK_TYPE_NUMBER=%d DUK_TYPE_NONE=%d\n",
-		       i, duk_check_type(ctx, i, DUK_TYPE_NUMBER), duk_check_type(ctx, i, DUK_TYPE_NONE));
+		printf("stack[%ld] --> DUK_TYPE_NUMBER=%ld DUK_TYPE_NONE=%ld\n",
+		       (long) i, (long) duk_check_type(ctx, i, DUK_TYPE_NUMBER),
+		       (long) duk_check_type(ctx, i, DUK_TYPE_NONE));
 	}
 }
-

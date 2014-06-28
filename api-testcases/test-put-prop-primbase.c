@@ -8,7 +8,7 @@ final top: 1
 ===*/
 
 int test_put(duk_context *ctx) {
-	int rc;
+	duk_ret_t rc;
 
 	/* In Ecmascript, '(0).foo = "bar"' should work and evaluate to "bar"
 	 * in non-strict mode, but cause an error to be thrown in strict mode
@@ -20,9 +20,9 @@ int test_put(duk_context *ctx) {
 	duk_push_string(ctx, "bar");
 	rc = duk_put_prop(ctx, -3);
 
-	printf("put rc=%d\n", rc);
+	printf("put rc=%d\n", (int) rc);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

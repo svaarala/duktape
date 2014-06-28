@@ -1,5 +1,5 @@
 =proto
-const char *duk_hex_encode(duk_context *ctx, int index);
+const char *duk_hex_encode(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ] -> [ ... hex_val! ... ]

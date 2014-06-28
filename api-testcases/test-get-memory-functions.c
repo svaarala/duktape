@@ -5,31 +5,31 @@ free matches: 1
 udata: 0x12345678
 ===*/
 
-int alloc_count = 0;
-int realloc_count = 0;
-int free_count = 0;
+static int alloc_count = 0;
+static int realloc_count = 0;
+static int free_count = 0;
 
-void *my_alloc(void *udata, size_t size) {
+static void *my_alloc(void *udata, size_t size) {
 #if 0
 	printf("my_alloc: %d\n", (int) size);
-	alloc_count++;
 #endif
+	alloc_count++;
 	return malloc(size);
 }
 
-void *my_realloc(void *udata, void *ptr, size_t size) {
+static void *my_realloc(void *udata, void *ptr, size_t size) {
 #if 0
 	printf("my_realloc: %d\n", (int) size);
-	realloc_count++;
 #endif
+	realloc_count++;
 	return realloc(ptr, size);
 }
 
-void my_free(void *udata, void *ptr) {
+static void my_free(void *udata, void *ptr) {
 #if 0
 	printf("my_free\n");
-	free_count++;
 #endif
+	free_count++;
 	free(ptr);
 }
 
@@ -49,4 +49,3 @@ void test(duk_context *ctx) {
 	printf("counts: alloc=%d, realloc=%d, free=%d\n", alloc_count, realloc_count, free_count);
 #endif
 }
-

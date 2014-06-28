@@ -1,5 +1,5 @@
 =proto
-void duk_decode_string(duk_context *ctx, int index, duk_decode_char_function callback, void *udata);
+void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata);
 
 =stack
 [ ... val! ... ]
@@ -11,8 +11,8 @@ The input string is not modified.  If the value is not a string or the index is
 invalid, throws an error.</p>
 
 =example
-static void decode_char(void *udata, int codepoint) {
-    printf("codepoint: %d\n", codepoint);
+static void decode_char(void *udata, duk_codepoint_t codepoint) {
+    printf("codepoint: %ld\n", (long) codepoint);
 }
 
 duk_push_string(ctx, "test_string");
@@ -26,4 +26,3 @@ duk_map_string
 
 =fixme
 Currently implemented.  Necessary?
-

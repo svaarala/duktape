@@ -20,8 +20,7 @@ the implementation will try increasing temporary buffer sizes until a
 large enough buffer is found for the temporary formatted value.</p>
 
 =example
-duk_push_sprintf(ctx, "meaning of life: %d, name: %s",
-                 42, "Zaphod");
+duk_push_sprintf(ctx, "meaning of life: %d, name: %s", 42, "Zaphod");
 
 =tags
 stack

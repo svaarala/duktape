@@ -1,12 +1,12 @@
 =proto
-void duk_substring(duk_context *ctx, int index, size_t start_offset, size_t end_offset);
+void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_char_offset, duk_size_t end_char_offset);
 
 =stack
 [ ... str! ... ] -> [ ... substr! ... ]
 
 =summary
-<p>Replace a string at <code>index</code> with a substring [<code>start_offset</code>,
-<code>end_offset</code>[ of the string itself.  If the value at <code>index</code> is
+<p>Replace a string at <code>index</code> with a substring [<code>start_char_offset</code>,
+<code>end_char_offset</code>[ of the string itself.  If the value at <code>index</code> is
 not a string or the index is invalid, throws an error.</p>
 
 <p>The substring operation works with characters, not bytes, and the offsets

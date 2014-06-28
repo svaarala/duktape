@@ -86,7 +86,7 @@ index 21 -> type 8, value '0xdeadbeef'
 
 void test(duk_context *ctx) {
 	char *buf1, *buf2, *buf3;
-	int i, j, n;
+	duk_idx_t i, j, n;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -119,14 +119,15 @@ void test(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		duk_dup(ctx, i);
-		printf("index %d -> type %d, value '%s'\n", i, duk_get_type(ctx, i), duk_to_string(ctx, -1));
+		printf("index %ld -> type %d, value '%s'\n", (long) i,
+		       (int) duk_get_type(ctx, i), duk_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 
 	for (i = 0; i <= n + 1; i++) {
 		for (j = 0; j <= n + 1; j++) {
-			int idx1, idx2;
-			int eq, seq;
+			duk_idx_t idx1, idx2;
+			duk_bool_t eq, seq;
 
 			/* Note: i and j run up to 'n + 1' (invalid index) on purpose. */
 			idx1 = (i == n + 1 ? DUK_INVALID_INDEX : i);
@@ -143,16 +144,15 @@ void test(duk_context *ctx) {
 			if (idx1 == DUK_INVALID_INDEX) {
 				printf("DUK_INVALID_INDEX");
 			} else {
-				printf("%d", idx1);
+				printf("%ld", (long) idx1);
 			}
 			printf(" vs. ");
 			if (idx2 == DUK_INVALID_INDEX) {
 				printf("DUK_INVALID_INDEX");
 			} else {
-				printf("%d", idx2);
+				printf("%ld", (long) idx2);
 			}
-			printf(" -> equals=%d, strict_equals=%d\n", eq, seq);
+			printf(" -> equals=%d, strict_equals=%d\n", (int) eq, (int) seq);
 		}
 	}
 }
-

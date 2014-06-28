@@ -23,8 +23,8 @@ final top: 5
 ==> rc=1, result='Error: index out of bounds'
 ===*/
 
-void dump_stack(duk_context *ctx) {
-	int i, n;
+static void dump_stack(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	printf("[");
 	n = duk_get_top(ctx);
@@ -34,7 +34,7 @@ void dump_stack(duk_context *ctx) {
 	printf(" ]\n");
 }
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -60,82 +60,82 @@ int test_1(duk_context *ctx) {
 	duk_swap_top(ctx, 4);
 	dump_stack(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap(ctx, -1, -3);  /* second index out of bounds */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap(ctx, 6, 1);  /* first index out of bounds */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap(ctx, DUK_INVALID_INDEX, 0);  /* first index DUK_INVALID_INDEX */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_2d(duk_context *ctx) {
+static duk_ret_t test_2d(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap(ctx, 0, DUK_INVALID_INDEX);  /* second index DUK_INVALID_INDEX */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_swap_top(ctx, 0);  /* empty stack */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap_top(ctx, 2);  /* index out of bounds */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-int test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	duk_swap_top(ctx, DUK_INVALID_INDEX);  /* index is DUK_INVALID_INDEX */
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -149,4 +149,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_3b);
 	TEST_SAFE_CALL(test_3c);
 }
-

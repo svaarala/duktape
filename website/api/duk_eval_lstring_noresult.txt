@@ -9,10 +9,7 @@ void duk_eval_lstring_noresult(duk_context *ctx, const char *src, duk_size_t len
 <code><a href="#duk_eval_lstring">duk_eval_lstring()</a></code>, but leaves no
 result on the value stack.</p>
 
-<div class="note">
-With this variant, the input source code is not interned by Duktape which is
-useful in low memory environments.
-</div>
+<div include="no-string-intern.html" />
 
 =example
 const char *src = /* ... */;

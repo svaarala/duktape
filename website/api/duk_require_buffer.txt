@@ -1,5 +1,5 @@
 =proto
-void *duk_require_buffer(duk_context *ctx, int index, size_t *out_size);
+void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 
 =stack
 [ ... val! ... ]
@@ -11,10 +11,10 @@ or if the index is invalid.</p>
 
 =example
 void *ptr;
-size_t sz;
+duk_size_t sz;
 
 ptr = duk_require_buffer(ctx, &sz);
-printf("buf=%p, size=%d\n", ptr, (int) sz);
+printf("buf=%p, size=%lu\n", ptr, (unsigned long) sz);
 
 =tags
 stack

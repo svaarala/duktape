@@ -1,5 +1,5 @@
 =proto
-int duk_pcall_method(duk_context *ctx, int nargs);
+duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs);
 
 =stack
 [ ... func! this! arg! ...! argN! ] -> [ ... retval! ]  (if success, return value == 0)
@@ -19,7 +19,7 @@ stack.</p>
  * and returns 5.
  */
 
-int rc;
+duk_int_t rc;
 
 duk_push_string(ctx, "function(x,y) { print('this:', this); "
                      "print(x,y); return x+y; }");
@@ -29,7 +29,7 @@ duk_push_int(ctx, 2);
 duk_push_int(ctx, 3);
 rc = duk_pcall_method(ctx, 2);  /* [ ... func 123 2 3 ] -> [ 5 ] */
 if (rc == DUK_EXEC_SUCCESS) {
-    printf("2+3=%d\n", duk_get_int(ctx, -1));  /* prints 5 */
+    printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));  /* prints 5 */
 } else {
     printf("error: %s\n", duk_to_string(ctx, -1));
 }

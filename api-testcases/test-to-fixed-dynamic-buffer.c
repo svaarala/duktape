@@ -59,20 +59,21 @@ final top: 1
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-void dump_buffer(duk_context *ctx) {
+static void dump_buffer(duk_context *ctx) {
 	unsigned char *p;
-	size_t i, s;
+	duk_size_t i, sz;
 
-	p = (unsigned char *) duk_require_buffer(ctx, -1, &s);
-	printf("%d bytes (%s):", (int) s, duk_is_dynamic(ctx, -1) ? "dynamic" : "fixed");
-	for (i = 0; i < s; i++) {
+	p = (unsigned char *) duk_require_buffer(ctx, -1, &sz);
+	printf("%lu bytes (%s):", (unsigned long) sz,
+	       (int) duk_is_dynamic(ctx, -1) ? "dynamic" : "fixed");
+	for (i = 0; i < sz; i++) {
 		printf(" %d", (int) p[i]);
 	}
 	printf("\n");
 }
 
 /* source: dynamic buffer, target: fixed buffer */
-int test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx) {
 	unsigned char *p;
 	void *q, *r;
 	duk_size_t sz;
@@ -88,7 +89,7 @@ int test_1a(duk_context *ctx) {
 	q = duk_to_fixed_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
 	printf("p == q: %d\n", (p == q ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
 	/* second time should be a no-op */
@@ -97,12 +98,12 @@ int test_1a(duk_context *ctx) {
 	printf("q == r: %d\n", (q == r ? 1 : 0));
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* source: fixed buffer, target: dynamic buffer */
-int test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx) {
 	unsigned char *p;
 	void *q, *r;
 	duk_size_t sz;
@@ -118,7 +119,7 @@ int test_1b(duk_context *ctx) {
 	q = duk_to_dynamic_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
 	printf("p == q: %d\n", (p == q ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
 	/* second time should be a no-op */
@@ -127,12 +128,12 @@ int test_1b(duk_context *ctx) {
 	printf("q == r: %d\n", (q == r ? 1 : 0));
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* source: fixed buffer, target: fixed buffer */
-int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx) {
 	unsigned char *p;
 	void *q;
 	duk_size_t sz;
@@ -147,15 +148,15 @@ int test_2a(duk_context *ctx) {
 	q = duk_to_fixed_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
 	printf("p == q: %d\n", (p == q ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* source: dynamic buffer, target: dynamic buffer */
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	unsigned char *p;
 	void *q;
 	duk_size_t sz;
@@ -170,15 +171,15 @@ int test_2b(duk_context *ctx) {
 	q = duk_to_dynamic_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
 	printf("p == q: %d\n", (p == q ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* source: non-buffer, target: fixed buffer */
-int test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -187,15 +188,15 @@ int test_3a(duk_context *ctx) {
 
 	q = duk_to_fixed_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* source: non-buffer, target: dynamic buffer */
-int test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -204,15 +205,15 @@ int test_3b(duk_context *ctx) {
 
 	q = duk_to_dynamic_buffer(ctx, -1, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 	dump_buffer(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* invalid index, target: fixed buffer */
-int test_4a(duk_context *ctx) {
+static duk_ret_t test_4a(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -220,14 +221,14 @@ int test_4a(duk_context *ctx) {
 
 	q = duk_to_fixed_buffer(ctx, 3, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* invalid index, target: dynamic buffer */
-int test_4b(duk_context *ctx) {
+static duk_ret_t test_4b(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -235,14 +236,14 @@ int test_4b(duk_context *ctx) {
 
 	q = duk_to_dynamic_buffer(ctx, 3, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* DUK_INVALID_INDEX, target: fixed buffer */
-int test_5a(duk_context *ctx) {
+static duk_ret_t test_5a(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -250,14 +251,14 @@ int test_5a(duk_context *ctx) {
 
 	q = duk_to_fixed_buffer(ctx, DUK_INVALID_INDEX, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* DUK_INVALID_INDEX, target: dynamic buffer */
-int test_5b(duk_context *ctx) {
+static duk_ret_t test_5b(duk_context *ctx) {
 	void *q;
 	duk_size_t sz;
 
@@ -265,9 +266,9 @@ int test_5b(duk_context *ctx) {
 
 	q = duk_to_dynamic_buffer(ctx, DUK_INVALID_INDEX, &sz);
 	printf("q is NULL: %d\n", (q == NULL ? 1 : 0));
-	printf("sz=%d\n", (int) sz);
+	printf("sz=%lu\n", (unsigned long) sz);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 

@@ -40,8 +40,8 @@ index 0 OK
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static duk_ret_t test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	duk_set_top(ctx, 0);
 	duk_push_true(ctx);
@@ -56,69 +56,72 @@ int test_1(duk_context *ctx) {
 	duk_push_thread(ctx);
 
 	n = duk_get_top(ctx);
-	printf("top: %d\n", n);
+	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		int t;
+		duk_int_t t;
 		duk_to_object(ctx, i);
 		t = duk_get_type(ctx, i);
 		duk_to_string(ctx, i);
-		printf("index %d, type: %d, string coerced: %s\n", i, t, duk_to_string(ctx, i));
+		printf("index %ld, type: %ld, string coerced: %s\n",
+		       (long) i, (long) t, duk_to_string(ctx, i));
 	}
 
 	return 0;
 }
 
-/* non-coercible types */
-int test_2a(duk_context *ctx) {
+/* Non-coercible types */
+static duk_ret_t test_2a(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2c(duk_context *ctx) {
+
+/* Buffers and pointers are coercible */
+static duk_ret_t test_2c(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_fixed_buffer(ctx, 0);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2d(duk_context *ctx) {
+static duk_ret_t test_2d(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_fixed_buffer(ctx, 1024);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2e(duk_context *ctx) {
+static duk_ret_t test_2e(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_dynamic_buffer(ctx, 0);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2f(duk_context *ctx) {
+static duk_ret_t test_2f(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2g(duk_context *ctx) {
+static duk_ret_t test_2g(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_pointer(ctx, (void *) NULL);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;
 }
-int test_2h(duk_context *ctx) {
+static duk_ret_t test_2h(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_pointer(ctx, (void *) 0xdeadbeef);
 	duk_to_object(ctx, 0);
@@ -126,14 +129,14 @@ int test_2h(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_boolean(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_to_boolean(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");

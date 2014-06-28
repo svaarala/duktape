@@ -34,12 +34,12 @@ req_norm_idx: top 3 after popping arg
 idx=5 -> duk_require_normalize_index -> Error: invalid index
 ===*/
 
-int req_norm_idx(duk_context *ctx) {
-	int idx = duk_get_int(ctx, -1);
-	int norm_idx;
+static duk_ret_t req_norm_idx(duk_context *ctx) {
+	duk_idx_t idx = (duk_idx_t) duk_get_int(ctx, -1);
+	duk_idx_t norm_idx;
 
 	duk_pop(ctx);
-	printf("req_norm_idx: top %d after popping arg\n", duk_get_top(ctx));
+	printf("req_norm_idx: top %ld after popping arg\n", (long) duk_get_top(ctx));
 
 	norm_idx = duk_require_normalize_index(ctx, idx);
 	duk_push_int(ctx, norm_idx);
@@ -47,8 +47,7 @@ int req_norm_idx(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	int idx;
-	int norm_idx;
+	duk_idx_t idx, norm_idx;
 
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
@@ -57,17 +56,18 @@ void test(duk_context *ctx) {
 	for (idx = -5; idx <= 5; idx++) {
 		norm_idx = duk_normalize_index(ctx, idx);
 		if (norm_idx == DUK_INVALID_INDEX) {
-			printf("top=%d, idx=%d, duk_normalize_index -> DUK_INVALID_INDEX\n", duk_get_top(ctx), idx);
+			printf("top=%ld, idx=%ld, duk_normalize_index -> DUK_INVALID_INDEX\n",
+			       (long) duk_get_top(ctx), (long) idx);
 		} else {
-			printf("top=%d, idx=%d, duk_normalize_index -> %d\n", duk_get_top(ctx), idx, norm_idx);
+			printf("top=%ld, idx=%ld, duk_normalize_index -> %ld\n",
+			       (long) duk_get_top(ctx), (long) idx, (long) norm_idx);
 		}
 	}
 
 	for (idx = -5; idx <= 5; idx++) {
 		duk_push_int(ctx, idx);
 		duk_safe_call(ctx, req_norm_idx, 1, 1);
-		printf("idx=%d -> duk_require_normalize_index -> %s\n", idx, duk_to_string(ctx, -1));
+		printf("idx=%ld -> duk_require_normalize_index -> %s\n", (long) idx, duk_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 }
-

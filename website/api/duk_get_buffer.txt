@@ -1,5 +1,5 @@
 =proto
-void *duk_get_buffer(duk_context *ctx, int index, size_t *out_size);
+void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 
 =stack
 [ ... val! ... ]
@@ -22,10 +22,10 @@ it is also possible that a non-<code>NULL</code> pointer is returned).
 
 =example
 void *ptr;
-size_t sz;
+duk_size_t sz;
 
 ptr = duk_get_buffer(ctx, &sz);
-printf("buf=%p, size=%d\n", ptr, (int) sz);
+printf("buf=%p, size=%lu\n", ptr, (unsigned long) sz);
 
 =tags
 stack

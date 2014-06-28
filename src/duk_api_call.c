@@ -9,9 +9,9 @@
 /* Prepare value stack for a method call through an object property.
  * May currently throw an error e.g. when getting the property.
  */
-static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index, int nargs) {
+static void duk__call_prop_prep_stack(duk_context *ctx, duk_idx_t normalized_obj_index, duk_idx_t nargs) {
 	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
-	                     normalized_obj_index, nargs, duk_get_top(ctx)));
+	                     normalized_obj_index, (int) nargs, (int) duk_get_top(ctx)));
 
 	/* [... key arg1 ... argN] */
 
@@ -33,11 +33,11 @@ static void duk__call_prop_prep_stack(duk_context *ctx, int normalized_obj_index
 	/* [... func this arg1 ... argN] */
 }
 
-void duk_call(duk_context *ctx, int nargs) {
+void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int call_flags;
-	int idx_func;
-	int rc;
+	duk_small_int_t call_flags;
+	duk_idx_t idx_func;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -60,11 +60,11 @@ void duk_call(duk_context *ctx, int nargs) {
 	DUK_UNREF(rc);
 }
 
-void duk_call_method(duk_context *ctx, int nargs) {
+void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int call_flags;
-	int idx_func;
-	int rc;
+	duk_small_int_t call_flags;
+	duk_idx_t idx_func;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -83,7 +83,7 @@ void duk_call_method(duk_context *ctx, int nargs) {
 	DUK_UNREF(rc);
 }
 
-void duk_call_prop(duk_context *ctx, int obj_index, int nargs) {
+void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs) {
 	/*
 	 *  XXX: if duk_handle_call() took values through indices, this could be
 	 *  made much more sensible.  However, duk_handle_call() needs to fudge
@@ -98,11 +98,11 @@ void duk_call_prop(duk_context *ctx, int obj_index, int nargs) {
 	duk_call_method(ctx, nargs);
 }
 
-int duk_pcall(duk_context *ctx, int nargs) {
+duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int call_flags;
-	int idx_func;
-	int rc;
+	duk_small_int_t call_flags;
+	duk_idx_t idx_func;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -136,11 +136,11 @@ int duk_pcall(duk_context *ctx, int nargs) {
 	return rc;
 }
 
-int duk_pcall_method(duk_context *ctx, int nargs) {
+duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int call_flags;
-	int idx_func;
-	int rc;
+	duk_small_int_t call_flags;
+	duk_idx_t idx_func;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -161,16 +161,16 @@ int duk_pcall_method(duk_context *ctx, int nargs) {
 	return rc;
 }
 
-static int duk__pcall_prop_raw(duk_context *ctx) {
-	int obj_index;
-	int nargs;
+static duk_ret_t duk__pcall_prop_raw(duk_context *ctx) {
+	duk_idx_t obj_index;
+	duk_idx_t nargs;
 
 	/* Get the original arguments.  Note that obj_index may be a relative
 	 * index so the stack must have the same top when we use it.
 	 */
 
-	obj_index = duk_get_int(ctx, -2);
-	nargs = duk_get_int(ctx, -1);
+	obj_index = (duk_idx_t) duk_get_int(ctx, -2);
+	nargs = (duk_idx_t) duk_get_int(ctx, -1);
 	duk_pop_2(ctx);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
@@ -179,13 +179,13 @@ static int duk__pcall_prop_raw(duk_context *ctx) {
 	return 1;
 }
 
-int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
+duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs) {
 	/*
 	 *  Must be careful to catch errors related to value stack manipulation
 	 *  and property lookup, not just the call itself.
 	 */
 
-	duk_push_int(ctx, obj_index);
+	duk_push_int(ctx, obj_index);  /* FIXME: typing */
 	duk_push_int(ctx, nargs);
 
 	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing.
@@ -195,9 +195,9 @@ int duk_pcall_prop(duk_context *ctx, int obj_index, int nargs) {
 	return duk_safe_call(ctx, duk__pcall_prop_raw, nargs + 1 + 2 /*nargs*/, 1 /*nrets*/);
 }
 
-int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int nrets) {
+duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_idx_t nargs, duk_idx_t nrets) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int rc;
+	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -216,7 +216,7 @@ int duk_safe_call(duk_context *ctx, duk_safe_call_function func, int nargs, int 
 	return rc;
 }
 
-void duk_new(duk_context *ctx, int nargs) {
+void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	/*
 	 *  There are two [[Construct]] operations in the specification:
 	 *
@@ -257,9 +257,9 @@ void duk_new(duk_context *ctx, int nargs) {
 	duk_hobject *proto;
 	duk_hobject *cons;
 	duk_hobject *fallback;
-	int idx_cons;
-	int call_flags;
-	int rc;
+	duk_idx_t idx_cons;
+	duk_small_int_t call_flags;
+	duk_int_t rc;
 
 	/* [... constructor arg1 ... argN] */
 
@@ -387,7 +387,7 @@ void duk_new(duk_context *ctx, int nargs) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not constructable");
 }
 
-int duk_is_constructor_call(duk_context *ctx) {
+duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 
@@ -403,7 +403,7 @@ int duk_is_constructor_call(duk_context *ctx) {
 	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
 }
 
-int duk_is_strict_call(duk_context *ctx) {
+duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 
@@ -423,7 +423,7 @@ int duk_is_strict_call(duk_context *ctx) {
  *  Duktape/C function magic
  */
 
-int duk_get_magic(duk_context *ctx) {
+duk_int_t duk_get_magic(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *func;

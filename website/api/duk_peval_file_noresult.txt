@@ -9,6 +9,8 @@ duk_int_t duk_peval_file_noresult(duk_context *ctx, const char *path);
 <code><a href="#duk_peval_file">duk_peval_file()</a></code>, but leaves no
 result on the value stack.</p>
 
+<div include="path-encoding.html" />
+
 =example
 if (duk_peval_file_noresult(ctx, "test.js") != 0) {
     printf("eval failed\n");

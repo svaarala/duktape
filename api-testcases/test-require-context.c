@@ -11,7 +11,7 @@ still here
 ==> rc=1, result='TypeError: incorrect type, expected tag 6'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	duk_set_top(ctx, 0);
@@ -34,7 +34,7 @@ int test_1(duk_context *ctx) {
 	return 0;
 }
 
-int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	/* non-thread value */
@@ -45,7 +45,7 @@ int test_2(duk_context *ctx) {
 	return 0;
 }
 
-int test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	/* invalid index */
@@ -56,7 +56,7 @@ int test_3(duk_context *ctx) {
 	return 0;
 }
 
-int test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx) {
 	duk_context *new_ctx;
 
 	/* invalid index */

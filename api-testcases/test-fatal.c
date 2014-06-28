@@ -10,7 +10,7 @@ void my_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
 	exit(0);
 }
 
-int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
 	printf("my_func\n");
 	duk_fatal(ctx, 123456, "reason");
 	printf("never here\n");

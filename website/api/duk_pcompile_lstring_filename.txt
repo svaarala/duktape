@@ -1,5 +1,5 @@
 =proto
-duk_int_t duk_pcompile_lstring_filename(duk_context *ctx, duk_int_t flags, const char *src, duk_size_t len);
+duk_int_t duk_pcompile_lstring_filename(duk_context *ctx, duk_uint_t flags, const char *src, duk_size_t len);
 
 =stack
 [ ... filename! ] -> [ ... function! ]  (if success, return value == 0)
@@ -10,10 +10,7 @@ duk_int_t duk_pcompile_lstring_filename(duk_context *ctx, duk_int_t flags, const
 <code><a href="#duk_pcompile">duk_pcompile()</a></code>, but the compile input
 is given as a C string with explicit length.</p>
 
-<div class="note">
-With this variant, the input source code is not interned by Duktape which is
-useful in low memory environments.
-</div>
+<div include="no-string-intern.html" />
 
 =example
 const char *src = /* ... */;

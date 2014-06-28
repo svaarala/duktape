@@ -1,4 +1,5 @@
 /*===
+*** test_1 (duk_safe_call)
 top=4
 duk_safe_to_string[0] = '123'
 top=4
@@ -31,7 +32,7 @@ top=4
 duk_safe_to_lstring[2] = 'Error: toString error', len 21
 top=4
 duk_safe_to_lstring[3] = 'Error', len 5
-rc=0, result=undefined
+==> rc=0, result='undefined'
 ===*/
 
 static void init_test_values(duk_context *ctx) {
@@ -54,15 +55,15 @@ static void init_test_values(duk_context *ctx) {
 	/* FIXME: add an infinite loop and timeout case */
 }
 
-int test_1(duk_context *ctx) {
-	int i, n;
+static int test_1(duk_context *ctx) {
+	duk_idx_t i, n;
 
 	/* duk_safe_to_string() */
 	init_test_values(ctx);
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
-		printf("top=%d\n", duk_get_top(ctx));
-		printf("duk_safe_to_string[%d] = '%s'\n", i, duk_safe_to_string(ctx, i));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
+		printf("duk_safe_to_string[%ld] = '%s'\n", (long) i, duk_safe_to_string(ctx, i));
 	}
 
 	/* duk_safe_to_lstring() with NULL arg */
@@ -70,9 +71,9 @@ int test_1(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		const char *str;
-		printf("top=%d\n", duk_get_top(ctx));
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, i, NULL);
-		printf("duk_safe_to_lstring_null[%d] = '%s'\n", i, str);
+		printf("duk_safe_to_lstring_null[%ld] = '%s'\n", (long) i, str);
 	}
 
 	/* duk_safe_to_lstring() */
@@ -80,10 +81,10 @@ int test_1(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		const char *str;
-		size_t len;
-		printf("top=%d\n", duk_get_top(ctx));
+		duk_size_t len;
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, i, &len);
-		printf("duk_safe_to_lstring[%d] = '%s', len %d\n", i, str, (int) len);
+		printf("duk_safe_to_lstring[%ld] = '%s', len %lu\n", (long) i, str, (unsigned long) len);
 	}
 
 	/* duk_safe_to_lstring() with negative stack indices */
@@ -91,20 +92,15 @@ int test_1(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
 		const char *str;
-		size_t len;
-		printf("top=%d\n", duk_get_top(ctx));
+		duk_size_t len;
+		printf("top=%ld\n", (long) duk_get_top(ctx));
 		str = duk_safe_to_lstring(ctx, -4 + i, &len);
-		printf("duk_safe_to_lstring[%d] = '%s', len %d\n", i, str, (int) len);
+		printf("duk_safe_to_lstring[%ld] = '%s', len %lu\n", (long) i, str, (unsigned long) len);
 	}
 
 	return 0;
 }
 
 void test(duk_context *ctx) {
-	int rc;
-
-	rc = duk_safe_call(ctx, test_1, 0, 1);
-	printf("rc=%d, result=%s\n", rc, duk_to_string(ctx, -1));
-	duk_pop(ctx);
+	TEST_SAFE_CALL(test_1);
 }
-

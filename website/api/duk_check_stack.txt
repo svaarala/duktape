@@ -1,13 +1,13 @@
 =proto
-int duk_check_stack(duk_context *ctx, unsigned int extra);
+duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra);
 
 =summary
 <p>Ensure that the value stack has at least <code>extra</code> reserved
-(allocated) elements for caller's use.  Returns 1 if successful, 0
-otherwise.  If the call is successful, the caller is guaranteed that
-<code>extra</code> elements can be pushed to the value stack without a
-value stack related error (other errors like out-of-memory can still
-occur).  The caller MUST NOT rely on being able to push more than
+(allocated) elements for caller's use, relative to the current stack top.
+Returns 1 if successful, 0 otherwise.  If the call is successful, the caller
+is guaranteed that <code>extra</code> elements can be pushed to the value
+stack without a value stack related error (other errors like out-of-memory
+can still occur).  The caller MUST NOT rely on being able to push more than
 <code>extra</code> values; although this is possible, such elements are
 reserved for Duktape's internal use.</p>
 
@@ -39,9 +39,7 @@ cannot be extended, there is almost never a useful recovery strategy except
 to throw an error and unwind.</p>
 
 =example
-int nargs;
-
-nargs = duk_get_top(ctx);  /* number or arguments */
+duk_idx_t nargs = duk_get_top(ctx);  /* number or arguments */
 
 /* reserve space for one temporary for each input argument */
 if (!duk_check_stack(ctx, nargs * 2)) {

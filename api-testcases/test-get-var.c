@@ -30,8 +30,8 @@ strict: 1
 ===*/
 
 /* existing property */
-int test_1(duk_context *ctx) {
-	printf("strict: %d\n", duk_is_strict_call(ctx));
+static duk_ret_t test_1(duk_context *ctx) {
+	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
 
@@ -41,13 +41,13 @@ int test_1(duk_context *ctx) {
 	printf("Math.PI = %s\n", duk_to_string(ctx, -1));
 	duk_pop_2(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* nonexistent -> throw, even in non-strict mode */
-int test_2(duk_context *ctx) {
-	printf("strict: %d\n", duk_is_strict_call(ctx));
+static duk_ret_t test_2(duk_context *ctx) {
+	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
 
@@ -56,13 +56,13 @@ int test_2(duk_context *ctx) {
 	printf("value=%s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* Variable name is not a string */
-int test_3(duk_context *ctx) {
-	printf("strict: %d\n", duk_is_strict_call(ctx));
+static duk_ret_t test_3(duk_context *ctx) {
+	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
 
@@ -70,13 +70,13 @@ int test_3(duk_context *ctx) {
 	duk_get_var(ctx);
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
 /* Value stack is empty (no varname at all) */
-int test_4(duk_context *ctx) {
-	printf("strict: %d\n", duk_is_strict_call(ctx));
+static duk_ret_t test_4(duk_context *ctx) {
+	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
 	duk_set_top(ctx, 0);
 
@@ -84,7 +84,7 @@ int test_4(duk_context *ctx) {
 	duk_get_var(ctx);
 	duk_pop(ctx);
 
-	printf("final top: %d\n", duk_get_top(ctx));
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
@@ -98,4 +98,3 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_4);
 	TEST_PCALL(test_4);
 }
-
