@@ -1,5 +1,5 @@
 =proto
-void duk_new(duk_context *ctx, duk_int_t nargs);
+void duk_new(duk_context *ctx, duk_idx_t nargs);
 
 =stack
 [ ... constructor! arg1! ...! argN! ] -> [ ... retval! ]

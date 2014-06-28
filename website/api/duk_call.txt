@@ -1,5 +1,5 @@
 =proto
-void duk_call(duk_context *ctx, duk_int_t nargs);
+void duk_call(duk_context *ctx, duk_idx_t nargs);
 
 =stack
 [ ... func! arg1! ...! argN! ] -> [ ... retval! ]

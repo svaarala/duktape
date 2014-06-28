@@ -1,5 +1,5 @@
 =proto
-void duk_xmove(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t to_idx, duk_idx_t from_idx, duk_uint_t count);
+void duk_xmove(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t to_idx, duk_idx_t from_idx, duk_idx_t count);
 
 =stack
 [ ... val1(from_idx)! ...! valN! ... ] -> [ ... ]  (on source stack, from_ctx)
