@@ -98,6 +98,8 @@ for i in	\
 	duk_debug_hobject.c	\
 	duk_debug_macros.c	\
 	duk_debug_vsnprintf.c	\
+	duk_errmsg.c		\
+	duk_errmsg.h		\
 	duk_error_augment.c	\
 	duk_error.h		\
 	duk_error_longjmp.c	\
