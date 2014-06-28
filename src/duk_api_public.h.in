@@ -337,7 +337,7 @@ void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
 duk_idx_t duk_push_object(duk_context *ctx);
 duk_idx_t duk_push_array(duk_context *ctx);
-duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_int_t nargs);
+duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_idx_t nargs);
 duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags);
 
 #define duk_push_thread(ctx) \

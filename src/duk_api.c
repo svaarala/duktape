@@ -2872,7 +2872,7 @@ duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	return ret;
 }
 
-static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_int_t nargs, duk_uint32_t flags) {
+static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint32_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hnativefunction *obj;
 	duk_idx_t ret;
