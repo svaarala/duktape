@@ -1983,7 +1983,7 @@ void duk_to_object(duk_context *ctx, duk_idx_t index) {
  *  Type checking
  */
 
-static duk_bool_t duk__tag_check(duk_context *ctx, duk_idx_t index, duk_int_t tag) {
+static duk_bool_t duk__tag_check(duk_context *ctx, duk_idx_t index, duk_small_uint_t tag) {
 	duk_tval *tv;
 
 	tv = duk_get_tval(ctx, index);
