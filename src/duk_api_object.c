@@ -249,7 +249,7 @@ duk_bool_t duk_has_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_
  * not invoked by this method.  The caller must be careful to invoke any such
  * behaviors if necessary.
  */
-void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t desc_flags) {
+void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_small_uint_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -267,7 +267,7 @@ void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t desc_fl
 	duk_pop(ctx);  /* pop key */
 }
 
-void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index, duk_small_int_t desc_flags) {
+void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index, duk_small_uint_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 
@@ -280,7 +280,7 @@ void duk_def_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr
 	/* value popped by call */
 }
 
-void duk_def_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t desc_flags) {
+void duk_def_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_uint_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -299,7 +299,7 @@ void duk_def_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t 
 	/* value popped by call */
 }
 
-void duk_def_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t builtin_idx, duk_small_int_t desc_flags) {
+void duk_def_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t builtin_idx, duk_small_uint_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -325,7 +325,7 @@ void duk_def_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_index, duk_smal
  * object creation code, function instance creation code, and Function.prototype.bind().
  */
 
-void duk_def_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_int_t desc_flags) {
+void duk_def_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx, duk_small_uint_t desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj = duk_require_hobject(ctx, obj_index);
 	duk_hobject *thrower = thr->builtins[DUK_BIDX_TYPE_ERROR_THROWER];
@@ -354,7 +354,7 @@ void duk_compact(duk_context *ctx, duk_idx_t obj_index) {
 
 /* FIXME: the duk_hobject_enum.c stack APIs should be reworked */
 
-void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_int_t enum_flags) {
+void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags) {
 	DUK_ASSERT(ctx != NULL);
 
 	duk_require_hobject(ctx, obj_index);

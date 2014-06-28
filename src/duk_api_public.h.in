@@ -232,7 +232,7 @@ void *duk_alloc(duk_context *ctx, duk_size_t size);
 void duk_free(duk_context *ctx, void *ptr);
 void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
 void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
-void duk_gc(duk_context *ctx, duk_int_t flags);
+void duk_gc(duk_context *ctx, duk_uint_t flags);
 
 /*
  *  Error handling
@@ -321,7 +321,7 @@ void duk_push_nan(duk_context *ctx);
 void duk_push_int(duk_context *ctx, duk_int_t val);
 void duk_push_uint(duk_context *ctx, duk_uint_t val);
 const char *duk_push_string(duk_context *ctx, const char *str);
-const char *duk_push_string_file(duk_context *ctx, const char *path);  /* FIXME: wide char paths? path encoding? */
+const char *duk_push_string_file(duk_context *ctx, const char *path);
 const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
 void duk_push_pointer(duk_context *ctx, void *p);
 const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
@@ -338,7 +338,7 @@ void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 duk_idx_t duk_push_object(duk_context *ctx);
 duk_idx_t duk_push_array(duk_context *ctx);
 duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_int_t nargs);
-duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_int_t flags);  /* FIXME: flag field typing? duk_uint_t? */
+duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags);
 
 #define duk_push_thread(ctx) \
 	duk_push_thread_raw((ctx), 0 /*flags*/)
@@ -557,7 +557,7 @@ duk_bool_t duk_has_var(duk_context *ctx);
  */
 
 void duk_compact(duk_context *ctx, duk_idx_t obj_index);
-void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_int_t enum_flags);
+void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags);
 duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_bool_t get_value);
 
 /*
@@ -607,8 +607,8 @@ duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_int_t
  *  Compilation and evaluation
  */
 
-duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags);
-duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags);
+duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags);
+duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags);
 
 /* plain */
 #define duk_eval(ctx)  \

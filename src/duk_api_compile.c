@@ -8,12 +8,12 @@ typedef struct duk__compile_raw_args duk__compile_raw_args;
 struct duk__compile_raw_args {
 	duk_size_t src_length;  /* should be first on 64-bit platforms */
 	const duk_uint8_t *src_buffer;
-	duk_int_t flags;
+	duk_uint_t flags;
 };
 
 /* Eval is just a wrapper now. */
-duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags) {
-	duk_int_t comp_flags;
+duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
+	duk_uint_t comp_flags;
 	duk_int_t rc;
 
 	/* [ ... source? filename ] (depends on flags) */
@@ -53,7 +53,7 @@ duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_
 static duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__compile_raw_args *comp_args;
-	duk_int_t flags;
+	duk_uint_t flags;
 	duk_small_int_t comp_flags;
 	duk_hcompiledfunction *h_templ;
 
@@ -117,7 +117,7 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	return 1;
 }
 
-duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_int_t flags) {
+duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 
