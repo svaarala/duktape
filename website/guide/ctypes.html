@@ -22,34 +22,39 @@ arithmetic.</p>
 <h2>Guidelines for code using the Duktape API</h2>
 
 <ul>
+
 <li>Use Duktape types such as <code>duk_idx_t</code> and <code>duk_ret_t</code>
-    (described below) when declaring variables for maximum portability.  Alternatively
-    you may use plain types (like <code>long</code>) but your code will be less portable
-    and you may need to use casts to avoid warnings.  Note that <code>long</code> is a
-    better default integer type than <code>int</code>, because <code>int</code> may be
-    only 16 bits wide on some platforms.</li>
+(described below) when declaring variables for maximum portability.  Alternatively
+you may use plain types (like <code>long</code>) but your code will be less portable
+and you may need to use casts to avoid warnings.  Note that <code>long</code> is a
+better default integer type than <code>int</code>, because <code>int</code> may be
+only 16 bits wide on some platforms.</li>
+
 <li>Duktape types like <code>duk_int_t</code> have been chosen to be the most
-    convenient (or fastest) types for the compiler.  If you're using them in
-    structs whose footprint matters, you may want to use other C types; remember
-    to check / cast accordingly.</li>
+convenient (or fastest) types for the compiler.  If you're using them in
+structs whose footprint matters, you may want to use other C types; remember
+to check / cast accordingly.</li>
+
 <li>In <code>printf()</code> formatting cast Duktape types to a wide integer
-    type and use a standard format specific to ensure that the type and the
-    specifier always match.  For integers, <code>long</code> and <code>unsigned long</code>
-    are usually a good choice because they don't require C99/C++11 and can usually
-    hold all integer values used by Duktape typedefs.  For example:
-    <pre class="c-code">
-    printf("Result: %ld\n", (long) duk_get_int(ctx, -3));
-    </pre>
-    </li>
+type and use a standard format specific to ensure that the type and the
+specifier always match.  For integers, <code>long</code> and <code>unsigned long</code>
+are usually a good choice because they don't require C99/C++11 and can usually
+hold all integer values used by Duktape typedefs.  For example:
+<pre class="c-code">
+printf("Result: %ld\n", (long) duk_get_int(ctx, -3));
+</pre>
+</li>
+
 <li>Duktape API calls which support ANSI C format strings simply pass on the
-    format string and call arguments to the platform's <code>vsnprintf()</code>
-    function.  To maximize portability, select format specifiers carefully and
-    cast arguments to ensure types match.  For example:
-    <pre class="c-code">
-    duk_int_t val = 123;
-    duk_push_sprintf(ctx, "My integer: %ld", (long) val);
-    </pre>
-    </li>
+format string and call arguments to the platform's <code>vsnprintf()</code>
+function.  To maximize portability, select format specifiers carefully and
+cast arguments to ensure types match.  For example:
+<pre class="c-code">
+duk_int_t val = 123;
+duk_push_sprintf(ctx, "My integer: %ld", (long) val);
+</pre>
+</li>
+
 <li>A few standard format specifiers:
     <ul>
     <li><code>long</code>: <code>%ld</code></li>
@@ -60,31 +65,35 @@ arithmetic.</p>
     <li><code>intmax_t</code>: <code>%jd</code> (C99)</li>
     <li><code>uintmax_t</code>: <code>%ju</code> (C99)</li>
     </ul>
-    </li>
+</li>
+
 <li>Format specifiers used by <code>printf()</code> and <code>scanf()</code>
-    may be different.  For <code>scanf()</code>, use a standard type and a
-    standard format code (so that you can be certain they match), then cast
-    to a Duktape type as necessary.  Again, <code>long</code> and <code>unsigned long</code>
-    are a good default choice.  For example:
-    <pre class="c-code">
-    long val;
-    sscanf(my_str, "%ld", &amp;val);
-    duk_push_int(ctx, (duk_int_t) val);
-    </pre>
-    </li>
+may be different.  For <code>scanf()</code>, use a standard type and a
+standard format code (so that you can be certain they match), then cast
+to a Duktape type as necessary.  Again, <code>long</code> and <code>unsigned long</code>
+are a good default choice.  For example:
+<pre class="c-code">
+long val;
+sscanf(my_str, "%ld", &amp;val);
+duk_push_int(ctx, (duk_int_t) val);
+</pre>
+</li>
+
 <li>Use the <code>L</code> (or <code>UL</code>) suffix for constants which
-    are larger than 16 bits to maximize portability.  Like the <code>int</code>
-    type, integer constants without a suffix are only guaranteed to be 16 bits
-    wide.  With the <code>L</code> suffix constants are guaranteed to be at least
-    32 bits wide.  Example:
-    <pre class="c-code">
-    duk_push_int(ctx, 1234567L);
-    </pre>
-    </li>
+are larger than 16 bits to maximize portability.  Like the <code>int</code>
+type, integer constants without a suffix are only guaranteed to be 16 bits
+wide.  With the <code>L</code> suffix constants are guaranteed to be at least
+32 bits wide.  Example:
+<pre class="c-code">
+duk_push_int(ctx, 1234567L);
+</pre>
+</li>
+
 <li>Duktape API calls with a filesystem path argument simply pass the
-    path to <code>fopen()</code>.  There is no way to specify an encoding
-    or support a wide character set.  To do that, you need to implement a
-    platform specific helper yourself.</li>
+path to <code>fopen()</code>.  There is no way to specify an encoding
+or support a wide character set.  To do that, you need to implement a
+platform specific helper yourself.</li>
+
 </ul>
 
 <h2>Wrapped types used in the Duktape API</h2>
