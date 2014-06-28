@@ -24,6 +24,7 @@ new_ctx = duk_get_context(ctx, thr_idx);
 
 =tags
 stack
+thread
 
 =seealso
 duk_push_thread

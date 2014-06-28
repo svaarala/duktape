@@ -22,3 +22,4 @@ duk_push_thread(ctx);
 =tags
 stack
 function
+thread

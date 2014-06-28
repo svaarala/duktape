@@ -22,6 +22,7 @@ stack
 stash
 object
 module
+thread
 
 =seealso
 duk_push_heap_stash
