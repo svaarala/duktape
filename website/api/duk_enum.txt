@@ -1,5 +1,5 @@
 =proto
-void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_int_t enum_flags);
+void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags);
 
 =stack
 [ ... obj! ... ] -> [ ... obj! ... enum! ]

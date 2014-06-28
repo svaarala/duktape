@@ -13,7 +13,7 @@ of the caller.</p>
 
 <p>This is essentially a shortcut for:</p>
 <pre class="c-code">
-duk_int_t flags = DUK_COMPILE_EVAL;
+duk_uint_t flags = DUK_COMPILE_EVAL;
 if (duk_is_strict_call(ctx)) {
     flags |= DUK_COMPILE_STRICT;
 }

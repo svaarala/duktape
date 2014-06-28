@@ -1,5 +1,5 @@
 =proto
-duk_int_t duk_pcompile_string(duk_context *ctx, duk_int_t flags, const char *src);
+duk_int_t duk_pcompile_string(duk_context *ctx, duk_uint_t flags, const char *src);
 
 =stack
 [ ... ] -> [ ... function! ]  (if success, return value == 0)

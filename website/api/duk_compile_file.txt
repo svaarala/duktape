@@ -1,5 +1,5 @@
 =proto
-void duk_compile_file(duk_context *ctx, duk_int_t flags, const char *path);
+void duk_compile_file(duk_context *ctx, duk_uint_t flags, const char *path);
 
 =stack
 [ ... ] -> [ ... function! ]
