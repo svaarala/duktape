@@ -280,7 +280,7 @@ void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	const duk_uint8_t *str;
 	duk_size_t len;
 	duk_size_t i;
-	duk_uint_fast8_t t;
+	duk_small_int_t t;
 	duk_uint8_t *buf;
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
