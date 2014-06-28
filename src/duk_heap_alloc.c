@@ -408,16 +408,20 @@ static void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_int_least16_t);
 	DUK__DUMPSZ(duk_uint_least32_t);
 	DUK__DUMPSZ(duk_int_least32_t);
+#if defined(DUK_USE_64BIT_OPS)
 	DUK__DUMPSZ(duk_uint_least64_t);
 	DUK__DUMPSZ(duk_int_least64_t);
+#endif
 	DUK__DUMPSZ(duk_uint_fast8_t);
 	DUK__DUMPSZ(duk_int_fast8_t);
 	DUK__DUMPSZ(duk_uint_fast16_t);
 	DUK__DUMPSZ(duk_int_fast16_t);
 	DUK__DUMPSZ(duk_uint_fast32_t);
 	DUK__DUMPSZ(duk_int_fast32_t);
+#if defined(DUK_USE_64BIT_OPS)
 	DUK__DUMPSZ(duk_uint_fast64_t);
 	DUK__DUMPSZ(duk_int_fast64_t);
+#endif
 	DUK__DUMPSZ(duk_uintptr_t);
 	DUK__DUMPSZ(duk_intptr_t);
 	DUK__DUMPSZ(duk_uintmax_t);
