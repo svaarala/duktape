@@ -5,7 +5,7 @@
 #ifndef DUK_LEXER_H_INCLUDED
 #define DUK_LEXER_H_INCLUDED
 
-typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepoint_t r2, int direct);
+typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct);
 
 /*
  *  A token is interpreted as any possible production of InputElementDiv
@@ -350,28 +350,28 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 
 /* A token value.  Can be memcpy()'d, but note that slot1/slot2 values are on the valstack. */
 struct duk_token {
-	int t;                  /* token type (with reserved word identification) */
-	int t_nores;            /* token type (with reserved words as DUK_TOK_IDENTIFER) */
-	double num;             /* numeric value of token */
-	duk_hstring *str1;      /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
-	duk_hstring *str2;      /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
-	int num_escapes;        /* number of escapes and line continuations (for directive prologue) */
-	int start_line;         /* start line of token (first char) */
-	int end_line;           /* end line of token (char after last token char) */
-	int start_offset;	/* start byte offset of token in lexer input */
-	int lineterm;           /* token was preceded by a lineterm */
-	int allow_auto_semi;    /* token allows automatic semicolon insertion (eof or preceded by newline) */
+	duk_small_int_t t;            /* token type (with reserved word identification) */
+	duk_small_int_t t_nores;      /* token type (with reserved words as DUK_TOK_IDENTIFER) */
+	duk_double_t num;             /* numeric value of token */
+	duk_hstring *str1;            /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
+	duk_hstring *str2;            /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
+	duk_size_t start_offset;      /* start byte offset of token in lexer input */
+	duk_int_t start_line;         /* start line of token (first char) */
+	duk_int_t end_line;           /* end line of token (char after last token char) */
+	duk_int_t num_escapes;        /* number of escapes and line continuations (for directive prologue) */
+	duk_bool_t lineterm;          /* token was preceded by a lineterm */
+	duk_bool_t allow_auto_semi;   /* token allows automatic semicolon insertion (eof or preceded by newline) */
 };
 
 #define DUK_RE_QUANTIFIER_INFINITE         ((duk_uint32_t) 0xffffffffUL)
 
 /* A regexp token value. */
 struct duk_re_token {
-	int t;                  /* token type */
-	duk_uint32_t num;       /* numeric value (character, count) */
-	duk_uint32_t qmin;
-	duk_uint32_t qmax;
-	int greedy;
+	duk_small_int_t t;           /* token type */
+	duk_small_int_t greedy;
+	duk_uint_fast32_t num;       /* numeric value (character, count) */
+	duk_uint_fast32_t qmin;
+	duk_uint_fast32_t qmax;
 };
 
 /* A structure for 'snapshotting' a point for rewinding */
@@ -382,23 +382,23 @@ struct duk_lexer_point {
 
 /* Lexer context.  Same context is used for Ecmascript and Regexp parsing. */
 struct duk_lexer_ctx {
-	duk_hthread *thr;                       /* thread; minimizes argument passing */
+	duk_hthread *thr;                              /* thread; minimizes argument passing */
 
-	const duk_uint8_t *input;
-	duk_size_t input_length;
-	duk_size_t input_offset;                /* input offset for window leading edge (not window[0]) */
-	int window[DUK_LEXER_WINDOW_SIZE];      /* window of unicode code points */
-	int offsets[DUK_LEXER_WINDOW_SIZE];     /* input byte offset for each char */
-	int lines[DUK_LEXER_WINDOW_SIZE];       /* input lines for each char */
-	duk_int_t input_line;                   /* input linenumber at input_offset (not window[0]), init to 1 */
+	const duk_uint8_t *input;                      /* input string (may be a user pointer) */
+	duk_size_t input_length;                       /* input byte length */
+	duk_size_t input_offset;                       /* input offset for window leading edge (not window[0]) */
 
-	int slot1_idx;                          /* valstack slot for 1st token value */
-	int slot2_idx;                          /* valstack slot for 2nd token value */
-	int buf_idx;                            /* valstack slot for temp buffer */
-	duk_hbuffer_dynamic *buf;               /* temp accumulation buffer (on valstack) */
+	duk_codepoint_t window[DUK_LEXER_WINDOW_SIZE]; /* window of unicode code points */
+	duk_size_t offsets[DUK_LEXER_WINDOW_SIZE];     /* input byte offset for each char */
+	duk_int_t lines[DUK_LEXER_WINDOW_SIZE];        /* input lines for each char */
+	duk_int_t input_line;                          /* input linenumber at input_offset (not window[0]), init to 1 */
+	duk_idx_t slot1_idx;                           /* valstack slot for 1st token value */
+	duk_idx_t slot2_idx;                           /* valstack slot for 2nd token value */
+	duk_idx_t buf_idx;                             /* valstack slot for temp buffer */
+	duk_hbuffer_dynamic *buf;                      /* temp accumulation buffer (on valstack) */
 
-	duk_int_t token_count;                  /* number of tokens parsed */
-	duk_int_t token_limit;                  /* maximum token count before error (sanity backstop) */
+	duk_int_t token_count;                         /* number of tokens parsed */
+	duk_int_t token_limit;                         /* maximum token count before error (sanity backstop) */
 };
 
 /*
@@ -411,12 +411,11 @@ void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt);
 
 void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
-                                      int strict_mode,
-                                      int regexp_mode);
+                                      duk_bool_t strict_mode,
+                                      duk_bool_t regexp_mode);
 #ifdef DUK_USE_REGEXP_SUPPORT
 void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token);
 void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata);
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
 #endif  /* DUK_LEXER_H_INCLUDED */
-
