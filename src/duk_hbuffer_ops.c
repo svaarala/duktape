@@ -188,7 +188,7 @@ size_t duk_hbuffer_insert_hstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, si
 	return len;
 }
 
-size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t offset, duk_uint32_t codepoint) {
+size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t offset, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	size_t len;
 
@@ -211,7 +211,7 @@ size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size
  * Codepoints above valid Unicode range (> U+10FFFF) are mangled.
  */
 
-size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t offset, duk_uint32_t codepoint) {
+size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, size_t offset, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_CESU8_LENGTH];
 	size_t len;
 
@@ -288,7 +288,7 @@ size_t duk_hbuffer_append_hstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, du
  * effectively, CESU-8 encoded).
  */
 
-size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint32_t codepoint) {
+size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	size_t len;
 
@@ -317,7 +317,7 @@ size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_
  * Codepoints above valid Unicode range (> U+10FFFF) are mangled.
  */
 
-size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint32_t codepoint) {
+size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_CESU8_LENGTH];
 	size_t len;
 
@@ -347,6 +347,7 @@ size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_
 
 void duk_hbuffer_append_native_u32(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint32_t val) {
 	/* relies on duk_uint32_t being exactly right size */
+	DUK_ASSERT(sizeof(val) == 4);
 	duk_hbuffer_insert_bytes(thr,
 	                         buf,
 	                         DUK_HBUFFER_GET_SIZE(buf),

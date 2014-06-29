@@ -156,7 +156,7 @@ static duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int
  *  being parsed simultaneously).
  */
 
-static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, int direct) {
+static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct) {
 	duk_re_compiler_ctx *re_ctx = (duk_re_compiler_ctx *) userdata;
 
 	DUK_DD(DUK_DDPRINT("duk__generate_ranges(): re_ctx=%p, range=[%d,%d] direct=%d",
