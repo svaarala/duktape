@@ -33,6 +33,26 @@ typedef union {
 	duk_uint8_t c[8];
 } duk__test_u32_union;
 
+/*
+ *  Various sanity checks for typing
+ */
+
+static void duk__selftest_types(void) {
+	if (!(sizeof(duk_size_t) >= sizeof(duk_uint_t))) {
+		/* Some internal code now assumes that all duk_uint_t values
+		 * can be expressed with a duk_size_t.
+		 */
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_size_t is smaller than duk_uint_t");
+	}
+	if (!(sizeof(duk_int_t) >= 4)) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_int_t is not 32 bits");
+	}
+}
+
+/*
+ *  Packed tval sanity
+ */
+
 static void duk__selftest_packed_tval(void) {
 #if defined(DUK_USE_PACKED_TVAL)
 	if (sizeof(void *) > 4) {
@@ -188,6 +208,7 @@ static void duk__selftest_struct_align(void) {
  */
 
 void duk_selftest_run_tests(void) {
+	duk__selftest_types();
 	duk__selftest_packed_tval();
 	duk__selftest_twos_complement();
 	duk__selftest_byte_order();
