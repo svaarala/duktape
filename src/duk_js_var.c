@@ -856,7 +856,7 @@ static duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
                                                 duk_bool_t parents,
                                                 duk__id_lookup_result *out) {
 	duk_tval *tv;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(env != NULL || act != NULL);

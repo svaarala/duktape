@@ -5,7 +5,7 @@
 #include "duk_internal.h"
 
 int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(h != NULL);

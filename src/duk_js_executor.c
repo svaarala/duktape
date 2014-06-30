@@ -17,7 +17,7 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
 /* XXX: overlap with other helpers, rework */
 static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);

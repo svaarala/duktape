@@ -905,7 +905,7 @@ duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
-	duk_int_t sanity;
+	duk_uint_t sanity;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover

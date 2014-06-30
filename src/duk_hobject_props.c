@@ -1751,7 +1751,7 @@ static int duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hs
 static int duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, int push_value) {
 	duk_hobject *curr;
 	duk_uint32_t arr_idx;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -1908,7 +1908,7 @@ int duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_hstring *key = NULL;
 	duk_uint32_t arr_idx = DUK__NO_ARRAY_INDEX;
 	duk_propdesc desc;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	DUK_DDD(DUK_DDDPRINT("getprop: thr=%p, obj=%p, key=%p (obj -> %!T, key -> %!T)",
 	                     (void *) thr, (void *) tv_obj, (void *) tv_key, tv_obj, tv_key));
@@ -2765,7 +2765,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	duk_uint32_t arr_idx;
 	int rc;
 	duk_int_t e_idx;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 	duk_uint32_t new_array_length = 0;  /* 0 = no update */
 
 	DUK_DDD(DUK_DDDPRINT("putprop: thr=%p, obj=%p, key=%p, val=%p, throw=%d "

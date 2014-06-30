@@ -98,4 +98,3 @@ typedef struct duk_re_matcher_ctx duk_re_matcher_ctx;
 typedef struct duk_re_compiler_ctx duk_re_compiler_ctx;
 	
 #endif  /* DUK_FORWDECL_H_INCLUDED */
-
