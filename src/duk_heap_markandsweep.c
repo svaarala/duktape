@@ -871,7 +871,7 @@ static void duk__assert_valid_refcounts(duk_heap *heap) {
  *  to avoid trouble.
  */
 
-int duk_heap_mark_and_sweep(duk_heap *heap, int flags) {
+duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 	duk_size_t count_keep_obj;
 	duk_size_t count_keep_str;
 	duk_size_t tmp;

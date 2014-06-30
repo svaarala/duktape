@@ -263,15 +263,15 @@ struct duk_hthread {
 
 void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to);
 void duk_hthread_create_builtin_objects(duk_hthread *thr);
-int duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr);
+duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr);
 void duk_hthread_terminate(duk_hthread *thr);
 
 void duk_hthread_callstack_grow(duk_hthread *thr);
 void duk_hthread_callstack_shrink_check(duk_hthread *thr);
-void duk_hthread_callstack_unwind(duk_hthread *thr, int new_top);
+void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
 void duk_hthread_catchstack_grow(duk_hthread *thr);
 void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
-void duk_hthread_catchstack_unwind(duk_hthread *thr, int new_top);
+void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
 duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
 void *duk_hthread_get_valstack_ptr(void *ud);  /* indirect allocs */

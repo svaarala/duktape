@@ -194,4 +194,3 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx);
 duk_ret_t duk_bi_type_error_thrower(duk_context *ctx);
 
 #endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */
-

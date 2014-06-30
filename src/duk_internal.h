@@ -74,4 +74,3 @@ DUK_USE_USER_DECLARE()
 #include "duk_selftest.h"
 
 #endif  /* DUK_INTERNAL_H_INCLUDED */
-

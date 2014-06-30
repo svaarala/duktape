@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-int duk_bi_buffer_constructor(duk_context *ctx) {
+duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
 	duk_size_t buf_size;
 	duk_small_int_t buf_dynamic;
 	duk_uint8_t *buf_data;
@@ -84,9 +84,9 @@ int duk_bi_buffer_constructor(duk_context *ctx) {
  *  toString(), valueOf()
  */
 
-int duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
+duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
-	int to_string = duk_get_magic(ctx);
+	duk_small_int_t to_string = duk_get_magic(ctx);
 
 	duk_push_this(ctx);
 	tv = duk_require_tval(ctx, -1);
@@ -116,4 +116,3 @@ int duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
-

@@ -42,4 +42,3 @@ duk_activation *duk_hthread_get_current_activation(duk_hthread *thr) {
 		return NULL;
 	}
 }
-

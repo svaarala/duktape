@@ -639,11 +639,11 @@ extern duk_uint8_t duk_class_number_to_stridx[32];
  */
 
 /* alloc and init */
-duk_hobject *duk_hobject_alloc(duk_heap *heap, int hobject_flags);
-duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, int hobject_flags);
-duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, int hobject_flags);
-duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, int hobject_flags);
-duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags);
+duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags);
+duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 
 /* low-level property functions */
 void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
@@ -706,7 +706,7 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func
 #endif
 
 /* misc */	
-int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
+duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */
 

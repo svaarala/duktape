@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-int duk_bi_error_constructor_shared(duk_context *ctx) {
+duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	/* Behavior for constructor and non-constructor call is
 	 * the same except for augmenting the created error.  When
 	 * called as a constructor, the caller (duk_new()) will handle
@@ -13,11 +13,11 @@ int duk_bi_error_constructor_shared(duk_context *ctx) {
 	 */
 
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int bidx_prototype = duk_get_magic(ctx);
+	duk_small_int_t bidx_prototype = duk_get_magic(ctx);
 
 	/* same for both error and each subclass like TypeError */
-	int flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                      DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
+	duk_uint_t flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
 	
 	DUK_UNREF(thr);
 
@@ -45,7 +45,7 @@ int duk_bi_error_constructor_shared(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_error_prototype_to_string(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	/* FIXME: optimize with more direct internal access */
 
 	duk_push_this(ctx);
@@ -119,10 +119,11 @@ int duk_bi_error_prototype_to_string(duk_context *ctx) {
 #define DUK__OUTPUT_TYPE_FILENAME    0
 #define DUK__OUTPUT_TYPE_LINENUMBER  1
 
-static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
+static duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t output_type) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	int idx_td;
-	int i;
+	duk_idx_t idx_td;
+	duk_small_int_t i;  /* traceback depth fits into 16 bits */
+	duk_small_int_t t;  /* stack type fits into 16 bits */
 	const char *str_tailcalled = " tailcalled";
 	const char *str_strict = " strict";
 	const char *str_construct = " construct";
@@ -145,14 +146,12 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 	/* FIXME: skip null filename? */
 
 	if (duk_check_type(ctx, idx_td, DUK_TYPE_OBJECT)) {
-		int t;
-
 		/* Current tracedata contains 2 entries per callstack entry. */
 		for (i = 0; ; i += 2) {
-			int pc;
-			int line;
-			int flags;
-			double d;
+			duk_int_t pc;
+			duk_int_t line;
+			duk_int_t flags;
+			duk_double_t d;
 			const char *funcname;
 			duk_hobject *h_func;
 			duk_hstring *h_name;
@@ -161,9 +160,9 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 			duk_get_prop_index(ctx, idx_td, i);
 			duk_get_prop_index(ctx, idx_td, i + 1);
 			d = duk_to_number(ctx, -1);
-			pc = (int) DUK_FMOD(d, DUK_DOUBLE_2TO32);
-			flags = (int) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
-			t = duk_get_type(ctx, -2);
+			pc = (duk_int_t) DUK_FMOD(d, DUK_DOUBLE_2TO32);
+			flags = (duk_int_t) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
+			t = (duk_small_int_t) duk_get_type(ctx, -2);
 
 			if (t == DUK_TYPE_OBJECT) {
 				/*
@@ -207,10 +206,10 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 					                 (flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty);
 
 				} else {
-					duk_push_sprintf(ctx, "%s %s:%d%s%s%s%s%s",
+					duk_push_sprintf(ctx, "%s %s:%ld%s%s%s%s%s",
 					                 funcname,
 					                 duk_get_string(ctx, -1),
-					                 line,
+					                 (long) line,
 					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
 					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
 					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty,
@@ -238,8 +237,8 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
 					}
 				}
 
-				duk_push_sprintf(ctx, "%s:%d",
-				                 duk_get_string(ctx, -2), pc);
+				duk_push_sprintf(ctx, "%s:%ld",
+				                 duk_get_string(ctx, -2), (long) pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
 			} else {
@@ -272,15 +271,15 @@ static int duk__traceback_getter_helper(duk_context *ctx, int output_type) {
  * save space.
  */
 
-int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_stack_getter(duk_context *ctx) {
 	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
 }
 
-int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_filename_getter(duk_context *ctx) {
 	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
 }
 
-int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
 	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
@@ -302,26 +301,26 @@ int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
  *  of the error so this makes sense.
  */
 
-int duk_bi_error_prototype_stack_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_stack_getter(duk_context *ctx) {
 	/* FIXME: remove this native function and map 'stack' accessor
 	 * to the toString() implementation directly.
 	 */
 	return duk_bi_error_prototype_to_string(ctx);
 }
 
-int duk_bi_error_prototype_filename_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_filename_getter(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return 0;
 }
 
-int duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return 0;
 }
 
 #endif  /* DUK_USE_TRACEBACKS */
 
-int duk_bi_error_prototype_nop_setter(duk_context *ctx) {
+duk_ret_t duk_bi_error_prototype_nop_setter(duk_context *ctx) {
 	/* Attempt to write 'stack', 'fileName', 'lineNumber' is a silent no-op.
 	 * User can use Object.defineProperty() to override this behavior.
 	 */

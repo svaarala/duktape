@@ -42,7 +42,7 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	if (h_pattern != NULL &&
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
 		if (duk_is_undefined(ctx, 1)) {
-			int flag_g, flag_i, flag_m;
+			duk_bool_t flag_g, flag_i, flag_m;
 			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
 			flag_g = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_GLOBAL, NULL);
 			flag_i = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_IGNORE_CASE, NULL);

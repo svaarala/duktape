@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void *duk_alloc_raw(duk_context *ctx, size_t size) {
+void *duk_alloc_raw(duk_context *ctx, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -20,7 +20,7 @@ void duk_free_raw(duk_context *ctx, void *ptr) {
 	DUK_FREE_RAW(thr->heap, ptr);
 }
 
-void *duk_realloc_raw(duk_context *ctx, void *ptr, size_t size) {
+void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -28,7 +28,7 @@ void *duk_realloc_raw(duk_context *ctx, void *ptr, size_t size) {
 	return DUK_REALLOC_RAW(thr->heap, ptr, size);
 }
 
-void *duk_alloc(duk_context *ctx, size_t size) {
+void *duk_alloc(duk_context *ctx, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -44,7 +44,7 @@ void duk_free(duk_context *ctx, void *ptr) {
 	DUK_FREE(thr->heap, ptr);
 }
 
-void *duk_realloc(duk_context *ctx, void *ptr, size_t size) {
+void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(ctx != NULL);
@@ -99,4 +99,3 @@ void duk_gc(duk_context *ctx, duk_uint_t flags) {
 	DUK_UNREF(flags);
 #endif
 }
-

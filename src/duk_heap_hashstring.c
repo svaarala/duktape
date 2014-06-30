@@ -5,9 +5,9 @@
 #include "duk_internal.h"
 
 /* constants for duk_hashstring() */
-#define DUK__STRHASH_SHORTSTRING   4096
-#define DUK__STRHASH_MEDIUMSTRING  (256 * 1024)
-#define DUK__STRHASH_BLOCKSIZE     256
+#define DUK__STRHASH_SHORTSTRING   4096L
+#define DUK__STRHASH_MEDIUMSTRING  (256L * 1024L)
+#define DUK__STRHASH_BLOCKSIZE     256L
 
 duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len) {
 	/*
@@ -61,4 +61,3 @@ duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t le
 		return hash;
 	}
 }
-

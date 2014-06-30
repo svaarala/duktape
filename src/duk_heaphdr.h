@@ -28,7 +28,7 @@
 struct duk_heaphdr {
 	duk_uint32_t h_flags;
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	size_t h_refcount;
+	duk_size_t h_refcount;
 #endif
 	duk_heaphdr *h_next;
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
@@ -40,7 +40,7 @@ struct duk_heaphdr {
 struct duk_heaphdr_string {
 	duk_uint32_t h_flags;
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	size_t h_refcount;
+	duk_size_t h_refcount;
 #endif
 };
 
@@ -53,8 +53,8 @@ struct duk_heaphdr_string {
 
 #define DUK_HEAPHDR_HEAP_FLAG_NUMBER(n)  (DUK_HEAPHDR_FLAGS_HEAP_START + (n))
 #define DUK_HEAPHDR_USER_FLAG_NUMBER(n)  (DUK_HEAPHDR_FLAGS_USER_START + (n))
-#define DUK_HEAPHDR_HEAP_FLAG(n)         (1 << (DUK_HEAPHDR_FLAGS_HEAP_START + (n)))
-#define DUK_HEAPHDR_USER_FLAG(n)         (1 << (DUK_HEAPHDR_FLAGS_USER_START + (n)))
+#define DUK_HEAPHDR_HEAP_FLAG(n)         (1UL << (DUK_HEAPHDR_FLAGS_HEAP_START + (n)))
+#define DUK_HEAPHDR_USER_FLAG(n)         (1UL << (DUK_HEAPHDR_FLAGS_USER_START + (n)))
 
 #define DUK_HEAPHDR_FLAG_REACHABLE       DUK_HEAPHDR_HEAP_FLAG(0)  /* mark-and-sweep: reachable */
 #define DUK_HEAPHDR_FLAG_TEMPROOT        DUK_HEAPHDR_HEAP_FLAG(1)  /* mark-and-sweep: children not processed */
@@ -142,7 +142,7 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_HAS_FINALIZED(h)      DUK_HEAPHDR_CHECK_FLAG_BITS((h),DUK_HEAPHDR_FLAG_FINALIZED)
 
 /* get or set a range of flags; m=first bit number, n=number of bits */
-#define DUK_HEAPHDR_GET_FLAG_RANGE(h,m,n)  (((h)->h_flags >> (m)) & ((1 << (n)) - 1))
+#define DUK_HEAPHDR_GET_FLAG_RANGE(h,m,n)  (((h)->h_flags >> (m)) & ((1UL << (n)) - 1UL))
 
 #define DUK_HEAPHDR_SET_FLAG_RANGE(h,m,n,v)  do { \
 		(h)->h_flags = \
@@ -218,4 +218,3 @@ struct duk_heaphdr_string {
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
 #endif  /* DUK_HEAPHDR_H_INCLUDED */
-
