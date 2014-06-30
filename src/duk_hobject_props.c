@@ -998,7 +998,7 @@ void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) {
  *  but there is no hash part, h_idx is set to -1.
  */
 
-void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_idx, int *h_idx) {
+void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(e_idx != NULL);
@@ -1071,8 +1071,8 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_
 
 /* For internal use: get non-accessor entry value */
 duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key) {
-	int e_idx;
-	int h_idx;
+	duk_int_t e_idx;
+	duk_int_t h_idx;
 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -1087,8 +1087,8 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring
 
 /* For internal use: get non-accessor entry value and attributes */
 duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs) {
-	int e_idx;
-	int h_idx;
+	duk_int_t e_idx;
+	duk_int_t h_idx;
 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -1203,8 +1203,8 @@ static int duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstr
 /* FIXME: is this wrapper useful?  just a 'get_own_prop' call and normal stack ops? */
 
 int duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv_out) {
-	int e_idx;
-	int h_idx;
+	duk_int_t e_idx;
+	duk_int_t h_idx;
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(obj != NULL);
@@ -1526,7 +1526,7 @@ static int duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, du
 
 	duk_hobject_find_existing_entry(obj, key, &out_desc->e_idx, &out_desc->h_idx);
 	if (out_desc->e_idx >= 0) {
-		int e_idx = out_desc->e_idx;
+		duk_int_t e_idx = out_desc->e_idx;
 		out_desc->flags = DUK_HOBJECT_E_GET_FLAGS(obj, e_idx);
 		if (out_desc->flags & DUK_PROPDESC_FLAG_ACCESSOR) {
 			DUK_DDD(DUK_DDDPRINT("-> found accessor property in entry part"));
@@ -2764,7 +2764,7 @@ int duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, du
 	duk_tval *tv;
 	duk_uint32_t arr_idx;
 	int rc;
-	int e_idx;
+	duk_int_t e_idx;
 	duk_uint32_t sanity;
 	duk_uint32_t new_array_length = 0;  /* 0 = no update */
 
@@ -3818,11 +3818,11 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	duk_context *ctx = (duk_context *) thr;
 	duk_propdesc desc;
 	duk_uint32_t arr_idx;
-	int e_idx;
+	duk_int_t e_idx;
 	duk_tval tv_tmp;
 	duk_tval *tv1 = NULL;
 	duk_tval *tv2 = NULL;
-	int propflags = flags & DUK_PROPDESC_FLAGS_MASK;  /* mask out flags not actually stored */
+	duk_small_int_t propflags = flags & DUK_PROPDESC_FLAGS_MASK;  /* mask out flags not actually stored */
 
 	DUK_DDD(DUK_DDDPRINT("define new property (internal): thr=%p, obj=%!O, key=%!O, flags=0x%02x, val=%!T",
 	                     (void *) thr, obj, key, flags, duk_get_tval(ctx, -1)));
@@ -3991,8 +3991,8 @@ void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *
 
 void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_int_t propflags) {
 	duk_context *ctx = (duk_context *) thr;
-	int e_idx;
-	int h_idx;
+	duk_int_t e_idx;
+	duk_int_t h_idx;
 
 	DUK_DDD(DUK_DDDPRINT("define new accessor (internal): thr=%p, obj=%!O, key=%!O, getter=%!O, setter=%!O, flags=0x%02x",
 	                     (void *) thr, obj, key, getter, setter, propflags));
@@ -4492,7 +4492,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 
 		/* steps 4.a and 4.b are tricky */
 		if (has_set || has_get) {
-			int e_idx;
+			duk_int_t e_idx;
 
 			DUK_DDD(DUK_DDDPRINT("create new accessor property"));
 
@@ -4526,7 +4526,7 @@ int duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_HOBJECT_E_SET_FLAGS(obj, e_idx, new_flags);
 			goto success_exotics;
 		} else {
-			int e_idx;
+			duk_int_t e_idx;
 			duk_tval *tv2;
 
 			DUK_DDD(DUK_DDDPRINT("create new data property"));

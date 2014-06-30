@@ -539,14 +539,14 @@ union duk_propvalue {
 
 struct duk_propdesc {
 	/* read-only values 'lifted' for ease of use */
-	int flags;
+	duk_small_int_t flags;
 	duk_hobject *get;
 	duk_hobject *set;
 
 	/* for updating (all are set to < 0 for virtual properties) */
-	int e_idx;	/* prop index in 'entry part', < 0 if not there */
-	int h_idx;	/* prop index in 'hash part', < 0 if not there */
-	int a_idx;	/* prop index in 'array part', < 0 if not there */
+	duk_int_t e_idx;	/* prop index in 'entry part', < 0 if not there */
+	duk_int_t h_idx;	/* prop index in 'hash part', < 0 if not there */
+	duk_int_t a_idx;	/* prop index in 'array part', < 0 if not there */
 };
 
 struct duk_hobject {
@@ -646,7 +646,7 @@ duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, int hobject_flags
 duk_hthread *duk_hthread_alloc(duk_heap *heap, int hobject_flags);
 
 /* low-level property functions */
-void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, int *e_idx, int *h_idx);
+void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
 duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key);
 duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs);
 duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uint32_t i);

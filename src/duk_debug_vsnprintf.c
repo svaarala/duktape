@@ -569,7 +569,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	if (st->heavy && h->h_size > 0) {
 		duk_fb_put_byte(fb, (duk_uint8_t) '<');
 		for (i = 0; i < h->h_size; i++) {
-			duk_uint32_t h_idx = DUK_HOBJECT_H_GET_INDEX(h, i);
+			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(h, i);
 			if (i > 0) {
 				duk_fb_put_byte(fb, (duk_uint8_t) ',');
 			}
