@@ -54,7 +54,7 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__compile_raw_args *comp_args;
 	duk_uint_t flags;
-	duk_small_int_t comp_flags;
+	duk_small_uint_t comp_flags;
 	duk_hcompiledfunction *h_templ;
 
 	/* [ ... source? filename &comp_args ] (depends on flags) */

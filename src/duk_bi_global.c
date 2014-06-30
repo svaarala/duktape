@@ -11,14 +11,14 @@
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
-#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
+#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((duk_uint8_t) ( \
 	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
 	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
 	))
 #define DUK__CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
-static unsigned char duk__encode_uriunescaped_table[16] = {
+static duk_uint8_t duk__encode_uriunescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
@@ -30,7 +30,7 @@ static unsigned char duk__encode_uriunescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.4: uriUnescaped */
-static unsigned char duk__encode_uricomponent_unescaped_table[16] = {
+static duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
@@ -42,7 +42,7 @@ static unsigned char duk__encode_uricomponent_unescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.1: uriReserved + '#' */
-static unsigned char duk__decode_uri_reserved_table[16] = {
+static duk_uint8_t duk__decode_uri_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
@@ -54,7 +54,7 @@ static unsigned char duk__decode_uri_reserved_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.2: empty */
-static unsigned char duk__decode_uri_component_reserved_table[16] = {
+static duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
@@ -67,7 +67,7 @@ static unsigned char duk__decode_uri_component_reserved_table[16] = {
 
 #ifdef DUK_USE_SECTION_B
 /* E5.1 Section B.2.2, step 7. */
-static unsigned char duk__escape_unescaped_table[16] = {
+static duk_uint8_t duk__escape_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
@@ -214,7 +214,7 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 			goto uri_error;
 		}
 
-		if (t < 128) {
+		if (t < 0x80) {
 			if (DUK__CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
@@ -400,8 +400,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hcompiledfunction *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
-	int this_to_global = 1;
-	duk_small_int_t comp_flags;
+	duk_bool_t this_to_global = 1;
+	duk_small_uint_t comp_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
@@ -554,9 +554,9 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
  */
 
 duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
-	int strip_prefix;
+	duk_bool_t strip_prefix;
 	duk_int32_t radix;
-	int s2n_flags;
+	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 2);
 	duk_to_string(ctx, 0);
@@ -602,7 +602,7 @@ duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
-	int s2n_flags;
+	duk_small_uint_t s2n_flags;
 	duk_int32_t radix;
 
 	DUK_ASSERT_TOP(ctx, 1);
@@ -629,14 +629,15 @@ duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 /*
  *  Number checkers
  */
+
 duk_ret_t duk_bi_global_object_is_nan(duk_context *ctx) {
-	double d = duk_to_number(ctx, 0);
+	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
 
 duk_ret_t duk_bi_global_object_is_finite(duk_context *ctx) {
-	double d = duk_to_number(ctx, 0);
+	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
 }
@@ -683,11 +684,11 @@ duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 
 #ifdef DUK_USE_BROWSER_LIKE
 #ifdef DUK_USE_FILE_IO
-static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
-	int nargs;
-	int i;
+static duk_ret_t duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
+	duk_idx_t nargs;
+	duk_idx_t i;
 	const char *str;
-	size_t len;
+	duk_size_t len;
 	char nl = '\n';
 
 	/* If argument count is 1 and first argument is a buffer, write the buffer
@@ -698,7 +699,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 	nargs = duk_get_top(ctx);
 	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
 		const char *buf = NULL;
-		size_t sz = 0;
+		duk_size_t sz = 0;
 		buf = (const char *) duk_get_buffer(ctx, 0, &sz);
 		if (buf && sz > 0) {
 			DUK_FWRITE(buf, 1, sz, f_out);
@@ -706,8 +707,10 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 		goto flush;
 	}
 
-	/* FIXME: best semantics link?  Now apply ToString to args, join with ' ' */
-	/* FIXME: ToString() coerce inplace instead? */
+	/* XXX: What are the best semantics / specification for print()?
+	 * Now apply ToString() to arguments and join with a single space.
+	 */
+	/* XXX: ToString() coerce inplace instead? */
 
 	if (nargs > 0) {
 		for (i = 0; i < nargs; i++) {
@@ -718,7 +721,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 			duk_to_string(ctx, -1);
 		}
 
-		duk_concat(ctx, 2*nargs - 1);
+		duk_concat(ctx, 2 * nargs - 1);
 
 		str = duk_get_lstring(ctx, -1, &len);
 		if (str) {
@@ -726,7 +729,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 		}
 	}
 
-	DUK_FWRITE(&nl, 1, 1, f_out);
+	DUK_FWRITE((const char *) &nl, 1, 1, f_out);
 
  flush:
 	DUK_FFLUSH(f_out);
@@ -832,7 +835,7 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 	p = buf_in;
 	q = buf_out;
 	for (;;) {
-		duk_uint8_t c;
+		duk_uint_fast8_t c;
 
 		/* Here 'p' always points to the start of a term. */
 		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p", p, (void *) q, (void *) buf_out));

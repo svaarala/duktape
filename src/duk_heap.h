@@ -423,7 +423,7 @@ void duk_heap_force_stringtable_resize(duk_heap *heap);
 #endif
 
 void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
-duk_uint32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint32_t char_offset);
+duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
 
 #ifdef DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
 void *duk_default_alloc_function(void *udata, duk_size_t size);

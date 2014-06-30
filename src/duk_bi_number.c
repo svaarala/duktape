@@ -8,7 +8,7 @@
 
 #include "duk_internal.h"
 
-static double duk__push_this_number_plain(duk_context *ctx) {
+static duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	duk_hobject *h;
 
 	/* Number built-in accepts a plain number or a Number object (whose
@@ -35,8 +35,8 @@ static double duk__push_this_number_plain(duk_context *ctx) {
 	return duk_get_number(ctx, -1);
 }
 
-int duk_bi_number_constructor(duk_context *ctx) {
-	int nargs;
+duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
+	duk_idx_t nargs;
 	duk_hobject *h_this;
 
 	/*
@@ -86,22 +86,22 @@ int duk_bi_number_constructor(duk_context *ctx) {
 	return 0;  /* no return value -> don't replace created value */
 }
 
-int duk_bi_number_prototype_value_of(duk_context *ctx) {
+duk_ret_t duk_bi_number_prototype_value_of(duk_context *ctx) {
 	(void) duk__push_this_number_plain(ctx);
 	return 1;
 }
 
-int duk_bi_number_prototype_to_string(duk_context *ctx) {
-	int radix;
-	int n2s_flags;
+duk_ret_t duk_bi_number_prototype_to_string(duk_context *ctx) {
+	duk_small_int_t radix;
+	duk_small_uint_t n2s_flags;
 
 	(void) duk__push_this_number_plain(ctx);
 	if (duk_is_undefined(ctx, 0)) {
 		radix = 10;
 	} else {
-		radix = duk_to_int_check_range(ctx, 0, 2, 36);
+		radix = (duk_small_int_t) duk_to_int_check_range(ctx, 0, 2, 36);
 	}
-	DUK_DDD(DUK_DDDPRINT("radix=%d", radix));
+	DUK_DDD(DUK_DDDPRINT("radix=%d", (int) radix));
 
 	n2s_flags = 0;
 
@@ -112,8 +112,8 @@ int duk_bi_number_prototype_to_string(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
-	/* FIXME: just use toString() for now; permitted although not recommended.
+duk_ret_t duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
+	/* XXX: just use toString() for now; permitted although not recommended.
 	 * nargs==1, so radix is passed to toString().
 	 */
 	return duk_bi_number_prototype_to_string(ctx);
@@ -125,16 +125,16 @@ int duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
 
 /* FIXME: shared helper for toFixed(), toExponential(), toPrecision()? */
 
-int duk_bi_number_prototype_to_fixed(duk_context *ctx) {
-	int frac_digits;
-	double d;
-	int c;
-	int n2s_flags;
+duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx) {
+	duk_small_int_t frac_digits;
+	duk_double_t d;
+	duk_small_int_t c;
+	duk_small_uint_t n2s_flags;
 
-	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
+	frac_digits = (duk_small_int_t) duk_to_int_check_range(ctx, 0, 0, 20);
 	d = duk__push_this_number_plain(ctx);
 
-	c = DUK_FPCLASSIFY(d);
+	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
@@ -158,24 +158,24 @@ int duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_number_prototype_to_exponential(duk_context *ctx) {
-	int frac_undefined;
-	int frac_digits;
-	double d;
-	int c;
-	int n2s_flags;
+duk_ret_t duk_bi_number_prototype_to_exponential(duk_context *ctx) {
+	duk_bool_t frac_undefined;
+	duk_small_int_t frac_digits;
+	duk_double_t d;
+	duk_small_int_t c;
+	duk_small_uint_t n2s_flags;
 
 	d = duk__push_this_number_plain(ctx);
 
 	frac_undefined = duk_is_undefined(ctx, 0);
 	duk_to_int(ctx, 0);  /* for side effects */
 
-	c = DUK_FPCLASSIFY(d);
+	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
 
-	frac_digits = duk_to_int_check_range(ctx, 0, 0, 20);
+	frac_digits = (duk_small_int_t) duk_to_int_check_range(ctx, 0, 0, 20);
 
 	n2s_flags = DUK_N2S_FLAG_FORCE_EXP |
 	           (frac_undefined ? 0 : DUK_N2S_FLAG_FIXED_FORMAT);
@@ -192,16 +192,16 @@ int duk_bi_number_prototype_to_exponential(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_number_prototype_to_precision(duk_context *ctx) {
+duk_ret_t duk_bi_number_prototype_to_precision(duk_context *ctx) {
 	/* The specification has quite awkward order of coercion and
 	 * checks for toPrecision().  The operations below are a bit
 	 * reordered, within constraints of observable side effects.
 	 */
 
-	double d;
-	int prec;
-	int c;
-	int n2s_flags;
+	duk_double_t d;
+	duk_small_int_t prec;
+	duk_small_int_t c;
+	duk_small_uint_t n2s_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 
@@ -213,12 +213,12 @@ int duk_bi_number_prototype_to_precision(duk_context *ctx) {
 
 	duk_to_int(ctx, 0);  /* for side effects */
 
-	c = DUK_FPCLASSIFY(d);
+	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
 		goto use_to_string;
 	}
 
-	prec = duk_to_int_check_range(ctx, 0, 1, 21);
+	prec = (duk_small_int_t) duk_to_int_check_range(ctx, 0, 1, 21);
 
 	n2s_flags = DUK_N2S_FLAG_FIXED_FORMAT |
 	            DUK_N2S_FLAG_NO_ZERO_PAD;
@@ -238,4 +238,3 @@ int duk_bi_number_prototype_to_precision(duk_context *ctx) {
 	duk_to_string(ctx, -1);
 	return 1;
 }
-

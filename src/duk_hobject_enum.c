@@ -51,7 +51,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 	duk_hstring **keys;
 	duk_hstring **p_curr, **p_insert, **p_end;
 	duk_hstring *h_curr;
-	duk_uint32_t val_highest, val_curr, val_insert;
+	duk_uarridx_t val_highest, val_curr, val_insert;
 
 	DUK_ASSERT(h_obj != NULL);
 	DUK_ASSERT(h_obj->e_used >= 2);  /* control props */
@@ -159,7 +159,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
  *  scan would be needed to eliminate duplicates found in the prototype chain.
  */
 
-void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
+void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *enum_target;
 	duk_hobject *curr;
@@ -169,7 +169,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	duk_hobject *h_proxy_handler;
 	duk_hobject *h_trap_result;
 #endif
-	duk_uint32_t i, len;
+	duk_uint_fast32_t i, len;  /* used for array, stack, and entry indices */
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -239,7 +239,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 	DUK_UNREF(h_trap_result);
 
 	/* Copy trap result keys into the enumerator object. */
-	len = duk_get_length(ctx, -1);
+	len = (duk_uint_fast32_t) duk_get_length(ctx, -1);
 	for (i = 0; i < len; i++) {
 		/* XXX: not sure what the correct semantic details are here,
 		 * e.g. handling of missing values (gaps), handling of non-array
@@ -295,16 +295,15 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 				duk_hstring *h_val;
 				h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
 				DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
-				len = DUK_HSTRING_GET_CHARLEN(h_val);
+				len = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_val);
 			} else {
 				duk_hbuffer *h_val;
 				DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr));
 				h_val = duk_hobject_get_internal_value_buffer(thr->heap, curr);
 				DUK_ASSERT(h_val != NULL);  /* buffer objects must not created without internal value */
-				len = DUK_HBUFFER_GET_SIZE(h_val);
+				len = (duk_uint_fast32_t) DUK_HBUFFER_GET_SIZE(h_val);
 			}
 
-			/* FIXME: type for 'i' to match string max len (duk_uint32_t) */
 			for (i = 0; i < len; i++) {
 				duk_hstring *k;
 
@@ -344,7 +343,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		 *  must be the same.
 		 */
 
-		for (i = 0; i < curr->a_size; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) curr->a_size; i++) {
 			duk_hstring *k;
 			duk_tval *tv;
 
@@ -368,7 +367,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
 		 *  Entries part
 		 */
 
-		for (i = 0; i < curr->e_used; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) curr->e_used; i++) {
 			duk_hstring *k;
 
 			k = DUK_HOBJECT_E_GET_KEY(curr, i);
@@ -455,13 +454,13 @@ void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags) {
  *
  *  Returns zero without pushing anything on the stack otherwise.
  */
-int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
+duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *e;
 	duk_hobject *enum_target;
 	duk_hstring *res = NULL;
-	duk_uint32_t idx;
-	int check_existence;
+	duk_uint_fast32_t idx;
+	duk_bool_t check_existence;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -469,11 +468,11 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 
 	e = duk_require_hobject(ctx, -1);
 
-	/* FIXME: use get tval ptr, more efficient */
+	/* XXX use get tval ptr, more efficient */
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
-	idx = (duk_uint32_t) duk_require_number(ctx, -1);
+	idx = (duk_uint_fast32_t) duk_require_uint(ctx, -1);
 	duk_pop(ctx);
-	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %d", idx));
+	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %d", (int) idx));
 
 	/* Enumeration keys are checked against the enumeration target (to see
 	 * that they still exist).  In the proxy enumeration case _target will
@@ -484,6 +483,7 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
 	enum_target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(enum_target != NULL);
 #if defined(DUK_USE_ES6_PROXY)
+	/* FIXME: typing issue here? */
 	check_existence = (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(enum_target));
 #else
 	check_existence = 1;
@@ -551,10 +551,10 @@ int duk_hobject_enumerator_next(duk_context *ctx, int get_value) {
  *  described in E5 Section 15.2.3.14.
  */
 
-int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
+duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags) {
 	duk_hobject *e;
-	duk_uint32_t i;
-	duk_uint32_t idx;
+	duk_uint_fast32_t i;
+	duk_uint_fast32_t idx;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(duk_get_hobject(ctx, -1) != NULL);
@@ -573,7 +573,7 @@ int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags) {
 	DUK_ASSERT(e != NULL);
 
 	idx = 0;
-	for (i = DUK__ENUM_START_INDEX; i < e->e_used; i++) {
+	for (i = DUK__ENUM_START_INDEX; i < (duk_uint_fast32_t) e->e_used; i++) {
 		duk_hstring *k;
 
 		k = DUK_HOBJECT_E_GET_KEY(e, i);

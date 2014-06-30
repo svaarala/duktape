@@ -61,7 +61,7 @@
  * duk_safe_call().
  */
 typedef struct {
-	int flags;
+	duk_small_uint_t flags;
 	duk_compiler_ctx comp_ctx_alloc;
 	duk_lexer_point lex_pt_alloc;
 } duk__compiler_stkstate;
@@ -7040,7 +7040,7 @@ static int duk__js_compile_raw(duk_context *ctx) {
 	return 1;
 }
 
-void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_int_t flags) {
+void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk__compiler_stkstate comp_stk;
 

@@ -671,9 +671,9 @@ duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
 int duk_hobject_object_define_property(duk_context *ctx);
 int duk_hobject_object_define_properties(duk_context *ctx);
 int duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
-void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, int freeze);
-int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen);
-int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags);
+void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
+duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen);
+duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags);
 
 /* internal properties */
 int duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
@@ -689,9 +689,9 @@ duk_small_int_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_
 #endif
 
 /* enumeration */
-void duk_hobject_enumerator_create(duk_context *ctx, int enum_flags);
-int duk_hobject_get_enumerated_keys(duk_context *ctx, int enum_flags);
-int duk_hobject_enumerator_next(duk_context *ctx, int get_value);
+void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags);
+duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags);
+duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value);
 
 /* macros */
 void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p);

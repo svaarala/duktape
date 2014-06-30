@@ -77,7 +77,7 @@ duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	duk_hobject *h_obj;
 	duk_hobject *h_new_proto;
 	duk_hobject *h_curr;
-	int ret_success = 1;
+	duk_ret_t ret_success = 1;  /* retval for success path */
 
 	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4);
 	 * magic: 0=setter call, 1=Object.setPrototypeOf
@@ -192,13 +192,13 @@ duk_ret_t duk_bi_object_constructor_define_properties(duk_context *ctx) {
 duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
-	int is_freeze;
+	duk_bool_t is_freeze;
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
-	is_freeze = duk_get_magic(ctx);
-	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze /*freeze*/);
+	is_freeze = (duk_bool_t) duk_get_magic(ctx);
+	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
 
 	/* Sealed and frozen objects cannot gain any more properties,
 	 * so this is a good time to compact them.
@@ -227,15 +227,15 @@ duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {
 
 duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_context *ctx) {
 	duk_hobject *h;
-	int is_frozen;
-	int rc;
+	duk_bool_t is_frozen;
+	duk_bool_t rc;
 
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
 	is_frozen = duk_get_magic(ctx);
 	rc = duk_hobject_object_is_sealed_frozen_helper(h, is_frozen /*is_frozen*/);
-	duk_push_boolean(ctx ,rc);
+	duk_push_boolean(ctx, rc);
 	return 1;
 }
 
@@ -259,9 +259,9 @@ duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	duk_hobject *h_proxy_target;
 	duk_hobject *h_proxy_handler;
 	duk_hobject *h_trap_result;
-	duk_uint32_t i, len, idx;
+	duk_uarridx_t i, len, idx;
 #endif
-	duk_small_int_t enum_flags;
+	duk_small_uint_t enum_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 
@@ -297,7 +297,7 @@ duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	h_trap_result = duk_require_hobject(ctx, -1);
 	DUK_UNREF(h_trap_result);
 
-	len = (duk_uint32_t) duk_get_length(ctx, -1);
+	len = (duk_uarridx_t) duk_get_length(ctx, -1);
 	idx = 0;
 	duk_push_array(ctx);
 	for (i = 0; i < len; i++) {
@@ -418,4 +418,3 @@ duk_ret_t duk_bi_object_prototype_has_own_property(duk_context *ctx) {
 duk_ret_t duk_bi_object_prototype_property_is_enumerable(duk_context *ctx) {
 	return duk_hobject_object_ownprop_helper(ctx, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
 }
-

@@ -5211,12 +5211,12 @@ int duk_hobject_object_define_properties(duk_context *ctx) {
  *  Object.prototype.hasOwnProperty() and Object.prototype.propertyIsEnumerable().
  */
 
-int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags) {
+duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_v;
 	duk_hobject *h_obj;
 	duk_propdesc desc;
-	int ret;
+	duk_bool_t ret;
 
 	/* coercion order matters */
 	h_v = duk_to_hstring(ctx, 0);
@@ -5246,7 +5246,7 @@ int duk_hobject_object_ownprop_helper(duk_context *ctx, int required_desc_flags)
  *  requiring some additional flags in the object.
  */
 
-void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, int freeze) {
+void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(thr != NULL);
@@ -5273,7 +5273,7 @@ void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, i
 
 		/* avoid multiple computations of flags address; bypasses macros */
 		fp = DUK_HOBJECT_E_GET_FLAGS_PTR(obj, i);
-		if (freeze && !((*fp) & DUK_PROPDESC_FLAG_ACCESSOR)) {
+		if (is_freeze && !((*fp) & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			*fp &= ~(DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_CONFIGURABLE);
 		} else {
 			*fp &= ~DUK_PROPDESC_FLAG_CONFIGURABLE;
@@ -5300,7 +5300,7 @@ void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, i
  *  need to be considered here now.
  */
 
-int duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, int is_frozen) {
+duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(obj != NULL);
