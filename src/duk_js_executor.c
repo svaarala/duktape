@@ -423,7 +423,7 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
 	 */
 
 	duk_tval tv_tmp;
-	int res;
+	duk_bool_t res;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
@@ -2460,7 +2460,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_IF: {
 			int a = DUK_DEC_A(ins);
 			int b = DUK_DEC_B(ins);
-			int tmp;
+			duk_bool_t tmp;
 
 			tmp = duk_js_toboolean(DUK__REGCONSTP(b));
 			if (tmp == a) {

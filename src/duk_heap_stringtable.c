@@ -24,7 +24,7 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	duk_hstring *res = NULL;
 	duk_uint8_t *data;
 	duk_uint32_t alloc_size;
-	duk_uint32_t dummy;
+	duk_uarridx_t dummy;
 
 	/* NUL terminate for convenient C access */
 
