@@ -81,19 +81,11 @@ void duk_js_push_closure(duk_hthread *thr,
                          duk_hobject *outer_lex_env);
 
 /* call handling */
-int duk_handle_call(duk_hthread *thr,
-                    int num_stack_args,
-                    int call_flags);
-int duk_handle_safe_call(duk_hthread *thr,
-                         duk_safe_call_function func,
-                         int num_stack_args,
-                         int num_stack_res);
-void duk_handle_ecma_call_setup(duk_hthread *thr,
-                                int num_stack_args,
-                                int call_flags);
+duk_int_t duk_handle_call(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
+duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
+void duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
 
 /* bytecode execution */
 void duk_js_execute_bytecode(duk_hthread *entry_thread);
 
 #endif  /* DUK_JS_H_INCLUDED */
-
