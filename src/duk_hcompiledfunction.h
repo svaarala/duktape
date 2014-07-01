@@ -37,7 +37,7 @@
 
 #define DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
@@ -46,7 +46,7 @@
 
 #define DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
@@ -55,7 +55,7 @@
 
 #define DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
@@ -63,13 +63,13 @@
 	)
 
 #define DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE((h)) / sizeof(duk_tval)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE((h)) / sizeof(duk_tval)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE((h)) / sizeof(duk_hobject *)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE((h)) / sizeof(duk_hobject *)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE((h)) / sizeof(duk_instr)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE((h)) / sizeof(duk_instr)))
 
 
 /*
@@ -172,4 +172,3 @@ struct duk_hcompiledfunction {
 };
 
 #endif  /* DUK_HCOMPILEDFUNCTION_H_INCLUDED */
-

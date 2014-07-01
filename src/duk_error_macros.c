@@ -72,12 +72,12 @@ void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_
 void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
 	DUK_UNREF(ctx);
 #ifdef DUK_USE_FILE_IO
-	DUK_FPRINTF(DUK_STDERR, "FATAL %d: %s\n", (int) code, msg ? msg : "null");  /* FIXME: format */
+	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, msg ? msg : "null");
 	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */
 #endif
-	DUK_D(DUK_DPRINT("default fatal handler called, code %d -> calling DUK_PANIC()", (int) code));
+	DUK_D(DUK_DPRINT("default fatal handler called, code %ld -> calling DUK_PANIC()", (long) code));
 	DUK_PANIC(code, msg);
 	DUK_UNREACHABLE();
 }
@@ -89,7 +89,7 @@ void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char 
 #if !defined(DUK_USE_PANIC_HANDLER)
 void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 #ifdef DUK_USE_FILE_IO
-	DUK_FPRINTF(DUK_STDERR, "PANIC %d: %s ("
+	DUK_FPRINTF(DUK_STDERR, "PANIC %ld: %s ("
 #if defined(DUK_USE_PANIC_ABORT)
 	            "calling abort"
 #elif defined(DUK_USE_PANIC_EXIT)
@@ -99,7 +99,7 @@ void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 #else
 #error no DUK_USE_PANIC_xxx macro defined
 #endif	
-	            ")\n", (int) code, msg ? msg : "null");  /* FIXME: format */
+	            ")\n", (long) code, msg ? msg : "null");
 	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */

@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_int_t pos) {
+duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos) {
 	duk_uint32_t boff;
 	duk_uint8_t *p, *p_start, *p_end;
 	duk_ucodepoint_t cp;

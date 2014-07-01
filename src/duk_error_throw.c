@@ -26,7 +26,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *
 void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
 	duk_context *ctx = (duk_context *) thr;
-	int double_error = thr->heap->handling_error;
+	duk_bool_t double_error = thr->heap->handling_error;
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
@@ -58,12 +58,14 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 		} else {
 			DUK_D(DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
 			                 "-> push the error code as a number"));
-			duk_push_int(ctx, code);
+			duk_push_int(ctx, (duk_int_t) code);
 		}
 	} else {
 		/* Error object is augmented at its creation here. */
 		duk_require_stack(ctx, 1);
-		/* FIXME: unnecessary '%s' formatting here */
+		/* XXX: unnecessary '%s' formatting here, but cannot use
+		 * 'msg' as a format string directly.
+		 */
 #ifdef DUK_USE_VERBOSE_ERRORS
 		duk_push_error_object_raw(ctx,
 		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
@@ -112,10 +114,10 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
  *  Helper for C function call negative return values.
  */
 
-void duk_error_throw_from_negative_rc(duk_hthread *thr, int rc) {
+void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
 	duk_context *ctx = (duk_context *) thr;
 	const char *msg;
-	int code;
+	duk_errcode_t code;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(rc < 0);
