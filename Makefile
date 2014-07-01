@@ -71,7 +71,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_debug_heap.c \
 	$(DISTSRCSEP)/duk_debug_hobject.c \
 	$(DISTSRCSEP)/duk_debug_fixedbuffer.c \
-	$(DISTSRCSEP)/duk_errmsg.c \
 	$(DISTSRCSEP)/duk_error_macros.c \
 	$(DISTSRCSEP)/duk_error_longjmp.c \
 	$(DISTSRCSEP)/duk_error_throw.c \
@@ -142,7 +141,8 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_bi_buffer.c \
 	$(DISTSRCSEP)/duk_bi_pointer.c \
 	$(DISTSRCSEP)/duk_bi_logger.c \
-	$(DISTSRCSEP)/duk_selftest.c
+	$(DISTSRCSEP)/duk_selftest.c \
+	$(DISTSRCSEP)/duk_strings.c
 
 # Use combined sources for testing etc.
 DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
