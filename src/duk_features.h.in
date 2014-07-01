@@ -70,7 +70,7 @@
 /* XXX: more accurate detection of what gcc versions work; more inline
  * asm versions for other compilers.
  */
-#if defined(__GNUC__) && defined(__i386__) && \
+#if defined(__GNUC__) && defined(__i386__) && defined(DUK_F_C99) && \
     !defined(__cplusplus) /* unsigned long long not standard */
 static __inline__ unsigned long long duk_rdtsc(void) {
 	unsigned long long int x;
@@ -78,7 +78,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 	return x;
 }
 #define DUK_RDTSC_AVAILABLE 1
-#elif defined(__GNUC__) && defined(__x86_64__) && \
+#elif defined(__GNUC__) && defined(__x86_64__) && defined(DUK_F_C99) && \
     !defined(__cplusplus) /* unsigned long long not standard */
 static __inline__ unsigned long long duk_rdtsc(void) {
 	unsigned hi, lo;
