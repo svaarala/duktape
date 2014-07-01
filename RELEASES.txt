@@ -414,6 +414,9 @@ Planned
   representation on x64 when standard integer headers are not available
   (also added a self test to catch such cases)
 
+* Portability fix for DUK_OPT_SEGFAULT_ON_PANIC when C99 types are not
+  available
+
 * Portability fixes for uclibc, use a replacement for e.g. fpclassify()
   because it is broken in some uclibc versions still in use (affected at
   least some mixed endian ARM environments)
