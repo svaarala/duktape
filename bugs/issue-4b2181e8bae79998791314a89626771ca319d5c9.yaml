@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "lexer optimization: add keyword token numbers to duk_hstring objects"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-29 21:17:17.145098 Z
+references: []
+
+id: 4b2181e8bae79998791314a89626771ca319d5c9
+log_events: 
+- - 2014-06-29 21:17:17.201504 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

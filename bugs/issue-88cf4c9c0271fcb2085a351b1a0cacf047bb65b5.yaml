@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: merge duk_js_ops.c with api call entrypoints
+desc: |-
+  API entrypoints mostly make calls to duk_js_ops.c, and often duk_js_ops.c functions
+  have no other callers.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-30 11:48:59.067053 Z
+references: []
+
+id: 88cf4c9c0271fcb2085a351b1a0cacf047bb65b5
+log_events: 
+- - 2014-06-30 11:48:59.243043 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

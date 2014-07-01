@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: remove lexer end_line tracking as unused?
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-06-29 21:08:07.310894 Z
+references: []
+
+id: d5d5dc4a20869d6ff009ca265e1b94e890ec697b
+log_events: 
+- - 2014-06-29 21:08:07.470872 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
