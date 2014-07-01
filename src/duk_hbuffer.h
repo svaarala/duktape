@@ -181,4 +181,3 @@ void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_si
 void duk_hbuffer_append_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t src_offset, duk_size_t length);
 
 #endif  /* DUK_HBUFFER_H_INCLUDED */
-
