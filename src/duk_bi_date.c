@@ -37,22 +37,23 @@
  */
 
 /* Forward declarations. */
-static double duk__push_this_get_timeval_tzoffset(duk_context *ctx, int flags, int *out_tzoffset);
-static double duk__push_this_get_timeval(duk_context *ctx, int flags);
-static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flags);
-static double duk__get_timeval_from_dparts(double *dparts, int flags);
-static void duk__twodigit_year_fixup(duk_context *ctx, int idx_val);
+static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset);
+static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags);
+static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
+static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
+static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
 
 /* Millisecond count constants. */
-#define DUK__MS_SECOND          1000
-#define DUK__MS_MINUTE          (60 * 1000)
-#define DUK__MS_HOUR            (60 * 60 * 1000)
-#define DUK__MS_DAY             (24 * 60 * 60 * 1000)
+#define DUK__MS_SECOND          1000L
+#define DUK__MS_MINUTE          (60L * 1000L)
+#define DUK__MS_HOUR            (60L * 60L * 1000L)
+#define DUK__MS_DAY             (24L * 60L * 60L * 1000L)
 
 /* Part indices for internal breakdowns.  Part order from DUK__IDX_YEAR to
  * DUK__IDX_MILLISECOND matches argument ordering of Ecmascript API calls
  * (like Date constructor call).  A few functions in this file depend
- * on the specific ordering, so change with care.
+ * on the specific ordering, so change with care.  16 bits are not enough
+ * for all parts (year, specifically).
  *
  * (Must be in-sync with genbuiltins.py.)
  */
@@ -97,14 +98,14 @@ static void duk__twodigit_year_fixup(duk_context *ctx, int idx_val);
 duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
-	double d;
+	duk_double_t d;
 
 	if (gettimeofday(&tv, NULL) != 0) {
 		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "gettimeofday failed");
 	}
 
-	d = ((double) tv.tv_sec) * 1000.0 +
-	    ((double) (tv.tv_usec / 1000));
+	d = ((duk_double_t) tv.tv_sec) * 1000.0 +
+	    ((duk_double_t) (tv.tv_usec / 1000));
 	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions */
 
 	return d;
@@ -115,7 +116,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 /* Not a very good provider: only full seconds are available. */
 duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	time_t t = time(NULL);
-	return ((double) t) * 1000.0;
+	return ((duk_double_t) t) * 1000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
 
@@ -158,17 +159,17 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	duk__set_systime_jan1970(&st2);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
-	/* Difference is in 100ns units, convert to milliseconds */
-	return (double) ((tmp1.QuadPart - tmp2.QuadPart) / 10000LL);
+	/* Difference is in 100ns units, convert to milliseconds w/o fractions */
+	return (duk_double_t) ((tmp1.QuadPart - tmp2.QuadPart) / 10000LL);
 }
 #endif  /* DUK_USE_DATE_NOW_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
-static int duk__get_local_tzoffset(double d) {
+static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	time_t t, t1, t2;
-	int parts[DUK__NUM_PARTS];
-	double dparts[DUK__NUM_PARTS];
+	duk_int_t parts[DUK__NUM_PARTS];
+	duk_double_t dparts[DUK__NUM_PARTS];
 	struct tm tms[2];
 #ifdef DUK_USE_DATE_TZO_GMTIME
 	struct tm *tm_ptr;
@@ -215,8 +216,8 @@ static int duk__get_local_tzoffset(double d) {
 
 	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
 	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0);  /* unsigned 31-bit range */
-	t = (size_t) (d / 1000.0);
-	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %d", d, (int) t));
+	t = (time_t) (d / 1000.0);
+	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %d", (double) d, (int) t));
 
 	t1 = t;
 
@@ -263,22 +264,22 @@ static int duk__get_local_tzoffset(double d) {
 	/* difftime() returns a double, so coercion to int generates quite
 	 * a lot of code.  Direct subtraction is not portable, however.
 	 *
-	 * FIXME: allow direct subtraction on known platforms.
+	 * XXX: allow direct subtraction on known platforms.
 	 */
 #if 0
-	return t1 - t2;
+	return (duk_int_t) (t1 - t2);
 #endif
-	return (int) difftime(t1, t2);
+	return (duk_int_t) difftime(t1, t2);
 
  error:
 	/* FIXME: return something more useful, so that caller can throw? */
-	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", d));
+	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", (double) d));
 	return 0;
 }
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
-static int duk__get_local_tzoffset(double d) {
+static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
@@ -306,12 +307,12 @@ static int duk__get_local_tzoffset(double d) {
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
 
 	/* Positive if local time ahead of UTC. */
-	return (int) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000000LL);  /* seconds */
+	return (duk_int_t) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000000LL);  /* seconds */
 }
 #endif  /* DUK_USE_DATE_TZO_WINDOWS */
 
 #ifdef DUK_USE_DATE_PRS_STRPTIME
-static int duk__parse_string_strptime(duk_context *ctx, const char *str) {
+static duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) {
 	struct tm tm;
 	time_t t;
 	char buf[DUK__STRPTIME_BUF_SIZE];
@@ -336,7 +337,7 @@ static int duk__parse_string_strptime(duk_context *ctx, const char *str) {
 		t = mktime(&tm);
 		DUK_DDD(DUK_DDDPRINT("mktime() -> %d", (int) t));
 		if (t >= 0) {
-			duk_push_number(ctx, ((double) t) * 1000.0);
+			duk_push_number(ctx, ((duk_double_t) t) * 1000.0);
 			return 1;
 		}
 	}
@@ -346,47 +347,50 @@ static int duk__parse_string_strptime(duk_context *ctx, const char *str) {
 #endif  /* DUK_USE_DATE_PRS_STRPTIME */
 
 #ifdef DUK_USE_DATE_PRS_GETDATE
-static int duk__parse_string_getdate(duk_context *ctx, const char *str) {
+static duk_bool_t duk__parse_string_getdate(duk_context *ctx, const char *str) {
 	struct tm tm;
-	int rc;
+	duk_small_int_t rc;
 	time_t t;
 
-	/* For this to work, DATEMSK must be set, to this is not very
+	/* For this to work, DATEMSK must be set, so this is not very
 	 * convenient for an embeddable interpreter.
 	 */
 
 	DUK_MEMZERO(&tm, sizeof(struct tm));
-	rc = getdate_r(str, &tm);
-	DUK_DDD(DUK_DDDPRINT("getdate_r() -> %d", rc));
+	rc = (duk_small_int_t) getdate_r(str, &tm);
+	DUK_DDD(DUK_DDDPRINT("getdate_r() -> %d", (int) rc));
 
 	if (rc == 0) {
 		t = mktime(&tm);
 		DUK_DDD(DUK_DDDPRINT("mktime() -> %d", (int) t));
 		if (t >= 0) {
-			duk_push_number(ctx, (double) t);
+			duk_push_number(ctx, (duk_double_t) t);
 			return 1;
 		}
 	}
 
-	duk_push_nan(ctx);
-	return 1;
+	return 0;
 }
 #endif  /* DUK_USE_DATE_PRS_GETDATE */
 
 #ifdef DUK_USE_DATE_FMT_STRFTIME
-static int duk__format_parts_strftime(duk_context *ctx, int *parts, int tzoffset, int flags) {
+static duk_bool_t duk__format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
 	char buf[DUK__STRFTIME_BUF_SIZE];
 	struct tm tm;
 	const char *fmt;
 
 	DUK_UNREF(tzoffset);
 
-	/* If platform doesn't support the entire Ecmascript range, we need to
-	 * return 0 so that the caller can fall back to the default formatter.
+	/* If the platform doesn't support the entire Ecmascript range, we need
+	 * to return 0 so that the caller can fall back to the default formatter.
 	 *
-	 * FIXME: how to detect this more correctly?  add a feature define?
-	 * The size of time_t is probably not an accurate guarantee of strftime
-	 * supporting or not supporting a large time range.
+	 * For now, assume that if time_t is 8 bytes or more, the whole Ecmascript
+	 * range is supported.  For smaller time_t values (4 bytes in practice),
+	 * assumes that the signed 32-bit range is supported.
+	 *
+	 * XXX: detect this more correctly per platform.  The size of time_t is
+	 * probably not an accurate guarantee of strftime() supporting or not
+	 * supporting a large time range (the full Ecmascript range).
 	 */
 	if (sizeof(time_t) < 8 &&
 	   (parts[DUK__IDX_YEAR] < 1970 || parts[DUK__IDX_YEAR] > 2037)) {
@@ -476,23 +480,26 @@ static int duk__format_parts_strftime(duk_context *ctx, int *parts, int tzoffset
 #define DUK__CF_ACCEPT_NUL   (1 << 2)  /* accept string if next char is NUL (otherwise reject) */
 
 #define DUK__PACK_RULE(partmask,sepmask,nextpart,flags)  \
-	((partmask) + ((sepmask) << 9) + ((nextpart) << 17) + ((flags) << 21))
+	((duk_uint32_t) (partmask) + \
+	 (((duk_uint32_t) (sepmask)) << 9) + \
+	 (((duk_uint32_t) (nextpart)) << 17) + \
+	 (((duk_uint32_t) (flags)) << 21))
 
 #define DUK__UNPACK_RULE(rule,var_nextidx,var_flags)  do { \
-		(var_nextidx) = ((rule) >> 17) & 0x0f; \
-		(var_flags) = (rule) >> 21; \
+		(var_nextidx) = (duk_small_uint_t) (((rule) >> 17) & 0x0f); \
+		(var_flags) = (duk_small_uint_t) ((rule) >> 21); \
 	} while (0)
 
-#define DUK__RULE_MASK_PART_SEP  0x1ffff
+#define DUK__RULE_MASK_PART_SEP  0x1ffffUL
 
 /* Matching separator index is used in the control table */
-static const char duk__parse_iso8601_seps[] = {
-	'+' /*0*/, '-' /*1*/, 'T' /*2*/, ' ' /*3*/,
-	':' /*4*/, '.' /*5*/, 'Z' /*6*/, (char) 0 /*7*/
+static const duk_uint8_t duk__parse_iso8601_seps[] = {
+	DUK_ASC_PLUS /*0*/, DUK_ASC_MINUS /*1*/, DUK_ASC_UC_T /*2*/, DUK_ASC_SPACE /*3*/,
+	DUK_ASC_COLON /*4*/, DUK_ASC_PERIOD /*5*/, DUK_ASC_UC_Z /*6*/, DUK_ASC_NUL /*7*/
 };
 
 /* Rule table: first matching rule is used to determine what to do next. */
-static const int duk__parse_iso8601_control[] = {
+static const duk_uint32_t duk__parse_iso8601_control[] = {
 	DUK__PACK_RULE(DUK__PM_YEAR, DUK__SM_MINUS, DUK__PI_MONTH, 0),
 	DUK__PACK_RULE(DUK__PM_MONTH, DUK__SM_MINUS, DUK__PI_DAY, 0),
 	DUK__PACK_RULE(DUK__PM_YEAR | DUK__PM_MONTH | DUK__PM_DAY, DUK__SM_T | DUK__SM_SPACE, DUK__PI_HOUR, 0),
@@ -513,18 +520,18 @@ static const int duk__parse_iso8601_control[] = {
 	 */
 };
 
-static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
-	int parts[DUK__NUM_ISO8601_PARSER_PARTS];
-	double dparts[DUK__NUM_PARTS];
-	double d;
-	const char *p;
-	int part_idx = 0;
-	int accum = 0;
-	int neg_year = 0;
-	int neg_tzoffset = 0;
-	int ndigits = 0;
-	char ch;
-	int i;
+static duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
+	duk_int_t parts[DUK__NUM_ISO8601_PARSER_PARTS];
+	duk_double_t dparts[DUK__NUM_PARTS];
+	duk_double_t d;
+	const duk_uint8_t *p;
+	duk_small_uint_t part_idx = 0;
+	duk_int_t accum = 0;
+	duk_small_uint_t ndigits = 0;
+	duk_bool_t neg_year = 0;
+	duk_bool_t neg_tzoffset = 0;
+	duk_uint_fast8_t ch;
+	duk_small_uint_t i;
 
 	/* During parsing, month and day are one-based; set defaults here. */
 	DUK_MEMZERO(parts, sizeof(parts));
@@ -533,21 +540,22 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	parts[DUK__IDX_DAY] = 1;
 
 	/* Special handling for year sign. */
-	p = str;
+	p = (const duk_uint8_t *) str;
 	ch = p[0];
-	if (ch == '+') {
+	if (ch == DUK_ASC_PLUS) {
 		p++;
-	} else if (ch == '-') {
+	} else if (ch == DUK_ASC_MINUS) {
 		neg_year = 1;
 		p++;
 	}
 
 	for (;;) {
 		ch = *p++;
-		DUK_DDD(DUK_DDDPRINT("parsing, part_idx=%d, char=%d ('%c')", part_idx, (int) ch,
-		                     (ch >= 0x20 && ch <= 0x7e) ? ch : '?'));
+		DUK_DDD(DUK_DDDPRINT("parsing, part_idx=%d, char=%d ('%c')",
+		                     (int) part_idx, (int) ch,
+		                     (ch >= 0x20 && ch <= 0x7e) ? ch : DUK_ASC_QUESTION));
 
-		if (ch >= '0' && ch <= '9') {
+		if (ch >= DUK_ASC_0 && ch <= DUK_ASC_9) {
 			if (ndigits >= 9) {
 				DUK_DDD(DUK_DDDPRINT("too many digits -> reject"));
 				goto reject;
@@ -555,12 +563,12 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 			if (part_idx == DUK__PI_MILLISECOND /*msec*/ && ndigits >= 3) {
 				/* ignore millisecond fractions after 3 */
 			} else {
-				accum = accum * 10 + ((int) ch) - ((int) '0') + 0x00;
+				accum = accum * 10 + ((duk_int_t) ch) - ((duk_int_t) DUK_ASC_0) + 0x00;
 				ndigits++;
 			}
 		} else {
-			int match_val;
-			int sep_idx;
+			duk_uint_fast32_t match_val;
+			duk_small_int_t sep_idx;
 
 			if (ndigits <= 0) {
 				goto reject;
@@ -573,31 +581,31 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				}
 			}
 			parts[part_idx] = accum;
-			DUK_DDD(DUK_DDDPRINT("wrote part %d -> value %d", part_idx, accum));
+			DUK_DDD(DUK_DDDPRINT("wrote part %d -> value %d", (int) part_idx, (int) accum));
 
 			accum = 0;
 			ndigits = 0;
 
-			for (i = 0; i < (int) sizeof(duk__parse_iso8601_seps); i++) {
+			for (i = 0; i < (duk_small_uint_t) (sizeof(duk__parse_iso8601_seps) / sizeof(duk_uint8_t)); i++) {
 				if (duk__parse_iso8601_seps[i] == ch) {
 					break;
 				}
 			}
-			if (i == (int) sizeof(duk__parse_iso8601_seps)) {
+			if (i == (duk_small_uint_t) (sizeof(duk__parse_iso8601_seps) / sizeof(duk_uint8_t))) {
 				DUK_DDD(DUK_DDDPRINT("separator character doesn't match -> reject"));
 				goto reject;
 			}
 
 			sep_idx = i;
-			match_val = (1 << part_idx) + (1 << (sep_idx + 9));  /* match against rule part/sep bits */
+			match_val = (1UL << part_idx) + (1UL << (sep_idx + 9));  /* match against rule part/sep bits */
 
-			for (i = 0; i < (int) (sizeof(duk__parse_iso8601_control) / sizeof(int)); i++) {
-				int rule = duk__parse_iso8601_control[i];
-				int nextpart;
-				int cflags;
+			for (i = 0; i < (duk_small_uint_t) (sizeof(duk__parse_iso8601_control) / sizeof(duk_uint32_t)); i++) {
+				duk_uint_fast32_t rule = duk__parse_iso8601_control[i];
+				duk_small_uint_t nextpart;
+				duk_small_uint_t cflags;
 
 				DUK_DDD(DUK_DDDPRINT("part_idx=%d, sep_idx=%d, match_val=0x%08x, considering rule=0x%08x",
-				                     part_idx, sep_idx, match_val, rule));
+				                     (int) part_idx, (int) sep_idx, (int) match_val, (int) rule));
 
 				if ((rule & match_val) != match_val) {
 					continue;
@@ -606,7 +614,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				DUK__UNPACK_RULE(rule, nextpart, cflags);
 
 				DUK_DDD(DUK_DDDPRINT("rule match -> part_idx=%d, sep_idx=%d, match_val=0x%08x, rule=0x%08x -> nextpart=%d, cflags=0x%02x",
-				                     part_idx, sep_idx, match_val, rule, nextpart, cflags));
+				                     (int) part_idx, (int) sep_idx, (int) match_val, (int) rule, (int) nextpart, (int) cflags));
 
 				if (cflags & DUK__CF_NEG) {
 					neg_tzoffset = 1;
@@ -617,8 +625,8 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				}
 
 				if (cflags & DUK__CF_ACCEPT_NUL) {
-					DUK_ASSERT(*(p-1) != (char) 0);
-					if (*p == '\0') {
+					DUK_ASSERT(*(p - 1) != (char) 0);
+					if (*p == DUK_ASC_NUL) {
 						goto accept;
 					}
 					goto reject;
@@ -628,12 +636,12 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 				break;
 			}  /* rule match */
 
-			if (i == (int) (sizeof(duk__parse_iso8601_control) / sizeof(int))) {
+			if (i == (duk_small_uint_t) (sizeof(duk__parse_iso8601_control) / sizeof(duk_uint32_t))) {
 				DUK_DDD(DUK_DDDPRINT("no rule matches -> reject"));
 				goto reject;
 			}
 
-			if (ch == (char) 0) {
+			if (ch == 0) {
 				/* This shouldn't be necessary, but check just in case
 				 * to avoid any chance of overruns.
 				 */
@@ -677,7 +685,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	 * potential for Valgrind issues.
 	 */
 	for (i = 0; i < DUK__NUM_PARTS; i++) {
-		DUK_DDD(DUK_DDDPRINT("part[%d] = %d", i, parts[i]));
+		DUK_DDD(DUK_DDDPRINT("part[%d] = %d", (int) i, (int) parts[i]));
 		dparts[i] = parts[i];
 	}
 
@@ -697,6 +705,8 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
  *
  *  Note in particular that we must parse whatever toString(), toUTCString(),
  *  and toISOString() can produce; see E5.1 Section 15.9.4.2.
+ *
+ *  Returns 1 to allow tailcalling.
  */
 
 /*
@@ -705,7 +715,7 @@ static int duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
  *  '2012/01/01' as local time.
  */
 
-static int duk__parse_string(duk_context *ctx, const char *str) {
+static duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
 	/* XXX: there is a small risk here: because the ISO 8601 parser is
 	 * very loose, it may end up parsing some datetime values which
 	 * would be better parsed with a platform specific parser.
@@ -714,16 +724,16 @@ static int duk__parse_string(duk_context *ctx, const char *str) {
 	DUK_ASSERT(str != NULL);
 	DUK_DDD(DUK_DDDPRINT("parse datetime from string '%s'", str));
 
-	if (duk__parse_string_iso8601_subset(ctx, str) > 0) {
+	if (duk__parse_string_iso8601_subset(ctx, str) != 0) {
 		return 1;
 	}
 
 #if defined(DUK_USE_DATE_PRS_STRPTIME)
-	if (duk__parse_string_strptime(ctx, str) > 0) {
+	if (duk__parse_string_strptime(ctx, str) != 0) {
 		return 1;
 	}
 #elif defined(DUK_USE_DATE_PRS_GETDATE)
-	if (duk__parse_string_getdate(ctx, str) > 0) {
+	if (duk__parse_string_getdate(ctx, str) != 0) {
 		return 1;
 	}
 #else
@@ -743,13 +753,13 @@ static int duk__parse_string(duk_context *ctx, const char *str) {
  *  out for non-finite numbers etc.
  */
 
-static unsigned char duk__days_in_month[12] = {
-	(unsigned char) 31, (unsigned char) 28, (unsigned char) 31, (unsigned char) 30,
-	(unsigned char) 31, (unsigned char) 30, (unsigned char) 31, (unsigned char) 31,
-	(unsigned char) 30, (unsigned char) 31, (unsigned char) 30, (unsigned char) 31
+static duk_uint8_t duk__days_in_month[12] = {
+	(duk_uint8_t) 31, (duk_uint8_t) 28, (duk_uint8_t) 31, (duk_uint8_t) 30,
+	(duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 31,
+	(duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31
 };
 
-static int duk__is_leap_year(int year) {
+static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
 		return 0;
 	}
@@ -762,7 +772,7 @@ static int duk__is_leap_year(int year) {
 	return 1;
 }
 
-static double duk__timeclip(double x) {
+static duk_double_t duk__timeclip(duk_double_t x) {
 	if (!DUK_ISFINITE(x)) {
 		return DUK_DOUBLE_NAN;
 	}
@@ -778,7 +788,7 @@ static double duk__timeclip(double x) {
 }
 
 /* Integer division which floors also negative values correctly. */
-static int duk__div_floor(int a, int b) {
+static duk_int_t duk__div_floor(duk_int_t a, duk_int_t b) {
 	DUK_ASSERT(b > 0);
 	if (a >= 0) {
 		return a / b;
@@ -792,17 +802,20 @@ static int duk__div_floor(int a, int b) {
 }
 
 /* Compute day number of the first day of a given year. */
-static int duk__day_from_year(int year) {
+static duk_int_t duk__day_from_year(duk_int_t year) {
 	/* Note: in integer arithmetic, (x / 4) is same as floor(x / 4) for non-negative
 	 * values, but is incorrect for negative ones.
 	 */
-	return 365 * (year - 1970) + duk__div_floor(year - 1969, 4) - duk__div_floor(year - 1901, 100) + duk__div_floor(year - 1601, 400);
+	return 365 * (year - 1970)
+	       + duk__div_floor(year - 1969, 4)
+	       - duk__div_floor(year - 1901, 100)
+	       + duk__div_floor(year - 1601, 400);
 }
 
 /* Given a day number, determine year and day-within-year. */
-static int duk__year_from_day(int day, int *out_day_within_year) {
-	int year;
-	int diff_days;
+static duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_within_year) {
+	duk_int_t year;
+	duk_int_t diff_days;
 
 	/* estimate year upwards (towards positive infinity), then back down;
 	 * two iterations should be enough
@@ -816,11 +829,12 @@ static int duk__year_from_day(int day, int *out_day_within_year) {
 
 	for (;;) {
 		diff_days = duk__day_from_year(year) - day;
-		DUK_DDD(DUK_DDDPRINT("year=%d day=%d, diff_days=%d", year, day, diff_days));
+		DUK_DDD(DUK_DDDPRINT("year=%d day=%d, diff_days=%d", (int) year, (int) day, (int) diff_days));
 		if (diff_days <= 0) {
+			DUK_ASSERT(-diff_days <= 366);  /* fits into duk_small_int_t */
 			*out_day_within_year = -diff_days;
 			DUK_DDD(DUK_DDDPRINT("--> year=%d, day-within-year=%d",
-			                     year, *out_day_within_year));
+			                     (int) year, (int) *out_day_within_year));
 			DUK_ASSERT(*out_day_within_year >= 0);
 			DUK_ASSERT(*out_day_within_year <= (duk__is_leap_year(year) ? 366 : 365));
 			return year;
@@ -836,26 +850,28 @@ static int duk__year_from_day(int day, int *out_day_within_year) {
 /* Given a (year, month, day-within-month) triple, compute day number.
  * The input triple is un-normalized and may contain non-finite values.
  */
-static double duk__make_day(double year, double month, double day) {
-	int day_num;
-	int is_leap;
-	int i;
+static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_double_t day) {
+	duk_int_t day_num;
+	duk_bool_t is_leap;
+	duk_small_int_t i, n;
 
 	/* Assume that year, month, day are all coerced to whole numbers.
 	 * They may also be NaN or infinity, in which case this function
 	 * must return NaN or infinity to ensure time value becomes NaN.
+	 * If 'day' is NaN, the final return will end up returning a NaN,
+	 * so it doesn't need to be checked here.
 	 */
 
 	if (!DUK_ISFINITE(year) || !DUK_ISFINITE(month)) {
 		return DUK_DOUBLE_NAN;
 	}
 	
-	year += DUK_FLOOR(month / 12);
+	year += DUK_FLOOR(month / 12.0);
 
-	month = DUK_FMOD(month, 12);
-	if (month < 0) {
+	month = DUK_FMOD(month, 12.0);
+	if (month < 0.0) {
 		/* handle negative values */
-		month += 12;
+		month += 12.0;
 	}
 
 	/* The algorithm in E5.1 Section 15.9.1.12 normalizes month, but
@@ -869,29 +885,34 @@ static double duk__make_day(double year, double month, double day) {
 	 * day_num would be a bogus integer here.
 	 */
 
-	day_num = duk__day_from_year((int) year);
-	is_leap = duk__is_leap_year((int) year);
-	for (i = 0; i < (int) month; i++) {
+	day_num = duk__day_from_year((duk_int_t) year);
+	is_leap = duk__is_leap_year((duk_int_t) year);
+
+	n = (duk_small_int_t) month;
+	for (i = 0; i < n; i++) {
 		day_num += duk__days_in_month[i];
 		if (i == 1 && is_leap) {
 			day_num++;
 		}
 	}
 
-	return (double) day_num + day;
+	/* If 'day' is NaN, returns NaN. */
+	return (duk_double_t) day_num + day;
 }
 
 /* Split time value into parts.  The time value is assumed to be an internal
  * one, i.e. finite, no fractions.  Possible local time adjustment has already
  * been applied when reading the time value.
  */
-static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flags) {
-	double d1, d2;
-	int t1, t2;
-	int year, month, day;
-	int dim;
-	int i;
-	int is_leap;
+static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
+	duk_double_t d1, d2;
+	duk_int_t t1, t2;
+	duk_int_t year;  /* does not fit into 16 bits */
+	duk_small_int_t month;
+	duk_small_int_t day;
+	duk_small_int_t dim;
+	duk_small_uint_t i;
+	duk_bool_t is_leap;
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
 	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
@@ -899,19 +920,19 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
 	 */
-	d1 = DUK_FMOD(d, (double) DUK__MS_DAY);
+	d1 = (duk_double_t) DUK_FMOD(d, (double) DUK__MS_DAY);
 	if (d1 < 0.0) {
 		/* deal with negative values */
-		d1 += (double) DUK__MS_DAY;
+		d1 += (duk_double_t) DUK__MS_DAY;
 	}
-	d2 = DUK_FLOOR(d / (double) DUK__MS_DAY);
-	DUK_ASSERT(d2 * ((double) DUK__MS_DAY) + d1 == d);
+	d2 = DUK_FLOOR(d / (duk_double_t) DUK__MS_DAY);
+	DUK_ASSERT(d2 * ((duk_double_t) DUK__MS_DAY) + d1 == d);
 
 	/* now expected to fit into a 32-bit integer */
-	t1 = (int) d1;
-	t2 = (int) d2;
-	DUK_ASSERT((double) t1 == d1);
-	DUK_ASSERT((double) t2 == d2);
+	t1 = (duk_int_t) d1;
+	t2 = (duk_int_t) d2;
+	DUK_ASSERT((duk_double_t) t1 == d1);
+	DUK_ASSERT((duk_double_t) t2 == d2);
 
 	/* t1 = milliseconds within day, t2 = day number */
 
@@ -937,13 +958,14 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 		if (month == 1 && is_leap) {
 			dim++;
 		}
-		DUK_DDD(DUK_DDDPRINT("month=%d, dim=%d, day=%d", month, dim, day));
+		DUK_DDD(DUK_DDDPRINT("month=%d, dim=%d, day=%d",
+		                     (int) month, (int) dim, (int) day));
 		if (day < dim) {
 			break;
 		}
 		day -= dim;
 	}
-	DUK_DDD(DUK_DDDPRINT("final month=%d", month));
+	DUK_DDD(DUK_DDDPRINT("final month=%d", (int) month));
 	DUK_ASSERT(month >= 0 && month <= 11);
 	DUK_ASSERT(day >= 0 && day <= 31);
 
@@ -958,24 +980,24 @@ static void duk__timeval_to_parts(double d, int *parts, double *dparts, int flag
 
 	if (dparts != NULL) {
 		for (i = 0; i < DUK__NUM_PARTS; i++) {
-			dparts[i] = (double) parts[i];
+			dparts[i] = (duk_double_t) parts[i];
 		}
 	}
 }
 
 /* Compute time value from (double) parts. */
-static double duk__get_timeval_from_dparts(double *dparts, int flags) {
+static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
 #if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
 	/* See comments below on MakeTime why these are volatile. */
-	volatile double tmp_time;
-	volatile double tmp_day;
-	volatile double d;
+	volatile duk_double_t tmp_time;
+	volatile duk_double_t tmp_day;
+	volatile duk_double_t d;
 #else
-	double tmp_time;
-	double tmp_day;
-	double d;
+	duk_double_t tmp_time;
+	duk_double_t tmp_day;
+	duk_double_t d;
 #endif
-	int i;
+	duk_small_uint_t i;
 
 	/* Expects 'this' at top of stack on entry. */
 
@@ -1016,18 +1038,19 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
 	
 	/* MakeTime */
 	tmp_time = 0.0;
-	tmp_time += dparts[DUK__IDX_HOUR] * ((double) DUK__MS_HOUR);
-	tmp_time += dparts[DUK__IDX_MINUTE] * ((double) DUK__MS_MINUTE);
-	tmp_time += dparts[DUK__IDX_SECOND] * ((double) DUK__MS_SECOND);
+	tmp_time += dparts[DUK__IDX_HOUR] * ((duk_double_t) DUK__MS_HOUR);
+	tmp_time += dparts[DUK__IDX_MINUTE] * ((duk_double_t) DUK__MS_MINUTE);
+	tmp_time += dparts[DUK__IDX_SECOND] * ((duk_double_t) DUK__MS_SECOND);
 	tmp_time += dparts[DUK__IDX_MILLISECOND];
 
 	/* MakeDay */
 	tmp_day = duk__make_day(dparts[DUK__IDX_YEAR], dparts[DUK__IDX_MONTH], dparts[DUK__IDX_DAY]);
 
 	/* MakeDate */
-	d = tmp_day * ((double) DUK__MS_DAY) + tmp_time;
+	d = tmp_day * ((duk_double_t) DUK__MS_DAY) + tmp_time;
 
-	DUK_DDD(DUK_DDDPRINT("time=%lf day=%lf --> timeval=%lf", tmp_time, tmp_day, d));
+	DUK_DDD(DUK_DDDPRINT("time=%lf day=%lf --> timeval=%lf",
+	                     (double) tmp_time, (double) tmp_day, (double) d));
 
 	/* Optional UTC conversion followed by TimeClip().
 	 * Note that this also handles Infinity -> NaN conversion.
@@ -1044,7 +1067,7 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
 		 * For NaN/inf, DUK__GET_LOCAL_TZOFFSET() returns 0.
 		 */
 
-		d -= DUK__GET_LOCAL_TZOFFSET(d) * 1000;
+		d -= DUK__GET_LOCAL_TZOFFSET(d) * 1000L;
 	}
 	d = duk__timeclip(d);
 
@@ -1059,11 +1082,11 @@ static double duk__get_timeval_from_dparts(double *dparts, int flags) {
  * internal time value.  At the end, stack is: [ ... this timeval ].
  * Returns the time value.  Local time adjustment is done if requested.
  */
-static double duk__push_this_get_timeval_tzoffset(duk_context *ctx, int flags, int *out_tzoffset) {
+static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
-	double d;
-	int tzoffset = 0;
+	duk_double_t d;
+	duk_int_t tzoffset = 0;
 
 	duk_push_this(ctx);
 	h = duk_get_hobject(ctx, -1);  /* FIXME: getter with class check, useful in built-ins */
@@ -1091,7 +1114,7 @@ static double duk__push_this_get_timeval_tzoffset(duk_context *ctx, int flags, i
 		 * If 'd' is NaN, tzoffset will be 0.
 		 */
 		tzoffset = DUK__GET_LOCAL_TZOFFSET(d);  /* seconds */
-		d += tzoffset * 1000;
+		d += tzoffset * 1000L;
 	}
 	if (out_tzoffset) {
 		*out_tzoffset = tzoffset;
@@ -1101,7 +1124,7 @@ static double duk__push_this_get_timeval_tzoffset(duk_context *ctx, int flags, i
 	return d;
 }
 
-static double duk__push_this_get_timeval(duk_context *ctx, int flags) {
+static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags) {
 	return duk__push_this_get_timeval_tzoffset(ctx, flags, NULL);
 }
 
@@ -1109,8 +1132,8 @@ static double duk__push_this_get_timeval(duk_context *ctx, int flags) {
  * value stack and return 1 (caller can then tailcall us).  Expects
  * the value stack to contain 'this' on the stack top.
  */
-static int duk__set_this_timeval_from_dparts(duk_context *ctx, double *dparts, int flags) {
-	double d;
+static duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_t *dparts, duk_small_uint_t flags) {
+	duk_double_t d;
 
 	/* [ ... this ] */
 
@@ -1119,15 +1142,15 @@ static int duk__set_this_timeval_from_dparts(duk_context *ctx, double *dparts, i
 	duk_dup_top(ctx);         /* -> [ ... this timeval_new timeval_new ] */
 	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE);
 
-	/* stack top: new time value */
+	/* stack top: new time value, return 1 to allow tailcalls */
 	return 1;
 }
 
 /* 'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long. */
-static void duk__format_parts_iso8601(int *parts, int tzoffset, int flags, duk_uint8_t *out_buf) {
+static void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags, duk_uint8_t *out_buf) {
 	char yearstr[8];   /* "-123456\0" */
 	char tzstr[8];     /* "+11:22\0" */
-	char sep = (flags & DUK__FLAG_SEP_T) ? 'T' : ' ';
+	char sep = (flags & DUK__FLAG_SEP_T) ? DUK_ASC_UC_T : DUK_ASC_SPACE;
 
 	DUK_ASSERT(parts[DUK__IDX_MONTH] >= 1 && parts[DUK__IDX_MONTH] <= 12);
 	DUK_ASSERT(parts[DUK__IDX_DAY] >= 1 && parts[DUK__IDX_DAY] <= 31);
@@ -1138,48 +1161,57 @@ static void duk__format_parts_iso8601(int *parts, int tzoffset, int flags, duk_u
 	 */
 	DUK_SNPRINTF(yearstr,
 	             sizeof(yearstr),
-	             (parts[DUK__IDX_YEAR] >= 0 && parts[DUK__IDX_YEAR] <= 9999) ? "%04d" :
-	                    ((parts[DUK__IDX_YEAR] >= 0) ? "+%06d" : "%07d"),
-	             parts[DUK__IDX_YEAR]);
+	             (parts[DUK__IDX_YEAR] >= 0 && parts[DUK__IDX_YEAR] <= 9999) ? "%04ld" :
+	                    ((parts[DUK__IDX_YEAR] >= 0) ? "+%06ld" : "%07ld"),
+	             (long) parts[DUK__IDX_YEAR]);
 	yearstr[sizeof(yearstr) - 1] = (char) 0;
 
 	if (flags & DUK__FLAG_LOCALTIME) {
-		/* tzoffset seconds are dropped */
+		/* tzoffset seconds are dropped; 16 bits suffice for
+		 * time offset in minutes
+		 */
 		if (tzoffset >= 0) {
-			int tmp = tzoffset / 60;
-			DUK_SNPRINTF(tzstr, sizeof(tzstr), "+%02d:%02d", tmp / 60, tmp % 60);
+			duk_small_int_t tmp = tzoffset / 60;
+			DUK_SNPRINTF(tzstr, sizeof(tzstr), "+%02d:%02d", (int) (tmp / 60), (int) (tmp % 60));
 		} else {
-			int tmp = -tzoffset / 60;
-			DUK_SNPRINTF(tzstr, sizeof(tzstr), "-%02d:%02d", tmp / 60, tmp % 60);
+			duk_small_int_t tmp = -tzoffset / 60;
+			DUK_SNPRINTF(tzstr, sizeof(tzstr), "-%02d:%02d", (int) (tmp / 60), (int) (tmp % 60));
 		}
 		tzstr[sizeof(tzstr) - 1] = (char) 0;
 	} else {
-		tzstr[0] = 'Z';
+		tzstr[0] = DUK_ASC_UC_Z;
 		tzstr[1] = (char) 0;
 	}
 
+	/* Unlike year, the other parts fit into 16 bits so %d format
+	 * is portable.
+	 */
 	if ((flags & DUK__FLAG_TOSTRING_DATE) && (flags & DUK__FLAG_TOSTRING_TIME)) {
 		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
-		            yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY], sep,
-		            parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE], parts[DUK__IDX_SECOND],
-		            parts[DUK__IDX_MILLISECOND], tzstr);
+		            yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY], sep,
+		            (int) parts[DUK__IDX_HOUR], (int) parts[DUK__IDX_MINUTE],
+		            (int) parts[DUK__IDX_SECOND], (int) parts[DUK__IDX_MILLISECOND], tzstr);
 	} else if (flags & DUK__FLAG_TOSTRING_DATE) {
-		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d", yearstr, parts[DUK__IDX_MONTH], parts[DUK__IDX_DAY]);
+		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d",
+		            yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY]);
 	} else {
 		DUK_ASSERT(flags & DUK__FLAG_TOSTRING_TIME);
-		DUK_SPRINTF((char *) out_buf, "%02d:%02d:%02d.%03d%s", parts[DUK__IDX_HOUR], parts[DUK__IDX_MINUTE],
-		            parts[DUK__IDX_SECOND], parts[DUK__IDX_MILLISECOND], tzstr);
+		DUK_SPRINTF((char *) out_buf, "%02d:%02d:%02d.%03d%s",
+		            (int) parts[DUK__IDX_HOUR], (int) parts[DUK__IDX_MINUTE],
+		            (int) parts[DUK__IDX_SECOND], (int) parts[DUK__IDX_MILLISECOND],
+		            tzstr);
 	}
 }
 
 /* Helper for string conversion calls: check 'this' binding, get the
  * internal time value, and format date and/or time in a few formats.
+ * Return value allows tail calls.
  */
-static int duk__to_string_helper(duk_context *ctx, int flags) {
-	double d;
-	int parts[DUK__NUM_PARTS];
-	int tzoffset;  /* seconds */
-	int rc;
+static duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t flags) {
+	duk_double_t d;
+	duk_int_t parts[DUK__NUM_PARTS];
+	duk_int_t tzoffset;  /* seconds, doesn't fit into 16 bits */
+	duk_bool_t rc;
 	duk_uint8_t buf[DUK_BI_DATE_ISO8601_BUFSIZE];
 
 	DUK_UNREF(rc);  /* unreferenced with some options */
@@ -1203,8 +1235,8 @@ static int duk__to_string_helper(duk_context *ctx, int flags) {
 		 */
 #ifdef DUK_USE_DATE_FMT_STRFTIME
 		rc = duk__format_parts_strftime(ctx, parts, tzoffset, flags);
-		if (rc == 1) {
-			return rc;
+		if (rc != 0) {
+			return 1;
 		}
 #else
 		/* No locale specific formatter; this is OK, we fall back
@@ -1226,12 +1258,13 @@ static int duk__to_string_helper(duk_context *ctx, int flags) {
  * local time), push a specified component as a return value to the
  * value stack and return 1 (caller can then tailcall us).
  */
-static int duk__get_part_helper(duk_context *ctx, int flags_and_idx) {
-	double d;
-	int parts[DUK__NUM_PARTS];
-	int idx_part = flags_and_idx >> 12;  /* unpack args */
+static duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_and_idx) {
+	duk_double_t d;
+	duk_int_t parts[DUK__NUM_PARTS];
+	duk_small_uint_t idx_part = (duk_small_uint_t) (flags_and_idx >> 12);  /* unpack args */
 
-	DUK_ASSERT(idx_part >= 0 && idx_part < DUK__NUM_PARTS);
+	DUK_ASSERT_DISABLE(idx_part >= 0);  /* unsigned */
+	DUK_ASSERT(idx_part < DUK__NUM_PARTS);
 
 	d = duk__push_this_get_timeval(ctx, flags_and_idx);
 	if (DUK_ISNAN(d)) {
@@ -1240,7 +1273,7 @@ static int duk__get_part_helper(duk_context *ctx, int flags_and_idx) {
 	}
 	DUK_ASSERT(DUK_ISFINITE(d));
 
-	duk__timeval_to_parts(d, parts, NULL, flags_and_idx);
+	duk__timeval_to_parts(d, parts, NULL, flags_and_idx);  /* no need to mask idx portion */
 
 	/* Setter APIs detect special year numbers (0...99) and apply a +1900
 	 * only in certain cases.  The legacy getYear() getter applies -1900
@@ -1257,14 +1290,14 @@ static int duk__get_part_helper(duk_context *ctx, int flags_and_idx) {
  * new time value as a return value to the value stack and return 1
  * (caller can then tailcall us).
  */
-static int duk__set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
-	double d;
-	int parts[DUK__NUM_PARTS];
-	double dparts[DUK__NUM_PARTS];
-	int nargs;
-	int maxnargs = flags_and_maxnargs >> 12;  /* unpack args */
-	int idx_first, idx;
-	int i;
+static duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_and_maxnargs) {
+	duk_double_t d;
+	duk_int_t parts[DUK__NUM_PARTS];
+	duk_double_t dparts[DUK__NUM_PARTS];
+	duk_idx_t nargs;
+	duk_small_uint_t maxnargs = (duk_small_uint_t) (flags_and_maxnargs >> 12);  /* unpack args */
+	duk_small_uint_t idx_first, idx;
+	duk_small_uint_t i;
 
 	nargs = duk_get_top(ctx);
 	d = duk__push_this_get_timeval(ctx, flags_and_maxnargs);
@@ -1309,18 +1342,20 @@ static int duk__set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 		DUK_ASSERT(maxnargs >= 1 && maxnargs <= 3);
 		idx_first = DUK__IDX_DAY - (maxnargs - 1);
 	}
-	DUK_ASSERT(idx_first >= 0 && idx_first < DUK__NUM_PARTS);
+	DUK_ASSERT_DISABLE(idx_first >= 0);  /* unsigned */
+	DUK_ASSERT(idx_first < DUK__NUM_PARTS);
 
 	for (i = 0; i < maxnargs; i++) {
-		if (i >= nargs) {
+		if ((duk_idx_t) i >= nargs) {
 			/* no argument given -> leave components untouched */
 			break;
 		}
 		idx = idx_first + i;
-		DUK_ASSERT(idx >= 0 && idx < DUK__NUM_PARTS);
+		DUK_ASSERT_DISABLE(idx >= 0);  /* unsigned */
+		DUK_ASSERT(idx < DUK__NUM_PARTS);
 
 		if (idx == DUK__IDX_YEAR && (flags_and_maxnargs & DUK__FLAG_YEAR_FIXUP)) {
-			duk__twodigit_year_fixup(ctx, i);
+			duk__twodigit_year_fixup(ctx, (duk_idx_t) i);
 		}
 
 		dparts[idx] = duk_to_number(ctx, i);
@@ -1354,8 +1389,12 @@ static int duk__set_part_helper(duk_context *ctx, int flags_and_maxnargs) {
 /* Apply ToNumber() to specified index; if ToInteger(val) in [0,99], add
  * 1900 and replace value at idx_val.
  */
-static void duk__twodigit_year_fixup(duk_context *ctx, int idx_val) {
-	double d;
+static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val) {
+	duk_double_t d;
+
+	/* XXX: idx_val would fit into 16 bits, but using duk_small_uint_t
+	 * might not generate better code due to casting.
+	 */
 
 	/* E5 Sections 15.9.3.1, B.2.4, B.2.5 */
 	duk_to_number(ctx, idx_val);
@@ -1376,10 +1415,10 @@ static void duk__twodigit_year_fixup(duk_context *ctx, int idx_val) {
 /* Set datetime parts from stack arguments, defaulting any missing values.
  * Day-of-week is not set; it is not required when setting the time value.
  */
-static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs) {
-	double d;
-	int i;
-	int idx;
+static void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, duk_idx_t nargs) {
+	duk_double_t d;
+	duk_small_uint_t i;
+	duk_small_uint_t idx;
 
 	/* Causes a ToNumber() coercion, but doesn't break coercion order since
 	 * year is coerced first anyway.
@@ -1393,8 +1432,8 @@ static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs
 	for (i = 0; i < 8; i++) {
 		/* Note: rely on index ordering */
 		idx = DUK__IDX_YEAR + i;
-		if (i < nargs) {
-			d = duk_to_number(ctx, i);
+		if ((duk_idx_t) i < nargs) {
+			d = duk_to_number(ctx, (duk_idx_t) i);
 			if (idx == DUK__IDX_DAY) {
 				/* Convert day from one-based to zero-based (internal).  This may
 				 * cause the day part to be negative, which is OK.
@@ -1412,8 +1451,10 @@ static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs
 	}
 
 	DUK_DDD(DUK_DDDPRINT("parts from args -> %lf %lf %lf %lf %lf %lf %lf %lf",
-	                     dparts[0], dparts[1], dparts[2], dparts[3],
-	                     dparts[4], dparts[5], dparts[6], dparts[7]));
+	                     (double) dparts[0], (double) dparts[1],
+	                     (double) dparts[2], (double) dparts[3],
+	                     (double) dparts[4], (double) dparts[5],
+	                     (double) dparts[6], (double) dparts[7]));
 }
 
 /*
@@ -1422,7 +1463,7 @@ static void duk__set_parts_from_args(duk_context *ctx, double *dparts, int nargs
  */
 
 void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
-	int parts[DUK__NUM_PARTS];
+	duk_int_t parts[DUK__NUM_PARTS];
 
 	duk__timeval_to_parts(timeval,
 	                      parts,
@@ -1441,13 +1482,13 @@ void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
  *  Constructor calls
  */
 
-int duk_bi_date_constructor(duk_context *ctx) {
-	int nargs = duk_get_top(ctx);
-	int is_cons = duk_is_constructor_call(ctx);
-	double dparts[DUK__NUM_PARTS];
-	double d;
+duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
+	duk_idx_t nargs = duk_get_top(ctx);
+	duk_bool_t is_cons = duk_is_constructor_call(ctx);
+	duk_double_t dparts[DUK__NUM_PARTS];
+	duk_double_t d;
 
-	DUK_DDD(DUK_DDDPRINT("Date constructor, nargs=%d, is_cons=%d", nargs, is_cons));
+	DUK_DDD(DUK_DDDPRINT("Date constructor, nargs=%d, is_cons=%d", (int) nargs, (int) is_cons));
 
 	duk_push_object_helper(ctx,
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -1483,19 +1524,19 @@ int duk_bi_date_constructor(duk_context *ctx) {
 
 	/* Parts are in local time, convert when setting. */
 
-	duk__set_this_timeval_from_dparts(ctx, dparts, DUK__FLAG_LOCALTIME /*flags*/);  /* -> [ ... this timeval ] */
+	(void) duk__set_this_timeval_from_dparts(ctx, dparts, DUK__FLAG_LOCALTIME /*flags*/);  /* -> [ ... this timeval ] */
 	duk_pop(ctx);  /* -> [ ... this ] */
 	return 1;
 }
 
-int duk_bi_date_constructor_parse(duk_context *ctx) {
+duk_ret_t duk_bi_date_constructor_parse(duk_context *ctx) {
 	return duk__parse_string(ctx, duk_to_string(ctx, 0));
 }
 
-int duk_bi_date_constructor_utc(duk_context *ctx) {
-	int nargs = duk_get_top(ctx);
-	double dparts[DUK__NUM_PARTS];
-	double d;
+duk_ret_t duk_bi_date_constructor_utc(duk_context *ctx) {
+	duk_idx_t nargs = duk_get_top(ctx);
+	duk_double_t dparts[DUK__NUM_PARTS];
+	duk_double_t d;
 
 	/* Behavior for nargs < 2 is implementation dependent: currently we'll
 	 * set a NaN time value (matching V8 behavior) in this case.
@@ -1511,8 +1552,8 @@ int duk_bi_date_constructor_utc(duk_context *ctx) {
 	return 1;
 }
 
-int duk_bi_date_constructor_now(duk_context *ctx) {
-	double d;
+duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
+	duk_double_t d;
 
 	d = DUK__GET_NOW_TIMEVAL(ctx);
 	DUK_ASSERT(duk__timeclip(d) == d);  /* TimeClip() should never be necessary */
@@ -1554,23 +1595,23 @@ int duk_bi_date_constructor_now(duk_context *ctx) {
  *      toISOString() requires a RangeError for invalid date values.
  */
 
-int duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
-	int flags = duk_get_magic(ctx);
+duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
+	duk_small_uint_t flags = (duk_small_uint_t) duk_get_magic(ctx);
 	return duk__to_string_helper(ctx, flags);
 }
 
-int duk_bi_date_prototype_value_of(duk_context *ctx) {
+duk_ret_t duk_bi_date_prototype_value_of(duk_context *ctx) {
 	/* This native function is also used for Date.prototype.getTime()
 	 * as their behavior is identical.
 	 */
 
-	double d = duk__push_this_get_timeval(ctx, 0 /*flags*/);  /* -> [ this ] */
+	duk_double_t d = duk__push_this_get_timeval(ctx, 0 /*flags*/);  /* -> [ this ] */
 	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
 	duk_push_number(ctx, d);
 	return 1;
 }
 
-int duk_bi_date_prototype_to_json(duk_context *ctx) {
+duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
 	/* Note: toJSON() is a generic function which works even if 'this'
 	 * is not a Date.  The sole argument is ignored.
 	 */
@@ -1581,7 +1622,7 @@ int duk_bi_date_prototype_to_json(duk_context *ctx) {
 	duk_dup_top(ctx);
 	duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
 	if (duk_is_number(ctx, -1)) {
-		double d = duk_get_number(ctx, -1);
+		duk_double_t d = duk_get_number(ctx, -1);
 		if (!DUK_ISFINITE(d)) {
 			duk_push_null(ctx);
 			return 1;
@@ -1636,12 +1677,12 @@ int duk_bi_date_prototype_to_json(duk_context *ctx) {
  *      function (duk_bi_date_prototype_value_of).
  */
 
-int duk_bi_date_prototype_get_shared(duk_context *ctx) {
-	int flags_and_idx = duk_get_magic(ctx);
+duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx) {
+	duk_small_uint_t flags_and_idx = (duk_small_uint_t) duk_get_magic(ctx);
 	return duk__get_part_helper(ctx, flags_and_idx);
 }
 
-int duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
+duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
 	/*
 	 *  Return (t - LocalTime(t)) in minutes:
 	 *
@@ -1656,8 +1697,8 @@ int duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
 	 *
 	 */
 
-	double d;
-	int tzoffset;
+	duk_double_t d;
+	duk_int_t tzoffset;
 
 	/* Note: DST adjustment is determined using UTC time. */
 	d = duk__push_this_get_timeval(ctx, 0 /*flags*/);
@@ -1721,13 +1762,13 @@ int duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
  *      the year will be set regardless of actual argument count.
  */
 
-int duk_bi_date_prototype_set_shared(duk_context *ctx) {
-	int flags_and_maxnargs = duk_get_magic(ctx);
+duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx) {
+	duk_small_uint_t flags_and_maxnargs = (duk_small_uint_t) duk_get_magic(ctx);
 	return duk__set_part_helper(ctx, flags_and_maxnargs);
 }
 
-int duk_bi_date_prototype_set_time(duk_context *ctx) {
-	double d;
+duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx) {
+	duk_double_t d;
 
 	(void) duk__push_this_get_timeval(ctx, 0 /*flags*/); /* -> [ timeval this ] */
 	d = duk__timeclip(duk_to_number(ctx, 0));
@@ -1737,4 +1778,3 @@ int duk_bi_date_prototype_set_time(duk_context *ctx) {
 
 	return 1;
 }
-
