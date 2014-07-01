@@ -18,11 +18,11 @@ static void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *s
 	data = DUK_HSTRING_GET_DATA(str);
 	nchars = ((duk_size_t) str->blen < maxchars ? (duk_size_t) str->blen : maxchars);
 	for (i = 0; i < nchars; i++) {
-		char c = (char) data[i];
+		duk_small_int_t c = (duk_small_int_t) data[i];
 		if (c < 0x20 || c > 0x7e) {
 			c = '.';
 		}
-		buf[i] = c;
+		buf[i] = (char) c;
 	}
 }
 
@@ -59,7 +59,7 @@ static void duk__dump_indented(duk_heaphdr *obj, int index) {
 }
 
 static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
-	int count;
+	duk_int_t count;
 	duk_heaphdr *curr;
 
 	DUK_UNREF(heap);
@@ -71,7 +71,7 @@ static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char
 		curr = DUK_HEAPHDR_GET_NEXT(curr);
 	}
 
-	DUK_D(DUK_DPRINT("%s, %d objects", name, count));
+	DUK_D(DUK_DPRINT("%s, %d objects", name, (int) count));
 
 	count = 0;
 	curr = root;
@@ -83,7 +83,7 @@ static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char
 }
 
 static void duk__dump_stringtable(duk_heap *heap) {
-	duk_uint32_t i;
+	duk_uint_fast32_t i;
 	char buf[64+1];
 
 	DUK_D(DUK_DPRINT("stringtable %p, used %d, size %d, load %d%%",
@@ -92,20 +92,20 @@ static void duk__dump_stringtable(duk_heap *heap) {
 	                 (int) heap->st_size,
 	                 (int) (((double) heap->st_used) / ((double) heap->st_size) * 100.0)));
 
-	for (i = 0; i < heap->st_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) heap->st_size; i++) {
 		duk_hstring *e = heap->st[i];
 
 		if (!e) {
-			DUK_D(DUK_DPRINT("  [%d]: NULL", i));
+			DUK_D(DUK_DPRINT("  [%d]: NULL", (int) i));
 		} else if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
-			DUK_D(DUK_DPRINT("  [%d]: DELETED", i));
+			DUK_D(DUK_DPRINT("  [%d]: DELETED", (int) i));
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), e);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x, ref: %d) '%s', strhash=0x%08x, blen=%d, clen=%d, "
 			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			                 i,
+			                 (int) i,
 			                 (void *) e,
 			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
 			                 (int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) e),
@@ -121,7 +121,7 @@ static void duk__dump_stringtable(duk_heap *heap) {
 #else
 			DUK_D(DUK_DPRINT("  [%d]: %p (flags: 0x%08x) '%s', strhash=0x%08x, blen=%d, clen=%d, "
 			                 "arridx=%d, internal=%d, reserved_word=%d, strict_reserved_word=%d, eval_or_arguments=%d",
-			                 i,
+			                 (int) i,
 			                 (void *) e,
 			                 (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) e),
 			                 buf,
@@ -139,20 +139,20 @@ static void duk__dump_stringtable(duk_heap *heap) {
 }
 
 static void duk__dump_strcache(duk_heap *heap) {
-	duk_uint32_t i;
+	duk_uint_fast32_t i;
 	char buf[64+1];
 
 	DUK_D(DUK_DPRINT("stringcache"));
 
-	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache *c = &heap->strcache[i];
 		if (!c->h) {
 			DUK_D(DUK_DPRINT("  [%d]: bidx=%d, cidx=%d, str=NULL",
-			                 i, c->bidx, c->cidx));
+			                 (int) i, (int) c->bidx, (int) c->cidx));
 		} else {
 			duk__sanitize_snippet(buf, sizeof(buf), c->h);
 			DUK_D(DUK_DPRINT("  [%d]: bidx=%d cidx=%d str=%s",
-			                 i, c->bidx, c->cidx, buf));
+			                 (int) i, (int) c->bidx, (int) c->cidx, buf));
 		}
 	} 
 }
@@ -184,26 +184,26 @@ void duk_debug_dump_heap(duk_heap *heap) {
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 #ifdef DUK_USE_VOLUNTARY_GC
-	DUK_D(DUK_DPRINT("  mark-and-sweep trig counter: %d", heap->mark_and_sweep_trigger_counter));
+	DUK_D(DUK_DPRINT("  mark-and-sweep trig counter: %d", (int) heap->mark_and_sweep_trigger_counter));
 #endif
-	DUK_D(DUK_DPRINT("  mark-and-sweep rec depth: %d", heap->mark_and_sweep_recursion_depth));
-	DUK_D(DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", heap->mark_and_sweep_base_flags));
+	DUK_D(DUK_DPRINT("  mark-and-sweep rec depth: %d", (int) heap->mark_and_sweep_recursion_depth));
+	DUK_D(DUK_DPRINT("  mark-and-sweep base flags: 0x%08x", (int) heap->mark_and_sweep_base_flags));
 #endif
 
 	DUK_D(DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr));
-	DUK_D(DUK_DPRINT("  lj.type: %d", heap->lj.type));
+	DUK_D(DUK_DPRINT("  lj.type: %d", (int) heap->lj.type));
 	DUK_D(DUK_DPRINT("  lj.value1: %!T", &heap->lj.value1));
 	DUK_D(DUK_DPRINT("  lj.value2: %!T", &heap->lj.value2));
-	DUK_D(DUK_DPRINT("  lj.iserror: %d", heap->lj.iserror));
+	DUK_D(DUK_DPRINT("  lj.iserror: %d", (int) heap->lj.iserror));
 
-	DUK_D(DUK_DPRINT("  handling_error: %d", heap->handling_error));
+	DUK_D(DUK_DPRINT("  handling_error: %d", (int) heap->handling_error));
 
 	DUK_D(DUK_DPRINT("  heap_thread: %!@O", (duk_heaphdr *) heap->heap_thread));
 	DUK_D(DUK_DPRINT("  curr_thread: %!@O", (duk_heaphdr *) heap->curr_thread));
 	DUK_D(DUK_DPRINT("  heap_object: %!@O", (duk_heaphdr *) heap->heap_object));
 
-	DUK_D(DUK_DPRINT("  call_recursion_depth: %d", heap->call_recursion_depth));
-	DUK_D(DUK_DPRINT("  call_recursion_limit: %d", heap->call_recursion_limit));
+	DUK_D(DUK_DPRINT("  call_recursion_depth: %d", (int) heap->call_recursion_depth));
+	DUK_D(DUK_DPRINT("  call_recursion_limit: %d", (int) heap->call_recursion_limit));
 
 	DUK_D(DUK_DPRINT("  hash_seed: 0x%08x", (int) heap->hash_seed));
 	DUK_D(DUK_DPRINT("  rnd_state: 0x%08x", (int) heap->rnd_state));
@@ -226,4 +226,3 @@ void duk_debug_dump_heap(duk_heap *heap) {
 }
 
 #endif  /* DUK_USE_DEBUG */
-

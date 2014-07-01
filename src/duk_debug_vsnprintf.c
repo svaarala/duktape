@@ -125,22 +125,22 @@ struct duk__dprint_state {
 	 * to not couple these two mechanisms unnecessarily.
 	 */
 	duk_hobject *loop_stack[DUK__LOOP_STACK_DEPTH];
-	int loop_stack_index;
-	int loop_stack_limit;
+	duk_int_t loop_stack_index;
+	duk_int_t loop_stack_limit;
 
-	int depth;
-	int depth_limit;
+	duk_int_t depth;
+	duk_int_t depth_limit;
 
-	int pointer;
-	int heavy;
-	int binary;
-	int follow_proto;
-	int internal;
-	int hexdump;
+	duk_bool_t pointer;
+	duk_bool_t heavy;
+	duk_bool_t binary;
+	duk_bool_t follow_proto;
+	duk_bool_t internal;
+	duk_bool_t hexdump;
 };
 
 /* helpers */
-static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, int quotes);
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, duk_bool_t quotes);
 static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
 static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
 static void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
@@ -162,11 +162,11 @@ static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 
 	if (st->binary) {
 		duk_size_t i;
-		duk_fb_put_byte(fb, (duk_uint8_t) '[');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)h)[i]);
 		}
-		duk_fb_put_byte(fb, (duk_uint8_t) ']');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
 
 #ifdef DUK_USE_REFERENCE_COUNTING  /* currently implicitly also DUK_USE_DOUBLE_LINKED_HEAP */
@@ -174,24 +174,24 @@ static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 		duk_fb_sprintf(fb, "[h_next=%p,h_prev=%p,h_refcount=%u,h_flags=%08x,type=%d,reachable=%d,temproot=%d,finalizable=%d,finalized=%d]",
 		               DUK_HEAPHDR_GET_NEXT(h),
 		               DUK_HEAPHDR_GET_PREV(h),
-		               DUK_HEAPHDR_GET_REFCOUNT(h),
-		               DUK_HEAPHDR_GET_FLAGS(h),
-		               DUK_HEAPHDR_GET_TYPE(h),
-		               DUK_HEAPHDR_HAS_REACHABLE(h),
-		               DUK_HEAPHDR_HAS_TEMPROOT(h),
-		               DUK_HEAPHDR_HAS_FINALIZABLE(h),
-		               DUK_HEAPHDR_HAS_FINALIZED(h));
+		               (unsigned int) DUK_HEAPHDR_GET_REFCOUNT(h),
+		               (int) DUK_HEAPHDR_GET_FLAGS(h),
+		               (int) DUK_HEAPHDR_GET_TYPE(h),
+		               (int) (DUK_HEAPHDR_HAS_REACHABLE(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_TEMPROOT(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZABLE(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZED(h) ? 1 : 0));
 	}
 #else
 	if (st->heavy) {
 		duk_fb_sprintf(fb, "[h_next=%p,h_flags=%08x,type=%d,reachable=%d,temproot=%d,finalizable=%d,finalized=%d]",
 		               DUK_HEAPHDR_GET_NEXT(h),
-	        	       DUK_HEAPHDR_GET_FLAGS(h),
-		               DUK_HEAPHDR_GET_TYPE(h),
-		               DUK_HEAPHDR_HAS_REACHABLE(h),
-	        	       DUK_HEAPHDR_HAS_TEMPROOT(h),
-		               DUK_HEAPHDR_HAS_FINALIZABLE(h),
-		               DUK_HEAPHDR_HAS_FINALIZED(h));
+		               (int) DUK_HEAPHDR_GET_FLAGS(h),
+		               (int) DUK_HEAPHDR_GET_TYPE(h),
+		               (int) (DUK_HEAPHDR_HAS_REACHABLE(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_TEMPROOT(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZABLE(h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZED(h) ? 1 : 0));
 	}
 #endif
 }
@@ -209,38 +209,38 @@ static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_
 
 	if (st->binary) {
 		duk_size_t i;
-		duk_fb_put_byte(fb, (duk_uint8_t) '[');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)h)[i]);
 		}
-		duk_fb_put_byte(fb, (duk_uint8_t) ']');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	if (st->heavy) {
 		duk_fb_sprintf(fb, "[h_refcount=%u,h_flags=%08x,type=%d,reachable=%d,temproot=%d,finalizable=%d,finalized=%d]",
-		               DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h),
-		               DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
-		               DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_TEMPROOT((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h));
+		               (unsigned int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h),
+		               (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
+		               (int) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
+		               (int) (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_TEMPROOT((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h) ? 1 : 0));
 	}
 #else
 	if (st->heavy) {
 		duk_fb_sprintf(fb, "[h_flags=%08x,type=%d,reachable=%d,temproot=%d,finalizable=%d,finalized=%d]",
-	        	       DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
-		               DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h),
-	        	       DUK_HEAPHDR_HAS_TEMPROOT((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) h),
-		               DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h));
+		               (int) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
+		               (int) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
+		               (int) (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_TEMPROOT((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) h) ? 1 : 0),
+		               (int) (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h) ? 1 : 0));
 	}
 #endif
 }
 
-static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes) {
+static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_bool_t quotes) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
@@ -261,7 +261,7 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes
 	p = DUK_HSTRING_GET_DATA(h);
 	p_end = p + DUK_HSTRING_GET_BYTELEN(h);
 
-	if (p_end > p && p[0] == '_') {
+	if (p_end > p && p[0] == DUK_ASC_UNDERSCORE) {
 		/* if property key begins with underscore, encode it with
 		 * forced quotes (e.g. "_foo") to distinguish it from encoded
 		 * internal properties (e.g. \xffbar -> _bar).
@@ -270,7 +270,7 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes
 	}
 
 	if (quotes) {
-		duk_fb_put_byte(fb, (duk_uint8_t) '"');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_DOUBLEQUOTE);
 	}
 	while (p < p_end) {
 		duk_uint8_t ch = *p++;
@@ -286,17 +286,17 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes
 			/* encode \xffbar as _bar if no quotes are applied, this is for
 			 * readable internal keys.
 			 */
-			duk_fb_put_byte(fb, (duk_uint8_t) '_');
+			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_UNDERSCORE);
 		} else {
 			duk_fb_sprintf(fb, "\\x%02x", (int) ch);
 		}
 	}
 	if (quotes) {
-		duk_fb_put_byte(fb, (duk_uint8_t) '"');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_DOUBLEQUOTE);
 	}
 #ifdef DUK_USE_REFERENCE_COUNTING
 	/* XXX: limit to quoted strings only, to save keys from being cluttered? */
-	duk_fb_sprintf(fb, "/%d", DUK_HEAPHDR_GET_REFCOUNT(&h->hdr));
+	duk_fb_sprintf(fb, "/%u", (unsigned int) DUK_HEAPHDR_GET_REFCOUNT(&h->hdr));
 #endif
 }
 
@@ -307,7 +307,7 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, int quotes
 		if (first) { \
 			first = 0; \
 		} else { \
-			duk_fb_put_byte(fb, (duk_uint8_t) ','); \
+			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COMMA); \
 		} \
 	} while (0)
 
@@ -316,10 +316,10 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_uint_fast32_t i;
 	duk_tval *tv;
 	duk_hstring *key;
-	int first = 1;
+	duk_bool_t first = 1;
 	char *brace1 = "{";
 	char *brace2 = "}";
-	int pushed_loopstack = 0;
+	duk_bool_t pushed_loopstack = 0;
 
 	if (duk_fb_is_full(fb)) {
 		return;
@@ -412,7 +412,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			}
 			DUK__COMMA();
 			duk__print_hstring(st, key, 0);
-			duk_fb_put_byte(fb, (duk_uint8_t) ':');
+			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COLON);
 			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
 				duk_fb_sprintf(fb, "[get:%p,set:%p]",
 				               DUK_HOBJECT_E_GET_VALUE(h, i).a.get,
@@ -521,42 +521,42 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	if (st->internal && DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:"); duk__print_hbuffer(st, f->data);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%d", f->nregs);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%d", (int) f->nregs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", (int) f->nargs);
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 #if 0  /* FIXME: no portable way to print function pointers */
 		DUK__COMMA(); duk_fb_sprintf(fb, "__func:%p", (void *) f->func);
 #endif
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", f->nargs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%d", (int) f->nargs);
 
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%d", t->strict);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%d", t->state);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%d", t->unused1);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%d", t->unused2);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_max:%d", t->valstack_max);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_max:%d", t->callstack_max);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_max:%d", t->catchstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%d", (int) t->strict);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%d", (int) t->state);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%d", (int) t->unused1);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%d", (int) t->unused2);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_max:%d", (int) t->valstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_max:%d", (int) t->callstack_max);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_max:%d", (int) t->catchstack_max);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%d", (void *) t->valstack_end, (int) (t->valstack_end - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%d", (void *) t->valstack_bottom, (int) (t->valstack_bottom - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%d", (void *) t->valstack_top, (int) (t->valstack_top - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack:%p", (void *) t->catchstack);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", t->catchstack_size);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", t->catchstack_top);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%d", (int) t->catchstack_size);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%d", (int) t->catchstack_top);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);
 		/* XXX: print built-ins array? */
 
 	}
 #ifdef DUK_USE_REFERENCE_COUNTING
 	if (st->internal) {
-		DUK__COMMA(); duk_fb_sprintf(fb, "__refcount:%d", DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__refcount:%u", (unsigned int) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
 	}
 #endif
 	if (st->internal) {
-		DUK__COMMA(); duk_fb_sprintf(fb, "__class:%d", DUK_HOBJECT_GET_CLASS_NUMBER(h));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__class:%d", (int) DUK_HOBJECT_GET_CLASS_NUMBER(h));
 	}
 
 	/* prototype should be last, for readability */
@@ -567,11 +567,11 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_fb_put_cstring(fb, brace2);
 
 	if (st->heavy && h->h_size > 0) {
-		duk_fb_put_byte(fb, (duk_uint8_t) '<');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LANGLE);
 		for (i = 0; i < h->h_size; i++) {
 			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(h, i);
 			if (i > 0) {
-				duk_fb_put_byte(fb, (duk_uint8_t) ',');
+				duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COMMA);
 			}
 			if (h_idx == DUK_HOBJECT_HASHIDX_UNUSED) {
 				duk_fb_sprintf(fb, "u");
@@ -581,7 +581,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 				duk_fb_sprintf(fb, "%d", (int) h_idx);
 			}
 		}
-		duk_fb_put_byte(fb, (duk_uint8_t) '>');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RANGLE);
 	}
 
  finished:
@@ -596,7 +596,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 
 static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;
-	size_t i, n;
+	duk_size_t i, n;
 	duk_uint8_t *p;
 
 	if (duk_fb_is_full(fb)) {
@@ -613,13 +613,13 @@ static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
 		duk_fb_sprintf(fb, "buffer:dynamic:%p:%d:%d",
-		               g->curr_alloc, g->size, g->usable_size);
+		               g->curr_alloc, (int) g->size, (int) g->usable_size);
 	} else {
-		duk_fb_sprintf(fb, "buffer:fixed:%d", DUK_HBUFFER_GET_SIZE(h));
+		duk_fb_sprintf(fb, "buffer:fixed:%d", (int) DUK_HBUFFER_GET_SIZE(h));
 	}
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-	duk_fb_sprintf(fb, "/%d", DUK_HEAPHDR_GET_REFCOUNT(&h->hdr));
+	duk_fb_sprintf(fb, "/%u", (unsigned int) DUK_HEAPHDR_GET_REFCOUNT(&h->hdr));
 #endif
 
 	if (st->hexdump) {
@@ -656,7 +656,7 @@ static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 		duk__print_hbuffer(st, (duk_hbuffer *) h);
 		break;
 	default:
-		duk_fb_sprintf(fb, "[unknown htype %d]", DUK_HEAPHDR_GET_TYPE(h));
+		duk_fb_sprintf(fb, "[unknown htype %d]", (int) DUK_HEAPHDR_GET_TYPE(h));
 		break;
 	}
 }
@@ -681,15 +681,15 @@ static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 
 	if (st->binary) {
 		duk_size_t i;
-		duk_fb_put_byte(fb, (duk_uint8_t) '[');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*tv); i++) {
 			duk_fb_sprintf(fb, "%02x", (int) ((unsigned char *)tv)[i]);
 		}
-		duk_fb_put_byte(fb, (duk_uint8_t) ']');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
 
 	if (st->heavy) {
-		duk_fb_put_byte(fb, (duk_uint8_t) '<');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LANGLE);
 	}
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
@@ -722,28 +722,28 @@ static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 		break;
 	}
 	case DUK_TAG_POINTER: {
-		duk_fb_sprintf(fb, "pointer:%p", DUK_TVAL_GET_POINTER(tv));
+		duk_fb_sprintf(fb, "pointer:%p", (void *) DUK_TVAL_GET_POINTER(tv));
 		break;
 	}
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		duk_fb_sprintf(fb, "%.18g", DUK_TVAL_GET_NUMBER(tv));
+		duk_fb_sprintf(fb, "%.18g", (double) DUK_TVAL_GET_NUMBER(tv));
 		break;
 	}
 	}
 	if (st->heavy) {
-		duk_fb_put_byte(fb, (duk_uint8_t) '>');
+		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RANGLE);
 	}
 }
 
 static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
 	duk_fixedbuffer *fb = st->fb;
-	int op;
+	duk_small_int_t op;
 	const char *op_name;
 	const char *extraop_name;
 
-	op = DUK_DEC_OP(ins);
+	op = (duk_small_int_t) DUK_DEC_OP(ins);
 	op_name = duk__bc_optab[op];
 
 	/* XXX: option to fix opcode length so it lines up nicely */
@@ -752,34 +752,34 @@ static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
 		extraop_name = duk__bc_extraoptab[DUK_DEC_A(ins)];
 
 		duk_fb_sprintf(fb, "%s %d, %d",
-		               extraop_name, DUK_DEC_B(ins), DUK_DEC_C(ins));
+		               extraop_name, (int) DUK_DEC_B(ins), (int) DUK_DEC_C(ins));
 	} else if (op == DUK_OP_JUMP) {
-		int diff1 = DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;  /* from next pc */
-		int diff2 = diff1 + 1;                            /* from curr pc */
+		duk_int_t diff1 = DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;  /* from next pc */
+		duk_int_t diff2 = diff1 + 1;                            /* from curr pc */
 
 		duk_fb_sprintf(fb, "%s %d (to pc%c%d)",
-		               op_name, diff1, (diff2 >= 0 ? '+' : '-'), (diff2 >= 0 ? diff2 : -diff2));
+		               op_name, (int) diff1, (diff2 >= 0 ? '+' : '-'), (int) (diff2 >= 0 ? diff2 : -diff2));
 	} else {
 		duk_fb_sprintf(fb, "%s %d, %d, %d",
-		               op_name, DUK_DEC_A(ins), DUK_DEC_B(ins), DUK_DEC_C(ins));
+		               op_name, (int) DUK_DEC_A(ins), (int) DUK_DEC_B(ins), (int) DUK_DEC_C(ins));
 	}
 }
 
-static void duk__print_opcode(duk__dprint_state *st, int opcode) {
+static void duk__print_opcode(duk__dprint_state *st, duk_small_int_t opcode) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (opcode < DUK_BC_OP_MIN || opcode > DUK_BC_OP_MAX) {
-		duk_fb_sprintf(fb, "?(%d)", opcode);
+		duk_fb_sprintf(fb, "?(%d)", (int) opcode);
 	} else {
 		duk_fb_sprintf(fb, "%s", duk__bc_optab[opcode]);
 	}
 }
 
-int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
+duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap) {
 	duk_fixedbuffer fb;
 	const char *p = format;
 	const char *p_end = p + DUK_STRLEN(format);
-	int retval;
+	duk_int_t retval;
 	
 	DUK_MEMZERO(&fb, sizeof(fb));
 	fb.buffer = (duk_uint8_t *) str;
@@ -790,10 +790,10 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 	while (p < p_end) {
 		char ch = *p++;
 		const char *p_begfmt = NULL;
-		int got_exclamation = 0;
+		duk_bool_t got_exclamation = 0;
 		duk__dprint_state st;
 
-		if (ch != '%') {
+		if (ch != DUK_ASC_PERCENT) {
 			duk_fb_put_byte(&fb, (duk_uint8_t) ch);
 			continue;
 		}
@@ -816,47 +816,47 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 		while (p < p_end) {
 			ch = *p++;
 
-			if (ch == '*') {
+			if (ch == DUK_ASC_STAR) {
 				/* unsupported: would consume multiple args */
 				goto error;
-			} else if (ch == '%') {
-				duk_fb_put_byte(&fb, (duk_uint8_t) '%');
+			} else if (ch == DUK_ASC_PERCENT) {
+				duk_fb_put_byte(&fb, (duk_uint8_t) DUK_ASC_PERCENT);
 				break;
-			} else if (ch == '!') {
+			} else if (ch == DUK_ASC_EXCLAMATION) {
 				got_exclamation = 1;
-			} else if (got_exclamation && ch == 'd') {
+			} else if (got_exclamation && ch == DUK_ASC_LC_D) {
 				st.depth_limit = DUK__DEEP_DEPTH_LIMIT;
-			} else if (got_exclamation && ch == 'p') {
+			} else if (got_exclamation && ch == DUK_ASC_LC_P) {
 				st.follow_proto = 1;
-			} else if (got_exclamation && ch == 'i') {
+			} else if (got_exclamation && ch == DUK_ASC_LC_I) {
 				st.internal = 1;
-			} else if (got_exclamation && ch == 'x') {
+			} else if (got_exclamation && ch == DUK_ASC_LC_X) {
 				st.hexdump = 1;
-			} else if (got_exclamation && ch == 'h') {
+			} else if (got_exclamation && ch == DUK_ASC_LC_H) {
 				st.heavy = 1;
-			} else if (got_exclamation && ch == '@') {
+			} else if (got_exclamation && ch == DUK_ASC_ATSIGN) {
 				st.pointer = 1;
-			} else if (got_exclamation && ch == '#') {
+			} else if (got_exclamation && ch == DUK_ASC_HASH) {
 				st.binary = 1;
-			} else if (got_exclamation && ch == 'T') {
+			} else if (got_exclamation && ch == DUK_ASC_UC_T) {
 				duk_tval *t = va_arg(ap, duk_tval *);
 				if (st.pointer && !st.heavy) {
 					duk_fb_sprintf(&fb, "(%p)", (void *) t);
 				}
 				duk__print_tval(&st, t);
 				break;
-			} else if (got_exclamation && ch == 'O') {
+			} else if (got_exclamation && ch == DUK_ASC_UC_O) {
 				duk_heaphdr *t = va_arg(ap, duk_heaphdr *);
 				if (st.pointer && !st.heavy) {
 					duk_fb_sprintf(&fb, "(%p)", (void *) t);
 				}
 				duk__print_heaphdr(&st, t);
 				break;
-			} else if (got_exclamation && ch == 'I') {
+			} else if (got_exclamation && ch == DUK_ASC_UC_I) {
 				duk_instr t = va_arg(ap, duk_instr);
 				duk__print_instr(&st, t);
 				break;
-			} else if (got_exclamation && ch == 'C') {
+			} else if (got_exclamation && ch == DUK_ASC_UC_C) {
 				int t = va_arg(ap, int);
 				duk__print_opcode(&st, t);
 				break;
@@ -880,7 +880,7 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 				/* XXX: check size for other types.. actually it would be best to switch
 				 * for supported standard formats and get args explicitly
 				 */
-				if (ch == 'f' || ch == 'g' || ch == 'e') {
+				if (ch == DUK_ASC_LC_F || ch == DUK_ASC_LC_G || ch == DUK_ASC_LC_E) {
 					double arg;
 					arg = va_arg(ap, double);
 					duk_fb_sprintf(&fb, fmtbuf, arg);
@@ -909,8 +909,8 @@ int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap) 
 	return retval;
 }
 
-int duk_debug_snprintf(char *str, size_t size, const char *format, ...) {
-	int retval;
+duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...) {
+	duk_int_t retval;
 	va_list ap;
 	va_start(ap, format);
 	retval = duk_debug_vsnprintf(str, size, format, ap);
@@ -923,16 +923,16 @@ int duk_debug_snprintf(char *str, size_t size, const char *format, ...) {
  * specific pointer type.  This helper formats a function pointer based on
  * its memory layout to get something useful on most platforms.
  */
-void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int fptr_size) {
-	int i;
-	char *p = buf;
-	char *p_end = buf + buf_size - 1;
+void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size) {
+	duk_size_t i;
+	duk_uint8_t *p = (duk_uint8_t *) buf;
+	duk_uint8_t *p_end = (duk_uint8_t *) (buf + buf_size - 1);
 
 	DUK_MEMZERO(buf, buf_size);
 
 	for (i = 0; i < fptr_size; i++) {
-		int left = p_end - p;
-		unsigned char ch;
+		duk_int_t left = (duk_int_t) (p_end - p);
+		duk_uint8_t ch;
 		if (left <= 0) {
 			break;
 		}
@@ -943,9 +943,8 @@ void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int 
 #else
 		ch = fptr[fptr_size - 1 - i];
 #endif
-		p += DUK_SNPRINTF(p, left, "%02x", (int) ch);
+		p += DUK_SNPRINTF((char *) p, left, "%02x", (int) ch);
 	}	
 }
 
 #endif  /* DUK_USE_DEBUG */
-
