@@ -17,7 +17,7 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 
 	if (DUK_UNLIKELY(count_in <= 0)) {
 		if (count_in < 0) {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+			DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_count);
 			return;
 		}
 		DUK_ASSERT(count_in == 0);

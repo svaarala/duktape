@@ -736,7 +736,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	DUK_ASSERT(from_ctx != NULL);
 
 	if (count < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_count);
 		return;
 	}
 
@@ -3142,7 +3142,7 @@ void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	DUK_ASSERT(ctx != NULL);
 
 	if (count < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_count);
 		return;
 	}
 
