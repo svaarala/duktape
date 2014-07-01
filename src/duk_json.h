@@ -33,24 +33,24 @@ typedef struct {
 	duk_hobject *h_replacer;     /* replacer function */
 	duk_hstring *h_gap;          /* gap (if empty string, NULL) */
 	duk_hstring *h_indent;       /* current indent (if gap is NULL, this is NULL) */
-	int idx_proplist;            /* explicit PropertyList */
-	int idx_loop;                /* valstack index of loop detection object */
-	int flags;
-	int flag_ascii_only;
-	int flag_avoid_key_quotes;
+	duk_idx_t idx_proplist;      /* explicit PropertyList */
+	duk_idx_t idx_loop;          /* valstack index of loop detection object */
+	duk_small_uint_t flags;
+	duk_small_uint_t flag_ascii_only;
+	duk_small_uint_t flag_avoid_key_quotes;
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-	int flag_ext_custom;
-	int flag_ext_compatible;
+	duk_small_uint_t flag_ext_custom;
+	duk_small_uint_t flag_ext_compatible;
 #endif
-	int recursion_depth;
-	int recursion_limit;
-	int mask_for_undefined;      /* type bit mask: types which certainly produce 'undefined' */
+	duk_int_t recursion_depth;
+	duk_int_t recursion_limit;
+	duk_uint_t mask_for_undefined;      /* type bit mask: types which certainly produce 'undefined' */
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-	int stridx_custom_undefined;
-	int stridx_custom_nan;
-	int stridx_custom_neginf;
-	int stridx_custom_posinf;
-	int stridx_custom_function;
+	duk_small_uint_t stridx_custom_undefined;
+	duk_small_uint_t stridx_custom_nan;
+	duk_small_uint_t stridx_custom_neginf;
+	duk_small_uint_t stridx_custom_posinf;
+	duk_small_uint_t stridx_custom_function;
 #endif
 } duk_json_enc_ctx;
 
@@ -58,15 +58,14 @@ typedef struct {
 	duk_hthread *thr;
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
-	int idx_reviver;
-	int flags;
+	duk_idx_t idx_reviver;
+	duk_small_uint_t flags;
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-	int flag_ext_custom;
-	int flag_ext_compatible;
+	duk_small_uint_t flag_ext_custom;
+	duk_small_uint_t flag_ext_compatible;
 #endif
-	int recursion_depth;
-	int recursion_limit;
+	duk_int_t recursion_depth;
+	duk_int_t recursion_limit;
 } duk_json_dec_ctx;
 
 #endif  /* DUK_JSON_H_INCLUDED */
-
