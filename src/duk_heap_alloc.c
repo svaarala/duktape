@@ -69,7 +69,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 
 	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %d", (void *) hdr, (int) DUK_HEAPHDR_GET_TYPE(hdr)));
 
-	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
 		/* no inner refs to free */
 		break;
@@ -151,7 +151,7 @@ static void duk__free_stringtable(duk_heap *heap) {
 
 	/* strings are only tracked by stringtable */
 	if (heap->st) {
-		for (i = 0; i < heap->st_size; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) heap->st_size; i++) {
 			duk_hstring *e = heap->st[i];
 			if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
 				continue;
@@ -265,7 +265,7 @@ void duk_heap_free(duk_heap *heap) {
 static int duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
-	int i, j;
+	duk_small_uint_t i, j;
 
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_strings_data;
@@ -274,39 +274,41 @@ static int duk__init_heap_strings(duk_heap *heap) {
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 		duk_uint8_t tmp[DUK_STRDATA_MAX_STRLEN];
 		duk_hstring *h;
-		int len;
-		int mode;
-		int t;
+		duk_small_uint_t len;
+		duk_small_uint_t mode;
+		duk_small_uint_t t;
 
 		len = duk_bd_decode(bd, 5);
 		mode = 32;		/* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
 		for (j = 0; j < len; j++) {
 			t = duk_bd_decode(bd, 5);
 			if (t < DUK__BITPACK_LETTER_LIMIT) {
-				t = t + 'A' + mode;
+				t = t + DUK_ASC_UC_A + mode;
 			} else if (t == DUK__BITPACK_UNDERSCORE) {
-				t = (int) '_';
+				t = DUK_ASC_UNDERSCORE;
 			} else if (t == DUK__BITPACK_FF) {
 				/* Internal keys are prefixed with 0xFF in the stringtable
 				 * (which makes them invalid UTF-8 on purpose).
 				 */
-				t = (int) 0xff;
+				t = 0xff;
 			} else if (t == DUK__BITPACK_SWITCH1) {
 				t = duk_bd_decode(bd, 5);
-				DUK_ASSERT(t >= 0 && t <= 25);
-				t = t + 'A' + (mode ^ 32);
+				DUK_ASSERT_DISABLE(t >= 0);  /* unsigned */
+				DUK_ASSERT(t <= 25);
+				t = t + DUK_ASC_UC_A + (mode ^ 32);
 			} else if (t == DUK__BITPACK_SWITCH) {
 				mode = mode ^ 32;
 				t = duk_bd_decode(bd, 5);
-				DUK_ASSERT(t >= 0 && t <= 25);
-				t = t + 'A' + mode;
+				DUK_ASSERT_DISABLE(t >= 0);
+				DUK_ASSERT(t <= 25);
+				t = t + DUK_ASC_UC_A + mode;
 			} else if (t == DUK__BITPACK_SEVENBIT) {
 				t = duk_bd_decode(bd, 7);
 			}
 			tmp[j] = (duk_uint8_t) t;
 		}
 
-		DUK_DDD(DUK_DDDPRINT("intern built-in string %d", i));
+		DUK_DDD(DUK_DDDPRINT("intern built-in string %d", (int) i));
 		h = duk_heap_string_intern(heap, tmp, len);
 		if (!h) {
 			goto error;
@@ -314,7 +316,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 
 		/* special flags */
 
-		if (len > 0 && tmp[0] == 0xff) {
+		if (len > 0 && tmp[0] == (duk_uint8_t) 0xff) {
 			DUK_HSTRING_SET_INTERNAL(h);
 		}
 		if (i == DUK_STRIDX_EVAL || i == DUK_STRIDX_LC_ARGUMENTS) {
@@ -329,8 +331,8 @@ static int duk__init_heap_strings(duk_heap *heap) {
 
 		DUK_DDD(DUK_DDDPRINT("interned: %!O", h));
 
-		/* The incref macro takes a thread pointer but doesn't use it
-		 * right now.
+		/* XXX: The incref macro takes a thread pointer but doesn't
+		 * use it right now.
 		 */
 		DUK_HSTRING_INCREF(_never_referenced_, h);
 
@@ -544,7 +546,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->log_buffer = NULL;
 	res->st = NULL;
 	{
-		int i;
+		duk_small_uint_t i;
 	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
         	        res->strs[i] = NULL;
 	        }
@@ -597,8 +599,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->st_size = DUK_STRTAB_INITIAL_SIZE;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
-		duk_uint_fast32_t i;
-	        for (i = 0; i < res->st_size; i++) {
+		duk_small_uint_t i;
+		DUK_ASSERT(res->st_size == DUK_STRTAB_INITIAL_SIZE);
+	        for (i = 0; i < DUK_STRTAB_INITIAL_SIZE; i++) {
         	        res->st[i] = NULL;
 	        }
 	}
@@ -609,7 +612,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	/* strcache init */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
-		int i;
+		duk_small_uint_t i;
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			res->strcache[i].h = NULL;
 		}
@@ -671,4 +674,3 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	return NULL;
 }
-

@@ -128,13 +128,13 @@
  */
 #if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              12800  /* 50x heap size */
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              12800L  /* 50x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
 #else
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256    /* 1x heap size */
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256L    /* 1x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
 #endif
 #endif
 
@@ -291,10 +291,10 @@ struct duk_strcache {
 
 struct duk_ljstate {
 	duk_jmpbuf *jmpbuf_ptr;   /* current setjmp() catchpoint */
-	int type;                 /* longjmp type */
+	duk_small_uint_t type;    /* longjmp type */
+	duk_bool_t iserror;       /* isError flag for yield */
 	duk_tval value1;          /* 1st related value (type specific) */
 	duk_tval value2;          /* 2nd related value (type specific) */
-	int iserror;              /* isError flag for yield */
 };
 
 /*
@@ -302,7 +302,7 @@ struct duk_ljstate {
  */
 
 struct duk_heap {
-	int flags;
+	duk_small_uint_t flags;
 
 	/* allocator functions */
 	duk_alloc_function alloc_func;
@@ -332,12 +332,12 @@ struct duk_heap {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/* mark-and-sweep control */
 #ifdef DUK_USE_VOLUNTARY_GC
-	int mark_and_sweep_trigger_counter;
+	duk_int_t mark_and_sweep_trigger_counter;
 #endif
-	int mark_and_sweep_recursion_depth;
+	duk_int_t mark_and_sweep_recursion_depth;
 
 	/* mark-and-sweep flags automatically active (used for critical sections) */
-	int mark_and_sweep_base_flags;
+	duk_small_uint_t mark_and_sweep_base_flags;
 
 	/* work list for objects to be finalized (by mark-and-sweep) */
 	duk_heaphdr *finalize_list;
@@ -347,7 +347,7 @@ struct duk_heap {
 	duk_ljstate lj;
 
 	/* marker for detecting internal "double faults", see duk_error_throw.c */
-	int handling_error;
+	duk_bool_t handling_error;
 
 	/* heap thread, used internally and for finalization */
 	duk_hthread *heap_thread;
@@ -362,8 +362,8 @@ struct duk_heap {
 	duk_hbuffer_dynamic *log_buffer;
 
 	/* duk_handle_call / duk_handle_safe_call recursion depth limiting */
-	int call_recursion_depth;
-	int call_recursion_limit;
+	duk_int_t call_recursion_depth;
+	duk_int_t call_recursion_limit;
 
 	/* mix-in value for computing string hashes; should be reasonably unpredictable */
 	duk_uint32_t hash_seed;
@@ -466,4 +466,3 @@ duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len);
 
 #endif  /* DUK_HEAP_H_INCLUDED */
-
