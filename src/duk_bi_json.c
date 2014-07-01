@@ -10,17 +10,6 @@
 #include "duk_internal.h"
 
 /*
- *  Shared strings
- */
-
-static const char *duk__str_pct_p = "%p";
-static const char *duk__str_invalid_json = "invalid json";
-static const char *duk__str_invalid_number = "invalid number";
-static const char *duk__str_jsondec_reclimit = "json decode recursion limit";
-static const char *duk__str_jsonenc_reclimit = "json encode recursion limit";
-static const char *duk__str_cyclic_input = "cyclic input";
-
-/*
  *  Local defines and forward declarations.
  */
 
@@ -81,7 +70,7 @@ static void duk__dec_syntax_error(duk_json_dec_ctx *js_ctx) {
 	/* Shared handler to minimize parser size.  Cause will be
 	 * hidden, unfortunately.
 	 */
-	DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, duk__str_invalid_json);
+	DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, duk_str_invalid_json);
 }
 
 static void duk__dec_eat_white(duk_json_dec_ctx *js_ctx) {
@@ -362,7 +351,7 @@ static void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	 */
 
 	voidptr = NULL;
-	(void) DUK_SSCANF((const char *) js_ctx->p, duk__str_pct_p, &voidptr);
+	(void) DUK_SSCANF((const char *) js_ctx->p, duk_str_fmt_ptr, &voidptr);
 	duk_push_pointer(ctx, voidptr);
 	js_ctx->p = p + 1;  /* skip ')' */
 
@@ -463,7 +452,7 @@ static void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 	DUK_DDD(DUK_DDDPRINT("parse_number: string before parsing: %!T", duk_get_tval(ctx, -1)));
 	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
 	if (duk_is_nan(ctx, -1)) {
-		DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, duk__str_invalid_number);
+		DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, duk_str_invalid_number);
 	}
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDD(DUK_DDDPRINT("parse_number: final number: %!T", duk_get_tval(ctx, -1)));
@@ -480,7 +469,7 @@ static void duk__dec_objarr_entry(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, duk__str_jsondec_reclimit);
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, duk_str_jsondec_reclimit);
 	}
 	js_ctx->recursion_depth++;
 }
@@ -1046,11 +1035,11 @@ static void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_step
 
 	h_target = duk_get_hobject(ctx, -1);  /* object or array */
 	DUK_ASSERT(h_target != NULL);
-	duk_push_sprintf(ctx, duk__str_pct_p, (void *) h_target);
+	duk_push_sprintf(ctx, duk_str_fmt_ptr, (void *) h_target);
 
 	duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
 	if (duk_has_prop(ctx, js_ctx->idx_loop)) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, duk__str_cyclic_input);
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, duk_str_cyclic_input);
 	}
 	duk_push_true(ctx);  /* -> [ ... voidp true ] */
 	duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
@@ -1060,7 +1049,7 @@ static void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_step
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, duk__str_jsonenc_reclimit);
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, duk_str_jsonenc_reclimit);
 	}
 	js_ctx->recursion_depth++;
 
@@ -1123,7 +1112,7 @@ static void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepb
 
 	h_target = duk_get_hobject(ctx, *entry_top - 1);  /* original target at entry_top - 1 */
 	DUK_ASSERT(h_target != NULL);
-	duk_push_sprintf(ctx, duk__str_pct_p, (void *) h_target);
+	duk_push_sprintf(ctx, duk_str_fmt_ptr, (void *) h_target);
 
 	duk_del_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
 
@@ -1707,7 +1696,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	 */
 
 	if (js_ctx->p != js_ctx->p_end) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, duk__str_invalid_json);
+		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, duk_str_invalid_json);
 	}
 
 	if (duk_is_callable(ctx, idx_reviver)) {
