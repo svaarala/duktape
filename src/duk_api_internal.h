@@ -36,6 +36,12 @@ duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_p
 #define duk_push_u32(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
 
+/* sometimes stack indices need to go on the stack */
+#define duk_push_idx(ctx,idx) \
+	duk_push_int((ctx), (duk_int_t) (idx))
+#define duk_push_uarridx(ctx,arridx) \
+	duk_push_uint((ctx), (duk_uarridx_t) (arridx))
+
 /* internal helper for looking up a tagged type */
 #define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1L << 24)
 #define  DUK_GETTAGGED_FLAG_CHECK_CLASS (1L << 25)

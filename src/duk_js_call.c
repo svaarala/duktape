@@ -126,9 +126,8 @@ static void duk__create_arguments_object(duk_hthread *thr,
 		                     (int) idx, (int) i_argbase, (int) (i_argbase + idx)));
 
 		DUK_DDD(DUK_DDDPRINT("define arguments[%d]=arg", (int) idx));
-		duk_push_int(ctx, idx);
 		duk_dup(ctx, i_argbase + idx);
-		duk_def_prop_wec(ctx, i_arg);
+		duk_def_prop_index_wec(ctx, i_arg, (duk_uarridx_t) idx);
 		DUK_DDD(DUK_DDDPRINT("defined arguments[%d]=arg", (int) idx));
 
 		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
@@ -154,17 +153,15 @@ static void duk__create_arguments_object(duk_hthread *thr,
 
 				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=%d",
 				                     duk_get_string(ctx, -1), (int) idx));
-				duk_dup(ctx, -1);         /* name */
-				duk_push_int(ctx, idx);   /* index */
+				duk_dup(ctx, -1);                      /* name */
+				duk_push_uint(ctx, (duk_uint_t) idx);  /* index */
 				duk_to_string(ctx, -1);
 				duk_def_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%d]=%s",
 				                     (int) idx, duk_get_string(ctx, -1)));
-				duk_push_int(ctx, idx);   /* index */
-				duk_to_string(ctx, -1);
-				duk_dup(ctx, -2);         /* name */
-				duk_def_prop_wec(ctx, i_map);  /* out of spec, must be configurable */
+				duk_dup(ctx, -1);         /* name */
+				duk_def_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
 			} else {
 				/* duk_has_prop() popped the second 'name' */
 			}
