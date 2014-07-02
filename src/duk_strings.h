@@ -6,6 +6,7 @@ extern const char *duk_str_invalid_call_args;
 extern const char *duk_str_not_constructable;
 
 extern const char *duk_str_invalid_index;
+extern const char *duk_str_valstack_limit;
 
 extern const char *duk_str_fmt_ptr;
 extern const char *duk_str_invalid_json;

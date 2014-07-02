@@ -135,19 +135,19 @@ duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index) {
 	if (index < 0) {
 		index = vs_size + index;
 		if (DUK_UNLIKELY(index < 0)) {
-			goto fail;
+			goto invalid_index;
 		}
 	} else {
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
 		if (DUK_UNLIKELY(index >= vs_size)) {
-			goto fail;
+			goto invalid_index;
 		}
 	}
 
 	DUK_ASSERT(index >= 0 && index < vs_size);
 	return index;
 
- fail:
+ invalid_index:
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 }
 
@@ -190,19 +190,19 @@ duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index) {
 	if (index < 0) {
 		index = vs_size + index;
 		if (DUK_UNLIKELY(index < 0)) {
-			goto fail;
+			goto invalid_index;
 		}
 	} else {
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
 		if (DUK_UNLIKELY(index >= vs_size)) {
-			goto fail;
+			goto invalid_index;
 		}
 	}
 
 	DUK_ASSERT(index >= 0 && index < vs_size);
 	return thr->valstack_bottom + index;
 
- fail:
+ invalid_index:
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 	return NULL;
 }
@@ -226,7 +226,7 @@ void duk_require_valid_index(duk_context *ctx, duk_idx_t index) {
 }
 
 /*
- *  Stack top/size management
+ *  Value stack top handling
  */
 
 duk_idx_t duk_get_top(duk_context *ctx) {
@@ -240,78 +240,84 @@ duk_idx_t duk_get_top(duk_context *ctx) {
 /* set stack top within currently allocated range, but don't reallocate */
 void duk_set_top(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_tval *tv_new_top;
+	duk_idx_t vs_size;
+	duk_idx_t vs_limit;
+	duk_idx_t count;
+	duk_tval tv_tmp;
+	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	/* FIXME: the pointer arithmetic here is not safe on a 32-bit platform,
-	 * as it may wrap.  For instance, with 8-byte values, the index 0x20000000
-	 * will wrap and be equivalent to index 0; with 12-byte values, the index
-	 * 0x15555556 will wrap to +8 bytes and does not even wrap evenly to a
-	 * duk_tval boundary!  A correct check would first impose a min/max index
-	 * which guarantees that there is only one "round" of wrapping at most,
-	 * and then wrapping needs to be detected because we don't want the value
-	 * stack to be wrapped around end-of-memory.
-	 */
+	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	vs_limit = (duk_idx_t) (thr->valstack_end - thr->valstack_bottom);
 
 	if (index < 0) {
-		if (index == DUK_INVALID_INDEX) {
+		/* Negative indices are always within allocated stack but
+		 * must not go below zero index.
+		 */
+		index = vs_size + index;
+		if (index < 0) {
+			/* Also catches index == DUK_INVALID_INDEX. */
 			goto invalid_index;
 		}
-		tv_new_top = thr->valstack_top + index;
 	} else {
-		/* may be higher than valstack_top, but not higher than
-		 * allocated stack
+		/* Positive index can be higher than valstack top but must
+		 * not go above allocated stack (equality is OK).
 		 */
-		tv_new_top = thr->valstack_bottom + index;
-	}
-
-	/* Check both ends: for extreme values the pointer arithmetic may wrap.
-	 * The check doesn't detect wrapping so it's technically incorrect.
-	 */
-	if (tv_new_top < thr->valstack_bottom) {
-		goto invalid_index;
-	}
-	if (tv_new_top > thr->valstack_end) {
-		goto invalid_index;
-	}
-
-	if (tv_new_top >= thr->valstack_top) {
-		/* no pointer stability issues when increasing stack size */
-		while (thr->valstack_top < tv_new_top) {
-			/* no need to decref previous or new value */
-			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(thr->valstack_top));
-			DUK_TVAL_SET_UNDEFINED_ACTUAL(thr->valstack_top);
-			thr->valstack_top++;
+		if (index > vs_limit) {
+			goto invalid_index;
 		}
-	} else {
-		/* each DECREF potentially invalidates valstack pointers, careful */
-		duk_ptrdiff_t pdiff = ((char *) thr->valstack_top) - ((char *) tv_new_top);  /* byte diff (avoid shift/div) */
+	}
+	DUK_ASSERT(index >= 0 && index <= vs_limit);
 
-		/* XXX: inlined DECREF macro would be nice here: no NULL check,
-		 * refzero queueing but no refzero algorithm run (= no pointer
-		 * instability), inline code.
+	if (index >= vs_size) {
+		/* Stack size increases or stays the same.  Fill the new
+		 * entries (if any) with undefined.  No pointer stability
+		 * issues here so we can use a running pointer.
 		 */
-	
-		while (pdiff > 0) {
-			duk_tval tv_tmp;
-			duk_tval *tv;
 
-			thr->valstack_top--;
-			tv = thr->valstack_top;
+		tv = thr->valstack_top;
+		count = index - vs_size;
+		DUK_ASSERT(count >= 0);
+		while (count > 0) {
+			/* no need to decref previous or new value */
+			count--;
+			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(tv));
+			DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+			tv++;
+		}
+		thr->valstack_top = tv;
+	} else {
+		/* Stack size decreases, DECREF entries which are above the
+		 * new top.  Each DECREF potentially invalidates valstack
+		 * pointers, so don't hold on to pointers.  The valstack top
+		 * must also be updated on every loop in case a GC is triggered.
+		 */
+
+		/* XXX: Here it would be useful to have a DECREF macro which
+		 * doesn't need a NULL check, and does refzero queueing without
+		 * running the refzero algorithm.  There would be no pointer
+		 * instability in this case, and code could be inlined.  After
+		 * the loop, one call to refzero would be needed.
+		 */
+
+		count = vs_size - index;
+		DUK_ASSERT(count > 0);
+
+		while (count > 0) {
+			count--;
+			tv = --thr->valstack_top;  /* tv -> value just before prev top value */
 			DUK_ASSERT(tv >= thr->valstack_bottom);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 			DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
-
-			pdiff -= sizeof(duk_tval);
 		}
 	}
 	return;
 
  invalid_index:
-	DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 }
 
 duk_idx_t duk_get_top_index(duk_context *ctx) {
@@ -321,10 +327,10 @@ duk_idx_t duk_get_top_index(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 
 	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
-	if (ret < 0) {
+	if (DUK_UNLIKELY(ret < 0)) {
 		/* Return invalid index; if caller uses this without checking
-		 * in another API call, the index will never (practically)
-		 * map to a valid stack entry.
+		 * in another API call, the index won't map to a valid stack
+		 * entry.
 		 */
 		return DUK_INVALID_INDEX;
 	}
@@ -338,28 +344,35 @@ duk_idx_t duk_require_top_index(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 
 	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
-	if (ret < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
+	if (DUK_UNLIKELY(ret < 0)) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 	}
 	return ret;
 }
+
+/*
+ *  Value stack resizing.
+ *
+ *  This resizing happens above the current "top": the value stack can be
+ *  grown or shrunk, but the "top" is not affected.  The value stack cannot
+ *  be resized to a size below the current "top".
+ *
+ *  The low level reallocation primitive must carefully recompute all value
+ *  stack pointers, and must also work if ALL pointers are NULL.  The resize
+ *  is quite tricky because the valstack realloc may cause a mark-and-sweep,
+ *  which may run finalizers.  Running finalizers may resize the valstack
+ *  recursively (the same value stack we're working on).  So, after realloc
+ *  returns, we know that the valstack "top" should still be the same (there
+ *  should not be live values above the "top"), but its underlying size and
+ *  pointer may have changed.
+ */
 
 /* XXX: perhaps refactor this to allow caller to specify some parameters, or
  * at least a 'compact' flag which skips any spare or round-up .. useful for
  * emergency gc.
  */
 
-/* Resize valstack, with careful recomputation of all pointers.
- * Must also work if ALL pointers are NULL.
- *
- * Note: this is very tricky because the valstack realloc may
- * cause a mark-and-sweep, which may run finalizers.  Running
- * finalizers may resize the valstack recursively.  So, after
- * realloc returns, we know that the valstack "top" should still
- * be the same (there should not be live values above the "top"),
- * but its underlying size may have changed.
- */
-static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
+static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_ptrdiff_t old_bottom_offset;
 	duk_ptrdiff_t old_top_offset;
@@ -388,7 +401,7 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	old_valstack_pre = thr->valstack;
 #endif
 
-	/* allocate a new valstack
+	/* Allocate a new valstack.
 	 *
 	 * Note: cannot use a plain DUK_REALLOC() because a mark-and-sweep may
 	 * invalidate the original thr->valstack base pointer inside the realloc
@@ -399,7 +412,7 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (!new_valstack) {
 		DUK_D(DUK_DPRINT("failed to resize valstack to %d entries (%d bytes)",
-		                 new_size, new_alloc_size));
+		                 (int) new_size, (int) new_alloc_size));
 		return 0;
 	}
 
@@ -442,8 +455,8 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
 	if (old_end_offset_pre != old_end_offset_post) {
 		DUK_D(DUK_DPRINT("valstack was resized during valstack_resize(), probably by mark-and-sweep; "
 		                 "end offset changed: %d -> %d",
-		                 old_end_offset_pre,
-		                 old_end_offset_post));
+		                 (int) old_end_offset_pre,
+		                 (int) old_end_offset_post));
 	}
 	if (old_valstack_pre != old_valstack_post) {
 		DUK_D(DUK_DPRINT("valstack pointer changed during valstack_resize(), probably by mark-and-sweep: %p -> %p",
@@ -468,7 +481,7 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, size_t new_size) {
 		p++;
 	}
 
-	/* assertion check: we try to maintain elements above top in known state */
+	/* assertion check: we maintain elements above top in known state */
 #ifdef DUK_USE_ASSERTIONS
 	p = thr->valstack_top;
 	while (p < thr->valstack_end) {
@@ -504,7 +517,7 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
-	old_size = (size_t) (thr->valstack_end - thr->valstack);
+	old_size = (duk_size_t) (thr->valstack_end - thr->valstack);
 
 	if (min_new_size <= old_size) {
 		is_shrink = 1;
@@ -528,14 +541,14 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 
 	DUK_DD(DUK_DDPRINT("want to %s valstack: %d -> %d elements (min_new_size %d)",
 	                   (new_size > old_size ? "grow" : "shrink"),
-	                   old_size, new_size, min_new_size));
+	                   (int) old_size, (int) new_size, (int) min_new_size));
 
 	if (new_size >= thr->valstack_max) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
 		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account.
 		 */
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "valstack limit");
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, duk_str_valstack_limit);
 		} else {
 			return 0;
 		}
@@ -633,7 +646,7 @@ void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 }
 
 duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
-	size_t min_new_size;
+	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -653,7 +666,7 @@ duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 }
 
 void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
-	size_t min_new_size;
+	duk_size_t min_new_size;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -673,7 +686,7 @@ void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 }
 
 /*
- *  Stack manipulation
+ *  Basic stack manipulation: swap, dup, insert, replace, etc
  */
 
 void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
@@ -815,6 +828,10 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
 	DUK_TVAL_DECREF(thr, &tv);
 #endif
 }
+
+/*
+ *  Stack slice primitives
+ */
 
 void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;

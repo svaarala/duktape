@@ -12,6 +12,7 @@ const char *duk_str_invalid_call_args = "invalid call args";
 const char *duk_str_not_constructable = "not constructable";
 
 const char *duk_str_invalid_index = "invalid index";
+const char *duk_str_valstack_limit = "valstack limit";
 
 const char *duk_str_fmt_ptr = "%p";
 const char *duk_str_invalid_json = "invalid json";
