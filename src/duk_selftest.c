@@ -38,6 +38,15 @@ typedef union {
  */
 
 static void duk__selftest_types(void) {
+	if (!(sizeof(duk_int8_t) == 1 &&
+	      sizeof(duk_uint8_t) == 1 &&
+	      sizeof(duk_int16_t) == 2 &&
+	      sizeof(duk_uint16_t) == 2 &&
+	      sizeof(duk_int32_t) == 4 &&
+	      sizeof(duk_uint32_t) == 4)) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_(u)int{8,16,32}_t size");
+	}
+
 	if (!(sizeof(duk_size_t) >= sizeof(duk_uint_t))) {
 		/* Some internal code now assumes that all duk_uint_t values
 		 * can be expressed with a duk_size_t.
