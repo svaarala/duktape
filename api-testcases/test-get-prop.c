@@ -11,9 +11,9 @@ arr.length -> rc=1, result='3'
 final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1c (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1d (duk_safe_call)
 Math.PI is 3.141593
 configuration setting present, value: setting value

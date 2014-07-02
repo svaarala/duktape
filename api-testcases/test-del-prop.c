@@ -17,9 +17,9 @@ final top: 3
 *** test_1c (duk_pcall)
 ==> rc=1, result='TypeError: property not configurable'
 *** test_1d (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1e (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1f (duk_safe_call)
 ==> rc=1, result='TypeError: invalid base reference for property delete'
 *** test_2a (duk_safe_call)
