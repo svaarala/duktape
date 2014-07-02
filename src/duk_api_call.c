@@ -35,14 +35,14 @@ static void duk__call_prop_prep_stack(duk_context *ctx, duk_idx_t normalized_obj
 
 void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_small_int_t call_flags;
+	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
 
-	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
+	idx_func = duk_get_top(ctx) - nargs - 1;
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_call_args);
@@ -64,7 +64,7 @@ void duk_call(duk_context *ctx, duk_idx_t nargs) {
 
 void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_small_int_t call_flags;
+	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
@@ -102,7 +102,7 @@ void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs) {
 
 duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_small_int_t call_flags;
+	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
@@ -140,7 +140,7 @@ duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 
 duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_small_int_t call_flags;
+	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
@@ -253,14 +253,16 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	 *  depending on how they are called.
 	 */
 
-	/* XXX: should this go to duk_js_call.c? it implements core semantics. */
+	/* XXX: merge this with duk_js_call.c, as this function implements
+	 * core semantics (or perhaps merge the two files altogether).
+	 */
 
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *proto;
 	duk_hobject *cons;
 	duk_hobject *fallback;
 	duk_idx_t idx_cons;
-	duk_small_int_t call_flags;
+	duk_small_uint_t call_flags;
 	duk_int_t rc;
 
 	/* [... constructor arg1 ... argN] */
@@ -398,12 +400,8 @@ duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	if (thr->callstack_top <= 0) {
-		return 0;
-	}
-
-	act = thr->callstack + thr->callstack_top - 1;
-	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
+	act = duk_hthread_get_current_activation(thr);
+	return (act != NULL && (act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
 }
 
 duk_bool_t duk_is_strict_call(duk_context *ctx) {
@@ -414,12 +412,8 @@ duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	if (thr->callstack_top <= 0) {
-		return 0;
-	}
-
-	act = thr->callstack + thr->callstack_top - 1;
-	return ((act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
+	act = duk_hthread_get_current_activation(thr);
+	return (act != NULL && (act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
 }
 
 /*
@@ -435,18 +429,15 @@ duk_int_t duk_get_magic(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	if (thr->callstack_top <= 0) {
-		return 0;
+	act = duk_hthread_get_current_activation(thr);
+	if (act) {
+		func = act->func;
+		DUK_ASSERT(func != NULL);
+
+		if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
+			duk_hnativefunction *nf = (duk_hnativefunction *) func;
+			return (duk_int_t) nf->magic;
+		}
 	}
-
-	act = thr->callstack + thr->callstack_top - 1;
-	func = act->func;
-	DUK_ASSERT(func != NULL);
-
-	if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
-		duk_hnativefunction *nf = (duk_hnativefunction *) func;
-		return (duk_int_t) nf->magic;
-	}
-
 	return 0;
 }
