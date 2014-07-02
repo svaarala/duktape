@@ -4,9 +4,9 @@ duk_require_c_function == my_func: 1
 final top: 1
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected c function'
+==> rc=1, result='TypeError: expected c function'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected c function'
+==> rc=1, result='TypeError: expected c function'
 ===*/
 
 static duk_ret_t my_func(duk_context *ctx) {

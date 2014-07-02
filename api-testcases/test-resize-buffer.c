@@ -18,15 +18,15 @@ resize (fixed) to 64
 *** test_3 (duk_safe_call)
 non-buffer
 resize (non-buffer) to 64
-==> rc=1, result='TypeError: incorrect type, expected tag 7'
+==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_safe_call)
 non-buffer
 resize (invalid index) to 64
-==> rc=1, result='TypeError: incorrect type, expected tag 7'
+==> rc=1, result='TypeError: unexpected type'
 *** test_5 (duk_safe_call)
 non-buffer
 resize (DUK_INVALID_INDEX) to 64
-==> rc=1, result='TypeError: incorrect type, expected tag 7'
+==> rc=1, result='TypeError: unexpected type'
 ===*/
 
 static void dump_buffer(duk_context *ctx) {
