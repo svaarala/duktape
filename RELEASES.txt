@@ -399,6 +399,9 @@ Planned
   corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,
   gcc 4.8.1, -m32, and no -std=c99
 
+* Fix a few corner case pointer wrapping bugs in duk_set_top() and a few
+  other value stack index handling functions
+
 * Portability fix for avoiding potentially non-portable signed integer
   constants internally (e.g. use 0x7fffffffL - 1L instead of -0x80000000L);
   this fixed a concrete problem with at least VS2010 + x64
