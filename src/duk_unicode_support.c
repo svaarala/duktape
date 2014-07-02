@@ -767,7 +767,7 @@ static duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
                                                   duk_codepoint_t cp,
                                                   duk_codepoint_t prev,
                                                   duk_codepoint_t next,
-                                                  duk_small_int_t uppercase) {
+                                                  duk_bool_t uppercase) {
 	duk_bitdecoder_ctx bd_ctx;
 
 	/* fast path for ASCII */
