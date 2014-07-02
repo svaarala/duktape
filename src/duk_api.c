@@ -408,7 +408,7 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	 * process.  See doc/memory-management.txt.
 	 */
 
-	new_alloc_size = sizeof(duk_tval) * new_size;
+	new_alloc_size = sizeof(duk_tval) * new_size;  /* FIXME: wrap check */
 	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (!new_valstack) {
 		DUK_D(DUK_DPRINT("failed to resize valstack to %d entries (%d bytes)",
@@ -692,7 +692,7 @@ void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
 	duk_tval *tv1;
 	duk_tval *tv2;
-	duk_tval tv;  /* temp */
+	duk_tval tv_tmp;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -701,9 +701,10 @@ void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
 	tv2 = duk_require_tval(ctx, index2);
 	DUK_ASSERT(tv2 != NULL);
 
-	DUK_TVAL_SET_TVAL(&tv, tv1);
+	/* If tv1==tv2 this is a NOP, no check is needed */
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	DUK_TVAL_SET_TVAL(tv1, tv2);
-	DUK_TVAL_SET_TVAL(tv2, &tv);
+	DUK_TVAL_SET_TVAL(tv2, &tv_tmp);
 }
 
 void duk_swap_top(duk_context *ctx, duk_idx_t index) {
@@ -732,7 +733,7 @@ void duk_dup_top(duk_context *ctx) {
 void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 	duk_tval *p;
 	duk_tval *q;
-	duk_tval tv;
+	duk_tval tv_tmp;
 	duk_size_t nbytes;
 
 	DUK_ASSERT(ctx != NULL);
@@ -753,11 +754,14 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 
 	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d", to_index, p, q, (int) nbytes));
+
+	/* No net refcount changes. */
+
 	if (nbytes > 0) {
-		DUK_TVAL_SET_TVAL(&tv, q);
+		DUK_TVAL_SET_TVAL(&tv_tmp, q);
 		DUK_ASSERT(nbytes > 0);
 		DUK_MEMMOVE((void *) (p + 1), (void *) p, nbytes);
-		DUK_TVAL_SET_TVAL(p, &tv);
+		DUK_TVAL_SET_TVAL(p, &tv_tmp);
 	} else {
 		/* nop: insert top to top */
 		DUK_ASSERT(nbytes == 0);
@@ -769,7 +773,7 @@ void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1;
 	duk_tval *tv2;
-	duk_tval tv;  /* temp */
+	duk_tval tv_tmp;
 
 	DUK_ASSERT(ctx != NULL);
 
@@ -782,11 +786,11 @@ void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	 * is same as duk_pop(ctx).
 	 */
 
-	DUK_TVAL_SET_TVAL(&tv, tv2);
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 	DUK_TVAL_SET_TVAL(tv2, tv1);
 	DUK_TVAL_SET_UNDEFINED_UNUSED(tv1);
 	thr->valstack_top--;
-	DUK_TVAL_DECREF(thr, &tv);
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 }
 
 void duk_remove(duk_context *ctx, duk_idx_t index) {
@@ -794,7 +798,7 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
 	duk_tval *p;
 	duk_tval *q;
 #ifdef DUK_USE_REFERENCE_COUNTING
-	duk_tval tv;
+	duk_tval tv_tmp;
 #endif
 	duk_size_t nbytes;
 
@@ -815,7 +819,7 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	/* use a temp: decref only when valstack reachable values are correct */
-	DUK_TVAL_SET_TVAL(&tv, p);
+	DUK_TVAL_SET_TVAL(&tv_tmp, p);
 #endif
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
@@ -825,7 +829,7 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
 	thr->valstack_top--;
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_TVAL_DECREF(thr, &tv);
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 #endif
 }
 
@@ -848,17 +852,17 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 		return;
 	}
 
-	nbytes = sizeof(duk_tval) * count;
+	nbytes = sizeof(duk_tval) * count;  /* FIXME: wrap check */
 	if (nbytes == 0) {
 		return;
 	}
 	DUK_ASSERT(thr->valstack_top <= thr->valstack_end);
 	if ((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack_top) < nbytes) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 	src = (void *) ((duk_uint8_t *) from_thr->valstack_top - nbytes);
 	if (src < (void *) from_thr->valstack_bottom) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "source stack does not contain enough elements");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_src_stack_not_enough);
 	}
 
 	/* copy values (no overlap even if ctx == from_ctx) */
@@ -869,7 +873,7 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	p = thr->valstack_top;
 	thr->valstack_top = (duk_tval *) (((duk_uint8_t *) thr->valstack_top) + nbytes);
 	while (p < thr->valstack_top) {
-		DUK_TVAL_INCREF(thr, p);
+		DUK_TVAL_INCREF(thr, p);  /* no side effects */
 		p++;
 	}
 }
@@ -889,7 +893,7 @@ void duk_require_undefined(duk_context *ctx, duk_idx_t index) {
 		/* Note: accept both 'actual' and 'unused' undefined */
 		return;
 	}
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not undefined");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_undefined);
 }
 
 void duk_require_null(duk_context *ctx, duk_idx_t index) {
@@ -902,7 +906,8 @@ void duk_require_null(duk_context *ctx, duk_idx_t index) {
 	if (tv && DUK_TVAL_IS_NULL(tv)) {
 		return;
 	}
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not null");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_null);
+	return;  /* not reachable */
 }
 
 duk_bool_t duk_get_boolean(duk_context *ctx, duk_idx_t index) {
@@ -933,7 +938,7 @@ duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t index) {
 		return ret;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not boolean");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_boolean);
 	return 0;  /* not reachable */
 }
 
@@ -950,8 +955,8 @@ duk_double_t duk_get_number(duk_context *ctx, duk_idx_t index) {
 	}
 
 	/*
-	 *  Number should already be in NaN-normalized form,
-	 *  but let's normalize anyway.
+	 *  Number should already be in NaN-normalized form, but let's
+	 *  normalize anyway.
 	 */
 
 	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&ret);
@@ -978,7 +983,7 @@ duk_double_t duk_require_number(duk_context *ctx, duk_idx_t index) {
 		return ret.d;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not number");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_number);
 	return DUK_DOUBLE_NAN;  /* not reachable */
 }
 
@@ -1044,7 +1049,7 @@ const char *duk_require_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *o
 		return ret;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not string");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_string);
 	return NULL;  /* not reachable */
 }
 
@@ -1089,7 +1094,7 @@ void *duk_require_pointer(duk_context *ctx, duk_idx_t index) {
 		return (void *) p;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not pointer");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_pointer);
 	return NULL;  /* not reachable */
 }
 
@@ -1154,7 +1159,7 @@ void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size
 		return (void *) DUK_HBUFFER_GET_DATA_PTR(h);  /* may be NULL (but only if size is 0) */
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not buffer");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_buffer);
 	return NULL;  /* not reachable */
 }
 
@@ -1196,41 +1201,38 @@ duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, duk_idx_t index, duk_u
 		return (duk_heaphdr *) NULL;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected tag %d", tag);
+	/* Formatting the tag number here is not very useful: the tag value
+	 * is Duktape internal (not the same as DUK_TYPE_xxx) and even depends
+	 * on the duk_tval layout.  If anything, add a human readable type here.
+	 */
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_unexpected_type);
 	return NULL;  /* not reachable */
 }
 
-/* internal */
 duk_hstring *duk_get_hstring(duk_context *ctx, duk_idx_t index) {
 	return (duk_hstring *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_STRING | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 }
 
-/* internal */
 duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t index) {
 	return (duk_hstring *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_STRING);
 }
 
-/* internal */
 duk_hobject *duk_get_hobject(duk_context *ctx, duk_idx_t index) {
 	return (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 }
 
-/* internal */
 duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index) {
 	return (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
 }
 
-/* internal */
 duk_hbuffer *duk_get_hbuffer(duk_context *ctx, duk_idx_t index) {
 	return (duk_hbuffer *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_BUFFER | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 }
 
-/* internal */
 duk_hbuffer *duk_require_hbuffer(duk_context *ctx, duk_idx_t index) {
 	return (duk_hbuffer *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_BUFFER);
 }
 
-/* internal */
 duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && !DUK_HOBJECT_IS_THREAD(h)) {
@@ -1239,18 +1241,16 @@ duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t index) {
 	return (duk_hthread *) h;
 }
 
-/* internal */
 duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
 	DUK_ASSERT(h != NULL);
 	if (!DUK_HOBJECT_IS_THREAD(h)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected thread");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_expected_thread);
 	}
 	return (duk_hthread *) h;
 }
 
-/* internal */
 duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && !DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
@@ -1259,18 +1259,16 @@ duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t ind
 	return (duk_hcompiledfunction *) h;
 }
 
-/* internal */
 duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
 	DUK_ASSERT(h != NULL);
 	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected compiledfunction");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_expected_compiledfunction);
 	}
 	return (duk_hcompiledfunction *) h;
 }
 
-/* internal */
 duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && !DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
@@ -1279,13 +1277,12 @@ duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) 
 	return (duk_hnativefunction *) h;
 }
 
-/* internal */
 duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
 	DUK_ASSERT(h != NULL);
 	if (!DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected nativefunction");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_expected_nativefunction);
 	}
 	return (duk_hnativefunction *) h;
 }
@@ -1322,22 +1319,13 @@ duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index) {
 
 	ret = duk_get_c_function(ctx, index);
 	if (!ret) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "incorrect type, expected c function");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_expected_c_function);
 	}
 	return ret;
 }
 
 duk_context *duk_get_context(duk_context *ctx, duk_idx_t index) {
-	duk_hobject *h;
-
-	h = duk_get_hobject(ctx, index);
-	if (!h) {
-		return NULL;
-	}
-	if (!DUK_HOBJECT_HAS_THREAD(h)) {
-		return NULL;
-	}
-	return (duk_context *) h;
+	return (duk_context *) duk_get_hthread(ctx, index);
 }
 
 duk_context *duk_require_context(duk_context *ctx, duk_idx_t index) {
@@ -1839,7 +1827,6 @@ const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 	return duk_require_string(ctx, index);
 }
 
-/* internal */
 duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index) {
 	duk_hstring *ret;
 	DUK_ASSERT(ctx != NULL);
@@ -2299,7 +2286,6 @@ duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index) {
  *  Pushers
  */
 
-/* internal */
 void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
@@ -2308,7 +2294,7 @@ void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	DUK_ASSERT(tv != NULL);
 
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	tv_slot = thr->valstack_top;
@@ -2317,7 +2303,6 @@ void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	thr->valstack_top++;
 }
 
-/* internal */
 void duk_push_unused(duk_context *ctx) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
@@ -2389,7 +2374,7 @@ const char *duk_push_lstring(duk_context *ctx, const char *str, size_t len) {
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	/* NULL with zero length represents an empty string; NULL with higher
@@ -2735,7 +2720,6 @@ const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...) {
 	return ret;
 }
 
-/* internal */
 duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
@@ -2748,7 +2732,7 @@ duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	h = duk_hobject_alloc(thr->heap, hobject_flags_and_class);
@@ -2835,7 +2819,7 @@ duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	obj = duk_hthread_alloc(thr->heap,
@@ -2890,7 +2874,7 @@ duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	/* Template functions are not strictly constructable (they don't
@@ -2931,7 +2915,7 @@ static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func,
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 	if (func == NULL) {
 		goto api_error;
@@ -3102,7 +3086,7 @@ void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic) {
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "attempt to push beyond currently allocated stack");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_push_beyond_alloc_stack);
 	}
 
 	/* Check for maximum buffer length. */
@@ -3138,7 +3122,6 @@ duk_idx_t duk_push_object_internal(duk_context *ctx) {
 	                              -1);  /* no prototype */
 }
 
-/* internal */
 void duk_push_hstring(duk_context *ctx, duk_hstring *h) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
@@ -3153,7 +3136,6 @@ void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx) {
 	duk_push_hstring(ctx, thr->strs[stridx]);
 }
 
-/* internal */
 void duk_push_hobject(duk_context *ctx, duk_hobject *h) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
@@ -3162,7 +3144,6 @@ void duk_push_hobject(duk_context *ctx, duk_hobject *h) {
 	duk_push_tval(ctx, &tv);
 }
 
-/* internal */
 void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
@@ -3171,7 +3152,6 @@ void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h) {
 	duk_push_tval(ctx, &tv);
 }
 
-/* internal */
 void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builtin_idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
