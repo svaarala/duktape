@@ -246,7 +246,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 					if (thr->callstack[i].flags & DUK_ACT_FLAG_TAILCALLED) {
 						DUK_DEBUG_SUMMARY_CHAR('/');
 					}
-					DUK_DEBUG_SUMMARY_CHAR(duk__get_act_summary_char(&thr->callstack[i]));
+					DUK_DEBUG_SUMMARY_CHAR(duk__get_act_summary_char(thr->callstack + i));
 				} else {
 					DUK_DEBUG_SUMMARY_CHAR('.');
 				}
@@ -316,7 +316,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 				DUK_DEBUG_SUMMARY_CHAR('@');
 			} else if (i < thr->catchstack_size) {
 				if (i < thr->catchstack_top) {
-					DUK_DEBUG_SUMMARY_CHAR(duk__get_cat_summary_char(&thr->catchstack[i]));
+					DUK_DEBUG_SUMMARY_CHAR(duk__get_cat_summary_char(thr->catchstack + i));
 				} else {
 					DUK_DEBUG_SUMMARY_CHAR('.');
 				}
@@ -419,7 +419,7 @@ void duk_debug_dump_callstack(duk_hthread *thr) {
 	}
 
 	for (i = 0; i < (duk_uint_fast32_t) thr->callstack_top; i++) {
-		duk_activation *act = &thr->callstack[i];
+		duk_activation *act = thr->callstack + i;
 		duk_tval *this_binding = NULL;
 
 		this_binding = thr->valstack + act->idx_bottom - 1;

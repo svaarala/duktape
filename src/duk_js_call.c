@@ -992,7 +992,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	/* [ ... func this arg1 ... argN ] */
 
 	DUK_ASSERT(thr->callstack_top < thr->callstack_size);
-	act = &thr->callstack[thr->callstack_top];
+	act = thr->callstack + thr->callstack_top;
 	thr->callstack_top++;
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 	DUK_ASSERT(thr->valstack_top > thr->valstack_bottom);  /* at least effective 'this' */
@@ -1805,7 +1805,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		for (i = 0; i < thr->catchstack_top; i++) {
 			DUK_ASSERT(thr->catchstack[i].callstack_index < our_callstack_index ||  /* refer to callstack entries below current */
-			           DUK_CAT_GET_TYPE(&thr->catchstack[i]) == DUK_CAT_TYPE_LABEL); /* or a non-catching entry */
+			           DUK_CAT_GET_TYPE(thr->catchstack + i) == DUK_CAT_TYPE_LABEL); /* or a non-catching entry */
 		}
 	}
 #endif  /* DUK_USE_ASSERTIONS */
@@ -2057,7 +2057,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		}
 
 		DUK_ASSERT(thr->callstack_top < thr->callstack_size);
-		act = &thr->callstack[thr->callstack_top];
+		act = thr->callstack + thr->callstack_top;
 		thr->callstack_top++;
 		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 

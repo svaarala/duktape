@@ -126,7 +126,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 		DUK_ASSERT_DISABLE(idx >= 0);  /* unsigned */
 		DUK_ASSERT((duk_size_t) idx < thr->callstack_size);  /* true, despite side effect resizes */
 
-		p = &thr->callstack[idx];
+		p = thr->callstack + idx;
 		DUK_ASSERT(p->func != NULL);
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
@@ -166,7 +166,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 					DUK_HOBJECT_DECREF(thr, h_tmp);  /* side effects */
 				}
 			}
-			p = &thr->callstack[idx];  /* avoid side effects */
+			p = thr->callstack + idx;  /* avoid side effects */
 			DUK_ASSERT(p->prev_caller == NULL);
 		}
 #endif
@@ -191,7 +191,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 			DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
 			                     (void *) p->var_env, (duk_heaphdr *) p->var_env));
 			duk_js_close_environment_record(thr, p->var_env, p->func, p->idx_bottom);
-			p = &thr->callstack[idx];  /* avoid side effect issues */
+			p = thr->callstack + idx;  /* avoid side effect issues */
 		}
 
 #if 0
@@ -205,7 +205,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 				DUK_DD(DUK_DDPRINT("closing lex_env record %p -> %!O",
 				                   (void *) p->lex_env, (duk_heaphdr *) p->lex_env));
 				duk_js_close_environment_record(thr, p->lex_env, p->func, p->idx_bottom);
-				p = &thr->callstack[idx];  /* avoid side effect issues */
+				p = thr->callstack + idx;  /* avoid side effect issues */
 			}
 		}
 #endif
@@ -248,7 +248,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 		p->var_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = &thr->callstack[idx];  /* avoid side effect issues */
+		p = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -257,7 +257,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 		p->lex_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = &thr->callstack[idx];  /* avoid side effect issues */
+		p = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
 		/* Note: this may cause a corner case situation where a finalizer
@@ -269,7 +269,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 		p->func = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_DECREF(thr, tmp);
-		p = &thr->callstack[idx];  /* avoid side effect issues */
+		p = thr->callstack + idx;  /* avoid side effect issues */
 		DUK_UNREF(p);
 #endif
 	}
@@ -389,7 +389,7 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 		DUK_ASSERT_DISABLE(idx >= 0);  /* unsigned */
 		DUK_ASSERT((duk_size_t) idx < thr->catchstack_size);
 
-		p = &thr->catchstack[idx];
+		p = thr->catchstack + idx;
 
 		if (DUK_CAT_HAS_LEXENV_ACTIVE(p)) {
 			DUK_DDD(DUK_DDDPRINT("unwinding catchstack idx %d, callstack idx %d, callstack top %d: lexical environment active",
@@ -404,9 +404,9 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 			/* Note that multiple catchstack entries may refer to the same
 			 * callstack entry.
 			 */
-			act = &thr->callstack[p->callstack_index];
+			act = thr->callstack + p->callstack_index;
 			DUK_ASSERT(act >= thr->callstack);
-			DUK_ASSERT(act < &thr->callstack[thr->callstack_top]);
+			DUK_ASSERT(act < thr->callstack + thr->callstack_top);
 
 			DUK_DDD(DUK_DDDPRINT("catchstack_index=%d, callstack_index=%d, lex_env=%!iO",
 			                     (int) idx, (int) p->callstack_index, act->lex_env));
