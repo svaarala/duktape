@@ -24,7 +24,7 @@ duk_int_t duk_api_global_line = 0;
  */
 
 static duk_int_t duk__api_coerce_d2i(duk_double_t d) {
-	int c;
+	duk_small_int_t c;
 
 	/*
 	 *  Special cases like NaN and +/- Infinity are handled explicitly
@@ -39,7 +39,7 @@ static duk_int_t duk__api_coerce_d2i(duk_double_t d) {
 	 *  on platforms with a 64-bit int type, the full range is allowed.
 	 */
 
-	c = DUK_FPCLASSIFY(d);
+	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN) {
 		return 0;
 	} else if (d < (duk_double_t) DUK_INT_MIN) {
@@ -55,11 +55,11 @@ static duk_int_t duk__api_coerce_d2i(duk_double_t d) {
 }
 
 static duk_uint_t duk__api_coerce_d2ui(duk_double_t d) {
-	int c;
+	duk_small_int_t c;
 
 	/* Same as above but for unsigned int range. */
 
-	c = DUK_FPCLASSIFY(d);
+	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN) {
 		return 0;
 	} else if (d < 0.0) {
@@ -75,58 +75,145 @@ static duk_uint_t duk__api_coerce_d2ui(duk_double_t d) {
 }
 
 /*
- *  Stack indexes and stack size management
+ *  Stack index validation/normalization and getting a stack duk_tval ptr.
+ *
+ *  These are called by many API entrypoints so the implementations must be
+ *  fast and "inlined".
+ *
+ *  There's some repetition because of this; keep the functions in sync.
  */
 
 duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_tval *tv;
+	duk_idx_t vs_size;
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
+	/* Care must be taken to avoid pointer wrapping in the index
+	 * validation.  For instance, on a 32-bit platform with 8-byte
+	 * duk_tval the index 0x20000000UL would wrap the memory space
+	 * once.
+	 */
+
+	/* Assume value stack sizes (in elements) fits into duk_idx_t. */
+	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT(vs_size >= 0);
+
 	if (index < 0) {
-		if (index == DUK_INVALID_INDEX) {
-			goto fail;
-		}
-		tv = thr->valstack_top + index;
-		DUK_ASSERT(tv < thr->valstack_top);
-		if (tv < thr->valstack_bottom) {
-			goto fail;
+		index = vs_size + index;
+		if (DUK_UNLIKELY(index < 0)) {
+			/* Also catches index == DUK_INVALID_INDEX: vs_size >= 0
+			 * so that vs_size + DUK_INVALID_INDEX cannot underflow
+			 * and will always be negative.
+			 */
+			return DUK_INVALID_INDEX;
 		}
 	} else {
-		tv = thr->valstack_bottom + index;
-		DUK_ASSERT(tv >= thr->valstack_bottom);
-		if (tv >= thr->valstack_top) {
-			goto fail;
+		/* since index non-negative */
+		DUK_ASSERT(index != DUK_INVALID_INDEX);
+
+		if (DUK_UNLIKELY(index >= vs_size)) {
+			return DUK_INVALID_INDEX;
 		}
 	}
 
-	DUK_ASSERT((duk_idx_t) (tv - thr->valstack_bottom) >= 0);
-	return (duk_idx_t) (tv - thr->valstack_bottom);
-
- fail:
-	return DUK_INVALID_INDEX;
+	DUK_ASSERT(index >= 0 && index < vs_size);
+	return index;
 }
 
 duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t ret;
+	duk_idx_t vs_size;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	ret = duk_normalize_index(ctx, index);
-	if (ret < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
+	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT(vs_size >= 0);
+
+	if (index < 0) {
+		index = vs_size + index;
+		if (DUK_UNLIKELY(index < 0)) {
+			goto fail;
+		}
+	} else {
+		DUK_ASSERT(index != DUK_INVALID_INDEX);
+		if (DUK_UNLIKELY(index >= vs_size)) {
+			goto fail;
+		}
 	}
-	return ret;
+
+	DUK_ASSERT(index >= 0 && index < vs_size);
+	return index;
+
+ fail:
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 }
 
+duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_idx_t vs_size;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(DUK_INVALID_INDEX < 0);
+
+	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT(vs_size >= 0);
+
+	if (index < 0) {
+		index = vs_size + index;
+		if (DUK_UNLIKELY(index < 0)) {
+			return NULL;
+		}
+	} else {
+		DUK_ASSERT(index != DUK_INVALID_INDEX);
+		if (DUK_UNLIKELY(index >= vs_size)) {
+			return NULL;
+		}
+	}
+
+	DUK_ASSERT(index >= 0 && index < vs_size);
+	return thr->valstack_bottom + index;
+}
+
+duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_idx_t vs_size;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(DUK_INVALID_INDEX < 0);
+
+	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT(vs_size >= 0);
+
+	if (index < 0) {
+		index = vs_size + index;
+		if (DUK_UNLIKELY(index < 0)) {
+			goto fail;
+		}
+	} else {
+		DUK_ASSERT(index != DUK_INVALID_INDEX);
+		if (DUK_UNLIKELY(index >= vs_size)) {
+			goto fail;
+		}
+	}
+
+	DUK_ASSERT(index >= 0 && index < vs_size);
+	return thr->valstack_bottom + index;
+
+ fail:
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
+	return NULL;
+}
+
+/* Non-critical. */
 duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 	return (duk_normalize_index(ctx, index) >= 0);
 }
 
+/* Non-critical. */
 void duk_require_valid_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
@@ -134,9 +221,13 @@ void duk_require_valid_index(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
 	if (duk_normalize_index(ctx, index) < 0) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid index");
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_index);
 	}
 }
+
+/*
+ *  Stack top/size management
+ */
 
 duk_idx_t duk_get_top(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -770,67 +861,6 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
  *  Get/require
  */
 
-/* internal */
-duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_tval *tv;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(DUK_INVALID_INDEX < 0);
-
-	if (index < 0) {
-		if (index == DUK_INVALID_INDEX) {
-			return NULL;
-		}
-		tv = thr->valstack_top + index;
-		DUK_ASSERT(tv < thr->valstack_top);
-		if (tv < thr->valstack_bottom) {
-			return NULL;
-		}
-	} else {
-		tv = thr->valstack_bottom + index;
-		DUK_ASSERT(tv >= thr->valstack_bottom);
-		if (tv >= thr->valstack_top) {
-			return NULL;
-		}
-	}
-	return tv;
-}
-
-duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_tval *tv;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(DUK_INVALID_INDEX < 0);
-
-	if (index < 0) {
-		if (index == DUK_INVALID_INDEX) {
-			/* XXX: this check may not be necessary
-			 * on some architectures but be careful
-			 * of wrapping.
-			 */
-			goto fail;
-		}
-		tv = thr->valstack_top + index;
-		DUK_ASSERT(tv < thr->valstack_top);
-		if (DUK_UNLIKELY(tv < thr->valstack_bottom)) {
-			goto fail;
-		}
-	} else {
-		tv = thr->valstack_bottom + index;
-		DUK_ASSERT(tv >= thr->valstack_bottom);
-		if (DUK_UNLIKELY(tv >= thr->valstack_top)) {
-			goto fail;
-		}
-	}
-	return tv;
-
- fail:
-	DUK_ERROR(thr, DUK_ERR_API_ERROR, "index out of bounds");
-	return NULL;  /* not reachable */
-}
-
 void duk_require_undefined(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
@@ -1122,7 +1152,7 @@ duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, duk_idx_t index, duk_u
 	DUK_ASSERT(ctx != NULL);
 
 	tv = duk_get_tval(ctx, index);
-	if (tv && DUK_TVAL_GET_TAG(tv) == tag) {
+	if (tv && (DUK_TVAL_GET_TAG(tv) == tag)) {
 		duk_heaphdr *ret;
 
 		/* Note: tag comparison in general doesn't work for numbers,
@@ -2518,18 +2548,19 @@ duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 
 void duk_push_current_function(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_activation *act;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
-	if (thr->callstack_top == 0) {
-		duk_push_undefined(ctx);
-	} else {
-		duk_activation *act = thr->callstack + thr->callstack_top - 1;
+	act = duk_hthread_get_current_activation(thr);
+	if (act) {
 		DUK_ASSERT(act->func != NULL);
 		duk_push_hobject(ctx, act->func);
+	} else {
+		duk_push_undefined(ctx);
 	}
 }
 
