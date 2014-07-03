@@ -7,9 +7,15 @@
 
 #include "duk_internal.h"
 
+/* Mostly API related */
+const char *duk_str_internal_error = "internal error";
 const char *duk_str_invalid_count = "invalid count";
 const char *duk_str_invalid_call_args = "invalid call args";
 const char *duk_str_not_constructable = "not constructable";
+const char *duk_str_not_callable = "not callable";
+const char *duk_str_not_extensible = "not extensible";
+const char *duk_str_not_writable = "not writable";
+const char *duk_str_not_configurable = "not configurable";
 
 const char *duk_str_invalid_index = "invalid index";
 const char *duk_str_valstack_limit = "valstack limit";
@@ -40,9 +46,30 @@ const char *duk_str_func_alloc_failed = "func alloc failed";
 const char *duk_str_buffer_alloc_failed = "buffer alloc failed";
 const char *duk_str_pop_too_many = "attempt to pop too many entries";
 
+/* JSON */
 const char *duk_str_fmt_ptr = "%p";
 const char *duk_str_invalid_json = "invalid json";
 const char *duk_str_invalid_number = "invalid number";
 const char *duk_str_jsondec_reclimit = "json decode recursion limit";
 const char *duk_str_jsonenc_reclimit = "json encode recursion limit";
 const char *duk_str_cyclic_input = "cyclic input";
+
+/* Object property access */
+const char *duk_str_proxy_revoked = "proxy revoked";
+const char *duk_str_object_resize_failed = "object resize failed";
+const char *duk_str_invalid_base = "invalid base value";
+const char *duk_str_strict_caller_read = "attempt to read strict 'caller'";
+const char *duk_str_proxy_rejected = "proxy rejected";
+const char *duk_str_invalid_array_length = "invalid array length";
+const char *duk_str_array_length_write_failed = "array length write failed";
+const char *duk_str_array_length_not_writable = "array length non-writable";
+const char *duk_str_setter_undefined = "setter undefined";
+const char *duk_str_redefine_virt_prop = "attempt to redefine virtual property";
+const char *duk_str_invalid_descriptor = "invalid descriptor";
+const char *duk_str_property_is_virtual = "property is virtual";
+
+/* Limits */
+const char *duk_str_object_property_limit = "object property limit";
+const char *duk_str_prototype_chain_limit = "prototype chain limit";
+const char *duk_str_bound_chain_limit = "function call bound chain limit";
+const char *duk_str_c_callstack_limit = "C call stack depth limit";
