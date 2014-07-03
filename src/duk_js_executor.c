@@ -472,7 +472,7 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
 	DUK_ASSERT(act_idx >= 0);
 	DUK_ASSERT(thr->callstack[act_idx].func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(thr->callstack[act_idx].func));
-	DUK_ASSERT(thr->callstack[act_idx].idx_retval >= 0);
+	DUK_ASSERT_DISABLE(thr->callstack[act_idx].idx_retval >= 0);  /* unsigned */
 
 	thr->valstack_bottom = thr->valstack + thr->callstack[act_idx].idx_bottom;
 
@@ -480,9 +480,9 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
 	 * intended retval is at the top (retval_count == 0, happens e.g. with 'finally').
 	 */
 	duk_set_top((duk_context *) thr, 
-	            thr->callstack[act_idx].idx_retval -
-	            thr->callstack[act_idx].idx_bottom +
-	            retval_count);
+	            (duk_idx_t) (thr->callstack[act_idx].idx_retval -
+	                         thr->callstack[act_idx].idx_bottom +
+	                         retval_count));
 
 	/*
 	 *  When returning to an Ecmascript function, extend the valstack
@@ -660,9 +660,9 @@ static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_id
 	DUK_ASSERT(resumer->callstack[act_idx].func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(resumer->callstack[act_idx].func));  /* resume caller must be an ecmascript func */
 
-	DUK_DDD(DUK_DDDPRINT("resume idx_retval is %d", resumer->callstack[act_idx].idx_retval));
+	DUK_DDD(DUK_DDDPRINT("resume idx_retval is %d", (int) resumer->callstack[act_idx].idx_retval));
 
-	tv1 = &resumer->valstack[resumer->callstack[act_idx].idx_retval];  /* return value from Duktape.Thread.resume() */
+	tv1 = resumer->valstack + resumer->callstack[act_idx].idx_retval;  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	DUK_TVAL_SET_TVAL(tv1, &thr->heap->lj.value1);
 	DUK_TVAL_INCREF(thr, tv1);
@@ -733,7 +733,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		           ((duk_hnativefunction *) (thr->callstack + thr->callstack_top - 1)->func)->func == duk_bi_thread_resume);
 		DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func));                /* an Ecmascript function */
-		DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->idx_retval >= 0);                                      /* waiting for a value */
+		DUK_ASSERT_DISABLE((thr->callstack + thr->callstack_top - 2)->idx_retval >= 0);                              /* unsigned */
 
 		tv = &thr->heap->lj.value2;  /* resumee */
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
@@ -754,8 +754,8 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
 		           ((resumee->callstack + resumee->callstack_top - 2)->func != NULL &&
 		            DUK_HOBJECT_IS_COMPILEDFUNCTION((resumee->callstack + resumee->callstack_top - 2)->func)));      /* an Ecmascript function */
-		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
-		           (resumee->callstack + resumee->callstack_top - 2)->idx_retval >= 0);                              /* waiting for a value */
+		DUK_ASSERT_DISABLE(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
+		           (resumee->callstack + resumee->callstack_top - 2)->idx_retval >= 0);                              /* idx_retval unsigned */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
 		           resumee->callstack_top == 0);                                                                     /* INACTIVE: no activation, single function value on valstack */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
@@ -791,9 +791,9 @@ static int duk__handle_longjmp(duk_hthread *thr,
 			goto check_longjmp;
 		} else if (resumee->state == DUK_HTHREAD_STATE_YIELDED) {
 			act_idx = resumee->callstack_top - 2;  /* Ecmascript function */
-			DUK_ASSERT(resumee->callstack[act_idx].idx_retval >= 0);
+			DUK_ASSERT_DISABLE(resumee->callstack[act_idx].idx_retval >= 0);  /* unsigned */
 
-			tv = &resumee->valstack[resumee->callstack[act_idx].idx_retval];  /* return value from Duktape.Thread.yield() */
+			tv = resumee->valstack + resumee->callstack[act_idx].idx_retval;  /* return value from Duktape.Thread.yield() */
 			DUK_ASSERT(tv >= resumee->valstack && tv < resumee->valstack_top);
 			tv2 = &thr->heap->lj.value1;
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
@@ -872,7 +872,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		           ((duk_hnativefunction *) (thr->callstack + thr->callstack_top - 1)->func)->func == duk_bi_thread_yield);
 		DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func));                /* an Ecmascript function */
-		DUK_ASSERT((thr->callstack + thr->callstack_top - 2)->idx_retval >= 0);                                      /* waiting for a value */
+		DUK_ASSERT_DISABLE((thr->callstack + thr->callstack_top - 2)->idx_retval >= 0);                              /* unsigned */
 
 		resumer = thr->resumer;
 
@@ -884,7 +884,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		           ((duk_hnativefunction *) (resumer->callstack + resumer->callstack_top - 1)->func)->func == duk_bi_thread_resume);
 		DUK_ASSERT((resumer->callstack + resumer->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((resumer->callstack + resumer->callstack_top - 2)->func));        /* an Ecmascript function */
-		DUK_ASSERT((resumer->callstack + resumer->callstack_top - 2)->idx_retval >= 0);                              /* waiting for a value */
+		DUK_ASSERT_DISABLE((resumer->callstack + resumer->callstack_top - 2)->idx_retval >= 0);                      /* unsigned */
 
 		if (thr->heap->lj.iserror) {
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
@@ -994,7 +994,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("slow return to Ecmascript caller, idx_retval=%d, lj_value1=%!T",
-			                     (thr->callstack + thr->callstack_top - 2)->idx_retval, &thr->heap->lj.value1));
+			                     (int) (thr->callstack + thr->callstack_top - 2)->idx_retval, &thr->heap->lj.value1));
 
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func));   /* must be ecmascript */
 
@@ -1005,7 +1005,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
 			DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%d is %!T",
-			                     (thr->callstack + thr->callstack_top - 2)->idx_retval,
+			                     (int) (thr->callstack + thr->callstack_top - 2)->idx_retval,
 			                     thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval));
 
 			duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
@@ -1026,7 +1026,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 		           ((duk_hnativefunction *) (thr->resumer->callstack + thr->resumer->callstack_top - 1)->func)->func == duk_bi_thread_resume);  /* Duktape.Thread.resume() */
 		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func != NULL &&
 		           DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->resumer->callstack + thr->resumer->callstack_top - 2)->func));  /* an Ecmascript function */
-		DUK_ASSERT((thr->resumer->callstack + thr->resumer->callstack_top - 2)->idx_retval >= 0);                        /* waiting for a value */
+		DUK_ASSERT_DISABLE((thr->resumer->callstack + thr->resumer->callstack_top - 2)->idx_retval >= 0);                /* unsigned */
 		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 		DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 

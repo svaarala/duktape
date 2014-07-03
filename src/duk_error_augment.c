@@ -232,7 +232,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 		/* [... arr] */
 
 		DUK_ASSERT(thr_callstack->callstack[i].func != NULL);
-		DUK_ASSERT(thr_callstack->callstack[i].pc >= 0);
+		DUK_ASSERT_DISABLE(thr_callstack->callstack[i].pc >= 0);  /* unsigned */
 
 		/* add function */
 		duk_push_hobject(ctx, thr_callstack->callstack[i].func);  /* -> [... arr func] */

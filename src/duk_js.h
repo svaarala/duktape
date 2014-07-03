@@ -73,8 +73,8 @@ duk_bool_t duk_js_delvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring 
 duk_bool_t duk_js_delvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name);
 duk_bool_t duk_js_declvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_small_int_t prop_flags, duk_bool_t is_func_decl);
 void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_activation *act);
-void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_uint_t regbase);
-duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_uint_t reg_bottom);
+void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase);
+duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t idx_bottom);
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,

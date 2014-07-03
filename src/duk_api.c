@@ -1098,6 +1098,7 @@ void *duk_require_pointer(duk_context *ctx, duk_idx_t index) {
 	return NULL;  /* not reachable */
 }
 
+/* XXX: unused */
 void *duk_get_voidptr(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
@@ -3273,7 +3274,7 @@ void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg) {
 	DUK_ASSERT(thr->heap->fatal_func != NULL);
 
 	DUK_D(DUK_DPRINT("fatal error occurred, code %d, message %s",
-	                 (int) err_code, (int) err_msg));
+	                 (int) err_code, err_msg));
 
 	/* fatal_func should be noreturn, but noreturn declarations on function
 	 * pointers has a very spotty support apparently so it's not currently

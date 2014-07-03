@@ -283,12 +283,13 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 #if 0
 	if (thr->callstack_top > 0) {
 		duk_activation *p = thr->callstack + thr->callstack_top - 1;
-		p->idx_retval = -1;
+		p->idx_retval = 0;
 	}
 #endif
 
 	/* Note: any entries above the callstack top are garbage and not zeroed.
-	 * Also topmost activation idx_retval is garbage and not zeroed.
+	 * Also topmost activation idx_retval is garbage (not zeroed), and must
+	 * be ignored.
 	 */
 }
 

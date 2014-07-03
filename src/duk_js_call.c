@@ -665,7 +665,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 *  refers to valstack_bottom.
 	 */
 
-	entry_valstack_bottom_index = (int) (thr->valstack_bottom - thr->valstack);
+	entry_valstack_bottom_index = (duk_size_t) (thr->valstack_bottom - thr->valstack);
 	entry_callstack_top = thr->callstack_top;
 	entry_catchstack_top = thr->catchstack_top;
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
@@ -1027,7 +1027,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	act->pc = 0;
 	act->idx_bottom = entry_valstack_bottom_index + idx_args;
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-	act->idx_retval = -1;  /* idx_retval is a 'caller' retval, so init to "unused" here */
+	act->idx_retval = 0;
 #endif
 
 	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
@@ -1985,7 +1985,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->idx_bottom = entry_valstack_bottom_index;  /* tail call -> reuse current "frame" */
 		DUK_ASSERT(nregs >= 0);
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-		act->idx_retval = -1;  /* idx_retval is a 'caller' retval, so init to "unused" here */
+		act->idx_retval = 0;
 #endif
 
 		/*
@@ -2078,7 +2078,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->idx_bottom = entry_valstack_bottom_index + idx_args;
 		DUK_ASSERT(nregs >= 0);
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-		act->idx_retval = -1;  /* idx_retval is a 'caller' retval, so init to "unused" here */
+		act->idx_retval = 0;
 #endif
 
 		DUK_HOBJECT_INCREF(thr, func);  /* act->func */

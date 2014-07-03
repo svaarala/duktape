@@ -24,8 +24,8 @@
  *    - Duktape Date provider settings
  *    - Final sanity checks
  *
- *  DUK_F_XXX are internal feature detection macros which should not
- *  be used outside this header.
+ *  DUK_F_XXX are internal feature detection macros which should not be
+ *  used outside this header.
  *
  *  Useful resources:
  *
@@ -62,7 +62,8 @@
 #endif
 
 /*
- *  Provides the duk_rdtsc() inline function (if available)
+ *  Provides the duk_rdtsc() inline function (if available), limited to
+ *  GCC C99.
  *
  *  See: http://www.mcs.anl.gov/~kazutomo/rdtsc.html
  */
@@ -1972,7 +1973,7 @@ typedef FILE duk_file;
 #if defined(DUK_OPT_DEBUG_BUFSIZE)
 #define DUK_USE_DEBUG_BUFSIZE  DUK_OPT_DEBUG_BUFSIZE
 #else
-#define DUK_USE_DEBUG_BUFSIZE  65536
+#define DUK_USE_DEBUG_BUFSIZE  65536L
 #endif
 
 /*

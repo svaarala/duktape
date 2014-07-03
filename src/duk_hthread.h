@@ -30,19 +30,19 @@
  * requirements.
  */
 
-#define DUK_VALSTACK_DEFAULT_MAX        1000000
+#define DUK_VALSTACK_DEFAULT_MAX        1000000L
 
 #define DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */
 #define DUK_CALLSTACK_SHRINK_THRESHOLD  16      /* roughly 512 bytes */
 #define DUK_CALLSTACK_SHRINK_SPARE      8       /* roughly 256 bytes */
 #define DUK_CALLSTACK_INITIAL_SIZE      8
-#define DUK_CALLSTACK_DEFAULT_MAX       10000
+#define DUK_CALLSTACK_DEFAULT_MAX       10000L
 
 #define DUK_CATCHSTACK_GROW_STEP         4      /* roughly 64 bytes */
 #define DUK_CATCHSTACK_SHRINK_THRESHOLD  8      /* roughly 128 bytes */
 #define DUK_CATCHSTACK_SHRINK_SPARE      4      /* roughly 64 bytes */
 #define DUK_CATCHSTACK_INITIAL_SIZE      4
-#define DUK_CATCHSTACK_DEFAULT_MAX       10000
+#define DUK_CATCHSTACK_DEFAULT_MAX       10000L
 
 /*
  *  Activation defines
@@ -133,7 +133,7 @@
  *  Struct defines
  */
 
-/* Note: it's nice if size is 2^N (now 32 bytes on 32 bit) */
+/* Note: it's nice if size is 2^N (now 32 bytes on 32 bit without 'caller' property) */
 struct duk_activation {
 	duk_hobject *func;      /* function being executed; for bound function calls, this is the final, real function */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
@@ -145,27 +145,34 @@ struct duk_activation {
 	duk_hobject *prev_caller;
 #endif
 
-	int flags;
-	int pc;                 /* next instruction to execute */
+	duk_small_uint_t flags;
+	duk_uint32_t pc;        /* next instruction to execute */
 
-	/* These following are only used for book-keeping of Ecmascript-initiated
-	 * calls, to allow returning to an Ecmascript function properly.
-	 *
-	 * Note: idx_bottom is always set, while idx_retval is only applicable for
-	 * activations below the topmost one.  Currently idx_retval for the topmost
-	 * activation is considered garbage (and it not initialized on entry or
-	 * cleared on return; may contain previous or garbage values).
+	/* idx_bottom and idx_retval are only used for book-keeping of
+	 * Ecmascript-initiated calls, to allow returning to an Ecmascript
+	 * function properly.  They are duk_size_t to match the convention
+	 * that value stack sizes are duk_size_t and local frame indices
+	 * are duk_idx_t.
 	 */
 
-	int idx_bottom;         /* Bottom of valstack for this activation, used to reset
-	                         * valstack_bottom on return; index is absolute.
-	                         * Note: idx_top not needed because top is set to 'nregs'
-	                         * always when returning to an Ecmascript activation.
-	                         */
-	int idx_retval;         /* Return value when returning to this activation
-	                         * (points to caller reg, not callee reg); index is absolute
-	                         * Note: only set if activation is -not topmost-.
-	                         */
+	/* Bottom of valstack for this activation, used to reset
+	 * valstack_bottom on return; index is absolute.  Note:
+	 * idx_top not needed because top is set to 'nregs' always
+	 * when returning to an Ecmascript activation.
+	 */
+	duk_size_t idx_bottom;
+
+	/* Return value when returning to this activation (points to caller
+	 * reg, not callee reg); index is absolute (only set if activation is
+	 * not topmost).
+	 *
+	 * Note: idx_bottom is always set, while idx_retval is only applicable
+	 * for activations below the topmost one.  Currently idx_retval for
+	 * the topmost activation is considered garbage (and it not initialized
+	 * on entry or cleared on return; may contain previous or garbage
+	 * values).
+	 */
+	duk_size_t idx_retval;
 
 	/* Current 'this' binding is the value just below idx_bottom.
 	 * Previously, 'this' binding was handled with an index to the
@@ -175,19 +182,18 @@ struct duk_activation {
 
 #if defined(DUK_USE_32BIT_PTRS) && !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	/* Minor optimization: pad structure to 2^N size on 32-bit platforms. */
-	int unused1;  /* pad to 2^N */
+	duk_int_t unused1;  /* pad to 2^N */
 #endif
 };
 
 /* Note: it's nice if size is 2^N (not 4x4 = 16 bytes on 32 bit) */
 struct duk_catcher {
-	/* FIXME: typing */
-	duk_size_t callstack_index;     /* callstack index of related activation */
-	int flags;                      /* type and control flags */
-	int pc_base;                    /* resume execution from pc_base or pc_base+1 */
-	int idx_base;                   /* idx_base and idx_base+1 get completion value and type */
 	duk_hstring *h_varname;         /* borrowed reference to catch variable name (or NULL if none) */
 	                                /* (reference is valid as long activation exists) */
+	duk_size_t callstack_index;     /* callstack index of related activation */
+	duk_size_t idx_base;            /* idx_base and idx_base+1 get completion value and type */
+	duk_uint32_t pc_base;           /* resume execution from pc_base or pc_base+1 */
+	duk_small_uint_t flags;         /* type and control flags */
 };
 
 struct duk_hthread {

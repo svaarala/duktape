@@ -458,7 +458,7 @@ void duk_js_push_closure(duk_hthread *thr,
 /* shared helper */
 duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
                                                       duk_hobject *func,
-                                                      duk_uint_t idx_bottom) {
+                                                      duk_size_t idx_bottom) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *env;
 	duk_hobject *parent;
@@ -491,7 +491,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
 		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
-		duk_push_uint(ctx, idx_bottom);
+		duk_push_size_t(ctx, idx_bottom);
 		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
 	}
 
@@ -553,7 +553,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
  *  XXX: should access the own properties directly instead of using the API
  */
 
-void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_uint_t regbase) {
+void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint_fast32_t i;
 
@@ -718,11 +718,11 @@ static duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
                                                 duk__id_lookup_result *out) {
 	duk_hthread *env_thr;
 	duk_hobject *env_func;
-	duk_int_t env_regbase;
+	duk_size_t env_regbase;
 	duk_hobject *varmap;
 	duk_tval *tv;
-	duk_int_t reg_rel;
-	duk_int_t idx;
+	duk_size_t reg_rel;
+	duk_size_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -759,8 +759,9 @@ static duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	reg_rel = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
-	DUK_ASSERT(reg_rel >= 0 && reg_rel < ((duk_hcompiledfunction *) env_func)->nregs);
+	reg_rel = (duk_size_t) DUK_TVAL_GET_NUMBER(tv);
+	DUK_ASSERT_DISABLE(reg_rel >= 0);  /* unsigned */
+	DUK_ASSERT(reg_rel < ((duk_hcompiledfunction *) env_func)->nregs);
 
 	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THREAD(thr));
 	DUK_ASSERT(tv != NULL);
@@ -777,10 +778,10 @@ static duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_REGBASE(thr));
 	DUK_ASSERT(tv != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	env_regbase = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
+	env_regbase = (duk_size_t) DUK_TVAL_GET_NUMBER(tv);
 
 	idx = env_regbase + reg_rel;
-	tv = &env_thr->valstack[idx];
+	tv = env_thr->valstack + idx;
 	DUK_ASSERT(tv >= env_thr->valstack && tv < env_thr->valstack_end);  /* XXX: more accurate? */
 
 	out->value = tv;
@@ -802,8 +803,8 @@ static duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	duk_tval *tv;
 	duk_hobject *func;
 	duk_hobject *varmap;
-	duk_int_t reg_rel;
-	duk_int_t idx;
+	duk_size_t reg_rel;
+	duk_size_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -831,12 +832,13 @@ static duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	reg_rel = (duk_int_t) DUK_TVAL_GET_NUMBER(tv);
-	DUK_ASSERT(reg_rel >= 0 && reg_rel < ((duk_hcompiledfunction *) func)->nregs);
+	reg_rel = (duk_size_t) DUK_TVAL_GET_NUMBER(tv);
+	DUK_ASSERT_DISABLE(reg_rel >= 0);
+	DUK_ASSERT(reg_rel < ((duk_hcompiledfunction *) func)->nregs);
 
 	idx = act->idx_bottom + reg_rel;
 	DUK_ASSERT(idx >= act->idx_bottom);
-	tv = &thr->valstack[idx];
+	tv = thr->valstack + idx;
 
 	out->value = tv;
 	out->attrs = DUK_PROPDESC_FLAGS_W;  /* registers are mutable, non-deletable */
