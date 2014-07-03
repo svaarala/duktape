@@ -4,7 +4,7 @@ put rc=0
 final top: 1
 ==> rc=0, result='undefined'
 *** test_put (duk_pcall)
-==> rc=1, result='TypeError: non-object base reference'
+==> rc=1, result='TypeError: invalid base value'
 ===*/
 
 int test_put(duk_context *ctx) {

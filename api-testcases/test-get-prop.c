@@ -20,7 +20,7 @@ configuration setting present, value: setting value
 final top: 4
 ==> rc=0, result='undefined'
 *** test_1e (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property read'
+==> rc=1, result='TypeError: invalid base value'
 *** test_2a (duk_safe_call)
 obj.foo -> rc=1, result='fooval'
 obj.nonexistent -> rc=0, result='undefined'

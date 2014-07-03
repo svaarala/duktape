@@ -13,9 +13,9 @@ final top: 3
 *** test_1c (duk_safe_call)
 ==> rc=1, result='Error: invalid index'
 *** test_1d (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property existence check'
+==> rc=1, result='TypeError: invalid base value'
 *** test_1e (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property existence check'
+==> rc=1, result='TypeError: invalid base value'
 *** test_2a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0

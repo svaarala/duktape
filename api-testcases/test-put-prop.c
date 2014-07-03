@@ -23,7 +23,7 @@ final top: 2
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
-==> rc=1, result='TypeError: property not writable'
+==> rc=1, result='TypeError: not writable'
 *** test_ex_accessor_wo_setter (duk_safe_call)
 strict: 0
 eval:
@@ -56,7 +56,7 @@ eval:
     return o;
 })()
 top after eval: 1
-==> rc=1, result='TypeError: undefined setter for accessor'
+==> rc=1, result='TypeError: setter undefined'
 *** test_ex_setter_throws (duk_safe_call)
 strict: 0
 eval:
@@ -115,7 +115,7 @@ strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
 top after eval: 1
-==> rc=1, result='TypeError: object not extensible'
+==> rc=1, result='TypeError: not extensible'
 ===*/
 
 /* Test property writing API call.
