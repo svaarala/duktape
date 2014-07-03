@@ -40,10 +40,10 @@ error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
 - non-callable errCreate
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
-error: TypeError: call target not callable, foo: undefined, bar: undefined
+error: TypeError: not callable, foo: undefined, bar: undefined
 - "undefined" (but set) errCreate
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
-error: TypeError: call target not callable, foo: undefined, bar: undefined
+error: TypeError: not callable, foo: undefined, bar: undefined
 - delete errCreate property
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
@@ -314,10 +314,10 @@ error: DoubleError: error in error handling, foo: undefined, bar: undefined
 error: ReferenceError: identifier 'zork' undefined, foo: undefined, bar: undefined
 - non-callable errThrow
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
-error: TypeError: call target not callable, foo: undefined, bar: undefined
+error: TypeError: not callable, foo: undefined, bar: undefined
 - "undefined" (but set) errThrow
 error: DoubleError: error in error handling, foo: undefined, bar: undefined
-error: TypeError: call target not callable, foo: undefined, bar: undefined
+error: TypeError: not callable, foo: undefined, bar: undefined
 - delete errThrow property
 error: ReferenceError: identifier 'aiee' undefined, foo: undefined, bar: undefined
 error: URIError: fake uri error, foo: undefined, bar: undefined
