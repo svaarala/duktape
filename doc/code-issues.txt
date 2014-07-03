@@ -755,6 +755,12 @@ Types used inside Duktape
   ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
   the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
 
+* Value stack indices which are relative to the current activation use
+  ``duk_idx_t``.  Value stack sizes and value stack indices related to the
+  entire value stack are ``duk_size_t``.  In principle the value stack could
+  be larger than 32 bits while individual activations could be limited to
+  a signed 32 bit index space.
+
 * **FIXME:** Format specifiers are under work.
 
 * **FIXME:** normal vs. fast variables: use tight values in structs,
