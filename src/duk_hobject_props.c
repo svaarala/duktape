@@ -733,7 +733,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 *  to ensuring the hash part never fills up.
 	 */
 
-	if (new_h_size > 0) {
+	if (DUK_UNLIKELY(new_h_size > 0)) {
 		DUK_ASSERT(new_h != NULL);
 
 		/* fill new_h with u32 0xff = UNUSED */
@@ -1178,10 +1178,14 @@ static duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, d
 	DUK_HOBJECT_E_SET_KEY(obj, idx, key);
 	DUK_HSTRING_INCREF(thr, key);
 
-	if (obj->h_size > 0) {
-		duk_uint32_t i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size);
-		duk_uint32_t step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+	if (DUK_UNLIKELY(obj->h_size > 0)) {
+		duk_uint32_t n;
+		duk_uint32_t i, step;
 		duk_uint32_t *h_base = DUK_HOBJECT_H_GET_BASE(obj);
+
+		n = obj->h_size;
+		i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n);
+		step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
 
 		for (;;) {
 			duk_uint32_t t = h_base[i];
@@ -1196,7 +1200,7 @@ static duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, d
 				break;
 			}
 			DUK_DDD(DUK_DDDPRINT("duk__alloc_entry_checked() miss %d", (int) i));
-			i = (i + step) % obj->h_size;
+			i = (i + step) % n;
 
 			/* guaranteed to find an empty slot */
 			DUK_ASSERT(i != (duk_uint32_t) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), obj->h_size));
