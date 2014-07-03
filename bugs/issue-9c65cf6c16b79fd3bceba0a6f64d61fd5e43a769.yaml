@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Proxy: implement Object.hasOwnProperty()"
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-01 23:53:12.103047 Z
+references: []
+
+id: 9c65cf6c16b79fd3bceba0a6f64d61fd5e43a769
+log_events: 
+- - 2014-07-01 23:53:12.151514 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
