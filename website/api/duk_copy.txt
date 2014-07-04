@@ -11,7 +11,10 @@ error.</p>
 
 <p>This is a shorthand for:</p>
 <pre class="c-code">
-duk_idx_t to_index = duk_normalize_index(to_index);
+/* to_index must be normalize in case it is negative and would change its
+ * meaning after duk_dup().
+ */
+to_index = duk_normalize_index(ctx, to_index);
 duk_dup(ctx, from_index);
 duk_replace(ctx, to_index);
 </pre>
