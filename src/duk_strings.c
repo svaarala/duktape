@@ -18,7 +18,6 @@ const char *duk_str_not_writable = "not writable";
 const char *duk_str_not_configurable = "not configurable";
 
 const char *duk_str_invalid_index = "invalid index";
-const char *duk_str_valstack_limit = "valstack limit";
 const char *duk_str_push_beyond_alloc_stack = "attempt to push beyond currently allocated stack";
 const char *duk_str_src_stack_not_enough = "source stack does not contain enough elements";
 const char *duk_str_not_undefined = "not undefined";
@@ -68,8 +67,17 @@ const char *duk_str_redefine_virt_prop = "attempt to redefine virtual property";
 const char *duk_str_invalid_descriptor = "invalid descriptor";
 const char *duk_str_property_is_virtual = "property is virtual";
 
+/* Compiler */
+const char *duk_str_fmt_compiler_error_token = "parse error (expected token %d, got %d)";
+
 /* Limits */
+const char *duk_str_valstack_limit = "valstack limit";
 const char *duk_str_object_property_limit = "object property limit";
 const char *duk_str_prototype_chain_limit = "prototype chain limit";
 const char *duk_str_bound_chain_limit = "function call bound chain limit";
 const char *duk_str_c_callstack_limit = "C call stack depth limit";
+const char *duk_str_compiler_recursion_limit = "compiler recursion limit";
+const char *duk_str_bytecode_limit = "bytecode limit";
+const char *duk_str_reg_limit = "register limit";
+const char *duk_str_temp_limit = "temp limit";
+const char *duk_str_const_limit = "const limit";

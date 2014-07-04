@@ -11,7 +11,6 @@ extern const char *duk_str_not_writable;
 extern const char *duk_str_not_configurable;
 
 extern const char *duk_str_invalid_index;
-extern const char *duk_str_valstack_limit;
 extern const char *duk_str_push_beyond_alloc_stack;
 extern const char *duk_str_src_stack_not_enough;
 extern const char *duk_str_not_undefined;
@@ -59,9 +58,17 @@ extern const char *duk_str_redefine_virt_prop;
 extern const char *duk_str_invalid_descriptor;
 extern const char *duk_str_property_is_virtual;
 
+extern const char *duk_str_fmt_compiler_error_token;
+
+extern const char *duk_str_valstack_limit;
 extern const char *duk_str_object_property_limit;
 extern const char *duk_str_prototype_chain_limit;
 extern const char *duk_str_bound_chain_limit;
 extern const char *duk_str_c_callstack_limit;
+extern const char *duk_str_compiler_recursion_limit;
+extern const char *duk_str_bytecode_limit;
+extern const char *duk_str_reg_limit;
+extern const char *duk_str_temp_limit;
+extern const char *duk_str_const_limit;
 
 #endif  /* DUK_ERRMSG_H_INCLUDED */
