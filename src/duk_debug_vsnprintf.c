@@ -144,7 +144,7 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, duk_bool_t
 static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
 static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
 static void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
-static void duk__print_instr(duk__dprint_state *st, duk_instr ins);
+static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins);
 static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
 static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
 static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h);
@@ -737,7 +737,7 @@ static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	}
 }
 
-static void duk__print_instr(duk__dprint_state *st, duk_instr ins) {
+static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_small_int_t op;
 	const char *op_name;
@@ -853,7 +853,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 				duk__print_heaphdr(&st, t);
 				break;
 			} else if (got_exclamation && ch == DUK_ASC_UC_I) {
-				duk_instr t = va_arg(ap, duk_instr);
+				duk_instr_t t = va_arg(ap, duk_instr_t);
 				duk__print_instr(&st, t);
 				break;
 			} else if (got_exclamation && ch == DUK_ASC_UC_C) {

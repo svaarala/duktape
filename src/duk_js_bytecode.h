@@ -29,7 +29,7 @@
  *  the field layout is logically "CBA".
  */ 
 
-typedef duk_uint32_t duk_instr;
+typedef duk_uint32_t duk_instr_t;
 
 #define DUK_DEC_OP(x)               ((x) & 0x3fUL)
 #define DUK_DEC_A(x)                (((x) >> 6) & 0xffUL)
@@ -38,9 +38,21 @@ typedef duk_uint32_t duk_instr;
 #define DUK_DEC_BC(x)               (((x) >> 14) & 0x3ffffUL)
 #define DUK_DEC_ABC(x)              (((x) >> 6) & 0x3ffffffUL)
 
-#define DUK_ENC_OP_ABC(op,abc)      ((duk_instr) (((abc) << 6) | (op)))
-#define DUK_ENC_OP_A_BC(op,a,bc)    ((duk_instr) (((bc) << 14) | ((a) << 6) | (op)))
-#define DUK_ENC_OP_A_B_C(op,a,b,c)  ((duk_instr) (((c) << 23) | ((b) << 14) | ((a) << 6) | (op)))
+#define DUK_ENC_OP_ABC(op,abc)      ((duk_instr_t) ( \
+                                        (((duk_instr_t) (abc)) << 6) | \
+                                        ((duk_instr_t) (op)) \
+                                    ))
+#define DUK_ENC_OP_A_BC(op,a,bc)    ((duk_instr_t) ( \
+                                        (((duk_instr_t) (bc)) << 14) | \
+                                        (((duk_instr_t) (a)) << 6) | \
+                                        ((duk_instr_t) (op)) \
+                                    ))
+#define DUK_ENC_OP_A_B_C(op,a,b,c)  ((duk_instr_t) ( \
+                                        (((duk_instr_t) (c)) << 23) | \
+                                        (((duk_instr_t) (b)) << 14) | \
+                                        (((duk_instr_t) (a)) << 6) | \
+                                        ((duk_instr_t) (op)) \
+                                    ))
 #define DUK_ENC_OP_A_B(op,a,b)      DUK_ENC_OP_A_B_C(op,a,b,0)
 #define DUK_ENC_OP_A(op,a)          DUK_ENC_OP_A_B_C(op,a,0,0)
 
@@ -184,9 +196,9 @@ typedef duk_uint32_t duk_instr;
 #define DUK_BC_REGLIMIT             256  /* if B/C is >= this value, refers to a const */
 #define DUK_BC_ISREG(x)             ((x) < DUK_BC_REGLIMIT)
 #define DUK_BC_ISCONST(x)           ((x) >= DUK_BC_REGLIMIT)
-#define DUK_BC_LDINT_BIAS           (1 << 17)
+#define DUK_BC_LDINT_BIAS           (1L << 17)
 #define DUK_BC_LDINTX_SHIFT         18
-#define DUK_BC_JUMP_BIAS            (1 << 25)
+#define DUK_BC_JUMP_BIAS            (1L << 25)
 
 #endif  /* DUK_JS_BYTECODE_H_INCLUDED */
 

@@ -7,17 +7,17 @@
 
 /* ecmascript compiler limits */
 #if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_COMPILER_RECURSION_LIMIT       2500
+#define DUK_COMPILER_RECURSION_LIMIT       2500L
 #else
-#define DUK_COMPILER_RECURSION_LIMIT       50
+#define DUK_COMPILER_RECURSION_LIMIT       50L
 #endif
-#define DUK_COMPILER_TOKEN_LIMIT           100000000  /* 1e8: protects against deeply nested inner functions */
+#define DUK_COMPILER_TOKEN_LIMIT           100000000L  /* 1e8: protects against deeply nested inner functions */
 
 /* maximum loopcount for peephole optimization */
 #define DUK_COMPILER_PEEPHOLE_MAXITER      3
 
 /* maximum bytecode length in instructions */
-#define DUK_COMPILER_MAX_BYTECODE_LENGTH   (256 * 1024 * 1024)  /* 1 GB */
+#define DUK_COMPILER_MAX_BYTECODE_LENGTH   (256L * 1024L * 1024L)  /* 1 GB */
 
 /*
  *  Compiler intermediate values
@@ -38,12 +38,18 @@
 #define DUK_ISPEC_REGCONST     2   /* value resides in a register or constant */
 
 /* bit mask which indicates that a regconst is a constant instead of a register */
-#define DUK_JS_CONST_MARKER    0x80000000
+#define DUK_JS_CONST_MARKER    0x80000000UL
+
+/* type to represent a reg/const reference during compilation */
+typedef duk_uint32_t duk_regconst_t;
+
+/* type to represent a straight register reference, with <0 indicating none */
+typedef duk_int32_t duk_reg_t;
 
 typedef struct {
-	int t;                      /* DUK_ISPEC_XXX */
-	int regconst;
-	int valstack_idx;           /* always set; points to a reserved valstack slot */
+	duk_small_uint_t t;          /* DUK_ISPEC_XXX */
+	duk_regconst_t regconst;
+	duk_idx_t valstack_idx;      /* always set; points to a reserved valstack slot */
 } duk_ispec;
 
 typedef struct {
@@ -54,8 +60,9 @@ typedef struct {
 	 *  VAR: x1 (name)
 	 */
 
-	int t;                      /* DUK_IVAL_XXX */
-	int op;                     /* bytecode opcode for binary ops */
+	/* XXX: can be optimized for smaller footprint esp. on 32-bit environments */
+	duk_small_uint_t t;          /* DUK_IVAL_XXX */
+	duk_small_uint_t op;         /* bytecode opcode for binary ops */
 	duk_ispec x1;
 	duk_ispec x2;
 } duk_ivalue;
@@ -67,7 +74,7 @@ typedef struct {
  */
 
 struct duk_compiler_instr {
-	duk_instr ins;
+	duk_instr_t ins;
 #if defined(DUK_USE_PC2LINE)
 	duk_uint32_t line;
 #endif
@@ -83,16 +90,16 @@ struct duk_compiler_instr {
 #define DUK_DECL_TYPE_VAR                0
 #define DUK_DECL_TYPE_FUNC               1
 
-/* FIXME: optimize to 16 bytes */
+/* XXX: optimize to 16 bytes */
 typedef struct {
-	int flags;
-	int label_id;           /* numeric label_id */
-	duk_hstring *h_label;   /* borrowed label name */
-	int catch_depth;        /* catch depth at point of definition */
-	int pc_label;           /* pc of label statement:
-	                         * pc+1: break jump site
-	                         * pc+2: continue jump site
-	                         */
+	duk_small_uint_t flags;
+	duk_int_t label_id;          /* numeric label_id (-1 reserved as marker) */
+	duk_hstring *h_label;        /* borrowed label name */
+	duk_int_t catch_depth;       /* catch depth at point of definition */
+	duk_int_t pc_label;          /* pc of label statement:
+	                              * pc+1: break jump site
+	                              * pc+2: continue jump site
+	                              */
 
 	/* Fast jumps (which avoid longjmp) jump directly to the jump sites
 	 * which are always known even while the iteration/switch statement
@@ -123,63 +130,58 @@ struct duk_compiler_func {
 	duk_hobject *h_argnames;            /* array of formal argument names (-> _formals) */
 	duk_hobject *h_varmap;              /* variable map for pass 2 (identifier -> register number or null (unmapped)) */
 
-	int is_function;                    /* is an actual function (not global/eval code) */
-	int is_eval;                        /* is eval code */
-	int is_global;                      /* is global code */
-	int is_setget;                      /* is a setter/getter */
-	int is_decl;                        /* is a function declaration (as opposed to function expression) */
-	int is_strict;                      /* function is strict */
-	int is_notail;                      /* function must not be tailcalled */
-	int in_directive_prologue;          /* parsing in "directive prologue", recognize directives */
-	int in_scanning;                    /* parsing in "scanning" phase (first pass) */
-	int may_direct_eval;                /* function may call direct eval */
-	int id_access_arguments;            /* function refers to 'arguments' identifier */
-	int id_access_slow;                 /* function makes one or more slow path accesses */
-	int is_arguments_shadowed;          /* argument/function declaration shadows 'arguments' */
-	int needs_shuffle;                  /* function needs shuffle registers */
-	int num_formals;                    /* number of formal arguments */
-	int reg_stmt_value;                 /* register for writing value of 'non-empty' statements (global or eval code) */
-
-	int reject_regexp_in_adv;           /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
-
-	int code_idx;
-	int consts_idx;
-	int funcs_idx;
-	int fnum_next;
-	int decls_idx;
-	int labelnames_idx;
-	int labelinfos_idx;
-	int argnames_idx;
-	int varmap_idx;
+	/* value stack indices for tracking objects */
+	duk_idx_t code_idx;
+	duk_idx_t consts_idx;
+	duk_idx_t funcs_idx;
+	duk_idx_t decls_idx;
+	duk_idx_t labelnames_idx;
+	duk_idx_t labelinfos_idx;
+	duk_idx_t argnames_idx;
+	duk_idx_t varmap_idx;
 
 	/* temp reg handling */
-	int temp_first;                     /* first register that is a temporary (below: variables) */
-	int temp_next;                      /* next temporary register to allocate */
-	int temp_max;                       /* highest value of temp_reg (temp_max - 1 is highest used reg) */
+	duk_reg_t temp_first;               /* first register that is a temporary (below: variables) */
+	duk_reg_t temp_next;                /* next temporary register to allocate */
+	duk_reg_t temp_max;                 /* highest value of temp_reg (temp_max - 1 is highest used reg) */
 
 	/* shuffle registers if large number of regs/consts */
-	int shuffle1;
-	int shuffle2;
-	int shuffle3;
-
-	/* statement id allocation (running counter) */
-	int stmt_next;
-
-	/* label handling */
-	int label_next;
-
-	/* catch stack book-keeping */
-	int catch_depth;                    /* catch stack depth */
-
-	/* with stack book-keeping (affects identifier lookups) */
-	int with_depth;
+	duk_reg_t shuffle1;
+	duk_reg_t shuffle2;
+	duk_reg_t shuffle3;
 
 	/* stats for current expression being parsed */
-	int nud_count;
-	int led_count;
-	int paren_level;                    /* parenthesis count, 0 = top level */
-	int expr_lhs;                       /* expression is left-hand-side compatible */
-	int allow_in;                       /* current paren level allows 'in' token */
+	duk_int_t nud_count;
+	duk_int_t led_count;
+	duk_int_t paren_level;              /* parenthesis count, 0 = top level */
+	duk_bool_t expr_lhs;                /* expression is left-hand-side compatible */
+	duk_bool_t allow_in;                /* current paren level allows 'in' token */
+
+	/* misc */
+	duk_int_t stmt_next;                /* statement id allocation (running counter) */
+	duk_int_t label_next;               /* label id allocation (running counter) */
+	duk_int_t catch_depth;              /* catch stack depth */
+	duk_int_t with_depth;               /* with stack depth (affects identifier lookups) */
+	duk_int_t fnum_next;                /* inner function numbering */
+	duk_int_t num_formals;              /* number of formal arguments */
+	duk_reg_t reg_stmt_value;           /* register for writing value of 'non-empty' statements (global or eval code), -1 is marker */
+
+	/* status booleans */
+	duk_bool_t is_function;             /* is an actual function (not global/eval code) */
+	duk_bool_t is_eval;                 /* is eval code */
+	duk_bool_t is_global;               /* is global code */
+	duk_bool_t is_setget;               /* is a setter/getter */
+	duk_bool_t is_decl;                 /* is a function declaration (as opposed to function expression) */
+	duk_bool_t is_strict;               /* function is strict */
+	duk_bool_t is_notail;               /* function must not be tailcalled */
+	duk_bool_t in_directive_prologue;   /* parsing in "directive prologue", recognize directives */
+	duk_bool_t in_scanning;             /* parsing in "scanning" phase (first pass) */
+	duk_bool_t may_direct_eval;         /* function may call direct eval */
+	duk_bool_t id_access_arguments;     /* function refers to 'arguments' identifier */
+	duk_bool_t id_access_slow;          /* function makes one or more slow path accesses */
+	duk_bool_t is_arguments_shadowed;   /* argument/function declaration shadows 'arguments' */
+	duk_bool_t needs_shuffle;           /* function needs shuffle registers */
+	duk_bool_t reject_regexp_in_adv;    /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
 };
 
 struct duk_compiler_ctx {
@@ -194,14 +196,14 @@ struct duk_compiler_ctx {
 	/* current and previous token for parsing */
 	duk_token prev_token;
 	duk_token curr_token;
-	int tok11_idx;                      /* curr_token slot1 (matches 'lex' slot1_idx) */
-	int tok12_idx;                      /* curr_token slot2 (matches 'lex' slot2_idx) */
-	int tok21_idx;                      /* prev_token slot1 */
-	int tok22_idx;                      /* prev_token slot2 */
+	duk_idx_t tok11_idx;                /* curr_token slot1 (matches 'lex' slot1_idx) */
+	duk_idx_t tok12_idx;                /* curr_token slot2 (matches 'lex' slot2_idx) */
+	duk_idx_t tok21_idx;                /* prev_token slot1 */
+	duk_idx_t tok22_idx;                /* prev_token slot2 */
 
 	/* recursion limit */
-	int recursion_depth;
-	int recursion_limit;
+	duk_int_t recursion_depth;
+	duk_int_t recursion_limit;
 
 	/* current function being compiled (embedded instead of pointer for more compact access) */
 	duk_compiler_func curr_func;
@@ -218,4 +220,3 @@ struct duk_compiler_ctx {
 void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_uint_t flags);
 
 #endif  /* DUK_JS_COMPILER_H_INCLUDED */
-

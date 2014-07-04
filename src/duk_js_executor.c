@@ -1398,7 +1398,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	duk_hthread *thr;             /* stable */
 	duk_activation *act;          /* semi-stable (ok as long as callstack not resized) */
 	duk_hcompiledfunction *fun;   /* stable */
-	duk_instr *bcode;             /* stable */
+	duk_instr_t *bcode;           /* stable */
 	/* 'consts' is computed on-the-fly */
 	/* 'funcs' is quite rarely used, so no local for it */
 
