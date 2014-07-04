@@ -793,6 +793,27 @@ void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 }
 
+void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv1;
+	duk_tval *tv2;
+	duk_tval tv_tmp;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv1 = duk_require_tval(ctx, from_index);
+	DUK_ASSERT(tv1 != NULL);
+	tv2 = duk_require_tval(ctx, to_index);
+	DUK_ASSERT(tv2 != NULL);
+
+	/* For tv1 == tv2, this is a no-op (no explicit check needed). */
+
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
+	DUK_TVAL_SET_TVAL(tv2, tv1);
+	DUK_TVAL_INCREF(thr, tv2);  /* no side effects */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+}
+
 void duk_remove(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *p;
