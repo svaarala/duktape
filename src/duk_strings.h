@@ -58,7 +58,13 @@ extern const char *duk_str_redefine_virt_prop;
 extern const char *duk_str_invalid_descriptor;
 extern const char *duk_str_property_is_virtual;
 
-extern const char *duk_str_fmt_compiler_error_token;
+extern const char *duk_str_parse_error;
+extern const char *duk_str_duplicate_label;
+extern const char *duk_str_invalid_label;
+extern const char *duk_str_invalid_array_literal;
+extern const char *duk_str_invalid_object_literal;
+extern const char *duk_str_cannot_delete_identifier;
+extern const char *duk_str_invalid_expression;
 
 extern const char *duk_str_valstack_limit;
 extern const char *duk_str_object_property_limit;

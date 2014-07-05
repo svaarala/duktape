@@ -68,7 +68,13 @@ const char *duk_str_invalid_descriptor = "invalid descriptor";
 const char *duk_str_property_is_virtual = "property is virtual";
 
 /* Compiler */
-const char *duk_str_fmt_compiler_error_token = "parse error (expected token %d, got %d)";
+const char *duk_str_parse_error = "parse error";
+const char *duk_str_duplicate_label = "duplicate label";
+const char *duk_str_invalid_label = "invalid label";
+const char *duk_str_invalid_array_literal = "invalid array literal";
+const char *duk_str_invalid_object_literal = "invalid object literal";
+const char *duk_str_cannot_delete_identifier = "cannot delete identifier";
+const char *duk_str_invalid_expression = "invalid expression";
 
 /* Limits */
 const char *duk_str_valstack_limit = "valstack limit";
