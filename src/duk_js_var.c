@@ -1066,7 +1066,7 @@ static duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 		}
 
                 if (sanity-- == 0) {
-                        DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, duk_str_prototype_chain_limit);
+                        DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
                 }
 		env = env->prototype;
 	};

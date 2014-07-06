@@ -36,7 +36,7 @@ static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *f
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, duk_str_bound_chain_limit);
+		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));

@@ -388,7 +388,7 @@ static void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, duk_str_bound_chain_limit);
+		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %p", (void *) func));
@@ -715,7 +715,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 *  call the fatal error handler.
 		 */
 
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_call_args);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/*
@@ -880,7 +880,11 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("ignoring reclimit for this call (probably an errhandler call)"));
 	} else {	
 		if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, duk_str_c_callstack_limit);
+			/* XXX: error message is a bit misleading: we reached a recursion
+			 * limit which is also essentially the same as a C callstack limit
+			 * (except perhaps with some relaxed threading assumptions).
+			 */
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
 		}
 		thr->heap->call_recursion_depth++;
 	}
@@ -899,7 +903,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_callable);
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
 	}
 	func = duk_get_hobject(thr, idx_func);
 	DUK_ASSERT(func != NULL);
@@ -936,7 +940,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		nregs = nargs;
 	} else {
 		/* XXX: this should be an assert */
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_callable);
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
 	}
 
 	/* [ ... func this arg1 ... argN ] */
@@ -1514,7 +1518,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		 *  call the fatal error handler.
 		 */
 
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_call_args);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/* setjmp catchpoint setup */
@@ -1631,7 +1635,11 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(thr->heap->call_recursion_depth >= 0);
 	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
 	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, duk_str_c_callstack_limit);
+		/* XXX: error message is a bit misleading: we reached a recursion
+		 * limit which is also essentially the same as a C callstack limit
+		 * (except perhaps with some relaxed threading assumptions).
+		 */
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
 	}
 	thr->heap->call_recursion_depth++;
 
@@ -1833,7 +1841,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (idx_func < 0 || idx_args < 0) {
 		/* XXX: assert? compiler is responsible for this never happening */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_str_invalid_call_args);
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/*
@@ -1850,7 +1858,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 */
 
 	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, duk_str_not_callable);
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
 	}
 	func = duk_get_hobject(thr, idx_func);
 	DUK_ASSERT(func != NULL);

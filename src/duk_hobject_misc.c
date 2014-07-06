@@ -18,7 +18,7 @@ duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h
 		}
 
 		if (sanity-- == 0) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, duk_str_prototype_chain_limit);
+			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		h = h->prototype;
 	} while (h);
