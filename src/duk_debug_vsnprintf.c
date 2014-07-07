@@ -791,6 +791,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 		char ch = *p++;
 		const char *p_begfmt = NULL;
 		duk_bool_t got_exclamation = 0;
+		duk_bool_t got_long = 0;  /* %lf, %ld etc */
 		duk__dprint_state st;
 
 		if (ch != DUK_ASC_PERCENT) {
@@ -824,6 +825,8 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 				break;
 			} else if (ch == DUK_ASC_EXCLAMATION) {
 				got_exclamation = 1;
+			} else if (!got_exclamation && ch == DUK_ASC_LC_L) {
+				got_long = 1;
 			} else if (got_exclamation && ch == DUK_ASC_LC_D) {
 				st.depth_limit = DUK__DEEP_DEPTH_LIMIT;
 			} else if (got_exclamation && ch == DUK_ASC_LC_P) {
@@ -877,22 +880,48 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 				 * depends on type though.
 				 */
 
-				/* XXX: check size for other types.. actually it would be best to switch
-				 * for supported standard formats and get args explicitly
-				 */
 				if (ch == DUK_ASC_LC_F || ch == DUK_ASC_LC_G || ch == DUK_ASC_LC_E) {
-					double arg;
-					arg = va_arg(ap, double);
+					/* %f and %lf both consume a 'long' */
+					double arg = va_arg(ap, double);
 					duk_fb_sprintf(&fb, fmtbuf, arg);
-				} else {
-					void *arg;
-					arg = va_arg(ap, void *);
-					if (ch == DUK_ASC_LC_S && arg == NULL) {
+				} else if (ch == DUK_ASC_LC_D && got_long) {
+					/* %ld */
+					long arg = va_arg(ap, long);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_D) {
+					/* %d; only 16 bits are guaranteed */
+					int arg = va_arg(ap, int);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_U && got_long) {
+					/* %lu */
+					unsigned long arg = va_arg(ap, unsigned long);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_U) {
+					/* %u; only 16 bits are guaranteed */
+					unsigned int arg = va_arg(ap, unsigned int);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_X && got_long) {
+					/* %lx */
+					unsigned long arg = va_arg(ap, unsigned long);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_X) {
+					/* %x; only 16 bits are guaranteed */
+					unsigned int arg = va_arg(ap, unsigned int);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
+				} else if (ch == DUK_ASC_LC_S) {
+					/* %s */
+					const char *arg = va_arg(ap, const char *);
+					if (arg == NULL) {
 						/* '%s' and NULL is not portable, so special case
 						 * it for debug printing.
 						 */
 						duk_fb_sprintf(&fb, "NULL");
-					} else if (ch == DUK_ASC_LC_P && arg == NULL) {
+					} else {
+						duk_fb_sprintf(&fb, fmtbuf, arg);
+					}
+				} else if (ch == DUK_ASC_LC_P) {
+					void *arg = va_arg(ap, void *);
+					if (arg == NULL) {
 						/* '%p' and NULL is portable, but special case it
 						 * anyway to get a standard NULL marker in logs.
 						 */
@@ -900,6 +929,9 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 					} else {
 						duk_fb_sprintf(&fb, fmtbuf, arg);
 					}
+				} else {
+					/* Should not happen. */
+					duk_fb_sprintf(&fb, "INVALID-FORMAT(%s)", (const char *) fmtbuf);
 				}
 				break;
 			} else {
