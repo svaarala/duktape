@@ -79,8 +79,18 @@ const char *duk_str_invalid_expression = "invalid expression";
 const char *duk_str_invalid_lvalue = "invalid lvalue";
 const char *duk_str_expected_identifier = "expected identifier";
 const char *duk_str_empty_expr_not_allowed = "empty expression not allowed";
-const char *duk_str_invalid_for_stmt = "invalid for statement";
-const char *duk_str_invalid_switch_stmt = "invalid switch statement";
+const char *duk_str_invalid_for = "invalid for statement";
+const char *duk_str_invalid_switch = "invalid switch statement";
+const char *duk_str_invalid_break_cont_label = "invalid break/continue label";
+const char *duk_str_invalid_return = "invalid return";
+const char *duk_str_invalid_try = "invalid try";
+const char *duk_str_with_in_strict_mode = "with in strict mode";
+const char *duk_str_func_stmt_not_allowed = "function statement not allowed";
+const char *duk_str_unterminated_stmt = "unterminated statement";
+const char *duk_str_invalid_arg_name = "invalid argument name";
+const char *duk_str_invalid_func_name = "invalid function name";
+const char *duk_str_invalid_getset_name = "invalid getter/setter name";
+const char *duk_str_func_name_required = "function name required";
 
 /* Limits */
 const char *duk_str_valstack_limit = "valstack limit";
@@ -93,3 +103,4 @@ const char *duk_str_bytecode_limit = "bytecode limit";
 const char *duk_str_reg_limit = "register limit";
 const char *duk_str_temp_limit = "temp limit";
 const char *duk_str_const_limit = "const limit";
+const char *duk_str_func_limit = "function limit";

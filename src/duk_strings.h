@@ -146,8 +146,18 @@ extern const char *duk_str_property_is_virtual;
 #define DUK_STR_INVALID_LVALUE duk_str_invalid_lvalue
 #define DUK_STR_EXPECTED_IDENTIFIER duk_str_expected_identifier
 #define DUK_STR_EMPTY_EXPR_NOT_ALLOWED duk_str_empty_expr_not_allowed
-#define DUK_STR_INVALID_FOR_STMT duk_str_invalid_for_stmt
-#define DUK_STR_INVALID_SWITCH_STMT duk_str_invalid_switch_stmt
+#define DUK_STR_INVALID_FOR duk_str_invalid_for
+#define DUK_STR_INVALID_SWITCH duk_str_invalid_switch
+#define DUK_STR_INVALID_BREAK_CONT_LABEL duk_str_invalid_break_cont_label
+#define DUK_STR_INVALID_RETURN duk_str_invalid_return
+#define DUK_STR_INVALID_TRY duk_str_invalid_try
+#define DUK_STR_WITH_IN_STRICT_MODE duk_str_with_in_strict_mode
+#define DUK_STR_FUNC_STMT_NOT_ALLOWED duk_str_func_stmt_not_allowed
+#define DUK_STR_UNTERMINATED_STMT duk_str_unterminated_stmt
+#define DUK_STR_INVALID_ARG_NAME duk_str_invalid_arg_name
+#define DUK_STR_INVALID_FUNC_NAME duk_str_invalid_func_name
+#define DUK_STR_INVALID_GETSET_NAME duk_str_invalid_getset_name
+#define DUK_STR_FUNC_NAME_REQUIRED duk_str_func_name_required
 
 extern const char *duk_str_parse_error;
 extern const char *duk_str_duplicate_label;
@@ -160,8 +170,18 @@ extern const char *duk_str_invalid_expression;
 extern const char *duk_str_invalid_lvalue;
 extern const char *duk_str_expected_identifier;
 extern const char *duk_str_empty_expr_not_allowed;
-extern const char *duk_str_invalid_for_stmt;
-extern const char *duk_str_invalid_switch_stmt;
+extern const char *duk_str_invalid_for;
+extern const char *duk_str_invalid_switch;
+extern const char *duk_str_invalid_break_cont_label;
+extern const char *duk_str_invalid_return;
+extern const char *duk_str_invalid_try;
+extern const char *duk_str_with_in_strict_mode;
+extern const char *duk_str_func_stmt_not_allowed;
+extern const char *duk_str_unterminated_stmt;
+extern const char *duk_str_invalid_arg_name;
+extern const char *duk_str_invalid_func_name;
+extern const char *duk_str_invalid_getset_name;
+extern const char *duk_str_func_name_required;
 
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
 #define DUK_STR_OBJECT_PROPERTY_LIMIT duk_str_object_property_limit
@@ -173,6 +193,7 @@ extern const char *duk_str_invalid_switch_stmt;
 #define DUK_STR_REG_LIMIT duk_str_reg_limit
 #define DUK_STR_TEMP_LIMIT duk_str_temp_limit
 #define DUK_STR_CONST_LIMIT duk_str_const_limit
+#define DUK_STR_FUNC_LIMIT duk_str_func_limit
 
 extern const char *duk_str_valstack_limit;
 extern const char *duk_str_object_property_limit;
@@ -184,5 +205,6 @@ extern const char *duk_str_bytecode_limit;
 extern const char *duk_str_reg_limit;
 extern const char *duk_str_temp_limit;
 extern const char *duk_str_const_limit;
+extern const char *duk_str_func_limit;
 
 #endif  /* DUK_ERRMSG_H_INCLUDED */
