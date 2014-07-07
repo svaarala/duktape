@@ -796,11 +796,25 @@ Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
 unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
 ``duk_uint_t`` should be used as an ``unsigned int`` replacement.
 
+duk_int_fast_t
+::::::::::::::
+
+This is a type at least the size of ``duk_int_t`` but which is guaranteed to
+be a "fast" variant if that distinction matters for the CPU.  This type is
+mainly used in the executor where performance really matters.  ``duk_uint_fast_t``
+is used similarly.
+
 duk_small_int_t
 :::::::::::::::
 
 The ``duk_small_int_t`` should be used in internal code e.g. for flags.
 It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
+
+duk_small_int_fast_t
+::::::::::::::::::::
+
+Same as ``duk_small_int_t`` but guaranteed to be a fast variant.  Used mainly
+for fast paths like the executor.  Similarly for ``duk_small_uint_fast_t``.
 
 duk_bool_t
 ::::::::::
