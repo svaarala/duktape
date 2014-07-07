@@ -101,7 +101,7 @@ duk_ret_t duk_bi_number_prototype_to_string(duk_context *ctx) {
 	} else {
 		radix = (duk_small_int_t) duk_to_int_check_range(ctx, 0, 2, 36);
 	}
-	DUK_DDD(DUK_DDDPRINT("radix=%d", (int) radix));
+	DUK_DDD(DUK_DDDPRINT("radix=%ld", (long) radix));
 
 	n2s_flags = 0;
 

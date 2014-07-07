@@ -411,8 +411,8 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	new_alloc_size = sizeof(duk_tval) * new_size;  /* FIXME: wrap check */
 	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (!new_valstack) {
-		DUK_D(DUK_DPRINT("failed to resize valstack to %d entries (%d bytes)",
-		                 (int) new_size, (int) new_alloc_size));
+		DUK_D(DUK_DPRINT("failed to resize valstack to %lu entries (%lu bytes)",
+		                 (unsigned long) new_size, (unsigned long) new_alloc_size));
 		return 0;
 	}
 
@@ -454,9 +454,9 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 #ifdef DUK_USE_DEBUG
 	if (old_end_offset_pre != old_end_offset_post) {
 		DUK_D(DUK_DPRINT("valstack was resized during valstack_resize(), probably by mark-and-sweep; "
-		                 "end offset changed: %d -> %d",
-		                 (int) old_end_offset_pre,
-		                 (int) old_end_offset_post));
+		                 "end offset changed: %lu -> %lu",
+		                 (unsigned long) old_end_offset_pre,
+		                 (unsigned long) old_end_offset_post));
 	}
 	if (old_valstack_pre != old_valstack_post) {
 		DUK_D(DUK_DPRINT("valstack pointer changed during valstack_resize(), probably by mark-and-sweep: %p -> %p",
@@ -465,11 +465,11 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	}
 #endif
 
-	DUK_DD(DUK_DDPRINT("resized valstack to %d elements (%d bytes), bottom=%d, top=%d, "
+	DUK_DD(DUK_DDPRINT("resized valstack to %lu elements (%lu bytes), bottom=%ld, top=%ld, "
 	                   "new pointers: start=%p end=%p bottom=%p top=%p",
-	                   (int) new_size, (int) new_alloc_size,
-	                   (int) (thr->valstack_bottom - thr->valstack),
-	                   (int) (thr->valstack_top - thr->valstack),
+	                   (unsigned long) new_size, (unsigned long) new_alloc_size,
+	                   (long) (thr->valstack_bottom - thr->valstack),
+	                   (long) (thr->valstack_top - thr->valstack),
 	                   (void *) thr->valstack, (void *) thr->valstack_end,
 	                   (void *) thr->valstack_bottom, (void *) thr->valstack_top));
 
@@ -503,13 +503,13 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	duk_size_t new_size;
 	duk_bool_t is_shrink = 0;
 
-	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%d, curr_size=%d, curr_top=%d, "
-	                     "curr_bottom=%d, shrink=%d, compact=%d, throw=%d",
-	                     (int) min_new_size,
-	                     (int) (thr->valstack_end - thr->valstack),
-	                     (int) (thr->valstack_top - thr->valstack),
-	                     (int) (thr->valstack_bottom - thr->valstack),
-	                     (int) shrink_flag, (int) compact_flag, (int) throw_flag));
+	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%lu, curr_size=%ld, curr_top=%ld, "
+	                     "curr_bottom=%ld, shrink=%ld, compact=%ld, throw=%ld",
+	                     (unsigned long) min_new_size,
+	                     (long) (thr->valstack_end - thr->valstack),
+	                     (long) (thr->valstack_top - thr->valstack),
+	                     (long) (thr->valstack_bottom - thr->valstack),
+	                     (long) shrink_flag, (long) compact_flag, (long) throw_flag));
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -539,9 +539,10 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 		new_size = (new_size / DUK_VALSTACK_GROW_STEP + 1) * DUK_VALSTACK_GROW_STEP;
 	}
 
-	DUK_DD(DUK_DDPRINT("want to %s valstack: %d -> %d elements (min_new_size %d)",
+	DUK_DD(DUK_DDPRINT("want to %s valstack: %lu -> %lu elements (min_new_size %lu)",
 	                   (const char *) (new_size > old_size ? "grow" : "shrink"),
-	                   (int) old_size, (int) new_size, (int) min_new_size));
+	                   (unsigned long) old_size, (unsigned long) new_size,
+	                   (unsigned long) min_new_size));
 
 	if (new_size >= thr->valstack_max) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
@@ -753,8 +754,8 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 
-	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d",
-	                     (void *) to_index, (void *) p, (void *) q, (int) nbytes));
+	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%lu",
+	                     (void *) to_index, (void *) p, (void *) q, (unsigned long) nbytes));
 
 	/* No net refcount changes. */
 
@@ -2762,7 +2763,7 @@ duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_OBJECT_ALLOC_FAILED);
 	}
 
-	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08x", (int) h->hdr.h_flags));
+	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08lx", (unsigned long) h->hdr.h_flags));
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, h);
@@ -2853,7 +2854,7 @@ duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 	obj->strs = thr->strs;
-	DUK_DDD(DUK_DDDPRINT("created thread object with flags: 0x%08x", (int) obj->obj.hdr.h_flags));
+	DUK_DDD(DUK_DDDPRINT("created thread object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
 
 	/* make the new thread reachable */
 	tv_slot = thr->valstack_top;
@@ -2912,7 +2913,7 @@ duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_FUNC_ALLOC_FAILED);
 	}
 
-	DUK_DDD(DUK_DDDPRINT("created compiled function object with flags: 0x%08x", (int) obj->obj.hdr.h_flags));
+	DUK_DDD(DUK_DDDPRINT("created compiled function object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -2958,8 +2959,8 @@ static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func,
 	obj->func = func;
 	obj->nargs = func_nargs;
 
-	DUK_DDD(DUK_DDDPRINT("created native function object with flags: 0x%08x, nargs=%d",
-	                     (int) obj->obj.hdr.h_flags, (int) obj->nargs));
+	DUK_DDD(DUK_DDDPRINT("created native function object with flags: 0x%08lx, nargs=%ld",
+	                     (unsigned long) obj->obj.hdr.h_flags, (long) obj->nargs));
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -3295,8 +3296,8 @@ void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(thr->heap->fatal_func != NULL);
 
-	DUK_D(DUK_DPRINT("fatal error occurred, code %d, message %s",
-	                 (int) err_code, (const char *) err_msg));
+	DUK_D(DUK_DPRINT("fatal error occurred, code %ld, message %s",
+	                 (long) err_code, (const char *) err_msg));
 
 	/* fatal_func should be noreturn, but noreturn declarations on function
 	 * pointers has a very spotty support apparently so it's not currently

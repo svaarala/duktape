@@ -60,7 +60,8 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 		len = new_len;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("join/concat %d strings, total length %d bytes", (int) count, (int) len));
+	DUK_DDD(DUK_DDDPRINT("join/concat %lu strings, total length %lu bytes",
+	                     (unsigned long) count, (unsigned long) len));
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);

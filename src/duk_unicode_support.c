@@ -304,7 +304,8 @@ static duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_size_
 
 		/* [r1,r2] is the range */
 
-		DUK_DDD(DUK_DDDPRINT("duk__uni_range_match: cp=%06x range=[0x%06x,0x%06x]", (int) cp, (int) r1, (int) r2));
+		DUK_DDD(DUK_DDDPRINT("duk__uni_range_match: cp=%06lx range=[0x%06lx,0x%06lx]",
+		                     (unsigned long) cp, (unsigned long) r1, (unsigned long) r2));
 		if (cp >= r1 && cp <= r2) {
 			return 1;
 		}
@@ -671,7 +672,7 @@ static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	duk_codepoint_t start_i;
 	duk_codepoint_t start_o;
 
-	DUK_DDD(DUK_DDDPRINT("slow case conversion for codepoint: %d", (int) cp));
+	DUK_DDD(DUK_DDDPRINT("slow case conversion for codepoint: %ld", (long) cp));
 
 	/* range conversion with a "skip" */
 	DUK_DDD(DUK_DDDPRINT("checking ranges"));
@@ -682,14 +683,14 @@ static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 			/* end marker */
 			break;
 		}
-		DUK_DDD(DUK_DDDPRINT("skip=%d, n=%d", (int) skip, (int) n));
+		DUK_DDD(DUK_DDDPRINT("skip=%ld, n=%ld", (long) skip, (long) n));
 
 		while (n--) {
 			start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 			start_o = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 			count = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
-			DUK_DDD(DUK_DDDPRINT("range: start_i=%d, start_o=%d, count=%d, skip=%d",
-			                     (int) start_i, (int) start_o, (int) count, (int) skip));
+			DUK_DDD(DUK_DDDPRINT("range: start_i=%ld, start_o=%ld, count=%ld, skip=%ld",
+			                     (long) start_i, (long) start_o, (long) count, (long) skip));
 
 			if (cp >= start_i) {
 				tmp_cp = cp - start_i;  /* always >= 0 */
@@ -705,11 +706,11 @@ static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 
 	/* 1:1 conversion */
 	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 6);
-	DUK_DDD(DUK_DDDPRINT("checking 1:1 conversions (count %d)", (int) n));
+	DUK_DDD(DUK_DDDPRINT("checking 1:1 conversions (count %ld)", (long) n));
 	while (n--) {
 		start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 		start_o = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
-		DUK_DDD(DUK_DDDPRINT("1:1 conversion %d -> %d", (int) start_i, (int) start_o));
+		DUK_DDD(DUK_DDDPRINT("1:1 conversion %ld -> %ld", (long) start_i, (long) start_o));
 		if (cp == start_i) {
 			DUK_DDD(DUK_DDDPRINT("1:1 matches input codepoint"));
 			cp = start_o;
@@ -719,11 +720,11 @@ static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 
 	/* complex, multicharacter conversion */
 	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
-	DUK_DDD(DUK_DDDPRINT("checking 1:n conversions (count %d)", n));
+	DUK_DDD(DUK_DDDPRINT("checking 1:n conversions (count %ld)", (long) n));
 	while (n--) {
 		start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 		t = (duk_small_int_t) duk_bd_decode(bd_ctx, 2);
-		DUK_DDD(DUK_DDDPRINT("1:n conversion %d -> %d chars", (int) start_i, (int) t));
+		DUK_DDD(DUK_DDDPRINT("1:n conversion %ld -> %ld chars", (long) start_i, (long) t));
 		if (cp == start_i) {
 			DUK_DDD(DUK_DDDPRINT("1:n matches input codepoint"));
 			if (buf) {

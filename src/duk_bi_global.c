@@ -202,14 +202,14 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		duk_uint8_t *p = tfm_ctx->p;
 		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
-		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%d", (int) left));
+		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%ld", (long) left));
 
 		if (left < 2) {
 			goto uri_error;
 		}
 
 		t = duk__decode_hex_escape(p, 2);
-		DUK_DDD(DUK_DDDPRINT("first byte: %d", t));
+		DUK_DDD(DUK_DDDPRINT("first byte: %ld", (long) t));
 		if (t < 0) {
 			goto uri_error;
 		}
@@ -268,7 +268,8 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		for (i = 1; i < utf8_blen; i++) {
 			/* p points to digit part ('%xy', p points to 'x') */
 			t = duk__decode_hex_escape(p, 2);
-			DUK_DDD(DUK_DDDPRINT("i=%d utf8_blen=%d cp=%d t=0x%02x", i, utf8_blen, cp, t));
+			DUK_DDD(DUK_DDDPRINT("i=%ld utf8_blen=%ld cp=%ld t=0x%02lx",
+			                     (long) i, (long) utf8_blen, (long) cp, (unsigned long) t));
 			if (t < 0) {
 				goto uri_error;
 			}
@@ -281,7 +282,7 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		p--;  /* p overshoots */
 		tfm_ctx->p = p;
 
-		DUK_DDD(DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp));
+		DUK_DDD(DUK_DDDPRINT("final cp=%ld, min_cp=%ld", (long) cp, (long) min_cp));
 
 		if (cp < min_cp || cp > 0x10ffffL || (cp >= 0xd800L && cp <= 0xdfffL)) {
 			goto uri_error;

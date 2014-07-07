@@ -341,7 +341,7 @@ static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_
 		for (i = 0; i < blen; i++) {
 			duk_uint8_t x = str[i];
 			if (x >= 0x20 && x <= 0x7e && x != '"' && x != '\\') {
-				printf("%c", (char) x);
+				printf("%c", (int) x);
 			} else {
 				printf("\\x%02x", (int) x);
 			}

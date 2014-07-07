@@ -20,7 +20,8 @@ duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 
 	while (ctx->currbits < bits) {
 #if 0
-		DUK_DDD(DUK_DDDPRINT("decode_bits: shift more data (bits=%d, currbits=%d)", bits, ctx->currbits));
+		DUK_DDD(DUK_DDDPRINT("decode_bits: shift more data (bits=%ld, currbits=%ld)",
+		                     (long) bits, (long) ctx->currbits));
 #endif
 		ctx->currval <<= 8;
 		if (ctx->offset < ctx->length) {
@@ -32,7 +33,8 @@ duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 		ctx->currbits += 8;
 	}
 #if 0
-	DUK_DDD(DUK_DDDPRINT("decode_bits: bits=%d, currbits=%d, currval=0x%08x", bits, ctx->currbits, ctx->currval));
+	DUK_DDD(DUK_DDDPRINT("decode_bits: bits=%ld, currbits=%ld, currval=0x%08lx",
+	                     (long) bits, (long) ctx->currbits, (unsigned long) ctx->currval));
 #endif
 
 	/* Extract 'top' bits of currval; note that the extracted bits do not need
@@ -44,8 +46,8 @@ duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	ctx->currbits = shift;  /* remaining */
 
 #if 0
-	DUK_DDD(DUK_DDDPRINT("decode_bits: %d bits -> 0x%08x (%d), currbits=%d, currval=0x%08x",
-	                     bits, tmp, tmp, ctx->currbits, ctx->currval));
+	DUK_DDD(DUK_DDDPRINT("decode_bits: %ld bits -> 0x%08lx (%ld), currbits=%ld, currval=0x%08lx",
+	                     (long) bits, (unsigned long) tmp, (long) tmp, (long) ctx->currbits, (unsigned long) ctx->currval));
 #endif
 
 	return tmp;

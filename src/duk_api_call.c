@@ -10,8 +10,8 @@
  * May currently throw an error e.g. when getting the property.
  */
 static void duk__call_prop_prep_stack(duk_context *ctx, duk_idx_t normalized_obj_index, duk_idx_t nargs) {
-	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%d, nargs=%d, stacktop=%d",
-	                     (int) normalized_obj_index, (int) nargs, (int) duk_get_top(ctx)));
+	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%ld, nargs=%ld, stacktop=%ld",
+	                     (long) normalized_obj_index, (long) nargs, (long) duk_get_top(ctx)));
 
 	/* [... key arg1 ... argN] */
 
@@ -269,8 +269,8 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	idx_cons = duk_require_normalize_index(ctx, -nargs - 1);
 
-	DUK_DDD(DUK_DDDPRINT("top=%d, nargs=%d, idx_cons=%d",
-	                     (int) duk_get_top(ctx), (int) nargs, (int) idx_cons));
+	DUK_DDD(DUK_DDDPRINT("top=%ld, nargs=%ld, idx_cons=%ld",
+	                     (long) duk_get_top(ctx), (long) nargs, (long) idx_cons));
 
 	/* XXX: code duplication */
 
@@ -343,9 +343,9 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("before call, idx_cons+1 (constructor) -> %!T, idx_cons+2 (fallback/this) -> %!T, "
-	                     "nargs=%d, top=%d",
+	                     "nargs=%ld, top=%ld",
 	                     duk_get_tval(ctx, idx_cons + 1), duk_get_tval(ctx, idx_cons + 2),
-	                     (int) nargs, (int) duk_get_top(ctx)));
+	                     (long) nargs, (long) duk_get_top(ctx)));
 
 	/*
 	 *  Call the constructor function (called in "constructor mode").
@@ -360,8 +360,8 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	/* [... fallback retval] */
 
-	DUK_DDD(DUK_DDDPRINT("constructor call finished, rc=%d, fallback=%!iT, retval=%!iT",
-	                     (int) rc, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("constructor call finished, rc=%ld, fallback=%!iT, retval=%!iT",
+	                     (long) rc, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Determine whether to use the constructor return value as the created

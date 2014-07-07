@@ -247,8 +247,8 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
 	if (thr->callstack_preventcount != 1) {
 		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
-		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
-		                   (int) thr->callstack_preventcount));
+		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %ld)",
+		                   (long) thr->callstack_preventcount));
 		goto state_error;
 	}
 

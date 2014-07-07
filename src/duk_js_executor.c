@@ -510,17 +510,17 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, d
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
-	DUK_DDD(DUK_DDDPRINT("handling catch/finally, cat_idx=%d, is_finally=%d",
-	                     (int) cat_idx, (int) is_finally));
+	DUK_DDD(DUK_DDDPRINT("handling catch/finally, cat_idx=%ld, is_finally=%ld",
+	                     (long) cat_idx, (long) is_finally));
 
 	/*
 	 *  Set caught value and longjmp type to catcher regs.
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("writing catch registers: idx_base=%d -> %!T, idx_base+1=%d -> %!T",
-	                     (int) thr->catchstack[cat_idx].idx_base,
+	DUK_DDD(DUK_DDDPRINT("writing catch registers: idx_base=%ld -> %!T, idx_base+1=%ld -> %!T",
+	                     (long) thr->catchstack[cat_idx].idx_base,
 	                     &thr->heap->lj.value1,
-	                     (int) (thr->catchstack[cat_idx].idx_base + 1),
+	                     (long) (thr->catchstack[cat_idx].idx_base + 1),
 	                     &thr->heap->lj.value2));
 
 	tv1 = thr->valstack + thr->catchstack[cat_idx].idx_base;
@@ -665,7 +665,7 @@ static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t
 	DUK_ASSERT(resumer->callstack[act_idx].func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(resumer->callstack[act_idx].func));  /* resume caller must be an ecmascript func */
 
-	DUK_DDD(DUK_DDDPRINT("resume idx_retval is %d", (int) resumer->callstack[act_idx].idx_retval));
+	DUK_DDD(DUK_DDDPRINT("resume idx_retval is %ld", (long) resumer->callstack[act_idx].idx_retval));
 
 	tv1 = resumer->valstack + resumer->callstack[act_idx].idx_retval;  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
@@ -710,11 +710,11 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
  check_longjmp:
 
-	DUK_DD(DUK_DDPRINT("handling longjmp: type=%d, value1=%!T, value2=%!T, iserror=%d",
-	                   (int) thr->heap->lj.type,
+	DUK_DD(DUK_DDPRINT("handling longjmp: type=%ld, value1=%!T, value2=%!T, iserror=%ld",
+	                   (long) thr->heap->lj.type,
 	                   &thr->heap->lj.value1,
 	                   &thr->heap->lj.value2,
-	                   (int) thr->heap->lj.iserror));
+	                   (long) thr->heap->lj.iserror));
 
 	switch (thr->heap->lj.type) {
 
@@ -998,8 +998,8 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			 * match entry level check)
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("slow return to Ecmascript caller, idx_retval=%d, lj_value1=%!T",
-			                     (int) (thr->callstack + thr->callstack_top - 2)->idx_retval, &thr->heap->lj.value1));
+			DUK_DDD(DUK_DDDPRINT("slow return to Ecmascript caller, idx_retval=%ld, lj_value1=%!T",
+			                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval, &thr->heap->lj.value1));
 
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func));   /* must be ecmascript */
 
@@ -1009,8 +1009,8 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			DUK_TVAL_INCREF(thr, tv1);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
-			DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%d is %!T",
-			                     (int) (thr->callstack + thr->callstack_top - 2)->idx_retval,
+			DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%ld is %!T",
+			                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval,
 			                     thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval));
 
 			duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
@@ -1076,16 +1076,17 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(&thr->heap->lj.value1));
 		lj_label = (duk_uint_t) DUK_TVAL_GET_NUMBER(&thr->heap->lj.value1);
 
-		DUK_DDD(DUK_DDDPRINT("handling break/continue with label=%d, callstack index=%d",
-		                     (int) lj_label, (int) cat->callstack_index));
+		DUK_DDD(DUK_DDDPRINT("handling break/continue with label=%ld, callstack index=%ld",
+		                     (long) lj_label, (long) cat->callstack_index));
 
 		while (cat >= thr->catchstack) {
 			if (cat->callstack_index != orig_callstack_index) {
 				break;
 			}
-			DUK_DDD(DUK_DDDPRINT("considering catcher %d: type=%d label=%d",
-			                     (int) (cat - thr->catchstack),
-			                     DUK_CAT_GET_TYPE(cat), DUK_CAT_GET_LABEL(cat)));
+			DUK_DDD(DUK_DDDPRINT("considering catcher %ld: type=%ld label=%ld",
+			                     (long) (cat - thr->catchstack),
+			                     (long) DUK_CAT_GET_TYPE(cat),
+			                     (long) DUK_CAT_GET_LABEL(cat)));
 
 			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF &&
 			    DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
@@ -1233,7 +1234,7 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 	default: {
 		/* should never happen, but be robust */
-		DUK_D(DUK_DPRINT("caught unknown longjmp type %d, treat as internal error", (int) thr->heap->lj.type));
+		DUK_D(DUK_DPRINT("caught unknown longjmp type %ld, treat as internal error", (long) thr->heap->lj.type));
 		goto convert_to_internal_error;
 	}
 
@@ -1334,8 +1335,8 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 	}
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("executor interrupt finished, cstop=%d, pc=%d, nextctr=%d",
-	                     (int) thr->callstack_top, (int) act->pc, (int) ctr));
+	DUK_DDD(DUK_DDDPRINT("executor interrupt finished, cstop=%ld, pc=%ld, nextctr=%ld",
+	                     (long) thr->callstack_top, (long) act->pc, (long) ctr));
 
 	/* The counter value is one less than the init value: init value should
 	 * indicate how many instructions are executed before interrupt.  To
@@ -1596,21 +1597,21 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	DUK_ASSERT(fun != NULL);
 	DUK_ASSERT(bcode != NULL);
 
-	DUK_DD(DUK_DDPRINT("restarting execution, thr %p, act %p (idx %d), fun %p, bcode %p, "
-	                   "consts %p, funcs %p, lev %d, regbot %d, regtop %d, catchstack_top=%d, "
-	                   "preventcount=%d",
+	DUK_DD(DUK_DDPRINT("restarting execution, thr %p, act %p (idx %ld), fun %p, bcode %p, "
+	                   "consts %p, funcs %p, lev %ld, regbot %ld, regtop %ld, catchstack_top=%ld, "
+	                   "preventcount=%ld",
 	                   (void *) thr,
 	                   (void *) act,
-	                   (int) thr->callstack_top - 1,
+	                   (long) (thr->callstack_top - 1),
 	                   (void *) fun,
 	                   (void *) bcode,
 	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun),
 	                   (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(fun),
-	                   (int) (thr->callstack_top - 1),
-	                   (int) (thr->valstack_bottom - thr->valstack),
-	                   (int) (thr->valstack_top - thr->valstack),
-	                   (int) thr->catchstack_top,
-	                   (int) thr->callstack_preventcount));
+	                   (long) (thr->callstack_top - 1),
+	                   (long) (thr->valstack_bottom - thr->valstack),
+	                   (long) (thr->valstack_top - thr->valstack),
+	                   (long) thr->catchstack_top,
+	                   (long) thr->callstack_preventcount));
 
 #ifdef DUK_USE_ASSERTIONS
 	valstack_top_base = (duk_size_t) (thr->valstack_top - thr->valstack);
@@ -1654,12 +1655,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(fun));
 		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(fun));
 
-		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%d ins=0x%08x, op=%d, valstack_top=%d/%d  -->  %!I",
-		                     (int) act->pc,
-		                     (int) bcode[act->pc],
-		                     (int) DUK_DEC_OP(bcode[act->pc]),
-		                     (int) (thr->valstack_top - thr->valstack),
-		                     (int) (thr->valstack_end - thr->valstack),
+		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%ld ins=0x%08lx, op=%ld, valstack_top=%ld/%ld  -->  %!I",
+		                     (long) act->pc,
+		                     (unsigned long) bcode[act->pc],
+		                     (long) DUK_DEC_OP(bcode[act->pc]),
+		                     (long) (thr->valstack_top - thr->valstack),
+		                     (long) (thr->valstack_end - thr->valstack),
 		                     bcode[act->pc]));
 
 		ins = bcode[act->pc++];
@@ -2192,8 +2193,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * BC -> inner function index
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("CLOSURE to target register %d, fnum %d (count %d)",
-			                     (int) a, (int) bc, (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun)));
+			DUK_DDD(DUK_DDDPRINT("CLOSURE to target register %ld, fnum %ld (count %ld)",
+			                     (long) a, (long) bc, (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun)));
 
 			DUK_ASSERT_DISABLE(bc >= 0); /* unsigned */
 			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
@@ -2239,7 +2240,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv_obj = DUK__REGCONSTP(b);
 			tv_key = DUK__REGCONSTP(c);
-			DUK_DDD(DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", (int) a, DUK__REGCONSTP(b), DUK__REGCONSTP(c)));
+			DUK_DDD(DUK_DDDPRINT("GETPROP: a=%ld obj=%!T, key=%!T", (long) a, DUK__REGCONSTP(b), DUK__REGCONSTP(c)));
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
 			DUK_UNREF(rc);  /* ignore */
 			DUK_DDD(DUK_DDDPRINT("GETPROP --> %!T", duk_get_tval(ctx, -1)));
@@ -2594,7 +2595,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			} else {
 				/* slow return */
 
-				DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%d b=%d", (int) a, (int) b));
+				DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
 
 				if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
 					duk_push_tval(ctx, DUK__REGCONSTP(b));
@@ -2765,9 +2766,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat->idx_base = 0;  /* unused for label */
 			cat->h_varname = NULL;
 
-			DUK_DDD(DUK_DDDPRINT("LABEL catcher: flags=0x%08x, callstack_index=%d, pc_base=%d, idx_base=%d, h_varname=%!O, label_id=%d",
-			                     (int) cat->flags, (int) cat->callstack_index, (int) cat->pc_base,
-			                     (int) cat->idx_base, cat->h_varname, (int) DUK_CAT_GET_LABEL(cat)));
+			DUK_DDD(DUK_DDDPRINT("LABEL catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
+			                     "idx_base=%ld, h_varname=%!O, label_id=%ld",
+			                     (long) cat->flags, (long) cat->callstack_index, (long) cat->pc_base,
+			                     (long) cat->idx_base, cat->h_varname, (long) DUK_CAT_GET_LABEL(cat)));
 
 			act->pc += 2;  /* skip jump slots */
 			break;
@@ -2779,7 +2781,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
 #endif
 #if defined(DUK_USE_DDDPRINT)
-			DUK_DDD(DUK_DDDPRINT("ENDLABEL %d", (int) abc));
+			DUK_DDD(DUK_DDDPRINT("ENDLABEL %ld", (long) abc));
 #endif
 
 			DUK_ASSERT(thr->catchstack_top >= 1);
@@ -2802,7 +2804,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * simply an DUK_OP_JUMP.
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("BREAK: %d", (int) abc));
+			DUK_DDD(DUK_DDDPRINT("BREAK: %ld", (long) abc));
 
 			duk_push_uint(ctx, (duk_uint_t) abc);
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_BREAK);
@@ -2822,7 +2824,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * simply an DUK_OP_JUMP.
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("CONTINUE: %d", (int) abc));
+			DUK_DDD(DUK_DDDPRINT("CONTINUE: %ld", (long) abc));
 
 			duk_push_uint(ctx, (duk_uint_t) abc);
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_CONTINUE);
@@ -2863,15 +2865,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* XXX: side effect handling is quite awkward here */
 
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%d, var_name/with_target=%d, have_catch=%d, "
-			                     "have_finally=%d, catch_binding=%d, with_binding=%d (flags=0x%02x)",
-			                     (int) DUK_DEC_B(ins),
-			                     (int) DUK_DEC_C(ins),
-			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
-			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
-			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
-			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
-			                     (int) DUK_DEC_A(ins)));
+			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%ld, var_name/with_target=%ld, have_catch=%ld, "
+			                     "have_finally=%ld, catch_binding=%ld, with_binding=%ld (flags=0x%02lx)",
+			                     (long) DUK_DEC_B(ins),
+			                     (long) DUK_DEC_C(ins),
+			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
+			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
+			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
+			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
+			                     (unsigned long) DUK_DEC_A(ins)));
 
 			a = DUK_DEC_A(ins);
 			b = DUK_DEC_B(ins);
@@ -2966,10 +2968,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
 			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + b;
 
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08x, callstack_index=%d, pc_base=%d, "
-			                     "idx_base=%d, h_varname=%!O",
-			                     (int) cat->flags, (int) cat->callstack_index, (int) cat->pc_base,
-			                     (int) cat->idx_base, cat->h_varname));
+			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
+			                     "idx_base=%ld, h_varname=%!O",
+			                     (unsigned long) cat->flags, (long) cat->callstack_index,
+			                     (long) cat->pc_base, (long) cat->idx_base, cat->h_varname));
 
 			act->pc += 2;  /* skip jump slots */
 			break;
@@ -2997,7 +2999,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				tv2 = thr->valstack_bottom - 1;  /* 'this binding' is just under bottom */
 				DUK_ASSERT(tv2 >= thr->valstack);
 
-				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%d", tv2, (int) b));
+				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%ld", tv2, (long) b));
 
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_TVAL(tv1, tv2);
@@ -3395,9 +3397,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
 					/* no need to unwind callstack */
 				} else {
-					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%d -> "
+					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%ld -> "
 					                     "dismantle catcher, re-throw error",
-					                     (int) cont_type));
+					                     (long) cont_type));
 
 					duk_push_tval(ctx, thr->valstack + cat->idx_base);
 
@@ -3458,8 +3460,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 #ifdef DUK_USE_DEBUG
 			case DUK_EXTRAOP_DUMPREG: {
-				DUK_D(DUK_DPRINT("DUMPREG: %d -> %!T",
-				                 (int) DUK_DEC_BC(ins),
+				DUK_D(DUK_DPRINT("DUMPREG: %ld -> %!T",
+				                 (long) DUK_DEC_BC(ins),
 				                 duk_get_tval((duk_context *) thr, (duk_idx_t) DUK_DEC_BC(ins))));
 				break;
 			}
@@ -3467,9 +3469,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			case DUK_EXTRAOP_DUMPREGS: {
 				duk_idx_t i, i_top;
 				i_top = duk_get_top((duk_context *) thr);
-				DUK_D(DUK_DPRINT("DUMPREGS: %d regs", (int) i_top));
+				DUK_D(DUK_DPRINT("DUMPREGS: %ld regs", (long) i_top));
 				for (i = 0; i < i_top; i++) {
-					DUK_D(DUK_DPRINT("  r%d -> %!dT", (int) i, duk_get_tval((duk_context *) thr, i)));
+					DUK_D(DUK_DPRINT("  r%ld -> %!dT", (long) i, duk_get_tval((duk_context *) thr, i)));
 				}
 				break;
 			}
@@ -3480,7 +3482,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LOGMARK: {
-				DUK_D(DUK_DPRINT("LOGMARK: mark %d at pc %d", (int) DUK_DEC_BC(ins), (int) (act->pc - 1)));  /* -1, autoinc */
+				DUK_D(DUK_DPRINT("LOGMARK: mark %ld at pc %ld", (long) DUK_DEC_BC(ins), (long) (act->pc - 1)));  /* -1, autoinc */
 				break;
 			}
 #endif  /* DUK_USE_DEBUG */
@@ -3495,7 +3497,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_INVALID: {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%d)", (int) DUK_DEC_ABC(ins));
+			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_ABC(ins));
 			break;
 		}
 

@@ -187,7 +187,7 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 		duk_require_stack(ctx, len);
 
-		DUK_DDD(DUK_DDDPRINT("argArray length is %d", len));
+		DUK_DDD(DUK_DDDPRINT("argArray length is %ld", (long) len));
 		for (i = 0; i < len; i++) {
 			duk_get_prop_index(ctx, 2, i);
 		}
@@ -197,8 +197,8 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	/* [ func thisArg arg1 ... argN ] */
 	
-	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%d",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), (int) len));
+	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%ld",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), (long) len));
 	duk_call_method(ctx, len);
 	return 1;
 
@@ -228,8 +228,9 @@ duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 
 	/* [ func thisArg arg1 ... argN ] */
 
-	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argcount=%d, top=%d",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), nargs - 1, (int) duk_get_top(ctx)));
+	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argcount=%ld, top=%ld",
+	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1),
+	                     (long) (nargs - 1), (long) duk_get_top(ctx)));
 	duk_call_method(ctx, nargs - 1);	
 	return 1;
 }

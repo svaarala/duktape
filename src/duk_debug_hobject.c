@@ -157,20 +157,20 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	DUK_D(DUK_DPRINT("  %sexotic_bufferobj", (const char *) (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) ? str_empty : str_excl)));
 	DUK_D(DUK_DPRINT("  %sexotic_proxyobj", (const char *) (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj) ? str_empty : str_excl)));
 
-	DUK_D(DUK_DPRINT("  class: number %d -> %s",
-	                 (int) DUK_HOBJECT_GET_CLASS_NUMBER(obj),
+	DUK_D(DUK_DPRINT("  class: number %ld -> %s",
+	                 (long) DUK_HOBJECT_GET_CLASS_NUMBER(obj),
 	                 (const char *) (duk__class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)])));
 
 	DUK_D(DUK_DPRINT("  prototype: %p -> %!O",
 	                 (void *) obj->prototype,
 	                 (duk_heaphdr *) obj->prototype));
 
-	DUK_D(DUK_DPRINT("  props: p=%p, e_size=%d, e_used=%d, a_size=%d, h_size=%d",
+	DUK_D(DUK_DPRINT("  props: p=%p, e_size=%ld, e_used=%ld, a_size=%ld, h_size=%ld",
 	                 (void *) obj->p,
-	                 (int) obj->e_size,
-	                 (int) obj->e_used,
-	                 (int) obj->a_size,
-	                 (int) obj->h_size));
+	                 (long) obj->e_size,
+	                 (long) obj->e_used,
+	                 (long) obj->a_size,
+	                 (long) obj->h_size));
 
 	/*
 	 *  Object (struct layout) specific dumping.  Inline code here
@@ -182,22 +182,22 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 		DUK_D(DUK_DPRINT("  hcompiledfunction"));
 		DUK_D(DUK_DPRINT("  data: %!O", h->data));
-		DUK_D(DUK_DPRINT("  nregs: %d", (int) h->nregs));
-		DUK_D(DUK_DPRINT("  nargs: %d", (int) h->nargs));
+		DUK_D(DUK_DPRINT("  nregs: %ld", (long) h->nregs));
+		DUK_D(DUK_DPRINT("  nargs: %ld", (long) h->nargs));
 
 		if (h->data && DUK_HBUFFER_HAS_DYNAMIC(h->data) && DUK_HBUFFER_GET_DATA_PTR(h->data)) {
-			DUK_D(DUK_DPRINT("  consts: %p (%d, %d bytes)",
+			DUK_D(DUK_DPRINT("  consts: %p (%ld, %ld bytes)",
 			                 (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(h)));
-			DUK_D(DUK_DPRINT("  funcs: %p (%d, %d bytes)",
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h),
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(h)));
+			DUK_D(DUK_DPRINT("  funcs: %p (%ld, %ld bytes)",
 			                 (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(h)));
-			DUK_D(DUK_DPRINT("  bytecode: %p (%d, %d bytes)",
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(h),
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(h)));
+			DUK_D(DUK_DPRINT("  bytecode: %p (%ld, %ld bytes)",
 			                 (void *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(h),
-			                 (int) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(h)));
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(h),
+			                 (long) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(h)));
 		} else {
 			DUK_D(DUK_DPRINT("  consts: ???"));
 			DUK_D(DUK_DPRINT("  funcs: ???"));
@@ -208,27 +208,27 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 		DUK_D(DUK_DPRINT("  hnativefunction"));
 		/* XXX: h->func, cannot print function pointers portably */
-		DUK_D(DUK_DPRINT("  nargs: %d", (int) h->nargs));
+		DUK_D(DUK_DPRINT("  nargs: %ld", (long) h->nargs));
 	} else if (DUK_HOBJECT_IS_THREAD(obj)) {
 		duk_hthread *thr = (duk_hthread *) obj;
 		duk_tval *p;
 
 		DUK_D(DUK_DPRINT("  hthread"));
-		DUK_D(DUK_DPRINT("  strict: %d", (int) thr->strict));
-		DUK_D(DUK_DPRINT("  state: %d", (int) thr->state));
+		DUK_D(DUK_DPRINT("  strict: %ld", (long) thr->strict));
+		DUK_D(DUK_DPRINT("  state: %ld", (long) thr->state));
 
-		DUK_D(DUK_DPRINT("  valstack_max: %d, callstack_max:%d, catchstack_max: %d",
-		                 (int) thr->valstack_max, (int) thr->callstack_max, (int) thr->catchstack_max));
+		DUK_D(DUK_DPRINT("  valstack_max: %ld, callstack_max: %ld, catchstack_max: %ld",
+		                 (long) thr->valstack_max, (long) thr->callstack_max, (long) thr->catchstack_max));
 
-		DUK_D(DUK_DPRINT("  callstack: ptr %p, size %d, top %d, preventcount %d, used size %d entries (%d bytes), alloc size %d entries (%d bytes)",
+		DUK_D(DUK_DPRINT("  callstack: ptr %p, size %ld, top %ld, preventcount %ld, used size %ld entries (%ld bytes), alloc size %ld entries (%ld bytes)",
 		                 (void *) thr->callstack,
-		                 (int) thr->callstack_size,
-		                 (int) thr->callstack_top,
-		                 (int) thr->callstack_preventcount,
-		                 (int) thr->callstack_top,
-		                 (int) (thr->callstack_top * sizeof(duk_activation)),
-		                 (int) thr->callstack_size,
-		                 (int) (thr->callstack_size * sizeof(duk_activation))));
+		                 (long) thr->callstack_size,
+		                 (long) thr->callstack_top,
+		                 (long) thr->callstack_preventcount,
+		                 (long) thr->callstack_top,
+		                 (long) (thr->callstack_top * sizeof(duk_activation)),
+		                 (long) thr->callstack_size,
+		                 (long) (thr->callstack_size * sizeof(duk_activation))));
 
 		DUK_DEBUG_SUMMARY_INIT();
 		DUK_DEBUG_SUMMARY_CHAR('[');
@@ -255,18 +255,18 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		DUK_DEBUG_SUMMARY_CHAR(']');
 		DUK_DEBUG_SUMMARY_FINISH();
 
-		DUK_D(DUK_DPRINT("  valstack: ptr %p, end %p (%d), bottom %p (%d), top %p (%d), used size %d entries (%d bytes), alloc size %d entries (%d bytes)",
+		DUK_D(DUK_DPRINT("  valstack: ptr %p, end %p (%ld), bottom %p (%ld), top %p (%ld), used size %ld entries (%ld bytes), alloc size %ld entries (%ld bytes)",
 		                 (void *) thr->valstack,
 		                 (void *) thr->valstack_end,
-		                 (int) (thr->valstack_end - thr->valstack),
+		                 (long) (thr->valstack_end - thr->valstack),
 		                 (void *) thr->valstack_bottom,
-		                 (int) (thr->valstack_bottom - thr->valstack),
+		                 (long) (thr->valstack_bottom - thr->valstack),
 		                 (void *) thr->valstack_top,
-		                 (int) (thr->valstack_top - thr->valstack),
-		                 (int) (thr->valstack_top - thr->valstack),
-		                 (int) (thr->valstack_top - thr->valstack) * sizeof(duk_tval),
-		                 (int) (thr->valstack_end - thr->valstack),
-		                 (int) (thr->valstack_end - thr->valstack) * sizeof(duk_tval)));
+		                 (long) (thr->valstack_top - thr->valstack),
+		                 (long) (thr->valstack_top - thr->valstack),
+		                 (long) (thr->valstack_top - thr->valstack) * sizeof(duk_tval),
+		                 (long) (thr->valstack_end - thr->valstack),
+		                 (long) (thr->valstack_end - thr->valstack) * sizeof(duk_tval)));
 
 		DUK_DEBUG_SUMMARY_INIT();
 		DUK_DEBUG_SUMMARY_CHAR('[');
@@ -297,14 +297,14 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		DUK_DEBUG_SUMMARY_CHAR(']');
 		DUK_DEBUG_SUMMARY_FINISH();
 
-		DUK_D(DUK_DPRINT("  catchstack: ptr %p, size %d, top %d, used size %d entries (%d bytes), alloc size %d entries (%d bytes)",
+		DUK_D(DUK_DPRINT("  catchstack: ptr %p, size %ld, top %ld, used size %ld entries (%ld bytes), alloc size %ld entries (%ld bytes)",
 		                 (void *) thr->catchstack,
-		                 (int) thr->catchstack_size,
-		                 (int) thr->catchstack_top,
-		                 (int) thr->catchstack_top,
-		                 (int) (thr->catchstack_top * sizeof(duk_catcher)),
-		                 (int) thr->catchstack_size,
-		                 (int) (thr->catchstack_size * sizeof(duk_catcher))));
+		                 (long) thr->catchstack_size,
+		                 (long) thr->catchstack_top,
+		                 (long) thr->catchstack_top,
+		                 (long) (thr->catchstack_top * sizeof(duk_catcher)),
+		                 (long) thr->catchstack_size,
+		                 (long) (thr->catchstack_size * sizeof(duk_catcher))));
 
 		DUK_DEBUG_SUMMARY_INIT();
 		DUK_DEBUG_SUMMARY_CHAR('[');
@@ -329,14 +329,14 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 #if 0  /* worth dumping? */
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-			DUK_D(DUK_DPRINT("  builtins[%d] -> %!@O", (int) i, thr->builtins[i]));
+			DUK_D(DUK_DPRINT("  builtins[%ld] -> %!@O", (long) i, (duk_heaphdr *) thr->builtins[i]));
 		}
 #endif
 	}
 
 	if (obj->p) {
-		DUK_D(DUK_DPRINT("  props alloc size: %d",
-		                 (int) DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size)));
+		DUK_D(DUK_DPRINT("  props alloc size: %ld",
+		                 (long) DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size)));
 	} else {
 		DUK_D(DUK_DPRINT("  props alloc size: n/a"));
 	}
@@ -350,48 +350,48 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		v = DUK_HOBJECT_E_GET_VALUE_PTR(obj, i);
 
 		if (i >= obj->e_used) {
-			DUK_D(DUK_DPRINT("    [%d]: UNUSED", (int) i));
+			DUK_D(DUK_DPRINT("    [%ld]: UNUSED", (long) i));
 			continue;
 		}
 
 		if (!k) {
-			DUK_D(DUK_DPRINT("    [%d]: NULL", (int) i));
+			DUK_D(DUK_DPRINT("    [%ld]: NULL", (long) i));
 			continue;
 		}
 
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i)) {
-			DUK_D(DUK_DPRINT("    [%d]: [w=%d e=%d c=%d a=%d] %!O -> get:%p set:%p; get %!O; set %!O",
-			                 (int) i,
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_WRITABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i) ? 1 : 0),
-			                 k,
+			DUK_D(DUK_DPRINT("    [%ld]: [w=%ld e=%ld c=%ld a=%ld] %!O -> get:%p set:%p; get %!O; set %!O",
+			                 (long) i,
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_WRITABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i) ? 1 : 0),
+			                 (duk_heaphdr *) k,
 			                 (void *) v->a.get,
 			                 (void *) v->a.set,
 			                 (duk_heaphdr *) v->a.get,
 			                 (duk_heaphdr *) v->a.set));
 		} else {
-			DUK_D(DUK_DPRINT("    [%d]: [w=%d e=%d c=%d a=%d] %!O -> %!T",
-			                 (int) i,
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_WRITABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(obj, i) ? 1 : 0),
-			                 (int) (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i) ? 1 : 0),
-			                 k,
+			DUK_D(DUK_DPRINT("    [%ld]: [w=%ld e=%ld c=%ld a=%ld] %!O -> %!T",
+			                 (long) i,
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_WRITABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(obj, i) ? 1 : 0),
+			                 (long) (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i) ? 1 : 0),
+			                 (duk_heaphdr *) k,
 			                 &v->v));
 		}
 	}
 
 	DUK_D(DUK_DPRINT("  array entries:"));
 	for (i = 0; i < (duk_uint_fast32_t) obj->a_size; i++) {
-		DUK_D(DUK_DPRINT("    [%d]: [w=%d e=%d c=%d a=%d] %d -> %!T",
-		                 (int) i,
-		                 1,  /* implicit attributes */
-		                 1,
-		                 1,
-		                 0,
-		                 (int) i,
+		DUK_D(DUK_DPRINT("    [%ld]: [w=%ld e=%ld c=%ld a=%ld] %ld -> %!T",
+		                 (long) i,
+		                 (long) 1,  /* implicit attributes */
+		                 (long) 1,
+		                 (long) 1,
+		                 (long) 0,
+		                 (long) i,
 		                 DUK_HOBJECT_A_GET_VALUE_PTR(obj, i)));
 	}
 
@@ -399,11 +399,11 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	for (i = 0; i < (duk_uint_fast32_t) obj->h_size; i++) {
 		duk_uint32_t t = DUK_HOBJECT_H_GET_INDEX(obj, i);
 		if (t == DUK_HOBJECT_HASHIDX_UNUSED) {
-			DUK_D(DUK_DPRINT("    [%d]: unused", (int) i));
+			DUK_D(DUK_DPRINT("    [%ld]: unused", (long) i));
 		} else if (t == DUK_HOBJECT_HASHIDX_DELETED) {
-			DUK_D(DUK_DPRINT("    [%d]: deleted", (int) i));
+			DUK_D(DUK_DPRINT("    [%ld]: deleted", (long) i));
 		} else {
-			DUK_D(DUK_DPRINT("    [%d]: %d", (int) i, (int) t));
+			DUK_D(DUK_DPRINT("    [%ld]: %ld", (long) i, (long) t));
 		}
 	}
 }
@@ -411,9 +411,9 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 void duk_debug_dump_callstack(duk_hthread *thr) {
 	duk_uint_fast32_t i;
 
-	DUK_D(DUK_DPRINT("=== hthread %p callstack: %d entries ===",
+	DUK_D(DUK_DPRINT("=== hthread %p callstack: %ld entries ===",
 	                 (void *) thr,
-	                 (thr == NULL ? 0 : thr->callstack_top)));
+	                 (thr == NULL ? (long) 0 : (long) thr->callstack_top)));
 	if (!thr) {
 		return;
 	}
@@ -427,16 +427,16 @@ void duk_debug_dump_callstack(duk_hthread *thr) {
 			this_binding = NULL;
 		}
 
-		DUK_D(DUK_DPRINT("  [%d] -> flags=0x%08x, func=%!O, var_env=%!iO, lex_env=%!iO, pc=%d, idx_bottom=%d, idx_retval=%d, this_binding=%!T",
-		                 (int) i,
-		                 (int) act->flags,
+		DUK_D(DUK_DPRINT("  [%ld] -> flags=0x%08lx, func=%!O, var_env=%!iO, lex_env=%!iO, pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
+		                 (long) i,
+		                 (unsigned long) act->flags,
 		                 (duk_heaphdr *) act->func,
 		                 (duk_heaphdr *) act->var_env,
 		                 (duk_heaphdr *) act->lex_env,
-		                 (int) act->pc,
-		                 (int) act->idx_bottom,
-		                 (int) act->idx_retval,
-		                 this_binding));
+		                 (long) act->pc,
+		                 (long) act->idx_bottom,
+		                 (long) act->idx_retval,
+		                 (duk_tval *) this_binding));
 	}
 }
 
@@ -451,16 +451,16 @@ void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
 			this_binding = NULL;
 		}
 
-		DUK_D(DUK_DPRINT("duk_activation: %p -> flags=0x%08x, func=%!O, var_env=%!O, lex_env=%!O, pc=%d, idx_bottom=%d, idx_retval=%d, this_binding=%!T",
+		DUK_D(DUK_DPRINT("duk_activation: %p -> flags=0x%08lx, func=%!O, var_env=%!O, lex_env=%!O, pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
 		                 (void *) act,
-		                 (int) act->flags,
+		                 (unsigned long) act->flags,
 		                 (duk_heaphdr *) act->func,
 		                 (duk_heaphdr *) act->var_env,
 		                 (duk_heaphdr *) act->lex_env,
-		                 (int) act->pc,
-		                 (int) act->idx_bottom,
-		                 (int) act->idx_retval,
-		                 this_binding));
+		                 (long) act->pc,
+		                 (long) act->idx_bottom,
+		                 (long) act->idx_retval,
+		                 (duk_tval *) this_binding));
 	}
 }
 
