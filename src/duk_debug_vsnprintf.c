@@ -758,7 +758,7 @@ static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 		duk_int_t diff2 = diff1 + 1;                            /* from curr pc */
 
 		duk_fb_sprintf(fb, "%s %d (to pc%c%d)",
-		               (const char *) op_name, (int) diff1, (char) (diff2 >= 0 ? '+' : '-'), (int) (diff2 >= 0 ? diff2 : -diff2));
+		               (const char *) op_name, (int) diff1, (int) (diff2 >= 0 ? '+' : '-'), (int) (diff2 >= 0 ? diff2 : -diff2));
 	} else {
 		duk_fb_sprintf(fb, "%s %d, %d, %d",
 		               (const char *) op_name, (int) DUK_DEC_A(ins), (int) DUK_DEC_B(ins), (int) DUK_DEC_C(ins));
@@ -920,6 +920,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 						duk_fb_sprintf(&fb, fmtbuf, arg);
 					}
 				} else if (ch == DUK_ASC_LC_P) {
+					/* %p */
 					void *arg = va_arg(ap, void *);
 					if (arg == NULL) {
 						/* '%p' and NULL is portable, but special case it
@@ -929,6 +930,10 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 					} else {
 						duk_fb_sprintf(&fb, fmtbuf, arg);
 					}
+				} else if (ch == DUK_ASC_LC_C) {
+					/* '%c', passed concretely as int */
+					int arg = va_arg(ap, int);
+					duk_fb_sprintf(&fb, fmtbuf, arg);
 				} else {
 					/* Should not happen. */
 					duk_fb_sprintf(&fb, "INVALID-FORMAT(%s)", (const char *) fmtbuf);
