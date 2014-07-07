@@ -8,7 +8,7 @@
  *  Local forward declarations
  */
 
-static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count);
+static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count);
 
 /*
  *  Helper for finding the final non-bound function in a "bound function" chain.
@@ -58,7 +58,7 @@ static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *f
  *  invalidated by any DECREF and almost any API call.
  */
 
-static double duk__compute_mod(double d1, double d2) {
+static duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
 	/*
 	 *  Ecmascript modulus ('%') does not match IEEE 754 "remainder"
 	 *  operation (implemented by remainder() in C99) but does seem
@@ -67,10 +67,10 @@ static double duk__compute_mod(double d1, double d2) {
 	 *  Compare E5 Section 11.5.3 and "man fmod".
 	 */
 
-	return DUK_FMOD(d1, d2);
+	return (duk_double_t) DUK_FMOD((double) d1, (double) d2);
 }
 
-static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z) {
+static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
 	/*
 	 *  Addition operator is different from other arithmetic
 	 *  operations in that it also provides string concatenation.
@@ -94,7 +94,8 @@ static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
 	DUK_ASSERT(tv_y != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
+	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
 	/*
 	 *  Fast paths
@@ -108,7 +109,7 @@ static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, 
 		DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
-		tv_z = &thr->valstack_bottom[idx_z];
+		tv_z = thr->valstack_bottom + idx_z;
 		DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 		DUK_TVAL_SET_NUMBER(tv_z, du.d);
 		DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
@@ -134,9 +135,9 @@ static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, 
 		duk_to_string(ctx, -2);
 		duk_to_string(ctx, -1);
 		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */
-		duk_replace(ctx, idx_z);  /* side effects */
+		duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
 	} else {
-		double d1, d2;
+		duk_double_t d1, d2;
 
 		d1 = duk_to_number(ctx, -2);
 		d2 = duk_to_number(ctx, -1);
@@ -151,11 +152,11 @@ static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, 
 
 		duk_pop_2(ctx);
 		duk_push_number(ctx, du.d);
-		duk_replace(ctx, idx_z);  /* side effects */
+		duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
 	}
 }
 
-static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
+static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_idx_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -167,14 +168,15 @@ static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	double d1, d2;
+	duk_double_t d1, d2;
 	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
 	DUK_ASSERT(tv_y != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
+	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* fast path */
@@ -219,14 +221,14 @@ static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *
 	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 	
-	tv_z = &thr->valstack_bottom[idx_z];
+	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 	DUK_TVAL_SET_NUMBER(tv_z, du.d);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, int idx_z, int opcode) {
+static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Binary bitwise operations use different coercions (ToInt32, ToUint32)
 	 *  depending on the operation.  We coerce the arguments first using
@@ -241,13 +243,14 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
 	duk_int32_t i1, i2;
-	double val;
+	duk_double_t val;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
 	DUK_ASSERT(tv_y != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
+	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
@@ -257,15 +260,15 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 
 	switch (opcode) {
 	case DUK_OP_BAND: {
-		val = (double) (i1 & i2);
+		val = (duk_double_t) (i1 & i2);
 		break;
 	}
 	case DUK_OP_BOR: {
-		val = (double) (i1 | i2);
+		val = (duk_double_t) (i1 | i2);
 		break;
 	}
 	case DUK_OP_BXOR: {
-		val = (double) (i1 ^ i2);
+		val = (duk_double_t) (i1 ^ i2);
 		break;
 	}
 	case DUK_OP_BASL: {
@@ -277,10 +280,10 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 		duk_uint32_t u2;
 		duk_int32_t i3;
 
-		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
+		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
 		i3 = i1 << (u2 & 0x1f);                     /* E5 Section 11.7.1, steps 7 and 8 */
-		i3 = i3 & ((duk_int32_t) 0xffffffffU);      /* Note: left shift, should mask */
-		val = (double) i3;
+		i3 = i3 & ((duk_int32_t) 0xffffffffUL);      /* Note: left shift, should mask */
+		val = (duk_double_t) i3;
 		break;
 	}
 	case DUK_OP_BASR: {
@@ -288,8 +291,8 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 
 		duk_uint32_t u2;
 
-		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
-		val = (double) (i1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
+		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
+		val = (duk_double_t) (i1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	case DUK_OP_BLSR: {
@@ -298,14 +301,14 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 		duk_uint32_t u1;
 		duk_uint32_t u2;
 
-		u1 = ((duk_uint32_t) i1) & 0xffffffffU;
-		u2 = ((duk_uint32_t) i2) & 0xffffffffU;
+		u1 = ((duk_uint32_t) i1) & 0xffffffffUL;
+		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
 
-		val = (double) (u1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
+		val = (duk_double_t) (u1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	default: {
-		val = (double) 0;  /* should not happen */
+		val = (duk_double_t) 0;  /* should not happen */
 		break;
 	}
 	}
@@ -313,14 +316,14 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
 	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
 
-	tv_z = &thr->valstack_bottom[idx_z];
+	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 	DUK_TVAL_SET_NUMBER(tv_z, val);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, int opcode) {
+static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -332,13 +335,14 @@ static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, 
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	double d1;
+	duk_double_t d1;
 	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
+	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
 	if (DUK_TVAL_IS_NUMBER(tv_x)) {
 		/* fast path */
@@ -377,14 +381,14 @@ static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, int idx_z, 
 	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
-	tv_z = &thr->valstack_bottom[idx_z];
+	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 	DUK_TVAL_SET_NUMBER(tv_z, du.d);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
+static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z) {
 	/*
 	 *  E5 Section 11.4.8
 	 */
@@ -393,24 +397,25 @@ static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, int idx_z) {
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
 	duk_int32_t i1, i2;
-	double val;
+	duk_double_t val;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
-	DUK_ASSERT(idx_z >= 0 && idx_z < duk_get_top(ctx));
+	DUK_ASSERT_DISABLE(idx_z >= 0);
+	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
 	duk_push_tval(ctx, tv_x);
 	i1 = duk_to_int32(ctx, -1);
 	duk_pop(ctx);
 
 	i2 = ~i1;
-	val = (double) i2;
+	val = (duk_double_t) i2;
 
 	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
 	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
 
-	tv_z = &thr->valstack_bottom[idx_z];
+	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 	DUK_TVAL_SET_NUMBER(tv_z, val);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
@@ -465,11 +470,11 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
 #define DUK__LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
 
 /* only called when act_idx points to an Ecmascript function */
-static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_count) {
+static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count) {
 	duk_hcompiledfunction *h_func;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(act_idx >= 0);
+	DUK_ASSERT_DISABLE(act_idx >= 0);  /* unsigned */
 	DUK_ASSERT(thr->callstack[act_idx].func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(thr->callstack[act_idx].func));
 	DUK_ASSERT_DISABLE(thr->callstack[act_idx].idx_retval >= 0);  /* unsigned */
@@ -500,33 +505,33 @@ static void duk__reconfig_valstack(duk_hthread *thr, int act_idx, int retval_cou
 	duk_set_top((duk_context *) thr, h_func->nregs);
 }
 
-static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_finally) {
+static void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, duk_bool_t is_finally) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
 	DUK_DDD(DUK_DDDPRINT("handling catch/finally, cat_idx=%d, is_finally=%d",
-	                     cat_idx, is_finally));
+	                     (int) cat_idx, (int) is_finally));
 
 	/*
 	 *  Set caught value and longjmp type to catcher regs.
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("writing catch registers: idx_base=%d -> %!T, idx_base+1=%d -> %!T",
-	                     thr->catchstack[cat_idx].idx_base,
+	                     (int) thr->catchstack[cat_idx].idx_base,
 	                     &thr->heap->lj.value1,
-	                     thr->catchstack[cat_idx].idx_base + 1,
+	                     (int) (thr->catchstack[cat_idx].idx_base + 1),
 	                     &thr->heap->lj.value2));
 
-	tv1 = &thr->valstack[thr->catchstack[cat_idx].idx_base];
+	tv1 = thr->valstack + thr->catchstack[cat_idx].idx_base;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	DUK_TVAL_SET_TVAL(tv1, &thr->heap->lj.value1);
 	DUK_TVAL_INCREF(thr, tv1);
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
-	tv1 = &thr->valstack[thr->catchstack[cat_idx].idx_base + 1];
+	tv1 = thr->valstack + thr->catchstack[cat_idx].idx_base + 1;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-	DUK_TVAL_SET_NUMBER(tv1, (double) thr->heap->lj.type);
+	DUK_TVAL_SET_NUMBER(tv1, (duk_double_t) thr->heap->lj.type);  /* XXX: set int */
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv1));   /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
@@ -635,7 +640,7 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, int cat_idx, int is_f
 	}
 }
 
-static void duk__handle_label(duk_hthread *thr, int cat_idx) {
+static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 	/* no callstack changes, no value stack changes */
 
 	/* +0 = break, +1 = continue */
@@ -649,7 +654,7 @@ static void duk__handle_label(duk_hthread *thr, int cat_idx) {
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
  * return terminates a thread and yields to the resumer.
  */
-static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_idx) {
+static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t act_idx) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
@@ -676,12 +681,12 @@ static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, int act_id
 	/* caller must change active thread, and set thr->resumer to NULL */
 }
 
-static int duk__handle_longjmp(duk_hthread *thr,
-                               duk_hthread *entry_thread,
-                               duk_size_t entry_callstack_top) {
+static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
+                                            duk_hthread *entry_thread,
+                                            duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_size_t entry_callstack_index;
-	int retval = DUK__LONGJMP_RESTART;
+	duk_small_uint_t retval = DUK__LONGJMP_RESTART;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(entry_thread != NULL);
@@ -706,10 +711,10 @@ static int duk__handle_longjmp(duk_hthread *thr,
  check_longjmp:
 
 	DUK_DD(DUK_DDPRINT("handling longjmp: type=%d, value1=%!T, value2=%!T, iserror=%d",
-	                   thr->heap->lj.type,
+	                   (int) thr->heap->lj.type,
 	                   &thr->heap->lj.value1,
 	                   &thr->heap->lj.value2,
-	                   thr->heap->lj.iserror));
+	                   (int) thr->heap->lj.iserror));
 
 	switch (thr->heap->lj.type) {
 
@@ -721,7 +726,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 
 		duk_tval *tv;
 		duk_tval *tv2;
-		int act_idx;
+		duk_size_t act_idx;
 		duk_hthread *resumee;
 
 		/* duk_bi_duk_object_yield() and duk_bi_duk_object_resume() ensure all of these are met */
@@ -969,7 +974,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 			}
 			cat--;
 		}
-		/* if out of catchstack, cat = &thr->catchstack[-1] */
+		/* if out of catchstack, cat = thr->catchstack - 1 */
 
 		DUK_DD(DUK_DDPRINT("no catcher in catch stack, return to calling activation / yield"));
 
@@ -1256,7 +1261,7 @@ static int duk__handle_longjmp(duk_hthread *thr,
 	/* This could also be thrown internally (set the error, goto check_longjmp),
 	 * but it's better for internal errors to bubble outwards.
 	 */
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor longjmp handler");
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR_EXEC_LONGJMP);
 	DUK_UNREACHABLE();
 	return retval;
 }
@@ -1307,7 +1312,7 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 	/* XXX: cumulative instruction count example */
 	static int step_count = 0;
 	step_count += thr->heap->interrupt_init;
-	if (step_count >= 1000000) {
+	if (step_count >= 1000000L) {
 		/* Keep throwing an error whenever we get here.  The unusual values
 		 * are set this way because no instruction is ever executed, we just
 		 * throw an error until all try/catch/finally and other catchpoints
@@ -1391,7 +1396,7 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	/* entry level info */
 	duk_size_t entry_callstack_top;
-	int entry_call_recursion_depth;
+	duk_int_t entry_call_recursion_depth;
 	duk_jmpbuf *entry_jmpbuf_ptr;
 
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
@@ -1403,7 +1408,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	/* 'funcs' is quite rarely used, so no local for it */
 
 	/* "hot" temps for interpretation -- not volatile, value not guaranteed in setjmp error handling */
-	duk_uint32_t ins;
+	duk_uint_fast32_t ins;  /* XXX: check performance impact on x64 between fast/non-fast variant */
 
 	/* jmpbuf */
 	duk_jmpbuf jmpbuf;
@@ -1413,7 +1418,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 #endif
 
 #ifdef DUK_USE_ASSERTIONS
-	int valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
+	duk_size_t valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
 #endif
 
 	/* XXX: document assumptions on setjmp and volatile variables
@@ -1461,7 +1466,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		 *  using longjmp()s.
 		 */
 
-		int lj_ret;
+		duk_small_uint_t lj_ret;
 
 		/* XXX: signalling the need to shrink check (only if unwound) */
 
@@ -1596,7 +1601,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	                   "preventcount=%d",
 	                   (void *) thr,
 	                   (void *) act,
-	                   thr->callstack_top - 1,
+	                   (int) thr->callstack_top - 1,
 	                   (void *) fun,
 	                   (void *) bcode,
 	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun),
@@ -1608,13 +1613,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	                   (int) thr->callstack_preventcount));
 
 #ifdef DUK_USE_ASSERTIONS
-	valstack_top_base = (int) (thr->valstack_top - thr->valstack);
+	valstack_top_base = (duk_size_t) (thr->valstack_top - thr->valstack);
 #endif
 
 	for (;;) {
 		DUK_ASSERT(thr->callstack_top >= 1);
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
-		DUK_ASSERT((int) (thr->valstack_top - thr->valstack) == valstack_top_base);
+		DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) == valstack_top_base);
 
 		/* Executor interrupt counter check, used to implement breakpoints,
 		 * debugging interface, execution timeouts, etc.  The counter is heap
@@ -1635,13 +1640,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		/* Because ANY DECREF potentially invalidates 'act' now (through
 		 * finalization), we need to re-lookup 'act' in almost every case.
 		 *
-		 * FIXME:
+		 * XXX: future work for performance optimization:
 		 * This is not nice; it would be nice if the program counter was a
 		 * behind a stable pointer.  For instance, put a raw bytecode pointer
 		 * into duk_hthread struct (not into the callstack); since bytecode
 		 * has a stable pointer this would work nicely.  Whenever a call is
 		 * made, the bytecode pointer could be backed up as an integer index
-		 * to the calling activation.
+		 * to the calling activation.  Perhaps add a macro for setting up a
+		 * new activation (same as for setting up / switching threads)?
 		 */
 
 		act = thr->callstack + thr->callstack_top - 1;
@@ -1649,22 +1655,42 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(fun));
 
 		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%d ins=0x%08x, op=%d, valstack_top=%d/%d  -->  %!I",
-		                     act->pc, bcode[act->pc], DUK_DEC_OP(bcode[act->pc]),
+		                     (int) act->pc,
+		                     (int) bcode[act->pc],
+		                     (int) DUK_DEC_OP(bcode[act->pc]),
 		                     (int) (thr->valstack_top - thr->valstack),
 		                     (int) (thr->valstack_end - thr->valstack),
 		                     bcode[act->pc]));
 
 		ins = bcode[act->pc++];
 
-		switch ((duk_small_int_t) DUK_DEC_OP(ins)) {
+		/* Typing: use duk_small_(u)int_fast_t when decoding small
+		 * opcode fields (op, A, B, C) and duk_(u)int_fast_t when
+		 * decoding larger fields (e.g. BC which is 18 bits).  Use
+		 * unsigned variant by default, signed when the value is used
+		 * in signed arithmetic.  Using variable names such as 'a', 'b',
+		 * 'c', 'bc', etc makes it easier to spot typing mismatches.
+		 */
+
+		/* XXX: the best typing needs to be validated by perf measurement:
+		 * e.g. using a small type which is the cast to a larger duk_idx_t
+		 * may be slower than declaring the variable as a duk_idx_t in the
+		 * first place.
+		 */
+
+		/* XXX: use macros for the repetitive tval/refcount handling. */
+
+		switch ((int) DUK_DEC_OP(ins)) {
+		/* XXX: switch cast? */
 
 		case DUK_OP_LDREG: {
-			int t;
+			duk_small_uint_fast_t a;
+			duk_uint_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = DUK__REGP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); tv2 = DUK__REGP(bc);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_TVAL(tv1, tv2);
 			DUK_TVAL_INCREF(thr, tv1);
@@ -1673,12 +1699,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_STREG: {
-			int t;
+			duk_small_uint_fast_t a;
+			duk_uint_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = DUK__REGP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); tv2 = DUK__REGP(bc);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 			DUK_TVAL_SET_TVAL(tv2, tv1);
 			DUK_TVAL_INCREF(thr, tv2);
@@ -1687,12 +1714,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_LDCONST: {
-			int t;
+			duk_small_uint_fast_t a;
+			duk_uint_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1, *tv2;
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
-			t = DUK_DEC_BC(ins); tv2 = DUK__CONSTP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); tv2 = DUK__CONSTP(bc);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_TVAL(tv1, tv2);
 			DUK_TVAL_INCREF(thr, tv2);  /* may be e.g. string */
@@ -1701,13 +1729,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_LDINT: {
-			int t;
+			duk_small_uint_fast_t a;
+			duk_int_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1;
-			double val;
+			duk_double_t val;
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
-			t = DUK_DEC_BC(ins); val = (double) (t - DUK_BC_LDINT_BIAS);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); val = (duk_double_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_NUMBER(tv1, val);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
@@ -1715,16 +1744,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_LDINTX: {
-			int t;
+			duk_small_uint_fast_t a;
 			duk_tval *tv1;
-			double val;
+			duk_double_t val;
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
 				DUK__INTERNAL_ERROR("LDINTX target not a number");
 			}
-			val = DUK_TVAL_GET_NUMBER(tv1) * ((double) (1 << DUK_BC_LDINTX_SHIFT)) +
-			      (double) DUK_DEC_BC(ins);
+			val = DUK_TVAL_GET_NUMBER(tv1) * ((duk_double_t) (1L << DUK_BC_LDINTX_SHIFT)) +
+			      (duk_double_t) DUK_DEC_BC(ins);
 			DUK_TVAL_SET_NUMBER(tv1, val);
 			break;
 		}
@@ -1732,38 +1761,41 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_MPUTOBJ:
 		case DUK_OP_MPUTOBJI: {
 			duk_context *ctx = (duk_context *) thr;
-			int t;
+			duk_small_uint_fast_t a;
 			duk_tval *tv1;
 			duk_hobject *obj;
-			int idx;
-			int count;
+			duk_uint_fast_t idx;
+			duk_small_uint_fast_t count;
 
 			/* A -> register of target object
 			 * B -> first register of key/value pair list
 			 * C -> number of key/value pairs
 			 */
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
 				DUK__INTERNAL_ERROR("MPUTOBJ target not an object");
 			}
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
-			idx = (int) DUK_DEC_B(ins);
+			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTOBJI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("MPUTOBJI target is not a number");
 				}
-				idx = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			count = (int) DUK_DEC_C(ins);
+			count = (duk_small_uint_fast_t) DUK_DEC_C(ins);
 
-			if (idx < 0 || idx + count * 2 > duk_get_top(ctx)) {
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (DUK_UNLIKELY(idx + count * 2 > (duk_uint_fast_t) duk_get_top(ctx))) {
+				/* XXX: use duk_is_valid_index() instead? */
 				/* XXX: improve check; check against nregs, not against top */
 				DUK__INTERNAL_ERROR("MPUTOBJ out of bounds");
 			}
+#endif
 
 			duk_push_hobject(ctx, obj);
 
@@ -1788,11 +1820,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_MPUTARR:
 		case DUK_OP_MPUTARRI: {
 			duk_context *ctx = (duk_context *) thr;
-			int t;
+			duk_small_uint_fast_t a;
 			duk_tval *tv1;
 			duk_hobject *obj;
-			int idx;
-			int count;
+			duk_uint_fast_t idx;
+			duk_small_uint_fast_t count;
 			duk_uint32_t arr_idx;
 
 			/* A -> register of target object
@@ -1800,27 +1832,30 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> number of key/value pairs (N)
 			 */
 
-			t = DUK_DEC_A(ins); tv1 = DUK__REGP(t);
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			if (!DUK_TVAL_IS_OBJECT(tv1)) {
 				DUK__INTERNAL_ERROR("MPUTARR target not an object");
 			}
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
-			idx = (int) DUK_DEC_B(ins);
+			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTARRI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("MPUTARRI target is not a number");
 				}
-				idx = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			count = (int) DUK_DEC_C(ins);
+			count = (duk_small_uint_fast_t) DUK_DEC_C(ins);
 
-			if (idx < 0 || idx + count + 1 > duk_get_top(ctx)) {
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (idx + count + 1 > (duk_uint_fast_t) duk_get_top(ctx)) {
+				/* XXX: use duk_is_valid_index() instead? */
 				/* XXX: improve check; check against nregs, not against top */
 				DUK__INTERNAL_ERROR("MPUTARR out of bounds");
 			}
+#endif
 
 			tv1 = DUK__REGP(idx);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
@@ -1848,6 +1883,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_push_tval(ctx, DUK__REGP(idx));          /* -> [... obj value] */
 				duk_def_prop_index_wec(ctx, -2, arr_idx);    /* -> [... obj] */
 
+				/* XXX: could use at least one fewer loop counters */
 				count--;
 				idx++;
 				arr_idx++;
@@ -1857,7 +1893,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * ToUint32() which is odd but happens now as a side effect of
 			 * 'arr_idx' type.
 			 */
-			duk_hobject_set_length(thr, obj, arr_idx);
+			duk_hobject_set_length(thr, obj, (duk_uint32_t) arr_idx);
 
 			duk_pop(ctx);  /* [... obj] -> [...] */
 			break;
@@ -1866,9 +1902,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_NEW:
 		case DUK_OP_NEWI: {
 			duk_context *ctx = (duk_context *) thr;
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int i;
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_uint_fast_t idx;
+			duk_small_uint_fast_t i;
 
 			/* A -> unused (reserved for flags, for consistency with DUK_OP_CALL)
 			 * B -> target register and start reg: constructor, arg1, ..., argN
@@ -1885,31 +1921,40 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * b + c, and let the return handling fix up the stack frame?
 			 */
 
+			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_NEWI) {
-				duk_tval *tv_ind = DUK__REGP(b);
+				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("NEWI target is not a number");
 				}
-				b = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			duk_require_stack(ctx, c);
-			duk_push_tval(ctx, DUK__REGP(b));
-			for (i = 0; i < c; i++) {
-				duk_push_tval(ctx, DUK__REGP(b + i + 1));
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (idx + c + 1 > (duk_uint_fast_t) duk_get_top(ctx)) {
+				/* XXX: use duk_is_valid_index() instead? */
+				/* XXX: improve check; check against nregs, not against top */
+				DUK__INTERNAL_ERROR("NEW out of bounds");
 			}
-			duk_new(ctx, c);  /* [... constructor arg1 ... argN] -> [retval] */
+#endif
+
+			duk_require_stack(ctx, (duk_idx_t) c);
+			duk_push_tval(ctx, DUK__REGP(idx));
+			for (i = 0; i < c; i++) {
+				duk_push_tval(ctx, DUK__REGP(idx + i + 1));
+			}
+			duk_new(ctx, (duk_idx_t) c);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDD(DUK_DDDPRINT("NEW -> %!iT", duk_get_tval(ctx, -1)));
-			duk_replace(ctx, b);
+			duk_replace(ctx, (duk_idx_t) idx);
 			break;
 		}
 
 		case DUK_OP_REGEXP: {
 #ifdef DUK_USE_REGEXP_SUPPORT
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
 			/* A -> target register
 			 * B -> bytecode (also contains flags)
@@ -1920,7 +1965,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_push_tval(ctx, DUK__REGCONSTP(b));  /* -> [ ... escaped_source bytecode ] */
 			duk_regexp_create_instance(thr);   /* -> [ ... regexp_instance ] */
 			DUK_DDD(DUK_DDDPRINT("regexp instance: %!iT", duk_get_tval(ctx, -1)));
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 #else
 			/* The compiler should never emit DUK_OP_REGEXP if there is no
 			 * regexp support.
@@ -1940,8 +1985,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 */
 
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);  /* restricted to regs */
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);  /* restricted to regs */
+			duk_uint_fast_t idx;
 
 			/* A -> target register (A, A+1) for call setup
 			 *      (for DUK_OP_CSREGI, 'a' is indirect)
@@ -1954,25 +1999,34 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * Careful here.
 			 */
 
+			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSREGI) {
-				duk_tval *tv_ind = DUK__REGP(a);
+				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("CSREGI target is not a number");
 				}
-				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
+				/* XXX: use duk_is_valid_index() instead? */
+				/* XXX: improve check; check against nregs, not against top */
+				DUK__INTERNAL_ERROR("CSREG out of bounds");
+			}
+#endif
+
 			duk_push_tval(ctx, DUK__REGP(b));
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) idx);
 			duk_push_undefined(ctx);
-			duk_replace(ctx, a+1);
+			duk_replace(ctx, (duk_idx_t) (idx + 1));
 			break;
 		}
 
 		case DUK_OP_GETVAR: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int bc = DUK_DEC_BC(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
 
@@ -1986,13 +2040,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
 
 			duk_pop(ctx);  /* 'this' binding is not needed here */
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_PUTVAR: {
-			int a = DUK_DEC_A(ins);
-			int bc = DUK_DEC_BC(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
 
@@ -2013,15 +2067,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_DECLVAR: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
-			int prop_flags;
-			int is_func_decl;
-			int flag_undef_value;
-			int flag_func_decl;
+			duk_small_uint_t prop_flags;
+			duk_bool_t is_func_decl;
+			duk_bool_t is_undef_value;
 
 			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
@@ -2029,8 +2082,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 			name = DUK_TVAL_GET_STRING(tv1);
 
-			flag_undef_value = a & DUK_BC_DECLVAR_FLAG_UNDEF_VALUE;
-			flag_func_decl = a & DUK_BC_DECLVAR_FLAG_FUNC_DECL;
+			is_undef_value = ((a & DUK_BC_DECLVAR_FLAG_UNDEF_VALUE) != 0);
+			is_func_decl = ((a & DUK_BC_DECLVAR_FLAG_FUNC_DECL) != 0);
 
 			/* XXX: declvar takes an duk_tval pointer, which is awkward and
 			 * should be reworked.
@@ -2040,9 +2093,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * writability, etc).
 			 */
 			prop_flags = a & DUK_PROPDESC_FLAGS_MASK;
-			is_func_decl = flag_func_decl;
 
-			if (flag_undef_value) {
+			if (is_undef_value) {
 				duk_push_undefined(ctx);
 			} else {
 				duk_push_tval(ctx, DUK__REGCONSTP(c));
@@ -2061,11 +2113,11 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_DELVAR: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
-			int rc;
+			duk_bool_t rc;
 
 			tv1 = DUK__REGCONSTP(b);
 			if (!DUK_TVAL_IS_STRING(tv1)) {
@@ -2076,7 +2128,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			rc = duk_js_delvar_activation(thr, act, name);
 
 			duk_push_boolean(ctx, rc);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
@@ -2092,8 +2144,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 */
 
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_uint_fast_t idx;
 			duk_tval *tv1;
 			duk_hstring *name;
 
@@ -2108,23 +2160,32 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
+			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSVARI) {
-				duk_tval *tv_ind = DUK__REGP(a);
+				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("CSVARI target is not a number");
 				}
-				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			duk_replace(ctx, a+1);  /* 'this' binding */
-			duk_replace(ctx, a);    /* variable value (function, we hope, not checked here) */
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
+				/* XXX: use duk_is_valid_index() instead? */
+				/* XXX: improve check; check against nregs, not against top */
+				DUK__INTERNAL_ERROR("CSVAR out of bounds");
+			}
+#endif
+
+			duk_replace(ctx, (duk_idx_t) (idx + 1));  /* 'this' binding */
+			duk_replace(ctx, (duk_idx_t) idx);        /* variable value (function, we hope, not checked here) */
 			break;
 		}
 
 		case DUK_OP_CLOSURE: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int bc = DUK_DEC_BC(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_hobject *fun_temp;
 
 			/* A -> target reg
@@ -2132,10 +2193,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("CLOSURE to target register %d, fnum %d (count %d)",
-			                     a, bc, DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun)));
+			                     (int) a, (int) bc, (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun)));
 
-			DUK_ASSERT(bc >= 0);
-			DUK_ASSERT(bc < (int) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
+			DUK_ASSERT_DISABLE(bc >= 0); /* unsigned */
+			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
 			fun_temp = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(fun)[bc];
 			DUK_ASSERT(fun_temp != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(fun_temp));
@@ -2157,19 +2218,19 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			                    (duk_hcompiledfunction *) fun_temp,
 			                    act->var_env,
 			                    act->lex_env);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 
 			break;
 		}
 
 		case DUK_OP_GETPROP: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
-			int rc;
+			duk_bool_t rc;
 
 			/* A -> target reg
 			 * B -> object reg/const (may be const e.g. in "'foo'[1]")
@@ -2178,25 +2239,25 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			tv_obj = DUK__REGCONSTP(b);
 			tv_key = DUK__REGCONSTP(c);
-			DUK_DDD(DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", a, DUK__REGCONSTP(b), DUK__REGCONSTP(c)));
+			DUK_DDD(DUK_DDDPRINT("GETPROP: a=%d obj=%!T, key=%!T", (int) a, DUK__REGCONSTP(b), DUK__REGCONSTP(c)));
 			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
 			DUK_UNREF(rc);  /* ignore */
 			DUK_DDD(DUK_DDDPRINT("GETPROP --> %!T", duk_get_tval(ctx, -1)));
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 
-			duk_replace(ctx, a);    /* val */
+			duk_replace(ctx, (duk_idx_t) a);    /* val */
 			break;
 		}
 
 		case DUK_OP_PUTPROP: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
 			duk_tval *tv_val;
-			int rc;
+			duk_bool_t rc;
 
 			/* A -> object reg
 			 * B -> key reg/const
@@ -2222,12 +2283,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_DELPROP: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
-			int rc;
+			duk_bool_t rc;
 
 			/* A -> result reg
 			 * B -> object reg
@@ -2241,19 +2302,19 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			tv_key = NULL;  /* invalidated */
 
 			duk_push_boolean(ctx, rc);
-			duk_replace(ctx, a);    /* result */
+			duk_replace(ctx, (duk_idx_t) a);    /* result */
 			break;
 		}
 
 		case DUK_OP_CSPROP:
 		case DUK_OP_CSPROPI: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_uint_fast_t idx;
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
-			int rc;
+			duk_bool_t rc;
 
 			/* E5 Section 11.2.3, step 6.a.i */
 			/* E5 Section 10.4.3 */
@@ -2271,17 +2332,26 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
+			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSPROPI) {
-				duk_tval *tv_ind = DUK__REGP(a);
+				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("CSPROPI target is not a number");
 				}
-				a = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			duk_push_tval(ctx, DUK__REGP(b));  /* [ ... val obj ] */
-			duk_replace(ctx, a+1);        /* 'this' binding */
-			duk_replace(ctx, a);          /* val */
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
+				/* XXX: use duk_is_valid_index() instead? */
+				/* XXX: improve check; check against nregs, not against top */
+				DUK__INTERNAL_ERROR("CSPROP out of bounds");
+			}
+#endif
+
+			duk_push_tval(ctx, DUK__REGP(b));         /* [ ... val obj ] */
+			duk_replace(ctx, (duk_idx_t) (idx + 1));  /* 'this' binding */
+			duk_replace(ctx, (duk_idx_t) idx);        /* val */
 			break;
 		}
 
@@ -2290,10 +2360,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_MUL:
 		case DUK_OP_DIV:
 		case DUK_OP_MOD: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int op = DUK_DEC_OP(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
 
 			if (op == DUK_OP_ADD) {
 				/*
@@ -2313,26 +2383,26 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_BASL:
 		case DUK_OP_BLSR:
 		case DUK_OP_BASR: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int op = DUK_DEC_OP(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
 
 			duk__vm_bitwise_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			break;
 		}
 
 		case DUK_OP_BNOT: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 
 			duk__vm_bitwise_not(thr, DUK__REGCONSTP(b), a);
 			break;
 		}
 
 		case DUK_OP_LNOT: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 
 			duk__vm_logical_not(thr, DUK__REGCONSTP(b), DUK__REGP(a));
 			break;
@@ -2341,10 +2411,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_EQ:
 		case DUK_OP_NEQ: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
 			tmp = duk_js_equals(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
@@ -2352,17 +2422,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				tmp = !tmp;
 			}
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_SEQ:
 		case DUK_OP_SNEQ: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
 			tmp = duk_js_strict_equals(DUK__REGCONSTP(b), DUK__REGCONSTP(c));
@@ -2370,7 +2440,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				tmp = !tmp;
 			}
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
@@ -2386,10 +2456,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_GT: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* x > y  -->  y < x */
 			tmp = duk_js_compare_helper(thr,
@@ -2398,16 +2468,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			                            0);                 /* flags */
 
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_GE: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* x >= y  -->  not (x < y) */
 			tmp = duk_js_compare_helper(thr,
@@ -2417,16 +2487,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_LT: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* x < y */
 			tmp = duk_js_compare_helper(thr,
@@ -2435,16 +2505,16 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			                            DUK_COMPARE_FLAG_EVAL_LEFT_FIRST);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_LE: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			/* x <= y  -->  not (x > y)  -->  not (y < x) */
 			tmp = duk_js_compare_helper(thr,
@@ -2453,17 +2523,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
 
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_IF: {
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_bool_t tmp;
 
 			tmp = duk_js_toboolean(DUK__REGCONSTP(b));
-			if (tmp == a) {
+			if (tmp == (duk_bool_t) a) {
 				/* if boolean matches A, skip next inst */
 				act->pc++;
 			} else {
@@ -2474,32 +2544,32 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_INSTOF: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			tmp = duk_js_instanceof(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_IN: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int tmp;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_bool_t tmp;
 
 			tmp = duk_js_in(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
 			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, a);
+			duk_replace(ctx, (duk_idx_t) a);
 			break;
 		}
 
 		case DUK_OP_JUMP: {
-			int abc = DUK_DEC_ABC(ins);
+			duk_int_fast_t abc = DUK_DEC_ABC(ins);
 
 			act->pc += abc - DUK_BC_JUMP_BIAS;
 			break;
@@ -2507,9 +2577,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_RETURN: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			/* int c = DUK_DEC_C(ins); */
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			/* duk_small_uint_fast_t c = DUK_DEC_C(ins); */
 
 			/* A -> flags
 			 * B -> return value reg/const
@@ -2524,7 +2594,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			} else {
 				/* slow return */
 
-				DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%d b=%d", a, b));
+				DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%d b=%d", (int) a, (int) b));
 
 				if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
 					duk_push_tval(ctx, DUK__REGCONSTP(b));
@@ -2544,12 +2614,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_CALL:
 		case DUK_OP_CALLI: {
 			duk_context *ctx = (duk_context *) thr;
-			int a = DUK_DEC_A(ins);
-			int b = DUK_DEC_B(ins);
-			int c = DUK_DEC_C(ins);
-			int call_flags;
-			int flag_tailcall;
-			int flag_evalcall;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_uint_fast_t idx;
+			duk_small_uint_t call_flags;
+			duk_small_uint_t flag_tailcall;
+			duk_small_uint_t flag_evalcall;
 			duk_tval *tv_func;
 			duk_hobject *obj_func;        /* target function, possibly a bound function */
 			duk_hobject *obj_final_func;  /* final target function, non-bound function */
@@ -2564,15 +2634,23 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			flag_tailcall = (a & DUK_BC_CALL_FLAG_TAILCALL);
 			flag_evalcall = (a & DUK_BC_CALL_FLAG_EVALCALL);
 
+			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CALLI) {
-				duk_tval *tv_ind = DUK__REGP(b);
+				duk_tval *tv_ind = DUK__REGP(idx);
 				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 					DUK__INTERNAL_ERROR("CALLI target is not a number");
 				}
-				b = (int) DUK_TVAL_GET_NUMBER(tv_ind);  /* not validated */
+				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
-			tv_func = DUK__REGP(b);
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+			if (!duk_is_valid_index(ctx, (duk_idx_t) idx)) {
+				/* XXX: improve check; check against nregs, not against top */
+				DUK__INTERNAL_ERROR("CALL out of bounds");
+			}
+#endif
+
+			tv_func = DUK__REGP(idx);
 			if (!DUK_TVAL_IS_OBJECT(tv_func)) {
 				DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "call target not an object");
 			}
@@ -2600,7 +2678,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				obj_final_func = obj_func;
 			}
 
-			duk_set_top(ctx, b + c + 2);   /* [ ... func this arg1 ... argN ] */
+			duk_set_top(ctx, (duk_idx_t) (idx + c + 2));   /* [ ... func this arg1 ... argN ] */
 
 			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(obj_final_func)) {
 				/*
@@ -2661,8 +2739,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				                call_flags);  /* call_flags */
 
 				/* FIXME: who should restore? */
-				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
-				duk_set_top(ctx, fun->nregs);
+				duk_require_stack_top(ctx, (duk_idx_t) fun->nregs);  /* may have shrunk by inner calls, must recheck */
+				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
 				/* No need to reinit setjmp() catchpoint, as call handling
 				 * will store and restore our state.
@@ -2673,12 +2751,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_LABEL: {
 			duk_catcher *cat;
-			int abc = DUK_DEC_ABC(ins);
+			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
 
 			/* allocate catcher and populate it (should be atomic) */
 
 			duk_hthread_catchstack_grow(thr);
-			cat = &thr->catchstack[thr->catchstack_top];
+			cat = thr->catchstack + thr->catchstack_top;
 			thr->catchstack_top++;
 
 			cat->flags = DUK_CAT_TYPE_LABEL | (abc << DUK_CAT_LABEL_SHIFT);
@@ -2688,8 +2766,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat->h_varname = NULL;
 
 			DUK_DDD(DUK_DDDPRINT("LABEL catcher: flags=0x%08x, callstack_index=%d, pc_base=%d, idx_base=%d, h_varname=%!O, label_id=%d",
-			                     cat->flags, cat->callstack_index, cat->pc_base, cat->idx_base, cat->h_varname,
-			                     DUK_CAT_GET_LABEL(cat)));
+			                     (int) cat->flags, (int) cat->callstack_index, (int) cat->pc_base,
+			                     (int) cat->idx_base, cat->h_varname, (int) DUK_CAT_GET_LABEL(cat)));
 
 			act->pc += 2;  /* skip jump slots */
 			break;
@@ -2698,7 +2776,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_ENDLABEL: {
 			duk_catcher *cat;
 #if defined(DUK_USE_DDDPRINT) || defined(DUK_USE_ASSERTIONS)
-			duk_int_t abc = DUK_DEC_ABC(ins);
+			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
 #endif
 #if defined(DUK_USE_DDDPRINT)
 			DUK_DDD(DUK_DDDPRINT("ENDLABEL %d", (int) abc));
@@ -2706,10 +2784,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			DUK_ASSERT(thr->catchstack_top >= 1);
 
-			cat = &thr->catchstack[thr->catchstack_top - 1];
+			cat = thr->catchstack + thr->catchstack_top - 1;
 			DUK_UNREF(cat);
 			DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
-			DUK_ASSERT((duk_int_t) DUK_CAT_GET_LABEL(cat) == abc);
+			DUK_ASSERT((duk_uint_fast_t) DUK_CAT_GET_LABEL(cat) == abc);
 
 			duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
 			/* no need to unwind callstack */
@@ -2718,15 +2796,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_BREAK: {
 			duk_context *ctx = (duk_context *) thr;
-			int abc = DUK_DEC_ABC(ins);
+			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
 
 			/* always the "slow break" variant (longjmp'ing); a "fast break" is
 			 * simply an DUK_OP_JUMP.
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("BREAK: %d", abc));
+			DUK_DDD(DUK_DDDPRINT("BREAK: %d", (int) abc));
 
-			duk_push_int(ctx, abc);
+			duk_push_uint(ctx, (duk_uint_t) abc);
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_BREAK);
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
@@ -2738,15 +2816,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 		case DUK_OP_CONTINUE: {
 			duk_context *ctx = (duk_context *) thr;
-			int abc = DUK_DEC_ABC(ins);
+			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
 
 			/* always the "slow continue" variant (longjmp'ing); a "fast continue" is
 			 * simply an DUK_OP_JUMP.
 			 */
 
-			DUK_DDD(DUK_DDDPRINT("CONTINUE: %d", abc));
+			DUK_DDD(DUK_DDDPRINT("CONTINUE: %d", (int) abc));
 
-			duk_push_int(ctx, abc);
+			duk_push_uint(ctx, (duk_uint_t) abc);
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_CONTINUE);
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
@@ -2760,7 +2838,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			duk_context *ctx = (duk_context *) thr;
 			duk_catcher *cat;
 			duk_tval *tv1;
-			int a, b, c;
+			duk_small_uint_fast_t a;
+			duk_small_uint_fast_t b;
+			duk_small_uint_fast_t c;
 
 			/* A -> flags
 			 * B -> reg_catch; base register for 2 regs
@@ -2783,14 +2863,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			/* XXX: side effect handling is quite awkward here */
 
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%d, var_name/with_target=%d, have_catch=%d, have_finally=%d, catch_binding=%d, with_binding=%d (flags=0x%02x)",
-			                     DUK_DEC_B(ins),
-			                     DUK_DEC_C(ins),
-			                     (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
-			                     (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
-			                     (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
-			                     (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
-			                     DUK_DEC_A(ins)));
+			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%d, var_name/with_target=%d, have_catch=%d, "
+			                     "have_finally=%d, catch_binding=%d, with_binding=%d (flags=0x%02x)",
+			                     (int) DUK_DEC_B(ins),
+			                     (int) DUK_DEC_C(ins),
+			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
+			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
+			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
+			                     (int) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
+			                     (int) DUK_DEC_A(ins)));
 
 			a = DUK_DEC_A(ins);
 			b = DUK_DEC_B(ins);
@@ -2838,7 +2919,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* allocate catcher and populate it (should be atomic) */
 
 			duk_hthread_catchstack_grow(thr);
-			cat = &thr->catchstack[thr->catchstack_top];
+			cat = thr->catchstack + thr->catchstack_top;
 			DUK_ASSERT(thr->catchstack_top + 1 <= thr->catchstack_size);
 			thr->catchstack_top++;
 
@@ -2883,10 +2964,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
 			cat->callstack_index = thr->callstack_top - 1;
 			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
-			cat->idx_base = (int) (thr->valstack_bottom - thr->valstack) + b;
+			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + b;
 
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08x, callstack_index=%d, pc_base=%d, idx_base=%d, h_varname=%!O",
-			                     cat->flags, cat->callstack_index, cat->pc_base, cat->idx_base, cat->h_varname));
+			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08x, callstack_index=%d, pc_base=%d, "
+			                     "idx_base=%d, h_varname=%!O",
+			                     (int) cat->flags, (int) cat->callstack_index, (int) cat->pc_base,
+			                     (int) cat->idx_base, cat->h_varname));
 
 			act->pc += 2;  /* skip jump slots */
 			break;
@@ -2895,8 +2978,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		case DUK_OP_EXTRA: {
 			/* XXX: shared decoding of 'b' and 'c'? */
 
-			int extraop = DUK_DEC_A(ins);
-			switch (extraop) {
+			duk_small_uint_fast_t extraop = DUK_DEC_A(ins);
+			switch ((int) extraop) {
+			/* XXX: switch cast? */
 
 			case DUK_EXTRAOP_NOP: {
 				/* nop */
@@ -2905,7 +2989,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_LDTHIS: {
 				/* Note: 'this' may be bound to any value, not just an object */
-				int b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1, *tv2;
 
@@ -2913,7 +2997,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				tv2 = thr->valstack_bottom - 1;  /* 'this binding' is just under bottom */
 				DUK_ASSERT(tv2 >= thr->valstack);
 
-				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%d", tv2, b));
+				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%d", tv2, (int) b));
 
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_TVAL(tv1, tv2);
@@ -2923,7 +3007,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LDUNDEF: {
-				int bc = DUK_DEC_BC(ins);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
@@ -2935,7 +3019,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LDNULL: {
-				int bc = DUK_DEC_BC(ins);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
 
@@ -2948,10 +3032,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_LDTRUE:
 			case DUK_EXTRAOP_LDFALSE: {
-				int bc = DUK_DEC_BC(ins);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1;
-				int bval = (extraop == DUK_EXTRAOP_LDTRUE ? 1 : 0);
+				duk_small_uint_fast_t bval = (extraop == DUK_EXTRAOP_LDTRUE ? 1 : 0);
 
 				tv1 = DUK__REGP(bc);
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
@@ -2962,33 +3046,34 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_NEWOBJ: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 
 				duk_push_object(ctx);
-				duk_replace(ctx, b);
+				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
 			case DUK_EXTRAOP_NEWARR: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 
 				duk_push_array(ctx);
-				duk_replace(ctx, b);
+				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
 			case DUK_EXTRAOP_SETALEN: {
-				int t;
+				duk_small_uint_fast_t b;
+				duk_small_uint_fast_t c;
 				duk_tval *tv1;
 				duk_hobject *h;
 				duk_uint32_t len;
 
-				t = DUK_DEC_B(ins); tv1 = DUK__REGP(t);
+				b = DUK_DEC_B(ins); tv1 = DUK__REGP(b);
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 				h = DUK_TVAL_GET_OBJECT(tv1);
 
-				t = DUK_DEC_C(ins); tv1 = DUK__REGP(t);
+				c= DUK_DEC_C(ins); tv1 = DUK__REGP(c);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 				len = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 
@@ -2999,17 +3084,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_TYPEOF: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 				duk_push_hstring(ctx, duk_js_typeof(thr, DUK__REGCONSTP(c)));
-				duk_replace(ctx, b);
+				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
 			case DUK_EXTRAOP_TYPEOFID: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 				duk_hstring *name;
 				duk_tval *tv;
 
@@ -3024,12 +3109,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					/* -> [... val this] */
 					tv = duk_get_tval(ctx, -2);
 					duk_push_hstring(ctx, duk_js_typeof(thr, tv));
-					duk_replace(ctx, b);
+					duk_replace(ctx, (duk_idx_t) b);
 					duk_pop_2(ctx);
 				} else {
 					/* unresolvable, no stack changes */
 					duk_push_hstring_stridx(ctx, DUK_STRIDX_LC_UNDEFINED);
-					duk_replace(ctx, b);
+					duk_replace(ctx, (duk_idx_t) b);
 				}
 
 				break;
@@ -3037,18 +3122,18 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_TONUM: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
-				duk_dup(ctx, c);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
+				duk_dup(ctx, (duk_idx_t) c);
 				duk_to_number(ctx, -1);
-				duk_replace(ctx, b);
+				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
 			case DUK_EXTRAOP_INITENUM: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
 				/*
 				 *  Enumeration semantics come from for-in statement, E5 Section 12.6.4.
@@ -3061,22 +3146,22 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * C -> value to be enumerated (expect a register)
 				 */
 
-				if (duk_is_null_or_undefined(ctx, c)) {
+				if (duk_is_null_or_undefined(ctx, (duk_idx_t) c)) {
 					duk_push_null(ctx);
-					duk_replace(ctx, b);
+					duk_replace(ctx, (duk_idx_t) b);
 				} else {
-					duk_dup(ctx, c);
+					duk_dup(ctx, (duk_idx_t) c);
 					duk_to_object(ctx, -1);
 					duk_hobject_enumerator_create(ctx, 0 /*enum_flags*/);  /* [ ... val ] --> [ ... enum ] */
-					duk_replace(ctx, b);
+					duk_replace(ctx, (duk_idx_t) b);
 				}
 				break;
 			}
 
 			case DUK_EXTRAOP_NEXTENUM: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
 				/*
 				 *  NEXTENUM checks whether the enumerator still has unenumerated
@@ -3089,11 +3174,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * C -> enum register
 				 */
 
-				DUK_DDD(DUK_DDDPRINT("NEXTENUM: b->%!T, c->%!T", duk_get_tval(ctx, b), duk_get_tval(ctx, c)));
+				DUK_DDD(DUK_DDDPRINT("NEXTENUM: b->%!T, c->%!T",
+				                     duk_get_tval(ctx, (duk_idx_t) b), duk_get_tval(ctx, (duk_idx_t) c)));
 
-				if (duk_is_object(ctx, c)) {
+				if (duk_is_object(ctx, (duk_idx_t) c)) {
 					/* XXX: assert 'c' is an enumerator */
-					duk_dup(ctx, c);
+					duk_dup(ctx, (duk_idx_t) c);
 					if (duk_hobject_enumerator_next(ctx, 0 /*get_value*/)) {
 						/* [ ... enum ] -> [ ... next_key ] */
 						DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ", duk_get_tval(ctx, -1)));
@@ -3103,10 +3189,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 						DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
 						duk_push_undefined(ctx);
 					}
-					duk_replace(ctx, b);
+					duk_replace(ctx, (duk_idx_t) b);
 				} else {
 					/* 'null' enumerator case -> behave as with an empty enumerator */
-					DUK_ASSERT(duk_is_null(ctx, c));
+					DUK_ASSERT(duk_is_null(ctx, (duk_idx_t) c));
 					DUK_DDD(DUK_DDDPRINT("enum is null, execute jump slot"));
 				}
 				break;				
@@ -3117,9 +3203,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			case DUK_EXTRAOP_INITGET:
 			case DUK_EXTRAOP_INITGETI: {
 				duk_context *ctx = (duk_context *) thr;
-				int is_set = (extraop == DUK_EXTRAOP_INITSET || extraop == DUK_EXTRAOP_INITSETI);
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_bool_t is_set = (extraop == DUK_EXTRAOP_INITSET || extraop == DUK_EXTRAOP_INITSETI);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_uint_fast_t idx;
 
 				/* B -> object register
 				 * C -> C+0 contains key, C+1 closure (value)
@@ -3132,13 +3218,22 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 *  be initialized once (or not at all).
 				 */
 
+				idx = (duk_uint_fast_t) DUK_DEC_C(ins);
 				if (extraop == DUK_EXTRAOP_INITSETI || extraop == DUK_EXTRAOP_INITGETI) {
-					duk_tval *tv_ind = DUK__REGP(c);
+					duk_tval *tv_ind = DUK__REGP(idx);
 					if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
 						DUK__INTERNAL_ERROR("DUK_EXTRAOP_INITSETI/DUK_EXTRAOP_INITGETI target is not a number");
 					}
-					c = (int) DUK_TVAL_GET_NUMBER(tv_ind);
+					idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 				}
+
+#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
+				if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
+					/* XXX: use duk_is_valid_index() instead? */
+					/* XXX: improve check; check against nregs, not against top */
+					DUK__INTERNAL_ERROR("INITSET/INITGET out of bounds");
+				}
+#endif
 
 				/* XXX: this is now a very unoptimal implementation -- this can be
 				 * made very simple by direct manipulation of the object internals,
@@ -3148,15 +3243,15 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_push_hobject_bidx(ctx, DUK_BIDX_OBJECT_CONSTRUCTOR);
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_DEFINE_PROPERTY);
 				duk_push_undefined(ctx);
-				duk_dup(ctx, b);
-				duk_dup(ctx, c + 0);
+				duk_dup(ctx, (duk_idx_t) b);
+				duk_dup(ctx, (duk_idx_t) (idx + 0));
 				duk_push_object(ctx);  /* -> [ Object defineProperty undefined obj key desc ] */
 
 				duk_push_true(ctx);
 				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
 				duk_push_true(ctx);
 				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
-				duk_dup(ctx, c + 1);
+				duk_dup(ctx, (duk_idx_t) (idx + 1));
 				duk_put_prop_stridx(ctx, -2, (is_set ? DUK_STRIDX_SET : DUK_STRIDX_GET));
 
 				DUK_DDD(DUK_DDDPRINT("INITGET/INITSET: obj=%!T, key=%!T, desc=%!T",
@@ -3165,7 +3260,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_call_method(ctx, 3);  /* -> [ Object res ] */
 				duk_pop_2(ctx);
 
-				DUK_DDD(DUK_DDDPRINT("INITGET/INITSET AFTER: obj=%!T", duk_get_tval(ctx, b)));
+				DUK_DDD(DUK_DDDPRINT("INITGET/INITSET AFTER: obj=%!T", duk_get_tval(ctx, (duk_idx_t) b)));
 				break;
 			}
 
@@ -3178,7 +3273,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_ASSERT(thr->callstack_top >= 1);
 				DUK_ASSERT(thr->catchstack[thr->catchstack_top - 1].callstack_index == thr->callstack_top - 1);
 
-				cat = &thr->catchstack[thr->catchstack_top - 1];
+				cat = thr->catchstack + thr->catchstack_top - 1;
 
 				DUK_DDD(DUK_DDDPRINT("ENDTRY: clearing catch active flag (regardless of whether it was set or not)"));
 				DUK_CAT_CLEAR_CATCH_ENABLED(cat);
@@ -3186,17 +3281,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 					DUK_DDD(DUK_DDDPRINT("ENDTRY: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
 			
-					tv1 = &thr->valstack[cat->idx_base];
+					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 					DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
 					DUK_TVAL_DECREF(thr, &tv_tmp);     /* side effects */
 					tv1 = NULL;
 
-					tv1 = &thr->valstack[cat->idx_base + 1];
+					tv1 = thr->valstack + cat->idx_base + 1;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-					DUK_TVAL_SET_NUMBER(tv1, (double) DUK_LJ_TYPE_NORMAL);
+					DUK_TVAL_SET_NUMBER(tv1, (duk_double_t) DUK_LJ_TYPE_NORMAL);  /* XXX: set int */
 					DUK_TVAL_DECREF(thr, &tv_tmp);     /* side effects */
 					tv1 = NULL;
 
@@ -3220,7 +3315,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				DUK_ASSERT(thr->callstack_top >= 1);
 				DUK_ASSERT(thr->catchstack[thr->catchstack_top - 1].callstack_index == thr->callstack_top - 1);
 
-				cat = &thr->catchstack[thr->catchstack_top - 1];
+				cat = thr->catchstack + thr->catchstack_top - 1;
 				DUK_ASSERT(!DUK_CAT_HAS_CATCH_ENABLED(cat));  /* cleared before entering catch part */
 
 				if (DUK_CAT_HAS_LEXENV_ACTIVE(cat)) {
@@ -3242,17 +3337,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 					DUK_DDD(DUK_DDDPRINT("ENDCATCH: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
 			
-					tv1 = &thr->valstack[cat->idx_base];
+					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 					DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
 					DUK_TVAL_DECREF(thr, &tv_tmp);     /* side effects */
 					tv1 = NULL;
 
-					tv1 = &thr->valstack[cat->idx_base + 1];
+					tv1 = thr->valstack + cat->idx_base + 1;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-					DUK_TVAL_SET_NUMBER(tv1, (double) DUK_LJ_TYPE_NORMAL);
+					DUK_TVAL_SET_NUMBER(tv1, (duk_double_t) DUK_LJ_TYPE_NORMAL);  /* XXX: set int */
 					DUK_TVAL_DECREF(thr, &tv_tmp);     /* side effects */
 					tv1 = NULL;
 
@@ -3271,13 +3366,13 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				duk_context *ctx = (duk_context *) thr;
 				duk_catcher *cat;
 				duk_tval *tv1;
-				int cont_type;
+				duk_small_uint_fast_t cont_type;
 
 				DUK_ASSERT(thr->catchstack_top >= 1);
 				DUK_ASSERT(thr->callstack_top >= 1);
 				DUK_ASSERT(thr->catchstack[thr->catchstack_top - 1].callstack_index == thr->callstack_top - 1);
 
-				cat = &thr->catchstack[thr->catchstack_top - 1];
+				cat = thr->catchstack + thr->catchstack_top - 1;
 
 				/* CATCH flag may be enabled or disabled here; it may be enabled if
 				 * the statement has a catch block but the try block does not throw
@@ -3290,9 +3385,9 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				                     &thr->valstack[cat->idx_base + 0],
 				                     &thr->valstack[cat->idx_base + 1]));
 
-				tv1 = &thr->valstack[cat->idx_base + 1];  /* type */
+				tv1 = thr->valstack + cat->idx_base + 1;  /* type */
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
-				cont_type = (int) DUK_TVAL_GET_NUMBER(tv1);
+				cont_type = (duk_small_uint_fast_t) DUK_TVAL_GET_NUMBER(tv1);
 
 				if (cont_type == DUK_LJ_TYPE_NORMAL) {
 					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'normal' (non-abrupt) completion -> "
@@ -3302,12 +3397,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				} else {
 					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%d -> "
 					                     "dismantle catcher, re-throw error",
-					                     cont_type));
+					                     (int) cont_type));
 
-					duk_push_tval(ctx, &thr->valstack[cat->idx_base]);
+					duk_push_tval(ctx, thr->valstack + cat->idx_base);
 
 					/* XXX: assert lj type valid */
-					duk_err_setup_heap_ljstate(thr, cont_type);
+					duk_err_setup_heap_ljstate(thr, (duk_small_int_t) cont_type);
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 					duk_err_longjmp(thr);
@@ -3320,14 +3415,14 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 			case DUK_EXTRAOP_THROW: {
 				duk_context *ctx = (duk_context *) thr;
-				int b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 
 				/* Note: errors are augmented when they are created, not
 				 * when they are thrown.  So, don't augment here, it would
 				 * break re-throwing for instance.
 				 */
 
-				duk_dup(ctx, b);
+				duk_dup(ctx, (duk_idx_t) b);
 				DUK_DDD(DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (before throw augment)", duk_get_tval(ctx, -1)));
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 				duk_err_augment_error_throw(thr);
@@ -3354,8 +3449,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			case DUK_EXTRAOP_UNP:
 			case DUK_EXTRAOP_INC:
 			case DUK_EXTRAOP_DEC: {
-				int b = DUK_DEC_B(ins);
-				int c = DUK_DEC_C(ins);
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
 				duk__vm_arith_unary_op(thr, DUK__REGCONSTP(c), b, extraop);
 				break;
@@ -3364,17 +3459,17 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 #ifdef DUK_USE_DEBUG
 			case DUK_EXTRAOP_DUMPREG: {
 				DUK_D(DUK_DPRINT("DUMPREG: %d -> %!T",
-				                 DUK_DEC_BC(ins),
-				                 duk_get_tval((duk_context *) thr, DUK_DEC_BC(ins))));
+				                 (int) DUK_DEC_BC(ins),
+				                 duk_get_tval((duk_context *) thr, (duk_idx_t) DUK_DEC_BC(ins))));
 				break;
 			}
 
 			case DUK_EXTRAOP_DUMPREGS: {
-				int i, i_top;
+				duk_idx_t i, i_top;
 				i_top = duk_get_top((duk_context *) thr);
-				DUK_D(DUK_DPRINT("DUMPREGS: %d regs", i_top));
+				DUK_D(DUK_DPRINT("DUMPREGS: %d regs", (int) i_top));
 				for (i = 0; i < i_top; i++) {
-					DUK_D(DUK_DPRINT("  r%d -> %!dT", i, duk_get_tval((duk_context *) thr, i)));
+					DUK_D(DUK_DPRINT("  r%d -> %!dT", (int) i, duk_get_tval((duk_context *) thr, i)));
 				}
 				break;
 			}
@@ -3385,7 +3480,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			}
 
 			case DUK_EXTRAOP_LOGMARK: {
-				DUK_D(DUK_DPRINT("LOGMARK: mark %d at pc %d", DUK_DEC_BC(ins), act->pc - 1));  /* -1, autoinc */
+				DUK_D(DUK_DPRINT("LOGMARK: mark %d at pc %d", (int) DUK_DEC_BC(ins), (int) (act->pc - 1)));  /* -1, autoinc */
 				break;
 			}
 #endif  /* DUK_USE_DEBUG */
@@ -3400,7 +3495,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		}
 
 		case DUK_OP_INVALID: {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%d)", DUK_DEC_ABC(ins));
+			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%d)", (int) DUK_DEC_ABC(ins));
 			break;
 		}
 
@@ -3423,4 +3518,3 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 }
 
 #undef DUK__INTERNAL_ERROR
-

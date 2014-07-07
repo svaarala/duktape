@@ -92,6 +92,9 @@ const char *duk_str_invalid_func_name = "invalid function name";
 const char *duk_str_invalid_getset_name = "invalid getter/setter name";
 const char *duk_str_func_name_required = "function name required";
 
+/* Executor */
+const char *duk_str_internal_error_exec_longjmp = "internal error in bytecode executor longjmp handler";
+
 /* Limits */
 const char *duk_str_valstack_limit = "valstack limit";
 const char *duk_str_object_property_limit = "object property limit";

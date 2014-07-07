@@ -183,6 +183,10 @@ extern const char *duk_str_invalid_func_name;
 extern const char *duk_str_invalid_getset_name;
 extern const char *duk_str_func_name_required;
 
+#define DUK_STR_INTERNAL_ERROR_EXEC_LONGJMP duk_str_internal_error_exec_longjmp
+
+extern const char *duk_str_internal_error_exec_longjmp;
+
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
 #define DUK_STR_OBJECT_PROPERTY_LIMIT duk_str_object_property_limit
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT duk_str_prototype_chain_limit

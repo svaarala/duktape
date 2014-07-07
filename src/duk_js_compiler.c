@@ -4046,7 +4046,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 				 * just use 9 bits for reg_res (and support constants) and 17
 				 * instead of 18 bits for the varname const index.
 				 */
-				if (DUK__ISCONST(comp_ctx, reg_res)) {
+				if (DUK__ISCONST(comp_ctx, rc_res)) {
 					reg_temp = DUK__ALLOCTEMP(comp_ctx);
 					duk__emit_a_bc(comp_ctx,
 					               DUK_OP_LDCONST,
