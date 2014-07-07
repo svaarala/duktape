@@ -193,7 +193,7 @@ struct duk_catcher {
 	duk_size_t callstack_index;     /* callstack index of related activation */
 	duk_size_t idx_base;            /* idx_base and idx_base+1 get completion value and type */
 	duk_uint32_t pc_base;           /* resume execution from pc_base or pc_base+1 */
-	duk_small_uint_t flags;         /* type and control flags */
+	duk_uint32_t flags;             /* type and control flags, label number */
 };
 
 struct duk_hthread {
