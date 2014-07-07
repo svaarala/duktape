@@ -320,10 +320,10 @@ static duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) 
 	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
 	DUK_ASSERT(str != NULL);
 	DUK_MEMZERO(buf, sizeof(buf));  /* valgrind whine without this */
-	DUK_SNPRINTF(buf, sizeof(buf), "%s", str);
+	DUK_SNPRINTF(buf, sizeof(buf), "%s", (const char *) str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
-	DUK_DDD(DUK_DDDPRINT("parsing: '%s'", buf));
+	DUK_DDD(DUK_DDDPRINT("parsing: '%s'", (const char *) buf));
 
 	DUK_MEMZERO(&tm, sizeof(tm));
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
@@ -722,7 +722,7 @@ static duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
 	 */
 
 	DUK_ASSERT(str != NULL);
-	DUK_DDD(DUK_DDDPRINT("parse datetime from string '%s'", str));
+	DUK_DDD(DUK_DDDPRINT("parse datetime from string '%s'", (const char *) str));
 
 	if (duk__parse_string_iso8601_subset(ctx, str) != 0) {
 		return 1;
@@ -1188,18 +1188,18 @@ static void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_
 	 */
 	if ((flags & DUK__FLAG_TOSTRING_DATE) && (flags & DUK__FLAG_TOSTRING_TIME)) {
 		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
-		            yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY], sep,
+		            (const char *) yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY], sep,
 		            (int) parts[DUK__IDX_HOUR], (int) parts[DUK__IDX_MINUTE],
-		            (int) parts[DUK__IDX_SECOND], (int) parts[DUK__IDX_MILLISECOND], tzstr);
+		            (int) parts[DUK__IDX_SECOND], (int) parts[DUK__IDX_MILLISECOND], (const char *) tzstr);
 	} else if (flags & DUK__FLAG_TOSTRING_DATE) {
 		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d",
-		            yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY]);
+		            (const char *) yearstr, (int) parts[DUK__IDX_MONTH], (int) parts[DUK__IDX_DAY]);
 	} else {
 		DUK_ASSERT(flags & DUK__FLAG_TOSTRING_TIME);
 		DUK_SPRINTF((char *) out_buf, "%02d:%02d:%02d.%03d%s",
 		            (int) parts[DUK__IDX_HOUR], (int) parts[DUK__IDX_MINUTE],
 		            (int) parts[DUK__IDX_SECOND], (int) parts[DUK__IDX_MILLISECOND],
-		            tzstr);
+		            (const char *) tzstr);
 	}
 }
 

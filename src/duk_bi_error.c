@@ -153,6 +153,7 @@ static duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t 
 			duk_int_t flags;
 			duk_double_t d;
 			const char *funcname;
+			const char *filename;
 			duk_hobject *h_func;
 			duk_hstring *h_name;
 
@@ -195,26 +196,31 @@ static duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t 
 				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
 				           "anon" : (const char *) DUK_HSTRING_GET_DATA(h_name);
+				filename = duk_get_string(ctx, -1);
+				filename = filename ? filename : "";
+				DUK_ASSERT(funcname != NULL);
+				DUK_ASSERT(filename != NULL);
+
 				if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
 					duk_push_sprintf(ctx, "%s %s native%s%s%s%s%s",
-					                 funcname,
-					                 duk_get_string(ctx, -1),
-					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
-					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
-					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty,
-					                 (flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty,
-					                 (flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty);
+					                 (const char *) funcname,
+					                 (const char *) filename,
+					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 
 				} else {
 					duk_push_sprintf(ctx, "%s %s:%ld%s%s%s%s%s",
-					                 funcname,
-					                 duk_get_string(ctx, -1),
+					                 (const char *) funcname,
+					                 (const char *) filename,
 					                 (long) line,
-					                 (flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty,
-					                 (flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty,
-					                 (flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty,
-					                 (flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty,
-					                 (flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty);
+					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 				}
 				duk_replace(ctx, -5);   /* [ ... v1 v2 name filename str ] -> [ ... str v2 name filename ] */
 				duk_pop_n(ctx, 3);      /* -> [ ... str ] */
@@ -238,7 +244,7 @@ static duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t 
 				}
 
 				duk_push_sprintf(ctx, "%s:%ld",
-				                 duk_get_string(ctx, -2), (long) pc);
+				                 (const char *) duk_get_string(ctx, -2), (long) pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
 			} else {

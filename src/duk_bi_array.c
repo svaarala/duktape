@@ -561,7 +561,7 @@ static void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t 
 	*ptr++ = ']';
 	*ptr++ = '\0';
 
-	DUK_DDD(DUK_DDDPRINT("%s   (lo=%d, hi=%d, pivot=%d)", buf, (int) lo, (int) hi, (int) pivot));
+	DUK_DDD(DUK_DDDPRINT("%s   (lo=%d, hi=%d, pivot=%d)", (const char *) buf, (int) lo, (int) hi, (int) pivot));
 }
 #endif
 

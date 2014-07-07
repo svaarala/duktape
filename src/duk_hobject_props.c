@@ -3597,7 +3597,7 @@ duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstri
 
 		/* remove value */
 		DUK_DDD(DUK_DDDPRINT("before removing value, e_idx %d, key %p, key at slot %p",
-		                     (int) desc.e_idx, key, DUK_HOBJECT_E_GET_KEY(obj, desc.e_idx)));
+		                     (int) desc.e_idx, (void *) key, DUK_HOBJECT_E_GET_KEY(obj, desc.e_idx)));
 		DUK_DDD(DUK_DDDPRINT("removing value at e_idx %d", (int) desc.e_idx));
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, desc.e_idx)) {
 			duk_hobject *tmp;
@@ -3623,7 +3623,7 @@ duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstri
 
 		/* remove key */
 		DUK_DDD(DUK_DDDPRINT("before removing key, e_idx %d, key %p, key at slot %p",
-		                     (int) desc.e_idx, key, DUK_HOBJECT_E_GET_KEY(obj, desc.e_idx)));
+		                     (int) desc.e_idx, (void *) key, DUK_HOBJECT_E_GET_KEY(obj, desc.e_idx)));
 		DUK_DDD(DUK_DDDPRINT("removing key at e_idx %d", (int) desc.e_idx));
 		DUK_ASSERT(key == DUK_HOBJECT_E_GET_KEY(obj, desc.e_idx));
 		DUK_HOBJECT_E_SET_KEY(obj, desc.e_idx, NULL);
@@ -3846,7 +3846,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 	duk_small_uint_t propflags = flags & DUK_PROPDESC_FLAGS_MASK;  /* mask out flags not actually stored */
 
 	DUK_DDD(DUK_DDDPRINT("define new property (internal): thr=%p, obj=%!O, key=%!O, flags=0x%02x, val=%!T",
-	                     (void *) thr, obj, key, flags, duk_get_tval(ctx, -1)));
+	                     (void *) thr, obj, key, (int) flags, duk_get_tval(ctx, -1)));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);

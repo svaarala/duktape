@@ -540,7 +540,7 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	}
 
 	DUK_DD(DUK_DDPRINT("want to %s valstack: %d -> %d elements (min_new_size %d)",
-	                   (new_size > old_size ? "grow" : "shrink"),
+	                   (const char *) (new_size > old_size ? "grow" : "shrink"),
 	                   (int) old_size, (int) new_size, (int) min_new_size));
 
 	if (new_size >= thr->valstack_max) {
@@ -753,7 +753,8 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 
-	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d", to_index, p, q, (int) nbytes));
+	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%d",
+	                     (void *) to_index, (void *) p, (void *) q, (int) nbytes));
 
 	/* No net refcount changes. */
 
@@ -1816,7 +1817,7 @@ const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 	case DUK_TAG_POINTER: {
 		void *ptr = DUK_TVAL_GET_POINTER(tv);
 		if (ptr != NULL) {
-			duk_push_sprintf(ctx, DUK_STR_FMT_PTR, ptr);
+			duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) ptr);
 		} else {
 			/* Represent a null pointer as 'null' to be consistent with
 			 * the JX format variant.  Native '%p' format for a NULL
@@ -3295,7 +3296,7 @@ void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg) {
 	DUK_ASSERT(thr->heap->fatal_func != NULL);
 
 	DUK_D(DUK_DPRINT("fatal error occurred, code %d, message %s",
-	                 (int) err_code, err_msg));
+	                 (int) err_code, (const char *) err_msg));
 
 	/* fatal_func should be noreturn, but noreturn declarations on function
 	 * pointers has a very spotty support apparently so it's not currently

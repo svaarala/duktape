@@ -64,7 +64,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynam
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 
-	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", res));
+	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", (void *) res));
 	return res;
 
  error:

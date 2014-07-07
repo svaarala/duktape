@@ -75,11 +75,11 @@
 #else  /* DUK_USE_VARIADIC_MACROS */
 
 #define DUK__DEBUG_STASH(lev)    \
-	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FILE_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FILE_MACRO), \
 	duk_debug_file_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
 	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE, "%ld", (long) DUK_LINE_MACRO), \
 	duk_debug_line_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
-	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FUNC_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FUNC_MACRO), \
 	duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
 	(void) (duk_debug_level_stash = (lev))
 
@@ -131,7 +131,7 @@
 		duk_debug_summary_buf[duk_debug_summary_idx++] = (ch); \
 		if ((duk_size_t) duk_debug_summary_idx >= (duk_size_t) (sizeof(duk_debug_summary_buf) - 1)) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", duk_debug_summary_buf); \
+			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)
@@ -139,7 +139,7 @@
 #define DUK_DEBUG_SUMMARY_FINISH()  do { \
 		if (duk_debug_summary_idx > 0) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", duk_debug_summary_buf); \
+			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)

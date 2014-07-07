@@ -62,8 +62,12 @@
 #define DUK_HOBJECT_SET_CLASS_NUMBER(h,v)      \
 	DUK_HEAPHDR_SET_FLAG_RANGE(&(h)->hdr, DUK_HOBJECT_FLAG_CLASS_BASE, DUK_HOBJECT_FLAG_CLASS_BITS, (v))
 
-/* for creating flag initializers */
-#define DUK_HOBJECT_CLASS_AS_FLAGS(v)          ((v) << DUK_HOBJECT_FLAG_CLASS_BASE)
+/* Macro for creating flag initializer from a class number.
+ * Unsigned type cast is needed to avoid warnings about coercing
+ * a signed integer to an unsigned one; the largest class values
+ * have the highest bit (bit 31) set which causes this.
+ */
+#define DUK_HOBJECT_CLASS_AS_FLAGS(v)          (((duk_uint_t) (v)) << DUK_HOBJECT_FLAG_CLASS_BASE)
 
 /* E5 Section 8.6.2 + custom classes */
 #define DUK_HOBJECT_CLASS_UNUSED               0

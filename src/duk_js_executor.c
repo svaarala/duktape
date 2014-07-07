@@ -1471,7 +1471,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		/* XXX: signalling the need to shrink check (only if unwound) */
 
 		DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor, thr=%p, curr_thread=%p",
-		                     thr, (thr && thr->heap) ? thr->heap->curr_thread : NULL));
+		                     (void *) thr, (void *) ((thr && thr->heap) ? thr->heap->curr_thread : NULL)));
 
 		/* must be restored here to handle e.g. yields properly */
 		thr->heap->call_recursion_depth = entry_call_recursion_depth;
@@ -1489,8 +1489,8 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
-		                     (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-		                     entry_jmpbuf_ptr));
+		                     (void *) ((thr && thr->heap) ? thr->heap->lj.jmpbuf_ptr : NULL),
+		                     (void *) entry_jmpbuf_ptr));
 		thr->heap->lj.jmpbuf_ptr = entry_jmpbuf_ptr;
 
 		lj_ret = duk__handle_longjmp(thr, entry_thread, entry_callstack_top);

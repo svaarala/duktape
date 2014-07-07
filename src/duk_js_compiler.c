@@ -44,12 +44,12 @@
 #define DUK__MAX_TEMPS                    (DUK_BC_BC_MAX + 1)
 
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
-		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%d", DUK_FILE_MACRO, (int) DUK_LINE_MACRO)); \
+		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%d", (const char *) DUK_FILE_MACRO, (int) DUK_LINE_MACRO)); \
 		duk__recursion_increase((comp_ctx)); \
 	} while (0)
 
 #define DUK__RECURSION_DECREASE(comp_ctx,thr)  do { \
-		DUK_DDD(DUK_DDDPRINT("RECURSION DECREASE: %s:%d", DUK_FILE_MACRO, (int) DUK_LINE_MACRO)); \
+		DUK_DDD(DUK_DDDPRINT("RECURSION DECREASE: %s:%d", (const char *) DUK_FILE_MACRO, (int) DUK_LINE_MACRO)); \
 		duk__recursion_decrease((comp_ctx)); \
 	} while (0)
 

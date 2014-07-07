@@ -320,7 +320,8 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 		ptr_post = cb(ud);
 		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
-			DUK_DD(DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p", ptr_pre, ptr_post));
+			DUK_DD(DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p",
+			                   (void *) ptr_pre, (void *) ptr_post));
 		}
 #endif
 	

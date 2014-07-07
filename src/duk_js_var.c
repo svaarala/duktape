@@ -660,7 +660,9 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 			duk_push_hstring(ctx, key);
 			duk_push_tval(ctx, thr->valstack + regbase + regnum);
 			DUK_DDD(DUK_DDDPRINT("closing identifier '%s' -> reg %d, value %!T",
-			                     duk_get_string(ctx, -2), (int) regnum, duk_get_tval(ctx, -1)));
+			                     (const char *) duk_require_string(ctx, -2),
+			                     (int) regnum,
+			                     duk_get_tval(ctx, -1)));
 
 			/* [... env callee varmap key val] */
 
@@ -1202,7 +1204,7 @@ static duk_bool_t duk__getvar_helper(duk_hthread *thr,
 		if (throw_flag) {
 			DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR,
 			          "identifier '%s' undefined",
-			          (char *) DUK_HSTRING_GET_DATA(name));
+			          (const char *) DUK_HSTRING_GET_DATA(name));
 		}
 
 		return 0;

@@ -152,14 +152,16 @@ static void duk__create_arguments_object(duk_hthread *thr,
 				need_map = 1;
 
 				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=%d",
-				                     duk_get_string(ctx, -1), (int) idx));
+				                     (const char *) duk_get_string(ctx, -1),
+				                     (int) idx));
 				duk_dup(ctx, -1);                      /* name */
 				duk_push_uint(ctx, (duk_uint_t) idx);  /* index */
 				duk_to_string(ctx, -1);
 				duk_def_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%d]=%s",
-				                     (int) idx, duk_get_string(ctx, -1)));
+				                     (int) idx,
+				                     duk_get_string(ctx, -1)));
 				duk_dup(ctx, -1);         /* name */
 				duk_def_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
 			} else {
@@ -769,8 +771,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* Note: either pointer may be NULL (at entry), so don't assert */
 	DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
-	                     (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-	                     old_jmpbuf_ptr));
+	                     (void *) (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
+	                     (void *) old_jmpbuf_ptr));
 
 	thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
 
@@ -1322,8 +1324,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 * this is now done potentially twice, which is OK
 		 */
 		DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p (possibly already done)",
-		                     (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
-		                     old_jmpbuf_ptr));
+		                     (void *) (thr && thr->heap ? thr->heap->lj.jmpbuf_ptr : NULL),
+		                     (void *) old_jmpbuf_ptr));
 		thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
 
 		/* These are just convenience "wiping" of state */

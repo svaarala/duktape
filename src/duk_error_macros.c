@@ -72,7 +72,7 @@ void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_
 void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
 	DUK_UNREF(ctx);
 #ifdef DUK_USE_FILE_IO
-	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, msg ? msg : "null");
+	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, (const char *) (msg ? msg : "null"));
 	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */
@@ -99,7 +99,7 @@ void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 #else
 #error no DUK_USE_PANIC_xxx macro defined
 #endif	
-	            ")\n", (long) code, msg ? msg : "null");
+	            ")\n", (long) code, (const char *) (msg ? msg : "null"));
 	DUK_FFLUSH(DUK_STDERR);
 #else
 	/* omit print */

@@ -95,25 +95,25 @@ void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, cons
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%ld (%s):%s %s%s\n",
-	            duk__get_term_1(level),
-	            duk__get_level_string(level),
-	            duk_rdtsc(),
-	            file,
+	            (const char *) duk__get_term_1(level),
+	            (const char *) duk__get_level_string(level),
+	            (unsigned long long) duk_rdtsc(),  /* match the inline asm in duk_features.h */
+	            (const char *) file,
 	            (long) line,
-	            func,
-	            duk__get_term_2(level),
-	            duk__debug_buf,
-	            duk__get_term_3(level));
+	            (const char *) func,
+	            (const char *) duk__get_term_2(level),
+	            (const char *) duk__debug_buf,
+	            (const char *) duk__get_term_3(level));
 #else
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%ld (%s):%s %s%s\n",
-	            duk__get_term_1(level),
-	            duk__get_level_string(level),
-	            file,
+	            (const char *) duk__get_term_1(level),
+	            (const char *) duk__get_level_string(level),
+	            (const char *) file,
 	            (long) line,
-	            func,
-	            duk__get_term_2(level),
-	            duk__debug_buf,
-	            duk__get_term_3(level));
+	            (const char *) func,
+	            (const char *) duk__get_term_2(level),
+	            (const char *) duk__debug_buf,
+	            (const char *) duk__get_term_3(level));
 #endif
 	DUK_FFLUSH(DUK_STDERR);
 
@@ -138,25 +138,25 @@ void duk_debug_log(char *fmt, ...) {
 
 #ifdef DUK_USE_DPRINT_RDTSC
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
-	            duk__get_term_1(level),
-	            duk__get_level_string(duk_debug_level_stash),
-	            duk_rdtsc(),
-	            duk_debug_file_stash,
-	            duk_debug_line_stash,
-	            duk_debug_func_stash,
-	            duk__get_term_2(level),
-	            duk__debug_buf,
-	            duk__get_term_3(level));
+	            (const char *) duk__get_term_1(level),
+	            (const char *) duk__get_level_string(duk_debug_level_stash),
+	            (unsigned long long) duk_rdtsc(),  /* match duk_features.h */
+	            (const char *) duk_debug_file_stash,
+	            (const char *) duk_debug_line_stash,
+	            (const char *) duk_debug_func_stash,
+	            (const char *) duk__get_term_2(level),
+	            (const char *) duk__debug_buf,
+	            (const char *) duk__get_term_3(level));
 #else
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%s (%s):%s %s%s\n",
-	            duk__get_term_1(level),
-	            duk__get_level_string(duk_debug_level_stash),
-	            duk_debug_file_stash,
-	            duk_debug_line_stash,
-	            duk_debug_func_stash,
-	            duk__get_term_2(level),
-	            duk__debug_buf,
-	            duk__get_term_3(level));
+	            (const char *) duk__get_term_1(level),
+	            (const char *) duk__get_level_string(duk_debug_level_stash),
+	            (const char *) duk_debug_file_stash,
+	            (const char *) duk_debug_line_stash,
+	            (const char *) duk_debug_func_stash,
+	            (const char *) duk__get_term_2(level),
+	            (const char *) duk__debug_buf,
+	            (const char *) duk__get_term_3(level));
 #endif
 	DUK_FFLUSH(DUK_STDERR);
 

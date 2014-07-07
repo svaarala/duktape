@@ -74,7 +74,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 			DUK_DDD(DUK_DDDPRINT("initial: %d %p -> %!O",
 			                     (int) i,
 			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
-			                     (void *) DUK_HOBJECT_E_GET_KEY(h_obj, i)));
+			                     DUK_HOBJECT_E_GET_KEY(h_obj, i)));
 		}
 	}
 #endif
@@ -110,7 +110,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 				break;
 			}
 			if (p_insert == keys) {
-				DUK_DDD(DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning"));
+				DUK_DDD(DUK_DDDPRINT("p_insert=%p -> out of keys, insert to beginning", (void *) p_insert));
 				break;
 			}
 			DUK_DDD(DUK_DDDPRINT("p_insert=%p, val_insert=%d, val_curr=%d -> search backwards",

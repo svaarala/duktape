@@ -815,17 +815,17 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
 			goto resolve_error;
 		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", mod_id, req_id);
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", (const char *) mod_id, (const char *) req_id);
 	} else {
 		if (req_id_len + 1 >= sizeof(buf_in)) {
 			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
 			goto resolve_error;
 		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", req_id);
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", (const char *) req_id);
 	}
 	buf_in[sizeof(buf_in) - 1] = (duk_uint8_t) 0;
 
-	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", buf_in));
+	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", (const char *) buf_in));
 
 	/*
 	 *  Resolution loop.  At the top of the loop we're expecting a valid
@@ -838,7 +838,8 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 		duk_uint_fast8_t c;
 
 		/* Here 'p' always points to the start of a term. */
-		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p", p, (void *) q, (void *) buf_out));
+		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p",
+		                     (const char *) p, (void *) q, (void *) buf_out));
 
 		c = *p++;
 		if (DUK_UNLIKELY(c == 0)) {
@@ -914,7 +915,7 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 	return;
 
  resolve_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", req_id);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", (const char *) req_id);
 }
 #endif  /* DUK_USE_COMMONJS_MODULES */
 

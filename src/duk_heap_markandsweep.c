@@ -271,7 +271,10 @@ static void duk__mark_finalizable(duk_heap *heap) {
 			 *  - has a finalizer
 			 */
 
-			DUK_DD(DUK_DDPRINT("unreachable heap object will be finalized -> mark as finalizable and treat as a reachability root: %p", hdr));
+			DUK_DD(DUK_DDPRINT("unreachable heap object will be "
+			                   "finalized -> mark as finalizable "
+			                   "and treat as a reachability root: %p",
+			                   (void *) hdr));
 			DUK_HEAPHDR_SET_FINALIZABLE(hdr);
 			count_finalizable ++;
 		}
@@ -855,7 +858,7 @@ static void duk__assert_valid_refcounts(duk_heap *heap) {
 #if 0  /* this case can no longer occur because refcount is unsigned */
 		} else if (DUK_HEAPHDR_GET_REFCOUNT(hdr) < 0) {
 			DUK_D(DUK_DPRINT("invalid refcount: %d, %p -> %!O",
-			                 (int) (hdr != NULL ? DUK_HEAPHDR_GET_REFCOUNT(hdr) : 0),
+			                 (hdr != NULL ? (int) DUK_HEAPHDR_GET_REFCOUNT(hdr) : (int) 0),
 			                 (void *) hdr, hdr));
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(hdr) > 0);
 #endif

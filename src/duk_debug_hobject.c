@@ -138,28 +138,28 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		return;
 	}
 
-	DUK_D(DUK_DPRINT("  %sextensible", DUK_HOBJECT_HAS_EXTENSIBLE(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sconstructable", DUK_HOBJECT_HAS_CONSTRUCTABLE(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sbound", DUK_HOBJECT_HAS_BOUND(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %scompiledfunction", DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %snativefunction", DUK_HOBJECT_HAS_NATIVEFUNCTION(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sthread", DUK_HOBJECT_HAS_THREAD(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sarray_part", DUK_HOBJECT_HAS_ARRAY_PART(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sstrict", DUK_HOBJECT_HAS_STRICT(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %snewenv", DUK_HOBJECT_HAS_NEWENV(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %snamebinding", DUK_HOBJECT_HAS_NAMEBINDING(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %screateargs", DUK_HOBJECT_HAS_CREATEARGS(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %senvrecclosed", DUK_HOBJECT_HAS_ENVRECCLOSED(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_array", DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_stringobj", DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_arguments", DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_dukfunc", DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_bufferobj", DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) ? str_empty : str_excl));
-	DUK_D(DUK_DPRINT("  %sexotic_proxyobj", DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj) ? str_empty : str_excl));
+	DUK_D(DUK_DPRINT("  %sextensible", (const char *) (DUK_HOBJECT_HAS_EXTENSIBLE(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sconstructable", (const char *) (DUK_HOBJECT_HAS_CONSTRUCTABLE(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sbound", (const char *) (DUK_HOBJECT_HAS_BOUND(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %scompiledfunction", (const char *) (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %snativefunction", (const char *) (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sthread", (const char *) (DUK_HOBJECT_HAS_THREAD(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sarray_part", (const char *) (DUK_HOBJECT_HAS_ARRAY_PART(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sstrict", (const char *) (DUK_HOBJECT_HAS_STRICT(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %snewenv", (const char *) (DUK_HOBJECT_HAS_NEWENV(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %snamebinding", (const char *) (DUK_HOBJECT_HAS_NAMEBINDING(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %screateargs", (const char *) (DUK_HOBJECT_HAS_CREATEARGS(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %senvrecclosed", (const char *) (DUK_HOBJECT_HAS_ENVRECCLOSED(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_array", (const char *) (DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_stringobj", (const char *) (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_arguments", (const char *) (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_dukfunc", (const char *) (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_bufferobj", (const char *) (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) ? str_empty : str_excl)));
+	DUK_D(DUK_DPRINT("  %sexotic_proxyobj", (const char *) (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj) ? str_empty : str_excl)));
 
 	DUK_D(DUK_DPRINT("  class: number %d -> %s",
 	                 (int) DUK_HOBJECT_GET_CLASS_NUMBER(obj),
-	                 duk__class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)]));
+	                 (const char *) (duk__class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)])));
 
 	DUK_D(DUK_DPRINT("  prototype: %p -> %!O",
 	                 (void *) obj->prototype,

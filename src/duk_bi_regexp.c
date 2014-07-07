@@ -49,9 +49,9 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 			flag_m = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_MULTILINE, NULL);
 
 			duk_push_sprintf(ctx, "%s%s%s",
-			                 (flag_g ? "g" : ""),
-			                 (flag_i ? "i" : ""),
-			                 (flag_m ? "m" : ""));
+			                 (const char *) (flag_g ? "g" : ""),
+			                 (const char *) (flag_i ? "i" : ""),
+			                 (const char *) (flag_m ? "m" : ""));
 
 			/* [ ... pattern flags ] */
 		} else {
@@ -161,10 +161,11 @@ duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 
 #if 1
 	/* This is a cleaner approach and also produces smaller code than
-	 * the other alternative.
+	 * the other alternative.  Use duk_require_string() for format
+	 * safety (although the source property should always exist).
 	 */
 	duk_push_sprintf(ctx, "/%s/%s%s%s",
-	                 duk_get_string(ctx, -2),
+	                 (const char *) duk_require_string(ctx, -2),  /* require to be safe */
 	                 (re_flags & DUK_RE_FLAG_GLOBAL) ? "g" : "",
 	                 (re_flags & DUK_RE_FLAG_IGNORE_CASE) ? "i" : "",
 	                 (re_flags & DUK_RE_FLAG_MULTILINE) ? "m" : "");
@@ -176,8 +177,8 @@ duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 	re_flags &= 0x07;
 	DUK_ASSERT(re_flags >= 0 && re_flags <= 7);  /* three flags */
 	duk_push_sprintf(ctx, "/%s/%s",
-	                 duk_get_string(ctx, -2),
-	                 flag_strings + flag_offsets[re_flags]);
+	                 (const char *) duk_require_string(ctx, -2),
+	                 (const char *) (flag_strings + flag_offsets[re_flags]));
 #endif
 
 	return 1;

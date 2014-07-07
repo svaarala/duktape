@@ -135,11 +135,11 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 
 		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj)) {
 			/* XXX: actual source, if available */
-			duk_push_sprintf(ctx, "function %s() {/* source code */}", func_name);
+			duk_push_sprintf(ctx, "function %s() {/* source code */}", (const char *) func_name);
 		} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
-			duk_push_sprintf(ctx, "function %s() {/* native code */}", func_name);
+			duk_push_sprintf(ctx, "function %s() {/* native code */}", (const char *) func_name);
 		} else if (DUK_HOBJECT_HAS_BOUND(obj)) {
-			duk_push_sprintf(ctx, "function %s() {/* bound */}", func_name);
+			duk_push_sprintf(ctx, "function %s() {/* bound */}", (const char *) func_name);
 		} else {
 			goto type_error;
 		}

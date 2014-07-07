@@ -30,7 +30,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d, msg=%s, filename=%s, line=%d",
-	                   (int) code, msg ? msg : "null", filename ? filename : "null", (int) line));
+	                   (int) code, (const char *) (msg ? msg : "null"),
+	                   (const char *) (filename ? filename : "null"), (int) line));
 #else
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%d", (int) code));
 #endif
@@ -72,7 +73,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 		                          filename,
 		                          line,
 		                          "%s",
-		                          msg);
+		                          (const char *) msg);
 #else
 		duk_push_error_object_raw(ctx,
 		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
@@ -155,6 +156,6 @@ void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
 	 *  code, and having the file/line of this function isn't very useful.
 	 */
 
-	duk_error_raw(ctx, code, NULL, 0, "%s error (rc %d)", msg, rc);
+	duk_error_raw(ctx, code, NULL, 0, "%s error (rc %d)", (const char *) msg, (int) rc);
 	DUK_UNREACHABLE();
 }

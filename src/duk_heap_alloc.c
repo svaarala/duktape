@@ -58,7 +58,7 @@ static void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", g->curr_alloc));
+		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) g->curr_alloc));
 		DUK_FREE(heap, g->curr_alloc);
 	}
 }
@@ -211,7 +211,7 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 }
 
 void duk_heap_free(duk_heap *heap) {
-	DUK_D(DUK_DPRINT("free heap: %p", heap));
+	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
 
 	/* Execute finalizers before freeing the heap, even for reachable
 	 * objects, and regardless of whether or not mark-and-sweep is
@@ -235,23 +235,23 @@ void duk_heap_free(duk_heap *heap) {
 	 * and heap->log_buffer are on the heap allocated list.
 	 */
 
-	DUK_D(DUK_DPRINT("freeing heap objects of heap: %p", heap));
+	DUK_D(DUK_DPRINT("freeing heap objects of heap: %p", (void *) heap));
 	duk__free_allocated(heap);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_D(DUK_DPRINT("freeing refzero list of heap: %p", heap));
+	DUK_D(DUK_DPRINT("freeing refzero list of heap: %p", (void *) heap));
 	duk__free_refzero_list(heap);
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-	DUK_D(DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", heap));
+	DUK_D(DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", (void *) heap));
 	duk__free_markandsweep_finalize_list(heap);
 #endif
 
-	DUK_D(DUK_DPRINT("freeing string table of heap: %p", heap));
+	DUK_D(DUK_DPRINT("freeing string table of heap: %p", (void *) heap));
 	duk__free_stringtable(heap);
 
-	DUK_D(DUK_DPRINT("freeing heap structure: %p", heap));
+	DUK_D(DUK_DPRINT("freeing heap structure: %p", (void *) heap));
 	heap->free_func(heap->alloc_udata, heap);
 }
 
@@ -657,7 +657,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	DUK_HBUFFER_INCREF(res->heap_thread, res->log_buffer);
 
-	DUK_D(DUK_DPRINT("allocated heap: %p", res));
+	DUK_D(DUK_DPRINT("allocated heap: %p", (void *) res));
 	return res;
 
  error:
