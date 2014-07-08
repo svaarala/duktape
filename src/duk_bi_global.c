@@ -492,7 +492,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                                    act_lex_env);
 			new_env = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(new_env != NULL);
-			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", new_env));
+			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO",
+			                     (duk_heaphdr *) new_env));
 
 			outer_lex_env = new_env;
 			outer_var_env = new_env;
@@ -539,7 +540,9 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	}
 
 	DUK_DDD(DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
-	                     outer_lex_env, outer_var_env, duk_get_tval(ctx, -1)));
+	                     (duk_heaphdr *) outer_lex_env,
+	                     (duk_heaphdr *) outer_var_env,
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/* [ source template closure this ] */
 
@@ -940,12 +943,15 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
 	str_mod_id = duk_get_string(ctx, 2);  /* ignore non-strings */
 	DUK_DDD(DUK_DDDPRINT("resolve module id: requested=%!T, currentmodule=%!T",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
 	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
 	str_req_id = NULL;
 	str_mod_id = NULL;
 	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 2),
+	                     (duk_tval *) duk_get_tval(ctx, 3)));
 
 	/* [ requested_id require require.id resolved_id ] */
 	DUK_ASSERT_TOP(ctx, 4);
@@ -972,7 +978,8 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);
 	if (duk_get_prop(ctx, 5)) {
 		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
-		DUK_DD(DUK_DDPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
+		DUK_DD(DUK_DDPRINT("module already loaded: %!T",
+		                   (duk_tval *) duk_get_tval(ctx, 3)));
 		return 1;
 	}
 
@@ -989,7 +996,8 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  succeeds in finding the module.
 	 */
 
-	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
+	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T",
+	                   (duk_tval *) duk_get_tval(ctx, 3)));
 
 	/* Fresh require: require.id is left configurable (but not writable)
 	 * so that is not easy to accidentally tweak it, but it can still be

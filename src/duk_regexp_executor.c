@@ -670,7 +670,9 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 
-	DUK_DD(DUK_DDPRINT("regexp match: regexp=%!T, input=%!T", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+	DUK_DD(DUK_DDPRINT("regexp match: regexp=%!T, input=%!T",
+	                   (duk_tval *) duk_get_tval(ctx, -2),
+	                   (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Regexp instance check, bytecode check, input coercion.

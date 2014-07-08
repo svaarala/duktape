@@ -131,7 +131,7 @@ duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 
 	/* XXX: faster implementation */
 
-	DUK_DDD(DUK_DDDPRINT("arg=%!T", duk_get_tval(ctx, 0)));
+	DUK_DDD(DUK_DDDPRINT("arg=%!T", (duk_tval *) duk_get_tval(ctx, 0)));
 
 	h = duk_push_this_coercible_to_string(ctx);
 	DUK_ASSERT(h != NULL);

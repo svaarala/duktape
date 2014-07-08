@@ -36,8 +36,10 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	duk_idx_t idx;
 	duk_bool_t need_map;
 
-	DUK_DDD(DUK_DDDPRINT("creating arguments object for func=%!iO, varenv=%!iO, idx_argbase=%ld, num_stack_args=%ld",
-	                     (duk_heaphdr *) func, (duk_heaphdr *) varenv, (long) idx_argbase, (long) num_stack_args));
+	DUK_DDD(DUK_DDDPRINT("creating arguments object for func=%!iO, varenv=%!iO, "
+	                     "idx_argbase=%ld, num_stack_args=%ld",
+	                     (duk_heaphdr *) func, (duk_heaphdr *) varenv,
+	                     (long) idx_argbase, (long) num_stack_args));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
@@ -66,7 +68,9 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	DUK_ASSERT(n_formals >= 0);
 	DUK_ASSERT(formals != NULL || n_formals == 0);
 
-	DUK_DDD(DUK_DDDPRINT("func=%!O, formals=%!O, n_formals=%ld", func, formals, (long) n_formals));
+	DUK_DDD(DUK_DDDPRINT("func=%!O, formals=%!O, n_formals=%ld",
+	                     (duk_heaphdr *) func, (duk_heaphdr *) formals,
+	                     (long) n_formals));
 
 	/* [ ... formals ] */
 
@@ -104,9 +108,9 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	                     "arguments at index %ld -> %!O "
 	                     "map at index %ld -> %!O "
 	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg, duk_get_hobject(ctx, i_arg),
-	                     (long) i_map, duk_get_hobject(ctx, i_map),
-	                     (long) i_mappednames, duk_get_hobject(ctx, i_mappednames)));
+	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(ctx, i_arg),
+	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(ctx, i_map),
+	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(ctx, i_mappednames)));
 
 	/*
 	 *  Init arguments properties, map, etc.
@@ -253,9 +257,9 @@ static void duk__create_arguments_object(duk_hthread *thr,
 	                     "arguments at index %ld -> %!O "
 	                     "map at index %ld -> %!O "
 	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg, duk_get_hobject(ctx, i_arg),
-	                     (long) i_map, duk_get_hobject(ctx, i_map),
-	                     (long) i_mappednames, duk_get_hobject(ctx, i_mappednames)));
+	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(ctx, i_arg),
+	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(ctx, i_map),
+	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(ctx, i_mappednames)));
 
 	/* [args(n) [crud] formals arguments map mappednames] -> [args [crud] arguments] */
 	duk_pop_2(ctx);
@@ -759,7 +763,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("error caught during protected duk_handle_call(): %!T",
-	                     &thr->heap->lj.value1));
+	                     (duk_tval *) &thr->heap->lj.value1));
 
 	DUK_ASSERT(thr->heap->lj.type == DUK_LJ_TYPE_THROW);
 	DUK_ASSERT(thr->callstack_top >= entry_callstack_top);
@@ -919,7 +923,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	           DUK_HOBJECT_IS_NATIVEFUNCTION(func));
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
-	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1)));
+	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
+	                     (duk_tval *) duk_get_tval(ctx, idx_func + 1)));
 
 	/* These base values are never used, but if the compiler doesn't know
 	 * that DUK_ERROR() won't return, these are needed to silence warnings.
@@ -1212,7 +1217,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	}
 	/* [... func this (crud) retval] */
 
-	DUK_DDD(DUK_DDDPRINT("native call retval -> %!T (rc=%ld)", (duk_tval *) duk_get_tval(ctx, -1), (long) rc));
+	DUK_DDD(DUK_DDDPRINT("native call retval -> %!T (rc=%ld)",
+	                     (duk_tval *) duk_get_tval(ctx, -1), (long) rc));
 
 	duk_replace(ctx, idx_func);
 	duk_set_top(ctx, idx_func + 1);
@@ -1873,7 +1879,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func));  /* caller must ensure this */
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
-	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T", duk_get_tval(ctx, idx_func + 1)));
+	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
+	                     duk_get_tval(ctx, idx_func + 1)));
 
 	nargs = ((duk_hcompiledfunction *) func)->nargs;
 	nregs = ((duk_hcompiledfunction *) func)->nregs;

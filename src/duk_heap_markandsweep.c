@@ -859,7 +859,7 @@ static void duk__assert_valid_refcounts(duk_heap *heap) {
 		} else if (DUK_HEAPHDR_GET_REFCOUNT(hdr) < 0) {
 			DUK_D(DUK_DPRINT("invalid refcount: %ld, %p -> %!O",
 			                 (hdr != NULL ? (long) DUK_HEAPHDR_GET_REFCOUNT(hdr) : (long) 0),
-			                 (void *) hdr, hdr));
+			                 (void *) hdr, (duk_heaphdr *) hdr));
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(hdr) > 0);
 #endif
 		}

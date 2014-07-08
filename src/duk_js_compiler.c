@@ -449,15 +449,15 @@ static void duk__advance_helper(duk_compiler_ctx *comp_ctx, duk_small_int_t expe
 	                     (long) comp_ctx->curr_token.start_line,
 	                     (long) comp_ctx->curr_token.end_line,
 	                     (long) comp_ctx->curr_token.lineterm,
-	                     duk_get_tval(ctx, comp_ctx->tok11_idx),
-	                     duk_get_tval(ctx, comp_ctx->tok12_idx),
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok11_idx),
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok12_idx),
 	                     (long) comp_ctx->prev_token.t,
 	                     (long) comp_ctx->prev_token.t_nores,
 	                     (long) comp_ctx->prev_token.start_line,
 	                     (long) comp_ctx->prev_token.end_line,
 	                     (long) comp_ctx->prev_token.lineterm,
-	                     duk_get_tval(ctx, comp_ctx->tok21_idx),
-	                     duk_get_tval(ctx, comp_ctx->tok22_idx)));
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok21_idx),
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok22_idx)));
 }
 
 /* advance, expecting current token to be a specific token; parse next token in regexp context */
@@ -634,7 +634,10 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_tval *tv;
 
 	DUK_DDD(DUK_DDDPRINT("converting duk_compiler_func to function/template"));
-	DUK_DD(DUK_DDPRINT("code=%!xO consts=%!O funcs=%!O", func->h_code, func->h_consts, func->h_funcs));
+	DUK_DD(DUK_DDPRINT("code=%!xO consts=%!O funcs=%!O",
+	                   (duk_heaphdr *) func->h_code,
+	                   (duk_heaphdr *) func->h_consts,
+	                   (duk_heaphdr *) func->h_funcs));
 
 	/*
 	 *  Push result object and init its flags
@@ -727,7 +730,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		p_const++;
 		DUK_TVAL_INCREF(thr, tv);  /* may be a string constant */
 
-		DUK_DDD(DUK_DDDPRINT("constant: %!T", tv));
+		DUK_DDD(DUK_DDDPRINT("constant: %!T", (duk_tval *) tv));
 	}
 
 	p_func = (duk_hobject **) p_const;
@@ -743,7 +746,8 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		*p_func++ = h;
 		DUK_HOBJECT_INCREF(thr, h);
 
-		DUK_DDD(DUK_DDDPRINT("inner function: %p -> %!iO", (void *) h, h));
+		DUK_DDD(DUK_DDDPRINT("inner function: %p -> %!iO",
+		                     (void *) h, (duk_heaphdr *) h));
 	}
 
 	p_instr = (duk_instr_t *) p_func;
@@ -777,10 +781,11 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	if (func->id_access_slow ||     /* directly uses slow accesses */
 	    func->may_direct_eval ||    /* may indirectly slow access through a direct eval */
 	    funcs_count > 0) {          /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
-		int num_used;
+		duk_int_t num_used;
 		duk_dup(ctx, func->varmap_idx);
 		num_used = duk__cleanup_varmap(comp_ctx);
-		DUK_DDD(DUK_DDDPRINT("cleaned up varmap: %!T (num_used=%ld)", duk_get_tval(ctx, -1), (long) num_used));
+		DUK_DDD(DUK_DDDPRINT("cleaned up varmap: %!T (num_used=%ld)",
+		                     (duk_tval *) duk_get_tval(ctx, -1), (long) num_used));
 
 		if (num_used > 0) {
 			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
@@ -892,7 +897,8 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	h_res->nargs = duk_hobject_get_length(thr, func->h_argnames);
 	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
 
-	DUK_DD(DUK_DDPRINT("converted function: %!ixT", duk_get_tval(ctx, -1)));
+	DUK_DD(DUK_DDPRINT("converted function: %!ixT",
+	                   (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Compact the function template.
@@ -917,7 +923,7 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		while (p < p_end) {
 			DUK_DDD(DUK_DDDPRINT("BC %04ld: %!I        ; 0x%08lx op=%ld (%!C) a=%ld b=%ld c=%ld",
 			                     (long) (p - p_start),
-			                     (*p),
+			                     (duk_instr_t) (*p),
 			                     (unsigned long) (*p),
 			                     (long) DUK_DEC_OP(*p),
 			                     (long) DUK_DEC_OP(*p),
@@ -1007,7 +1013,7 @@ static void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 
 	DUK_DDD(DUK_DDDPRINT("duk__emit: 0x%08lx line=%ld pc=%ld --> %!I",
 	                     (unsigned long) ins, (long) comp_ctx->curr_token.start_line,
-	                     (long) duk__get_current_pc(comp_ctx), ins));
+	                     (long) duk__get_current_pc(comp_ctx), (duk_instr_t) ins));
 
 	h = comp_ctx->curr_func.h_code;
 #if defined(DUK_USE_PC2LINE)
@@ -1319,7 +1325,8 @@ static void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, duk_r
 	ins = DUK_ENC_OP_ABC(op, abc);
 	DUK_DDD(DUK_DDDPRINT("duk__emit_abc: 0x%08lx line=%ld pc=%ld op=%ld (%!C) abc=%ld (%!I)",
 	                     (unsigned long) ins, (long) comp_ctx->curr_token.start_line,
-	                     (long) duk__get_current_pc(comp_ctx), (long) op, op, (long) abc, ins));
+	                     (long) duk__get_current_pc(comp_ctx), (long) op, (long) op,
+	                     (long) abc, (duk_instr_t) ins));
 	duk__emit(comp_ctx, ins);
 }
 
@@ -1671,7 +1678,8 @@ static duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 		 * constant for e.g. +0 and -0.
 		 */
 		if (duk_js_samevalue(tv1, tv2)) {
-			DUK_DDD(DUK_DDDPRINT("reused existing constant for %!T -> const index %ld", tv1, (long) i));
+			DUK_DDD(DUK_DDDPRINT("reused existing constant for %!T -> const index %ld",
+			                     (duk_tval *) tv1, (long) i));
 			duk_pop(ctx);
 			return (duk_regconst_t) (i | DUK__CONST_MARKER);
 		}
@@ -1681,7 +1689,8 @@ static duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_CONST_LIMIT);
 	}
 
-	DUK_DDD(DUK_DDDPRINT("allocating new constant for %!T -> const index %ld", tv1, (long) n));
+	DUK_DDD(DUK_DDDPRINT("allocating new constant for %!T -> const index %ld",
+	                     (duk_tval *) tv1, (long) n));
 	(void) duk_put_prop_index(ctx, f->consts_idx, n);  /* invalidates tv1, tv2 */
 	return (duk_regconst_t) (n | DUK__CONST_MARKER);
 }
@@ -1713,7 +1722,7 @@ static duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	                     "forced_reg=%ld, flags 0x%08lx: allow_const=%ld require_temp=%ld require_short=%ld",
 	                     (long) x->t,
 	                     (long) x->regconst,
-	                     duk_get_tval(ctx, x->valstack_idx),
+	                     (duk_tval *) duk_get_tval(ctx, x->valstack_idx),
 	                     (long) forced_reg,
 	                     (unsigned long) flags,
 	                     (long) ((flags & DUK__IVAL_FLAG_ALLOW_CONST) ? 1 : 0),
@@ -1874,8 +1883,10 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, d
 	DUK_DDD(DUK_DDDPRINT("duk__ivalue_toplain_raw(): x={t=%ld,op=%ld,x1={%ld:%ld:%!T},x2={%ld:%ld:%!T}}, "
 	                     "forced_reg=%ld",
 	                     (long) x->t, (long) x->op,
-	                     (long) x->x1.t, (long) x->x1.regconst, duk_get_tval(ctx, x->x1.valstack_idx),
-	                     (long) x->x2.t, (long) x->x2.regconst, duk_get_tval(ctx, x->x2.valstack_idx),
+	                     (long) x->x1.t, (long) x->x1.regconst,
+	                     (duk_tval *) duk_get_tval(ctx, x->x1.valstack_idx),
+	                     (long) x->x2.t, (long) x->x2.regconst,
+	                     (duk_tval *) duk_get_tval(ctx, x->x2.valstack_idx),
 	                     (long) forced_reg));
 
 	switch (x->t) {
@@ -1900,7 +1911,9 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, d
 			DUK_ASSERT(tv1 != NULL);
 			DUK_ASSERT(tv2 != NULL);
 
-			DUK_DDD(DUK_DDDPRINT("arith: tv1=%!T, tv2=%!T", tv1, tv2));
+			DUK_DDD(DUK_DDDPRINT("arith: tv1=%!T, tv2=%!T",
+			                     (duk_tval *) tv1,
+			                     (duk_tval *) tv2));
 
 			if (DUK_TVAL_IS_NUMBER(tv1) && DUK_TVAL_IS_NUMBER(tv2)) {
 				duk_double_t d1 = DUK_TVAL_GET_NUMBER(tv1);
@@ -2061,8 +2074,10 @@ static duk_regconst_t duk__ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	DUK_DDD(DUK_DDDPRINT("duk__ivalue_toregconst_raw(): x={t=%ld,op=%ld,x1={%ld:%ld:%!T},x2={%ld:%ld:%!T}}, "
 	                     "forced_reg=%ld, flags 0x%08lx: allow_const=%ld require_temp=%ld require_short=%ld",
 	                     (long) x->t, (long) x->op,
-	                     (long) x->x1.t, (long) x->x1.regconst, duk_get_tval(ctx, x->x1.valstack_idx),
-	                     (long) x->x2.t, (long) x->x2.regconst, duk_get_tval(ctx, x->x2.valstack_idx),
+	                     (long) x->x1.t, (long) x->x1.regconst,
+	                     (duk_tval *) duk_get_tval(ctx, x->x1.valstack_idx),
+	                     (long) x->x2.t, (long) x->x2.regconst,
+	                     (duk_tval *) duk_get_tval(ctx, x->x2.valstack_idx),
 	                     (long) forced_reg,
 	                     (unsigned long) flags,
 	                     (long) ((flags & DUK__IVAL_FLAG_ALLOW_CONST) ? 1 : 0),
@@ -2118,7 +2133,8 @@ static duk_reg_t duk__lookup_active_register_binding(duk_compiler_ctx *comp_ctx)
 	duk_hstring *h_varname;
 	duk_reg_t ret;
 
-	DUK_DDD(DUK_DDDPRINT("resolving identifier reference to '%!T'", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("resolving identifier reference to '%!T'",
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Special name handling
@@ -2266,7 +2282,7 @@ static void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, duk
 	li->pc_label = pc_label;
 
 	DUK_DDD(DUK_DDDPRINT("registered label: flags=0x%08lx, id=%ld, name=%!O, catch_depth=%ld, pc_label=%ld",
-	                     (unsigned long) li->flags, (long) li->label_id, li->h_label,
+	                     (unsigned long) li->flags, (long) li->label_id, (duk_heaphdr *) li->h_label,
 	                     (long) li->catch_depth, (long) li->pc_label));
 }
 
@@ -2319,7 +2335,8 @@ static void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_
 	duk_labelinfo *li_start, *li_end, *li;
 	duk_bool_t match = 0;
 
-	DUK_DDD(DUK_DDDPRINT("looking up active label: label='%!O', is_break=%ld", h_label, (long) is_break));
+	DUK_DDD(DUK_DDDPRINT("looking up active label: label='%!O', is_break=%ld",
+	                     (duk_heaphdr *) h_label, (long) is_break));
 
 	DUK_UNREF(ctx);
 
@@ -2336,12 +2353,14 @@ static void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_
 
 		if (li->h_label != h_label) {
 			DUK_DDD(DUK_DDDPRINT("labelinfo[%ld] ->'%!O' != %!O",
-			                     (long) (li - li_start), li->h_label, h_label));
+			                     (long) (li - li_start),
+			                     (duk_heaphdr *) li->h_label,
+			                     (duk_heaphdr *) h_label));
 			continue;
 		}
 
 		DUK_DDD(DUK_DDDPRINT("labelinfo[%ld] -> '%!O' label name matches (still need to check type)",
-		                     (long) (li - li_start), h_label));
+		                     (long) (li - li_start), (duk_heaphdr *) h_label));
 
 		/* currently all labels accept a break, so no explicit check for it now */
 		DUK_ASSERT(li->flags & DUK_LABEL_FLAG_ALLOW_BREAK);
@@ -2373,7 +2392,8 @@ static void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_
 	}
 
 	DUK_DDD(DUK_DDDPRINT("label match: %!O -> label_id %ld, catch_depth=%ld, pc_label=%ld",
-	                     h_label, (long) li->label_id, (long) li->catch_depth, (long) li->pc_label));
+	                     (duk_heaphdr *) h_label, (long) li->label_id,
+	                     (long) li->catch_depth, (long) li->pc_label));
 
 	*out_label_id = li->label_id;
 	*out_label_catch_depth = li->catch_depth;
@@ -2604,7 +2624,9 @@ static duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *comp_ctx, 
 
 	new_key_flags |= key_flags;
 	DUK_DDD(DUK_DDDPRINT("setting/updating key %!T flags: 0x%08lx -> 0x%08lx",
-	                     duk_get_tval(ctx, -1), (unsigned long) key_flags, (unsigned long) new_key_flags));
+	                     (duk_tval *) duk_get_tval(ctx, -1),
+	                     (unsigned long) key_flags,
+	                     (unsigned long) new_key_flags));
 	duk_dup(ctx, -1);
 	duk_push_int(ctx, new_key_flags);   /* [ ... key_obj key key flags ] */
 	duk_put_prop(ctx, -4);              /* [ ... key_obj key ] */
@@ -2845,7 +2867,8 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	res->x1.t = DUK_ISPEC_REGCONST;
 	res->x1.regconst = reg_obj;
 
-	DUK_DDD(DUK_DDDPRINT("final tracking object: %!T", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("final tracking object: %!T",
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 	duk_pop(ctx);
 	return;
 
@@ -2985,7 +3008,9 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		DUK_ASSERT(tk->str1 != NULL);
 		DUK_ASSERT(tk->str2 != NULL);
 
-		DUK_DDD(DUK_DDDPRINT("emitting regexp op, str1=%!O, str2=%!O", tk->str1, tk->str2));
+		DUK_DDD(DUK_DDDPRINT("emitting regexp op, str1=%!O, str2=%!O",
+		                     (duk_heaphdr *) tk->str1,
+		                     (duk_heaphdr *) tk->str2));
 
 		reg_temp = DUK__ALLOCTEMP(comp_ctx);
 		duk_push_hstring(ctx, tk->str1);
@@ -3400,7 +3425,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			}
 
 			DUK_DDD(DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%ld, rc_varname=%ld",
-			                     h_varname, (long) reg_varbind, (long) rc_varname));
+			                     (duk_heaphdr *) h_varname, (long) reg_varbind, (long) rc_varname));
 		} else if (res->t == DUK_IVAL_PROP) {
 			duk_reg_t reg_obj;  /* allocate to reg only (not const) */
 			duk_regconst_t rc_key;
@@ -4008,7 +4033,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			(void) duk__lookup_lhs(comp_ctx, &reg_varbind, &rc_varname);
 
 			DUK_DDD(DUK_DDDPRINT("assign to '%!O' -> reg_varbind=%ld, rc_varname=%ld",
-			                     h_varname, (long) reg_varbind, (long) rc_varname));
+			                     (duk_heaphdr *) h_varname, (long) reg_varbind, (long) rc_varname));
 
 			if (args_op == DUK_OP_INVALID) {
 				rc_res = res->x1.regconst;
@@ -4206,7 +4231,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			}
 
 			DUK_DDD(DUK_DDDPRINT("postincdec to '%!O' -> reg_varbind=%ld, rc_varname=%ld",
-			                     h_varname, (long) reg_varbind, (long) rc_varname));
+			                     (duk_heaphdr *) h_varname, (long) reg_varbind, (long) rc_varname));
 		} else if (left->t == DUK_IVAL_PROP) {
 			duk_reg_t reg_obj;  /* allocate to reg only (not const) */
 			duk_regconst_t rc_key;
@@ -4534,7 +4559,8 @@ static void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk
 	/* register declarations in first pass */
 	if (comp_ctx->curr_func.in_scanning) {
 		duk_uarridx_t n;
-		DUK_DDD(DUK_DDDPRINT("register variable declaration %!O in pass 1", h_varname));
+		DUK_DDD(DUK_DDDPRINT("register variable declaration %!O in pass 1",
+		                     (duk_heaphdr *) h_varname));
 		n = (duk_uarridx_t) duk_get_length(ctx, comp_ctx->curr_func.decls_idx);
 		duk_push_hstring(ctx, h_varname);
 		duk_put_prop_index(ctx, comp_ctx->curr_func.decls_idx, n);
@@ -4554,7 +4580,7 @@ static void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk
 		duk__advance(comp_ctx);
 
 		DUK_DDD(DUK_DDDPRINT("vardecl, assign to '%!O' -> reg_varbind=%ld, rc_varname=%ld",
-		                     h_varname, (long) reg_varbind, (long) rc_varname));
+		                     (duk_heaphdr *) h_varname, (long) reg_varbind, (long) rc_varname));
 
 		duk__exprtop(comp_ctx, res, DUK__BP_COMMA | expr_flags /*rbp_flags*/);  /* AssignmentExpression */
 
@@ -5522,7 +5548,7 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__advance_expect(comp_ctx, DUK_TOK_LCURLY);
 
 		DUK_DDD(DUK_DDDPRINT("varmap before modifying for catch clause: %!iT",
-		                     duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
+		                     (duk_tval *) duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
 
 		duk_dup_top(ctx);
 		duk_get_prop(ctx, comp_ctx->curr_func.varmap_idx);
@@ -5555,7 +5581,7 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		               rc_varname /*varname*/);
 
 		DUK_DDD(DUK_DDDPRINT("varmap before parsing catch clause: %!iT",
-		                     duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
+		                     (duk_tval *) duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
 
 		duk__parse_stmts(comp_ctx, 0 /*allow_source_elem*/, 0 /*expect_eof*/);
 		/* the DUK_TOK_RCURLY is eaten by duk__parse_stmts() */
@@ -5575,7 +5601,7 @@ static void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		/* varname is popped by above code */
 
 		DUK_DDD(DUK_DDDPRINT("varmap after restore catch clause: %!iT",
-		                     duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
+		                     (duk_tval *) duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx)));
 
 		duk__emit_extraop_only(comp_ctx,
 		                       DUK_EXTRAOP_ENDCATCH);
@@ -5814,7 +5840,8 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_boo
 				h_funcname = duk_get_hstring(ctx, -1);
 				DUK_ASSERT(h_funcname != NULL);
 
-				DUK_DDD(DUK_DDDPRINT("register function declaration %!O in pass 1, fnum %ld", h_funcname, (long) fnum));
+				DUK_DDD(DUK_DDDPRINT("register function declaration %!O in pass 1, fnum %ld",
+				                     (duk_heaphdr *) h_funcname, (long) fnum));
 				n = (duk_uarridx_t) duk_get_length(ctx, comp_ctx->curr_func.decls_idx);
 				duk_push_hstring(ctx, h_funcname);
 				duk_put_prop_index(ctx, comp_ctx->curr_func.decls_idx, n);
@@ -6015,7 +6042,8 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_boo
 			h_lab = comp_ctx->prev_token.str1;
 			DUK_ASSERT(h_lab != NULL);
 
-			DUK_DDD(DUK_DDDPRINT("explicit label site for label '%!O'", h_lab));
+			DUK_DDD(DUK_DDDPRINT("explicit label site for label '%!O'",
+			                     (duk_heaphdr *) h_lab));
 
 			duk__advance(comp_ctx);  /* eat colon */
 
@@ -6388,8 +6416,9 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 	 */
 
 	num_decls = (duk_uarridx_t) duk_get_length(ctx, comp_ctx->curr_func.decls_idx);
-	DUK_DDD(DUK_DDDPRINT("num_decls=%ld -> %!T", (long) num_decls,
-	                     duk_get_tval(ctx, comp_ctx->curr_func.decls_idx)));
+	DUK_DDD(DUK_DDDPRINT("num_decls=%ld -> %!T",
+	                     (long) num_decls,
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->curr_func.decls_idx)));
 	for (i = 0; i < num_decls; i += 2) {
 		duk_int_t decl_type;
 		duk_int_t fnum;
@@ -6465,7 +6494,8 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 		}
 
 		DUK_DDD(DUK_DDDPRINT("function declaration to varmap: %!T -> %!T",
-		                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+		                     (duk_tval *) duk_get_tval(ctx, -2),
+		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 		duk_put_prop(ctx, comp_ctx->curr_func.varmap_idx);  /* [ ... name reg/null ] -> [ ... ] */
 	}
@@ -6555,7 +6585,7 @@ static void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, 
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("varmap: %!T, is_arguments_shadowed=%ld",
-	                     duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx),
+	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->curr_func.varmap_idx),
 	                     (long) comp_ctx->curr_func.is_arguments_shadowed));
 
 	DUK_ASSERT_TOP(ctx, entry_top);
@@ -6863,7 +6893,8 @@ static void duk__parse_func_formals(duk_compiler_ctx *comp_ctx) {
 		}
 		DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_IDENTIFIER);
 		DUK_ASSERT(comp_ctx->curr_token.str1 != NULL);
-		DUK_DDD(DUK_DDDPRINT("formal argument: %!O", comp_ctx->curr_token.str1));
+		DUK_DDD(DUK_DDDPRINT("formal argument: %!O",
+		                     (duk_heaphdr *) comp_ctx->curr_token.str1));
 
 		/* XXX: append primitive */
 		duk_push_hstring(ctx, comp_ctx->curr_token.str1);
@@ -6935,7 +6966,8 @@ static void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t is_d
 		}
 	}
 
-	DUK_DDD(DUK_DDDPRINT("function name: %!O", comp_ctx->curr_func.h_name));
+	DUK_DDD(DUK_DDDPRINT("function name: %!O",
+	                     (duk_heaphdr *) comp_ctx->curr_func.h_name));
 
 	/*
 	 *  Formal argument list
@@ -7269,7 +7301,8 @@ void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t 
 		 * out-of-memory errors and the like.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("compile error, before adding line info: %!T", duk_get_tval(ctx, -1)));
+		DUK_DDD(DUK_DDDPRINT("compile error, before adding line info: %!T",
+		                     (duk_tval *) duk_get_tval(ctx, -1)));
 		if (duk_is_object(ctx, -1)) {
 			if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_MESSAGE)) {
 				duk_push_sprintf(ctx, " (line %ld)", (long) comp_stk.comp_ctx_alloc.curr_token.start_line);
@@ -7279,7 +7312,8 @@ void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t 
 				duk_pop(ctx);
 			}
 		}
-		DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T", duk_get_tval(ctx, -1)));
+		DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T",
+		                     (duk_tval *) duk_get_tval(ctx, -1)));
 		duk_throw(ctx);
 	}
 

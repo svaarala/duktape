@@ -99,10 +99,12 @@ static void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_cb) 
 	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
 	                                                  thr->strs[stridx_cb]);
 	if (tv_hnd == NULL) {
-		DUK_DD(DUK_DDPRINT("error handler does not exist or is not a plain value: %!T", tv_hnd));
+		DUK_DD(DUK_DDPRINT("error handler does not exist or is not a plain value: %!T",
+		                   (duk_tval *) tv_hnd));
 		return;
 	}
-	DUK_DDD(DUK_DDDPRINT("error handler dump (callability not checked): %!T", tv_hnd));
+	DUK_DDD(DUK_DDDPRINT("error handler dump (callability not checked): %!T",
+	                     (duk_tval *) tv_hnd));
 	duk_push_tval(ctx, tv_hnd);
 
 	/* [ ... errval errhandler ] */
@@ -174,7 +176,8 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 	 *  See doc/error-objects.txt.
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("adding traceback to object: %!T", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("adding traceback to object: %!T",
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
 	arr_idx = 0;

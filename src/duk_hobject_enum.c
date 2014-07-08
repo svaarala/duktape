@@ -74,7 +74,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 			DUK_DDD(DUK_DDDPRINT("initial: %ld %p -> %!O",
 			                     (long) i,
 			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
-			                     DUK_HOBJECT_E_GET_KEY(h_obj, i)));
+			                     (duk_heaphdr *) DUK_HOBJECT_E_GET_KEY(h_obj, i)));
 		}
 	}
 #endif
@@ -221,7 +221,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags
 		 * target reachable.  We do need to replace the internal _target.
 		 */
 		DUK_DDD(DUK_DDDPRINT("no enumerate trap, enumerate proxy target instead"));
-		DUK_DDD(DUK_DDDPRINT("h_proxy_target=%!O", h_proxy_target));
+		DUK_DDD(DUK_DDDPRINT("h_proxy_target=%!O", (duk_heaphdr *) h_proxy_target));
 		enum_target = h_proxy_target;
 
 		duk_push_hobject(ctx, enum_target);  /* -> [ ... enum_target res handler undefined target ] */
@@ -270,7 +270,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags
 	 * fact that the _target is a proxy disables key existence check
 	 * during enumeration.
 	 */
-	DUK_DDD(DUK_DDDPRINT("proxy enumeration, final res: %!O", res));
+	DUK_DDD(DUK_DDDPRINT("proxy enumeration, final res: %!O", (duk_heaphdr *) res));
 	goto compact_and_return;
 
  skip_proxy:
@@ -443,7 +443,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags
 	/* compact; no need to seal because object is internal */
 	duk_hobject_compact_props(thr, res);
 
-	DUK_DDD(DUK_DDDPRINT("created enumerator object: %!iT", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("created enumerator object: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 }
 
 /*
@@ -491,7 +491,7 @@ duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
 	duk_pop(ctx);  /* still reachable */
 
 	DUK_DDD(DUK_DDDPRINT("getting next enum value, enum_target=%!iO, enumerator=%!iT",
-	                     enum_target, duk_get_tval(ctx, -1)));
+	                     (duk_heaphdr *) enum_target, (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/* no array part */
 	for (;;) {
@@ -516,7 +516,7 @@ duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
 			continue;
 		}
 
-		DUK_DDD(DUK_DDDPRINT("enumeration: found element, key: %!O", k));
+		DUK_DDD(DUK_DDDPRINT("enumeration: found element, key: %!O", (duk_heaphdr *) k));
 		res = k;
 		break;
 	}

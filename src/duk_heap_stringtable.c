@@ -434,7 +434,7 @@ duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t v
 
 /* find and remove string from stringtable; caller must free the string itself */
 void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
-	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", h));
+	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", (duk_heaphdr *) h));
 	duk__remove_matching_hstring(heap, heap->st, heap->st_size, h);
 }
 

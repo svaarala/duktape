@@ -203,7 +203,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 		h1 = heap->refzero_list;
 		obj = (duk_hobject *) h1;
-		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, h1));
+		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, (duk_heaphdr *) h1));
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 
@@ -324,7 +324,7 @@ void duk_heap_tval_incref(duk_tval *tv) {
 	                     (void *) tv,
 	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
 	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1) : (long) 0),
-	                     tv));
+	                     (duk_tval *) tv));
 #endif
 
 	if (!tv) {
@@ -347,7 +347,7 @@ void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 	                     (void *) tv,
 	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
 	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1) : (long) 0),
-	                     tv));
+	                     (duk_tval *) tv));
 #endif
 
 	if (!tv) {
@@ -365,7 +365,7 @@ void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 	                     (void *) h,
 	                     (h != NULL ? (long) h->h_refcount : (long) 0),
 	                     (h != NULL ? (long) (h->h_refcount + 1) : (long) 0),
-	                     h));
+	                     (duk_heaphdr *) h));
 #endif
 
 	if (!h) {
@@ -385,7 +385,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	                     (void *) h,
 	                     (h != NULL ? (long) h->h_refcount : (long) 0),
 	                     (h != NULL ? (long) (h->h_refcount - 1) : (long) 0),
-	                     h));
+	                     (duk_heaphdr *) h));
 #endif
 
 	DUK_ASSERT(thr != NULL);
@@ -402,7 +402,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	}
 
 	heap = thr->heap;
-	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, h));
+	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, (duk_heaphdr *) h));
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/*

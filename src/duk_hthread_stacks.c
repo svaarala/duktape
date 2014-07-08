@@ -410,7 +410,8 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 			DUK_ASSERT(act < thr->callstack + thr->callstack_top);
 
 			DUK_DDD(DUK_DDDPRINT("catchstack_index=%ld, callstack_index=%ld, lex_env=%!iO",
-			                     (long) idx, (long) p->callstack_index, act->lex_env));
+			                     (long) idx, (long) p->callstack_index,
+			                     (duk_heaphdr *) act->lex_env));
 
 			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */

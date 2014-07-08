@@ -91,7 +91,8 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 		DUK_D(DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble"));
 	} else {
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", duk_get_tval(ctx, -1)));
+		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)",
+		                     (duk_tval *) duk_get_tval(ctx, -1)));
 		duk_err_augment_error_throw(thr);
 #endif
 	}
@@ -105,7 +106,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
-	                     &thr->heap->lj.value1, &thr->heap->lj.value2));
+	                     (duk_tval *) &thr->heap->lj.value1, (duk_tval *) &thr->heap->lj.value2));
 
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();

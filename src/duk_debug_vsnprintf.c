@@ -11,7 +11,7 @@
  *     %!T    tagged value (duk_tval *)
  *     %!O    heap object (duk_heaphdr *)
  *     %!I    decoded bytecode instruction
- *     %!C    bytecode instruction opcode name
+ *     %!C    bytecode instruction opcode name (arg is long)
  *
  *  Everything is serialized in a JSON-like manner.  The default depth is one
  *  level, internal prototype is not followed, and internal properties are not
@@ -864,8 +864,8 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 				duk__print_instr(&st, t);
 				break;
 			} else if (got_exclamation && ch == DUK_ASC_UC_C) {
-				int t = va_arg(ap, int);
-				duk__print_opcode(&st, t);
+				long t = va_arg(ap, long);
+				duk__print_opcode(&st, (duk_small_int_t) t);
 				break;
 			} else if (!got_exclamation && strchr(DUK__ALLOWED_STANDARD_SPECIFIERS, (int) ch)) {
 				char fmtbuf[DUK__MAX_FORMAT_TAG_LENGTH];

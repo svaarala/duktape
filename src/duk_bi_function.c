@@ -168,7 +168,9 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 3);
 
 	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), duk_get_tval(ctx, 2)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
 
 	/* [ func thisArg argArray ] */
 
@@ -198,7 +200,9 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	/* [ func thisArg arg1 ... argN ] */
 	
 	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%ld",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1), (long) len));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (long) len));
 	duk_call_method(ctx, len);
 	return 1;
 
@@ -229,8 +233,10 @@ duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	/* [ func thisArg arg1 ... argN ] */
 
 	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argcount=%ld, top=%ld",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1),
-	                     (long) (nargs - 1), (long) duk_get_top(ctx)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (long) (nargs - 1),
+	                     (long) duk_get_top(ctx)));
 	duk_call_method(ctx, nargs - 1);	
 	return 1;
 }
@@ -317,7 +323,7 @@ duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
-	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	return 1;
 

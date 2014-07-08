@@ -153,7 +153,9 @@ duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
 
 	/* [ ... func this ] */
 
-	DUK_DDD(DUK_DDDPRINT("calling: func=%!iT, this=%!iT", duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("calling: func=%!iT, this=%!iT",
+	                     (duk_tval *) duk_get_tval(ctx, -2),
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 	duk_call_method(ctx, 0);
 
 	return 1;
@@ -267,7 +269,8 @@ duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	/* [ sep ToObject(this) len ] */
 
 	DUK_DDD(DUK_DDDPRINT("sep=%!T, this=%!T, len=%lu",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
 	                     (unsigned long) len));
 
 	valstack_required = (len >= DUK__ARRAY_MID_JOIN_LIMIT ?
@@ -423,7 +426,8 @@ static duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t idx1,
 	have2 = duk_get_prop_index(ctx, idx_obj, (duk_uarridx_t) idx2);
 
 	DUK_DDD(DUK_DDDPRINT("duk__array_sort_compare: idx1=%ld, idx2=%ld, have1=%ld, have2=%ld, val1=%!T, val2=%!T",
-	                     (long) idx1, (long) idx2, (long) have1, (long) have2, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+	                     (long) idx1, (long) idx2, (long) have1, (long) have2,
+	                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
 
 	if (have1) {
 		if (have2) {
@@ -574,7 +578,7 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	/* The lo/hi indices may be crossed and hi < 0 is possible at entry. */
 
 	DUK_DDD(DUK_DDDPRINT("duk__array_qsort: lo=%ld, hi=%ld, obj=%!T",
-	                     (long) lo, (long) hi, duk_get_tval(ctx, 1)));
+	                     (long) lo, (long) hi, (duk_tval *) duk_get_tval(ctx, 1)));
 
 	DUK_ASSERT_TOP(ctx, 3);
 
@@ -600,7 +604,7 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	/* move pivot out of the way */
 	duk__array_sort_swap(ctx, p, lo);
 	p = lo;
-	DUK_DDD(DUK_DDDPRINT("pivot moved out of the way: %!T", duk_get_tval(ctx, 1)));
+	DUK_DDD(DUK_DDDPRINT("pivot moved out of the way: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
 
 	l = lo + 1;
 	r = hi;
@@ -637,7 +641,7 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 
 		duk__array_sort_swap(ctx, l, r);
 
-		DUK_DDD(DUK_DDDPRINT("after swap: %!T", duk_get_tval(ctx, 1)));
+		DUK_DDD(DUK_DDDPRINT("after swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
 		l++;
 		r--;
 	}
@@ -653,14 +657,14 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	 */
 
 	/* move pivot to its final place */
-	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", duk_get_tval(ctx, 1)));
+	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
 	duk__array_sort_swap(ctx, lo, r);	
 
 #if defined(DUK_USE_DDDPRINT)
 	duk__debuglog_qsort_state(ctx, lo, hi, r);
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("recurse: pivot=%ld, obj=%!T", (long) r, duk_get_tval(ctx, 1)));
+	DUK_DDD(DUK_DDDPRINT("recurse: pivot=%ld, obj=%!T", (long) r, (duk_tval *) duk_get_tval(ctx, 1)));
 	duk__array_qsort(ctx, lo, r - 1);
 	duk__array_qsort(ctx, r + 1, hi);
 }
@@ -1325,7 +1329,8 @@ duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 		duk_dup(ctx, 1);
 		have_acc = 1;
 	}
-	DUK_DDD(DUK_DDDPRINT("have_acc=%ld, acc=%!T", (long) have_acc, duk_get_tval(ctx, 3)));
+	DUK_DDD(DUK_DDDPRINT("have_acc=%ld, acc=%!T",
+	                     (long) have_acc, (duk_tval *) duk_get_tval(ctx, 3)));
 
 	/* For len == 0, i is initialized to len - 1 which underflows.
 	 * The condition (i < len) will then exit the for-loop on the
@@ -1338,7 +1343,8 @@ duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	     i += idx_step) {
 		DUK_DDD(DUK_DDDPRINT("i=%ld, len=%ld, have_acc=%ld, top=%ld, acc=%!T",
 		                     (long) i, (long) len, (long) have_acc,
-		                     (long) duk_get_top(ctx), duk_get_tval(ctx, 4)));
+		                     (long) duk_get_top(ctx),
+		                     (duk_tval *) duk_get_tval(ctx, 4)));
 
 		DUK_ASSERT((have_acc && duk_get_top(ctx) == 5) ||
 		           (!have_acc && duk_get_top(ctx) == 4));
@@ -1360,10 +1366,11 @@ duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 			duk_push_u32(ctx, i);
 			duk_dup(ctx, 2);
 			DUK_DDD(DUK_DDDPRINT("calling reduce function: func=%!T, prev=%!T, curr=%!T, idx=%!T, obj=%!T",
-			                     duk_get_tval(ctx, -5), duk_get_tval(ctx, -4), duk_get_tval(ctx, -3),
-			                     duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+			                     (duk_tval *) duk_get_tval(ctx, -5), (duk_tval *) duk_get_tval(ctx, -4),
+			                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),
+			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			duk_call(ctx, 4);
-			DUK_DDD(DUK_DDDPRINT("-> result: %!T", duk_get_tval(ctx, -1)));
+			DUK_DDD(DUK_DDDPRINT("-> result: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
 			duk_replace(ctx, 4);
 			DUK_ASSERT_TOP(ctx, 5);
 		}

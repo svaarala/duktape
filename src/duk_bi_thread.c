@@ -55,9 +55,9 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
-	                     duk_get_tval(ctx, 0),
-	                     duk_get_tval(ctx, 1),
-	                     duk_get_tval(ctx, 2)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -145,16 +145,16 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	} else if (thr_resume->state == DUK_HTHREAD_STATE_YIELDED) {
 		DUK_DDD(DUK_DDDPRINT("RESUME NORMAL: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("RESUME INITIAL: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	}
 #endif
 
@@ -210,8 +210,8 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
-	                     duk_get_tval(ctx, 0),
-	                     duk_get_tval(ctx, 1)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -269,10 +269,10 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T",
-		                     duk_get_tval(ctx, 0)));
+		                     (duk_tval *) duk_get_tval(ctx, 0)));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("YIELD NORMAL: value=%!T",
-		                     duk_get_tval(ctx, 0)));
+		                     (duk_tval *) duk_get_tval(ctx, 0)));
 	}
 #endif
 

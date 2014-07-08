@@ -19,7 +19,7 @@ static void duk__call_prop_prep_stack(duk_context *ctx, duk_idx_t normalized_obj
 	duk_dup(ctx, -nargs - 1);  /* Note: -nargs alone would fail for nargs == 0, this is OK */
 	duk_get_prop(ctx, normalized_obj_index);
 
-	DUK_DDD(DUK_DDDPRINT("func: %!T", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("func: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/* [... key arg1 ... argN func] */
 
@@ -317,7 +317,7 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 		                     "-> leave standard Object prototype as fallback prototype"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("constructor has 'prototype' property with object value "
-		                     "-> set fallback prototype to that value: %!iO", proto));
+		                     "-> set fallback prototype to that value: %!iO", (duk_heaphdr *) proto));
 		fallback = duk_get_hobject(ctx, -2);
 		DUK_ASSERT(fallback != NULL);
 		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
@@ -344,8 +344,10 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	DUK_DDD(DUK_DDDPRINT("before call, idx_cons+1 (constructor) -> %!T, idx_cons+2 (fallback/this) -> %!T, "
 	                     "nargs=%ld, top=%ld",
-	                     duk_get_tval(ctx, idx_cons + 1), duk_get_tval(ctx, idx_cons + 2),
-	                     (long) nargs, (long) duk_get_top(ctx)));
+	                     (duk_tval *) duk_get_tval(ctx, idx_cons + 1),
+	                     (duk_tval *) duk_get_tval(ctx, idx_cons + 2),
+	                     (long) nargs,
+	                     (long) duk_get_top(ctx)));
 
 	/*
 	 *  Call the constructor function (called in "constructor mode").
@@ -361,7 +363,9 @@ void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	/* [... fallback retval] */
 
 	DUK_DDD(DUK_DDDPRINT("constructor call finished, rc=%ld, fallback=%!iT, retval=%!iT",
-	                     (long) rc, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+	                     (long) rc,
+	                     (duk_tval *) duk_get_tval(ctx, -2),
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/*
 	 *  Determine whether to use the constructor return value as the created

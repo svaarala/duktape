@@ -181,7 +181,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		duk_hcompiledfunction *h = (duk_hcompiledfunction *) obj;
 
 		DUK_D(DUK_DPRINT("  hcompiledfunction"));
-		DUK_D(DUK_DPRINT("  data: %!O", h->data));
+		DUK_D(DUK_DPRINT("  data: %!O", (duk_heaphdr *) h->data));
 		DUK_D(DUK_DPRINT("  nregs: %ld", (long) h->nregs));
 		DUK_D(DUK_DPRINT("  nargs: %ld", (long) h->nargs));
 
@@ -379,7 +379,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 			                 (long) (DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(obj, i) ? 1 : 0),
 			                 (long) (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i) ? 1 : 0),
 			                 (duk_heaphdr *) k,
-			                 &v->v));
+			                 (duk_tval *) &v->v));
 		}
 	}
 
@@ -392,7 +392,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		                 (long) 1,
 		                 (long) 0,
 		                 (long) i,
-		                 DUK_HOBJECT_A_GET_VALUE_PTR(obj, i)));
+		                 (duk_tval *) DUK_HOBJECT_A_GET_VALUE_PTR(obj, i)));
 	}
 
 	DUK_D(DUK_DPRINT("  hash entries:"));
@@ -427,7 +427,8 @@ void duk_debug_dump_callstack(duk_hthread *thr) {
 			this_binding = NULL;
 		}
 
-		DUK_D(DUK_DPRINT("  [%ld] -> flags=0x%08lx, func=%!O, var_env=%!iO, lex_env=%!iO, pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
+		DUK_D(DUK_DPRINT("  [%ld] -> flags=0x%08lx, func=%!O, var_env=%!iO, lex_env=%!iO, "
+		                 "pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
 		                 (long) i,
 		                 (unsigned long) act->flags,
 		                 (duk_heaphdr *) act->func,
@@ -451,7 +452,8 @@ void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
 			this_binding = NULL;
 		}
 
-		DUK_D(DUK_DPRINT("duk_activation: %p -> flags=0x%08lx, func=%!O, var_env=%!O, lex_env=%!O, pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
+		DUK_D(DUK_DPRINT("duk_activation: %p -> flags=0x%08lx, func=%!O, var_env=%!O, "
+		                 "lex_env=%!O, pc=%ld, idx_bottom=%ld, idx_retval=%ld, this_binding=%!T",
 		                 (void *) act,
 		                 (unsigned long) act->flags,
 		                 (duk_heaphdr *) act->func,

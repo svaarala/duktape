@@ -754,8 +754,8 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 
-	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%p, p=%p, q=%p, nbytes=%lu",
-	                     (void *) to_index, (void *) p, (void *) q, (unsigned long) nbytes));
+	DUK_DDD(DUK_DDDPRINT("duk_insert: to_index=%ld, p=%p, q=%p, nbytes=%lu",
+	                     (long) to_index, (void *) p, (void *) q, (unsigned long) nbytes));
 
 	/* No net refcount changes. */
 
@@ -3272,10 +3272,10 @@ void duk_throw(duk_context *ctx) {
 	 */
 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (before throw augment)", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (before throw augment)", (duk_tval *) duk_get_tval(ctx, -1)));
 	duk_err_augment_error_throw(thr);
 #endif
-	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (after throw augment)", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (after throw augment)", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 

@@ -970,7 +970,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 
 	DUK_D(DUK_DPRINT("regexp bytecode size (after header) is %ld bytes",
 	                 (long) DUK_HBUFFER_GET_SIZE(re_ctx.buf)));
-	DUK_DDD(DUK_DDDPRINT("compiled regexp: %!xO", re_ctx.buf));
+	DUK_DDD(DUK_DDDPRINT("compiled regexp: %!xO", (duk_heaphdr *) re_ctx.buf));
 
 	/* [ ... pattern flags escaped_source buffer ] */
 
@@ -986,7 +986,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 	duk_remove(ctx, -3);     /* -> [ ... escaped_source bytecode ] */
 
 	DUK_D(DUK_DPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
-	                 duk_get_tval(ctx, -1), duk_get_tval(ctx, -2)));
+	                 (duk_tval *) duk_get_tval(ctx, -1), (duk_tval *) duk_get_tval(ctx, -2)));
 }
 
 /*

@@ -109,7 +109,8 @@ static void duk__free_allocated(duk_heap *heap) {
 		 * because they may happen with finalizer processing.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO", curr));
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO",
+		                     (duk_heaphdr *) curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -123,7 +124,8 @@ static void duk__free_refzero_list(duk_heap *heap) {
 
 	curr = heap->refzero_list;
 	while (curr) {
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (refzero_list): %!iO", curr));
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (refzero_list): %!iO",
+		                     (duk_heaphdr *) curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -138,7 +140,8 @@ static void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 
 	curr = heap->finalize_list;
 	while (curr) {
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO", curr));
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO",
+		                     (duk_heaphdr *) curr));
 		next = DUK_HEAPHDR_GET_NEXT(curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -158,7 +161,8 @@ static void duk__free_stringtable(duk_heap *heap) {
 			}
 
 			/* strings have no inner allocations so free directly */
-			DUK_DDD(DUK_DDDPRINT("FINALFREE (string): %!iO", e));
+			DUK_DDD(DUK_DDDPRINT("FINALFREE (string): %!iO",
+			                     (duk_heaphdr *) e));
 			DUK_FREE(heap, e);
 #if 0  /* not strictly necessary */
 			heap->st[i] = NULL;
@@ -329,7 +333,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 			}
 		}
 
-		DUK_DDD(DUK_DDDPRINT("interned: %!O", h));
+		DUK_DDD(DUK_DDDPRINT("interned: %!O", (duk_heaphdr *) h));
 
 		/* XXX: The incref macro takes a thread pointer but doesn't
 		 * use it right now.

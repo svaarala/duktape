@@ -47,14 +47,14 @@ static void duk__dump_indented(duk_heaphdr *obj, int index) {
 	                 (const char *) duk__get_heap_type_string(obj),
 	                 (unsigned long) DUK_HEAPHDR_GET_FLAGS(obj),
 	                 (long) DUK_HEAPHDR_GET_REFCOUNT(obj),
-	                 obj));
+	                 (duk_heaphdr *) obj));
 #else
 	DUK_D(DUK_DPRINT("  [%ld]: %p %s (flags: 0x%08lx) -> %!O",
 	                 (long) index,
 	                 (void *) obj,
 	                 (const char *) duk__get_heap_type_string(obj),
 	                 (unsigned long) DUK_HEAPHDR_GET_FLAGS(obj),
-	                 obj));
+	                 (duk_heaphdr *) obj));
 #endif
 }
 
@@ -192,8 +192,8 @@ void duk_debug_dump_heap(duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("  lj.jmpbuf_ptr: %p", (void *) heap->lj.jmpbuf_ptr));
 	DUK_D(DUK_DPRINT("  lj.type: %ld", (long) heap->lj.type));
-	DUK_D(DUK_DPRINT("  lj.value1: %!T", &heap->lj.value1));
-	DUK_D(DUK_DPRINT("  lj.value2: %!T", &heap->lj.value2));
+	DUK_D(DUK_DPRINT("  lj.value1: %!T", (duk_tval *) &heap->lj.value1));
+	DUK_D(DUK_DPRINT("  lj.value2: %!T", (duk_tval *) &heap->lj.value2));
 	DUK_D(DUK_DPRINT("  lj.iserror: %ld", (long) heap->lj.iserror));
 
 	DUK_D(DUK_DPRINT("  handling_error: %ld", (long) heap->handling_error));
