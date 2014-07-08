@@ -432,11 +432,24 @@ static void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_intptr_t);
 	DUK__DUMPSZ(duk_uintmax_t);
 	DUK__DUMPSZ(duk_intmax_t);
+	DUK__DUMPSZ(duk_double_t);
+
+	/* important chosen base types */
+	DUK__DUMPSZ(duk_int_t);
+	DUK__DUMPSZ(duk_uint_t);
+	DUK__DUMPSZ(duk_int_fast_t);
+	DUK__DUMPSZ(duk_uint_fast_t);
 	DUK__DUMPSZ(duk_small_int_t);
 	DUK__DUMPSZ(duk_small_uint_t);
+	DUK__DUMPSZ(duk_small_int_fast_t);
+	DUK__DUMPSZ(duk_small_uint_fast_t);
+
+	/* some derived types */
 	DUK__DUMPSZ(duk_codepoint_t);
 	DUK__DUMPSZ(duk_ucodepoint_t);
-	DUK__DUMPSZ(duk_double_t);
+	DUK__DUMPSZ(duk_idx_t);
+	DUK__DUMPSZ(duk_errcode_t);
+	DUK__DUMPSZ(duk_uarridx_t);
 
 	/* tval */
 	DUK__DUMPSZ(duk_double_union);

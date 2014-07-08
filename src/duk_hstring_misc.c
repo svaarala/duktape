@@ -13,7 +13,7 @@ duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT_DISABLE(pos >= 0);  /* unsigned */
-	DUK_ASSERT(pos < (duk_int_t) DUK_HSTRING_GET_CHARLEN(h));
+	DUK_ASSERT(pos < (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h));
 
 	boff = duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
 	DUK_DDD(DUK_DDDPRINT("charCodeAt: pos=%ld -> boff=%ld, str=%!O",
