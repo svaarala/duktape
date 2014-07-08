@@ -117,10 +117,10 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 	 *  necessary, inserting a new cache entry if none exists.
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("non-ascii string %p, char_offset=%d, clen=%d, blen=%d",
-	                     (void *) h, (int) char_offset,
-	                     (int) DUK_HSTRING_GET_CHARLEN(h),
-	                     (int) DUK_HSTRING_GET_BYTELEN(h)));
+	DUK_DDD(DUK_DDDPRINT("non-ascii string %p, char_offset=%ld, clen=%ld, blen=%ld",
+	                     (void *) h, (long) char_offset,
+	                     (long) DUK_HSTRING_GET_CHARLEN(h),
+	                     (long) DUK_HSTRING_GET_BYTELEN(h)));
 
 	heap = thr->heap;
 	sce = NULL;
@@ -131,8 +131,8 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 		DUK_DDD(DUK_DDDPRINT("stringcache before char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = heap->strcache + i;
-			DUK_DDD(DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d",
-			                     (int) i, (void *) c->h, (int) c->cidx, (int) c->bidx));
+			DUK_DDD(DUK_DDDPRINT("  [%ld] -> h=%p, cidx=%ld, bidx=%ld",
+			                     (long) i, (void *) c->h, (long) c->cidx, (long) c->bidx));
 		}
 #endif
 
@@ -166,13 +166,13 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 		if (char_offset >= sce->cidx) {
 			dist_sce = char_offset - sce->cidx;
 			if ((dist_sce <= dist_start) && (dist_sce <= dist_end)) {
-				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-				                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%ld, sce=%p:%ld:%ld, "
+				                     "dist_start=%ld, dist_end=%ld, dist_sce=%ld => "
 				                     "scan forwards from sce",
-				                     (int) use_cache, (void *) (sce ? sce->h : NULL),
-				                     (sce ? (int) sce->cidx : (int) -1),
-				                     (sce ? (int) sce->bidx : (int) -1),
-				                     (int) dist_start, (int) dist_end, (int) dist_sce));
+				                     (long) use_cache, (void *) (sce ? sce->h : NULL),
+				                     (sce ? (long) sce->cidx : (long) -1),
+				                     (sce ? (long) sce->bidx : (long) -1),
+				                     (long) dist_start, (long) dist_end, (long) dist_sce));
 
 				p_found = duk__scan_forwards(p_start + sce->bidx,
 				                             p_end,
@@ -182,13 +182,13 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 		} else {
 			dist_sce = sce->cidx - char_offset;
 			if ((dist_sce <= dist_start) && (dist_sce <= dist_end)) {
-				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-				                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+				DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%ld, sce=%p:%ld:%ld, "
+				                     "dist_start=%ld, dist_end=%ld, dist_sce=%ld => "
 				                     "scan backwards from sce",
-				                     (int) use_cache, (void *) (sce ? sce->h : NULL),
-				                     (sce ? (int) sce->cidx : (int) -1),
-				                     (sce ? (int) sce->bidx : (int) -1),
-				                     (int) dist_start, (int) dist_end, (int) dist_sce));
+				                     (long) use_cache, (void *) (sce ? sce->h : NULL),
+				                     (sce ? (long) sce->cidx : (long) -1),
+				                     (sce ? (long) sce->bidx : (long) -1),
+				                     (long) dist_start, (long) dist_end, (long) dist_sce));
 
 				p_found = duk__scan_backwards(p_start + sce->bidx,
 				                              p_start,
@@ -201,25 +201,25 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 	/* no sce, or sce scan not best */
 
 	if (dist_start <= dist_end) {
-		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-		                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%ld, sce=%p:%ld:%ld, "
+		                     "dist_start=%ld, dist_end=%ld, dist_sce=%ld => "
 		                     "scan forwards from string start",
-		                     (int) use_cache, (void *) (sce ? sce->h : NULL),
-		                     (sce ? (int) sce->cidx : (int) -1),
-		                     (sce ? (int) sce->bidx : (int) -1),
-		                     (int) dist_start, (int) dist_end, (int) dist_sce));
+		                     (long) use_cache, (void *) (sce ? sce->h : NULL),
+		                     (sce ? (long) sce->cidx : (long) -1),
+		                     (sce ? (long) sce->bidx : (long) -1),
+		                     (long) dist_start, (long) dist_end, (long) dist_sce));
 
 		p_found = duk__scan_forwards(p_start,
 		                             p_end,
 		                             dist_start);
 	} else {
-		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%d, sce=%p:%d:%d, "
-		                     "dist_start=%d, dist_end=%d, dist_sce=%d => "
+		DUK_DDD(DUK_DDDPRINT("non-ascii string, use_cache=%ld, sce=%p:%ld:%ld, "
+		                     "dist_start=%ld, dist_end=%ld, dist_sce=%ld => "
 		                     "scan backwards from string end",
-		                     (int) use_cache, (void *) (sce ? sce->h : NULL),
-		                     (sce ? (int) sce->cidx : (int) -1),
-		                     (sce ? (int) sce->bidx : (int) -1),
-		                     (int) dist_start, (int) dist_end, (int) dist_sce));
+		                     (long) use_cache, (void *) (sce ? sce->h : NULL),
+		                     (sce ? (long) sce->cidx : (long) -1),
+		                     (sce ? (long) sce->bidx : (long) -1),
+		                     (long) dist_start, (long) dist_end, (long) dist_sce));
 
 		p_found = duk__scan_backwards(p_end,
 		                              p_start,
@@ -240,8 +240,8 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 	DUK_ASSERT(p_found <= p_end);  /* may be equal */
 	byte_offset = (duk_uint32_t) (p_found - p_start);
 
-	DUK_DDD(DUK_DDDPRINT("-> string %p, cidx %d -> bidx %d",
-	                     (void *) h, (int) char_offset, (int) byte_offset));
+	DUK_DDD(DUK_DDDPRINT("-> string %p, cidx %ld -> bidx %ld",
+	                     (void *) h, (long) char_offset, (long) byte_offset));
 
 	/*
 	 *  Update cache entry (allocating if necessary), and move the
@@ -280,8 +280,8 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 		DUK_DDD(DUK_DDDPRINT("stringcache after char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = heap->strcache + i;
-			DUK_DDD(DUK_DDDPRINT("  [%d] -> h=%p, cidx=%d, bidx=%d",
-			                     (int) i, (void *) c->h, (int) c->cidx, (int) c->bidx));
+			DUK_DDD(DUK_DDDPRINT("  [%ld] -> h=%p, cidx=%ld, bidx=%ld",
+			                     (long) i, (void *) c->h, (long) c->cidx, (long) c->bidx));
 		}
 #endif
 	}

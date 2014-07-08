@@ -1591,7 +1591,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 	 *  is in force.
 	 *
 	 *  XXX: could save space by supporting radix 10 only and using
-	 *  sprintf "%u" for the fast path and for exponent formatting.
+	 *  sprintf "%lu" for the fast path and for exponent formatting.
 	 */
 
 	uval = (unsigned int) x;

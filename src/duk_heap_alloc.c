@@ -67,7 +67,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(heap);
 	DUK_ASSERT(hdr);
 
-	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %d", (void *) hdr, (int) DUK_HEAPHDR_GET_TYPE(hdr)));
+	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %ld", (void *) hdr, (long) DUK_HEAPHDR_GET_TYPE(hdr)));
 
 	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
@@ -206,7 +206,7 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 
 	/* Note: count includes all objects, not only those with an actual finalizer. */
 #ifdef DUK_USE_DEBUG
-	DUK_D(DUK_DPRINT("checked %d objects for finalizers before freeing heap", (int) count_obj));
+	DUK_D(DUK_DPRINT("checked %ld objects for finalizers before freeing heap", (long) count_obj));
 #endif
 }
 
@@ -308,7 +308,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 			tmp[j] = (duk_uint8_t) t;
 		}
 
-		DUK_DDD(DUK_DDDPRINT("intern built-in string %d", (int) i));
+		DUK_DDD(DUK_DDDPRINT("intern built-in string %ld", (long) i));
 		h = duk_heap_string_intern(heap, tmp, len);
 		if (!h) {
 			goto error;
@@ -380,7 +380,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 
 #ifdef DUK_USE_DEBUG
 #define DUK__DUMPSZ(t)  do { \
-		DUK_D(DUK_DPRINT("" #t "=%d", (int) sizeof(t))); \
+		DUK_D(DUK_DPRINT("" #t "=%ld", (long) sizeof(t))); \
 	} while (0)
 
 static void duk__dump_type_sizes(void) {

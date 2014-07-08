@@ -134,9 +134,9 @@ static void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 /* recursion tracking happens here only */
 static void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
-	DUK_DDD(DUK_DDDPRINT("duk__mark_heaphdr %p, type %d",
+	DUK_DDD(DUK_DDDPRINT("duk__mark_heaphdr %p, type %ld",
 	                     (void *) h,
-	                     (h != NULL ? (int) DUK_HEAPHDR_GET_TYPE(h) : (int) -1)));
+	                     (h != NULL ? (long) DUK_HEAPHDR_GET_TYPE(h) : (long) -1)));
 	if (!h) {
 		return;
 	}
@@ -168,7 +168,7 @@ static void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		/* nothing to mark */
 		break;
 	default:
-		DUK_D(DUK_DPRINT("attempt to mark heaphdr %p with invalid htype %d", (void *) h, (int) DUK_HEAPHDR_GET_TYPE(h)));
+		DUK_D(DUK_DPRINT("attempt to mark heaphdr %p with invalid htype %ld", (void *) h, (long) DUK_HEAPHDR_GET_TYPE(h)));
 		DUK_UNREACHABLE();
 	}
 
@@ -286,8 +286,8 @@ static void duk__mark_finalizable(duk_heap *heap) {
 		return;
 	}
 
-	DUK_DD(DUK_DDPRINT("marked %d heap objects as finalizable, now mark them reachable",
-	                   (int) count_finalizable));
+	DUK_DD(DUK_DDPRINT("marked %ld heap objects as finalizable, now mark them reachable",
+	                   (long) count_finalizable));
 
 	hdr = heap->heap_allocated;
 	while (hdr) {
@@ -375,7 +375,7 @@ static void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
 #ifdef DUK_USE_DEBUG
-		DUK_DD(DUK_DDPRINT("temproot mark heap scan processed %d temp roots", (int) count));
+		DUK_DD(DUK_DDPRINT("temproot mark heap scan processed %ld temp roots", (long) count));
 #endif
 	}
 }
@@ -500,8 +500,8 @@ static void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep) {
 	}
 
 #ifdef DUK_USE_DEBUG
-	DUK_D(DUK_DPRINT("mark-and-sweep sweep stringtable: %d freed, %d kept",
-	                 (int) count_free, (int) count_keep));
+	DUK_D(DUK_DPRINT("mark-and-sweep sweep stringtable: %ld freed, %ld kept",
+	                 (long) count_free, (long) count_keep));
 #endif
 	*out_count_keep = count_keep;
 }
@@ -652,8 +652,8 @@ static void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_cou
 	}
 
 #ifdef DUK_USE_DEBUG
-	DUK_D(DUK_DPRINT("mark-and-sweep sweep objects (non-string): %d freed, %d kept, %d rescued, %d queued for finalization",
-	                 (int) count_free, (int) count_keep, (int) count_rescue, (int) count_finalize));
+	DUK_D(DUK_DPRINT("mark-and-sweep sweep objects (non-string): %ld freed, %ld kept, %ld rescued, %ld queued for finalization",
+	                 (long) count_free, (long) count_keep, (long) count_rescue, (long) count_finalize));
 #endif
 	*out_count_keep = count_keep;
 }
@@ -707,7 +707,7 @@ static void duk__run_object_finalizers(duk_heap *heap) {
 	heap->finalize_list = NULL;
 
 #ifdef DUK_USE_DEBUG
-	DUK_D(DUK_DPRINT("mark-and-sweep finalize objects: %d finalizers called", (int) count));
+	DUK_D(DUK_DPRINT("mark-and-sweep finalize objects: %ld finalizers called", (long) count));
 #endif
 }
 
@@ -803,8 +803,8 @@ static void duk__compact_objects(duk_heap *heap) {
 #endif
 
 #ifdef DUK_USE_DEBUG
-	DUK_D(DUK_DPRINT("mark-and-sweep compact objects: %d checked, %d compaction attempts, %d bytes saved by compaction",
-	                 (int) count_check, (int) count_compact, (int) count_bytes_saved));
+	DUK_D(DUK_DPRINT("mark-and-sweep compact objects: %ld checked, %ld compaction attempts, %ld bytes saved by compaction",
+	                 (long) count_check, (long) count_compact, (long) count_bytes_saved));
 #endif
 }
 
@@ -857,8 +857,8 @@ static void duk__assert_valid_refcounts(duk_heap *heap) {
 			 */
 #if 0  /* this case can no longer occur because refcount is unsigned */
 		} else if (DUK_HEAPHDR_GET_REFCOUNT(hdr) < 0) {
-			DUK_D(DUK_DPRINT("invalid refcount: %d, %p -> %!O",
-			                 (hdr != NULL ? (int) DUK_HEAPHDR_GET_REFCOUNT(hdr) : (int) 0),
+			DUK_D(DUK_DPRINT("invalid refcount: %ld, %p -> %!O",
+			                 (hdr != NULL ? (long) DUK_HEAPHDR_GET_REFCOUNT(hdr) : (long) 0),
 			                 (void *) hdr, hdr));
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(hdr) > 0);
 #endif
@@ -897,8 +897,8 @@ duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 		return 0;  /* OK */
 	}
 
-	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08x, effective flags: 0x%08x",
-	                 (int) flags, (int) (flags | heap->mark_and_sweep_base_flags)));
+	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
+	                 (unsigned long) flags, (unsigned long) (flags | heap->mark_and_sweep_base_flags)));
 
 	flags |= heap->mark_and_sweep_base_flags;
 
@@ -1078,11 +1078,11 @@ duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 	heap->mark_and_sweep_trigger_counter =
 	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +
 	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD;
-	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, trigger reset to %d",
-	                 (int) count_keep_obj, (int) count_keep_str, (int) heap->mark_and_sweep_trigger_counter));
+	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, trigger reset to %ld",
+	                 (long) count_keep_obj, (long) count_keep_str, (long) heap->mark_and_sweep_trigger_counter));
 #else
-	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %d objects kept, %d strings kept, no voluntary trigger",
-	                 (int) count_keep_obj, (int) count_keep_str));
+	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, no voluntary trigger",
+	                 (long) count_keep_obj, (long) count_keep_str));
 #endif
 	return 0;  /* OK */
 }

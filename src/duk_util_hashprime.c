@@ -60,7 +60,7 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 		/* correction */
 		curr += t;
 
-		DUK_DDD(DUK_DDDPRINT("size=%d, curr=%d", size, curr));
+		DUK_DDD(DUK_DDDPRINT("size=%ld, curr=%ld", (long) size, (long) curr));
 
 		if (curr >= size) {
 			return curr;

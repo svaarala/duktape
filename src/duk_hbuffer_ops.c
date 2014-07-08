@@ -59,9 +59,9 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t n
 	if (res != NULL || new_alloc_size == 0) {
 		/* 'res' may be NULL if new allocation size is 0. */
 
-		DUK_DDD(DUK_DDDPRINT("resized dynamic buffer %p:%d:%d -> %p:%d:%d",
-		                     (void *) buf->curr_alloc, (int) buf->size, (int) buf->usable_size,
-		                     (void *) res, (int) new_size, (int) new_usable_size));
+		DUK_DDD(DUK_DDDPRINT("resized dynamic buffer %p:%ld:%ld -> %p:%ld:%ld",
+		                     (void *) buf->curr_alloc, (long) buf->size, (long) buf->usable_size,
+		                     (void *) res, (long) new_size, (long) new_usable_size));
 
 		/*
 		 *  The entire allocated buffer area, regardless of actual used
@@ -84,9 +84,9 @@ void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t n
 		buf->usable_size = new_usable_size;
 		buf->curr_alloc = res;
 	} else {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "buffer resize failed: %d:%d to %d:%d",
-		          (int) buf->size, (int) buf->usable_size,
-		          (int) new_size, (int) new_usable_size);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "buffer resize failed: %ld:%ld to %ld:%ld",
+		          (long) buf->size, (long) buf->usable_size,
+		          (long) new_size, (long) new_usable_size);
 	}
 
 	DUK_ASSERT(res != NULL || new_alloc_size == 0);

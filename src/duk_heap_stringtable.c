@@ -52,11 +52,11 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	DUK_MEMCPY(data, str, blen);
 	data[blen] = (duk_uint8_t) 0;
 
-	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08x, blen=%d, clen=%d, has_arridx=%d",
-	                     (int) DUK_HSTRING_GET_HASH(res),
-	                     (int) DUK_HSTRING_GET_BYTELEN(res),
-	                     (int) DUK_HSTRING_GET_CHARLEN(res),
-	                     (int) DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0));
+	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld",
+	                     (unsigned long) DUK_HSTRING_GET_HASH(res),
+	                     (long) DUK_HSTRING_GET_BYTELEN(res),
+	                     (long) DUK_HSTRING_GET_CHARLEN(res),
+	                     (long) DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0));
 
 	return res;
 
@@ -99,17 +99,17 @@ static void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint3
 		
 		e = entries[i];
 		if (e == NULL) {
-			DUK_DDD(DUK_DDDPRINT("insert hit (null): %d", (int) i));
+			DUK_DDD(DUK_DDDPRINT("insert hit (null): %ld", (long) i));
 			entries[i] = h;
 			(*p_used)++;
 			break;
 		} else if (e == DUK__DELETED_MARKER(heap)) {
 			/* st_used remains the same, DELETED is counted as used */
-			DUK_DDD(DUK_DDDPRINT("insert hit (deleted): %d", (int) i));
+			DUK_DDD(DUK_DDDPRINT("insert hit (deleted): %ld", (long) i));
 			entries[i] = h;
 			break;
 		}
-		DUK_DDD(DUK_DDDPRINT("insert miss: %d", (int) i));
+		DUK_DDD(DUK_DDDPRINT("insert miss: %ld", (long) i));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -134,11 +134,13 @@ static duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entr
 		}
 		if (e != DUK__DELETED_MARKER(heap) && DUK_HSTRING_GET_BYTELEN(e) == blen) {
 			if (DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(e), blen) == 0) {
-				DUK_DDD(DUK_DDDPRINT("find matching hit: %d (step %d, size %d)", (int) i, (int) step, (int) size));
+				DUK_DDD(DUK_DDDPRINT("find matching hit: %ld (step %ld, size %ld)",
+				                     (long) i, (long) step, (long) size));
 				return e;
 			}
 		}
-		DUK_DDD(DUK_DDDPRINT("find matching miss: %d (step %d, size %d)", (int) i, (int) step, (int) size));
+		DUK_DDD(DUK_DDDPRINT("find matching miss: %ld (step %ld, size %ld)",
+		                     (long) i, (long) step, (long) size));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -165,12 +167,12 @@ static void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, 
 		}
 		if (e == h) {
 			/* st_used remains the same, DELETED is counted as used */
-			DUK_DDD(DUK_DDDPRINT("free matching hit: %d", (int) i));
+			DUK_DDD(DUK_DDDPRINT("free matching hit: %ld", (long) i));
 			entries[i] = DUK__DELETED_MARKER(heap);
 			break;
 		}
 
-		DUK_DDD(DUK_DDDPRINT("free matching miss: %d", (int) i));
+		DUK_DDD(DUK_DDDPRINT("free matching miss: %ld", (long) i));
 		i = (i + step) % size;
 
 		/* looping should never happen */
@@ -200,11 +202,11 @@ static duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) 
 #endif
 
 #ifdef DUK_USE_DDDPRINT
-	DUK_DDD(DUK_DDDPRINT("attempt to resize stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
-	                     (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
-	                     (int) (((double) old_used) / ((double) old_size) * 100.0),
-	                     (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) duk__count_used(heap),
-	                     (int) (((double) duk__count_used(heap)) / ((double) new_size) * 100.0)));
+	DUK_DDD(DUK_DDDPRINT("attempt to resize stringtable: %ld entries, %ld bytes, %ld used, %ld%% load -> %ld entries, %ld bytes, %ld used, %ld%% load",
+	                     (long) old_size, (long) (sizeof(duk_hstring *) * old_size), (long) old_used,
+	                     (long) (((double) old_used) / ((double) old_size) * 100.0),
+	                     (long) new_size, (long) (sizeof(duk_hstring *) * new_size), (long) duk__count_used(heap),
+	                     (long) (((double) duk__count_used(heap)) / ((double) new_size) * 100.0)));
 #endif
 
 	DUK_ASSERT(new_size > (duk_uint32_t) duk__count_used(heap));  /* required for rehash to succeed, equality not that useful */
@@ -259,11 +261,11 @@ static duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) 
 	}
 
 #ifdef DUK_USE_DDPRINT
-	DUK_DD(DUK_DDPRINT("resized stringtable: %d entries, %d bytes, %d used, %d%% load -> %d entries, %d bytes, %d used, %d%% load",
-	                   (int) old_size, (int) (sizeof(duk_hstring *) * old_size), (int) old_used,
-	                   (int) (((double) old_used) / ((double) old_size) * 100.0),
-	                   (int) new_size, (int) (sizeof(duk_hstring *) * new_size), (int) new_used,
-	                   (int) (((double) new_used) / ((double) new_size) * 100.0)));
+	DUK_DD(DUK_DDPRINT("resized stringtable: %ld entries, %ld bytes, %ld used, %ld%% load -> %ld entries, %ld bytes, %ld used, %ld%% load",
+	                   (long) old_size, (long) (sizeof(duk_hstring *) * old_size), (long) old_used,
+	                   (long) (((double) old_used) / ((double) old_size) * 100.0),
+	                   (long) new_size, (long) (sizeof(duk_hstring *) * new_size), (long) new_used,
+	                   (long) (((double) new_used) / ((double) new_size) * 100.0)));
 #endif
 
 	DUK_FREE(heap, heap->st);
@@ -341,9 +343,9 @@ static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_
 		for (i = 0; i < blen; i++) {
 			duk_uint8_t x = str[i];
 			if (x >= 0x20 && x <= 0x7e && x != '"' && x != '\\') {
-				printf("%c", (int) x);
+				printf("%c", (int) x);  /* char: use int cast */
 			} else {
-				printf("\\x%02x", (int) x);
+				printf("\\x%02lx", (long) x);
 			}
 		}
 		printf("\"\n");

@@ -1295,8 +1295,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		duk__parse_input_element_raw(lex_ctx, out_token, strict_mode, regexp_mode);
 		tok = out_token->t;
 
-		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %d (line %d-%d)",
-		                     (int) tok, (int) out_token->start_line, (int) out_token->end_line));
+		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %ld (line %ld-%ld)",
+		                     (long) tok, (long) out_token->start_line, (long) out_token->end_line));
 
 		if (tok == DUK_TOK_COMMENT) {
 			/* single-line comment or multi-line comment without an internal lineterm */
@@ -1348,7 +1348,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	x = DUK__L0();
 	y = DUK__L1();
 
-	DUK_DDD(DUK_DDDPRINT("parsing regexp token, L0=%d, L1=%d", (int) x, (int) y));
+	DUK_DDD(DUK_DDDPRINT("parsing regexp token, L0=%ld, L1=%ld", (long) x, (long) y));
 
 	switch (x) {
 	case '|': {
