@@ -875,25 +875,35 @@ typedef size_t duk_size_t;
 typedef ptrdiff_t duk_ptrdiff_t;
 
 /* The best type for an "all around int" in Duktape internals is "at least
- * 32 bit signed integer" which is fastest.  Same for unsigned type.
+ * 32 bit signed integer" which is most convenient.  Same for unsigned type.
+ * Prefer 'int' when large enough, as it is almost always a convenient type.
  */
+#if defined(UINT_MAX) && (UINT_MAX >= 0xffffffffUL)
+typedef int duk_int_t;
+typedef unsigned int duk_uint_t;
+#define DUK_INT_MIN           INT_MIN
+#define DUK_INT_MAX           INT_MAX
+#define DUK_UINT_MIN          0
+#define DUK_UINT_MAX          UINT_MAX
+#else
 typedef duk_int_fast32_t duk_int_t;
 typedef duk_uint_fast32_t duk_uint_t;
 #define DUK_INT_MIN           DUK_INT_FAST32_MIN
 #define DUK_INT_MAX           DUK_INT_FAST32_MAX
 #define DUK_UINT_MIN          DUK_UINT_FAST32_MIN
 #define DUK_UINT_MAX          DUK_UINT_FAST32_MAX
+#endif
 
 /* Same as 'duk_int_t' but guaranteed to be a 'fast' variant if this
  * distinction matters for the CPU.  These types are used mainly in the
  * executor where it might really matter.
  */
-typedef duk_int_t duk_int_fast_t;
-typedef duk_uint_t duk_uint_fast_t;
-#define DUK_INT_FAST_MIN      DUK_INT_MIN
-#define DUK_INT_FAST_MAX      DUK_INT_MAX
-#define DUK_UINT_FAST_MIN     DUK_UINT_MIN
-#define DUK_UINT_FAST_MAX     DUK_UINT_MAX
+typedef duk_int_fast32_t duk_int_fast_t;
+typedef duk_uint_fast32_t duk_uint_fast_t;
+#define DUK_INT_FAST_MIN      DUK_INT_FAST32_MIN
+#define DUK_INT_FAST_MAX      DUK_INT_FAST32_MAX
+#define DUK_UINT_FAST_MIN     DUK_UINT_FAST32_MIN
+#define DUK_UINT_FAST_MAX     DUK_UINT_FAST32_MAX
 
 /* Small integers (16 bits or more) can fall back to the 'int' type, but
  * have a typedef so they are marked "small" explicitly.
@@ -943,8 +953,8 @@ typedef duk_int_t duk_errcode_t;
  * ensure duk_uint32_t casts back and forth nicely.  Almost everything
  * else uses the signed one.
  */
-typedef duk_int_fast32_t duk_codepoint_t;
-typedef duk_uint_fast32_t duk_ucodepoint_t;
+typedef duk_int_t duk_codepoint_t;
+typedef duk_uint_t duk_ucodepoint_t;
 
 /* IEEE double typedef. */
 typedef double duk_double_t;
