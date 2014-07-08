@@ -348,6 +348,9 @@ Planned
   platforms, e.g. platforms where "int" is a 16-bit type; API docs updated to
   describe how type wrapping affects calling code (see new section "C types")
 
+* Internal C typing wrapped throughout to allow porting to more exotic
+  platforms, e.g. platforms where "int" is a 16-bit type
+
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
 
@@ -438,9 +441,6 @@ Planned
 
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
-
-* Internal C typing wrapped throughout to allow porting to more exotic
-  platforms, e.g. platforms where "int" is a 16-bit type
 
 1.0.0 (2014-07-XX)
 ------------------
