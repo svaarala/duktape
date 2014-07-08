@@ -600,7 +600,7 @@ duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 		duk_hbuffer_append_bytes(thr,
 		                         h_buf,
 		                         DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff,
-		                         (size_t) (match_start_boff - prev_match_end_boff));
+		                         (duk_size_t) (match_start_boff - prev_match_end_boff));
 
 		prev_match_end_boff = match_start_boff + DUK_HSTRING_GET_BYTELEN(h_match);
 

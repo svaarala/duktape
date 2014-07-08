@@ -2568,7 +2568,7 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 	res->t = DUK_IVAL_PLAIN;
 	res->x1.t = DUK_ISPEC_REGCONST;
-	res->x1.regconst = reg_obj;
+	res->x1.regconst = (duk_regconst_t) reg_obj;
 	return;
 
  syntax_error:
@@ -2865,7 +2865,7 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 
 	res->t = DUK_IVAL_PLAIN;
 	res->x1.t = DUK_ISPEC_REGCONST;
-	res->x1.regconst = reg_obj;
+	res->x1.regconst = (duk_regconst_t) reg_obj;
 
 	DUK_DDD(DUK_DDDPRINT("final tracking object: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
@@ -3033,7 +3033,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = reg_temp;
+		res->x1.regconst = (duk_regconst_t) reg_temp;
 		return;
 #else  /* DUK_USE_REGEXP_SUPPORT */
 		goto syntax_error;
@@ -3115,7 +3115,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = reg_target;
+		res->x1.regconst = (duk_regconst_t) reg_target;
 		return;
 	}
 
@@ -3195,7 +3195,7 @@ static void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			}
 			res->t = DUK_IVAL_PLAIN;
 			res->x1.t = DUK_ISPEC_REGCONST;
-			res->x1.regconst = reg_temp;
+			res->x1.regconst = (duk_regconst_t) reg_temp;
 		} else if (res->t == DUK_IVAL_PROP) {
 			duk_reg_t reg_temp;
 			duk_reg_t reg_obj;

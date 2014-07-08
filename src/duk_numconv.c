@@ -696,9 +696,9 @@ static duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, d
 			break;
 		}
 	}
-	len = (size_t) ((buf + 32) - p);
+	len = (duk_size_t) ((buf + 32) - p);
 
-	DUK_MEMMOVE((void *) buf, (void *) p, len);
+	DUK_MEMMOVE((void *) buf, (void *) p, (size_t) len);
 
 	return len;
 }
@@ -1322,7 +1322,7 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 		 *  instance, the number "1.faecee+1c".
 		 */
 
-		size_t len;
+		duk_size_t len;
 		char exp_sign;
 
 		*q++ = 'e';
@@ -1607,7 +1607,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 			*p++ = (duk_uint8_t) '-';
 		}
 		p += duk__dragon4_format_uint32(p, uval, radix);
-		duk_push_lstring(ctx, (const char *) buf, (size_t) (p - buf));
+		duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (p - buf));
 		return;
 	}
 

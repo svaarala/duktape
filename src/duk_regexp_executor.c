@@ -917,7 +917,7 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 
 				duk_push_lstring(ctx,
 				                 (char *) re_ctx.saved[i],
-				                 (size_t) (re_ctx.saved[i+1] - re_ctx.saved[i]));
+				                 (duk_size_t) (re_ctx.saved[i+1] - re_ctx.saved[i]));
 				h_saved = duk_get_hstring(ctx, -1);
 				DUK_ASSERT(h_saved != NULL);
 

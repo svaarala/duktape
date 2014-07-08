@@ -2465,7 +2465,7 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	}
 	buf = (char *) duk_push_fixed_buffer(ctx, (duk_size_t) sz);
 	DUK_ASSERT(buf != NULL);
-	if (DUK_FREAD(buf, 1, (size_t) sz, f) != (duk_size_t) sz) {
+	if ((duk_size_t) DUK_FREAD(buf, 1, (size_t) sz, f) != (duk_size_t) sz) {
 		goto fail;
 	}
 	(void) DUK_FCLOSE(f);  /* ignore fclose() error */

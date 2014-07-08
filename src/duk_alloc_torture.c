@@ -14,7 +14,7 @@
 
 /* FIXME: unimplemented */
 
-void *duk_torture_alloc_function(void *udata, size_t size) {
+void *duk_torture_alloc_function(void *udata, duk_size_t size) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_MALLOC(size);
@@ -23,7 +23,7 @@ void *duk_torture_alloc_function(void *udata, size_t size) {
 	return res;
 }
 
-void *duk_torture_realloc_function(void *udata, void *ptr, size_t newsize) {
+void *duk_torture_realloc_function(void *udata, void *ptr, duk_size_t newsize) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_REALLOC(ptr, newsize);

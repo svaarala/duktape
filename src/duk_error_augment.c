@@ -216,7 +216,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 	 * special handling above (intentional)
 	 */
 	depth = DUK_USE_TRACEBACK_DEPTH;
-	i_min = (thr_callstack->callstack_top > (size_t) depth ? (duk_int_t) (thr_callstack->callstack_top - depth) : 0);
+	i_min = (thr_callstack->callstack_top > (duk_size_t) depth ? (duk_int_t) (thr_callstack->callstack_top - depth) : 0);
 	DUK_ASSERT(i_min >= 0);
 
 	/* [ ... error arr ] */
