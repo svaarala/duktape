@@ -56,7 +56,7 @@
 /* Note: combining __FILE__, __LINE__, and __func__ into fmt would be
  * possible compile time, but waste some space with shared function names.
  */
-#define DUK__DEBUG_LOG(lev,...)  duk_debug_log((lev), DUK_FILE_MACRO, (int) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
+#define DUK__DEBUG_LOG(lev,...)  duk_debug_log((duk_small_int_t) (lev), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
 
 #define DUK_DPRINT(...)          DUK__DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -75,11 +75,11 @@
 #else  /* DUK_USE_VARIADIC_MACROS */
 
 #define DUK__DEBUG_STASH(lev)    \
-	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FILE_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FILE_MACRO), \
 	duk_debug_file_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
-	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE, "%d", (int) DUK_LINE_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE, "%ld", (long) DUK_LINE_MACRO), \
 	duk_debug_line_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
-	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", DUK_FUNC_MACRO), \
+	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FUNC_MACRO), \
 	duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
 	(void) (duk_debug_level_stash = (lev))
 
@@ -131,7 +131,7 @@
 		duk_debug_summary_buf[duk_debug_summary_idx++] = (ch); \
 		if ((duk_size_t) duk_debug_summary_idx >= (duk_size_t) (sizeof(duk_debug_summary_buf) - 1)) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", duk_debug_summary_buf); \
+			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)
@@ -139,7 +139,7 @@
 #define DUK_DEBUG_SUMMARY_FINISH()  do { \
 		if (duk_debug_summary_idx > 0) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", duk_debug_summary_buf); \
+			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)
@@ -188,9 +188,9 @@
 #ifdef DUK_USE_DEBUG
 struct duk_fixedbuffer {
 	duk_uint8_t *buffer;
-	duk_uint32_t length;
-	duk_uint32_t offset;
-	int truncated;
+	duk_size_t length;
+	duk_size_t offset;
+	duk_bool_t truncated;
 };
 #endif
 
@@ -199,27 +199,27 @@ struct duk_fixedbuffer {
  */
 
 #ifdef DUK_USE_DEBUG
-int duk_debug_vsnprintf(char *str, size_t size, const char *format, va_list ap);
-int duk_debug_snprintf(char *str, size_t size, const char *format, ...);
-void duk_debug_format_funcptr(char *buf, int buf_size, unsigned char *fptr, int fptr_size);
+duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap);
+duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...);
+void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size);
 
 #ifdef DUK_USE_VARIADIC_MACROS
-void duk_debug_log(int level, const char *file, int line, const char *func, char *fmt, ...);
+void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, char *fmt, ...);
 #else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */
 #define DUK_DEBUG_STASH_SIZE  128
 extern char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
 extern char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 extern char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
-extern int duk_debug_level_stash;
+extern duk_small_int_t duk_debug_level_stash;
 extern void duk_debug_log(char *fmt, ...);
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
-void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_uint32_t length);
+void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length);
 void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x);
 void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x);
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...);
-int duk_fb_is_full(duk_fixedbuffer *fb);
+duk_bool_t duk_fb_is_full(duk_fixedbuffer *fb);
 
 void duk_debug_dump_heap(duk_heap *heap);
 void duk_debug_heap_graphviz(duk_heap *heap);
@@ -230,9 +230,8 @@ void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act);
 
 #define DUK_DEBUG_SUMMARY_BUF_SIZE  76
 extern char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
-extern int duk_debug_summary_idx;
+extern duk_int_t duk_debug_summary_idx;
 
 #endif  /* DUK_USE_DEBUG */
 
 #endif  /* DUK_DEBUG_H_INCLUDED */
-

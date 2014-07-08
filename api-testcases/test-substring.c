@@ -7,7 +7,7 @@ blen=0, clen=0, str=""
 final top: 1
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected tag 5'
+==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_safe_call)
 ==> rc=1, result='Error: invalid index'
 *** test_4 (duk_safe_call)

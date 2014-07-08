@@ -13,9 +13,9 @@ index 8, type: 6, string coerced: [object Object]
 index 9, type: 6, string coerced: [object Thread]
 ==> rc=0, result='undefined'
 *** test_2a (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+==> rc=1, result='TypeError: not object coercible'
 *** test_2b (duk_safe_call)
-==> rc=1, result='TypeError: attempt to coerce incompatible value to object'
+==> rc=1, result='TypeError: not object coercible'
 *** test_2c (duk_safe_call)
 index 0 OK
 ==> rc=0, result='undefined'

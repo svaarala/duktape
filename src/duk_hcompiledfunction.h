@@ -32,12 +32,12 @@
 	((duk_hobject **) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_CODE_END(h)  \
-	((duk_instr *) (DUK_HBUFFER_FIXED_GET_DATA_PTR((duk_hbuffer_fixed *) (h)->data) + \
+	((duk_instr_t *) (DUK_HBUFFER_FIXED_GET_DATA_PTR((duk_hbuffer_fixed *) (h)->data) + \
 	                DUK_HBUFFER_GET_SIZE((h)->data)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
@@ -46,7 +46,7 @@
 
 #define DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
@@ -55,7 +55,7 @@
 
 #define DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(h)  \
 	( \
-	 (size_t) \
+	 (duk_size_t) \
 	 ( \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
 	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
@@ -63,13 +63,13 @@
 	)
 
 #define DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE((h)) / sizeof(duk_tval)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE((h)) / sizeof(duk_tval)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE((h)) / sizeof(duk_hobject *)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE((h)) / sizeof(duk_hobject *)))
 
 #define DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(h)  \
-	((size_t) (DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE((h)) / sizeof(duk_instr)))
+	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE((h)) / sizeof(duk_instr_t)))
 
 
 /*
@@ -88,7 +88,7 @@ struct duk_hcompiledfunction {
 	 *
 	 *    constants (duk_tval)
 	 *    inner functions (duk_hobject *)
-	 *    bytecode (duk_instr)
+	 *    bytecode (duk_instr_t)
 	 *
 	 *  Note: bytecode end address can be computed from 'data' buffer
 	 *  size.  It is not strictly necessary functionally, assuming
@@ -105,7 +105,7 @@ struct duk_hcompiledfunction {
 
 	/* no need for constants pointer */
 	duk_hobject **funcs;
-	duk_instr *bytecode;
+	duk_instr_t *bytecode;
 
 	/*
 	 *  'nregs' registers are allocated on function entry, at most 'nargs'
@@ -172,4 +172,3 @@ struct duk_hcompiledfunction {
 };
 
 #endif  /* DUK_HCOMPILEDFUNCTION_H_INCLUDED */
-

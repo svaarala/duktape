@@ -34,7 +34,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 	num_header_entries = (length + DUK_PC2LINE_SKIP - 1) / DUK_PC2LINE_SKIP;
 	curr_offset = (duk_uint_fast32_t) (sizeof(duk_uint32_t) + num_header_entries * sizeof(duk_uint32_t) * 2);
 
-	duk_push_dynamic_buffer(ctx, (size_t) curr_offset);
+	duk_push_dynamic_buffer(ctx, (duk_size_t) curr_offset);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
@@ -57,11 +57,11 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 		hdr[hdr_index + 1] = (duk_uint32_t) curr_offset;
 
 #if 0
-		DUK_DDD(DUK_DDDPRINT("hdr[%d]: pc=%d line=%d offset=%d",
-		                     (int) (curr_pc / DUK_PC2LINE_SKIP),
-		                     (int) curr_pc,
-		                     (int) hdr[hdr_index + 0],
-		                     (int) hdr[hdr_index + 1]));
+		DUK_DDD(DUK_DDDPRINT("hdr[%ld]: pc=%ld line=%ld offset=%ld",
+		                     (long) (curr_pc / DUK_PC2LINE_SKIP),
+		                     (long) curr_pc,
+		                     (long) hdr[hdr_index + 0],
+		                     (long) hdr[hdr_index + 1]));
 #endif
 
 		DUK_MEMZERO(be_ctx, sizeof(*be_ctx));
@@ -79,8 +79,8 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 			diff_line = next_line - curr_line;
 
 #if 0
-			DUK_DDD(DUK_DDDPRINT("curr_line=%d, next_line=%d -> diff_line=%d",
-			                     (int) curr_line, (int) next_line, (int) diff_line));
+			DUK_DDD(DUK_DDDPRINT("curr_line=%ld, next_line=%ld -> diff_line=%ld",
+			                     (long) curr_line, (long) next_line, (long) diff_line));
 #endif
 
 			if (diff_line == 0) {
@@ -117,9 +117,9 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 
 	(void) duk_to_fixed_buffer(ctx, -1, NULL);
 
-	DUK_DDD(DUK_DDDPRINT("final pc2line data: pc_limit=%d, length=%d, %lf bits/opcode --> %!ixT",
-	                     (int) length, (int) new_size, (double) new_size * 8.0 / (double) length,
-	                     duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("final pc2line data: pc_limit=%ld, length=%ld, %lf bits/opcode --> %!ixT",
+	                     (long) length, (long) new_size, (double) new_size * 8.0 / (double) length,
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 }
 
 /* PC is unsigned.  If caller does PC arithmetic and gets a negative result,
@@ -153,16 +153,16 @@ static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, 
 	pc_limit = hdr[0];
 	if (pc >= pc_limit) {
 		/* Note: pc is unsigned and cannot be negative */
-		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%d, limit=%d)",
-		                   (int) pc, (int) pc_limit));
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%ld, limit=%ld)",
+		                   (long) pc, (long) pc_limit));
 		goto error;
 	}
 
 	curr_line = hdr[1 + hdr_index * 2];
 	start_offset = hdr[1 + hdr_index * 2 + 1];
 	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
-		DUK_DD(DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%d, buffer_size=%d)",
-		                   (int) start_offset, (int) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%ld, buffer_size=%ld)",
+		                   (long) start_offset, (long) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
 		goto error;
 	}
 
@@ -171,13 +171,13 @@ static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, 
 	bd_ctx->length = (duk_size_t) (DUK_HBUFFER_FIXED_GET_SIZE(buf) - start_offset);
 
 #if 0
-	DUK_DDD(DUK_DDDPRINT("pc2line lookup: pc=%d -> hdr_index=%d, pc_base=%d, n=%d, start_offset=%d",
-	                     (int) pc, (int) hdr_index, (int) pc_base, (int) n, (int) start_offset));
+	DUK_DDD(DUK_DDDPRINT("pc2line lookup: pc=%ld -> hdr_index=%ld, pc_base=%ld, n=%ld, start_offset=%ld",
+	                     (long) pc, (long) hdr_index, (long) pc_base, (long) n, (long) start_offset));
 #endif
 
 	while (n > 0) {
 #if 0
-		DUK_DDD(DUK_DDDPRINT("lookup: n=%d, curr_line=%d", (int) n, (int) curr_line));
+		DUK_DDD(DUK_DDDPRINT("lookup: n=%ld, curr_line=%ld", (long) n, (long) curr_line));
 #endif
 
 		if (duk_bd_decode_flag(bd_ctx)) {
@@ -207,11 +207,11 @@ static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, 
 		n--;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("pc2line lookup result: pc %d -> line %d", (int) pc, (int) curr_line));
+	DUK_DDD(DUK_DDDPRINT("pc2line lookup result: pc %ld -> line %ld", (long) pc, (long) curr_line));
 	return curr_line;
 
  error:
-	DUK_D(DUK_DPRINT("pc2line conversion failed for pc=%d", (int) pc));
+	DUK_D(DUK_DPRINT("pc2line conversion failed for pc=%ld", (long) pc));
 	return 0;
 }
 

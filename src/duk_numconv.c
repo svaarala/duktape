@@ -93,12 +93,12 @@ static void duk__bi_print(const char *name, duk__bigint *x) {
 	duk_small_int_t i;
 
 	/* No NUL term checks in this debug code. */
-	p += DUK_SPRINTF(p, "%p n=%d", (void *) x, x->n);
+	p += DUK_SPRINTF(p, "%p n=%ld", (void *) x, (long) x->n);
 	if (x->n == 0) {
 		p += DUK_SPRINTF(p, " 0");
 	}
 	for (i = x->n - 1; i >= 0; i--) {
-		p += DUK_SPRINTF(p, " %08x", (unsigned int) x->v[i]);
+		p += DUK_SPRINTF(p, " %08lx", (unsigned long) x->v[i]);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("%s: %s", (const char *) name, (const char *) buf));
@@ -487,10 +487,10 @@ static void duk__bi_mul(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 			t = a * c;
 			r += t;
 
-			DUK_DDD(DUK_DDDPRINT("ab=%08x cd=%08x ef=%08x -> rs=%08x %08x",
-			                     (unsigned int) y->v[i], (unsigned int) z->v[j],
-			                     (unsigned int) x->v[i+j], (unsigned int) r,
-			                     (unsigned int) s));
+			DUK_DDD(DUK_DDDPRINT("ab=%08lx cd=%08lx ef=%08lx -> rs=%08lx %08lx",
+			                     (unsigned long) y->v[i], (unsigned long) z->v[j],
+			                     (unsigned long) x->v[i+j], (unsigned long) r,
+			                     (unsigned long) s));
 
 			x->v[i+j] = s;
 			f = r;
@@ -582,7 +582,7 @@ static void duk__bi_exp_small(duk__bigint *x, duk_small_int_t b, duk_small_int_t
 
 	/* http://en.wikipedia.org/wiki/Exponentiation_by_squaring */
 
-	DUK_DDD(DUK_DDDPRINT("exp_small: b=%d, y=%d", (int) b, (int) y));
+	DUK_DDD(DUK_DDDPRINT("exp_small: b=%ld, y=%ld", (long) b, (long) y));
 
 	duk__bi_set_small(x, 1);
 	duk__bi_set_small(t1, b);
@@ -696,9 +696,9 @@ static duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, d
 			break;
 		}
 	}
-	len = (size_t) ((buf + 32) - p);
+	len = (duk_size_t) ((buf + 32) - p);
 
-	DUK_MEMMOVE((void *) buf, (void *) p, len);
+	DUK_MEMMOVE((void *) buf, (void *) p, (size_t) len);
 
 	return len;
 }
@@ -870,15 +870,15 @@ static void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
 	 * impact for very large and very small numbers.
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("scale: B=%d, low_ok=%d, high_ok=%d",
-	                     (int) nc_ctx->B, (int) nc_ctx->low_ok, (int) nc_ctx->high_ok));
+	DUK_DDD(DUK_DDDPRINT("scale: B=%ld, low_ok=%ld, high_ok=%ld",
+	                     (long) nc_ctx->B, (long) nc_ctx->low_ok, (long) nc_ctx->high_ok));
 	DUK__BI_PRINT("r(init)", &nc_ctx->r);
 	DUK__BI_PRINT("s(init)", &nc_ctx->s);
 	DUK__BI_PRINT("mp(init)", &nc_ctx->mp);
 	DUK__BI_PRINT("mm(init)", &nc_ctx->mm);
 
 	for (;;) {
-		DUK_DDD(DUK_DDDPRINT("scale loop (inc k), k=%d", (int) k));
+		DUK_DDD(DUK_DDDPRINT("scale loop (inc k), k=%ld", (long) k));
 		DUK__BI_PRINT("r", &nc_ctx->r);
 		DUK__BI_PRINT("s", &nc_ctx->s);
 		DUK__BI_PRINT("m+", &nc_ctx->mp);
@@ -907,7 +907,7 @@ static void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
 	}
 
 	for (;;) {
-		DUK_DDD(DUK_DDDPRINT("scale loop (dec k), k=%d", (int) k));
+		DUK_DDD(DUK_DDDPRINT("scale loop (dec k), k=%ld", (long) k));
 		DUK__BI_PRINT("r", &nc_ctx->r);
 		DUK__BI_PRINT("s", &nc_ctx->s);
 		DUK__BI_PRINT("m+", &nc_ctx->mp);
@@ -943,7 +943,7 @@ static void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
 	}
 	nc_ctx->k = k;
 
-	DUK_DDD(DUK_DDDPRINT("final k: %d", (int) k));
+	DUK_DDD(DUK_DDDPRINT("final k: %ld", (long) k));
 	DUK__BI_PRINT("r(final)", &nc_ctx->r);
 	DUK__BI_PRINT("s(final)", &nc_ctx->s);
 	DUK__BI_PRINT("mp(final)", &nc_ctx->mp);
@@ -974,9 +974,9 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 	 */
 
 	for (;;) {
-		DUK_DDD(DUK_DDDPRINT("generate loop, count=%d, k=%d, B=%d, low_ok=%d, high_ok=%d",
-		                     (int) count, (int) nc_ctx->k, (int) nc_ctx->B,
-		                     (int) nc_ctx->low_ok, (int) nc_ctx->high_ok));
+		DUK_DDD(DUK_DDDPRINT("generate loop, count=%ld, k=%ld, B=%ld, low_ok=%ld, high_ok=%ld",
+		                     (long) count, (long) nc_ctx->k, (long) nc_ctx->B,
+		                     (long) nc_ctx->low_ok, (long) nc_ctx->high_ok));
 		DUK__BI_PRINT("r", &nc_ctx->r);
 		DUK__BI_PRINT("s", &nc_ctx->s);
 		DUK__BI_PRINT("m+", &nc_ctx->mp);
@@ -994,7 +994,7 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 		}
 		duk__bi_copy(&nc_ctx->r, &nc_ctx->t1);  /* r <- (remainder (* r B) s) */
 		                                        /* d <- (quotient (* r B) s)   (in range 0...B-1) */
-		DUK_DDD(DUK_DDDPRINT("-> d(quot)=%d", (int) d));
+		DUK_DDD(DUK_DDDPRINT("-> d(quot)=%ld", (long) d));
 		DUK__BI_PRINT("r(rem)", &nc_ctx->r);
 
 		duk__bi_mul_small_copy(&nc_ctx->mp, nc_ctx->B, &nc_ctx->t2); /* m+ <- (* m+ B) */
@@ -1015,7 +1015,7 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 			duk__bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 <- (+ r m+) */
 			tc2 = (duk__bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (&nc_ctx->high_ok ? 0 : 1));
 
-			DUK_DDD(DUK_DDDPRINT("tc1=%d, tc2=%d", (int) tc1, (int) tc2));
+			DUK_DDD(DUK_DDDPRINT("tc1=%ld, tc2=%ld", (long) tc1, (long) tc2));
 		} else {
 			/* fixed-format */
 			tc1 = 0;
@@ -1032,33 +1032,33 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 				/* tc1 = true, tc2 = true */
 				duk__bi_mul_small(&nc_ctx->t1, &nc_ctx->r, 2);
 				if (duk__bi_compare(&nc_ctx->t1, &nc_ctx->s) < 0) {  /* (< (* r 2) s) */
-					DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=true, 2r > s: output d --> %d (k=%d)",
-					                     (int) d, (int) nc_ctx->k));
+					DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=true, 2r > s: output d --> %ld (k=%ld)",
+					                     (long) d, (long) nc_ctx->k));
 					DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 				} else {
-					DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=true, 2r <= s: output d+1 --> %d (k=%d)",
-					                     (int) (d + 1), (int) nc_ctx->k));
+					DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=true, 2r <= s: output d+1 --> %ld (k=%ld)",
+					                     (long) (d + 1), (long) nc_ctx->k));
 					DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
 				}
 				break;
 			} else {
 				/* tc1 = true, tc2 = false */
-				DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=false: output d --> %d (k=%d)",
-				                     (int) d, (int) nc_ctx->k));
+				DUK_DDD(DUK_DDDPRINT("tc1=true, tc2=false: output d --> %ld (k=%ld)",
+				                     (long) d, (long) nc_ctx->k));
 				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 				break;
 			}
 		} else {
 			if (tc2) {
 				/* tc1 = false, tc2 = true */
-				DUK_DDD(DUK_DDDPRINT("tc1=false, tc2=true: output d+1 --> %d (k=%d)",
-				                     (int) (d + 1), (int) nc_ctx->k));
+				DUK_DDD(DUK_DDDPRINT("tc1=false, tc2=true: output d+1 --> %ld (k=%ld)",
+				                     (long) (d + 1), (long) nc_ctx->k));
 				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d + 1);
 				break;
 			} else {
 				/* tc1 = false, tc2 = false */
-				DUK_DDD(DUK_DDDPRINT("tc1=false, tc2=false: output d --> %d (k=%d)",
-				                     (int) d, (int) nc_ctx->k));
+				DUK_DDD(DUK_DDDPRINT("tc1=false, tc2=false: output d --> %ld (k=%ld)",
+				                     (long) d, (long) nc_ctx->k));
 				DUK__DRAGON4_OUTPUT_PREINC(nc_ctx, count, d);
 
 				/* r <- r    (updated above: r <- (remainder (* r B) s)
@@ -1076,15 +1076,15 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 		if (nc_ctx->is_fixed) {
 			if (nc_ctx->abs_pos) {
 				int pos = nc_ctx->k - count + 1;  /* count is already incremented, take into account */
-				DUK_DDD(DUK_DDDPRINT("fixed format, absolute: abs pos=%d, k=%d, count=%d, req=%d",
-				                     (int) pos, (int) nc_ctx->k, (int) count, (int) nc_ctx->req_digits));
+				DUK_DDD(DUK_DDDPRINT("fixed format, absolute: abs pos=%ld, k=%ld, count=%ld, req=%ld",
+				                     (long) pos, (long) nc_ctx->k, (long) count, (long) nc_ctx->req_digits));
 				if (pos <= nc_ctx->req_digits) {
 					DUK_DDD(DUK_DDDPRINT("digit position reached req_digits, end generate loop"));
 					break;
 				}
 			} else {
-				DUK_DDD(DUK_DDDPRINT("fixed format, relative: k=%d, count=%d, req=%d",
-				                     (int) nc_ctx->k, (int) count, (int) nc_ctx->req_digits));
+				DUK_DDD(DUK_DDDPRINT("fixed format, relative: k=%ld, count=%ld, req=%ld",
+				                     (long) nc_ctx->k, (long) count, (long) nc_ctx->req_digits));
 				if (count >= nc_ctx->req_digits) {
 					DUK_DDD(DUK_DDDPRINT("digit count reached req_digits, end generate loop"));
 					break;
@@ -1110,8 +1110,8 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 				buf[i] = (duk_uint8_t) DUK__DIGITCHAR(t);
 			}
 		}
-		DUK_DDD(DUK_DDDPRINT("-> generated digits; k=%d, digits='%s'",
-		                     (int) nc_ctx->k, (const char *) buf));
+		DUK_DDD(DUK_DDDPRINT("-> generated digits; k=%ld, digits='%s'",
+		                     (long) nc_ctx->k, (const char *) buf));
 	}
 #endif
 }
@@ -1139,12 +1139,12 @@ static duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify_ct
 	 */
 
 	if (round_idx >= nc_ctx->count) {
-		DUK_DDD(DUK_DDDPRINT("round_idx out of bounds (%d >= %d (count)) -> no rounding",
-		                     (int) round_idx, (int) nc_ctx->count));
+		DUK_DDD(DUK_DDDPRINT("round_idx out of bounds (%ld >= %ld (count)) -> no rounding",
+		                     (long) round_idx, (long) nc_ctx->count));
 		return 0;
 	} else if (round_idx < 0) {
-		DUK_DDD(DUK_DDDPRINT("round_idx out of bounds (%d < 0) -> no rounding",
-		                     (int) round_idx));
+		DUK_DDD(DUK_DDDPRINT("round_idx out of bounds (%ld < 0) -> no rounding",
+		                     (long) round_idx));
 		return 0;
 	}
 
@@ -1176,11 +1176,11 @@ static duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify_ct
 				break;
 			}
 
-			DUK_DDD(DUK_DDDPRINT("fixed-format rounding carry: B=%d, roundup_limit=%d, p=%p, digits=%p",
-			                     (int) nc_ctx->B, (int) roundup_limit, (void *) p, (void *) nc_ctx->digits));
+			DUK_DDD(DUK_DDDPRINT("fixed-format rounding carry: B=%ld, roundup_limit=%ld, p=%p, digits=%p",
+			                     (long) nc_ctx->B, (long) roundup_limit, (void *) p, (void *) nc_ctx->digits));
 			p--;
 			t = *p;
-			DUK_DDD(DUK_DDDPRINT("digit before carry: %d", (int) t));
+			DUK_DDD(DUK_DDDPRINT("digit before carry: %ld", (long) t));
 			if (++t < nc_ctx->B) {
 				DUK_DDD(DUK_DDDPRINT("rounding carry terminated"));
 				*p = t;
@@ -1253,7 +1253,8 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 		    ((flags & DUK_N2S_FLAG_NO_ZERO_PAD) &&          /* fixed precision and zero padding would be required */
 	             (k - digits >= 1)) ||                          /* (e.g. k=3, digits=2 -> "12X") */
 		    ((k > 21 || k <= -6) && (radix == 10))) {       /* toString() conditions */
-			DUK_DDD(DUK_DDDPRINT("use exponential notation: k=%d -> exp=%d", (int) k, (int) (k - 1)));
+			DUK_DDD(DUK_DDDPRINT("use exponential notation: k=%ld -> exp=%ld",
+			                     (long) k, (long) (k - 1)));
 			exp = k - 1;  /* e.g. 12.3 -> digits="123" k=2 -> 1.23e1 */
 			k = 1;  /* generate mantissa with a single leading whole number digit */
 		}
@@ -1279,15 +1280,15 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 		pos_end = 0;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("exp=%d, k=%d, count=%d, pos=%d, pos_end=%d, is_fixed=%d, "
-	                     "digits=%d, abs_pos=%d",
-	                     (int) exp, (int) k, (int) nc_ctx->count, (int) pos, (int) pos_end,
-	                     (int) nc_ctx->is_fixed, (int) digits, (int) nc_ctx->abs_pos));
+	DUK_DDD(DUK_DDDPRINT("exp=%ld, k=%ld, count=%ld, pos=%ld, pos_end=%ld, is_fixed=%ld, "
+	                     "digits=%ld, abs_pos=%ld",
+	                     (long) exp, (long) k, (long) nc_ctx->count, (long) pos, (long) pos_end,
+	                     (long) nc_ctx->is_fixed, (long) digits, (long) nc_ctx->abs_pos));
 
 	/* Digit generation */
 	while (pos > pos_end) {
-		DUK_DDD(DUK_DDDPRINT("digit generation: pos=%d, pos_end=%d",
-		                     (int) pos, (int) pos_end));
+		DUK_DDD(DUK_DDDPRINT("digit generation: pos=%ld, pos_end=%ld",
+		                     (long) pos, (long) pos_end));
 		if (pos == 0) {
 			*q++ = (duk_uint8_t) '.';
 		}
@@ -1321,7 +1322,7 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 		 *  instance, the number "1.faecee+1c".
 		 */
 
-		size_t len;
+		duk_size_t len;
 		char exp_sign;
 
 		*q++ = 'e';
@@ -1471,8 +1472,8 @@ void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t
 	}
 	bitround = bitstart + 52;
 
-	DUK_DDD(DUK_DDDPRINT("ieee exp=%d, bitstart=%d, bitround=%d",
-	                     (int) exp, (int) bitstart, (int) bitround));
+	DUK_DDD(DUK_DDDPRINT("ieee exp=%ld, bitstart=%ld, bitround=%ld",
+	                     (long) exp, (long) bitstart, (long) bitround));
 
 	if (!skip_round) {
 		if (duk__dragon4_fixed_format_round(nc_ctx, bitround)) {
@@ -1510,9 +1511,9 @@ void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t
 	}
 	/* t has high mantissa */
 
-	DUK_DDD(DUK_DDDPRINT("mantissa is complete: %08x %08x",
-	                     (unsigned int) t,
-	                     (unsigned int) DUK_DBLUNION_GET_LOW32(&u)));
+	DUK_DDD(DUK_DDDPRINT("mantissa is complete: %08lx %08lx",
+	                     (unsigned long) t,
+	                     (unsigned long) DUK_DBLUNION_GET_LOW32(&u)));
 
 	DUK_ASSERT(exp >= 0 && exp <= 0x7ffL);
 	t += exp << 20;
@@ -1523,9 +1524,9 @@ void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t
 #endif
 	DUK_DBLUNION_SET_HIGH32(&u, t);
 
-	DUK_DDD(DUK_DDDPRINT("number is complete: %08x %08x",
-	                     (unsigned int) DUK_DBLUNION_GET_HIGH32(&u),
-	                     (unsigned int) DUK_DBLUNION_GET_LOW32(&u)));
+	DUK_DDD(DUK_DDDPRINT("number is complete: %08lx %08lx",
+	                     (unsigned long) DUK_DBLUNION_GET_HIGH32(&u),
+	                     (unsigned long) DUK_DBLUNION_GET_LOW32(&u)));
 
 	*x = DUK_DBLUNION_GET_DOUBLE(&u);
 }
@@ -1590,7 +1591,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 	 *  is in force.
 	 *
 	 *  XXX: could save space by supporting radix 10 only and using
-	 *  sprintf "%u" for the fast path and for exponent formatting.
+	 *  sprintf "%lu" for the fast path and for exponent formatting.
 	 */
 
 	uval = (unsigned int) x;
@@ -1606,7 +1607,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 			*p++ = (duk_uint8_t) '-';
 		}
 		p += duk__dragon4_format_uint32(p, uval, radix);
-		duk_push_lstring(ctx, (const char *) buf, (size_t) (p - buf));
+		duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (p - buf));
 		return;
 	}
 
@@ -1663,7 +1664,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 		} else {
 			count = 1;
 		}
-		DUK_DDD(DUK_DDDPRINT("count=%d", (int) count));
+		DUK_DDD(DUK_DDDPRINT("count=%ld", (long) count));
 		DUK_ASSERT(count >= 1);
 		DUK_MEMZERO((void *) nc_ctx->digits, count);
 		nc_ctx->count = count;
@@ -1674,7 +1675,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 
 	duk__dragon4_double_to_ctx(nc_ctx, x);   /* -> sets 'f' and 'e' */
 	DUK__BI_PRINT("f", &nc_ctx->f);
-	DUK_DDD(DUK_DDDPRINT("e=%d", (int) nc_ctx->e));
+	DUK_DDD(DUK_DDDPRINT("e=%ld", (long) nc_ctx->e));
 
 	/*
 	 *  Dragon4 slow path digit generation.
@@ -1690,7 +1691,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 
 	duk__dragon4_scale(nc_ctx);
 
-	DUK_DDD(DUK_DDDPRINT("after scale; k=%d", (int) nc_ctx->k));
+	DUK_DDD(DUK_DDDPRINT("after scale; k=%ld", (long) nc_ctx->k));
 	DUK__BI_PRINT("r", &nc_ctx->r);
 	DUK__BI_PRINT("s", &nc_ctx->s);
 	DUK__BI_PRINT("mp", &nc_ctx->mp);
@@ -1717,8 +1718,8 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 		} else {
 			roundpos = digits;
 		}
-		DUK_DDD(DUK_DDDPRINT("rounding: k=%d, count=%d, digits=%d, roundpos=%d",
-		                     (int) nc_ctx->k, (int) nc_ctx->count, (int) digits, (int) roundpos));
+		DUK_DDD(DUK_DDDPRINT("rounding: k=%ld, count=%ld, digits=%ld, roundpos=%ld",
+		                     (long) nc_ctx->k, (long) nc_ctx->count, (long) digits, (long) roundpos));
 		(void) duk__dragon4_fixed_format_round(nc_ctx, roundpos);
 
 		/* Note: 'count' is currently not adjusted by rounding (i.e. the
@@ -1779,8 +1780,9 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	duk_small_int_t allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
 	duk_small_int_t allow_auto_oct_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT);
 
-	DUK_DDD(DUK_DDDPRINT("parse number: %!T, radix=%d, flags=0x%08x",
-	                     duk_get_tval(ctx, -1), (int) radix, (unsigned int) flags));
+	DUK_DDD(DUK_DDDPRINT("parse number: %!T, radix=%ld, flags=0x%08lx",
+	                     (duk_tval *) duk_get_tval(ctx, -1),
+	                     (long) radix, (unsigned long) flags));
 
 	DUK_ASSERT(radix >= 2 && radix <= 36);
 	DUK_ASSERT(radix - 2 < (duk_small_int_t) sizeof(duk__str2num_digits_for_radix));
@@ -1935,11 +1937,11 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	for (;;) {
 		ch = *p++;
 
-		DUK_DDD(DUK_DDDPRINT("parse digits: p=%p, ch='%c' (%d), exp=%d, exp_adj=%d, "
-		                     "dig_whole=%d, dig_frac=%d, dig_exp=%d, dig_lzero=%d, dig_prec=%d",
-		                     (void *) p, (ch >= 0x20 && ch <= 0x7e) ? ch : '?', (int) ch,
-		                     (int) exp, (int) exp_adj, (int) dig_whole, (int) dig_frac,
-		                     (int) dig_exp, (int) dig_lzero, (int) dig_prec));
+		DUK_DDD(DUK_DDDPRINT("parse digits: p=%p, ch='%c' (%ld), exp=%ld, exp_adj=%ld, "
+		                     "dig_whole=%ld, dig_frac=%ld, dig_exp=%ld, dig_lzero=%ld, dig_prec=%ld",
+		                     (void *) p, (int) ((ch >= 0x20 && ch <= 0x7e) ? ch : '?'), (long) ch,
+		                     (long) exp, (long) exp_adj, (long) dig_whole, (long) dig_frac,
+		                     (long) dig_exp, (long) dig_lzero, (long) dig_prec));
 		DUK__BI_PRINT("f", &nc_ctx->f);
 
 		/* Most common cases first. */
@@ -2133,8 +2135,8 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	if (exp_neg) {
 		exp = -exp;
 	}
-	DUK_DDD(DUK_DDDPRINT("exp=%d, exp_adj=%d, net exponent -> %d",
-	                     (int) exp, (int) exp_adj, (int) (exp + exp_adj)));
+	DUK_DDD(DUK_DDDPRINT("exp=%ld, exp_adj=%ld, net exponent -> %ld",
+	                     (long) exp, (long) exp_adj, (long) (exp + exp_adj)));
 	exp += exp_adj;
 
 	/* Fast path check. */
@@ -2162,14 +2164,14 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 		/* Pad significand with "virtual" zero digits so that Dragon4 will
 		 * have enough (apparent) precision to work with.
 		 */
-		DUK_DDD(DUK_DDDPRINT("dig_prec=%d, pad significand with zero", (int) dig_prec));
+		DUK_DDD(DUK_DDDPRINT("dig_prec=%ld, pad significand with zero", (long) dig_prec));
 		duk__bi_mul_small_copy(&nc_ctx->f, radix, &nc_ctx->t1);
 		DUK__BI_PRINT("f", &nc_ctx->f);
 		exp--;
 		dig_prec++;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("final exponent: %d", (int) exp));
+	DUK_DDD(DUK_DDDPRINT("final exponent: %ld", (long) exp));
 
 	/* Detect zero special case. */
 
@@ -2208,7 +2210,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	nc_ctx->req_digits = 53 + 1;
 
 	DUK__BI_PRINT("f", &nc_ctx->f);
-	DUK_DDD(DUK_DDDPRINT("e=%d", (int) nc_ctx->e));
+	DUK_DDD(DUK_DDDPRINT("e=%ld", (long) nc_ctx->e));
 
 	/*
 	 *  Dragon4 slow path (binary) digit generation.
@@ -2225,7 +2227,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 
 	duk__dragon4_scale(nc_ctx);
 
-	DUK_DDD(DUK_DDDPRINT("after scale; k=%d", (int) nc_ctx->k));
+	DUK_DDD(DUK_DDDPRINT("after scale; k=%ld", (long) nc_ctx->k));
 	DUK__BI_PRINT("r", &nc_ctx->r);
 	DUK__BI_PRINT("s", &nc_ctx->s);
 	DUK__BI_PRINT("mp", &nc_ctx->mp);
@@ -2249,7 +2251,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	}
 	duk_pop(ctx);
 	duk_push_number(ctx, (double) res);
-	DUK_DDD(DUK_DDDPRINT("result: %!T", duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("result: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
 	return;
 
  parse_fail:

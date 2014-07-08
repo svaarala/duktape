@@ -86,14 +86,14 @@
 #define DUK__LOOKUP(lex_ctx,index)    ((lex_ctx)->window[(index)])
 #define DUK__ADVANCE(lex_ctx,count)   duk__advance_chars((lex_ctx), (count))
 #define DUK__INITBUFFER(lex_ctx)      duk__initbuffer((lex_ctx))
-#define DUK__APPENDBUFFER(lex_ctx,x)  duk__appendbuffer((lex_ctx), (int) (x))
+#define DUK__APPENDBUFFER(lex_ctx,x)  duk__appendbuffer((lex_ctx), (duk_codepoint_t) (x))
 
 /* whether to use macros or helper function depends on call count */
-#define DUK__ISDIGIT(x)          ((x) >= '0' && (x) <= '9')
+#define DUK__ISDIGIT(x)          ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_9)
 #define DUK__ISHEXDIGIT(x)       duk__is_hex_digit((x))
-#define DUK__ISOCTDIGIT(x)       ((x) >= '0' && (x) <= '7')
-#define DUK__ISDIGIT03(x)        ((x) >= '0' && (x) <= '3')
-#define DUK__ISDIGIT47(x)        ((x) >= '4' && (x) <= '7')
+#define DUK__ISOCTDIGIT(x)       ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_7)
+#define DUK__ISDIGIT03(x)        ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_3)
+#define DUK__ISDIGIT47(x)        ((x) >= DUK_ASC_4 && (x) <= DUK_ASC_7)
 
 /* lookup shorthands (note: assume context variable is named 'lex_ctx') */
 #define DUK__L0()  DUK__LOOKUP(lex_ctx, 0)
@@ -159,14 +159,14 @@
  *      imposes a certain limit anyway.
  */
 
-static int duk__read_char(duk_lexer_ctx *lex_ctx) {
+static duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 	/* attempting to reduce size of 'len' and/or 'i' resulted in larger code */
-	int x;
-	int len;
-	int i;
+	duk_codepoint_t x;
+	duk_small_int_t len;
+	duk_small_int_t i;
 	const duk_uint8_t *p;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-	int mincp;
+	duk_codepoint_t mincp;
 #endif
 	duk_size_t input_offset;
 
@@ -183,32 +183,32 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	p = lex_ctx->input + input_offset;
 	x = (int) *p++;
 
-	if (x < 0x80) {
+	if (x < 0x80L) {
 		/* 0xxx xxxx -> fast path */
 		len = 1;
 		goto fastpath;
-	} else if (x < 0xc0) {
+	} else if (x < 0xc0L) {
 		/* 10xx xxxx -> invalid */
 		goto error_encoding;
-	} else if (x < 0xe0) {
+	} else if (x < 0xe0L) {
 		/* 110x xxxx   10xx xxxx  */
 		len = 2;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x80;
+		mincp = 0x80L;
 #endif
-		x = x & 0x1f;
-	} else if (x < 0xf0) {
+		x = x & 0x1fL;
+	} else if (x < 0xf0L) {
 		/* 1110 xxxx   10xx xxxx   10xx xxxx */
 		len = 3;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x800;
+		mincp = 0x800L;
 #endif
-		x = x & 0x0f;
-	} else if (x < 0xf8) {
+		x = x & 0x0fL;
+	} else if (x < 0xf8L) {
 		/* 1111 0xxx   10xx xxxx   10xx xxxx   10xx xxxx */
 		len = 4;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x10000;
+		mincp = 0x10000L;
 #endif
 		x = x & 0x07;
 	} else {
@@ -217,12 +217,12 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	}
 
 	DUK_ASSERT(lex_ctx->input_length >= lex_ctx->input_offset);
-	if (len > (int) (lex_ctx->input_length - lex_ctx->input_offset)) {
+	if ((duk_size_t) len > (duk_size_t) (lex_ctx->input_length - lex_ctx->input_offset)) {
 		goto error_clipped;
 	}
 
 	for (i = 1; i < len; i++) {
-		int y = *p++;
+		duk_small_int_t y = *p++;
 		if ((y & 0xc0) != 0x80) {
 			/* check that byte has the form 10xx xxxx */
 			goto error_encoding;
@@ -233,11 +233,11 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 
 	/* check final character validity */
 
-	if (x > 0x10ffff) {
+	if (x > 0x10ffffL) {
 		goto error_encoding;
 	}
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-	if (x < mincp || (x >= 0xd800 && x <= 0xdfff) || x == 0xfffe) {
+	if (x < mincp || (x >= 0xd800L && x <= 0xdfffL) || x == 0xfffeL) {
 		goto error_encoding;
 	}
 #endif
@@ -249,11 +249,11 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
 	lex_ctx->input_offset += len;
 
 	/* line tracking */
-	if ((x == 0x000a) ||
-	    ((x == 0x000d) && (lex_ctx->input_offset >= lex_ctx->input_length ||
-	                       lex_ctx->input[lex_ctx->input_offset] != 0x000a)) ||
-	    (x == 0x2028) ||
-	    (x == 0x2029)) {
+	if ((x == 0x000aL) ||
+	    ((x == 0x000dL) && (lex_ctx->input_offset >= lex_ctx->input_length ||
+	                        lex_ctx->input[lex_ctx->input_offset] != 0x000aL)) ||
+	    (x == 0x2028L) ||
+	    (x == 0x2029L)) {
 		/* lookup for 0x000a above assumes shortest encoding now */
 
 		/* E5 Section 7.3, treat the following as newlines:
@@ -280,16 +280,14 @@ static int duk__read_char(duk_lexer_ctx *lex_ctx) {
  *  Advance lookup window by N characters.  Also used to fill the window
  *  after position is changed (call with count == DUK_LEXER_WINDOW_SIZE).
  *
- *  Future work:
- *
- *    * A lot of copying now, perhaps change to circular array or at
- *      least use memcpy().  For memcpy(), putting all elements of the
- *      window (code point, offset, line) into a struct would allow one
- *      memcpy() to slide the window, instead of three separate copys.
+ *  XXX: A lot of copying now, perhaps change to circular array or at
+ *  least use memcpy().  For memcpy(), putting all elements of the
+ *  window (code point, offset, line) into a struct would allow one
+ *  memcpy() to slide the window, instead of three separate copys.
  */
 
-static void duk__advance_chars(duk_lexer_ctx *lex_ctx, int count) {
-	int i;
+static void duk__advance_chars(duk_lexer_ctx *lex_ctx, duk_small_int_t count) {
+	duk_small_int_t i, n;
 
 	DUK_ASSERT(count >= 0 && count <= DUK_LEXER_WINDOW_SIZE);
 
@@ -298,7 +296,8 @@ static void duk__advance_chars(duk_lexer_ctx *lex_ctx, int count) {
 		return;
 	}
 
-	for (i = 0; i < DUK_LEXER_WINDOW_SIZE - count; i++) {
+	n = DUK_LEXER_WINDOW_SIZE - count;
+	for (i = 0; i < n; i++) {
 		lex_ctx->offsets[i] = lex_ctx->offsets[i + count];
 		lex_ctx->lines[i] = lex_ctx->lines[i + count];
 		lex_ctx->window[i] = lex_ctx->window[i + count];
@@ -331,7 +330,7 @@ static void duk__initbuffer(duk_lexer_ctx *lex_ctx) {
  *  Existing surrogate pairs are allowed and also encoded into CESU-8.
  */
 
-static void duk__appendbuffer(duk_lexer_ctx *lex_ctx, int x) {
+static void duk__appendbuffer(duk_lexer_ctx *lex_ctx, duk_codepoint_t x) {
 	/*
 	 *  Since character data is only generated by decoding the source or by
 	 *  the compiler itself, we rely on the input codepoints being correct
@@ -344,7 +343,7 @@ static void duk__appendbuffer(duk_lexer_ctx *lex_ctx, int x) {
 
 	DUK_ASSERT(x >= 0 && x <= 0x10ffff);
 
-	duk_hbuffer_append_cesu8(lex_ctx->thr, lex_ctx->buf, x);
+	duk_hbuffer_append_cesu8(lex_ctx->thr, lex_ctx->buf, (duk_ucodepoint_t) x);
 }
 
 /*
@@ -352,7 +351,7 @@ static void duk__appendbuffer(duk_lexer_ctx *lex_ctx, int x) {
  *  (in practice, slot1 or slot2).
  */
 
-static void duk__internbuffer(duk_lexer_ctx *lex_ctx, int valstack_idx) {
+static void duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx) {
 	duk_context *ctx = (duk_context *) lex_ctx->thr;
 
 	DUK_ASSERT(valstack_idx == lex_ctx->slot1_idx || valstack_idx == lex_ctx->slot2_idx);
@@ -396,7 +395,7 @@ void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt) {
  */
 
 /* numeric value of a hex digit (also covers octal and decimal digits) */
-static int duk__hexval(duk_lexer_ctx *lex_ctx, int x) {
+static duk_codepoint_t duk__hexval(duk_lexer_ctx *lex_ctx, duk_codepoint_t x) {
 	duk_small_int_t t;
 
 	/* Here 'x' is a Unicode codepoint */
@@ -415,20 +414,20 @@ static int duk__hexval(duk_lexer_ctx *lex_ctx, int x) {
 }
 
 /* having this as a separate function provided a size benefit */
-static int duk__is_hex_digit(int x) {
+static duk_bool_t duk__is_hex_digit(duk_codepoint_t x) {
 	if (DUK_LIKELY(x >= 0 && x <= 0xff)) {
 		return (duk_hex_dectab[x] >= 0);
 	}
 	return 0;
 }
 
-static int duk__decode_hexesc_from_window(duk_lexer_ctx *lex_ctx, int lookup_offset) {
+static duk_codepoint_t duk__decode_hexesc_from_window(duk_lexer_ctx *lex_ctx, duk_small_int_t lookup_offset) {
 	/* validation performed by duk__hexval */
 	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset]) << 4) |
 	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1]));
 }
 
-static int duk__decode_uniesc_from_window(duk_lexer_ctx *lex_ctx, int lookup_offset) {
+static duk_codepoint_t duk__decode_uniesc_from_window(duk_lexer_ctx *lex_ctx, duk_small_int_t lookup_offset) {
 	/* validation performed by duk__hexval */
 	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset]) << 12) |
 	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1]) << 8) |
@@ -515,12 +514,12 @@ static void duk__eat_whitespace(duk_lexer_ctx *lex_ctx) {
 
 static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
                                          duk_token *out_token,
-                                         int strict_mode,
-                                         int regexp_mode) {
-	int x, y;               /* temporaries, must be 32-bit to hold Unicode code points */
-	int advtok = 0;         /* (advance << 8) + token_type, updated at function end,
-	                         * init is unnecessary but suppresses "may be used uninitialized warnings
-	                         */
+                                         duk_bool_t strict_mode,
+                                         duk_bool_t regexp_mode) {
+	duk_codepoint_t x, y;        /* temporaries, must be signed and 32-bit to hold Unicode code points */
+	duk_small_uint_t advtok = 0; /* (advance << 8) + token_type, updated at function end,
+	                              * init is unnecessary but suppresses "may be used uninitialized" warnings.
+	                              */
 
 	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
 		DUK_ERROR(lex_ctx->thr, DUK_ERR_RANGE_ERROR, "token limit");
@@ -564,9 +563,10 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	 *  always correctly identified.  There are order dependencies
 	 *  in the clauses, so it's not trivial to convert to a switch.
 	 *
-	 *  Maybe change this to a switch which handles all single character
-	 *  cases and a follow-up if-else chain.  Switch matches need to goto
-	 *  to bypass the if-else chain.
+	 *  XXX: This is quite inefficient.  Maybe change to a switch
+	 *  statement which handles all single character cases and then
+	 *  use a followup if-else chain?  Switch matches need to use
+	 *  goto to bypass the if-else chain.
 	 */
 
 	x = DUK__L0();
@@ -595,7 +595,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 *  automatic semicolon insertion.
 			 */
 
-			duk_uint8_t last_asterisk = 0;
+			duk_bool_t last_asterisk = 0;
 			advtok = DUK__ADVTOK(0, DUK_TOK_COMMENT);
 			DUK__ADVANCE(lex_ctx, 2);
 			for (;;) {
@@ -611,7 +611,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				if (duk_unicode_is_line_terminator(x)) {
 					advtok = DUK__ADVTOK(0, DUK_TOK_LINETERM);
 				}
-				last_asterisk = (x == (int) '*');
+				last_asterisk = (x == '*');
 			}
 		} else if (regexp_mode) {
 #ifdef DUK_USE_REGEXP_SUPPORT
@@ -672,7 +672,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 			/* first, parse regexp body roughly */
 
-			duk_uint8_t state = 0;  /* 0=base, 1=esc, 2=class, 3=class+esc */
+			duk_small_int_t state = 0;  /* 0=base, 1=esc, 2=class, 3=class+esc */
 
 			DUK__INITBUFFER(lex_ctx);
 			for (;;) {
@@ -896,15 +896,15 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  parsing the identifier.  This has little practical impact.
 		 */
 
-		int i, i_end;
-		int first = 1;
+		duk_small_int_t i, i_end;
+		duk_bool_t first = 1;
 		duk_hstring *str;
 
 		DUK__INITBUFFER(lex_ctx);
 		for (;;) {
 			/* re-lookup first char on first loop */
 			if (DUK__L0() == '\\') {
-				int ch;
+				duk_codepoint_t ch;
 				if (DUK__L1() != 'u') {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid unicode escape while parsing identifier");
@@ -915,7 +915,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				/* IdentifierStart is stricter than IdentifierPart, so if the first
 				 * character is escaped, must have a stricter check here.
 				 */
-				if (! (first ? duk_unicode_is_identifier_start(ch) : duk_unicode_is_identifier_part(ch))) {
+				if (!(first ? duk_unicode_is_identifier_start(ch) : duk_unicode_is_identifier_part(ch))) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid unicode escaped character while parsing identifier");
 				}
@@ -964,6 +964,11 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 *  work around this a bit.
 		 */
 
+		/* XXX: optimize by adding the token numbers directly into the
+		 * always interned duk_hstring objects (there should be enough
+		 * flag bits free for that)?
+		 */
+
 		i_end = (strict_mode ? DUK_STRIDX_END_RESERVED : DUK_STRIDX_START_STRICT_RESERVED);
 
 		advtok = DUK__ADVTOK(0, DUK_TOK_IDENTIFIER);
@@ -1001,15 +1006,15 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		 * Maybe too complex.
 		 */
 
-		double val;
-		int int_only = 0;
-		int allow_hex = 0;
-		int st;		/* 0=before period/exp,
-		                 * 1=after period, before exp
-		                 * 2=after exp, allow '+' or '-'
-		                 * 3=after exp and exp sign
-		                 */
-		int s2n_flags;
+		duk_double_t val;
+		duk_bool_t int_only = 0;
+		duk_bool_t allow_hex = 0;
+		duk_small_int_t state;  /* 0=before period/exp,
+		                         * 1=after period, before exp
+		                         * 2=after exp, allow '+' or '-'
+		                         * 3=after exp and exp sign
+		                         */
+		duk_small_uint_t s2n_flags;
 
 		DUK__INITBUFFER(lex_ctx);
 		if (x == '0' && (y == 'x' || y == 'X')) {
@@ -1033,36 +1038,36 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 #endif
 		}
 
-		st = 0;
+		state = 0;
 		for (;;) {
 			x = DUK__L0();	/* re-lookup curr char on first round */
 			if (DUK__ISDIGIT(x)) {
 				/* Note: intentionally allow leading zeroes here, as the
 				 * actual parser will check for them.
 				 */
-				if (st == 2) {
-					st = 3;
+				if (state == 2) {
+					state = 3;
 				}
 			} else if (allow_hex && DUK__ISHEXDIGIT(x)) {
 				/* Note: 'e' and 'E' are also accepted here. */
 				;
 			} else if (x == '.') {
-				if (st >= 1 || int_only) {
+				if (state >= 1 || int_only) {
 					break;
 				} else {
-					st = 1;
+					state = 1;
 				}
 			} else if (x == 'e' || x == 'E') {
-				if (st >= 2 || int_only) {
+				if (state >= 2 || int_only) {
 					break;
 				} else {
-					st = 2;
+					state = 2;
 				}
 			} else if (x == '-' || x == '+') {
-				if (st != 2) {
+				if (state != 2) {
 					break;
 				} else {
-					st = 3;
+					state = 3;
 				}
 			} else {
 				break;
@@ -1104,8 +1109,8 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		out_token->num = val;
 		advtok = DUK__ADVTOK(0, DUK_TOK_NUMBER);
 	} else if (x == '"' || x == '\'') {
-		int quote = x;	/* duk_uint8_t type yields larger code */
-		int adv;
+		duk_small_int_t quote = x;    /* Note: duk_uint8_t type yields larger code */
+		duk_small_int_t adv;
 
 		DUK__INITBUFFER(lex_ctx);
 		for (;;) {
@@ -1169,7 +1174,7 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 					adv = 6 - 1;
 					DUK__APPENDBUFFER(lex_ctx, duk__decode_uniesc_from_window(lex_ctx, 2));
 				} else if (DUK__ISDIGIT(x)) {
-					int ch = 0;  /* initialized to avoid warnings of unused var */
+					duk_codepoint_t ch = 0;  /* initialized to avoid warnings of unused var */
 
 					/*
 					 *  Octal escape or zero escape:
@@ -1281,17 +1286,17 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
-                                      int strict_mode,
-                                      int regexp_mode) {
-	int tok;
-	int got_lineterm = 0;  /* got lineterm preceding non-whitespace, non-lineterm token */
+                                      duk_bool_t strict_mode,
+                                      duk_bool_t regexp_mode) {
+	duk_small_int_t tok;
+	duk_bool_t got_lineterm = 0;  /* got lineterm preceding non-whitespace, non-lineterm token */
 
 	for (;;) {
 		duk__parse_input_element_raw(lex_ctx, out_token, strict_mode, regexp_mode);
 		tok = out_token->t;
 
-		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %d (line %d-%d)",
-		                     tok, out_token->start_line, out_token->end_line));
+		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %ld (line %ld-%ld)",
+		                     (long) tok, (long) out_token->start_line, (long) out_token->end_line));
 
 		if (tok == DUK_TOK_COMMENT) {
 			/* single-line comment or multi-line comment without an internal lineterm */
@@ -1330,8 +1335,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
  */
 
 void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
-	int advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
-	int x, y;
+	duk_small_int_t advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
+	duk_codepoint_t x, y;
 
 	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
 		DUK_ERROR(lex_ctx->thr, DUK_ERR_RANGE_ERROR, "token limit");
@@ -1343,7 +1348,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	x = DUK__L0();
 	y = DUK__L1();
 
-	DUK_DDD(DUK_DDDPRINT("parsing regexp token, L0=%d, L1=%d", x, y));
+	DUK_DDD(DUK_DDDPRINT("parsing regexp token, L0=%ld, L1=%ld", (long) x, (long) y));
 
 	switch (x) {
 	case '|': {
@@ -1396,9 +1401,9 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 	}
 	case '{': {
 		/* Production allows 'DecimalDigits', including leading zeroes */
-		duk_uint32_t val1 = 0;
-		duk_uint32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
-		int digits = 0;
+		duk_uint_fast32_t val1 = 0;
+		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
+		duk_small_int_t digits = 0;
 		for (;;) {
 			DUK__ADVANCE(lex_ctx, 1);	/* eat '{' on entry */
 			x = DUK__L0();
@@ -1408,7 +1413,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 					          "invalid regexp quantifier (too many digits)");
 				}
 				digits++;
-				val1 = val1 * 10 + duk__hexval(lex_ctx, x);
+				val1 = val1 * 10 + (duk_uint_fast32_t) duk__hexval(lex_ctx, x);
 			} else if (x == ',') {
 				if (val2 != DUK_RE_QUANTIFIER_INFINITE) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -1525,8 +1530,8 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 				advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);
 			} else {
 				/* XXX: shared parsing? */
-				duk_uint32_t val = 0;
-				int i;
+				duk_uint_fast32_t val = 0;
+				duk_small_int_t i;
 				for (i = 0; ; i++) {
 					if (i >= DUK__MAX_RE_DECESC_DIGITS) {
 						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -1537,7 +1542,7 @@ void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
 					if (!DUK__ISDIGIT(x)) {
 						break;
 					}
-					val = val * 10 + duk__hexval(lex_ctx, x);
+					val = val * 10 + (duk_uint_fast32_t) duk__hexval(lex_ctx, x);
 				}
 				/* DUK__L0() cannot be a digit, because the loop doesn't terminate if it is */
 				advtok = DUK__ADVTOK(0, DUK_RETOK_ATOM_BACKREFERENCE);
@@ -1664,15 +1669,14 @@ static void duk__emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
 }
 
 void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata) {
-	duk_int32_t start = -1;
-	int dash = 0;
-	duk_int32_t ch;
+	duk_codepoint_t start = -1;
+	duk_codepoint_t ch;
+	duk_codepoint_t x;
+	duk_bool_t dash = 0;
 
 	DUK_DD(DUK_DDPRINT("parsing regexp ranges"));
 
 	for (;;) {
-		int x;
-
 		x = DUK__L0();
 		DUK__ADVANCE(lex_ctx, 1);
 
@@ -1685,7 +1689,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 		} else if (x == ']') {
 			DUK_ASSERT(!dash);	/* lookup should prevent this */
 			if (start >= 0) {
-				gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
+				gen_range(userdata, start, start, 0);
 			}
 			break;
 		} else if (x == '-') {
@@ -1823,7 +1827,7 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid range");
 				} else {
-					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
+					gen_range(userdata, start, start, 0);
 					start = -1;
 					/* dash is already 0 */
 				}
@@ -1835,11 +1839,11 @@ void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen
 						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 						          "invalid range");
 					}
-					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) ch, 0);
+					gen_range(userdata, start, ch, 0);
 					start = -1;
 					dash = 0;
 				} else {
-					gen_range(userdata, (duk_codepoint_t) start, (duk_codepoint_t) start, 0);
+					gen_range(userdata, start, start, 0);
 					start = ch;
 					/* dash is already 0 */
 				}

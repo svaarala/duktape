@@ -109,7 +109,7 @@ struct duk_hstring {
  *  Prototypes
  */
 
-duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_int_t pos);
+duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos);
 
 #endif  /* DUK_HSTRING_H_INCLUDED */
 

@@ -11,18 +11,18 @@
  *  the following signatures. This is not portable if any of these math
  *  functions is actually a macro.
  *
- *  Typing here is intentionally 'double' because that's what the standard
- *  library APIs use.
+ *  Typing here is intentionally 'double' wherever values interact with
+ *  the standard library APIs.
  */
 
 typedef double (*duk__one_arg_func)(double);
 typedef double (*duk__two_arg_func)(double, double);
 
-static int duk__math_minmax(duk_context *ctx, double initial, duk__two_arg_func min_max) {
-	duk_int_t n = duk_get_top(ctx);
-	duk_int_t i;
-	double res = initial;
-	double t;
+static duk_ret_t duk__math_minmax(duk_context *ctx, duk_double_t initial, duk__two_arg_func min_max) {
+	duk_idx_t n = duk_get_top(ctx);
+	duk_idx_t i;
+	duk_double_t res = initial;
+	duk_double_t t;
 
 	/*
 	 *  Note: fmax() does not match the E5 semantics.  E5 requires
@@ -39,9 +39,9 @@ static int duk__math_minmax(duk_context *ctx, double initial, duk__two_arg_func 
 		t = duk_to_number(ctx, i);
 		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN || DUK_FPCLASSIFY(res) == DUK_FP_NAN) {
 			/* Note: not normalized, but duk_push_number() will normalize */
-			res = DUK_DOUBLE_NAN;
+			res = (duk_double_t) DUK_DOUBLE_NAN;
 		} else {
-			res = min_max(res, t);
+			res = (duk_double_t) min_max(res, (double) t);
 		}
 	}
 
@@ -95,7 +95,7 @@ static double duk__round_fixed(double x) {
 	 * which is incorrect for negative values.  Here we make do with floor().
 	 */
 
-	int c = DUK_FPCLASSIFY(x);
+	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE || c == DUK_FP_ZERO) {
 		return x;
 	}
@@ -134,11 +134,11 @@ static double duk__pow_fixed(double x, double y) {
 	 * result is NaN, while at least Linux pow() returns 1.
 	 */
 
-	int cx, cy, sx;
+	duk_small_int_t cx, cy, sx;
 
 	DUK_UNREF(cx);
 	DUK_UNREF(sx);
-	cy = DUK_FPCLASSIFY(y);
+	cy = (duk_small_int_t) DUK_FPCLASSIFY(y);
 
 	if (cy == DUK_FP_NAN) {
 		goto ret_nan;
@@ -151,9 +151,9 @@ static double duk__pow_fixed(double x, double y) {
 	 * correctly handle some cases where x=+/-0.  Specific fixes to these
 	 * here.
 	 */
-	cx = DUK_FPCLASSIFY(x);
+	cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
 	if (cx == DUK_FP_ZERO && y < 0.0) {
-		sx = DUK_SIGNBIT(x);
+		sx = (duk_small_int_t) DUK_SIGNBIT(x);
 		if (sx == 0) {
 			/* Math.pow(+0,y) should be Infinity when y<0.  NetBSD pow()
 			 * returns -Infinity instead when y is <0 and finite.  The
@@ -288,8 +288,7 @@ duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__one_arg_funcs) / sizeof(duk__one_arg_func)));
 	fun = duk__one_arg_funcs[fun_idx];
-	/* FIXME: double typing here: double or duk_double_t? */
-	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0)));
+	duk_push_number(ctx, (duk_double_t) fun((double) duk_to_number(ctx, 0)));
 	return 1;
 }
 
@@ -300,8 +299,7 @@ duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__two_arg_funcs) / sizeof(duk__two_arg_func)));
 	fun = duk__two_arg_funcs[fun_idx];
-	/* FIXME: double typing here: double or duk_double_t? */
-	duk_push_number(ctx, fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));
+	duk_push_number(ctx, (duk_double_t) fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));
 	return 1;
 }
 

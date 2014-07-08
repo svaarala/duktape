@@ -30,4 +30,3 @@ struct duk_hnativefunction {
 };
 
 #endif  /* DUK_HNATIVEFUNCTION_H_INCLUDED */
-

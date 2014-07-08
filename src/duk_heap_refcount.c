@@ -59,7 +59,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 
 	/* XXX: better to get base and walk forwards? */
 
-	for (i = 0; i < h->e_used; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) h->e_used; i++) {
 		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
 		if (!key) {
 			continue;
@@ -73,7 +73,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 		}
 	}
 
-	for (i = 0; i < h->a_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) h->a_size; i++) {
 		duk_heap_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
 	}
 
@@ -117,8 +117,8 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 			tv++;
 		}
 
-		for (i = 0; i < t->callstack_top; i++) {
-			duk_activation *act = &t->callstack[i];
+		for (i = 0; i < (duk_uint_fast32_t) t->callstack_top; i++) {
+			duk_activation *act = t->callstack + i;
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->func);
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->var_env);
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->lex_env);
@@ -128,8 +128,8 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 		}
 
 #if 0  /* nothing now */
-		for (i = 0; i < t->catchstack_top; i++) {
-			duk_catcher *cat = &t->catchstack[i];
+		for (i = 0; i < (duk_uint_fast32_t) t->catchstack_top; i++) {
+			duk_catcher *cat = t->catchstack + i;
 		}
 #endif
 
@@ -144,7 +144,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 	DUK_ASSERT(hdr);
 
-	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_OBJECT:
 		duk__refcount_finalize_hobject(thr, (duk_hobject *) hdr);
 		break;
@@ -172,7 +172,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 static void duk__refzero_free_pending(duk_hthread *thr) {
 	duk_heaphdr *h1, *h2;
 	duk_heap *heap;
-	int count = 0;
+	duk_int_t count = 0;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -195,7 +195,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap);
 	while (heap->refzero_list) {
 		duk_hobject *obj;
-		int rescued = 0;
+		duk_bool_t rescued = 0;
 
 		/*
 		 *  Pick an object from the head (don't remove yet).
@@ -203,7 +203,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 		h1 = heap->refzero_list;
 		obj = (duk_hobject *) h1;
-		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", h1, h1));
+		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, (duk_heaphdr *) h1));
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 
@@ -287,7 +287,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	}
 	DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap);
 
-	DUK_DDD(DUK_DDDPRINT("refzero processed %d objects", count));
+	DUK_DDD(DUK_DDDPRINT("refzero processed %ld objects", (long) count));
 
 	/*
 	 *  Once the whole refzero cascade has been freed, check for
@@ -300,12 +300,12 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 	 */
 	heap->mark_and_sweep_trigger_counter -= count;
 	if (heap->mark_and_sweep_trigger_counter <= 0) {
-		int rc;
-		int emergency = 0;
+		duk_bool_t rc;
+		duk_small_uint_t flags = 0;  /* not emergency */
 		DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
-		rc = duk_heap_mark_and_sweep(heap, emergency);
+		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
-		DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %d", rc));
+		DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %ld", (long) rc));
 	}
 #endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
 }
@@ -320,11 +320,11 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 
 void duk_heap_tval_incref(duk_tval *tv) {
 #if 0
-	DUK_DDD(DUK_DDDPRINT("tval incref %p (%d->%d): %!T",
+	DUK_DDD(DUK_DDDPRINT("tval incref %p (%ld->%ld): %!T",
 	                     (void *) tv,
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1 : 0),
-	                     tv));
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1) : (long) 0),
+	                     (duk_tval *) tv));
 #endif
 
 	if (!tv) {
@@ -343,11 +343,11 @@ void duk_heap_tval_incref(duk_tval *tv) {
 
 void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 #if 0
-	DUK_DDD(DUK_DDDPRINT("tval decref %p (%d->%d): %!T",
+	DUK_DDD(DUK_DDDPRINT("tval decref %p (%ld->%ld): %!T",
 	                     (void *) tv,
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : 0),
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1 : 0),
-	                     tv));
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
+	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1) : (long) 0),
+	                     (duk_tval *) tv));
 #endif
 
 	if (!tv) {
@@ -361,11 +361,11 @@ void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 
 void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 #if 0
-	DUK_DDD(DUK_DDDPRINT("heaphdr incref %p (%d->%d): %!O",
+	DUK_DDD(DUK_DDDPRINT("heaphdr incref %p (%ld->%ld): %!O",
 	                     (void *) h,
-	                     (h != NULL ? h->h_refcount : 0),
-	                     (h != NULL ? h->h_refcount + 1 : 0),
-	                     h));
+	                     (h != NULL ? (long) h->h_refcount : (long) 0),
+	                     (h != NULL ? (long) (h->h_refcount + 1) : (long) 0),
+	                     (duk_heaphdr *) h));
 #endif
 
 	if (!h) {
@@ -381,11 +381,11 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	duk_heap *heap;
 
 #if 0
-	DUK_DDD(DUK_DDDPRINT("heaphdr decref %p (%d->%d): %!O",
+	DUK_DDD(DUK_DDDPRINT("heaphdr decref %p (%ld->%ld): %!O",
 	                     (void *) h,
-	                     (h != NULL ? h->h_refcount : 0),
-	                     (h != NULL ? h->h_refcount - 1 : 0),
-	                     h));
+	                     (h != NULL ? (long) h->h_refcount : (long) 0),
+	                     (h != NULL ? (long) (h->h_refcount - 1) : (long) 0),
+	                     (duk_heaphdr *) h));
 #endif
 
 	DUK_ASSERT(thr != NULL);
@@ -402,7 +402,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	}
 
 	heap = thr->heap;
-	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, h));
+	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, (duk_heaphdr *) h));
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	/*
@@ -458,7 +458,7 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 		break;
 
 	default:
-		DUK_D(DUK_DPRINT("invalid heap type in decref: %d", (int) DUK_HEAPHDR_GET_TYPE(h)));
+		DUK_D(DUK_DPRINT("invalid heap type in decref: %ld", (long) DUK_HEAPHDR_GET_TYPE(h)));
 		DUK_UNREACHABLE();
 	}
 }
@@ -468,4 +468,3 @@ void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 /* no refcounting */
 
 #endif  /* DUK_USE_REFERENCE_COUNTING */
-

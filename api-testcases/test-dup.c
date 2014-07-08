@@ -7,13 +7,13 @@
 final top: 4
 ==> rc=0, result='undefined'
 *** test_2a (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_2b (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_2c (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_3a (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

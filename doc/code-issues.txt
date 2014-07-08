@@ -176,6 +176,21 @@ The fix is::
           ...
   }
 
+Function calls with many difficult-to-identify arguments
+--------------------------------------------------------
+
+Example helper::
+
+  duk_bool_t frob(duk_context *ctx, int allow_foo, int allow_bar, int allow_quux);
+
+Such helpers lead to call sites which are difficult to read::
+
+  duk_bool_t rc = frob(ctx, 1, 0, 1);
+
+In such cases, inline comments can be used to clarify the argument names::
+
+  duk_bool_t rc = frob(ctx, 1 /*allow_foo*/, 0 /*allow_bar*/, 1 /*allow_quux*/);
+
 Include guards
 --------------
 
@@ -323,6 +338,94 @@ platforms the outer macro allows a debug log write to be omitted entirely.
 If the log writes are not omitted, the workaround for lack of variadic
 macros causes a lot of warnings with some compilers.  With this wrapping,
 at least the non-debug build will be clean on non-C99 compilers.
+
+Shared strings
+==============
+
+Sharing of constant internal strings has multiple considerations:
+
+* Some very old compilers won't share the same string value for multiple
+  occurrences of the same literal string; newer compilers will treat such
+  strings as ``const`` and share them.
+
+* If strings are declared with explicit symbols which are referred to from
+  code (explicit sharing), sharing is guaranteed but such strings may end
+  up in a symbol table without some kind of compiler specific "linker script"
+  (although for a combined duktape.c/duktape.h the strings can be declared
+  static)::
+
+    const char *shared_string = "shared string;
+
+    /* foo.c */
+    duk_push_sprintf(ctx, "%s", shared_string);
+
+    /* bar.c */
+    sprintf(buf, "%s: %d", shared_string, 123);
+
+* In low memory environments it may be desirable to simplify or shorten
+  messages, or perhaps merge multiple strings into a more generic shared
+  message (e.g. "parse error: invalid token", "parse error: expect lparen"
+  could be mapped to "parse error").
+
+The current approach for shared strings is as follows:
+
+* Shared strings are referred to using macros in Duktape internals.  The
+  macros begin with a ``DUK_STR_`` prefix::
+
+    DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_PARSE_ERROR);
+
+* ``duk_strings.h`` provides the necessary macros and decides what string
+  each macro maps to (depending on e.g. memory footprint target).  In case
+  string literals are automatically shared by the compiler, the preferred
+  definition may be e.g.::
+
+    #define DUK_STR_PARSE_ERROR "parse error"
+
+  If not, an explicit shared string may be better::
+
+    /* Note: the extern should be rewritten to "static" in a single
+     * file distributable.
+     */
+
+    #define DUK_STR_PARSE_ERROR duk_str_parse_error
+    extern const char *duk_str_parse_error;
+
+* ``duk_strings.c`` contains the actual shared string values required by
+  the macros (assuming the macros don't provide the strings directly).
+
+The upsides include:
+
+* Call sites are relatively clean.
+
+* Footprint tuning is quite flexible.
+
+* Message consistency is easier to achieve than by having strings in the
+  call sites.
+
+* Non-ASCII (EBCDIC) portability may be easier to achieve.
+
+The downsides include:
+
+* Conditional strings need to be conditional in ``duk_strings.c`` too.
+  This easily becomes messy and easy to get wrong.  Unused strings are
+  difficult to detect.  By using literal strings directly in ``duk_strings.h``
+  this is not an issue (but requires a compiler that shares string
+  constants).
+
+* Format strings don't abstract entirely.  The arguments of a formatted
+  call must match the format string, so whatever footprint variants are
+  used, they must have the same argument list.  For example::
+
+    "parse error, got: %d"
+
+  cannot be replaced with a shared::
+
+    "parse error"
+
+  for this reason.
+
+* Indirection obscures the strings emitted from each call site a bit, and
+  makes the code less modular.
 
 Feature detection in duktape.h
 ==============================
@@ -557,6 +660,28 @@ compiles with no 64-bit support at all.
 Duktape must compile with only 32-bit operations if necessary, so
 replacements are needed in the few places where 32 bits are not enough.
 
+Array indexing
+--------------
+
+This is a common 64-bit portability bug::
+
+  char *buf = /*something*/;
+  uint32_t idx = /*something*/
+  char *p;
+
+  p = &buf[idx - 1];
+
+The index computation happens using unsigned integers, so with ``idx == 0``
+the index becomes 0xffffffffUL.  With 32-bit pointers adding this value to
+the base (``buf``) is the same as subtracting one from the base.  But with
+64-bit pointers, these two operations are not the same.
+
+A safer expression, preferred in Duktape internals, is::
+
+  p = buf + idx - 1;
+
+See ``misc/arridx_unsigned.c`` for more concrete examples.
+
 Integer overflows
 -----------------
 
@@ -624,6 +749,40 @@ For 32-bit types the check is actually exact, see test in::
 
   misc/c_overflow_test.py 
 
+Shifting
+--------
+
+With 32-bit integers the following may cause warnings on some compilers
+when the value is used in conjunction with unsigned values (see
+``duk_hobject.h``)::
+
+  #define FOO(v) ((v) << 24)
+
+Suppose ``v`` is 0x80 (signed constant).  The result of the shift now has
+the highest bit (bit 31) set which causes the result to become unsigned.
+This can be fixed e.g. as::
+
+  #define FOO(v) (((duk_uint_t) (v)) << 24)
+
+On a more general note, suppose a macro does::
+
+  #define BAR(v) ((v) << N)
+
+What is a plain value coerced to during shifting?  If the platform has 16-bit
+integers, can it be coerced to a 16-bit integer, with the left shift then
+overflowing?  If so, all such shifts would need to be replaced with::
+
+  #define BAR(v) (((duk_uint_t) (v)) << N)
+
+**This is not done now for shifts (as of Duktape 0.11.0).**
+
+Switch statement
+----------------
+
+**FIXME: what is the set of acceptable types for the switch target value
+and case values (when portability to old compilers is an issue)?  Is it
+just "int"?  What casts are most appropriate?**
+
 String handling
 ---------------
 
@@ -679,23 +838,54 @@ all C types are wrapped behind a typedef.
 The ``duktape.h`` header handles all platform and feature detection and provides
 all necessary type wrappers, both for the public API and for internal use.
 
-Fast integer type with at least 32 bits
----------------------------------------
+Preferred integer type with at least 32 bits
+--------------------------------------------
 
-A large amount of code needs an integer type which is fastest on the platform
+A large amount of code needs an integer type which is convenient for the CPU
 but still guaranteed to be 32 bits or more.  The ``int`` type is NOT a good
 choice because it may be 16 bits even on platforms with a 32-bit type and
 even 32-bit registers (e.g. PureC on M68K).  The ``long`` type is also not a
 good choice as it may be too wide (e.g. GCC on x86-64, int is 32 bits while
-long is 64 bits).  For this use, there are two typedefs: ``duk_int_t`` and
-``duk_uint_t``.  For small integers, like flags, there are typedefs
-``duk_small_int_t`` and ``duk_small_uint_t`` which explicitly indicate that
-a small integer (16 bits or more) suffices.
+long is 64 bits).
 
-Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics.
-Also, 64-bit arithmetic emulation (implemented on 32 bit types) relies on
-exact unsigned overflows / underflows.  The wrapped C99 types are used in
-these cases.
+For this use, there are two typedefs:
+
+* ``duk_int_t``: an integer convenient on the target, but always guaranteed
+  to be 32 bits or more.  This may be mapped to ``int`` if it's large enough,
+  or possibly ``int_fast32_t``, or something else depending on the target.
+
+* ``duk_uint_t``: same but unsigned.
+
+There are also typedefs for the case where a 32 bits or more are needed but
+the types also need to be fastest for the CPU.  This is useful for true fast
+paths like executor loops and such:
+
+* ``duk_int_fast_t``: an integer fastest on the target, but always guaranteed
+  to be 32 bits or more.  This is usually mapped to ``int_fast32_t`` when C99
+  types are available.
+
+* ``duk_uint_fast_t``: same but unsigned.
+
+For cases where 16 bits are enough, the following wrapped types are provided
+(they are essentially ``int`` and ``unsigned int`` but wrapped for consistency):
+
+* ``duk_small_int_t``: an integer convenient on the target, guaranteed to be
+  16 bits or more.
+
+* ``duk_small_uint_t``: same but unsigned.
+
+For these, too, there are fast variants:
+
+* ``duk_small_int_fast_t``: an integer fastest of the target, guaranteed to be
+  16 bits or more, usually mapped to ``int_fast16_t`` when C99 types are
+  available.
+
+* ``duk_small_uint_fast_t``: same but unsigned.
+
+Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics and
+or guaranteeing portable overflow / underflow handling.  Also, 64-bit
+arithmetic emulation (implemented on 32 bit types) relies on exact unsigned
+overflows / underflows.  The wrapped C99 types are used in these cases.
 
 Format specifiers
 -----------------
@@ -718,12 +908,28 @@ an ``int`` in decimal, but:
   sometimes different.  As a concrete example, the proper print format code for
   an IEEE double is ``%f`` while the scan format code is ``%lf``.
 
-* Some useful format codes:
+  - Inside Duktape code, use ``%lf`` for the print format code: it's
+    also an acceptable format and perhaps more clear
 
-  - ``%d``: int
-  - ``%ld``: long
-  - ``%zu``: size_t
-  - ``%jd``: maxint_t (C99)
+* Some useful portable format codes:
+
+  - ``%s``: string, use ``(const char *)`` cast
+  - ``%p``: pointer, use ``(void *)`` cast
+  - ``%d``: int, use ``(int)`` cast
+  - ``%u``: unsigned int, use ``(unsigned int)`` cast
+  - ``%ld``: long, use ``(long)`` cast
+  - ``%lu``: unsigned long, use ``(unsigned long)`` cast
+
+* These are useful but unfortunately C99 (C++11):
+
+  - ``%zu``: size_t (C99), use ``%lu`` and ``(unsigned long)`` cast instead
+  - ``%jd``: maxint_t (C99), use ``%lu`` and ``(unsigned long)`` cast instead
+
+* Format argument types, see e.g.:
+
+  - http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output
+  - http://www.gnu.org/software/libc/manual/html_node/Other-Output-Conversions.html#Other-Output-Conversions
+  - http://www.gnu.org/software/libc/manual/html_node/Integer-Conversions.html#Integer-Conversions
 
 Types used inside Duktape
 -------------------------
@@ -755,7 +961,11 @@ Types used inside Duktape
   ``cp`` had value ``-1``.  The comparison ``(cp < 0x7fL)`` is true while
   the comparison ``(cp < 0x7fUL)`` is false because of C coercion rules.
 
-* **FIXME:** Format specifiers are under work.
+* Value stack indices which are relative to the current activation use
+  ``duk_idx_t``.  Value stack sizes and value stack indices related to the
+  entire value stack are ``duk_size_t``.  In principle the value stack could
+  be larger than 32 bits while individual activations could be limited to
+  a signed 32 bit index space.
 
 * **FIXME:** normal vs. fast variables: use tight values in structs,
   "fast" values as e.g. loop counters in fast paths (character / byte
@@ -764,6 +974,74 @@ Types used inside Duktape
 * **FIXME**: flags field type (storage vs. internal APIs)
 
 * **FIXME**: avoid casting when unnecessary
+
+Formatting considerations
+-------------------------
+
+* Use standard format specifiers (``%d``, ``%p``, ``%s``, etc) instead of
+  relying on compiler specific or C99 format specifiers: they may not be
+  available on all platforms.
+
+* Select a standard specifier which is guaranteed to be wide enough for
+  the argument type and cast the argument explicitly to a matching type.
+
+  - Casting all arguments explicitly is a compromise: an explicit cast removes
+    some useful warnings but also removes some pointless warnings.  Since type
+    detection ends up with different typing across platforms, the only way to
+    format portably is to use a portable format specifier and an explicit cast;
+    the format specifier/type must be chosen to be wide enough to match all
+    possible type detection results.
+
+* For integers, use ``long`` variants by default because it is guaranteed
+  to be 32 bits or more:
+
+  - ``%ld`` with ``(long)`` cast
+
+  - ``%lu`` with ``(unsigned long)`` cast
+
+  - ``%lx`` with ``(unsigned long)`` cast; there seems to be some variance
+    whether a signed or unsigned cast should be used, GCC seems to expect
+    an unsigned argument:
+
+    + http://www.gnu.org/software/libc/manual/html_node/Integer-Conversions.html#Integer-Conversions
+
+* For debug code, use ``long`` variants for all integers for simplicity,
+  even for short fields like booleans.
+
+* For release code using ``int`` variants (``%d``, ``%u``, ``%x``) is OK
+  if a 16-bit range suffices.  It's probably nice to mention this in code
+  so that there is no doubt.
+
+* Selecting signed/unsigned variant for debug logs is not that critical, as most
+  values don't use the full range.  The current code base contains both signed
+  and unsigned formatting for e.g. lengths (which are never negative).
+
+* Use ``%lf`` for IEEE doubles; ``%f`` is the other alternative.
+
+* When using ``%c``, cast the argument explicitly with ``(int)`` (not ``(char)``).
+  This is the "promoted type" expected, see e.g.:
+
+  - http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output
+
+* When using hexadecimal formats ``%lx`` (or ``%x``), cast the argument to an
+  unsigned type (``unsigned long`` or ``unsigned int``).  There seems to be
+  some variation between compilers whether they expect a signed or an unsigned
+  argument.  GCC seems to expect an unsigned argument.
+
+* Don't rely on ``%s`` accepting a NULL pointer, this breaks on some
+  platforms.  Check pointer before formatting; if the string argument
+  is obtained with Duktape API without an explicit NULL check (which is
+  mostly preferable), use ``duk_require_string()`` instead of
+  ``duk_get_string()``.
+
+* For debug prints, the debug formatter special cases ``%s`` so that the
+  platform never sees a NULL pointer with ``%s``.  NULL pointers can thus
+  be safely debug logged with ``%s``.
+
+* For debug custom formatting, use the following casts:
+
+  - ``%!T`` and variants: ``(duk_tval *)``
+  - ``%!O`` and variants: ``(duk_heaphdr *)``
 
 duk_size_t
 ::::::::::
@@ -790,11 +1068,25 @@ Use ``duk_int_t`` as an ``int`` replacement; it behaves like an ``int`` but,
 unlike ``int``, is guaranteed to be at least 32 bits wide.  Similarly
 ``duk_uint_t`` should be used as an ``unsigned int`` replacement.
 
+duk_int_fast_t
+::::::::::::::
+
+This is a type at least the size of ``duk_int_t`` but which is guaranteed to
+be a "fast" variant if that distinction matters for the CPU.  This type is
+mainly used in the executor where performance really matters.  ``duk_uint_fast_t``
+is used similarly.
+
 duk_small_int_t
 :::::::::::::::
 
 The ``duk_small_int_t`` should be used in internal code e.g. for flags.
 It is guaranteed to be 16 bits or more.  Similarly ``duk_small_uint_t``.
+
+duk_small_int_fast_t
+::::::::::::::::::::
+
+Same as ``duk_small_int_t`` but guaranteed to be a fast variant.  Used mainly
+for fast paths like the executor.  Similarly for ``duk_small_uint_fast_t``.
 
 duk_bool_t
 ::::::::::

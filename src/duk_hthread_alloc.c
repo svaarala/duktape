@@ -10,9 +10,9 @@
  *  Returns zero (without leaking memory) if init fails.
  */
 
-int duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
-	size_t alloc_size;
-	int i;
+duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
+	duk_size_t alloc_size;
+	duk_size_t i;
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -87,4 +87,3 @@ void *duk_hthread_get_catchstack_ptr(void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
 	return (void *) thr->catchstack;
 }
-

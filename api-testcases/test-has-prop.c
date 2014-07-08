@@ -9,13 +9,13 @@ arr.length -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1c (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1d (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property existence check'
+==> rc=1, result='TypeError: invalid base value'
 *** test_1e (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property existence check'
+==> rc=1, result='TypeError: invalid base value'
 *** test_2a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0

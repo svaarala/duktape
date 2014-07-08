@@ -48,7 +48,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
 	duk_hobject *h;
-	int i, j;
+	duk_small_uint_t i, j;
 
 	DUK_D(DUK_DPRINT("INITBUILTINS BEGIN"));
 
@@ -70,27 +70,27 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	DUK_DD(DUK_DDPRINT("create empty built-ins"));
 	DUK_ASSERT_TOP(ctx, 0);
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		int class_num;
-		int len = -1;
+		duk_small_uint_t class_num;
+		duk_small_int_t len = -1;  /* must be signed */
 
-		class_num = duk_bd_decode(bd, DUK__CLASS_BITS);
-		len = duk_bd_decode_flagged(bd, DUK__LENGTH_PROP_BITS, (duk_int32_t) -1 /*def_value*/);
+		class_num = (duk_small_uint_t) duk_bd_decode(bd, DUK__CLASS_BITS);
+		len = (duk_small_int_t) duk_bd_decode_flagged(bd, DUK__LENGTH_PROP_BITS, (duk_int32_t) -1 /*def_value*/);
 
 		if (class_num == DUK_HOBJECT_CLASS_FUNCTION) {
-			int natidx;
-			int stridx;
-			int c_nargs;
+			duk_small_uint_t natidx;
+			duk_small_uint_t stridx;
+			duk_int_t c_nargs;  /* must hold DUK_VARARGS */
 			duk_c_function c_func;
 			duk_int16_t magic;
 
-			DUK_DDD(DUK_DDDPRINT("len=%d", len));
+			DUK_DDD(DUK_DDDPRINT("len=%ld", (long) len));
 			DUK_ASSERT(len >= 0);
 
-			natidx = duk_bd_decode(bd, DUK__NATIDX_BITS);
-			stridx = duk_bd_decode(bd, DUK__STRIDX_BITS);
+			natidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
+			stridx = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRIDX_BITS);
 			c_func = duk_bi_native_functions[natidx];
 
-			c_nargs = duk_bd_decode_flagged(bd, DUK__NARGS_BITS, len /*def_value*/);
+			c_nargs = (duk_small_uint_t) duk_bd_decode_flagged(bd, DUK__NARGS_BITS, len /*def_value*/);
 			if (c_nargs == DUK__NARGS_VARARGS_MARKER) {
 				c_nargs = DUK_VARARGS;
 			}
@@ -191,7 +191,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		/* DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h));
 
-		DUK_DDD(DUK_DDDPRINT("created built-in %d, class=%d, length=%d", i, class_num, len));
+		DUK_DDD(DUK_DDDPRINT("created built-in %ld, class=%ld, length=%ld", (long) i, (long) class_num, (long) len));
 	}
 
 	/*
@@ -201,48 +201,48 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	DUK_DD(DUK_DDPRINT("initialize built-in object properties"));
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		unsigned char t;
-		int num;
+		duk_small_uint_t t;
+		duk_small_uint_t num;
 
-		DUK_DDD(DUK_DDDPRINT("initializing built-in object at index %d", i));
+		DUK_DDD(DUK_DDDPRINT("initializing built-in object at index %ld", (long) i));
 		h = thr->builtins[i];
 
-		t = duk_bd_decode(bd, DUK__BIDX_BITS);
+		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
-			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %d", (int) t));
+			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %ld", (long) t));
 			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[t]);
 		}
 
-		t = duk_bd_decode(bd, DUK__BIDX_BITS);
+		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
 			/* 'prototype' property for all built-in objects (which have it) has attributes:
 			 *  [[Writable]] = false,
 			 *  [[Enumerable]] = false,
 			 *  [[Configurable]] = false
 			 */
-			DUK_DDD(DUK_DDDPRINT("set external prototype: built-in %d", (int) t));
+			DUK_DDD(DUK_DDDPRINT("set external prototype: built-in %ld", (long) t));
 			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
 		}
 
-		t = duk_bd_decode(bd, DUK__BIDX_BITS);
+		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
 			/* 'constructor' property for all built-in objects (which have it) has attributes:
 			 *  [[Writable]] = true,
 			 *  [[Enumerable]] = false,	
 			 *  [[Configurable]] = true
 			 */
-			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %d", (int) t));
+			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %ld", (long) t));
 			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
 		}
 
 		/* normal valued properties */
-		num = duk_bd_decode(bd, DUK__NUM_NORMAL_PROPS_BITS);
-		DUK_DDD(DUK_DDDPRINT("built-in object %d, %d normal valued properties", i, num));
+		num = (duk_small_uint_t) duk_bd_decode(bd, DUK__NUM_NORMAL_PROPS_BITS);
+		DUK_DDD(DUK_DDDPRINT("built-in object %ld, %ld normal valued properties", (long) i, (long) num));
 		for (j = 0; j < num; j++) {
-			int stridx;
-			int prop_flags;
+			duk_small_uint_t stridx;
+			duk_small_uint_t prop_flags;
 
-			stridx = duk_bd_decode(bd, DUK__STRIDX_BITS);
+			stridx = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRIDX_BITS);
 
 			/*
 			 *  Property attribute defaults are defined in E5 Section 15 (first
@@ -252,7 +252,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 
 			if (duk_bd_decode_flag(bd)) {
-				prop_flags = duk_bd_decode(bd, DUK__PROP_FLAGS_BITS);
+				prop_flags = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_FLAGS_BITS);
 			} else {
 				if (stridx == DUK_STRIDX_LENGTH) {
 					prop_flags = DUK_PROPDESC_FLAGS_NONE;
@@ -261,15 +261,15 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				}
 			}
 
-			t = duk_bd_decode(bd, DUK__PROP_TYPE_BITS);
+			t = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_TYPE_BITS);
 
-			DUK_DDD(DUK_DDDPRINT("built-in %d, normal-valued property %d, stridx %d, flags 0x%02x, type %d",
-			                     i, j, stridx, prop_flags, (int) t));
+			DUK_DDD(DUK_DDDPRINT("built-in %ld, normal-valued property %ld, stridx %ld, flags 0x%02lx, type %ld",
+			                     (long) i, (long) j, (long) stridx, (unsigned long) prop_flags, (long) t));
 
 			switch (t) {
 			case DUK__PROP_TYPE_DOUBLE: {
 				duk_double_union du;
-				int k;
+				duk_small_uint_t k;
 
 				for (k = 0; k < 8; k++) {
 					/* Encoding endianness must match target memory layout,
@@ -282,33 +282,34 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				break;
 			}
 			case DUK__PROP_TYPE_STRING: {
-				int n;
-				int k;
-				char *p;
+				duk_small_uint_t n;
+				duk_small_uint_t k;
+				duk_uint8_t *p;
 
-				n = duk_bd_decode(bd, DUK__STRING_LENGTH_BITS);
-				p = (char *) duk_push_fixed_buffer(ctx, n);
+				n = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRING_LENGTH_BITS);
+				p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, n);
 				for (k = 0; k < n; k++) {
-					*p++ = duk_bd_decode(bd, DUK__STRING_CHAR_BITS);
+					*p++ = (duk_uint8_t) duk_bd_decode(bd, DUK__STRING_CHAR_BITS);
 				}
 
 				duk_to_string(ctx, -1);
 				break;
 			}
 			case DUK__PROP_TYPE_STRIDX: {
-				int n;
+				duk_small_uint_t n;
 
-				n = duk_bd_decode(bd, DUK__STRIDX_BITS);
-				DUK_ASSERT(n >= 0 && n < DUK_HEAP_NUM_STRINGS);
+				n = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRIDX_BITS);
+				DUK_ASSERT_DISABLE(n >= 0);  /* unsigned */
+				DUK_ASSERT(n < DUK_HEAP_NUM_STRINGS);
 				duk_push_hstring_stridx(ctx, n);
 				break;
 			}
 			case DUK__PROP_TYPE_BUILTIN: {
-				int bidx;
+				duk_small_uint_t bidx;
 
-				bidx = duk_bd_decode(bd, DUK__BIDX_BITS);
+				bidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 				DUK_ASSERT(bidx != DUK__NO_BIDX_MARKER);
-				duk_dup(ctx, bidx);
+				duk_dup(ctx, (duk_idx_t) bidx);
 				break;
 			}
 			case DUK__PROP_TYPE_UNDEFINED: {
@@ -324,16 +325,16 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				break;
 			}
 			case DUK__PROP_TYPE_ACCESSOR: {
-				int natidx_getter = duk_bd_decode(bd, DUK__NATIDX_BITS);
-				int natidx_setter = duk_bd_decode(bd, DUK__NATIDX_BITS);
+				duk_small_uint_t natidx_getter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
+				duk_small_uint_t natidx_setter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
 				duk_c_function c_func_getter;
 				duk_c_function c_func_setter;
 
 				/* XXX: this is a bit awkward because there is no exposed helper
 				 * in the API style, only this internal helper.
 				 */
-				DUK_DDD(DUK_DDDPRINT("built-in accessor property: objidx=%d, stridx=%d, getteridx=%d, setteridx=%d, flags=0x%04x",
-				                     i, stridx, natidx_getter, natidx_setter, prop_flags));
+				DUK_DDD(DUK_DDDPRINT("built-in accessor property: objidx=%ld, stridx=%ld, getteridx=%ld, setteridx=%ld, flags=0x%04lx",
+				                     (long) i, (long) stridx, (long) natidx_getter, (long) natidx_setter, (unsigned long) prop_flags));
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
@@ -366,30 +367,31 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		}
 
 		/* native function properties */
-		num = duk_bd_decode(bd, DUK__NUM_FUNC_PROPS_BITS);
-		DUK_DDD(DUK_DDDPRINT("built-in object %d, %d function valued properties", i, num));
+		num = (duk_small_uint_t) duk_bd_decode(bd, DUK__NUM_FUNC_PROPS_BITS);
+		DUK_DDD(DUK_DDDPRINT("built-in object %ld, %ld function valued properties", (long) i, (long) num));
 		for (j = 0; j < num; j++) {
-			int stridx;
-			int natidx;
-			int c_nargs;
-			int c_length;
+			duk_small_uint_t stridx;
+			duk_small_uint_t natidx;
+			duk_int_t c_nargs;  /* must hold DUK_VARARGS */
+			duk_small_uint_t c_length;
 			duk_int16_t magic;
 			duk_c_function c_func;
 			duk_hnativefunction *h_func;
 
-			stridx = duk_bd_decode(bd, DUK__STRIDX_BITS);
-			natidx = duk_bd_decode(bd, DUK__NATIDX_BITS);
+			stridx = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRIDX_BITS);
+			natidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
 
-			c_length = duk_bd_decode(bd, DUK__LENGTH_PROP_BITS);
-			c_nargs = duk_bd_decode_flagged(bd, DUK__NARGS_BITS, (duk_int32_t) c_length /*def_value*/);
+			c_length = (duk_small_uint_t) duk_bd_decode(bd, DUK__LENGTH_PROP_BITS);
+			c_nargs = (duk_int_t) duk_bd_decode_flagged(bd, DUK__NARGS_BITS, (duk_int32_t) c_length /*def_value*/);
 			if (c_nargs == DUK__NARGS_VARARGS_MARKER) {
 				c_nargs = DUK_VARARGS;
 			}
 
 			c_func = duk_bi_native_functions[natidx];
 
-			DUK_DDD(DUK_DDDPRINT("built-in %d, function-valued property %d, stridx %d, natidx %d, length %d, nargs %d",
-			                     i, j, stridx, natidx, c_length, (c_nargs == DUK_VARARGS ? -1 : c_nargs)));
+			DUK_DDD(DUK_DDDPRINT("built-in %ld, function-valued property %ld, stridx %ld, natidx %ld, length %ld, nargs %ld",
+			                     (long) i, (long) j, (long) stridx, (long) natidx, (long) c_length,
+			                     (c_nargs == DUK_VARARGS ? (long) -1 : (long) c_nargs)));
 
 			/* [ (builtin objects) ] */
 
@@ -427,7 +429,8 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* XXX: other properties of function instances; 'arguments', 'caller'. */
 
-			DUK_DD(DUK_DDPRINT("built-in object %d, function property %d -> %!T", i, j, duk_get_tval(ctx, -1)));
+			DUK_DD(DUK_DDPRINT("built-in object %ld, function property %ld -> %!T",
+			                   (long) i, (long) j, (duk_tval *) duk_get_tval(ctx, -1)));
 
 			/* [ (builtin objects) func ] */
 
@@ -558,13 +561,14 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 #ifdef DUK_USE_DDPRINT
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		DUK_DD(DUK_DDPRINT("built-in object %d after initialization and compacting: %!@iO", i, thr->builtins[i]));
+		DUK_DD(DUK_DDPRINT("built-in object %ld after initialization and compacting: %!@iO",
+		                   (long) i, (duk_heaphdr *) thr->builtins[i]));
 	}
 #endif
 	
 #ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		DUK_DDD(DUK_DDDPRINT("built-in object %d after initialization and compacting", i));
+		DUK_DDD(DUK_DDDPRINT("built-in object %ld after initialization and compacting", (long) i));
 		DUK_DEBUG_DUMP_HOBJECT(thr->builtins[i]);
 	}
 #endif
@@ -579,7 +583,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 }
 
 void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to) {
-	int i;
+	duk_small_uint_t i;
 
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		thr_to->builtins[i] = thr_from->builtins[i];

@@ -13,15 +13,15 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_pcall)
-==> rc=1, result='TypeError: property not configurable'
+==> rc=1, result='TypeError: not configurable'
 *** test_1c (duk_pcall)
-==> rc=1, result='TypeError: property not configurable'
+==> rc=1, result='TypeError: not configurable'
 *** test_1d (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1e (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1f (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property delete'
+==> rc=1, result='TypeError: invalid base value'
 *** test_2a (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
@@ -36,9 +36,9 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_2b (duk_pcall)
-==> rc=1, result='TypeError: property not configurable'
+==> rc=1, result='TypeError: not configurable'
 *** test_2c (duk_pcall)
-==> rc=1, result='TypeError: property not configurable'
+==> rc=1, result='TypeError: not configurable'
 *** test_2d (duk_safe_call)
 ==> rc=1, result='Error: invalid index'
 *** test_2e (duk_safe_call)
@@ -54,7 +54,7 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_3b (duk_pcall)
-==> rc=1, result='TypeError: property not configurable'
+==> rc=1, result='TypeError: not configurable'
 *** test_3c (duk_safe_call)
 ==> rc=1, result='Error: invalid index'
 *** test_3d (duk_safe_call)

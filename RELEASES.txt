@@ -333,6 +333,8 @@ Planned
   duk_compile_lstring()) and avoid interning the source code when compiling
   from a user provided string (useful in low memory environments)
 
+* Add duk_copy() API call, essentially shorthand for duk_dup() + duk_replace()
+
 * Align duk_to_fixed_buffer() arguments and return value with duk_to_buffer()
   (this is an API incompatible change); add duk_to_dynamic_buffer()
 
@@ -345,6 +347,9 @@ Planned
 * Public API C typing wrapped behind typedefs to allow porting to more exotic
   platforms, e.g. platforms where "int" is a 16-bit type; API docs updated to
   describe how type wrapping affects calling code (see new section "C types")
+
+* Internal C typing wrapped throughout to allow porting to more exotic
+  platforms, e.g. platforms where "int" is a 16-bit type
 
 * Rename some feature options (DUK_OPT_xxx) for consistency, please check
   any options you use against the up-to-date options list
@@ -399,6 +404,9 @@ Planned
   corner case test (test-bi-date-canceling.js) to fail on e.g. 64-bit Ubuntu,
   gcc 4.8.1, -m32, and no -std=c99
 
+* Fix a few corner case pointer wrapping bugs in duk_set_top() and a few
+  other value stack index handling functions
+
 * Portability fix for avoiding potentially non-portable signed integer
   constants internally (e.g. use 0x7fffffffL - 1L instead of -0x80000000L);
   this fixed a concrete problem with at least VS2010 + x64
@@ -433,9 +441,6 @@ Planned
 
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
-
-* Internal C typing wrapped throughout to allow porting to more exotic
-  platforms, e.g. platforms where "int" is a 16-bit type
 
 1.0.0 (2014-07-XX)
 ------------------

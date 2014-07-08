@@ -17,7 +17,7 @@
 
 #include "duk_internal.h"
 
-static int duk__finalize_helper(duk_context *ctx) {
+static duk_ret_t duk__finalize_helper(duk_context *ctx) {
 	DUK_ASSERT(ctx != NULL);
 
 	DUK_DDD(DUK_DDDPRINT("protected finalization helper running"));
@@ -48,9 +48,9 @@ static int duk__finalize_helper(duk_context *ctx) {
 
 void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
-	int rc;
+	duk_ret_t rc;
 #ifdef DUK_USE_ASSERTIONS
-	int entry_top;
+	duk_idx_t entry_top;
 #endif
 
 	DUK_DDD(DUK_DDDPRINT("running object finalizer for object: %p", (void *) obj));
@@ -82,10 +82,9 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 		 * error debugging here.
 		 */
 		DUK_D(DUK_DPRINT("wrapped finalizer call failed for object %p (ignored); error: %!T",
-		                 (void *) obj, duk_get_tval(ctx, -1)));
+		                 (void *) obj, (duk_tval *) duk_get_tval(ctx, -1)));
 	}
 	duk_pop_2(ctx);  /* -> [...] */
 
 	DUK_ASSERT_TOP(ctx, entry_top);
 }
-

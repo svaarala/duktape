@@ -1,6 +1,6 @@
 /*
- *  Internal API calls which have (stack and other) semantics
- *  similar to the public API.
+ *  Internal API calls which have (stack and other) semantics similar
+ *  to the public API.
  */
 
 #ifndef DUK_API_INTERNAL_H_INCLUDED
@@ -15,9 +15,8 @@
  */
 #define DUK_ERRCODE_FLAG_NOBLAME_FILELINE  (1L << 24)
 
-/* FIXME: use duk_idx_t here? One approach would be to use duk_size_t for valstack sizes,
- * and duk_idx_t for local stack indices (the valstack might be larger than the maximum
- * stack frame).
+/* Current convention is to use duk_size_t for value stack sizes and global indices,
+ * and duk_idx_t for local frame indices.
  */
 duk_bool_t duk_check_valstack_resize(duk_context *ctx, duk_size_t min_new_size, duk_bool_t allow_shrink);
 void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, duk_bool_t allow_shrink);
@@ -35,6 +34,14 @@ duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_p
 /* duk_push_uint() is guaranteed to support at least unsigned 32-bit range */
 #define duk_push_u32(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
+
+/* sometimes stack and array indices need to go on the stack */
+#define duk_push_idx(ctx,val) \
+	duk_push_int((ctx), (duk_int_t) (val))
+#define duk_push_uarridx(ctx,val) \
+	duk_push_uint((ctx), (duk_uint_t) (val))
+#define duk_push_size_t(ctx,val) \
+	duk_push_uint((ctx), (duk_uint_t) (val))  /* XXX */
 
 /* internal helper for looking up a tagged type */
 #define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1L << 24)
@@ -55,7 +62,7 @@ duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index);
 		DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL | \
 		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
 
-void *duk_get_voidptr(duk_context *ctx, duk_idx_t index);  /* FIXME: unused */
+void *duk_get_voidptr(duk_context *ctx, duk_idx_t index);
 
 duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index);
 duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */

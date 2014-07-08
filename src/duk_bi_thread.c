@@ -55,9 +55,9 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
-	                     duk_get_tval(ctx, 0),
-	                     duk_get_tval(ctx, 1),
-	                     duk_get_tval(ctx, 2)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -145,16 +145,16 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	} else if (thr_resume->state == DUK_HTHREAD_STATE_YIELDED) {
 		DUK_DDD(DUK_DDDPRINT("RESUME NORMAL: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("RESUME INITIAL: thread=%!T, value=%!T",
-		                     duk_get_tval(ctx, 0),
-		                     duk_get_tval(ctx, 1)));
+		                     (duk_tval *) duk_get_tval(ctx, 0),
+		                     (duk_tval *) duk_get_tval(ctx, 1)));
 	}
 #endif
 
@@ -210,8 +210,8 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_small_int_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
-	                     duk_get_tval(ctx, 0),
-	                     duk_get_tval(ctx, 1)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1)));
 
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
@@ -247,8 +247,8 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
 	if (thr->callstack_preventcount != 1) {
 		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
-		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %d)",
-		                   (int) thr->callstack_preventcount));
+		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %ld)",
+		                   (long) thr->callstack_preventcount));
 		goto state_error;
 	}
 
@@ -269,10 +269,10 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 #ifdef DUK_USE_DEBUG
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T",
-		                     duk_get_tval(ctx, 0)));
+		                     (duk_tval *) duk_get_tval(ctx, 0)));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("YIELD NORMAL: value=%!T",
-		                     duk_get_tval(ctx, 0)));
+		                     (duk_tval *) duk_get_tval(ctx, 0)));
 	}
 #endif
 

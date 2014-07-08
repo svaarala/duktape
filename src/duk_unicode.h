@@ -215,7 +215,7 @@ duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp);
 duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp);
 duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp);
 duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp);
-void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase);
+void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t uppercase);
 duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp);
 duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
 

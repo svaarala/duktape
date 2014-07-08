@@ -230,7 +230,7 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	if (tot_len <= DUK_BI_LOGGER_SHORT_MSG_LIMIT) {
 		duk_hbuffer_dynamic *h_buf;
 
-		DUK_DDD(DUK_DDDPRINT("reuse existing small log message buffer, tot_len %d", (int) tot_len));
+		DUK_DDD(DUK_DDDPRINT("reuse existing small log message buffer, tot_len %ld", (long) tot_len));
 
 		/* We can assert for all buffer properties because user code
 		 * never has access to heap->log_buffer.
@@ -251,7 +251,7 @@ duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 		duk_push_hbuffer(ctx, (duk_hbuffer *) h_buf);
 		buf = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
 	} else {
-		DUK_DDD(DUK_DDDPRINT("use a one-off large log message buffer, tot_len %d", (int) tot_len));
+		DUK_DDD(DUK_DDDPRINT("use a one-off large log message buffer, tot_len %ld", (long) tot_len));
 		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, tot_len);
 	}
 	DUK_ASSERT(buf != NULL);

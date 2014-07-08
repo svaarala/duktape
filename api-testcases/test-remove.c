@@ -6,13 +6,13 @@
 *** test_2 (duk_safe_call)
 remove at 2 ok
 remove at -1 ok
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
 remove at 0 ok
 remove at -2 ok
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 static void prep(duk_context *ctx) {

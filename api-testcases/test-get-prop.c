@@ -11,16 +11,16 @@ arr.length -> rc=1, result='3'
 final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1c (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_1d (duk_safe_call)
 Math.PI is 3.141593
 configuration setting present, value: setting value
 final top: 4
 ==> rc=0, result='undefined'
 *** test_1e (duk_safe_call)
-==> rc=1, result='TypeError: invalid base reference for property read'
+==> rc=1, result='TypeError: invalid base value'
 *** test_2a (duk_safe_call)
 obj.foo -> rc=1, result='fooval'
 obj.nonexistent -> rc=0, result='undefined'

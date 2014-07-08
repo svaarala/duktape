@@ -39,7 +39,7 @@ duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t code)
  *  Exposed helper for setting up heap longjmp state.
  */
 
-void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type) {
+void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type) {
 	duk_tval tv_tmp;
 
 	thr->heap->lj.type = lj_type;

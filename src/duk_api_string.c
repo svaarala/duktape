@@ -17,7 +17,7 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 
 	if (DUK_UNLIKELY(count_in <= 0)) {
 		if (count_in < 0) {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, duk_errmsg_invalid_count);
+			DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
 			return;
 		}
 		DUK_ASSERT(count_in == 0);
@@ -60,7 +60,8 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 		len = new_len;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("join/concat %d strings, total length %d bytes", (int) count, (int) len));
+	DUK_DDD(DUK_DDDPRINT("join/concat %lu strings, total length %lu bytes",
+	                     (unsigned long) count, (unsigned long) len));
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);
@@ -199,8 +200,8 @@ void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, d
 	DUK_ASSERT_DISABLE(end_offset >= 0);
 	DUK_ASSERT(end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
 
-	start_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, start_offset);
-	end_byte_offset = (size_t) duk_heap_strcache_offset_char2byte(thr, h, end_offset);
+	start_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, start_offset);
+	end_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, end_offset);
 
 	DUK_ASSERT(end_byte_offset >= start_byte_offset);
 
@@ -285,7 +286,7 @@ void duk_trim(duk_context *ctx, duk_idx_t index) {
 		return;
 	}
 
-	duk_push_lstring(ctx, (const char *) q_start, (size_t) (q_end - q_start));
+	duk_push_lstring(ctx, (const char *) q_start, (duk_size_t) (q_end - q_start));
 	duk_replace(ctx, index);
 }
 

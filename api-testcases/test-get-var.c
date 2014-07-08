@@ -17,16 +17,16 @@ strict: 1
 ==> rc=1, result='ReferenceError: identifier 'no-such-property' undefined'
 *** test_3 (duk_safe_call)
 strict: 0
-==> rc=1, result='TypeError: incorrect type, expected tag 5'
+==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_pcall)
 strict: 1
-==> rc=1, result='TypeError: incorrect type, expected tag 5'
+==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_safe_call)
 strict: 0
-==> rc=1, result='TypeError: incorrect type, expected tag 5'
+==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_pcall)
 strict: 1
-==> rc=1, result='TypeError: incorrect type, expected tag 5'
+==> rc=1, result='TypeError: unexpected type'
 ===*/
 
 /* existing property */

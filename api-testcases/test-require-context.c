@@ -4,11 +4,11 @@ concat: foobarquux
 still here
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected tag 6'
+==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected tag 6'
+==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_safe_call)
-==> rc=1, result='TypeError: incorrect type, expected tag 6'
+==> rc=1, result='TypeError: unexpected type'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

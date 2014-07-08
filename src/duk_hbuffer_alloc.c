@@ -4,9 +4,9 @@
 
 #include "duk_internal.h"
 
-duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
+duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynamic) {
 	duk_hbuffer *res = NULL;
-	size_t alloc_size;
+	duk_size_t alloc_size;
 
 	DUK_DDD(DUK_DDDPRINT("allocate hbuffer"));
 
@@ -64,7 +64,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, size_t size, int dynamic) {
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 
-	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", res));
+	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", (void *) res));
 	return res;
 
  error:

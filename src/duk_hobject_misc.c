@@ -4,8 +4,8 @@
 
 #include "duk_internal.h"
 
-int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
-	duk_uint32_t sanity;
+duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
+	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(h != NULL);
@@ -18,7 +18,7 @@ int duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_h
 		}
 
 		if (sanity-- == 0) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "prototype chain max depth reached (loop?)");
+			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		h = h->prototype;
 	} while (h);
@@ -41,4 +41,3 @@ void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p)
 	h->prototype = p;
 #endif
 }
-

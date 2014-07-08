@@ -83,4 +83,3 @@ duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 };
-

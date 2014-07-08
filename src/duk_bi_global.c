@@ -11,14 +11,14 @@
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
-#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((unsigned char) ( \
+#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((duk_uint8_t) ( \
 	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
 	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
 	))
 #define DUK__CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
-static unsigned char duk__encode_uriunescaped_table[16] = {
+static duk_uint8_t duk__encode_uriunescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
@@ -30,7 +30,7 @@ static unsigned char duk__encode_uriunescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.4: uriUnescaped */
-static unsigned char duk__encode_uricomponent_unescaped_table[16] = {
+static duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
@@ -42,7 +42,7 @@ static unsigned char duk__encode_uricomponent_unescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.1: uriReserved + '#' */
-static unsigned char duk__decode_uri_reserved_table[16] = {
+static duk_uint8_t duk__decode_uri_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
@@ -54,7 +54,7 @@ static unsigned char duk__decode_uri_reserved_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.2: empty */
-static unsigned char duk__decode_uri_component_reserved_table[16] = {
+static duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
@@ -67,7 +67,7 @@ static unsigned char duk__decode_uri_component_reserved_table[16] = {
 
 #ifdef DUK_USE_SECTION_B
 /* E5.1 Section B.2.2, step 7. */
-static unsigned char duk__escape_unescaped_table[16] = {
+static duk_uint8_t duk__escape_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
@@ -202,19 +202,19 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		duk_uint8_t *p = tfm_ctx->p;
 		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
-		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%d", (int) left));
+		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%ld", (long) left));
 
 		if (left < 2) {
 			goto uri_error;
 		}
 
 		t = duk__decode_hex_escape(p, 2);
-		DUK_DDD(DUK_DDDPRINT("first byte: %d", t));
+		DUK_DDD(DUK_DDDPRINT("first byte: %ld", (long) t));
 		if (t < 0) {
 			goto uri_error;
 		}
 
-		if (t < 128) {
+		if (t < 0x80) {
 			if (DUK__CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
@@ -268,7 +268,8 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		for (i = 1; i < utf8_blen; i++) {
 			/* p points to digit part ('%xy', p points to 'x') */
 			t = duk__decode_hex_escape(p, 2);
-			DUK_DDD(DUK_DDDPRINT("i=%d utf8_blen=%d cp=%d t=0x%02x", i, utf8_blen, cp, t));
+			DUK_DDD(DUK_DDDPRINT("i=%ld utf8_blen=%ld cp=%ld t=0x%02lx",
+			                     (long) i, (long) utf8_blen, (long) cp, (unsigned long) t));
 			if (t < 0) {
 				goto uri_error;
 			}
@@ -281,7 +282,7 @@ static void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, 
 		p--;  /* p overshoots */
 		tfm_ctx->p = p;
 
-		DUK_DDD(DUK_DDDPRINT("final cp=%d, min_cp=%d", cp, min_cp));
+		DUK_DDD(DUK_DDDPRINT("final cp=%ld, min_cp=%ld", (long) cp, (long) min_cp));
 
 		if (cp < min_cp || cp > 0x10ffffL || (cp >= 0xd800L && cp <= 0xdfffL)) {
 			goto uri_error;
@@ -400,8 +401,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hcompiledfunction *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
-	int this_to_global = 1;
-	duk_small_int_t comp_flags;
+	duk_bool_t this_to_global = 1;
+	duk_small_uint_t comp_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
 	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
@@ -491,7 +492,8 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                                    act_lex_env);
 			new_env = duk_require_hobject(ctx, -1);
 			DUK_ASSERT(new_env != NULL);
-			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", new_env));
+			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO",
+			                     (duk_heaphdr *) new_env));
 
 			outer_lex_env = new_env;
 			outer_var_env = new_env;
@@ -538,7 +540,9 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	}
 
 	DUK_DDD(DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
-	                     outer_lex_env, outer_var_env, duk_get_tval(ctx, -1)));
+	                     (duk_heaphdr *) outer_lex_env,
+	                     (duk_heaphdr *) outer_var_env,
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/* [ source template closure this ] */
 
@@ -554,9 +558,9 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
  */
 
 duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
-	int strip_prefix;
+	duk_bool_t strip_prefix;
 	duk_int32_t radix;
-	int s2n_flags;
+	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 2);
 	duk_to_string(ctx, 0);
@@ -602,7 +606,7 @@ duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
-	int s2n_flags;
+	duk_small_uint_t s2n_flags;
 	duk_int32_t radix;
 
 	DUK_ASSERT_TOP(ctx, 1);
@@ -629,14 +633,15 @@ duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 /*
  *  Number checkers
  */
+
 duk_ret_t duk_bi_global_object_is_nan(duk_context *ctx) {
-	double d = duk_to_number(ctx, 0);
+	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
 
 duk_ret_t duk_bi_global_object_is_finite(duk_context *ctx) {
-	double d = duk_to_number(ctx, 0);
+	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
 }
@@ -683,11 +688,11 @@ duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 
 #ifdef DUK_USE_BROWSER_LIKE
 #ifdef DUK_USE_FILE_IO
-static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
-	int nargs;
-	int i;
+static duk_ret_t duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
+	duk_idx_t nargs;
+	duk_idx_t i;
 	const char *str;
-	size_t len;
+	duk_size_t len;
 	char nl = '\n';
 
 	/* If argument count is 1 and first argument is a buffer, write the buffer
@@ -698,7 +703,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 	nargs = duk_get_top(ctx);
 	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
 		const char *buf = NULL;
-		size_t sz = 0;
+		duk_size_t sz = 0;
 		buf = (const char *) duk_get_buffer(ctx, 0, &sz);
 		if (buf && sz > 0) {
 			DUK_FWRITE(buf, 1, sz, f_out);
@@ -706,8 +711,10 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 		goto flush;
 	}
 
-	/* FIXME: best semantics link?  Now apply ToString to args, join with ' ' */
-	/* FIXME: ToString() coerce inplace instead? */
+	/* XXX: What are the best semantics / specification for print()?
+	 * Now apply ToString() to arguments and join with a single space.
+	 */
+	/* XXX: ToString() coerce inplace instead? */
 
 	if (nargs > 0) {
 		for (i = 0; i < nargs; i++) {
@@ -718,7 +725,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 			duk_to_string(ctx, -1);
 		}
 
-		duk_concat(ctx, 2*nargs - 1);
+		duk_concat(ctx, 2 * nargs - 1);
 
 		str = duk_get_lstring(ctx, -1, &len);
 		if (str) {
@@ -726,7 +733,7 @@ static int duk__print_alert_helper(duk_context *ctx, duk_file *f_out) {
 		}
 	}
 
-	DUK_FWRITE(&nl, 1, 1, f_out);
+	DUK_FWRITE((const char *) &nl, 1, 1, f_out);
 
  flush:
 	DUK_FFLUSH(f_out);
@@ -812,17 +819,17 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
 			goto resolve_error;
 		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", mod_id, req_id);
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", (const char *) mod_id, (const char *) req_id);
 	} else {
 		if (req_id_len + 1 >= sizeof(buf_in)) {
 			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
 			goto resolve_error;
 		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", req_id);
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", (const char *) req_id);
 	}
 	buf_in[sizeof(buf_in) - 1] = (duk_uint8_t) 0;
 
-	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", buf_in));
+	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", (const char *) buf_in));
 
 	/*
 	 *  Resolution loop.  At the top of the loop we're expecting a valid
@@ -832,10 +839,11 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 	p = buf_in;
 	q = buf_out;
 	for (;;) {
-		duk_uint8_t c;
+		duk_uint_fast8_t c;
 
 		/* Here 'p' always points to the start of a term. */
-		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p", p, (void *) q, (void *) buf_out));
+		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p",
+		                     (const char *) p, (void *) q, (void *) buf_out));
 
 		c = *p++;
 		if (DUK_UNLIKELY(c == 0)) {
@@ -911,7 +919,7 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 	return;
 
  resolve_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", req_id);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", (const char *) req_id);
 }
 #endif  /* DUK_USE_COMMONJS_MODULES */
 
@@ -935,12 +943,15 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
 	str_mod_id = duk_get_string(ctx, 2);  /* ignore non-strings */
 	DUK_DDD(DUK_DDDPRINT("resolve module id: requested=%!T, currentmodule=%!T",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
 	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
 	str_req_id = NULL;
 	str_mod_id = NULL;
 	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
-	                     duk_get_tval(ctx, 0), duk_get_tval(ctx, 2), duk_get_tval(ctx, 3)));
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 2),
+	                     (duk_tval *) duk_get_tval(ctx, 3)));
 
 	/* [ requested_id require require.id resolved_id ] */
 	DUK_ASSERT_TOP(ctx, 4);
@@ -967,7 +978,8 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);
 	if (duk_get_prop(ctx, 5)) {
 		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
-		DUK_DD(DUK_DDPRINT("module already loaded: %!T", duk_get_tval(ctx, 3)));
+		DUK_DD(DUK_DDPRINT("module already loaded: %!T",
+		                   (duk_tval *) duk_get_tval(ctx, 3)));
 		return 1;
 	}
 
@@ -984,7 +996,8 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  succeeds in finding the module.
 	 */
 
-	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T", duk_get_tval(ctx, 3)));
+	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T",
+	                   (duk_tval *) duk_get_tval(ctx, 3)));
 
 	/* Fresh require: require.id is left configurable (but not writable)
 	 * so that is not easy to accidentally tweak it, but it can still be

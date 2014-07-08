@@ -21,9 +21,9 @@ index 16, is-undefined: 1
 index 17, is-undefined: 1
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: index out of bounds'
+==> rc=1, result='Error: invalid index'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

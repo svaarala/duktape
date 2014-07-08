@@ -14,21 +14,21 @@
 
 /* FIXME: unimplemented */
 
-void *duk_torture_alloc_function(void *udata, size_t size) {
+void *duk_torture_alloc_function(void *udata, duk_size_t size) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_MALLOC(size);
-	DUK_DDD(DUK_DDDPRINT("torture alloc function: %d -> %p",
-	                     (int) size, (void *) res));
+	DUK_DDD(DUK_DDDPRINT("torture alloc function: %lu -> %p",
+	                     (unsigned long) size, (void *) res));
 	return res;
 }
 
-void *duk_torture_realloc_function(void *udata, void *ptr, size_t newsize) {
+void *duk_torture_realloc_function(void *udata, void *ptr, duk_size_t newsize) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_REALLOC(ptr, newsize);
-	DUK_DDD(DUK_DDDPRINT("torture realloc function: %p %d -> %p",
-	                     (void *) ptr, (int) newsize, (void *) res));
+	DUK_DDD(DUK_DDDPRINT("torture realloc function: %p %lu -> %p",
+	                     (void *) ptr, (unsigned long) newsize, (void *) res));
 	return res;
 }
 

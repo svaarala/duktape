@@ -164,8 +164,7 @@
 #define DUK_ASSERT_REFCOUNT_NONZERO_TVAL(tv)    /* no refcount check */
 #endif
 
-/* FIXME: fix typing to match duk_get_top() eventual return value type */
-#define DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT((duk_int_t) duk_get_top((ctx)) == (duk_int_t) (n))
+#define DUK_ASSERT_TOP(ctx,n)  DUK_ASSERT((duk_idx_t) duk_get_top((ctx)) == (duk_idx_t) (n))
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_PACKED_TVAL)
 #define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  do { \
@@ -242,9 +241,8 @@ DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code
 DUK_NORETURN(void duk_default_panic_handler(duk_errcode_t code, const char *msg));
 #endif
 
-void duk_err_setup_heap_ljstate(duk_hthread *thr, int lj_type);
+void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type);
 
 duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t err_code);
 
 #endif  /* DUK_ERROR_H_INCLUDED */
-

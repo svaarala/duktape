@@ -98,8 +98,6 @@ for i in	\
 	duk_debug_hobject.c	\
 	duk_debug_macros.c	\
 	duk_debug_vsnprintf.c	\
-	duk_errmsg.c		\
-	duk_errmsg.h		\
 	duk_error_augment.c	\
 	duk_error.h		\
 	duk_error_longjmp.c	\
@@ -168,6 +166,8 @@ for i in	\
 	duk_util_tinyrandom.c	\
 	duk_selftest.c		\
 	duk_selftest.h		\
+	duk_strings.c		\
+	duk_strings.h		\
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do

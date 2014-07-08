@@ -62,7 +62,7 @@
  *  ToBoolean()  (E5 Section 9.2)
  */
 
-int duk_js_toboolean(duk_tval *tv) {
+duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL:
@@ -131,10 +131,10 @@ int duk_js_toboolean(duk_tval *tv) {
  */	
 
 /* E5 Section 9.3.1 */
-static double duk__tonumber_string_raw(duk_hthread *thr) {
+static duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
-	int s2n_flags;
-	double d;
+	duk_small_uint_t s2n_flags;
+	duk_double_t d;
 
 	/* Quite lenient, e.g. allow empty as zero, but don't allow trailing
 	 * garbage.
@@ -158,7 +158,7 @@ static double duk__tonumber_string_raw(duk_hthread *thr) {
 	return d;
 }
 
-double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
+duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	duk_context *ctx = (duk_hthread *) thr;
 
 	DUK_ASSERT(thr != NULL);
@@ -191,7 +191,7 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		/* Note: ToPrimitive(object,hint) == [[DefaultValue]](object,hint),
 		 * so use [[DefaultValue]] directly.
 		 */
-		double d;
+		duk_double_t d;
 		duk_push_tval(ctx, tv);
 		duk_to_defaultvalue(ctx, -1, DUK_HINT_NUMBER);  /* 'tv' becomes invalid */
 
@@ -235,8 +235,8 @@ double duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
  */
 
 /* exposed, used by e.g. duk_bi_date.c */
-double duk_js_tointeger_number(double x) {
-	int c = DUK_FPCLASSIFY(x);
+duk_double_t duk_js_tointeger_number(duk_double_t x) {
+	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
 
 	if (c == DUK_FP_NAN) {
 		return 0.0;
@@ -246,7 +246,7 @@ double duk_js_tointeger_number(double x) {
 		 */
 		return x;
 	} else {
-		int s = DUK_SIGNBIT(x);
+		duk_small_int_t s = (duk_small_int_t) DUK_SIGNBIT(x);
 		x = DUK_FLOOR(DUK_FABS(x));  /* truncate towards zero */
 		if (s) {
 			x = -x;
@@ -255,8 +255,8 @@ double duk_js_tointeger_number(double x) {
 	}
 }
 
-double duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
-	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
+duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
+	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	return duk_js_tointeger_number(d);
 }
 
@@ -265,9 +265,9 @@ double duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
  */
 
 /* combined algorithm matching E5 Sections 9.5 and 9.6 */	
-static double duk__toint32_touint32_helper(double x, int is_toint32) {
-	int c = DUK_FPCLASSIFY(x);
-	int s;
+static duk_double_t duk__toint32_touint32_helper(duk_double_t x, duk_bool_t is_toint32) {
+	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
+	duk_small_int_t s;
 
 	if (c == DUK_FP_NAN || c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
 		return 0.0;
@@ -275,7 +275,7 @@ static double duk__toint32_touint32_helper(double x, int is_toint32) {
 
 
 	/* x = sign(x) * floor(abs(x)), i.e. truncate towards zero, keep sign */
-	s = DUK_SIGNBIT(x);
+	s = (duk_small_int_t) DUK_SIGNBIT(x);
 	x = DUK_FLOOR(DUK_FABS(x));
 	if (s) {
 		x = -x;
@@ -304,21 +304,21 @@ static double duk__toint32_touint32_helper(double x, int is_toint32) {
 }
 
 duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
-	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
+	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
-	DUK_ASSERT(d == ((double) ((duk_int32_t) d)));  /* whole, won't clip */
+	DUK_ASSERT(d == ((duk_double_t) ((duk_int32_t) d)));  /* whole, won't clip */
 	return (duk_int32_t) d;
 }
 
 
 duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
-	double d = duk_js_tonumber(thr, tv);  /* invalidates tv */
+	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */
-	DUK_ASSERT(d == ((double) ((duk_uint32_t) d)));  /* whole, won't clip */
+	DUK_ASSERT(d == ((duk_double_t) ((duk_uint32_t) d)));  /* whole, won't clip */
 	return (duk_uint32_t) d;
 
 }
@@ -346,8 +346,9 @@ duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv) {
  *  Note: no API equivalent now.
  */
 
+#if 0  /* unused */
 void duk_js_checkobjectcoercible(duk_hthread *thr, duk_tval *tv_x) {
-	int tag = DUK_TVAL_GET_TAG(tv_x);
+	duk_small_uint_t tag = DUK_TVAL_GET_TAG(tv_x);
 
 	/* Note: this must match ToObject() behavior */
 
@@ -358,6 +359,7 @@ void duk_js_checkobjectcoercible(duk_hthread *thr, duk_tval *tv_x) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not object coercible");
 	}
 }
+#endif
 
 /*
  *  IsCallable()  (E5 Section 9.11)
@@ -398,11 +400,11 @@ int duk_js_iscallable(duk_tval *tv_x) {
  *  - E5 Section 11.9.6, step 4 (strict)
  */
 
-static int duk__js_equals_number(double x, double y) {
+static duk_bool_t duk__js_equals_number(duk_double_t x, duk_double_t y) {
 #if defined(DUK_USE_PARANOID_MATH)
 	/* Straightforward algorithm, makes fewer compiler assumptions. */
-	int cx = DUK_FPCLASSIFY(x);
-	int cy = DUK_FPCLASSIFY(y);
+	duk_small_int_t cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
+	duk_small_int_t cy = (duk_small_int_t) DUK_FPCLASSIFY(y);
 	if (cx == DUK_FP_NAN || cy == DUK_FP_NAN) {
 		return 0;
 	}
@@ -436,10 +438,10 @@ static int duk__js_equals_number(double x, double y) {
 #endif  /* DUK_USE_PARANOID_MATH */
 }
 
-static int duk__js_samevalue_number(double x, double y) {
+static duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 #if defined(DUK_USE_PARANOID_MATH)
-	int cx = DUK_FPCLASSIFY(x);
-	int cy = DUK_FPCLASSIFY(y);
+	duk_small_int_t cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
+	duk_small_int_t cy = (duk_small_int_t) DUK_FPCLASSIFY(y);
 
 	if (cx == DUK_FP_NAN && cy == DUK_FP_NAN) {
 		/* SameValue(NaN, NaN) = true, regardless of NaN sign or extra bits */
@@ -451,8 +453,8 @@ static int duk__js_samevalue_number(double x, double y) {
 		 *
 		 *     signbit(x) == signbit(y)
 		 */
-		int sx = (DUK_SIGNBIT(x) ? 1 : 0);
-		int sy = (DUK_SIGNBIT(y) ? 1 : 0);
+		duk_small_int_t sx = (DUK_SIGNBIT(x) ? 1 : 0);
+		duk_small_int_t sy = (DUK_SIGNBIT(y) ? 1 : 0);
 		return (sx == sy);
 	}
 
@@ -464,8 +466,8 @@ static int duk__js_samevalue_number(double x, double y) {
 
 	return (x == y);
 #else  /* DUK_USE_PARANOID_MATH */
-	int cx = DUK_FPCLASSIFY(x);
-	int cy = DUK_FPCLASSIFY(y);
+	duk_small_int_t cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
+	duk_small_int_t cy = (duk_small_int_t) DUK_FPCLASSIFY(y);
 
 	if (x == y) {
 		/* IEEE requires that NaNs compare false */
@@ -479,8 +481,8 @@ static int duk__js_samevalue_number(double x, double y) {
 			 *
 			 *     signbit(x) == signbit(y)
 			 */
-			int sx = (DUK_SIGNBIT(x) ? 1 : 0);
-			int sy = (DUK_SIGNBIT(y) ? 1 : 0);
+			duk_small_int_t sx = (DUK_SIGNBIT(x) ? 1 : 0);
+			duk_small_int_t sy = (DUK_SIGNBIT(y) ? 1 : 0);
 			return (sx == sy);
 		}
 		return 1;
@@ -503,7 +505,7 @@ static int duk__js_samevalue_number(double x, double y) {
 #endif  /* DUK_USE_PARANOID_MATH */
 }
 
-int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
+duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_tmp;
 
@@ -554,8 +556,8 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 				/* non-strict equality for buffers compares contents */
 				duk_hbuffer *h_x = DUK_TVAL_GET_BUFFER(tv_x);
 				duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
-				size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
-				size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
+				duk_size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
+				duk_size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
 				void *buf_x;
 				void *buf_y;
 				if (len_x != len_y) {
@@ -609,7 +611,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 	}
 	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* XXX: this is possible without resorting to the value stack */
-		double d1, d2;
+		duk_double_t d1, d2;
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		duk_push_tval(ctx, tv_x);
 		duk_to_string(ctx, -1);  /* buffer values are coerced first to string here */
@@ -628,8 +630,8 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_BUFFER(tv_y)) {
 		duk_hstring *h_x = DUK_TVAL_GET_STRING(tv_x);
 		duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
-		size_t len_x = DUK_HSTRING_GET_BYTELEN(h_x);
-		size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
+		duk_size_t len_x = DUK_HSTRING_GET_BYTELEN(h_x);
+		duk_size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
 		void *buf_x;
 		void *buf_y;
 		if (len_x != len_y) {
@@ -658,7 +660,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 	}
 	if (DUK_TVAL_IS_BOOLEAN(tv_y)) {
 		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
-		int rc;
+		duk_bool_t rc;
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(ctx, tv_x);
 		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
@@ -676,7 +678,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
 	}
 	if (DUK_TVAL_IS_OBJECT(tv_x) &&
 	    (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
-		int rc;
+		duk_bool_t rc;
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
 		duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* apparently no hint? */
@@ -700,7 +702,7 @@ int duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_s
  * needs to push stuff on the stack anyway...
  */
 
-int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
+duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	/*
 	 *  String comparison (E5 Section 11.8.5, step 4), which
 	 *  needs to compare codepoint by codepoint.
@@ -714,8 +716,8 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	 *  is not an issue for compliance.
 	 */
 
-	size_t h1_len, h2_len, prefix_len;
-	int rc;
+	duk_size_t h1_len, h2_len, prefix_len;
+	duk_small_int_t rc;
 
 	DUK_ASSERT(h1 != NULL);
 	DUK_ASSERT(h2 != NULL);
@@ -754,13 +756,13 @@ int duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	return 0;
 }
 
-int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
+duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
-	double d1, d2;
-	int c1, c2;
-	int s1, s2;
-	int rc;
-	int retval;
+	duk_double_t d1, d2;
+	duk_small_int_t c1, c2;
+	duk_small_int_t s1, s2;
+	duk_small_int_t rc;
+	duk_bool_t retval;
 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
@@ -802,10 +804,10 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_
 			d1 = duk_to_number(ctx, -2);
 		}
 
-		c1 = DUK_FPCLASSIFY(d1);
-		s1 = DUK_SIGNBIT(d1);
-		c2 = DUK_FPCLASSIFY(d2);
-		s2 = DUK_SIGNBIT(d2);
+		c1 = (duk_small_int_t) DUK_FPCLASSIFY(d1);
+		s1 = (duk_small_int_t) DUK_SIGNBIT(d1);
+		c2 = (duk_small_int_t) DUK_FPCLASSIFY(d2);
+		s2 = (duk_small_int_t) DUK_SIGNBIT(d2);
 
 		if (c1 == DUK_FP_NAN || c2 == DUK_FP_NAN) {
 			goto lt_undefined;
@@ -898,12 +900,12 @@ int duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_
  *  For other objects, a TypeError is thrown.
  */
 
-int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
-	duk_uint32_t sanity;
+	duk_uint_t sanity;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
@@ -955,7 +957,7 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "instanceof bound chain sanity exceeded");
+		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
 	/*
@@ -1033,9 +1035,9 @@ int duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
  *  Basically just a property existence check using [[HasProperty]].
  */
 	
-int duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_context *ctx = (duk_context *) thr;
-	int retval;
+	duk_bool_t retval;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
@@ -1077,56 +1079,56 @@ int duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
  */
 
 duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
-	int idx = 0;
+	duk_small_int_t stridx = 0;
 
 	switch (DUK_TVAL_GET_TAG(tv_x)) {
 	case DUK_TAG_UNDEFINED: {
-		idx = DUK_STRIDX_LC_UNDEFINED;
+		stridx = DUK_STRIDX_LC_UNDEFINED;
 		break;
 	}
 	case DUK_TAG_NULL: {
 		/* Note: not a typo, "object" is returned for a null value */
-		idx = DUK_STRIDX_LC_OBJECT;
+		stridx = DUK_STRIDX_LC_OBJECT;
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
-		idx = DUK_STRIDX_LC_BOOLEAN;
+		stridx = DUK_STRIDX_LC_BOOLEAN;
 		break;
 	}
 	case DUK_TAG_POINTER: {
 		/* implementation specific */
-		idx = DUK_STRIDX_LC_POINTER;
+		stridx = DUK_STRIDX_LC_POINTER;
 		break;
 	}
 	case DUK_TAG_STRING: {
-		idx = DUK_STRIDX_LC_STRING;
+		stridx = DUK_STRIDX_LC_STRING;
 		break;
 	}
 	case DUK_TAG_OBJECT: {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_x);
 		DUK_ASSERT(obj != NULL);
 		if (DUK_HOBJECT_IS_CALLABLE(obj)) {
-			idx = DUK_STRIDX_LC_FUNCTION;
+			stridx = DUK_STRIDX_LC_FUNCTION;
 		} else {
-			idx = DUK_STRIDX_LC_OBJECT;
+			stridx = DUK_STRIDX_LC_OBJECT;
 		}
 		break;
 	}
 	case DUK_TAG_BUFFER: {
 		/* implementation specific */
-		idx = DUK_STRIDX_LC_BUFFER;
+		stridx = DUK_STRIDX_LC_BUFFER;
 		break;
 	}
 	default: {
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
-		idx = DUK_STRIDX_LC_NUMBER;
+		stridx = DUK_STRIDX_LC_NUMBER;
 		break;
 	}
 	}
 
-	DUK_ASSERT(idx >= 0 && idx < DUK_HEAP_NUM_STRINGS);
-	return thr->strs[idx];
+	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	return thr->strs[stridx];
 }
 
 /*
@@ -1139,8 +1141,8 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
  *  call duk_js_to_arrayindex_string_helper().
  */
 
-duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_idx) {
-	duk_uint32_t res, new_res;
+duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {
+	duk_uarridx_t res, new_res;
 
 	if (blen == 0 || blen > 10) {
 		goto parse_fail;
@@ -1178,8 +1180,8 @@ duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t b
 }	
 
 /* Called by duk_hstring.h macros */
-duk_uint32_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
-	duk_uint32_t res;
+duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
+	duk_uarridx_t res;
 	duk_small_int_t rc;
 
 	if (!DUK_HSTRING_HAS_ARRIDX(h)) {
@@ -1193,4 +1195,3 @@ duk_uint32_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
 	DUK_ASSERT(rc != 0);
 	return res;
 }
-
