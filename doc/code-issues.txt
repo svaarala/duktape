@@ -718,12 +718,28 @@ an ``int`` in decimal, but:
   sometimes different.  As a concrete example, the proper print format code for
   an IEEE double is ``%f`` while the scan format code is ``%lf``.
 
-* Some useful format codes:
+  - Inside Duktape code, use ``%lf`` for the print format code: it's
+    also an acceptable format and perhaps more clear
 
-  - ``%d``: int
-  - ``%ld``: long
-  - ``%zu``: size_t
-  - ``%jd``: maxint_t (C99)
+* Some useful portable format codes:
+
+  - ``%s``: string, use ``(const char *)`` cast
+  - ``%p``: pointer, use ``(void *)`` cast
+  - ``%d``: int, use ``(int)`` cast
+  - ``%u``: unsigned int, use ``(unsigned int)`` cast
+  - ``%ld``: long, use ``(long)`` cast
+  - ``%lu``: unsigned long, use ``(unsigned long)`` cast
+
+* These are useful but unfortunately C99 (C++11):
+
+  - ``%zu``: size_t (C99), use ``%lu`` and ``(unsigned long)`` cast instead
+  - ``%jd``: maxint_t (C99), use ``%lu`` and ``(unsigned long)`` cast instead
+
+* Format argument types, see e.g.:
+
+  - http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output
+  - http://www.gnu.org/software/libc/manual/html_node/Other-Output-Conversions.html#Other-Output-Conversions
+  - http://www.gnu.org/software/libc/manual/html_node/Integer-Conversions.html#Integer-Conversions
 
 Types used inside Duktape
 -------------------------
@@ -761,8 +777,6 @@ Types used inside Duktape
   be larger than 32 bits while individual activations could be limited to
   a signed 32 bit index space.
 
-* **FIXME:** Format specifiers are under work.
-
 * **FIXME:** normal vs. fast variables: use tight values in structs,
   "fast" values as e.g. loop counters in fast paths (character / byte
   iteration loops etc)
@@ -770,6 +784,74 @@ Types used inside Duktape
 * **FIXME**: flags field type (storage vs. internal APIs)
 
 * **FIXME**: avoid casting when unnecessary
+
+Formatting considerations
+-------------------------
+
+* Use standard format specifiers (``%d``, ``%p``, ``%s``, etc) instead of
+  relying on compiler specific or C99 format specifiers: they may not be
+  available on all platforms.
+
+* Select a standard specifier which is guaranteed to be wide enough for
+  the argument type and cast the argument explicitly to a matching type.
+
+  - Casting all arguments explicitly is a compromise: an explicit cast removes
+    some useful warnings but also removes some pointless warnings.  Since type
+    detection ends up with different typing across platforms, the only way to
+    format portably is to use a portable format specifier and an explicit cast;
+    the format specifier/type must be chosen to be wide enough to match all
+    possible type detection results.
+
+* For integers, use ``long`` variants by default because it is guaranteed
+  to be 32 bits or more:
+
+  - ``%ld`` with ``(long)`` cast
+
+  - ``%lu`` with ``(unsigned long)`` cast
+
+  - ``%lx`` with ``(unsigned long)`` cast; there seems to be some variance
+    whether a signed or unsigned cast should be used, GCC seems to expect
+    an unsigned argument:
+
+    + http://www.gnu.org/software/libc/manual/html_node/Integer-Conversions.html#Integer-Conversions
+
+* For debug code, use ``long`` variants for all integers for simplicity,
+  even for short fields like booleans.
+
+* For release code using ``int`` variants (``%d``, ``%u``, ``%x``) is OK
+  if a 16-bit range suffices.  It's probably nice to mention this in code
+  so that there is no doubt.
+
+* Selecting signed/unsigned variant for debug logs is not that critical, as most
+  values don't use the full range.  The current code base contains both signed
+  and unsigned formatting for e.g. lengths (which are never negative).
+
+* Use ``%lf`` for IEEE doubles; ``%f`` is the other alternative.
+
+* When using ``%c``, cast the argument explicitly with ``(int)`` (not ``(char)``).
+  This is the "promoted type" expected, see e.g.:
+
+  - http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output
+
+* When using hexadecimal formats ``%lx`` (or ``%x``), cast the argument to an
+  unsigned type (``unsigned long`` or ``unsigned int``).  There seems to be
+  some variation between compilers whether they expect a signed or an unsigned
+  argument.  GCC seems to expect an unsigned argument.
+
+* Don't rely on ``%s`` accepting a NULL pointer, this breaks on some
+  platforms.  Check pointer before formatting; if the string argument
+  is obtained with Duktape API without an explicit NULL check (which is
+  mostly preferable), use ``duk_require_string()`` instead of
+  ``duk_get_string()``.
+
+* For debug prints, the debug formatter special cases ``%s`` so that the
+  platform never sees a NULL pointer with ``%s``.  NULL pointers can thus
+  be safely debug logged with ``%s``.
+
+* For debug custom formatting, use the following casts:
+
+  - ``%!T`` and variants: ``(duk_tval *)``
+  - ``%!O`` and variants: ``(duk_heaphdr *)``
 
 duk_size_t
 ::::::::::
