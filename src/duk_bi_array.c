@@ -734,7 +734,7 @@ duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	if (act_start < 0) {
 		act_start = len + act_start;
 	}
-	DUK_ASSERT(act_start >= 0 && act_start <= len);
+	DUK_ASSERT(act_start >= 0 && act_start <= (duk_int_t) len);
 
 #ifdef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
 	if (have_delcount) {
@@ -751,8 +751,8 @@ duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	}
 #endif
 
-	DUK_ASSERT(del_count >= 0 && del_count <= len - act_start);
-	DUK_ASSERT(del_count + act_start <= len);
+	DUK_ASSERT(del_count >= 0 && del_count <= (duk_int_t) len - act_start);
+	DUK_ASSERT(del_count + act_start <= (duk_int_t) len);
 
 	duk_push_array(ctx);
 
