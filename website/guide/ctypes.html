@@ -106,7 +106,8 @@ about type bit counts and such don't hold.</p>
 <code>duk_idx_t</code>).  The concrete type used by the compiler depends
 on your platform and compiler.  When hovering over a prototype in the API
 documentation the tool tip will show what concrete types are used when
-C99/C++11 types are available.</p>
+C99/C++11 types are available and the platform <code>int</code> is at least
+32 bits wide (which is nowadays almost always the case).</p>
 
 <p>The following table summarizes a few central typedefs and what the
 concrete type selected will be in various (example) environments.  The
@@ -116,16 +117,16 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 <table>
 <tr>
 <th>Duktape type</th>
-<th>C99/C++11</th>
-<th>Legacy 32-bit</th>
-<th>Legacy 16-bit</th>
+<th>C99/C++11 32-bit int</th>
+<th>Legacy 32-bit int</th>
+<th>Legacy 16-bit int</th>
 <th><code>printf</code></th>
 <th><code>scanf</code></th>
 <th>Notes</th>
 </tr>
 <tr>
 <td>duk_int_t</td>
-<td>int_fast32_t</td>
+<td>int</td>
 <td>int</td>
 <td>long</td>
 <td>%ld<br />long</td>
@@ -134,7 +135,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 </tr>
 <tr>
 <td>duk_uint_t</td>
-<td>uint_fast32_t</td>
+<td>unsigned int</td>
 <td>unsigned int</td>
 <td>unsigned long</td>
 <td>%lu<br />unsigned long</td>
@@ -170,7 +171,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 </tr>
 <tr>
 <td>duk_idx_t</td>
-<td>int_fast32_t</td>
+<td>int</td>
 <td>int</td>
 <td>long</td>
 <td>%ld<br />long</td>
@@ -179,7 +180,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 </tr>
 <tr>
 <td>duk_uarridx_t</td>
-<td>uint_fast32_t</td>
+<td>unsigned int</td>
 <td>unsigned int</td>
 <td>unsigned long</td>
 <td>%lu<br />unsigned long</td>
@@ -188,7 +189,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 </tr>
 <tr>
 <td>duk_codepoint_t</td>
-<td>int_fast32_t</td>
+<td>int</td>
 <td>int</td>
 <td>long</td>
 <td>%ld<br />long</td>
@@ -197,7 +198,7 @@ and <code>scanf()</code> casts for portable formatting/scanning.</p>
 </tr>
 <tr>
 <td>duk_errcode_t</td>
-<td>int_fast32_t</td>
+<td>int</td>
 <td>int</td>
 <td>long</td>
 <td>%ld<br />long</td>
@@ -268,9 +269,14 @@ least the following variations are seen:</p>
 
 <p>As can be seen, no built-in C type would be appropriate, so type detection
 is needed.  Duktape detects and defines <code>duk_int_t</code> type for these
-purposes (at least 32 bits wide, fast integer).  Normally it is mapped to the
-C99 type <code>int_fast32_t</code> but if that's not available, Duktape uses
-platform specific detection.</p>
+purposes (at least 32 bits wide, convenient to the CPU).  Normally it is mapped
+to <code>int</code> if Duktape can reliably detect that <code>int</code> is 32
+bits or wider.  When this is not the case, <code>int_fast32_t</code> is used
+if C99 types are available; if C99 is not available, Duktape uses platform
+specific detection to arrive at an appropriate type.  The <code>duk_uint_t</code>
+is the same but unsigned.  Most other types in the API (such as <code>duk_idx_t</code>)
+are mapped to <code>duk_(u)int_t</code> but this may change in the future
+if necessary.</p>
 
 <p>Other special types are also needed.  For instance, exactly N bits wide
 integers are also needed to ensure proper overflow behavior in some cases.</p>
@@ -283,7 +289,7 @@ partially standardized (e.g. <code>%d</code> is used for an <code>int</code>,
 regardless of its bit size), but custom codes are sometimes used.</p>
 
 <p>When using type wrappers, the correct format code depends on type detection.
-For instance, <code>duk_int_t</code> is mapped to a fast integer type which is
+For instance, <code>duk_int_t</code> is mapped to a convenient integer type which is
 at least 32 bits wide.  On one platform the underlying type might be <code>int</code>
 (format specifier <code>%d</code>) and on another it might be <code>long</code>
 (format specifier <code>%ld</code>).  Calling code cannot safely use such a value

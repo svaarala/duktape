@@ -216,16 +216,16 @@ def parseApiDoc(filename):
 	return parts
 
 # C99: these are used if available
-type_repl_c99 = [
-	['duk_int_t', 'int_fast32_t' ],
-	['duk_uint_t', 'uint_fast32_t' ],
+type_repl_c99_32bit = [
+	['duk_int_t', 'int' ],
+	['duk_uint_t', 'unsigned int' ],
 	['duk_int32_t', 'int32_t' ],
 	['duk_uint32_t', 'uint32_t' ],
 	['duk_uint16_t', 'uint16_t' ],
-	['duk_idx_t', 'int_fast32_t' ],
-	['duk_uarridx_t', 'uint_fast32_t' ],
-	['duk_codepoint_t', 'int_fast32_t' ],
-	['duk_errcode_t', 'int_fast32_t' ],
+	['duk_idx_t', 'int' ],
+	['duk_uarridx_t', 'unsigned int' ],
+	['duk_codepoint_t', 'int' ],
+	['duk_errcode_t', 'int' ],
 	['duk_bool_t', 'int' ],
 	['duk_ret_t', 'int' ],
 	['duk_size_t', 'size_t' ],
@@ -290,7 +290,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		alt_typing_legacy32 = []
 		alt_typing_legacy16 = []
 		for i in p:
-			alt_typing_c99.append(substitutePrototypeTypes(i, type_repl_c99))
+			alt_typing_c99.append(substitutePrototypeTypes(i, type_repl_c99_32bit))
 			alt_typing_legacy32.append(substitutePrototypeTypes(i, type_repl_legacy32))
 			alt_typing_legacy16.append(substitutePrototypeTypes(i, type_repl_legacy16))
 		# Long tooltips are a bad idea in most browsers, so just put the C99 typing there for now
@@ -300,7 +300,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		#           'Legacy 16-bit: ' + '\n'.join(alt_typing_legacy16) + '\n'
 		#           '">')
 		res.append('<pre class="c-code" title="' +
-		           'C99/C++11: ' + '\n'.join(alt_typing_c99) +
+		           'C99/C++11 (32-bit): ' + '\n'.join(alt_typing_c99) +
 		           '">')
 		for i in p:
 			res.append(htmlEscape(i))
