@@ -3,7 +3,7 @@ title: ssize_t type, needed for e.g. some loop constructs
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -35,3 +35,7 @@ log_events:
     Because ssize_t is not a standard type (it is POSIX) it may be better to use
     ptrdiff_t where signed sizes are needed.  It could theoretically be that
     sizeof(size_t) > sizeof(ptrdiff_t) but that's quite unlikely in practice.
+- - 2014-07-08 23:09:31.696958 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.11
+  - ""

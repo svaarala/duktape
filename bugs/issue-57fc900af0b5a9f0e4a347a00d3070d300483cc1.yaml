@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: "typing: (flags & FLAG_MASK) use as boolean is broken if flags is 32 bits"
+title: support %ld formatting in debugging
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2014-06-30 18:22:40.742548 Z
+creation_time: 2014-07-07 21:09:58.060852 Z
 references: []
 
-id: 8e4863287f8d285bbed440760b776828219364fd
+id: 57fc900af0b5a9f0e4a347a00d3070d300483cc1
 log_events: 
-- - 2014-06-30 18:22:41.022579 Z
+- - 2014-07-07 21:09:58.147669 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-07-08 23:07:56.485253 Z
+- - 2014-07-08 23:07:06.831750 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

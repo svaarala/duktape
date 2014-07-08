@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add api or feature option to bulk redirect Duktape stdout/stderr writes
+desc: ""
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-04 21:03:30.351765 Z
+references: []
+
+id: 7313ad8809181fb9cb2b4ac74ab8f0ae3b772172
+log_events: 
+- - 2014-07-04 21:03:30.495770 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

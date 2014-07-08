@@ -1,22 +1,22 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: "internal typing: unsigned types for flags"
+title: compare duk_int_t typedef to duk_int_fast32_t vs. int (when 32 bit)
 desc: ""
 type: :task
 component: duk
 release: v0.11
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :closed
-disposition: :fixed
-creation_time: 2014-06-28 18:33:52.403222 Z
+disposition: :reorg
+creation_time: 2014-07-08 21:38:56.598254 Z
 references: []
 
-id: 52fc26855583f6ee30ad68d1772086a64e52c779
+id: 314eebfb08279782f7f02a5fb0b1d4ef0292eea2
 log_events: 
-- - 2014-06-28 18:33:52.547142 Z
+- - 2014-07-08 21:38:56.648691 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-07-08 23:08:23.759166 Z
+- - 2014-07-08 23:06:59.896722 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
-  - closed with disposition fixed
+  - closed with disposition reorg
   - ""

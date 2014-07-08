@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: DUK_TVAL_xxx() macro for setting a duk_int_t / duk_uint_t
+desc: This would be quite useful for the FASTINT branch.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-07 11:44:19.740385 Z
+references: []
+
+id: d3590ea109e693282e168a1697ae038995ea5078
+log_events: 
+- - 2014-07-07 11:44:19.916434 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

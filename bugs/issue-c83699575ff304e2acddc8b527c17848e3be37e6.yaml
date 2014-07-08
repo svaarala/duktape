@@ -1,0 +1,31 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "duk_features: fix expressions like: #if defined(FOO) && (FOO >= XXX)"
+desc: |-
+  If FOO is not defined, the comparison will be a syntax error, at least on
+  some older compilers.
+  
+  One fix is to nest #ifdefs::
+  
+    #if defined(FOO)
+    #if (FOO >= XXX)
+    /* ... */
+    #endif
+    #endif
+  
+  This often leads to awkward preprocessor expressions but maybe cannot be
+  avoided.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-08 22:48:15.160794 Z
+references: []
+
+id: c83699575ff304e2acddc8b527c17848e3be37e6
+log_events: 
+- - 2014-07-08 22:48:15.161606 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
