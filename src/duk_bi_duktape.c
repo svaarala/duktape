@@ -41,7 +41,7 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 
 	/* refcount */
 #ifdef DUK_USE_REFERENCE_COUNTING
-	duk_push_int(ctx, DUK_HEAPHDR_GET_REFCOUNT(h));
+	duk_push_size_t(ctx, DUK_HEAPHDR_GET_REFCOUNT(h));
 #else
 	duk_push_undefined(ctx);
 #endif

@@ -41,7 +41,7 @@ duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);       /* duk_p
 #define duk_push_uarridx(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
 #define duk_push_size_t(ctx,val) \
-	duk_push_uint((ctx), (duk_uint_t) (val))  /* XXX */
+	duk_push_uint((ctx), (duk_uint_t) (val))  /* XXX: assumed to fit for now */
 
 /* internal helper for looking up a tagged type */
 #define  DUK_GETTAGGED_FLAG_ALLOW_NULL  (1L << 24)

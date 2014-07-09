@@ -724,7 +724,8 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 
 	p_const = (duk_tval *) DUK_HBUFFER_FIXED_GET_DATA_PTR(h_data);
 	for (i = 0; i < consts_count; i++) {
-		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_consts, i);
+		DUK_ASSERT(i <= DUK_UARRIDX_MAX);  /* const limits */
+		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_consts, (duk_uarridx_t) i);
 		DUK_ASSERT(tv != NULL);
 		DUK_TVAL_SET_TVAL(p_const, tv);
 		p_const++;
@@ -737,7 +738,8 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	h_res->funcs = p_func;
 	for (i = 0; i < funcs_count; i++) {
 		duk_hobject *h;
-		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_funcs, i * 3);
+		DUK_ASSERT(i * 3 <= DUK_UARRIDX_MAX);  /* func limits */
+		tv = duk_hobject_find_existing_array_entry_tval_ptr(func->h_funcs, (duk_uarridx_t) (i * 3));
 		DUK_ASSERT(tv != NULL);
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		h = DUK_TVAL_GET_OBJECT(tv);
@@ -1512,7 +1514,8 @@ static void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
 
 	bc = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h);
-	n = DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr);
+	DUK_ASSERT(DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr) <= DUK_INT_MAX);  /* bytecode limits */
+	n = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr));
 
 	for (iter = 0; iter < DUK_COMPILER_PEEPHOLE_MAXITER; iter++) {
 		count_opt = 0;
@@ -2256,7 +2259,8 @@ static void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, duk
 	}
 
 	duk_push_hstring(ctx, h_label);
-	(void) duk_put_prop_index(ctx, comp_ctx->curr_func.labelnames_idx, n);
+	DUK_ASSERT(n <= DUK_UARRIDX_MAX);  /* label limits */
+	(void) duk_put_prop_index(ctx, comp_ctx->curr_func.labelnames_idx, (duk_uarridx_t) n);
 
 	new_size = (n + 1) * sizeof(duk_labelinfo);
 	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);
@@ -7096,7 +7100,7 @@ static duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bool_
 
 	/* array writes autoincrement length */
 	(void) duk_put_prop_index(ctx, old_func.funcs_idx, (duk_uarridx_t) (fnum * 3));
-	duk_push_int(ctx, comp_ctx->prev_token.start_offset);
+	duk_push_size_t(ctx, comp_ctx->prev_token.start_offset);
 	(void) duk_put_prop_index(ctx, old_func.funcs_idx, (duk_uarridx_t) (fnum * 3 + 1));
 	duk_push_int(ctx, comp_ctx->prev_token.start_line);
 	(void) duk_put_prop_index(ctx, old_func.funcs_idx, (duk_uarridx_t) (fnum * 3 + 2));
