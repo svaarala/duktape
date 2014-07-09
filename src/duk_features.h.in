@@ -535,15 +535,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 /* FIXME: add feature options to force basic types from outside? */
 
-/* FIXME: this assumption must be in place until no 'int' variables are
- * used anywhere, including the public Duktape API.  Also all printf()
- * format characters need to be changed.
- */
-#if defined(INT_MAX)
-#if INT_MAX < 2147483647L
-#error INT_MAX too small, expected int to be 32 bits at least
-#endif
-#else
+#if !defined(INT_MAX)
 #error INT_MAX not defined
 #endif
 
