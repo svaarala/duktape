@@ -258,11 +258,14 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_VBCC
 #endif
 
-#if defined(DUK_F_BCC)
-/* Preprocessor does not understand ULL constants (12345ULL) so we can't
- * evaluate any expressions with them (e.g. BCC).
+#if (defined(DUK_F_C99) || defined(DUK_F_CPP11)) && \
+    !defined(DUK_F_BCC)
+/* ULL / LL preprocessor constants should be avoided because they're not
+ * always available.  With suitable options, some compilers will support
+ * 64-bit integer types but won't support ULL / LL preprocessor constants.
+ * Assume C99/C++11 environments have these.  However, BCC is nominally
+ * C99 but doesn't support these constants.
  */
-#else
 #define DUK_F_ULL_CONSTS
 #endif
 
@@ -714,31 +717,58 @@ typedef signed long duk_int32_t;
 #error cannot detect 32-bit type
 #endif
 
+/* 64-bit type detection is a bit tricky.
+ *
+ * ULLONG_MAX is a standard define.  __LONG_LONG_MAX__ and __ULONG_LONG_MAX__
+ * are used by at least GCC (even if system headers don't provide ULLONG_MAX).
+ * Some GCC variants may provide __LONG_LONG_MAX__ but not __ULONG_LONG_MAX__.
+ *
+ * ULL / LL constants are rejected / warned about by some compilers, even if
+ * the compiler has a 64-bit type and the compiler/system headers provide an
+ * unsupported constant (ULL/LL)!  Try to avoid using ULL / LL constants.
+ * As a side effect we can only check that e.g. ULONG_MAX is larger than 32
+ * bits but can't be sure it is exactly 64 bits.  Self tests will catch such
+ * cases.
+ */
 #undef DUK_F_HAVE_64BIT
-#if defined(DUK_F_ULL_CONSTS)
-#if defined(ULONG_MAX) && (ULONG_MAX == 18446744073709551615ULL)
+#if !defined(DUK_F_HAVE_64BIT) && defined(ULONG_MAX)
+#if (ULONG_MAX > 4294967295UL)
 #define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
-#elif defined(ULLONG_MAX) && (ULLONG_MAX == 18446744073709551615ULL) || \
-      defined(__ULONG_LONG_MAX__) && (__ULONG_LONG_MAX__ == 18446744073709551615ULL) || \
-      defined(__LONG_LONG_MAX__) && (__LONG_LONG_MAX__ == 9223372036854775807LL)
-/* ULLONG_MAX is a standard define.  __LONG_LONG_MAX__ and __ULONG_LONG_MAX__
- * are used by at least GCC (even if system headers don't provide ULLONG_MAX).
- * Some GCC variants may provide __LONG_LONG_MAX__ but not __ULONG_LONG_MAX__.
- */
+#endif
+#endif
+#if !defined(DUK_F_HAVE_64BIT) && defined(ULLONG_MAX)
+#if (ULLONG_MAX > 4294967295UL)
 #define DUK_F_HAVE_64BIT
 typedef unsigned long long duk_uint64_t;
 typedef signed long long duk_int64_t;
-#elif defined(DUK_F_MINGW) || defined(DUK_F_MSVC)
+#endif
+#endif
+#if !defined(DUK_F_HAVE_64BIT) && defined(__ULONG_LONG_MAX__)
+#if (__ULONG_LONG_MAX__ > 4294967295UL)
+#define DUK_F_HAVE_64BIT
+typedef unsigned long long duk_uint64_t;
+typedef signed long long duk_int64_t;
+#endif
+#endif
+#if !defined(DUK_F_HAVE_64BIT) && defined(__LONG_LONG_MAX__)
+#if (__LONG_LONG_MAX__ > 2147483647L)
+#define DUK_F_HAVE_64BIT
+typedef unsigned long long duk_uint64_t;
+typedef signed long long duk_int64_t;
+#endif
+#endif
+#if !defined(DUK_F_HAVE_64BIT) && \
+    (defined(DUK_F_MINGW) || defined(DUK_F_MSVC))
 /* Both MinGW and MSVC have a 64-bit type. */
 #define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
-#else
+#endif
+#if !defined(DUK_F_HAVE64BIT)
 /* cannot detect 64-bit type, not always needed so don't error */
 #endif
-#endif  /* DUK_F_ULL_CONSTS */
 
 typedef duk_uint8_t duk_uint_least8_t;
 typedef duk_int8_t duk_int_least8_t;
@@ -817,39 +847,70 @@ typedef duk_uint64_t duk_uintptr_t;
 #define DUK_UINT_FAST32_MAX   0xffffffffUL
 #define DUK_INT_FAST32_MIN    (-0x7fffffffL - 1L)
 #define DUK_INT_FAST32_MAX    0x7fffffffL
+
+/* 64-bit constants.  Since LL / ULL constants are not always available,
+ * use computed values.  These values can't be used in preprocessor
+ * comparisons; flag them as such.
+ */
 #if defined(DUK_F_HAVE_64BIT)
-#define DUK_UINT64_MIN        0ULL
-#define DUK_UINT64_MAX        0xffffffffffffffffULL
-#define DUK_INT64_MIN         (-0x7fffffffffffffffLL - 1LL)
-#define DUK_INT64_MAX         0x7fffffffffffffffLL
-#define DUK_UINT_LEAST64_MIN  0ULL
-#define DUK_UINT_LEAST64_MAX  0xffffffffffffffffULL
-#define DUK_INT_LEAST64_MIN   (-0x7fffffffffffffffLL - 1LL)
-#define DUK_INT_LEAST64_MAX   0x7fffffffffffffffLL
-#define DUK_UINT_FAST64_MIN   0ULL
-#define DUK_UINT_FAST64_MAX   0xffffffffffffffffULL
-#define DUK_INT_FAST64_MIN    (-0x7fffffffffffffffLL - 1LL)
-#define DUK_INT_FAST64_MAX    0x7fffffffffffffffLL
-#endif  /* DUK_F_HAVE_64BIT */
+#define DUK_UINT64_MIN        ((duk_uint64_t) 0)
+#define DUK_UINT64_MAX        ((duk_uint64_t) -1)
+#define DUK_INT64_MIN         ((duk_int64_t) (~(DUK_UINT64_MAX >> 1)))
+#define DUK_INT64_MAX         ((duk_int64_t) (DUK_UINT64_MAX >> 1))
+#define DUK_UINT_LEAST64_MIN  DUK_UINT64_MIN
+#define DUK_UINT_LEAST64_MAX  DUK_UINT64_MAX
+#define DUK_INT_LEAST64_MIN   DUK_INT64_MIN
+#define DUK_INT_LEAST64_MAX   DUK_INT64_MAX
+#define DUK_UINT_FAST64_MIN   DUK_UINT64_MIN
+#define DUK_UINT_FAST64_MAX   DUK_UINT64_MAX
+#define DUK_INT_FAST64_MIN    DUK_INT64_MIN
+#define DUK_INT_FAST64_MAX    DUK_INT64_MAX
+#define DUK_UINT64_MIN_COMPUTED
+#define DUK_UINT64_MAX_COMPUTED
+#define DUK_INT64_MIN_COMPUTED
+#define DUK_INT64_MAX_COMPUTED
+#define DUK_UINT_LEAST64_MIN_COMPUTED
+#define DUK_UINT_LEAST64_MAX_COMPUTED
+#define DUK_INT_LEAST64_MIN_COMPUTED
+#define DUK_INT_LEAST64_MAX_COMPUTED
+#define DUK_UINT_FAST64_MIN_COMPUTED
+#define DUK_UINT_FAST64_MAX_COMPUTED
+#define DUK_INT_FAST64_MIN_COMPUTED
+#define DUK_INT_FAST64_MAX_COMPUTED
+#endif
+
 #if defined(DUK_F_HAVE_64BIT)
-#define DUK_UINTPTR_MIN       0ULL
-#define DUK_UINTPTR_MAX       0xffffffffffffffffULL
-#define DUK_INTPTR_MIN        (-0x7fffffffffffffffLL - 1LL)
-#define DUK_INTPTR_MAX        0x7fffffffffffffffLL
-#define DUK_UINTMAX_MIN       0ULL
-#define DUK_UINTMAX_MAX       0xffffffffffffffffULL
-#define DUK_INTMAX_MIN        (-0x7fffffffffffffffLL - 1LL)
-#define DUK_INTMAX_MAX        0x7fffffffffffffffLL
+#define DUK_UINTMAX_MIN       DUK_UINT64_MIN
+#define DUK_UINTMAX_MAX       DUK_UINT64_MAX
+#define DUK_INTMAX_MIN        DUK_INT64_MIN
+#define DUK_INTMAX_MAX        DUK_INT64_MAX
+#define DUK_UINTMAX_MIN_COMPUTED
+#define DUK_UINTMAX_MAX_COMPUTED
+#define DUK_INTMAX_MIN_COMPUTED
+#define DUK_INTMAX_MAX_COMPUTED
+#else
+#define DUK_UINTMAX_MIN       0UL
+#define DUK_UINTMAX_MAX       0xffffffffUL
+#define DUK_INTMAX_MIN        (-0x7fffffffL - 1L)
+#define DUK_INTMAX_MAX        0x7fffffffL
+#endif
+
+/* FIXME: this is not well justified. */
+#if defined(DUK_F_HAVE_64BIT)
+#define DUK_UINTPTR_MIN       DUK_UINT64_MIN
+#define DUK_UINTPTR_MAX       DUK_UINT64_MAX
+#define DUK_INTPTR_MIN        DUK_INT64_MIN
+#define DUK_INTPTR_MAX        DUK_INT64_MAX
+#define DUK_UINTPTR_MIN_COMPUTED
+#define DUK_UINTPTR_MAX_COMPUTED
+#define DUK_INTPTR_MIN_COMPUTED
+#define DUK_INTPTR_MAX_COMPUTED
 #else
 #define DUK_UINTPTR_MIN       0UL
 #define DUK_UINTPTR_MAX       0xffffffffUL
 #define DUK_INTPTR_MIN        (-0x7fffffffL - 1L)
 #define DUK_INTPTR_MAX        0x7fffffffL
-#define DUK_UINTMAX_MIN       0UL
-#define DUK_UINTMAX_MAX       0xffffffffUL
-#define DUK_INTMAX_MIN        (-0x7fffffffL - 1L)
-#define DUK_INTMAX_MAX        0x7fffffffL
-#endif  /* DUK_F_HAVE_64BIT */
+#endif
 
 /* SIZE_MAX may be missing so use an approximate value for it. */
 #undef DUK_SIZE_MAX_COMPUTED
@@ -987,8 +1048,10 @@ typedef double duk_double_t;
  * to be organized for compactness.
  */
 #undef DUK_USE_32BIT_PTRS
+#if defined(DUK_UINTPTR_MAX) && !defined(DUK_UINTPTR_MAX_COMPUTED)
 #if DUK_UINTPTR_MAX <= 0xffffffffUL
 #define DUK_USE_32BIT_PTRS
+#endif
 #endif
 
 /*
@@ -1310,8 +1373,8 @@ typedef double duk_double_t;
 #endif
 #endif
 
-/* Non-C99 case, still relying on DUK_UINTPTR_MAX */
-#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_UINTPTR_MAX)
+/* Non-C99 case, still relying on DUK_UINTPTR_MAX, as long as it is not a computed value */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_UINTPTR_MAX) && !defined(DUK_UINTPTR_MAX_COMPUTED)
 #if (DUK_UINTPTR_MAX <= 0xffffffffUL)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
