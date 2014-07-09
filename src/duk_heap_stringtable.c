@@ -414,14 +414,16 @@ duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
-	return duk_heap_string_lookup(heap, (duk_uint8_t *) buf, DUK_STRLEN(buf));
+	DUK_ASSERT(DUK_STRLEN(buf) <= DUK_UINT32_MAX);  /* formatted result limited */
+	return duk_heap_string_lookup(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 
 duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
-	return duk_heap_string_intern(heap, (duk_uint8_t *) buf, DUK_STRLEN(buf));
+	DUK_ASSERT(DUK_STRLEN(buf) <= DUK_UINT32_MAX);  /* formatted result limited */
+	return duk_heap_string_intern(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 
 duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {

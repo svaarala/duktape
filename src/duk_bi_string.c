@@ -1009,7 +1009,8 @@ duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 
 			len = duk_get_length(ctx, 4);
 			for (i = 1; i < len; i++) {
-				duk_get_prop_index(ctx, 4, i);
+				DUK_ASSERT(i <= DUK_UARRIDX_MAX);  /* cannot have >4G captures */
+				duk_get_prop_index(ctx, 4, (duk_uarridx_t) i);
 				duk_put_prop_index(ctx, 3, arr_idx);
 				arr_idx++;
 				if (arr_idx >= limit) {

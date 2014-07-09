@@ -150,7 +150,7 @@ static duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uin
 }
 
 static duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int32_t skip) {
-	return (duk_uint32_t) duk__insert_jump_offset(re_ctx, DUK__BUFLEN(re_ctx), skip);
+	return (duk_uint32_t) duk__insert_jump_offset(re_ctx, (duk_uint32_t) DUK__BUFLEN(re_ctx), skip);
 }
 
 /*
