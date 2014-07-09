@@ -955,7 +955,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 	/* fall through */
 
  done:
-	retval = fb.offset;
+	retval = (duk_int_t) fb.offset;
 	duk_fb_put_byte(&fb, (duk_uint8_t) 0);
 
 	/* return total chars written excluding terminator */

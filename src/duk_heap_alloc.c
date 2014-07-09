@@ -584,9 +584,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* FIXME: use the pointer as a seed for now: mix in time at least */
 
-	/* cast through C99 intptr_t to avoid GCC warning:
+	/* The casts through duk_intr_pt is to avoid the following GCC warning:
 	 *
 	 *   warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+	 *
+	 * This still generates a /Wp64 warning on VS2010 when compiling for x86.
 	 */
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
 	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;

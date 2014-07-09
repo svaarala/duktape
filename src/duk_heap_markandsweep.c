@@ -1075,9 +1075,9 @@ duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 
 #ifdef DUK_USE_VOLUNTARY_GC
 	tmp = (count_keep_obj + count_keep_str) / 256;
-	heap->mark_and_sweep_trigger_counter =
+	heap->mark_and_sweep_trigger_counter = (duk_int_t) (
 	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +
-	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD;
+	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD);
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, trigger reset to %ld",
 	                 (long) count_keep_obj, (long) count_keep_str, (long) heap->mark_and_sweep_trigger_counter));
 #else

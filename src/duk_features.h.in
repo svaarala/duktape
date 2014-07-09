@@ -927,24 +927,35 @@ typedef duk_uint_fast16_t duk_small_uint_fast_t;
 
 /* Boolean values are represented with the platform 'int'. */
 typedef duk_small_int_t duk_bool_t;
+#define DUK_BOOL_MIN              DUK_SMALL_INT_MIN
+#define DUK_BOOL_MAX              DUK_SMALL_INT_MAX
 
 /* Index values must have at least 32-bit signed range. */
 typedef duk_int_t duk_idx_t;
+#define DUK_IDX_MIN               DUK_INT_MIN
+#define DUK_IDX_MAX               DUK_INT_MAX
 
-/* Array index values, could be exact 32 bits. */
+/* Array index values, could be exact 32 bits.
+ * Currently no need for signed duk_arridx_t.
+ */
 typedef duk_uint_t duk_uarridx_t;
-/* currently no need for signed duk_arridx_t */
+#define DUK_UARRIDX_MIN           DUK_UINT_MIN
+#define DUK_UARRIDX_MAX           DUK_UINT_MAX
 
 /* Duktape/C function return value, platform int is enough for now to
  * represent 0, 1, or negative error code.  Must be compatible with
  * assigning truth values (e.g. duk_ret_t rc = (foo == bar);).
  */
 typedef duk_small_int_t duk_ret_t;
+#define DUK_RET_MIN               DUK_SMALL_INT_MIN
+#define DUK_RET_MAX               DUK_SMALL_INT_MAX
 
 /* Error codes are represented with platform int.  High bits are used
  * for flags and such, so 32 bits are needed.
  */
 typedef duk_int_t duk_errcode_t;
+#define DUK_ERRCODE_MIN           DUK_INT_MIN
+#define DUK_ERRCODE_MAX           DUK_INT_MAX
 
 /* Codepoint type.  Must be 32 bits or more because it is used also for
  * internal codepoints.  The type is signed because negative codepoints
@@ -955,6 +966,10 @@ typedef duk_int_t duk_errcode_t;
  */
 typedef duk_int_t duk_codepoint_t;
 typedef duk_uint_t duk_ucodepoint_t;
+#define DUK_CODEPOINT_MIN         DUK_INT_MIN
+#define DUK_CODEPOINT_MAX         DUK_INT_MAX
+#define DUK_UCODEPOINT_MIN        DUK_UINT_MIN
+#define DUK_UCODEPOINT_MAX        DUK_UINT_MAX
 
 /* IEEE double typedef. */
 typedef double duk_double_t;

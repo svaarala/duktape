@@ -1926,7 +1926,8 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		duk_tval *tv1, *tv2;
 		duk_tval tv_tmp;
 		duk_size_t cs_index;
-		duk_idx_t i;
+		duk_int_t i_stk;  /* must be signed for loop structure */
+		duk_idx_t i_arg;
 
 		/*
 		 *  Tailcall handling
@@ -1950,14 +1951,15 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		/* Unwind catchstack entries referring to the callstack entry we're reusing */
 		cs_index = thr->callstack_top - 1;
-		for (i = thr->catchstack_top - 1; i >= 0; i--) {
-			duk_catcher *cat = thr->catchstack + i;
+		DUK_ASSERT(thr->catchstack_top <= DUK_INT_MAX);  /* catchstack limits */
+		for (i_stk = (duk_int_t) (thr->catchstack_top - 1); i_stk >= 0; i_stk--) {
+			duk_catcher *cat = thr->catchstack + i_stk;
 			if (cat->callstack_index != cs_index) {
 				/* 'i' is the first entry we'll keep */
 				break;
 			}
 		}
-		duk_hthread_catchstack_unwind(thr, i + 1);
+		duk_hthread_catchstack_unwind(thr, i_stk + 1);
 
 		/* Unwind the topmost callstack entry before reusing it */
 		DUK_ASSERT(thr->callstack_top > 0);
@@ -2026,7 +2028,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_TVAL_INCREF(thr, tv1);
 		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 		
-		for (i = 0; i < idx_args; i++) {
+		for (i_arg = 0; i_arg < idx_args; i_arg++) {
 			/* XXX: block removal API primitive */
 			/* Note: 'func' is popped from valstack here, but it is
 			 * already reachable from the activation.

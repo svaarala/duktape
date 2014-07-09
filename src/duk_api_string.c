@@ -200,15 +200,20 @@ void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, d
 	DUK_ASSERT_DISABLE(end_offset >= 0);
 	DUK_ASSERT(end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
 
-	start_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, start_offset);
-	end_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, end_offset);
+	/* guaranteed by string limits */
+	DUK_ASSERT(start_offset <= DUK_UINT32_MAX);
+	DUK_ASSERT(end_offset <= DUK_UINT32_MAX);
+
+	start_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) start_offset);
+	end_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) end_offset);
 
 	DUK_ASSERT(end_byte_offset >= start_byte_offset);
+	DUK_ASSERT(end_byte_offset - start_byte_offset <= DUK_UINT32_MAX);  /* guaranteed by string limits */
 
 	/* no size check is necessary */
 	res = duk_heap_string_intern_checked(thr,
 	                                     DUK_HSTRING_GET_DATA(h) + start_byte_offset,
-	                                     end_byte_offset - start_byte_offset);
+	                                     (duk_uint32_t) (end_byte_offset - start_byte_offset));
 
 	duk_push_hstring(ctx, res);
 	duk_replace(ctx, index);
@@ -303,6 +308,7 @@ duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t c
 		return 0;
 	}
 
-	cp = duk_hstring_char_code_at_raw(thr, h, char_offset);
+	DUK_ASSERT(char_offset <= DUK_UINT_MAX);  /* guaranteed by string limits */
+	cp = duk_hstring_char_code_at_raw(thr, h, (duk_uint_t) char_offset);
 	return (duk_codepoint_t) cp;
 }

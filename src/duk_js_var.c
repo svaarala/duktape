@@ -332,7 +332,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS)) {
 		/* [ ... closure template formals ] */
 		DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH));
-		len_value = duk_get_length(ctx, -1);
+		DUK_ASSERT(duk_get_length(ctx, -1) <= DUK_UINT_MAX);  /* formal arg limits */
+		len_value = (duk_uint_t) duk_get_length(ctx, -1);
 	} else {
 		/* XXX: what to do if _formals is not empty but compiler has
 		 * optimized it away -- read length from an explicit property

@@ -221,7 +221,8 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 
 	/* [ ... error arr ] */
 
-	for (i = thr_callstack->callstack_top - 1; i >= i_min; i--) {
+	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
+	for (i = (duk_int_t) (thr_callstack->callstack_top - 1); i >= i_min; i--) {
 		duk_uint32_t pc;
 
 		/*
