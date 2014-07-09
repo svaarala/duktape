@@ -119,7 +119,8 @@ detail below the table.</p>
 <td>Windows</td>
 <td>MSVC<br />(Visual Studio Express 2010)</td>
 <td>x86</td>
-<td>Only ISO 8601 date format supported (no platform specific format).</td>
+<td>Only ISO 8601 date format supported (no platform specific format).
+    Harmless warnings if <code>/Wp64</code> is enabled.</td>
 </tr>
 <tr>
 <td>Windows</td>
@@ -204,6 +205,21 @@ value representation type.  You can work around the problem by defining
 problem does not appear in all clang versions.  Duktape self tests cover
 this issue (define <code>DUK_OPT_SELF_TESTS</code> when compiling).
 See internal test file <code>misc/clang_aliasing.c</code>.</p>
+
+<h3>MSVC</h3>
+
+<p>The <a href="http://msdn.microsoft.com/en-us/library/yt4xw8fh.aspx"><code>/Wp64</code>
+(Detect 64-bit Portability issues)</a> option causes harmless compile warnings when compiling
+32-bit code, e.g.:</p>
+<pre>
+duk_api.c(2419): warning C4311: 'type cast' : pointer truncation from 'duk_hstring *' to 'duk_uint32_t'
+</pre>
+
+<p>The warnings are caused by Duktape casting 32-bit pointers to 32-bit integers
+used by its internal value representation.  These casts would be incorrect in a 64-bit
+environment which is reported by the <code>/Wp64</code> option.  When Duktape is
+compiled in a 64-bit environment a different value representation is used which
+doesn't use these casts at all, so the warnings are not relevant.</p>
 
 <h3>TCC</h3>
 
