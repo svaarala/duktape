@@ -315,6 +315,9 @@ Duktape and the application with the same compiler.</p>
     incorrect even on some platforms which provide a 32-bit type.</li>
 <li>Pointer less-than/greater-than comparisons are expected to work like
     pointers were unsigned.  This is incorrect on some platforms.</li>
+<li>Two's complement signed arithmetic is required.  This is not technically
+    guaranteed by ANSI C, but there are very few environments where this
+    assumption does not hold.</li>
 </ul>
 
 <h2>Troubleshooting</h2>
