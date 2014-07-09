@@ -46,6 +46,12 @@ static void duk__selftest_types(void) {
 	      sizeof(duk_uint32_t) == 4)) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_(u)int{8,16,32}_t size");
 	}
+#if defined(DUK_USE_64BIT_OPS)
+	if (!(sizeof(duk_int64_t) == 8 &&
+	      sizeof(duk_uint64_t) == 8)) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_(u)int64_t size");
+	}
+#endif
 
 	if (!(sizeof(duk_size_t) >= sizeof(duk_uint_t))) {
 		/* Some internal code now assumes that all duk_uint_t values
