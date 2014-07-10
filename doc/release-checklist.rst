@@ -38,23 +38,23 @@ Release checklist
 
   - **FIXME: incomplete list, automate compilation tests**
   - Linux x86-64 gcc
-  - Linux x86-64 gcc + DUK_OPT_DEBUG
+  - Linux x86-64 gcc + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 gcc + -m32
-  - Linux x86-64 gcc + -m32 + DUK_OPT_DEBUG
+  - Linux x86-64 gcc + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 clang
-  - Linux x86-64 clang + DUK_OPT_DEBUG
+  - Linux x86-64 clang + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 clang + -m32
-  - Linux x86-64 clang + -m32 + DUK_OPT_DEBUG
+  - Linux x86-64 clang + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - FreeBSD clang
-  - FreeBSD clang + DUK_OPT_DEBUG
+  - FreeBSD clang + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - FreeBSD clang + -m32
-  - FreeBSD clang + -m32 + DUK_OPT_DEBUG
+  - FreeBSD clang + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Windows MinGW
   - Windows MinGW-w64
   - Windows MSVC (cl) x32
   - Windows MSVC (cl) x64
   - Linux MIPS gcc
-  - Linux MIPS gcc + DUK_OPT_DEBUG
+  - Linux MIPS gcc + DUK_OPT_DEBUG + DUK_OPT_DPRINT
 
 * Ecmascript testcases
 
