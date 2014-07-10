@@ -4,5 +4,5 @@ if (typeof console === 'undefined') {
 if (typeof console.log === 'undefined') {
     this.console.log = function () {
         print(Array.prototype.join.call(arguments, ' '));
-    }
+    };
 }
