@@ -34,21 +34,6 @@ Release checklist
   - Release log entries match ditz issues
   - Release date is in place
 
-* Build candidate tar.xz files
-
-  - These should remain the same so that their hash values are known
-  - NOTE: because README.txt.dist also contains a "git describe" of
-    the current commit, the describe string will refer to the previous
-    release tag (not the current release tag)
-
-* Check source dist contents
-
-  - Check file list
-  - Grep for FIXME and XXX
-  - Trivial compile test for combined source
-  - Trivial compile test for separate sources (important because
-    it's easy to forget to add files in make_dist.sh)
-
 * Compilation tests (clean compile)
 
   - **FIXME: incomplete list, automate compilation tests**
@@ -127,6 +112,23 @@ Release checklist
   - on x86-64
 
     - make luajstest
+
+* Build candidate tar.xz files
+
+  - These should remain the same after this point so that their hash
+    values are known
+
+  - NOTE: because README.txt.dist also contains a "git describe" of
+    the current commit, the describe string will refer to the previous
+    release tag (not the current release tag)
+
+* Check source dist contents
+
+  - Check file list
+  - Grep for FIXME and XXX
+  - Trivial compile test for combined source
+  - Trivial compile test for separate sources (important because
+    it's easy to forget to add files in make_dist.sh)
 
 * Store binaries and update website downloads page
 
