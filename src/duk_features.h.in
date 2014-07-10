@@ -663,14 +663,17 @@ typedef intmax_t duk_intmax_t;
 #define DUK_UINT_FAST64_MAX   UINT_FAST64_MAX
 #define DUK_INT_FAST64_MIN    INT_FAST64_MIN
 #define DUK_INT_FAST64_MAX    INT_FAST64_MAX
+
 #define DUK_UINTPTR_MIN       0
 #define DUK_UINTPTR_MAX       UINTPTR_MAX
 #define DUK_INTPTR_MIN        INTPTR_MIN
 #define DUK_INTPTR_MAX        INTPTR_MAX
+
 #define DUK_UINTMAX_MIN       0
 #define DUK_UINTMAX_MAX       UINTMAX_MAX
 #define DUK_INTMAX_MIN        INTMAX_MIN
 #define DUK_INTMAX_MAX        INTMAX_MAX
+
 #define DUK_SIZE_MIN          0
 #define DUK_SIZE_MAX          SIZE_MAX
 
@@ -796,17 +799,6 @@ typedef duk_uint32_t duk_uintmax_t;
 typedef duk_int32_t duk_intmax_t;
 #endif
 
-/* This detection is not very reliable. */
-#if defined(DUK_F_32BIT_PTRS)
-typedef duk_int32_t duk_intptr_t;
-typedef duk_uint32_t duk_uintptr_t;
-#elif defined(DUK_F_64BIT_PTRS) && defined(DUK_F_HAVE_64BIT)
-typedef duk_int64_t duk_intptr_t;
-typedef duk_uint64_t duk_uintptr_t;
-#else
-#error cannot determine intptr type
-#endif
-
 /* Note: the funny looking computations for signed minimum 16-bit, 32-bit, and
  * 64-bit values are intentional as the obvious forms (e.g. -0x80000000L) are
  * -not- portable.  See code-issues.txt for a detailed discussion.
@@ -895,8 +887,17 @@ typedef duk_uint64_t duk_uintptr_t;
 #define DUK_INTMAX_MAX        0x7fffffffL
 #endif
 
-/* FIXME: this is not well justified. */
-#if defined(DUK_F_HAVE_64BIT)
+/* This detection is not very reliable. */
+#if defined(DUK_F_32BIT_PTRS)
+typedef duk_int32_t duk_intptr_t;
+typedef duk_uint32_t duk_uintptr_t;
+#define DUK_UINTPTR_MIN       DUK_UINT32_MIN
+#define DUK_UINTPTR_MAX       DUK_UINT32_MAX
+#define DUK_INTPTR_MIN        DUK_INT32_MIN
+#define DUK_INTPTR_MAX        DUK_INT32_MAX
+#elif defined(DUK_F_64BIT_PTRS) && defined(DUK_F_HAVE_64BIT)
+typedef duk_int64_t duk_intptr_t;
+typedef duk_uint64_t duk_uintptr_t;
 #define DUK_UINTPTR_MIN       DUK_UINT64_MIN
 #define DUK_UINTPTR_MAX       DUK_UINT64_MAX
 #define DUK_INTPTR_MIN        DUK_INT64_MIN
@@ -906,10 +907,7 @@ typedef duk_uint64_t duk_uintptr_t;
 #define DUK_INTPTR_MIN_COMPUTED
 #define DUK_INTPTR_MAX_COMPUTED
 #else
-#define DUK_UINTPTR_MIN       0UL
-#define DUK_UINTPTR_MAX       0xffffffffUL
-#define DUK_INTPTR_MIN        (-0x7fffffffL - 1L)
-#define DUK_INTPTR_MAX        0x7fffffffL
+#error cannot determine intptr type
 #endif
 
 /* SIZE_MAX may be missing so use an approximate value for it. */
@@ -1047,6 +1045,7 @@ typedef double duk_double_t;
  * footprint optimization target, and this define allows e.g. struct sizes
  * to be organized for compactness.
  */
+
 #undef DUK_USE_32BIT_PTRS
 #if defined(DUK_UINTPTR_MAX) && !defined(DUK_UINTPTR_MAX_COMPUTED)
 #if DUK_UINTPTR_MAX <= 0xffffffffUL
