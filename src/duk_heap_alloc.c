@@ -387,8 +387,22 @@ static int duk__init_heap_thread(duk_heap *heap) {
 		DUK_D(DUK_DPRINT("" #t "=%ld", (long) sizeof(t))); \
 	} while (0)
 
+/* These is not 100% because format would need to be non-portable "long long". */
+#define DUK__DUMPLM_SIGNED_RAW(t,a,b)  do { \
+		DUK_D(DUK_DPRINT(t "=[%ld,%ld]", (long) (a), (long) (b))); \
+	} while(0)
+#define DUK__DUMPLM_UNSIGNED_RAW(t,a,b)  do { \
+		DUK_D(DUK_DPRINT(t "=[%lu,%lu]", (unsigned long) (a), (unsigned long) (b))); \
+	} while(0)
+#define DUK__DUMPLM_SIGNED(t)  do { \
+		DUK__DUMPLM_SIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
+	} while(0)
+#define DUK__DUMPLM_UNSIGNED(t)  do { \
+		DUK__DUMPLM_UNSIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
+	} while(0)
+
 static void duk__dump_type_sizes(void) {
-	DUK_D(DUK_DPRINT("sizeofs()"));
+	DUK_D(DUK_DPRINT("sizeof()"));
 
 	/* basic platform types */
 	DUK__DUMPSZ(char);
@@ -488,7 +502,56 @@ static void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_re_matcher_ctx);
 	DUK__DUMPSZ(duk_re_compiler_ctx);
 }
+static void duk__dump_type_limits(void) {
+	DUK_D(DUK_DPRINT("limits"));
+
+	/* basic types */
+	DUK__DUMPLM_SIGNED(INT8);
+	DUK__DUMPLM_UNSIGNED(UINT8);
+	DUK__DUMPLM_SIGNED(INT_FAST8);
+	DUK__DUMPLM_UNSIGNED(UINT_FAST8);
+	DUK__DUMPLM_SIGNED(INT_LEAST8);
+	DUK__DUMPLM_UNSIGNED(UINT_LEAST8);
+	DUK__DUMPLM_SIGNED(INT16);
+	DUK__DUMPLM_UNSIGNED(UINT16);
+	DUK__DUMPLM_SIGNED(INT_FAST16);
+	DUK__DUMPLM_UNSIGNED(UINT_FAST16);
+	DUK__DUMPLM_SIGNED(INT_LEAST16);
+	DUK__DUMPLM_UNSIGNED(UINT_LEAST16);
+	DUK__DUMPLM_SIGNED(INT32);
+	DUK__DUMPLM_UNSIGNED(UINT32);
+	DUK__DUMPLM_SIGNED(INT_FAST32);
+	DUK__DUMPLM_UNSIGNED(UINT_FAST32);
+	DUK__DUMPLM_SIGNED(INT_LEAST32);
+	DUK__DUMPLM_UNSIGNED(UINT_LEAST32);
+#if defined(DUK_USE_64BIT_OPS)
+	DUK__DUMPLM_SIGNED(INT64);
+	DUK__DUMPLM_UNSIGNED(UINT64);
+	DUK__DUMPLM_SIGNED(INT_FAST64);
+	DUK__DUMPLM_UNSIGNED(UINT_FAST64);
+	DUK__DUMPLM_SIGNED(INT_LEAST64);
+	DUK__DUMPLM_UNSIGNED(UINT_LEAST64);
+#endif
+	DUK__DUMPLM_SIGNED(INTPTR);
+	DUK__DUMPLM_UNSIGNED(UINTPTR);
+	DUK__DUMPLM_SIGNED(INTMAX);
+	DUK__DUMPLM_UNSIGNED(UINTMAX);
+
+	/* derived types */
+	DUK__DUMPLM_SIGNED(INT);
+	DUK__DUMPLM_UNSIGNED(UINT);
+	DUK__DUMPLM_SIGNED(INT_FAST);
+	DUK__DUMPLM_UNSIGNED(UINT_FAST);
+	DUK__DUMPLM_SIGNED(SMALL_INT);
+	DUK__DUMPLM_UNSIGNED(SMALL_UINT);
+	DUK__DUMPLM_SIGNED(SMALL_INT_FAST);
+	DUK__DUMPLM_UNSIGNED(SMALL_UINT_FAST);
+}
 #undef DUK__DUMPSZ
+#undef DUK__DUMPLM_SIGNED_RAW
+#undef DUK__DUMPLM_UNSIGNED_RAW
+#undef DUK__DUMPLM_SIGNED
+#undef DUK__DUMPLM_UNSIGNED
 #endif  /* DUK_USE_DEBUG */
 
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
@@ -503,6 +566,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	/* Debug dump type sizes */
 #ifdef DUK_USE_DEBUG
 	duk__dump_type_sizes();
+	duk__dump_type_limits();
 #endif
 
 	/* If selftests enabled, run them as early as possible. */
