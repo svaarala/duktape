@@ -14,7 +14,8 @@
 
 /*---
 {
-    "custom": true
+    "custom": true,
+    "knownissue": "expect strings to be checked (now from V8 and probably inappropriate for bases other than 10 and 2^N"
 }
 ---*/
 

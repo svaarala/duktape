@@ -1,7 +1,6 @@
-
 /*---
 {
-    "custom": true
+    "nonstandard": true
 }
 ---*/
 

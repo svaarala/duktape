@@ -5,6 +5,12 @@
  *  __proto__ property is enabled, but rather sets the object prototype.
  */
 
+/*---
+{
+    "knownissue": "when ES6 __proto__ enabled, JSON.parse() parses '__proto__' property incorrectly when a specially crafted reviver is used"
+}
+---*/
+
 /*===
 basic case
 [object Object]

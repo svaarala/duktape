@@ -109,6 +109,8 @@ metadata keys:
   as a known issue which does not need immediate fixing (i.e. they are not
   release blockers).  Bugs marked as known issues may be difficult to fix,
   may be low priority, or it may uncertain what the desired behavior is.
+  If set to a string, the string can summarize the issue and is shown in
+  test case output.
 
 * ``comment``: optional string to comment on testcase very shortly, this can
   be used to provide additional details on why a testcase fails for now.

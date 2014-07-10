@@ -8,6 +8,12 @@
  *  too!
  */
 
+/*---
+{
+    "knownissue": "corner cases for 'new Function()' when arguments and code are given as strings"
+}
+---*/
+
 /*===
 6
 6

@@ -4,7 +4,7 @@
 
 /*---
 {
-    "knownissue": true
+    "knownissue": "for-in allows some invalid left-hand-side expressions which cause a runtime ReferenceError instead of a compile-time SyntaxError (e.g. 'for (a+b in [0,1]) {...}')"
 }
 ---*/
 

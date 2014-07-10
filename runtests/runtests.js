@@ -559,7 +559,11 @@ function testRunnerMain() {
                 countFail++;
                 parts.push(res.diff_expect.split('\n').length + ' diff lines');
                 if (res.testcase.meta.knownissue) {
-                    parts.push('known issue');
+                    if (typeof res.testcase.meta.knownissue === 'string') {
+                        parts.push('known issue: ' + res.testcase.meta.knownissue);
+                    } else {
+                        parts.push('known issue');
+                    }
                 }
                 if (res.testcase.meta.specialoptions) {
                     if (typeof res.testcase.meta.specialoptions === 'string') {

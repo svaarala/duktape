@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "'\\x' should be allowed by eval() but not by JSON.parse(), Duktape rejects '\\x' in both"
+}
+---*/
+
 /*===
 typeof, class, etc
 typeof: object
@@ -662,4 +668,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

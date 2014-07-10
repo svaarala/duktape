@@ -1,5 +1,11 @@
 /* FIXME: check expected values */
 
+/*---
+{
+    "knownissue": "corner case rounding errors in toExponential()"
+}
+---*/
+
 function test(this_value, args, prefix_string) {
     var t;
 

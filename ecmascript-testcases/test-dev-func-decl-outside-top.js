@@ -11,7 +11,7 @@
 
 /*---
 {
-    "custom": true
+    "nonstandard": true
 }
 ---*/
 

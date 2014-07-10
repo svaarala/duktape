@@ -30,12 +30,6 @@ function checkSumString(x) {
     return res;
 }
 
-/*---
-{
-    "custom": true
-}
----*/
-
 /*===
 radix 2
 179306267

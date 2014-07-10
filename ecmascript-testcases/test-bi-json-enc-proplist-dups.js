@@ -1,6 +1,6 @@
 /*---
 {
-    "knownissue": true
+    "knownissue": "JSON.stringify() can be given a property list to serialize; duplicates should be eliminated but Duktape (and other engines) will happily serialize a property multiple times"
 }
 ---*/
 

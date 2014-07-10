@@ -13,7 +13,7 @@
 
 /*---
 {
-    "custom": true
+    "nonstandard": true
 }
 ---*/
 
