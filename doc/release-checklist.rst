@@ -10,6 +10,10 @@ Release checklist
   - git fsck --full
   - git gc --aggressive
 
+* Ditz maintenance
+
+  - Ensure Ditz issues for the new release are all closed
+
 * Finalize DUK_VERSION
 
   - Change previous development version (with patch level 99) to release
