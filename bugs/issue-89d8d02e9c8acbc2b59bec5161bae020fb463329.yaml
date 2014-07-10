@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: gcc -pedantic without -std=c99 causes 'unsigned long long' to be used and an associated warning for it
+desc: |-
+  The type is available and it is autodetected based on ULLONG_MAX and friends,
+  but the compiler will still warn about it.  Should we not use the type?  There
+  is no reasonable way to know that the compiler will warn about a type it *does*
+  support - other than special casing for the compiler.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-10 23:01:41.427749 Z
+references: []
+
+id: 89d8d02e9c8acbc2b59bec5161bae020fb463329
+log_events: 
+- - 2014-07-10 23:01:41.652032 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
