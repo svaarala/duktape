@@ -51,6 +51,9 @@ Duktape itself is widely portable, some of the examples are Linux only.
 For instance the ``eventloop`` example illustrates how ``setTimeout()``
 and other standard timer functions could be implemented on Unix/Linux.
 
+The ``polyfills/`` directory provides a few replacement suggestions for
+non-standard Javascript functions provided by other implementations.
+
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 

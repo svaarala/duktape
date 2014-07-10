@@ -44,6 +44,7 @@ rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
 mkdir $DIST/src
+mkdir $DIST/polyfills
 #mkdir $DIST/doc
 mkdir $DIST/licenses
 mkdir $DIST/examples
@@ -56,7 +57,7 @@ mkdir $DIST/examples/coffee
 
 # Copy most files directly
 
-for i in	\
+for i in \
 	duk_alloc_default.c	\
 	duk_alloc_torture.c	\
 	duk_api_internal.h	\
@@ -173,6 +174,15 @@ for i in	\
 	; do
 	cp src/$i $DISTSRCSEP/
 done
+
+for i in \
+	console-minimal.js \
+	object-prototype-definegetter.js \
+	object-prototype-definesetter.js \
+	; do
+	cp polyfills/$i $DIST/polyfills/
+done
+
 
 for i in \
 	README.txt \
