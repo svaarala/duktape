@@ -25,7 +25,7 @@ This document discusses the ``duk_hobject`` object in detail, including:
 * Design notes, future work
 
 The details of property-related algorithms in E5 are pretty intricate
-and are described separately in ``hobject-algorithms.txt``.
+and are described separately in ``hobject-algorithms.rst``.
 
 The following parts of Ecmascript E5 are useful background:
 
@@ -47,13 +47,13 @@ The following parts of Ecmascript E5 are useful background:
 
 See also the following documentation:
 
-* ``hobject-algorithms.txt``: detailed derivation of object algorithms
+* ``hobject-algorithms.rst``: detailed derivation of object algorithms
 
-* ``hobject-enumeration.txt``: more discussion on enumeration
+* ``hobject-enumeration.rst``: more discussion on enumeration
 
-* ``error-objects.txt``: error object properties
+* ``error-objects.rst``: error object properties
 
-* ``function-objects.txt``: function template and instance properties
+* ``function-objects.rst``: function template and instance properties
 
 Requirements overview
 =====================
@@ -1223,7 +1223,7 @@ in the order they were inserted.  See, for instance:
   properties in the order in which they were defined. Because of
   this the Chrome team has deemed this to be a bug and will be fixing it."
 
-* ``hobject-enumeration.txt`` for practical testing results with
+* ``hobject-enumeration.rst`` for practical testing results with
   actual implementations.
 
 We impose the following additional requirements for compatibility:
@@ -1646,7 +1646,7 @@ Section 8.6.2, pages 32-33 summarizes exotic behavior and refers to:
 * Arguments objects: ``[[Get]]``, ``[[GetOwnProperty]]``,
   ``[DefineOwnProperty]]``, ``[[Delete]]``, E5 Section 10.6
   (the exotic behavior of a non-strict arguments object is pretty
-  intricate and is discussed separately in ``arguments-object.txt``)
+  intricate and is discussed separately in ``arguments-object.rst``)
 
 * Function objects: ``[[Get]]``, E5 Section 15.3
 
@@ -2036,7 +2036,7 @@ There is considerable variance in practical implementations:
 
     // strict mode functions are similar
 
-See ``function-objects.txt`` for more discussion.
+See ``function-objects.rst`` for more discussion.
 
 Built-in functions
 ------------------
