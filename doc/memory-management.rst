@@ -635,9 +635,9 @@ The string table structure is similar to the "entry part" of the
 
 For more details, see:
 
-* ``hstring-design.txt`` for discussion on the string hash algorithm.
+* ``hstring-design.rst`` for discussion on the string hash algorithm.
 
-* ``hobject-design.txt``, entry part hash algorithm, for discussion on
+* ``hobject-design.rst``, entry part hash algorithm, for discussion on
   the basic closed hash structure.
 
 .. note:: This discussion should be expanded.

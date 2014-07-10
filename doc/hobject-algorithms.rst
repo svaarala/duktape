@@ -25,7 +25,7 @@ primitives are also in almost 1:1 relationship with the internal bytecode
 operations.
 
 Call and constructor related algorithms (``[[Call]]`` and ``[[Construct]]``)
-are covered in ``execution.txt``.
+are covered in ``execution.rst``.
 
 .. note:: This document is not completely up-to-date: some special behaviors
    (like buffer and proxy objects) have been added on top of the algorithms
@@ -65,7 +65,7 @@ Algorithm overview
 Ecmascript object property access behavior is described by internal property
 handling algorithms.  The default algorithms are described in E5 Section 8.12.
 There are some objects with exotic behaviors; these have variants of the
-default property handling algorithms.  See ``hobject-design.txt`` for a
+default property handling algorithms.  See ``hobject-design.rst`` for a
 detailed discussion of exotic behaviors.
 
 The "raw" property algorithms are:
@@ -279,7 +279,7 @@ for completeness although not all of them invoke property algorithms.)
 | ``instanceof``                        | ``[[HasInstance]]``.            |
 +---------------------------------------+---------------------------------+
 | "for-in" enumeration                  | Enumeration order guarantees,   |
-|                                       | see ``hobject-design.txt``.     |
+|                                       | see ``hobject-design.rst``.     |
 +---------------------------------------+---------------------------------+
 | ``Object.getPrototypeOf()``           | Just returns internal prototype.|
 +---------------------------------------+---------------------------------+

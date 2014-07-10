@@ -566,7 +566,7 @@ The number of arguments given in a function call is theoretically
 unlimited.  In particular, it is theoretically possible that there
 are more than 2**32-1 arguments and thus some of the numeric keys
 of an arguments object are beyond the range of "valid array indices"
-(see ``hobject-design.txt`` for detailed discussion).
+(see ``hobject-design.rst`` for detailed discussion).
 
 The current implementation assumes that this never happens in practice.
 As a result, arguments exotic behavior can do a fast reject if the
