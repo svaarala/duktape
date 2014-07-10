@@ -300,10 +300,7 @@ Released
   "Dukweb" provides an example where Duktape runs on a web page, with
   Duktape and the browser Javascript environment interacting
 
-Planned
-=======
-
-0.11.0 (2014-05-XX)
+0.11.0 (2014-07-XX)
 -------------------
 
 * Add a built-in module loader (i.e. a require() function) based on CommonJS
@@ -443,13 +440,16 @@ Planned
   AUTHORS.txt are embedded into duktape.c and duktape.h to ensure they're
   automatically included when used in another project
 
-0.12.0 (2014-06-XX)
+Planned
+=======
+
+0.12.0 (2014-08-XX)
 -------------------
 
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
 
-1.0.0 (2014-07-XX)
+1.0.0 (2014-08-XX)
 ------------------
 
 * Feature complete baseline release
