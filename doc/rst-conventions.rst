@@ -6,7 +6,8 @@ File extension
 ==============
 
 Although ``.txt`` extension is probably technically correct for RST files,
-use ``.rst`` for internal documentation for better GitHub compatibility.
+use ``.rst`` for internal documentation for better compatibility with editors,
+GitHub, etc.
 
 Section markers
 ===============
