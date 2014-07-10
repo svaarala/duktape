@@ -149,6 +149,7 @@ duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index) {
 
  invalid_index:
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
+	return 0;  /* unreachable */
 }
 
 duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index) {
