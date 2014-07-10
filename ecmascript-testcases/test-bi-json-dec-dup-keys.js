@@ -1,6 +1,6 @@
 /*---
 {
-    "custom": true
+    "nonstandard": true
 }
 ---*/
 
@@ -10,7 +10,7 @@
 
 /* If a key appears multiple times, the last value wins.
  *
- * What makes this test a custom one is that we also test that the
+ * What makes this test a non-standard one is that we also test that the
  * enumeration order is as expected, i.e. the second occurrence does
  * not change the enum order (first occurrence defines order).
  */

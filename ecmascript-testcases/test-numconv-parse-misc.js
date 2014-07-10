@@ -1,6 +1,6 @@
 /*---
 {
-    "knownissue": "rounding corner case for 1e+23 (parses as 1.0000000000000001e+23)"
+    "knownissue": "rounding corner case for 1e+23 (parses/prints as 1.0000000000000001e+23)"
 }
 ---*/
 
