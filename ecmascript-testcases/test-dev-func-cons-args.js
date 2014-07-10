@@ -10,7 +10,7 @@
 
 /*---
 {
-    "knownissue": true
+    "knownissue": "corner cases for 'new Function()' when arguments and code are given as strings"
 }
 ---*/
 

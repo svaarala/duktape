@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "label attached to a plain block statement can cause an INVALID opcode error"
+}
+---*/
+
 /*===
 0
 1

@@ -9,7 +9,7 @@
 
 /*---
 {
-    "knownissue": true
+    "knownissue": "in corner cases (related to automatic semicolon insertion) throw statement error linenumber can be unexpected"
 }
 ---*/
 

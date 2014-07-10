@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "rounding corner case for 1e+23 (parses as 1.0000000000000001e+23)"
+}
+---*/
+
 /*===
 0.1
 0.1

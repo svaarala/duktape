@@ -1,3 +1,8 @@
+/*---
+{
+    "knownissue": "rounding corner case, 1e+23 string coerces to 1.0000000000000001e+23"
+}
+---*/
 
 /*===
 1e+23

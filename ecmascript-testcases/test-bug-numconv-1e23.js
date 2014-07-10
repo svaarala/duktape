@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "corner case in floating point parse rounding"
+}
+---*/
+
 /*===
 1e+23
 1e+23

@@ -5,7 +5,7 @@ NaN
 
 /*---
 {
-    "knownissue": true
+    "knownissue": "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string"
 }
 ---*/
 

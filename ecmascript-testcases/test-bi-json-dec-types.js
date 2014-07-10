@@ -1,6 +1,6 @@
 /*---
 {
-    "knownissue": true
+    "knownissue": "'\\x' should be allowed by eval() but not by JSON.parse(), Duktape rejects '\\x' in both"
 }
 ---*/
 
@@ -668,4 +668,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

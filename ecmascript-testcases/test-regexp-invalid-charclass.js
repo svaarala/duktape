@@ -4,7 +4,7 @@
 
 /*---
 {
-    "knownissue": true
+    "knownissue": "some invalid character classes are accepted (e.g. '[\\d-z]' and '[z-x]')"
 }
 ---*/
 

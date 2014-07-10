@@ -1,6 +1,7 @@
 /*---
 {
-    "knownissue": true
+    "nonstandard": true,
+    "knownissue": "V8/Rhino parse invalid octal constants as decimal values, Duktape doesn't at the moment"
 }
 ---*/
 
