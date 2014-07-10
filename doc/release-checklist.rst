@@ -34,27 +34,22 @@ Release checklist
   - Release log entries match ditz issues
   - Release date is in place
 
-* Compilation tests (clean compile)
+* Compilation tests: clean compile with common debug options
+  (DUK_OPT_DEBUG, DUK_OPT_DPRINT, DUK_OPT_SELF_TESTS, DUK_OPT_ASSERTIONS)
+  and with no debug options:
 
   - **FIXME: incomplete list, automate compilation tests**
   - Linux x86-64 gcc
-  - Linux x86-64 gcc + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 gcc + -m32
-  - Linux x86-64 gcc + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 clang
-  - Linux x86-64 clang + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Linux x86-64 clang + -m32
-  - Linux x86-64 clang + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - FreeBSD clang
-  - FreeBSD clang + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - FreeBSD clang + -m32
-  - FreeBSD clang + -m32 + DUK_OPT_DEBUG + DUK_OPT_DPRINT
   - Windows MinGW
   - Windows MinGW-w64
-  - Windows MSVC (cl) x32
+  - Windows MSVC (cl) x86
   - Windows MSVC (cl) x64
   - Linux MIPS gcc
-  - Linux MIPS gcc + DUK_OPT_DEBUG + DUK_OPT_DPRINT
 
 * Ecmascript testcases
 
