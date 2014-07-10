@@ -13,7 +13,7 @@ desc: |-
   Ecmascript functions).
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -41,4 +41,8 @@ log_events:
 - - 2014-04-12 09:11:00.262841 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
+  - ""
+- - 2014-07-10 12:43:15.333936 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""

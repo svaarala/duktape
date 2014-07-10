@@ -3,7 +3,7 @@ title: select and document versioning for 1.0 release and after
 desc: ""
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-03-28 10:26:26.888194 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.11 from v0.10
+  - ""
+- - 2014-07-10 12:43:18.566037 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""

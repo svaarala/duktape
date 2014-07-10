@@ -6,7 +6,7 @@ desc: |-
   to the buffer, and buf[123] = '9' will assign 0x09 (not 0x39) to the buffer.
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -28,3 +28,7 @@ log_events:
     would cause a zero to be written which is reasonably intuitive.  For non-ASCII
     characters the first byte of the extended UTF-8 representation would be used:
     not great (better might be codepoint & 0xff) but probably good enough.
+- - 2014-07-10 12:43:20.891786 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
+  - ""

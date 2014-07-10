@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: perhaps remove duk_intptr_t entirely to avoid feature detection hassle
+desc: |-
+  duk_intptr_t detection is a bit difficult (e.g. for segmented architectures) and
+  it is only needed by the random seed setup in duk_heap_alloc.c.
+type: :task
+component: duk
+release: v0.11
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-10 10:10:29.981549 Z
+references: []
+
+id: 3f32bc07b248dfc41fec10db4b41f073f1749a0e
+log_events: 
+- - 2014-07-10 10:10:30.125611 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

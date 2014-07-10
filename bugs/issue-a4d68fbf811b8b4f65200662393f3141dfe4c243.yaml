@@ -27,7 +27,7 @@ desc: |-
   propagation in another thread.
 type: :task
 component: duk
-release: v0.11
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -39,4 +39,8 @@ log_events:
 - - 2014-06-01 13:09:48.481470 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-10 12:43:21.763955 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v0.11
   - ""
