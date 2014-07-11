@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "clobber warning: duk_js_call.c:643:12: warning: variable \xE2\x80\x98idx_func\xE2\x80\x99 might be clobbered by \xE2\x80\x98longjmp\xE2\x80\x99 or \xE2\x80\x98vfork\xE2\x80\x99 [-Wclobbered]"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-11 00:26:35.301699 Z
+references: []
+
+id: 54a2922eacf4511065643bdf825d5c156b858d84
+log_events: 
+- - 2014-07-11 00:26:37.486903 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-07-11 00:26:51.112678 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - Can be reproduced by compiling example eventloop.

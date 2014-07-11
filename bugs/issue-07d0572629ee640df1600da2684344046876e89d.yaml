@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: finish programming model section (remove "under work" text)
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-11 00:35:07.514110 Z
+references: []
+
+id: 07d0572629ee640df1600da2684344046876e89d
+log_events: 
+- - 2014-07-11 00:35:07.591250 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
