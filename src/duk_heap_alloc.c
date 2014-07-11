@@ -387,12 +387,20 @@ static int duk__init_heap_thread(duk_heap *heap) {
 		DUK_D(DUK_DPRINT("" #t "=%ld", (long) sizeof(t))); \
 	} while (0)
 
-/* These is not 100% because format would need to be non-portable "long long". */
+/* These is not 100% because format would need to be non-portable "long long".
+ * Also print out as doubles to catch cases where the "long" type is not wide
+ * enough; the limits will then not be printed accurately but the magnitude
+ * will be correct.
+ */
 #define DUK__DUMPLM_SIGNED_RAW(t,a,b)  do { \
-		DUK_D(DUK_DPRINT(t "=[%ld,%ld]", (long) (a), (long) (b))); \
+		DUK_D(DUK_DPRINT(t "=[%ld,%ld]=[%lf,%lf]", \
+		                 (long) (a), (long) (b), \
+		                 (double) (a), (double) (b))); \
 	} while(0)
 #define DUK__DUMPLM_UNSIGNED_RAW(t,a,b)  do { \
-		DUK_D(DUK_DPRINT(t "=[%lu,%lu]", (unsigned long) (a), (unsigned long) (b))); \
+		DUK_D(DUK_DPRINT(t "=[%lu,%lu]=[%lf,%lf]", \
+		                 (unsigned long) (a), (unsigned long) (b), \
+		                 (double) (a), (double) (b))); \
 	} while(0)
 #define DUK__DUMPLM_SIGNED(t)  do { \
 		DUK__DUMPLM_SIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \

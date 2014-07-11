@@ -22,6 +22,10 @@ for line in sys.stdin:
 		# GH-11: Another RegExp escaping fix.
 		print(r"""  var sourceRegex = /^function\s\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""")
 		fix_count += 1
+	elif line == r"""  var sourceRegex = /^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;""":
+		# Another variant of above
+		print(r"""  var sourceRegex = /^function\s*\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""")
+		fix_count += 1
 	elif line == r"""    var parsed = jsfunc.toString().match(sourceRegex).slice(1);""":
 		# GH-11: Attempt to parse a function's toString() output with a RegExp.
 		# The RegExp makes invalid assumptions and won't parse Duktape's function

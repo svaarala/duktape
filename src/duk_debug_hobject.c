@@ -133,6 +133,9 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	const char *str_empty = "";
 	const char *str_excl = "!";
 
+	DUK_UNREF(str_empty);
+	DUK_UNREF(str_excl);
+
 	DUK_D(DUK_DPRINT("=== hobject %p ===", (void *) obj));
 	if (!obj) {
 		return;
@@ -205,6 +208,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		}
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(obj)) {
 		duk_hnativefunction *h = (duk_hnativefunction *) obj;
+		DUK_UNREF(h);
 
 		DUK_D(DUK_DPRINT("  hnativefunction"));
 		/* XXX: h->func, cannot print function pointers portably */
@@ -348,6 +352,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 
 		k = DUK_HOBJECT_E_GET_KEY(obj, i);
 		v = DUK_HOBJECT_E_GET_VALUE_PTR(obj, i);
+		DUK_UNREF(v);
 
 		if (i >= obj->e_used) {
 			DUK_D(DUK_DPRINT("    [%ld]: UNUSED", (long) i));

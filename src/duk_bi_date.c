@@ -153,6 +153,8 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	SYSTEMTIME st1, st2;
 	ULARGE_INTEGER tmp1, tmp2;
 
+	DUK_UNREF(ctx);
+
 	GetSystemTime(&st1);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st1, &tmp1);
 

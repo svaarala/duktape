@@ -10,6 +10,10 @@ Release checklist
   - git fsck --full
   - git gc --aggressive
 
+* Ditz maintenance
+
+  - Ensure Ditz issues for the new release are all closed
+
 * Finalize DUK_VERSION
 
   - Change previous development version (with patch level 99) to release
@@ -30,42 +34,22 @@ Release checklist
   - Release log entries match ditz issues
   - Release date is in place
 
-* Build candidate tar.xz files
-
-  - These should remain the same so that their hash values are known
-  - NOTE: because README.txt.dist also contains a "git describe" of
-    the current commit, the describe string will refer to the previous
-    release tag (not the current release tag)
-
-* Check source dist contents
-
-  - Check file list
-  - Grep for FIXME and XXX
-  - Trivial compile test for combined source
-  - Trivial compile test for separate sources (important because
-    it's easy to forget to add files in make_dist.sh)
-
-* Compilation tests (clean compile)
+* Compilation tests: clean compile with common debug options
+  (DUK_OPT_DEBUG, DUK_OPT_DPRINT, DUK_OPT_SELF_TESTS, DUK_OPT_ASSERTIONS)
+  and with no debug options:
 
   - **FIXME: incomplete list, automate compilation tests**
   - Linux x86-64 gcc
-  - Linux x86-64 gcc + DUK_OPT_DEBUG
   - Linux x86-64 gcc + -m32
-  - Linux x86-64 gcc + -m32 + DUK_OPT_DEBUG
   - Linux x86-64 clang
-  - Linux x86-64 clang + DUK_OPT_DEBUG
   - Linux x86-64 clang + -m32
-  - Linux x86-64 clang + -m32 + DUK_OPT_DEBUG
   - FreeBSD clang
-  - FreeBSD clang + DUK_OPT_DEBUG
   - FreeBSD clang + -m32
-  - FreeBSD clang + -m32 + DUK_OPT_DEBUG
   - Windows MinGW
   - Windows MinGW-w64
-  - Windows MSVC (cl) x32
+  - Windows MSVC (cl) x86
   - Windows MSVC (cl) x64
   - Linux MIPS gcc
-  - Linux MIPS gcc + DUK_OPT_DEBUG
 
 * Ecmascript testcases
 
@@ -123,6 +107,23 @@ Release checklist
   - on x86-64
 
     - make luajstest
+
+* Build candidate tar.xz files
+
+  - These should remain the same after this point so that their hash
+    values are known
+
+  - NOTE: because README.txt.dist also contains a "git describe" of
+    the current commit, the describe string will refer to the previous
+    release tag (not the current release tag)
+
+* Check source dist contents
+
+  - Check file list
+  - Grep for FIXME and XXX
+  - Trivial compile test for combined source
+  - Trivial compile test for separate sources (important because
+    it's easy to forget to add files in make_dist.sh)
 
 * Store binaries and update website downloads page
 
