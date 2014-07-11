@@ -1912,14 +1912,22 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 #if !defined(DUK_USE_TAILCALL)
 	DUK_ASSERT(use_tailcall == 0);  /* compiler ensures this */
 #endif
-	act = thr->callstack + thr->callstack_top - 1;
-	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
-		/* See: test-bug-tailcall-preventyield-assert.c. */
-		DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
-		use_tailcall = 0;
-	} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
-		DUK_D(DUK_DPRINT("tailcall prevented by function having a notail flag"));
-		use_tailcall = 0;
+	if (use_tailcall) {
+		/* tailcall cannot be flagged to resume calls, and a
+		 * previous frame must exist
+		 */
+		DUK_ASSERT(thr->callstack_top >= 1);
+		DUK_ASSERT((call_flags & DUK_CALL_FLAG_IS_RESUME) == 0);
+
+		act = thr->callstack + thr->callstack_top - 1;
+		if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
+			/* See: test-bug-tailcall-preventyield-assert.c. */
+			DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
+			use_tailcall = 0;
+		} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
+			DUK_D(DUK_DPRINT("tailcall prevented by function having a notail flag"));
+			use_tailcall = 0;
+		}
 	}
 
 	if (use_tailcall) {
