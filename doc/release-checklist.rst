@@ -155,4 +155,4 @@ Release checklist
     from 1000 to 1099.  This ensures that any forks off the trunk will have a
     version number easy to distinguish as an unofficial release.
 
-  - ``duktape.h``
+  - ``src/duk_api_public.h.in``
