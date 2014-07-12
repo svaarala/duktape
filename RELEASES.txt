@@ -446,6 +446,10 @@ Planned
 0.12.0 (2014-08-XX)
 -------------------
 
+* Fix the object property allocation resizing algorithm to avoid unbounded
+  memory usage with some insert/delete sequences
+  (see test-bug-object-prop-alloc-unbounded.js)
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
