@@ -46,7 +46,7 @@ entry count < 100: true
 function objectEntryPartResizeTest(doCompact) {
     var sparse = { 0: 0 };
     var i;
-    var t, entryCount, entryUsed;
+    var t, entryCount, entryNext;
 
     for (i = 1; i < 10000; i++) {
         sparse[i] = i;
@@ -65,16 +65,16 @@ function objectEntryPartResizeTest(doCompact) {
      * we can more or less safely assume the entry part should be smaller
      * than 100 entries.
      *
-     * NOTE: the "entry used" count is currently not the count of non-NULL
-     * key entries in the entry part.  It's simply the next index to use
-     * when adding a new key.
+     * NOTE: the "entry next" value is not the count of non-NULL key
+     * entries in the entry part.  It's simply the next index to use
+     * when adding a new key, and is not necessarily 1 here.
      */
 
     t = Duktape.info(sparse);
     //print(t);
     entryCount = t[5];  // version dependent, property entry allocated count
-    entryUsed = t[6];   // version dependent, property entry used count
-    //print('entry used:', entryUsed);
+    entryNext = t[6];   // version dependent, property entry next index
+    //print('entry next:', entryNext);
     //print('entry count:', entryCount);
     print('entry count < 100:', (entryCount < 100));
 
@@ -84,8 +84,8 @@ function objectEntryPartResizeTest(doCompact) {
     t = Duktape.info(sparse);
     //print(t);
     entryCount = t[5];  // version dependent, property entry allocated count
-    entryUsed = t[6];   // version dependent, property entry used count
-    //print('entry used:', entryUsed);
+    entryNext = t[6];   // version dependent, property entry next index
+    //print('entry next:', entryNext);
     //print('entry count:', entryCount);
     print('entry count < 100:', (entryCount < 100));
 }
