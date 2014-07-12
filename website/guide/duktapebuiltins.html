@@ -201,7 +201,8 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <li>Reference counts are not adjusted in any way, and include references to
     the value caused by the <code>info()</code> call.</li>
 <li>"type tag" is a number matching <code>DUK_TYPE_xxx</code> from <code>duktape.h</code>.</li>
-<li>Prop entry count: for objects, number of non-array entries allocated.</li>
+<li>Prop entry count: for objects, number of entries allocated for properties
+    outside the array part.</li>
 <li>Prop entry next: for objects, index where the next new property will be
     inserted within the entry part.  When "prop entry count" equals "prop entry next",
     insertion of a new property causes an object resize.
@@ -210,9 +211,9 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
     "compacted".</li>
 <li>Prop array count: for objects, number of entries currently allocated
     for the array part (if any); there is no value to indicate the number
-    of actually used entries (indices present)</li>
-<li>Prop hash count: for objects, size of hash lookup table for keys in the entry part
-    or zero if hash part not present.  Typical small objects don't have a hash part.</li>
+    of actually used entries (indices present).</li>
+<li>Prop hash count: for objects, size of entry part hash lookup table or
+    zero if not present.  Typical small objects don't have a hash part.</li>
 <li>Function data contains bytecode instructions, constants, etc.  It is
     shared between all instances (closures) of a certain function template.</li>
 </ul>
