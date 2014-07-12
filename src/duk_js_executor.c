@@ -434,6 +434,8 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
 	DUK_ASSERT(tv_z != NULL);  /* reg */
 
+	DUK_UNREF(thr);  /* w/o refcounts */
+
 	/* ToBoolean() does not require any operations with side effects so
 	 * we can do it efficiently.  For footprint it would be better to use
 	 * duk_js_toboolean() and then push+replace to the result slot.
