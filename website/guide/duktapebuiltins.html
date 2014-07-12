@@ -201,14 +201,19 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <li>Reference counts are not adjusted in any way, and include references to
     the value caused by the <code>info()</code> call.</li>
 <li>"type tag" is a number matching <code>DUK_TYPE_xxx</code> from <code>duktape.h</code>.</li>
-<li>The number of entries allocated for object properties is given by
-    "prop entry count", while "prop entry used" indicates how many of the
-    entries are in used.  If an array part is present, "prop array count"
-    indicates the number of entries currently allocated (there is no value
-    to indicate the number of used array part entries).  Finally, "prop hash count"
-    indicates the number of entries in a hash lookup table if present (it is
-    not present for typical, small objects).  These numbers are counts, not
-    byte sizes.</li>
+<li>Prop entry count: for objects, number of entries allocated for properties
+    outside the array part.</li>
+<li>Prop entry next: for objects, index where the next new property will be
+    inserted within the entry part.  When "prop entry count" equals "prop entry next",
+    insertion of a new property causes an object resize.
+    Note that this number does <i>not</i> indicate the number of properties actually
+    present in the object because some entries may have been deleted and not yet
+    "compacted".</li>
+<li>Prop array count: for objects, number of entries currently allocated
+    for the array part (if any); there is no value to indicate the number
+    of actually used entries (indices present).</li>
+<li>Prop hash count: for objects, size of entry part hash lookup table or
+    zero if not present.  Typical small objects don't have a hash part.</li>
 <li>Function data contains bytecode instructions, constants, etc.  It is
     shared between all instances (closures) of a certain function template.</li>
 </ul>
@@ -292,7 +297,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <td>heap hdr size</td>
 <td>prop alloc size</td>
 <td>prop entry count</td>
-<td>prop entry used</td>
+<td>prop entry next</td>
 <td>prop array count</td>
 <td>prop hash count</td>
 <td>func data size</td>
@@ -305,7 +310,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <td>heap hdr size</td>
 <td>prop alloc size</td>
 <td>prop entry count</td>
-<td>prop entry used</td>
+<td>prop entry next</td>
 <td>prop array count</td>
 <td>prop hash count</td>
 <td>-</td>
@@ -318,7 +323,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <td>heap hdr size</td>
 <td>prop alloc size</td>
 <td>prop entry count</td>
-<td>prop entry used</td>
+<td>prop entry next</td>
 <td>prop array count</td>
 <td>prop hash count</td>
 <td>-</td>
@@ -331,7 +336,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <td>heap hdr size</td>
 <td>prop alloc size</td>
 <td>prop entry count</td>
-<td>prop entry used</td>
+<td>prop entry next</td>
 <td>prop array count</td>
 <td>prop hash count</td>
 <td>-</td>
