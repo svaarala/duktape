@@ -649,9 +649,9 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
 
 		/* [... env callee varmap] */
 
-		DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) varmap->e_used));
+		DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) varmap->e_next));
 
-		for (i = 0; i < (duk_uint_fast32_t) varmap->e_used; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) varmap->e_next; i++) {
 			key = DUK_HOBJECT_E_GET_KEY(varmap, i);
 			DUK_ASSERT(key != NULL);   /* assume keys are compacted */
 

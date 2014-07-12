@@ -168,10 +168,10 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	                 (void *) obj->prototype,
 	                 (duk_heaphdr *) obj->prototype));
 
-	DUK_D(DUK_DPRINT("  props: p=%p, e_size=%ld, e_used=%ld, a_size=%ld, h_size=%ld",
+	DUK_D(DUK_DPRINT("  props: p=%p, e_size=%ld, e_next=%ld, a_size=%ld, h_size=%ld",
 	                 (void *) obj->p,
 	                 (long) obj->e_size,
-	                 (long) obj->e_used,
+	                 (long) obj->e_next,
 	                 (long) obj->a_size,
 	                 (long) obj->h_size));
 
@@ -354,7 +354,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 		v = DUK_HOBJECT_E_GET_VALUE_PTR(obj, i);
 		DUK_UNREF(v);
 
-		if (i >= obj->e_used) {
+		if (i >= obj->e_next) {
 			DUK_D(DUK_DPRINT("    [%ld]: UNUSED", (long) i));
 			continue;
 		}

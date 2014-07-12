@@ -70,7 +70,8 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 		duk_push_uint(ctx, (duk_uint_t) hdr_size);
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_E_ALLOC_SIZE(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) h_obj->e_size);
-		duk_push_uint(ctx, (duk_uint_t) h_obj->e_used);
+		/* FIXME: count keys */
+		duk_push_uint(ctx, (duk_uint_t) h_obj->e_next);
 		duk_push_uint(ctx, (duk_uint_t) h_obj->a_size);
 		duk_push_uint(ctx, (duk_uint_t) h_obj->h_size);
 		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
