@@ -70,7 +70,13 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 		duk_push_uint(ctx, (duk_uint_t) hdr_size);
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_E_ALLOC_SIZE(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) h_obj->e_size);
-		/* FIXME: count keys */
+		/* Note: e_next indicates the number of gc-reachable entries
+		 * in the entry part, and also indicates the index where the
+		 * next new property would be inserted.  It does *not* indicate
+		 * the number of non-NULL keys present in the object.  That
+		 * value could be counted separately but requires a pass through
+		 * the key list.
+		 */
 		duk_push_uint(ctx, (duk_uint_t) h_obj->e_next);
 		duk_push_uint(ctx, (duk_uint_t) h_obj->a_size);
 		duk_push_uint(ctx, (duk_uint_t) h_obj->h_size);
