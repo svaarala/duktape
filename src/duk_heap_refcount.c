@@ -59,7 +59,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 
 	/* XXX: better to get base and walk forwards? */
 
-	for (i = 0; i < (duk_uint_fast32_t) h->e_used; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) h->e_next; i++) {
 		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
 		if (!key) {
 			continue;

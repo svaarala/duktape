@@ -570,7 +570,7 @@ static duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 	duk_hobject *h_varmap;
 	duk_hstring *h_key;
 	duk_tval *tv;
-	duk_uint32_t i, e_used;
+	duk_uint32_t i, e_next;
 	duk_int_t ret;
 
 	/* [ ... varmap ] */
@@ -579,8 +579,8 @@ static duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(h_varmap != NULL);
 
 	ret = 0;
-	e_used = h_varmap->e_used;
-	for (i = 0; i < e_used; i++) {
+	e_next = h_varmap->e_next;
+	for (i = 0; i < e_next; i++) {
 		h_key = DUK_HOBJECT_E_GET_KEY(h_varmap, i);
 		if (!h_key) {
 			continue;

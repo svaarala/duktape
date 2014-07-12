@@ -565,39 +565,39 @@ struct duk_hobject {
 	 *
 	 *  Layout 1 (DUK_USE_HOBJECT_LAYOUT_1):
 	 *
-	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
-	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
-	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_used gc reachable)
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_next gc reachable)
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_next gc reachable)
+	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_next gc reachable)
 	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
 	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                      0xffffffffUL = unused, 0xfffffffeUL = deleted
 	 *
 	 *  Layout 2 (DUK_USE_HOBJECT_LAYOUT_2):
 	 *
-	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
-	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
-	 *    e_size * sizeof(duk_uint8_t) + pad     bytes of   entry flags (e_used gc reachable)
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_next gc reachable)
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_next gc reachable)
+	 *    e_size * sizeof(duk_uint8_t) + pad     bytes of   entry flags (e_next gc reachable)
 	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
 	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                      0xffffffffUL = unused, 0xfffffffeUL = deleted
 	 *
 	 *  Layout 3 (DUK_USE_HOBJECT_LAYOUT_3):
 	 *
-	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_used gc reachable)
+	 *    e_size * sizeof(duk_propvalue)         bytes of   entry values (e_next gc reachable)
 	 *    a_size * sizeof(duk_tval)              bytes of   (opt) array values (plain only) (all gc reachable)
-	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_used gc reachable)
+	 *    e_size * sizeof(duk_hstring *)         bytes of   entry keys (e_next gc reachable)
 	 *    h_size * sizeof(duk_uint32_t)          bytes of   (opt) hash indexes to entries (e_size),
 	 *                                                      0xffffffffUL = unused, 0xfffffffeUL = deleted
-	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_used gc reachable)
+	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_next gc reachable)
 	 *
-	 *  In layout 1, the 'e_used' count is rounded to 4 or 8 on platforms
+	 *  In layout 1, the 'e_next' count is rounded to 4 or 8 on platforms
 	 *  requiring 4 or 8 byte alignment.  This ensures proper alignment
 	 *  for the entries, at the cost of memory footprint.  However, it's
 	 *  probably preferable to use another layout on such platforms instead.
 	 *
 	 *  In layout 2, the key and value parts are swapped to avoid padding
 	 *  the key array on platforms requiring alignment by 8.  The flags part
-	 *  is padded to get alignment for array entries.  The 'e_used' count does
+	 *  is padded to get alignment for array entries.  The 'e_next' count does
 	 *  not need to be rounded as in layout 1.
 	 *
 	 *  In layout 3, entry values and array values are always aligned properly,
@@ -623,10 +623,10 @@ struct duk_hobject {
 	 */
 
 	duk_uint8_t *p;
-	duk_uint32_t e_size;
-	duk_uint32_t e_used;
-	duk_uint32_t a_size;
-	duk_uint32_t h_size;
+	duk_uint32_t e_size;  /* entry part size */
+	duk_uint32_t e_next;  /* index for next new key ([0,e_next[ are gc reachable) */
+	duk_uint32_t a_size;  /* array part size (entirely gc reachable) */
+	duk_uint32_t h_size;  /* hash part size or 0 if unused */
 
 	/* prototype: the only internal property lifted outside 'e' as it is so central */
 	duk_hobject *prototype;

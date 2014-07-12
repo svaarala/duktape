@@ -400,7 +400,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			DUK__COMMA();
 			duk__print_tval(st, tv);
 		}
-		for (i = 0; i < h->e_used; i++) {
+		for (i = 0; i < h->e_next; i++) {
 			key = DUK_HOBJECT_E_GET_KEY(h, i);
 			if (!key) {
 				continue;
