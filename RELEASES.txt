@@ -446,6 +446,9 @@ Planned
 0.12.0 (2014-08-XX)
 -------------------
 
+* Minor compile warnings fixes for non-default options (e.g. when reference
+  counting is disabled)
+
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
 

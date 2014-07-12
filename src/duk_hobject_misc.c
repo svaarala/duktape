@@ -38,6 +38,7 @@ void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p)
 	DUK_HOBJECT_DECREF(thr, tmp);
 #else
 	DUK_ASSERT(h);
+	DUK_UNREF(thr);
 	h->prototype = p;
 #endif
 }

@@ -802,6 +802,8 @@ void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_index) {
 	duk_tval *tv2;
 	duk_tval tv_tmp;
 
+	DUK_UNREF(thr);  /* w/o refcounting */
+
 	DUK_ASSERT(ctx != NULL);
 
 	tv1 = duk_require_tval(ctx, from_index);
