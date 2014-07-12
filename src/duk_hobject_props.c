@@ -873,6 +873,7 @@ static void duk__realloc_props(duk_hthread *thr,
 
 /* Grow entry part allocation for one additional entry. */
 static void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *obj) {
+	duk_uint32_t old_e_used;
 	duk_uint32_t new_e_size;
 	duk_uint32_t new_a_size;
 	duk_uint32_t new_h_size;
@@ -880,10 +881,18 @@ static void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *ob
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 
-	new_e_size = obj->e_size + duk__get_min_grow_e(obj->e_size);
+	/* Duktape 0.11.0 and prior tried to optimize the resize by not
+	 * counting the number of actually used keys prior to the resize.
+	 * This worked mostly well but also caused weird leak-like behavior
+	 * as in: test-bug-object-prop-alloc-unbounded.js.  So, now we count
+	 * the keys explicitly to compute the new entry part size.
+	 */
+
+	old_e_used = duk__count_used_e_keys(obj);
+	new_e_size = old_e_used + duk__get_min_grow_e(old_e_used);
 	new_h_size = duk__get_default_h_size(new_e_size);
 	new_a_size = obj->a_size;
-	DUK_ASSERT(new_e_size >= obj->e_size + 1);  /* duk__get_min_grow_e() is always >= 1 */
+	DUK_ASSERT(new_e_size >= old_e_used + 1);  /* duk__get_min_grow_e() is always >= 1 */
 
 	duk__realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
 }
