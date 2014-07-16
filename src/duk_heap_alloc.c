@@ -318,11 +318,11 @@ static int duk__init_heap_strings(duk_heap *heap) {
 			goto error;
 		}
 
-		/* special flags */
-
-		if (len > 0 && tmp[0] == (duk_uint8_t) 0xff) {
-			DUK_HSTRING_SET_INTERNAL(h);
-		}
+		/* Special flags checks.  Since these strings are always
+		 * reachable and a string cannot appear twice in the string
+		 * table, there's no need to check/set these flags elsewhere.
+		 * The 'internal' flag is set by string intern code.
+		 */
 		if (i == DUK_STRIDX_EVAL || i == DUK_STRIDX_LC_ARGUMENTS) {
 			DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(h);
 		}
