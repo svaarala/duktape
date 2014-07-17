@@ -6,6 +6,12 @@
  *  buffer values nor the ability to create buffer values.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 date: 1970-01-01T00:02:03.456Z
 using Duktape.Buffer, date \xFFvalue: 123456
