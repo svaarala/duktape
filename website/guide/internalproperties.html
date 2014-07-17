@@ -21,10 +21,11 @@ property names and ordinary Ecmascript code cannot accidentally access them.</p>
 reference, for storing the underlying primitive value for various objects
 (such as <code>Date</code> and <code>Number</code>) and for storing control
 properties of function instances.  The current naming convention of
-Duktape's internal properties is to follow the <code>0xFF</code>
-byte with only lowercase letters and underscores.  For instance, the underlying
-timestamp of a <code>Date</code> is (currently) stored as the internal property
-<code>\xFFvalue</code> (byte sequence <code>ff 76 61 6c 75 65</code>).
+Duktape's internal properties is to follow the <code>0xFF</code> with
+an identifier matching <code>[a-z0-9_]+</code> (no uppercase characters).
+For instance, the underlying timestamp of a <code>Date</code> is (currently)
+stored as the internal property <code>\xFFvalue</code> (byte sequence
+<code>ff 76 61 6c 75 65</code>).
 Note that this is different from the valid Ecmascript string <code>"\u00ffvalue"</code>
 which Duktape would represent internally as the CESU-8 byte sequence
 <code>c3 bf 76 61 6c 75 65</code>.  The initial byte is often represented by
@@ -44,7 +45,7 @@ two <code>0xFF</code> bytes, e.g. <code>\xFF\xFFmyprop</code> (byte sequence
 <code>ff ff 6d 79 70 72 6f 70</code>).  (Note, again, that this is different
 from the valid Ecmascript string <code>"\u00ff\u00ffmyprop"</code> which would
 be represented as the CESU-8 byte sequence
-<code>c3 bf c3 bf 6d 79 70 72 6f 70</code>.)</p>.
+<code>c3 bf c3 bf 6d 79 70 72 6f 70</code>.)</p>
 
 <p>Creating an internal string is easy from C code:</p>
 <pre class="c-code">
