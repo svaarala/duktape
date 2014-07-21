@@ -540,6 +540,11 @@ The memory layout of an ``duk_hobject`` is illustrated below::
   allocation exists                 on-the-fly using e_size and
                                     a_size
 
+There are multiple memory layouts for the property allocation part,
+each containing the same parts but in a different order.  The different
+layouts are used to best suit the target platform's alignment needs.
+The layout is automatically selected by Duktape during compilation
+(feature detection).
 
 The heap header structure ``duk_heaphdr`` contains:
 
