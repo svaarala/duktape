@@ -51,9 +51,14 @@ be represented as the CESU-8 byte sequence
 <pre class="c-code">
 /* Create an internal string, which can then be used to read/write internal
  * properties, and can be passed on to Ecmascript code like any other string.
+ * Terminating a string literal after a hex escape is safest to avoid some
+ * ambiguous cases like "\xffab".
  */
-duk_push_string(ctx, "\xff\xffmyprop");
+duk_push_string(ctx, "\xff\xff" "myprop");
 </pre>
+
+<p>For more discussion on C string hex escaping, see
+<a href="https://github.com/svaarala/duktape/blob/master/misc/c_hex_esc.c">c_hex_esc.c</a>.</p>
 
 <p>Internal strings can also be created from Ecmascript code if one has access
 to e.g. the Buffer constructor or <code>Duktape.dec()</code> (this must be considered
