@@ -296,8 +296,8 @@ at least 32 bits wide.  On one platform the underlying type might be <code>int</
 in string formatting without either getting the proper format specified from a
 preprocessor define or using a fixed format specifier and casting the argument:</p>
 
-<pre>
-duk_int_t val = ...;
+<pre class="c-code">
+duk_int_t val = /* ... */;
 
 /* Cast value to ensure type and format match.  Selecting the appropriate
  * cast target is problematic, and caller must "play it safe".  Without
@@ -322,7 +322,7 @@ printf(DUK_PRIdINT, val);
 format specifier for <code>int_fast32_t</code> is <code>PRIdFAST32</code>:</p>
 
 <pre class="c-code">
-int_fast32_t val = ...;
+int_fast32_t val = /* ... */;
 
 printf("value is: " PRIdFAST32 "\n", val);
 </pre>
