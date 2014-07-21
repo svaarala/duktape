@@ -178,7 +178,7 @@ Built-in objects often have properties with non-default attributes, though.
 A *property descriptor* contains zero or more property attributes,
 and is used both internally and externally to describe or modify
 property attributes.  Property descriptors are used internally in the E5
-specification with the following notation:
+specification with the following notation::
 
   { ``[[Value]]``: 42, ``[[Writable]]``: true }
 
@@ -524,7 +524,7 @@ The memory layout of an ``duk_hobject`` is illustrated below::
   +========================+  |     | (e_size x duk_hstring *)  |
   | duk_u8 *p -------------+--'     +---------------------------+
   | duk_u32 e_size         |     .->| entry part values         |
-  | duk_u32 e_used         |     :  | (e_size x duk_propvalue)  |
+  | duk_u32 e_next         |     :  | (e_size x duk_propvalue)  |
   | duk_u32 a_size         |     :  +---------------------------+
   | duk_u32 h_size         |     +->| entry part flags          |
   | duk_hobject *prototype |     :  | (e_size x duk_u8)         |
@@ -685,16 +685,16 @@ lookups::
                   DELETED entries don't terminate hash
                   probe sequences, UNUSED entries do.
  
-    Here, e_size = 5, e_used = 3, h_size = 7.
+    Here, e_size = 5, e_next = 3, h_size = 7.
 
 .. FIXME for some unknown reason the illustration breaks with pandoc
 
 Each array in the entry part contains ``e_size`` allocated entries.
-The entries at indices [0,\ ``e_used``\ [ are currently in use, and any
+The entries at indices [0,\ ``e_next``\ [ are currently in use, and any
 entries above that are uninitialized (garbage) data, and not reachable
 from a GC perspective.
 
-New keys are always appended to the current ``e_used`` position (with the
+New keys are always appended to the current ``e_next`` position (with the
 entry part resized if it is already full).  Existing entries are deleted
 by marking a key as ``NULL``; they are not reused for new properties to
 avoid disrupting the key enumeration order (which should match insertion
@@ -851,11 +851,11 @@ before the hash part fills up with DELETED entries as follows.
 
 Because all new entries are appended to the existing entry part key array
 (deleted entry part keys are marked ``NULL`` but not reused until a resize
-happens), the hash part contains exactly ``e_used`` used and DELETED entries
-combined, and exactly ``h_size - e_used`` UNUSED entries.  As long as the hash
+happens), the hash part contains exactly ``e_next`` used and DELETED entries
+combined, and exactly ``h_size - e_next`` UNUSED entries.  As long as the hash
 part is larger than the entry part (``h_size > e_size``) the hash is thus
 guaranteed to contain at least one UNUSED entry.  When an insertion is
-attempted to a full entry part (``e_used = e_size``), a property allocation
+attempted to a full entry part (``e_next = e_size``), a property allocation
 resize is triggered which also resizes and rehashes the hash part, purging
 any ``DELETED`` entries.
 
@@ -1467,31 +1467,44 @@ on the property in question:
 * implicit behaviors in specification algorithms based on e.g.
   object flags, type, or class
 
-The current approach for storing internal properties which are never
-visible to program code and never overlap with externally visible named
-properties is simple: since legitimate keys all encode into valid UTF-8
-sequences (to be fully exact, valid CESU-8 sequences) in memory, internal
-properties are prefixed with an invalid UTF-8 sequence which user code
+The current approach for storing internal properties which are not visible
+to ordinary program code and never overlap with externally visible named
+properties is simple: since all standard keys encode into valid UTF-8
+sequences (valid CESU-8 sequences to be exact) in memory, internal properties
+are prefixed with an invalid UTF-8 sequence which standard Ecmascript code
 cannot generate and thus cannot access.  The current prefix is a single
 ``0xff`` byte.  The prefix is denoted with an underscore in this document;
 e.g. ``_map`` would be represented as the byte sequence: ``0xff`` ``'m'``
-``'a'`` ``'p'`` in memory.
+``'a'`` ``'p'`` in memory.  User C code can also use internal properties for
+its own purposes, as long as the property names don't conflict with Duktape's
+internal properties.
 
 To avoid complications:
 
 * Internal properties MUST NOT be enumerable
 
+  - Duktape prevents enumeration of internal properties regardless of their
+    ``[[Enumerable]]`` attribute.  This makes it easier for user code to
+    read/write internal properties as ordinary put/get primitives can be
+    used.
+
 * Internal properties MUST NOT be visible in any other way either, e.g.
   through ``Object.getOwnPropertyNames()`` which outputs also
   non-enumerable properties
 
+  - Duktape prevents this in each relevant built-in function.
+
 * User Ecmascript code should not be given references to internal strings,
   i.e. strings other than valid UTF-8/CESU-8 encodings
 
-The current C bindings *do allow* internal properties to be accessed as C
-code cannot be easily restrained in any case.  However, it's not recommended
-to access internal properties from C code as the internal properties may
-change between versions.
+* Untrusted Ecmascript code should have no access to buffer values or
+  buffer constructors because it's easy to create an internal property
+  name with buffers
+
+User C code can access internal properties; C code has full memory access
+anyway so it must be trustworthy in any case.  User code should never access
+Duktape's internal properties as the internal properties may change arbitrarily
+between versions.
 
 Internal property names use a bit of shorthand and often the same internal
 key is reused in many contexts.  This is simply to save a bit of memory with
@@ -1598,7 +1611,6 @@ double brackets are omitted from the specification property names
 | ParameterMap      | Internal property ``_map``.                          |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-
 
 Exotic behavior and virtual properties
 ======================================

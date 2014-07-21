@@ -44,6 +44,17 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 		DUK_HSTRING_SET_ARRIDX(res);
 	}
 
+	/* All strings beginning with 0xff are treated as "internal",
+	 * even strings interned by the user.  This allows user code to
+	 * create internal properties too, and makes behavior consistent
+	 * in case user code happens to use a string also used by Duktape
+	 * (such as string has already been interned and has the 'internal'
+	 * flag set).
+	 */
+	if (blen > 0 && str[0] == (duk_uint8_t) 0xff) {
+		DUK_HSTRING_SET_INTERNAL(res);
+	}
+
 	res->hash = strhash;
 	res->blen = blen;
 	res->clen = (duk_uint32_t) duk_unicode_unvalidated_utf8_length(str, (duk_size_t) blen);  /* clen <= blen */

@@ -9,6 +9,14 @@ specification.</p>
 access to Duktape specific features.  Also the buffer and pointer types are
 custom.</p>
 
+<h2>Internal properties</h2>
+
+<p>Objects may have <a href="#internalproperties">internal properties</a> which
+are essentially hidden from normal code: they won't be enumerated or returned
+even by e.g. <code>Object.getOwnPropertyNames()</code>.  Ordinary Ecmascript
+code cannot refer to such properties because the property keys intentionally
+use invalid UTF-8 (<code>0xFF</code> prefix byte).</p>
+
 <h2>"use duk notail" directive</h2>
 
 <p>The <a href="#use-duk-notail">"use duk notail"</a> directive is non-standard.

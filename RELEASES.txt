@@ -446,6 +446,11 @@ Planned
 0.12.0 (2014-08-XX)
 -------------------
 
+* Treat any strings whose byte representation begins with 0xFF as internal,
+  so that user code can use hidden internal properties like Duktape does
+  internally; such properties are not enumerated or returned by e.g.
+  getOwnPropertyNames()
+
 * Fix the object property allocation resizing algorithm to avoid unbounded
   memory usage with some insert/delete sequences
   (see test-bug-object-prop-alloc-unbounded.js)
