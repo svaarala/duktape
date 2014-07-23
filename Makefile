@@ -49,7 +49,7 @@ DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 GIT_DESCRIBE=$(shell git describe)
 
 # Ditz release (next release name)
-DITZ_RELEASE=v0.11
+DITZ_RELEASE=v0.12
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
