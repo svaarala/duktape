@@ -108,15 +108,18 @@ Released
 * Added support for function declarations outside function or program top
   level (also known as "function statements"), with V8-like semantics
 
-* Renamed __duk__ to Duktape for more consistency with Ecmascript conventions,
-  and made the following cleanups:
+* Renamed __duk__ to Duktape for more consistency with Ecmascript conventions
 
-    - removed somewhat useless 'build'
-    - added 'env'
-    - replaced 'addr' and 'refc' with 'info' which gives more internal info
-    - merged 'setFinalizer' and 'getFinalizer' into a single 'fin' call
-    - compatibility properties available for now (e.g. __duk__), but will
-      be removed after this release
+* Removed somewhat useless Duktape.build property and added Duktape.env
+
+* Replaced Duktape.addr() and Duktape.refc() with Duktape.info() which gives
+  more internal info
+
+* Merged Duktape.setFinalizer() and Duktape.getFinalizer() into a single
+  Duktape.fin() call
+
+* Some compatibility properties available for now (e.g. __duk__), but these
+  will be removed after this release
 
 * Removed array size limit for very large array joins
 
