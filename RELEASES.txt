@@ -446,6 +446,11 @@ Planned
 0.12.0 (2014-08-XX)
 -------------------
 
+* Change strictness handling of duk_eval() and variants so that all code is
+  evaluated in non-strict mode by default (unless the code itself contains
+  a "use strict" directive); without this change the strictness would depend
+  on whether a Duktape/C function call was active or not
+
 * Treat any strings whose byte representation begins with 0xFF as internal,
   so that user code can use hidden internal properties like Duktape does
   internally; such properties are not enumerated or returned by e.g.
