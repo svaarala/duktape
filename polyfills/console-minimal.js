@@ -1,8 +1,12 @@
 if (typeof console === 'undefined') {
-    this.console = {};
+    Object.defineProperty(this, 'console', {
+        value: {}, writable: true, enumerable: false, configurable: true
+    });
 }
 if (typeof console.log === 'undefined') {
-    this.console.log = function () {
-        print(Array.prototype.join.call(arguments, ' '));
-    };
+    Object.defineProperty(this.console, 'log', {
+        value: function () {
+            print(Array.prototype.join.call(arguments, ' '));
+        }, writable: true, enumerable: false, configurable: true
+    });
 }

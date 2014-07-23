@@ -449,6 +449,9 @@ Planned
 0.12.0 (2014-08-XX)
 -------------------
 
+* Beta release for stabilization: feature freeze until 1.0.0 release, most
+  work will be testing, bug fixes, and documentation
+
 * Change strictness handling of duk_eval() and variants so that all code is
   evaluated in non-strict mode by default (unless the code itself contains
   a "use strict" directive); without this change the strictness would depend
@@ -466,8 +469,8 @@ Planned
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
-* Beta release for stabilization: feature freeze until 1.0.0 release, most
-  work will be testing, bug fixes, and documentation
+* Make objects and functions defined by included polyfills non-enumerable so
+  that they don't enumerate e.g. in a for-in loop
 
 1.0.0 (2014-08-XX)
 ------------------

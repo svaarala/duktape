@@ -1,5 +1,7 @@
 if (typeof Object.prototype.__defineSetter__ === 'undefined') {
-    Object.prototype.__defineSetter__ = function (n, f) {
-        Object.defineProperty(this, n, { enumerable: true, configurable: true, set: f });
-    };
+    Object.defineProperty(Object.prototype, '__defineSetter__', {
+        value: function (n, f) {
+            Object.defineProperty(this, n, { enumerable: true, configurable: true, set: f });
+        }, writable: true, enumerable: false, configurable: true
+    });
 }
