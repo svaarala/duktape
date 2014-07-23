@@ -80,7 +80,7 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 		duk_hstring *h_sourcecode;
 
 		if (flags & DUK_COMPILE_NOSOURCE) {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "no sourcecode");
+			DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_NO_SOURCECODE);
 		}
 		h_sourcecode = duk_require_hstring(ctx, -2);
 		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);

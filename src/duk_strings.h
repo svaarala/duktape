@@ -66,6 +66,15 @@ extern const char *duk_str_not_configurable;
 #define DUK_STR_FUNC_ALLOC_FAILED duk_str_func_alloc_failed
 #define DUK_STR_BUFFER_ALLOC_FAILED duk_str_buffer_alloc_failed
 #define DUK_STR_POP_TOO_MANY duk_str_pop_too_many
+#define DUK_STR_BUFFER_NOT_DYNAMIC duk_str_buffer_not_dynamic
+#define DUK_STR_FAILED_TO_EXTEND_VALSTACK duk_str_failed_to_extend_valstack
+#define DUK_STR_BASE64_ENCODE_FAILED duk_str_base64_encode_failed
+#define DUK_STR_BASE64_DECODE_FAILED duk_str_base64_decode_failed
+#define DUK_STR_HEX_DECODE_FAILED duk_str_hex_decode_failed
+#define DUK_STR_NO_SOURCECODE duk_str_no_sourcecode
+#define DUK_STR_CONCAT_RESULT_TOO_LONG duk_str_concat_result_too_long
+#define DUK_STR_UNIMPLEMENTED duk_str_unimplemented
+#define DUK_STR_ARRAY_LENGTH_OVER_2G duk_str_array_length_over_2g
 
 extern const char *duk_str_invalid_index;
 extern const char *duk_str_push_beyond_alloc_stack;
@@ -94,6 +103,15 @@ extern const char *duk_str_thread_alloc_failed;
 extern const char *duk_str_func_alloc_failed;
 extern const char *duk_str_buffer_alloc_failed;
 extern const char *duk_str_pop_too_many;
+extern const char *duk_str_buffer_not_dynamic;
+extern const char *duk_str_failed_to_extend_valstack;
+extern const char *duk_str_base64_encode_failed;
+extern const char *duk_str_base64_decode_failed;
+extern const char *duk_str_hex_decode_failed;
+extern const char *duk_str_no_sourcecode;
+extern const char *duk_str_concat_result_too_long;
+extern const char *duk_str_unimplemented;
+extern const char *duk_str_array_length_over_2g;
 
 #define DUK_STR_FMT_PTR duk_str_fmt_ptr
 #define DUK_STR_INVALID_JSON duk_str_invalid_json

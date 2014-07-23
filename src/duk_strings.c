@@ -7,7 +7,7 @@
 
 #include "duk_internal.h"
 
-/* Mostly API related */
+/* Mostly API and built-in method related */
 const char *duk_str_internal_error = "internal error";
 const char *duk_str_invalid_count = "invalid count";
 const char *duk_str_invalid_call_args = "invalid call args";
@@ -44,6 +44,15 @@ const char *duk_str_thread_alloc_failed = "thread alloc failed";
 const char *duk_str_func_alloc_failed = "func alloc failed";
 const char *duk_str_buffer_alloc_failed = "buffer alloc failed";
 const char *duk_str_pop_too_many = "attempt to pop too many entries";
+const char *duk_str_buffer_not_dynamic = "buffer is not dynamic";
+const char *duk_str_failed_to_extend_valstack = "failed to extend valstack";
+const char *duk_str_base64_encode_failed = "base64 encode failed";
+const char *duk_str_base64_decode_failed = "base64 decode failed";
+const char *duk_str_hex_decode_failed = "hex decode failed";
+const char *duk_str_no_sourcecode = "no sourcecode";
+const char *duk_str_concat_result_too_long = "concat result too long";
+const char *duk_str_unimplemented = "unimplemented";
+const char *duk_str_array_length_over_2g = "array length over 2G";
 
 /* JSON */
 const char *duk_str_fmt_ptr = "%p";
