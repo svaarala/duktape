@@ -67,7 +67,7 @@ static duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk
 	return p;
 
  fail:
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "regexp backtrack failed");
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REGEXP_BACKTRACK_FAILED);
 	return NULL;  /* never here */
 }
 
@@ -98,7 +98,7 @@ static duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_u
 	return p;
 
  fail:
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "regexp advance failed");
+	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REGEXP_ADVANCE_FAILED);
 	return NULL;  /* never here */
 }
 
@@ -142,7 +142,7 @@ static duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint
 
 static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
-		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, "regexp executor recursion limit");
+		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
 	}
 	re_ctx->recursion_depth++;
 
@@ -150,7 +150,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 		duk_small_int_t op;
 
 		if (re_ctx->steps_count >= re_ctx->steps_limit) {
-			DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, "regexp step limit");
+			DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT);
 		}
 		re_ctx->steps_count++;
 
@@ -637,7 +637,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 	return NULL;
 
  internal_error:
-	DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, "regexp internal error");
+	DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REGEXP_INTERNAL_ERROR);
 	return NULL;  /* never here */
 }
 

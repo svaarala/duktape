@@ -96,6 +96,19 @@ const char *duk_str_func_name_required = "function name required";
 /* Executor */
 const char *duk_str_internal_error_exec_longjmp = "internal error in bytecode executor longjmp handler";
 
+/* Regexp */
+const char *duk_str_invalid_quantifier_no_atom = "quantifier without preceding atom";
+const char *duk_str_invalid_quantifier_values = "quantifier values invalid (qmin > qmax)";
+const char *duk_str_quantifier_too_many_copies = "quantifier expansion requires too many atom copies";
+const char *duk_str_unexpected_closing_paren = "unexpected closing parenthesis";
+const char *duk_str_unexpected_end_of_pattern = "unexpected end of pattern";
+const char *duk_str_unexpected_regexp_token = "unexpected token in regexp";
+const char *duk_str_invalid_regexp_flags = "invalid regexp flags";
+const char *duk_str_invalid_backrefs = "invalid backreference(s)";
+const char *duk_str_regexp_backtrack_failed = "regexp backtrack failed";
+const char *duk_str_regexp_advance_failed = "regexp advance failed";
+const char *duk_str_regexp_internal_error = "regexp internal error";
+
 /* Limits */
 const char *duk_str_valstack_limit = "valstack limit";
 const char *duk_str_object_property_limit = "object property limit";
@@ -108,3 +121,6 @@ const char *duk_str_reg_limit = "register limit";
 const char *duk_str_temp_limit = "temp limit";
 const char *duk_str_const_limit = "const limit";
 const char *duk_str_func_limit = "function limit";
+const char *duk_str_regexp_compiler_recursion_limit = "regexp compiler recursion limit";
+const char *duk_str_regexp_executor_recursion_limit = "regexp executor recursion limit";
+const char *duk_str_regexp_executor_step_limit = "regexp step limit";

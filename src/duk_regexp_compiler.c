@@ -287,7 +287,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
-		          "regexp compiler recursion limit reached");
+		          DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT);
 	}
 	re_ctx->recursion_depth++;
 
@@ -361,11 +361,11 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 		case DUK_RETOK_QUANTIFIER: {
 			if (atom_start_offset < 0) {
 				DUK_ERROR(re_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "quantifier without preceding atom");
+				          DUK_STR_INVALID_QUANTIFIER_NO_ATOM);
 			}
 			if (re_ctx->curr_token.qmin > re_ctx->curr_token.qmax) {
 				DUK_ERROR(re_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "quantifier values invalid (qmin > qmax)");
+				          DUK_STR_INVALID_QUANTIFIER_VALUES);
 			}
 			if (atom_char_length >= 0) {
 				/*
@@ -434,7 +434,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 				              re_ctx->curr_token.qmin : re_ctx->curr_token.qmax;
 				if (atom_copies > DUK_RE_MAX_ATOM_COPIES) {
 					DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
-					          "quantifier expansion requires too many atom copies");
+					          DUK_STR_QUANTIFIER_TOO_MANY_COPIES);
 				}
 
 				/* wipe the capture range made by the atom (if any) */
@@ -697,20 +697,20 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 		case DUK_RETOK_ATOM_END_GROUP: {
 			if (expect_eof) {
 				DUK_ERROR(re_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "unexpected closing parenthesis");
+				          DUK_STR_UNEXPECTED_CLOSING_PAREN);
 			}
 			goto done;
 		}
 		case DUK_RETOK_EOF: {
 			if (!expect_eof) {
 				DUK_ERROR(re_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "unexpected end of pattern");
+				          DUK_STR_UNEXPECTED_END_OF_PATTERN);
 			}
 			goto done;
 		}
 		default: {
 			DUK_ERROR(re_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-			          "unexpected token in regexp");
+			          DUK_STR_UNEXPECTED_REGEXP_TOKEN);
 		}
 		}
 
@@ -804,7 +804,7 @@ static duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
 	return flags;
 
  error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "invalid regexp flags");
+	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_REGEXP_FLAGS);
 	return 0;  /* never here */
 }
 
@@ -973,7 +973,7 @@ void duk_regexp_compile(duk_hthread *thr) {
 	 */
 
 	if (re_ctx.highest_backref > re_ctx.captures) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "invalid backreference(s)");
+		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_BACKREFS);
 	}
 
 	/*
