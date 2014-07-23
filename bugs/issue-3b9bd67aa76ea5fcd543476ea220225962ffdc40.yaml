@@ -3,9 +3,9 @@ title: merge string substring(), substr(), slice()
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
+status: :unstarted
 disposition: 
 creation_time: 2013-12-29 11:27:54.329897 Z
 references: []
@@ -31,4 +31,8 @@ log_events:
 - - 2014-07-10 12:43:14.193601 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-23 12:44:42.141594 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

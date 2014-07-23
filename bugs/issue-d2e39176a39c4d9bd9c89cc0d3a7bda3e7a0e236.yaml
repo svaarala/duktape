@@ -3,10 +3,10 @@ title: make it possible to compile code from user buffer instead of pushing a st
 desc: On memory-starved devices this may be useful.
 type: :task
 component: duk
-release: v0.12
+release: v0.11
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-12-19 00:52:20.188772 Z
 references: []
 
@@ -27,4 +27,12 @@ log_events:
 - - 2014-05-07 21:10:50.392913 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-23 12:46:25.690628 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
+- - 2014-07-23 12:46:31.498812 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.11 from v0.12
   - ""

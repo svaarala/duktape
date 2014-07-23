@@ -3,9 +3,9 @@ title: shared helper for string charAt() and charCodeAt()?
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
-status: :in_progress
+status: :unstarted
 disposition: 
 creation_time: 2013-12-29 11:19:29.281292 Z
 references: []
@@ -31,4 +31,8 @@ log_events:
 - - 2014-07-10 12:43:13.996883 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-23 12:38:35.245974 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""
