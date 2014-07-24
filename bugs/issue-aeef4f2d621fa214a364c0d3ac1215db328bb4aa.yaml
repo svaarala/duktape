@@ -7,7 +7,7 @@ desc: |-
   a different value).  This may not always be desirable.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-04-24 20:43:04.482982 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:09.262328 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

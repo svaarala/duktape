@@ -14,7 +14,7 @@ desc: |-
   passing, register allocation, etc.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -34,4 +34,8 @@ log_events:
 - - 2014-07-10 12:43:18.740607 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-24 13:10:07.247033 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

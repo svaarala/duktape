@@ -3,7 +3,7 @@ title: "lexer optimization: fastpath ordinary parsing cases"
 desc: Token initialization, for instance, is quite heavy.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-07-10 12:43:23.829657 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-24 13:10:12.197263 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

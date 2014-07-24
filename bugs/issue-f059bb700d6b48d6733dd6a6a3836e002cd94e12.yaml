@@ -3,7 +3,7 @@ title: align internal properties with ES6 symbols
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-05-11 17:28:09.053212 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:10.291764 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

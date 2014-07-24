@@ -9,7 +9,7 @@ desc: |-
   are currently a bit long and tedious even when the compiler supports them.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2014-07-10 10:23:22.001750 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:13.758445 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

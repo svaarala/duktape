@@ -3,7 +3,7 @@ title: "turboc: individual filenames in 8.3 format"
 desc: Either rename files or make a rename map for MSDOS / 8.3 environments.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-07-10 10:23:52.210227 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:13.927760 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

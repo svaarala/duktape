@@ -5,7 +5,7 @@ desc: |-
   have 9 properties (6 visible and 3 internal) which takes a lot of RAM.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -17,4 +17,8 @@ log_events:
 - - 2014-06-04 21:10:59.369651 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:11.335122 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

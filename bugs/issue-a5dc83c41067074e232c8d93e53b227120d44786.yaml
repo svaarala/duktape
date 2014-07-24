@@ -3,7 +3,7 @@ title: add a primitive (internal?) to make an array out of values on the valstac
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-05-07 21:29:26.046890 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from unassigned
+  - ""
+- - 2014-07-24 13:10:05.190870 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

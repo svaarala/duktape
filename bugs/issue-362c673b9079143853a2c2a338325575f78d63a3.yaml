@@ -11,7 +11,7 @@ desc: |-
   of duk_regexp_compiler.c).
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2014-07-09 22:37:33.775728 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-07-24 13:10:13.587278 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

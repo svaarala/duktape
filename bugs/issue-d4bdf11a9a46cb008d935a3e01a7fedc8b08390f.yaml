@@ -3,7 +3,7 @@ title: "consistency: DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE() vs. DUK_HOBJECT_E_ALLO
 desc: There is not '_GET' usually in macros accessing fields.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-07-10 12:43:17.651683 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-07-24 13:10:05.381332 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""
