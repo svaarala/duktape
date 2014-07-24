@@ -400,6 +400,19 @@ duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
+
+	act = duk_hthread_get_current_activation(thr);
+	DUK_ASSERT(act != NULL);  /* because callstack_top > 0 */
+	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
+}
+
+duk_bool_t duk_is_strict_call(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_activation *act;
+
 	/* For user code this could just return 1 (strict) always
 	 * because all Duktape/C functions are considered strict,
 	 * and strict is also the default when nothing is running.
@@ -412,25 +425,12 @@ duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	if (thr->callstack_top <= 0) {
-		return 1;  /* strict by default */
+	act = duk_hthread_get_current_activation(thr);
+	if (act == NULL) {
+		/* Strict by default. */
+		return 1;
 	}
-
-	act = duk_hthread_get_current_activation(thr);
-	DUK_ASSERT(act != NULL);  /* because callstack_top > 0 */
-	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
-}
-
-duk_bool_t duk_is_strict_call(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_activation *act;
-
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
-
-	act = duk_hthread_get_current_activation(thr);
-	return (act != NULL && (act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
+	return ((act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
 }
 
 /*
