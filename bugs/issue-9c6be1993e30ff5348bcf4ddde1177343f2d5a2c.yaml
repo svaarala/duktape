@@ -33,3 +33,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
   - ""
+- - 2014-07-24 09:53:13.964754 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - Now that eval strictness handling was changed this should be more feasible again.
