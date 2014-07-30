@@ -3,7 +3,7 @@ title: add a bytecode compiler executable to the project
 desc: ""
 type: :task
 component: duk
-release: 
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -16,3 +16,14 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-07-30 10:52:05.651089 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from unassigned
+  - ""
+- - 2014-07-30 10:52:55.602925 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    The easiest first step is probably to add a compile option to the duk_cmdline.c
+    executable.  It would also make sense to add support for executing bytecode from
+    the command line executable.

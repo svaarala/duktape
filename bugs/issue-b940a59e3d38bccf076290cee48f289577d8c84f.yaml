@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "guide: clarify that embedding or using static/dynamic library are viable options"
+desc: Must be careful that compilation options match, even when using as a library.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-07-30 10:51:04.627110 Z
+references: []
+
+id: b940a59e3d38bccf076290cee48f289577d8c84f
+log_events: 
+- - 2014-07-30 10:51:04.802491 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

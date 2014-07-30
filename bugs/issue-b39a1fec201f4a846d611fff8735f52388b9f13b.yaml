@@ -3,7 +3,7 @@ title: optional bytecode load/save primitives
 desc: ""
 type: :task
 component: duk
-release: 
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -20,3 +20,22 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - Also make the compiler configurable, to reduce footprint.
+- - 2014-07-30 10:52:02.483037 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from unassigned
+  - ""
+- - 2014-07-30 10:55:47.371843 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    One interesting question is to whether or not allow duk_compile() and duk_eval()
+    (and variants) to transparently load/execute bytecode.  If allowed, it will make
+    module loading a bit easier because the caller doesn't need to check a file for a
+    bytecode signature.  On the other hand because bytecode is not verified, it makes
+    loading unsafe remote code easy too - which means that when loading remote code,
+    user code should exclude bytecode based on signature manually.
+    
+    Perhaps the best option is to allow bytecode loading when an explicit flag is
+    given to duk_compile().  Another option is to make the bytecode primitives
+    entirely separate: duk_bytecode_dump(), duk_bytecode_load().  User should be able
+    to load bytecode from a buffer (like with duk_compile()).
