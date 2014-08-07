@@ -53,9 +53,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_NOT_BUFFER duk_str_not_buffer
 #define DUK_STR_UNEXPECTED_TYPE duk_str_unexpected_type
 #define DUK_STR_NOT_THREAD duk_str_not_thread
-#if 0  /*unused*/
 #define DUK_STR_NOT_COMPILEDFUNCTION duk_str_not_compiledfunction
-#endif
 #define DUK_STR_NOT_NATIVEFUNCTION duk_str_not_nativefunction
 #define DUK_STR_NOT_C_FUNCTION duk_str_not_c_function
 #define DUK_STR_DEFAULTVALUE_COERCE_FAILED duk_str_defaultvalue_coerce_failed
@@ -68,12 +66,12 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_POP_TOO_MANY duk_str_pop_too_many
 #define DUK_STR_BUFFER_NOT_DYNAMIC duk_str_buffer_not_dynamic
 #define DUK_STR_FAILED_TO_EXTEND_VALSTACK duk_str_failed_to_extend_valstack
-#define DUK_STR_BASE64_ENCODE_FAILED duk_str_base64_encode_failed
-#define DUK_STR_BASE64_DECODE_FAILED duk_str_base64_decode_failed
-#define DUK_STR_HEX_DECODE_FAILED duk_str_hex_decode_failed
+#define DUK_STR_ENCODE_FAILED duk_str_encode_failed
+#define DUK_STR_DECODE_FAILED duk_str_decode_failed
 #define DUK_STR_NO_SOURCECODE duk_str_no_sourcecode
 #define DUK_STR_CONCAT_RESULT_TOO_LONG duk_str_concat_result_too_long
 #define DUK_STR_UNIMPLEMENTED duk_str_unimplemented
+#define DUK_STR_UNSUPPORTED duk_str_unsupported
 #define DUK_STR_ARRAY_LENGTH_OVER_2G duk_str_array_length_over_2g
 
 #if !defined(DUK_SINGLE_FILE)
@@ -89,9 +87,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_pointer;
 DUK_INTERNAL_DECL const char *duk_str_not_buffer;
 DUK_INTERNAL_DECL const char *duk_str_unexpected_type;
 DUK_INTERNAL_DECL const char *duk_str_not_thread;
-#if 0  /*unused*/
 DUK_INTERNAL_DECL const char *duk_str_not_compiledfunction;
-#endif
 DUK_INTERNAL_DECL const char *duk_str_not_nativefunction;
 DUK_INTERNAL_DECL const char *duk_str_not_c_function;
 DUK_INTERNAL_DECL const char *duk_str_defaultvalue_coerce_failed;
@@ -104,12 +100,12 @@ DUK_INTERNAL_DECL const char *duk_str_alloc_failed;
 DUK_INTERNAL_DECL const char *duk_str_pop_too_many;
 DUK_INTERNAL_DECL const char *duk_str_buffer_not_dynamic;
 DUK_INTERNAL_DECL const char *duk_str_failed_to_extend_valstack;
-DUK_INTERNAL_DECL const char *duk_str_base64_encode_failed;
-DUK_INTERNAL_DECL const char *duk_str_base64_decode_failed;
-DUK_INTERNAL_DECL const char *duk_str_hex_decode_failed;
+DUK_INTERNAL_DECL const char *duk_str_encode_failed;
+DUK_INTERNAL_DECL const char *duk_str_decode_failed;
 DUK_INTERNAL_DECL const char *duk_str_no_sourcecode;
 DUK_INTERNAL_DECL const char *duk_str_concat_result_too_long;
 DUK_INTERNAL_DECL const char *duk_str_unimplemented;
+DUK_INTERNAL_DECL const char *duk_str_unsupported;
 DUK_INTERNAL_DECL const char *duk_str_array_length_over_2g;
 #endif  /* !DUK_SINGLE_FILE */
 

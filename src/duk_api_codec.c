@@ -214,7 +214,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	return ret;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BASE64_ENCODE_FAILED);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_ENCODE_FAILED);
 	return NULL;  /* never here */
 }
 
@@ -260,7 +260,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BASE64_DECODE_FAILED);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_DECODE_FAILED);
 }
 
 DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
@@ -339,7 +339,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_HEX_DECODE_FAILED);
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_DECODE_FAILED);
 }
 
 DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {

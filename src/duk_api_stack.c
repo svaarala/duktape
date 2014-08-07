@@ -1483,7 +1483,6 @@ DUK_INTERNAL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, 
 	return (duk_hcompiledfunction *) h;
 }
 
-#if 0  /*unused*/
 DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
@@ -1493,7 +1492,6 @@ DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *c
 	}
 	return (duk_hcompiledfunction *) h;
 }
-#endif
 
 DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);

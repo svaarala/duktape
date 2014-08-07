@@ -2,7 +2,8 @@
  *  Shared error message strings
  *
  *  To minimize code footprint, try to share error messages inside Duktape
- *  code.
+ *  code.  Modern compilers will do this automatically anyway, this is mostly
+ *  for older compilers.
  */
 
 #include "duk_internal.h"
@@ -29,9 +30,7 @@ DUK_INTERNAL const char *duk_str_not_pointer = "not pointer";
 DUK_INTERNAL const char *duk_str_not_buffer = "not buffer";
 DUK_INTERNAL const char *duk_str_unexpected_type = "unexpected type";
 DUK_INTERNAL const char *duk_str_not_thread = "not thread";
-#if 0  /*unused*/
 DUK_INTERNAL const char *duk_str_not_compiledfunction = "not compiledfunction";
-#endif
 DUK_INTERNAL const char *duk_str_not_nativefunction = "not nativefunction";
 DUK_INTERNAL const char *duk_str_not_c_function = "not c function";
 DUK_INTERNAL const char *duk_str_defaultvalue_coerce_failed = "[[DefaultValue]] coerce failed";
@@ -44,12 +43,12 @@ DUK_INTERNAL const char *duk_str_alloc_failed = "alloc failed";
 DUK_INTERNAL const char *duk_str_pop_too_many = "attempt to pop too many entries";
 DUK_INTERNAL const char *duk_str_buffer_not_dynamic = "buffer is not dynamic";
 DUK_INTERNAL const char *duk_str_failed_to_extend_valstack = "failed to extend valstack";
-DUK_INTERNAL const char *duk_str_base64_encode_failed = "base64 encode failed";
-DUK_INTERNAL const char *duk_str_base64_decode_failed = "base64 decode failed";
-DUK_INTERNAL const char *duk_str_hex_decode_failed = "hex decode failed";
+DUK_INTERNAL const char *duk_str_encode_failed = "encode failed";
+DUK_INTERNAL const char *duk_str_decode_failed = "decode failed";
 DUK_INTERNAL const char *duk_str_no_sourcecode = "no sourcecode";
 DUK_INTERNAL const char *duk_str_concat_result_too_long = "concat result too long";
 DUK_INTERNAL const char *duk_str_unimplemented = "unimplemented";
+DUK_INTERNAL const char *duk_str_unsupported = "unsupported";
 DUK_INTERNAL const char *duk_str_array_length_over_2g = "array length over 2G";
 
 /* JSON */
