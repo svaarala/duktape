@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add stack index to 'not number' and similar type error messages
+desc: |-
+  Including the value would not be appropriate, as some applications may deal with
+  sensitive values that must not be logged.  Including the actual type and/or the
+  stack index is OK.  GH-28.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-05 12:26:40.294340 Z
+references: []
+
+id: e1d5a8556abebfe47a518b4329e8f527e41bb990
+log_events: 
+- - 2014-08-05 12:26:40.454257 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

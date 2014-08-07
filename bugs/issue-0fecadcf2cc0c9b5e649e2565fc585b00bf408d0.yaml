@@ -3,7 +3,7 @@ title: add es6-to-es5 transpiler tests
 desc: https://github.com/addyosmani/es6-tools
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -20,3 +20,10 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
   - ""
+- - 2014-08-05 12:17:46.955028 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
+  - |-
+    The transpilers seem somewhat immature still, so postponing this.  For instance,
+    traceur didn't work out of the box and es6now doesn't translate block scoped
+    variables and expects a 'window' binding to be present.
