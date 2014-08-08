@@ -171,7 +171,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
 static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
-	time_t t, t1, t2;
+	time_t t, t1, t2, ttmp;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
 	duk_int_t tmp;
@@ -812,7 +812,6 @@ static duk_uint8_t duk__days_in_month[12] = {
 	(duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31
 };
 
-
 /* Equivalent year for DST calculations outside [1970,2038[ range, see
  * E5 Section 15.9.1.8.  Equivalent year has the same leap-year-ness and
  * starts with the same weekday on Jan 1.
@@ -849,6 +848,11 @@ static duk_uint8_t duk__date_equivyear[14] = {
 #endif
 };
 #undef DUK__YEAR
+
+/* Maximum iteration count for computing UTC-to-local time offset when
+ * creating an Ecmascript time value from local parts.
+ */
+#define DUK__LOCAL_TZOFFSET_MAXITER   4
 
 static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
@@ -1076,7 +1080,10 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 	}
 }
 
-/* Compute time value from (double) parts. */
+/* Compute time value from (double) parts.  The parts can be either UTC
+ * or local time; if local, they need to be (conceptually) converted into
+ * UTC time.
+ */
 static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
 #if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
 	/* See comments below on MakeTime why these are volatile. */
@@ -1089,6 +1096,7 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 	duk_double_t d;
 #endif
 	duk_small_uint_t i;
+	duk_int_t tzoff, tzoffnew;
 
 	/* Expects 'this' at top of stack on entry. */
 
@@ -1143,23 +1151,48 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 	DUK_DDD(DUK_DDDPRINT("time=%lf day=%lf --> timeval=%lf",
 	                     (double) tmp_time, (double) tmp_day, (double) d));
 
-	/* Optional UTC conversion followed by TimeClip().
-	 * Note that this also handles Infinity -> NaN conversion.
-	 */
+	/* Optional UTC conversion. */
 	if (flags & DUK__FLAG_LOCALTIME) {
-		/* FIXME: this is now incorrect.  'd' is local time here (as
-		 * we're converting to UTC), but DUK__GET_LOCAL_TZOFFSET() should
-		 * be called with UTC time.  This needs to be reworked to avoid
-		 * the chicken-and-egg problem.
+		/* DUK__GET_LOCAL_TZOFFSET() needs to be called with a time
+		 * value computed from UTC parts.  At this point we only have
+		 * 'd' which is a time value computed from local parts, so it
+		 * is off by the UTC-to-local time offset which we don't know
+		 * yet.  The current solution for computing the UTC-to-local
+		 * time offset is to iterate a few times, see
+		 * test-bi-date-local-parts.js.
 		 *
-		 * See E5.1 Section 15.9.1.9:
+		 * E5.1 Section 15.9.1.9:
 		 * UTC(t) = t - LocalTZA - DaylightSavingTA(t - LocalTZA)
 		 *
 		 * For NaN/inf, DUK__GET_LOCAL_TZOFFSET() returns 0.
 		 */
 
-		d -= DUK__GET_LOCAL_TZOFFSET(d) * 1000L;
+#if 0
+		/* Old solution: don't iterate, incorrect */
+		tzoff = DUK__GET_LOCAL_TZOFFSET(d);
+		DUK_DDD(DUK_DDDPRINT("tzoffset w/o iteration, tzoff=%ld", (long) tzoff));
+		d -= tzoff * 1000L;
+		DUK_UNREF(tzoffnew);
+#endif
+
+#if 1
+		/* Iteration solution */
+		tzoff = 0;
+		for (i = 0; i < DUK__LOCAL_TZOFFSET_MAXITER; i++) {
+			tzoffnew = DUK__GET_LOCAL_TZOFFSET(d - tzoff * 1000L);
+			DUK_DDD(DUK_DDDPRINT("tzoffset iteration, i=%d, tzoff=%ld, tzoffnew=%ld", (int) i, (long) tzoff, (long) tzoffnew));
+			if (tzoffnew == tzoff) {
+				DUK_DDD(DUK_DDDPRINT("tzoffset iteration finished, i=%d, tzoff=%ld", (int) i, (long) tzoff));
+				break;
+			}
+			tzoff = tzoffnew;
+		}
+		DUK_DDD(DUK_DDDPRINT("tzoffset iteration, tzoff=%ld", (long) tzoff));
+		d -= tzoff * 1000L;
+#endif
 	}
+
+	/* TimeClip(), which also handles Infinity -> NaN conversion */
 	d = duk__timeclip(d);
 
 	return d;
