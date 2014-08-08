@@ -37,11 +37,13 @@
  */
 
 /* Forward declarations. */
+static duk_uint8_t duk__date_equivyear[14];
 static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset);
 static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags);
 static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
 static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
 static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
+static duk_bool_t duk__is_leap_year(duk_int_t year);
 
 /* Millisecond count constants. */
 #define DUK__MS_SECOND          1000L
@@ -172,6 +174,9 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	time_t t, t1, t2;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
+	duk_int_t tmp;
+	duk_bool_t isleap;
+	duk_small_int_t arridx;
 	struct tm tms[2];
 #ifdef DUK_USE_DATE_TZO_GMTIME
 	struct tm *tm_ptr;
@@ -192,28 +197,71 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	 *
 	 *  - Clamp year to stay within portable UNIX limits.  Avoid 2038 as
 	 *    some conversions start to fail.  Avoid 1970, as some conversions
-	 *    in January 1970 start to fail (verified in practice).
+	 *    in January 1970 start to fail (verified in practice).  For dates
+	 *    before and after these limits, use an equivalent year mapping.
 	 *
 	 *  - Create a UTC time breakdown from 't', and then pretend it is a
 	 *    local time breakdown and build a UTC time from it.  The timestamp
-	 *    will effectively shift backwards by time the time offset (e.g. -2h
-	 *    or -3h for EET/EEST).  Convert with mktime() twice to get the DST
-	 *    flag for the final conversion.
+	 *    will effectively shift backwards by time the time offset (e.g.
+	 *    -2h or -3h for EET/EEST).  Convert with mktime() twice to get the
+	 *    DST flag for the final conversion.
 	 *
-	 *  FIXME: this is probably not entirely correct nor clear, but is
-	 *  good enough for now.
+	 *  Equivalent year mapping (E5 Section 15.9.1.8):
+	 *
+	 *    If the host environment provides functionality for determining
+	 *    daylight saving time, the implementation of ECMAScript is free
+	 *    to map the year in question to an equivalent year (same
+	 *    leap-year-ness and same starting week day for the year) for which
+	 *    the host environment provides daylight saving time information.
+	 *    The only restriction is that all equivalent years should produce
+	 *    the same result.
+	 *
+	 *  This approach is quite reasonable but not entirely correct, e.g.
+	 *  the specification also states (E5 Section 15.9.1.8):
+	 *
+	 *    The implementation of ECMAScript should not try to determine
+	 *    whether the exact time was subject to daylight saving time, but
+	 *    just whether daylight saving time would have been in effect if
+	 *    the _current daylight saving time algorithm_ had been used at the
+	 *    time.  This avoids complications such as taking into account the
+	 *    years that the locale observed daylight saving time year round.
+	 *
+	 *  Since we rely on the platform APIs for conversions between local
+	 *  time and UTC, we can't guarantee the above.  Rather, if the platform
+	 *  has historical DST rules they will be applied.  This seems to be the
+	 *  general preferred direction in Ecmascript standardization (or at least
+	 *  implementations) anyway, and even the equivalent year mapping should
+	 *  be disabled if the platform is known to handle DST properly for the
+	 *  full Ecmascript range.
+	 *
+	 *  The following has useful discussion and links:
+	 *
+	 *    https://bugzilla.mozilla.org/show_bug.cgi?id=351066
 	 */
 
 	duk__timeval_to_parts(d, parts, dparts, 0 /*flags*/);
 
-	/*
-	 *  FIXME: must choose 'equivalent year', E5 Section 15.9.1.8, instead
-	 *  of just clamping.
-	 */
-	if (parts[DUK__IDX_YEAR] < 1971) {
+#if 0  /* clamping approach */
+	tmp = parts[DUK__IDX_YEAR];
+	if (tmp < 1971) {
 		dparts[DUK__IDX_YEAR] = 1971.0;
-	} else if (parts[DUK__IDX_YEAR] > 2037) {
+	} else if (tmp > 2037) {
 		dparts[DUK__IDX_YEAR] = 2037.0;
+	}
+#endif
+	tmp = parts[DUK__IDX_YEAR];
+	if (tmp < 1971 || tmp > 2037) {
+		DUK_ASSERT(parts[DUK__IDX_WEEKDAY] >= 0 && parts[DUK__IDX_WEEKDAY] <= 6);
+		isleap = duk__is_leap_year(tmp);
+		DUK_ASSERT(isleap == 0 || isleap == 1);
+		arridx = parts[DUK__IDX_WEEKDAY];
+		if (isleap) {
+			arridx += 7;
+		}
+		DUK_ASSERT(arridx >= 0 && arridx < (duk_small_int_t) (sizeof(duk__date_equivyear) / sizeof(duk_uint8_t)));
+		tmp = (duk_int_t) duk__date_equivyear[arridx] + 1970;
+		DUK_DDD(DUK_DDDPRINT("replaced year with equivalent year: %ld -> %ld", (long) dparts[DUK__IDX_YEAR], (long) tmp));
+		dparts[DUK__IDX_YEAR] = tmp;
 	}
 
 	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
@@ -274,7 +322,7 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	return (duk_int_t) difftime(t1, t2);
 
  error:
-	/* FIXME: return something more useful, so that caller can throw? */
+	/* XXX: return something more useful, so that caller can throw? */
 	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", (double) d));
 	return 0;
 }
@@ -713,12 +761,10 @@ static duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const char 
  *  and toISOString() can produce; see E5.1 Section 15.9.4.2.
  *
  *  Returns 1 to allow tailcalling.
- */
-
-/*
- *  FIXME: check standard behavior and also usual behavior in other
- *  implementations.  For instance, V8 parses '2012-01-01' as UTC and
- *  '2012/01/01' as local time.
+ *
+ *  There is much room for improvement here with respect to supporting
+ *  alternative datetime formats.  For instance, V8 parses '2012-01-01' as
+ *  UTC and '2012/01/01' as local time.
  */
 
 static duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
@@ -764,6 +810,44 @@ static duk_uint8_t duk__days_in_month[12] = {
 	(duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 31,
 	(duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31
 };
+
+
+/* Equivalent year for DST calculations outside [1970,2038[ range, see
+ * E5 Section 15.9.1.8.  Equivalent year has the same leap-year-ness and
+ * starts with the same weekday on Jan 1.
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=351066
+ */
+#define DUK__YEAR(x) ((duk_uint8_t) ((x) - 1970))
+static duk_uint8_t duk__date_equivyear[14] = {
+#if 1
+	/* This is based on V8 EquivalentYear() algorithm (see src/genequivyear.py):
+	 * http://code.google.com/p/v8/source/browse/trunk/src/date.h#146
+	 */
+
+	/* non-leap year: sunday, monday, ... */
+	DUK__YEAR(2023), DUK__YEAR(2035), DUK__YEAR(2019), DUK__YEAR(2031),
+	DUK__YEAR(2015), DUK__YEAR(2027), DUK__YEAR(2011),
+
+	/* leap year: sunday, monday, ... */
+	DUK__YEAR(2012), DUK__YEAR(2024), DUK__YEAR(2008), DUK__YEAR(2020),
+	DUK__YEAR(2032), DUK__YEAR(2016), DUK__YEAR(2028)
+#endif
+
+#if 0
+	/* This is based on Rhino EquivalentYear() algorithm:
+	 * https://github.com/mozilla/rhino/blob/f99cc11d616f0cdda2c42bde72b3484df6182947/src/org/mozilla/javascript/NativeDate.java
+	 */
+
+	/* non-leap year: sunday, monday, ... */
+	DUK__YEAR(1978), DUK__YEAR(1973), DUK__YEAR(1985), DUK__YEAR(1986),
+	DUK__YEAR(1981), DUK__YEAR(1971), DUK__YEAR(1977),
+
+	/* leap year: sunday, monday, ... */
+	DUK__YEAR(1984), DUK__YEAR(1996), DUK__YEAR(1980), DUK__YEAR(1992),
+	DUK__YEAR(1976), DUK__YEAR(1988), DUK__YEAR(1972)
+#endif
+};
+#undef DUK__YEAR
 
 static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
