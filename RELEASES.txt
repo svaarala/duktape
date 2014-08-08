@@ -466,6 +466,10 @@ Planned
   memory usage with some insert/delete sequences
   (see test-bug-object-prop-alloc-unbounded.js)
 
+* Use an equivalent year (matching leap-year-ness and weekday of Jan 1) for
+  local tzoffset calculations outside the [1971,2037] year range to improve
+  local time handling
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
