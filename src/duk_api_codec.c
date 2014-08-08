@@ -44,19 +44,10 @@ static void duk__base64_encode_helper(const duk_uint8_t *src, const duk_uint8_t 
 			/* A straightforward 64-byte lookup would be faster
 			 * and cleaner, but this is shorter.
 			 */
-			if (i >= snip) {
+			if (i >= snip)
 				y = '=';
-			} else if (x <= 25) {
-				y = x + 'A';
-			} else if (x <= 51) {
-				y = x - 26 + 'a';
-			} else if (x <= 61) {
-				y = x - 52 + '0';
-			} else if (x == 62) {
-				y = '+';
-			} else {
-				y = '/';
-			}
+			else 
+				y = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[x];
 
 			DUK_ASSERT(dst < dst_end);
 			*dst++ = (duk_uint8_t) y;
@@ -78,17 +69,9 @@ static duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk_ui
 	while (src < src_end) {
 		x = *src++;
 
-		if (x >= 'A' && x <= 'Z') {
-			y = x - 'A' + 0;
-		} else if (x >= 'a' && x <= 'z') {
-			y = x - 'a' + 26;
-		} else if (x >= '0' && x <= '9') {
-			y = x - '0' + 52;
-		} else if (x == '+') {
-			y = 62;
-		} else if (x == '/') {
-			y = 63;
-		} else if (x == '=') {
+		if (x != '=')
+			y = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\76~~~\77\64\65\66\67\70\71\72\73\74\75~~~~~~~\0\1\2\3\4\5\6\7\10\11\12\13\14\15\16\17\20\21\22\23\24\25\26\27\30\31~~~~~~\32\33\34\35\36\37\40\41\42\43\44\45\46\47\50\51\52\53\54\55\56\57\60\61\62\63"[x];
+		else {
 			/* We don't check the zero padding bytes here right now.
 			 * This seems to be common behavior for base-64 decoders.
 			 */
