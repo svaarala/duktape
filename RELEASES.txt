@@ -470,6 +470,9 @@ Planned
   local tzoffset calculations outside the [1971,2037] year range to improve
   local time handling
 
+* Use gmtime() + localtime() on Unix (instead of gmtime() twice) for local
+  tzoffset, fixing some DST cases
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
