@@ -917,12 +917,12 @@ static duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_with
 		diff_days = duk__day_from_year(year) - day;
 		DUK_DDD(DUK_DDDPRINT("year=%ld day=%ld, diff_days=%ld", (long) year, (long) day, (long) diff_days));
 		if (diff_days <= 0) {
-			DUK_ASSERT(-diff_days <= 366);  /* fits into duk_small_int_t */
+			DUK_ASSERT(-diff_days < 366);  /* fits into duk_small_int_t */
 			*out_day_within_year = -diff_days;
 			DUK_DDD(DUK_DDDPRINT("--> year=%ld, day-within-year=%ld",
 			                     (long) year, (long) *out_day_within_year));
 			DUK_ASSERT(*out_day_within_year >= 0);
-			DUK_ASSERT(*out_day_within_year <= (duk__is_leap_year(year) ? 366 : 365));
+			DUK_ASSERT(*out_day_within_year < (duk__is_leap_year(year) ? 366 : 365));
 			return year;
 		}
 
