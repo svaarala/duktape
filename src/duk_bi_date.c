@@ -82,14 +82,16 @@ static duk_bool_t duk__is_leap_year(duk_int_t year);
 #define DUK__FLAG_NAN_TO_ZERO          (1 << 0)  /* timeval breakdown: internal time value NaN -> zero */
 #define DUK__FLAG_NAN_TO_RANGE_ERROR   (1 << 1)  /* timeval breakdown: internal time value NaN -> RangeError (toISOString) */
 #define DUK__FLAG_ONEBASED             (1 << 2)  /* timeval breakdown: convert month and day-of-month parts to one-based (default is zero-based) */
-#define DUK__FLAG_LOCALTIME            (1 << 3)  /* convert time value to local time */
-#define DUK__FLAG_SUB1900              (1 << 4)  /* getter: subtract 1900 from year when getting year part */
-#define DUK__FLAG_TOSTRING_DATE        (1 << 5)  /* include date part in string conversion result */
-#define DUK__FLAG_TOSTRING_TIME        (1 << 6)  /* include time part in string conversion result */
-#define DUK__FLAG_TOSTRING_LOCALE      (1 << 7)  /* use locale specific formatting if available */
-#define DUK__FLAG_TIMESETTER           (1 << 8)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
-#define DUK__FLAG_YEAR_FIXUP           (1 << 9)  /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
-#define DUK__FLAG_SEP_T                (1 << 10) /* string conversion: use 'T' instead of ' ' as a separator */
+#define DUK__FLAG_EQUIVYEAR            (1 << 3)  /* timeval breakdown: replace year with equivalent year in the [1971,2037] range for DST calculations */
+#define DUK__FLAG_LOCALTIME            (1 << 4)  /* convert time value to local time */
+#define DUK__FLAG_SUB1900              (1 << 5)  /* getter: subtract 1900 from year when getting year part */
+#define DUK__FLAG_TOSTRING_DATE        (1 << 6)  /* include date part in string conversion result */
+#define DUK__FLAG_TOSTRING_TIME        (1 << 7)  /* include time part in string conversion result */
+#define DUK__FLAG_TOSTRING_LOCALE      (1 << 8)  /* use locale specific formatting if available */
+#define DUK__FLAG_TIMESETTER           (1 << 9)  /* setter: call is a time setter (affects hour, min, sec, ms); otherwise date setter (affects year, month, day-in-month) */
+#define DUK__FLAG_YEAR_FIXUP           (1 << 10) /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
+#define DUK__FLAG_SEP_T                (1 << 11) /* string conversion: use 'T' instead of ' ' as a separator */
+#define DUK__FLAG_VALUE_SHIFT          12        /* additional values begin at bit 12 */
 
 /*
  *  Platform specific helpers
@@ -174,9 +176,6 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	time_t t, t1, t2, ttmp;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
-	duk_int_t tmp;
-	duk_bool_t isleap;
-	duk_small_int_t arridx;
 	struct tm tms[2];
 #ifdef DUK_USE_DATE_TZO_GMTIME
 	struct tm *tm_ptr;
@@ -195,10 +194,9 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	 *
 	 *  Current approach:
 	 *
-	 *  - Clamp year to stay within portable UNIX limits.  Avoid 2038 as
-	 *    some conversions start to fail.  Avoid 1970, as some conversions
-	 *    in January 1970 start to fail (verified in practice).  For dates
-	 *    before and after these limits, use an equivalent year mapping.
+	 *  - Stay within portable UNIX limits by using equivalent year mapping.
+	 *    Avoid year 1970 and 2038 as some conversions start to fail, at
+	 *    least on some platforms.
 	 *
 	 *  - Create a UTC and local time breakdowns from 't'.  Then create
 	 *    a time_t using gmtime() and localtime() and compute the time
@@ -237,30 +235,8 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	 *    https://bugzilla.mozilla.org/show_bug.cgi?id=351066
 	 */
 
-	duk__timeval_to_parts(d, parts, dparts, 0 /*flags*/);
-
-#if 0  /* clamping approach */
-	tmp = parts[DUK__IDX_YEAR];
-	if (tmp < 1971) {
-		dparts[DUK__IDX_YEAR] = 1971.0;
-	} else if (tmp > 2037) {
-		dparts[DUK__IDX_YEAR] = 2037.0;
-	}
-#endif
-	tmp = parts[DUK__IDX_YEAR];
-	if (tmp < 1971 || tmp > 2037) {
-		DUK_ASSERT(parts[DUK__IDX_WEEKDAY] >= 0 && parts[DUK__IDX_WEEKDAY] <= 6);
-		isleap = duk__is_leap_year(tmp);
-		DUK_ASSERT(isleap == 0 || isleap == 1);
-		arridx = parts[DUK__IDX_WEEKDAY];
-		if (isleap) {
-			arridx += 7;
-		}
-		DUK_ASSERT(arridx >= 0 && arridx < (duk_small_int_t) (sizeof(duk__date_equivyear) / sizeof(duk_uint8_t)));
-		tmp = (duk_int_t) duk__date_equivyear[arridx] + 1970;
-		DUK_DDD(DUK_DDDPRINT("replaced year with equivalent year: %ld -> %ld", (long) dparts[DUK__IDX_YEAR], (long) tmp));
-		dparts[DUK__IDX_YEAR] = tmp;
-	}
+	duk__timeval_to_parts(d, parts, dparts, DUK__FLAG_EQUIVYEAR /*flags*/);
+	DUK_ASSERT(parts[DUK__IDX_YEAR] >= 1970 && parts[DUK__IDX_YEAR] <= 2038);
 
 	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
 	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0);  /* unsigned 31-bit range */
@@ -339,6 +315,13 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	ULARGE_INTEGER tmp3;
 	FILETIME ft1;
 
+	/* FIXME: handling of timestamps outside Windows supported range.
+	 * How does Windows deal with dates before 1600?  Does windows
+	 * support all Ecmascript years (like -200000 and +200000)?
+	 * Should equivalent year mapping be used here too?  If so, use
+	 * a shared helper (currently integrated into timeval-to-parts).
+	 */
+
 	/* Use the approach described in "Remarks" of FileTimeToLocalFileTime:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724277(v=vs.85).aspx
 	 */
@@ -382,7 +365,7 @@ static duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) 
 		                     "wday:%ld,yday:%ld,isdst:%ld}",
 		                     (long) tm.tm_sec, (long) tm.tm_min, (long) tm.tm_hour,
 		                     (long) tm.tm_mday, (long) tm.tm_mon, (long) tm.tm_year,
-		                      (long) tm.tm_wday, (long) tm.tm_yday, (long) tm.tm_isdst));
+		                     (long) tm.tm_wday, (long) tm.tm_yday, (long) tm.tm_isdst));
 		tm.tm_isdst = -1;  /* negative: dst info not available */
 
 		t = mktime(&tm);
@@ -854,6 +837,14 @@ static duk_uint8_t duk__date_equivyear[14] = {
  */
 #define DUK__LOCAL_TZOFFSET_MAXITER   4
 
+/* Because 'day since epoch' can be negative and is used to compute weekday
+ * using a modulo operation, add this multiple of 7 to avoid negative values
+ * when year is below 1970 epoch.  Ecmascript time values are restricted to
+ * +/- 100 million days from epoch, so this adder fits nicely into 32 bits.
+ * Round to a multiple of 7 (= floor(100000000 / 7) * 7) and add margin.
+ */
+#define DUK__WEEKDAY_MOD_ADDER  (20000000 * 7)  /* 0x08583b00 */
+
 static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
 		return 0;
@@ -1002,12 +993,18 @@ static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_dou
 static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
 	duk_double_t d1, d2;
 	duk_int_t t1, t2;
+	duk_int_t day_since_epoch;
 	duk_int_t year;  /* does not fit into 16 bits */
+	duk_small_int_t day_in_year;
 	duk_small_int_t month;
 	duk_small_int_t day;
 	duk_small_int_t dim;
+	duk_int_t jan1_since_epoch;
+	duk_small_int_t jan1_weekday;
+	duk_int_t equiv_year;
 	duk_small_uint_t i;
 	duk_bool_t is_leap;
+	duk_small_int_t arridx;
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
 	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
@@ -1020,16 +1017,18 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 		/* deal with negative values */
 		d1 += (duk_double_t) DUK__MS_DAY;
 	}
-	d2 = DUK_FLOOR(d / (duk_double_t) DUK__MS_DAY);
+	d2 = DUK_FLOOR((double) (d / (duk_double_t) DUK__MS_DAY));
 	DUK_ASSERT(d2 * ((duk_double_t) DUK__MS_DAY) + d1 == d);
-
 	/* now expected to fit into a 32-bit integer */
 	t1 = (duk_int_t) d1;
 	t2 = (duk_int_t) d2;
+	day_since_epoch = t2;
 	DUK_ASSERT((duk_double_t) t1 == d1);
 	DUK_ASSERT((duk_double_t) t2 == d2);
 
-	/* t1 = milliseconds within day, t2 = day number */
+	/* t1 = milliseconds within day (fits 32 bit)
+	 * t2 = day number from epoch (fits 32 bit, may be negative)
+	 */
 
 	parts[DUK__IDX_MILLISECOND] = t1 % 1000; t1 /= 1000;
 	parts[DUK__IDX_SECOND] = t1 % 60; t1 /= 60;
@@ -1040,13 +1039,12 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 	DUK_ASSERT(parts[DUK__IDX_MINUTE] >= 0 && parts[DUK__IDX_MINUTE] <= 59);
 	DUK_ASSERT(parts[DUK__IDX_HOUR] >= 0 && parts[DUK__IDX_HOUR] <= 23);
 
-	parts[DUK__IDX_WEEKDAY] = (t2 + 4) % 7;  /* E5.1 Section 15.9.1.6 */
-	if (parts[DUK__IDX_WEEKDAY] < 0) {
-		/* deal with negative values */
-		parts[DUK__IDX_WEEKDAY] += 7;
-	}
+	DUK_ASSERT(t2 + DUK__WEEKDAY_MOD_ADDER >= 0);
+	parts[DUK__IDX_WEEKDAY] = (t2 + 4 + DUK__WEEKDAY_MOD_ADDER) % 7;  /* E5.1 Section 15.9.1.6 */
+	DUK_ASSERT(parts[DUK__IDX_WEEKDAY] >= 0 && parts[DUK__IDX_WEEKDAY] <= 6);
 
-	year = duk__year_from_day(t2, &day);
+	year = duk__year_from_day(t2, &day_in_year);
+	day = day_in_year;
 	is_leap = duk__is_leap_year(year);
 	for (month = 0; month < 12; month++) {
 		dim = duk__days_in_month[month];
@@ -1063,6 +1061,34 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 	DUK_DDD(DUK_DDDPRINT("final month=%ld", (long) month));
 	DUK_ASSERT(month >= 0 && month <= 11);
 	DUK_ASSERT(day >= 0 && day <= 31);
+
+	/* Equivalent year mapping, used to avoid DST trouble when platform
+	 * may fail to provide reasonable DST answers for dates outside the
+	 * ordinary range (e.g. 1970-2038).  The years 1970 and 2038 are avoided
+	 * also because they seem to behave unreliably on some platforms.
+	 * An equivalent year has the same leap-year-ness as the original year
+	 * and begins on the same weekday (Jan 1).
+	 */
+	if ((flags & DUK__FLAG_EQUIVYEAR) && (year < 1971 || year > 2037)) {
+		DUK_ASSERT(is_leap == 0 || is_leap == 1);
+
+		jan1_since_epoch = day_since_epoch - day_in_year;  /* day number for Jan 1 since epoch */
+		DUK_ASSERT(jan1_since_epoch + DUK__WEEKDAY_MOD_ADDER >= 0);
+		jan1_weekday = (jan1_since_epoch + 4 + DUK__WEEKDAY_MOD_ADDER) % 7;  /* E5.1 Section 15.9.1.6 */
+		DUK_ASSERT(jan1_weekday >= 0 && jan1_weekday <= 6);
+		arridx = jan1_weekday;
+		if (is_leap) {
+			arridx += 7;
+		}
+		DUK_ASSERT(arridx >= 0 && arridx < (duk_small_int_t) (sizeof(duk__date_equivyear) / sizeof(duk_uint8_t)));
+
+		equiv_year = (duk_int_t) duk__date_equivyear[arridx] + 1970;
+		year = equiv_year;
+		DUK_DDD(DUK_DDDPRINT("equiv year mapping, year=%ld, day_in_year=%ld, day_since_epoch=%ld, "
+		                     "jan1_since_epoch=%ld, jan1_weekday=%ld -> equiv year %ld",
+		                     (long) year, (long) day_in_year, (long) day_since_epoch,
+		                     (long) jan1_since_epoch, (long) jan1_weekday, (long) equiv_year));
+	}
 
 	parts[DUK__IDX_YEAR] = year;
 	parts[DUK__IDX_MONTH] = month;
@@ -1385,7 +1411,7 @@ static duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t flags)
 static duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_and_idx) {
 	duk_double_t d;
 	duk_int_t parts[DUK__NUM_PARTS];
-	duk_small_uint_t idx_part = (duk_small_uint_t) (flags_and_idx >> 12);  /* unpack args */
+	duk_small_uint_t idx_part = (duk_small_uint_t) (flags_and_idx >> DUK__FLAG_VALUE_SHIFT);  /* unpack args */
 
 	DUK_ASSERT_DISABLE(idx_part >= 0);  /* unsigned */
 	DUK_ASSERT(idx_part < DUK__NUM_PARTS);
@@ -1419,7 +1445,7 @@ static duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_a
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
 	duk_idx_t nargs;
-	duk_small_uint_t maxnargs = (duk_small_uint_t) (flags_and_maxnargs >> 12);  /* unpack args */
+	duk_small_uint_t maxnargs = (duk_small_uint_t) (flags_and_maxnargs >> DUK__FLAG_VALUE_SHIFT);  /* unpack args */
 	duk_small_uint_t idx_first, idx;
 	duk_small_uint_t i;
 
