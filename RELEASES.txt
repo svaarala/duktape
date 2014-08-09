@@ -473,6 +473,9 @@ Planned
 * Use gmtime() + localtime() on Unix (instead of gmtime() twice) for local
   tzoffset, fixing some DST cases
 
+* Improve parsing of a local time (new Date(2012, 1, 2, 3, 4, 5)) using an
+  iterative algorithm to get a more accurate tzoffset/DST estimate
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 

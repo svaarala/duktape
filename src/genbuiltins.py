@@ -134,14 +134,16 @@ PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
 BI_DATE_FLAG_NAN_TO_ZERO =        (1 << 0)
 BI_DATE_FLAG_NAN_TO_RANGE_ERROR = (1 << 1)
 BI_DATE_FLAG_ONEBASED =           (1 << 2)
-BI_DATE_FLAG_LOCALTIME =          (1 << 3)
-BI_DATE_FLAG_SUB1900 =            (1 << 4)
-BI_DATE_FLAG_TOSTRING_DATE =      (1 << 5)
-BI_DATE_FLAG_TOSTRING_TIME =      (1 << 6)
-BI_DATE_FLAG_TOSTRING_LOCALE =    (1 << 7)
-BI_DATE_FLAG_TIMESETTER =         (1 << 8)
-BI_DATE_FLAG_YEAR_FIXUP =         (1 << 9)
-BI_DATE_FLAG_SEP_T =              (1 << 10)
+BI_DATE_FLAG_EQUIVYEAR =          (1 << 3)
+BI_DATE_FLAG_LOCALTIME =          (1 << 4)
+BI_DATE_FLAG_SUB1900 =            (1 << 5)
+BI_DATE_FLAG_TOSTRING_DATE =      (1 << 6)
+BI_DATE_FLAG_TOSTRING_TIME =      (1 << 7)
+BI_DATE_FLAG_TOSTRING_LOCALE =    (1 << 8)
+BI_DATE_FLAG_TIMESETTER =         (1 << 9)
+BI_DATE_FLAG_YEAR_FIXUP =         (1 << 10)
+BI_DATE_FLAG_SEP_T =              (1 << 11)
+BI_DATE_FLAG_VALUE_SHIFT =        12
 BI_DATE_IDX_YEAR =           0
 BI_DATE_IDX_MONTH =          1
 BI_DATE_IDX_DAY =            2
@@ -667,46 +669,46 @@ bi_date_prototype = {
 		{ 'name': 'toJSON',			'native': 'duk_bi_date_prototype_to_json',		'length': 1 },
 		{ 'name': 'valueOf',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },
 		{ 'name': 'getTime',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
-		{ 'name': 'getFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'getUTCFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'getMonth',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MONTH << 12) } },
-		{ 'name': 'getUTCMonth',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MONTH << 12) } },
-		{ 'name': 'getDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_DAY << 12) } },
-		{ 'name': 'getUTCDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + (BI_DATE_IDX_DAY << 12) } },
-		{ 'name': 'getDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_WEEKDAY << 12) } },
-		{ 'name': 'getUTCDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_WEEKDAY << 12) } },
-		{ 'name': 'getHours',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_HOUR << 12) } },
-		{ 'name': 'getUTCHours',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_HOUR << 12) } },
-		{ 'name': 'getMinutes',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MINUTE << 12) } },
-		{ 'name': 'getUTCMinutes',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MINUTE << 12) } },
-		{ 'name': 'getSeconds',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_SECOND << 12) } },
-		{ 'name': 'getUTCSeconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_SECOND << 12) } },
-		{ 'name': 'getMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MILLISECOND << 12) } },
-		{ 'name': 'getUTCMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MILLISECOND << 12) } },
+		{ 'name': 'getFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_YEAR << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_YEAR << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getMonth',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MONTH << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCMonth',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MONTH << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_DAY << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_ONEBASED + (BI_DATE_IDX_DAY << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_WEEKDAY << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_WEEKDAY << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getHours',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_HOUR << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCHours',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_HOUR << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getMinutes',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MINUTE << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCMinutes',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MINUTE << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getSeconds',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_SECOND << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCSeconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_SECOND << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (BI_DATE_IDX_MILLISECOND << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'getUTCMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 0 + (BI_DATE_IDX_MILLISECOND << BI_DATE_FLAG_VALUE_SHIFT) } },
 		{ 'name': 'getTimezoneOffset',		'native': 'duk_bi_date_prototype_get_timezone_offset',	'length': 0 },
 		{ 'name': 'setTime',			'native': 'duk_bi_date_prototype_set_time',		'length': 1 },
-		{ 'name': 'setMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
-		{ 'name': 'setUTCMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (1 << 12) } },
-		{ 'name': 'setSeconds',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
-		{ 'name': 'setUTCSeconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (2 << 12) } },
-		{ 'name': 'setMinutes',			'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
-		{ 'name': 'setUTCMinutes',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (3 << 12) } },
-		{ 'name': 'setHours',			'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (4 << 12) } },
-		{ 'name': 'setUTCHours',		'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (4 << 12) } },
-		{ 'name': 'setDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (1 << 12) } },
-		{ 'name': 'setUTCDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 0 + (1 << 12) } },
-		{ 'name': 'setMonth',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (2 << 12) } },
-		{ 'name': 'setUTCMonth',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << 12) } },
-		{ 'name': 'setFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << 12) } },
-		{ 'name': 'setUTCFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << 12) } },
+		{ 'name': 'setMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (1 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (1 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setSeconds',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (2 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCSeconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (2 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setMinutes',			'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (3 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCMinutes',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (3 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setHours',			'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + BI_DATE_FLAG_LOCALTIME + (4 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCHours',		'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TIMESETTER + (4 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (1 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 0 + (1 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setMonth',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + (2 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCMonth',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 + (2 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_LOCALTIME + (3 << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setUTCFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + (3 << BI_DATE_FLAG_VALUE_SHIFT) } },
 
 		# Non-standard extensions: E5 Section B.2.4, B.2.5, B.2.6
 		#
 		# 'length' values are not given explicitly but follows the general rule.
 		# The lengths below agree with V8.
 
-		{ 'name': 'getYear',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + BI_DATE_FLAG_SUB1900 + (BI_DATE_IDX_YEAR << 12) } },
-		{ 'name': 'setYear',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_YEAR_FIXUP + (3 << 12) } },
+		{ 'name': 'getYear',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_LOCALTIME + BI_DATE_FLAG_SUB1900 + (BI_DATE_IDX_YEAR << BI_DATE_FLAG_VALUE_SHIFT) } },
+		{ 'name': 'setYear',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_NAN_TO_ZERO + BI_DATE_FLAG_YEAR_FIXUP + (3 << BI_DATE_FLAG_VALUE_SHIFT) } },
 
 		# Note: toGMTString() is required to initially be the same Function object as the initial
 		# Date.prototype.toUTCString.  In other words: Date.prototype.toGMTString === Date.prototype.toUTCString --> true.
