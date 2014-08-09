@@ -200,11 +200,9 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	 *    in January 1970 start to fail (verified in practice).  For dates
 	 *    before and after these limits, use an equivalent year mapping.
 	 *
-	 *  - Create a UTC time breakdown from 't', and then pretend it is a
-	 *    local time breakdown and build a UTC time from it.  The timestamp
-	 *    will effectively shift backwards by time the time offset (e.g.
-	 *    -2h or -3h for EET/EEST).  Convert with mktime() twice to get the
-	 *    DST flag for the final conversion.
+	 *  - Create a UTC and local time breakdowns from 't'.  Then create
+	 *    a time_t using gmtime() and localtime() and compute the time
+	 *    difference between the two.
 	 *
 	 *  Equivalent year mapping (E5 Section 15.9.1.8):
 	 *
@@ -275,51 +273,54 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 
 #if defined(DUK_USE_DATE_TZO_GMTIME_R)
 	(void) gmtime_r(&t, &tms[0]);
+	(void) localtime_r(&t, &tms[1]);
 #elif defined(DUK_USE_DATE_TZO_GMTIME)
 	tm_ptr = gmtime(&t);
 	DUK_MEMCPY((void *) &tms[0], tm_ptr, sizeof(struct tm));
+	tm_ptr = localtime(&t);
+	DUK_MEMCPY((void *) &tms[1], tm_ptr, sizeof(struct tm));
 #else
 #error internal error
 #endif
-	DUK_MEMCPY((void *) &tms[1], &tms[0], sizeof(struct tm));
-
-	DUK_DDD(DUK_DDDPRINT("before mktime: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
+	DUK_DDD(DUK_DDDPRINT("gmtime result: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
 	                     "wday:%ld,yday:%ld,isdst:%ld}",
 	                     (long) tms[0].tm_sec, (long) tms[0].tm_min, (long) tms[0].tm_hour,
 	                     (long) tms[0].tm_mday, (long) tms[0].tm_mon, (long) tms[0].tm_year,
 	                     (long) tms[0].tm_wday, (long) tms[0].tm_yday, (long) tms[0].tm_isdst));
+	DUK_DDD(DUK_DDDPRINT("localtime result: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
+	                     "wday:%ld,yday:%ld,isdst:%ld}",
+	                     (long) tms[1].tm_sec, (long) tms[1].tm_min, (long) tms[1].tm_hour,
+	                     (long) tms[1].tm_mday, (long) tms[1].tm_mon, (long) tms[1].tm_year,
+	                     (long) tms[1].tm_wday, (long) tms[1].tm_yday, (long) tms[1].tm_isdst));
 
-	(void) mktime(&tms[0]);
-	tms[1].tm_isdst = tms[0].tm_isdst;
-	t2 = mktime(&tms[1]);
-	DUK_ASSERT_DISABLE(t2 >= 0);  /* On some platforms time_t is unsigned and this would cause a warning */
-	if (t2 == (time_t) -1) {
-		/* This check used to be for (t2 < 0) but on some platforms
+	t1 = mktime(&tms[0]);  /* UTC */
+	t2 = mktime(&tms[1]);  /* local */
+	if (t1 == (time_t) -1 || t2 == (time_t) -1) {
+		/* This check used to be for (t < 0) but on some platforms
 		 * time_t is unsigned and apparently the proper way to detect
 		 * an mktime() error return is the cast above.  See e.g.:
 		 * http://pubs.opengroup.org/onlinepubs/009695299/functions/mktime.html
 		 */
 		goto error;
 	}
+	if (tms[1].tm_isdst > 0) {
+		t2 += 3600;
+	} else if (tms[1].tm_isdst < 0) {
+		DUK_D(DUK_DPRINT("tm_isdst is negative: %d", (int) tms[1].tm_isdst));
+	}
+	DUK_DDD(DUK_DDDPRINT("t1=%ld (utc), t2=%ld (local)", (long) t1, (long) t2));
 
-	DUK_DDD(DUK_DDDPRINT("after mktime: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
-	                     "wday:%ld,yday:%ld,isdst:%ld}",
-	                     (long) tms[1].tm_sec, (long) tms[1].tm_min, (long) tms[1].tm_hour,
-	                     (long) tms[1].tm_mday, (long) tms[1].tm_mon, (long) tms[1].tm_year,
-	                     (long) tms[1].tm_wday, (long) tms[1].tm_yday, (long) tms[1].tm_isdst));
-	DUK_DDD(DUK_DDDPRINT("t2=%ld", (long) t2));
-
-	/* Positive if local time ahead of UTC. */
-
-	/* difftime() returns a double, so coercion to int generates quite
-	 * a lot of code.  Direct subtraction is not portable, however.
+	/* Compute final offset in seconds, positive if local time ahead of
+	 * UTC (returned value is UTC-to-local offset).
 	 *
+	 * difftime() returns a double, so coercion to int generates quite
+	 * a lot of code.  Direct subtraction is not portable, however.
 	 * XXX: allow direct subtraction on known platforms.
 	 */
 #if 0
-	return (duk_int_t) (t1 - t2);
+	return (duk_int_t) (t2 - t1);
 #endif
-	return (duk_int_t) difftime(t1, t2);
+	return (duk_int_t) difftime(t2, t1);
 
  error:
 	/* XXX: return something more useful, so that caller can throw? */
