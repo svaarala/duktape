@@ -173,7 +173,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
 static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
-	time_t t, t1, t2, ttmp;
+	time_t t, t1, t2;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
 	struct tm tms[2];
@@ -196,7 +196,8 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	 *
 	 *  - Stay within portable UNIX limits by using equivalent year mapping.
 	 *    Avoid year 1970 and 2038 as some conversions start to fail, at
-	 *    least on some platforms.
+	 *    least on some platforms.  Avoiding 1970 means that there are
+	 *    currently DST discrepancies for 1970.
 	 *
 	 *  - Create a UTC and local time breakdowns from 't'.  Then create
 	 *    a time_t using gmtime() and localtime() and compute the time
@@ -1064,10 +1065,15 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 
 	/* Equivalent year mapping, used to avoid DST trouble when platform
 	 * may fail to provide reasonable DST answers for dates outside the
-	 * ordinary range (e.g. 1970-2038).  The years 1970 and 2038 are avoided
-	 * also because they seem to behave unreliably on some platforms.
-	 * An equivalent year has the same leap-year-ness as the original year
-	 * and begins on the same weekday (Jan 1).
+	 * ordinary range (e.g. 1970-2038).  An equivalent year has the same
+	 * leap-year-ness as the original year and begins on the same weekday
+	 * (Jan 1).
+	 *
+	 * The year 2038 is avoided because there seem to be problems with it
+	 * on some platforms.  The year 1970 is also avoided as there were
+	 * practical problems with it; an equivalent year is used for it too,
+	 * which breaks some DST computations for 1970 right now, see e.g.
+	 * test-bi-date-tzoffset-brute-fi.js.
 	 */
 	if ((flags & DUK__FLAG_EQUIVYEAR) && (year < 1971 || year > 2037)) {
 		DUK_ASSERT(is_leap == 0 || is_leap == 1);
@@ -1122,7 +1128,7 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 	duk_double_t d;
 #endif
 	duk_small_uint_t i;
-	duk_int_t tzoff, tzoffnew;
+	duk_int_t tzoff, tzoffprev1, tzoffprev2;
 
 	/* Expects 'this' at top of stack on entry. */
 
@@ -1184,8 +1190,9 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 		 * 'd' which is a time value computed from local parts, so it
 		 * is off by the UTC-to-local time offset which we don't know
 		 * yet.  The current solution for computing the UTC-to-local
-		 * time offset is to iterate a few times, see
-		 * test-bi-date-local-parts.js.
+		 * time offset is to iterate a few times and detect a fixed
+		 * point or a two-cycle loop (or a sanity iteration limit),
+		 * see test-bi-date-local-parts.js and test-bi-date-tzoffset-basic-fi.js.
 		 *
 		 * E5.1 Section 15.9.1.9:
 		 * UTC(t) = t - LocalTZA - DaylightSavingTA(t - LocalTZA)
@@ -1198,24 +1205,39 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 		tzoff = DUK__GET_LOCAL_TZOFFSET(d);
 		DUK_DDD(DUK_DDDPRINT("tzoffset w/o iteration, tzoff=%ld", (long) tzoff));
 		d -= tzoff * 1000L;
-		DUK_UNREF(tzoffnew);
+		DUK_UNREF(tzoffprev1);
+		DUK_UNREF(tzoffprev2);
 #endif
 
-#if 1
 		/* Iteration solution */
 		tzoff = 0;
+		tzoffprev1 = 999999999L;  /* invalid value which never matches */
 		for (i = 0; i < DUK__LOCAL_TZOFFSET_MAXITER; i++) {
-			tzoffnew = DUK__GET_LOCAL_TZOFFSET(d - tzoff * 1000L);
-			DUK_DDD(DUK_DDDPRINT("tzoffset iteration, i=%d, tzoff=%ld, tzoffnew=%ld", (int) i, (long) tzoff, (long) tzoffnew));
-			if (tzoffnew == tzoff) {
-				DUK_DDD(DUK_DDDPRINT("tzoffset iteration finished, i=%d, tzoff=%ld", (int) i, (long) tzoff));
+			tzoffprev2 = tzoffprev1;
+			tzoffprev1 = tzoff;
+			tzoff = DUK__GET_LOCAL_TZOFFSET(d - tzoff * 1000L);
+			DUK_DDD(DUK_DDDPRINT("tzoffset iteration, i=%d, tzoff=%ld, tzoffprev1=%ld tzoffprev2=%ld",
+			                     (int) i, (long) tzoff, (long) tzoffprev1, (long) tzoffprev2));
+			if (tzoff == tzoffprev1) {
+				DUK_DDD(DUK_DDDPRINT("tzoffset iteration finished, i=%d, tzoff=%ld, tzoffprev1=%ld, tzoffprev2=%ld",
+				                     (int) i, (long) tzoff, (long) tzoffprev1, (long) tzoffprev2));
+				break;
+			} else if (tzoff == tzoffprev2) {
+				/* Two value cycle, see e.g. test-bi-date-tzoffset-basic-fi.js.
+				 * In these cases, favor a higher tzoffset to get a consistent
+				 * result which is independent of iteration count.  Not sure if
+				 * this is a generically correct solution.
+				 */
+				DUK_DDD(DUK_DDDPRINT("tzoffset iteration two-value cycle, i=%d, tzoff=%ld, tzoffprev1=%ld, tzoffprev2=%ld",
+				                     (int) i, (long) tzoff, (long) tzoffprev1, (long) tzoffprev2));
+				if (tzoffprev1 > tzoff) {
+					tzoff = tzoffprev1;
+				}
 				break;
 			}
-			tzoff = tzoffnew;
 		}
 		DUK_DDD(DUK_DDDPRINT("tzoffset iteration, tzoff=%ld", (long) tzoff));
 		d -= tzoff * 1000L;
-#endif
 	}
 
 	/* TimeClip(), which also handles Infinity -> NaN conversion */
