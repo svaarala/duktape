@@ -795,11 +795,12 @@ static duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 	 * in the caseconv bitstream: hardcoded rules in C
 	 */
 	if (uppercase) {
-		/* XXX: turkish / azeri not implemented */
+		/* XXX: turkish / azeri */
 	} else {
 		/*
-		 *  Final sigma context specific rule.  This is a rather tricky rule
-		 *  and this handling is probably not 100% correct now.
+		 *  Final sigma context specific rule.  This is a rather tricky
+		 *  rule and this handling is probably not 100% correct now.
+		 *  The rule is not locale/language specific so it is supported.
 		 */
 
 		if (cp == 0x03a3L &&    /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
@@ -817,12 +818,6 @@ static duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 		/* XXX: lithuanian not implemented */
 		/* XXX: lithuanian, explicit dot rules */
 		/* XXX: turkish / azeri, lowercase rules */
-#if 0
-		if (0 /* language == 'lt' */ &&
-		    cp == 0x0307L) {               /* U+0307 = COMBINING DOT ABOVE */
-			goto nochar;
-		}
-#endif
 	}
 
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
@@ -1011,4 +1006,3 @@ duk_uint16_t duk_unicode_re_ranges_not_wordchar[10] = {
 };
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */
-
