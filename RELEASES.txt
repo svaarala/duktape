@@ -476,6 +476,11 @@ Planned
 * Improve parsing of a local time (new Date(2012, 1, 2, 3, 4, 5)) using an
   iterative algorithm to get a more accurate tzoffset/DST estimate
 
+* Apply E5.1 Section 15.3.5.4 TypeError throwing also when the property value
+  is a bound strict function, previously the special "caller" property
+  behavior was only applied when "caller" value was a non-bound strict mode
+  function
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
