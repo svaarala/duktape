@@ -241,13 +241,14 @@ duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	return 1;
 }
 
-/* FIXME: the implementation now assumes "chained" bound functions,
+/* XXX: the implementation now assumes "chained" bound functions,
  * whereas "collapsed" bound functions (where there is ever only
  * one bound function which directly points to a non-bound, final
  * function) would require a "collapsing" implementation which
  * merges argument lists etc here.
  */
 duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
+	duk_hobject *h_bound;
 	duk_hobject *h_target;
 	duk_idx_t nargs;
 	duk_idx_t i;
@@ -276,8 +277,8 @@ duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	                       DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
 	                       DUK_BIDX_FUNCTION_PROTOTYPE);
-
-	/* FIXME: check hobject flags (e.g. strict) */
+	h_bound = duk_get_hobject(ctx, -1);
+	DUK_ASSERT(h_bound != NULL);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 	duk_dup(ctx, -2);  /* func */
@@ -323,6 +324,14 @@ duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
+	/* The 'strict' flag is copied to get the special [[Get]] of E5.1
+	 * Section 15.3.5.4 to apply when a 'caller' value is a strict bound
+	 * function.  Not sure if this is correct, because the specification
+	 * is a bit ambiguous on this point but it would make sense.
+	 */
+	if (DUK_HOBJECT_HAS_STRICT(h_target)) {
+		DUK_HOBJECT_SET_STRICT(h_bound);
+	}
 	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	return 1;

@@ -2295,25 +2295,47 @@ duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 	/* [key result] */
 
 #if !defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	/* This exotic behavior is disabled when the non-standard 'caller' property
+	/* Special behavior for 'caller' property of (non-bound) function objects
+	 * and non-strict Arguments objects: if 'caller' -value- (!) is a strict
+	 * mode function, throw a TypeError (E5 Sections 15.3.5.4, 10.6).
+	 * Quite interestingly, a non-strict function with no formal arguments
+	 * will get an arguments object -without- special 'caller' behavior!
+	 *
+	 * The E5.1 spec is a bit ambiguous if this special behavior applies when
+	 * a bound function is the base value (not the 'caller' value): Section
+	 * 15.3.4.5 (describing bind()) states that [[Get]] for bound functions
+	 * matches that of Section 15.3.5.4 ([[Get]] for Function instances).
+	 * However, Section 13.3.5.4 has "NOTE: Function objects created using
+	 * Function.prototype.bind use the default [[Get]] internal method."
+	 * The current implementation assumes this means that bound functions
+	 * should not have the special [[Get]] behavior.
+	 *
+	 * The E5.1 spec is also a bit unclear if the TypeError throwing is
+	 * applied if the 'caller' value is a strict bound function.  The
+	 * current implementation will throw even for both strict non-bound
+	 * and strict bound functions.
+	 *
+	 * See test-dev-strict-func-as-caller-prop-value.js for quite extensive
+	 * tests.
+	 *
+	 * This exotic behavior is disabled when the non-standard 'caller' property
 	 * is enabled, as it conflicts with the free use of 'caller'.
 	 */
 	if (key == DUK_HTHREAD_STRING_CALLER(thr) &&
 	    DUK_TVAL_IS_OBJECT(tv_obj)) {
 		duk_hobject *orig = DUK_TVAL_GET_OBJECT(tv_obj);
+		DUK_ASSERT(orig != NULL);
 
 		if (DUK_HOBJECT_IS_NONBOUND_FUNCTION(orig) ||
 		    DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(orig)) {
 			duk_hobject *h;
 
-			/* FIXME: is this behavior desired for bound functions too?
-			 * E5.1 Section 15.3.4.5 step 6 seems to indicate so, while
-			 * E5.1 Section 15.3.5.4 "NOTE" indicates that bound functions
-			 * have a default [[Get]] method.
-			 *
-			 * Also, must the value Function object be a non-bound function?
+			/* XXX: The TypeError is currently not applied to bound
+			 * functions because the 'strict' flag is not copied by
+			 * bind().  This may or may not be correct, the specification
+			 * only refers to the value being a "strict mode Function
+			 * object" which is ambiguous.
 			 */
-
 			DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(orig));
 
 			h = duk_get_hobject(ctx, -1);  /* NULL if not an object */
