@@ -8,7 +8,7 @@ desc: |-
   to cover the different cases.
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -40,4 +40,8 @@ log_events:
 - - 2014-05-07 21:36:25.259488 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from unassigned
+  - ""
+- - 2014-08-12 13:43:11.379449 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""
