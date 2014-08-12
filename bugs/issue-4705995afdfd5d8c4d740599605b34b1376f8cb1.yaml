@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Date: review implementation against others, especially tzoffset and DST handling"
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-12 13:24:30.852391 Z
+references: []
+
+id: 4705995afdfd5d8c4d740599605b34b1376f8cb1
+log_events: 
+- - 2014-08-12 13:24:31.092333 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

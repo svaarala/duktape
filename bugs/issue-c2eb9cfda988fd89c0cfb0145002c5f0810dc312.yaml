@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add locale specific tzoffset / timezone tests for Date built-in
+desc: |-
+  Most important would be to cover Unix and Windows to some extent.
+  There are currently almost no test cases to check the local times
+  are reasonable.
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-09 14:05:38.306104 Z
+references: []
+
+id: c2eb9cfda988fd89c0cfb0145002c5f0810dc312
+log_events: 
+- - 2014-08-09 14:05:39.633986 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

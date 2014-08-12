@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Date: recheck replacement for year 1970"
+desc: |-
+  DST during 1970 caused some trouble (perhaps on Jan 1 near midnight when the UTC time
+  can be actually in 1969).  Maybe fix this better to avoid using a replacement year for
+  1970.
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-12 13:24:08.883851 Z
+references: []
+
+id: c7e7ade6c26bca21baf1b23c4f0523b5fd0887c0
+log_events: 
+- - 2014-08-12 13:24:09.107829 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

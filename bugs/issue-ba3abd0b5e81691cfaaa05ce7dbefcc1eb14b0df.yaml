@@ -10,8 +10,8 @@ type: :bugfix
 component: duk
 release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-20 20:28:10.528642 Z
 references: []
 
@@ -24,4 +24,8 @@ log_events:
 - - 2014-05-07 21:36:59.747699 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from unassigned
+  - ""
+- - 2014-08-12 13:31:47.924000 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""

@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2013-02-20 19:57:15.027291 Z
 references: []
 
@@ -20,3 +20,9 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from unassigned
   - ""
+- - 2014-08-12 13:21:07.844543 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Behavior matches V8 for Finnish locale at least (except for year 1970 for
+    which Duktape uses a replacement year and V8 does not).

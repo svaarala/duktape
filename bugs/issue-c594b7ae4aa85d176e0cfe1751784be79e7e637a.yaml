@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Date: check windows behavior for dates before 1600, check windows supported range vs. ecmascript range"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-09 13:41:33.884470 Z
+references: []
+
+id: c594b7ae4aa85d176e0cfe1751784be79e7e637a
+log_events: 
+- - 2014-08-09 13:41:34.060368 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
