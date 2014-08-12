@@ -62,6 +62,13 @@ the pointer arithmetic may wrap and work in unexpected ways if stack
 index values are large enough (e.g. 0x20000000 on a 32-bit platform
 with 8-byte packed value type).</p>
 
+<h2>Duktape does not fully support locales</h2>
+
+<p>Although Duktape supports the concept of a local time, it doesn't support
+other locale related features such as: locale specific Date formatting,
+locale specific string comparison, locale/language specific Unicode rules
+(such as case conversion rules for Turkish, Azeri, and Lithuanian).</p>
+
 <h2>Unicode case conversion is not locale or context sensitive</h2>
 
 <p>E5 Sections 15.5.4.16 to 15.5.4.19 require context and locale processing
