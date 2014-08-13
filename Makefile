@@ -256,7 +256,7 @@ clean:
 	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	-@rm -f /tmp/duk-closure-test*
 	-@rm -f a.out
-	-@rm -rf test262-d067d2f0ca30
+	-@rm -rf test262-*
 	-@rm -f compiler.jar
 	-@rm -rf lua-5.2.3
 	-@rm -rf luajs
@@ -452,19 +452,23 @@ underscoretest:	underscore duk
 	#-util/underscore_test.sh ./duk underscore/test/speed.js
 	-util/underscore_test.sh ./duk underscore/test/utility.js
 
-d067d2f0ca30.tar.bz2:
+595a36b252ee97110724e6fa89fc92c9aa9a206a.zip:
 	# http://test262.ecmascript.org/
-	$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
+	# https://github.com/tc39/test262
+	# HG repo seems to have migrated to https://github.com/tc39/test262
+	#$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
+	$(WGET) https://github.com/tc39/test262/archive/595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
 
-test262-d067d2f0ca30: d067d2f0ca30.tar.bz2
-	tar xfj d067d2f0ca30.tar.bz2
+test262-595a36b252ee97110724e6fa89fc92c9aa9a206a: 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	unzip $<
+	touch $@
 
 .PHONY: test262test
-test262test: test262-d067d2f0ca30 duk
+test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
 	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
+	-cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
 	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
@@ -472,9 +476,9 @@ test262test: test262-d067d2f0ca30 duk
 # command line arguments and complains about missing targets etc:
 # http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
 .PHONY: test262cat
-test262cat: test262-d067d2f0ca30
+test262cat: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	@cd test262-d067d2f0ca30; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+	-@cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
 	# https://github.com/kripken/emscripten
