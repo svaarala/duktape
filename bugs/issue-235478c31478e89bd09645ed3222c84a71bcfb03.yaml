@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "fix test262 ch07/7.9/S7.9_A4: automatic semicolon and throw stmt"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-08-13 13:53:42.976812 Z
+references: []
+
+id: 235478c31478e89bd09645ed3222c84a71bcfb03
+log_events: 
+- - 2014-08-13 13:53:43.184865 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-08-13 14:14:15.757692 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
