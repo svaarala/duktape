@@ -2489,13 +2489,14 @@ static duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	/* FIXME: this assumption is actually invalid, because e.g. Array.prototype.push()
-	 * can create an array whose length is above 2**32.
-	 */
-
-	/* Call only for objects with array exotic behavior, as we assume
-	 * that the length property always exists, and always contains a
-	 * valid number value (in unsigned 32-bit range).
+	/* This function is only called for objects with array exotic behavior.
+	 * The [[DefineOwnProperty]] algorithm for arrays requires that
+	 * 'length' can never have a value outside the unsigned 32-bit range,
+	 * attempt to write such a value is a RangeError.  Here we can thus
+	 * assert for this.  When Duktape internals go around the official
+	 * property write interface (doesn't happen often) this assumption is
+	 * easy to accidentally break, so such code must be written carefully.
+	 * See test-bi-array-push-maxlen.js.
 	 */
 
 	rc = duk__get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, temp_desc, 0);
@@ -2518,10 +2519,10 @@ static duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	duk_uint32_t res;
 
 	/* Input value should be on stack top and will be coerced and
-	 * left on stack top.
+	 * left on stack top.  Refuse to update an Array's 'length'
+	 * to a value outside the 32-bit range.
 	 */
 
-	/* FIXME: coerce in_val to new_len, check that this is correct */
 	res = ((duk_uint32_t) duk_to_number(ctx, -1)) & 0xffffffffUL;
 	if (res != duk_get_number(ctx, -1)) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_ARRAY_LENGTH);
@@ -3229,7 +3230,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 
 		DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array exotic, invoke complex helper"));
 
-		/* FIXME: the helper currently assumes stack top contains new
+		/* XXX: the helper currently assumes stack top contains new
 		 * 'length' value and the whole calling convention is not very
 		 * compatible with what we need.
 		 */
@@ -3523,7 +3524,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 
 		/* Note: we can reuse 'desc' here */
 
-		/* FIXME: top of stack must contain value, which helper doesn't touch,
+		/* XXX: top of stack must contain value, which helper doesn't touch,
 		 * rework to use tv_val directly?
 		 */
 
@@ -4518,7 +4519,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 		}
 		DUK_DDD(DUK_DDDPRINT("new length is smaller than previous => exotic post behavior"));
 
-		/* FIXME: consolidated algorithm step 15.f -> redundant? */
+		/* XXX: consolidated algorithm step 15.f -> redundant? */
 		if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
 			/* Note: 'curr' refers to 'length' propdesc */
 			goto fail_not_writable_array_length;
@@ -4533,7 +4534,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 
 		/* remaining actual steps are carried out if standard DefineOwnProperty succeeds */
 	} else if (arr_idx != DUK__NO_ARRAY_INDEX) {
-		/* FIXME: any chance of unifying this with the 'length' key handling? */
+		/* XXX: any chance of unifying this with the 'length' key handling? */
 
 		/* E5 Section 15.4.5.1, step 4 */
 		duk_uint32_t old_len;
@@ -4580,7 +4581,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			goto fail_not_extensible;
 		}
 
-		/* FIXME: share final setting code for value and flags?  difficult because
+		/* XXX: share final setting code for value and flags?  difficult because
 		 * refcount code is different.  Share entry allocation?  But can't allocate
 		 * until array index checked.
 		 */
@@ -4846,7 +4847,9 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("flags after data->accessor conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(obj, curr.e_idx)));
 
-			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
+			/* re-lookup to update curr.flags
+			 * XXX: would be faster to update directly
+			 */
 			duk_pop(ctx);  /* remove old value */
 			rc = duk__get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
 			DUK_UNREF(rc);
@@ -4888,7 +4891,9 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("flags after accessor->data conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(obj, curr.e_idx)));
 
-			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
+			/* re-lookup to update curr.flags
+			 * XXX: would be faster to update directly
+			 */
 			duk_pop(ctx);  /* remove old value */
 			rc = duk__get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
 			DUK_UNREF(rc);
@@ -4949,7 +4954,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 		}
 	}
 
-	/* FIXME: write protect after flag? -> any chance of handling it here? */
+	/* XXX: write protect after flag? -> any chance of handling it here? */
 
 	DUK_DDD(DUK_DDDPRINT("new flags that we want to write: 0x%02lx",
 	                     (unsigned long) new_flags));
@@ -5088,7 +5093,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			 *  'writable' update.
 			 */
 
-			/* FIXME: investigate whether write protect can be handled above, if we
+			/* XXX: investigate whether write protect can be handled above, if we
 			 * just update length here while ignoring its protected status
 			 */
 
@@ -5117,7 +5122,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			}
 
 			/*
-			 *  FIXME: shrink array allocation or entries compaction here?
+			 *  XXX: shrink array allocation or entries compaction here?
 			 */
 
 			if (!rc) {
@@ -5288,8 +5293,8 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 
 		/* FIXME: need access to the -original- Object.defineProperty function
 		 * object here (the property is configurable so a caller may have changed
-		 * it).  This is not a good approach as a new Ecmascript function is created
-		 * for every loop.
+		 * it).  This is not a good approach as a new Ecmascript function is
+		 * created for every loop.  Move this outside the loop at least.
 		 */
 		duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
 		duk_insert(ctx, -4);
@@ -5300,7 +5305,7 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 
 		/* [hobject props descriptors enum(descriptors) retval] */
 
-		/* FIXME: call which ignores result would be nice */
+		/* XXX: call which ignores result would be nice */
 
 		duk_pop(ctx);
 	}
