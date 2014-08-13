@@ -5306,6 +5306,16 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("enum(descriptors)=%!iT",
 	                     (duk_tval *) duk_get_tval(ctx, 3)));
 
+	/* XXX: We need access to the -original- Object.defineProperty() here.
+	 * The property is configurable so the caller may have changed it.
+	 * This is not a good approach as a new Ecmascript function is created
+	 * for every defineProperties() call, but suffices for now.
+	 */
+
+	duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
+
+	/* [hobject props descriptors enum(descriptors) defineProperty] */
+
 	for (;;) {
 		if (!duk_next(ctx, 3, 1 /*get_value*/)) {
 			break;
@@ -5315,37 +5325,32 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 		                     (duk_tval *) duk_get_tval(ctx, -2),
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-		/* [hobject props descriptors enum(descriptors) key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty key desc_norm] */
 
 		duk_dup(ctx, 0);
 		duk_insert(ctx, -3);
 
-		/* [hobject props descriptors enum(descriptors) hobject key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty hobject key desc_norm] */
 
-		/* FIXME: need access to the -original- Object.defineProperty function
-		 * object here (the property is configurable so a caller may have changed
-		 * it).  This is not a good approach as a new Ecmascript function is
-		 * created for every loop.  Move this outside the loop at least.
-		 */
-		duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
+		duk_dup(ctx, 4);
 		duk_insert(ctx, -4);
 
-		/* [hobject props descriptors enum(descriptors) Object.defineProperty hobject key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty defineProperty hobject key desc_norm] */
 
 		duk_call(ctx, 3);
 
-		/* [hobject props descriptors enum(descriptors) retval] */
+		/* [hobject props descriptors enum(descriptors) definePropert defineProperty retval] */
 
 		/* XXX: call which ignores result would be nice */
 
 		duk_pop(ctx);
 	}
 
-	/* [hobject props descriptors enum(descriptors)] */
+	/* [hobject props descriptors enum(descriptors) defineProperty ] */
 
 	duk_dup(ctx, 0);
 	
-	/* [hobject props descriptors enum(descriptors) hobject] */
+	/* [hobject props descriptors enum(descriptors) defineProperty hobject] */
 
 	return 1;
 }
