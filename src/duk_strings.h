@@ -151,6 +151,7 @@ extern const char *duk_str_property_is_virtual;
 #define DUK_STR_INVALID_BREAK_CONT_LABEL duk_str_invalid_break_cont_label
 #define DUK_STR_INVALID_RETURN duk_str_invalid_return
 #define DUK_STR_INVALID_TRY duk_str_invalid_try
+#define DUK_STR_INVALID_THROW duk_str_invalid_throw
 #define DUK_STR_WITH_IN_STRICT_MODE duk_str_with_in_strict_mode
 #define DUK_STR_FUNC_STMT_NOT_ALLOWED duk_str_func_stmt_not_allowed
 #define DUK_STR_UNTERMINATED_STMT duk_str_unterminated_stmt
@@ -175,6 +176,7 @@ extern const char *duk_str_invalid_switch;
 extern const char *duk_str_invalid_break_cont_label;
 extern const char *duk_str_invalid_return;
 extern const char *duk_str_invalid_try;
+extern const char *duk_str_invalid_throw;
 extern const char *duk_str_with_in_strict_mode;
 extern const char *duk_str_func_stmt_not_allowed;
 extern const char *duk_str_unterminated_stmt;
