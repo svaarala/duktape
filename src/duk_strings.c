@@ -84,6 +84,7 @@ const char *duk_str_invalid_switch = "invalid switch statement";
 const char *duk_str_invalid_break_cont_label = "invalid break/continue label";
 const char *duk_str_invalid_return = "invalid return";
 const char *duk_str_invalid_try = "invalid try";
+const char *duk_str_invalid_throw = "invalid throw";
 const char *duk_str_with_in_strict_mode = "with in strict mode";
 const char *duk_str_func_stmt_not_allowed = "function statement not allowed";
 const char *duk_str_unterminated_stmt = "unterminated statement";

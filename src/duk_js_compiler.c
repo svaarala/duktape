@@ -5429,19 +5429,13 @@ static void duk__parse_throw_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 	duk__advance(comp_ctx);  /* eat 'throw' */
 
-	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON ||  /* explicit semi follows */
-	    comp_ctx->curr_token.lineterm ||                /* automatic semi will be inserted */
-	    comp_ctx->curr_token.allow_auto_semi) {         /* automatic semi will be inserted */
-		DUK_DDD(DUK_DDDPRINT("empty throw value -> undefined"));
-		reg_val = DUK__ALLOCTEMP(comp_ctx);
-		duk__emit_extraop_bc(comp_ctx,
-		                     DUK_EXTRAOP_LDUNDEF,
-		                     (duk_regconst_t) reg_val);
-	} else {
-		DUK_DDD(DUK_DDDPRINT("throw with a value"));
-		reg_val = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
+	/* Unlike break/continue, throw statement does not allow an empty value. */
+
+	if (comp_ctx->curr_token.lineterm) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_THROW);
 	}
 
+	reg_val = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 	duk__emit_extraop_b_c(comp_ctx,
 	                      DUK_EXTRAOP_THROW,
 	                      (duk_regconst_t) reg_val,
