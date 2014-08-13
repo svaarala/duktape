@@ -13,8 +13,15 @@
  *
  *  XXX: array lengths above 2G won't work reliably.  There are many places
  *  where one needs a full signed 32-bit range ([-0xffffffff, 0xffffffff],
- *  i.e. -33- bits).  Further, some valid array length values may be above
- *  2**32-1, and this is not always correctly handled (duk_uint32_t is not enough).
+ *  i.e. -33- bits).  Although array 'length' cannot be written to be outside
+ *  the unsigned 32-bit range (E5.1 Section 15.4.5.1 throws a RangeError if so)
+ *  some intermediate values may be above 0xffffffff and this may not be always
+ *  correctly handled now (duk_uint32_t is not enough for all algorithms).
+ *
+ *  For instance, push() can legitimately write entries beyond length 0xffffffff
+ *  and cause a RangeError only at the end.  To do this properly, the current
+ *  push() implementation tracks the array index using a 'double' instead of a
+ *  duk_uint32_t (which is somewhat awkward).  See test-bi-array-push-maxlen.js.
  *
  *  On using "put" vs. "def" prop
  *  =============================
@@ -366,6 +373,7 @@ duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 	/* Note: we keep track of length with a double instead of a 32-bit
 	 * (unsigned) int because the length can go beyond 32 bits and the
 	 * final length value is NOT wrapped to 32 bits on this call.
+	 * See test-bi-array-push-maxlen.js.
 	 */
 
 	for (i = 0; i < n; i++) {

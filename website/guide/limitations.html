@@ -84,6 +84,13 @@ and array entries are moved to the "entry part".  This involves interning all us
 array indices as explicit string keys (e.g. "0", "1", etc).  This is not a
 compliance concern, but degrades performance.</p>
 
+<h2>Array performance when writing elements using Object.defineProperty()</h2>
+
+<p>When number indexed array elements are written with <code>Object.defineProperty()</code>
+the current implementation abandons the internal "array part" which makes later
+array access much slower.  Write array elements with direct assignments such as
+<code>a[123] = 321</code> to avoid this.</p>
+
 <h2>Global/eval code is slower than function code</h2>
 
 <p>Bytecode generated for global and eval code cannot assign variables

@@ -452,7 +452,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 */
 
 #ifdef DUK_USE_ASSERTIONS
-	/* XXX: pre checks (such as no duplicate keys) */
+	/* XXX: pre-checks (such as no duplicate keys) */
 #endif
 
 	/*
@@ -841,7 +841,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 */
 
 #ifdef DUK_USE_ASSERTIONS
-	/* XXX: post checks (such as no duplicate keys) */
+	/* XXX: post-checks (such as no duplicate keys) */
 #endif
 	return;
 
@@ -2489,13 +2489,14 @@ static duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	/* FIXME: this assumption is actually invalid, because e.g. Array.prototype.push()
-	 * can create an array whose length is above 2**32.
-	 */
-
-	/* Call only for objects with array exotic behavior, as we assume
-	 * that the length property always exists, and always contains a
-	 * valid number value (in unsigned 32-bit range).
+	/* This function is only called for objects with array exotic behavior.
+	 * The [[DefineOwnProperty]] algorithm for arrays requires that
+	 * 'length' can never have a value outside the unsigned 32-bit range,
+	 * attempt to write such a value is a RangeError.  Here we can thus
+	 * assert for this.  When Duktape internals go around the official
+	 * property write interface (doesn't happen often) this assumption is
+	 * easy to accidentally break, so such code must be written carefully.
+	 * See test-bi-array-push-maxlen.js.
 	 */
 
 	rc = duk__get_own_property_desc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, temp_desc, 0);
@@ -2518,10 +2519,10 @@ static duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	duk_uint32_t res;
 
 	/* Input value should be on stack top and will be coerced and
-	 * left on stack top.
+	 * left on stack top.  Refuse to update an Array's 'length'
+	 * to a value outside the 32-bit range.
 	 */
 
-	/* FIXME: coerce in_val to new_len, check that this is correct */
 	res = ((duk_uint32_t) duk_to_number(ctx, -1)) & 0xffffffffUL;
 	if (res != duk_get_number(ctx, -1)) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_ARRAY_LENGTH);
@@ -3229,7 +3230,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 
 		DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array exotic, invoke complex helper"));
 
-		/* FIXME: the helper currently assumes stack top contains new
+		/* XXX: the helper currently assumes stack top contains new
 		 * 'length' value and the whole calling convention is not very
 		 * compatible with what we need.
 		 */
@@ -3523,7 +3524,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 
 		/* Note: we can reuse 'desc' here */
 
-		/* FIXME: top of stack must contain value, which helper doesn't touch,
+		/* XXX: top of stack must contain value, which helper doesn't touch,
 		 * rework to use tv_val directly?
 		 */
 
@@ -3829,6 +3830,9 @@ duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag);
 		goto done_rc;
 	} else if (DUK_TVAL_IS_STRING(tv_obj)) {
+		/* XXX: unnecessary string coercion for array indices,
+		 * intentional to keep small.
+		 */
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		DUK_ASSERT(h != NULL);
 
@@ -3846,8 +3850,29 @@ duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			goto fail_not_configurable;
 		}
+	} else if (DUK_TVAL_IS_BUFFER(tv_obj)) {
+		/* XXX: unnecessary string coercion for array indices,
+		 * intentional to keep small; some overlap with string
+		 * handling.
+		 */
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
+		DUK_ASSERT(h != NULL);
+
+		duk_to_string(ctx, -1);
+		key = duk_get_hstring(ctx, -1);
+		DUK_ASSERT(key != NULL);
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			goto fail_not_configurable;
+		}
+
+		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
+		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+			goto fail_not_configurable;
+		}
 	}
-	/* FIXME: buffer virtual properties? */
 
 	/* non-object base, no offending virtual property */
 	rc = 1;
@@ -4518,7 +4543,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 		}
 		DUK_DDD(DUK_DDDPRINT("new length is smaller than previous => exotic post behavior"));
 
-		/* FIXME: consolidated algorithm step 15.f -> redundant? */
+		/* XXX: consolidated algorithm step 15.f -> redundant? */
 		if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
 			/* Note: 'curr' refers to 'length' propdesc */
 			goto fail_not_writable_array_length;
@@ -4533,7 +4558,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 
 		/* remaining actual steps are carried out if standard DefineOwnProperty succeeds */
 	} else if (arr_idx != DUK__NO_ARRAY_INDEX) {
-		/* FIXME: any chance of unifying this with the 'length' key handling? */
+		/* XXX: any chance of unifying this with the 'length' key handling? */
 
 		/* E5 Section 15.4.5.1, step 4 */
 		duk_uint32_t old_len;
@@ -4564,6 +4589,13 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	}
  skip_array_exotic:
 
+	/* XXX: There is currently no support for writing buffer object
+	 * indexed elements here.  Attempt to do so will succeed and
+	 * write a concrete property into the buffer object.  This should
+	 * be fixed at some point but because buffers are a custom feature
+	 * anyway, this is relatively unimportant.
+	 */
+
 	/*
 	 *  Actual Object.defineProperty() default algorithm.
 	 */
@@ -4580,7 +4612,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			goto fail_not_extensible;
 		}
 
-		/* FIXME: share final setting code for value and flags?  difficult because
+		/* XXX: share final setting code for value and flags?  difficult because
 		 * refcount code is different.  Share entry allocation?  But can't allocate
 		 * until array index checked.
 		 */
@@ -4652,7 +4684,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 					DUK_DDD(DUK_DDDPRINT("new data property attributes match array defaults, attempt to write to array part"));
 					/* may become sparse...*/
 #endif
-					/* FIXME: handling for array part missing now; this doesn't affect
+					/* XXX: handling for array part missing now; this doesn't affect
 					 * compliance but causes array entry writes using defineProperty()
 					 * to always abandon array part.
 					 */
@@ -4846,7 +4878,9 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("flags after data->accessor conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(obj, curr.e_idx)));
 
-			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
+			/* re-lookup to update curr.flags
+			 * XXX: would be faster to update directly
+			 */
 			duk_pop(ctx);  /* remove old value */
 			rc = duk__get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
 			DUK_UNREF(rc);
@@ -4888,7 +4922,9 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("flags after accessor->data conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(obj, curr.e_idx)));
 
-			/* re-lookup to update curr.flags -- FIXME: faster to update directly */
+			/* re-lookup to update curr.flags
+			 * XXX: would be faster to update directly
+			 */
 			duk_pop(ctx);  /* remove old value */
 			rc = duk__get_own_property_desc_raw(thr, obj, key, arr_idx, &curr, 1);
 			DUK_UNREF(rc);
@@ -4949,7 +4985,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 		}
 	}
 
-	/* FIXME: write protect after flag? -> any chance of handling it here? */
+	/* XXX: write protect after flag? -> any chance of handling it here? */
 
 	DUK_DDD(DUK_DDDPRINT("new flags that we want to write: 0x%02lx",
 	                     (unsigned long) new_flags));
@@ -5088,7 +5124,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			 *  'writable' update.
 			 */
 
-			/* FIXME: investigate whether write protect can be handled above, if we
+			/* XXX: investigate whether write protect can be handled above, if we
 			 * just update length here while ignoring its protected status
 			 */
 
@@ -5117,7 +5153,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			}
 
 			/*
-			 *  FIXME: shrink array allocation or entries compaction here?
+			 *  XXX: shrink array allocation or entries compaction here?
 			 */
 
 			if (!rc) {
@@ -5270,6 +5306,16 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("enum(descriptors)=%!iT",
 	                     (duk_tval *) duk_get_tval(ctx, 3)));
 
+	/* XXX: We need access to the -original- Object.defineProperty() here.
+	 * The property is configurable so the caller may have changed it.
+	 * This is not a good approach as a new Ecmascript function is created
+	 * for every defineProperties() call, but suffices for now.
+	 */
+
+	duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
+
+	/* [hobject props descriptors enum(descriptors) defineProperty] */
+
 	for (;;) {
 		if (!duk_next(ctx, 3, 1 /*get_value*/)) {
 			break;
@@ -5279,37 +5325,32 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 		                     (duk_tval *) duk_get_tval(ctx, -2),
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-		/* [hobject props descriptors enum(descriptors) key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty key desc_norm] */
 
 		duk_dup(ctx, 0);
 		duk_insert(ctx, -3);
 
-		/* [hobject props descriptors enum(descriptors) hobject key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty hobject key desc_norm] */
 
-		/* FIXME: need access to the -original- Object.defineProperty function
-		 * object here (the property is configurable so a caller may have changed
-		 * it).  This is not a good approach as a new Ecmascript function is created
-		 * for every loop.
-		 */
-		duk_push_c_function(ctx, duk_hobject_object_define_property, 3);
+		duk_dup(ctx, 4);
 		duk_insert(ctx, -4);
 
-		/* [hobject props descriptors enum(descriptors) Object.defineProperty hobject key desc_norm] */
+		/* [hobject props descriptors enum(descriptors) defineProperty defineProperty hobject key desc_norm] */
 
 		duk_call(ctx, 3);
 
-		/* [hobject props descriptors enum(descriptors) retval] */
+		/* [hobject props descriptors enum(descriptors) definePropert defineProperty retval] */
 
-		/* FIXME: call which ignores result would be nice */
+		/* XXX: call which ignores result would be nice */
 
 		duk_pop(ctx);
 	}
 
-	/* [hobject props descriptors enum(descriptors)] */
+	/* [hobject props descriptors enum(descriptors) defineProperty ] */
 
 	duk_dup(ctx, 0);
 	
-	/* [hobject props descriptors enum(descriptors) hobject] */
+	/* [hobject props descriptors enum(descriptors) defineProperty hobject] */
 
 	return 1;
 }

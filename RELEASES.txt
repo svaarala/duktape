@@ -481,6 +481,10 @@ Planned
   behavior was only applied when "caller" value was a non-bound strict mode
   function
 
+* Reject deletion of plain buffer indexed elements (previously this behavior
+  was implemented only for Buffer objects), i.e. delete returns false (in
+  non-strict functions) or throws a TypeError (in strict functions)
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
