@@ -468,7 +468,7 @@ test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
 	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
+	-cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
 	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
@@ -478,7 +478,7 @@ test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
 .PHONY: test262cat
 test262cat: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	@cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+	-@cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
 	# https://github.com/kripken/emscripten
