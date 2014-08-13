@@ -4684,7 +4684,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 					DUK_DDD(DUK_DDDPRINT("new data property attributes match array defaults, attempt to write to array part"));
 					/* may become sparse...*/
 #endif
-					/* FIXME: handling for array part missing now; this doesn't affect
+					/* XXX: handling for array part missing now; this doesn't affect
 					 * compliance but causes array entry writes using defineProperty()
 					 * to always abandon array part.
 					 */
