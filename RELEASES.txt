@@ -485,6 +485,9 @@ Planned
   was implemented only for Buffer objects), i.e. delete returns false (in
   non-strict functions) or throws a TypeError (in strict functions)
 
+* Disable internal interrupt mechanism in anticipation of 1.0 release since
+  there will be no API to use it
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
