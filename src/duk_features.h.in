@@ -2017,10 +2017,15 @@ typedef FILE duk_file;
  *  Execution and debugger options
  */
 
+/* Executor interrupt disabled for 1.0 release: there is no API to use it */
+#if 0
 #define DUK_USE_INTERRUPT_COUNTER
 #if defined(DUK_OPT_NO_INTERRUPT_COUNTER)
 #undef DUK_USE_INTERRUPT_COUNTER
 #endif
+#endif
+
+#undef DUK_USE_INTERRUPT_COUNTER
 
 /* For opcodes with indirect indices, check final index against stack size.
  * This should not be necessary because the compiler is trusted, and we don't
