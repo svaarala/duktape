@@ -452,7 +452,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 */
 
 #ifdef DUK_USE_ASSERTIONS
-	/* XXX: pre checks (such as no duplicate keys) */
+	/* XXX: pre-checks (such as no duplicate keys) */
 #endif
 
 	/*
@@ -841,7 +841,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	 */
 
 #ifdef DUK_USE_ASSERTIONS
-	/* XXX: post checks (such as no duplicate keys) */
+	/* XXX: post-checks (such as no duplicate keys) */
 #endif
 	return;
 
@@ -4588,6 +4588,13 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 		}
 	}
  skip_array_exotic:
+
+	/* XXX: There is currently no support for writing buffer object
+	 * indexed elements here.  Attempt to do so will succeed and
+	 * write a concrete property into the buffer object.  This should
+	 * be fixed at some point but because buffers are a custom feature
+	 * anyway, this is relatively unimportant.
+	 */
 
 	/*
 	 *  Actual Object.defineProperty() default algorithm.
