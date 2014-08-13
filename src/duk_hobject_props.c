@@ -3830,6 +3830,9 @@ duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag);
 		goto done_rc;
 	} else if (DUK_TVAL_IS_STRING(tv_obj)) {
+		/* XXX: unnecessary string coercion for array indices,
+		 * intentional to keep small.
+		 */
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		DUK_ASSERT(h != NULL);
 
@@ -3847,8 +3850,29 @@ duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		    arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
 			goto fail_not_configurable;
 		}
+	} else if (DUK_TVAL_IS_BUFFER(tv_obj)) {
+		/* XXX: unnecessary string coercion for array indices,
+		 * intentional to keep small; some overlap with string
+		 * handling.
+		 */
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
+		DUK_ASSERT(h != NULL);
+
+		duk_to_string(ctx, -1);
+		key = duk_get_hstring(ctx, -1);
+		DUK_ASSERT(key != NULL);
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			goto fail_not_configurable;
+		}
+
+		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+
+		if (arr_idx != DUK__NO_ARRAY_INDEX &&
+		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+			goto fail_not_configurable;
+		}
 	}
-	/* FIXME: buffer virtual properties? */
 
 	/* non-object base, no offending virtual property */
 	rc = 1;
