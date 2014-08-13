@@ -279,6 +279,7 @@ The table below summarizes the available options, in no particular order:</p>
     This option does not suppress debug printing so don't enable debug printing
     if you wish to avoid I/O.</td>
 </tr>
+<!-- Disabled for 1.0 release, there is no API to use it
 <tr>
 <td class="definename">DUK_OPT_NO_INTERRUPT_COUNTER</td>
 <td>Disable the internal bytecode executor periodic interrupt counter.
@@ -287,6 +288,7 @@ The table below summarizes the available options, in no particular order:</p>
     improves bytecode execution performance very slightly but disables all
     features depending on it.</td>
 </tr>
+-->
 <tr>
 <td class="definename">DUK_OPT_NO_ZERO_BUFFER_DATA</td>
 <td>By default Duktape zeroes data allocated for buffer values.  Define
