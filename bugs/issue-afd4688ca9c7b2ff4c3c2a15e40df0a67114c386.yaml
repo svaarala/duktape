@@ -3,7 +3,7 @@ title: built-in for checking whether object has an array part
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -40,4 +40,8 @@ log_events:
 - - 2014-05-07 21:10:50.247029 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-08-13 12:39:33.622657 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v0.12
   - ""

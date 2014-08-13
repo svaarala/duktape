@@ -9,7 +9,7 @@ desc: |-
   must be volatile.
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -29,4 +29,8 @@ log_events:
 - - 2014-06-11 08:00:18.351843 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-08-13 12:42:07.382415 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
   - ""

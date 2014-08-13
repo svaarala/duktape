@@ -3,7 +3,7 @@ title: internal execution document
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-07-10 12:43:15.953423 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-08-13 12:41:23.559195 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
   - ""

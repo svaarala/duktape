@@ -6,7 +6,7 @@ desc: |-
   to the buffer, and buf[123] = '9' will assign 0x09 (not 0x39) to the buffer.
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -31,4 +31,8 @@ log_events:
 - - 2014-07-10 12:43:20.891786 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-08-13 12:43:17.574499 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
   - ""
