@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: cygwin compile duk_bi_date.c:364 strptime() undeclared
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-14 07:28:23.458790 Z
+references: []
+
+id: 75b7585ec7b9b4673128bfbd9f17a39c7262967f
+log_events: 
+- - 2014-08-14 07:28:23.635344 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

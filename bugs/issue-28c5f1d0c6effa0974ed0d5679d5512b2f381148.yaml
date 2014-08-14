@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "guide: platform differences section - what to expect"
+desc: |-
+  Add guide section describing what platform differences the user can
+  expect.  For example, at the moment:
+  
+  * Date tzoffset/DST: locale specific, and DST behavior also depends
+    on platform datetime primitives
+  
+  * Date: locale specific parsing/formatting
+  
+  * TypedArray endianness
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-14 07:30:07.335137 Z
+references: []
+
+id: 28c5f1d0c6effa0974ed0d5679d5512b2f381148
+log_events: 
+- - 2014-08-14 07:30:07.671220 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

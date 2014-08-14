@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "Date: proper tests for Windows locale specific Date behavior (esp. DST)"
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-14 07:37:24.163834 Z
+references: []
+
+id: 66165c15f9a250cdfa82d32fafe5d163cd672007
+log_events: 
+- - 2014-08-14 07:37:24.771656 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
