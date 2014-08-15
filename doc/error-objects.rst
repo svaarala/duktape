@@ -143,12 +143,12 @@ This can be achieved e.g. as follows::
 Here, error augmentation (including Duktape's own augmentation handling and
 a user error handler) would happen twice:
 
-  1. When ``new Error('my error')`` executes, the result gets augmented.
-     If a user error handler (``errCreate``) exists, it is called.
+1. When ``new Error('my error')`` executes, the result gets augmented.
+   If a user error handler (``errCreate``) exists, it is called.
 
-  2. When the ``new Constructor()`` call returns, the returned error value
-     replaces the default object given to the constructor.  The replacement
-     value (i.e. the result of ``new Error('my error')``) gets augmented.
+2. When the ``new Constructor()`` call returns, the returned error value
+   replaces the default object given to the constructor.  The replacement
+   value (i.e. the result of ``new Error('my error')``) gets augmented.
 
 To avoid issues with this behavior, Duktape's augmentation code refuses
 to add any field to an error if it's already present.  This ensures that
