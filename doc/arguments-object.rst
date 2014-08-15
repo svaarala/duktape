@@ -342,7 +342,7 @@ does not happen in relevant cases and would require additional checks.
 Exotic [[Get]] behavior
 =======================
 
-A non-strict arguments object has a exotic ``[[Get]]`` implementation.
+A non-strict arguments object has an exotic ``[[Get]]`` implementation.
 This is unusual, because most exotic behaviors are defined through a
 custom ``[[GetOwnProperty]]`` or ``[[DefineOwnProperty]``.  Because
 this exotic behavior operates at the ``[[Get]]`` level, it affects
@@ -369,7 +369,9 @@ Then:
 Note that this behavior is only defined for a non-strict arguments
 object (i.e. arguments object created for a non-strict callee), and
 protects the ``caller`` property from being read, if the caller is
-strict.
+strict.  Quite oddly, if the function has no formal parameters, it
+gets no "parameter map" and also doesn't get the exotic ``[[Get]]``
+behavior for ``caller``!
 
 However, the ``caller`` property *can* be read through e.g.
 ``Object.getOwnPropertyDescriptor()`` (which uses
