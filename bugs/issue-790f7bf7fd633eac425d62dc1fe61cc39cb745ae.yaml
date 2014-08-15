@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: improve string hashing, hash algorithm and performance
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-15 11:23:50.961109 Z
+references: []
+
+id: 790f7bf7fd633eac425d62dc1fe61cc39cb745ae
+log_events: 
+- - 2014-08-15 11:23:51.150143 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
