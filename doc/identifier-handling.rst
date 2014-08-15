@@ -1108,9 +1108,9 @@ and cleaning up:
 
 5. **NOTFOUND:**
 
-    a. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
+   a. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
 
-    b. Else, return ``undefined``.
+   b. Else, return ``undefined``.
 
 Notes:
 
@@ -1605,23 +1605,23 @@ Algorithm:
       which must hold an own property called ``name``.  This is the case
       because the global object has a ``null`` internal prototype.
 
-  c. Let ``X`` be the property descriptor for ``name`` in ``holder``.
+   c. Let ``X`` be the property descriptor for ``name`` in ``holder``.
 
-  d. If ``X.[[Configurable]]`` is ``false``:
+   d. If ``X.[[Configurable]]`` is ``false``:
 
-     1. If ``X`` is an accessor property, throw a ``TypeError``.
+      1. If ``X`` is an accessor property, throw a ``TypeError``.
 
-     2. If ``X.[[Writable]]`` is ``false`` or ``X.[[Enumerable]]`` is
-        ``false``, throw a ``TypeError``.
+      2. If ``X.[[Writable]]`` is ``false`` or ``X.[[Enumerable]]`` is
+         ``false``, throw a ``TypeError``.
 
-     3. Set ``attrs`` to the current property attributes of ``X``.
-        (Note: in effect, don't update ``X`` attributes; we know it is
-        writable, enumerable, and non-configurable.)
+      3. Set ``attrs`` to the current property attributes of ``X``.
+         (Note: in effect, don't update ``X`` attributes; we know it is
+         writable, enumerable, and non-configurable.)
 
-  e. Update the property ``name`` of ``holder`` to be a data property with
-     the value ``val``, and attributes set to ``attrs``.
+   e. Update the property ``name`` of ``holder`` to be a data property with
+      the value ``val``, and attributes set to ``attrs``.
 
-  f. Return.
+   f. Return.
 
 3. Let ``holder`` be the property holder object of ``env`` (this is ``env``
    itself for a declarative environment, and the target (bindings) object
