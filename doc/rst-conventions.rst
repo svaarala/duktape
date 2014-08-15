@@ -66,6 +66,18 @@ confusing if Quux was renumbered to 1.1.1 or 1.a.iii.  Even so, such
 references are sometimes necessary so they can be used.
 Start at zero indent
 
+Bullets
+-------
+
+Recommended bullet styles by level::
+
+  * Foo
+
+    + Bar
+
+      - Quux
+
+Start at zero indent
 --------------------
 
 Start lists at zero indent, e.g.::
