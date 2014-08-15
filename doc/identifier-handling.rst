@@ -61,23 +61,30 @@ Key parts
 Key parts of Ecmascript E5 discussion identifier handling include Section 10
 (Executable Code and Execution Contexts):
 
-  + Sections 10.2.2.1 and 10.3.1 cover identifier lookup
-    (``GetIdentifierReference``)
-  + Sections 10.4 and 10.5 cover execution context initialization for global
-    code, eval code, and function calls
-  + Section 10.6 covers the ``arguments`` object initialization (for function
-    calls)
+* Sections 10.2.2.1 and 10.3.1 cover identifier lookup
+  (``GetIdentifierReference``)
+
+* Sections 10.4 and 10.5 cover execution context initialization for global
+  code, eval code, and function calls
+
+* Section 10.6 covers the ``arguments`` object initialization (for function
+  calls)
 
 Other relevant sections include:
 
-  + Section 11.4.1: the ``delete`` operator, which is used for variable
-    deletion (and property deletion)
-  + Section 11.4.3: the ``typeof`` operator
-  + Section 12.10: the ``with`` statement
-  + Section 12.14: the ``try`` statement, special handling of ``catch``
-  + Section 13: function declarations and function expressions
-  + Section 15.1.2.1: ``eval (x)``, defines the concept of a *direct call
-    to eval*
+* Section 11.4.1: the ``delete`` operator, which is used for variable
+  deletion (and property deletion)
+
+* Section 11.4.3: the ``typeof`` operator
+
+* Section 12.10: the ``with`` statement
+
+* Section 12.14: the ``try`` statement, special handling of ``catch``
+
+* Section 13: function declarations and function expressions
+
+* Section 15.1.2.1: ``eval (x)``, defines the concept of a *direct call
+  to eval*
 
 Key concepts
 ------------
@@ -108,18 +115,21 @@ Environment record
 Execution context
   Consists of (note the confusing names and terminology here):
 
-      1. ``LexicalEnvironment``, a lexical environment (an environment
-         record) for processing variable lookups,
-      2. ``VariableEnvironment``, a lexical environment (an environment
-         record) for processing variable and function declarations, and
-      3. a ``this`` binding
+  1. ``LexicalEnvironment``, a lexical environment (an environment
+     record) for processing variable lookups,
+
+  2. ``VariableEnvironment``, a lexical environment (an environment
+     record) for processing variable and function declarations, and
+
+  3. a ``this`` binding
 
   The two lexical environments are usually the same, except for:
 
-    + ``with``, which establishes an object environment record for variable
-      lookups, but keeps the previous one for declarations
-    + ``catch``, which establishes a single-variable declarative environment
-      record for the variable containing the error
+  * ``with``, which establishes an object environment record for variable
+    lookups, but keeps the previous one for declarations
+
+  * ``catch``, which establishes a single-variable declarative environment
+    record for the variable containing the error
 
   Note the confusing terminology, especially the use of "lexical environment"
   as a general term and ``LexicalEnvironment`` as a component of an execution
@@ -152,8 +162,10 @@ bindings, except: [#specialbindings]_
 
 * *declaration in eval*: function and variable declarations in eval code are
   deletable mutable bindings
+
 * *"arguments" binding*: the ``arguments`` binding for strict mode function is
   an immutable binding
+
 * *function name in a function expression*: in a function expression
   ``function f(args) { body }``, the identifier ``f`` is an immutable binding
   for the function body; this is not true of function declarations
@@ -163,14 +175,17 @@ an uninitialized state: [#uninitializedimmutable]_
 
 * Immutable bindings are created with ``CreateImmutableBinding`` and
   initialized with ``InitializeImmutableBinding``
+
 * For ``arguments``, creation and initialization are consecutive, there is
   little chance of failure (except "out of memory" like conditions); even
   in failure cases, the intermediate uninitialized binding is not accessible
   to program code
+
 * For function name in a function expression, creation and initialization
   are not consecutive but the same applies as for ``arguments``: an
   uninitialized binding is never exposed to program code (the function
   expression is not "returned" until its initialization is complete)
+
 * As a result, the implementation does not need to handle lookups for
   uninitialized immutable bindings, implied for declarative environment
   records in E5 Section 10.2.1.1.4, step 3
@@ -187,45 +202,58 @@ Implicit ``this`` value is relevant only for: [#implicitthis]_
 New declarative environment records are created for: [#newdecrecord]_
 
 * Entering strict eval code (with a direct eval call)
+
 * Entering function code
+
 * Entering ``catch`` clause
+
 * Evaluating a named function expression
 
 New object environment records are created for: [#newobjrecord]_
 
 * Entering ``with`` statement body
+
 * Implicitly for the global object environment record
 
 .. [#specialbindings] See the following E5 sections:
 
-  * Section 10.5 steps 2, 5.d, 8.c (eval code)
-  * Section 10.5 step 7.b (``arguments`` binding)
-  * Section 13 (function expression)
+   * Section 10.5 steps 2, 5.d, 8.c (eval code)
+
+   * Section 10.5 step 7.b (``arguments`` binding)
+
+   * Section 13 (function expression)
 
 .. [#uninitializedimmutable] See the following E5 sections:
 
-  * Section 10.5, steps 7.b.i and 7.b.ii (``arguments`` for a strict function)
-  * Section 13, named function expression algorithm, steps 3-5 (named
-    function expressions)
+   * Section 10.5, steps 7.b.i and 7.b.ii (``arguments`` for a strict function)
+
+   * Section 13, named function expression algorithm, steps 3-5 (named
+     function expressions)
 
 .. [#implicitthis] See the following E5 sections:
 
-  * Sections 10.2.1.1.6, 10.2.1.2.6: when implicit ``this`` is provided
-  * Section 11.2.3 step 6.b: function call handling
-  * Sections 10.2.1.2, 12.10: object environment records which have
-    ``provideThis`` set (``with`` statement only)
+   * Sections 10.2.1.1.6, 10.2.1.2.6: when implicit ``this`` is provided
+
+   * Section 11.2.3 step 6.b: function call handling
+
+   * Sections 10.2.1.2, 12.10: object environment records which have
+     ``provideThis`` set (``with`` statement only)
 
 .. [#newdecrecord] See the following E5 sections:
 
-  * Section 10.4.2, step 3: strict eval code
-  * Section 10.4.3: function call
-  * Section 12.14: ``catch`` clause, step 3
-  * Section 13.1: function expression
+   * Section 10.4.2, step 3: strict eval code
+
+   * Section 10.4.3: function call
+
+   * Section 12.14: ``catch`` clause, step 3
+
+   * Section 13.1: function expression
 
 .. [#newobjrecord] See the following E5 sections:
 
-  * Section 10.2.3: global environment record
-  * Section 12.10: ``with`` statement, step 4
+   * Section 10.2.3: global environment record
+
+   * Section 12.10: ``with`` statement, step 4
 
 Establishing an execution context (= calling)
 ---------------------------------------------
@@ -314,9 +342,13 @@ identifiers are bound to values in an Ecmascript execution context.
 Bindings can be established in several ways:
 
 #. variable and function declarations in the global scope
+
 #. variable and function declarations in eval code
+
 #. variable and function declarations in functions
+
 #. ``catch`` clauses
+
 #. ``with`` statements
 
 An environment record maintains bindings to a certain set of identifiers,
@@ -326,6 +358,7 @@ reference*) with further bindings.
 There are two types of environment records:
 
 #. *declarative environment record*: binds identifiers to values directly
+
 #. *object environment record*: refers to an external Ecmascript object
    which contains the variable bindings
 
@@ -341,6 +374,7 @@ references (E5 Section 10.3):
 
 * A *variable environment* refers to an environment record which is used
   for function and variable declarations
+
 * A *lexical environment* refers to an environment record which is used
   for variable lookups (including deletes)
 
@@ -371,6 +405,7 @@ A *declarative environment record* object maintains identifier mappings
 in two ways:
 
 #. directly as properties of the environment record
+
 #. by identifying an active activation record ("open scope") and a set
    of identifiers bound to the registers of that activation record
 
@@ -382,6 +417,7 @@ entry as follows:
 #. The function's variable map (if it exists) is consulted to find the
    identifiers register number, relative to the bottom of the activation.
    (Of course, the identifier might not be mapped.)
+
 #. The "register base" of the environment record identifies the absolute
    value stack index of the activation record's frame bottom, and is added
    to the relative register number to get an absolute value stack index.
@@ -395,9 +431,12 @@ activation record's frame).
 The internal object is initialized with:
 
 * Object class set to ``DUK_HOBJECT_CLASS_DECENV``
+
 * Object flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` cleared (assuming the
   environment is open)
+
 * Internal prototype referring to outer environment record
+
 * Internal control properties: ``_callee``, ``_thread``, ``_regbase``
 
 When a declarative environment is "closed", identifiers bound to
@@ -411,8 +450,10 @@ The variables mapped as properties have their attributes set as follows:
 
 * ``[[Enumerable]]``: does not matter as the properties are not visible
   to the program (currently set to ``true``)
+
 * ``[[Writable]]``: set to ``true`` for mutable bindings, ``false`` for
   immutable bindings
+
 * ``[[Configurable]]``: set to ``true`` for mutable bindings which are
   also deletable, ``false`` for non-deletable mutable bindings and
   immutable bindings
@@ -436,7 +477,9 @@ object is identified with an internal control property.
 The internal object is initialized with:
 
 * Object class set to ``DUK_HOBJECT_CLASS_OBJENV``
+
 * Internal prototype referring to outer environment record
+
 * Internal control property: ``_target``
 
 Identifier lookups proceed to the ``_target`` object while the parent
@@ -449,7 +492,9 @@ Example internal environment record objects
 Let's consider an environment with:
 
 #. the global object (outermost)
+
 #. a declarative environment (of a function, scope is open)
+
 #. an object environment (e.g. of a ``with`` clause)
 
 This could happen in this example::
@@ -566,25 +611,29 @@ are supported:
 
 * If both scope references are missing:
 
-  - Assume that the function has an empty declarative environment record,
+  + Assume that the function has an empty declarative environment record,
     whose parent is the global environment record.
-  - For variable lookups this means that we proceed directly to the global
+
+  + For variable lookups this means that we proceed directly to the global
     environment record.
-  - For variable declarations this means that a declarative environment
+
+  + For variable declarations this means that a declarative environment
     record needs to be created on demand.
 
 * If ``_varenv`` is missing:
 
-  - Assume that ``_varenv`` has the same value as ``_lexenv``.
-  - This is very common, and saves one (unnecessary) reference.
-  - Note: it would be more logical to allow ``_lexenv`` to be missing
+  + Assume that ``_varenv`` has the same value as ``_lexenv``.
+
+  + This is very common, and saves one (unnecessary) reference.
+
+  + Note: it would be more logical to allow ``_lexenv`` to be missing
     and default it to ``_varenv``; however, dynamic variable
     declarations are comparatively rare so the defaulting is more
     useful this way around
 
 * If ``_varmap`` is missing:
 
-  - Assume that the function has no register-mapped variables.
+  + Assume that the function has no register-mapped variables.
 
 * The compiler attempts to drop any fields not required from compiled
   objects.  In many common cases (even when dynamic variables accesses
@@ -593,6 +642,7 @@ are supported:
 The detailed handling of these is documented as part of the source for:
 
 * Creating function templates in the compiler
+
 * Instantiating function instances from templates (closures)
 
 Notes:
@@ -733,8 +783,8 @@ and a ``strict`` flag:
 
 1. If ``lex`` is the value ``null``, then
 
-  a. Return a value of type Reference whose base value is ``undefined``, whose
-     referenced name is ``name``, and whose strict mode flag is ``strict``.
+   a. Return a value of type Reference whose base value is ``undefined``, whose
+      referenced name is ``name``, and whose strict mode flag is ``strict``.
 
 2. Let ``envRec`` be ``lex``\ ‘s environment record.
 
@@ -743,15 +793,15 @@ and a ``strict`` flag:
 
 4. If ``exists`` is ``true``, then
 
-  a. Return a value of type Reference whose base value is ``envRec``, whose
-     referenced name is ``name``, and whose strict mode flag is ``strict``.
+   a. Return a value of type Reference whose base value is ``envRec``, whose
+      referenced name is ``name``, and whose strict mode flag is ``strict``.
 
 5. Else
 
-  a. Let ``outer`` be the value of ``lex``\ ’s outer environment reference.
+   a. Let ``outer`` be the value of ``lex``\ ’s outer environment reference.
 
-  b. Return the result of calling ``GetIdentifierReference`` passing
-     ``outer``, ``name``, and ``strict`` as arguments.
+   b. Return the result of calling ``GetIdentifierReference`` passing
+      ``outer``, ``name``, and ``strict`` as arguments.
 
 Notes:
 
@@ -768,8 +818,8 @@ Eliminating recursion
 1. **NEXT:**
    If ``lex`` is the value ``null``, then:
 
-  a. Return a value of type Reference whose base value is ``undefined``, whose
-     referenced name is ``name``, and whose strict mode flag is ``strict``.
+   a. Return a value of type Reference whose base value is ``undefined``, whose
+      referenced name is ``name``, and whose strict mode flag is ``strict``.
 
 2. Let ``envRec`` be ``lex``\ ‘s environment record.
 
@@ -778,8 +828,8 @@ Eliminating recursion
 
 4. If ``exists`` is ``true``, then
 
-  a. Return a value of type Reference whose base value is ``envRec``, whose
-     referenced name is ``name``, and whose strict mode flag is ``strict``.
+   a. Return a value of type Reference whose base value is ``envRec``, whose
+      referenced name is ``name``, and whose strict mode flag is ``strict``.
 
 5. Let ``lex`` be the value of ``lex``\ 's outer environment reference.
 
@@ -806,78 +856,97 @@ First draft:
 1. If ``lex`` is ``null`` and ``act`` is defined then
    (delayed declarative environment record):
 
-  a. Check whether ``name`` is bound to a register of ``act``.
-     To do this, the function object needs to be looked up based on
-     ``act``, and the function metadata be consulted; in particular,
-     the ``_varmap`` internal property (which maps names to register
-     numbers) is used.
+   a. Check whether ``name`` is bound to a register of ``act``.
+      To do this, the function object needs to be looked up based on
+      ``act``, and the function metadata be consulted; in particular,
+      the ``_varmap`` internal property (which maps names to register
+      numbers) is used.
 
-  b. If ``name`` is mapped, return the following:
+   b. If ``name`` is mapped, return the following:
 
-    * Result: ``true``
-    * Value pointer: point to register storage
-    * Attributes: writable
-    * This pointer: NULL
-    * Environment pointer: NULL
-    * Holder pointer: NULL
+      * Result: ``true``
 
-  c. If ``parents`` is ``false``, goto NOTFOUND.
+      * Value pointer: point to register storage
 
-  d. Else, let ``lex`` be the outer environment record that a
-     declarative environment record created for ``act`` would
-     have.  This is concretetely looked up from the ``_lexenv``
-     internal property of the function related to ``act``.
+      * Attributes: writable
+
+      * This pointer: NULL
+
+      * Environment pointer: NULL
+
+      * Holder pointer: NULL
+
+   c. If ``parents`` is ``false``, goto NOTFOUND.
+
+   d. Else, let ``lex`` be the outer environment record that a
+      declarative environment record created for ``act`` would
+      have.  This is concretetely looked up from the ``_lexenv``
+      internal property of the function related to ``act``.
 
 2. **NEXT:**
    If ``lex`` is the value ``null``, then goto NOTFOUND.
 
 3. If ``lex`` is a declarative environment record, then:
 
-  a. If ``lex`` is *open* (activation registers are still in use):
+   a. If ``lex`` is *open* (activation registers are still in use):
 
-    1. Check whether ``name`` is mapped to a register of the activation
-       related to the environment record.  These are concretely looked
-       up using internal properties of ``lex``.  (Note that the related
-       activation may be any function, and even that of another thread.)
+      1. Check whether ``name`` is mapped to a register of the activation
+         related to the environment record.  These are concretely looked
+         up using internal properties of ``lex``.  (Note that the related
+         activation may be any function, and even that of another thread.)
 
-    2. If so, return the following values (value pointer can always be
-       given, and the caller is always allowed to modify the value in-place,
-       because all register bindings are mutable):
+      2. If so, return the following values (value pointer can always be
+         given, and the caller is always allowed to modify the value in-place,
+         because all register bindings are mutable):
+
+         * Result: ``true``
+
+         * Value pointer: point to register storage
+
+         * This pointer: NULL
+
+         * Environment pointer: ``lex``
+
+         * Holder pointer: NULL
+
+   b. If ``lex`` has a property named ``name``, return the following values:
 
       * Result: ``true``
-      * Value pointer: point to register storage
+
+      * Value pointer: point to storage location of property in ``lex``
+
+      * Attributes: from ``lex`` property (non-writable for immutable
+        bindings, writable for others)
+
       * This pointer: NULL
+
       * Environment pointer: ``lex``
-      * Holder pointer: NULL
 
-  b. If ``lex`` has a property named ``name``, return the following values:
-
-    * Result: ``true``
-    * Value pointer: point to storage location of property in ``lex``
-    * Attributes: from ``lex`` property (non-writable for immutable
-      bindings, writable for others)
-    * This pointer: NULL
-    * Environment pointer: ``lex``
-    * Holder pointer: ``lex``
+      * Holder pointer: ``lex``
 
 4. Else ``lex`` is an object environment record:
 
-  a. Let ``target`` be the binding object for ``lex``. 
-     (Note: this is always defined, and an object.)
+   a. Let ``target`` be the binding object for ``lex``.
+      (Note: this is always defined, and an object.)
 
-  b. If the result of calling ``[[HasProperty]]`` for ``target`` with the
-     property name ``name`` is ``true``:
+   b. If the result of calling ``[[HasProperty]]`` for ``target`` with the
+      property name ``name`` is ``true``:
 
-    1. If ``lex`` has the internal property ``_this``, set ``thisBinding``
-       to its value.  Else set ``thisBinding`` to ``NULL``.
+      1. If ``lex`` has the internal property ``_this``, set ``thisBinding``
+         to its value.  Else set ``thisBinding`` to ``NULL``.
 
-    2. Return the following values:
+      2. Return the following values:
 
          * Result: ``true``
+
          * Value pointer: NULL
+
          * Attributes: arbitrary (use zero)
+
          * This pointer: ``thisBinding``
+
          * Environment pointer: ``lex``
+
          * Holder pointer: ``target``
 
 5. If ``parents`` is ``false``, goto NOTFOUND.
@@ -889,12 +958,17 @@ First draft:
 8. **NOTFOUND:**
    Return the following:
 
-  * Result: ``false``
-  * Value pointer: NULL
-  * Attributes: arbitrary (use zero)
-  * This pointer: NULL
-  * Environment pointer: NULL
-  * Holder pointer: NULL
+   * Result: ``false``
+
+   * Value pointer: NULL
+
+   * Attributes: arbitrary (use zero)
+
+   * This pointer: NULL
+
+   * Environment pointer: NULL
+
+   * Holder pointer: NULL
 
 HASVAR: check existence of identifier
 =====================================
@@ -973,34 +1047,34 @@ Inlining the ``GetBindingValue`` calls (E5 Sections 10.2.1.1.4 and
 
 3. If ``base`` is a declarative environment record, then:
 
-  a. If the binding for ``name`` is an uninitialized immutable binding,
-     then:
+   a. If the binding for ``name`` is an uninitialized immutable binding,
+      then:
 
-    1. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
+      1. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
 
-    2. Else, return ``undefined``.
+      2. Else, return ``undefined``.
 
-  b. Return the value currently bound to ``name`` in ``base``.
-     (Note: the value must exist, because ``IsUnresolvableReference()``
-     checks that it does.)
+   b. Return the value currently bound to ``name`` in ``base``.
+      (Note: the value must exist, because ``IsUnresolvableReference()``
+      checks that it does.)
 
 4. Else ``base`` must be an object environment record and:
 
-  a. Let ``bindings`` be the bindings object for ``base``.
+   a. Let ``bindings`` be the bindings object for ``base``.
 
-  b. Let ``value`` be the result of calling the ``[[HasProperty]]``
-     internal method of ``bindings``, passing ``name`` as the property
-     name.
+   b. Let ``value`` be the result of calling the ``[[HasProperty]]``
+      internal method of ``bindings``, passing ``name`` as the property
+      name.
 
-  c. If ``value`` is ``false``, then:
+   c. If ``value`` is ``false``, then:
 
-    1. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
+      1. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
 
-    2. Else, return ``undefined``.
+      2. Else, return ``undefined``.
 
-  d. Return the result of calling the ``[[Get]]`` internal method of
-     ``bindings``, passing ``name`` for the argument.
-     (Note: this may invoke an accessor.)
+   d. Return the result of calling the ``[[Get]]`` internal method of
+      ``bindings``, passing ``name`` for the argument.
+      (Note: this may invoke an accessor.)
 
 Reworking a bit to eliminate duplication of ``ReferenceError`` throwing,
 and cleaning up:
@@ -1013,30 +1087,30 @@ and cleaning up:
 
 3. If ``base`` is a declarative environment record, then:
 
-  a. If the binding for ``name`` is an uninitialized immutable binding,
-     then goto NOTFOUND.
+   a. If the binding for ``name`` is an uninitialized immutable binding,
+      then goto NOTFOUND.
 
-  b. Return the value currently bound to ``name`` in ``base``.
-     (Note: the value must exist, because ``IsUnresolvableReference()``
-     checks that it does.)
+   b. Return the value currently bound to ``name`` in ``base``.
+      (Note: the value must exist, because ``IsUnresolvableReference()``
+      checks that it does.)
 
 4. Else ``base`` must be an object environment record and:
 
-  a. Let ``bindings`` be the bindings object for ``base``.
+   a. Let ``bindings`` be the bindings object for ``base``.
 
-  b. If the result of calling the ``[[HasProperty]]`` internal method of
-     ``bindings``, passing ``name`` as the property name, is ``false``,
-     then goto NOTFOUND.
+   b. If the result of calling the ``[[HasProperty]]`` internal method of
+      ``bindings``, passing ``name`` as the property name, is ``false``,
+      then goto NOTFOUND.
 
-  c. Return the result of calling the ``[[Get]]`` internal method of
-     ``bindings``, passing ``name`` for the argument.
-     (Note: this may invoke an accessor.)
+   c. Return the result of calling the ``[[Get]]`` internal method of
+      ``bindings``, passing ``name`` for the argument.
+      (Note: this may invoke an accessor.)
 
 5. **NOTFOUND:**
 
-   a. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
+    a. If ``strict`` is ``true``, then throw a ``ReferenceError`` exception.
 
-   b. Else, return ``undefined``.
+    b. Else, return ``undefined``.
 
 Notes:
 
@@ -1071,17 +1145,17 @@ The return value is a pair (value, this_binding).
 3. If ``res.value`` is not NULL (identifier bound to a register in a
    declarative environment record) then:
 
-  a. Return ``res.value`` and ``undefined``.
+   a. Return ``res.value`` and ``undefined``.
 
 4. Else ``res.holder`` must not be NULL (identifier bound to a declarative
    environment record or an object environment record target object):
 
-  a. Let ``this`` be ``ref.this_binding``.
+   a. Let ``this`` be ``ref.this_binding``.
 
-  b. Let ``val`` be the result of calling ``[[Get]]`` on ``res.holder`` with
-     the property name ``name``.
+   b. Let ``val`` be the result of calling ``[[Get]]`` on ``res.holder`` with
+      the property name ``name``.
 
-  c. Return ``val`` and ``this``.
+   c. Return ``val`` and ``this``.
 
 Notes:
 
@@ -1105,6 +1179,7 @@ PUTVAR: write identifier value
 ==============================
 
 * ``GetIdentifierReference``
+
 * ``PutValue``
 
 Note: the E5 specification prohibits a binding or assignment to an
@@ -1113,8 +1188,11 @@ actually prevented during compilation, and causes a compile time
 ``SyntaxError``:
 
 * E5 Section 11.13: single or compound assignment
+
 * E5 Section 12.2.1: variable or function declaration in a function body
+
 * E5 Section 13.1: function argument name
+
 * E5 Section 12.14.1: ``catch`` clause variable name
 
 As a result, there is no need to check for this at run time when
@@ -1134,12 +1212,12 @@ PutValue simplifies to (here, ``V`` is the Reference and ``W`` is the value):
 
 2. If ``IsUnresolvableReference(V)``, then:
 
-  a. If ``IsStrictReference(V)`` is ``true`` then throw a
-     ``ReferenceError`` exception.
+   a. If ``IsStrictReference(V)`` is ``true`` then throw a
+      ``ReferenceError`` exception.
 
-  b. Call the ``[[Put]]`` internal method of the global object, passing
-     ``GetReferencedName(V)`` for the property name, ``W`` for the value,
-     and ``false`` for the ``Throw`` flag.
+   b. Call the ``[[Put]]`` internal method of the global object, passing
+      ``GetReferencedName(V)`` for the property name, ``W`` for the value,
+      and ``false`` for the ``Throw`` flag.
 
 3. Call the ``SetMutableBinding`` (10.2.1) concrete method of ``base``,
    passing ``GetReferencedName(V)``, ``W``, and ``IsStrictReference(V)``
@@ -1155,28 +1233,28 @@ Inlining the ``SetMutableBinding`` calls (E5 Sections 10.2.1.1.3 and
 
 2. If ``IsUnresolvableReference(V)``, then:
 
-  a. If ``IsStrictReference(V)`` is ``true`` then throw a
-     ``ReferenceError`` exception.
+   a. If ``IsStrictReference(V)`` is ``true`` then throw a
+      ``ReferenceError`` exception.
 
-  b. Call the ``[[Put]]`` internal method of the global object, passing
-     ``GetReferencedName(V)`` for the property name, ``W`` for the value,
-     and ``false`` for the ``Throw`` flag.
+   b. Call the ``[[Put]]`` internal method of the global object, passing
+      ``GetReferencedName(V)`` for the property name, ``W`` for the value,
+      and ``false`` for the ``Throw`` flag.
 
 3. If ``base`` is a declarative environment record, then:
 
-  a. If the binding for ``GetReferencedName(V)`` in ``base`` is a mutable
-     binding, change its bound value to ``W``.
+   a. If the binding for ``GetReferencedName(V)`` in ``base`` is a mutable
+      binding, change its bound value to ``W``.
 
-  b. Else this must be an attempt to change the value of an immutable
-     binding so throw a ``TypeError`` exception.
+   b. Else this must be an attempt to change the value of an immutable
+      binding so throw a ``TypeError`` exception.
 
 4. Else ``base`` must be an object environment record and:
 
-  a. Let ``bindings`` be the binding object for ``base``.
+   a. Let ``bindings`` be the binding object for ``base``.
 
-  b. Call the ``[[Put]]`` internal method of ``bindings`` with
-     arguments ``GetReferencedName(V)``, ``W``, and ``IsStrictReference(V)``.
-     (Note: this may invoke an accessor.)
+   b. Call the ``[[Put]]`` internal method of ``bindings`` with
+      arguments ``GetReferencedName(V)``, ``W``, and ``IsStrictReference(V)``.
+      (Note: this may invoke an accessor.)
 
 4. Return.
 
@@ -1197,30 +1275,30 @@ code executing a PUTVAR is strict.
 
 2. If ``res.result`` is ``false``:
 
-  a. If ``strict`` is ``true``, throw a ``ReferenceError``.
+   a. If ``strict`` is ``true``, throw a ``ReferenceError``.
 
-  b. Call the ``[[Put]]`` internal method of the global object, passing
-     ``name`` for the property name, ``val`` for the value,
-     and ``false`` for the ``Throw`` flag.
+   b. Call the ``[[Put]]`` internal method of the global object, passing
+      ``name`` for the property name, ``val`` for the value,
+      and ``false`` for the ``Throw`` flag.
 
 3. If ``res.value`` is not NULL (identifier bound to a register, or to
    a property in a declarative environment record) and ``res.attrs``
    indicates value is writable, then:
 
-  a. Write ``val`` to the target of the pointer ``res.value``.
-     (Identifier bound to a register in a declarative environment record.)
+   a. Write ``val`` to the target of the pointer ``res.value``.
+      (Identifier bound to a register in a declarative environment record.)
 
-  b. Return.
+   b. Return.
 
 4. Else ``res.holder`` must not be NULL.  Identifier is bound to a declarative
    environment record (an immutable binding) or an object environment record
    target object:
 
-  a. Call the ``[[Put]]`` internal method of ``res.holder`` with
-     arguments ``name``, ``val``, and ``strict``.
-     (Note: this may invoke an accessor.)
+   a. Call the ``[[Put]]`` internal method of ``res.holder`` with
+      arguments ``name``, ``val``, and ``strict``.
+      (Note: this may invoke an accessor.)
 
-  b. Return.
+   b. Return.
 
 Notes:
 
@@ -1233,7 +1311,9 @@ DELVAR: delete identifier
 =========================
 
 * ``GetIdentifierReference``
+
 * ``delete`` operator applied to an identifier (not a property)
+
 * ``DeleteBinding``
 
 The deletion process locates the nearest declaration and deletes that (if possible).
@@ -1354,23 +1434,23 @@ Inlining the concrete ``DeleteBinding`` algorithms (E5 Sections
 
 3. If ``base`` is a declarative environment record, then:
 
-  a. If ``base`` does not have a binding for the name
-     ``GetReferencedName(V)``, return ``true``.
+   a. If ``base`` does not have a binding for the name
+      ``GetReferencedName(V)``, return ``true``.
 
-  b. If the binding for ``GetReferencedName(V)`` in ``base`` cannot
-     be deleted, return ``false``.
+   b. If the binding for ``GetReferencedName(V)`` in ``base`` cannot
+      be deleted, return ``false``.
 
-  c. Remove the binding for ``GetReferencedName(V)`` from ``base``.
+   c. Remove the binding for ``GetReferencedName(V)`` from ``base``.
 
-  d. Return ``true``.
+   d. Return ``true``.
 
 4. Else ``base`` must be an object environment record and:
 
-  a. Let ``bindings`` be the binding (target) object for ``base``.
+   a. Let ``bindings`` be the binding (target) object for ``base``.
 
-  b. Return the result of calling ``[[Delete]]`` internal method of
-     ``bindings``, passing ``GetReferencedName(V)`` and ``false``
-     arguments.
+   b. Return the result of calling ``[[Delete]]`` internal method of
+      ``bindings``, passing ``GetReferencedName(V)`` and ``false``
+      arguments.
 
 Notes:
 
@@ -1392,22 +1472,22 @@ though).
 
 2. If ``res.result`` is ``false``:
 
-  a. Return ``true``.
+   a. Return ``true``.
 
 3. If ``res.value`` is not NULL (identifier bound to a register, or a
    property in a declarative environment record) and ``res.attrs``
    indicates value is non-configurable, then:
 
-  a. Return ``false``.
-     (Note: register-bound identifiers are not deletable.)
+   a. Return ``false``.
+      (Note: register-bound identifiers are not deletable.)
 
 4. Else ``res.holder`` must not be NULL (identifier bound to a declarative
    environment record or an object environment record target object):
 
-  a. Call the ``[[Delete]]`` internal method of ``res.holder`` with
-     arguments ``name`` and ``false``.
+   a. Call the ``[[Delete]]`` internal method of ``res.holder`` with
+      arguments ``name`` and ``false``.
 
-  b. Return.
+   b. Return.
 
 Notes:
 
@@ -1516,27 +1596,27 @@ Algorithm:
 
 2. If ``res.result`` is ``true`` (already declared):
 
-  a. If ``is_func_decl`` is ``false`` or ``env`` is not the global object
-     environment record, return (ignore re-declaration).
-     Else ``is_func_decl`` is ``true`` and ``env`` is the global object
-     environment record, and E5.1 special behavior is needed.
+   a. If ``is_func_decl`` is ``false`` or ``env`` is not the global object
+      environment record, return (ignore re-declaration).
+      Else ``is_func_decl`` is ``true`` and ``env`` is the global object
+      environment record, and E5.1 special behavior is needed.
 
-  b. Let ``holder`` be ``ref.holder``; this must be the global object,
-     which must hold an own property called ``name``.  This is the case
-     because the global object has a ``null`` internal prototype.
+   b. Let ``holder`` be ``ref.holder``; this must be the global object,
+      which must hold an own property called ``name``.  This is the case
+      because the global object has a ``null`` internal prototype.
 
   c. Let ``X`` be the property descriptor for ``name`` in ``holder``.
 
   d. If ``X.[[Configurable]]`` is ``false``:
 
-    1. If ``X`` is an accessor property, throw a ``TypeError``.
+     1. If ``X`` is an accessor property, throw a ``TypeError``.
 
-    2. If ``X.[[Writable]]`` is ``false`` or ``X.[[Enumerable]]`` is
-       ``false``, throw a ``TypeError``.
+     2. If ``X.[[Writable]]`` is ``false`` or ``X.[[Enumerable]]`` is
+        ``false``, throw a ``TypeError``.
 
-    3. Set ``attrs`` to the current property attributes of ``X``.
-       (Note: in effect, don't update ``X`` attributes; we know it is
-       writable, enumerable, and non-configurable.)
+     3. Set ``attrs`` to the current property attributes of ``X``.
+        (Note: in effect, don't update ``X`` attributes; we know it is
+        writable, enumerable, and non-configurable.)
 
   e. Update the property ``name`` of ``holder`` to be a data property with
      the value ``val``, and attributes set to ``attrs``.
