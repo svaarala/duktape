@@ -4,22 +4,19 @@ Duktape
 
 Duktape is a small and portable Ecmascript E5/E5.1 implementation.  It is
 intended to be easily embeddable into C programs, with a C API similar in
-spirit to Lua's.  Duktape supports the full E5 feature set such as errors
-(with tracebacks), Unicode strings, and regular expressions.  Other feature
-highlights include:
+spirit to Lua's.
 
-  * Custom types (like pointers and buffers) for C integration
-
-  * Reference counting and mark-and-sweep garbage collection
-    (with finalizer support)
-
-  * Co-operative threads, a.k.a. coroutines
-
-  * Tail call support
+Duktape supports the full E5 feature set such as errors (with tracebacks),
+Unicode strings, and regular expressions, as well as a subset of E6 features
+like Proxy objects.  Duktape also provides a number of custom features
+such as additional data types for better C integration, combined reference
+counting and mark-and sweep garbage collector with finalizer support,
+co-operative threads a.k.a. coroutines, tail calls, built-in logging and
+module frameworks, and so on.
 
 You can browse Duktape programmer's API and other documentation at::
 
-  http://www.duktape.org/
+  http://duktape.org/
 
 In particular, you should read the getting started section::
 
