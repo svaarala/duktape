@@ -352,19 +352,19 @@ descriptors or e.g. ``[[GetOwnProperty]]``.
 The exotic behavior is covered in E5 Section 10.6, description for
 ``[[Get]]``.  To summarize, if:
 
-  * the property being looked up is not currently mapped in the
-    arguments "parameter map" (``caller`` never is, because only
-    numeric indices like "0" are mapped);
+* the property being looked up is not currently mapped in the arguments
+  "parameter map" (``caller`` never is, because only numeric indices
+  like "0" are mapped);
 
-  * the name of the property is ``caller``; and
+* the name of the property is ``caller``; and
 
-  * the standard lookup from the arguments object succeeds
+* the standard lookup from the arguments object succeeds
 
 Then:
 
-  * Check the result value of the property lookup (i.e. the value for
-    ``arguments.caller``).  If the result value is a strict mode
-    function, throw a ``TypeError``.
+* Check the result value of the property lookup (i.e. the value for
+  ``arguments.caller``).  If the result value is a strict mode
+  function, throw a ``TypeError``.
 
 Note that this behavior is only defined for a non-strict arguments
 object (i.e. arguments object created for a non-strict callee), and
