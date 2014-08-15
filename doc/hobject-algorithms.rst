@@ -659,26 +659,26 @@ The exotic behavior can be appended to the above algorithm as follows:
 
       * ``[[Configurable]]: false``
 
-  d. If ``P`` is not an array index (E5 Section 15.4), return ``undefined``.
+   d. If ``P`` is not an array index (E5 Section 15.4), return ``undefined``.
 
-  e.  Else let ``index`` be ``ToUint32(P)``.
+   e.  Else let ``index`` be ``ToUint32(P)``.
 
-  f. If ``len`` <= ``index``, return ``undefined``.
+   f. If ``len`` <= ``index``, return ``undefined``.
 
-  g. Let ``resultStr`` be a string of length 1, containing one character
-     from ``str``, specifically the character at position ``index``, where
-     the first (leftmost) character in ``str`` is considered to be at
-     position 0, the next one at position 1, and so on.
+   g. Let ``resultStr`` be a string of length 1, containing one character
+      from ``str``, specifically the character at position ``index``, where
+      the first (leftmost) character in ``str`` is considered to be at
+      position 0, the next one at position 1, and so on.
 
-  h. Return a Property Descriptor with the values:
+   h. Return a Property Descriptor with the values:
 
-     * ``[[Value]]: resultStr``
+      * ``[[Value]]: resultStr``
 
-     * ``[[Enumerable]]: true``
+      * ``[[Enumerable]]: true``
 
-     * ``[[Writable]]: false``
+      * ``[[Writable]]: false``
 
-     * ``[[Configurable]]: false``
+      * ``[[Configurable]]: false``
 
 2. Let ``D`` be a newly created Property Descriptor with no fields.
 
@@ -1105,29 +1105,29 @@ Default algorithm
 10. Else, if ``IsDataDescriptor(current)`` and ``IsDataDescriptor(Desc)``
     are both true, then
 
-   a. If the ``[[Configurable]]`` field of ``current`` is ``false``, then
+    a. If the ``[[Configurable]]`` field of ``current`` is ``false``, then
 
-      1. Reject, if the ``[[Writable]]`` field of ``current`` is ``false``
-         and the ``[[Writable]]`` field of ``Desc`` is ``true``.
+       1. Reject, if the ``[[Writable]]`` field of ``current`` is ``false``
+          and the ``[[Writable]]`` field of ``Desc`` is ``true``.
 
-      2. If the ``[[Writable]]`` field of ``current`` is ``false``, then
+       2. If the ``[[Writable]]`` field of ``current`` is ``false``, then
 
-         a. Reject, if the ``[[Value]]`` field of ``Desc`` is present and
-            ``SameValue(Desc.[[Value]], current.[[Value]])`` is ``false``.
+          a. Reject, if the ``[[Value]]`` field of ``Desc`` is present and
+             ``SameValue(Desc.[[Value]], current.[[Value]])`` is ``false``.
 
-   b. else, the ``[[Configurable]]`` field of ``current`` is ``true``, so
-      any change is acceptable.
+    b. else, the ``[[Configurable]]`` field of ``current`` is ``true``, so
+       any change is acceptable.
 
 11. Else, ``IsAccessorDescriptor(current)`` and ``IsAccessorDescriptor(Desc)``
     are both ``true`` so,
 
-   a. If the ``[[Configurable]]`` field of ``current`` is ``false``, then
+    a. If the ``[[Configurable]]`` field of ``current`` is ``false``, then
 
-      1. Reject, if the ``[[Set]]`` field of ``Desc`` is present and
-         ``SameValue(Desc.[[Set]], current.[[Set]])`` is ``false``.
+       1. Reject, if the ``[[Set]]`` field of ``Desc`` is present and
+          ``SameValue(Desc.[[Set]], current.[[Set]])`` is ``false``.
 
-      2. Reject, if the ``[[Get]]`` field of ``Desc`` is present and
-         ``SameValue(Desc.[[Get]], current.[[Get]])`` is ``false``.
+       2. Reject, if the ``[[Get]]`` field of ``Desc`` is present and
+          ``SameValue(Desc.[[Get]], current.[[Get]])`` is ``false``.
 
 12. For each attribute field of ``Desc`` that is present, set the
     correspondingly named attribute of the property named ``P`` of object
@@ -2869,7 +2869,7 @@ We can assume that:
 
 More specifically, we know that in the ``[[DefineOwnProperty]]`` algorithm:
 
- * ``current`` is ``undefined``
+* ``current`` is ``undefined``
 
 Taking the ``[[DefineOwnProperty]]`` with all exotic behaviors included,
 using the above assumptions, and then eliminating any unnecessary steps,
@@ -3158,8 +3158,8 @@ some cleanup):
 
       * ``[[Configurable]]: true}``
 
-  b. Call the ``[[DefineOwnProperty]]`` internal method of ``O`` passing
-     ``P``, ``newDesc``, and ``Throw`` as arguments.
+   b. Call the ``[[DefineOwnProperty]]`` internal method of ``O`` passing
+      ``P``, ``newDesc``, and ``Throw`` as arguments.
 
 6. Return.
 
@@ -3197,8 +3197,8 @@ The result is:
 
       * ``[[Configurable]]: true}``
 
-  d. Call the ``[[DefineOwnProperty]]`` internal method of ``O`` passing
-     ``P``, ``newDesc``, and ``Throw`` as arguments.
+   d. Call the ``[[DefineOwnProperty]]`` internal method of ``O`` passing
+      ``P``, ``newDesc``, and ``Throw`` as arguments.
 
 4. Else if ``desc`` was not found (is ``undefined``):
 
@@ -3876,9 +3876,9 @@ and property name value ``P``):
 10. If ``orig`` is a ``Function`` object or an ``arguments`` object which
     contains a ``[[ParameterMap]]`` internal property:
 
-   a. (Arguments or Function object exotic behavior.)
-      If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
-      object, throw a ``TypeError`` exception.
+    a. (Arguments or Function object exotic behavior.)
+       If ``P`` is ``"caller"`` and ``res`` is a strict mode ``Function``
+       object, throw a ``TypeError`` exception.
 
 11. Return ``res``.
 
@@ -3915,7 +3915,7 @@ A variant where steps 3 and 4 are reversed and expanded is as follows:
       (This is the ``CheckObjectCoercible`` part.)
 
    b. Else if ``O`` is a boolean, a number, or a string, set ``O`` to
-     ``ToObject(O)``.
+      ``ToObject(O)``.
 
    c. Else if ``O`` is an object, do nothing.
 
@@ -4872,12 +4872,12 @@ and property name value ``P``):
 
 10. Else (property is an accessor):
 
-   a. If ``desc.[[Set]]`` is ``undefined``, Reject.
+    a. If ``desc.[[Set]]`` is ``undefined``, Reject.
 
-   b. Call the ``[[Call]]`` internal method of ``desc.[[Set]]`` providing
-      ``orig`` as the ``this`` value and providing ``V`` as the sole argument.
-      (Note: the difference to a basic ``[[Put]]`` is that the setter ``this``
-      binding is the original, uncoerced object.)
+    b. Call the ``[[Call]]`` internal method of ``desc.[[Set]]`` providing
+       ``orig`` as the ``this`` value and providing ``V`` as the sole argument.
+       (Note: the difference to a basic ``[[Put]]`` is that the setter ``this``
+       binding is the original, uncoerced object.)
 
 11. Return.
 
@@ -5106,15 +5106,15 @@ The resulting algorithm is:
 10. If ``O`` is an arguments object which has a ``[[ParameterMap]]``
     internal property:
 
-   a. Let ``map`` be the value of the ``[[ParameterMap]]`` internal property
-      of the arguments object.
+    a. Let ``map`` be the value of the ``[[ParameterMap]]`` internal property
+       of the arguments object.
 
-   b. If the result of calling the ``[[GetOwnProperty]]`` internal method
-      of ``map`` passing ``P`` as the argument is not ``undefined``, then:
+    b. If the result of calling the ``[[GetOwnProperty]]`` internal method
+       of ``map`` passing ``P`` as the argument is not ``undefined``, then:
 
-      1. Call the ``[[Put]]`` internal method of ``map`` passing ``P``,
-         ``V``, and ``Throw`` as the arguments.  (This updates the bound
-         variable value.)
+       1. Call the ``[[Put]]`` internal method of ``map`` passing ``P``,
+          ``V``, and ``Throw`` as the arguments.  (This updates the bound
+          variable value.)
 
 11. Return.
 
@@ -5123,23 +5123,23 @@ The resulting algorithm is:
     If ``O`` is an ``Array`` object and ``P`` is an array index (E5 Section
     15.4), then:
 
-   a. Let ``oldLenDesc`` be the result of calling the ``[[GetOwnProperty]]``
-      internal method of ``O`` passing ``"length"`` as the argument.  The
-      result will never be ``undefined`` or an accessor descriptor because
-      ``Array`` objects are created with a length data property that cannot
-      be deleted or reconfigured.
+    a. Let ``oldLenDesc`` be the result of calling the ``[[GetOwnProperty]]``
+       internal method of ``O`` passing ``"length"`` as the argument.  The
+       result will never be ``undefined`` or an accessor descriptor because
+       ``Array`` objects are created with a length data property that cannot
+       be deleted or reconfigured.
 
-   b. Let ``oldLen`` be ``oldLenDesc.[[Value]]``.
-      (Note that ``oldLen`` is guaranteed to be a unsigned 32-bit integer.)
+    b. Let ``oldLen`` be ``oldLenDesc.[[Value]]``.
+       (Note that ``oldLen`` is guaranteed to be a unsigned 32-bit integer.)
 
-   c. Let ``index`` be ``ToUint32(P)``.
+    c. Let ``index`` be ``ToUint32(P)``.
 
-   d. If ``index`` >= ``oldLen``:
+    d. If ``index`` >= ``oldLen``:
 
-      1. Goto REJECT ``oldLenDesc.[[Writable]]`` is ``false``.
+       1. Goto REJECT ``oldLenDesc.[[Writable]]`` is ``false``.
 
-      2. Update the ``"length"`` property of ``O`` to the value ``index + 1``.
-         This always succeeds.
+       2. Update the ``"length"`` property of ``O`` to the value ``index + 1``.
+          This always succeeds.
 
 13. Create an own data property named ``P`` of object ``O`` whose attributes
     are:
@@ -5349,23 +5349,23 @@ Avoiding temporaries altogether:
     If ``O`` is an ``Array`` object and ``P`` is an array index (E5 Section
     15.4), then:
 
-   a. Let ``oldLenDesc`` be the result of calling the ``[[GetOwnProperty]]``
-      internal method of ``O`` passing ``"length"`` as the argument.  The
-      result will never be ``undefined`` or an accessor descriptor because
-      ``Array`` objects are created with a length data property that cannot
-      be deleted or reconfigured.
+    a. Let ``oldLenDesc`` be the result of calling the ``[[GetOwnProperty]]``
+       internal method of ``O`` passing ``"length"`` as the argument.  The
+       result will never be ``undefined`` or an accessor descriptor because
+       ``Array`` objects are created with a length data property that cannot
+       be deleted or reconfigured.
 
-   b. Let ``oldLen`` be ``oldLenDesc.[[Value]]``.
-      (Note that ``oldLen`` is guaranteed to be a unsigned 32-bit integer.)
+    b. Let ``oldLen`` be ``oldLenDesc.[[Value]]``.
+       (Note that ``oldLen`` is guaranteed to be a unsigned 32-bit integer.)
 
-   c. Let ``index`` be ``ToUint32(P)``.
+    c. Let ``index`` be ``ToUint32(P)``.
 
-   d. If ``index`` >= ``oldLen``:
+    d. If ``index`` >= ``oldLen``:
 
-      1. Goto REJECT ``oldLenDesc.[[Writable]]`` is ``false``.
+       1. Goto REJECT ``oldLenDesc.[[Writable]]`` is ``false``.
 
-      2. Update the ``"length"`` property of ``O`` to the value ``index + 1``.
-         This always succeeds.
+       2. Update the ``"length"`` property of ``O`` to the value ``index + 1``.
+          This always succeeds.
 
 12. Create an own data property named ``P`` of object ``O`` whose attributes
     are:
@@ -6637,7 +6637,7 @@ Some cleanup
        1. Create an own accessor property named ``P`` of object ``O`` whose
           ``[[Get]]``, ``[[Set]]``, ``[[Enumerable]]`` and ``[[Configurable]]``
           attribute values are described by ``Desc``.  If the value of an
-         attribute field of ``Desc`` is absent, the attribute of the newly
+          attribute field of ``Desc`` is absent, the attribute of the newly
            created property is set to its default value.
 
     d. Goto SUCCESS.
