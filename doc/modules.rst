@@ -252,6 +252,7 @@ have been defined.
 References summarizing several module frameworks:
 
 * http://addyosmani.com/writing-modular-js/
+
 * http://wiki.commonjs.org/wiki/Modules
 
 Module loading APIs or "formats":
@@ -263,9 +264,13 @@ Module loading APIs or "formats":
 * CommonJS:
 
   - http://wiki.commonjs.org/wiki/Modules/1.1.1
+
   - https://github.com/joyent/node/blob/master/lib/module.js
+
   - https://github.com/commonjs/commonjs/tree/master/tests/modules
+
   - http://requirejs.org/docs/commonjs.html
+
   - http://dailyjs.com/2010/10/18/modules/
 
 * NodeJS, more or less CommonJS:

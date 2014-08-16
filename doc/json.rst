@@ -63,6 +63,7 @@ because JSON.parse() and JSON.stringify() are intended to be strict interfaces.
 See also:
 
 * http://json.org/
+
 * http://bolinfest.com/essays/json.html
 
 Notes on stringify()

@@ -10,17 +10,25 @@ and is the most important type from an implementation point of view.
 It provides objects for various purposes:
 
 * Objects with E5 normal object semantics
+
 * Objects with E5 array object exotic behavior
+
 * Objects with E5 string object exotic behavior
+
 * Objects with E5 arguments object exotic behavior
+
 * Objects with no E5 semantics, for internal use
 
 This document discusses the ``duk_hobject`` object in detail, including:
 
 * Requirements overview
+
 * Features of Ecmascript E5 objects
+
 * Internal data structure and algorithms
+
 * Enumeration guarantees
+
 * Ecmascript property behavior (default and exotic)
 * Design notes, future work
 
@@ -62,27 +70,38 @@ Ecmascript object compatibility requires:
 
 * Properties with a string key and a value that is either a plain data
   value or an accessor (getter/setter)
+
 * Property attributes which control the behavior of individual properties
   (e.g. enumerability and writability)
+
 * Object extensibility flag which controls addition of new properties
+
 * Prototype-based inheritance of properties along a loop-free prototype chain
+
 * Some very basic enumeration guarantees for both mutating and non-mutating
   enumeration
+
 * Object internal properties (at a conceptual level)
 
 Additional practical requirements include:
 
 * Additional enumeration guarantees (e.g. enumeration order matches key
   insertion order); see separate discussion on enumeration
+
 * Minimal memory footprint, especially for objects with few properties
   which dominate common use
+
 * Near constant property lookup performance, even for large objects
+
 * Near constant amortized property insert performance, even for large objects
+
 * Fast read/write access for array entries, in particular avoiding string
   interning whenever possible
+
 * Sparse array support (e.g. ``var x=[]; x[0]=1; x[1000000]=2;``): must be
   compliant, shouldn't allocate megabytes of memory, but does not have to
   be fast
+
 * Support long-lived objects with an arbitrary number of key insertions
   and deletions (implies "compaction" of keys / ordering structure)
 
@@ -90,8 +109,11 @@ There are unavoidable trade-offs involved, the current trade-off preferences
 are roughly as follows (most important to least important):
 
 #. Compliance
+
 #. Compactness
+
 #. Performance
+
 #. Low complexity
 
 Compliance is a must-have goal for all object features.  Performance is only
@@ -116,11 +138,13 @@ The externally visible named properties are characterized by:
 * A string key
 
   + 16-bit characters (any 16-bit unsigned integer codepoints may be used)
+
   + Even array indices are strings, e.g. ``x[0]`` really means ``x["0"]``
 
 * A property value which may be:
 
   + A *data property*, a plain Ecmascript value
+
   + An *accessor property*, a setter/getter function pair invoked
     for property accesses
 
@@ -129,15 +153,21 @@ The externally visible named properties are characterized by:
   + For data properties:
 
     - ``[[Configurable]]``
+
     - ``[[Enumerable]]``
+
     - ``[[Value]]``
+
     - ``[[Writable]]``
  
   + For accessor properties:
 
     - ``[[Configurable]]``
+
     - ``[[Enumerable]]``
+
     - ``[[Get]]``
+
     - ``[[Set]]``
 
 * The ``[[Extensible]]`` internal property determines whether new (own) keys
@@ -156,10 +186,15 @@ also externally visible and can be manipulated through built-in methods.
 The property attributes are:
 
 * ``[[Configurable]]``
+
 * ``[[Enumerable]]``
+
 * ``[[Value]]``
+
 * ``[[Writable]]``
+
 * ``[[Get]]``
+
 * ``[[Set]]``
 
 New properties added to objects by an assignment are by default data
@@ -195,7 +230,9 @@ Property descriptors are classified into several categories based on
 what keys they contain:
 
 * Data property descriptor: contains ``[[Value]]`` or ``[[Writable]]``
+
 * Accessor property descriptor: contains ``[[Set]]`` or ``[[Get]]``
+
 * Generic property descriptor: a descriptor which is neither a data nor
   an accessor property descriptor, i.e. does not contain
   ``[[Value]]``, ``[[Writable]]``, ``[[Set]]``, or ``[[Get]]``
@@ -211,6 +248,7 @@ its type, i.e.:
 
 * A fully populated data descriptor contains all of the following:
   ``[[Configurable]]``, ``[[Enumerable]]``, ``[[Value]]``, ``[[Writable]]``
+
 * A fully populated accessor descriptor contains all of the following:
   ``[[Configurable]]``, ``[[Enumerable]]``, ``[[Get]]``, ``[[Set]]``
 
@@ -447,6 +485,7 @@ The requirements for a valid array length are implicit in E5 Section 15.4.5.1,
 steps 3.c to 3.d:
 
 * Step 3.c: Let ``newLen`` be ``ToUint32(Desc.[[Value]])``.
+
 * Step 3.d: If ``newLen`` is not equal to ``ToNumber(Desc.[[Value]])``, throw
   a ``RangeError`` exception
 
@@ -458,7 +497,9 @@ The requirements are seemingly similar to the array index requirements, but
 in fact allow a wider set of values, such as:
 
 * ``true`` represents array length ``1``, but is not a valid array index
+
 * ``"0.2e1"`` represents array length ``2``, but is not a valid array index
+
 * ``0xffffffff`` represents array length 2**32-1, but is not a valid array index
 
 A potential ``length`` value ``X`` is treated as follows (see E5 Sections
@@ -557,8 +598,10 @@ The heap header structure ``duk_heaphdr`` contains:
 The object specific part of ``duk_hobject`` contains:
 
 * property allocation: A data structure for storing properties
+
 * internal prototype field for fast prototype chain walking;
   other internal properties are stored in the property allocation
+
 * ``duk_hcompiledfunction``, ``duk_hnativefunction``, and ``duk_hthread``
   object sub-types have an extended structure with more fields
 
@@ -569,10 +612,12 @@ internally into the following parts:
 * *Entry part* stores ordered key-value properties with arbitrary
   property attributes (flags), and supports accessor properties
   (getter/setter properties), i.e., full E5 semantics
+
 * *Array part* (optional) stores plain values with default property
   attributes (writable, enumerable, configurable) for valid array indices
   (``"0"``, ``"1"``, ..., ``"4294967294"``); does not support accessor
   properties
+
 * *Hash part* (optional) provides accelerated key lookups for the
   entry part, mapping a key into an entry part index
 
@@ -714,8 +759,11 @@ Flags are represented by an ``duk_u8`` field, with flags defined in
 ``duk_hobject.h``.  The current flags are:
 
 * ``DUK_PROPDESC_FLAG_WRITABLE``
+
 * ``DUK_PROPDESC_FLAG_ENUMERABLE``
+
 * ``DUK_PROPDESC_FLAG_CONFIGURABLE``
+
 * ``DUK_PROPDESC_FLAG_ACCESSOR``
 
 The value field is a union of (1) a plain value, and (2) an accessor value
@@ -779,6 +827,7 @@ The hash part is an array of ``h_size`` ``duk_u32`` values.  Each value
 is either an index to the entry part, or one of two markers:
 
 * ``UNUSED``: entry is currently unused
+
 * ``DELETED``: entry has been deleted
 
 Hash table size (``h_size``) is selected relative to the maximum number
@@ -790,17 +839,20 @@ of inserted elements ``N`` (equal to ``e_size`` in practice) in two steps:
 #. ``T`` is rounded upwards to the closest prime from a pre-generated
    list of primes with an approximately fixed prime-to-prime ratio.
 
-  + The list of primes generated by ``genhashsizes.py``, and is encoded
-    in a bit packed format, decoded on the fly.  See ``genhashsizes.py``
-    for details.
-  + The fact that the hash table size is a prime simplifies probe sequence
-    handling: it is easy to select probe steps which are guaranteed to
-    cover all entries of the hash table.
-  + The ratio between successive primes is currently about 1.15.
-    As a result, the hash table size is about 1.2-1.4 times larger than
-    the maximum number of properties in the entry part.  This implies a
-    maximum hash table load factor of about 72-83%.
-  + The current minimum prime used is 17.
+   + The list of primes generated by ``genhashsizes.py``, and is encoded
+     in a bit packed format, decoded on the fly.  See ``genhashsizes.py``
+     for details.
+
+   + The fact that the hash table size is a prime simplifies probe sequence
+     handling: it is easy to select probe steps which are guaranteed to
+     cover all entries of the hash table.
+
+   + The ratio between successive primes is currently about 1.15.
+     As a result, the hash table size is about 1.2-1.4 times larger than
+     the maximum number of properties in the entry part.  This implies a
+     maximum hash table load factor of about 72-83%.
+
+   + The current minimum prime used is 17.
 
 The probe sequence for a certain key is guaranteed to walk through every
 hash table entry, and is generated as follows:
@@ -813,6 +865,7 @@ hash table entry, and is generated as follows:
 
    + The probe steps are is guaranteed to be non-zero and relatively prime
      to all precomputed hash table size primes.  See ``genhashsizes.py``.
+
    + Currently the precomputed steps are small primes which are not present
      in the precomputed hash size primes list.  Technically they don't need
      to be primes (or small), as long as they are relatively prime to all
@@ -946,6 +999,7 @@ following implications:
   either:
 
   #. extend the array allocation to cover the new entry; or
+
   #. abandon the entire array part, moving all array part entries to the
      entry part.
 
@@ -1025,8 +1079,10 @@ The reason why a separate array part exists is to:
 
 * Store normal array structures compactly: normal arrays are dense and
   have default properties
+
 * Provide relatively fast access to array elements: avoid entry or hash
   part lookup
+
 * Avoid string interning of array index keys for numeric indices
 
 Ecmascript array indices are always strings, so conceptually arrays
@@ -1053,8 +1109,11 @@ chain, the details of property access algorithms etc.  Currently the
 See the following functions in ``duk_hobject_props.c``:
 
 * ``duk_hobject_get_value_u32()``
+
 * ``duk_hobject_get_value_tval()``
+
 * ``duk_hobject_has_property_u32()``
+
 * ``duk_hobject_has_property_tval()``
 
 There is currently no fast path for array writes, which means the key is
@@ -1086,7 +1145,9 @@ The property allocation is currently resized e.g. when:
 * The array part needs to be abandoned due to:
 
   + a property insert which would result in a too sparse array part;
+
   + a property insert incompatible with the array part assumptions; or
+
   + a property modification incompatible with the array part assumptions.
 
 * The object is compacted, i.e. its active entry and array part properies
@@ -1241,6 +1302,7 @@ We impose the following additional requirements for compatibility:
   + This is currently provided for all objects with an array part.
     Ecmascript ``Array`` instances should thus always have an array
     part (at least when they are created).
+
   + If an object has an array part which is abandoned, e.g. because
     the array becomes too sparse, the enumeration ordering reverts
     to enumerating entries in insertion order (regardless of whether
@@ -1467,7 +1529,9 @@ Duktape implements E5 internal properties in differing ways, depending
 on the property in question:
 
 * concretely stored internal properties
+
 * ``duk_hobject`` header flags
+
 * ``duk_hobject`` structure fields (only internal prototype currently)
 * implicit behaviors in specification algorithms based on e.g.
   object flags, type, or class
@@ -1673,9 +1737,11 @@ Exotic behavior for ``[[Get]]``:
 
   + If ``arguments.caller`` has a value, which is a strict function object,
     the ``[[Get]]`` operation fails after standard lookup is complete.
+
   + Note that the exotic behavior occurs at the level of ``[[Get]]`` and
     is *not* visible through property descriptors, e.g. through
     ``[[GetProperty]]`` or ``[[GetOwnProperty]]``.
+
   + Exotic behavior only applies to non-strict arguments objects.
 
 * The ``Function`` object: E5 Section 15.3.5.4
@@ -1703,6 +1769,7 @@ Exotic behavior for ``[[GetOwnProperty]]``:
 
   + The ``[[Value]]`` of a property descriptor may be overridden for
     "magically bound" properties (some numeric indices).
+
   + Exotic behavior only applies to non-strict arguments objects.
 
 Exotic behavior for ``[[DefineOwnProperty]]``:
@@ -1720,6 +1787,7 @@ Exotic behavior for ``[[DefineOwnProperty]]``:
 
   + Automatic interaction with "magically bound" variables (some
     numeric indices).  May also remove magic binding.
+
   + Exotic behavior only applies to non-strict arguments objects.
 
 Exotic behavior for ``[[Delete]]``:
@@ -1728,6 +1796,7 @@ Exotic behavior for ``[[Delete]]``:
 
   + Automatic interaction with "magically" bound variables (some
     numeric indices), may remove magic binding.
+
   + Exotic behavior only applies to non-strict arguments objects.
 
 When implementing exotic or virtual properties, property attributes must
@@ -1736,6 +1805,7 @@ initial attributes, but these are not fixed and may be changed later by
 user code.  The *only* properties which are "truly fixed" are:
 
 * Non-configurable, non-writable data properties
+
 * Non-configurable accessor properties
 
 In particular, a data property which is non-configurable but writable
@@ -1933,15 +2003,21 @@ Internal objects
 The following internal objects are currently used:
 
 * Function templates which are "instantiated" into concrete closures
+
 * A declarative environment record
+
 * An object environment record
+
 * Function formals name list
+
 * Function variable map
 
 Internal objects don't always need Ecmascript properties like:
 
 * Enumeration order
+
 * Property attributes
+
 * Prototype chain
 
 The current implementation does not take advantage of these: internal
@@ -2213,7 +2289,9 @@ Hash algorithm notes
 Some hash algorithm goals:
 
 * Minimal memory allocation
+
 * High load factor (minimizes memory use)
+
 * Small code space
 
 Closed hashing (open addressing) provides fixed allocation, but requires a
@@ -2221,8 +2299,11 @@ Closed hashing (open addressing) provides fixed allocation, but requires a
 collisions include:
 
 * http://en.wikipedia.org/wiki/Linear_probing
+
 * http://en.wikipedia.org/wiki/Quadratic_probing
+
 * http://en.wikipedia.org/wiki/Double_hashing
+
 * http://en.wikipedia.org/wiki/Cuckoo_hashing
 
 Notes on current solution:
@@ -2283,8 +2364,10 @@ However, the extra cost of having another object data structure
 does not seem worth it.  The effects are:
 
 * Code size is increased by several kilobytes.
+
 * Internal objects data size decreases slightly (no need to track
   property attributes, for instance).
+
 * Internal object property lookup is slightly more performant.
 
 Currently it seems to make more sense to use the same object
@@ -2499,4 +2582,3 @@ Test cases
 ----------
 
 Black box and white box test cases.
-

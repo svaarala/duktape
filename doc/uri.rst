@@ -116,4 +116,3 @@ It would be nice to be able to:
 Because the API requirements are strict, these cannot be added to the standard
 API without breaking compliance.  Custom URI encoding/decoding functions could
 provide these extended semantics.
-

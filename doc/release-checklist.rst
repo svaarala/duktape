@@ -5,9 +5,13 @@ Release checklist
 * Git maintenance
 
   - ensure git commits are up-to-date
+
   - ensure branches are merged, unused branches deleted (also remotely)
+
   - ensure branches are rebased where applicable
+
   - git fsck --full
+
   - git gc --aggressive
 
 * Ditz maintenance
@@ -31,7 +35,9 @@ Release checklist
   build because dist package contains RELEASES.txt)
 
   - New release is in place
+
   - Release log entries match ditz issues
+
   - Release date is in place
 
 * Compilation tests: clean compile with common debug options
@@ -39,16 +45,27 @@ Release checklist
   and with no debug options:
 
   - **FIXME: incomplete list, automate compilation tests**
+
   - Linux x86-64 gcc
+
   - Linux x86-64 gcc + -m32
+
   - Linux x86-64 clang
+
   - Linux x86-64 clang + -m32
+
   - FreeBSD clang
+
   - FreeBSD clang + -m32
+
   - Windows MinGW
+
   - Windows MinGW-w64
+
   - Windows MSVC (cl) x86
+
   - Windows MSVC (cl) x64
+
   - Linux MIPS gcc
 
 * Ecmascript testcases
@@ -58,6 +75,7 @@ Release checklist
   - On x86-64:
 
     - make qecmatest   # quick test
+
     - make vgecmatest  # valgrind test
 
   - Run testcases on all endianness targets
@@ -120,31 +138,40 @@ Release checklist
 * Check source dist contents
 
   - Check file list
+
   - Grep for FIXME and XXX
+
   - Trivial compile test for combined source
+
   - Trivial compile test for separate sources (important because
     it's easy to forget to add files in make_dist.sh)
 
 * Store binaries and update website downloads page
 
   - Release date
+
   - Link
+
   - Date
+
   - "latest" class
 
 * Build website
 
   - Readthrough
+
   - Test that the Duktape REPL (Dukweb) works
 
 * Ditz release
 
   - ``ditz release vN.N``
+
   - git add and commit ditz issues
 
 * Git release and tag
 
   - ``git tag -l -n1`` to list current tags
+
   - ``git tag -s -m "<one line release description>" vN.N.N``
 
 * Upload and test

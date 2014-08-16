@@ -138,6 +138,17 @@ The E5.1 specification provides explicit guidance for this; Section 15.9.1.8:
   time information. The only restriction is that all equivalent years should
   produce the same result.
 
+However, the equivalent year mapping approach is not necessarily preferred
+in the long term see e.g. the following discussion:
+
+* https://bugzilla.mozilla.org/show_bug.cgi?id=351066
+
+Note that using a platform specific API to get timezone offset and DST
+information makes programs behave slightly differently across platforms, even
+when they are running with the same locale.  There's no way around this
+unless the locale information needed by Duktape is provided by a portable
+or pluggable provider (e.g. user callback for tzoffset/DST information).
+
 Linux
 -----
 

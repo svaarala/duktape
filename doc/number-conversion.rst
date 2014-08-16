@@ -213,8 +213,11 @@ output.
 Example:
 
 * (123).toFixed(3) -> "123.000"
+
 * (0.1).toFixed(0) -> "0"
+
 * (0.9).toFixed(0) -> "1"  (rounds up)
+
 * (1e21).toFixed(10) -> "1e+21"  (falls back to ToString())
 
 toExponential()
@@ -245,11 +248,16 @@ or if the topmost (most significant) digit has an exponent of -7 or less
 toPrecision() uses an exponent notation.  Examples:
 
 * (1234).toPrecision(4) -> "1234"
+
 * (1234).toPrecision(3) -> "1.23e+3"
+
 * (9876).toPrecision(3) -> "9.88e+3" (rounding up is necessary)
+
 * (9999).toPrecision(3) -> "1.00e+4" (rounding up and carrying over the
   leading digit is necessary)
+
 * (0.000001).toPrecision(2) -> "0.0000010"
+
 * (0.0000001).toPrecision(2) -> "1.0e-7"
 
 Note that leading fractional zeroes are prepended if necessary.  Trailing
@@ -730,4 +738,3 @@ Future work
   as arbitrary radix support, some of the precision modes etc), even if it
   is not fully compatible with Ecmascript semantics.  The impact of custom
   number formatting is about 8-9 kilobytes of code footprint at the moment.
-

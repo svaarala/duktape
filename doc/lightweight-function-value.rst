@@ -109,4 +109,3 @@ and don't have an automatic prototype object.
 Even so, there are close to 200 built-in functions, so the footprint of
 the ``duk_hnativefunction`` objects is around 16kB, not taking into account
 allocator overhead.
-

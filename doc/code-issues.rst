@@ -127,10 +127,10 @@ Multi-statement macros should use a ``do-while(0)`` construct::
 Use parentheses when referring to macro arguments and the final macro
 result to minimize error proneness::
 
-  #define  MULTIPLY(a,b)  ((a)*(b))
+  #define  MULTIPLY(a,b)  ((a) * (b))
 
-  /* Now MULTIPLY(1+2,3) expands to ((1+2)*(3)) == 9, not
-   * 1+2*3 == 7.  Parentheses are used around macro result for
+  /* Now MULTIPLY(1 + 2, 3) expands to ((1 + 2) * (3)) == 9, not
+   * 1 + 2 * 3 == 7.  Parentheses are used around macro result for
    * similar reasons.
    */
 
