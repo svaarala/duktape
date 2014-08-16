@@ -71,9 +71,11 @@ Heap element
   objects are heap elements, but there are other heap element types too.
   Heap-allocated elements subject to memory management are:
 
-    * ``duk_hstring``
-    * ``duk_hobject`` and its subtypes
-    * ``duk_hbuffer``
+  * ``duk_hstring``
+
+  * ``duk_hobject`` and its subtypes
+
+  * ``duk_hbuffer``
 
   Only ``duk_hobject`` contains further internal references to other heap
   elements.  These references are kept in the object property table and the
@@ -176,7 +178,9 @@ The following internal macros use the raw allocation functions and do
 not trigger garbage collection or any other side effects:
 
 * ``DUK_ALLOC_RAW``
+
 * ``DUK_REALLOC_RAW``
+
 * ``DUK_FREE_RAW``
 
 The natural downside of using these functions is that an allocation or
@@ -187,9 +191,13 @@ The following internal macros may trigger a garbage collection (even
 when not strictly out of memory):
 
 * ``DUK_ALLOC``, ``DUK_ALLOC_CHECKED``
+
 * ``DUK_ALLOC_ZEROED``, ``DUK_ALLOC_CHECKED_ZEROED``
+
 * ``DUK_REALLOC``, ``DUK_REALLOC_CHECKED``
+
 * ``DUK_REALLOC_INDIRECT``, ``DUK_REALLOC_INDIRECT_CHECKED``
+
 * ``DUK_FREE``, ``DUK_FREE_CHECKED``
 
 Triggering a garbage collection has a wide set of possible side effects.
@@ -450,11 +458,17 @@ thread structure maintains a pointer to the thread which resumed the current
 thread (if any).  All heap element references ultimately reside in:
 
 * Object properties
+
 * Thread value stack
+
 * Thread call stack
+
 * Thread catch stack
+
 * Thread resumer reference
+
 * Compiled function constant table
+
 * Compiled function inner function table
 
 These references form the heap-level reachability graph, and provides
@@ -709,9 +723,13 @@ Reference count macros
 Macros:
 
 * ``DUK_TVAL_INCREF``
+
 * ``DUK_TVAL_DECREF``
+
 * ``DUK_HEAPHDR_INCREF``
+
 * ``DUK_HEAPHDR_DECREF``
+
 * and a bunch of heap element type specific INCREF/DECREF macros,
   defined in ``heaphdr.h``
 
@@ -804,49 +822,49 @@ The ``DECREF`` algorithm is a bit more complicated:
 
 3. If the reference count dropped to zero:
 
-  a. If mark-and-sweep is currently running, ignore and return.
-     (Note: mark-and-sweep is expected to perform a full reachability
-     analysis and have correct reference counts at the end of the
-     mark-and-sweep algorithm.)
+   a. If mark-and-sweep is currently running, ignore and return.
+      (Note: mark-and-sweep is expected to perform a full reachability
+      analysis and have correct reference counts at the end of the
+      mark-and-sweep algorithm.)
 
-  b. If the target is a string:
+   b. If the target is a string:
 
-    1. Remove the string from the string table.
+      1. Remove the string from the string table.
 
-    2. Remove any references to the string from the "string access cache"
-       (which accelerates character index to byte index conversions).
-       Note that this is a special, internal "weak" reference.
+      2. Remove any references to the string from the "string access cache"
+         (which accelerates character index to byte index conversions).
+         Note that this is a special, internal "weak" reference.
 
-    3. Free the string.  There are no auxiliary allocations to free
-       for strings.
+      3. Free the string.  There are no auxiliary allocations to free
+         for strings.
 
-    4. Return.
+      4. Return.
 
-  c. If the target is a buffer:
+   c. If the target is a buffer:
 
-    1. Remove the buffer from the "heap allocated" list.
+      1. Remove the buffer from the "heap allocated" list.
 
-    2. If the buffer is dynamic, free the auxiliary buffer (which is
-       allocated separately).
+      2. If the buffer is dynamic, free the auxiliary buffer (which is
+         allocated separately).
 
-    3. Free the buffer.
+      3. Free the buffer.
 
-    4. Return.
+      4. Return.
 
-  d. Else the target is an object:
+   d. Else the target is an object:
 
-    1. Move the object from the "heap allocated" list to the "refzero" work
-       list.  Note that this prevents the mark-and-sweep algorithm from
-       freeing the object (the "sweep" phase does not affect objects in the
-       "refzero" work list).
+      1. Move the object from the "heap allocated" list to the "refzero" work
+         list.  Note that this prevents the mark-and-sweep algorithm from
+         freeing the object (the "sweep" phase does not affect objects in the
+         "refzero" work list).
 
-    2. If the "refzero" algorithm is already running, return.
+      2. If the "refzero" algorithm is already running, return.
 
-    3. Else, call the "refzero" algorithm to free pending objects.
-       The refzero algorithm returns when the entire work list has
-       been successfully cleared.
+      3. Else, call the "refzero" algorithm to free pending objects.
+         The refzero algorithm returns when the entire work list has
+         been successfully cleared.
 
-    4. Return.
+      4. Return.
 
 The REFZERO algorithm
 ---------------------
@@ -860,66 +878,66 @@ The algorithm is as follows:
 
 1. While the "refzero" work list is not empty:
 
-  a. Let ``O`` be the element at the head of the work list.
-     Note:
+   a. Let ``O`` be the element at the head of the work list.
+      Note:
 
-    * ``O`` is always an object, because only objects are placed in the work list.
+      * ``O`` is always an object, because only objects are placed in the work list.
 
-    * ``O`` must not be removed from the work list yet.  ``O`` must be on the
-      work list in case a finalizer is executed, so that a mark-and-sweep
-      triggered by the finalizer works correctly (concretely: to be able to
-      clear the ``DUK_HEAPHDR_FLAG_REACHABLE`` of the object.)
+      * ``O`` must not be removed from the work list yet.  ``O`` must be on the
+        work list in case a finalizer is executed, so that a mark-and-sweep
+        triggered by the finalizer works correctly (concretely: to be able to
+        clear the ``DUK_HEAPHDR_FLAG_REACHABLE`` of the object.)
 
-  b. If ``O`` is an object (this is always the case, currently), and has a
-     finalizer (i.e. has a ``_finalizer`` internal property):
+    b. If ``O`` is an object (this is always the case, currently), and has a
+       finalizer (i.e. has a ``_finalizer`` internal property):
 
-    1. Create a ``setjmp()`` catchpoint.
+       1. Create a ``setjmp()`` catchpoint.
 
-    2. Increase the reference count of ``O`` temporarily by one (back to 1).
+       2. Increase the reference count of ``O`` temporarily by one (back to 1).
 
-    3. Note: the presence of ``O`` in the "refzero" work list is enough to
-       guarantee that the mark-and-sweep algorithm will not free the object
-       despite it not being reachable.
+       3. Note: the presence of ``O`` in the "refzero" work list is enough to
+          guarantee that the mark-and-sweep algorithm will not free the object
+          despite it not being reachable.
 
-    4. Call the finalizer method.  Ignore the return value and a possible
-       error thrown by the finalizer (except for debug logging an error).
-       Any error or other ``longjmp()`` is caught by the  ``setjmp()``
-       catchpoint.  Note:
+       4. Call the finalizer method.  Ignore the return value and a possible
+          error thrown by the finalizer (except for debug logging an error).
+          Any error or other ``longjmp()`` is caught by the  ``setjmp()``
+          catchpoint.  Note:
 
-      * The thread used for finalization is currently the thread which
-        executed ``DECREF``.  *This is liable to be changed later.*
+          * The thread used for finalization is currently the thread which
+            executed ``DECREF``.  *This is liable to be changed later.*
 
-    5. Regardless of how the finalizer finishes, decrease the reference
-       count of ``O`` by one.
+       5. Regardless of how the finalizer finishes, decrease the reference
+          count of ``O`` by one.
 
-    6. If the reference count of ``O`` is non-zero, the object has been
-       "rescued" and:
+       6. If the reference count of ``O`` is non-zero, the object has been
+          "rescued" and:
 
-      a. Place the object back into the "heap allocated" list (and debug
-         log the object as "rescued").
+          a. Place the object back into the "heap allocated" list (and debug
+             log the object as "rescued").
 
-      b. Continue the while-loop with the next object.
+          b. Continue the while-loop with the next object.
 
-  c. Remove ``O`` from the work list.
+   c. Remove ``O`` from the work list.
 
-  d. Call ``DECREF`` for any references that ``O`` contains (this is
-     called "refcount finalization" in the source).  Concretely:
+   d. Call ``DECREF`` for any references that ``O`` contains (this is
+      called "refcount finalization" in the source).  Concretely:
 
-    * String: no internal references.
+      * String: no internal references.
 
-    * Buffer: no internal references.
+      * Buffer: no internal references.
 
-    * Object: properties contain references; specific sub-types (like
-      ``duk_hthread``) contain further references.
+      * Object: properties contain references; specific sub-types (like
+        ``duk_hthread``) contain further references.
 
-    * Note: this step is recursive with respect to ``DECREF`` but not
-      the "refzero" algorithm: a ``DECREF`` is executed inside a
-      ``DECREF`` which started the "refzero" algorithm, but the inner
-      ``DECREF`` doesn't restart the "refzero" algorithm.  Recursion is
-      thus limited to two levels.
+      * Note: this step is recursive with respect to ``DECREF`` but not
+        the "refzero" algorithm: a ``DECREF`` is executed inside a
+        ``DECREF`` which started the "refzero" algorithm, but the inner
+        ``DECREF`` doesn't restart the "refzero" algorithm.  Recursion is
+        thus limited to two levels.
 
-  e. Free any auxiliary references (such as object properties) contained
-     in ``O``, and finally ``O`` itself.
+    e. Free any auxiliary references (such as object properties) contained
+       in ``O``, and finally ``O`` itself.
 
 2. Check for a voluntary mark-and-sweep.
 
@@ -1022,7 +1040,9 @@ which is otherwise avoided by reference counting.
 The mark-and-sweep algorithm used has support for:
 
 * object finalization (requires two collector passes)
+
 * object compaction (in emergency mode)
+
 * string table resizing
 
 An "emergency mode" is provided for situations where allocation fails
@@ -1042,8 +1062,11 @@ Mark-and-sweep flags
 Mark-and-sweep control flags are defined in ``duk_heap.h``:
 
 * ``DUK_MS_FLAG_EMERGENCY``
+
 * ``DUK_MS_FLAG_NO_STRINGTABLE_RESIZE``
+
 * ``DUK_MS_FLAG_NO_FINALIZERS``
+
 * ``DUK_MS_FLAG_NO_OBJECT_COMPACTION``
   
 In addition to the explicitly requested flags, the bit mask in
@@ -1055,9 +1078,13 @@ for certain critical sections.
 To protect against such side effects, the critical algorithms:
 
 * Store the original value of ``heap->mark_and_sweep_base_flags``
+
 * Set the suitable restriction flags into ``heap->mark_and_sweep_base_flags``
+
 * Attempt the allocation / reallocation operation, *without throwing errors*
+
 * Restore the ``heap->mark_and_sweep_base_flags`` to its previous value
+
 * Examine the allocation result and act accordingly
 
 It is important not to throw an error without restoring the base flags field.
@@ -1134,160 +1161,160 @@ The mark-and-sweep algorithm is as follows:
 1. The ``REACHABLE`` and ``TEMPROOT`` flags of all heap elements are
    assumed to be cleared at this point.
 
-  * Note: this is the case for all elements regardless of whether they
-    reside in the string table, the "heap allocated" list, the "refzero"
-    work list, or anywhere else.
+   * Note: this is the case for all elements regardless of whether they
+     reside in the string table, the "heap allocated" list, the "refzero"
+     work list, or anywhere else.
 
 2. **Mark phase**.
    The reachability graph is traversed recursively, and the ``REACHABLE``
    flags is set for all reachable elements.  This is complicated by the
    necessity to impose a limit on maximum C recursion depth:
 
-  a. At the beginning the heap level flag
-     ``DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED`` is asserted to be
-     cleared.
+   a. At the beginning the heap level flag
+      ``DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED`` is asserted to be
+      cleared.
 
-  b. The reachability graph of the heap is traversed with a depth-first
-     algorithm:
+   b. The reachability graph of the heap is traversed with a depth-first
+      algorithm:
 
-    1. Marking starts from the reachability roots:
+      1. Marking starts from the reachability roots:
 
-      * the heap structure itself (including the current thread, its
-        resuming thread, etc)
+         * the heap structure itself (including the current thread, its
+           resuming thread, etc)
 
-      * the "refzero_list" for reference counting
+         * the "refzero_list" for reference counting
 
-    2. If the reachability traversal hits the C recursion limit
-       (``mark_and_sweep_recursion_limit`` member of the heap) for
-       some heap element ``E``:
+      2. If the reachability traversal hits the C recursion limit
+         (``mark_and_sweep_recursion_limit`` member of the heap) for
+         some heap element ``E``:
 
-      a. The ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag is set.
+         a. The ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag is set.
 
-      b. The reachability status of ``E`` is updated, but its internal
-         references are not processed (to avoid further recursion).
+         b. The reachability status of ``E`` is updated, but its internal
+            references are not processed (to avoid further recursion).
 
-      c. The ``TEMPROOT`` flag is set for ``E``, indicating that it
-         should be processed later.
+         c. The ``TEMPROOT`` flag is set for ``E``, indicating that it
+            should be processed later.
 
-    3. Unreachable objects which need finalization (but whose finalizers
-       haven't been executed in the last round) are marked FINALIZABLE
-       and are marked as reachable with the normal recursive marking
-       algorithm.
+      3. Unreachable objects which need finalization (but whose finalizers
+         haven't been executed in the last round) are marked FINALIZABLE
+         and are marked as reachable with the normal recursive marking
+         algorithm.
 
-    4. The algorithm of step 2 (handling ``TEMPROOT`` markings) is
-       repeated to ensure reachability graph has been fully processed
-       (elements are marked reachable and TEMPROOT flags are set),
-       also for the objects just marked FINALIZABLE.
+      4. The algorithm of step 2 (handling ``TEMPROOT`` markings) is
+         repeated to ensure reachability graph has been fully processed
+         (elements are marked reachable and TEMPROOT flags are set),
+         also for the objects just marked FINALIZABLE.
 
-  c. While the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag is
-     set for the heap:
+   c. While the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag is
+      set for the heap:
 
-    1. Clear the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag
-       of the heap.
+      1. Clear the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag
+         of the heap.
 
-    2. Scan all elements in the "heap allocated" or "refzero work list"
-       (note that "refzero work list" *must* be included here but not
-       in the sweep phase).  For each element with the ``TEMPROOT`` flag set:
+      2. Scan all elements in the "heap allocated" or "refzero work list"
+         (note that "refzero work list" *must* be included here but not
+         in the sweep phase).  For each element with the ``TEMPROOT`` flag set:
 
-      a. Clear the ``TEMPROOT`` flag.
+         a. Clear the ``TEMPROOT`` flag.
 
-      b. Process the internal references of the element recursively,
-         imposing a similar recursion limit as before (i.e. setting
-         the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag etc).
+         b. Process the internal references of the element recursively,
+            imposing a similar recursion limit as before (i.e. setting
+            the ``DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED`` flag etc).
 
 3. **Sweep phase 1 (refcount adjustments)**.
    Inspect all heap elements in the "heap allocated" list (string table
    doesn't need to be considered as strings have no internal references):
 
-  a. If the heap element would be freed in sweep phase 2 (i.e., element
-     is not reachable, and has no finalizer which needs to be run):
+   a. If the heap element would be freed in sweep phase 2 (i.e., element
+      is not reachable, and has no finalizer which needs to be run):
 
-    1. Decrease reference counts of heap elements the element points to,
-       but don't execute "refzero" queueing or the "refzero" algorithm.
-       Any elements whose refcount drops to zero will be dealt with by
-       mark-and-sweep and objects in the refzero list are handled by
-       reference counting.
+      1. Decrease reference counts of heap elements the element points to,
+         but don't execute "refzero" queueing or the "refzero" algorithm.
+         Any elements whose refcount drops to zero will be dealt with by
+         mark-and-sweep and objects in the refzero list are handled by
+         reference counting.
 
 4. **Sweep phase 2 (actual freeing)**.
    Inspect all heap elements in the "heap allocated" list and the string
    table (note that objects in the "refzero" work list are NOT processed
    and thus never freed here):
 
-  a. If the heap element is ``REACHABLE``:
+   a. If the heap element is ``REACHABLE``:
 
-    1. If ``FINALIZED`` is set, the object has been rescued by the finalizer.
-       This requires no action as such, but can be debug logged.
+      1. If ``FINALIZED`` is set, the object has been rescued by the finalizer.
+         This requires no action as such, but can be debug logged.
 
-    2. Clear ``REACHABLE`` and ``FINALIZED`` flags.
+      2. Clear ``REACHABLE`` and ``FINALIZED`` flags.
 
-    3. Continue with next heap element.
+      3. Continue with next heap element.
 
-  b. Else the heap element is not reachable, and:
+   b. Else the heap element is not reachable, and:
 
-    1. If the heap element is an ``duk_hobject`` (its heap type is
-       ``DUK_HTYPE_OBJECT``) and the object has a finalizer (i.e. it
-       has the internal property ``_finalizer``), and the ``FINALIZED``
-       flag is not set:
+      1. If the heap element is an ``duk_hobject`` (its heap type is
+         ``DUK_HTYPE_OBJECT``) and the object has a finalizer (i.e. it
+         has the internal property ``_finalizer``), and the ``FINALIZED``
+         flag is not set:
 
-      a. Move the heap element from "heap allocated" to "to be finalized"
-         work list.
+         a. Move the heap element from "heap allocated" to "to be finalized"
+            work list.
 
-      b. Continue with next heap element.
+         b. Continue with next heap element.
 
-    2. Free the element and any of its "auxiliary allocations".
+      2. Free the element and any of its "auxiliary allocations".
 
-    3. Continue with next heap element.
+      3. Continue with next heap element.
 
 5. For every heap element in the "refzero" work list:
 
-  a. Clear the element's ``REACHABLE`` flag.
-     (See notes below why this seemingly unnecessary step is in fact necessary.)
+   a. Clear the element's ``REACHABLE`` flag.
+      (See notes below why this seemingly unnecessary step is in fact necessary.)
 
 6. If doing an emergency mark-and-sweep and object compaction is not
    explicitly prohibited by heap flags:
 
-  a. Compact the object's property allocation in the hopes of freeing
-     memory for the emergency.
+   a. Compact the object's property allocation in the hopes of freeing
+      memory for the emergency.
 
 7. If string table resize is not explicitly prohibited by heap flags:
 
-  a. Compact and rehash the string table.  This can be controlled by build
-     flags as it may not be appropriate in all environments.
+   a. Compact and rehash the string table.  This can be controlled by build
+      flags as it may not be appropriate in all environments.
 
 8. Run finalizers:
 
-  a. While the "to be finalized" work queue is not empty:
+   a. While the "to be finalized" work queue is not empty:
 
-    1. Select object from head of the list.
+      1. Select object from head of the list.
 
-    2. Set up a ``setjmp()`` catchpoint.
+      2. Set up a ``setjmp()`` catchpoint.
 
-    3. Execute finalizer.  Note:
+      3. Execute finalizer.  Note:
 
-      * The thread used for this is the currently running thread
-        (``heap->curr_thread``), or if no thread is running,
-        ``heap->heap_thread``.  This is liable to change in the future.
+         * The thread used for this is the currently running thread
+           (``heap->curr_thread``), or if no thread is running,
+           ``heap->heap_thread``.  This is liable to change in the future.
 
-    4. Ignore finalizer result (except for logging errors).
+      4. Ignore finalizer result (except for logging errors).
 
-    5. Mark the object ``FINALIZED``.
+      5. Mark the object ``FINALIZED``.
 
-    6. Move the object back to the "heap allocated" list.  The object will
-       be collected on the next pass if it is still unreachable.  (Regardless
-       of actual reachability, the ``REACHABLE`` flag of the object is clear
-       at this point.)
+      6. Move the object back to the "heap allocated" list.  The object will
+         be collected on the next pass if it is still unreachable.  (Regardless
+         of actual reachability, the ``REACHABLE`` flag of the object is clear
+         at this point.)
 
 9. Finish.
 
-  a. All ``TEMPROOT`` and ``REACHABLE`` flags are clear at this point.
+   a. All ``TEMPROOT`` and ``REACHABLE`` flags are clear at this point.
 
-  b. All "heap allocated" elements either (a) are reachable and have a
-     non-zero reference count, or (b) were finalized and their reachability
-     status is unknown.
+   b. All "heap allocated" elements either (a) are reachable and have a
+      non-zero reference count, or (b) were finalized and their reachability
+      status is unknown.
 
-  c. The "to be finalized" list is empty.
+   c. The "to be finalized" list is empty.
 
-  d. No object in the "refzero" work list has been freed.
+   d. No object in the "refzero" work list has been freed.
 
 Notes:
 
@@ -1712,4 +1739,3 @@ Future work
 
 * Add a figure of where objects may reside (string table, heap allocated,
   refzero work list, mark-and-sweep to be finalized work list).
-
