@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: split hobject-algorithms doc into subdocs
+desc: It's way too large now.
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-15 21:50:49.669595 Z
+references: []
+
+id: bacde1b61b3599eb99f0cce23759618103b6af18
+log_events: 
+- - 2014-08-15 21:50:49.840674 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
