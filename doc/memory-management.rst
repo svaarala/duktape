@@ -888,35 +888,35 @@ The algorithm is as follows:
         triggered by the finalizer works correctly (concretely: to be able to
         clear the ``DUK_HEAPHDR_FLAG_REACHABLE`` of the object.)
 
-    b. If ``O`` is an object (this is always the case, currently), and has a
-       finalizer (i.e. has a ``_finalizer`` internal property):
+   b. If ``O`` is an object (this is always the case, currently), and has a
+      finalizer (i.e. has a ``_finalizer`` internal property):
 
-       1. Create a ``setjmp()`` catchpoint.
+      1. Create a ``setjmp()`` catchpoint.
 
-       2. Increase the reference count of ``O`` temporarily by one (back to 1).
+      2. Increase the reference count of ``O`` temporarily by one (back to 1).
 
-       3. Note: the presence of ``O`` in the "refzero" work list is enough to
-          guarantee that the mark-and-sweep algorithm will not free the object
-          despite it not being reachable.
+      3. Note: the presence of ``O`` in the "refzero" work list is enough to
+         guarantee that the mark-and-sweep algorithm will not free the object
+         despite it not being reachable.
 
-       4. Call the finalizer method.  Ignore the return value and a possible
-          error thrown by the finalizer (except for debug logging an error).
-          Any error or other ``longjmp()`` is caught by the  ``setjmp()``
-          catchpoint.  Note:
+      4. Call the finalizer method.  Ignore the return value and a possible
+         error thrown by the finalizer (except for debug logging an error).
+         Any error or other ``longjmp()`` is caught by the  ``setjmp()``
+         catchpoint.  Note:
 
-          * The thread used for finalization is currently the thread which
-            executed ``DECREF``.  *This is liable to be changed later.*
+         * The thread used for finalization is currently the thread which
+           executed ``DECREF``.  *This is liable to be changed later.*
 
-       5. Regardless of how the finalizer finishes, decrease the reference
-          count of ``O`` by one.
+      5. Regardless of how the finalizer finishes, decrease the reference
+         count of ``O`` by one.
 
-       6. If the reference count of ``O`` is non-zero, the object has been
-          "rescued" and:
+      6. If the reference count of ``O`` is non-zero, the object has been
+         "rescued" and:
 
-          a. Place the object back into the "heap allocated" list (and debug
-             log the object as "rescued").
+         a. Place the object back into the "heap allocated" list (and debug
+            log the object as "rescued").
 
-          b. Continue the while-loop with the next object.
+         b. Continue the while-loop with the next object.
 
    c. Remove ``O`` from the work list.
 
@@ -936,8 +936,8 @@ The algorithm is as follows:
         ``DECREF`` doesn't restart the "refzero" algorithm.  Recursion is
         thus limited to two levels.
 
-    e. Free any auxiliary references (such as object properties) contained
-       in ``O``, and finally ``O`` itself.
+   e. Free any auxiliary references (such as object properties) contained
+      in ``O``, and finally ``O`` itself.
 
 2. Check for a voluntary mark-and-sweep.
 
