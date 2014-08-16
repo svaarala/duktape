@@ -12,18 +12,26 @@ challenging.  See the following three excellent articles by Russ Cox
 for background:
 
 * http://swtch.com/~rsc/regexp/regexp1.html
+
 * http://swtch.com/~rsc/regexp/regexp2.html
+
 * http://swtch.com/~rsc/regexp/regexp3.html
 
 Ecmascript regular expression set is described in E5 Section 15.10,
 and includes:
 
 * Disjunction
+
 * Quantifiers, counted repetition and both greedy and minimal variants
+
 * Assertions, negative and positive lookaheads
+
 * Character classes, normal and inverted
+
 * Captures and backreferences
+
 * Unicode character support
+
 * Unanchored matching (only) (e.g. ``/x/.exec('fooxfoo')`` matches ``'x'``)
 
 Counted repetition quantifiers, assertions, captures, and backreferences
@@ -36,10 +44,14 @@ and compactness.  More generally, the following prioritized requirements
 should be fulfilled:
 
 #. Ecmascript compatibility
+
 #. Compactness
+
 #. Avoiding deep or unbounded C recursion, and providing recursion and
    execution time sanity limits
+
 #. Regexp execution performance
+
 #. Regexp compilation performance
 
 Further, it should be possible to leave out regexp support during
@@ -411,11 +423,11 @@ which is useful for encoding bytecode jump distances.
 
 The compiled regexp begins with a header, containing:
 
- * unsigned integer: flags, any combination of ``DUK_RE_FLAG_*``
+* unsigned integer: flags, any combination of ``DUK_RE_FLAG_*``
 
- * unsigned integer: ``nsaved`` (number of save slots), which should be
-   ``2n+2`` where ``n`` equals ``NCapturingParens`` (number of capture
-   groups)
+* unsigned integer: ``nsaved`` (number of save slots), which should be
+  ``2n+2`` where ``n`` equals ``NCapturingParens`` (number of capture
+  groups)
 
 Regexp body bytecode then follows.  Each instruction consists of an opcode
 value (``DUK_REOP_*``) (encoded as an unsigned integer) followed by a
@@ -598,17 +610,17 @@ will be one byte shorter than ``len2``, but ``len2`` will be correct.
 For instance, if the code block in the second example had been 1022 bytes
 long:
 
- * The first offset ``L1 - L2 - 1`` would be -1023 which is converted to
-   the unsigned value ``2*1023+1 = 2047 = 0x7ff``.  This encodes to two
-   UTF-8 bytes, i.e. ``len1 = 2``.
+* The first offset ``L1 - L2 - 1`` would be -1023 which is converted to
+  the unsigned value ``2*1023+1 = 2047 = 0x7ff``.  This encodes to two
+  UTF-8 bytes, i.e. ``len1 = 2``.
 
- * The second offset ``L1 - L2 - 1 - 2`` would be -1025 which is converted
-   to the unsigned value ``2*1025+1 = 2051 = 0x803``.  This encodes to
-   *three* UTF-8 bytes, i.e. ``len2 = 3``.
+* The second offset ``L1 - L2 - 1 - 2`` would be -1025 which is converted
+  to the unsigned value ``2*1025+1 = 2051 = 0x803``.  This encodes to
+  *three* UTF-8 bytes, i.e. ``len2 = 3``.
 
- * The final skip offset ``L1 - L2 - 1 - 3`` is -1026, which converts to
-   the unsigned value ``2*1026+1 = 2053 = 0x805``.  This again encodes to
-   three UTF-8 bytes, and is thus "self consistent".
+* The final skip offset ``L1 - L2 - 1 - 3`` is -1026, which converts to
+  the unsigned value ``2*1026+1 = 2053 = 0x805``.  This again encodes to
+  three UTF-8 bytes, and is thus "self consistent".
 
 This could also be solved into closed form directly.
 
@@ -753,15 +765,15 @@ it during execution.
 During regexp execution, regexp flags are kept in the regexp matching
 context, and affect opcode execution as follows:
 
- * global (``/g``): does not affect regexp execution, only the behavior of
-   ``RegExp.prototype.exec()`` and ``RegExp.prototype.toString()``.
+* global (``/g``): does not affect regexp execution, only the behavior of
+  ``RegExp.prototype.exec()`` and ``RegExp.prototype.toString()``.
 
- * ignoreCase (``/i``): affects all opcodes which match characters or
-   character ranges, through the ``Canonicalize`` operation defined in
-   E5 Section 15.10.2.8.  It also affects ``RegExp.prototype.toString()``.
+* ignoreCase (``/i``): affects all opcodes which match characters or
+  character ranges, through the ``Canonicalize`` operation defined in
+  E5 Section 15.10.2.8.  It also affects ``RegExp.prototype.toString()``.
 
- * multiline (``/m``): affects the start and end assertion opcodes
-   (``^`` and ``$``).  It also affects ``RegExp.prototype.toString()``.
+* multiline (``/m``): affects the start and end assertion opcodes
+  (``^`` and ``$``).  It also affects ``RegExp.prototype.toString()``.
 
 A bytecode opcode for matching a string instead of an individual character
 seems useful at first glance.  The compiler could join successive
@@ -1201,4 +1213,3 @@ Executor
 
 * Optimized primitive for testing a regexp (match without captures) would be
   easy by just skipping 'save' instructions but would waste space.
-
