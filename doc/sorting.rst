@@ -21,10 +21,15 @@ Array.prototype.sort()
 Some desirable qualities:
 
 * Small code footprint
+
 * Bounded C recursion
+
 * In-place sorting (no large temporary allocations)
+
 * O(n log n) average performance (weaker)
+
 * O(n log n) worst case performance (stronger)
+
 * Stability (don't reorder elements which compare equal)
 
 C recursion is effectively bounded if recursion depth is O(log n) for a small
@@ -86,4 +91,3 @@ elements are expected to be almost always already in order.
 
 Current algorithm used is insertion sort, which works well in-place and
 handles already (almost) ordered cases efficiently.
-

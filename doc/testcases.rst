@@ -227,5 +227,3 @@ Future work
 
 * Keep simple input-output model but add includes.  There is a lot of
   boilerplate now for basic things like dumping descriptors.
-
-

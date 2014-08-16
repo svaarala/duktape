@@ -134,7 +134,9 @@ Each logger object has as its internal prototype ``Duktape.Logger.prototype``.
 The prototype provides:
 
 * ``n``: a default name ('anon')
+
 * ``l``: a default log level (2, info level)
+
 * log writing methods for each level
 
 Lazy formatting
@@ -238,9 +240,13 @@ Existing frameworks and related links
 =====================================
 
 * http://ajaxpatterns.org/Javascript_Logging_Frameworks
+
 * http://getfirebug.com/logging
+
 * http://log4javascript.org/docs/quickstart.html
+
 * http://log4js.berlios.de/
+
 * http://benalman.com/projects/javascript-debug-console-log/
 
 Future work

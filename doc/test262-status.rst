@@ -36,10 +36,13 @@ cases to fail:
 * Duktape follows the E5.1 regexp syntax strictly (except for allowing the
   ``\$`` identity escape).  Some things that fail in test cases:
 
-    - invalid backreferences (e.g. ``/\1/``)
-    - invalid identity escapes (e.g. ``/\a/``)
-    - invalid decimal escapes in character classes (e.g. ``[\12-\14]``)
-    - special characters appearing literally without escape (e.g. ``]``)
+  - invalid backreferences (e.g. ``/\1/``)
+
+  - invalid identity escapes (e.g. ``/\a/``)
+
+  - invalid decimal escapes in character classes (e.g. ``[\12-\14]``)
+
+  - special characters appearing literally without escape (e.g. ``]``)
 
 * Duktape has a conservative limit on the C recursion required to execute
   regexps.  This limit can cause several test cases to fail.
@@ -392,9 +395,13 @@ Arrays over 2G elements long will probably have such issues.  There are
 several similar failing test cases, e.g.:
 
 * ch15/15.4/15.4.4/15.4.4.12/S15.4.4.12_A3_T3
+
 * ch15/15.4/15.4.4/15.4.4.14/15.4.4.14-9-9
+
 * ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-12
+
 * ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-5-16
+
 * ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-8-9
 
 Fortunately these don't have much real world relevance.
