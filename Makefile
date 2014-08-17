@@ -770,3 +770,6 @@ dist-site:	tidy-site site
 	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
 
+.PHONY: big-git-files
+big-git-files:
+	util/find_big_git_files.sh
