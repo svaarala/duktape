@@ -11,8 +11,8 @@ behavior:</p>
 <ul>
 <li>If property exists and is configurable (deletable), deletes the
     property and returns non-zero.</li>
-<li>If property exists but is not configurable, throws an error if current
-    function is strict, returns 0 otherwise.</li>
+<li>If property exists but is not configurable, throws an error
+    (strict mode semantics).</li>
 <li>If property does not exist, returns non-zero (<i>not</i> 0).</li>
 <li>If the value at <code>obj_index</code> is not
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
@@ -46,14 +46,6 @@ This is not very intuitive, but follows Ecmascript semantics:
 <code>delete obj.nonexistent</code> also evaluates to <code>true</code>.
 </div>
 
-<div class="note">
-At the moment all Duktape/C functions are strict.  When called from a
-Duktape/C function, this API call thus either returns non-zero or throws
-an error.  However, if called outside a Duktape/C function (when the
-context has an empty call stack) the API call executes in non-strict mode,
-i.e. returns 0 when trying to delete a non-configurable property.
-</div>
-
 <p>If the key is a fixed string you can avoid one API call and use the
 <code><a href="#duk_del_prop_string">duk_del_prop_string()</a></code> variant.
 Similarly, if the key is an array index, you can use the
@@ -73,3 +65,5 @@ property
 duk_del_prop_string
 duk_del_prop_index
 
+=fixme
+Return value is now pointless when Duktape API calls are strict.

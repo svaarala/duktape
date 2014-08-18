@@ -354,6 +354,8 @@ int my_func(duk_context *ctx) {
 
 <p>All Duktape/C functions are considered <b>strict</b> in the
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">Ecmascript sense</a>.
+Duktape API calls always obey Ecmascript strict mode semantics, even when the API calls
+are made outside of any Duktape/C function, i.e. with an empty call stack.
 For instance, attempt to delete a non-configurable property using <code>duk_del_prop()</code>
 will cause an error to be thrown.  This is the case with a strict Ecmascript function too:</p>
 
@@ -367,17 +369,10 @@ function f() {
 print(f());  // this throws an error because f() is strict
 </pre>
 
-<p>As a consequence of Duktape/C function strictness, all Duktape API calls
-made from inside a Duktape/C call obey Ecmascript strict semantics.  However,
-when API calls are made from outside a Duktape/C function (when the call stack
-is empty), all API calls obey Ecmascript <i>non-strict</i> semantics, as this
-is the Ecmascript default.</p>
-
-<p>Also as a consequence of Duktape/C function strictness, the <code>this</code>
+<p>Another consequence of Duktape/C function strictness is that the <code>this</code>
 binding given to Duktape/C functions is not
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>
-as is normal for non-strict Ecmascript functions.  An example of how coercion
-happens in Ecmascript code:</p>
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>.
+This is also the case for strict Ecmascript code:</p>
 <pre class="ecmascript-code">
 function strictFunc() { 'use strict'; print(typeof this); }
 function nonStrictFunc() { print(typeof this); }
@@ -398,6 +393,16 @@ static int my_func(duk_context *ctx) {
     }
 }
 </pre>
+
+<p>To save memory, Duktape/C functions don't have a <code>prototype</code>
+property by default, so the default object instance (given to the constructor
+as <code>this</code>) inherits from <code>Object.prototype</code>.  To use a
+custom prototype you can define <code>prototype</code> for the Duktape/C
+function explicitly.  Another approach is to ignore the default object instance
+and construct one manually within the Duktape/C call: as with Ecmascript
+functions, if a constructor returns an object value, that value replaces the
+default object instance and becomes the value of the <code>new</code>
+expression.</p>
 
 <h2>Storing state for a Duktape/C function</h2>
 

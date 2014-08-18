@@ -3,14 +3,9 @@ duk_bool_t duk_is_strict_call(duk_context *ctx);
 
 =summary
 <p>Check whether the current (Duktape/C) function call is strict or not.
-Returns 1 if the current function call is strict, 0 otherwise.  If the
-call stack is empty, i.e. there is no active function call, returns 0.</p>
-
-<div class="note">
-All Duktape/C functions are currently strict, so at the monent this function
-always returns 1 when called from inside a Duktape/C function call, and 0 when
-called outside of a Duktape/C call (for a context with an empty call stack).
-</div>
+Returns 1 if the current function call is strict, 0 otherwise.  As of
+Duktape 0.12.0, this function always returns 1 when called from user code
+(even if the call stack is empty).</p>
 
 =example
 if (duk_is_strict_call(ctx)) {
@@ -23,4 +18,4 @@ if (duk_is_strict_call(ctx)) {
 function
 
 =fixme
-Necessary?
+Necessary, especially now that API strictness is the default.
