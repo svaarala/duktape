@@ -1,6 +1,6 @@
 /*===
 *** test_ex_writable (duk_safe_call)
-strict: 0
+strict: 1
 put rc=1
 result: {"foo":"bar"}
 final top: 1
@@ -12,20 +12,17 @@ result: {"foo":"bar"}
 final top: 1
 ==> rc=0, result='undefined'
 *** test_ex_nonwritable (duk_safe_call)
-strict: 0
+strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
-put rc=0
-Math.PI=3.141592653589793
-final top: 2
-==> rc=0, result='undefined'
+==> rc=1, result='TypeError: not writable'
 *** test_ex_nonwritable (duk_pcall)
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
 ==> rc=1, result='TypeError: not writable'
 *** test_ex_accessor_wo_setter (duk_safe_call)
-strict: 0
+strict: 1
 eval:
 (function () {
     var o = {};
@@ -38,10 +35,7 @@ eval:
     return o;
 })()
 top after eval: 1
-put rc=0
-result: {}
-final top: 1
-==> rc=0, result='undefined'
+==> rc=1, result='TypeError: setter undefined'
 *** test_ex_accessor_wo_setter (duk_pcall)
 strict: 1
 eval:
@@ -58,7 +52,7 @@ eval:
 top after eval: 1
 ==> rc=1, result='TypeError: setter undefined'
 *** test_ex_setter_throws (duk_safe_call)
-strict: 0
+strict: 1
 eval:
 (function () {
     var o = {};
@@ -90,7 +84,7 @@ top after eval: 1
 setter, throw error
 ==> rc=1, result='setter error'
 *** test_new_extensible (duk_safe_call)
-strict: 0
+strict: 1
 put rc=1
 result: {"foo":1,"bar":"quux"}
 final top: 1
@@ -102,14 +96,11 @@ result: {"foo":1,"bar":"quux"}
 final top: 1
 ==> rc=0, result='undefined'
 *** test_new_not_extensible (duk_safe_call)
-strict: 0
+strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
 top after eval: 1
-put rc=0
-result: {"foo":1}
-final top: 1
-==> rc=0, result='undefined'
+==> rc=1, result='TypeError: not extensible'
 *** test_new_not_extensible (duk_pcall)
 strict: 1
 eval:
@@ -124,15 +115,15 @@ top after eval: 1
  * are many Ecmascript testcases to cover the behavior.  The purpose
  * of this testcase is to ensure the exposed API behavior is as
  * expected without covering every specification case.  In particular,
- * different throwing / return code combinations need to be covered,
- * in both strict and non-strict mode.
+ * different throwing / return code combinations need to be covered.
+ * Duktape/C contexts are now (since Duktape 0.12.0) always strict,
+ * so the non-strict case doesn't happen when using Duktape/C API.
  *
- * The test case functions are called both with duk_safe_call()
- * and duk_pcall().  These two establish different execution
- * contexts: one is called outside a Duktape/C activation and
- * is non-strict, while the other is called inside a Duktape/C
- * activation and is strict.  A single test function is called
- * from both contexts.
+ * The test case functions are called both with duk_safe_call() and
+ * duk_pcall().  These two establish different execution contexts:
+ * one is called outside a Duktape/C activation and the other is called
+ * inside a Duktape/C activation.  Both cases are now 'strict' (since
+ * Duktape 0.12.0).  A single test function is called from both contexts.
  */
 
 /*
@@ -169,7 +160,7 @@ static duk_ret_t test_ex_writable(duk_context *ctx) {
 }
 
 /* strict: error
- * non-strict: return 0
+ * (non-strict: return 0)
  */
 static duk_ret_t test_ex_nonwritable(duk_context *ctx) {
 	duk_ret_t rc;
@@ -201,7 +192,7 @@ static duk_ret_t test_ex_nonwritable(duk_context *ctx) {
 }
 
 /* strict: error
- * non-strict: return 0
+ * (non-strict: return 0)
  */
 static duk_ret_t test_ex_accessor_wo_setter(duk_context *ctx) {
 	const char *src;
@@ -239,7 +230,7 @@ static duk_ret_t test_ex_accessor_wo_setter(duk_context *ctx) {
 }
 
 /* strict: setter error propagates
- * non-strict: same
+ * (non-strict: same)
  */
 static duk_ret_t test_ex_setter_throws(duk_context *ctx) {
 	const char *src;
@@ -304,7 +295,7 @@ static duk_ret_t test_new_extensible(duk_context *ctx) {
 }
 
 /* strict: error
- * non-strict: return 0
+ * (non-strict: return 0)
  */
 static duk_ret_t test_new_not_extensible(duk_context *ctx) {
 	const char *src;

@@ -1,6 +1,6 @@
 /*===
 *** test_1 (duk_safe_call)
-strict: 0
+strict: 1
 Math.PI = 3.141592653589793
 final top: 0
 ==> rc=0, result='undefined'
@@ -10,26 +10,26 @@ Math.PI = 3.141592653589793
 final top: 0
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-strict: 0
+strict: 1
 ==> rc=1, result='ReferenceError: identifier 'no-such-property' undefined'
 *** test_2 (duk_pcall)
 strict: 1
 ==> rc=1, result='ReferenceError: identifier 'no-such-property' undefined'
 *** test_3 (duk_safe_call)
-strict: 0
+strict: 1
 ==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_pcall)
 strict: 1
 ==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_safe_call)
-strict: 0
+strict: 1
 ==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_pcall)
 strict: 1
 ==> rc=1, result='TypeError: unexpected type'
 ===*/
 
-/* existing property */
+/* Existing property */
 static duk_ret_t test_1(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 
@@ -45,7 +45,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-/* nonexistent -> throw, even in non-strict mode */
+/* Nonexistent -> throw */
 static duk_ret_t test_2(duk_context *ctx) {
 	printf("strict: %d\n", (int) duk_is_strict_call(ctx));
 

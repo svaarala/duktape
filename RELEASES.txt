@@ -452,6 +452,10 @@ Planned
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
 
+* Change strictness behavior for Duktape API calls: all API calls now have
+  Ecmascript strict semantics, even when a call is made with an empty call
+  stack outside of any Duktape/C function
+
 * Change strictness handling of duk_eval() and variants so that all code is
   evaluated in non-strict mode by default (unless the code itself contains
   a "use strict" directive); without this change the strictness would depend

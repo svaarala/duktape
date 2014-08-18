@@ -10,9 +10,8 @@ duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_index);
 from the stack.  Return code and error throwing behavior:</p>
 <ul>
 <li>If the property write succeeds, returns non-zero.</li>
-<li>If the property write fails, throws an error if current function is
-    strict, returns 0 otherwise.  However, errors thrown by the "setter"
-    function of an accessor property are unconditional.</li>
+<li>If the property write fails, throws an error (strict mode semantics).
+    An error may also be thrown by the "setter" function of an accessor property.</li>
 <li>If the value at <code>obj_index</code> is not
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
     throws an error.</li>
@@ -72,3 +71,6 @@ property
 =seealso
 duk_put_prop_string
 duk_put_prop_index
+
+=fixme
+Return code is unnecessary now that API strictness is the default.

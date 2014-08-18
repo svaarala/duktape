@@ -1,13 +1,11 @@
 /*===
 *** test_put (duk_safe_call)
-put rc=0
-final top: 1
-==> rc=0, result='undefined'
+==> rc=1, result='TypeError: invalid base value'
 *** test_put (duk_pcall)
 ==> rc=1, result='TypeError: invalid base value'
 ===*/
 
-int test_put(duk_context *ctx) {
+duk_ret_t test_put(duk_context *ctx) {
 	duk_ret_t rc;
 
 	/* In Ecmascript, '(0).foo = "bar"' should work and evaluate to "bar"
@@ -27,6 +25,9 @@ int test_put(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	TEST_SAFE_CALL(test_put);  /* outside: non-strict */
+	/* Since Duktape 0.12.0, a Duktape/C context is considered strict
+	 * both inside and outside of Duktape/C calls.
+	 */
+	TEST_SAFE_CALL(test_put);  /* outside: strict (non-strict before 0.12.0) */
 	TEST_PCALL(test_put);      /* inside: strict */
 }

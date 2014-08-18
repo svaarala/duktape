@@ -23,18 +23,19 @@
  *  always compiles code in non-strict mode so that it's possible to eval
  *  non-strict code inside a Duktape/C activation.  This matches the behavior
  *  of duk_compile() which also doesn't "inherit" strictness from the Duktape/C
- *  context.
+ *  context.  Further, in Duktape 0.12.0 and onwards the Duktape/C context is
+ *  always considered strict to minimize confusion.
  */
 
 /*===
 *** test_1 (duk_safe_call)
-context is strict: 0
+context is strict: 1
 test_1 evalcode, typeof Math: object
 global.foo1=bar
 final top: 0
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-context is strict: 0
+context is strict: 1
 context is strict: 1
 test_2 evalcode, typeof Math: object
 global.foo2=bar

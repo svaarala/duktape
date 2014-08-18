@@ -99,7 +99,7 @@ duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_index) {
 	tv_obj = duk_require_tval(ctx, obj_index);
 	tv_key = duk_require_tval(ctx, -2);
 	tv_val = duk_require_tval(ctx, -1);
-	throw_flag = duk_is_strict_call(ctx);  /* FIXME */
+	throw_flag = duk_is_strict_call(ctx);
 
 	rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
@@ -155,7 +155,7 @@ duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_index) {
 
 	tv_obj = duk_require_tval(ctx, obj_index);
 	tv_key = duk_require_tval(ctx, -1);
-	throw_flag = duk_is_strict_call(ctx);  /* FIXME */
+	throw_flag = duk_is_strict_call(ctx);
 
 	rc = duk_hobject_delprop(thr, tv_obj, tv_key, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
