@@ -418,7 +418,8 @@ duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	 * and strict is also the default when nothing is running.
 	 * However, Duktape may call this function internally when
 	 * the current activation is an Ecmascript function, so
-	 * this cannot be replaced by a 'return 1'.
+	 * this cannot be replaced by a 'return 1' without fixing
+	 * the internal call sites.
 	 */
 
 	DUK_ASSERT(ctx != NULL);
