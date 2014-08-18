@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.12
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-03-07 13:03:49.151025 Z
 references: []
 
@@ -37,3 +37,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - Now that eval strictness handling was changed this should be more feasible again.
+- - 2014-08-18 21:37:16.027445 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
