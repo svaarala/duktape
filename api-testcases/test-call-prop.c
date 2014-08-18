@@ -73,10 +73,10 @@ static duk_ret_t test_3(duk_context *ctx) {
 	 * plain number value.  The 'this' binding is initially the plain number.
 	 * A strict function gets the plain number as is, a non-strict function
 	 * gets an object coerced version.
-	 */
-
-	/* FIXME: with default being strict there is no way for C code to
-	 * define a non-strict function through eval right now.
+	 *
+	 * NOTE: the strictness of the calling Duktape/C context is no longer
+	 * inherited to the eval code in Duktape 0.12.0, so both strict and
+	 * non-strict eval code can be evaluated.
 	 */
 
 	duk_eval_string(ctx, "Number.prototype.myfunc1 = function() { print(typeof this, this, Object.prototype.toString.call(this)); };");
