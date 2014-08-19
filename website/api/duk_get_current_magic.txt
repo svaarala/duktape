@@ -1,9 +1,9 @@
 =proto
-duk_int_t duk_get_magic(duk_context *ctx);
+duk_int_t duk_get_current_magic(duk_context *ctx);
 
 =summary
-<p>Get the 16-bit signed "magic" value associated with a Duktape/C function.
-If there is no current activation, zero is returned.</p>
+<p>Get the 16-bit signed "magic" value associated with the running
+Duktape/C function.  If there is no current activation, zero is returned.</p>
 
 <p>The magic function allows the same Duktape/C function to be used with slightly
 different behavior; behavior flags or other parameters can be passed in the
@@ -12,11 +12,11 @@ properties in the function object as normal properties.</p>
 
 <p>If you need an unsigned 16-bit value, simply AND the result:</p>
 <pre class="c-code">
-unsigned int my_flags = ((unsigned int) duk_get_magic(ctx)) & 0xffffU;
+unsigned int my_flags = ((unsigned int) duk_get_current_magic(ctx)) & 0xffffU;
 </pre>
 
 =example
-duk_int_t my_flags = duk_get_magic(ctx);
+duk_int_t my_flags = duk_get_current_magic(ctx);
 if (my_flags & 0x01) {
     printf("flag set\n");
 } else {
