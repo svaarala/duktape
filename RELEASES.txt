@@ -461,6 +461,9 @@ Planned
   a "use strict" directive); without this change the strictness would depend
   on whether a Duktape/C function call was active or not
 
+* Add API calls for function "magic" which allows a 16-bit signed integer
+  to be associated (cheaply) with a Duktape/C function
+
 * Treat any strings whose byte representation begins with 0xFF as internal,
   so that user code can use hidden internal properties like Duktape does
   internally; such properties are not enumerated or returned by e.g.
