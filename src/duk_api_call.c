@@ -438,7 +438,7 @@ duk_bool_t duk_is_strict_call(duk_context *ctx) {
  *  Duktape/C function magic
  */
 
-duk_int_t duk_get_magic(duk_context *ctx) {
+duk_int_t duk_get_current_magic(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *func;

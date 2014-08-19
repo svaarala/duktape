@@ -282,7 +282,7 @@ static const duk__two_arg_func duk__two_arg_funcs[] = {
 };
 
 duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
-	duk_small_int_t fun_idx = duk_get_magic(ctx);
+	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
 	duk__one_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0);
@@ -293,7 +293,7 @@ duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 }
 
 duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
-	duk_small_int_t fun_idx = duk_get_magic(ctx);
+	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
 	duk__two_arg_func fun;
 
 	DUK_ASSERT(fun_idx >= 0);

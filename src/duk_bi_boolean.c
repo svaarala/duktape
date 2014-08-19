@@ -10,7 +10,7 @@
 duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	duk_hobject *h;
-	duk_small_int_t coerce_tostring = duk_get_magic(ctx);
+	duk_small_int_t coerce_tostring = duk_get_current_magic(ctx);
 
 	/* FIXME: there is room to use a shared helper here, many built-ins
 	 * check the 'this' type, and if it's an object, check its class,

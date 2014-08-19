@@ -44,7 +44,7 @@ duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hobject *h;
 
 	/* magic: 0=getter call, 1=Object.getPrototypeOf */
-	if (duk_get_magic(ctx) == 0) {
+	if (duk_get_current_magic(ctx) == 0) {
 		duk_push_this_coercible_to_object(ctx);
 		duk_insert(ctx, 0);
 	}
@@ -82,7 +82,7 @@ duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4);
 	 * magic: 0=setter call, 1=Object.setPrototypeOf
 	 */
-	if (duk_get_magic(ctx) == 0) {
+	if (duk_get_current_magic(ctx) == 0) {
 		duk_push_this_check_object_coercible(ctx);
 		duk_insert(ctx, 0);
 		if (!duk_check_type_mask(ctx, 1, DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_OBJECT)) {
@@ -197,7 +197,7 @@ duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context *ctx) {
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
-	is_freeze = (duk_bool_t) duk_get_magic(ctx);
+	is_freeze = (duk_bool_t) duk_get_current_magic(ctx);
 	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
 
 	/* Sealed and frozen objects cannot gain any more properties,
@@ -233,7 +233,7 @@ duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_context *ctx) {
 	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
-	is_frozen = duk_get_magic(ctx);
+	is_frozen = duk_get_current_magic(ctx);
 	rc = duk_hobject_object_is_sealed_frozen_helper(h, is_frozen /*is_frozen*/);
 	duk_push_boolean(ctx, rc);
 	return 1;
@@ -330,7 +330,7 @@ duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 
-	if (duk_get_magic(ctx)) {
+	if (duk_get_current_magic(ctx)) {
 		/* Object.keys */
 		enum_flags = DUK_ENUM_OWN_PROPERTIES_ONLY |
 		             DUK_ENUM_NO_PROXY_BEHAVIOR;

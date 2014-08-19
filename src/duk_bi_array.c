@@ -256,7 +256,7 @@ duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	duk_uint32_t len, count;
 	duk_uint32_t idx;
-	duk_small_int_t to_locale_string = duk_get_magic(ctx);
+	duk_small_int_t to_locale_string = duk_get_current_magic(ctx);
 	duk_idx_t valstack_required;
 
 	/* For join(), nargs is 1.  For toLocaleString(), nargs is 0 and
@@ -1086,7 +1086,7 @@ duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_int_t i, len;
 	duk_int_t from_index;
-	duk_small_int_t idx_step = duk_get_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
+	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
 	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
@@ -1188,7 +1188,7 @@ duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	duk_uint32_t i;
 	duk_uarridx_t k;
 	duk_bool_t bval;
-	duk_small_int_t iter_type = duk_get_magic(ctx);
+	duk_small_int_t iter_type = duk_get_current_magic(ctx);
 	duk_uint32_t res_length = 0;
 
 	/* each call this helper serves has nargs==2 */
@@ -1311,7 +1311,7 @@ duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_bool_t have_acc;
 	duk_uint32_t i, len;
-	duk_small_int_t idx_step = duk_get_magic(ctx);  /* idx_step is +1 for reduce, -1 for reduceRight */
+	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for reduce, -1 for reduceRight */
 
 	/* We're a varargs function because we need to detect whether
 	 * initialValue was given or not.

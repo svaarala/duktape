@@ -1768,7 +1768,7 @@ duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
  */
 
 duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
-	duk_small_uint_t flags = (duk_small_uint_t) duk_get_magic(ctx);
+	duk_small_uint_t flags = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__to_string_helper(ctx, flags);
 }
 
@@ -1850,7 +1850,7 @@ duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
  */
 
 duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx) {
-	duk_small_uint_t flags_and_idx = (duk_small_uint_t) duk_get_magic(ctx);
+	duk_small_uint_t flags_and_idx = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__get_part_helper(ctx, flags_and_idx);
 }
 
@@ -1935,7 +1935,7 @@ duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
  */
 
 duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx) {
-	duk_small_uint_t flags_and_maxnargs = (duk_small_uint_t) duk_get_magic(ctx);
+	duk_small_uint_t flags_and_maxnargs = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__set_part_helper(ctx, flags_and_maxnargs);
 }
 
