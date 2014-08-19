@@ -24,4 +24,9 @@ if (my_flags & 0x01) {
 }
 
 =tags
-omit
+function
+magic
+
+=seealso
+duk_get_magic
+duk_set_magic
