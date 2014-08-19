@@ -24,6 +24,13 @@ final top: 2
 ==> rc=1, result='TypeError: not nativefunction'
 *** test_3 (duk_safe_call)
 ==> rc=1, result='TypeError: not nativefunction'
+*** test_4 (duk_safe_call)
+INFO: log line<LF>
+WARN: log line<LF>
+ERROR: log line<CR><LF>
+FATAL: log line<LF>
+final top: 4
+==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t my_func(duk_context *ctx) {
@@ -82,8 +89,71 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
+/*
+ *  Extended version of the guide example: illustrate how a magic value can
+ *  be used to share a single native log write helper.
+ */
+
+static duk_ret_t guide_example(duk_context *ctx) {
+	const char *prefix[4] = { "INFO", "WARN", "ERROR", "FATAL" };
+	duk_int_t magic = duk_get_current_magic(ctx);
+
+	printf("%s: %s", prefix[magic & 0x03], duk_safe_to_string(ctx, 0));
+	if (magic & 0x04) {
+		printf("<CR><LF>\n");
+	} else {
+		printf("<LF>\n");
+	}
+
+	return 0;
+}
+
+static duk_ret_t test_4(duk_context *ctx) {
+	duk_push_c_function(ctx, guide_example, 1);
+	duk_set_magic(ctx, -1, 0);  /* INFO */
+
+	duk_push_c_function(ctx, guide_example, 1);
+	duk_set_magic(ctx, -1, 1);  /* WARN */
+
+	duk_push_c_function(ctx, guide_example, 1);
+	duk_set_magic(ctx, -1, 2 | 0x04);  /* ERROR */
+
+	duk_push_c_function(ctx, guide_example, 1);
+	duk_set_magic(ctx, -1, 3);  /* FATAL */
+
+	/* 0: func with INFO level
+	 * 1: func with WARN level
+	 * 2: func with ERROR level and CRLF newline
+	 * 3: func with FATAL level
+	 */
+
+	duk_dup(ctx, 0);
+	duk_push_string(ctx, "log line");
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_dup(ctx, 1);
+	duk_push_string(ctx, "log line");
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_dup(ctx, 2);
+	duk_push_string(ctx, "log line");
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_dup(ctx, 3);
+	duk_push_string(ctx, "log line");
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
 }
