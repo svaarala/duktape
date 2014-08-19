@@ -260,7 +260,6 @@ DUK_API_NORETURN(void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const 
 
 duk_bool_t duk_is_strict_call(duk_context *ctx);
 duk_bool_t duk_is_constructor_call(duk_context *ctx);
-duk_int_t duk_get_current_magic(duk_context *ctx);
 
 /*
  *  Stack management
@@ -536,6 +535,14 @@ duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_index, const char
 duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index);
 
 duk_bool_t duk_get_global_string(duk_context *ctx, const char *key);
+
+/*
+ *  Duktape/C function magic value
+ */
+
+duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index);
+void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic);
+duk_int_t duk_get_current_magic(duk_context *ctx);
 
 /*
  *  Module helpers: put multiple function or constant properties
