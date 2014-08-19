@@ -13,7 +13,7 @@ duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	 */
 
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_small_int_t bidx_prototype = duk_get_magic(ctx);
+	duk_small_int_t bidx_prototype = duk_get_current_magic(ctx);
 
 	/* same for both error and each subclass like TypeError */
 	duk_uint_t flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |

@@ -120,7 +120,7 @@ duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
 duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_double_t now;
-	duk_small_int_t entry_lev = duk_get_magic(ctx);
+	duk_small_int_t entry_lev = duk_get_current_magic(ctx);
 	duk_small_int_t logger_lev;
 	duk_int_t nargs;
 	duk_int_t i;

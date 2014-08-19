@@ -438,7 +438,7 @@ duk_bool_t duk_is_strict_call(duk_context *ctx) {
  *  Duktape/C function magic
  */
 
-duk_int_t duk_get_magic(duk_context *ctx) {
+duk_int_t duk_get_current_magic(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hobject *func;
@@ -458,4 +458,24 @@ duk_int_t duk_get_magic(duk_context *ctx) {
 		}
 	}
 	return 0;
+}
+
+duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
+	duk_hnativefunction *nf;
+
+	DUK_ASSERT(ctx != NULL);
+
+	nf = duk_require_hnativefunction(ctx, index);
+	DUK_ASSERT(nf != NULL);
+	return (duk_int_t) nf->magic;
+}
+
+void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic) {
+	duk_hnativefunction *nf;
+
+	DUK_ASSERT(ctx != NULL);
+
+	nf = duk_require_hnativefunction(ctx, index);
+	DUK_ASSERT(nf != NULL);
+	nf->magic = (duk_int16_t) magic;
 }
