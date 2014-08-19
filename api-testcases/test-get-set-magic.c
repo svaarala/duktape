@@ -20,6 +20,10 @@ magic: -16657
 magic: -16657
 final top: 2
 ==> rc=0, result='undefined'
+*** test_2 (duk_safe_call)
+==> rc=1, result='TypeError: not nativefunction'
+*** test_3 (duk_safe_call)
+==> rc=1, result='TypeError: not nativefunction'
 ===*/
 
 static duk_ret_t my_func(duk_context *ctx) {
@@ -60,6 +64,26 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
+static duk_ret_t test_2(duk_context *ctx) {
+	/* duk_get_magic() is strict: incorrect target type throws an error.
+	 * This minimizes compiled function size and magic manipulation is
+	 * rare.
+	 */
+	duk_eval_string(ctx, "(function () {})");
+	printf("magic: %ld\n", (long) duk_get_magic(ctx, -1));
+	return 0;
+}
+
+static duk_ret_t test_3(duk_context *ctx) {
+	/* duk_set_magic() is similarly strict. */
+	duk_eval_string(ctx, "(function () {})");
+	duk_set_magic(ctx, -1, 0x4321);
+	printf("magic: %ld\n", (long) duk_get_magic(ctx, -1));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
+	TEST_SAFE_CALL(test_3);
 }
