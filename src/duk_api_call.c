@@ -477,5 +477,5 @@ void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic) {
 
 	nf = duk_require_hnativefunction(ctx, index);
 	DUK_ASSERT(nf != NULL);
-	nf->magic = (duk_uint16_t) magic;
+	nf->magic = (duk_int16_t) magic;
 }
