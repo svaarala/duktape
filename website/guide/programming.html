@@ -410,12 +410,12 @@ expression.</p>
 to a Duktape/C function out-of-band, i.e. outside explicit call arguments.
 There are several ways to achieve this.</p>
 
-<h3>Function object</h3>
+<h3>Properties of function</h3>
 
 <p>First, a Duktape/C function can use its Function object to store state
 or parameters.  A certain Duktape/C function (the actual C function)
 is always represented by an Ecmascript Function object which is
-magically associated with the underlying C function.   The Function
+internally associated with the underlying C function.   The Function
 object can be used to store properties related to that particular
 instance of the function.  Note that a certain Duktape/C function can
 be associated with multiple independent Function objects and thus
@@ -447,6 +447,40 @@ methods, which has both advantages and disadvantages.</p>
 duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
 </pre>
+
+<h3>Magic value of function</h3>
+
+<p>Duktape/C function objects can store an internal 16-bit signed integer "magic"
+value (zero by default) with no extra memory cost.  The magic value can be used
+to pass flags and/or small values to a Duktape/C function at minimal cost, so
+that a single native function can provide slightly varied behavior for multiple
+function objects:</p>
+<pre class="c-code">
+/* Magic value example: two lowest bits are used for a prefix index, bit 2 (0x04)
+ * is used to select newline style for a log write helper.
+ */
+const char *prefix[4] = { "INFO", "WARN", "ERROR", "FATAL" };
+duk_int_t magic = duk_get_current_magic(ctx);
+
+printf("%s: %s", prefix[magic &amp; 0x03], duk_safe_to_string(ctx, 0));
+if (magic &amp; 0x04) {
+    printf("\r\n");
+} else {
+    printf("\n");
+}
+</pre>
+
+<p>For an API usage example, see the test case
+<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-get-set-magic.c">test-get-set-magic.c</a>.
+Duktape uses magic values a lot internally to minimize size of compiled code, see e.g.
+<a href="https://github.com/svaarala/duktape/blob/master/src/duk_bi_math.c">duk_bi_math.c</a>.</p>
+
+<div class="note">
+The magic value mechanism is liable to change between major Duktape versions,
+as the number of available spare bits changes.  Use magic values only when it
+really matters for footprint.  Properties stored on the function object is a
+more stable alternative.
+</div>
 
 <h3>Heap stash</h3>
 
