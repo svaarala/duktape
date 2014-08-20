@@ -422,3 +422,40 @@ duk_bool_t duk_get_global_string(duk_context *ctx, const char *key) {
 	duk_remove(ctx, -2);
 	return ret;
 }
+
+/*
+ *  Object prototype
+ */
+
+void duk_get_prototype(duk_context *ctx, duk_idx_t index) {
+	duk_hobject *obj;
+	duk_hobject *proto;
+
+	DUK_ASSERT(ctx != NULL);
+
+	obj = duk_require_hobject(ctx, index);
+	DUK_ASSERT(obj != NULL);
+
+	/* FIXME: shared helper for duk_push_hobject_or_undefined()? */
+	proto = DUK_HOBJECT_GET_PROTOTYPE(obj);
+	if (proto) {
+		duk_push_hobject(ctx, proto);
+	} else {
+		duk_push_undefined(ctx);
+	}
+}
+
+void duk_set_prototype(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *obj;
+	duk_hobject *proto;
+
+	DUK_ASSERT(ctx != NULL);
+
+	obj = duk_require_hobject(ctx, index);
+	DUK_ASSERT(obj != NULL);
+	proto = duk_require_hobject(ctx, -1);
+	DUK_ASSERT(proto != NULL);
+
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, obj, proto);
+}
