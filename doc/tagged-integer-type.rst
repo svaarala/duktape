@@ -407,15 +407,34 @@ may be more sensible to avoid a memory tradeoff and compute the masks::
         }
     };
 
-For middle endian machines (ARM) this algorithm first needs swapping
-of the 32-bit parts.  By changing the mask checks to operate on 32-bit
-parts the algorithm would work on more platforms and would also remove
-the need for swapping the parts on middle endian platforms.
+C algorithm with a computed mask, unsigned
+------------------------------------------
+
+Using an unsigned 64-bit integer for the input::
+
+    int is_fastint(duk_uint64_t d) {
+        int exp = (d >> 52) & 0x07ff;
+        int shift = exp - 1023;
+
+        if (shift >= 0 && shift <= 46) {  /* exponents 1023 to 1069 */
+            return ((0x000fffffffffffffULL >> shift) & mant) == 0;
+        } else if (shift == -1023) {  /* exponent 0 */
+            /* return ((d & 0x800fffffffffffffULL) == 0); */
+            return (d == 0);
+        } else if (shift == 47) {  /* exponent 1070 */
+            return ((d & 0x800fffffffffffffULL) == 0x8000000000000000ULL);
+        } else {
+            return 0;
+        }
+    };
 
 C algorithm with 32-bit operations and a computed mask
 ------------------------------------------------------
 
-::
+For middle endian machines (ARM) this algorithm first needs swapping
+of the 32-bit parts.  By changing the mask checks to operate on 32-bit
+parts the algorithm would work on more platforms and would also remove
+the need for swapping the parts on middle endian platforms::
 
     int is_fastint(duk_uint32_t hi, duk_uint32_t lo) {
         int exp = (hi >> 20) & 0x07ff;
