@@ -1815,6 +1815,10 @@ static duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk
 			return 1;
 		}
 
+		/* FIXME: option to pretend property doesn't exist if sanity limit is
+		 * hit might be useful.
+		 */
+
 		/* not found in 'curr', next in prototype chain; impose max depth */
 		if (sanity-- == 0) {
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
@@ -2272,6 +2276,9 @@ duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		goto found;  /* [key result] */
 
 	 next_in_chain:
+		/* FIXME: option to pretend property doesn't exist if sanity limit is
+		 * hit might be useful.
+		 */
 		if (sanity-- == 0) {
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
@@ -3172,6 +3179,9 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		DUK_UNREACHABLE();
 
 	 next_in_chain:
+		/* FIXME: option to pretend property doesn't exist if sanity limit is
+		 * hit might be useful.
+		 */
 		if (sanity-- == 0) {
 			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}

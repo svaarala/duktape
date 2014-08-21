@@ -458,6 +458,8 @@
  *  Macros for property handling
  */		
 
+#define DUK_HOBJECT_GET_PROTOTYPE(h)                    ((h)->prototype)
+
 /* note: this updates refcounts */
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype((thr),(h),(p))
 

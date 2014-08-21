@@ -26,7 +26,6 @@ duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h
 	return 0;
 }
 
-/* FIXME: needed? */
 void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 	duk_hobject *tmp;
