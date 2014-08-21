@@ -251,6 +251,7 @@ function executeTest(options, callback) {
 			'runtests/api_testcase_main.c',
 			tempSource,
 			'-lduktape',
+//			'-lduktaped',
 			'-lm' ];
 
         cmdline = cmd.join(' ');
@@ -309,17 +310,21 @@ var API_TEST_HEADER =
     "#define  TEST_SAFE_CALL(func)  do { \\\n" +
     "\t\tduk_ret_t _rc; \\\n" +
     "\t\tprintf(\"*** %s (duk_safe_call)\\n\", #func); \\\n" +
+    "\t\tfflush(stdout); \\\n" +
     "\t\t_rc = duk_safe_call(ctx, (func), 0, 1); \\\n" +
     "\t\tprintf(\"==> rc=%d, result='%s'\\n\", (int) _rc, duk_to_string(ctx, -1)); \\\n" +
+    "\t\tfflush(stdout); \\\n" +
     "\t\tduk_pop(ctx); \\\n" +
     "\t} while (0)\n" +
     "\n" +
     "#define  TEST_PCALL(func)  do { \\\n" +
     "\t\tduk_ret_t _rc; \\\n" +
     "\t\tprintf(\"*** %s (duk_pcall)\\n\", #func); \\\n" +
+    "\t\tfflush(stdout); \\\n" +
     "\t\tduk_push_c_function(ctx, (func), 0); \\\n" +
     "\t\t_rc = duk_pcall(ctx, 0); \\\n" +
     "\t\tprintf(\"==> rc=%d, result='%s'\\n\", (int) _rc, duk_to_string(ctx, -1)); \\\n" +
+    "\t\tfflush(stdout); \\\n" +
     "\t\tduk_pop(ctx); \\\n" +
     "\t} while (0)\n" +
     "\n" +
