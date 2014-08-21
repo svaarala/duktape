@@ -398,7 +398,8 @@ may be more sensible to avoid a memory tradeoff and compute the masks::
         if (shift >= 0 && shift <= 46) {  /* exponents 1023 to 1069 */
             return ((0x000fffffffffffffULL >> shift) & mant) == 0;
         } else if (shift == -1023) {  /* exponent 0 */
-            return (d >= 0) && ((d & 0x000fffffffffffffULL) == 0);
+            /* return (d >= 0) && ((d & 0x000fffffffffffffULL) == 0); */
+            return (d == 0);
         } else if (shift == 47) {  /* exponent 1070 */
             return (d < 0) && ((d & 0x000fffffffffffffULL) == 0);
         } else {
