@@ -537,6 +537,13 @@ duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx
 duk_bool_t duk_get_global_string(duk_context *ctx, const char *key);
 
 /*
+ *  Object prototype
+ */
+
+void duk_get_prototype(duk_context *ctx, duk_idx_t index);
+void duk_set_prototype(duk_context *ctx, duk_idx_t index);
+
+/*
  *  Duktape/C function magic value
  */
 

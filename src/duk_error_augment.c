@@ -414,11 +414,14 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
 		DUK_DDD(DUK_DDDPRINT("value is not an object, skip both built-in and user augment"));
 		return;
 	}
-	if (!duk_hobject_prototype_chain_contains(thr, obj, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE])) {
+	if (!duk_hobject_prototype_chain_contains(thr, obj, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE], 1 /*ignore_loop*/)) {
+		/* If the value has a prototype loop, it's critical not to
+		 * throw here.  Instead, assume the value is not to be
+		 * augmented.
+		 */
 		DUK_DDD(DUK_DDDPRINT("value is not an error instance, skip both built-in and user augment"));
 		return;
 	}
-
 	if (DUK_HOBJECT_HAS_EXTENSIBLE(obj)) {
 		DUK_DDD(DUK_DDDPRINT("error meets criteria, built-in augment"));
 		duk__err_augment_builtin_throw(thr, thr_callstack, filename, line, noblame_fileline, obj);

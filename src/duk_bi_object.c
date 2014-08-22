@@ -406,8 +406,10 @@ duk_ret_t duk_bi_object_prototype_is_prototype_of(duk_context *ctx) {
 	h_obj = duk_push_this_coercible_to_object(ctx);
 	DUK_ASSERT(h_obj != NULL);
 
-	/* E5.1 Section 15.2.4.6, step 3.a, lookup proto once before compare */
-	duk_push_boolean(ctx, duk_hobject_prototype_chain_contains(thr, h_v->prototype, h_obj));
+	/* E5.1 Section 15.2.4.6, step 3.a, lookup proto once before compare.
+	 * Prototype loops should cause an error to be thrown.
+	 */
+	duk_push_boolean(ctx, duk_hobject_prototype_chain_contains(thr, h_v->prototype, h_obj, 0 /*ignore_loop*/));
 	return 1;
 }
 

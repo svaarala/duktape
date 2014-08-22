@@ -458,6 +458,8 @@
  *  Macros for property handling
  */		
 
+#define DUK_HOBJECT_GET_PROTOTYPE(h)                    ((h)->prototype)
+
 /* note: this updates refcounts */
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype((thr),(h),(p))
 
@@ -710,6 +712,6 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func
 #endif
 
 /* misc */	
-duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
+duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */

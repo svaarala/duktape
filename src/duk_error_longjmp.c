@@ -15,6 +15,10 @@ void duk_err_longjmp(duk_hthread *thr) {
 		 *  return.
 		 */
 
+		DUK_D(DUK_DPRINT("uncaught error: type=%d iserror=%d value1=%!T value2=%!T",
+		                 (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
+		                 &thr->heap->lj.value1, &thr->heap->lj.value2));
+
 		duk_fatal((duk_context *) thr, DUK_ERR_UNCAUGHT_ERROR, "uncaught error");
 		DUK_UNREACHABLE();
 	}
