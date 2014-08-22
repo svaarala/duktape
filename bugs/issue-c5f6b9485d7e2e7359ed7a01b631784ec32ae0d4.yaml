@@ -12,8 +12,8 @@ type: :bugfix
 component: duk
 release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-08-20 10:49:54.364530 Z
 references: []
 
@@ -42,3 +42,7 @@ log_events:
     
     * Deny prototype loops also for C code.  This means a prototype walk when the
       prototype is set, which is more expensive than ideal.
+- - 2014-08-22 20:47:22.649258 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
