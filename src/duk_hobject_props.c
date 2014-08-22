@@ -2282,7 +2282,7 @@ duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		goto found;  /* [key result] */
 
 	 next_in_chain:
-		/* FIXME: option to pretend property doesn't exist if sanity limit is
+		/* XXX: option to pretend property doesn't exist if sanity limit is
 		 * hit might be useful.
 		 */
 		if (sanity-- == 0) {
@@ -3188,7 +3188,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 		DUK_UNREACHABLE();
 
 	 next_in_chain:
-		/* FIXME: option to pretend property doesn't exist if sanity limit is
+		/* XXX: option to pretend property doesn't exist if sanity limit is
 		 * hit might be useful.
 		 */
 		if (sanity-- == 0) {
