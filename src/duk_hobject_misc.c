@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
+duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop) {
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
@@ -18,7 +18,11 @@ duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h
 		}
 
 		if (sanity-- == 0) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+			if (ignore_loop) {
+				break;
+			} else {
+				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+			}
 		}
 		h = h->prototype;
 	} while (h);

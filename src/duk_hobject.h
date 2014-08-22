@@ -712,6 +712,6 @@ duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func
 #endif
 
 /* misc */	
-duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
+duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */
