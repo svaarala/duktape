@@ -3,7 +3,7 @@ title: optional bytecode load/save primitives
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -39,3 +39,7 @@ log_events:
     given to duk_compile().  Another option is to make the bytecode primitives
     entirely separate: duk_bytecode_dump(), duk_bytecode_load().  User should be able
     to load bytecode from a buffer (like with duk_compile()).
+- - 2014-08-22 08:46:20.458669 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
+  - ""

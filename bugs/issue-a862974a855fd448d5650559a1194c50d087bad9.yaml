@@ -1,0 +1,29 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: optimized 'iswhole' primitive
+desc: |-
+  To support the FASTINT branch, there needs to be an optimized primitive
+  for checking whether a number is a whole number which be represented with
+  N bits (e.g. signed 48 bits).
+  
+  For the FASTINT branch, a quick reject is not useful, as numbers are
+  usually expected to be integers.  A quick accept is useful if that is at
+  all possible.
+  
+  In any case, the DUK_SET_TVAL_NUMBER() handler should have a fast inlined
+  version because the check is made by default for all numbers where FASTINT
+  fast paths are not explicitly implemented.
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-20 10:10:02.391046 Z
+references: []
+
+id: a862974a855fd448d5650559a1194c50d087bad9
+log_events: 
+- - 2014-08-20 10:10:02.748091 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
