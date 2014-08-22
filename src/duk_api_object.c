@@ -436,7 +436,7 @@ void duk_get_prototype(duk_context *ctx, duk_idx_t index) {
 	obj = duk_require_hobject(ctx, index);
 	DUK_ASSERT(obj != NULL);
 
-	/* FIXME: shared helper for duk_push_hobject_or_undefined()? */
+	/* XXX: shared helper for duk_push_hobject_or_undefined()? */
 	proto = DUK_HOBJECT_GET_PROTOTYPE(obj);
 	if (proto) {
 		duk_push_hobject(ctx, proto);
@@ -454,8 +454,12 @@ void duk_set_prototype(duk_context *ctx, duk_idx_t index) {
 
 	obj = duk_require_hobject(ctx, index);
 	DUK_ASSERT(obj != NULL);
-	proto = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(proto != NULL);
+	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_UNDEFINED |
+	                               DUK_TYPE_MASK_OBJECT);
+	proto = duk_get_hobject(ctx, -1);
+	/* proto can also be NULL here (allowed explicitly) */
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, obj, proto);
+
+	duk_pop(ctx);
 }
