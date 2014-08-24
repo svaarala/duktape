@@ -464,6 +464,8 @@ Planned
 * Add API calls for getting and setting an object's "internal prototype"
   from C code
 
+* Add API calls for getting and setting an object's finalizer
+
 * Add API calls for function "magic" which allows a 16-bit signed integer
   to be associated (cheaply) with a Duktape/C function
 
