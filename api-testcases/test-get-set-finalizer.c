@@ -22,6 +22,18 @@ after set top 0
 before explicit gc
 after explicit gc
 ==> rc=0, result='undefined'
+*** test_get_nonobject (duk_safe_call)
+read finalizer: undefined
+==> rc=0, result='undefined'
+*** test_set_nonobject (duk_safe_call)
+==> rc=1, result='TypeError: invalid base value'
+*** test_finalizer_loop (duk_safe_call)
+before pop
+after pop
+before forced gc
+finalizer called
+after forced gc
+==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t basic_finalizer(duk_context *ctx) {
@@ -141,7 +153,51 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx) {
 	return 0;
 }
 
+static duk_ret_t test_get_nonobject(duk_context *ctx) {
+	duk_push_int(ctx, 123);
+	duk_get_finalizer(ctx, -1);
+	printf("read finalizer: %s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
+static duk_ret_t test_set_nonobject(duk_context *ctx) {
+	duk_push_int(ctx, 123);
+	duk_push_int(ctx, 321);
+	duk_set_finalizer(ctx, -2);
+	printf("never here\n");
+	return 0;
+}
+
+static duk_ret_t test_finalizer_loop(duk_context *ctx) {
+	/* Setup a finalizer loop: the finalizer of a finalizer is the
+	 * finalizer itself.  The finalizer won't be called recursively.
+	 */
+	duk_eval_string(ctx, "(function (obj) { print('finalizer called'); })");
+	duk_dup(ctx, -1);
+	duk_set_finalizer(ctx, -2);
+
+	printf("before pop\n");
+	duk_pop(ctx);
+	printf("after pop\n");
+
+	/* The finalizer participates in two circular references so it won't
+	 * be collected until mark-and-sweep happens.  The first circular
+	 * reference is the function<->prototype loop.  The second circular
+	 * reference is the finalizer reference which points to the object
+	 * itself.
+	 */
+
+	printf("before forced gc\n");
+	duk_gc(ctx, 0);
+	printf("after forced gc\n");
+
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_basic);
 	TEST_SAFE_CALL(test_recursive_finalizer);
+	TEST_SAFE_CALL(test_get_nonobject);
+	TEST_SAFE_CALL(test_set_nonobject);
+	TEST_SAFE_CALL(test_finalizer_loop);
 }
