@@ -7,8 +7,9 @@ chain (or in the object itself) is subject to finalization before being
 freed.  The internal finalizer property is set using the <code>Duktape.fin()</code>
 method with the object and the finalizer function as call arguments.
 The current finalizer is read back by calling <code>Duktape.fin()</code>
-with only the object as a call argument.  A finalizer may be an Ecmascript
-function but can also be a Duktape/C function.</p>
+with only the object as a call argument.  A finalizer can also be set/get from
+C code using the <code>duk_get_finalizer()</code> and <code>duk_set_finalizer()</code>
+API calls.  A finalizer can be either an Ecmascript function or a Duktape/C function.</p>
 
 <p>A finalizer is triggered when an unreachable object is detected by
 reference counting or mark-and-sweep.  Finalizers are also executed for all
