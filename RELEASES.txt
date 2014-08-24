@@ -461,10 +461,11 @@ Planned
   a "use strict" directive); without this change the strictness would depend
   on whether a Duktape/C function call was active or not
 
-* Add API calls for getting and setting an object's "internal prototype"
-  from C code
+* Add API calls duk_get_prototype() and duk_set_prototype() for getting and
+  setting an object's "internal prototype" from C code
 
-* Add API calls for getting and setting an object's finalizer
+* Add API calls duk_get_finalizer() and duk_set_finalizer() for getting and
+  setting an object's finalizer from C code
 
 * Add API calls for function "magic" which allows a 16-bit signed integer
   to be associated (cheaply) with a Duktape/C function
