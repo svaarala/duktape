@@ -1,0 +1,30 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add Ecmascript and/or C API to actually delete a finalizer reference
+desc: |-
+  Currently there is no way to delete the internal _finalizer property.  You can
+  set it to undefined with Duktape.fin() or duk_set_finalizer() which makes the
+  object behave like it has no finalizer, but the object will retain the property
+  slot unnecessarily.
+  
+  This could be fixed by special casing null/undefined (or any non-function
+  value) when setting a finalizer, or by adding a separate API call to do that
+  (this seems clunky and unnecessary for a corner case).
+  
+  If the finalizer reference is made a documented internal property, there will
+  be no need for explicit API calls and ordinary propert get/set/delete
+  primitives could be used.
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-24 20:00:11.247866 Z
+references: []
+
+id: b54307c3febffbd4d23263e361fb0698b6631d9a
+log_events: 
+- - 2014-08-24 20:00:11.402269 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
