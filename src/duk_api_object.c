@@ -463,3 +463,20 @@ void duk_set_prototype(duk_context *ctx, duk_idx_t index) {
 
 	duk_pop(ctx);
 }
+
+/*
+ *  Object finalizer
+ */
+
+/* XXX: these could be implemented as macros calling an internal function
+ * directly.
+ * XXX: same issue as with Duktape.fin: there's no way to delete the property
+ * now (just set it to undefined).
+ */
+void duk_get_finalizer(duk_context *ctx, duk_idx_t index) {
+	duk_get_prop_stridx(ctx, index, DUK_STRIDX_INT_FINALIZER);
+}
+
+void duk_set_finalizer(duk_context *ctx, duk_idx_t index) {
+	duk_put_prop_stridx(ctx, index, DUK_STRIDX_INT_FINALIZER);
+}

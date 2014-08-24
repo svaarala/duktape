@@ -544,6 +544,13 @@ void duk_get_prototype(duk_context *ctx, duk_idx_t index);
 void duk_set_prototype(duk_context *ctx, duk_idx_t index);
 
 /*
+ *  Object finalizer
+ */
+
+void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
+void duk_set_finalizer(duk_context *ctx, duk_idx_t index);
+
+/*
  *  Duktape/C function magic value
  */
 
