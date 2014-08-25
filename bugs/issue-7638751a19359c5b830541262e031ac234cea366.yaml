@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add 16-bit magic value to plain buffer and pointer objects
+desc: |-
+  There's 16 bits of space in duk_tval for all pointer-based values.  A magic
+  value could be used by the caller for instance to validate pointers at run
+  time to avoid segfaults.
+  
+  Both pointers and buffers could benefit from a magic value.
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-25 11:14:17.090690 Z
+references: []
+
+id: 7638751a19359c5b830541262e031ac234cea366
+log_events: 
+- - 2014-08-25 11:14:17.330649 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
