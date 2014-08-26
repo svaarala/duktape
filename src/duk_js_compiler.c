@@ -5398,7 +5398,7 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 				 * simulate a RETURN if a tailcall could not actually be performed
 				 * (e.g. if the target was a native function).  This would break
 				 * during execution if the target function turned out to be
-				 * thread yield/resume.  So now we just omit the RETURN which
+				 * thread yield/resume.  So now we just emit the RETURN which
 				 * also obviates the need for a simulated return in the executor
 				 * when a tailcall cannot be actually done as requested.
 				 *
