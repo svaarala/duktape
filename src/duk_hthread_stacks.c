@@ -9,7 +9,7 @@
  *  needs to DECREF multiple objects, close environment records, etc.
  *  Stacks must thus be unwound in the correct order by the caller.
  *
- *  (FIXME: This should be probably reworked so that there is a shared
+ *  (XXX: This should be probably reworked so that there is a shared
  *  unwind primitive which handles all stacks as requested, and knows
  *  the proper order for unwinding.)
  *
@@ -396,7 +396,7 @@ void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 			DUK_DDD(DUK_DDDPRINT("unwinding catchstack idx %ld, callstack idx %ld, callstack top %ld: lexical environment active",
 			                     (long) idx, (long) p->callstack_index, (long) thr->callstack_top));
 
-			/* FIXME: Here we have a nasty dependency: the need to manipulate
+			/* XXX: Here we have a nasty dependency: the need to manipulate
 			 * the callstack means that catchstack must always be unwound by
 			 * the caller before unwinding the callstack.  This should be fixed
 			 * later.

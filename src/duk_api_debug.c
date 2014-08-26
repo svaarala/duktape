@@ -19,7 +19,7 @@ void duk_push_context_dump(duk_context *ctx) {
 		duk_put_prop_index(ctx, -2, idx);
 	}
 
-	/* FIXME: conversion errors should not propagate outwards.
+	/* XXX: conversion errors should not propagate outwards.
 	 * Perhaps values need to be coerced individually?
 	 */
 	duk_bi_json_stringify_helper(ctx,
