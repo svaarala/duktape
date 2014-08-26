@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "API: return a number also for boxed Number objects"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-08-26 20:53:22.938491 Z
+references: []
+
+id: ae17512cb3daccdaef3f2cdbd6d85dc1160a4d75
+log_events: 
+- - 2014-08-26 20:53:23.095461 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
