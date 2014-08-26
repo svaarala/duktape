@@ -731,7 +731,7 @@ static duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 				while (t--) {
 					tmp_cp = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 					DUK_ASSERT(buf != NULL);
-					duk_hbuffer_append_xutf8(thr, buf, (duk_uint32_t) tmp_cp);  /* FIXME: duk_codepoint_t */
+					duk_hbuffer_append_xutf8(thr, buf, (duk_ucodepoint_t) tmp_cp);
 				}
 			}
 			return -1;

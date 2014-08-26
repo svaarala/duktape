@@ -646,7 +646,9 @@ extern duk_uint8_t duk_class_number_to_stridx[32];
 
 /* alloc and init */
 duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+#if 0  /* unused */
 duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags);
+#endif
 duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);

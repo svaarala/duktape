@@ -316,7 +316,7 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	ULARGE_INTEGER tmp3;
 	FILETIME ft1;
 
-	/* FIXME: handling of timestamps outside Windows supported range.
+	/* XXX: handling of timestamps outside Windows supported range.
 	 * How does Windows deal with dates before 1600?  Does windows
 	 * support all Ecmascript years (like -200000 and +200000)?
 	 * Should equivalent year mapping be used here too?  If so, use
@@ -1261,7 +1261,7 @@ static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_sm
 	duk_int_t tzoffset = 0;
 
 	duk_push_this(ctx);
-	h = duk_get_hobject(ctx, -1);  /* FIXME: getter with class check, useful in built-ins */
+	h = duk_get_hobject(ctx, -1);  /* XXX: getter with class check, useful in built-ins */
 	if (h == NULL || DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_DATE) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "expected Date");
 	}

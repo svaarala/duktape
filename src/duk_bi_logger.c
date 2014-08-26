@@ -17,7 +17,7 @@ static const duk_uint8_t duk__log_level_strings[] = {
 /* Constructor */
 duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_int_t nargs;  /* FIXME: type */
+	duk_idx_t nargs;
 
 	/* Calling as a non-constructor is not meaningful. */
 	if (!duk_is_constructor_call(ctx)) {

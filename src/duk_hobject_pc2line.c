@@ -27,7 +27,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 
 	DUK_ASSERT(length <= DUK_COMPILER_MAX_BYTECODE_LENGTH);
 
-	/* FIXME: add proper spare handling to dynamic buffer, to minimize
+	/* XXX: add proper spare handling to dynamic buffer, to minimize
 	 * reallocs; currently there is no spare at all.
 	 */
 

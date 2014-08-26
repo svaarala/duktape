@@ -526,7 +526,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
-#if 0  /* FIXME: no portable way to print function pointers */
+#if 0  /* FIXME: format function pointer with duk_debug_format_funcptr() */
 		DUK__COMMA(); duk_fb_sprintf(fb, "__func:%p", (void *) f->func);
 #endif
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);

@@ -12,7 +12,7 @@
 
 #include "duk_internal.h"
 
-/* FIXME: unimplemented */
+/* XXX: unimplemented */
 
 void *duk_torture_alloc_function(void *udata, duk_size_t size) {
 	void *res;

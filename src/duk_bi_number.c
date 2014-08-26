@@ -2,10 +2,6 @@
  *  Number built-ins
  */
 
-/* FIXME: needs to be refactored when exact parsing / string conversion
- * primitives are implemented.
- */
-
 #include "duk_internal.h"
 
 static duk_double_t duk__push_this_number_plain(duk_context *ctx) {
@@ -72,7 +68,7 @@ duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	 *  (above).  String internal value is immutable.
 	 */
 
-	/* FIXME: helper */
+	/* XXX: helper */
 	duk_push_this(ctx);
 	h_this = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h_this != NULL);
@@ -124,7 +120,7 @@ duk_ret_t duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
  *  toFixed(), toExponential(), toPrecision()
  */
 
-/* FIXME: shared helper for toFixed(), toExponential(), toPrecision()? */
+/* XXX: shared helper for toFixed(), toExponential(), toPrecision()? */
 
 duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	duk_small_int_t frac_digits;

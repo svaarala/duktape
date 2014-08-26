@@ -15,7 +15,7 @@ static void duk__mark_tval(duk_heap *heap, duk_tval *tv);
 
 /* Select a thread for mark-and-sweep use.
  *
- * FIXME: This needs to change later.
+ * XXX: This needs to change later.
  */
 static duk_hthread *duk__get_temp_hthread(duk_heap *heap) {
 	if (heap->curr_thread) {
@@ -886,7 +886,7 @@ duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 	duk_size_t count_keep_str;
 	duk_size_t tmp;
 
-	/* FIXME: thread selection for mark-and-sweep is currently a hack.
+	/* XXX: thread selection for mark-and-sweep is currently a hack.
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
 	 */

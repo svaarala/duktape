@@ -218,7 +218,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 		 *  objects and must be safe (not throw any errors, ever).
 		 */
 
-		/* FIXME: If object has FINALIZED, it was finalized by mark-and-sweep on
+		/* XXX: If object has FINALIZED, it was finalized by mark-and-sweep on
 		 * its previous run.  Any point in running finalizer again here?  If
 		 * finalization semantics is changed so that finalizer is only run once,
 		 * checking for FINALIZED would happen here.
