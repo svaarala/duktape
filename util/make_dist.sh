@@ -69,7 +69,6 @@ for i in \
 	duk_api_memory.c	\
 	duk_api_object.c	\
 	duk_api_string.c	\
-	duk_api_thread.c	\
 	duk_api_var.c		\
 	duk_api_logging.c	\
 	duk_api_debug.c		\
