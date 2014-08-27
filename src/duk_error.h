@@ -185,8 +185,8 @@
  */
 
 #define DUK_VALSTACK_ASSERT_EXTRA  5  /* this is added to checks to allow for Duktape
-                                        * API calls in addition to function's own use
-                                        */
+                                       * API calls in addition to function's own use
+                                       */
 #if defined(DUK_USE_ASSERTIONS)
 #define DUK_ASSERT_VALSTACK_SPACE(thr,n)   do { \
 		DUK_ASSERT((thr) != NULL); \

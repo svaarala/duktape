@@ -12,7 +12,7 @@ duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx) {
 	duk_hobject *h;
 	duk_small_int_t coerce_tostring = duk_get_current_magic(ctx);
 
-	/* FIXME: there is room to use a shared helper here, many built-ins
+	/* XXX: there is room to use a shared helper here, many built-ins
 	 * check the 'this' type, and if it's an object, check its class,
 	 * then get its internal value, etc.
 	 */
@@ -49,7 +49,7 @@ duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 	duk_to_boolean(ctx, 0);
 
 	if (duk_is_constructor_call(ctx)) {
-		/* FIXME: helper; rely on Boolean.prototype as being non-writable, non-configurable */
+		/* XXX: helper; rely on Boolean.prototype as being non-writable, non-configurable */
 		duk_push_this(ctx);
 		h_this = duk_get_hobject(ctx, -1);
 		DUK_ASSERT(h_this != NULL);
@@ -58,7 +58,7 @@ duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 		DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_BOOLEAN);
 
 		duk_dup(ctx, 0);  /* -> [ val obj val ] */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* FIXME: proper flags? */
+		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* XXX: proper flags? */
 	}  /* unbalanced stack */
 
 	return 1;

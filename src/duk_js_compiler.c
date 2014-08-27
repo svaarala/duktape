@@ -798,9 +798,11 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/* _formals: omitted if function is guaranteed not to need a (non-strict) arguments object */
-	if (1) {  /* FIXME: condition */
-		/* FIXME: if omitted, recheck handling for 'length' in duk_js_push_closure();
-		 * it currently relies on _formals being set.
+	if (1) {
+		/* XXX: Add a proper condition.  If formals list is omitted, recheck
+		 * handling for 'length' in duk_js_push_closure(); it currently relies
+		 * on _formals being set.  Removal may need to be conditional to debugging
+		 * being enabled/disabled too.
 		 */
 		duk_dup(ctx, func->argnames_idx);
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
@@ -815,16 +817,22 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	/* _source */
 #if defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY)
 	if (0) {
-		/* FIXME: Currently function source code is not stored, as it is not
+		/* XXX: Currently function source code is not stored, as it is not
 		 * required by the standard.  Source code should not be stored by
 		 * default (user should enable it explicitly), and the source should
 		 * probably be compressed with a trivial text compressor; average
 		 * compression of 20-30% is quite easy to achieve even with a trivial
 		 * compressor (RLE + backwards lookup).
-		 */
-		/* FIXME: Debugging needs source code to be useful: sometimes input
-		 * code is not found in files as it may be generated and then eval()'d,
-		 * given by dynamic C code, etc.
+		 *
+		 * Debugging needs source code to be useful: sometimes input code is
+		 * not found in files as it may be generated and then eval()'d, given
+		 * by dynamic C code, etc.
+		 *
+		 * Other issues:
+		 *
+		 *   - Need tokenizer indices for start and end to substring
+		 *   - Always normalize function declaration part?
+		 *   - If we keep _formals, only need to store body
 		 */
 
 		/*
@@ -847,11 +855,8 @@ static void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		 *    'function a(foo,bar) { print(foo); }'
 		 */
 
-		/* FIXME: need tokenizer indices for start and end to substring */
-		/* FIXME: always normalize function declaration part? */
-		/* FIXME: if we keep _formals, only need to store body */
 #if 0
-		duk_push_string(ctx, "FIXME");
+		duk_push_string(ctx, "XXX");
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 #endif
 	}

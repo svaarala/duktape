@@ -90,7 +90,7 @@ typedef struct {
 
 typedef void (*duk__transform_callback)(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
 
-/* FIXME: refactor and share with other code */
+/* XXX: refactor and share with other code */
 static duk_small_int_t duk__decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
 	duk_small_int_t ch;
 	duk_small_int_t t = 0;

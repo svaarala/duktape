@@ -352,7 +352,7 @@ void duk_compact(duk_context *ctx, duk_idx_t obj_index) {
 	}
 }
 
-/* FIXME: the duk_hobject_enum.c stack APIs should be reworked */
+/* XXX: the duk_hobject_enum.c stack APIs should be reworked */
 
 void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags) {
 	DUK_ASSERT(ctx != NULL);

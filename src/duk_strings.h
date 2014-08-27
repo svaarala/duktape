@@ -261,4 +261,7 @@ extern const char *duk_str_regexp_compiler_recursion_limit;
 extern const char *duk_str_regexp_executor_recursion_limit;
 extern const char *duk_str_regexp_executor_step_limit;
 
+#define DUK_STR_ANON duk_str_anon
+extern const char *duk_str_anon;
+
 #endif  /* DUK_ERRMSG_H_INCLUDED */

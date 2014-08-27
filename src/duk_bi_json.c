@@ -118,7 +118,7 @@ static duk_uint_fast32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, du
 	duk_small_int_t x;
 
 	for (i = 0; i < n; i++) {
-		/* FIXME: share helper from lexer; duk_lexer.c / hexval(). */
+		/* XXX: share helper from lexer; duk_lexer.c / hexval(). */
 
 		x = duk__dec_get(js_ctx);
 		DUK_ASSERT((x >= 0 && x <= 0xff) || (x == -1));
@@ -731,7 +731,7 @@ static void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 				                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),
 				                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-				/* FIXME: push_uint_string / push_u32_string */
+				/* XXX: push_uint_string / push_u32_string */
 				duk_dup_top(ctx);
 				duk_push_uint(ctx, (duk_uint_t) i);
 				duk_to_string(ctx, -1);  /* -> [ ... holder name val val ToString(i) ] */
@@ -1158,7 +1158,7 @@ static void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	if (js_ctx->idx_proplist >= 0) {
 		idx_keys = js_ctx->idx_proplist;
 	} else {
-		/* FIXME: would be nice to enumerate an object at specified index */
+		/* XXX: would be nice to enumerate an object at specified index */
 		duk_dup(ctx, idx_obj);
 		(void) duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);  /* [ ... target ] -> [ ... target keys ] */
 		idx_keys = duk_require_normalize_index(ctx, -1);
@@ -1172,7 +1172,7 @@ static void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 
 	DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);
 
-	/* FIXME: keys is an internal object with all keys to be processed
+	/* XXX: keys is an internal object with all keys to be processed
 	 * in its (gapless) array part.  Because nobody can touch the keys
 	 * object, we could iterate its array part directly (keeping in mind
 	 * that it can be reallocated).
@@ -1279,7 +1279,7 @@ static void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 			DUK__EMIT_HSTR(js_ctx, h_indent);
 		}
 
-		/* FIXME: duk_push_uint_string() */
+		/* XXX: duk_push_uint_string() */
 		duk_push_uint(ctx, (duk_uint_t) i);
 		duk_to_string(ctx, -1);  /* -> [ ... key ] */
 		undef = duk__enc_value1(js_ctx, idx_arr);
@@ -1351,7 +1351,7 @@ static duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder
 	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	if (js_ctx->h_replacer) {
-		/* FIXME: here a "slice copy" would be useful */
+		/* XXX: here a "slice copy" would be useful */
 		DUK_DDD(DUK_DDDPRINT("replacer is set, call replacer"));
 		duk_push_hobject(ctx, js_ctx->h_replacer);  /* -> [ ... key val replacer ] */
 		duk_dup(ctx, idx_holder);                   /* -> [ ... key val replacer holder ] */
@@ -1877,7 +1877,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 			duk_uarridx_t plist_idx = 0;
 			duk_small_uint_t enum_flags;
 
-			js_ctx->idx_proplist = duk_push_array(ctx);  /* FIXME: array internal? */
+			js_ctx->idx_proplist = duk_push_array(ctx);  /* XXX: array internal? */
 
 			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
 			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
@@ -1885,7 +1885,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 			while (duk_next(ctx, -1 /*enum_index*/, 1 /*get_value*/)) {
 				/* [ ... proplist enum_obj key val ] */
 				if (duk__enc_allow_into_proplist(duk_get_tval(ctx, -1))) {
-					/* FIXME: duplicates should be eliminated here */
+					/* XXX: duplicates should be eliminated here */
 					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> accept",
 					                     (duk_tval *) duk_get_tval(ctx, -2),
 					                     (duk_tval *) duk_get_tval(ctx, -1)));
@@ -1929,7 +1929,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 			DUK_ASC_SPACE, DUK_ASC_SPACE, DUK_ASC_SPACE, DUK_ASC_SPACE,
 			DUK_ASC_SPACE, DUK_ASC_SPACE, DUK_ASC_SPACE, DUK_ASC_SPACE,
 			DUK_ASC_SPACE, DUK_ASC_SPACE
-		};  /* FIXME:helper */
+		};  /* XXX: helper */
 
 		/* ToInteger() coercion; NaN -> 0, infinities are clamped to 0 and 10 */
 		nspace = (duk_small_int_t) duk_to_int_clamped(ctx, idx_space, 0 /*minval*/, 10 /*maxval*/);
@@ -1939,7 +1939,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
 	} else if (duk_is_string(ctx, idx_space)) {
-		/* FIXME: substring in-place at idx_place? */
+		/* XXX: substring in-place at idx_place? */
 		duk_dup(ctx, idx_space);
 		duk_substring(ctx, -1, 0, 10);  /* clamp to 10 chars */
 		js_ctx->h_gap = duk_get_hstring(ctx, -1);

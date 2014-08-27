@@ -4,9 +4,6 @@
 
 #include "duk_internal.h"
 
-/* FIXME: shared string */
-const char *duk__str_anon = "anon";
-
 duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
@@ -41,7 +38,7 @@ duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 2);
 
-	/* FIXME: this placeholder is not always correct, but use for now.
+	/* XXX: this placeholder is not always correct, but use for now.
 	 * It will fail in corner cases; see test-dev-func-cons-args.js.
 	 */
 	duk_push_string(ctx, "function(");
@@ -58,7 +55,7 @@ duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	/* strictness is not inherited, intentional */
 	comp_flags = DUK_JS_COMPILE_FLAG_FUNCEXPR;
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* FIXME: ignored now */
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
 	h_sourcecode = duk_require_hstring(ctx, -2);
 	duk_js_compile(thr,
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
@@ -110,16 +107,16 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	 */
 
 
-	/* FIXME: faster internal way to get this */
+	/* XXX: faster internal way to get this */
 	duk_push_this(ctx);
 	tv = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv);
-		const char *func_name = duk__str_anon;
+		const char *func_name = DUK_STR_ANON;
 
-		/* FIXME: rework, it would be nice to avoid C formatting functions to
+		/* XXX: rework, it would be nice to avoid C formatting functions to
 		 * ensure there are no Unicode issues.
 		 */
 
@@ -129,7 +126,7 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 			DUK_ASSERT(func_name != NULL);
 
 			if (func_name[0] == (char) 0) {
-				func_name = duk__str_anon;
+				func_name = DUK_STR_ANON;
 			}
 		}
 
@@ -182,7 +179,7 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	} else {
 		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
-		/* FIXME: make this an internal helper */
+		/* XXX: make this an internal helper */
 		duk_get_prop_stridx(ctx, 2, DUK_STRIDX_LENGTH);
 		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
 		duk_pop(ctx);

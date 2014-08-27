@@ -16,7 +16,7 @@ static void duk__get_this_regexp(duk_context *ctx) {
 	duk_insert(ctx, 0);  /* prepend regexp to valstack 0 index */
 }
 
-/* FIXME: much to improve (code size) */
+/* XXX: much to improve (code size) */
 duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_pattern;

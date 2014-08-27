@@ -190,7 +190,7 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep not running -> must be empty */
 #endif
 
-	/* FIXME: here again finalizer thread is the heap_thread which needs
+	/* XXX: here again finalizer thread is the heap_thread which needs
 	 * to be coordinated with finalizer thread fixes.
 	 */
 
@@ -223,7 +223,7 @@ void duk_heap_free(duk_heap *heap) {
 	 * resources like file handles, allocations made outside Duktape,
 	 * etc.
 	 *
-	 * FIXME: this perhaps requires an execution time limit.
+	 * XXX: this perhaps requires an execution time limit.
 	 */
 	DUK_D(DUK_DPRINT("execute finalizers before freeing heap"));
 #ifdef DUK_USE_MARK_AND_SWEEP
@@ -373,7 +373,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 		return 0;
 	}
 
-	/* FIXME: this may now fail, and is not handled correctly */
+	/* XXX: this may now fail, and is not handled correctly */
 	duk_hthread_create_builtin_objects(thr);
 
 	/* default prototype (Note: 'thr' must be reachable) */
@@ -654,7 +654,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->call_recursion_depth = 0;
 	res->call_recursion_limit = DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT;
 
-	/* FIXME: use the pointer as a seed for now: mix in time at least */
+	/* XXX: use the pointer as a seed for now: mix in time at least */
 
 	/* The casts through duk_intr_pt is to avoid the following GCC warning:
 	 *
@@ -710,7 +710,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 #endif
 
-	/* FIXME: error handling is incomplete.  It would be cleanest if
+	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could
 	 * freely throw errors.  If that were the case, the return code
 	 * passing here could be removed.

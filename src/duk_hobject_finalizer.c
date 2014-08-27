@@ -24,7 +24,7 @@ static duk_ret_t duk__finalize_helper(duk_context *ctx) {
 
 	/* [... obj] */
 
-	/* FIXME: finalizer lookup should traverse the prototype chain (to allow
+	/* XXX: finalizer lookup should traverse the prototype chain (to allow
 	 * inherited finalizers) but should not invoke accessors or proxy object
 	 * behavior.
 	 */
@@ -58,8 +58,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(obj != NULL);
-
-	/* FIXME: assert stack space */
+	DUK_ASSERT_VALSTACK_SPACE(thr, 1);
 
 #ifdef DUK_USE_ASSERTIONS
 	entry_top = duk_get_top(ctx);
@@ -70,7 +69,7 @@ void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	 *  may trigger an error (getter may throw one, for instance).
 	 */
 
-	/* FIXME: use a NULL error handler for the finalizer call? */
+	/* XXX: use a NULL error handler for the finalizer call? */
 
 	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling wrapped finalize helper"));
 	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */

@@ -382,7 +382,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
  *                    (needed because user code filename/line are reported but internal ones
  *                    are not)
  *
- *  FIXME: rename noblame_fileline to flags field; combine it to some existing
+ *  XXX: rename noblame_fileline to flags field; combine it to some existing
  *  field (there are only a few call sites so this may not be worth it).
  */
 

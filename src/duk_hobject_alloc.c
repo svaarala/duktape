@@ -13,7 +13,7 @@ static void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t 
 	obj->p = NULL;
 #endif
 
-	/* FIXME: macro? sets both heaphdr and object flags */
+	/* XXX: macro? sets both heaphdr and object flags */
 	obj->hdr.h_flags = hobject_flags;
 	DUK_HEAPHDR_SET_TYPE(&obj->hdr, DUK_HTYPE_OBJECT);  /* also goes into flags */
 
@@ -144,7 +144,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	return res;
 }
 
-/* FIXME: unused now, remove */
+#if 0  /* unused now */
 duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags) {
 	duk_hobject *res = duk_hobject_alloc(thr->heap, hobject_flags);
 	if (!res) {
@@ -152,3 +152,4 @@ duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flag
 	}
 	return res;
 }
+#endif

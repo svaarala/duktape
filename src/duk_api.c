@@ -393,6 +393,8 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) <= new_size);  /* can't resize below 'top' */
+	DUK_ASSERT(new_size <= thr->valstack_max);  /* valstack limit caller has check, prevents wrapping */
+	DUK_ASSERT(new_size <= DUK_SIZE_MAX / sizeof(duk_tval));  /* specific assert for wrapping */
 
 	/* get pointer offsets for tweaking below */
 	old_bottom_offset = (((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack));
@@ -409,7 +411,7 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	 * process.  See doc/memory-management.txt.
 	 */
 
-	new_alloc_size = sizeof(duk_tval) * new_size;  /* FIXME: wrap check */
+	new_alloc_size = sizeof(duk_tval) * new_size;
 	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (!new_valstack) {
 		DUK_D(DUK_DPRINT("failed to resize valstack to %lu entries (%lu bytes)",
@@ -545,9 +547,9 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	                   (unsigned long) old_size, (unsigned long) new_size,
 	                   (unsigned long) min_new_size));
 
-	if (new_size >= thr->valstack_max) {
+	if (new_size > thr->valstack_max) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
-		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account.
+		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account).
 		 */
 		if (throw_flag) {
 			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_VALSTACK_LIMIT);
@@ -561,9 +563,11 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	 *  the allocation of the new valstack.  If the mark-and-sweep needs
 	 *  to use our thread for something, it may cause *the same valstack*
 	 *  to be resized recursively.  This happens e.g. when mark-and-sweep
-	 *  finalizers are called.
+	 *  finalizers are called.  This is taken into account carefully in
+	 *  duk__resize_valstack().
 	 *
-	 *  This is taken into account carefully in duk__resize_valstack().
+	 *  'new_size' is known to be <= valstack_max, which ensures that
+	 *  size_t and pointer arithmetic won't wrap in duk__resize_valstack().
 	 */
 
 	if (!duk__resize_valstack(ctx, new_size)) {
@@ -873,12 +877,14 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(from_ctx != NULL);
 
-	if (count < 0) {
+	if ((count < 0) ||
+	    (count > (duk_idx_t) thr->valstack_max)) {
+		/* Maximum value check ensures 'nbytes' won't wrap below. */
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
 		return;
 	}
 
-	nbytes = sizeof(duk_tval) * count;  /* FIXME: wrap check */
+	nbytes = sizeof(duk_tval) * count;
 	if (nbytes == 0) {
 		return;
 	}
