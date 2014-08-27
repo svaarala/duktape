@@ -2334,7 +2334,10 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			/* E5 Section 11.2.3, step 6.a.i */
 			/* E5 Section 10.4.3 */
 
-			/* FIXME: allow object to be a const, e.g. in 'foo'.toString() */
+			/* XXX: allow object to be a const, e.g. in 'foo'.toString()?
+			 * On the other hand, DUK_REGCONSTP() is slower and generates
+			 * more code.
+			 */
 
 			tv_obj = DUK__REGP(b);
 			tv_key = DUK__REGCONSTP(c);
@@ -2601,11 +2604,12 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> currently unused
 			 */
 
-			/* FIXME: fast return not implemented, always do a slow return now */
-			/* FIXME: limit fast return to the case with no catchstack at all (not even labels)?) */
-			if (a & DUK_BC_RETURN_FLAG_FAST && 0 /*FIXME*/) {
+			/* FIXME: fast return not implemented, always do a slow return now.
+			 * Limit fast return to the case with no catchstack at all (not even labels)?
+			 */
+			if (a & DUK_BC_RETURN_FLAG_FAST && 0) {
 				/* fast return: no TCF catchers (but may have e.g. labels) */
-				DUK__INTERNAL_ERROR("FIXME: fast return unimplemented");
+				DUK__INTERNAL_ERROR("fast return unimplemented");
 			} else {
 				/* slow return */
 
@@ -2753,7 +2757,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				                c,            /* num_stack_args */
 				                call_flags);  /* call_flags */
 
-				/* FIXME: who should restore? */
+				/* XXX: who should restore? */
 				duk_require_stack_top(ctx, (duk_idx_t) fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
@@ -3120,7 +3124,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 				 * C -> constant index of identifier name
 				 */
 
-				tv = DUK__REGCONSTP(c);  /* FIXME: this could be a DUK__CONSTP instead */
+				tv = DUK__REGCONSTP(c);  /* XXX: this could be a DUK__CONSTP instead */
 				DUK_ASSERT(DUK_TVAL_IS_STRING(tv));
 				name = DUK_TVAL_GET_STRING(tv);
 				if (duk_js_getvar_activation(thr, act, name, 0 /*throw*/)) {
