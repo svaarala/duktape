@@ -133,3 +133,6 @@ const char *duk_str_func_limit = "function limit";
 const char *duk_str_regexp_compiler_recursion_limit = "regexp compiler recursion limit";
 const char *duk_str_regexp_executor_recursion_limit = "regexp executor recursion limit";
 const char *duk_str_regexp_executor_step_limit = "regexp step limit";
+
+/* Misc */
+const char *duk_str_anon = "anon";

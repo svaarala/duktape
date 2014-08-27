@@ -4,9 +4,6 @@
 
 #include "duk_internal.h"
 
-/* FIXME: shared string */
-const char *duk__str_anon = "anon";
-
 duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
@@ -117,7 +114,7 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv);
-		const char *func_name = duk__str_anon;
+		const char *func_name = DUK_STR_ANON;
 
 		/* XXX: rework, it would be nice to avoid C formatting functions to
 		 * ensure there are no Unicode issues.
@@ -129,7 +126,7 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 			DUK_ASSERT(func_name != NULL);
 
 			if (func_name[0] == (char) 0) {
-				func_name = duk__str_anon;
+				func_name = DUK_STR_ANON;
 			}
 		}
 
