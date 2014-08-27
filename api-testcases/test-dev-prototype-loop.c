@@ -66,7 +66,7 @@ true
 object function
 true
 object function
-==> rc=1, result='Error: instanceof prototype chain sanity exceeded'
+==> rc=1, result='Error: prototype chain limit'
 still here
 ===*/
 
