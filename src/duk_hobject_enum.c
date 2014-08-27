@@ -19,7 +19,7 @@
 
 #include "duk_internal.h"
 
-/* FIXME: identify enumeration target with an object index (not top of stack) */
+/* XXX: identify enumeration target with an object index (not top of stack) */
 
 /* must match exactly the number of internal properties inserted to enumerator */
 #define DUK__ENUM_START_INDEX  2
@@ -426,12 +426,12 @@ void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags
 		 *  here.
 		 */
 
-		/* FIXME: avoid this at least when enum_target is an Array, it has an
+		/* XXX: avoid this at least when enum_target is an Array, it has an
 		 * array part, and no ancestor properties were included?  Not worth
 		 * it for JSON, but maybe worth it for forEach().
 		 */
 
-		/* FIXME: may need a 'length' filter for forEach()
+		/* XXX: may need a 'length' filter for forEach()
 		 */
 		DUK_DDD(DUK_DDDPRINT("sort array indices by caller request"));
 		duk__sort_array_indices(res);
@@ -483,7 +483,6 @@ duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
 	enum_target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(enum_target != NULL);
 #if defined(DUK_USE_ES6_PROXY)
-	/* FIXME: typing issue here? */
 	check_existence = (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(enum_target));
 #else
 	check_existence = 1;

@@ -109,7 +109,7 @@ duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 
  done:
 	/* set values into ret array */
-	/* FIXME: primitive to make array from valstack slice */
+	/* XXX: primitive to make array from valstack slice */
 	n = duk_get_top(ctx);
 	for (i = 2; i < n; i++) {
 		duk_dup(ctx, i);
@@ -157,7 +157,7 @@ duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 
 	/* [ level obj func pc line ] */
 
-	/* FIXME: version specific array format instead? */
+	/* XXX: version specific array format instead? */
 	duk_def_prop_stridx_wec(ctx, -4, DUK_STRIDX_LINE_NUMBER);
 	duk_def_prop_stridx_wec(ctx, -3, DUK_STRIDX_PC);
 	duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_LC_FUNCTION);

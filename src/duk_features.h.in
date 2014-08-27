@@ -135,7 +135,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* MIPS */
-/* FIXME: 32-bit vs. 64-bit MIPS */
+/* XXX: 32-bit vs. 64-bit MIPS */
 #if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
     defined(_R3000) || defined(_R4000) || defined(_R5900) || \
     defined(_MIPS_ISA_MIPS1) || defined(_MIPS_ISA_MIPS2) || \
@@ -298,7 +298,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  #ifdefs, but it would then be more difficult to make fixes which
  *  affect only a specific platform.
  *
- *  FIXME: add a way to provide custom functions to provide the critical
+ *  XXX: add a way to provide custom functions to provide the critical
  *  primitives; this would be convenient when porting to unknown platforms
  *  (rather than muck with Duktape internals).
  */
@@ -536,7 +536,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  *  being able to compare DUK_SIZE_MAX against a limit.
  */
 
-/* FIXME: add feature options to force basic types from outside? */
+/* XXX: add feature options to force basic types from outside? */
 
 #if !defined(INT_MAX)
 #error INT_MAX not defined
