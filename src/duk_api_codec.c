@@ -199,7 +199,7 @@ const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	return ret;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "base64 encode failed");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BASE64_ENCODE_FAILED);
 	return NULL;  /* never here */
 }
 
@@ -243,7 +243,7 @@ void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "base64 decode failed");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BASE64_DECODE_FAILED);
 }
 
 const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
@@ -318,7 +318,7 @@ void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "hex decode failed");
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_HEX_DECODE_FAILED);
 }
 
 const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {

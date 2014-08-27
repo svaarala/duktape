@@ -66,6 +66,15 @@ extern const char *duk_str_not_configurable;
 #define DUK_STR_FUNC_ALLOC_FAILED duk_str_func_alloc_failed
 #define DUK_STR_BUFFER_ALLOC_FAILED duk_str_buffer_alloc_failed
 #define DUK_STR_POP_TOO_MANY duk_str_pop_too_many
+#define DUK_STR_BUFFER_NOT_DYNAMIC duk_str_buffer_not_dynamic
+#define DUK_STR_FAILED_TO_EXTEND_VALSTACK duk_str_failed_to_extend_valstack
+#define DUK_STR_BASE64_ENCODE_FAILED duk_str_base64_encode_failed
+#define DUK_STR_BASE64_DECODE_FAILED duk_str_base64_decode_failed
+#define DUK_STR_HEX_DECODE_FAILED duk_str_hex_decode_failed
+#define DUK_STR_NO_SOURCECODE duk_str_no_sourcecode
+#define DUK_STR_CONCAT_RESULT_TOO_LONG duk_str_concat_result_too_long
+#define DUK_STR_UNIMPLEMENTED duk_str_unimplemented
+#define DUK_STR_ARRAY_LENGTH_OVER_2G duk_str_array_length_over_2g
 
 extern const char *duk_str_invalid_index;
 extern const char *duk_str_push_beyond_alloc_stack;
@@ -94,6 +103,15 @@ extern const char *duk_str_thread_alloc_failed;
 extern const char *duk_str_func_alloc_failed;
 extern const char *duk_str_buffer_alloc_failed;
 extern const char *duk_str_pop_too_many;
+extern const char *duk_str_buffer_not_dynamic;
+extern const char *duk_str_failed_to_extend_valstack;
+extern const char *duk_str_base64_encode_failed;
+extern const char *duk_str_base64_decode_failed;
+extern const char *duk_str_hex_decode_failed;
+extern const char *duk_str_no_sourcecode;
+extern const char *duk_str_concat_result_too_long;
+extern const char *duk_str_unimplemented;
+extern const char *duk_str_array_length_over_2g;
 
 #define DUK_STR_FMT_PTR duk_str_fmt_ptr
 #define DUK_STR_INVALID_JSON duk_str_invalid_json
@@ -189,6 +207,30 @@ extern const char *duk_str_func_name_required;
 
 extern const char *duk_str_internal_error_exec_longjmp;
 
+#define DUK_STR_INVALID_QUANTIFIER_NO_ATOM duk_str_invalid_quantifier_no_atom
+#define DUK_STR_INVALID_QUANTIFIER_VALUES duk_str_invalid_quantifier_values
+#define DUK_STR_QUANTIFIER_TOO_MANY_COPIES duk_str_quantifier_too_many_copies
+#define DUK_STR_UNEXPECTED_CLOSING_PAREN duk_str_unexpected_closing_paren
+#define DUK_STR_UNEXPECTED_END_OF_PATTERN duk_str_unexpected_end_of_pattern
+#define DUK_STR_UNEXPECTED_REGEXP_TOKEN duk_str_unexpected_regexp_token
+#define DUK_STR_INVALID_REGEXP_FLAGS duk_str_invalid_regexp_flags
+#define DUK_STR_INVALID_BACKREFS duk_str_invalid_backrefs
+#define DUK_STR_REGEXP_BACKTRACK_FAILED duk_str_regexp_backtrack_failed
+#define DUK_STR_REGEXP_ADVANCE_FAILED duk_str_regexp_advance_failed
+#define DUK_STR_REGEXP_INTERNAL_ERROR duk_str_regexp_internal_error
+
+extern const char *duk_str_invalid_quantifier_no_atom;
+extern const char *duk_str_invalid_quantifier_values;
+extern const char *duk_str_quantifier_too_many_copies;
+extern const char *duk_str_unexpected_closing_paren;
+extern const char *duk_str_unexpected_end_of_pattern;
+extern const char *duk_str_unexpected_regexp_token;
+extern const char *duk_str_invalid_regexp_flags;
+extern const char *duk_str_invalid_backrefs;
+extern const char *duk_str_regexp_backtrack_failed;
+extern const char *duk_str_regexp_advance_failed;
+extern const char *duk_str_regexp_internal_error;
+
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
 #define DUK_STR_OBJECT_PROPERTY_LIMIT duk_str_object_property_limit
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT duk_str_prototype_chain_limit
@@ -200,6 +242,9 @@ extern const char *duk_str_internal_error_exec_longjmp;
 #define DUK_STR_TEMP_LIMIT duk_str_temp_limit
 #define DUK_STR_CONST_LIMIT duk_str_const_limit
 #define DUK_STR_FUNC_LIMIT duk_str_func_limit
+#define DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT duk_str_regexp_compiler_recursion_limit
+#define DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT duk_str_regexp_executor_recursion_limit
+#define DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT duk_str_regexp_executor_step_limit
 
 extern const char *duk_str_valstack_limit;
 extern const char *duk_str_object_property_limit;
@@ -212,5 +257,8 @@ extern const char *duk_str_reg_limit;
 extern const char *duk_str_temp_limit;
 extern const char *duk_str_const_limit;
 extern const char *duk_str_func_limit;
+extern const char *duk_str_regexp_compiler_recursion_limit;
+extern const char *duk_str_regexp_executor_recursion_limit;
+extern const char *duk_str_regexp_executor_step_limit;
 
 #endif  /* DUK_ERRMSG_H_INCLUDED */

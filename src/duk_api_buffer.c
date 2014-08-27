@@ -14,7 +14,7 @@ void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size) 
 	DUK_ASSERT(h != NULL);
 
 	if (!DUK_HBUFFER_HAS_DYNAMIC(h)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "buffer is not dynamic");
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BUFFER_NOT_DYNAMIC);
 	}
 
 	/* maximum size check is handled by callee */

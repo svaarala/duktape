@@ -575,7 +575,7 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 		DUK_DD(DUK_DDPRINT("valstack resize failed"));
 
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to extend valstack");
+			DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_FAILED_TO_EXTEND_VALSTACK);
 		} else {
 			return 0;
 		}

@@ -103,7 +103,7 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 	return;
 
  error_overflow:
-	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "concat result too long");
+	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CONCAT_RESULT_TOO_LONG);
 }
 
 void duk_concat(duk_context *ctx, duk_idx_t count) {

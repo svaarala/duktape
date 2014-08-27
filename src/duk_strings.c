@@ -7,7 +7,7 @@
 
 #include "duk_internal.h"
 
-/* Mostly API related */
+/* Mostly API and built-in method related */
 const char *duk_str_internal_error = "internal error";
 const char *duk_str_invalid_count = "invalid count";
 const char *duk_str_invalid_call_args = "invalid call args";
@@ -44,6 +44,15 @@ const char *duk_str_thread_alloc_failed = "thread alloc failed";
 const char *duk_str_func_alloc_failed = "func alloc failed";
 const char *duk_str_buffer_alloc_failed = "buffer alloc failed";
 const char *duk_str_pop_too_many = "attempt to pop too many entries";
+const char *duk_str_buffer_not_dynamic = "buffer is not dynamic";
+const char *duk_str_failed_to_extend_valstack = "failed to extend valstack";
+const char *duk_str_base64_encode_failed = "base64 encode failed";
+const char *duk_str_base64_decode_failed = "base64 decode failed";
+const char *duk_str_hex_decode_failed = "hex decode failed";
+const char *duk_str_no_sourcecode = "no sourcecode";
+const char *duk_str_concat_result_too_long = "concat result too long";
+const char *duk_str_unimplemented = "unimplemented";
+const char *duk_str_array_length_over_2g = "array length over 2G";
 
 /* JSON */
 const char *duk_str_fmt_ptr = "%p";
@@ -96,6 +105,19 @@ const char *duk_str_func_name_required = "function name required";
 /* Executor */
 const char *duk_str_internal_error_exec_longjmp = "internal error in bytecode executor longjmp handler";
 
+/* Regexp */
+const char *duk_str_invalid_quantifier_no_atom = "quantifier without preceding atom";
+const char *duk_str_invalid_quantifier_values = "quantifier values invalid (qmin > qmax)";
+const char *duk_str_quantifier_too_many_copies = "quantifier expansion requires too many atom copies";
+const char *duk_str_unexpected_closing_paren = "unexpected closing parenthesis";
+const char *duk_str_unexpected_end_of_pattern = "unexpected end of pattern";
+const char *duk_str_unexpected_regexp_token = "unexpected token in regexp";
+const char *duk_str_invalid_regexp_flags = "invalid regexp flags";
+const char *duk_str_invalid_backrefs = "invalid backreference(s)";
+const char *duk_str_regexp_backtrack_failed = "regexp backtrack failed";
+const char *duk_str_regexp_advance_failed = "regexp advance failed";
+const char *duk_str_regexp_internal_error = "regexp internal error";
+
 /* Limits */
 const char *duk_str_valstack_limit = "valstack limit";
 const char *duk_str_object_property_limit = "object property limit";
@@ -108,3 +130,6 @@ const char *duk_str_reg_limit = "register limit";
 const char *duk_str_temp_limit = "temp limit";
 const char *duk_str_const_limit = "const limit";
 const char *duk_str_func_limit = "function limit";
+const char *duk_str_regexp_compiler_recursion_limit = "regexp compiler recursion limit";
+const char *duk_str_regexp_executor_recursion_limit = "regexp executor recursion limit";
+const char *duk_str_regexp_executor_step_limit = "regexp step limit";

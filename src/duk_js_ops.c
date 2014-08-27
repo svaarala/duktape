@@ -1012,7 +1012,7 @@ duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "instanceof prototype chain sanity exceeded");
+		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 	}
 	DUK_UNREACHABLE();
 
