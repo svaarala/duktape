@@ -5416,6 +5416,9 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		ret_flags = DUK_BC_RETURN_FLAG_HAVE_RETVAL;
 	}
 
+	/* XXX: allow fast return when there are no try-catch catchers but allow
+	 * label sites (requires catch stack handling in executor so perhaps not)?
+	 */
 	if (comp_ctx->curr_func.catch_depth == 0) {
 		DUK_DDD(DUK_DDDPRINT("fast return allowed -> use fast return"));
 		ret_flags |= DUK_BC_RETURN_FLAG_FAST;

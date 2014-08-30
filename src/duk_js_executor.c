@@ -1270,6 +1270,55 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	return retval;
 }
 
+/* Try a fast return.  Return false if fails, so that a slow return can be done
+ * instead.
+ */
+static duk_bool_t duk__handle_fast_return(duk_hthread *thr,
+                                          duk_tval *tv_retval,
+                                          duk_hthread *entry_thread,
+                                          duk_size_t entry_callstack_top) {
+	duk_tval tv_tmp;
+	duk_tval *tv1;
+
+	/* retval == NULL indicates 'undefined' return value */
+
+	if (thr == entry_thread && thr->callstack_top == entry_callstack_top) {
+		DUK_DDD(DUK_DDDPRINT("reject fast return: return would exit bytecode executor to caller"));
+		return 0;
+	}
+	if (thr->callstack_top <= 1) {
+		DUK_DDD(DUK_DDDPRINT("reject fast return: there is no caller in this callstack (thread yield)"));
+		return 0;
+	}
+
+	/* There is a caller, and it must be an Ecmascript caller (otherwise
+	 * it would have matched the entry level check).
+	 */
+	DUK_ASSERT(thr->callstack_top >= 2);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((thr->callstack + thr->callstack_top - 2)->func));   /* must be ecmascript */
+
+	tv1 = thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+	if (tv_retval) {
+		DUK_TVAL_SET_TVAL(tv1, tv_retval);
+		DUK_TVAL_INCREF(thr, tv1);
+	} else {
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
+		/* no need to incref */
+	}
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+	/* No catchstack to unwind. */
+#if 0
+	duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
+#endif
+	duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
+	duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
+
+	DUK_DDD(DUK_DDDPRINT("fast return accepted"));
+	return 1;
+}
+
 /*
  *  Executor interrupt handling
  *
@@ -2604,29 +2653,41 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * C -> currently unused
 			 */
 
-			/* FIXME: fast return not implemented, always do a slow return now.
-			 * Limit fast return to the case with no catchstack at all (not even labels)?
+			/* A fast return avoids full longjmp handling for a set of
+			 * scenarios which hopefully represents the common cases.
+			 * The compiler is responsible for emitting fast returns
+			 * only when they are safe.  Currently this means that there
+			 * is nothing on the catch stack (not even label catchers).
+			 * The speed advantage of fast returns (avoiding longjmp) is
+			 * not very high, around 10-15%.
 			 */
-			if (a & DUK_BC_RETURN_FLAG_FAST && 0) {
-				/* fast return: no TCF catchers (but may have e.g. labels) */
-				DUK__INTERNAL_ERROR("fast return unimplemented");
-			} else {
-				/* slow return */
 
-				DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
+			if (a & DUK_BC_RETURN_FLAG_FAST) {
+				DUK_DDD(DUK_DDDPRINT("FASTRETURN attempt a=%ld b=%ld", (long) a, (long) b));
 
-				if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
-					duk_push_tval(ctx, DUK__REGCONSTP(b));
-				} else {
-					duk_push_undefined(ctx);
+				if (duk__handle_fast_return(thr,
+				                            (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) ? DUK__REGCONSTP(b) : NULL,
+				                            entry_thread,
+				                            entry_callstack_top)) {
+					DUK_DDD(DUK_DDDPRINT("FASTRETURN success a=%ld b=%ld", (long) a, (long) b));
+					goto restart_execution;
 				}
-
-				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
-
-				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
-				duk_err_longjmp(thr);
-				DUK_UNREACHABLE();
 			}
+
+			/* No fast return, slow path. */
+			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
+
+			if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
+				duk_push_tval(ctx, DUK__REGCONSTP(b));
+			} else {
+				duk_push_undefined(ctx);
+			}
+
+			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
+
+			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
+			duk_err_longjmp(thr);
+			DUK_UNREACHABLE();
 			break;
 		}
 
