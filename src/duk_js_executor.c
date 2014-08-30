@@ -1270,6 +1270,13 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	return retval;
 }
 
+/* XXX: Disabled for 1.0 release.  This needs to handle unwinding for label
+ * sites (which are created for explicit labels but also for control statements
+ * like for-loops).  At that point it's quite close to the "slow return" handler
+ * except for longjmp().  Perhaps all returns could initially be handled as fast
+ * returns and only converted to longjmp()s when basic handling won't do?
+ */
+#if 0
 /* Try a fast return.  Return false if fails, so that a slow return can be done
  * instead.
  */
@@ -1318,6 +1325,7 @@ static duk_bool_t duk__handle_fast_return(duk_hthread *thr,
 	DUK_DDD(DUK_DDDPRINT("fast return accepted"));
 	return 1;
 }
+#endif
 
 /*
  *  Executor interrupt handling
@@ -2661,7 +2669,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 * The speed advantage of fast returns (avoiding longjmp) is
 			 * not very high, around 10-15%.
 			 */
-
+#if 0  /* XXX: Disabled for 1.0 release */
 			if (a & DUK_BC_RETURN_FLAG_FAST) {
 				DUK_DDD(DUK_DDDPRINT("FASTRETURN attempt a=%ld b=%ld", (long) a, (long) b));
 
@@ -2673,6 +2681,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					goto restart_execution;
 				}
 			}
+#endif
 
 			/* No fast return, slow path. */
 			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
