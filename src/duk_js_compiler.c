@@ -5416,12 +5416,20 @@ static void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		ret_flags = DUK_BC_RETURN_FLAG_HAVE_RETVAL;
 	}
 
+	/* XXX: For now, "fast returns" are disabled.  The compiler doesn't track
+	 * label site depth so when it emits a fast return, it doesn't know whether
+	 * label sites exist or not.  Label sites are emitted for e.g. for loops,
+	 * so it's probably quite relevant to handle them in the executor's fast
+	 * return handler.
+	 */
+#if 0
 	if (comp_ctx->curr_func.catch_depth == 0) {
 		DUK_DDD(DUK_DDDPRINT("fast return allowed -> use fast return"));
 		ret_flags |= DUK_BC_RETURN_FLAG_FAST;
 	} else {
 		DUK_DDD(DUK_DDDPRINT("fast return not allowed -> use slow return"));
 	}
+#endif
 
 	duk__emit_a_b(comp_ctx,
 	              DUK_OP_RETURN,

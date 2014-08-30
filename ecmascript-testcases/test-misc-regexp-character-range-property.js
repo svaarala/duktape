@@ -156,25 +156,24 @@ var ranges_pos_period = [
     [ 0x202A, 0xFFFF ],
 ];
 
-print('checking complement property of \\d and \\D ranges...')
+print('checking complement property of \\d and \\D ranges...');
 check_complement_property(ranges_pos_d, ranges_neg_d);
-print('checking complement property of \\s and \\S ranges...')
+print('checking complement property of \\s and \\S ranges...');
 check_complement_property(ranges_pos_s, ranges_neg_s);
-print('checking complement property of \\w and \\W ranges...')
+print('checking complement property of \\w and \\W ranges...');
 check_complement_property(ranges_pos_w, ranges_neg_w);
 
-print('checking range normalization property for \\d...')
-check_normalization_property(ranges_pos_d)
-print('checking range normalization property for \\s...')
-check_normalization_property(ranges_pos_s)
-print('checking range normalization property for \\w...')
-check_normalization_property(ranges_pos_w)
-print('checking range normalization property for \\D...')
-check_normalization_property(ranges_neg_d)
-print('checking range normalization property for \\S...')
-check_normalization_property(ranges_neg_s)
-print('checking range normalization property for \\W...')
-check_normalization_property(ranges_neg_w)
-print('checking range normalization property for period (".")...')
-check_normalization_property(ranges_pos_period)
-
+print('checking range normalization property for \\d...');
+check_normalization_property(ranges_pos_d);
+print('checking range normalization property for \\s...');
+check_normalization_property(ranges_pos_s);
+print('checking range normalization property for \\w...');
+check_normalization_property(ranges_pos_w);
+print('checking range normalization property for \\D...');
+check_normalization_property(ranges_neg_d);
+print('checking range normalization property for \\S...');
+check_normalization_property(ranges_neg_s);
+print('checking range normalization property for \\W...');
+check_normalization_property(ranges_neg_w);
+print('checking range normalization property for period (".")...');
+check_normalization_property(ranges_pos_period);
