@@ -525,6 +525,7 @@ function testRunnerMain() {
     }
 
     function analyzeResults() {
+        var summary = { exitCode: 0 };
         iterateResults(function analyze(tn, en, res) {
             res.stdout_md5 = md5(res.stdout);
             res.stderr_md5 = md5(res.stderr);
@@ -532,11 +533,15 @@ function testRunnerMain() {
             if (res.testcase.meta.skip) {
                 res.status = 'skip';
             } else if (res.diff_expect) {
+                if (!res.testcase.meta.knownissue && !res.testcase.meta.specialoptions) {
+                    summary.exitCode = 1;
+                }
                 res.status = 'fail';
             } else {
                 res.status = 'pass';
             }
         });
+        return summary;
     }
 
     function printSummary() {
@@ -710,7 +715,7 @@ function testRunnerMain() {
 
     queue2.drain = function() {
         // summary and exit
-        analyzeResults();
+        var summary = analyzeResults();
         console.log('\n----------------------------------------------------------------------------\n');
         printSummary();
         console.log('\n----------------------------------------------------------------------------\n');
@@ -719,7 +724,7 @@ function testRunnerMain() {
             createLogFile(argv['log-file']);
         }
         console.log('All done.');
-        process.exit(0);
+        process.exit(summary.exitCode);
     };
 
     // First parallel step: run testcases with selected engines
@@ -738,4 +743,3 @@ function testRunnerMain() {
 }
 
 testRunnerMain();
-
