@@ -122,6 +122,12 @@ value <code>length</code>.  See
 at least), so Duktape uses the real world behavior by default.  The strict standards compliant
 behavior can be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER</code>.</p>
 
+<h2>Array.prototype.map() trailing non-existent elements</h2>
+
+<p>Similar issue as with <code>Array.prototype.concat()</code>, see
+<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-map-nonstd-trailing.js">test-bi-array-proto-map-nonstd-trailing.js</a>.  The strict standards compliant behavior can be
+enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER</code>.</p>
+
 <h2>Setter/getter key argument</h2>
 
 <p>Ecmascript standard behavior is that setters and getters are not given

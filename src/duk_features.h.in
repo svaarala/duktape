@@ -2160,6 +2160,14 @@ typedef FILE duk_file;
 #undef DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
 #endif
 
+/* Array.prototype.map() non-standard but real world compatible behavior
+ * for non-existent trailing elements.
+ */
+#define DUK_USE_NONSTD_ARRAY_MAP_TRAILER
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER)
+#undef DUK_USE_NONSTD_ARRAY_MAP_TRAILER
+#endif
+
 /* Non-standard 'caller' property for function instances, see
  * test-bi-function-nonstd-caller-prop.js.
  */

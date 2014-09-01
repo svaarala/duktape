@@ -461,10 +461,10 @@ Planned
   a "use strict" directive); without this change the strictness would depend
   on whether a Duktape/C function call was active or not
 
-* Change Array.prototype.concat() behavior so that trailing non-existent
-  elements are counted towards the result array length; this behavior seems
-  to be non-standard but is the real world behavior used by V8, Rhino, and
-  Spidermonkey at least
+* Change Array.prototype.concat() and Array.prototype.map() behavior so that
+  trailing non-existent elements are counted towards the result array length;
+  this behavior seems to be non-standard but is the real world behavior used
+  by V8, Rhino, and Spidermonkey at least
 
 * Add API calls duk_get_prototype() and duk_set_prototype() for getting and
   setting an object's "internal prototype" from C code

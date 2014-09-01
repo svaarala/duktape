@@ -250,6 +250,15 @@ The table below summarizes the available options, in no particular order:</p>
     elements in the result <code>length</code>.</td>
 </tr>
 <tr>
+<td class="definename">DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER</td>
+<td>For better compatibility with existing code, <code>Array.prototype.map()</code>
+    has non-standard behavior by default for trailing non-existent elements of the
+    map result, see
+    <a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-map-nonstd-trailing.js">test-bi-array-proto-map-nonstd-trailing.js</a>.  If this option is given, <code>map()</code>
+    will behave in a strictly conforming fashion, ignoring non-existent trailing
+    elements in the result <code>length</code>.</td>
+</tr>
+<tr>
 <td class="definename">DUK_OPT_NO_COMMONJS_MODULES</td>
 <td>Disable support for CommonJS modules.  Causes <code>require()</code> to
     throw an error.</td>
