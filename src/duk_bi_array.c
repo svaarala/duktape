@@ -1229,6 +1229,20 @@ duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 
 		if (!duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
+#if defined(DUK_USE_NONSTD_ARRAY_MAP_TRAILER)
+			/* Real world behavior for map(): trailing non-existent
+			 * elements don't invoke the user callback, but are still
+			 * counted towards result 'length'.
+			 */
+			if (iter_type == DUK__ITER_MAP) {
+				res_length = i + 1;
+			}
+#else
+			/* Standard behavior for map(): trailing non-existent
+			 * elements don't invoke the user callback and are not
+			 * counted towards result 'length'.
+			 */
+#endif
 			duk_pop(ctx);
 			continue;
 		}
