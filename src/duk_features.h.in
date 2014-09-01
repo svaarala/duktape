@@ -2152,6 +2152,14 @@ typedef FILE duk_file;
 #undef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
 #endif
 
+/* Array.prototype.concat() non-standard but real world compatible behavior
+ * for non-existent trailing elements.
+ */
+#define DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER)
+#undef DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+#endif
+
 /* Non-standard 'caller' property for function instances, see
  * test-bi-function-nonstd-caller-prop.js.
  */

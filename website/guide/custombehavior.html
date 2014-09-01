@@ -110,6 +110,18 @@ the splice operation to the end of the array.</p>
 Duktape uses this behavior by default.  The strict standards compliant behavior can
 be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT</code>.</p>
 
+<h2>Array.prototype.concat() trailing non-existent elements</h2>
+
+<p>When the result of an array <code>concat()</code> would have trailing non-existent
+elements, the standard behavior is to ignore them so that they are not reflected in
+the result <code>length</code>.  Real world behavior is to include them in the result
+value <code>length</code>.  See
+<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-concat-nonstd-trailing.js">test-bi-array-proto-concat-nonstd-trailing.js</a>.</p>
+
+<p>The real world behavior seems consistent in other engines (V8, Rhino, Spidermonkey
+at least), so Duktape uses the real world behavior by default.  The strict standards compliant
+behavior can be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER</code>.</p>
+
 <h2>Setter/getter key argument</h2>
 
 <p>Ecmascript standard behavior is that setters and getters are not given
