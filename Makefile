@@ -729,7 +729,7 @@ doc/%.html: doc/%.txt
 # XXX: make prints a harmless warning related to the sub-make.
 dist:	compiler.jar cloc-1.60.pl
 	@make debuglogcheck
-	sh util/make_dist.sh
+	sh util/make_dist.sh --minify closure
 
 .PHONY:	dist-src
 dist-src:	dist
