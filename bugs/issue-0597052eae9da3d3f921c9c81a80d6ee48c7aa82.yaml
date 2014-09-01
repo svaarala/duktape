@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: should duk_alloc() zero allocated memory?
+desc: If not, fix api-testcases/test-memory-funcs.c
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-01 16:41:30.670214 Z
+references: []
+
+id: 0597052eae9da3d3f921c9c81a80d6ee48c7aa82
+log_events: 
+- - 2014-09-01 16:41:30.849239 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
