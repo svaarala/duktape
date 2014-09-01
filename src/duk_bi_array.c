@@ -222,17 +222,28 @@ duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 				duk_def_prop_index_wec(ctx, -3, idx++);
 				idx_last = idx;
 			} else {
-				/* XXX: according to E5.1 Section 15.4.4.4 nonexistent trailing
-				 * elements do not affect 'length' but test262 disagrees.  Work
-				 * as E5.1 mandates for now and don't touch idx_last.
-				 */
 				idx++;
 				duk_pop(ctx);
+#if defined(DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER)
+				/* According to E5.1 Section 15.4.4.4 nonexistent trailing
+				 * elements do not affect 'length' of the result.  Test262
+				 * and other engines disagree, so update idx_last here too.
+				 */
+				idx_last = idx;
+#else
+				/* Strict standard behavior, ignore trailing elements for
+				 * result 'length'.
+				 */
+#endif
 			}
 		}
 		duk_pop(ctx);
 	}
 
+	/* The E5.1 Section 15.4.4.4 algorithm doesn't set the length explicitly
+	 * in the end, but because we're operating with an internal value which
+	 * is known to be an array, this should be equivalent.
+	 */
 	duk_push_uarridx(ctx, idx_last);
 	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
