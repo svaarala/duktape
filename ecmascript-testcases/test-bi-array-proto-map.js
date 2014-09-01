@@ -98,10 +98,14 @@ function basicTest() {
     obj[50] = 2;
     test(obj, [ retTwice ]);
 
-    // non-array
-    // (Note that trailing non-existent elements do not affect result length)
+    // sparse with trailing non-existent elements: for this case standard and
+    // real world behaviors differ, so this is covered by a separate test case:
+    // test-bi-array-proto-map-nonstd-trailing.js
 
-    obj = { '0': 'foo', '5': 'bar', '20': 'quux', '100': 'baz', length: 35 };
+    // non-array; careful to avoid trailing non-existent elements (tested
+    // separately)
+
+    obj = { '0': 'foo', '5': 'bar', '20': 'quux', '100': 'baz', length: 21 };
     test(obj, [ retTwice ]);
 
     // error in callback propagates outwards
