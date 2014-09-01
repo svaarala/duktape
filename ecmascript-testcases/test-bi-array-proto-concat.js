@@ -44,8 +44,6 @@ object 4 nonexistent,nonexistent,nonexistent,string:elem
 object 5 number:1,nonexistent,nonexistent,nonexistent,string:elem
 object 4 string:foo,string:bar,nonexistent,nonexistent
 object 8 number:1,number:1,number:2,string:foo,string:bar,nonexistent,nonexistent,number:4
-object 4 string:foo,string:bar,nonexistent,nonexistent
-object 5 number:1,number:1,number:2,string:foo,string:bar
 ===*/
 
 print('basic');
@@ -147,6 +145,9 @@ function basicTest() {
     //
     // Both V8 and Rhino seem to deviate from this: they will update the
     // result length even for trailing non-existent elements.
+    //
+    // This case is now tested separately by test-bi-array-proto-concat-nonstd-trailing.js
+    // because the desired behavior is non-standard.
 
     t = [];
     t[3] = 'elem';
@@ -158,11 +159,13 @@ function basicTest() {
     printArray(t);
     test([1], [ 1, 2, t, 4 ]);  // '4' will update final length -> 8
 
+/* Disabled, see test-bi-array-proto-concat-nonstd-trailing.js
     t = [ 'foo', 'bar' ];
     t.length = 4;  // two "non-existent" elements
     printArray(t);
     test([1], [ 1, 2, t ]);  // nothing follows non-existent elements, so final length should be 5, not 7
                              // Rhino and V8 will have final result length 7
+*/
 }
 
 try {
