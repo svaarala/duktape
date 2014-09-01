@@ -234,67 +234,68 @@ checksetup:
 
 .PHONY:	clean
 clean:
-	-@rm -rf dist/
-	-@rm -rf site/
-	-@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
-	-@rm -f libduktape*.so*
-	-@rm -f doc/*.html
-	-@rm -f src/*.pyc
-	-@rm -rf duktape-*  # covers various files and dirs
-	-@rm -rf massif.out.* ms_print.tmp.*
-	-@rm -rf cachegrind.out.*
-	-@rm -rf callgrind.out.*
-	-@rm -rf oprofile_data/
-	-@rm -f /tmp/duk_sizes.html
-	-@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
-	-@rm -rf /tmp/duktape-regfuzz/
-	-@rm -f /tmp/duk-test.log /tmp/duk-api-test.log
-	-@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	-@rm -f /tmp/duk-emcc-test*
-	-@rm -f /tmp/duk-emcc-luatest*
-	-@rm -f /tmp/duk-emcc-duktest*
-	-@rm -f /tmp/duk-jsint-test*
-	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
-	-@rm -f /tmp/duk-closure-test*
-	-@rm -f a.out
-	-@rm -rf test262-*
-	-@rm -f compiler.jar
-	-@rm -rf lua-5.2.3
-	-@rm -rf luajs
-	-@rm -f dukweb.js
-	-@rm -rf /tmp/dukweb-test/
+	@rm -rf dist/
+	@rm -rf site/
+	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
+	@rm -f libduktape*.so*
+	@rm -f doc/*.html
+	@rm -f src/*.pyc
+	@rm -rf duktape-*  # covers various files and dirs
+	@rm -rf massif.out.* ms_print.tmp.*
+	@rm -rf cachegrind.out.*
+	@rm -rf callgrind.out.*
+	@rm -rf oprofile_data/
+	@rm -f /tmp/duk_sizes.html
+	@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
+	@rm -rf /tmp/duktape-regfuzz/
+	@rm -f /tmp/duk-test.log /tmp/duk-api-test.log
+	@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
+	@rm -f /tmp/duk-emcc-test*
+	@rm -f /tmp/duk-emcc-luatest*
+	@rm -f /tmp/duk-emcc-duktest*
+	@rm -f /tmp/duk-jsint-test*
+	@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
+	@rm -f /tmp/duk-closure-test*
+	@rm -f a.out
+	@rm -rf test262-*
+	@rm -f compiler.jar
+	@rm -rf lua-5.2.3
+	@rm -rf luajs
+	@rm -f dukweb.js
+	@rm -rf /tmp/dukweb-test/
 
 .PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
-	-@rm -f regfuzz-*.tar.gz
-	-@rm -rf UglifyJS
-	-@rm -rf UglifyJS2
-	-@rm -rf underscore
-	-@rm -f d067d2f0ca30.tar.bz2
-	-@rm -rf emscripten
-	-@rm -rf JS-Interpreter
-	-@rm -f compiler-latest.zip
-	-@rm -f cloc-1.60.pl
-	-@rm -f lua-5.2.3.tar.gz
-	-@rm -f luajs.zip
-	-@rm -f jquery-1.11.0.js
-	-@rm -rf coffee-script
-	-@rm -rf LiveScript
-	-@rm -rf coco
-	-@rm -rf sax-js
-	-@rm -rf xmldoc
-	-@rm -rf FlameGraph
-	-@rm -rf dtrace4linux
+	@rm -f regfuzz-*.tar.gz
+	@rm -rf UglifyJS
+	@rm -rf UglifyJS2
+	@rm -rf closure-compiler
+	@rm -rf underscore
+	@rm -f d067d2f0ca30.tar.bz2
+	@rm -rf emscripten
+	@rm -rf JS-Interpreter
+	@rm -f compiler-latest.zip
+	@rm -f cloc-1.60.pl
+	@rm -f lua-5.2.3.tar.gz
+	@rm -f luajs.zip
+	@rm -f jquery-1.11.0.js
+	@rm -rf coffee-script
+	@rm -rf LiveScript
+	@rm -rf coco
+	@rm -rf sax-js
+	@rm -rf xmldoc
+	@rm -rf FlameGraph
+	@rm -rf dtrace4linux
 
 libduktape.so.1.0.0: dist
-	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
+	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
 libduktaped.so.1.0.0: dist
-	-rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
+	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(CCLIBS)
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
@@ -307,13 +308,13 @@ duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 duk.vg: duk.raw
-	-@rm -f $@
+	@rm -f $@
 	@echo '#!/bin/sh' > $@
 	@echo 'valgrind "$(shell pwd)/$<" "$$@"' >> $@
 	@chmod ugo+rx $@
 
 duk: duk.raw duk.vg
-	-@rm -f $@
+	@rm -f $@
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "Using valgrind wrapped $@"
 	@cp duk.vg $@
@@ -325,13 +326,13 @@ dukd.raw: dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 dukd.vg: dukd.raw
-	-@rm -f $@
+	@rm -f $@
 	@echo '#!/bin/sh' > $@
 	@echo 'valgrind "$(shell pwd)/$<" "$$@"' >> $@
 	@chmod ugo+rx $@
 
 dukd: dukd.raw dukd.vg
-	-@rm -f dukd
+	@rm -f dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "Using valgrind wrapped $@"
 	@cp dukd.vg $@
@@ -468,7 +469,7 @@ test262-595a36b252ee97110724e6fa89fc92c9aa9a206a: 595a36b252ee97110724e6fa89fc92
 test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
 	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
-	-rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
+	rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
 	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
@@ -498,7 +499,7 @@ EMCCOPTS=-s USE_TYPED_ARRAYS=0
 .PHONY: emscriptentest
 emscriptentest: emscripten duk
 	@echo "### emscriptentest"
-	-@rm -f /tmp/duk-emcc-test*
+	@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
 	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
@@ -525,7 +526,7 @@ MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9
 .PHONY: emscriptenduktest
 emscriptenduktest: emscripten dist
 	@echo "### emscriptenduktest"
-	-@rm -f /tmp/duk-emcc-duktest.js
+	@rm -f /tmp/duk-emcc-duktest.js
 	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
 	$(NODE) /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
@@ -549,7 +550,7 @@ dukweb.js: emscripten dist
 .PHONY: dukwebtest
 dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "### dukwebtest"
-	-@rm -rf /tmp/dukweb-test/
+	@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
 	cp dukweb.js jquery-1.11.0.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
@@ -575,7 +576,7 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 .PHONY: emscriptenluatest
 emscriptenluatest: emscripten duk lua-5.2.3
 	@echo "### emscriptenluatest"
-	-@rm -f /tmp/duk-emcc-luatest*
+	@rm -f /tmp/duk-emcc-luatest*
 	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
@@ -589,7 +590,7 @@ JS-Interpreter:
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
 	@echo "### jsinterpretertest"
-	-@rm -f /tmp/duk-jsint-test*
+	@rm -f /tmp/duk-jsint-test*
 	echo "window = {};" > /tmp/duk-jsint-test.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-test.js
 	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-test.js
@@ -600,13 +601,13 @@ luajs.zip:
 	$(WGET) https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
 
 luajs: luajs.zip
-	-@rm -rf luajs/
+	@rm -rf luajs/
 	mkdir luajs
 	cd luajs; unzip ../luajs.zip
 
 .PHONY: luajstest
 luajstest: luajs duk
-	-@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
+	@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-mandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-test.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
@@ -614,28 +615,42 @@ luajstest: luajs duk
 
 # Closure
 compiler-latest.zip:
+	# Prebuilt latest version; this is not good as a build dependency
+	# because closure changes may break minified initjs code and make
+	# old builds unreliable.
 	# https://code.google.com/p/closure-compiler/
 	$(WGET) http://dl.google.com/closure-compiler/compiler-latest.zip
 
-compiler.jar: compiler-latest.zip
-	unzip compiler-latest.zip compiler.jar
-	touch compiler.jar  # ensure date is newer than compiler-latest.zip
+closure-compiler:
+	# https://github.com/google/closure-compiler
+	@rm -f v20140814.tar.gz
+	$(WGET) https://github.com/google/closure-compiler/archive/v20140814.tar.gz
+	tar xfz v20140814.tar.gz
+	mv closure-compiler-20140814 closure-compiler
+	@rm -f v20140814.tar.gz
+
+closure-compiler/build/compiler.jar: closure-compiler
+	cd closure-compiler; ant
+
+compiler.jar: closure-compiler/build/compiler.jar
+	cp closure-compiler/build/compiler.jar $@
+	touch $@  # ensure date is newer than compiler-latest.zip
 
 .PHONY: closuretest
 closuretest: compiler.jar duk
 	@echo "### closuretest"
-	-@rm -f /tmp/duk-closure-test*
+	@rm -f /tmp/duk-closure-test*
 	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
 	./duk /tmp/duk-closure-test.js
 
 UglifyJS:
 	# https://github.com/mishoo/UglifyJS
 	# Use a specific release because UglifyJS is used in building Duktape
-	-@rm -f v1.3.5.tar.gz
+	@rm -f v1.3.5.tar.gz
 	$(WGET) https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
 	tar xfz v1.3.5.tar.gz
 	mv UglifyJS-1.3.5 UglifyJS
-	-@rm -f v1.3.5.tar.gz
+	@rm -f v1.3.5.tar.gz
 
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS.git
@@ -645,11 +660,11 @@ UglifyJS2:
 	# Use a specific release because UglifyJS2 is used in building Duktape
 	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
 	# the NodeJS dependencies need to be controlled for this to really work.)
-	-@rm -f v2.4.12.tar.gz
+	@rm -f v2.4.12.tar.gz
 	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
 	tar xfz v2.4.12.tar.gz
 	mv UglifyJS2-2.4.12 UglifyJS2
-	-@rm -f v2.4.12.tar.gz
+	@rm -f v2.4.12.tar.gz
 
 	# Don't use this because it's a moving critical dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
@@ -685,7 +700,7 @@ xmldoc:
 
 xmldoctest: sax-js xmldoc duk
 	@echo "### xmldoctest"
-	-@rm -f /tmp/duk-xmldoc-test*
+	@rm -f /tmp/duk-xmldoc-test*
 	cat sax-js/lib/sax.js > /tmp/duk-xmldoc-test.js
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat xmldoc/lib/xmldoc.js >> /tmp/duk-xmldoc-test.js
@@ -758,7 +773,7 @@ site: dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
 	cd website/; $(PYTHON) buildsite.py ../site/
-	-@rm -rf /tmp/site/
+	@rm -rf /tmp/site/
 	cp -r site /tmp/  # FIXME
 
 .PHONY:	dist-site
