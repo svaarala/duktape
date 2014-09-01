@@ -69,14 +69,20 @@
 3
 4,5,
 3
-1,2,3,4,5,
-6
+6,7,
+3
+1,2,3,4,5,,6,7,
+9
+true true true true true false true true false
 ===*/
 
 function test() {
     var a = [ 1, 2, 3 ];
-    var b = [ 4, 5, , ];
-    var c = a.concat(b);
+    var b = [ 4, 5, , ];  // intermediate trailing elements are not ignored
+    var c = [ 6, 7, , ];  // trailing ones are ignored by standard behavior
+    var d = a.concat(b, c);
+    var i;
+    var tmp;
 
     print(a);
     print(a.length);
@@ -84,6 +90,14 @@ function test() {
     print(b.length);
     print(c);
     print(c.length);
+    print(d);
+    print(d.length);
+
+    tmp = [];
+    for (i = 0; i < d.length; i++) {
+        tmp.push(i in d);
+    }
+    print(tmp.join(' '));
 }
 
 try {
