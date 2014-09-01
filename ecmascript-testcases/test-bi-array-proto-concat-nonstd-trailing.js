@@ -69,14 +69,10 @@
 3 4 5 nonexistent
 3 6 7 nonexistent
 9 1 2 3 4 5 nonexistent 6 7 nonexistent
+2 [object Object] [object Object]
 ===*/
 
 function test() {
-    var a = [ 1, 2, 3 ];
-    var b = [ 4, 5, , ];  // intermediate trailing elements are not ignored
-    var c = [ 6, 7, , ];  // trailing ones are ignored by standard behavior
-    var d = a.concat(b, c);
-
     function dump(v) {
         var tmp = [];
         for (var i = 0; i < v.length; i++) {
@@ -85,10 +81,25 @@ function test() {
         print(v.length, tmp.join(' '));
     }
 
+    var a = [ 1, 2, 3 ];
     dump(a);
+
+    var b = [ 4, 5, , ];  // intermediate trailing elements are not ignored
     dump(b);
+
+    var c = [ 6, 7, , ];  // trailing ones are ignored by standard behavior
     dump(c);
+
+    var d = a.concat(b, c);
     dump(d);
+
+    // concat() doesn't unflatten non-Array objects, so this results in a
+    // two-element array: [e, f]
+
+    var e = { '3': 'foo', '7': 'bar', 'length': 10 };
+    var f = { '0': 'quux', '2': 'baz', 'length': 5 };
+    var g = Array.prototype.concat.call(e, f);
+    dump(g);
 }
 
 try {
