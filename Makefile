@@ -270,6 +270,7 @@ cleanall: clean
 	-@rm -f regfuzz-*.tar.gz
 	-@rm -rf UglifyJS
 	-@rm -rf UglifyJS2
+	-@rm -rf closure-compiler
 	-@rm -rf underscore
 	-@rm -f d067d2f0ca30.tar.bz2
 	-@rm -rf emscripten
@@ -614,12 +615,26 @@ luajstest: luajs duk
 
 # Closure
 compiler-latest.zip:
+	# Prebuilt latest version; this is not good as a build dependency
+	# because closure changes may break minified initjs code and make
+	# old builds unreliable.
 	# https://code.google.com/p/closure-compiler/
 	$(WGET) http://dl.google.com/closure-compiler/compiler-latest.zip
 
-compiler.jar: compiler-latest.zip
-	unzip compiler-latest.zip compiler.jar
-	touch compiler.jar  # ensure date is newer than compiler-latest.zip
+closure-compiler:
+	# https://github.com/google/closure-compiler
+	-@rm -f v20140814.tar.gz
+	$(WGET) https://github.com/google/closure-compiler/archive/v20140814.tar.gz
+	tar xfz v20140814.tar.gz
+	mv closure-compiler-20140814 closure-compiler
+	-@rm -f v20140814.tar.gz
+
+closure-compiler/build/compiler.jar: closure-compiler
+	cd closure-compiler; ant
+
+compiler.jar: closure-compiler/build/compiler.jar
+	cp closure-compiler/build/compiler.jar $@
+	touch $@  # ensure date is newer than compiler-latest.zip
 
 .PHONY: closuretest
 closuretest: compiler.jar duk
