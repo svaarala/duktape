@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "number parsing bug for strings containing NUL characters (e.g. '\u0000')"
+}
+---*/
+
 /*===
 *** test_1 (duk_safe_call)
 top: 29
