@@ -357,7 +357,6 @@ struct duk_token {
 	duk_hstring *str2;            /* string 2 of token (borrowed, stored to ctx->slot1_idx) */
 	duk_size_t start_offset;      /* start byte offset of token in lexer input */
 	duk_int_t start_line;         /* start line of token (first char) */
-	duk_int_t end_line;           /* end line of token (char after last token char) */
 	duk_int_t num_escapes;        /* number of escapes and line continuations (for directive prologue) */
 	duk_bool_t lineterm;          /* token was preceded by a lineterm */
 	duk_bool_t allow_auto_semi;   /* token allows automatic semicolon insertion (eof or preceded by newline) */

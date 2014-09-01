@@ -442,19 +442,17 @@ static void duk__advance_helper(duk_compiler_ctx *comp_ctx, duk_small_int_t expe
 	                                 comp_ctx->curr_func.is_strict,
 	                                 regexp);
 
-	DUK_DDD(DUK_DDDPRINT("advance: curr: tok=%ld/%ld,%ld-%ld,term=%ld,%!T,%!T "
-	                     "prev: tok=%ld/%ld,%ld-%ld,term=%ld,%!T,%!T",
+	DUK_DDD(DUK_DDDPRINT("advance: curr: tok=%ld/%ld,%ld,term=%ld,%!T,%!T "
+	                     "prev: tok=%ld/%ld,%ld,term=%ld,%!T,%!T",
 	                     (long) comp_ctx->curr_token.t,
 	                     (long) comp_ctx->curr_token.t_nores,
 	                     (long) comp_ctx->curr_token.start_line,
-	                     (long) comp_ctx->curr_token.end_line,
 	                     (long) comp_ctx->curr_token.lineterm,
 	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok11_idx),
 	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok12_idx),
 	                     (long) comp_ctx->prev_token.t,
 	                     (long) comp_ctx->prev_token.t_nores,
 	                     (long) comp_ctx->prev_token.start_line,
-	                     (long) comp_ctx->prev_token.end_line,
 	                     (long) comp_ctx->prev_token.lineterm,
 	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok21_idx),
 	                     (duk_tval *) duk_get_tval(ctx, comp_ctx->tok22_idx)));

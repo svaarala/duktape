@@ -536,7 +536,6 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	out_token->num_escapes = 0;
 	out_token->start_line = lex_ctx->lines[0];
 	out_token->start_offset = lex_ctx->offsets[0];
-	/* out_token->end_line set at exit */
 	/* out_token->lineterm set by caller */
 
 	duk_to_undefined((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
@@ -1267,7 +1266,6 @@ static void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	if (out_token->t_nores < 0) {
 		out_token->t_nores = out_token->t;
 	}
-	out_token->end_line = lex_ctx->lines[0];
 }
 
 /*
@@ -1295,8 +1293,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		duk__parse_input_element_raw(lex_ctx, out_token, strict_mode, regexp_mode);
 		tok = out_token->t;
 
-		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %ld (line %ld-%ld)",
-		                     (long) tok, (long) out_token->start_line, (long) out_token->end_line));
+		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %ld (line %ld)",
+		                     (long) tok, (long) out_token->start_line));
 
 		if (tok == DUK_TOK_COMMENT) {
 			/* single-line comment or multi-line comment without an internal lineterm */
