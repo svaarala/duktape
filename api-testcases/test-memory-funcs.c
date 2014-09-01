@@ -1,3 +1,9 @@
+/*---
+{
+    "knownissue": "memory allocated by duk_alloc() is currently not zeroed (undecided, test case assumes it is)"
+}
+---*/
+
 /*===
 basic duk_alloc_raw + duk_free_raw
 p is non-NULL
