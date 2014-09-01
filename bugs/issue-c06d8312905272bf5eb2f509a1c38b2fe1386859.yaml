@@ -3,7 +3,7 @@ title: "guide: removing Duktape built-in to make the global environment standard
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.0
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-05-07 21:10:51.522671 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-09-01 08:12:12.870839 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
   - ""

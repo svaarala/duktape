@@ -9,7 +9,7 @@ desc: |-
   now be kept to a minimum.
 type: :task
 component: duk
-release: v0.12
+release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -29,4 +29,8 @@ log_events:
 - - 2014-07-10 12:43:21.241904 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-09-01 08:12:12.284273 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
   - ""

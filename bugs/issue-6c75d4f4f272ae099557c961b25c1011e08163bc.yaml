@@ -22,3 +22,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-09-01 08:07:44.399558 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - Also the global lexical environment needs to be updated in the process.

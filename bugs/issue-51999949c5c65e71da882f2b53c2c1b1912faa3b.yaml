@@ -3,7 +3,7 @@ title: "Proxy: make the ES6 proxy subset disabled by default because it has a lo
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-06-27 08:45:00.333986 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-09-01 08:12:11.709932 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
   - ""
