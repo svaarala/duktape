@@ -7,12 +7,12 @@ Overview
 
 Test262 provides testcases for various Ecmascript features.  It also includes
 features and behavior beyond E5/E5.1 standard (for instance the tests related
-to the ``Intl`` module).
+to the ``Intl`` module and E6).
 
 This document summarizes the currently failing testcases and why they fail.
 The test run was executed against::
 
-  d83445976cb8ca6169a2ac3ac76dd8d8  d067d2f0ca30.tar.bz2
+  595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
 
 A full list of known bugs is documented in::
 
@@ -28,7 +28,12 @@ In addition to unfixed bugs, the following reasons cause some test262 test
 cases to fail:
 
 * Anything under ``intl402`` fails as Duktape does not provide the ``Intl``
-  object which is not part of E5/E5.1.
+  object which is not part of E5/E5.1.  Same for ``es6``, which tests for
+  E6 features.
+
+* Duktape has internal limitations for arrays exceeding 2G or 4G entries
+  (even sparse ones, the limitations related to the indices).  These cause
+  some array tests to fail.
 
 * Duktape does not provice ``RegExp.prototype.compile`` which is not part
   of E5/E5.1.
@@ -67,6 +72,9 @@ cases to fail:
 
 * Duktape allows octal syntax.  There is a test case which requires that
   ``parseInt()`` should not accept octal syntax; this test case fails.
+
+* An enumeration corner case test (ch12/12.6/12.6.4/12.6.4-2) currently fails,
+  see ``test-bug-enum-shadow-nonenumerable.js``.
 
 * There seem to be several bugs in the Date testcases of test262 (see
   detailed error description).
@@ -171,22 +179,6 @@ Same failure in strict and non-strict modes::
 This is caused by trying to eval the regexp ``/\1/``, which contains a
 SyntaxError (invalid back-reference, see above).
 
-ch10/10.4/10.4.2/10.4.2-1-2
----------------------------
-
-Same failure in strict and non-strict modes::
-
-  === ch10/10.4/10.4.2/10.4.2-1-2 failed in non-strict mode ===
-  --- errors ---
-  SyntaxError: function declaration not allowed outside of top level (line 2221)
-          duk_js_compiler.c:5289
-  ===
-
-Function declarations are not allowed in E5.1 outside the top level
-of a Program or a FunctionBody.  Many implementations accept such
-declarations, with various interpretations.  Some interpretation will
-probably be added to Duktape too, but this hasn't yet been done.
-
 ch12/12.6/12.6.1/S12.6.1_A4_T5
 ------------------------------
 
@@ -214,6 +206,11 @@ ch12/12.6/12.6.2/S12.6.2_A4_T5
   ===
 
 Duktape bug, see test-bug-labelled-block.js.
+
+ch12/12.6/12.6.4/12.6.4-2
+-------------------------
+
+Enumeration corner case issue, see ``test-bug-enum-shadow-nonenumerable.js``.
 
 ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1
 -------------------------------------------
@@ -429,20 +426,6 @@ specific so the test case is not reliable.  Duktape uses ISO 8601 also for
 
 Here the index for "01" is 5, which causes a test case failure.
  
-ch15/15.5/15.5.4/15.5.4.9/15.5.4.9_CE
--------------------------------------
-
-::
-
-  === ch15/15.5/15.5.4/15.5.4.9/15.5.4.9_CE failed in non-strict mode ===
-  --- errors ---
-  Test262 Error: String.prototype.localeCompare considers ö (\u006f\u0308) ≠ ö (\u00f6).
-  ===
-
-Duktape ``localeCompare()`` does not perform an actual Unicode string
-comparison, i.e. something which would know about composing characters
-and such.
-
 ch15/15.9/15.9.3/S15.9.3.1_A5_{T1,T2,T3,T4,T5,T6}
 -------------------------------------------------
 
