@@ -32,7 +32,7 @@ The option minimizes any non-portable dependencies.
 <p>You can now run Ecmascript code interactively:</p>
 <pre>
 $ ./duk
-((o) Duktape 0.11.0
+((o) Duktape 0.12.0
 duk&gt; print('Hello world!')
 Hello world!
 = undefined
@@ -46,7 +46,6 @@ features and algorithms.  As an example, create <code>fib.js</code>:</p>
 <pre>
 $ ./duk fib.js
 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181
-Cleaning up...
 </pre>
 
 <h2>Integrating Duktape into your program</h2>
@@ -124,14 +123,11 @@ and examining values on the stack.</p>
 
 <li>
 <pre class="c-code">
-duk_eval_file(ctx, "process.js");
-duk_pop(ctx);  /* pop eval result */
+duk_eval_file_noresult(ctx, "process.js");
 </pre>
-<p>The first call reads in <code>process.js</code> and evaluates its contents.
-The script registers the <code>processLine()</code> function into the Ecmascript
-global object.  The result of the evaluation is pushed on top of the value
-stack.  Here we don't need the evaluation result, so we pop the value off
-the stack.</p>
+<p>The eval call reads in <code>process.js</code>, then compiles and executes the
+script.  The eval result is ignored.  The script registers the <code>processLine()</code>
+function into the Ecmascript global object.</p>
 </li>
 
 <li>
@@ -174,11 +170,11 @@ result.</p>
 
 <li>
 <pre class="c-code">
-printf("%s\n", duk_to_string(ctx, -1));
+printf("%s\n", duk_safe_to_string(ctx, -1));
 duk_pop(ctx);
 </pre>
-<p>The <code>duk_to_string()</code> call requests Duktape to convert the value stack
-element at index -1 (the topmost value on the stack, which is the processLine
+<p>The <code>duk_safe_to_string()</code> call requests Duktape to convert the value
+stack element at index -1 (the topmost value on the stack, which is the processLine
 function call result here) to a string, returning a <code>const char *</code> pointing
 to the result.  This return value is a read-only, NUL terminated UTF-8 value which
 C code can use directly as long as the value resides on the value stack.  Here we
@@ -203,7 +199,7 @@ No memory leaks will occur even if the value stack is not empty.</p>
 $ gcc -std=c99 -o processlines -Isrc/ src/duktape.c processlines.c -lm
 </pre>
 
-<p>Test run:</p>
+<p>Test run (ensure that <code>process.js</code> is in the current directory):</p>
 <pre>
 $ echo "I like *Sam &amp; Max*." | ./processlines
 I like &lt;b&gt;Sam &amp;<!-- avoiding double decode is tricky -->&#35;38; Max&lt;/b&gt;.
@@ -230,7 +226,7 @@ accesses call arguments and places return values through the Duktape context's
 <i>value stack</i>, manipulated with the Duktape API.  We'll go deeper into
 Duktape/C binding and the Duktape API later on.  Example:</p>
 <pre class="c-code">
-int my_native_func(duk_context *ctx) {
+duk_ret_t my_native_func(duk_context *ctx) {
     double arg = duk_require_number(ctx, 0 /*index*/);
     duk_push_number(ctx, arg * arg);
     return 1;
@@ -305,8 +301,12 @@ If the values are not of the Ecmascript number type, an error is thrown.
 If they are numbers, their value is converted to an integer and assigned to
 the <code>val</code> and <code>lim</code> locals.  The index 0 refers to the first
 function argument and index 1 to the second.</p>
+<p>
+Technically <code>duk_require_int()</code> returns a <code>duk_int_t</code>; this
+indirect type is always mapped to an <code>int</code> except on obscure platforms
+where an <code>int</code> is only 16 bits wide.  In ordinary application code you
+don't need to worry about this, see <a href="#ctypes">C types</a> for more discussion.</p>
 </li>
-
 <li>
 <pre class="c-code">
 duk_push_false(ctx);
@@ -357,7 +357,7 @@ value here.</p>
 $ gcc -std=c99 -o primecheck -Isrc/ src/duktape.c primecheck.c -lm
 </pre>
 
-<p>Test run:</p>
+<p>Test run (ensure that <code>prime.js</code> is in the current directory):</p>
 <pre>
 $ time ./primecheck
 Have native helper: true
@@ -388,4 +388,3 @@ real	0m23.609s
 user	0m23.573s
 sys	0m0.000s
 </pre>
-
