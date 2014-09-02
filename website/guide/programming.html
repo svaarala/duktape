@@ -1,7 +1,5 @@
 <h1 id="programming">Programming model</h1>
 
-<p><b>(This section is under work.)</b></p>
-
 <h2>Overview</h2>
 
 <p>Programming with Duktape is quite straightforward:</p>
@@ -39,9 +37,11 @@ directly; you need to use serialization to pass values between heaps.</p>
 <p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which lives
 in a certain Duktape heap.  A context is represented by a <code>duk_context *</code>
 in the Duktape API, and is associated with an internal Duktape coroutine (a form
-of a co-operative thread).  The context handle is given to almost every Duktape
-API call, and allows the caller to interact with the <b>value stack</b> of the
-Duktape coroutine: values can be inserted and queries, functions can be called,
+of a co-operative thread).  Each context is also associated with an environment
+consisting of global objects; contexts may share the same global environment but
+can also have different environments.  The context handle is given to almost every
+Duktape API call, and allows the caller to interact with the <b>value stack</b> of
+the Duktape coroutine: values can be inserted and queries, functions can be called,
 and so on.</p>
 
 <p>Each coroutine has a <b>call stack</b> which controls execution, keeping
@@ -85,11 +85,21 @@ duk_context *ctx = duk_create_heap(my_alloc,
 if (!ctx) { exit(1); }
 </pre>
 
-<p>To create additional contexts inside the same heap:</p>
+<p>To create a new context inside the same heap, with the context sharing the
+same global objects:</p>
 <pre class="c-code">
 duk_context *new_ctx;
 
 (void) duk_push_thread(ctx);
+new_ctx = duk_get_context(ctx, -1 /*index*/);
+</pre>
+
+<p>To create a new context inside the same heap, but with a fresh set of global
+object:</p>
+<pre class="c-code">
+duk_context *new_ctx;
+
+(void) duk_push_thread_new_globalenv(ctx);
 new_ctx = duk_get_context(ctx, -1 /*index*/);
 </pre>
 
@@ -306,7 +316,7 @@ call any Duktape API calls with a <code>NULL</code> context.</p>
 Ecmascript function object, and gets called when the Ecmascript function
 object is called.  A Duktape/C API function looks as follows:</p>
 <pre class="c-code">
-int my_func(duk_context *ctx) {
+duk_ret_t my_func(duk_context *ctx) {
     duk_push_int(ctx, 123);
     return 1;
 }
@@ -343,7 +353,7 @@ explicitly with Duktape API calls.  No error message can be given; a
 message is automatically constructed by Duktape.  For example:</p>
 
 <pre class="c-code">
-int my_func(duk_context *ctx) {
+duk_ret_t my_func(duk_context *ctx) {
     if (duk_get_top(ctx) == 0) {
         /* throw TypeError if no arguments given */
         return DUK_RET_TYPE_ERROR;
@@ -385,7 +395,7 @@ nonStrictFunc.call('foo');  // prints 'object' (coerced)
 can always be used in <code>new Foo()</code> expressions.  You can check whether
 a function was called in constructor mode as follows:</p>
 <pre class="c-code">
-static int my_func(duk_context *ctx) {
+static duk_ret_t my_func(duk_context *ctx) {
     if (duk_is_constructor_call(ctx)) {
         printf("called as a constructor\n");
     } else {
