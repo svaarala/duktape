@@ -135,7 +135,7 @@ duk_put_prop_string(ctx, -2, "key");
 <p>The Duktape/C getter function would then (similarly for the setter):</p>
 
 <pre class="c-code">
-static int my_getter(duk_context *ctx) {
+static duk_ret_t my_getter(duk_context *ctx) {
     const char *key;
 
     /* There are no positional arguments for the getter. */
