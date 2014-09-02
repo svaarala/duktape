@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: go through FIXMEs in ecmascript-testcases and fix the worst coverage issues
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-01 20:26:21.841131 Z
+references: []
+
+id: 49cce34deaa9df3b034e55d5f4a67de9c1ca2c69
+log_events: 
+- - 2014-09-01 20:26:21.990553 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
