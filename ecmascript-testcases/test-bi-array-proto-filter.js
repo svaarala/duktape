@@ -1,4 +1,4 @@
-function retEven(val, key, obj) {
+function retEvenIndices(val, key, obj) {
     print(typeof this, this, typeof val, val, typeof key, key, typeof obj, obj);
     return (Number(key) % 2) == 0;
 }
@@ -39,6 +39,11 @@ object [object global] number 3 number 51 object 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 object [object global] number 4 number 52 object 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2,3,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,5
 object [object global] number 5 number 100 object 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2,3,4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,5
 object 1,2,4,5
+object [object global] number 1 number 0 object 1,2,,,3,4,,
+object [object global] number 2 number 1 object 1,2,,,3,4,,
+object [object global] number 3 number 4 object 1,2,,,3,4,,
+object [object global] number 4 number 5 object 1,2,,,3,4,,
+object 1,3
 object [object global] string foo number 0 object [object Object]
 object [object global] string bar number 5 object [object Object]
 object [object global] string quux number 20 object [object Object]
@@ -78,13 +83,13 @@ function basicTest() {
 
     // simple cases
 
-    test([], [ retEven ]);
-    test([1], [ retEven ]);
-    test([1,2], [ retEven ]);
+    test([], [ retEvenIndices ]);
+    test([1], [ retEvenIndices ]);
+    test([1,2], [ retEvenIndices ]);
 
     // dense
 
-    test([1,2,3,4,5], [ retEven ]);
+    test([1,2,3,4,5], [ retEvenIndices ]);
 
     // sparse
 
@@ -93,12 +98,17 @@ function basicTest() {
     obj[50] = 2;
     obj[51] = 3;
     obj[52] = 4;
-    test(obj, [ retEven ]);
+    test(obj, [ retEvenIndices ]);
+
+    // trailing non-existent elements
+
+    obj = [ 1, 2, , , 3, 4 , , , ];
+    test(obj, [ retEvenIndices ]);
 
     // non-array
 
     obj = { '0': 'foo', '5': 'bar', '20': 'quux', '100': 'baz', length: 35 };
-    test(obj, [ retEven ]);
+    test(obj, [ retEvenIndices ]);
 
     // error in callback propagates outwards
 
@@ -254,6 +264,7 @@ object [object global] string quux number 2 object [object Object]
 object foo,bar,quux
 length valueOf
 TypeError
+TypeError
 callback 1 0 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 callback 2 1 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 callback 3 2 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
@@ -279,14 +290,14 @@ function coercionTest() {
 
     // this
 
-    test(undefined, [ retEven ]);
-    test(null, [ retEven ]);
-    test(true, [ retEven ]);
-    test(false, [ retEven ]);
-    test(123, [ retEven ]);
-    test('foo', [ retEven ]);
-    test([1,2,3], [ retEven ]);
-    test({ foo: 1, bar: 2 }, [ retEven ]);
+    test(undefined, [ retEvenIndices ]);
+    test(null, [ retEvenIndices ]);
+    test(true, [ retEvenIndices ]);
+    test(false, [ retEvenIndices ]);
+    test(123, [ retEvenIndices ]);
+    test('foo', [ retEvenIndices ]);
+    test([1,2,3], [ retEvenIndices ]);
+    test({ foo: 1, bar: 2 }, [ retEvenIndices ]);
 
     // length
 
@@ -323,6 +334,9 @@ function coercionTest() {
     }};
     test(obj, [ null ]);
 
+    // callable check is done even with no elements to process
+    test([], [ null ]);
+
     // return value of callback is ToBoolean() coerced; this has no
     // side effects, but test each Ecmascript type
 
@@ -338,4 +352,3 @@ try {
 } catch (e) {
     print(e);
 }
-
