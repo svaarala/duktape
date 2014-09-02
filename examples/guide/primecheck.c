@@ -4,7 +4,7 @@
 #include <string.h>
 #include "duktape.h"
 
-static int native_prime_check(duk_context *ctx) {
+static duk_ret_t native_prime_check(duk_context *ctx) {
     int val = duk_require_int(ctx, 0);
     int lim = duk_require_int(ctx, 1);
     int i;
@@ -30,8 +30,7 @@ int main(int argc, const char *argv[]) {
     duk_push_c_function(ctx, native_prime_check, 2 /*nargs*/);
     duk_put_prop_string(ctx, -2, "primeCheckNative");
 
-    duk_eval_file(ctx, "prime.js");
-    duk_pop(ctx);  /* pop eval result */
+    duk_eval_file_noresult(ctx, "prime.js");
 
     duk_get_prop_string(ctx, -1, "primeTest");
     duk_call(ctx, 0);

@@ -13,8 +13,7 @@ int main(int argc, const char *argv[]) {
     ctx = duk_create_heap_default();
     if (!ctx) { exit(1); }
 
-    duk_eval_file(ctx, "process.js");
-    duk_pop(ctx);  /* pop eval result */
+    duk_eval_file_noresult(ctx, "process.js");
 
     memset(line, 0, sizeof(line));
     idx = 0;
@@ -29,7 +28,7 @@ int main(int argc, const char *argv[]) {
             duk_get_prop_string(ctx, -1 /*index*/, "processLine");
             duk_push_string(ctx, line);
             duk_call(ctx, 1 /*nargs*/);
-            printf("%s\n", duk_to_string(ctx, -1));
+            printf("%s\n", duk_safe_to_string(ctx, -1));
             duk_pop(ctx);
 
             idx = 0;
