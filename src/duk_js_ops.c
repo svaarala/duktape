@@ -767,7 +767,7 @@ duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	/* Very often compared values are plain numbers, so handle that case
 	 * as the fast path without any stack operations and such.
 	 */
-#if 1
+#if 1  /* XXX: make fast paths optional for size minimization? */
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
