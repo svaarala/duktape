@@ -775,7 +775,7 @@ duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 		c2 = fpclassify(d2);
 
 		if (c1 == FP_NORMAL && c2 == FP_NORMAL) {
-			/* FIXME: this is a very narrow check, and doesn't cover
+			/* XXX: this is a very narrow check, and doesn't cover
 			 * zeroes, subnormals, infinities, which compare normally.
 			 */
 
