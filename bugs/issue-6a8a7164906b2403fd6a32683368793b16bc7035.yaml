@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "makefile: immediate assignment to avoid races"
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-04 13:51:22.875498 Z
+references: []
+
+id: 6a8a7164906b2403fd6a32683368793b16bc7035
+log_events: 
+- - 2014-09-04 13:51:23.083324 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-05 21:50:01.419263 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
