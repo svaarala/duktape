@@ -33,20 +33,21 @@
 # A few commands which may need to be edited.  NodeJS is sometimes found
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
 # so check 'nodejs' first.
-GIT=$(shell which git)
-NODE=$(shell which nodejs node | head -1)
-WGET=$(shell which wget)
-JAVA=$(shell which java)
-VALGRIND=$(shell which valgrind)
-PYTHON=$(shell which python)
+GIT:=$(shell which git)
+NODE:=$(shell which nodejs node | head -1)
+WGET:=$(shell which wget)
+JAVA:=$(shell which java)
+VALGRIND:=$(shell which valgrind)
+PYTHON:=$(shell which python)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
-DUK_VERSION=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
-DUK_MAJOR=$(shell echo "$(DUK_VERSION) / 10000" | bc)
-DUK_MINOR=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
-DUK_PATCH=$(shell echo "$(DUK_VERSION) % 100" | bc)
-DUK_VERSION_FORMATTED=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
-GIT_DESCRIBE=$(shell git describe)
+DUK_VERSION:=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
+DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
+DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
+DUK_VERSION_FORMATTED:=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+GIT_DESCRIBE:=$(shell git describe --always --dirty)
+BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
 
 # Ditz release (next release name)
 DITZ_RELEASE=v0.12
@@ -753,16 +754,16 @@ dist-src:	dist
 	mkdir duktape-$(DUK_VERSION_FORMATTED)
 	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.gz
 	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.bz2
 	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).tar.xz
 	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
-	cp duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).zip
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
-	cp duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED)-$(GIT_DESCRIBE).iso
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.bz2
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
+	cp duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).zip
+	cp duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).iso
 
 .PHONY: tidy-site
 tidy-site:
@@ -785,6 +786,7 @@ dist-site:	tidy-site site
 	cp -r site/* duktape-site-$(DUK_VERSION_FORMATTED)/
 	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
+	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
 
 .PHONY: big-git-files
 big-git-files:
