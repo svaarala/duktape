@@ -46,7 +46,7 @@ DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
 DUK_VERSION_FORMATTED:=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
-GIT_DESCRIBE:=$(shell git describe)
+GIT_DESCRIBE:=$(shell git describe --always --dirty)
 BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
 
 # Ditz release (next release name)
