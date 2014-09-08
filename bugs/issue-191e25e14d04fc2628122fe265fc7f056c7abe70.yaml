@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement ES6 regexp features
+desc: For example, new regexp flags such as "u".
+type: :feature
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-08 08:54:14.636770 Z
+references: []
+
+id: 191e25e14d04fc2628122fe265fc7f056c7abe70
+log_events: 
+- - 2014-09-08 08:54:15.068737 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

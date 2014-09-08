@@ -1,0 +1,23 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: implement RegExp flags properties as accessors
+desc: |-
+  This seems to be the approach in ES6.  The accessors can back directly to the
+  regexp bytecode.
+  
+  This saves three properties for each RegExp instance and also makes
+  RegExp.prototype.compile() easier to implement.
+type: :feature
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-08 08:58:21.244629 Z
+references: []
+
+id: 0f2c246cadbb3b3913b75dc7e890ee4e7d336a1a
+log_events: 
+- - 2014-09-08 08:58:21.500537 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
