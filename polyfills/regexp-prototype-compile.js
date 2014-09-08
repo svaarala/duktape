@@ -1,5 +1,5 @@
 /*
- *  RegExp.prototype.compile(), described in E6 Annex B:
+ *  RegExp.prototype.compile() polyfill, described in E6 Annex B:
  *
  *    https://people.mozilla.org/~jorendorff/es6-draft.html#sec-regexp.prototype.compile
  *

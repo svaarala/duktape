@@ -1,5 +1,5 @@
 /*
- *  Performance.now()
+ *  Performance.now() polyfill
  *
  *  http://www.w3.org/TR/hr-time/#sec-high-resolution-time
  *
