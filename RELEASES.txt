@@ -515,6 +515,8 @@ Planned
 * Make objects and functions defined by included polyfills non-enumerable so
   that they don't enumerate e.g. in a for-in loop
 
+* A few more polyfills.
+
 1.0.0 (2014-08-XX)
 ------------------
 

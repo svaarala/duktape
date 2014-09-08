@@ -1,3 +1,7 @@
+/*
+ *  Minimal console.log() polyfill
+ */
+
 if (typeof console === 'undefined') {
     Object.defineProperty(this, 'console', {
         value: {}, writable: true, enumerable: false, configurable: true

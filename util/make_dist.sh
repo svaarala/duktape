@@ -188,6 +188,8 @@ for i in \
 	console-minimal.js \
 	object-prototype-definegetter.js \
 	object-prototype-definesetter.js \
+	object-assign.js \
+	performance-now.js \
 	; do
 	cp polyfills/$i $DIST/polyfills/
 done

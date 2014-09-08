@@ -1,3 +1,7 @@
+/*
+ *  Object.prototype.__defineGetter__ polyfill
+ */
+
 if (typeof Object.prototype.__defineGetter__ === 'undefined') {
     Object.defineProperty(Object.prototype, '__defineGetter__', {
         value: function (n, f) {
