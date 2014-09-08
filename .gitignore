@@ -3,7 +3,9 @@
 *.o
 *.strip
 build/
+dist/
 stuff/
+autotest/
 doc/*.pdf
 src/*.pyc
 UglifyJS/
