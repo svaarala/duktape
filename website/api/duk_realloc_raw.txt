@@ -11,7 +11,10 @@ a <code>NULL</code> is returned and the previous allocation is still valid.
 Reallocation failure should only be possible when the new size is larger
 than the previous size (i.e. caller tries to grow the allocation).
 The attempt to reallocate cannot trigger a garbage collection,
-and the allocated memory is not automatically garbage collected.</p>
+and the allocated memory is not automatically garbage collected.
+If allocated size is extended from previous allocation, the newly allocated
+bytes are not automatically zeroed and may contain arbitrary garbage.
+</p>
 
 <p>The exact behavior depends on the <code>ptr</code> and <code>size</code>
 arguments as follows:</p>

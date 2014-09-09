@@ -4,12 +4,13 @@ void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
 =summary
 <p>Like <code><a href="#duk_realloc_raw">duk_realloc_raw()</a></code> but may
 trigger a garbage collection to satisfy the request.  However, the
-allocated memory itself is not automatically garbage collected.</p>
+allocated memory itself is not automatically garbage collected.
+If allocated size is extended from previous allocation, the newly allocated
+bytes are not automatically zeroed and may contain arbitrary garbage.</p>
 
 <p>Memory reallocated with <code>duk_realloc()</code> can be freed with either
 <code><a href="#duk_free">duk_free()</a></code> or
 <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
-
 =example
 void *buf = duk_alloc(ctx, 1024);
 if (buf) {
@@ -26,4 +27,3 @@ memory
 
 =seealso
 duk_realloc_raw
-

@@ -7,7 +7,8 @@ to the context.  If allocation fails, returns <code>NULL</code>.  If <code>size<
 is zero, the call may either return a <code>NULL</code> or some non-<code>NULL</code>
 value which may be safely given to e.g. <code>duk_free_raw()</code>.  The allocation
 cannot trigger a garbage collection, and the allocated memory is not automatically
-garbage collected.</p>
+garbage collected.  The allocated memory is not automatically zeroed, and may contain
+arbitrary garbage.</p>
 
 <p>Memory allocated with <code>duk_alloc_raw()</code> can be freed with either
 <code><a href="#duk_free">duk_free()</a></code> or
@@ -26,6 +27,3 @@ memory
 
 =seealso
 duk_alloc
-
-=fixme
-Zero allocated memory automatically?
