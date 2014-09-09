@@ -1,9 +1,3 @@
-/*---
-{
-    "knownissue": "memory allocated by duk_alloc() is currently not zeroed (undecided, test case assumes it is)"
-}
----*/
-
 /*===
 basic duk_alloc_raw + duk_free_raw
 p is non-NULL
@@ -33,9 +27,6 @@ duk_alloc_raw + duk_realloc + duk_free
 p is non-NULL
 new_p is non-NULL
 new_p[0], new_p[1023]: 1 2
-duk_alloc memory is zeroed
-p is non-NULL
-bytes: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 ===*/
 
 /* Very basic test of API memory alloc/realloc/free functions.
@@ -202,39 +193,8 @@ static void test_mixed_use(duk_context *ctx) {
 	}
 }
 
-static void test_alloc_zeroed(duk_context *ctx) {
-	void *p;
-	size_t sz = 64;
-
-	/* FIXME: currently allocated memory is NOT zeroed - should it be? */
-
-	printf("duk_alloc memory is zeroed\n");
-	p = duk_alloc(ctx, sz);
-	if (p) {
-		unsigned char *q = (unsigned char *) p;
-		int i;
-
-		printf("p is non-NULL\n");
-		printf("bytes:");
-		for (i = 0; i < (int) sz; i++) {
-			printf(" %d", (int) q[i]);
-		}
-		printf("\n");
-
-		duk_free(ctx, p);
-	} else {
-		printf("p is NULL\n");
-	}
-
-	/* Reallocated memory cannot be automatically zeroed in case where
-	 * the buffer grows: the allocation function doesn't know what the
-	 * original size was, so it cannot zero the new part only.
-	 */
-}
-
 void test(duk_context *ctx) {
 	test_raw_variants(ctx);
 	test_gc_variants(ctx);
 	test_mixed_use(ctx);
-	test_alloc_zeroed(ctx);
 }
