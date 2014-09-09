@@ -9,7 +9,7 @@ desc: |-
   This selection is logical (int and duk_int_fast16_t) but somewhat odd in practice.
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -21,4 +21,8 @@ log_events:
 - - 2014-07-09 11:37:19.894479 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-09 11:35:45.085870 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
   - ""

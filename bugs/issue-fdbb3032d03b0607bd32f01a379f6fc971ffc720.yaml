@@ -3,7 +3,7 @@ title: check filename/line parameter for checked alloc functions - remove or kee
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,12 @@ log_events:
 - - 2014-07-10 12:43:15.572076 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
+  - ""
+- - 2014-09-09 11:29:50.525470 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
+  - ""
+- - 2014-09-09 11:37:36.636902 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
   - ""

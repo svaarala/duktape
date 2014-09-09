@@ -5,7 +5,7 @@ desc: |-
   also be more compatible with ancient compilers.
 type: :task
 component: duk
-release: v1.0
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -29,4 +29,8 @@ log_events:
 - - 2014-09-01 11:27:39.085472 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.0 from v0.12
+  - ""
+- - 2014-09-09 11:37:36.866210 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
   - ""

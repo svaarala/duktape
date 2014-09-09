@@ -3,7 +3,7 @@ title: "API: return buffer data pointer also for boxed Buffer objects (similarly
 desc: ""
 type: :task
 component: duk
-release: v1.0
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-09-01 08:12:09.370027 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.0 from v0.12
+  - ""
+- - 2014-09-09 11:37:38.540265 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
   - ""
