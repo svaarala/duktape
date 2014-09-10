@@ -1338,7 +1338,7 @@ duk_c_function duk_get_c_function(duk_context *ctx, duk_idx_t index) {
 	}
 	h = DUK_TVAL_GET_OBJECT(tv);
 	DUK_ASSERT(h != NULL);
-	
+
 	if (!DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		return NULL;
 	}
