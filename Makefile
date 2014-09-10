@@ -106,6 +106,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_js_var.c \
 	$(DISTSRCSEP)/duk_numconv.c \
 	$(DISTSRCSEP)/duk_api_stack.c \
+	$(DISTSRCSEP)/duk_api_heap.c \
 	$(DISTSRCSEP)/duk_api_call.c \
 	$(DISTSRCSEP)/duk_api_compile.c \
 	$(DISTSRCSEP)/duk_api_codec.c \
