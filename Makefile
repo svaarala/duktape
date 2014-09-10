@@ -105,6 +105,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_js_ops.c \
 	$(DISTSRCSEP)/duk_js_var.c \
 	$(DISTSRCSEP)/duk_numconv.c \
+	$(DISTSRCSEP)/duk_api_stack.c \
 	$(DISTSRCSEP)/duk_api_call.c \
 	$(DISTSRCSEP)/duk_api_compile.c \
 	$(DISTSRCSEP)/duk_api_codec.c \
@@ -115,7 +116,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_api_var.c \
 	$(DISTSRCSEP)/duk_api_logging.c \
 	$(DISTSRCSEP)/duk_api_debug.c \
-	$(DISTSRCSEP)/duk_api.c \
 	$(DISTSRCSEP)/duk_lexer.c \
 	$(DISTSRCSEP)/duk_js_call.c \
 	$(DISTSRCSEP)/duk_js_executor.c \
