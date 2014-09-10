@@ -110,6 +110,7 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 #define DUK_ENUM_OWN_PROPERTIES_ONLY      (1 &lt;&lt; 2)    /* don't walk prototype chain, only check own properties */
 #define DUK_ENUM_ARRAY_INDICES_ONLY       (1 &lt;&lt; 3)    /* only enumerate array indices */
 #define DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
+#define DUK_ENUM_NO_PROXY_BEHAVIOR        (1 &lt;&lt; 5)    /* enumerate a proxy object itself without invoking proxy behavior */
 </pre>
 
 <h2>Coercion hints</h2>
@@ -120,12 +121,26 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 #define DUK_HINT_NUMBER       2    /* prefer number */
 </pre>
 
+<h2>Flags for duk_push_thread_raw()</h2>
+<pre class="c-code">
+#define DUK_THREAD_NEW_GLOBAL_ENV         (1 &lt;&lt; 0)    /* create a new global environment */
+</pre>
+
+<h2>Log levels</h2>
+<pre class="c-code">
+#define  DUK_LOG_TRACE                    0
+#define  DUK_LOG_DEBUG                    1
+#define  DUK_LOG_INFO                     2
+#define  DUK_LOG_WARN                     3
+#define  DUK_LOG_ERROR                    4
+#define  DUK_LOG_FATAL                    5
+</pre>
+
 <h2>Misc defines</h2>
 <pre class="c-code">
 #define DUK_INVALID_INDEX     INT_MIN 
 
-#define DUK_VARARGS           (-1)
+#define DUK_VARARGS           ((duk_int_t) (-1))
 
 #define DUK_API_ENTRY_STACK   64
 </pre>
-
