@@ -260,7 +260,7 @@ const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	data = (duk_uint8_t *) duk_to_buffer(ctx, index, &len);
 	DUK_ASSERT(data != NULL);
 
-	buf = (unsigned char *) duk_push_fixed_buffer(ctx, len * 2);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len * 2);
 	DUK_ASSERT(buf != NULL);
 	/* buf is always zeroed */
 

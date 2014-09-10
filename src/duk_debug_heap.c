@@ -168,13 +168,13 @@ void duk_debug_dump_heap(duk_heap *heap) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-pedantic"
 #endif
-	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->alloc_func, sizeof(heap->alloc_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (duk_uint8_t *) &heap->alloc_func, sizeof(heap->alloc_func));
 	DUK_D(DUK_DPRINT("  alloc_func: %s", (const char *) buf));
-	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->realloc_func, sizeof(heap->realloc_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (duk_uint8_t *) &heap->realloc_func, sizeof(heap->realloc_func));
 	DUK_D(DUK_DPRINT("  realloc_func: %s", (const char *) buf));
-	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->free_func, sizeof(heap->free_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (duk_uint8_t *) &heap->free_func, sizeof(heap->free_func));
 	DUK_D(DUK_DPRINT("  free_func: %s", (const char *) buf));
-	duk_debug_format_funcptr(buf, sizeof(buf), (unsigned char *) &heap->fatal_func, sizeof(heap->fatal_func));
+	duk_debug_format_funcptr(buf, sizeof(buf), (duk_uint8_t *) &heap->fatal_func, sizeof(heap->fatal_func));
 	DUK_D(DUK_DPRINT("  fatal_func: %s", (const char *) buf));
 #ifdef DUK_USE_GCC_PRAGMAS
 #pragma GCC diagnostic pop

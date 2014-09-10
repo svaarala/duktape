@@ -219,6 +219,7 @@ void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t lengt
 void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x);
 void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x);
 void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...);
+void duk_fb_put_funcptr(duk_fixedbuffer *fb, duk_uint8_t *fptr, duk_size_t fptr_size);
 duk_bool_t duk_fb_is_full(duk_fixedbuffer *fb);
 
 void duk_debug_dump_heap(duk_heap *heap);
