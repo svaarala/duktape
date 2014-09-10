@@ -71,8 +71,9 @@ for i in \
 	duk_alloc_default.c	\
 	duk_alloc_torture.c	\
 	duk_api_internal.h	\
+	duk_api_stack.c		\
+	duk_api_heap.c		\
 	duk_api_buffer.c	\
-	duk_api.c		\
 	duk_api_call.c		\
 	duk_api_codec.c		\
 	duk_api_compile.c	\
