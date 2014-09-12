@@ -20,6 +20,7 @@
 import os
 import sys
 import re
+import optparse
 
 class Problem:
 	filename = None
@@ -57,6 +58,14 @@ def checkDebugLogCalls(line):
 	log_macro = m.group(1)
 	log_wrapper = debuglog_wrappers[log_macro]
 	if log_wrapper + '(' in line:
+		return
+
+	# exclude '#define DUK_DPRINT...' macros in duk_debug.h
+	if len(line) >= 1 and line[0] == '#':
+		return
+
+	# exclude a few comment lines in duk_debug.h
+	if len(line) >= 3 and line[0:3] == ' * ':
 		return
 
 	raise Exception('invalid debug log call form')
@@ -110,6 +119,10 @@ def processFile(filename, checkers):
 	f.close()
 
 def main():
+	parser = optparse.OptionParser()
+	parser.add_option('--dump-vim-commands', dest='dump_vim_commands', default=False, help='Dump oneline vim command')
+	(opts, args) = parser.parse_args()
+
 	checkers = []
 	checkers.append(checkDebugLogCalls)
 	checkers.append(checkTrailingWhitespace)
@@ -117,7 +130,7 @@ def main():
 	checkers.append(checkMixedIndent)
 	checkers.append(checkFixme)
 
-	for filename in sys.argv[1:]:
+	for filename in args:
 		processFile(filename, checkers)
 
 	if len(problems) > 0:
@@ -132,6 +145,14 @@ def main():
 			print(tmp)
 
 		print '*** Total: %d problems' % len(problems)
+
+		if opts.dump_vim_commands:
+			cmds = []
+			for i in problems:
+				cmds.append('vim +' + str(i.linenumber) + ' "' + i.filename + '"')
+			print ''
+			print('; '.join(cmds))
+
 		sys.exit(1)
 
 	sys.exit(0)
