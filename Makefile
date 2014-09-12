@@ -302,10 +302,6 @@ libduktaped.so.1.0.0: dist
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-.PHONY: debuglogcheck
-debuglogcheck:
-	-python util/check_debuglog_calls.py src/*.c
-
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
@@ -742,10 +738,10 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users
-# XXX: want to run debuglogcheck when dist gets built, but don't want to depend on it.
+# XXX: want to run codepolicycheck when dist gets built, but don't want to depend on it.
 # XXX: make prints a harmless warning related to the sub-make.
 dist:	compiler.jar cloc-1.60.pl
-	@make debuglogcheck
+	@make codepolicycheck
 	sh util/make_dist.sh --minify closure
 
 .PHONY:	dist-src
@@ -788,6 +784,10 @@ dist-site:	tidy-site site
 	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
 	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
+
+.PHONY: codepolicycheck
+codepolicycheck:
+	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in
 
 .PHONY: big-git-files
 big-git-files:
