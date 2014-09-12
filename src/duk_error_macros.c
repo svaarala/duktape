@@ -98,7 +98,7 @@ void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 	            "segfaulting on purpose"
 #else
 #error no DUK_USE_PANIC_xxx macro defined
-#endif	
+#endif
 	            ")\n", (long) code, (const char *) (msg ? msg : "null"));
 	DUK_FFLUSH(DUK_STDERR);
 #else

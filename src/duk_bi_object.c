@@ -221,7 +221,7 @@ duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {
 	 * so this is a good time to compact.
 	 */
 	duk_hobject_compact_props(thr, h);
-	
+
 	return 1;
 }
 

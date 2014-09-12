@@ -154,7 +154,7 @@ static void duk__dump_strcache(duk_heap *heap) {
 			DUK_D(DUK_DPRINT("  [%ld]: bidx=%ld cidx=%ld str=%s",
 			                 (long) i, (long) c->bidx, (long) c->cidx, (const char *) buf));
 		}
-	} 
+	}
 }
 
 void duk_debug_dump_heap(duk_heap *heap) {

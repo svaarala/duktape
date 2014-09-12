@@ -17,7 +17,7 @@ static duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 		goto done;
 	}
 	h = duk_get_hobject(ctx, -1);
-	if (!h || 
+	if (!h ||
 	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
 		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
 		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "expected a number");

@@ -95,7 +95,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
 		DUK_DDD(DUK_DDDPRINT("p_curr=%p, p_end=%p, val_highest=%ld, val_curr=%ld -> "
 		                     "needs to be inserted",
 		                     (void *) p_curr, (void *) p_end, (long) val_highest, (long) val_curr));
-	
+
 		/* Needs to be inserted; scan backwards, since we optimize
 		 * for the case where elements are nearly in order.
 		 */

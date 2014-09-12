@@ -128,7 +128,7 @@ static duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint
 	(void) duk__inp_backtrack(re_ctx, &sp, (duk_uint_fast32_t) 1);
 	return duk__inp_get_cp(re_ctx, &sp);
 }
-	
+
 /*
  *  Regexp recursive matching function.
  *
@@ -214,7 +214,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
 			duk_uint32_t n;
 			duk_codepoint_t c;
 			duk_small_int_t match;
-	
+
 			n = duk__bc_get_u32(re_ctx, &pc);
 			if (sp >= re_ctx->input_end) {
 				goto fail;

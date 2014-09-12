@@ -1923,7 +1923,7 @@ typedef FILE duk_file;
 #define DUK_USE_ARCH_STRING "unknown"
 #endif
 
-/* 
+/*
  *  Tagged type representation (duk_tval)
  */
 
@@ -2138,7 +2138,7 @@ typedef FILE duk_file;
 /* Treat function statements (function declarations outside top level of
  * Program or FunctionBody) same as normal function declarations.  This is
  * also V8 behavior.  See test-dev-func-decl-outside-top.js.
- */ 
+ */
 #define DUK_USE_NONSTD_FUNC_STMT
 #if defined(DUK_OPT_NO_NONSTD_FUNC_STMT)
 #undef DUK_USE_NONSTD_FUNC_STMT
@@ -2370,7 +2370,7 @@ typedef FILE duk_file;
 /*
  *  Variable size array initialization.
  *
- *  Variable size array at the end of a structure is nonportable. 
+ *  Variable size array at the end of a structure is nonportable.
  *  There are three alternatives:
  *
  *    1) C99 (flexible array member): char buf[]

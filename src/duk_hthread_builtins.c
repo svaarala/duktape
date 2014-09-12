@@ -228,7 +228,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		if (t != DUK__NO_BIDX_MARKER) {
 			/* 'constructor' property for all built-in objects (which have it) has attributes:
 			 *  [[Writable]] = true,
-			 *  [[Enumerable]] = false,	
+			 *  [[Enumerable]] = false,
 			 *  [[Configurable]] = true
 			 */
 			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %ld", (long) t));
@@ -565,7 +565,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		                   (long) i, (duk_heaphdr *) thr->builtins[i]));
 	}
 #endif
-	
+
 #ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		DUK_DDD(DUK_DDDPRINT("built-in object %ld after initialization and compacting", (long) i));

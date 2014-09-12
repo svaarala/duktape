@@ -98,13 +98,13 @@
 #ifdef DUK_USE_DDPRINT
 #define DUK_DDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
-#define DUK_DDPRINT  0 && 
+#define DUK_DDPRINT  0 && /* args */
 #endif
 
 #ifdef DUK_USE_DDDPRINT
 #define DUK_DDDPRINT  DUK__DEBUG_STASH(DUK_LEVEL_DDDEBUG), (void) duk_debug_log  /* args go here in parens */
 #else
-#define DUK_DDDPRINT  0 && 
+#define DUK_DDDPRINT  0 && /* args */
 #endif
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
@@ -131,7 +131,7 @@
 		duk_debug_summary_buf[duk_debug_summary_idx++] = (ch); \
 		if ((duk_size_t) duk_debug_summary_idx >= (duk_size_t) (sizeof(duk_debug_summary_buf) - 1)) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
+			DUK_D(DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf)); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)
@@ -139,7 +139,7 @@
 #define DUK_DEBUG_SUMMARY_FINISH()  do { \
 		if (duk_debug_summary_idx > 0) { \
 			duk_debug_summary_buf[duk_debug_summary_idx++] = (char) 0; \
-			DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf); \
+			DUK_D(DUK_DPRINT("    %s", (const char *) duk_debug_summary_buf)); \
 			DUK_DEBUG_SUMMARY_INIT(); \
 		} \
 	} while (0)
@@ -163,8 +163,8 @@
 #else  /* DUK_USE_VARIADIC_MACROS */
 
 #define DUK_DPRINT    0 && /* args go here as a comma expression in parens */
-#define DUK_DDPRINT   0 && 
-#define DUK_DDDPRINT  0 && 
+#define DUK_DDPRINT   0 && /* args */
+#define DUK_DDDPRINT  0 && /* args */
 
 #endif  /* DUK_USE_VARIADIC_MACROS */
 

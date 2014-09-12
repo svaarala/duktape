@@ -952,7 +952,7 @@ static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_dou
 	if (!DUK_ISFINITE(year) || !DUK_ISFINITE(month)) {
 		return DUK_DOUBLE_NAN;
 	}
-	
+
 	year += DUK_FLOOR(month / 12.0);
 
 	month = DUK_FMOD(month, 12.0);
@@ -1166,7 +1166,7 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 	 * particular problem (annoyingly, also adding debug prints or
 	 * running the executable under valgrind hides it).
 	 */
-	
+
 	/* MakeTime */
 	tmp_time = 0.0;
 	tmp_time += dparts[DUK__IDX_HOUR] * ((duk_double_t) DUK__MS_HOUR);

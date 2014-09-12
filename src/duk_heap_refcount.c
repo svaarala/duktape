@@ -246,7 +246,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
 			}
 		}
 
-  		/* Refzero head is still the same.  This is the case even if finalizer
+		/* Refzero head is still the same.  This is the case even if finalizer
 		 * inserted more refzero objects; they are inserted to the tail.
 		 */
 		DUK_ASSERT(h1 == heap->refzero_list);
@@ -315,7 +315,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
  *
  *  Decref may trigger immediate refzero handling, which may free and finalize
  *  an arbitrary number of objects.
- *  
+ *
  */
 
 void duk_heap_tval_incref(duk_tval *tv) {

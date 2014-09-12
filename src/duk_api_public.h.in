@@ -87,7 +87,7 @@ struct duk_number_list_entry {
  * this index will map to a non-existent stack entry.  Also used in some
  * API calls as a marker to denote "no value".
  */
-#define DUK_INVALID_INDEX                 INT_MIN 
+#define DUK_INVALID_INDEX                 INT_MIN
 
 /* Indicates that a native function does not have a fixed number of args,
  * and the argument stack should not be capped/extended at all.

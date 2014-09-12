@@ -247,7 +247,7 @@ duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstri
 	 *  Update cache entry (allocating if necessary), and move the
 	 *  cache entry to the first place (in an "LRU" policy).
 	 */
-	
+
 	if (use_cache) {
 		/* update entry, allocating if necessary */
 		if (!sce) {

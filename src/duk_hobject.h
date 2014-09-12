@@ -21,7 +21,7 @@
  *       abandoned and moved to the 'entry part'.
  *
  *    3. An optional 'hash part' is used to optimize lookups of the entry
- *       part; it is used only for objects with sufficiently many properties 
+ *       part; it is used only for objects with sufficiently many properties
  *       and can be abandoned without loss of information.
  *
  *  These three conceptual parts are stored in a single memory allocated area.
@@ -456,7 +456,7 @@
 
 /*
  *  Macros for property handling
- */		
+ */
 
 #define DUK_HOBJECT_GET_PROTOTYPE(h)                    ((h)->prototype)
 
@@ -687,7 +687,7 @@ duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t 
 duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
 duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
 duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj);
-	
+
 /* hobject management functions */
 void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
@@ -713,7 +713,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
 duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
-/* misc */	
+/* misc */
 duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */

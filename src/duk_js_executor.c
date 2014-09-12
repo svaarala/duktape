@@ -24,7 +24,7 @@ static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *f
 	DUK_ASSERT(DUK_HOBJECT_HAS_BOUND(func));
 
 	sanity = DUK_HOBJECT_BOUND_CHAIN_SANITY;
-	do {	
+	do {
 		if (!DUK_HOBJECT_HAS_BOUND(func)) {
 			break;
 		}
@@ -220,7 +220,7 @@ static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *
 	/* important to use normalized NaN with 8-byte tagged types */
 	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
-	
+
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
 	DUK_TVAL_SET_NUMBER(tv_z, du.d);
@@ -486,7 +486,7 @@ static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_sma
 	/* clamp so that retval is at the top (retval_count == 1) or register just before
 	 * intended retval is at the top (retval_count == 0, happens e.g. with 'finally').
 	 */
-	duk_set_top((duk_context *) thr, 
+	duk_set_top((duk_context *) thr,
 	            (duk_idx_t) (thr->callstack[act_idx].idx_retval -
 	                         thr->callstack[act_idx].idx_bottom +
 	                         retval_count));
@@ -783,7 +783,7 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 			resumee->resumer = thr;
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
-			thr->state = DUK_HTHREAD_STATE_RESUMED;	
+			thr->state = DUK_HTHREAD_STATE_RESUMED;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
 			thr = resumee;
 
@@ -1024,7 +1024,7 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		}
-	
+
 		DUK_DD(DUK_DDPRINT("no calling activation, thread finishes (similar to yield)"));
 
 		DUK_ASSERT(thr->resumer != NULL);
@@ -1062,7 +1062,7 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		/*
 		 *  Find a matching label catcher or 'finally' catcher in
 		 *  the same function.
-		 *  
+		 *
 		 *  A label catcher must always exist and will match unless
 		 *  a 'finally' captures the break/continue first.  It is the
 		 *  compiler's responsibility to ensure that labels are used
@@ -2753,7 +2753,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 *  This overhead only affects bound functions (in particular, helper
 			 *  functions should not be called if the immediate target function is
 			 *  not bound).
-			 * 
+			 *
 			 *  Even so, this awkward solution could be avoided by e.g. replicating
 			 *  final, non-bound target function flags to the bound function objects
 			 *  (so that a bound function would e.g. have both a "BOUND" flag and
@@ -3289,7 +3289,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 					DUK_ASSERT(duk_is_null(ctx, (duk_idx_t) c));
 					DUK_DDD(DUK_DDDPRINT("enum is null, execute jump slot"));
 				}
-				break;				
+				break;
 			}
 
 			case DUK_EXTRAOP_INITSET:
@@ -3377,7 +3377,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 				if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 					DUK_DDD(DUK_DDDPRINT("ENDTRY: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
-			
+
 					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
@@ -3433,7 +3433,7 @@ void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 				if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
 					DUK_DDD(DUK_DDDPRINT("ENDCATCH: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
-			
+
 					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
 					DUK_TVAL_SET_TVAL(&tv_tmp, tv1);

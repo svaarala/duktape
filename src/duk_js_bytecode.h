@@ -27,7 +27,7 @@
  *
  *  Note: macro naming is a bit misleading, e.g. "ABC" in macro name but
  *  the field layout is logically "CBA".
- */ 
+ */
 
 typedef duk_uint32_t duk_instr_t;
 
@@ -74,7 +74,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_BC_EXTRAOP_MIN          DUK_BC_A_MIN
 #define DUK_BC_EXTRAOP_MAX          DUK_BC_A_MAX
 
-#define DUK_OP_LDREG                0 
+#define DUK_OP_LDREG                0
 #define DUK_OP_STREG                1
 #define DUK_OP_LDCONST              2
 #define DUK_OP_LDINT                3

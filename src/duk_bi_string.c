@@ -320,7 +320,7 @@ duk_ret_t duk_bi_string_prototype_indexof_shared(duk_context *ctx) {
 	if (duk_is_nan(ctx, 1) && is_lastindexof) {
 		/* indexOf: NaN should cause pos to be zero.
 		 * lastIndexOf: NaN should cause pos to be +Infinity
-	 	 * (and later be clamped to len).
+		 * (and later be clamped to len).
 		 */
 		cpos = clen_this;
 	} else {

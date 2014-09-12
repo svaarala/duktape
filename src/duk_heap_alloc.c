@@ -351,7 +351,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 
 static int duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
-	
+
 	DUK_DD(DUK_DDPRINT("heap init: alloc heap thread"));
 	thr = duk_hthread_alloc(heap,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -637,7 +637,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	{
 		duk_small_uint_t i;
 	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
-        	        res->strs[i] = NULL;
+			res->strs[i] = NULL;
 	        }
 	}
 #endif
@@ -693,7 +693,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		duk_small_uint_t i;
 		DUK_ASSERT(res->st_size == DUK_STRTAB_INITIAL_SIZE);
 	        for (i = 0; i < DUK_STRTAB_INITIAL_SIZE; i++) {
-        	        res->st[i] = NULL;
+			res->st[i] = NULL;
 	        }
 	}
 #else

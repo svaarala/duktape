@@ -1057,7 +1057,7 @@ static void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flag
 
 	DUK_DDD(DUK_DDDPRINT("emit: op_flags=%04lx, a=%ld, b=%ld, c=%ld",
 	                     (unsigned long) op_flags, (long) a, (long) b, (long) c));
-	
+
 	/* We could rely on max temp/const checks: if they don't exceed BC
 	 * limit, nothing here can either (just asserts would be enough).
 	 * Currently we check for the limits, which provides additional
@@ -1532,7 +1532,7 @@ static void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 			if (DUK_DEC_OP(ins) != DUK_OP_JUMP) {
 				continue;
 			}
-	
+
 			target_pc1 = i + 1 + DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;
 			DUK_DDD(DUK_DDDPRINT("consider jump at pc %ld; target_pc=%ld", (long) i, (long) target_pc1));
 			DUK_ASSERT(target_pc1 >= 0);
@@ -2452,10 +2452,10 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 	reg_obj = DUK__ALLOCTEMP(comp_ctx);
 	duk__emit_extraop_b_c(comp_ctx,
-	                      DUK_EXTRAOP_NEWARR | DUK__EMIT_FLAG_B_IS_TARGET, 
+	                      DUK_EXTRAOP_NEWARR | DUK__EMIT_FLAG_B_IS_TARGET,
 	                      reg_obj,
 	                      0);  /* XXX: patch initial size afterwards? */
- 	temp_start = DUK__GETTEMP(comp_ctx);
+	temp_start = DUK__GETTEMP(comp_ctx);
 
 	/*
 	 *  Emit initializers in sets of maximum max_init_values.
@@ -2550,7 +2550,7 @@ static void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 			init_idx = start_idx + num_values;
 
 			/* num_values and temp_start reset at top of outer loop */
-		}	
+		}
 	}
 
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RBRACKET);
@@ -2707,7 +2707,7 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 			 *  a string constant) even for numeric keys (e.g. "{1:'foo'}").
 			 *  These could be emitted using e.g. LDINT, but that seems hardly
 			 *  worth the effort and would increase code size.
-			 */ 
+			 */
 
 			DUK_DDD(DUK_DDDPRINT("object literal inner loop, curr_token->t = %ld",
 			                     (long) comp_ctx->curr_token.t));
@@ -2734,7 +2734,7 @@ static void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 				}
 			}
 
-			/* advance to get one step of lookup */		
+			/* advance to get one step of lookup */
 			duk__advance(comp_ctx);
 
 			/* NOTE: "get" and "set" are not officially ReservedWords and the lexer
@@ -3620,7 +3620,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			}
 		} else if (left->t == DUK_IVAL_PROP) {
 			DUK_DDD(DUK_DDDPRINT("function call with property base"));
-			
+
 			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 0);  /* base */
 			duk__ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 1);  /* key */
 			duk__emit_a_b_c(comp_ctx,
@@ -4112,7 +4112,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 
 			reg_obj = duk__ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
 			rc_key = duk__ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
-	
+
 			if (args_op == DUK_OP_INVALID) {
 				rc_res = res->x1.regconst;
 			} else {
@@ -4158,7 +4158,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 
 			/* then evaluate RHS fully (its value becomes the expression value too) */
 			rc_res = duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
-	
+
 			duk__emit_extraop_only(comp_ctx,
 			                       DUK_EXTRAOP_INVLHS);
 
@@ -4247,7 +4247,7 @@ static void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_ival
 			reg_obj = duk__ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
 			rc_key = duk__ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_GETPROP, 
+			                DUK_OP_GETPROP,
 			                (duk_regconst_t) reg_res,
 			                (duk_regconst_t) reg_obj,
 			                rc_key);
@@ -4628,7 +4628,7 @@ static void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			break;
 		}
 		duk__advance(comp_ctx);
-	} 
+	}
 }
 
 static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_int_t pc_label_site) {
@@ -4664,7 +4664,7 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk
 	 *  See doc/compiler.txt for a detailed discussion of control flow
 	 *  issues, evaluation order issues, etc.
 	 */
-	
+
 	duk__advance(comp_ctx);  /* eat 'for' */
 	duk__advance_expect(comp_ctx, DUK_TOK_LPAREN);
 
@@ -4924,7 +4924,7 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk
 		 * INITENUM will creates a 'null' enumerator which works like an empty enumerator
 		 * (E5 Section 12.6.4, step 3).  Note that INITENUM requires the value to be in a
 		 * register (constant not allowed).
-	 	 */
+		 */
 
 		pc_l2 = duk__get_current_pc(comp_ctx);
 		reg_target = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);  /* Expression */
@@ -4976,7 +4976,7 @@ static void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk
 	DUK_DDD(DUK_DDDPRINT("end parsing a for/for-in statement"));
 	return;
 
- syntax_error:		
+ syntax_error:
 	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_FOR);
 }
 
@@ -5001,7 +5001,7 @@ static void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	 *    - Case selectors are expressions, not values, and may thus e.g. throw
 	 *      exceptions (which causes evaluation order concerns)
 	 *
-	 *    - Evaluation semantics of case selectors and default clause need to be 
+	 *    - Evaluation semantics of case selectors and default clause need to be
 	 *      carefully implemented to provide correct behavior even with case value
 	 *      side effects
 	 *
@@ -5827,7 +5827,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_boo
 		{
 			/* FunctionDeclaration: not strictly a statement but handled as such.
 			 *
-		 	 * O(depth^2) parse count for inner functions is handled by recording a
+			 * O(depth^2) parse count for inner functions is handled by recording a
 			 * lexer offset on the first compilation pass, so that the function can
 			 * be efficiently skipped on the second pass.  This is encapsulated into
 			 * duk__parse_func_like_fnum().
@@ -6062,7 +6062,7 @@ static void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_boo
 			               h_lab,
 			               pc_at_entry /*pc_label*/,
 			               label_id);
-	
+
 			/* a statement following a label cannot be a source element
 			 * (a function declaration).
 			 */
@@ -6304,7 +6304,7 @@ static void duk__parse_stmts(duk_compiler_ctx *comp_ctx, duk_bool_t allow_source
  *
  *  Some bindings in E5 are not configurable (= deletable) and almost all
  *  are mutable (writable).  Exceptions are:
- * 
+ *
  *    - The 'arguments' binding, established only if no shadowing argument
  *      or function declaration exists.  We handle 'arguments' creation
  *      and binding through an explicit slow path environment record.
@@ -6313,7 +6313,7 @@ static void duk__parse_stmts(duk_compiler_ctx *comp_ctx, duk_bool_t allow_source
  *      handled through an explicit slow path environment record.
  */
 
-/* XXX: add support for variables to not be register bound always, to 
+/* XXX: add support for variables to not be register bound always, to
  * handle cases with a very large number of variables?
  */
 
@@ -7113,7 +7113,7 @@ static duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bool_
 	/*
 	 *  Cleanup: restore original function, restore valstack state.
 	 */
-	
+
 	DUK_MEMCPY((void *) &comp_ctx->curr_func, (void *) &old_func, sizeof(duk_compiler_func));
 	duk_set_top(ctx, entry_top);
 
