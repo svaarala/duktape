@@ -90,6 +90,12 @@ def checkMixedIndent(line):
 
 	raise Exception('mixed space/tab indent (idx %d)' % idx)
 
+def checkFixme(line):
+	if not 'FIXME' in line:
+		return
+
+	raise Exception('FIXME on line')
+
 def processFile(filename, checkers):
 	f = open(filename, 'rb')
 
@@ -109,6 +115,7 @@ def main():
 	checkers.append(checkTrailingWhitespace)
 	checkers.append(checkCarriageReturns)
 	checkers.append(checkMixedIndent)
+	checkers.append(checkFixme)
 
 	for filename in sys.argv[1:]:
 		processFile(filename, checkers)
