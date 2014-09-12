@@ -12,8 +12,8 @@ such as:
 
 Some code conventions are checked by the ``make codepolicycheck`` target.
 
-Conventions
-===========
+Basic conventions
+=================
 
 Indentantion, naming, etc
 -------------------------
@@ -136,8 +136,8 @@ result to minimize error proneness::
    * similar reasons.
    */
 
-Variable declarations
----------------------
+Local variable declarations
+---------------------------
 
 C variables should only be declared in the beginning of the block.  Although
 this is usually not a portability concern, some older still compilers require
@@ -176,6 +176,54 @@ The fix is::
 
           x = 123;
           ...
+  }
+
+Other variable declarations
+---------------------------
+
+Use symbol visibility macros as appropriate, e.g.::
+
+  /* Header: declare internal variable visible across files. */
+  DUK_INTERNAL_DECL int duk_internal_foo;
+
+  /* Source: define the variable. */
+  DUK_INTERNAL int duk_internal_foo;
+
+Function declarations and definitions
+-------------------------------------
+
+For functions with a small number of arguments::
+
+  DUK_INTERNAL_DECL void foo(duk_context *ctx, duk_idx_t idx);
+
+In definition opening brace on same line::
+
+  DUK_INTERNAL void foo(duk_context *ctx, duk_idx_t idx) {
+          /* ... */
+  }
+
+If there are too many arguments to fit one line comfortably, symbol
+visibility macro (and other macros) on a separate line, arguments
+aligned with spaces::
+
+  DUK_INTERNAL_DECL
+  void foo(duk_context *ctx,
+           duk_idx_t idx,
+           duk_uint_t foo,
+           duk_uint_t bar,
+           duk_uint_t quux,
+           duk_uint_t baz);,
+
+Again opening brace on the same line::
+
+  DUK_INTERNAL
+  void foo(duk_context *ctx,
+           duk_idx_t idx,
+           duk_uint_t foo,
+           duk_uint_t bar,
+           duk_uint_t quux,
+           duk_uint_t baz) {
+          /* ... */
   }
 
 Function calls with many difficult-to-identify arguments
@@ -326,7 +374,7 @@ To achieve this:
 * Use explicit casts for all pointer conversions.
 
 Debug macros
-============
+------------
 
 Debug macros unfortunately need double wrapping to deal with lack of variadic
 macros on pre-C99 platforms::
@@ -340,6 +388,95 @@ platforms the outer macro allows a debug log write to be omitted entirely.
 If the log writes are not omitted, the workaround for lack of variadic
 macros causes a lot of warnings with some compilers.  With this wrapping,
 at least the non-debug build will be clean on non-C99 compilers.
+
+Symbol visibility
+-----------------
+
+There are several issues related to symbol visibility:
+
+* Minimality: Duktape should only expose the function and data symbols that
+  are used by calling programs.  This is a hygiene issue but also affects
+  compiler optimization: if a function is internal, it doesn't need to conform
+  to a rigid ABI which allows some optimizations.  See e.g.
+  https://gcc.gnu.org/wiki/Visibility.
+
+* Single file vs. separate files: symbols need to be declared differently
+  depending on whether Duktape is compiled from a single file source or
+  multiple source files.
+
+* Compiling Duktape vs. compiling application: some compiler attributes need
+  to be set differently when compiling Duktape vs. compiling the application
+  (see MSVC below).
+
+* Compiler dependency: controlling link visibility of non-static symbols
+  requires compiler specific mechanisms.
+
+All Duktape symbols are declared with one of the following prefix macros:
+
+* ``DUK_EXTERNAL_DECL`` and ``DUK_EXTERNAL``: symbol is exposed to calling
+  application.  May require compiler specific link specification.
+
+* ``DUK_INTERNAL_DECL`` and ``DUK_INTERNAL``: symbol is internal to Duktape,
+  but may reside in another compilation unit.  May require compiler specific
+  link specification.
+
+* ``DUK_LOCAL_DECL`` and ``DUK_LOCAL``: symbol is file local.  This maps to
+  ``static`` and currently requires no compiler specific treatment.
+
+As a concrete example, this is how these defines work with GCC 4.x.x.
+For function declaration in header::
+
+    /* Header file */
+    DUK_EXTERNAL_DECL void foo(void);
+    DUK_INTERNAL_DECL void foo(void);
+    DUK_LOCAL_DECL void foo(void);
+
+    /* Single file */
+    __attribute__ ((visibility("default"))) extern void foo(void);
+    static void foo(void);
+    static void foo(void);
+
+    /* Separate files */
+    __attribute__ ((visibility("default"))) extern void foo(void);
+    __attribute__ ((visibility("hidden"))) extern void foo(void);
+    static void foo(void);
+
+For the actual function declaration::
+
+    /* Source file */
+    DUK_EXTERNAL void foo(void) { ... }
+    DUK_INTERNAL void foo(void) { ... }
+    DUK_LOCAL void foo(void) { ... }
+
+    /* Single file */
+    __attribute__ ((visibility("default"))) void foo(void) { ... }
+    static void foo(void) { ... }
+    static void foo(void) { ... }
+
+    /* Separate files */
+    __attribute__ ((visibility("default"))) void foo(void) { ... }
+    __attribute__ ((visibility("hidden"))) void foo(void) { ... }
+    static void foo(void) { ... }
+
+As seen from this example, different outcomes are needed for forward
+declaring a symbol and actually defining the symbol.  For now, the same
+macros work for function and data symbols.
+
+For MSVC, DLL import/export attributes are needed to build as a DLL.
+When compiling Duktape public symbols should be declared as "dllexport"
+in both header files and the actual declarations.  When compiling a
+user application, the same header symbols must be declared as "dllimport".
+The compilation context is available through ``DUK_COMPILING_DUKTAPE``.
+For more on MSVC dllimport/dllexport, see:
+
+* http://msdn.microsoft.com/en-us/library/y4h7bcy6.aspx
+
+As usual, ``duk_features.h.in`` defines these visibility symbols as
+appropriate, taking into account both the compiler and whether Duktape
+is being compiled from a single or multiple files.
+
+Missing a visibility macro is not critical on GCC: it will just pollute
+the symbol table.  On MSVC it can make break a DLL build of Duktape.
 
 Shared strings
 ==============
