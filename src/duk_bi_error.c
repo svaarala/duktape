@@ -18,7 +18,7 @@ duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	/* same for both error and each subclass like TypeError */
 	duk_uint_t flags_and_class = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
-	
+
 	DUK_UNREF(thr);
 
 	duk_push_object_helper(ctx, flags_and_class, bidx_prototype);

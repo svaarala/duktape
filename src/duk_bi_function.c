@@ -195,7 +195,7 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 2 + len);
 
 	/* [ func thisArg arg1 ... argN ] */
-	
+
 	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%ld",
 	                     (duk_tval *) duk_get_tval(ctx, 0),
 	                     (duk_tval *) duk_get_tval(ctx, 1),
@@ -234,7 +234,7 @@ duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	                     (duk_tval *) duk_get_tval(ctx, 1),
 	                     (long) (nargs - 1),
 	                     (long) duk_get_top(ctx)));
-	duk_call_method(ctx, nargs - 1);	
+	duk_call_method(ctx, nargs - 1);
 	return 1;
 }
 

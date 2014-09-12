@@ -98,9 +98,9 @@
  */
 
 #if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             1000  /* assuming 0.5 kB between calls, about 500kB of stack */ 
+#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             1000  /* assuming 0.5 kB between calls, about 500kB of stack */
 #else
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */ 
+#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */
 #endif
 
 /* Mark-and-sweep C recursion depth for marking phase; if reached,
@@ -209,7 +209,7 @@
  *
  *    - DUK_FREE() is required to ignore NULL and any other possible return
  *      value of a zero-sized alloc/realloc (same as ANSI C free()).
- * 
+ *
  *    - There is no DUK_REALLOC_ZEROED (and checked variant) because we don't
  *      assume to know the old size.  Caller must zero the reallocated memory.
  *

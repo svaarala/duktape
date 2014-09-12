@@ -104,10 +104,10 @@ static void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint3
 	DUK_ASSERT(size > 0);
 
 	i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(h), size);
-	step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(h)); 
+	step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(h));
 	for (;;) {
 		duk_hstring *e;
-		
+
 		e = entries[i];
 		if (e == NULL) {
 			DUK_DDD(DUK_DDDPRINT("insert hit (null): %ld", (long) i));
@@ -306,7 +306,7 @@ static duk_bool_t duk__resize_strtab(duk_heap *heap) {
 
 	/* rehash even if old and new sizes are the same to get rid of
 	 * DELETED entries.
-	*/ 
+	*/
 
 	ret = duk__resize_strtab_raw(heap, new_size);
 

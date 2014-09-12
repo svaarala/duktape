@@ -782,7 +782,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 	const char *p = format;
 	const char *p_end = p + DUK_STRLEN(format);
 	duk_int_t retval;
-	
+
 	DUK_MEMZERO(&fb, sizeof(fb));
 	fb.buffer = (duk_uint8_t *) str;
 	fb.length = size;
@@ -995,7 +995,7 @@ void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr,
 		ch = fptr[fptr_size - 1 - i];
 #endif
 		p += DUK_SNPRINTF((char *) p, left, "%02lx", (unsigned long) ch);
-	}	
+	}
 }
 
 #endif  /* DUK_USE_DEBUG */

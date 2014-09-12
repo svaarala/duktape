@@ -447,7 +447,7 @@ static void duk__realloc_props(duk_hthread *thr,
 	DUK_ASSERT(obj->p != NULL || (obj->e_size == 0 && obj->a_size == 0));
 	DUK_ASSERT(new_h_size == 0 || new_h_size >= new_e_size);  /* required to guarantee success of rehashing,
 	                                                           * intentionally use unadjusted new_e_size
-	                                                           */	
+	                                                           */
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
@@ -1232,7 +1232,7 @@ static duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, d
 /*
  *  Object internal value
  *
- *  Returned value is guaranteed to be reachable / incref'd, caller does not need 
+ *  Returned value is guaranteed to be reachable / incref'd, caller does not need
  *  to incref OR decref.  No proxies or accessors are invoked, no prototype walk.
  */
 
@@ -1327,7 +1327,7 @@ static duk_bool_t duk__lookup_arguments_map(duk_hthread *thr,
 	map = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(map != NULL);
 	duk_pop(ctx);  /* map is reachable through obj */
-	
+
 	if (!duk__get_own_property_desc(thr, map, key, temp_desc, DUK__DESC_FLAG_PUSH_VALUE)) {
 		DUK_DDD(DUK_DDDPRINT("-> 'map' exists, but key not in map"));
 		return 0;
@@ -1454,7 +1454,7 @@ static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *o
 	map = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(map != NULL);
 	duk_pop(ctx);  /* map is reachable through obj */
-	
+
 	DUK_DDD(DUK_DDDPRINT("-> have 'map', delete key %!O from map (if exists)); ignore result",
 	                     (duk_heaphdr *) key));
 
@@ -1602,7 +1602,7 @@ static duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *
 
 			DUK_DDD(DUK_DDDPRINT("array index exists"));
 
- 			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
+			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
 			DUK_ASSERT(h_val);
 			if (arr_idx < DUK_HSTRING_GET_CHARLEN(h_val)) {
 				DUK_DDD(DUK_DDDPRINT("-> found, array index inside string"));
@@ -1624,7 +1624,7 @@ static duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *
 
 			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
- 			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
+			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
 			DUK_ASSERT(h_val != NULL);
 			if (flags & DUK__DESC_FLAG_PUSH_VALUE) {
 				duk_push_uint(ctx, (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h_val));
@@ -3485,7 +3485,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 	/*
 	 *  Possible pending array length update, which must only be done
 	 *  if the actual entry write succeeded.
-	 */	
+	 */
 
 	if (new_array_length > 0) {
 		/*
@@ -3582,7 +3582,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
-	
+
  fail_not_writable:
 	DUK_DDD(DUK_DDDPRINT("result: error, not writable"));
 	if (throw_flag) {
@@ -3712,7 +3712,7 @@ duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstri
 	}
 
 	DUK_UNREACHABLE();
-	
+
  success:
 	/*
 	 *  Argument exotic [[Delete]] behavior (E5 Section 10.6) is
@@ -4016,7 +4016,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
 
 			DUK_ASSERT(arr_idx < obj->a_size);
 			tv1 = DUK_HOBJECT_A_GET_VALUE_PTR(obj, arr_idx);
-			goto write_value;			
+			goto write_value;
 		}
 	}
 
@@ -4539,7 +4539,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("exotic array behavior for 'length', but no value in descriptor -> normal behavior"));
 			goto skip_array_exotic;
 		}
-	
+
 		DUK_DDD(DUK_DDDPRINT("exotic array behavior for 'length', value present in descriptor -> exotic behavior"));
 
 		/*
@@ -4761,7 +4761,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	if (has_value) {
 		duk_tval *tmp1;
 		duk_tval *tmp2;
-	
+
 		/* attempt to change from accessor to data property */
 		if (curr.flags & DUK_PROPDESC_FLAG_ACCESSOR) {
 			goto need_check;
@@ -5302,7 +5302,7 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 		/* [hobject props descriptors enum(props) key desc] */
 
 		duk__normalize_property_descriptor(ctx);
-		
+
 		/* [hobject props descriptors enum(props) key desc_norm] */
 
 		duk_put_prop(ctx, 2);
@@ -5368,7 +5368,7 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 	/* [hobject props descriptors enum(descriptors) defineProperty ] */
 
 	duk_dup(ctx, 0);
-	
+
 	/* [hobject props descriptors enum(descriptors) defineProperty hobject] */
 
 	return 1;
@@ -5400,7 +5400,7 @@ duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t 
 
 /*
  *  Object.seal() and Object.freeze()  (E5 Sections 15.2.3.8 and 15.2.3.9)
- * 
+ *
  *  Since the algorithms are similar, a helper provides both functions.
  *  Freezing is essentially sealing + making plain properties non-writable.
  *

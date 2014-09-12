@@ -324,7 +324,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 			                   (void *) ptr_pre, (void *) ptr_post));
 		}
 #endif
-	
+
 		/* Note: key issue here is to re-lookup the base pointer on every attempt.
 		 * The pointer being reallocated may change after every mark-and-sweep.
 		 */

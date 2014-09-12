@@ -70,7 +70,7 @@ typedef struct duk_hbuffer_dynamic duk_hbuffer_dynamic;
 typedef struct duk_propaccessor duk_propaccessor;
 typedef union duk_propvalue duk_propvalue;
 typedef struct duk_propdesc duk_propdesc;
- 
+
 typedef struct duk_heap duk_heap;
 
 typedef struct duk_activation duk_activation;
@@ -96,5 +96,5 @@ typedef struct duk_compiler_ctx duk_compiler_ctx;
 
 typedef struct duk_re_matcher_ctx duk_re_matcher_ctx;
 typedef struct duk_re_compiler_ctx duk_re_compiler_ctx;
-	
+
 #endif  /* DUK_FORWDECL_H_INCLUDED */

@@ -372,7 +372,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 				 *  Simple atom
 				 *
 				 *  If atom_char_length is zero, we'll have unbounded execution time for e.g.
-			 	 *  /()*x/.exec('x').  We can't just skip the match because it might have some
+				 *  /()*x/.exec('x').  We can't just skip the match because it might have some
 				 *  side effects (for instance, if we allowed captures in simple atoms, the
 				 *  capture needs to happen).  The simple solution below is to force the
 				 *  quantifier to match at most once, since the additional matches have no effect.
@@ -1014,7 +1014,7 @@ void duk_regexp_compile(duk_hthread *thr) {
  *  Input stack:  [ escaped_source bytecode ]  (both as strings)
  *  Output stack: [ RegExp ]
  */
- 
+
 void duk_regexp_create_instance(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *h;

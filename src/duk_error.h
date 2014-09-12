@@ -31,7 +31,7 @@
  *  Normal error is thrown with a longjmp() through the current setjmp()
  *  catchpoint record in the duk_heap.  The 'curr_thread' of the duk_heap
  *  identifies the throwing thread.
- * 
+ *
  *  Error formatting is not always necessary but there are no separate calls
  *  (to minimize code size).  Error object creation will consume a considerable
  *  amount of time, compared to which formatting is probably trivial.  Note

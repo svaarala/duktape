@@ -1183,7 +1183,7 @@ void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size
 	/* Note: here we must be wary of the fact that a data pointer may
 	 * be a NULL for a zero-size buffer.
 	 */
-	
+
 	tv = duk_get_tval(ctx, index);
 	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
@@ -3000,7 +3000,7 @@ duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_int_t n
 	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
-	
+
 	return duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
@@ -3014,7 +3014,7 @@ void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, duk_int
 	        DUK_HOBJECT_FLAG_STRICT |
 	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
-	
+
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
@@ -3027,7 +3027,7 @@ void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function f
 	        DUK_HOBJECT_FLAG_STRICT |
 	        DUK_HOBJECT_FLAG_NOTAIL |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
-	
+
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 }
 
@@ -3223,7 +3223,7 @@ void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	 * refzero queueing but no refzero algorithm run (= no pointer
 	 * instability), inline code.
 	 */
-	
+
 #ifdef DUK_USE_REFERENCE_COUNTING
 	while (count > 0) {
 		duk_tval tv_tmp;

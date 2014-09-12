@@ -181,7 +181,7 @@ static void duk__mark_tval(duk_heap *heap, duk_tval *tv) {
 		return;
 	}
 	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
-		duk__mark_heaphdr(heap, DUK_TVAL_GET_HEAPHDR(tv)); 
+		duk__mark_heaphdr(heap, DUK_TVAL_GET_HEAPHDR(tv));
 	}
 }
 
@@ -747,7 +747,7 @@ static void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaph
 		DUK_DDD(DUK_DDDPRINT("mark-and-sweep compact: %p", (void *) curr));
 
 		if (DUK_HEAPHDR_GET_TYPE(curr) != DUK_HTYPE_OBJECT) {
-			goto next;	
+			goto next;
 		}
 		obj = (duk_hobject *) curr;
 

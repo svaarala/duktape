@@ -30,7 +30,7 @@ duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t le
 	 *  case that all long strings have certain offset ranges that are never
 	 *  sampled.
 	 */
-	
+
 	/* note: mixing len into seed improves hashing when skipping */
 	duk_uint32_t str_seed = heap->hash_seed ^ len;
 

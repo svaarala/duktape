@@ -677,7 +677,7 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 
 	/* move pivot to its final place */
 	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
-	duk__array_sort_swap(ctx, lo, r);	
+	duk__array_sort_swap(ctx, lo, r);
 
 #if defined(DUK_USE_DDDPRINT)
 	duk__debuglog_qsort_state(ctx, lo, hi, r);

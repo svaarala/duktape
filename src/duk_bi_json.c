@@ -1080,7 +1080,7 @@ static void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_step
 
 		/* The new indent string is left at value stack top, and will
 		 * be popped by the shared exit handler.
-	 	 */
+		 */
 	} else {
 		DUK_ASSERT(js_ctx->h_indent == NULL);
 	}
@@ -1981,7 +1981,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	                     (duk_heaphdr *) js_ctx->h_gap,
 	                     (duk_heaphdr *) js_ctx->h_indent,
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
-	
+
 	/* serialize the wrapper with empty string key */
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);

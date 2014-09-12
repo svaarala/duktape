@@ -103,7 +103,7 @@ duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_uint8_t *out) 
 		 *  See: http://en.wikipedia.org/wiki/Surrogate_pair
 		 *
 		 *  20-bit codepoint, 10 bits (A and B) per surrogate pair:
-		 * 
+		 *
 		 *    x = 0b00000000 0000AAAA AAAAAABB BBBBBBBB
 		 *  sp1 = 0b110110AA AAAAAAAA  (0xd800 + ((x >> 10) & 0x3ff))
 		 *  sp2 = 0b110111BB BBBBBBBB  (0xdc00 + (x & 0x3ff))
@@ -333,7 +333,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *  It also specifies any Unicode category 'Zs' characters as white
 	 *  space.  These can be extracted with the "src/extract_chars.py" script.
 	 *  Current result:
-	 *  
+	 *
 	 *    RAW OUTPUT:
 	 *    ===========
 	 *    0020;SPACE;Zs;0;WS;;;;;N;;;;;
@@ -354,7 +354,7 @@ duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *    202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
 	 *    205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
 	 *    3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
-	 *  
+	 *
 	 *    RANGES:
 	 *    =======
 	 *    0x0020
@@ -646,7 +646,7 @@ duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
  *  is very slow because it runs through the conversion data in a linear
  *  fashion to save space (which is why ASCII characters have a special
  *  fast path before arriving here).
- * 
+ *
  *  The particular bit counts etc have been determined experimentally to
  *  be small but still sufficient, and must match the Python script
  *  (src/extract_caseconv.py).

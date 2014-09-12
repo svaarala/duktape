@@ -107,7 +107,7 @@ static void duk__bi_print(const char *name, duk__bigint *x) {
 
 #ifdef DUK_USE_ASSERTIONS
 static duk_small_int_t duk__bi_is_valid(duk__bigint *x) {
-	return (duk_small_int_t) 
+	return (duk_small_int_t)
 	       ( ((x->n >= 0) && (x->n <= DUK__BI_MAX_PARTS)) /* is valid size */ &&
 	         ((x->n == 0) || (x->v[x->n - 1] != 0)) /* is normalized */ );
 }
@@ -1300,7 +1300,7 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 			dig = nc_ctx->digits[k - pos];
 			DUK_ASSERT(dig >= 0 && dig < nc_ctx->B);
 			*q++ = (duk_uint8_t) DUK__DIGITCHAR(dig);
-		} 
+		}
 
 		pos--;
 	}
@@ -1714,7 +1714,6 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
 			 */
 			roundpos = -digits;  /* absolute position for digit considered for rounding */
 			roundpos = nc_ctx->k - roundpos;
-			
 		} else {
 			roundpos = digits;
 		}
@@ -1918,7 +1917,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 	 *     Parsing whole part      dig_frac < 0 AND dig_exp < 0
 	 *     Parsing fraction part   dig_frac >= 0 AND dig_exp < 0
 	 *     Parsing exponent part   dig_exp >= 0   (dig_frac may be < 0 or >= 0)
-	 * 
+	 *
 	 *  Note: in case we hit an implementation limit (like exponent range),
 	 *  we should throw an error, NOT return NaN or Infinity.  Even with
 	 *  very large exponent (or significand) values the final result may be
@@ -2052,7 +2051,7 @@ void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t
 				 */
 				exp_adj++;
 			}
-	
+
 			if (dig_frac >= 0) {
 				dig_frac++;
 				exp_adj--;

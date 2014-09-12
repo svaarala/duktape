@@ -108,7 +108,7 @@ static const duk_uint16_t duk__closure_copy_proplist[] = {
 	DUK_STRIDX_FILE_NAME,
 	DUK_STRIDX_INT_SOURCE
 };
-	
+
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
@@ -230,7 +230,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 			/* -> [ ... closure template env ] */
 			(void) duk_push_object_helper_proto(ctx,
-	   		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
 			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 			                                    proto);
 
@@ -442,7 +442,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	/*
 	 *  Finish
 	 */
-	
+
 	/* [ ... closure template ] */
 
 	DUK_DDD(DUK_DDDPRINT("created function instance: template=%!iT -> closure=%!iT",
@@ -1314,7 +1314,7 @@ static void duk__putvar_helper(duk_hthread *thr,
 
 			DUK_ASSERT(ref.this_binding == NULL);  /* always for register bindings */
 
- 			tv_val = ref.value;
+			tv_val = ref.value;
 			DUK_ASSERT(tv_val != NULL);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv_val);
 			DUK_TVAL_SET_TVAL(tv_val, val);
@@ -1334,7 +1334,7 @@ static void duk__putvar_helper(duk_hthread *thr,
 
 		return;
 	}
-	
+
 	/*
 	 *  Not found: write to global object (non-strict) or ReferenceError
 	 *  (strict); see E5 Section 8.7.2, step 3.
@@ -1443,7 +1443,7 @@ duk_bool_t duk_js_delvar_envrec(duk_hthread *thr,
                                 duk_hstring *name) {
 	return duk__delvar_helper(thr, env, NULL, name);
 }
-	
+
 duk_bool_t duk_js_delvar_activation(duk_hthread *thr,
                                     duk_activation *act,
                                     duk_hstring *name) {
