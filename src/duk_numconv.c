@@ -1389,7 +1389,7 @@ static void duk__dragon4_double_to_ctx(duk__numconv_stringify_ctx *nc_ctx, duk_d
 	nc_ctx->e = expt;
 }
 
-void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t *x) {
+static void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t *x) {
 	duk_double_union u;
 	duk_small_int_t expt;
 	duk_small_int_t i;

@@ -1607,7 +1607,7 @@ duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index) {
 
 typedef duk_double_t (*duk__toint_coercer)(duk_hthread *thr, duk_tval *tv);
 
-duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index, duk__toint_coercer coerce_func) {
+static duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index, duk__toint_coercer coerce_func) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_tmp;
