@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: required changes to allow sandboxes with acccess to buffer values but not internal properties?
+desc: |-
+  Basically, property operations need to know whether they're executing as a
+  result of user operations from Ecmascript code, or from Duktape's internal
+  code (such as looking up a finalizer).
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-11 21:20:29.036063 Z
+references: []
+
+id: 27f2d28fd323dd2f715f5a071404acb3d1c0e3e1
+log_events: 
+- - 2014-09-11 21:20:29.672980 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
