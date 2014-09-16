@@ -7,7 +7,7 @@ desc: |-
   support - other than special casing for the compiler.
 type: :task
 component: duk
-release: v0.12
+release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-07-10 23:01:41.652032 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-16 20:09:08.156833 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
   - ""

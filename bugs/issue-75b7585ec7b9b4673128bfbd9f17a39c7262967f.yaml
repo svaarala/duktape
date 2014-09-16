@@ -3,7 +3,7 @@ title: cygwin compile duk_bi_date.c:364 strptime() undeclared
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-08-14 07:28:23.635344 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-16 20:09:14.197552 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v0.12
   - ""
