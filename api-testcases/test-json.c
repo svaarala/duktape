@@ -15,6 +15,8 @@ top after: 3
 JSON decoded meaningOfLife is: 42
 top after: 0
 ==> rc=0, result='undefined'
+*** test_decode_error (duk_safe_call)
+==> rc=1, result='SyntaxError: invalid json'
 ===*/
 
 static duk_ret_t test_encode(duk_context *ctx) {
@@ -63,10 +65,18 @@ static duk_ret_t test_decode_apidoc(duk_context *ctx) {
 	return 0;
 }
 
+static duk_ret_t test_decode_error(duk_context *ctx) {
+	duk_push_string(ctx, "{\"meaningOfLife\":,42}");
+	duk_json_decode(ctx, -1);
+	printf("top after: %ld\n", (long) duk_get_top(ctx));
+	duk_set_top(ctx, 0);
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_encode);
 	TEST_SAFE_CALL(test_encode_apidoc);
 	TEST_SAFE_CALL(test_decode);
 	TEST_SAFE_CALL(test_decode_apidoc);
-	/* FIXME: test decode error */
+	TEST_SAFE_CALL(test_decode_error);
 }

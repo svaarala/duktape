@@ -2,8 +2,8 @@
 *** test_1 (duk_safe_call)
 string: foo (7)
 string: foo
-string:  (0)
-string: 
+string: (0)
+string:
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: not string'
@@ -12,6 +12,14 @@ string:
 *** test_4 (duk_safe_call)
 ==> rc=1, result='TypeError: not string'
 ===*/
+
+static void dump_string(const char *p) {
+	printf("string:%s%s\n", (strlen(p) == 0 ? "" : " "), p);
+}
+
+static void dump_string_size(const char *p, duk_size_t sz) {
+	printf("string:%s%s (%ld)\n", (strlen(p) == 0 ? "" : " "), p, (long) sz);
+}
 
 static duk_ret_t test_1(duk_context *ctx) {
 	const char *p;
@@ -23,19 +31,19 @@ static duk_ret_t test_1(duk_context *ctx) {
 
 	sz = (duk_size_t) 0xdeadbeef;
 	p = duk_require_lstring(ctx, 0, &sz);
-	printf("string: %s (%ld)\n", p, (long) sz);
+	dump_string_size(p, sz);
 
 	sz = (duk_size_t) 0xdeadbeef;
 	p = duk_require_lstring(ctx, 0, NULL);
-	printf("string: %s\n", p);
+	dump_string(p);
 
 	sz = (duk_size_t) 0xdeadbeef;
 	p = duk_require_lstring(ctx, 1, &sz);
-	printf("string: %s (%ld)\n", p, (long) sz);
+	dump_string_size(p, sz);
 
 	sz = (duk_size_t) 0xdeadbeef;
 	p = duk_require_lstring(ctx, 1, NULL);
-	printf("string: %s\n", p);
+	dump_string(p);
 	return 0;
 }
 
