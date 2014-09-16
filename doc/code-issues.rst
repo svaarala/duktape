@@ -10,6 +10,8 @@ such as:
 * Specific platforms and compilers
 * Size and performance optimization issues
 
+Some code conventions are checked by the ``make codepolicycheck`` target.
+
 Conventions
 ===========
 
