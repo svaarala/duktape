@@ -47,7 +47,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 	 *  to avoid further trouble.
 	 */
 
-	/* FIXME: if attempt to push beyond allocated valstack, this double fault
+	/* XXX: if attempt to push beyond allocated valstack, this double fault
 	 * handling fails miserably.  We should really write the double error
 	 * directly to thr->heap->lj.value1 and avoid valstack use entirely.
 	 */

@@ -643,7 +643,17 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, d
 }
 
 static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
+	duk_activation *act;
+
 	/* no callstack changes, no value stack changes */
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->callstack_top >= 1);
+
+	act = thr->callstack + thr->callstack_top - 1;
+
+	DUK_ASSERT(act->func != NULL);
+	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(act->func));
 
 	/* +0 = break, +1 = continue */
 	(thr->callstack + thr->callstack_top - 1)->pc =
@@ -651,6 +661,10 @@ static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 
 	duk_hthread_catchstack_unwind(thr, cat_idx + 1);  /* keep label catcher */
 	/* no need to unwind callstack */
+
+	/* valstack should not need changes */
+	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) ==
+	           (duk_size_t) ((duk_hcompiledfunction *) act->func)->nregs);
 }
 
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
@@ -1108,8 +1122,6 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 				duk__handle_label(thr,
 				                  cat - thr->catchstack);
 
-				/* FIXME: reset valstack to 'nregs' (or assert it) */
-
 				DUK_DD(DUK_DDPRINT("-> break/continue caught by a label catcher (in the same function), restart execution"));
 				retval = DUK__LONGJMP_RESTART;
 				goto wipe_and_return;
@@ -1172,8 +1184,6 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 				duk__handle_catch_or_finally(thr,
 				                             cat - thr->catchstack,
 				                             1); /* is_finally */
-
-				/* FIXME: reset valstack to 'nregs' (or assert it) */
 
 				DUK_DD(DUK_DDPRINT("-> throw caught by a 'finally' clause, restart execution"));
 				retval = DUK__LONGJMP_RESTART;
