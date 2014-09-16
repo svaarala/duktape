@@ -656,8 +656,8 @@ static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(act->func));
 
 	/* +0 = break, +1 = continue */
-	(thr->callstack + thr->callstack_top - 1)->pc =
-		thr->catchstack[cat_idx].pc_base + (thr->heap->lj.type == DUK_LJ_TYPE_CONTINUE ? 1 : 0);
+	act->pc = thr->catchstack[cat_idx].pc_base + (thr->heap->lj.type == DUK_LJ_TYPE_CONTINUE ? 1 : 0);
+	act = NULL;  /* invalidated */
 
 	duk_hthread_catchstack_unwind(thr, cat_idx + 1);  /* keep label catcher */
 	/* no need to unwind callstack */
