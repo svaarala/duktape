@@ -787,7 +787,7 @@ dist-site:	tidy-site site
 
 .PHONY: codepolicycheck
 codepolicycheck:
-	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in
+	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in api-testcases/*.c
 
 .PHONY: big-git-files
 big-git-files:
