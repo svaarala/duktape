@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: remove duk_to_defaultvalue() from public api?"
+desc: ""
+type: :task
+component: duk
+release: 
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-16 20:12:12.991144 Z
+references: []
+
+id: 2b7130a05d0f1a684bb55e5d458478def89d3fc2
+log_events: 
+- - 2014-09-16 20:12:13.204369 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
