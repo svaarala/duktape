@@ -9,7 +9,7 @@ duk_bool_t duk_get_boolean(duk_context *ctx, duk_idx_t index);
 the value.  Returns 1 if the value is <code>true</code>, 0 if the value is
 <code>false</code>, not a boolean, or the index is invalid.</p>
 
-<p>Note that the value is not coerced, so a "truthy" Ecmascript value
+<p>Note that the value is not coerced, so even a "truthy" Ecmascript value
 (like a non-empty string) will be treated as false.  If you want to coerce
 the value, use <code><a href="#duk_to_boolean">duk_to_boolean()</a></code>.</p>
 
@@ -20,8 +20,3 @@ if (duk_get_boolean(ctx, -3)) {
 
 =tags
 stack
-
-=fixme
-An API primitive which coerces but doesn't modify value?  This would be
-closest to ordinary Ecmascript use.  The current behavior comes from the
-idea that duk_get_xxx() calls do not coerce anything.

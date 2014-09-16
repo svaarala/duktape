@@ -16,6 +16,3 @@ if (duk_is_strict_call(ctx)) {
 
 =tags
 function
-
-=fixme
-Necessary, especially now that API strictness is the default.

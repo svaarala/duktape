@@ -30,6 +30,3 @@ string
 
 =seealso
 duk_decode_string
-
-=fixme
-Currently implemented.  Necessary?

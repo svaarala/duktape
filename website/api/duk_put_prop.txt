@@ -71,6 +71,3 @@ property
 =seealso
 duk_put_prop_string
 duk_put_prop_index
-
-=fixme
-Return code is unnecessary now that API strictness is the default.

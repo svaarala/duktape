@@ -28,6 +28,3 @@ compare
 
 =seealso
 duk_strict_equals
-
-=fixme
-Currently buffer equality does not cause buffer contents to be compared.

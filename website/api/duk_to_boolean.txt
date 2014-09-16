@@ -23,7 +23,3 @@ if (duk_to_boolean(ctx, -3)) {
 
 =tags
 stack
-
-=fixme
-Describe coercion rules for custom types in a central location and just link
-there?

@@ -23,6 +23,3 @@ string
 
 =seealso
 duk_map_string
-
-=fixme
-Currently implemented.  Necessary?

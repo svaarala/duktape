@@ -44,9 +44,3 @@ duk_pop_2(ctx);
 =tags
 variable
 omit
-
-=fixme
-Although Ecmascript semantics always require a ReferenceError for
-unresolvable identifiers, it might fit the API better to return zero
-if identifier is not found and non-zero if found.  This would match
-the property access API.  Incomplete.

@@ -25,9 +25,3 @@ if (duk_is_string(ctx, -3)) {
 
 =tags
 stack
-
-=fixme
-Handling of object length is a bit curious as it is not clamped or
-checked against the size_t range.  The 32-bit unsigned range comes
-from the fact that Ecmascript semantics for array lengths are defined
-for 32-bit unsigned integer lengths (E5).  Explain this here?

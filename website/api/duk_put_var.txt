@@ -31,8 +31,3 @@ FIXME
 =tags
 variable
 omit
-
-=fixme
-There could be a return value indicating whether the put failed.  This is
-not relevant in strict mode, but in non-strict mode a variable put can
-silently fail.  Incomplete.
