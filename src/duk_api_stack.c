@@ -315,6 +315,9 @@ void duk_set_top(duk_context *ctx, duk_idx_t index) {
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 			DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+			/* XXX: fast primitive to set a bunch of values to UNDEFINED_UNUSED */
+
 		}
 	}
 	return;
@@ -869,20 +872,27 @@ void duk_remove(duk_context *ctx, duk_idx_t index) {
  *  Stack slice primitives
  */
 
-void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count, duk_bool_t is_copy) {
+	duk_hthread *to_thr = (duk_hthread *) to_ctx;
 	duk_hthread *from_thr = (duk_hthread *) from_ctx;
 	void *src;
 	duk_size_t nbytes;
 	duk_tval *p;
+	duk_tval *q;
 
-	DUK_ASSERT(ctx != NULL);
+	/* XXX: several pointer comparison issues here */
+
+	DUK_ASSERT(to_ctx != NULL);
 	DUK_ASSERT(from_ctx != NULL);
 
+	if (to_ctx == from_ctx) {
+		DUK_ERROR(to_thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CONTEXT);
+		return;
+	}
 	if ((count < 0) ||
-	    (count > (duk_idx_t) thr->valstack_max)) {
+	    (count > (duk_idx_t) to_thr->valstack_max)) {
 		/* Maximum value check ensures 'nbytes' won't wrap below. */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
+		DUK_ERROR(to_thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
 		return;
 	}
 
@@ -890,25 +900,44 @@ void duk_xmove(duk_context *ctx, duk_context *from_ctx, duk_idx_t count) {
 	if (nbytes == 0) {
 		return;
 	}
-	DUK_ASSERT(thr->valstack_top <= thr->valstack_end);
-	if ((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack_top) < nbytes) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+	DUK_ASSERT(to_thr->valstack_top <= to_thr->valstack_end);
+	if ((duk_size_t) ((duk_uint8_t *) to_thr->valstack_end - (duk_uint8_t *) to_thr->valstack_top) < nbytes) {
+		DUK_ERROR(to_thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
 	src = (void *) ((duk_uint8_t *) from_thr->valstack_top - nbytes);
 	if (src < (void *) from_thr->valstack_bottom) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_SRC_STACK_NOT_ENOUGH);
+		DUK_ERROR(to_thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
 	}
 
-	/* copy values (no overlap even if ctx == from_ctx) */
+	/* copy values (no overlap even if to_ctx == from_ctx; that's not
+	 * allowed now anyway)
+	 */
 	DUK_ASSERT(nbytes > 0);
-	DUK_MEMCPY((void *) thr->valstack_top, src, nbytes);
+	DUK_MEMCPY((void *) to_thr->valstack_top, src, nbytes);
 
-	/* incref them */
-	p = thr->valstack_top;
-	thr->valstack_top = (duk_tval *) (((duk_uint8_t *) thr->valstack_top) + nbytes);
-	while (p < thr->valstack_top) {
-		DUK_TVAL_INCREF(thr, p);  /* no side effects */
-		p++;
+	p = to_thr->valstack_top;
+	to_thr->valstack_top = (duk_tval *) (((duk_uint8_t *) p) + nbytes);
+
+	if (is_copy) {
+		/* incref copies, keep originals */
+		q = to_thr->valstack_top;
+		while (p < q) {
+			DUK_TVAL_INCREF(to_thr, p);  /* no side effects */
+			p++;
+		}
+	} else {
+		/* no net refcount change */
+		p = from_thr->valstack_top;
+		q = (duk_tval *) (((duk_uint8_t *) p) - nbytes);
+		from_thr->valstack_top = q;
+
+		/* elements above stack top are kept UNUSED */
+		while (p > q) {
+			p--;
+			DUK_TVAL_SET_UNDEFINED_UNUSED(p);
+
+			/* XXX: fast primitive to set a bunch of values to UNDEFINED_UNUSED */
+		}
 	}
 }
 
