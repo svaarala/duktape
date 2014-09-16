@@ -452,6 +452,10 @@ Planned
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
   work will be testing, bug fixes, and documentation
 
+* Remove undocumented duk_xmove(), add duk_xmove_top() and duk_xcopy_top()
+  (duk_xcopy_top() provides the same semantics as the earlier undocumented
+  duk_xmove())
+
 * Change strictness behavior for Duktape API calls: all API calls now have
   Ecmascript strict semantics, even when a call is made with an empty call
   stack outside of any Duktape/C function
