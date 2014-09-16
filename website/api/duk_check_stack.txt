@@ -55,7 +55,3 @@ stack
 
 =seealso
 duk_require_stack
-
-=fixme
-The automatic user reserve must be exposed by duktape.h and the current
-value should be indicated here.

@@ -73,7 +73,3 @@ property
 =seealso
 duk_get_prop_string
 duk_get_prop_index
-
-=fixme
-The obj_index argument name is misleading: the value doesn't have to be
-an object.  Change "non-zero" to "1" for return value?

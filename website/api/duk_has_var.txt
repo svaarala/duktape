@@ -24,6 +24,3 @@ omit
 
 =example
 FIXME
-
-=fixme
-Incomplete.

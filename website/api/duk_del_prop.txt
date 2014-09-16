@@ -64,6 +64,3 @@ property
 =seealso
 duk_del_prop_string
 duk_del_prop_index
-
-=fixme
-Return value is now pointless when Duktape API calls are strict.

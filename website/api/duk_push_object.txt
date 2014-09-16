@@ -25,7 +25,3 @@ duk_pop(ctx);  /* pop object */
 =tags
 stack
 object
-
-=fixme
-There is no way to give an initial size for object property table.
-This would be useful to minimize memory allocations.

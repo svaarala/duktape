@@ -25,6 +25,3 @@ FIXME
 =tags
 variable
 omit
-
-=fixme
-Incomplete.
