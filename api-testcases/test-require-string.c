@@ -1,7 +1,7 @@
 /*===
 *** test_1 (duk_safe_call)
 string: foo
-string: 
+string:
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: not string'
@@ -11,31 +11,35 @@ string:
 ==> rc=1, result='TypeError: not string'
 ===*/
 
+static void dump_string(const char *p) {
+	printf("string:%s%s\n", (strlen(p) == 0 ? "" : " "), p);
+}
+
 static duk_ret_t test_1(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
 	duk_push_string(ctx, "");
-	printf("string: %s\n", duk_require_string(ctx, 0));
-	printf("string: %s\n", duk_require_string(ctx, 1));
+	dump_string(duk_require_string(ctx, 0));
+	dump_string(duk_require_string(ctx, 1));
 	return 0;
 }
 
 static duk_ret_t test_2(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
-	printf("string: %s\n", duk_require_string(ctx, 0));
+	dump_string(duk_require_string(ctx, 0));
 	return 0;
 }
 
 static duk_ret_t test_3(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("string: %s\n", duk_require_string(ctx, 0));
+	dump_string(duk_require_string(ctx, 0));
 	return 0;
 }
 
 static duk_ret_t test_4(duk_context *ctx) {
 	duk_set_top(ctx, 0);
-	printf("string: %s\n", duk_require_string(ctx, DUK_INVALID_INDEX));
+	dump_string(duk_require_string(ctx, DUK_INVALID_INDEX));
 	return 0;
 }
 

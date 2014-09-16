@@ -37,7 +37,7 @@ void test(duk_context *ctx) {
 	duk_decode_string(ctx, -1, decode_char, NULL);
 	duk_pop(ctx);
 
-	/* FIXME: error cases */
+	/* XXX: add error cases */
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

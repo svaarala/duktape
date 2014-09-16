@@ -28,11 +28,11 @@ buffer: dynamic=0, size=7: foo\x00bar
 index 12, type 6 -> 7, ptr-is-NULL 0, size 15
 buffer: dynamic=0, size=15: [object Object]
 index 13, type 7 -> 7, ptr-is-NULL -1, size 0
-buffer: dynamic=0, size=0: 
+buffer: dynamic=0, size=0:
 index 14, type 7 -> 7, ptr-is-NULL 0, size 16
 buffer: dynamic=0, size=16: \x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f
 index 15, type 7 -> 7, ptr-is-NULL -1, size 0
-buffer: dynamic=1, size=0: 
+buffer: dynamic=1, size=0:
 index 16, type 7 -> 7, ptr-is-NULL 0, size 16
 buffer: dynamic=1, size=16: \x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f
 index 17, type 8 -> 7, ptr-is-NULL 0, size 4
@@ -51,9 +51,12 @@ static void dump_buffer(duk_context *ctx) {
 	duk_size_t i, sz;
 
 	ptr = (unsigned char *) duk_get_buffer(ctx, -1, &sz);
-	printf("buffer: dynamic=%d, size=%lu: ", (int) duk_is_dynamic(ctx, -1), (unsigned long) sz);
+	printf("buffer: dynamic=%d, size=%lu:", (int) duk_is_dynamic(ctx, -1), (unsigned long) sz);
 	for (i = 0; i < sz; i++) {
 		unsigned char c = ptr[i];
+		if (i == 0) {
+			printf(" ");
+		}
 		if (c >= 0x20 && c <= 0x7e) {
 			printf("%c", c);
 		} else {

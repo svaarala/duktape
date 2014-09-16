@@ -69,11 +69,6 @@ static duk_ret_t test_4(duk_context *ctx) {
 
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
-
-	/* FIXME: printing the specific error is currently fragile
-	 * because it includes a tag number.
-	 */
-
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
 	TEST_SAFE_CALL(test_4);

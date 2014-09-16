@@ -52,7 +52,7 @@ static void init_test_values(duk_context *ctx) {
 	                     "                           e.toString = function () { throw new Error('coercion error'); };"
 	                     "                           throw e; } })");
 
-	/* FIXME: add an infinite loop and timeout case */
+	/* XXX: add an infinite loop and timeout case */
 }
 
 static int test_1(duk_context *ctx) {

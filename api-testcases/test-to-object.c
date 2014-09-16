@@ -7,7 +7,7 @@ index 2, type: 6, string coerced: 0
 index 3, type: 6, string coerced: 1
 index 4, type: 6, string coerced: NaN
 index 5, type: 6, string coerced: Infinity
-index 6, type: 6, string coerced: 
+index 6, type: 6, string coerced:
 index 7, type: 6, string coerced: foo
 index 8, type: 6, string coerced: [object Object]
 index 9, type: 6, string coerced: [object Thread]
@@ -59,11 +59,13 @@ static duk_ret_t test_1(duk_context *ctx) {
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
 		duk_int_t t;
+		const char *p;
+
 		duk_to_object(ctx, i);
 		t = duk_get_type(ctx, i);
-		duk_to_string(ctx, i);
-		printf("index %ld, type: %ld, string coerced: %s\n",
-		       (long) i, (long) t, duk_to_string(ctx, i));
+		p = duk_to_string(ctx, i);
+		printf("index %ld, type: %ld, string coerced:%s%s\n",
+		       (long) i, (long) t, (strlen(p) == 0 ? "" : " "), p);
 	}
 
 	return 0;

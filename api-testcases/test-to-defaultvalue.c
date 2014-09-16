@@ -13,7 +13,7 @@ index 2, type 6 -> 3, result: true
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-/* FIXME: this test is missing a lot of coverage, like different hints,
+/* XXX: this test is missing a lot of coverage, like different hints,
  * different kinds of objects.  Much of this behavior is tested by the
  * Ecmascript tests.
  */

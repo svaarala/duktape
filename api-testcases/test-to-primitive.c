@@ -27,7 +27,7 @@ index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 ==> rc=1, result='Error: invalid index'
 ===*/
 
-/* FIXME: coverage is pretty poor, e.g. different hints are not tested.
+/* XXX: coverage is pretty poor, e.g. different hints are not tested.
  * They are indirectly covered by Ecmascript tests to some extent, though.
  */
 

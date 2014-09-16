@@ -381,7 +381,6 @@ void duk_pop_3(duk_context *ctx);
  *  is not needed; duk_is_valid_index() gives the same information.
  */
 
-/* FIXME: a duk_small_int_t suffices to represent type and type mask (at least now). */
 duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index);
 duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t index, duk_int_t type);
 duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index);
@@ -491,8 +490,8 @@ void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_siz
 void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
 void duk_to_object(duk_context *ctx, duk_idx_t index);
-void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int_t hint);  /* FIXME: small int? */
-void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t hint);  /* FIXME: small int? */
+void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int_t hint);
+void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t hint);
 
 /* safe variants of a few coercion operations */
 const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
@@ -572,7 +571,9 @@ void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number
  *  Variable access
  */
 
-/* FIXME: incomplete, not usable now */
+/* XXX: These calls are incomplete and not usable now.  They are not (yet)
+ * part of the public API.
+ */
 void duk_get_var(duk_context *ctx);
 void duk_put_var(duk_context *ctx);
 duk_bool_t duk_del_var(duk_context *ctx);
@@ -753,7 +754,6 @@ duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t s
  *  Logging
  */
 
-/* FIXME: here a small integer type would be proper */
 void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...);
 
 /*

@@ -32,7 +32,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	printf("result: '%s'\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	/* FIXME: error cases */
+	/* XXX: error cases */
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;

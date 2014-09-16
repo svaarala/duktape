@@ -817,7 +817,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [ ... func this (crud) errobj ] */
 
-	/* FIXME: is there space?  better implementation: write directly over
+	/* XXX: is there space?  better implementation: write directly over
 	 * 'func' slot to avoid valstack grow issues.
 	 */
 	duk_push_tval(ctx, &thr->heap->lj.value1);
@@ -1468,7 +1468,7 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_retba
  *  handler if nothing else.
  */
 
-/* FIXME: bump preventcount by one for the duration of this call? */
+/* XXX: bump preventcount by one for the duration of this call? */
 
 duk_int_t duk_handle_safe_call(duk_hthread *thr,
                                duk_safe_call_function func,
@@ -1572,7 +1572,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 	/* [ ... | (crud) ] */
 
-	/* FIXME: space in valstack?  see discussion in duk_handle_call. */
+	/* XXX: space in valstack?  see discussion in duk_handle_call. */
 	duk_push_tval(ctx, &thr->heap->lj.value1);
 
 	/* [ ... | (crud) errobj ] */

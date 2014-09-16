@@ -56,7 +56,7 @@ void test(duk_context *ctx) {
 	}
 	duk_pop_2(ctx);
 
-	/* FIXME: also test invalid input stack shapes (like not enough args) */
+	/* XXX: also test invalid input stack shapes (like not enough args) */
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 }

@@ -1989,17 +1989,24 @@ static void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x, d
 		duk_regconst_t arg2;
 		duk_reg_t dest;
 
-		/* need a short reg/const, does not have to be a mutable temp */
+		/* Need a short reg/const, does not have to be a mutable temp. */
 		arg1 = duk__ispec_toregconst_raw(comp_ctx, &x->x1, -1, DUK__IVAL_FLAG_ALLOW_CONST | DUK__IVAL_FLAG_REQUIRE_SHORT /*flags*/);
 		arg2 = duk__ispec_toregconst_raw(comp_ctx, &x->x2, -1, DUK__IVAL_FLAG_ALLOW_CONST | DUK__IVAL_FLAG_REQUIRE_SHORT /*flags*/);
+
+		/* Pick a destination register.  If either base value or key
+		 * happens to be a temp value, reuse it as the destination.
+		 *
+		 * XXX: The temp must be a "mutable" one, i.e. such that no
+		 * other expression is using it anymore.  Here this should be
+		 * the case because the value of a property access expression
+		 * is neither the base nor the key, but the lookup result.
+		 */
 
 		if (forced_reg >= 0) {
 			dest = forced_reg;
 		} else if (DUK__ISTEMP(comp_ctx, arg1)) {
-			/* FIXME: arg1 being used as a mutable temp? */
 			dest = (duk_reg_t) arg1;
 		} else if (DUK__ISTEMP(comp_ctx, arg2)) {
-			/* FIXME: arg1 being used as a mutable temp? */
 			dest = (duk_reg_t) arg2;
 		} else {
 			dest = DUK__ALLOCTEMP(comp_ctx);
