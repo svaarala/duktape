@@ -129,7 +129,7 @@ void test(duk_context *ctx) {
 	res = duk_push_sprintf(ctx, "foo %d %s 0x%08lx", 123, "bar", (long) 0x1234cafe); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, ""); PRINTRESTOP();
 	res = duk_push_sprintf(ctx, NULL); PRINTRESTOP();
-	
+
 	res = test_vsprintf_3x_int(ctx, 2, 3, 5); PRINTRESTOP();
 	res = test_vsprintf_empty(ctx, 2, 3, 5); PRINTRESTOP();
 	res = test_vsprintf_null(ctx, 2, 3, 5); PRINTRESTOP();
