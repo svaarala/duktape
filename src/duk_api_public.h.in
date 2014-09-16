@@ -299,8 +299,11 @@ void duk_insert(duk_context *ctx, duk_idx_t to_index);
 void duk_replace(duk_context *ctx, duk_idx_t to_index);
 void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_index);
 void duk_remove(duk_context *ctx, duk_idx_t index);
-/* FIXME: undocumented */
-void duk_xmove(duk_context *from_ctx, duk_context *to_ctx, duk_idx_t count);
+void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count, duk_bool_t is_copy);
+#define duk_xmove_top(to_ctx,from_ctx,count) \
+	duk_xcopymove_raw((to_ctx), (from_ctx), (count), 0 /*is_copy*/)
+#define duk_xcopy_top(to_ctx,from_ctx,count) \
+	duk_xcopymove_raw((to_ctx), (from_ctx), (count), 1 /*is_copy*/)
 
 /*
  *  Push operations

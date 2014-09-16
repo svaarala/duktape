@@ -39,9 +39,9 @@ extern const char *duk_str_not_extensible;
 extern const char *duk_str_not_writable;
 extern const char *duk_str_not_configurable;
 
+#define DUK_STR_INVALID_CONTEXT duk_str_invalid_context
 #define DUK_STR_INVALID_INDEX duk_str_invalid_index
 #define DUK_STR_PUSH_BEYOND_ALLOC_STACK duk_str_push_beyond_alloc_stack
-#define DUK_STR_SRC_STACK_NOT_ENOUGH duk_str_src_stack_not_enough
 #define DUK_STR_NOT_UNDEFINED duk_str_not_undefined
 #define DUK_STR_NOT_NULL duk_str_not_null
 #define DUK_STR_NOT_BOOLEAN duk_str_not_boolean
@@ -76,9 +76,9 @@ extern const char *duk_str_not_configurable;
 #define DUK_STR_UNIMPLEMENTED duk_str_unimplemented
 #define DUK_STR_ARRAY_LENGTH_OVER_2G duk_str_array_length_over_2g
 
+extern const char *duk_str_invalid_context;
 extern const char *duk_str_invalid_index;
 extern const char *duk_str_push_beyond_alloc_stack;
-extern const char *duk_str_src_stack_not_enough;
 extern const char *duk_str_not_undefined;
 extern const char *duk_str_not_null;
 extern const char *duk_str_not_boolean;

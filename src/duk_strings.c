@@ -17,9 +17,9 @@ const char *duk_str_not_extensible = "not extensible";
 const char *duk_str_not_writable = "not writable";
 const char *duk_str_not_configurable = "not configurable";
 
+const char *duk_str_invalid_context = "invalid context";
 const char *duk_str_invalid_index = "invalid index";
 const char *duk_str_push_beyond_alloc_stack = "attempt to push beyond currently allocated stack";
-const char *duk_str_src_stack_not_enough = "source stack does not contain enough elements";
 const char *duk_str_not_undefined = "not undefined";
 const char *duk_str_not_null = "not null";
 const char *duk_str_not_boolean = "not boolean";
