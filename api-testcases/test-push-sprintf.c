@@ -33,7 +33,7 @@ void test(duk_context *ctx) {
 	 * >>> res = 0
 	 * >>> for i in xrange(0, 65536+1):
 	 * ...   res += len( (('x' * i) + '%d') % 123 )
-	 * ... 
+	 * ...
 	 * >>> res
 	 * 2147713027
 	 */

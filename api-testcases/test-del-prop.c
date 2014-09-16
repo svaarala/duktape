@@ -121,7 +121,7 @@ static duk_ret_t test_1a(duk_context *ctx) {
 	rc = duk_del_prop(ctx, 0);
 	printf("delete obj.nonexistent -> rc=%d\n", (int) rc);
 
- 	/* nonexistent */
+	/* nonexistent */
 	duk_push_int(ctx, 123);
 	rc = duk_del_prop(ctx, 0);
 	printf("delete obj[123] -> rc=%d\n", (int) rc);
