@@ -3,7 +3,7 @@ title: add stack slice operations to the exposed API
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -36,3 +36,11 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
   - ""
+- - 2014-09-16 18:48:21.610060 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
+  - |-
+    For 1.0, duk_xcopy_top() and duk_xmove_top() should provide basic stack
+    manipulation like shuffling arguments.
+    
+    A more generic set of slice primitives should be added in 1.1.
