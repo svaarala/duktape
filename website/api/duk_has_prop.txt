@@ -46,6 +46,8 @@ as its target value.  This is intentional as it follows Ecmascript operator sema
 Similarly, if the key is an array index, you can use the
 <code><a href="#duk_has_prop_index">duk_has_prop_index()</a></code> variant.</p>
 
+<div include="object-can-be-any-value.html" />
+
 =example
 duk_push_string(ctx, "myProperty");
 if (duk_has_prop(ctx, -3)) {
