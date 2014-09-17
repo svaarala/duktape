@@ -11,7 +11,6 @@ can still occur).  The caller MUST NOT rely on being able to push more than
 <code>extra</code> values; although this is possible, such elements are
 reserved for Duktape's internal use.</p>
 
-<!--FIXME-->
 <p>Upon entry to a Duktape/C function and when outside any call
 there is an automatic reserve (of <code>DUK_API_ENTRY_STACK</code> elements)
 allocated for the caller in addition to call arguments on the value stack.

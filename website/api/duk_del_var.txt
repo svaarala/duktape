@@ -5,7 +5,7 @@ duk_bool_t duk_del_var(duk_context *ctx);
 [ ... varname! ] -> [ ... ]
 
 =summary
-FIXME
+XXX
 
 <p>The identifier deletion is equivalent to the Ecmascript expression:</p>
 <pre class="ecmascript-code">
@@ -16,11 +16,10 @@ delete varname
 Attempt to delete an identifier is compile time SyntaxError in strict mode
 code.  Because Duktape/C functions run in strict mode, the semantics for this
 call are currently not very useful when called from inside a Duktape/C function.
-FIXME.
 </div>
 
 =example
-FIXME
+XXX
 
 =tags
 variable
