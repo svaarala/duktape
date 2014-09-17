@@ -5,7 +5,7 @@ duk_bool_t duk_has_var(duk_context *ctx);
 [ ... varname! ] -> [ ... ]
 
 =summary
-FIXME
+XXX
 
 <p>The identifier existence check does not have a direct Ecmascript equivalent.
 The closest equivalent is:</p>
@@ -23,4 +23,4 @@ variable
 omit
 
 =example
-FIXME
+XXX

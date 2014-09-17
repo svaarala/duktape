@@ -6,7 +6,6 @@ void duk_put_var(duk_context *ctx);
 
 =summary
 
-<!--FIXME-->
 <p>Write <code>val</code> to the identifier <code>varname</code>.  Possible outcomes:</p>
 <ul>
 <li>If identifier is found and write succeeds: XXX.</li>
@@ -18,7 +17,7 @@ void duk_put_var(duk_context *ctx);
     error occurs), throws an error.</li>
 </ul>
 
-FIXME
+XXX
 
 <p>The identifier write is equivalent to the Ecmascript expression:</p>
 <pre class="ecmascript-code">
@@ -26,7 +25,7 @@ varname = val
 </pre>
 
 =example
-FIXME
+XXX
 
 =tags
 variable
