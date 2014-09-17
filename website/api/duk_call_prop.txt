@@ -26,6 +26,8 @@ var func = obj[key];
 var retval = func.call(obj, arg1, ..., argN);
 </pre>
 
+<div include="object-can-be-any-value.html" />
+
 =example
 /* obj.myAdderMethod(2,3) -> 5 */
 duk_idx_t obj_idx = /* ... */;

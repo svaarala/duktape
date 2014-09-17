@@ -1,0 +1,7 @@
+<div class="note">
+Although the base value for property accesses is usually an object, it can
+technically be an arbitrary value.  Plain string and buffer values have virtual
+index properties so you can access <code>"foo"[2]</code>, for instance.
+Most primitive values also inherit from some prototype object so that you can
+e.g. call methods on them: <code>(12345).toString(16)</code>.
+</div>

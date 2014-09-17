@@ -45,6 +45,8 @@ Both the target value and the <code>key</code> are coerced:</p>
 Similarly, if the key is an array index, you can use the
 <code><a href="#duk_get_prop_index">duk_get_prop_index()</a></code> variant.</p>
 
+<div include="object-can-be-any-value.html" />
+
 =example
 /* reading [global object].Math.PI */
 duk_push_global_object(ctx);    /* -> [ global ] */

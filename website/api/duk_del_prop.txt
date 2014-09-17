@@ -51,6 +51,8 @@ This is not very intuitive, but follows Ecmascript semantics:
 Similarly, if the key is an array index, you can use the
 <code><a href="#duk_del_prop_index">duk_del_prop_index()</a></code> variant.</p>
 
+<div include="object-can-be-any-value.html" />
+
 =example
 duk_bool_t rc;
 
