@@ -663,8 +663,11 @@ static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 	/* no need to unwind callstack */
 
 	/* valstack should not need changes */
+#if defined(DUK_USE_ASSERTIONS)
+	act = thr->callstack + thr->callstack_top - 1;
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) ==
 	           (duk_size_t) ((duk_hcompiledfunction *) act->func)->nregs);
+#endif
 }
 
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
