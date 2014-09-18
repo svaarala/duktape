@@ -34,5 +34,7 @@ xmldoc
 FlameGraph
 dtrace4linux
 flow
+massif-*.out
+ms_print.*
 alljoyn-js
 ajtcl

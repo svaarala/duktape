@@ -294,6 +294,7 @@ clean:
 	@rm -rf luajs
 	@rm -f dukweb.js
 	@rm -rf /tmp/dukweb-test/
+	@rm -f massif-*.out
 
 .PHONY: cleanall
 cleanall: clean
@@ -888,3 +889,23 @@ codepolicycheckvim:
 .PHONY: big-git-files
 big-git-files:
 	util/find_big_git_files.sh
+
+# Simple heap graph and peak usage using valgrind --tool=massif, for quick
+# and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.
+# The target name is intentionally not 'massif-%.out' so that the rule is never
+# satisfied and can be executed multiple times without cleaning.
+# Grep/sed hacks from:
+# http://stackoverflow.com/questions/774556/peak-memory-usage-of-a-linux-unix-process
+massif-%: ecmascript-testcases/%.js duk
+	@rm -f $(@).out
+	valgrind --tool=massif --peak-inaccuracy=0.0 --massif-out-file=$(@).out ./duk $< >/dev/null 2>/dev/null
+	@ms_print $(@).out | head -35
+	@echo "[... clipped... ]"
+	@echo ""
+	@echo -n "MAXIMUM: "
+	@cat $(@).out | grep mem_heap_B | sed -e 's/mem_heap_B=\(.*\)/\1/' | sort -g | tail -n 1
+
+# Convenience targets
+massif-helloworld: massif-test-dev-hello-world
+massif-deepmerge: massif-test-dev-deepmerge
+massif-arcfour: massif-test-dev-arcfour
