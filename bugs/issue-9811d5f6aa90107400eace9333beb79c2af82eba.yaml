@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: test bound function as thread initial function
+desc: ""
+type: :task
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-18 16:47:33.257401 Z
+references: []
+
+id: 9811d5f6aa90107400eace9333beb79c2af82eba
+log_events: 
+- - 2014-09-18 16:47:33.416671 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-19 14:31:58.037008 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
