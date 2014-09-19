@@ -176,6 +176,7 @@ static void duk__free_stringtable(duk_heap *heap) {
 }
 
 static void duk__free_run_finalizers(duk_heap *heap) {
+	duk_hthread *thr;
 	duk_heaphdr *curr;
 #ifdef DUK_USE_DEBUG
 	duk_size_t count_obj = 0;
@@ -193,14 +194,22 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 	/* XXX: here again finalizer thread is the heap_thread which needs
 	 * to be coordinated with finalizer thread fixes.
 	 */
+	thr = heap->heap_thread;
+	DUK_ASSERT(thr != NULL);
 
 	curr = heap->heap_allocated;
 	while (curr) {
 		if (DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT) {
-			/* Only objects in heap_allocated may have finalizers. */
-			DUK_ASSERT(heap->heap_thread != NULL);
+			/* Only objects in heap_allocated may have finalizers.  Check that
+			 * the object itself has a _finalizer property so that we don't
+			 * execute finalizers for e.g. Proxy objects.
+			 */
+			DUK_ASSERT(thr != NULL);
 			DUK_ASSERT(curr != NULL);
-			duk_hobject_run_finalizer(heap->heap_thread, (duk_hobject *) curr);
+
+			if (duk_hobject_hasprop_raw(thr, (duk_hobject *) curr, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
+				duk_hobject_run_finalizer(thr, (duk_hobject *) curr);
+			}
 #ifdef DUK_USE_DEBUG
 			count_obj++;
 #endif

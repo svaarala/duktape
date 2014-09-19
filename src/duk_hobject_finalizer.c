@@ -24,9 +24,11 @@ static duk_ret_t duk__finalize_helper(duk_context *ctx) {
 
 	/* [... obj] */
 
-	/* XXX: finalizer lookup should traverse the prototype chain (to allow
+	/* XXX: Finalizer lookup should traverse the prototype chain (to allow
 	 * inherited finalizers) but should not invoke accessors or proxy object
-	 * behavior.
+	 * behavior.  At the moment this lookup will invoke proxy behavior, so
+	 * caller must ensure that this function is not called if the target is
+	 * a Proxy.
 	 */
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
