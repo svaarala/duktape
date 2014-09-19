@@ -517,6 +517,10 @@ Planned
 * Disable internal interrupt mechanism in anticipation of 1.0 release since
   there will be no API to use it
 
+* Fix finalizer handling for Proxy objects: if a Proxy object was reachable
+  at heap destruction and the target object had a finalizer, the finalizer
+  would also be executed for the Proxy object
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 
