@@ -1,0 +1,34 @@
+=proto
+void duk_set_global_object(duk_context *ctx);
+
+=stack
+[ ... new_global! ] -> [ ... ]
+
+=summary
+<p>Replace the current context's global object with the object on top of the
+value stack.  If the value is not an object, an error is thrown.</p>
+
+<p>Note that this operation <b>does not</b> affect the global object of other
+contexts, even those that have up to this point shared the same global
+environment.  To inherit the change to other contexts, replace the global
+object first before calling <code>duk_push_thread()</code>.</p>
+
+<p>See the test case
+<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.js">test-set-global-object.js</a>
+for discussion of detailed behavior after the change.</p>
+
+=example
+/* Build a global object with a subset of bindings. */
+duk_eval_string(ctx,
+    "({\n"
+    "    print: this.print,\n"
+    "    JSON: this.JSON\n"
+    "})\n");
+
+/* Replace global object. */
+duk_set_global_object(ctx);
+
+=tags
+stack
+thread
+sandbox

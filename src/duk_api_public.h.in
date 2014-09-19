@@ -553,6 +553,12 @@ void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
 void duk_set_finalizer(duk_context *ctx, duk_idx_t index);
 
 /*
+ *  Global object
+ */
+
+void duk_set_global_object(duk_context *ctx);
+
+/*
  *  Duktape/C function magic value
  */
 
