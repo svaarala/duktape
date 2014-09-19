@@ -470,6 +470,10 @@ Planned
   this behavior seems to be non-standard but is the real world behavior used
   by V8, Rhino, and Spidermonkey at least
 
+* Add API call duk_set_global_object() which allows the global object of a
+  context to be replaced; this is useful as an initial mechanism for proper
+  sandboxing of Ecmascript code
+
 * Add API calls duk_get_prototype() and duk_set_prototype() for getting and
   setting an object's "internal prototype" from C code
 
