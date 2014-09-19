@@ -11,8 +11,8 @@ type: :task
 component: duk
 release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-06-26 11:28:39.450195 Z
 references: []
 
@@ -26,3 +26,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - Also the global lexical environment needs to be updated in the process.
+- - 2014-09-19 15:20:30.679763 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
