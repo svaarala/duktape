@@ -62,3 +62,36 @@ void duk_destroy_heap(duk_context *ctx) {
 
 	duk_heap_free(heap);
 }
+
+/* XXX: better place for this */
+void duk_set_global_object(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h_glob;
+	duk_hobject *h_prev_glob;
+	duk_hobject *h_env;
+	duk_tval tv_tmp;
+	duk_tval *tv;
+
+	DUK_D(DUK_DPRINT("replace global object with: %!T", duk_get_tval(ctx, -1)));
+
+	h_glob = duk_require_hobject(ctx, -1);
+	DUK_ASSERT(h_glob != NULL);
+
+	h_prev_glob = thr->builtins[DUK_BIDX_GLOBAL];
+	thr->builtins[DUK_BIDX_GLOBAL] = h_glob;
+	DUK_HOBJECT_INCREF(thr, h_glob);
+	DUK_HOBJECT_DECREF(thr, h_prev_glob);  /* side effects, in theory (referenced by global env) */
+
+	h_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+	if (h_env) {
+		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_env) == DUK_HOBJECT_CLASS_OBJENV);
+		tv = duk_hobject_find_existing_entry_tval_ptr(h_env, DUK_HTHREAD_STRING_INT_TARGET(thr));
+		DUK_ASSERT(tv != NULL);
+		DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+		DUK_TVAL_SET_OBJECT(tv, h_glob);
+		DUK_HOBJECT_INCREF(thr, h_glob);
+		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	}
+
+	duk_pop(ctx);
+}
