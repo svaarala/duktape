@@ -17,6 +17,11 @@ object first before calling <code>duk_push_thread()</code>.</p>
 <a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.js">test-set-global-object.js</a>
 for discussion of detailed behavior after the change.</p>
 
+<div class="note">
+This API call is experimental at present, and some of the semantics may
+change when other sandboxing features are implemented.
+</div>
+
 =example
 /* Build a global object with a subset of bindings. */
 duk_eval_string(ctx,
@@ -32,3 +37,4 @@ duk_set_global_object(ctx);
 stack
 thread
 sandbox
+experimental
