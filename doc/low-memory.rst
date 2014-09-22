@@ -61,3 +61,9 @@ Suggested feature options
   debuglog lines.  Use e.g. the following to reduce this overhead:
 
   - ``-DDUK_OPT_DEBUG_BUFSIZE=2048``
+
+* For very low memory environments, consider using lightweight functions
+  for your Duktape/C bindings and to force Duktape built-ins to be lightweight
+  functions:
+
+  - ``DUK_OPT_LIGHTFUNC_BUILTINS``

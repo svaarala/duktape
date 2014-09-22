@@ -2513,6 +2513,21 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Lightweight functions
+ */
+
+/* Force built-ins to use lightfunc function pointers when possible.  This
+ * makes the built-in functions non-compliant with respect to their property
+ * values and such, but is very useful in low memory environments (can save
+ * around 14kB of initial RAM footprint).
+ */
+
+#undef DUK_USE_LIGHTFUNC_BUILTINS
+#if defined(DUK_OPT_LIGHTFUNC_BUILTINS)
+#define DUK_USE_LIGHTFUNC_BUILTINS
+#endif
+
+/*
  *  Miscellaneous
  */
 
