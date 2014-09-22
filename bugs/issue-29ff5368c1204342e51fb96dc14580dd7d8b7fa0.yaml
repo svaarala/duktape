@@ -3,7 +3,7 @@ title: "api: format strings for duktape types"
 desc: ""
 type: :task
 component: duk
-release: v0.12
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-06-10 13:18:38.216343 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-22 14:21:18.864289 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v0.12
   - ""

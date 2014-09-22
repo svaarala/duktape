@@ -3,10 +3,10 @@ title: "duk_set_global_object improved tests: e.g. access to regexp built-in ind
 desc: ""
 type: :task
 component: duk
-release: v1.0
+release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-09-19 15:15:32.696241 Z
 references: []
 
@@ -15,4 +15,12 @@ log_events:
 - - 2014-09-19 15:15:32.888200 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-22 14:20:24.865225 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v0.12 from v1.0
+  - ""
+- - 2014-09-22 14:20:29.616997 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""
