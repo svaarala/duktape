@@ -44,12 +44,30 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
 static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
 static duk_bool_t duk__is_leap_year(duk_int_t year);
+static duk_bool_t duk__timeval_in_valid_range(duk_double_t x);
+static duk_bool_t duk__year_in_valid_range(duk_double_t year);
 
 /* Millisecond count constants. */
 #define DUK__MS_SECOND          1000L
 #define DUK__MS_MINUTE          (60L * 1000L)
 #define DUK__MS_HOUR            (60L * 60L * 1000L)
 #define DUK__MS_DAY             (24L * 60L * 60L * 1000L)
+
+/* Ecmascript date range is 100 million days from Epoch:
+ * > 100e6 * 24 * 60 * 60 * 1000  // 100M days in millisecs
+ * 8640000000000000
+ * (= 8.64e15)
+ */
+#define DUK__MS_100M_DAYS       (8.64e15)
+
+/* Ecmascript year range:
+ * > new Date(100e6 * 24 * 3600e3).toISOString()
+ * '+275760-09-13T00:00:00.000Z'
+ * > new Date(-100e6 * 24 * 3600e3).toISOString()
+ * '-271821-04-20T00:00:00.000Z'
+ */
+#define  DUK__MIN_ECMA_YEAR     (-271821)
+#define  DUK__MAX_ECMA_YEAR     275760
 
 /* Part indices for internal breakdowns.  Part order from DUK__IDX_YEAR to
  * DUK__IDX_MILLISECOND matches argument ordering of Ecmascript API calls
@@ -92,6 +110,33 @@ static duk_bool_t duk__is_leap_year(duk_int_t year);
 #define DUK__FLAG_YEAR_FIXUP           (1 << 10) /* setter: perform 2-digit year fixup (00...99 -> 1900...1999) */
 #define DUK__FLAG_SEP_T                (1 << 11) /* string conversion: use 'T' instead of ' ' as a separator */
 #define DUK__FLAG_VALUE_SHIFT          12        /* additional values begin at bit 12 */
+
+/* Debug macro to print all parts and dparts (used manually because of debug level). */
+#define  DUK__DPRINT_PARTS_AND_DPARTS(parts,dparts)  do { \
+		DUK_D(DUK_DPRINT("parts: %ld %ld %ld %ld %ld %ld %ld %ld, dparts: %lf %lf %lf %lf %lf %lf %lf %lf", \
+		                 (long) (parts)[0], (long) (parts)[1], \
+		                 (long) (parts)[2], (long) (parts)[3], \
+		                 (long) (parts)[4], (long) (parts)[5], \
+		                 (long) (parts)[6], (long) (parts)[7], \
+		                 (double) (dparts)[0], (double) (dparts)[1], \
+		                 (double) (dparts)[2], (double) (dparts)[3], \
+		                 (double) (dparts)[4], (double) (dparts)[5], \
+		                 (double) (dparts)[6], (double) (dparts)[7])); \
+	} while (0)
+#define  DUK__DPRINT_PARTS(parts)  do { \
+		DUK_D(DUK_DPRINT("parts: %ld %ld %ld %ld %ld %ld %ld %ld", \
+		                 (long) (parts)[0], (long) (parts)[1], \
+		                 (long) (parts)[2], (long) (parts)[3], \
+		                 (long) (parts)[4], (long) (parts)[5], \
+		                 (long) (parts)[6], (long) (parts)[7])); \
+	} while (0)
+#define  DUK__DPRINT_DPARTS(dparts)  do { \
+		DUK_D(DUK_DPRINT("dparts: %lf %lf %lf %lf %lf %lf %lf %lf", \
+		                 (double) (dparts)[0], (double) (dparts)[1], \
+		                 (double) (dparts)[2], (double) (dparts)[3], \
+		                 (double) (dparts)[4], (double) (dparts)[5], \
+		                 (double) (dparts)[6], (double) (dparts)[7])); \
+	} while (0)
 
 /*
  *  Platform specific helpers
@@ -183,6 +228,15 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 
 	/* For NaN/inf, the return value doesn't matter. */
 	if (!DUK_ISFINITE(d)) {
+		return 0;
+	}
+
+	/* If not within Ecmascript range, some integer time calculations
+	 * won't work correctly (and some asserts will fail), so bail out
+	 * if so.  This fixes test-bug-date-insane-setyear.js.
+	 */
+	if (!duk__timeval_in_valid_range(d)) {
+		DUK_DD(DUK_DDPRINT("timeval not within valid range, skip tzoffset computation to avoid integer overflows"));
 		return 0;
 	}
 
@@ -859,12 +913,20 @@ static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	return 1;
 }
 
+static duk_bool_t duk__timeval_in_valid_range(duk_double_t x) {
+	return (x >= -DUK__MS_100M_DAYS && x <= DUK__MS_100M_DAYS);
+}
+
+static duk_bool_t duk__year_in_valid_range(duk_double_t x) {
+	return (x >= DUK__MIN_ECMA_YEAR && x <= DUK__MAX_ECMA_YEAR);
+}
+
 static duk_double_t duk__timeclip(duk_double_t x) {
 	if (!DUK_ISFINITE(x)) {
 		return DUK_DOUBLE_NAN;
 	}
 
-	if (x > 8.64e15 || x < -8.64e15) {
+	if (!duk__timeval_in_valid_range(x)) {
 		return DUK_DOUBLE_NAN;
 	}
 
@@ -970,8 +1032,16 @@ static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_dou
 	 *
 	 * Without an explicit infinity / NaN check in the beginning,
 	 * day_num would be a bogus integer here.
+	 *
+	 * It's possible for 'year' to be out of integer range here.
+	 * If so, we need to return NaN without integer overflow.
+	 * This fixes test-bug-setyear-overflow.js.
 	 */
 
+	if (!duk__year_in_valid_range(year)) {
+		DUK_DD(DUK_DDPRINT("year not in ecmascript valid range, avoid integer overflow: %lf", (double) year));
+		return DUK_DOUBLE_NAN;
+	}
 	day_num = duk__day_from_year((duk_int_t) year);
 	is_leap = duk__is_leap_year((duk_int_t) year);
 
@@ -1009,6 +1079,7 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
 	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
+	DUK_ASSERT(duk__timeval_in_valid_range(d));  /* valid ecmascript range, caller ensures */
 
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
@@ -1040,6 +1111,16 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 	DUK_ASSERT(parts[DUK__IDX_MINUTE] >= 0 && parts[DUK__IDX_MINUTE] <= 59);
 	DUK_ASSERT(parts[DUK__IDX_HOUR] >= 0 && parts[DUK__IDX_HOUR] <= 23);
 
+	DUK_DDD(DUK_DDDPRINT("d=%lf, d1=%lf, d2=%lf, t1=%ld, t2=%ld, parts: hour=%ld min=%ld sec=%ld msec=%ld",
+	                     (double) d, (double) d1, (double) d2, (long) t1, (long) t2,
+	                     (long) parts[DUK__IDX_HOUR],
+	                     (long) parts[DUK__IDX_MINUTE],
+	                     (long) parts[DUK__IDX_SECOND],
+	                     (long) parts[DUK__IDX_MILLISECOND]));
+
+	/* This assert depends on the input parts representing time inside
+	 * the Ecmascript range.
+	 */
 	DUK_ASSERT(t2 + DUK__WEEKDAY_MOD_ADDER >= 0);
 	parts[DUK__IDX_WEEKDAY] = (t2 + 4 + DUK__WEEKDAY_MOD_ADDER) % 7;  /* E5.1 Section 15.9.1.6 */
 	DUK_ASSERT(parts[DUK__IDX_WEEKDAY] >= 0 && parts[DUK__IDX_WEEKDAY] <= 6);
@@ -1114,7 +1195,9 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 
 /* Compute time value from (double) parts.  The parts can be either UTC
  * or local time; if local, they need to be (conceptually) converted into
- * UTC time.
+ * UTC time.  The parts may represent valid or invalid time, and may be
+ * wildly out of range (but may cancel each other and still come out in
+ * the valid Date range).
  */
 static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
 #if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
@@ -1481,7 +1564,7 @@ static duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_a
 		/* NaN timevalue: we need to coerce the arguments, but
 		 * the resulting internal timestamp needs to remain NaN.
 		 * This works but is not pretty: parts and dparts will
-		 * be partially uninitialized, but we only write to it.
+		 * be partially uninitialized, but we only write to them.
 		 */
 	}
 
