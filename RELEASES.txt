@@ -521,6 +521,10 @@ Planned
   at heap destruction and the target object had a finalizer, the finalizer
   would also be executed for the Proxy object
 
+* Fix a few Date bugs for large out-of-range years which caused some assert
+  failures and incorrect behavior when year was out of Ecmascript range (e.g.
+  year 870e6 and year -200e6)
+
 * Minor compile warnings fixes for non-default options (e.g. when reference
   counting is disabled)
 

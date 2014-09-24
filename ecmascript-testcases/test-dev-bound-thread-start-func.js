@@ -40,5 +40,5 @@ try {
     print('bound');
     boundTest();
 } catch (e) {
-    print(e.stack);
+    print(e.stack || e);
 }
