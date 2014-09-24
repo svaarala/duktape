@@ -18,3 +18,9 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-09-24 21:32:00.182972 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    This is now discussed shortly in compilation overview section.  Also add a section
+    to the API document so that it can be easily seen.
