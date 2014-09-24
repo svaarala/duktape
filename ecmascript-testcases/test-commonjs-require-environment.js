@@ -158,7 +158,7 @@ try {
     mod = require('test1');
 } catch (e) {
     print('global require failed:', e);
-    print(e.stack);
+    print(e.stack || e);
 }
 print('mod:', typeof mod, mod);
 print('mod.name:', mod.name);
