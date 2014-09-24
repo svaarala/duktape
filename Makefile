@@ -491,8 +491,8 @@ emscripten:
 # Recent Emscripten will assume typed array support unless EMCC_FAST_COMPILER=0
 # is given through the environment:
 # https://github.com/kripken/emscripten/wiki/LLVM-Backend
-#EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288
-EMCCOPTS=-s USE_TYPED_ARRAYS=0
+#EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
+EMCCOPTS=-s USE_TYPED_ARRAYS=0 --memory-init-file 0
 
 .PHONY: emscriptentest
 emscriptentest: emscripten duk
@@ -515,9 +515,11 @@ emscriptentest: emscripten duk
 #     problem:
 #     "too many setjmps in a function call, build with a higher value for MAX_SETJMPS"
 #   - Using -O2 without asm.js for now.
+#   - --memory-init-file 0 to avoid a separate memory init file (this is
+#     not mandatory but keeps the result in a single file)
 # https://github.com/kripken/emscripten/wiki/Optimizing-Code
 # http://mozakai.blogspot.fi/2013/08/outlining-workaround-for-jits-and-big.html
-EMCCOPTS_DUKVM=-O2 -std=c99 -Wall -s OUTLINING_LIMIT=20000 -s MAX_SETJMPS=1000 -s ASM_JS=0 -DEMSCRIPTEN
+EMCCOPTS_DUKVM=-O2 -std=c99 -Wall -s OUTLINING_LIMIT=20000 -s MAX_SETJMPS=1000 -s ASM_JS=0 --memory-init-file 0 -DEMSCRIPTEN
 
 MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
 
