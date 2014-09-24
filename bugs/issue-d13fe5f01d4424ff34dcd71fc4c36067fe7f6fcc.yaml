@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Date assert failure and incorrect behavior for year values outside Ecmascript range
+desc: ""
+type: :bugfix
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-24 09:35:41.459411 Z
+references: []
+
+id: d13fe5f01d4424ff34dcd71fc4c36067fe7f6fcc
+log_events: 
+- - 2014-09-24 09:35:41.618847 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-24 09:35:44.707350 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
