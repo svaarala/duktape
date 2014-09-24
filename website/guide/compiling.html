@@ -1,6 +1,54 @@
 <h1 id="compiling">Compiling</h1>
 
-<h2>Automatic defaults</h2>
+<h2>Overview</h2>
+
+<p>Duktape doesn't have an official Makefile or a build script: given the
+number of different portability targets, maintaining an official build
+script would be difficult.  Instead, you should add Duktape to your existing
+build process in whatever way is most natural.</p>
+
+<p>Duktape is compiled with a C or C++ compiler (C99 is recommended)
+and then linked to your program in some way; the exact details vary between
+platforms and toolchains.  For example, you can:</p>
+<ul>
+<li>Compile Duktape together with your program without an explicit linking
+    step.</li>
+<li>Compile Duktape as a static library, and link the static library with
+    your program.</li>
+<li>Compile Duktape as a dynamic library, and link the dynamic library with
+    your program.</li>
+</ul>
+
+<p>There are two alternative distribution formats for the Duktape source:
+a single source file and separate source files.  The single source file
+version consists of <code>duktape.h</code> and <code>duktape.c</code>.
+The separate source files version consists of <code>duktape.h</code> and
+a set of separate source files.   The single source file version is preferred,
+but separate files work better with some toolchains.</p>
+
+<p>All Duktape API functions are potentially macros, and the implementation
+of a certain API primitive may change between a macro and an actual function
+even between compatible releases.  This has two implications:</p>
+<ul>
+<li><b>Include <code>duktape.h</code> in application code</b>.  This is
+    good practice in general, but without the header your compiler will
+    incorrectly assume that all Duktape API functions are actual functions
+    which will cause linking to fail.</li>
+<li><b>Compile Duktape and your application with the exactly same Duktape
+    version</b>.  Even compatible versions may be binary incompatible
+    because a function was changed into a macro or vice versa.</li>
+</ul>
+
+<p>Duktape has many features which can be controlled during compilation,
+see feature options below.  Some options after binary compatibility of
+Duktape and the application.  Because of this:</p>
+<ul>
+<li><b>Use the same feature options and the same compiler when compiling
+    Duktape and your application</b>.  This is especially important when
+    Duktape is compiled as a library in a separate step.</li>
+</ul>
+
+<h2>Recommended compiler options</h2>
 
 <p>If you compile Duktape with no compiler options, Duktape will detect the
 compiler and the platform automatically and select defaults appropriate in
@@ -18,6 +66,12 @@ in your compiler):</p>
     is compatible with these and they improve the resulting C code</li>
 </ul>
 
+<p>If you're using Duktape on a platform where Duktape's automatic feature
+detection doesn't (yet) work, you may need to force a specific byte order or
+alignment requirements with feature options described below.</p>
+
+<h2>Duktape feature defaults</h2>
+
 <p>Duktape feature defaults are, at a high level:</p>
 <ul>
 <li>Full Ecmascript E5/E5.1 compliance
@@ -27,16 +81,15 @@ in your compiler):</p>
     (see <a href="#custombehavior">Custom behavior</a>)</li>
 <li>Some <a href="#es6features">features borrowed from ES6</a></li>
 <li>Packed value representation (8 bytes per value) when available,
-    unpacked value representation (12-16 bytes per value) when not</li>
+    unpacked value representation (usually bytes per value) when not</li>
 <li>Reference counting and mark-and-sweep garbage collection</li>
 <li>Full error messages and tracebacks</li>
 <li>No debug printing, no asserts, etc</li>
 </ul>
 
-<p>Usually the automatic defaults are OK.  If you're using Duktape on a platform
-where Duktape's automatic feature detection doesn't (yet) work, you may need to
-force a specific byte order or alignment requirements with <b>feature options</b>
-described below.</p>
+<p>Usually these automatic defaults are OK.  If you're working on a constrained
+platform, you may need to add specific options to reduce memory footprint or to
+minimize garbage collection pauses.</p>
 
 <h2>Feature options (DUK_OPT_xxx)</h2>
 
@@ -47,7 +100,7 @@ final internal features based on feature requests, compiler features, and
 platform features.</p>
 
 <div class="note">
-If you use Duktape feature options, you should define the feature options both
+If you use Duktape feature options, you must define the feature options both
 when compiling Duktape and when compiling any application code using the
 <code>duktape.h</code> header.  This is necessary because some feature options
 affect the binary compatibility of the Duktape API.
@@ -557,7 +610,7 @@ named function expressions are also in a reference loop; this loop cannot be
 broken from user code and only mark-and-sweep can collect such functions.
 See <a href="#limitations">Limitations</a>.</p>
 
-<h2 id="duktape-cplusplus">Duktape and C++</h2>
+<h2 id="duktape-cplusplus">Using a C++ compiler</h2>
 
 <p>Duktape works with both C and C++ compilers and applications.  You can
 compile Duktape and the application with a C or a C++ compiler in any
