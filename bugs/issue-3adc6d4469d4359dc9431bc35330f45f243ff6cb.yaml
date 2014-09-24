@@ -24,3 +24,14 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v0.12 from v0.11
   - ""
+- - 2014-09-24 22:35:38.304451 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Add a C API test case:
+    
+    * Require value stack for 10000 elements
+    
+    * Make an Ecmascript call (or a C call)
+    
+    * Push 10000 elements
