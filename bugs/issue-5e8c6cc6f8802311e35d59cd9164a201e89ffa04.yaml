@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix test262 Date time value edge case bug (test262)
+desc: ""
+type: :bugfix
+component: duk
+release: v0.12
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-25 14:37:42.544370 Z
+references: []
+
+id: 5e8c6cc6f8802311e35d59cd9164a201e89ffa04
+log_events: 
+- - 2014-09-25 14:37:42.709623 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-25 17:33:27.962181 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
