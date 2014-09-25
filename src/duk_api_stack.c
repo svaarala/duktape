@@ -501,11 +501,11 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 	return 1;
 }
 
-static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
-                                                    duk_size_t min_new_size,
-                                                    duk_bool_t shrink_flag,
-                                                    duk_bool_t compact_flag,
-                                                    duk_bool_t throw_flag) {
+duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
+                                   duk_size_t min_new_size,
+                                   duk_bool_t shrink_flag,
+                                   duk_bool_t compact_flag,
+                                   duk_bool_t throw_flag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t old_size;
 	duk_size_t new_size;
@@ -594,24 +594,6 @@ static duk_bool_t duk__check_valstack_resize_helper(duk_context *ctx,
 	return 1;
 }
 
-#if 0  /* XXX: unused */
-duk_bool_t duk_check_valstack_resize(duk_context *ctx, duk_size_t min_new_size, duk_bool_t allow_shrink) {
-	return duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         allow_shrink,  /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         0);            /* throw flag */
-}
-#endif
-
-void duk_require_valstack_resize(duk_context *ctx, duk_size_t min_new_size, duk_bool_t allow_shrink) {
-	(void) duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         allow_shrink,  /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         1);            /* throw flag */
-}
-
 duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t min_new_size;
@@ -627,11 +609,11 @@ duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 	}
 
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
-	return duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         0,             /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         0);            /* throw flag */
+	return duk_valstack_resize_raw(ctx,
+	                               min_new_size,  /* min_new_size */
+	                               0,             /* shrink_flag */
+	                               0,             /* compact_flag */
+	                               0);            /* throw_flag */
 }
 
 void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
@@ -649,11 +631,11 @@ void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 	}
 
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
-	(void) duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         0,             /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         1);            /* throw flag */
+	(void) duk_valstack_resize_raw(ctx,
+	                               min_new_size,  /* min_new_size */
+	                               0,             /* shrink_flag */
+	                               0,             /* compact_flag */
+	                               1);            /* throw_flag */
 }
 
 duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
@@ -669,11 +651,11 @@ duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 	}
 
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
-	return duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         0,             /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         0);            /* throw flag */
+	return duk_valstack_resize_raw(ctx,
+	                               min_new_size,  /* min_new_size */
+	                               0,             /* shrink_flag */
+	                               0,             /* compact_flag */
+	                               0);            /* throw_flag */
 }
 
 void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
@@ -689,11 +671,11 @@ void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 	}
 
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
-	(void) duk__check_valstack_resize_helper(ctx,
-	                                         min_new_size,  /* min_new_size */
-	                                         0,             /* shrink_flag */
-	                                         0,             /* compact flag */
-	                                         1);            /* throw flag */
+	(void) duk_valstack_resize_raw(ctx,
+	                               min_new_size,  /* min_new_size */
+	                               0,             /* shrink_flag */
+	                               0,             /* compact_flag */
+	                               1);            /* throw_flag */
 }
 
 /*
