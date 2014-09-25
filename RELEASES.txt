@@ -443,10 +443,7 @@ Released
   AUTHORS.txt are embedded into duktape.c and duktape.h to ensure they're
   automatically included when used in another project
 
-Planned
-=======
-
-0.12.0 (2014-08-XX)
+0.12.0 (2014-09-26)
 -------------------
 
 * Beta release for stabilization: feature freeze until 1.0.0 release, most
@@ -537,6 +534,9 @@ Planned
   that they don't enumerate e.g. in a for-in loop
 
 * A few more polyfills.
+
+Planned
+=======
 
 1.0.0 (2014-08-XX)
 ------------------
