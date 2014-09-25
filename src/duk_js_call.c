@@ -633,6 +633,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
                           duk_small_uint_t call_flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_size_t entry_valstack_bottom_index;
+	duk_size_t entry_valstack_end;
 	duk_size_t entry_callstack_top;
 	duk_size_t entry_catchstack_top;
 	duk_int_t entry_call_recursion_depth;
@@ -672,6 +673,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	entry_valstack_bottom_index = (duk_size_t) (thr->valstack_bottom - thr->valstack);
+	entry_valstack_end = (duk_size_t) (thr->valstack_end - thr->valstack);
 	entry_callstack_top = thr->callstack_top;
 	entry_catchstack_top = thr->catchstack_top;
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
@@ -829,13 +831,15 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [ ... errobj ] */
 
-	/* ensure there is internal valstack spare before we exit; this may
-	 * throw an alloc error
+	/* Ensure there is internal valstack spare before we exit; this may
+	 * throw an alloc error.  The same guaranteed size must be available
+	 * as before the call.  This is not optimal now: we store the valstack
+	 * allocated size during entry; this value may be higher than the
+	 * minimal guarantee for an application.
 	 */
 
 	duk_require_valstack_resize((duk_context *) thr,
-	                            (thr->valstack_top - thr->valstack) +            /* top of current func */
-	                                DUK_VALSTACK_INTERNAL_EXTRA,                 /* + spare => min_new_size */
+	                            entry_valstack_end,                              /* same as during entry */
 	                            1);                                              /* allow_shrink */
 
 	/* Note: currently a second setjmp restoration is done at the target;
@@ -1225,13 +1229,16 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [... retval] */
 
-	/* ensure there is internal valstack spare before we exit */
+	/* Ensure there is internal valstack spare before we exit; this may
+	 * throw an alloc error.  The same guaranteed size must be available
+	 * as before the call.  This is not optimal now: we store the valstack
+	 * allocated size during entry; this value may be higher than the
+	 * minimal guarantee for an application.
+	 */
 
 	duk_require_valstack_resize((duk_context *) thr,
-	                            (thr->valstack_top - thr->valstack) +            /* top of current func */
-	                                DUK_VALSTACK_INTERNAL_EXTRA,                 /* + spare => min_new_size */
+	                            entry_valstack_end,                              /* same as during entry */
 	                            1);                                              /* allow_shrink */
-
 
 	/*
 	 *  Shrink checks and return with success.
@@ -1303,11 +1310,15 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [... retval] */
 
-	/* ensure there is internal valstack spare before we exit */
+	/* Ensure there is internal valstack spare before we exit; this may
+	 * throw an alloc error.  The same guaranteed size must be available
+	 * as before the call.  This is not optimal now: we store the valstack
+	 * allocated size during entry; this value may be higher than the
+	 * minimal guarantee for an application.
+	 */
 
 	duk_require_valstack_resize((duk_context *) thr,
-	                            (thr->valstack_top - thr->valstack) +            /* top of current func */
-	                                DUK_VALSTACK_INTERNAL_EXTRA,                 /* + spare => min_new_size */
+	                            entry_valstack_end,                              /* same as during entry */
 	                            1);                                              /* allow_shrink */
 
 	/*
