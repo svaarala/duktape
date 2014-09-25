@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v0.12
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-03-24 21:30:33.088489 Z
 references: []
 
@@ -35,3 +35,7 @@ log_events:
     * Make an Ecmascript call (or a C call)
     
     * Push 10000 elements
+- - 2014-09-25 11:49:01.683149 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
