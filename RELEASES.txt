@@ -517,6 +517,11 @@ Planned
 * Disable internal interrupt mechanism in anticipation of 1.0 release since
   there will be no API to use it
 
+* Fix value stack reserve handling for function calls: a function call
+  (Ecmascript or Duktape/C) might reduce the valstack "checked size" which
+  was previously requested by user code (for more detail, see API test case
+  test-dev-valstack-checked-size-call.c)
+
 * Fix finalizer handling for Proxy objects: if a Proxy object was reachable
   at heap destruction and the target object had a finalizer, the finalizer
   would also be executed for the Proxy object

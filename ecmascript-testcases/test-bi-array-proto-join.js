@@ -242,7 +242,7 @@ function joinSizeTest(joinChar) {
             ch = String.fromCharCode(0x41 + (j % 26));
             arr[j] = ch;
             if (j > 0) { expect += joinChar; }
-            expect += ch;
+            expect += ch;  // slow, but we want to avoid array join to create expect string
         }
 
         joined = arr.join(joinChar);
@@ -263,6 +263,6 @@ try {
     joinSizeTest(',');
     print('comma sep ok');
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 

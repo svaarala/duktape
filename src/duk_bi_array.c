@@ -291,8 +291,9 @@ duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	                     (duk_tval *) duk_get_tval(ctx, 1),
 	                     (unsigned long) len));
 
+	/* The extra (+4) is tight. */
 	valstack_required = (len >= DUK__ARRAY_MID_JOIN_LIMIT ?
-	                     DUK__ARRAY_MID_JOIN_LIMIT : len) + 1;
+	                     DUK__ARRAY_MID_JOIN_LIMIT : len) + 4;
 	duk_require_stack(ctx, valstack_required);
 
 	duk_dup(ctx, 0);

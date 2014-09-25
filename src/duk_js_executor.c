@@ -498,11 +498,13 @@ static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_sma
 
 	h_func = (duk_hcompiledfunction *) thr->callstack[act_idx].func;
 
-	duk_require_valstack_resize((duk_context *) thr,
-	                            (thr->valstack_bottom - thr->valstack) +          /* bottom of current func */
-	                                h_func->nregs +                               /* reg count */
-	                                DUK_VALSTACK_INTERNAL_EXTRA,                  /* + spare */
-	                            1);                                               /* allow_shrink */
+	(void) duk_valstack_resize_raw((duk_context *) thr,
+	                               (thr->valstack_bottom - thr->valstack) +      /* bottom of current func */
+	                                   h_func->nregs +                           /* reg count */
+	                                   DUK_VALSTACK_INTERNAL_EXTRA,              /* + spare */
+	                               DUK_VSRESIZE_FLAG_SHRINK |                    /* flags */
+	                               0 /* no compact */ |
+	                               DUK_VSRESIZE_FLAG_THROW);
 
 	duk_set_top((duk_context *) thr, h_func->nregs);
 }
