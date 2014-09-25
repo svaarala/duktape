@@ -502,9 +502,9 @@ static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_sma
 	                               (thr->valstack_bottom - thr->valstack) +      /* bottom of current func */
 	                                   h_func->nregs +                           /* reg count */
 	                                   DUK_VALSTACK_INTERNAL_EXTRA,              /* + spare */
-	                               1,                                            /* shrink_flag */
-	                               0,                                            /* compact_flag */
-	                               1);                                           /* throw_flag */
+	                               DUK_VSRESIZE_FLAG_SHRINK |                    /* flags */
+	                               0 /* no compact */ |
+	                               DUK_VSRESIZE_FLAG_THROW);
 
 	duk_set_top((duk_context *) thr, h_func->nregs);
 }

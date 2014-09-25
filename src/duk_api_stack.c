@@ -503,21 +503,22 @@ static duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
 
 duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
                                    duk_size_t min_new_size,
-                                   duk_bool_t shrink_flag,
-                                   duk_bool_t compact_flag,
-                                   duk_bool_t throw_flag) {
+                                   duk_small_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t old_size;
 	duk_size_t new_size;
 	duk_bool_t is_shrink = 0;
+	duk_small_uint_t shrink_flag = (flags & DUK_VSRESIZE_FLAG_SHRINK);
+	duk_small_uint_t compact_flag = (flags & DUK_VSRESIZE_FLAG_COMPACT);
+	duk_small_uint_t throw_flag = (flags & DUK_VSRESIZE_FLAG_THROW);
 
 	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%lu, curr_size=%ld, curr_top=%ld, "
-	                     "curr_bottom=%ld, shrink=%ld, compact=%ld, throw=%ld",
+	                     "curr_bottom=%ld, shrink=%d, compact=%d, throw=%d",
 	                     (unsigned long) min_new_size,
 	                     (long) (thr->valstack_end - thr->valstack),
 	                     (long) (thr->valstack_top - thr->valstack),
 	                     (long) (thr->valstack_bottom - thr->valstack),
-	                     (long) shrink_flag, (long) compact_flag, (long) throw_flag));
+	                     (int) shrink_flag, (int) compact_flag, (int) throw_flag));
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
@@ -610,10 +611,10 @@ duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
 	return duk_valstack_resize_raw(ctx,
-	                               min_new_size,  /* min_new_size */
-	                               0,             /* shrink_flag */
-	                               0,             /* compact_flag */
-	                               0);            /* throw_flag */
+	                               min_new_size,         /* min_new_size */
+	                               0 /* no shrink */ |   /* flags */
+	                               0 /* no compact */ |
+	                               0 /* no throw */);
 }
 
 void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
@@ -633,9 +634,9 @@ void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
 	(void) duk_valstack_resize_raw(ctx,
 	                               min_new_size,  /* min_new_size */
-	                               0,             /* shrink_flag */
-	                               0,             /* compact_flag */
-	                               1);            /* throw_flag */
+	                               0 /* no shrink */ |   /* flags */
+	                               0 /* no compact */ |
+	                               DUK_VSRESIZE_FLAG_THROW);
 }
 
 duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
@@ -653,9 +654,9 @@ duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
 	return duk_valstack_resize_raw(ctx,
 	                               min_new_size,  /* min_new_size */
-	                               0,             /* shrink_flag */
-	                               0,             /* compact_flag */
-	                               0);            /* throw_flag */
+	                               0 /* no shrink */ |   /* flags */
+	                               0 /* no compact */ |
+	                               0 /* no throw */);
 }
 
 void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
@@ -673,9 +674,9 @@ void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
 	(void) duk_valstack_resize_raw(ctx,
 	                               min_new_size,  /* min_new_size */
-	                               0,             /* shrink_flag */
-	                               0,             /* compact_flag */
-	                               1);            /* throw_flag */
+	                               0 /* no shrink */ |   /* flags */
+	                               0 /* no compact */ |
+	                               DUK_VSRESIZE_FLAG_THROW);
 }
 
 /*
