@@ -25,7 +25,7 @@ Release checklist
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
-* Check README.txt.dist
+* Check dist-files/README.txt
 
 * Ensure LICENSE.txt is up-to-date
 
@@ -131,7 +131,7 @@ Release checklist
   - These should remain the same after this point so that their hash
     values are known
 
-  - NOTE: because README.txt.dist also contains a "git describe" of
+  - NOTE: because dist-files/README.txt also contains a "git describe" of
     the current commit, the describe string will refer to the previous
     release tag (not the current release tag)
 
