@@ -198,7 +198,6 @@ done
 
 for i in \
 	README.txt \
-	Makefile \
 	duk_cmdline.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
@@ -206,7 +205,6 @@ done
 
 for i in \
 	README.txt \
-	Makefile \
 	c_eventloop.c \
 	c_eventloop.js \
 	ecma_eventloop.js \
@@ -225,7 +223,6 @@ done
 
 for i in \
 	README.txt \
-	Makefile \
 	hello.c \
 	; do
 	cp examples/hello/$i $DIST/examples/hello/
@@ -233,7 +230,6 @@ done
 
 for i in \
 	README.txt \
-	Makefile \
 	eval.c \
 	; do
 	cp examples/eval/$i $DIST/examples/eval/
@@ -262,13 +258,15 @@ for i in \
 done
 
 for i in \
-	Makefile.example \
 	Makefile.cmdline \
+	Makefile.eventloop \
+	Makefile.hello \
+	Makefile.eval \
 	; do
-	cp examples/$i $DIST/
+	cp dist-files/$i $DIST/
 done
 
-cat README.txt.dist | sed \
+cat dist-files/README.txt | sed \
 	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
 	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
 	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
