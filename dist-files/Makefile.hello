@@ -33,4 +33,3 @@ DEFINES += -DDUK_OPT_SELF_TESTS
 
 hello:	$(DUKTAPE_SOURCES) examples/hello/hello.c
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) examples/hello/hello.c $(CCLIBS)
-

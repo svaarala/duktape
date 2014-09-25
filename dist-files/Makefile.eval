@@ -1,0 +1,7 @@
+#
+#  Example Makefile for building the eval example
+#
+
+eval:
+	gcc -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
+		src/duktape.c examples/eval/eval.c -lm
