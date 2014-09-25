@@ -45,6 +45,7 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
 static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
 static duk_bool_t duk__is_leap_year(duk_int_t year);
 static duk_bool_t duk__timeval_in_valid_range(duk_double_t x);
+static duk_bool_t duk__timeval_in_leeway_range(duk_double_t x);
 static duk_bool_t duk__year_in_valid_range(duk_double_t year);
 
 /* Millisecond count constants. */
@@ -58,7 +59,8 @@ static duk_bool_t duk__year_in_valid_range(duk_double_t year);
  * 8640000000000000
  * (= 8.64e15)
  */
-#define DUK__MS_100M_DAYS       (8.64e15)
+#define DUK__MS_100M_DAYS         (8.64e15)
+#define DUK__MS_100M_DAYS_LEEWAY  (8.64e15 + 24 * 3600e3)
 
 /* Ecmascript year range:
  * > new Date(100e6 * 24 * 3600e3).toISOString()
@@ -233,9 +235,11 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 
 	/* If not within Ecmascript range, some integer time calculations
 	 * won't work correctly (and some asserts will fail), so bail out
-	 * if so.  This fixes test-bug-date-insane-setyear.js.
+	 * if so.  This fixes test-bug-date-insane-setyear.js.  There is
+	 * a +/- 24h leeway in this range check to avoid a test262 corner
+	 * case documented in test-bug-date-timeval-edges.js.
 	 */
-	if (!duk__timeval_in_valid_range(d)) {
+	if (!duk__timeval_in_leeway_range(d)) {
 		DUK_DD(DUK_DDPRINT("timeval not within valid range, skip tzoffset computation to avoid integer overflows"));
 		return 0;
 	}
@@ -917,6 +921,10 @@ static duk_bool_t duk__timeval_in_valid_range(duk_double_t x) {
 	return (x >= -DUK__MS_100M_DAYS && x <= DUK__MS_100M_DAYS);
 }
 
+static duk_bool_t duk__timeval_in_leeway_range(duk_double_t x) {
+	return (x >= -DUK__MS_100M_DAYS_LEEWAY && x <= DUK__MS_100M_DAYS_LEEWAY);
+}
+
 static duk_bool_t duk__year_in_valid_range(duk_double_t x) {
 	return (x >= DUK__MIN_ECMA_YEAR && x <= DUK__MAX_ECMA_YEAR);
 }
@@ -1079,7 +1087,13 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
 	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
-	DUK_ASSERT(duk__timeval_in_valid_range(d));  /* valid ecmascript range, caller ensures */
+
+	/* The timevalue must be in valid Ecmascript range, but since a local
+	 * time offset can be applied, we need to allow a +/- 24h leeway to
+	 * the value.  In other words, although the UTC time is within the
+	 * Ecmascript range, the local part values can be just outside of it.
+	 */
+	DUK_ASSERT(duk__timeval_in_leeway_range(d));
 
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
