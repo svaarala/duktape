@@ -357,6 +357,10 @@ issuecount:
 	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
 	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo $(DITZ_RELEASE) | wc -l | tr -d ' '`"
 
+.PHONY: issues
+issues:
+	ditz todo $(DITZ_RELEASE)
+
 .PHONY: dukscanbuild
 dukscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
