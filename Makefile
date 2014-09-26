@@ -8,6 +8,12 @@
 #    - running test cases
 #    - building the duktape.org website
 #
+#  The Makefile now also works in a very limited fashion with Cygwin,
+#  you can 'make dist' as long as you have enough software installed.
+#  The closure compiler requires a working JDK installation (JRE is
+#  not enough, JAVA_HOME must point to the JDK), and a working Apache
+#  'ant' command.
+#
 #  The source distributable has more platform neutral example Makefiles
 #  for end user projects (though an end user should really just use their
 #  own Makefile).
