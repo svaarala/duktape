@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: better resolution for freebsd 1.0 clang -m32 packed tval issue
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-26 10:03:18.426028 Z
+references: []
+
+id: 04819ef07c0fec02329cfaedef2f0b9956168b20
+log_events: 
+- - 2014-09-26 10:03:18.601935 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
