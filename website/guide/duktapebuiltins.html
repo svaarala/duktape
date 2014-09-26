@@ -125,11 +125,14 @@ and is not intended to be parsed programmatically.  This is mostly useful for
 developers (see <code>duk_hthread_builtins.c</code> for the code which sets
 the value).</p>
 
-<p>Example from Duktape 0.10.0:</p>
+<p>Example from Duktape 1.0.0:</p>
 <pre class="ecmascript-code">
-ll u p2 a4 x64     // l|b|m integer endianness, l|b|m double endianness,
-                   // p|u packed/unpacked tval, p1|p2 prop memory layout,
-                   // a1/a4/a8 align target, arch
+ll u p2 a4 x64 linux gcc     // l|b|m integer endianness, l|b|m IEEE double endianness
+                             // p|u packed/unpacked tval, p1|p2|p3 prop memory layout
+                             // a1/a4/a8: align target
+                             // x64 etc: architecture
+                             // linux etc: operating system
+                             // gcc etc: compiler
 </pre>
 
 <h3>fin()</h3>
