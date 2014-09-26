@@ -213,7 +213,13 @@ Release checklist
 
   - git add and commit ditz issues
 
-* Upload and test
+* Upload website and test
+
+* Final Git stuff
+
+  - Ensure ``master`` is pushed and unnecessary branches are cleaned up
+
+  - Push the release tag
 
 * Bump Duktape version for next release and testing
 
