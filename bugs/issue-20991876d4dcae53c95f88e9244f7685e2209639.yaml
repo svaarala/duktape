@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a few ecmascript files to dist (e.g. mandelbrot)
+desc: |-
+  This would make it easier to test the command line tool.  Also add a note
+  to Guide for testing these.
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-26 12:45:33.710569 Z
+references: []
+
+id: 20991876d4dcae53c95f88e9244f7685e2209639
+log_events: 
+- - 2014-09-26 12:45:33.902389 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
