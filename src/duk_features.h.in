@@ -233,6 +233,13 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* Clang */
 #if defined(__clang__)
 #define DUK_F_CLANG
+/* It seems clang also defines __GNUC__, so undo the GCC detection. */
+#if defined(DUK_F_GCC)
+#undef DUK_F_GCC
+#endif
+#if defined(DUK_F_GCC_VERSION)
+#undef DUK_F_GCC_VERSION
+#endif
 #endif
 
 /* MSVC */
