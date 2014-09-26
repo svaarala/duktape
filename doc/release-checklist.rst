@@ -2,6 +2,14 @@
 Release checklist
 =================
 
+* Git branch naming note
+
+  - ``vNN.NN-release-prep``: use this naming for bumping version number, etc.
+    Merge to master before tagging release.
+
+  - ``vNN.NN-release-post``: use this naming for bumping version number after
+    release, checklist fixes after release, etc.
+
 * Git maintenance
 
   - ensure git commits are up-to-date
@@ -66,21 +74,37 @@ Release checklist
 
   - Windows MSVC (cl) x64
 
+  - Windows Cygwin 32-bit
+
+  - Windows Cygwin 64-bit
+
   - Linux MIPS gcc
 
 * Ecmascript testcases
 
   - **FIXME: semiautomate test running for various configurations**
 
-  - On x86-64:
+  - On x86-64 (exercise 16-byte duk_tval):
 
     - make qecmatest   # quick test
 
-    - make vgecmatest  # valgrind test
+    - VALGRIND_WRAP=1 make qecmatest  # valgrind test
+
+  - On x86-32 (exercise 8-byte duk_tval)
+
+    - make qecmatest   # quick test
 
   - Run testcases on all endianness targets
 
   - Run with assertions enabled at least on x86-64
+
+* Memory usage testing
+
+  - Leaks are mostly detected by Valgrind, but bugs in valstack or object
+    resize algorithms (or similar) can lead to unbounded or suboptimal
+    memory usage
+
+  - XXX: establish some baseline test
 
 * API testcases
 
@@ -126,14 +150,31 @@ Release checklist
 
     - make luajstest
 
+* Git release and tag
+
+  - Tagging should be done before creating the candidate tar files so that
+    "git describe" output will have a nice tag name.
+
+  - This will be a preliminary tag which can be moved if necessary.  Don't
+    push it to the public repo until the tag is certain not to move anymore.
+
+  - There can be commits to the repo after tagging but nothing that will
+    affect "make dist" output.
+
+  - ``git tag -l -n1`` to list current tags
+
+  - ``git tag -s -m "<one line release description>" vN.N.N`` to set tag
+
+  - ``git tag -f -s -m "<one line release description>" vN.N.N`` to forcibly
+    reset tag if it needs to be moved
+
 * Build candidate tar.xz files
 
   - These should remain the same after this point so that their hash
-    values are known
+    values are known.
 
-  - NOTE: because dist-files/README.txt also contains a "git describe" of
-    the current commit, the describe string will refer to the previous
-    release tag (not the current release tag)
+  - Check git describe output from dist ``README.txt``, ``src/duktape.h``,
+    and ``src/duktape.c``.  It should show the release tag.
 
 * Check source dist contents
 
@@ -156,23 +197,21 @@ Release checklist
 
   - "latest" class
 
+  - Release notes (layout and contents) for release
+
 * Build website
 
   - Readthrough
 
   - Test that the Duktape REPL (Dukweb) works
 
+  - Check duk command line version number in Guide "Getting started"
+
 * Ditz release
 
   - ``ditz release vN.N``
 
   - git add and commit ditz issues
-
-* Git release and tag
-
-  - ``git tag -l -n1`` to list current tags
-
-  - ``git tag -s -m "<one line release description>" vN.N.N``
 
 * Upload and test
 
