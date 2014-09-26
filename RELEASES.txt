@@ -538,7 +538,7 @@ Released
 Planned
 =======
 
-1.0.0 (2014-08-XX)
+1.0.0 (2014-10-XX)
 ------------------
 
 * Feature complete baseline release
@@ -546,7 +546,8 @@ Planned
 1.1.0 (2014-XX-XX)
 ------------------
 
-* Debugger?
+1.2.0 (2015-XX-XX)
+------------------
 
 2.0.0 (XXXX-XX-XX)
 ------------------
