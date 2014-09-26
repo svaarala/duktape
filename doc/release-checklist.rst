@@ -228,3 +228,8 @@ Release checklist
     version number easy to distinguish as an unofficial release.
 
   - ``src/duk_api_public.h.in``
+
+* Update ``DITZ_RELEASE`` in ``Makefile``
+
+  - It should point to the next expected release so that ``make issuecount``
+    and ``make issues`` provide useful output
