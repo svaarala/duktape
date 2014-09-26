@@ -771,10 +771,10 @@ duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
-		c1 = fpclassify(d1);
-		c2 = fpclassify(d2);
+		c1 = DUK_FPCLASSIFY(d1);
+		c2 = DUK_FPCLASSIFY(d2);
 
-		if (c1 == FP_NORMAL && c2 == FP_NORMAL) {
+		if (c1 == DUK_FP_NORMAL && c2 == DUK_FP_NORMAL) {
 			/* XXX: this is a very narrow check, and doesn't cover
 			 * zeroes, subnormals, infinities, which compare normally.
 			 */
