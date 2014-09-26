@@ -266,6 +266,7 @@ clean:
 	@rm -rf dist/
 	@rm -rf site/
 	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
+	@rm -f ajduk ajdukd
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
 	@rm -f duktape-*.iso
@@ -320,6 +321,7 @@ cleanall: clean
 	@rm -rf dtrace4linux
 	@rm -rf flow
 	@rm -rf 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	@rm -rf alljoyn-js ajtcl
 
 libduktape.so.1.0.0: dist
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -771,6 +773,32 @@ dtrace4linux:
 flow:
 	# https://github.com/facebook/flow
 	$(GIT) clone --depth 1 https://github.com/facebook/flow.git
+
+alljoyn-js:
+	# https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+	# no --depth 1 ("dumb http transport does not support --depth")
+	$(GIT) clone https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+
+ajtcl:
+	# https://git.allseenalliance.org/cgit/core/ajtcl.git/
+	# no --depth 1 ("dumb http transport does not support --depth")
+	$(GIT) clone https://git.allseenalliance.org/cgit/core/ajtcl.git/
+
+ajduk: alljoyn-js ajtcl dist
+	# Command line with Alljoyn.js pool allocator, for low memory testing.
+	# The pool sizes only make sense with -m32, so force that.  This forces
+	# us to use barebones cmdline too.  The compilation produces some
+	# harmless warnings at present.
+	$(CC) -o $@ \
+		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
+		$(CCOPTS_NONDEBUG) \
+		-m32 \
+		-DDUK_CMDLINE_BAREBONES -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L \
+		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
+		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
+		-lm -lpthread
+	@echo "*** SUCCESS:"
+	@ls -l ajduk
 
 .PHONY: gccpredefs
 gccpredefs:
