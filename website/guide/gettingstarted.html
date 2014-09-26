@@ -13,20 +13,20 @@ $ cd /tmp
 $ tar xvfJ duktape-&lt;version&gt;.tar.xz
 </pre>
 
-<p>Compile the command line tool using the provided Makefile (your system
-needs to have <code>readline</code> and <code>ncurses</code> library and headers
-installed):</p>
+<p>Compile the command line tool using the provided Makefile:</p>
 <pre>
-# NOTE: ensure you have readline and curses library and headers installed
 $ cd /tmp/duktape-&lt;version&gt;/
 $ make -f Makefile.cmdline
 </pre>
 
 <div class="note">
-The command line tool requires <code>readline</code> by default.  If it's
-not available or there are other portability issues, try enabling the
-<code class="nobreak">-DDUK_CMDLINE_BAREBONES</code> compile option in the Makefile.
-The option minimizes any non-portable dependencies.
+The command line avoids platform dependencies by default.  If your platform
+has <code>readline</code> and the necessary development headers, you can enable
+line editing support by editing the Makefile:
+<ul>
+<li>Comment out <code class="nobreak">-DDUK_CMDLINE_BAREBONES</code></li>
+<li>Add <code>-lreadline</code> and <code>-lncurses</code></li>
+</ul>
 </div>
 
 <p>You can now run Ecmascript code interactively:</p>
