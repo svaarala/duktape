@@ -17,7 +17,7 @@ desc: |-
     (because it hasn't been needed), so the function would be collectable.
 type: :task
 component: duk
-release: 
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -29,4 +29,8 @@ log_events:
 - - 2014-03-14 15:19:24.541523 Z
   - sva <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-09-26 20:43:37.510818 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from unassigned
   - ""

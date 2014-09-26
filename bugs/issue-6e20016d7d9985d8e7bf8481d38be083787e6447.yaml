@@ -3,7 +3,7 @@ title: "function instance optimization: prototype object, often not needed but m
 desc: ""
 type: :task
 component: duk
-release: 
+release: v1.1
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-02-18 13:22:37.380675 Z
   - sva <sami.vaarala@iki.fi>
   - unassigned from release v0.10
+  - ""
+- - 2014-09-26 20:43:45.299503 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from unassigned
   - ""
