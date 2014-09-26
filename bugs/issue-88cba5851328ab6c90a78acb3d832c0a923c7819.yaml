@@ -16,3 +16,9 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-09-26 21:32:52.894080 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Maybe a release-notes-v1-0.rst would be more appropriate: known issues are just
+    a part of the release.
