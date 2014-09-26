@@ -67,5 +67,10 @@ keep the example somewhat simple.  Some shortcomings include:
 * The example uses poll() while one should use epoll() on Linux, kqueue()
   on BSD systems, etc.
 
+* Timers are not very accurate, e.g. setInterval() does not try to guarantee
+  a steady schedule.  Instead, the next interval is scheduled after the
+  current callback has finished.  This is not the best behavior for some
+  environments, but avoids bunching callbacks.
+
 * Error handling is mostly missing.  Debug prints don't interact well
   with curses.
