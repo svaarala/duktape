@@ -13,15 +13,15 @@ CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./src
 CCLIBS	= -lm
 
-# For the command line tool
-CCLIBS += -lreadline
+# With this option duk_cmdline.c will not assume readline and will be as
+# portable as possible.
+CCOPTS += -DDUK_CMDLINE_BAREBONES
 
-# On some platforms -lreadline also requires -lncurses (e.g. RHEL), so it is
-# added by default (you may be able to remove it)
-CCLIBS += -lncurses
-
-# If you don't have readline, or something else fails to compile
-#CCOPTS += -DDUK_CMDLINE_BAREBONES
+# If you have readline, you may want to comment out -DDUK_CMDLINE_BAREBONES
+# and enable these.  On some platforms -lreadline also requires -lncurses
+# (e.g. RHEL), so it is added by default (you may be able to remove it)
+#CCLIBS += -lreadline
+#CCLIBS += -lncurses
 
 # Optional feature defines, see: http://www.duktape.org/guide.html#compiling
 CCOPTS += -DDUK_OPT_SELF_TESTS
