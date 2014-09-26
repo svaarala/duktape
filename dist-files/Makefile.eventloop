@@ -3,6 +3,10 @@
 #
 
 evloop:
+	@echo "NOTE: The eventloop is example is intended to be used on Linux"
+	@echo "      or other common UNIX variants.  It is not fully portable."
+	@echo ""
+
 	gcc -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
 		examples/eventloop/main.c \
 		examples/eventloop/c_eventloop.c \
@@ -13,5 +17,6 @@ evloop:
 		src/duktape.c \
 		-lm -lncurses
 
-	@echo "NOTE: you must 'cd examples/eventloop' before you execute the"
+	@echo ""
+	@echo "NOTE: You must 'cd examples/eventloop' before you execute the"
 	@echo "      eventloop binary: it relies on finding .js files in CWD"
