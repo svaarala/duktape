@@ -14,12 +14,18 @@ values.</p>
 <tbody>
 <tr><td class="propname">Duktape</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
 <tr><td class="propname">Proxy</td><td>Proxy constructor borrowed from ES6 draft (not part of Ecmascript E5/E5.1).</td></tr>
+<tr><td class="propname">require</td><td>Non-standard, CommonsJS module loading function.</td></tr>
 <tr><td class="propname">print</td><td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
 <tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
 </tbody>
 </table>
 
-<h3>print and alert</h3>
+<h3>require()</h3>
+
+<p>CommonJS module loading function, see
+<a href="#modules">Modules</a>.</p>
+
+<h3>print() and alert()</h3>
 
 <p><code>print()</code> writes to <code>stdout</code> with an automatic
 flush afterwards.  The bytes written depend on the arguments:</p>
