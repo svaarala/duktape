@@ -54,14 +54,6 @@ RangeError: regexp executor recursion limit
 even though it is not allowed by the E5.1 specification.  RegExp dollar
 escapes are used in existing Ecmascript code quite widely.</p>
 
-<h2>Invalid stack indices</h2>
-
-<p>The internal implementation for some stack operations (like
-<code>duk_set_top()</code> uses pointer arithmetic.  On 32-bit platforms
-the pointer arithmetic may wrap and work in unexpected ways if stack
-index values are large enough (e.g. 0x20000000 on a 32-bit platform
-with 8-byte packed value type).</p>
-
 <h2>Duktape does not fully support locales</h2>
 
 <p>Although Duktape supports the concept of a local time, it doesn't support
