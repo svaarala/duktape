@@ -19,8 +19,11 @@ Suggested feature options
 
   - ``DUK_OPT_NO_PC2LINE``
 
-* If you don't need the Duktape-specific additional JX/JC formats, use both
-  ``DUK_OPT_NO_JX`` and ``DUK_OPT_NO_JC``.
+* If you don't need the Duktape-specific additional JX/JC formats, use:
+
+  - ``DUK_OPT_NO_JX``
+
+  - ``DUK_OPT_NO_JC``
 
 * Features borrowed from Ecmascript E6 can usually be disabled:
 
@@ -30,8 +33,11 @@ Suggested feature options
 
   - ``DUK_OPT_NO_ES6_PROXY``
 
-* If you don't need regexp support, use ``DUK_OPT_NO_REGEXP_SUPPORT``.
+* If you don't need regexp support, use:
+
+  - ``DUK_OPT_NO_REGEXP_SUPPORT``.
 
 * Duktape debug code uses a large, static temporary buffer for formatting
-  debuglog lines.  Use e.g. ``-DDUK_OPT_DEBUG_BUFSIZE=2048`` to reduce
-  this overhead.
+  debuglog lines.  Use e.g. the following to reduce this overhead:
+
+  - ``-DDUK_OPT_DEBUG_BUFSIZE=2048``
