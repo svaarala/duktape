@@ -454,121 +454,19 @@ The table below summarizes the available options, in no particular order:</p>
 
 <h3 id="timing-sensitive-options">Timing sensitive applications (e.g. games)</h3>
 
-<ul>
-<li>Use the default memory management settings (reference counting and
-    mark-and-sweep) but enable <code>DUK_OPT_NO_VOLUNTARY_GC</code> to
-    eliminate mark-and-sweep pauses.  Use explicit GC calls (either
-    <code>duk_gc()</code> from C or <code>Duktape.gc()</code> from
-    Ecmascript) when possible to collect circular references.</li>
-</ul>
+<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/timing-sensitive.rst">timing-sensitive.rst</a>.</p>
 
 <h3 id="memory-constrained-options">Memory constrained applications</h3>
 
-<ul>
-<li>Use the default memory management settings: although reference counting
-    increases heap header size, it also reduces memory usage fluctuation
-    which is often more important than absolute footprint.</li>
-<li>Reduce error handling footprint with one or more of:
-    <code>DUK_OPT_NO_AUGMENT_ERRORS</code>,
-    <code>DUK_OPT_NO_TRACEBACKS</code>,
-    <code>DUK_OPT_NO_VERBOSE_ERRORS</code>,
-    <code>DUK_OPT_NO_PC2LINE</code>.</li>
-<li>If you don't need the Duktape-specific additional JX/JC formats,
-    use both <code>DUK_OPT_NO_JX</code> and <code>DUK_OPT_NO_JC</code>.</li>
-<li>Features borrowed from Ecmascript E6 can usually be disabled:
-    <code>DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</code>,
-    <code>DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY</code>,
-    <code>DUK_OPT_NO_ES6_PROXY</code>.</li>
-<li>If you don't need regexp support, use <code>DUK_OPT_NO_REGEXP_SUPPORT</code>.</li>
-<li>Duktape debug code uses a large, static temporary buffer for formatting debug
-    log lines.  Use e.g. <code class="nobreak">-DDUK_OPT_DEBUG_BUFSIZE=2048</code> to reduce
-    this overhead.</li>
-</ul>
+<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a>.</p>
 
 <h2>DUK_OPT_HAVE_CUSTOM_H and duk_custom.h</h2>
 
-<p>Normally you define <code>DUK_OPT_xxx</code> feature options and the
-internal <code>duk_features.h</code> header resolves these with platform/compiler
-constraints to determine effective compilation options for Duktape internals.
-The effective options are provided as <code>DUK_USE_xxx</code> defines which
-you normally never see.</p>
-
-<p>If you define <code>DUK_OPT_HAVE_CUSTOM_H</code>, Duktape will include
-<code>duk_custom.h</code> after determining the appropriate <code>DUK_USE_xxx</code>
-defines but before compiling any code.  The <code>duk_custom.h</code> header,
-which you provide, can then tweak the active <code>DUK_USE_xxx</code> defines
-freely.  See <code>duk_features.h</code> for the available defines.</p>
-
-<p>This approach is useful when the <code>DUK_OPT_xxx</code> feature options
-don't provide enough flexibility to tweak the build.  The downside is that
-you can easily create inconsistent <code>DUK_USE_xxx</code> flags, the
-customization header will be version specific, and you need to peek into
-Duktape internals to know what defines to tweak.</p>
+<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
 
 <h2>DUK_OPT_PANIC_HANDLER</h2>
 
-<p>The default panic handler will print an error message to stdout
-unless I/O is disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call
-<code>abort()</code> or cause a segfault if
-<code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined.</p>
-
-<p>You can override the entire panic handler by defining
-<code>DUK_OPT_PANIC_HANDLER</code>.  For example, you could add the
-following to your compiler options:</p>
-<pre>
-'-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
-</pre>
-
-<p>You can also use:</p>
-<pre>
-'-DDUK_OPT_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg))}'
-</pre>
-
-<p>which calls your custom handler:</p>
-<pre class="c-code">
-void my_panic_handler(int code, const char *msg) {
-    /* Your panic handling.  Must not return. */
-}
-</pre>
-
-<p>The <code>DUK_OPT_PANIC_HANDLER</code> macro is used internally by Duktape,
-so your panic handler function needs to be declared for Duktape compilation to
-avoid compiler warnings about undeclared functions.  You can "inject" a declaration
-for your function into Duktape compilation with:</p>
-<pre>
-'-DDUK_OPT_DECLARE=extern void my_panic_handler(int code, const char *msg);'
-</pre>
-
-<p>After this you might still get a compilation warning like "a noreturn function
-must not return" as the compiler doesn't know your panic handler doesn't return.
-You can fix this by either using a (compiler specific) "noreturn" declaration,
-or by modifying the panic handler macro to something like:</p>
-
-<pre>
-'-DDUK_OPT_PANIC_HANDLER(code,msg)={my_panic_handler((code),(msg));abort()}'
-</pre>
-
-<p>As <code>abort()</code> is automatically a "noreturn" function the panic macro
-body can no longer return.  Duktape always includes <code>stdlib.h</code> which
-provides the <code>abort()</code> prototype so no additional include files are
-needed.</p>
-
-<h2>Adding new feature options</h2>
-
-<p>This section only applies if you customize Duktape internals and wish
-to submit a patch to be included in the mainline distribution:</p>
-
-<ul>
-<li>Add a descriptive <code>DUK_OPT_xxx</code> for the custom feature.
-    The custom feature should only be enabled if the feature option is
-    explicitly given.</li>
-<li>Modify <code>duk_features.h</code> to detect your custom feature
-    option and define appropriate internal <code>DUK_USE_xxx</code>
-    define(s).  Conflicts with other features should be detected.
-    Code outside <code>duk_features.h</code> should only listen
-    to <code>DUK_USE_xxx</code> defines so that the resolution process
-    is fully contained in <code>duk_features.h</code>.</li>
-</ul>
+<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
 
 <h2>Memory management alternatives</h2>
 
