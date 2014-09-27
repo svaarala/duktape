@@ -97,7 +97,8 @@ minimize garbage collection pauses.</p>
 form of <code>DUK_OPT_xxx</code> compiler defines.  These will be taken into
 account by the internal <code>duk_features.h</code> file, which resolves the
 final internal features based on feature requests, compiler features, and
-platform features.</p>
+platform features.  The full list of feature options is described in
+<a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
 
 <div class="note">
 If you use Duktape feature options, you must define the feature options both
@@ -106,8 +107,8 @@ when compiling Duktape and when compiling any application code using the
 affect the binary compatibility of the Duktape API.
 </div>
 
-<p>The available feature options can be found in <code>duk_features.h</code>.
-The table below summarizes the available options, in no particular order:</p>
+<p>The table below summarizes the most commonly needed feature options, in no
+particular order:</p>
 
 <table>
 <thead>
