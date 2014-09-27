@@ -9,9 +9,11 @@ This document describes all the supported Duktape feature options.
 
 See also:
 
-- ``low-memory.rst``
+- ``low-memory.rst``: suggested options for low memory environments
 
-- ``timing-sensitive.rst``
+- ``timing-sensitive.rst``: suggested options for timing sensitive environments
+
+- ``src/duk_features.h.in``: resolution of feature options to use flags
 
 Platform and portability
 ========================
