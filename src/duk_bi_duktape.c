@@ -172,7 +172,11 @@ duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 
 	flags = (duk_small_uint_t) duk_get_uint(ctx, 0);
 	rc = duk_heap_mark_and_sweep(thr->heap, flags);
-	duk_push_boolean(ctx, rc);
+
+	/* XXX: Not sure what the best return value would be in the API.
+	 * Return a boolean for now.  Note that rc == 0 is success (true).
+	 */
+	duk_push_boolean(ctx, !rc);
 	return 1;
 #else
 	DUK_UNREF(ctx);
