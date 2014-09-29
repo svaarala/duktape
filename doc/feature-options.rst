@@ -5,7 +5,24 @@ Duktape feature options
 Overview
 ========
 
-This document describes all the supported Duktape feature options.
+The effective set of Duktape features is resolved in three steps:
+
+* User defines ``DUK_OPT_xxx`` feature options.  These are essentially
+  requests to enable/disable some feature.
+
+* Duktape feature resolution in ``duk_features.h.in`` takes into account
+  the requested features, the platform, the compiler, the operating system
+  etc, and defines ``DUK_USE_xxx`` internal use flags.  Other parts of
+  Duktape only listen to these "use flags", so that feature resolution is
+  strictly contained.
+
+* User may optionally have a ``duk_custom.h`` header which can further
+  tweak the effective ``DUK_USE_xxx`` defines.  This is a last resort and
+  is somewhat fragile.  See ``DUK_OPT_HAVE_CUSTOM_H`` for more discussion.
+
+This document describes all the supported Duktape feature options and should
+be kept up-to-date with new features.  The feature option list in the guide
+is a subset of the most commonly needed features.
 
 See also:
 
@@ -15,8 +32,29 @@ See also:
 
 - ``src/duk_features.h.in``: resolution of feature options to use flags
 
-Platform and portability
-========================
+Feature option naming
+=====================
+
+Feature options that enable a certain (default) feature are named::
+
+  DUK_OPT_MY_FEATURE
+
+Feature options that disable a (default) feature are named::
+
+  DUK_OPT_NO_MY_FEATURE
+
+Both flags are reserved at the same time.  One of the options will match
+the default behavior, so it won't actually be implemented.
+
+Some feature options have a value associated with them.  This is the case
+for e.g. ``DUK_OPT_PANIC_HANDLER`` or ``DUK_OPT_FORCE_ALIGN``.  These are
+handled case by case.
+
+Avoid using words like "disable" in the feature naming.  This will lead to
+odd names if the default behavior changes and a "no disable" flag is needed.
+
+Platform and portability options
+================================
 
 DUK_OPT_FORCE_ALIGN
 -------------------
@@ -87,8 +125,8 @@ Errors in the initialization code result in a fatal error.
 which provides much more flexibility for extending the global environment,
 implementing sandboxing, etc.)
 
-Memory management
-=================
+Memory management options
+=========================
 
 DUK_OPT_NO_PACKED_TVAL
 ----------------------
@@ -148,8 +186,8 @@ DUK_OPT_GC_TORTURE
 Development time option: force full mark-and-sweep on every allocation to
 stress test memory management.
 
-Ecmascript features
-===================
+Ecmascript feature options
+==========================
 
 DUK_OPT_NO_AUGMENT_ERRORS
 -------------------------
@@ -334,8 +372,8 @@ DUK_OPT_NO_JC
 Disable support for the JC format.  Reduces code footprint.  An attempt
 to encode or decode the format causes an error.
 
-Debugging
-=========
+Debugging options
+=================
 
 DUK_OPT_SELF_TESTS
 ------------------
