@@ -233,6 +233,13 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 /* Clang */
 #if defined(__clang__)
 #define DUK_F_CLANG
+/* It seems clang also defines __GNUC__, so undo the GCC detection. */
+#if defined(DUK_F_GCC)
+#undef DUK_F_GCC
+#endif
+#if defined(DUK_F_GCC_VERSION)
+#undef DUK_F_GCC_VERSION
+#endif
 #endif
 
 /* MSVC */
@@ -1921,6 +1928,52 @@ typedef FILE duk_file;
 #define DUK_USE_ARCH_STRING "emscripten"
 #else
 #define DUK_USE_ARCH_STRING "unknown"
+#endif
+
+/*
+ *  OS string, human readable value exposed in Duktape.env
+ */
+
+#if defined(DUK_F_LINUX)
+#define DUK_USE_OS_STRING "linux"
+#elif defined(DUK_F_FREEBSD)
+#define DUK_USE_OS_STRING "freebsd"
+#elif defined(DUK_F_OPENBSD)
+#define DUK_USE_OS_STRING "openbsd"
+#elif defined(DUK_F_NETBSD)
+#define DUK_USE_OS_STRING "netbsd"
+#elif defined(DUK_F_BSD)
+#define DUK_USE_OS_STRING "bsd"
+#elif defined(DUK_F_UNIX)
+#define DUK_USE_OS_STRING "unix"
+#elif defined(DUK_F_WINDOWS)
+#define DUK_USE_OS_STRING "windows"
+#elif defined(DUK_F_TOS)
+#define DUK_USE_OS_STRING "tos"
+#elif defined(DUK_F_AMIGAOS)
+#define DUK_USE_OS_STRING "amigaos"
+#elif defined(DUK_F_QNX)
+#define DUK_USE_OS_STRING "qnx"
+#else
+#define DUK_USE_OS_STRING "unknown"
+#endif
+
+/*
+ *  Compiler string, human readable value exposed in Duktape.env
+ */
+
+#if defined(DUK_F_GCC)
+#define DUK_USE_COMPILER_STRING "gcc"
+#elif defined(DUK_F_CLANG)
+#define DUK_USE_COMPILER_STRING "clang"
+#elif defined(DUK_F_MSVC)
+#define DUK_USE_COMPILER_STRING "msvc"
+#elif defined(DUK_F_MINGW)
+#define DUK_USE_COMPILER_STRING "mingw"
+#elif defined(DUK_F_VBCC)
+#define DUK_USE_COMPILER_STRING "vbcc"
+#else
+#define DUK_USE_COMPILER_STRING "unknown"
 #endif
 
 /*
