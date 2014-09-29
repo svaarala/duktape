@@ -304,14 +304,16 @@ Add a non-standard ``source`` property to function instances.  This allows
 function ``toString()`` to print out the actual function source.  The
 property is disabled by default because it increases memory footprint.
 
-..note:: Unimplemented as of Duktape 0.12.0.
+.. note:: Unimplemented as of Duktape 0.12.0.
 
 DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT
 ---------------------------------------
 
 For better compatibility with existing code, ``Array.prototype.splice()``
 has non-standard behavior by default when the second argument (deleteCount)
-is not given: the splice operation is extended to the end of the array.
+is not given: the splice operation is extended to the end of the array,
+see
+`test-bi-array-proto-splice-no-delcount.js  <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-splice-no-delcount.js>`_.
 If this option is given, ``splice()`` will behave in a strictly
 conforming fashion, treating a missing deleteCount the same as an undefined
 (or 0) value.
@@ -458,7 +460,7 @@ to determine effective compilation options for Duktape internals.  The
 effective options are provided as ``DUK_USE_xxx`` defines which you normally
 never see.
 
->If you define ``DUK_OPT_HAVE_CUSTOM_H``, Duktape will include
+If you define ``DUK_OPT_HAVE_CUSTOM_H``, Duktape will include
 ``duk_custom.h`` after determining the appropriate ``DUK_USE_xxx`` defines
 but before compiling any code.  The ``duk_custom.h`` header, which you
 provide, can then tweak the active ``DUK_USE_xxx`` defines freely.  See
