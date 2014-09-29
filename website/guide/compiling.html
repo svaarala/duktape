@@ -140,14 +140,6 @@ particular order:</p>
     compilation fails in endianness detection.</td>
 </tr>
 <tr>
-<td class="definename">DUK_OPT_DEEP_C_STACK</td>
-<td>By default Duktape imposes a sanity limit on the depth of the C stack
-    because it is often limited in embedded environments.  This option
-    forces Duktape to use a deep C stack which relaxes e.g. recursion
-    limits.  Automatic feature detection enables deep C stacks on some
-    platforms known to have them (e.g. Linux, BSD, Windows).</td>
-</tr>
-<tr>
 <td class="definename">DUK_OPT_NO_REFERENCE_COUNTING</td>
 <td>Disable reference counting and use only mark-and-sweep for garbage collection.
     Although this reduces memory footprint of heap objects, the downside is much
@@ -201,31 +193,28 @@ particular order:</p>
 <td>Enable internal assert checks.  These slow down execution considerably
     so only use when debugging.</td>
 </tr>
-<tr>
-<td class="definename">DUK_OPT_HAVE_CUSTOM_H</td>
-<td>Enable user-provided <code>duk_custom.h</code> customization header
-    (see below for details).  Not recommended unless really necessary.</td>
-</tr>
 </tbody>
 </table>
 
 <h2>Suggested feature options for some environments</h2>
 
-<h3 id="timing-sensitive-options">Timing sensitive applications (e.g. games)</h3>
-
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/timing-sensitive.rst">timing-sensitive.rst</a>.</p>
-
-<h3 id="memory-constrained-options">Memory constrained applications</h3>
-
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a>.</p>
-
-<h2>DUK_OPT_HAVE_CUSTOM_H and duk_custom.h</h2>
-
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
+<ul>
+<li id="timing-sensitive-options">Timing sensitive applications, e.g. games: see
+    <a href="https://github.com/svaarala/duktape/blob/master/doc/timing-sensitive.rst">timing-sensitive.rst</a></li>
+<li id="memory-constrained-options">Memory constrained applications: see
+    <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a></li>
+</ul>
 
 <h2>DUK_OPT_PANIC_HANDLER</h2>
 
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
+<p>The default panic handler will print an error message to stdout unless I/O is
+disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call <code>abort()</code>
+or cause a segfault if <code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined.</p>
+
+<p>This is not always the best behavior for production applications which may
+already have better panic recovery mechanisms.  To replace the default panic
+handler, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
 
 <h2>Memory management alternatives</h2>
 
