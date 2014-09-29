@@ -28,3 +28,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.0 from v0.12
   - ""
+- - 2014-09-29 10:56:14.671617 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - Add this as an internal RST document with only the main points in the guide.
