@@ -363,10 +363,10 @@ streams (each bit packed stream begins at a byte boundary):
 +--------+------+---------------------------------------------------+
 | 16     | u32  | Byte offset of diff bitstream for PC 1*SKIP       |
 +--------+------+---------------------------------------------------+
-| ...    |      | ... a total of ceil(bytecode_length/SKIP)         |
-|        |      |     line/offset entries                           |
+| ...    |      | A total of ceil(bytecode_length/SKIP)             |
+|        |      | line/offset entries                               |
 +--------+------+---------------------------------------------------+
-| ...    |      | ... diff bitstreams                               |
+| ...    |      | Diff bitstreams                                   |
 +--------+------+---------------------------------------------------+
 
 The diff bitstream consists of SKIP-1 diff entries for a certain
