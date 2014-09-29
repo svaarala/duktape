@@ -545,6 +545,9 @@ Planned
 
 * Fix DUK_INVALID_INDEX define value, it used INT_MIN directly
 
+* Fix return value of Duktape.gc() to return true (instead of false) for
+  a successful mark-and-sweep
+
 1.1.0 (2014-XX-XX)
 ------------------
 
