@@ -1,0 +1,20 @@
+<h1 id="sandboxing">Sandboxing</h1>
+
+<p>Sandboxed environments allow execution of untrusted code with two broad
+goals in mind:</p>
+<ul>
+<li>Security: prevent untrusted code from doing unsafe operations such as
+    accessing memory directly, causing segfaults, etc.</li>
+<li>Availability: prevent untrusted code from hogging resources, e.g.
+    consuming all available memory or entering an infinite loop.</li>
+</ul>
+
+<p>Duktape provides mechanisms to achieve these goals for untrusted Ecmascript
+code.  All C code is expected to be trusted.
+See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/sandboxing.rst">sandboxing.rst</a>
+for a detailed discussion of how to implement sandboxing.</p>
+
+<div class="note">
+Sandboxing support in Duktape 1.0 is still a work in progress.
+</div>
