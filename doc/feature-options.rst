@@ -77,7 +77,7 @@ DUK_OPT_USER_INITJS
 Provide a string to evaluate when a thread with new built-ins (a new global
 environment) is created.  This allows you to make minor modifications to the
 global environment before any code is executed in it.  The value must be a
-string, e.g.:
+string, e.g.::
 
     -DDUK_OPT_USER_INITJS='"this.foo = 123"'
 
@@ -473,21 +473,6 @@ As ``abort()`` is automatically a "noreturn" function the panic macro body
 can no longer return.  Duktape always includes ``stdlib.h`` which provides
 the ``abort()`` prototype so no additional include files are needed.
 
-Adding new feature options
-==========================
-
-This section only applies if you customize Duktape internals and wish to
-submit a patch to be included in the mainline distribution:
-
-* Add a descriptive ``DUK_OPT_xxx`` for the custom feature.  The custom
-  feature should only be enabled if the feature option is explicitly given.
-
-* Modify ``duk_features.h`` to detect your custom feature option and define
-  appropriate internal ``DUK_USE_xxx`` define(s).  Conflicts with other
-  features should be detected.  Code outside ``duk_features.h`` should only
-  listen to ``DUK_USE_xxx`` defines so that the resolution process is fully
-  contained in ``duk_features.h``.
-
 Memory management alternatives
 ==============================
 
@@ -528,3 +513,29 @@ You can break this loop manually if you wish.  For internal technical reasons,
 named function expressions are also in a reference loop; this loop cannot be
 broken from user code and only mark-and-sweep can collect such functions.
 See `Limitations <http://duktape.org/guide.html#limitations>`_.
+
+Development notes
+=================
+
+This section only applies if you customize Duktape internals and wish to
+submit a patch to be included in the mainline distribution.
+
+Adding new feature options
+--------------------------
+
+* Add a descriptive ``DUK_OPT_xxx`` for the custom feature.  The custom
+  feature should only be enabled if the feature option is explicitly given.
+
+* Modify ``duk_features.h.in`` to detect your custom feature option and define
+  appropriate internal ``DUK_USE_xxx`` define(s).  Conflicts with other
+  features should be detected.  Code outside ``duk_features.h.in`` should only
+  listen to ``DUK_USE_xxx`` defines so that the resolution process is fully
+  contained in ``duk_features.h.in``.
+
+Removing feature options
+------------------------
+
+* If the feature option has been a part of a stable release, add a check
+  for it in ``duk_feature_sanity.h.in``.  If the option is present, the
+  build should error out with a deprecation notice.  This is preferable to
+  silently removing an option a user may be depending on.
