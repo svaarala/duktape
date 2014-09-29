@@ -5,7 +5,7 @@ type: :task
 component: duk
 release: v1.0
 reporter: sva <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2014-01-24 22:41:49.346428 Z
 references: []
@@ -32,3 +32,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - Add this as an internal RST document with only the main points in the guide.
+- - 2014-09-29 12:21:11.336983 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
