@@ -313,7 +313,7 @@ For better compatibility with existing code, ``Array.prototype.splice()``
 has non-standard behavior by default when the second argument (deleteCount)
 is not given: the splice operation is extended to the end of the array,
 see
-`test-bi-array-proto-splice-no-delcount.js  <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-splice-no-delcount.js>`_.
+`test-bi-array-proto-splice-no-delcount.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-splice-no-delcount.js>`_.
 If this option is given, ``splice()`` will behave in a strictly
 conforming fashion, treating a missing deleteCount the same as an undefined
 (or 0) value.
