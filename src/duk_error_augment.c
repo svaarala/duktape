@@ -268,7 +268,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 
 	/* [ ... error arr ] */
 
-	duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_TRACEDATA);  /* -> [ ... error ] */
+	duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_TRACEDATA);  /* -> [ ... error ] */
 }
 #endif  /* DUK_USE_TRACEBACKS */
 
@@ -289,13 +289,13 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 
 #ifdef DUK_USE_TRACEBACKS
 	/*
-	 *  If tracebacks are enabled, the 'tracedata' property is the only
+	 *  If tracebacks are enabled, the '_tracedata' property is the only
 	 *  thing we need: 'fileName' and 'lineNumber' are virtual properties
-	 *  which use 'tracedata'.
+	 *  which use '_tracedata'.
 	 */
 
-	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_TRACEDATA(thr))) {
-		DUK_DDD(DUK_DDDPRINT("error value already has a 'tracedata' property, not modifying it"));
+	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_TRACEDATA(thr))) {
+		DUK_DDD(DUK_DDDPRINT("error value already has a '_tracedata' property, not modifying it"));
 	} else {
 		duk__add_traceback(thr, thr_callstack, filename, line, noblame_fileline);
 	}
@@ -370,7 +370,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
 #endif  /* DUK_USE_AUGMENT_ERROR_CREATE */
 
 /*
- *  Augment an error at creation time with tracedata/fileName/lineNumber
+ *  Augment an error at creation time with _tracedata/fileName/lineNumber
  *  and allow a user error handler (if defined) to process/replace the error.
  *  The error to be augmented is at the stack top.
  *

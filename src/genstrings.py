@@ -525,7 +525,7 @@ duk_string_list = [
 	mkstr("fileName", custom=True),
 	mkstr("lineNumber", custom=True),
 	#mkstr("code", custom=True),
-	mkstr("tracedata", custom=True),
+	mkstr("tracedata", internal=True, custom=True),
 
 	# non-standard function instance properties
 	mkstr("name", custom=True), 	# function declaration/expression name (or empty)

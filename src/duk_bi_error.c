@@ -108,9 +108,9 @@ duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
  *  only the topmost return value matters.  For instance, traceback separator
  *  and decoded strings are pushed even when looking for filename only.
  *
- *  NOTE: because user code can currently write to the tracedata array (or
+ *  NOTE: because user code can currently write to the _tracedata array (or
  *  replace it with something other than an array), the code below must
- *  tolerate arbitrary tracedata.  It can throw errors etc, but cannot cause
+ *  tolerate arbitrary _tracedata.  It can throw errors etc, but cannot cause
  *  a segfault or memory unsafe behavior.
  */
 
@@ -134,7 +134,7 @@ static duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t 
 	DUK_ASSERT_TOP(ctx, 0);  /* fixed arg count */
 
 	duk_push_this(ctx);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TRACEDATA);
+	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TRACEDATA);
 	idx_td = duk_get_top_index(ctx);
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_NEWLINE_TAB);
