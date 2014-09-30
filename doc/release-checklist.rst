@@ -39,8 +39,8 @@ Release checklist
 
   - Check year range
 
-* Ensure RELEASES.txt is up-to-date (must be done before candidate tar.xz
-  build because dist package contains RELEASES.txt)
+* Ensure RELEASES.rst is up-to-date (must be done before candidate tar.xz
+  build because dist package contains RELEASES.rst)
 
   - New release is in place
 

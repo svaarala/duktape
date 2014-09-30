@@ -827,7 +827,7 @@ def generateDownloadPage(releases_filename):
 
 	if fancy_releaselog:
 		# fancy releaselog
-		rel_data = rst2Html(os.path.abspath(os.path.join('..', 'RELEASES.txt')))
+		rel_data = rst2Html(os.path.abspath(os.path.join('..', 'RELEASES.rst')))
 		rel_soup = BeautifulSoup(rel_data)
 		released = rel_soup.select('#released')[0]
 		# massage the rst2html generated HTML to be more suitable
@@ -1039,7 +1039,7 @@ def main():
 	guideincdirs = [ './guide', '../examples/guide' ]
 	apiincdirs = [ './api', '../examples/api' ]
 	out_charset = 'utf-8'
-	releases_filename = '../RELEASES.txt'
+	releases_filename = '../RELEASES.rst'
 
 	duk_verstr, duk_verint = scrapeDuktapeVersion()
 	print 'Scraped version number: ' + duk_verstr
