@@ -547,8 +547,8 @@ Planned
 
 * Make error 'tracedata' an internal property for better sandboxing
 
-* Rename RELEASES.txt and AUTHORS.txt to .rst suffix for better automatic
-  rendering
+* Rename RELEASES.txt, AUTHORS.txt, and README.txt files to .rst suffix for
+  better automatic formatting
 
 * Fix DUK_INVALID_INDEX define value, it used INT_MIN directly
 
