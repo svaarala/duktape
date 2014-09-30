@@ -54,7 +54,7 @@ non-standard Javascript functions provided by other implementations.
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 
-Duktape is copyrighted by its authors (see ``AUTHORS.txt``) and licensed
+Duktape is copyrighted by its authors (see ``AUTHORS.rst``) and licensed
 under the MIT license (see ``LICENSE.txt``).  MurmurHash2 is used internally;
 it is also under the MIT license.
 

@@ -5,7 +5,7 @@ Copyrights and licensing
 ------------------------
 
 Duktape copyrights are held by its contributors.  Contributors agree to
-license their contribution(s) under Duktape `LICENSE.txt`.  See `AUTHORS.txt`
+license their contribution(s) under Duktape `LICENSE.txt`.  See `AUTHORS.rst`
 for details.
 
 To make a code contribution to Duktape
@@ -27,7 +27,7 @@ To make a code contribution to Duktape
   style in the code base.  Check that your diff looks as clean and minimal
   as possible.
 
-* Add yourself to the end of the author list in `AUTHORS.txt` if you're
+* Add yourself to the end of the author list in `AUTHORS.rst` if you're
   not already on the list.  By doing this you confirm that:
 
   - You own the rights to the contribution, or have the legal right to

@@ -7,15 +7,15 @@
  *
  *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
  *
- *  See Duktape AUTHORS.txt and LICENSE.txt for copyright and
+ *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
  *  licensing information.
  */
 
 /* LICENSE.txt */
 @LICENSE_TXT@
 
-/* AUTHORS.txt */
-@AUTHORS_TXT@
+/* AUTHORS.rst */
+@AUTHORS_RST@
 
 #ifndef DUKTAPE_H_INCLUDED
 #define DUKTAPE_H_INCLUDED
