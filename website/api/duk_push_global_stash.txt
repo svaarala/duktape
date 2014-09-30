@@ -24,6 +24,7 @@ stack
 stash
 object
 module
+sandbox
 
 =seealso
 duk_push_heap_stash

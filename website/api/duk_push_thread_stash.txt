@@ -23,6 +23,7 @@ stash
 object
 module
 thread
+sandbox
 
 =seealso
 duk_push_heap_stash
