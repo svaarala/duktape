@@ -28,7 +28,7 @@ are also discussed.</p>
 </tbody>
 </table>
 
-<h2>Equality (non-strict)</h2>
+<h2 id="non-strict-equality-algorithm">Equality (non-strict)</h2>
 
 <p>Non-strict equality comparison is specified in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3">The Abstract Equality Comparison Algorithm</a>
@@ -64,7 +64,7 @@ for standard types.  Custom type behavior is as follows:</p>
 </tbody>
 </table>
 
-<h2>Strict equality</h2>
+<h2 id="strict-equality-algorithm">Strict equality</h2>
 
 <p>Strict equality is much more straightforward and preferable whenever
 possible for simplicity and performance.  It is described in
@@ -98,7 +98,7 @@ for standard types.  Custom type behavior is as follows:</p>
 </tbody>
 </table>
 
-<h2>SameValue</h2>
+<h2 id="samevalue-algorithm">SameValue</h2>
 
 <p>The <code>SameValue</code> algorithm is not easy to invoke from user code.
 It is used by e.g. <code>Object.defineProperty()</code> when checking whether

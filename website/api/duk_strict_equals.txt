@@ -16,6 +16,9 @@ is invalid.</p>
 used by the Strict Equals operator performs no value coercion, the comparison cannot have
 side effects and cannot throw an error.</p>
 
+<p>Comparison algorithm for Duktape custom types is described in
+<a href="http://duktape.org/guide.html#strict-equality-algorithm">Strict equality</a>.</p>
+
 =example
 if (duk_strict_equals(ctx, -3, -7)) {
     printf("values at indices -3 and -7 are strictly equal\n");
