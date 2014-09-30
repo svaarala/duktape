@@ -273,7 +273,7 @@ cat dist-files/README.txt | sed \
 	> $DIST/README.txt
 cp LICENSE.txt $DIST/LICENSE.txt
 cp AUTHORS.txt $DIST/AUTHORS.txt
-cp RELEASES.txt $DIST/RELEASES.txt
+cp RELEASES.rst $DIST/RELEASES.rst
 
 for i in \
 	murmurhash2.txt \
