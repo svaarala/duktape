@@ -22,8 +22,11 @@ In particular, you should read the getting started section::
 
   http://duktape.org/guide.html#gettingstarted
 
-Building and integrating Duktape into your project is very straightforward.
-See Makefile.hello for an example::
+Building and integrating Duktape into your project is very straightforward::
+
+  http://duktape.org/guide.html#compiling
+
+See Makefile.hello for a concrete example::
 
   $ cd <dist_root>
   $ make -f Makefile.hello
