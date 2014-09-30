@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add commonjs to licenses/ in dist
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-30 09:53:48.446259 Z
+references: []
+
+id: 0fec4f3272d9f3bf51bc3798ac6b825884f85f1c
+log_events: 
+- - 2014-09-30 09:53:48.590344 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-30 10:23:15.799367 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

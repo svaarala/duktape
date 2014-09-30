@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make releases a .rst file for better github rendering
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-09-30 09:37:58.514725 Z
+references: []
+
+id: d4538da64ef3547c4e8c93e3308b8de9f86c7f3b
+log_events: 
+- - 2014-09-30 09:37:58.674621 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-09-30 10:23:22.535470 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
