@@ -4,7 +4,7 @@ Duktape
 Introduction
 ------------
 
-[Duktape](http://www.duktape.org/) is an **embeddable Javascript** engine,
+[Duktape](http://duktape.org/) is an **embeddable Javascript** engine,
 with a focus on **portability** and **compact** footprint.
 
 Duktape is easy to integrate into a C/C++ project: add `duktape.c` and
@@ -21,7 +21,7 @@ Main features:
 * Combined reference counting and mark-and-sweep garbage collection with finalization
 * Liberal license
 
-See [duktape.org](http://www.duktape.org/) for packaged end-user downloads
+See [duktape.org](http://duktape.org/) for packaged end-user downloads
 and documentation.
 
 Have fun!
@@ -41,8 +41,8 @@ Getting started: end user
 -------------------------
 
 When embedding Duktape in your application you should use the packaged source
-distributables available from [duktape.org/download.html](http://www.duktape.org/download.html).
-See [duktape.org/guide.html#gettingstarted](http://www.duktape.org/guide.html#gettingstarted)
+distributables available from [duktape.org/download.html](http://duktape.org/download.html).
+See [duktape.org/guide.html#gettingstarted](http://duktape.org/guide.html#gettingstarted)
 for the basics.
 
 However, if you really want to use a bleeding edge version:
