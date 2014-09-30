@@ -197,14 +197,14 @@ done
 
 
 for i in \
-	README.txt \
+	README.rst \
 	duk_cmdline.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
 done
 
 for i in \
-	README.txt \
+	README.rst \
 	c_eventloop.c \
 	c_eventloop.js \
 	ecma_eventloop.js \
@@ -222,21 +222,21 @@ for i in \
 done
 
 for i in \
-	README.txt \
+	README.rst \
 	hello.c \
 	; do
 	cp examples/hello/$i $DIST/examples/hello/
 done
 
 for i in \
-	README.txt \
+	README.rst \
 	eval.c \
 	; do
 	cp examples/eval/$i $DIST/examples/eval/
 done
 
 for i in \
-	README.txt \
+	README.rst \
 	fib.js \
 	process.js \
 	processlines.c \
@@ -248,7 +248,7 @@ for i in \
 done
 
 for i in \
-	README.txt \
+	README.rst \
 	Makefile \
 	globals.coffee \
 	hello.coffee \

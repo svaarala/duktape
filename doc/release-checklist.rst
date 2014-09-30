@@ -33,7 +33,7 @@ Release checklist
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
-* Check dist-files/README.txt
+* Check dist-files/README.rst
 
 * Ensure LICENSE.txt is up-to-date
 
@@ -173,7 +173,7 @@ Release checklist
   - These should remain the same after this point so that their hash
     values are known.
 
-  - Check git describe output from dist ``README.txt``, ``src/duktape.h``,
+  - Check git describe output from dist ``README.rst``, ``src/duktape.h``,
     and ``src/duktape.c``.  It should show the release tag.
 
 * Check source dist contents
