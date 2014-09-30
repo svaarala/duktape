@@ -55,8 +55,10 @@ This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created fro
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 
 Duktape is copyrighted by its authors (see ``AUTHORS.rst``) and licensed
-under the MIT license (see ``LICENSE.txt``).  MurmurHash2 is used internally;
-it is also under the MIT license.
+under the MIT license (see ``LICENSE.txt``).  MurmurHash2 is used internally,
+it is also under the MIT license.  Duktape module loader is based on the
+CommonJS module loading specification (without sharing any code), CommonJS
+is under the MIT license.
 
 Have fun!
 
