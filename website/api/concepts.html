@@ -75,6 +75,7 @@ each other's values.</p>
 <tr><td>object</td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td><td>yes</td></tr>
 <tr><td>buffer</td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable byte buffer, fixed/dynamic</td><td>yes</td></tr>
 <tr><td>pointer</td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td><td>no</td></tr>
+<tr><td>lightfunc</td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C pointer (non-object)</td><td>no</td></tr>
 </table>
 </div>
 
@@ -123,8 +124,8 @@ indices in both Ecmascript code and C code using the Duktape API.</p>
 <h2>Duktape/C function</h2>
 
 <p>A C function with a Duktape/C API signature can be associated with an
-Ecmascript function object, and gets called when the Ecmascript function
-object is called.  Example:</p>
+Ecmascript function object or a lightfunc value, and gets called when
+the associated value is called from Ecmascript code.  Example:</p>
 <pre class="c-code">
 int my_func(duk_context *ctx) {
     duk_push_int(ctx, 123);

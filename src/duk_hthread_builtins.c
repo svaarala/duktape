@@ -6,10 +6,6 @@
 
 #include "duk_internal.h"
 
-/* FIXME: lightfunc check for other function values - constructors like
- * Number etc?
- */
-
 /*
  *  Encoding constants, must match genbuiltins.py
  */
@@ -46,17 +42,6 @@
  *  Create built-in objects by parsing an init bitstream generated
  *  by genbuiltins.py.
  */
-
-#ifdef DUK_USE_LIGHTFUNC_BUILTINS
-/* FIXME: test function */
-static int duk__lightfunc_test(duk_context *ctx) {
-	int v1 = duk_get_int(ctx, 0);
-	int v2 = duk_get_int(ctx, 1);
-	fprintf(stderr, "Lightfunc called, top=%d, args: %d %d\n", duk_get_top(ctx), v1, v2);
-	duk_push_int(ctx, v1 + v2);
-	return 1;
-}
-#endif
 
 DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
@@ -111,7 +96,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			/* XXX: set magic directly here? (it could share the c_nargs arg) */
-			DUK_D(DUK_DPRINT("FIXME: lightweight potential?"));
 			duk_push_c_function_noexotic(ctx, c_func, c_nargs);
 
 			h = duk_require_hobject(ctx, -1);
@@ -354,7 +338,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
-				DUK_D(DUK_DPRINT("FIXME: lightweight potential?"));
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
 
@@ -417,12 +400,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0);
 
 #if defined(DUK_USE_LIGHTFUNC_BUILTINS)
-			/* FIXME: hardcoded values, use constants */
-			/* FIXME: fix awkward control flow */
 			lightfunc_eligible =
-				((c_nargs >= 0 && c_nargs <= 0x0e) || (c_nargs == DUK_VARARGS)) &&
-				(c_length <= 0x0f) &&
-				(magic >= -0x80 && magic <= 0x7f);
+				((c_nargs >= DUK_LFUNC_NARGS_MIN && c_nargs <= DUK_LFUNC_NARGS_MAX) || (c_nargs == DUK_VARARGS)) &&
+				(c_length <= DUK_LFUNC_LENGTH_MAX) &&
+				(magic >= DUK_LFUNC_MAGIC_MIN && magic <= DUK_LFUNC_MAGIC_MAX);
 			if (stridx == DUK_STRIDX_EVAL ||
 			    stridx == DUK_STRIDX_YIELD ||
 			    stridx == DUK_STRIDX_RESUME ||
@@ -437,13 +418,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			if (lightfunc_eligible) {
 				duk_tval tv_lfunc;
-				duk_small_uint_t lf_flags =
-				        ((magic << 8) & 0xff00UL) |
-				        (c_length << 4) |
-					(c_nargs == DUK_VARARGS ? 0x0f : c_nargs);
+				duk_small_uint_t lf_nargs = (c_nargs == DUK_VARARGS ? DUK_LFUNC_NARGS_VARARGS : c_nargs);
+				duk_small_uint_t lf_flags = DUK_LFUNC_FLAGS_PACK(magic, c_length, lf_nargs);
 				DUK_TVAL_SET_LIGHTFUNC(&tv_lfunc, c_func, lf_flags);
 				duk_push_tval(ctx, &tv_lfunc);
-				DUK_D(DUK_DPRINT("built-in function eligible as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic));
+				DUK_D(DUK_DPRINT("built-in function eligible as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld -> %!iT", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic, duk_get_tval(ctx, -1)));
 				goto lightfunc_skip;
 			}
 #endif  /* DUK_USE_LIGHTFUNC_BUILTINS */
@@ -633,16 +612,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		DUK_DDD(DUK_DDDPRINT("built-in object %ld after initialization and compacting", (long) i));
 		DUK_DEBUG_DUMP_HOBJECT(thr->builtins[i]);
-	}
-#endif
-
-#ifdef DUK_USE_LIGHTFUNC_BUILTINS  /* FIXME: lightfunc testing hack */
-	{
-		duk_tval tv_lfunc;
-		DUK_TVAL_SET_LIGHTFUNC(&tv_lfunc, duk__lightfunc_test, DUK_LFUNC_FLAGS_PACK(0, 2, 2));
-		duk_push_string(ctx, "fixme_lightfunc_test");
-		duk_push_tval(ctx, &tv_lfunc);
-		duk_def_prop(ctx, DUK_BIDX_DUKTAPE, DUK_PROPDESC_FLAGS_WC);
 	}
 #endif
 

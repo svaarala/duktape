@@ -16,7 +16,7 @@
  *  Forward declarations
  */
 
-static duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags);
+DUK_LOCAL_DECL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags);
 
 /*
  *  Global state for working around missing variadic macros
@@ -1335,7 +1335,6 @@ DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *c
 }
 #endif
 
-#if 0  /*unused */
 DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && !DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
@@ -1343,7 +1342,6 @@ DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_
 	}
 	return (duk_hnativefunction *) h;
 }
-#endif
 
 DUK_INTERNAL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -1437,6 +1435,36 @@ DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
 	return (void *) NULL;  /* not reachable */
 }
 
+#if 0
+/* This would be pointless: we'd return NULL for both lightfuncs and
+ * unexpected types.
+ */
+duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t index) {
+}
+#endif
+
+/* Useful for internal call sites where we either expect an object (function)
+ * or a lightfunc.  Accepts an object (returned as is) or a lightfunc (coerced
+ * to an object).  Return value is NULL if value is neither an object nor a
+ * lightfunc.
+ */
+duk_hobject *duk_get_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index) {
+	duk_tval *tv;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_require_tval(ctx, index);
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		return DUK_TVAL_GET_OBJECT(tv);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_to_object(ctx, index);
+		return duk_require_hobject(ctx, index);
+	}
+
+	return NULL;
+}
+
 /* Useful for internal call sites where we either expect an object (function)
  * or a lightfunc.  Returns NULL for a lightfunc.
  */
@@ -1512,8 +1540,9 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
 		return (duk_size_t) DUK_HBUFFER_GET_SIZE(h);
 	}
 	case DUK_TAG_LIGHTFUNC: {
-		/* FIXME: return value for virtual length property */
-		return 0;
+		duk_small_uint_t lf_flags;
+		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
+		return (duk_size_t) DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
 	}
 	default:
 		/* number */
@@ -1578,15 +1607,10 @@ DUK_EXTERNAL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int
 	coercers[1] = DUK_STRIDX_TO_STRING;
 
 	index = duk_require_normalize_index(ctx, index);
-
-	if (!duk_is_object(ctx, index)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_OBJECT);
-	}
-	obj = duk_get_hobject(ctx, index);
-	DUK_ASSERT(obj != NULL);
+	obj = duk_require_hobject_or_lfunc(ctx, index);
 
 	if (hint == DUK_HINT_NONE) {
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(obj) == DUK_HOBJECT_CLASS_DATE) {
+		if (obj != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(obj) == DUK_HOBJECT_CLASS_DATE) {
 			hint = DUK_HINT_STRING;
 		} else {
 			hint = DUK_HINT_NUMBER;
@@ -1641,22 +1665,16 @@ DUK_EXTERNAL void duk_to_null(duk_context *ctx, duk_idx_t index) {
 
 /* E5 Section 9.1 */
 DUK_EXTERNAL void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t hint) {
-	duk_tval *tv;
-
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(hint == DUK_HINT_NONE || hint == DUK_HINT_NUMBER || hint == DUK_HINT_STRING);
 
 	index = duk_require_normalize_index(ctx, index);
 
-	tv = duk_require_tval(ctx, index);
-	DUK_ASSERT(tv != NULL);
-
-	if (DUK_TVAL_GET_TAG(tv) != DUK_TAG_OBJECT) {
+	if (!duk_check_type_mask(ctx, index, DUK_TYPE_MASK_OBJECT |
+	                                     DUK_TYPE_MASK_LIGHTFUNC)) {
 		/* everything except object stay as is */
 		return;
 	}
-	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-
 	duk_to_defaultvalue(ctx, index, hint);
 }
 
@@ -2081,8 +2099,9 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
 		res = (void *) DUK_TVAL_GET_HEAPHDR(tv);
 		break;
 	case DUK_TAG_LIGHTFUNC:
-		/* FIXME: function pointers may not cast correctly to void *,
-		 * but try anyway?
+		/* Function pointers do not always cast correctly to void *
+		 * (depends on memory and segmentation model for instance),
+		 * so they coerce to NULL.
 		 */
 		res = NULL;
 		break;
@@ -2165,7 +2184,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);
 
 		nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
-		if (nargs == 0x0f) {
+		if (nargs == DUK_LFUNC_NARGS_VARARGS) {
 			nargs = DUK_VARARGS;
 		}
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -2408,6 +2427,11 @@ DUK_EXTERNAL duk_bool_t duk_is_buffer(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL duk_bool_t duk_is_pointer(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(ctx != NULL);
 	return duk__tag_check(ctx, index, DUK_TAG_POINTER);
+}
+
+DUK_EXTERNAL duk_bool_t duk_is_lightfunc(duk_context *ctx, duk_idx_t index) {
+	DUK_ASSERT(ctx != NULL);
+	return duk__tag_check(ctx, index, DUK_TAG_LIGHTFUNC);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t index) {
@@ -2823,27 +2847,15 @@ DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 DUK_EXTERNAL void duk_push_current_function(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
-	duk_hobject *func;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
-	/* FIXME: lightfunc handling: perhaps we'll need the lightfunc
-	 * ptr after all... with all the duk_tval fields.
-	 */
-
 	act = duk_hthread_get_current_activation(thr);
 	if (act) {
-		/* FIXME: change if tv_func gets always initialized */
-		func = DUK_ACT_GET_FUNC(act);
-		if (func) {
-			duk_push_hobject(ctx, func);
-		} else {
-			DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(&act->tv_func));
-			duk_push_tval(ctx, &act->tv_func);
-		}
+		duk_push_tval(ctx, &act->tv_func);
 	} else {
 		duk_push_undefined(ctx);
 	}
@@ -3013,7 +3025,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 	DUK_ASSERT(prototype_bidx == -1 ||
 	           (prototype_bidx >= 0 && prototype_bidx < DUK_NUM_BUILTINS));
 
-	/* check stack before interning (avoid hanging temp) */
+	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
@@ -3100,7 +3112,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* check stack before interning (avoid hanging temp) */
+	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
@@ -3155,7 +3167,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* check stack before interning (avoid hanging temp) */
+	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
@@ -3196,7 +3208,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* check stack before interning (avoid hanging temp) */
+	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
@@ -3278,6 +3290,43 @@ DUK_INTERNAL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
 
 	(void) duk__push_c_function_raw(ctx, func, nargs, flags);
+}
+
+DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_idx_t length, duk_int_t magic) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval tv_tmp;
+	duk_small_uint_t lf_flags;
+
+	DUK_ASSERT(ctx != NULL);
+
+	/* check stack first */
+	if (thr->valstack_top >= thr->valstack_end) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+	}
+
+	if (nargs >= DUK_LFUNC_NARGS_MIN && nargs <= DUK_LFUNC_NARGS_MAX) {
+		/* as is */
+	} else if (nargs == DUK_VARARGS) {
+		nargs = DUK_LFUNC_NARGS_VARARGS;
+	} else {
+		goto api_error;
+	}
+	if (!(length >= DUK_LFUNC_LENGTH_MIN && length <= DUK_LFUNC_LENGTH_MAX)) {
+		goto api_error;
+	}
+	if (!(magic >= DUK_LFUNC_MAGIC_MIN && magic <= DUK_LFUNC_MAGIC_MAX)) {
+		goto api_error;
+	}
+
+	lf_flags = DUK_LFUNC_FLAGS_PACK(magic, length, nargs);
+	DUK_TVAL_SET_LIGHTFUNC(&tv_tmp, func, lf_flags);
+	duk_push_tval(ctx, &tv_tmp);  /* XXX: direct valstack write */
+	DUK_ASSERT(thr->valstack_top != thr->valstack_bottom);
+	return ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
+
+ api_error:
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	return 0;  /* not reached */
 }
 
 DUK_LOCAL duk_idx_t duk__push_error_object_vsprintf(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
@@ -3368,7 +3417,7 @@ DUK_EXTERNAL void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* check stack before interning (avoid hanging temp) */
+	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
@@ -3667,8 +3716,7 @@ DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, du
  *  Lightfunc
  */
 
-void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
-	/* FIXME: add pointer, and perhaps flags here? */
+DUK_INTERNAL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
 	duk_c_function func;
 
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
@@ -3684,18 +3732,15 @@ void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
 	 * pressure in low memory environments (but only when function name
 	 * is accessed).
 	 */
-#if 1
+
 	func = DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv);
 	duk_push_sprintf(ctx, "light_");
 	duk_push_string_funcptr(ctx, (duk_uint8_t *) &func, sizeof(func));
 	duk_push_sprintf(ctx, "_%04x", (unsigned int) DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv));
 	duk_concat(ctx, 3);
-#else
-	duk_push_string(ctx, "light");
-#endif
 }
 
-void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
+DUK_INTERNAL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
 
 	duk_push_string(ctx, "function ");
@@ -3711,7 +3756,7 @@ void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
  *  bytes from memory.
  */
 
-void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz) {
+DUK_INTERNAL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz) {
 	duk_uint8_t buf[32 * 2];
 	duk_uint8_t *p, *q;
 	duk_small_uint_t i;

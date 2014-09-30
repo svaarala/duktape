@@ -1,7 +1,7 @@
 /*===
 -1 0 act
 -2 10 basicTest
--3 21 global
+-3 26 global
 ===*/
 
 function basicTest() {
@@ -13,7 +13,12 @@ function basicTest() {
         // Property set may change between versions, but at least
         // these should be present for now (there is also 'pc' but
         // that isn't so useful.
-        print(i, t.lineNumber, t.function.name);
+        //
+        // NOTE: normally Duktape.act.name is 'act' but when using
+        // DUK_OPT_LIGHTFUNC_BUILTINS Duktape.act() will be a lightfunc
+        // and have a generic name (e.g. lightfunc_deadbeef_1234).  To
+        // make the test case generic, avoid printing Duktape.act name.
+        print(i, t.lineNumber, t.function === Duktape.act ? 'act' : t.function.name);
     }
 }
 
@@ -24,7 +29,7 @@ try {
 }
 
 /*===
-running on line: 37
+running on line: 42
 ===*/
 
 /* Simulate Duktape.line(). */

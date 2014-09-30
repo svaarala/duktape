@@ -12,10 +12,11 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	duk_hthread *new_thr;
 	duk_hobject *func;
 
+	/* XXX: need a duk_require_func_or_lfunc_coerce() */
 	if (!duk_is_callable(ctx, 0)) {
 		return DUK_RET_TYPE_ERROR;
 	}
-	func = duk_get_hobject(ctx, 0);
+	func = duk_require_hobject_or_lfunc_coerce(ctx, 0);
 	DUK_ASSERT(func != NULL);
 
 	duk_push_thread(ctx);

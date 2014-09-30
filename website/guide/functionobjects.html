@@ -1,6 +1,6 @@
 <h1 id="functionobjects">Function objects</h1>
 
-<h2>Property summary</h2>
+<h2 id="ecmascript-function-properties">Properties of Ecmascript functions</h2>
 
 <p>Duktape Function objects add a few properties to standard Ecmascript
 properties.  The table below summarizes properties assigned to newly
@@ -12,7 +12,7 @@ afterwards):</p>
 <tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
 </thead>
 <tbody>
-<tr><td class="propname">length</td><td>standard</td><td>Function argument count (if relevant).  Present for all Function objects, including bound functions.</td></tr>
+<tr><td class="propname">length</td><td>standard</td><td>Function (nominal) argument count (if relevant).  Present for all Function objects, including bound functions.</td></tr>
 <tr><td class="propname">prototype</td><td>standard</td><td>Prototype used for new objects when called as a constructor.  Present for most constructable Function objects, not copied to bound functions.</td></tr>
 <tr><td class="propname">caller</td><td>standard</td><td>Accessor which throws an error.  Present for strict functions and bound functions.  Not copied to bound functions.  (If <code>DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY</code> is given, non-strict functions will get a non-standard <code>caller</code> property.)</td></tr>
 <tr><td class="propname">arguments</td><td>standard</td><td>Accessor which throws an error.  Present for strict functions and bound functions.  Not copied to bound functions.</td></tr>
@@ -40,6 +40,13 @@ var bar = function () {
 }
 </pre>
 
+<div class="note">
+Several Ecmascript built-in functions have properties different from user
+created Functions.
+</div>
+
+<h2 id="duktapec-function-properties">Properties of Duktape/C functions</h2>
+
 <p>User-created Duktape/C functions (<code>duk_push_c_function()</code>) have
 a different set of properties to reduce Function object memory footprint:</p>
 
@@ -58,3 +65,36 @@ Non-writable and non-configurable.</td></tr>
 and <code>arguments</code> properties are missing by default.  This is not strictly
 compliant but is important to reduce function footprint.  User code can of course
 assign these but is not required to do so.</p>
+
+<h2 id="duktapec-lightfunc-properties">Properties of lightweight Duktape/C functions</h2>
+
+<p>Lightweight functions have a set of non-configurable, non-writable virtual
+properties listed below.  Like normal functions, they inherit further properties
+from <code>Function.prototype</code>.</p>
+
+<table>
+<thead>
+<tr><th>Property name</th><th>Compatibility</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td class="propname">length</td><td>standard</td><td>Function (nominal) argument count.</td></tr>
+<tr><td class="propname">name</td><td>Duktape</td><td>Function name: <code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code>.</td></tr>
+</tbody>
+</table>
+
+<p>The <code>name</code> property is an automatically generated virtual
+function name. &lt;PTR&gt; is a platform dependent dump of the Duktape/C
+function pointer, and &lt;FLAGS&gt; is a raw hex dump of the 16-bit internal
+control fields (the format is Duktape internal).  You shouldn't rely on a
+specific format.  For example:</p>
+<pre>
+duk&gt; print(myLightFunc.name);
+light_0805b94c_0511
+</pre>
+
+<p>As for ordinary functions, a lightfunc coerces to an implementation
+dependent string.  You shouldn't rely on a specific format.  For example:</p>
+<pre>
+duk&gt; print(myLightFunc);
+function light_0805b94c_0511() {/* light */}
+</pre>

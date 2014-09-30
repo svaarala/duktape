@@ -49,9 +49,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	/* XXX: optimize with more direct internal access */
 
 	duk_push_this(ctx);
-	if (!duk_is_object(ctx, -1)) {
-		goto type_error;
-	}
+	(void) duk_require_hobject_or_lfunc_coerce(ctx, -1);
 
 	/* [ ... this ] */
 
@@ -93,9 +91,6 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	duk_concat(ctx, 3);
 
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 #ifdef DUK_USE_TRACEBACKS

@@ -27,7 +27,6 @@ DUK_INTERNAL const char *duk_str_not_number = "not number";
 DUK_INTERNAL const char *duk_str_not_string = "not string";
 DUK_INTERNAL const char *duk_str_not_pointer = "not pointer";
 DUK_INTERNAL const char *duk_str_not_buffer = "not buffer";
-DUK_INTERNAL const char *duk_str_not_object = "not object";
 DUK_INTERNAL const char *duk_str_unexpected_type = "unexpected type";
 DUK_INTERNAL const char *duk_str_not_thread = "not thread";
 #if 0  /*unused*/

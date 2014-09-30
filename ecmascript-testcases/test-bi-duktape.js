@@ -154,7 +154,7 @@ function propsTest() {
 try {
     propsTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -211,7 +211,7 @@ print('encdec');
 try {
     encDecTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -243,5 +243,5 @@ print('finalizer');
 try {
     finalizerTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

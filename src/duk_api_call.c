@@ -473,8 +473,6 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ASSERT(ctx != NULL);
 
-	/* FIXME: hardcoded values for flag partitioning */
-
 	tv = duk_require_tval(ctx, index);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		h = DUK_TVAL_GET_OBJECT(tv);
@@ -484,10 +482,8 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 		}
 		return (duk_int_t) ((duk_hnativefunction *) h)->magic;
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
-		/* FIXME: use shared macro */
-		duk_int32_t tmp = (duk_int32_t) (DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv) >> 8);
-		tmp = (tmp << 16) >> 24;  /* 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss## */
-		return (duk_int_t) tmp;
+		duk_small_uint_t lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
+		return (duk_int_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
 	}
 
 	/* fall through */

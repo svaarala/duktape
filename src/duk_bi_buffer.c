@@ -21,6 +21,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
 	 *
 	 *    http://nodejs.org/api/buffer.html
 	 *
+	 *  Note that the ToBuffer() coercion (duk_to_buffer()) does NOT match
+	 *  the constructor behavior.
 	 */
 
 	buf_dynamic = duk_get_boolean(ctx, 1);  /* default to false */

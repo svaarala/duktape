@@ -330,8 +330,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	 * is a bit ambiguous on this point but it would make sense.
 	 */
 	if (h_target == NULL) {
-		/* lightfunc */
-		/* FIXME: assume strict? */
+		/* Lightfuncs are always strict. */
 		DUK_HOBJECT_SET_STRICT(h_bound);
 	} else if (DUK_HOBJECT_HAS_STRICT(h_target)) {
 		DUK_HOBJECT_SET_STRICT(h_bound);

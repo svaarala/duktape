@@ -23,6 +23,8 @@ is invalid, throws an error.</p>
 <li>Pointer object: coerces to the underlying plain pointer value</li>
 </ul>
 
+<div include="ref-custom-type-coercion.html" />
+
 =example
 duk_to_primitive(ctx, -3, DUK_HINT_NUMBER);
 

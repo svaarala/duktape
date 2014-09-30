@@ -12,12 +12,7 @@ NUL-terminated string data, and writes the string byte length to <code>*out_len<
 (if <code>out_len</code> is non-<code>NULL</code>).  If <code>index</code> is invalid, throws
 an error.</p>
 
-<p>Custom type coercion:</p>
-<ul>
-<li>Buffer: coerces byte-for-byte into a string</li>
-<li>Pointer: coerces to a string formatted with <code>sprintf()</code> format
-    <code>%p</code></li>
-</ul>
+<div include="ref-custom-type-coercion.html" />
 
 =example
 const char *ptr;

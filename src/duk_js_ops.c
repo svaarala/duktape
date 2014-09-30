@@ -216,10 +216,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		return duk__tonumber_string_raw(thr);
 	}
 	case DUK_TAG_POINTER: {
-		/* Coerce like boolean.  This allows code to do something like:
-		 *
-		 *    if (ptr) { ... }
-		 */
+		/* Coerce like boolean */
 		void *p = DUK_TVAL_GET_POINTER(tv);
 		return (p != NULL ? 1.0 : 0.0);
 	}
@@ -959,11 +956,16 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
 	 *  some normal cases without resorting to the value stack.
+	 *
+	 *  The right hand side could be a light function (as they generally
+	 *  behave like objects).  Light functions never have a 'prototype'
+	 *  property so E5.1 Section 15.3.5.3 step 3 always throws a TypeError.
+	 *  Using duk_require_hobject() is thus correct (except for error msg).
 	 */
 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
-	func = duk_require_hobject(ctx, -1);  /* FIXME: lightfunc */
+	func = duk_require_hobject(ctx, -1);
 
 	/*
 	 *  For bound objects, [[HasInstance]] just calls the target function
@@ -1020,7 +1022,9 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 	/* [ ... lval rval(func) ] */
 
-	val = duk_get_hobject(ctx, -2);
+	/* Handle lightfuncs through object coercion for now. */
+	/* XXX: direct implementation */
+	val = duk_get_hobject_or_lfunc_coerce(ctx, -2);
 	if (!val) {
 		goto pop_and_false;
 	}

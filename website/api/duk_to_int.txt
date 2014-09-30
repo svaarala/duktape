@@ -12,11 +12,7 @@ result using the algorithm described in
 <code><a href="#duk_get_int">duk_get_int()</a></code> (this second coercion is not
 reflected in the new stack value).  If <code>index</code> is invalid, throws an error.</p>
 
-<p>Custom type coercion:</p>
-<ul>
-<li>Buffer: <code>0</code> for zero-size buffer, <code>1</code> otherwise</li>
-<li>Pointer: <code>0</code> for <code>NULL</code> pointer, <code>1</code> otherwise</li>
-</ul>
+<div include="ref-custom-type-coercion.html" />
 
 <p>If you want the <code>double</code> version of the <code>ToInteger()</code> coerced value,
 use:</p>

@@ -135,7 +135,7 @@
  *  Struct defines
  */
 
-/* FIXME: for a memory-code tradeoff, remove 'func' and make it's access either a function
+/* XXX: for a memory-code tradeoff, remove 'func' and make it's access either a function
  * or a macro.  This would make the activation 32 bytes long on 32-bit platforms again.
  */
 

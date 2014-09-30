@@ -17,13 +17,15 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 
 	/* Pointer and buffer primitive values are treated like other
 	 * primitives values which have a fully fledged object counterpart:
-	 * promote to an object value.
+	 * promote to an object value.  Lightfuncs are coerced with
+	 * ToObject() even they could also be returned as is.
 	 */
 	if (duk_check_type_mask(ctx, 0, DUK_TYPE_MASK_STRING |
 	                                DUK_TYPE_MASK_BOOLEAN |
 	                                DUK_TYPE_MASK_NUMBER |
 	                                DUK_TYPE_MASK_POINTER |
-	                                DUK_TYPE_MASK_BUFFER)) {
+	                                DUK_TYPE_MASK_BUFFER |
+	                                DUK_TYPE_MASK_LIGHTFUNC)) {
 		duk_to_object(ctx, 0);
 		return 1;
 	}
@@ -49,17 +51,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 		duk_insert(ctx, 0);
 	}
 
-	/* FIXME: lightfunc hack, rework */
-	{
-		duk_tval *tv = duk_get_tval(ctx, 0);
-		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
-			duk_push_hobject_bidx(ctx, DUK_BIDX_FUNCTION_PROTOTYPE);
-			return 1;
-		}
-	}
-
-	h = duk_require_hobject(ctx, 0);
-	DUK_ASSERT(h != NULL);
+	h = duk_require_hobject_or_lfunc(ctx, 0);
+	/* h is NULL for lightfunc */
 
 	/* XXX: should the API call handle this directly, i.e. attempt
 	 * to duk_push_hobject(ctx, null) would push a null instead?
@@ -67,7 +60,9 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	 * not wanted here.)
 	 */
 
-	if (h->prototype) {
+	if (h == NULL) {
+		duk_push_hobject_bidx(ctx, DUK_BIDX_FUNCTION_PROTOTYPE);
+	} else if (h->prototype) {
 		duk_push_hobject(ctx, h->prototype);
 	} else {
 		duk_push_null(ctx);
@@ -106,13 +101,20 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 		duk_require_object_coercible(ctx, 0);
 		duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_OBJECT);
 	}
+
+	h_new_proto = duk_get_hobject(ctx, 1);
+	/* h_new_proto may be NULL */
+	if (duk_is_lightfunc(ctx, 0)) {
+		if (h_new_proto == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]) {
+			goto skip;
+		}
+		goto fail_nonextensible;
+	}
 	h_obj = duk_get_hobject(ctx, 0);
 	if (!h_obj) {
 		goto skip;
 	}
-	h_new_proto = duk_get_hobject(ctx, 1);
 	DUK_ASSERT(h_obj != NULL);
-	/* h_new_proto may be NULL */
 
 	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2 */
 	/* NOTE: steps 7-8 seem to be a cut-paste bug in the E6 draft */
@@ -203,10 +205,11 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context 
 	duk_hobject *h;
 	duk_bool_t is_freeze;
 
-	/* FIXME: lightfunc */
-
-	h = duk_require_hobject(ctx, 0);
-	DUK_ASSERT(h != NULL);
+	h = duk_require_hobject_or_lfunc(ctx, 0);
+	if (!h) {
+		/* Lightfunc, always success. */
+		return 1;
+	}
 
 	is_freeze = (duk_bool_t) duk_get_current_magic(ctx);
 	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
@@ -223,9 +226,11 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context 
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
-	/* FIXME: lightfunc */
-
-	h = duk_require_hobject(ctx, 0);
+	h = duk_require_hobject_or_lfunc(ctx, 0);
+	if (!h) {
+		/* Lightfunc, always success. */
+		return 1;
+	}
 	DUK_ASSERT(h != NULL);
 
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
@@ -243,8 +248,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 	duk_bool_t is_frozen;
 	duk_bool_t rc;
 
-	/* FIXME: lightfunc */
-
 	h = duk_require_hobject_or_lfunc(ctx, 0);
 	if (!h) {
 		duk_push_true(ctx);  /* frozen and sealed */
@@ -258,8 +261,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx) {
 	duk_hobject *h;
-
-	/* FIXME: lightfunc */
 
 	h = duk_require_hobject_or_lfunc(ctx, 0);
 	if (!h) {

@@ -827,7 +827,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			                                      1,              /* num_stack_args */
 			                                      call_flags);    /* call_flags */
 			if (setup_rc == 0) {
-				/* FIXME: cannot happen? if not, document */
+				/* Shouldn't happen but check anyway. */
 				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
 			}
 
@@ -2739,9 +2739,10 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			 *  target at DUK__REGP(idx) with the final, non-bound function (which
 			 *  may be a lightfunc), and fudge arguments if necessary.
 			 *
-			 *  FIXME: the call setup won't do "effective this binding" resolution
-			 *  if an ecma-to-ecma call is not possible.  This is quite confusing,
-			 *  so perhaps add a helper for doing bound function and effective this
+			 *  XXX: If an ecma-to-ecma call is not possible, this initial call
+			 *  setup will do bound function chain resolution but won't do the
+			 *  "effective this binding" resolution which is quite confusing.
+			 *  Perhaps add a helper for doing bound function and effective this
 			 *  binding resolution - and call that explicitly?  Ecma-to-ecma call
 			 *  setup and normal function handling can then assume this prestep has
 			 *  been done by the caller.
@@ -2786,18 +2787,16 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 			if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
 				call_flags = 0;  /* not protected, respect reclimit, not constructor */
 
-				/* FIXME: eval needs special handling if it can also be a lightfunc
-				 * (already excepted from lightfunc status, explain here).
+				/* There is no eval() special handling here: eval() is never
+				 * automatically converted to a lightfunc.
 				 */
-				/* FIXME: the call target bound chain is already resolved by the ecma
-				 * call setup attempt, document here... Perhaps the bound chain resolution
-				 * could be a shared helper instead so that we could skip it here.
-				 */
+				DUK_ASSERT(DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func) != duk_bi_global_object_eval);
+
 				duk_handle_call(thr,
 				                num_stack_args,
 				                call_flags);
 
-				/* FIXME: who should restore? */
+				/* XXX: who should restore? */
 				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, fun->nregs);
 

@@ -318,7 +318,6 @@ void duk__handle_createargs_for_call(duk_hthread *thr,
  *  function.  This would make call time handling much easier.
  */
 
-/* FIXME: lightfunc handling */
 DUK_LOCAL
 void duk__handle_bound_chain_for_call(duk_hthread *thr,
                                       duk_idx_t idx_func,
@@ -369,7 +368,7 @@ void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%ld: %!T",
-		                     (void *) DUK_TVAL_GET_OBJECT(tv), (long) num_stack_args, tv_func));
+		                     (void *) DUK_TVAL_GET_OBJECT(tv_func), (long) num_stack_args, tv_func));
 
 		/* [ ... func this arg1 ... argN ] */
 
@@ -588,7 +587,8 @@ void duk__coerce_effective_this_binding(duk_hthread *thr,
 	if (func) {
 		strict = DUK_HOBJECT_HAS_STRICT(func);
 	} else {
-		strict = 1;  /* FIXME: lightweight, bit? */
+		/* Lightfuncs are always considered strict. */
+		strict = 1;
 	}
 
 	if (strict) {
@@ -599,6 +599,9 @@ void duk__coerce_effective_this_binding(duk_hthread *thr,
 
 		if (DUK_TVAL_IS_OBJECT(tv_this)) {
 			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, object -> use directly"));
+		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_this)) {
+			/* Lightfuncs are treated like objects and not coerced. */
+			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, lightfunc -> use directly"));
 		} else if (DUK_TVAL_IS_UNDEFINED(tv_this) || DUK_TVAL_IS_NULL(tv_this)) {
 			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, undefined/null -> use global object"));
 			obj_global = thr->builtins[DUK_BIDX_GLOBAL];
@@ -618,6 +621,67 @@ void duk__coerce_effective_this_binding(duk_hthread *thr,
 			duk_to_object(ctx, idx_this);  /* may have side effects */
 		}
 	}
+}
+
+/*
+ *  Shared helper for non-bound func lookup.
+ *
+ *  Returns duk_hobject * to the final non-bound function (NULL for lightfunc).
+ */
+
+DUK_LOCAL
+duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
+                                       duk_idx_t idx_func,
+                                       duk_idx_t *out_num_stack_args,
+                                       duk_tval **out_tv_func,
+                                       duk_small_uint_t call_flags) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv_func;
+	duk_hobject *func;
+
+	for (;;) {
+		/* Use loop to minimize code size of relookup after bound function case */
+		tv_func = duk_get_tval(ctx, idx_func);
+		DUK_ASSERT(tv_func != NULL);
+
+		if (DUK_TVAL_IS_OBJECT(tv_func)) {
+			func = DUK_TVAL_GET_OBJECT(tv_func);
+			if (!DUK_HOBJECT_IS_CALLABLE(func)) {
+				goto not_callable_error;
+			}
+			if (DUK_HOBJECT_HAS_BOUND(func)) {
+				duk__handle_bound_chain_for_call(thr, idx_func, out_num_stack_args, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+
+				/* The final object may be a normal function or a lightfunc.
+				 * We need to re-lookup tv_func because it may have changed
+				 * (also value stack may have been resized).  Loop again to
+				 * do that; we're guaranteed not to come here again.
+				 */
+				DUK_ASSERT(DUK_TVAL_IS_OBJECT(duk_require_tval(ctx, idx_func)) ||
+				           DUK_TVAL_IS_LIGHTFUNC(duk_require_tval(ctx, idx_func)));
+				continue;
+			}
+		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
+			func = NULL;
+		} else {
+			goto not_callable_error;
+		}
+		break;
+	}
+
+	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
+	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
+	                            DUK_HOBJECT_IS_NATIVEFUNCTION(func)));
+
+	*out_tv_func = tv_func;
+	return func;
+
+ not_callable_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
+	DUK_UNREACHABLE();
+	return NULL;  /* never executed */
 }
 
 /*
@@ -682,7 +746,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_idx_t nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
 	duk_size_t vs_min_size;
 	duk_hobject *func;          /* 'func' on stack (borrowed reference) */
-	duk_tval *tv_func;          /* duk_tval ptr for 'func' on stack (borrowed reference) */
+	duk_tval *tv_func;          /* duk_tval ptr for 'func' on stack (borrowed reference) or tv_func_copy */
+	duk_tval tv_func_copy;      /* to avoid relookups */
 	duk_activation *act;
 	duk_hobject *env;
 	duk_jmpbuf our_jmpbuf;
@@ -746,6 +811,12 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
+
+	/* XXX: Multiple tv_func lookups are now avoided by making a local
+	 * copy of tv_func.  Another approach would be to compute an offset
+	 * for tv_func from valstack bottom and recomputing the tv_func
+	 * pointer quickly as valstack + offset instead of calling duk_get_tval().
+	 */
 
 #if 0
 	DUK_D(DUK_DPRINT("callstack before call setup:"));
@@ -953,39 +1024,13 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 *  the bound function chain first.
 	 */
 
-	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
-	}
-	tv_func = duk_get_tval(ctx, idx_func);
-	DUK_ASSERT(tv_func != NULL);
-	/* FIXME: avoid calling duk_is_callable() in the first place? */
-
-	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		func = DUK_TVAL_GET_OBJECT(tv_func);
-		if (DUK_HOBJECT_HAS_BOUND(func)) {
-			duk__handle_bound_chain_for_call(thr, idx_func, &num_stack_args, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
-		}
-	}
-	tv_func = NULL;  /* invalidated */
-
-	tv_func = duk_get_tval(ctx, idx_func);  /* relookup, valstack resize possible */
-	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
-	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
-
-	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		func = DUK_TVAL_GET_OBJECT(tv_func);
-	} else {
-		func = NULL;
-	}
-
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
-	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
-	                            DUK_HOBJECT_IS_NATIVEFUNCTION(func)));
+	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
+	DUK_TVAL_SET_TVAL(&tv_func_copy, tv_func);
+	tv_func = &tv_func_copy;  /* local copy to avoid relookups */
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, idx_func + 1)));
-	tv_func = NULL;  /* invalidated */
 
 	/* These base values are never used, but if the compiler doesn't know
 	 * that DUK_ERROR() won't return, these are needed to silence warnings.
@@ -999,16 +1044,13 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		duk_small_uint_t lf_flags;
 
 		DUK_DDD(DUK_DDDPRINT("lightfunc call handling"));
-		tv_func = duk_get_tval(ctx, idx_func);  /* relookup, valstack resize possible */
 		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_func));
 		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv_func);
-		func = NULL;
-		nargs = lf_flags & 0x0f;  /* FIXME: constants */
-		if (nargs == 0x0f) {
+		nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
+		if (nargs == DUK_LFUNC_NARGS_VARARGS) {
 			nargs = -1;  /* vararg */
 		}
 		nregs = nargs;
-		/* FIXME: extract magic here from lf_flags directly */
 	} else if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		nargs = ((duk_hcompiledfunction *) func)->nargs;
 		nregs = ((duk_hcompiledfunction *) func)->nregs;
@@ -1045,7 +1087,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	              idx_args;                                        /* bottom of new func */
 	vs_min_size += (nregs >= 0 ? nregs : num_stack_args);          /* num entries of new func at entry */
 	if (func == NULL || DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
-		/* FIXME: lightweight funcs must be handled above */
 		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;         /* Duktape/C API guaranteed entries (on top of args) */
 	}
 	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA,                    /* + spare */
@@ -1109,7 +1150,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 	act->flags |= DUK_ACT_FLAG_PREVENT_YIELD;
 
-	act->func = func;  /* FIXME: this is an issue */
+	act->func = func;  /* NULL for lightfunc */
 	act->var_env = NULL;
 	act->lex_env = NULL;
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
@@ -1120,19 +1161,17 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
 	act->idx_retval = 0;
 #endif
-	if (func == NULL) {
-		/* FIXME: use macro, avoid block */
-		/* FIXME: setting tv_func in other cases */
-		tv_func = duk_get_tval(ctx, idx_func);  /* relookup, valstack resize possible */
-		DUK_TVAL_SET_TVAL(&act->tv_func, tv_func);  /* borrowed, no refcount */
-	}
+	DUK_TVAL_SET_TVAL(&act->tv_func, tv_func);  /* borrowed, no refcount */
 
 	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 		/* duk_hthread_callstack_unwind() will decrease this on unwind */
 		thr->callstack_preventcount++;
 	}
 
-	/* FIXME: lightfunc? */
+	/* XXX: Is this INCREF necessary? 'func' is always a borrowed
+	 * reference reachable through the value stack?  If changed, stack
+	 * unwind code also needs to be fixed to match.
+	 */
 	DUK_HOBJECT_INCREF(thr, func);  /* act->func */
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
@@ -1214,6 +1253,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	/* XXX: replace with a single operation */
 
 	if (nregs >= 0) {
+		DUK_ASSERT(nargs >= 0);
 		duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
 		duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
 	} else {
@@ -1267,7 +1307,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	if (func) {
 		rc = ((duk_hnativefunction *) func)->func((duk_context *) thr);
 	} else {
-		/* FIXME: lightfunc */
 		duk_c_function funcptr = DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func);
 		rc = funcptr((duk_context *) thr);
 	}
@@ -1892,8 +1931,8 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_idx_t idx_args;     /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	duk_idx_t nargs;        /* # argument registers target function wants (< 0 => never for ecma calls) */
 	duk_idx_t nregs;        /* # total registers target function wants on entry (< 0 => never for ecma calls) */
-	duk_tval *tv_func;      /* duk_tval ptr for 'func' on stack (borrowed reference) */
 	duk_hobject *func;      /* 'func' on stack (borrowed reference) */
+	duk_tval *tv_func;      /* duk_tval ptr for 'func' on stack (borrowed reference) */
 	duk_activation *act;
 	duk_hobject *env;
 	duk_bool_t use_tailcall;
@@ -1984,36 +2023,12 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 *  function call.
 	 */
 
-	if (!duk_is_callable(thr, idx_func)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
-	}
-	tv_func = duk_get_tval(ctx, idx_func);
-	DUK_ASSERT(tv_func != NULL);
-	/* FIXME: avoid calling duk_is_callable() in the first place? */
-
-	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		func = DUK_TVAL_GET_OBJECT(tv_func);
-		if (DUK_HOBJECT_HAS_BOUND(func)) {
-			duk__handle_bound_chain_for_call(thr, idx_func, &num_stack_args, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
-		}
-	}
-	tv_func = NULL;  /* invalidated */
-
-	tv_func = duk_get_tval(ctx, idx_func);  /* relookup, valstack resize possible */
-	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
-	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
-
-	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		func = DUK_TVAL_GET_OBJECT(tv_func);
-		if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
-			DUK_ASSERT(DUK_HOBJECT_IS_NATIVEFUNCTION(func));
-			DUK_DDD(DUK_DDDPRINT("final target is a native function, cannot do ecma-to-ecma call"));
-			return 0;
-		}
-	} else {
-		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc, cannot do ecma-to-ecma call"));
+	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
+	if (func == NULL || !DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc/nativefunc, cannot do ecma-to-ecma call"));
 		return 0;
 	}
+	/* XXX: tv_func is not actually needed */
 
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
@@ -2022,7 +2037,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
 	                     duk_get_tval(ctx, idx_func + 1)));
-	tv_func = NULL;  /* invalidated */
 
 	nargs = ((duk_hcompiledfunction *) func)->nargs;
 	nregs = ((duk_hcompiledfunction *) func)->nregs;
@@ -2126,6 +2140,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->prev_caller = NULL;
 #endif
 		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
+		DUK_TVAL_SET_OBJECT(&act->tv_func, func);  /* borrowed, no refcount */
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_INCREF(thr, func);
 		act = thr->callstack + thr->callstack_top - 1;  /* side effects (currently none though) */
@@ -2253,6 +2268,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
 		act->idx_retval = 0;
 #endif
+		DUK_TVAL_SET_OBJECT(&act->tv_func, func);  /* borrowed, no refcount */
 
 		DUK_HOBJECT_INCREF(thr, func);  /* act->func */
 

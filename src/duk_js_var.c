@@ -568,7 +568,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(env != NULL);
-	/* FIXME: DUK_ASSERT(func != NULL); */
+	/* func is NULL for lightfuncs */
 
 	if (!DUK_HOBJECT_IS_DECENV(env) || DUK_HOBJECT_HAS_ENVRECCLOSED(env)) {
 		DUK_DDD(DUK_DDDPRINT("environment record not a declarative record, "

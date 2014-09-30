@@ -1880,7 +1880,7 @@ static duk_uint16_t duk__date_magics[] = {
 	DUK__FLAG_NAN_TO_ZERO + DUK__FLAG_YEAR_FIXUP + (3 << DUK__FLAG_VALUE_SHIFT),
 };
 
-duk_small_uint_t duk__date_get_indirect_magic(duk_context *ctx) {
+DUK_LOCAL duk_small_uint_t duk__date_get_indirect_magic(duk_context *ctx) {
 	duk_small_int_t magicidx = (duk_small_uint_t) duk_get_current_magic(ctx);
 	DUK_ASSERT(magicidx >= 0 && magicidx < (duk_small_int_t) (sizeof(duk__date_magics) / sizeof(duk_uint16_t)));
 	return (duk_small_uint_t) duk__date_magics[magicidx];

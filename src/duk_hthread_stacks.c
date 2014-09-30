@@ -199,14 +199,13 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 			DUK_DDD(DUK_DDDPRINT("skip closing environments, envs not owned by this activation"));
 			goto skip_env_close;
 		}
-
-		/* FIXME: lightfunc handling, explicit check or comment */
+		/* func is NULL for lightfunc */
 
 		DUK_ASSERT(act->lex_env == act->var_env);
 		if (act->var_env != NULL) {
 			DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
 			                     (void *) act->var_env, (duk_heaphdr *) act->var_env));
-			duk_js_close_environment_record(thr, act->var_env, DUK_ACT_GET_FUNC(act), act->idx_bottom);
+			duk_js_close_environment_record(thr, act->var_env, func, act->idx_bottom);
 			act = thr->callstack + idx;  /* avoid side effect issues */
 		}
 

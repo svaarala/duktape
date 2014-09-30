@@ -196,7 +196,7 @@ typedef struct duk_tval_struct duk_tval;
 
 struct duk_tval_struct {
 	duk_small_uint_t t;
-	duk_small_uint_t v_flags;
+	duk_small_uint_t v_extra;
 	union {
 		duk_double_t d;
 		duk_small_int_t i;
@@ -260,7 +260,7 @@ struct duk_tval_struct {
 
 #define DUK_TVAL_SET_LIGHTFUNC(tv,fp,flags)  do { \
 		(tv)->t = DUK_TAG_LIGHTFUNC; \
-		(tv)->v_flags = (flags); \
+		(tv)->v_extra = (flags); \
 		(tv)->v.lightfunc = (duk_c_function) (fp); \
 	} while (0)
 
@@ -292,11 +292,11 @@ struct duk_tval_struct {
 #define DUK_TVAL_GET_NUMBER(tv)            ((tv)->v.d)
 #define DUK_TVAL_GET_POINTER(tv)           ((tv)->v.voidptr)
 #define DUK_TVAL_GET_LIGHTFUNC(tv,out_fp,out_flags)  do { \
-		(out_flags) = (duk_uint32_t) (tv)->v_flags; \
+		(out_flags) = (duk_uint32_t) (tv)->v_extra; \
 		(out_fp) = (tv)->v.lightfunc; \
 	} while (0)
 #define DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv) ((tv)->v.lightfunc)
-#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv)   ((duk_uint32_t) ((tv)->v_flags))
+#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv)   ((duk_uint32_t) ((tv)->v_extra))
 #define DUK_TVAL_GET_STRING(tv)            ((tv)->v.hstring)
 #define DUK_TVAL_GET_OBJECT(tv)            ((tv)->v.hobject)
 #define DUK_TVAL_GET_BUFFER(tv)            ((tv)->v.hbuffer)
@@ -338,6 +338,14 @@ struct duk_tval_struct {
 #define DUK_LFUNC_FLAGS_GET_NARGS(lf_flags) \
 	((lf_flags) & 0x0f)
 #define DUK_LFUNC_FLAGS_PACK(magic,length,nargs) \
-	((magic) << 8) | ((length) << 4) | (nargs)
+	(((magic) & 0xff) << 8) | ((length) << 4) | (nargs)
+
+#define DUK_LFUNC_NARGS_VARARGS             0x0f   /* varargs marker */
+#define DUK_LFUNC_NARGS_MIN                 0x00
+#define DUK_LFUNC_NARGS_MAX                 0x0e   /* max, excl. varargs marker */
+#define DUK_LFUNC_LENGTH_MIN                0x00
+#define DUK_LFUNC_LENGTH_MAX                0x0f
+#define DUK_LFUNC_MAGIC_MIN                 (-0x80)
+#define DUK_LFUNC_MAGIC_MAX                 0x7f
 
 #endif  /* DUK_TVAL_H_INCLUDED */

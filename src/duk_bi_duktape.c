@@ -122,7 +122,6 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
-	duk_hobject *h_func;
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 	duk_int_t level;
@@ -139,16 +138,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 
 	duk_push_object(ctx);
 
-	/* FIXME: push act->tv_func for lightfuncs, or perhaps tv_func just
-	 * directly if it is changed to be always initialized.
-	 */
-	h_func = DUK_ACT_GET_FUNC(act);
-	if (!h_func) {
-		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(&act->tv_func));
-		duk_push_tval(ctx, &act->tv_func);
-	} else {
-		duk_push_hobject(ctx, h_func);
-	}
+	duk_push_tval(ctx, &act->tv_func);
 
 	pc = (duk_uint_fast32_t) act->pc;
 	duk_push_uint(ctx, (duk_uint_t) pc);

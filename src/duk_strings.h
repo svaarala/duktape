@@ -51,7 +51,6 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_NOT_STRING duk_str_not_string
 #define DUK_STR_NOT_POINTER duk_str_not_pointer
 #define DUK_STR_NOT_BUFFER duk_str_not_buffer
-#define DUK_STR_NOT_OBJECT duk_str_not_object
 #define DUK_STR_UNEXPECTED_TYPE duk_str_unexpected_type
 #define DUK_STR_NOT_THREAD duk_str_not_thread
 #if 0  /*unused*/
@@ -91,7 +90,6 @@ DUK_INTERNAL_DECL const char *duk_str_not_number;
 DUK_INTERNAL_DECL const char *duk_str_not_string;
 DUK_INTERNAL_DECL const char *duk_str_not_pointer;
 DUK_INTERNAL_DECL const char *duk_str_not_buffer;
-DUK_INTERNAL_DECL const char *duk_str_not_object;
 DUK_INTERNAL_DECL const char *duk_str_unexpected_type;
 DUK_INTERNAL_DECL const char *duk_str_not_thread;
 #if 0  /*unused*/
