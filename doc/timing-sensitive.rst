@@ -2,6 +2,9 @@
 Timing sensitive environments
 =============================
 
+Overview
+========
+
 Timing sensitive environments include e.g. games.  In these environments
 long blocking times are problematic.  Stop-and-go garbage collection is
 also a potential issue.
