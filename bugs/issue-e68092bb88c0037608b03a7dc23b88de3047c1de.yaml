@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: review use of C++ exceptions when available
+desc: http://lua-users.org/wiki/CatchingLuaExceptions
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-09-30 13:59:28.978046 Z
+references: []
+
+id: e68092bb88c0037608b03a7dc23b88de3047c1de
+log_events: 
+- - 2014-09-30 13:59:29.186017 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
