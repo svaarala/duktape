@@ -97,5 +97,5 @@ See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTI
 Copyright and license
 ---------------------
 
-See [AUTHORS.txt](https://github.com/svaarala/duktape/blob/master/AUTHORS.txt)
+See [AUTHORS.rst](https://github.com/svaarala/duktape/blob/master/AUTHORS.rst)
 and [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).

@@ -547,6 +547,9 @@ Planned
 
 * Make error 'tracedata' an internal property for better sandboxing
 
+* Rename RELEASES.txt and AUTHORS.txt to .rst suffix for better automatic
+  rendering
+
 * Fix DUK_INVALID_INDEX define value, it used INT_MIN directly
 
 * Fix return value of Duktape.gc() to return true (instead of false) for
