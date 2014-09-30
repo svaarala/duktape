@@ -266,12 +266,12 @@ for i in \
 	cp dist-files/$i $DIST/
 done
 
-cat dist-files/README.txt | sed \
+cat dist-files/README.rst | sed \
 	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
 	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
 	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
-	> $DIST/README.txt
-cp LICENSE.txt $DIST/LICENSE.txt
+	> $DIST/README.rst
+cp LICENSE.txt $DIST/LICENSE.txt  # not strict RST so keep .txt suffix
 cp AUTHORS.rst $DIST/AUTHORS.rst
 cp RELEASES.rst $DIST/RELEASES.rst
 
