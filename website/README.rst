@@ -6,7 +6,7 @@ Overview
 ========
 
 This directory contains all that is necessary to build the Duktape website
-(http://www.duktape.org/).
+(http://duktape.org/).
 
 The website has been implemented as a set of static files, to allow the site
 to be cached and viewed off-line.  The pages do depend on external resources,

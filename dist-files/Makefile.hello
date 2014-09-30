@@ -22,7 +22,7 @@ DEFINES =
 # If you want a 32-bit build on a 64-bit host
 #CCOPTS += -m32
 
-# Optional feature defines, see: http://www.duktape.org/guide.html#compiling
+# Optional feature defines, see: http://duktape.org/guide.html#compiling
 DEFINES += -DDUK_OPT_SELF_TESTS
 #DEFINES += -DDUK_OPT_DEBUG
 #DEFINES += -DDUK_OPT_DPRINT
