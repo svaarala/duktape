@@ -20,7 +20,6 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <tr><td class="propname">fileName</td><td>Rhino</td><td>Filename related to error source, inherited accessor</td></tr>
 <tr><td class="propname">lineNumber</td><td>Rhino</td><td>Linenumber related to error source, inherited accessor</td></tr>
 <tr><td class="propname">stack</td><td>V8</td><td>Traceback as a multi-line human redable string, inherited accessor</td></tr>
-<tr><td class="propname">tracedata</td><td>Duktape</td><td>Raw traceback data in an internal format, own property</td></tr>
 </tbody>
 </table>
 
@@ -29,8 +28,9 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <ul>
 <li><code>stack</code>, <code>fileName</code>, and <code>lineNumber</code> are accessor
     properties inherited from <code>Error.prototype</code>.</li>
-<li><code>tracedata</code> is an own property of the Error instance which provides
-    the raw data (in an internal format) needed by the accessors.</li>
+<li>The raw traceback data needed by the accessor properties is stored in an internal
+    property (<code>\xFFtracedata</code>) which is not normally accessible from
+    Ecmascript code.</li>
 </ul>
 
 <p>If Duktape is compiled without traceback support:</p>
@@ -65,13 +65,15 @@ Traceback data is automatically collected and added to an object:</p>
 <li>when an error is thrown from inside Duktape.</li>
 </ul>
 
-<p>The data used to create the traceback is stored in the <code>tracedata</code>
-property in an internal and version-dependent format described in the internal
-<a href="https://github.com/svaarala/duktape/blob/master/doc/error-objects.rst">error-objects.rst</a>
-document.  You shouldn't access the <code>tracedata</code> directly.</p>
+<p>The data used to create the traceback is stored in an internal property
+(<code>\xFFtracedata</code>), in an internal and version-dependent format
+described
+<a href="https://github.com/svaarala/duktape/blob/master/doc/error-objects.rst">error-objects.rst</a>.
+You shouldn't access the traceback data directly.</p>
 
-<p>The exact traceback format is still in flux (and you shouldn't rely on
-an exact format in any case).  As an example, the program:</p>
+<p>The printable traceback format is intended to be human readable only.
+You shouldn't rely on an exact traceback format as it may change between
+versions.  As an example of the current traceback format, the program:</p>
 <pre class="ecmascript-code">
 // shortened from ecmascript-testcases/test-dev-traceback-example.js
 try {
@@ -84,9 +86,9 @@ try {
 <p>would print something like:</p>
 <pre>
 URIError: invalid input
-        duk_bi_global.c:317
-        decodeURIComponent (null) native strict
-        global ecmascript-testcases/test-dev-traceback-example.js:3
+        duk_bi_global.c:316
+        decodeURIComponent  native strict preventsyield
+        global ecmascript-testcases/test-dev-traceback-example.js:3 preventsyield
 </pre>
 
 <p>In builds where tracebacks are disabled, the <code>stack</code> accessor
