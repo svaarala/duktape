@@ -126,7 +126,7 @@ prototype chain contains ``Error.prototype``:
   for this to happen, but it still must be an ``Error`` instance.
 
 Duktape refuses to add additional fields to the object if it already contains
-fields of the same name.  For instance, if the created object has a ``tracedata``
+fields of the same name.  For instance, if the created object has a ``_tracedata``
 field, it won't get overwritten by the augmentation process.  (User error
 handler has no such restrictions, and it may replace the error value entirely.)
 
@@ -303,8 +303,8 @@ within the control of the implementation:
 | stack           | no       | printable stack traceback string           |
 |                 |          | (inherited accessor)                       |
 +-----------------+----------+--------------------------------------------+
-| tracedata       | no       | stack traceback data, internal raw format  |
-|                 |          | (own property)                             |
+| _tracedata      | no       | stack traceback data, internal raw format  |
+|                 |          | (own, internal property)                   |
 +-----------------+----------+--------------------------------------------+
 
 The ``Error.prototype`` contains the following non-standard properties:
@@ -313,13 +313,13 @@ The ``Error.prototype`` contains the following non-standard properties:
 | Property        | Standard | Description                                |
 +=================+==========+============================================+
 | stack           | no       | Accessor property for getting a printable  |
-|                 |          | traceback based on tracedata.              |
+|                 |          | traceback based on _tracedata.             |
 +-----------------+----------+--------------------------------------------+
 | fileName        | no       | Accessor property for getting a filename   |
-|                 |          | based on tracedata.                        |
+|                 |          | based on _tracedata.                       |
 +-----------------+----------+--------------------------------------------+
 | lineNumber      | no       | Accessor property for getting a linenumber |
-|                 |          | based on tracedata.                        |
+|                 |          | based on _tracedata.                       |
 +-----------------+----------+--------------------------------------------+
 
 All of the accessors are in the prototype in case the object instance does
@@ -338,7 +338,7 @@ Notes:
 
 * The ``fileName`` and ``lineNumber`` property names are from Rhino.
 
-* The ``tracedata`` has an internal format which may change from version
+* The ``_tracedata`` has an internal format which may change from version
   to version (even build to build).  It should never be serialized or
   used outside the life cycle of a Duktape heap.
 
@@ -349,6 +349,10 @@ Notes:
   will not have a useful ``message`` field.  Instead, ``message`` is set
   to a string representation of the error ``code``.  Exceptions thrown
   from user code will carry ``message`` normally.
+
+* The ``_tracedata`` property contains function references to functions in
+  the current call stack.  Because such references are a potential sandboxing
+  concern, the tracedata is stored in an internal property.
 
 Cause chains
 ============
@@ -417,8 +421,8 @@ would need to tolerate e.g.::
   e1.cause = e2;
   e2.cause = e1;
 
-Traceback format (tracedata)
-============================
+Traceback format (_tracedata)
+=============================
 
 The purpose of the ``tracedata`` value is to capture the relevant call stack
 information very quickly before the call stack is unwound by error handling.
@@ -430,13 +434,13 @@ arcane.  The format is version dependent, and is not intended to be accessed
 directly by user code.  The implementation should provide stable helpers for
 getting e.g. readable tracebacks or inspecting the traceback entries.
 
-The ``tracedata`` value is a flat array, populated with values describing
+The ``_tracedata`` value is a flat array, populated with values describing
 the contents of the call stack, starting from the call stack top and working
 downwards until either the call stack bottom or the maximum traceback depth
 is reached.
 
 If a call has a related C ``__FILE__`` and ``__LINE__`` those are first
-pushed to ``tracedata``:
+pushed to ``_tracedata``:
 
 * The ``__FILE__`` value as a string.
 
@@ -449,7 +453,7 @@ pushed to ``tracedata``:
   requests for a ``fileName`` or ``lineNumber`` related to the error.
 
 After that, for each call stack element, the array entries appended to
-``tracedata`` are pairs consisting of:
+``_tracedata`` are pairs consisting of:
 
 * The function object of the activation.  The function object contains the
   function type and name.  It also contains the filename (or equivalent, like
@@ -477,7 +481,7 @@ Notes:
   for plenty of flags in the current representation.  Flags must be in
   the low end of the flags field though (bit 20 or lower)
 
-* The number of elements appended to the ``tracedata`` array for each
+* The number of elements appended to the ``_tracedata`` array for each
   activation does not need to constant, as long as the value can be decoded
   starting from the beginning of the array (in other words, random access is
   not important at the moment).
@@ -490,7 +494,7 @@ Notes:
   This is definitely future work and may be needed for better debugging
   support.
 
-* The ``tracedata`` value is currently an array, but it may later be changed
+* The ``_tracedata`` value is currently an array, but it may later be changed
   into an internal type of its own right to optimize memory usage and
   performance.  The internal type would then basically be a typed buffer
   which garbage collection would know how to visit.
