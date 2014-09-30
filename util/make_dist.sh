@@ -65,6 +65,7 @@ mkdir $DIST/examples/eventloop
 mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
 mkdir $DIST/examples/jxpretty
+mkdir $DIST/examples/sandbox
 
 # Copy most files directly
 
@@ -265,12 +266,20 @@ for i in \
 done
 
 for i in \
+	README.rst \
+	sandbox.c \
+	; do
+	cp examples/sandbox/$i $DIST/examples/sandbox/
+done
+
+for i in \
 	Makefile.cmdline \
 	Makefile.eventloop \
 	Makefile.hello \
 	Makefile.eval \
 	Makefile.coffee \
 	Makefile.jxpretty \
+	Makefile.sandbox \
 	; do
 	cp dist-files/$i $DIST/
 done
