@@ -20,6 +20,7 @@ stack
 stash
 object
 module
+sandbox
 
 =seealso
 duk_push_global_stash
