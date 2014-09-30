@@ -277,6 +277,7 @@ cp RELEASES.rst $DIST/RELEASES.rst
 
 for i in \
 	murmurhash2.txt \
+	commonjs.txt \
 	; do
 	cp licenses/$i $DIST/licenses/
 done
