@@ -72,9 +72,9 @@ void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs)
 	DUK_ASSERT(thr->heap != NULL);
 
 	heap = thr->heap;
-	out_funcs->alloc = heap->alloc_func;
-	out_funcs->realloc = heap->realloc_func;
-	out_funcs->free = heap->free_func;
+	out_funcs->alloc_func = heap->alloc_func;
+	out_funcs->realloc_func = heap->realloc_func;
+	out_funcs->free_func = heap->free_func;
 	out_funcs->udata = heap->alloc_udata;
 }
 
