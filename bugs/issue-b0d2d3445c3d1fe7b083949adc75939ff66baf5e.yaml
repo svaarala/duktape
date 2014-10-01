@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix relative module ID resolution bug in require() (GH-48)
+desc: ""
+type: :bugfix
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-01 10:50:47.312556 Z
+references: []
+
+id: b0d2d3445c3d1fe7b083949adc75939ff66baf5e
+log_events: 
+- - 2014-10-01 10:50:47.504488 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-01 10:50:52.864592 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
