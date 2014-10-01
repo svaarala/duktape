@@ -810,16 +810,20 @@ static void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_i
 	 *  Set up the resolution input which is the requested ID directly
 	 *  (if absolute or no current module path) or with current module
 	 *  ID prepended (if relative and current module path exists).
+	 *
+	 *  Suppose current module is 'foo/bar' and relative path is './quux'.
+	 *  The 'bar' component must be replaced so the initial input here is
+	 *  'foo/bar/.././quux'.
 	 */
 
 	req_id_len = DUK_STRLEN(req_id);
 	if (mod_id != NULL && req_id[0] == '.') {
 		mod_id_len = DUK_STRLEN(mod_id);
-		if (mod_id_len + 1 + req_id_len + 1 >= sizeof(buf_in)) {
+		if (mod_id_len + 4 + req_id_len + 1 >= sizeof(buf_in)) {
 			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
 			goto resolve_error;
 		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/%s", (const char *) mod_id, (const char *) req_id);
+		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/../%s", (const char *) mod_id, (const char *) req_id);
 	} else {
 		if (req_id_len + 1 >= sizeof(buf_in)) {
 			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
