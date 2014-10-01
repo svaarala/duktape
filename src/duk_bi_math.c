@@ -197,43 +197,43 @@ static double duk__pow_fixed(double x, double y) {
  */
 #if defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS)
 static double duk__fabs(double x) {
-	return fabs(x);
+	return DUK_FABS(x);
 }
 static double duk__acos(double x) {
-	return acos(x);
+	return DUK_ACOS(x);
 }
 static double duk__asin(double x) {
-	return asin(x);
+	return DUK_ASIN(x);
 }
 static double duk__atan(double x) {
-	return atan(x);
+	return DUK_ATAN(x);
 }
 static double duk__ceil(double x) {
-	return ceil(x);
+	return DUK_CEIL(x);
 }
 static double duk__cos(double x) {
-	return cos(x);
+	return DUK_COS(x);
 }
 static double duk__exp(double x) {
-	return exp(x);
+	return DUK_EXP(x);
 }
 static double duk__floor(double x) {
-	return floor(x);
+	return DUK_FLOOR(x);
 }
 static double duk__log(double x) {
-	return log(x);
+	return DUK_LOG(x);
 }
 static double duk__sin(double x) {
-	return sin(x);
+	return DUK_SIN(x);
 }
 static double duk__sqrt(double x) {
-	return sqrt(x);
+	return DUK_SQRT(x);
 }
 static double duk__tan(double x) {
-	return tan(x);
+	return DUK_TAN(x);
 }
 static double duk__atan2(double x, double y) {
-	return atan2(x, y);
+	return DUK_ATAN2(x, y);
 }
 #endif  /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
 
