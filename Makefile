@@ -339,6 +339,7 @@ cleanall: clean
 	@rm -rf UglifyJS2
 	@rm -rf closure-compiler
 	@rm -rf underscore
+	@rm -rf lodash
 	@rm -f d067d2f0ca30.tar.bz2
 	@rm -rf emscripten
 	@rm -rf JS-Interpreter
@@ -461,7 +462,7 @@ dukdscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 .PHONY: test
-test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
+test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest test262test
 
 RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.yaml
 
@@ -567,6 +568,18 @@ underscoretest:	underscore duk
 	# speed test disabled, requires JSLitmus
 	#-util/underscore_test.sh ./duk underscore/test/speed.js
 	-util/underscore_test.sh ./duk underscore/test/utility.js
+
+lodash:
+	# http://lodash.com/
+	# https://github.com/lodash
+	# Master is OK because not a critical dependency
+	$(GIT) clone --depth 1 https://github.com/lodash/lodash.git
+
+# Lodash test.js assumes require() etc.  Placeholder test for now, no
+# expect string etc.
+.PHONY: lodashtest
+lodashtest: lodash duk
+	./duk lodash/lodash.js lodash-testcases/basic.js
 
 3883a2e9063b0a5f2705bdac3263577a03913c94.zip:
 	# http://test262.ecmascript.org/
