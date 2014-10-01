@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update sandbox document on executor timeout
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-10-01 20:25:18.564731 Z
+references: []
+
+id: 11c093894647366b3c41aca68bc7f65457ec76f2
+log_events: 
+- - 2014-10-01 20:25:18.729710 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
