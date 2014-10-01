@@ -547,8 +547,14 @@ Planned
 
 * Make error 'tracedata' an internal property for better sandboxing
 
+* Rename members of struct duk_memory_functions to have a "_func" suffix,
+  to avoid conflicting with standard library names (which is problematic if
+  the standard names are #defines)
+
 * Rename RELEASES.txt, AUTHORS.txt, and README.txt files to .rst suffix for
   better automatic formatting
+
+* Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
   one component (see GH-48)

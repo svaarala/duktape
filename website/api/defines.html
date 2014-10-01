@@ -30,9 +30,9 @@ typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t c
 typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
 
 struct duk_memory_functions {
-        duk_alloc_function alloc;
-        duk_realloc_function realloc;
-        duk_free_function free;
+        duk_alloc_function alloc_func;
+        duk_realloc_function realloc_func;
+        duk_free_function free_func;
         void *udata;
 };
 typedef struct duk_memory_functions duk_memory_functions;

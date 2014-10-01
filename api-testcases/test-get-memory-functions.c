@@ -39,9 +39,9 @@ void test(duk_context *ctx) {
 
 	new_ctx = duk_create_heap(my_alloc, my_realloc, my_free, (void *) 0x12345678, NULL);
 	duk_get_memory_functions(new_ctx, &funcs);
-	printf("alloc matches: %d\n", my_alloc == funcs.alloc);
-	printf("realloc matches: %d\n", my_realloc == funcs.realloc);
-	printf("free matches: %d\n", my_free == funcs.free);
+	printf("alloc matches: %d\n", my_alloc == funcs.alloc_func);
+	printf("realloc matches: %d\n", my_realloc == funcs.realloc_func);
+	printf("free matches: %d\n", my_free == funcs.free_func);
 	printf("udata: %p\n", funcs.udata);
 	duk_destroy_heap(new_ctx);
 

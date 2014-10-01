@@ -350,16 +350,16 @@ static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_
 #if 0
 	{
 		duk_size_t i;
-		printf("INTERN: \"");
+		DUK_PRINTF("INTERN: \"");
 		for (i = 0; i < blen; i++) {
 			duk_uint8_t x = str[i];
 			if (x >= 0x20 && x <= 0x7e && x != '"' && x != '\\') {
-				printf("%c", (int) x);  /* char: use int cast */
+				DUK_PRINTF("%c", (int) x);  /* char: use int cast */
 			} else {
-				printf("\\x%02lx", (long) x);
+				DUK_PRINTF("\\x%02lx", (long) x);
 			}
 		}
-		printf("\"\n");
+		DUK_PRINTF("\"\n");
 	}
 #endif
 
