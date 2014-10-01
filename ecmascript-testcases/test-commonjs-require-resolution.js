@@ -61,8 +61,12 @@ global require: foo/mod1/. -> TypeError
 global require: foo/mod1/.. -> TypeError
 Duktape.modSearch baz
 Duktape.modSearch xxx
-Duktape.modSearch baz/xxx
-Duktape.modSearch baz/xxx/yyy
+Duktape.modSearch xxy
+Duktape.modSearch xxx/yyy
+Duktape.modSearch quux/foo
+Duktape.modSearch xxz
+Duktape.modSearch quux/xxw
+Duktape.modSearch quux/xxw/yyy
 Duktape.modSearch zzz
 Duktape.modSearch www
 ===*/
@@ -144,8 +148,25 @@ function basicResolutionTest() {
         print('Duktape.modSearch', id);
         if (id === 'baz') {
             return 'require("xxx");\n' +           // absolute
-                   'require("./xxx");\n' +         // relative
-                   'require("./xxx/yyy");\n' +     // relative
+                   'require("./xxy");\n' +         // relative
+                   'require("./xxx/yyy");\n'       // relative
+                   ;
+        }
+        return '';   // return a fake empty module
+    };
+
+    void require('baz');
+
+    /*
+     *  Require from inside a module with a few more path components.
+     */
+
+    Duktape.modSearch = function (id) {
+        print('Duktape.modSearch', id);
+        if (id === 'quux/foo') {
+            return 'require("xxz");\n' +           // absolute
+                   'require("./xxw");\n' +         // relative
+                   'require("./xxw/yyy");\n' +     // relative
                    'require("../zzz");\n' +        // relative
                    'require("././../www");\n'
                    ;
@@ -153,7 +174,7 @@ function basicResolutionTest() {
         return '';   // return a fake empty module
     };
 
-    void require('baz');
+    void require('quux/foo');
 }
 
 print('basic resolution');
@@ -260,14 +281,14 @@ Duktape.modSearch foo/bar
 268: TypeError
 269: TypeError
 270: TypeError
-230: foo/bar
-231: foo/bar
-232: foo/bar
-233: foo/bar
-234: foo/bar
-235: foo/bar
-236: foo/bar
-237: foo/bar
+230: bar
+231: bar
+232: bar
+233: bar
+234: bar
+235: TypeError
+236: TypeError
+237: TypeError
 238: TypeError
 239: TypeError
 240: TypeError
@@ -304,8 +325,8 @@ Duktape.modSearch foo/bar
 ===*/
 
 /* Test the current implementation limit for ID lengths.  This also
-* does some boundary value testing for ID length.
-*/
+ * does some boundary value testing for ID length.
+ */
 
 function lengthTest() {
     var i;

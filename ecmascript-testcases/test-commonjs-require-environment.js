@@ -9,8 +9,10 @@
 
 /*===
 basic bindings
+modSearch: foo/bar
+modSearch: foo/quux
 require: function false
-module: object foo/bar false false false
+module: object foo/quux false false false
 exports: object true
 ===*/
 
@@ -19,10 +21,11 @@ exports: object true
 var global_require = require;
 
 Duktape.modSearch = function (id) {
-    if (id === 'foo') {
-        return 'var mod = require("./bar");\n'
-    }
+    print('modSearch:', id);
     if (id === 'foo/bar') {
+        return 'var mod = require("./quux");\n'
+    }
+    if (id === 'foo/quux') {
         return 'var pd;\n' +
                'print("require:", typeof require, require === global_require);\n' +
                'pd = Object.getOwnPropertyDescriptor(module, "id");\n' +
@@ -36,7 +39,7 @@ Duktape.modSearch = function (id) {
 print('basic bindings');
 
 function bindingTest() {
-    var mod = require('foo');
+    var mod = require('foo/bar');
 
     // module.id must be a resolved absolute path so that it can be used
     // to require the correct module from any other module

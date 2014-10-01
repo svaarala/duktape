@@ -12,24 +12,24 @@
 /*===
 Duktape.modSearch quux
 quux: Error
-Duktape.modSearch foo/bar/quux
-./quux: Error
 Duktape.modSearch foo/quux
+./quux: Error
+Duktape.modSearch quux
 ../quux: Error
-Duktape.modSearch testModule
+Duktape.modSearch testModule/subModule
 Duktape.modSearch test/innerRequire
 testModule: Error
 ===*/
 
 Duktape.modSearch = function (id) {
     print('Duktape.modSearch', id);
-    if (id == 'testModule') {
+    if (id == 'testModule/subModule') {
         // require.id is non-writable but is configurable, so its value must
         // be changed with Object.defineProperty().
         return 'var mod;\n' +
-               'exports.name = "testModule";\n' +
-               'Object.defineProperty(require, "id", { value: "./././testModule/foo/../../test" });\n' +   // same as 'test' but non-canonical
-               'mod = require("./innerRequire");\n';
+               'exports.name = "testModule/subModule";\n' +
+               'Object.defineProperty(require, "id", { value: "./././testModule/subModule/foo/../../../test/foo" });\n' +   // same as 'test/foo' but non-canonical
+               'mod = require("./innerRequire");\n';  // test/foo + ./innerRequire -> test/innerRequire
     }
     throw new Error('cannot find module');
 }
@@ -51,13 +51,13 @@ function tweakedIdentifierTest() {
 
     require.id = './foo//./bar';  // same as 'foo/bar'
     globalTest('quux');
-    globalTest('./quux');
-    globalTest('../quux');
+    globalTest('./quux');         // foo/bar + ./quux -> foo/quux
+    globalTest('../quux');        // foo/bar + ../quux -> quux
     delete require.id;
 
     // Module 'id' not relative
     try {
-        mod = require('testModule');
+        mod = require('testModule/subModule');
         print('never here');
     } catch (e) {
         print('testModule:', e.name);

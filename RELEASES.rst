@@ -550,6 +550,9 @@ Planned
 * Rename RELEASES.txt, AUTHORS.txt, and README.txt files to .rst suffix for
   better automatic formatting
 
+* Fix require() resolution of relative module identifiers, which was off by
+  one component (see GH-48)
+
 * Fix DUK_INVALID_INDEX define value, it used INT_MIN directly
 
 * Fix return value of Duktape.gc() to return true (instead of false) for
