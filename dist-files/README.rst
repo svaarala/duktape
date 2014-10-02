@@ -40,11 +40,15 @@ To build an example command line tool, use the following::
   $ cd <dist_root>
   $ make -f Makefile.cmdline
   [...]
+
   $ ./duk
   ((o) Duktape
   duk> print('Hello world!');
   Hello world!
   = undefined
+
+  $ ./duk mandel.js
+  [...]
 
 There are further examples in the ``examples/`` directory.  Although
 Duktape itself is widely portable, some of the examples are Linux only.

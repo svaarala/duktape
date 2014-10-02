@@ -280,6 +280,7 @@ for i in \
 	Makefile.coffee \
 	Makefile.jxpretty \
 	Makefile.sandbox \
+	mandel.js \
 	; do
 	cp dist-files/$i $DIST/ || exit 1
 done
