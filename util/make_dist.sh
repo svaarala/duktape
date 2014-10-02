@@ -64,6 +64,7 @@ mkdir $DIST/examples/cmdline
 mkdir $DIST/examples/eventloop
 mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
+mkdir $DIST/examples/jxpretty
 
 # Copy most files directly
 
@@ -249,7 +250,6 @@ done
 
 for i in \
 	README.rst \
-	Makefile \
 	globals.coffee \
 	hello.coffee \
 	mandel.coffee \
@@ -258,10 +258,19 @@ for i in \
 done
 
 for i in \
+	README.rst \
+	jxpretty.c \
+	; do
+	cp examples/jxpretty/$i $DIST/examples/jxpretty/
+done
+
+for i in \
 	Makefile.cmdline \
 	Makefile.eventloop \
 	Makefile.hello \
 	Makefile.eval \
+	Makefile.coffee \
+	Makefile.jxpretty \
 	; do
 	cp dist-files/$i $DIST/
 done

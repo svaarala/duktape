@@ -40,4 +40,3 @@ int main(int argc, char *argv[]) {
     duk_destroy_heap(ctx);
     return 0;
 }
-
