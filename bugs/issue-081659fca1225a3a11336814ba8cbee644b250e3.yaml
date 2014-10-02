@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: improve sandbox example in dist
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-10-02 10:57:17.165088 Z
+references: []
+
+id: 081659fca1225a3a11336814ba8cbee644b250e3
+log_events: 
+- - 2014-10-02 10:57:17.421879 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
