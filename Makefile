@@ -801,6 +801,10 @@ dist-site:	tidy-site site
 codepolicycheck:
 	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in api-testcases/*.c
 
+.PHONY: codepolicycheckvim
+codepolicycheckvim:
+	-python util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in api-testcases/*.c
+
 .PHONY: big-git-files
 big-git-files:
 	util/find_big_git_files.sh
