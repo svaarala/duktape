@@ -65,6 +65,7 @@ mkdir $DIST/examples/eventloop
 mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
 mkdir $DIST/examples/jxpretty
+mkdir $DIST/examples/sandbox
 
 # Copy most files directly
 
@@ -183,7 +184,7 @@ for i in \
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do
-	cp src/$i $DISTSRCSEP/
+	cp src/$i $DISTSRCSEP/ || exit 1
 done
 
 for i in \
@@ -193,7 +194,7 @@ for i in \
 	object-assign.js \
 	performance-now.js \
 	; do
-	cp polyfills/$i $DIST/polyfills/
+	cp polyfills/$i $DIST/polyfills/ || exit 1
 done
 
 
@@ -201,7 +202,7 @@ for i in \
 	README.rst \
 	duk_cmdline.c \
 	; do
-	cp examples/cmdline/$i $DIST/examples/cmdline/
+	cp examples/cmdline/$i $DIST/examples/cmdline/ || exit 1
 done
 
 for i in \
@@ -219,21 +220,21 @@ for i in \
 	server-socket-test.js \
 	client-socket-test.js \
 	; do
-	cp examples/eventloop/$i $DIST/examples/eventloop/
+	cp examples/eventloop/$i $DIST/examples/eventloop/ || exit 1
 done
 
 for i in \
 	README.rst \
 	hello.c \
 	; do
-	cp examples/hello/$i $DIST/examples/hello/
+	cp examples/hello/$i $DIST/examples/hello/ || exit 1
 done
 
 for i in \
 	README.rst \
 	eval.c \
 	; do
-	cp examples/eval/$i $DIST/examples/eval/
+	cp examples/eval/$i $DIST/examples/eval/ || exit 1
 done
 
 for i in \
@@ -245,7 +246,7 @@ for i in \
 	primecheck.c \
 	uppercase.c \
 	; do
-	cp examples/guide/$i $DIST/examples/guide/
+	cp examples/guide/$i $DIST/examples/guide/ || exit 1
 done
 
 for i in \
@@ -254,14 +255,21 @@ for i in \
 	hello.coffee \
 	mandel.coffee \
 	; do
-	cp examples/coffee/$i $DIST/examples/coffee/
+	cp examples/coffee/$i $DIST/examples/coffee/ || exit 1
 done
 
 for i in \
 	README.rst \
 	jxpretty.c \
 	; do
-	cp examples/jxpretty/$i $DIST/examples/jxpretty/
+	cp examples/jxpretty/$i $DIST/examples/jxpretty/ || exit 1
+done
+
+for i in \
+	README.rst \
+	sandbox.c \
+	; do
+	cp examples/sandbox/$i $DIST/examples/sandbox/ || exit 1
 done
 
 for i in \
@@ -271,8 +279,9 @@ for i in \
 	Makefile.eval \
 	Makefile.coffee \
 	Makefile.jxpretty \
+	Makefile.sandbox \
 	; do
-	cp dist-files/$i $DIST/
+	cp dist-files/$i $DIST/ || exit 1
 done
 
 cat dist-files/README.rst | sed \
