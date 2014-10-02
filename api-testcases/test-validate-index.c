@@ -66,4 +66,3 @@ void test(duk_context *ctx) {
 		duk_pop(ctx);
 	}
 }
-

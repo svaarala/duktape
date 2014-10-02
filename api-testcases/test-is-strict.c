@@ -20,4 +20,3 @@ void test(duk_context *ctx) {
 	duk_push_c_function(ctx, my_func, 0);
 	duk_call(ctx, 0);
 }
-
