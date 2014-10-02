@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix duk_fatal_function typedef in api doc
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-02 10:06:30.665269 Z
+references: []
+
+id: f89448156b630b7ba348be2802290efed3f72a4a
+log_events: 
+- - 2014-10-02 10:06:30.825142 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-02 10:27:00.787749 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: sandbox note on implicit inheritance used by plain values
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-02 10:50:35.390212 Z
+references: []
+
+id: 946ea3e7ab2f9f5212ad198dd813de4be5498942
+log_events: 
+- - 2014-10-02 10:50:35.566165 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-02 10:50:38.590201 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
