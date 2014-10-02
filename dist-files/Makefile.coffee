@@ -1,4 +1,4 @@
 dummy:
-	coffee -c globals.coffee
-	coffee -c hello.coffee
-	coffee -c mandel.coffee
+	coffee -c examples/coffee/globals.coffee
+	coffee -c examples/coffee/hello.coffee
+	coffee -c examples/coffee/mandel.coffee
