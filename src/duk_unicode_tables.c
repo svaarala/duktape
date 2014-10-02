@@ -54,4 +54,3 @@
 /* duk_unicode_caseconv_lc[] */
 
 #include "duk_unicode_caseconv.c"
-

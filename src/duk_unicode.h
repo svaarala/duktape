@@ -220,4 +220,3 @@ duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint
 duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
 
 #endif  /* DUK_UNICODE_H_INCLUDED */
-

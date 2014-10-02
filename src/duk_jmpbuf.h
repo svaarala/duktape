@@ -16,4 +16,3 @@ struct duk_jmpbuf {
 };
 
 #endif  /* DUK_JMPBUF_H_INCLUDED */
-

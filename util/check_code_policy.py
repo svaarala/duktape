@@ -243,9 +243,13 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 	dataNoComments = removeCommentsAndLiterals(dataRaw)   # no c/javascript comments, literals removed
 	dataNoExpectStrings = removeExpectStrings(dataRaw)    # no testcase expect strings
 
-	def f(data, checkers):
+	linesRaw = dataRaw.split('\n')
+	linesNoComments = dataNoComments.split('\n')
+	linesNoExpectStrings = dataNoExpectStrings.split('\n')
+
+	def f(lines, checkers):
 		linenumber = 0
-		for line in data.split('\n'):
+		for line in lines:
 			linenumber += 1
 			for fun in checkers:
 				try:
@@ -253,9 +257,20 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 				except Exception as e:
 					problems.append(Problem(filename, linenumber, line, str(e)))
 
-	f(dataRaw, checkersRaw)
-	f(dataNoComments, checkersNoComments)
-	f(dataNoExpectStrings, checkersNoExpectStrings)
+	f(linesRaw, checkersRaw)
+	f(linesNoComments, checkersNoComments)
+	f(linesNoExpectStrings, checkersNoExpectStrings)
+
+	# Last line should have a newline, and there should not be an empty line.
+	# The 'split' result will have one empty string as its last item in the
+	# expected case.  For a single line file there will be two split results
+	# (the line itself, and an empty string).
+
+	if len(linesRaw) == 0 or \
+	   len(linesRaw) == 1 and linesRaw[-1] != '' or \
+	   len(linesRaw) >= 2 and linesRaw[-1] != '' or \
+	   len(linesRaw) >= 2 and linesRaw[-1] == '' and linesRaw[-2] == '':
+		problems.append(Problem(filename, 0, '(no line)', 'No newline on last line or empty line at end of file'))
 
 def main():
 	parser = optparse.OptionParser()

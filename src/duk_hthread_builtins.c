@@ -594,4 +594,3 @@ void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to
 		DUK_HOBJECT_INCREF(thr_to, thr_to->builtins[i]);  /* side effect free */
 	}
 }
-

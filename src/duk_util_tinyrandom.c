@@ -61,4 +61,3 @@ duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 
 	return t;
 }
-

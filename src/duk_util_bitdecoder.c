@@ -68,4 +68,3 @@ duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits,
 		return def_value;
 	}
 }
-

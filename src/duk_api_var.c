@@ -80,4 +80,3 @@ duk_bool_t duk_has_var(duk_context *ctx) {
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
 	return 0;
 }
-

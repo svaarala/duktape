@@ -201,4 +201,3 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_BC_JUMP_BIAS            (1L << 25)
 
 #endif  /* DUK_JS_BYTECODE_H_INCLUDED */
-

@@ -43,4 +43,3 @@ void test(duk_context *ctx) {
 		       (int) duk_check_type_mask(ctx, i, mask));
 	}
 }
-
