@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make coffeescript example like others (Makefile location etc)
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-02 08:31:16.731192 Z
+references: []
+
+id: d896fbac9b7f715e0a66a3bac1d678a06b5cc0fa
+log_events: 
+- - 2014-10-02 08:31:17.083218 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-02 08:31:22.363272 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
