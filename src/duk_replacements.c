@@ -80,4 +80,3 @@ int duk_repl_isinf(double x) {
 	return (c == DUK_FP_INFINITE);
 }
 #endif
-

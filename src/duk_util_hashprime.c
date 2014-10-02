@@ -68,4 +68,3 @@ duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 	}
 	return 0;
 }
-

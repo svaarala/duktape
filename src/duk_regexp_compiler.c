@@ -1072,4 +1072,3 @@ void duk_regexp_create_instance(duk_hthread *thr) {
 /* regexp support disabled */
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */
-

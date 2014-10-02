@@ -53,4 +53,3 @@ duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t 
 
 	return h;
 }
-

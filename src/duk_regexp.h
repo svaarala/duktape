@@ -90,4 +90,3 @@ void duk_regexp_match(duk_hthread *thr);
 void duk_regexp_match_force_global(duk_hthread *thr);  /* hacky helper for String.prototype.split() */
 
 #endif  /* DUK_REGEXP_H_INCLUDED */
-

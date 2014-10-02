@@ -41,4 +41,3 @@ void duk_be_finish(duk_bitencoder_ctx *ctx) {
 	}
 	DUK_ASSERT(ctx->currbits == 0);
 }
-

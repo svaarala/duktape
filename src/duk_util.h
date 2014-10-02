@@ -60,4 +60,3 @@ duk_uint32_t duk_util_tinyrandom_get_bits(duk_hthread *thr, duk_small_int_t n);
 duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr);
 
 #endif  /* DUK_UTIL_H_INCLUDED */
-
