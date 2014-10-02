@@ -209,6 +209,72 @@ Suggestions for sandboxing:
   native code so that they can access the necessary thread contexts
   regardless of the finalizer thread.
 
+Sanitize built-in prototype objects
+-----------------------------------
+
+Plain values inherit implicitly from built-in prototype objects.  For instance,
+string values inherit from ``String.prototype``, which allows one to access
+string methods with a plain base value::
+
+    print("foo".toUpperCase());
+
+Duktape 1.0 will use the original built-in prototype functions in these
+inheritance situations.  There is currently no way to replace these built-ins
+so that the replacements would be used for instead (see
+``test-dev-sandbox-prototype-limitation.js``).
+
+As a result, sandboxed code will always have access to the built-in prototype
+objects which participate in implicit inheritance:
+
+* ``Boolean.prototype``: through plain booleans such as ``true``
+
+* ``Number.prototype``: through numbers such as ``123``
+
+* ``String.prototype``: through strings such as ``"foo"``
+
+* ``Object.prototype``: through object literals such as ``{}``
+
+* ``Array.prototype``: through array literals such as ``[]``
+
+* ``Function.prototype``: through function expressions and declarations,
+  such as ``function(){}``
+
+* ``RegExp.prototype``: through RegExp literals such as ``/foo/``
+
+* ``Error.prototype`` and all subclasses like ``URIError.prototype``:
+  through explicit construction (if constructors visible) or implicitly
+  through internal errors, e.g. ``/foo\123/`` which throws a SyntaxError
+
+* ``Duktape.Buffer.prototype``: through buffer values (if available); since
+  there is no buffer literal, user cannot construct buffer values directly
+
+* ``Duktape.Pointer.prototype`` through pointer values (if available); since
+  there is no pointer literal, user cannot construct pointer values directly
+
+It's not sufficient to avoid exposing these prototype objects in a replacement
+global object: Duktape will use the original built-in prototype objects
+regardless when dealing with plain value inheritance.  It is possible, however,
+to delete individual properties of the prototype objects, e.g.::
+
+    delete String.prototype.toUpperCase
+
+This will cause the original example to fail::
+
+    delete String.prototype.toUpperCase
+    print("foo".toUpperCase());  // TypeError: call target not an object
+
+Suggestions for sandboxing:
+
+* Be aware that user code can access built-in prototypes through implicit
+  inheritance through various plain values.
+
+* Sanitize built-in prototype objects by deleting unnecessary methods.
+
+**XXX: This will probably need improvement.  There may need to be API to
+replace all built-in values.  They are kept in an internal array so perhaps
+just exposing a primitive to set arbitrary values in the array would be
+sufficient (though cryptic).**
+
 Use the bytecode execution timeout mechanism
 --------------------------------------------
 
