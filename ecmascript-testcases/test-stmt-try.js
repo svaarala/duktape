@@ -5,7 +5,7 @@
 /*===
 ===*/
 
-/* FIXME: test for control flow -> normal, canceling with continue, etc */
+/* XXX: test for control flow -> normal, canceling with continue, etc */
 
 /*===
 foo
@@ -15,6 +15,12 @@ try finished
 foo
 bar
 foo
+123 234
+foo 234
+123 234
+function
+string
+function
 ===*/
 
 /* The catch variable has a "let scope", i.e. it uses a temporary declarative
@@ -26,30 +32,84 @@ foo
 try {
     /* -> foo, Error, foo, try finished */
     eval("var e='foo'; print(e);\n" +
-         "try { throw new Error('error') } catch(e) { print(e.name) };\n" +
+         "try { throw new Error('error') } catch (e) { print(e.name) };\n" +
          "print(e);");
     print("try finished");
-} catch(e) {
+} catch (e) {
     print(e.name);
 }
 
 try {
     /* multiple shadowing -> foo, bar, foo */
-    eval("try { throw 'foo' } catch(e) { print(e); try { throw 'bar' } catch(e) { print(e) }; print(e) }");
-} catch(e) {
+    eval("try { throw 'foo' } catch (e) { print(e); try { throw 'bar' } catch (e) { print(e) }; print(e) }");
+} catch (e) {
     print(e.name);
 }
 
-/* XXX: test shadowing of arguments and function declarations too */
+try {
+    /* shadow arguments temporarily */
+    eval("(function (x, y) { print(x, y); try { throw 'foo' } catch (x) { print(x, y); }; print(x, y); })(123, 234)");
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    /* shadow function declarations temporarily */
+    eval("(function (x, y) { function fn() {} print(typeof fn); try { throw 'foo' } catch (fn) { print(typeof fn) }; print(typeof fn); })(123, 234)");
+} catch (e) {
+    print(e.name);
+}
 
 /*===
+10
+catch-binding-3
+123
+123
 ===*/
 
 /* The catch variable scope may be accessible through a function expression
  * created inside the catch clause.  The closure may persist indefinitely.
+ * One can even eval() code from inside a returned scope!
  */
 
-/* FIXME */
+function createCatchScopeFunctions() {
+    var res = [];
+    var i;
+
+    for (i = 0; i < 10; i++) {
+        try {
+            throw 'catch-binding-' + i;
+        } catch (e) {
+            res.push(function myfunc(code) {
+                return eval(code);
+            });
+        }
+    }
+
+    return res;
+}
+
+function testCatchScope() {
+    var funcs = createCatchScopeFunctions();
+
+    // 'i' is not 'let bound' so it is 10 here
+    print(funcs[3]('i'));
+
+    // 'e' is 'let' bound
+    print(funcs[3]('e'));
+
+    // we can assign to 'i'
+    print(funcs[3]('i=123'));
+
+    // and read it back through another closure
+    print(funcs[7]('i'));
+}
+
+try {
+    testCatchScope();
+} catch (e) {
+    print(e.stack || e);
+}
 
 /*===
 SyntaxError
@@ -138,35 +198,35 @@ SyntaxError
  */
 
 try {
-    eval("try { print('try'); } catch(if) { print('catch'); }");
+    eval("try { print('try'); } catch (if) { print('catch'); }");
     print("try finished");
 } catch (e) {
     print(e.name);
 }
 
 try {
-    eval("try { print('try'); } catch(eval) { print('catch'); }");
+    eval("try { print('try'); } catch (eval) { print('catch'); }");
     print("try finished");
 } catch (e) {
     print(e.name);
 }
 
 try {
-    eval("try { print('try'); } catch(arguments) { print('catch'); }");
+    eval("try { print('try'); } catch (arguments) { print('catch'); }");
     print("try finished");
 } catch (e) {
     print(e.name);
 }
 
 try {
-    eval("'use strict'; try { print('try'); } catch(eval) { print('catch'); }");
+    eval("'use strict'; try { print('try'); } catch (eval) { print('catch'); }");
     print("try finished");
 } catch (e) {
     print(e.name);
 }
 
 try {
-    eval("'use strict'; try { print('try'); } catch(arguments) { print('catch'); }");
+    eval("'use strict'; try { print('try'); } catch (arguments) { print('catch'); }");
     print("try finished");
 } catch (e) {
     print(e.name);
@@ -196,5 +256,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-
