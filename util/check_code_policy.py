@@ -270,7 +270,11 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 	   len(linesRaw) == 1 and linesRaw[-1] != '' or \
 	   len(linesRaw) >= 2 and linesRaw[-1] != '' or \
 	   len(linesRaw) >= 2 and linesRaw[-1] == '' and linesRaw[-2] == '':
-		problems.append(Problem(filename, 0, '(no line)', 'No newline on last line or empty line at end of file'))
+		problems.append(Problem(filename, len(linesRaw), '(no line)', 'No newline on last line or empty line at end of file'))
+
+	# First line should not be empty (unless it's the only line, len(linesRaw)==2)
+	if len(linesRaw) > 2 and linesRaw[0] == '':
+		problems.append(Problem(filename, 1, '(no line)', 'First line is empty'))
 
 def main():
 	parser = optparse.OptionParser()
