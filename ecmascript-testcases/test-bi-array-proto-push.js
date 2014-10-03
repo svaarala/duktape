@@ -1,8 +1,8 @@
-// FIXME: these should be shared utils for Array testing
+// XXX: these should be shared utils for Array testing
 
 function printDesc(obj, key) {
     var pd = Object.getOwnPropertyDescriptor(obj, key);
-    print(JSON.stringify(pd));  // FIXME
+    print(JSON.stringify(pd));
 }
 
 function dumpValue(v) {

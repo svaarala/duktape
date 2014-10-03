@@ -1,4 +1,4 @@
-// FIXME: shared test utils
+// XXX: shared test utils
 
 function formatValue(v) {
     if (typeof v === 'function') {
