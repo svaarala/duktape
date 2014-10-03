@@ -116,7 +116,7 @@ try {
     r.exec('foofoo');
     print(r.lastIndex, typeof r.lastIndex);
     r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex); 
+    print(r.lastIndex, typeof r.lastIndex);
 
     r = /foo/;
     print(r.lastIndex, typeof r.lastIndex);
@@ -128,7 +128,7 @@ try {
     r.exec('foofoo');
     print(r.lastIndex, typeof r.lastIndex);
     r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex); 
+    print(r.lastIndex, typeof r.lastIndex);
     print(r.lastIndex === a);   /* instance should still be the same */
 } catch (e) {
     print(e.name);
@@ -285,7 +285,7 @@ null
 try {
     r = /foo/gi;
     print(r.lastIndex);
- 
+
     t = r.exec('foo');    /* match, leave at 3 */
     print(t[0]);
     print(r.lastIndex);
@@ -617,5 +617,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

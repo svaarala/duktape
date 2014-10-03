@@ -11,4 +11,3 @@ print(eval('1+2;'));
 
 /* an empty statement (like debugger) must not alter non-empty previous result */
 print(eval('1+2; debugger;'));
-

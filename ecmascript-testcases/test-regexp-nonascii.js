@@ -20,4 +20,3 @@ re = /foo(...)/g;
 t = re.exec('\u1234\uabcdfoo\u4321\u1234\u4321quux');
 print(t.index);
 print(re.lastIndex);
-

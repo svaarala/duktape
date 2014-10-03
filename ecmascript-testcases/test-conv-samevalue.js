@@ -268,4 +268,3 @@ test(obj1, obj1);
 test(obj1, obj2);
 test(obj2, obj1);
 test(obj2, obj2);
-

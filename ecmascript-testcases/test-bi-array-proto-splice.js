@@ -5364,7 +5364,7 @@ function basicTest() {
                        1, 2, 3, 4, 5, 6, 7, 1e9, Number.POSITIVE_INFINITY, Number.NaN ];
     var delcount_vals = [ Number.NEGATIVE_INFINITY, -1e9, -7, -6, -5, -4, -3, -2, -1, -0, +0,
                           1, 2, 3, 4, 5, 6, 7, 1e9, Number.POSITIVE_INFINITY, Number.NaN ];
- 
+
     // dense
 
     for (i = 0; i < start_vals.length; i++) {
@@ -5405,7 +5405,7 @@ function basicTest() {
     test([], [0, 0]);
 
     // zero deleteCount with items
-    
+
     test([1,2,3], [0, 0]);
 
     // non-zero deleteCount without items
@@ -5547,4 +5547,3 @@ try {
 }
 
 // FIXME: attributes test
-

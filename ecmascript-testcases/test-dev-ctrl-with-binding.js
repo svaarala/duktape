@@ -8,4 +8,3 @@ with (Number) {
 }
 
 /* FIXME: more tests */
-

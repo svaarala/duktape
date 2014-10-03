@@ -23,4 +23,3 @@ print(obj.foo);
 Object.defineProperties(obj, { prop1: { value: 'foo' }, prop2: { value: 'bar' } });
 print(obj.prop1);
 print(obj.prop2);
-

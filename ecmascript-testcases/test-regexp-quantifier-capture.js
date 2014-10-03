@@ -24,4 +24,3 @@ print(t, typeof t);
 /* each backref matches different char, last 'c' retained as capture */
 t = /((.)\2){3}/.exec('aabbcc')
 print(t[0], t[1], t[2]);
-

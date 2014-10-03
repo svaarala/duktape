@@ -1,4 +1,3 @@
-
 // FIXME: util
 
 function printCodepoints(x) {
@@ -454,4 +453,3 @@ try {
 } catch (e) {
     print(e);
 }
-

@@ -1,4 +1,3 @@
-
 /*===
 function
 number 0
@@ -169,4 +168,3 @@ try {
 } catch (e) {
     print(e);
 }
-

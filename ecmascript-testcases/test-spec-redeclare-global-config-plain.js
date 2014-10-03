@@ -40,4 +40,3 @@ desc = Object.getOwnPropertyDescriptor(global, 'RegExp');
 print(desc.writable, desc.enumerable, desc.configurable);
 
 print(RegExp());
-

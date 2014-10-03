@@ -48,4 +48,3 @@ true
 ===*/
 
 test([ {}, [], function() {}, Number.prototype.toString, Number.prototype.toString.bind('foo') ])
-

@@ -21,7 +21,7 @@ function test() {
                               value: 'inherit',
                               writable: false,
                               enumerable: true,
-                              configurable: true 
+                              configurable: true
                           });
     print('defineProperty success');
 

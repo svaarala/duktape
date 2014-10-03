@@ -43,4 +43,3 @@ function outer_strict() {
 }
 
 outer_strict();
-

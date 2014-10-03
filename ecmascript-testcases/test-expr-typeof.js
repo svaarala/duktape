@@ -31,4 +31,3 @@ print(typeof {});     // object and not callable
 print(typeof print);  // object and callable
 print(typeof print.bind(null, 1, 2)); // object and callable (bound function)
 print(typeof function() {});
-

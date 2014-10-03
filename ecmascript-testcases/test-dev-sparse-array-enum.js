@@ -74,4 +74,3 @@ enumArray(a);
 // array order no longer maintained; now insertion order
 a[10] = 9;
 enumArray(a);
-

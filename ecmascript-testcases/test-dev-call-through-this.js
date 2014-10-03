@@ -1,4 +1,3 @@
-
 /*===
 g this.name: myThis
 f this.name: myThis
@@ -21,4 +20,3 @@ var myThis = {
 };
 
 g.call(myThis);
-

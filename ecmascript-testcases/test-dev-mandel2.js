@@ -95,4 +95,3 @@ for (i = 0; i - h; i += 1) {
 
     print(res.join(''));
 }
-

@@ -1,4 +1,3 @@
-
 /*---
 {
     "custom": true
@@ -27,4 +26,3 @@ try {
 } catch (e) {
     print(e);
 }
-

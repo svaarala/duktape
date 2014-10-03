@@ -381,7 +381,7 @@ function toPropertyDescriptorTest() {
     test({ value: function(){}, writable: true, enumerable: true, configurable: true });
 
     // Steps 7-8: get/set are checked to be callable.
- 
+
     test({ get: undefined, set: function(){}, enumerable: true, configurable: true });
     test({ get: null, set: function(){}, enumerable: true, configurable: true });
     test({ get: true, set: function(){}, enumerable: true, configurable: true });
@@ -1168,4 +1168,3 @@ try {
 }
 
 // FIXME: test special behavior (like arrays, arguments object, etc)
-

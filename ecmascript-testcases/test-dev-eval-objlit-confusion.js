@@ -16,5 +16,3 @@ print(typeof t, t);
 
 t = eval("({foo:1})");
 print(typeof t);
-
-

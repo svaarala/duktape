@@ -83,4 +83,3 @@ f4 = f1.bind('this-f2', 1, 2, 3, 4);  // equivalent to f3
 
 f3();
 f4();
-

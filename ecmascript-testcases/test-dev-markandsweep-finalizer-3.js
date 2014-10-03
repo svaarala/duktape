@@ -45,4 +45,3 @@ print(newobj.foo);
 print('forced gc');
 Duktape.gc();
 print(newobj.foo);
-

@@ -1,4 +1,3 @@
-
 var r, t;
 
 /*===
@@ -45,4 +44,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

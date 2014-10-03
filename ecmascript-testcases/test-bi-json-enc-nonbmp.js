@@ -53,7 +53,7 @@ function safePrint(t) {
 
     print(tmp.join(''));
 }
- 
+
 function nonBmpTest() {
     var t;
     var i;

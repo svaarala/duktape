@@ -14,4 +14,3 @@ try {
 }
 
 /* FIXME: inside function */
-

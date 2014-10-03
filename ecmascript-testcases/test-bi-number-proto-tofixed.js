@@ -1,4 +1,3 @@
-
 /* FIXME: check expected values */
 
 function test(this_value, args, prefix_string) {
@@ -751,4 +750,3 @@ try {
 } catch (e) {
     print(e);
 }
-

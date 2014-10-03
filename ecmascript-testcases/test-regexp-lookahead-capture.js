@@ -45,4 +45,3 @@ print(t[0], t[1]);
 /* lookahead still captures 'ab' and backrefs fail; lookahead never tries to capture 'abc' */
 t = /(?=(ab|abc))\1\1/.exec('abcabc');
 print(t, typeof t);
-

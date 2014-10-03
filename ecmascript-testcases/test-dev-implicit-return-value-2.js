@@ -29,4 +29,3 @@ print(t, typeof t);
 
 t = f2(1,2);
 print(t, typeof t);
-

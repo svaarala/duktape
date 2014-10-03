@@ -912,4 +912,3 @@ try {
 /* FIXME: enumeration order effects, when sparse: deleting and adding properties
  * changes their ordering on each shift().
  */
-

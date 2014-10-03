@@ -10,4 +10,3 @@ Infinity
 print(this.Infinity);
 
 /* FIXME: tests */
-

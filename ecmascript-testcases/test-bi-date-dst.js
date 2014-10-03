@@ -1,4 +1,3 @@
-
 /* When converting an internal time value to local time, the DST offset is
  * determine based on the UTC time (i.e. DaylightSavingTA(t) is called, and
  * 't' is internal (UTC) time value).
@@ -18,4 +17,3 @@
     "skip": true
 }
 ---*/
-

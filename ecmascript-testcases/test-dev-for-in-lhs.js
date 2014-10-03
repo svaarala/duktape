@@ -1,4 +1,3 @@
-
 function lhs() {
     print('lhs');
 }
@@ -46,7 +45,7 @@ try {
     /* Here the enumerator will be empty, so no ReferenceError should happen.
      * The lhs() expression is not evaluated at all.
      */
- 
+
     for (lhs() in getenum1()) {
         print('loop');
     }
@@ -57,7 +56,7 @@ try {
 
 try {
     /* Here empty() is called, but ReferenceError occurs on first assignment. */
- 
+
     for (lhs() in getenum2()) {
         print('loop');
     }
@@ -83,5 +82,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

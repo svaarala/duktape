@@ -17,4 +17,3 @@ x['bar'] = 2;
 print(x.bar);
 
 /* FIXME: more tests */
-

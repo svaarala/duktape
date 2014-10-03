@@ -402,4 +402,3 @@ print (t, typeof t, 1 / t);
 ===*/
 
 /*FIXME*/
-

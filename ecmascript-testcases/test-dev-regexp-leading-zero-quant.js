@@ -1,4 +1,3 @@
-
 /*===
 false
 true
@@ -13,4 +12,3 @@ print(r.test('xxxxxxxx'));
 
 r = /x{010,011}/;
 print(r.test('xxxxxxxxxx'));
-

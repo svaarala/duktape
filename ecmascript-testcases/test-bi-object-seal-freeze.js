@@ -187,7 +187,7 @@ function propertyAttributeTest() {
                   ', value: ' + pd.value +
                   ', writable: ' + pd.writable +
                   ', enumerable: ' + pd.enumerable +
-                  ', configurable: ' + pd.configurable + 
+                  ', configurable: ' + pd.configurable +
                   ', get: ' + typeof pd.get +
                   ', set: ' + typeof pd.set);
         }
@@ -328,4 +328,3 @@ try {
 }
 
 /* FIXME: test that ancestors have no effect and or not affected */
-

@@ -1,4 +1,3 @@
-
 /* FIXME: deletion tests for unconfigurable bindings etc */
 
 /*===
@@ -146,4 +145,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

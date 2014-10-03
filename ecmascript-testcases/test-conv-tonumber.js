@@ -81,4 +81,3 @@ test("0xdeadbeef");
 /* FIXME: octal */
 
 /* FIXME: object coercion */
-

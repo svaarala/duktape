@@ -1,4 +1,3 @@
-
 // FIXME: util
 function printDesc(obj, key) {
     var pd = Object.getOwnPropertyDescriptor(obj, key);
@@ -446,4 +445,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

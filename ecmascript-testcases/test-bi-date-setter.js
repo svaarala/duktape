@@ -58,4 +58,3 @@ try {
 }
 
 /* FIXME: tests for infinities (should convert to NaN time value) */
-

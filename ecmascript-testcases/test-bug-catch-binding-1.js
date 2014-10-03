@@ -45,4 +45,3 @@ function h() {
 f('arg');
 g();
 h();
-

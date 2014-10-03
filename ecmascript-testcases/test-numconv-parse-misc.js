@@ -74,7 +74,6 @@ function miscTest() {
         }
     }
 
- 
     // parseFloat() allows fractions without leading integer digit
     pFloat('0.1');
     pFloat('.1');
@@ -147,4 +146,3 @@ try {
 } catch (e) {
     print(e);
 }
-

@@ -110,7 +110,7 @@ function f_continue() {
 			print('return from outer');
 			return;
 		}
-	
+
 		for (;;) {
 			if (done) {
 				print('return from inner');
@@ -220,4 +220,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

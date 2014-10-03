@@ -31,4 +31,3 @@ print(x);
 var obj = {x:1};
 print(~obj.x);
 print(obj.x);
-

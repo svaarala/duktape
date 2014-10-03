@@ -39,4 +39,3 @@ function NaN() {
 print(typeof NaN);
 desc = Object.getOwnPropertyDescriptor(global, 'NaN');
 print(desc.writable, desc.enumerable, desc.configurable);
-

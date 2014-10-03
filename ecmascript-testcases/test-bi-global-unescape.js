@@ -1,4 +1,3 @@
-
 // FIXME: util
 /* Trivial string checksum used to summarize brute force output lines
  * (minimizes test case size).
@@ -216,4 +215,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

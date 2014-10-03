@@ -1,4 +1,3 @@
-
 /* FIXME: bound function cases */
 
 /*
@@ -562,4 +561,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

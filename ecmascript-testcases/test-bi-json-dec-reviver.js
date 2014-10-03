@@ -1,4 +1,3 @@
-
 /*===
 basic reviver
 reviver called
@@ -116,7 +115,7 @@ function reviverDeletionTest() {
         print('reviver: json(name)=' + JSON.stringify(name) +
               ', json(val)=' + JSON.stringify(val) +
 	      ', json(holder)=' + JSON.stringify(holder));
- 
+
         // delete k_arr and k_true
         if (name === 'k_arr' || name === 'k_true') {
             return;
@@ -340,4 +339,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

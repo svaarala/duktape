@@ -1,4 +1,3 @@
-
 /* marked as custom because enum order differs */
 /*---
 {
@@ -47,4 +46,3 @@ f1.prototype = ancestor;
 var obj4 = new f1();
 
 print(Object.getOwnPropertyNames(obj4));
-

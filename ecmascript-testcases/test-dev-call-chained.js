@@ -1,6 +1,6 @@
 /*
  *  Production for:
- * 
+ *
  *    f(1).g(2);
  *
  *  comes from:
@@ -61,4 +61,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

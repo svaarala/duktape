@@ -35,4 +35,3 @@ var obj = {
     get x() { print('getter on line', Duktape.line()); return 123; }
 }
 print(obj.x);
-

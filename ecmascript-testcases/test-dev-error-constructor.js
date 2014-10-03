@@ -51,4 +51,3 @@ print(typeof e.message, e.message);
 
 e = Error(123);
 print(typeof e.message, e.message);
-

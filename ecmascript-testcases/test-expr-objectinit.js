@@ -12,4 +12,3 @@ var t;
 
 t = {};
 print(typeof t);
-

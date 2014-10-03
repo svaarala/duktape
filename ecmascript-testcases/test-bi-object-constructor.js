@@ -1,4 +1,3 @@
-
 function dumpObject(o) {
     print(typeof o,
           Object.prototype.toString.call(o),
@@ -122,4 +121,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

@@ -37,4 +37,3 @@ function func(x) {
 }
 
 print(func(3));
-

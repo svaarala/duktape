@@ -1,4 +1,3 @@
-
 // marked as custom because 'name' property of some built-ins is not
 // specified exactly and implementations differ
 
@@ -134,5 +133,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

@@ -104,7 +104,7 @@ function standardFunctionExpressionTest() {
     fun1 = 123;
     print('D', typeof(fun1));
     try { fun1() } catch (f) { print(f.name); };
-}   
+}
 
 print('standard function expression');
 

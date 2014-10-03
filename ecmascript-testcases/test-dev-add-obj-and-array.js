@@ -9,7 +9,7 @@ var res;
 ===*/
 
 /* {} + [] parses as an empty block statement (!) followed by unary plus
- * and an array, and is equivalent to: 
+ * and an array, and is equivalent to:
  *
  *   {};
  *   +[];
@@ -62,4 +62,3 @@ print(res, typeof res);
 
 res = eval('({}+[])');
 print(res, typeof res);
-

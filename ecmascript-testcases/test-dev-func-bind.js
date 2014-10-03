@@ -1,4 +1,3 @@
-
 var func;
 
 /*===
@@ -36,4 +35,3 @@ func = f1.bind(null, 1, 2);
 print(func.length);
 func = f1.bind(null, 1, 2, 3);
 print(func.length);
-

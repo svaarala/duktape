@@ -74,4 +74,3 @@ print(t[0], typeof t[0]);
 
 t = /(?:(?=x))+xyz/.exec('xy');
 print(t, typeof t);
-

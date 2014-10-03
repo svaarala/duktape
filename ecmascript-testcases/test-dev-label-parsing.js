@@ -21,4 +21,3 @@ label3:
 do {
     print("quux");
 } while(0);
-

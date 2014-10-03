@@ -1,4 +1,3 @@
-
 /*===
 foobar
 ===*/
@@ -53,4 +52,3 @@ try {
 /* FIXME: test that locale specific conversions actually work.
  * How to force locale for a test?
  */
-

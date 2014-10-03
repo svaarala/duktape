@@ -51,4 +51,3 @@ x = null;  /* refcount to zero in the whole chain */
 
 /* FIXME: some gc stats thing here? */
 print("still here");
-

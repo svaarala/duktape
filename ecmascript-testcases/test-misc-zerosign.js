@@ -17,4 +17,3 @@ print(t, typeof t);
 
 t = 1 / -0;
 print(t, typeof t);
-

@@ -39,4 +39,3 @@ for (var time = 0; time < 10000; time++) {
 }
 
 print(res.join(''));
-
