@@ -17,4 +17,3 @@ for linenum, linedata in enumerate(data.split('\n')):
 			print '%s: non-ascii data on line %d, char index %d, value %d (0x%02x)' % \
 				(sys.argv[1], linenum + 1, i + 1, x, x)
 			non_ascii = True
-
