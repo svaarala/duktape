@@ -7,7 +7,7 @@ type: :task
 component: duk
 release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2014-09-10 19:33:34.159347 Z
 references: []
@@ -24,3 +24,7 @@ log_events:
   - |-
     This is now discussed shortly in compilation overview section.  Also add a section
     to the API document so that it can be easily seen.
+- - 2014-10-03 12:27:02.367921 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - changed status from unstarted to in_progress
+  - ""
