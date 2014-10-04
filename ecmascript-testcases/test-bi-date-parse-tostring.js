@@ -34,7 +34,7 @@ function toStringParseTest() {
               Date.parse(x.toISOString()));
     }
 
-    // FIXME: add more comprehensive cases
+    // XXX: add more comprehensive cases
 }
 
 try {

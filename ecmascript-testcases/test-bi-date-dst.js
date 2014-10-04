@@ -9,7 +9,9 @@
  * This has the impact, mentioned in E5.1 Section 15.9.1.9, that
  * UTC(LocalTime(t)) == t is not necessarily always true.
  *
- * FIXME: test case for this?
+ * XXX: Add a test for this for a specific timezone (e.g. Finnish).  There's
+ * no direct access to plain UTC() or LocalTime() so the test needs to be
+ * indirect.
  */
 
 /*---

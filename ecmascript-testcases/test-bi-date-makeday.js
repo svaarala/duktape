@@ -58,7 +58,7 @@ try {
     print(MakeDay(100e10, -1200e10, 55));
     print(MakeDay(0, 0, 55));
 
-    // FIXME: rounding errors?  MakeTime() is required to use Ecmascript
+    // XXX: rounding errors?  MakeTime() is required to use Ecmascript
     // (IEEE double) arithmetic.  These never occur unless extremely
     // unnormalized values are used.
 } catch (e) {

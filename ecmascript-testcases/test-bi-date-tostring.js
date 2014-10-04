@@ -34,7 +34,7 @@ function printConversions(dt) {
         tmp.push(n + '="' + String(v) + '"');
     }
 
-    // FIXME: how to test these, as even the custom output depends on
+    // XXX: how to test these, as even the custom output depends on
     // build options and current locale?
     /*
     f('toString', dt.toString());
