@@ -25,7 +25,7 @@ try {
 }
 
 /*===
-Error
+RangeError
 ===*/
 
 /* This is supposed to work by the specification, but the implementation
@@ -34,8 +34,6 @@ Error
  * So we test for that behavior.  Rhino and V8 (and others) will thus
  * intentionally fail this test.
  */
-
-/* FIXME: Error -> InternalError or RangeError? */
 
 try {
     r = eval("/^(a|b){100000}$/");
