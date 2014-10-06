@@ -44,7 +44,7 @@ radix 8
  * (at least for now).
  */
 
-/* FIXME: change Duktape behavior to match V8 and Rhino for octal? */
+/* XXX: change Duktape behavior to match V8 and Rhino for octal? */
 
 print('radix 8');
 

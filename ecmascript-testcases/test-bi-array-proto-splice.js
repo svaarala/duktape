@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 function dumpValue(v) {
     var i, n;
     var clipped;
@@ -5440,7 +5440,7 @@ print('protected');
 function protectedTest() {
     var obj;
 
-    // FIXME: protected elements, this test is incomplete
+    // XXX: protected elements, this test is incomplete
 
     // 'length' gets written regardless of whether it would change,
     // causing a TypeError if protected
@@ -5546,4 +5546,4 @@ try {
     print(e);
 }
 
-// FIXME: attributes test
+// XXX: attributes test

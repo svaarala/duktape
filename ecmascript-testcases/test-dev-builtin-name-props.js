@@ -126,7 +126,7 @@ try {
 undefined
 ===*/
 
-/* FIXME: other non-standard builtins */
+/* XXX: other non-standard builtins */
 
 try {
     print(Duktape.name);

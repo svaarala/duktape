@@ -116,9 +116,7 @@ try {
 /*===
 ===*/
 
-/* Fraction handling for numbers. */
-
-/* FIXME */
+/* XXX: Fraction handling for numbers. */
 
 /*===
 string "foo"

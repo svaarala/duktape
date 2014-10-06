@@ -2,7 +2,7 @@
  *  Basic equality operator tests
  */
 
-/* FIXME: fine grained coercion checks */
+/* XXX: fine grained coercion checks */
 
 /*===
 false true false

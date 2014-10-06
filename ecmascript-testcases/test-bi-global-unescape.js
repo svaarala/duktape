@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 /* Trivial string checksum used to summarize brute force output lines
  * (minimizes test case size).
  */
@@ -16,7 +16,7 @@ function checkSumString(x) {
     return res;
 }
 
-// FIXME: util
+// XXX: util
 function getCodePoints(x) {
     var res = [];
     var i, n;

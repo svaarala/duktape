@@ -165,4 +165,4 @@ print(JSON.stringify(obj, null, Number.NaN));
 /*===
 ===*/
 
-/* FIXME: coercion of String and Number objects */
+/* XXX: coercion of String and Number objects */

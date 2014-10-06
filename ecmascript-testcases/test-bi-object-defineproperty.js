@@ -6,7 +6,7 @@
  *  There is a separate brute force combination test.
  */
 
-// FIXME: util
+// XXX: util
 function formatValue(v) {
     if (typeof v === 'function') {
         // avoid implementation dependent string formatting
@@ -1158,7 +1158,7 @@ print('step12');
 function step12Test() {
     var obj;
 
-    // FIXME: anything to test here which hasn't been covered above?
+    // XXX: anything to test here which hasn't been covered above?
 }
 
 try {
@@ -1167,4 +1167,4 @@ try {
     print(e);
 }
 
-// FIXME: test special behavior (like arrays, arguments object, etc)
+// XXX: test special behavior (like arrays, arguments object, etc)

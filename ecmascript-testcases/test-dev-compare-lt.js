@@ -44,7 +44,7 @@ f('xx', 'xx');
 f('xx', 'xxx');
 f('xx', 'x');
 
-/* FIXME: more string cases */
+/* XXX: more string cases, esp. unicode */
 
 /*===
 false

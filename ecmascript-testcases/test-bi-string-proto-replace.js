@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 
 function printCodepoints(x) {
     var i;

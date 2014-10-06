@@ -19,4 +19,4 @@ try {
     print(e.name);
 }
 
-/* FIXME: thisArg handling */
+/* XXX: thisArg handling */

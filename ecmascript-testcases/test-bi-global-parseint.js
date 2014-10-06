@@ -444,7 +444,7 @@ leading zeroes
  * so test against this for now.
  */
 
-/* FIXME: change Duktape behavior to match V8 and Rhino for octal? */
+/* XXX: change Duktape behavior to match V8 and Rhino for octal? */
 
 print('leading zeroes');
 
@@ -575,7 +575,7 @@ function numbersNear53BitsTest() {
     var i;
 
     // demonstrate how behavior after 2**53 changes
-    // FIXME: elaborate on the rounding behavior
+    // XXX: elaborate on the rounding behavior
     print('(testdump)');
     for (i = -8; i <= 8; i++) {
         print(two_to_53 + i);

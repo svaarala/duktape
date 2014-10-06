@@ -327,4 +327,4 @@ try {
     print(e);
 }
 
-/* FIXME: test that ancestors have no effect and or not affected */
+/* XXX: test that ancestors have no effect and or not affected */

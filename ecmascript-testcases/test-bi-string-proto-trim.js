@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 var WHITESPACE_CODEPOINTS = [
     // from WhiteSpace production
     0x0009,    // <TAB>

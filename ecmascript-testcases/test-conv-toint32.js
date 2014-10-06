@@ -102,7 +102,7 @@ test("NaY");  // same case
 
 test("1e10");  // larger than 32-bit, fits in 53 bits of double
 
-/* FIXME: object coercion */
+/* XXX: object coercion */
 
 /*===
 0 pos

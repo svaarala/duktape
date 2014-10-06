@@ -47,8 +47,8 @@ try {
     print(e);
 }
 
-/* FIXME: basic tests like coercion etc. */
+/* XXX: basic tests like coercion etc. */
 
-/* FIXME: test that locale specific conversions actually work.
+/* XXX: test that locale specific conversions actually work.
  * How to force locale for a test?
  */

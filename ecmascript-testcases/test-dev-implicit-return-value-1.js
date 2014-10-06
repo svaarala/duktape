@@ -1,5 +1,5 @@
-/* FIXME: for eval/global code */
-/* FIXME: test for handling of 'valued' and 'non-valued' statements */
+/* XXX: for eval/global code */
+/* XXX: test for handling of 'valued' and 'non-valued' statements */
 
 /*===
 3

@@ -21,7 +21,7 @@ print.bind(null,1).bind(null,2).bind(null,3)();
 0
 ===*/
 
-/* FIXME: length handling of bound function, improve */
+/* XXX: length handling of bound function, improve */
 
 function f1(x,y) {
 }

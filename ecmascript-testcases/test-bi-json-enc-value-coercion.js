@@ -141,4 +141,4 @@ try {
 /*===
 ===*/
 
-/* FIXME: replacer/toJSON returns an object with toJSON() */
+/* XXX: replacer/toJSON returns an object with toJSON() */

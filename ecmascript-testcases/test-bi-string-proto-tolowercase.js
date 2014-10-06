@@ -69,7 +69,7 @@ function greekSigmaTest() {
 function localeTest() {
     var str, t;
 
-    // FIXME: add locale specific test and ensure locale specific rules do not apply
+    // XXX: add locale specific test and ensure locale specific rules do not apply
 }
 
 try {

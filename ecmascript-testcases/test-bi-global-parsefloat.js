@@ -355,7 +355,7 @@ function trailingGarbageTest() {
     print(g.parseFloat('123.4\u0000'));
     print(g.parseFloat('123.4\ufedc'));
 
-    // FIXME
+    // XXX: more cases
 }
 
 try {
@@ -1540,4 +1540,4 @@ try {
     print(e.name);
 }
 
-/* FIXME: more tests */
+/* XXX: more tests */
