@@ -167,6 +167,7 @@ CCOPTS_SHARED += -pedantic -ansi -std=c99
 CCOPTS_SHARED += -fstrict-aliasing
 CCOPTS_SHARED += -Wall
 CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparisons
+CCOPTS_SHARED += -Wunused-result
 CCOPTS_SHARED += -I./dist/src
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
@@ -295,6 +296,7 @@ cleanall: clean
 	@rm -rf xmldoc
 	@rm -rf FlameGraph
 	@rm -rf dtrace4linux
+	@rm -rf 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
 
 libduktape.so.1.0.0: dist
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
