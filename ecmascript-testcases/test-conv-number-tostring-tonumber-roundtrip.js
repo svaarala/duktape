@@ -3,6 +3,12 @@
  *  lost.  This is not required, but very preferable.
  */
 
+/*---
+{
+    "knownissue": "rounding corner cases"
+}
+---*/
+
 var values = [
     // Some basic values
     Number.NEGATIVE_INFINITY,
