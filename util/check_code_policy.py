@@ -29,6 +29,7 @@ re_debuglog_callsite = re.compile(r'^.*?(DUK_D+PRINT).*?$')
 re_trailing_ws = re.compile(r'^.*?\s$')
 re_only_ws = re.compile(r'^\s*$')
 re_identifier = re.compile(r'[A-Za-z0-9_]+')
+re_nonascii = re.compile(r'^.*?[\x80-\xff].*?$')
 
 # These identifiers are wrapped in duk_features.h.in, and should only be used
 # through the wrappers elsewhere.
@@ -226,6 +227,7 @@ def checkFixme(line, filename):
 	raise Exception('FIXME on line')
 
 def checkIdentifiers(line, filename):
+	# XXX: this now executes for every line which is pointless
 	bn = os.path.basename(filename)
 	excludePlain = (bn == 'duk_features.h.in' or \
 	                bn[0:5] == 'test-')
@@ -234,6 +236,16 @@ def checkIdentifiers(line, filename):
 		if rejected_plain_identifiers.has_key(m.group(0)):
 			if not excludePlain:
 				raise Exception('invalid identifier %r (perhaps plain)' % m.group(0))
+
+def checkNonAscii(line, filename):
+	m = re_nonascii.match(line)
+	if m is not None:
+		bn = os.path.basename(filename)
+		if bn == 'test-lex-utf8.js':
+			# this specific file is intentionally exempt
+			pass
+		else:
+			raise Exception('non-ascii character')
 
 def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings):
 	f = open(filename, 'rb')
@@ -276,6 +288,9 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 	if len(linesRaw) > 2 and linesRaw[0] == '':
 		problems.append(Problem(filename, 1, '(no line)', 'First line is empty'))
 
+def asciiOnly(x):
+	return re.sub(r'[\x80-\xff]', '#', x)
+
 def main():
 	parser = optparse.OptionParser()
 	parser.add_option('--dump-vim-commands', dest='dump_vim_commands', default=False, help='Dump oneline vim command')
@@ -285,6 +300,7 @@ def main():
 	checkersRaw.append(checkDebugLogCalls)
 	checkersRaw.append(checkCarriageReturns)
 	checkersRaw.append(checkFixme)
+	checkersRaw.append(checkNonAscii)
 
 	checkersNoComments = []
 	checkersNoComments.append(checkIdentifiers)
@@ -304,7 +320,7 @@ def main():
 			tmp += ' ' + str(i.filename) + ' : ' + str(i.reason)
 			while len(tmp) < 80:
 				tmp = tmp + ' '
-			tmp += ' - ' + i.line.strip()
+			tmp += ' - ' + asciiOnly(i.line.strip())
 			print(tmp)
 
 		print '*** Total: %d problems' % len(problems)
