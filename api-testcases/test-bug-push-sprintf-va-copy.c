@@ -3,7 +3,7 @@
  *  and the initial buffer size was not enough.  This bug testcase tries to
  *  trigger that issue.  Unfortunately it is not triggered with every compiler.
  *
- *  Reported by Andreas Öman.
+ *  Reported by Andreas Oman.
  */
 
 /*===

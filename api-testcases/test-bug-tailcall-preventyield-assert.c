@@ -1,6 +1,6 @@
 /*
  *  In Duktape 0.10.0 the following assert would fail in some cases (reported
- *  by Andreas Öman):
+ *  by Andreas Oman):
  *
  *    assertion failed: (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0 (duk_js_call.c:1914)
  *
