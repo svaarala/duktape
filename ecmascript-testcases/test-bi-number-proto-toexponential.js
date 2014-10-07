@@ -1,4 +1,17 @@
-/* FIXME: check expected values */
+/*
+ *  toExponential()
+ *
+ *  NOTE: The algorithm for toExponential() in E5.1 Section 15.7.4.6 handles
+ *  NaN and +/-Infinity as a special case *before* the digit count is checked.
+ *  So, for NaN and infinities, x.toExponential() never throws a RangeError
+ *  for incorrect fraction digit count like it does for other numbers.  V8
+ *  behavior differs from this: it will throw a RangeError.  Rhino behaves
+ *  as the specification requires but has other issues (it won't validate
+ *  fractionDigits).
+ *
+ *  Test case expect strings are mostly based on V8, but with clear V8
+ *  issues fixed manually.
+ */
 
 /*---
 {
@@ -30,7 +43,7 @@ string -Infinity
 string Infinity
 0,undefined string -Infinity
 0,notgiven string -Infinity
-RangeError
+0,-1 string -Infinity
 0,0 string -Infinity
 0,1 string -Infinity
 0,2 string -Infinity
@@ -52,7 +65,7 @@ RangeError
 0,18 string -Infinity
 0,19 string -Infinity
 0,20 string -Infinity
-RangeError
+0,21 string -Infinity
 1,undefined string -1e+100
 1,notgiven string -1e+100
 RangeError
@@ -455,7 +468,7 @@ RangeError
 RangeError
 17,undefined string Infinity
 17,notgiven string Infinity
-RangeError
+17,-1 string Infinity
 17,0 string Infinity
 17,1 string Infinity
 17,2 string Infinity
@@ -477,10 +490,10 @@ RangeError
 17,18 string Infinity
 17,19 string Infinity
 17,20 string Infinity
-RangeError
+17,21 string Infinity
 18,undefined string NaN
 18,notgiven string NaN
-RangeError
+18,-1 string NaN
 18,0 string NaN
 18,1 string NaN
 18,2 string NaN
@@ -502,7 +515,7 @@ RangeError
 18,18 string NaN
 18,19 string NaN
 18,20 string NaN
-RangeError
+18,21 string NaN
 ===*/
 
 print('basic');
@@ -532,7 +545,7 @@ function basicTest() {
 
     // NaN and infinities are special cases; they are checked for *after*
     // ToInteger(fractionDigits) but *before* checking the fractionDigits
-    // range
+    // range.  V8 will throw a RangeError from these which seems incorrect.
 
     test(new Number(Number.NaN), [ 100 ]);
     test(new Number(Number.NEGATIVE_INFINITY), [ 100 ]);
@@ -541,7 +554,7 @@ function basicTest() {
     // test a bunch of value and fractionDigits combinations
 
     for (i = 0; i < values.length; i++) {
-        // undefined fraction digits is a special case
+        // undefined fraction digits is a special case: use shortest digit count
         test(new Number(values[i]), [ undefined ], i + ',undefined');
 
         // not-given fraction digits should behave like undefined
@@ -588,6 +601,7 @@ RangeError
  * from each other.  For toExponential():
  *
  * - 'this' coercion check (only accept plain number and Number objects)
+ *   (V8 will coerce e.g. booleans to numbers)
  * - ToInteger(fractionDigits) but no range check yet
  * - special cases for NaN and +/- Infinity
  * - fractionDigits range check
@@ -616,8 +630,8 @@ function coercionTest() {
     test(new Number(testnum), [ '3.9' ]);  // -> 3
     test(new Number(testnum), [ 3 ]);
 
-    test(new Number(testnum), [ -256*256*256*256 + 8 ]);  // invalid
-    test(new Number(testnum), [ 256*256*256*256 + 8 ]);   // invalid
+    test(new Number(testnum), [ -256*256*256*256 + 8 ]);  // invalid, no 32-bit wrap
+    test(new Number(testnum), [ 256*256*256*256 + 8 ]);   // invalid, same
 
     // ToInteger(fractionDigits) coercion happens before NaN / infinity
     // check, but before fractionDigits range check

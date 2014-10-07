@@ -1,4 +1,6 @@
-/* FIXME: unfinished test case */
+/*
+ *  toPrecision()
+ */
 
 function test(this_value, args, print_prefix) {
     var t;

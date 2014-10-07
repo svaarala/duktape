@@ -1198,7 +1198,7 @@ PROPERTY: "stringify" writable !enumerable configurable
 NOPROPERTY: "length" 
 ===*/
 
-/* FIXME: the expected value needs to be verified against the specification */
+/* XXX: the expected value needs to be verified against the specification */
 
 function checkBuiltins() {
     var i;
