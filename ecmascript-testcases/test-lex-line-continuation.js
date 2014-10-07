@@ -1,4 +1,3 @@
-
 /*===
 "This is a \
 line continuation."
@@ -16,4 +15,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

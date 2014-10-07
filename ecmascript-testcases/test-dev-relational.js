@@ -39,4 +39,3 @@ var num = new Number(123);
 print(num instanceof Number);
 print(123 instanceof Number);
 print('foo' instanceof Number);
-

@@ -29,8 +29,8 @@ try {
 function localeTest() {
     var str, t;
 
-    // FIXME: add context specific test and ensure context specific rules apply
-    // FIXME: add locale specific test and ensure locale specific rules do not apply
+    // XXX: add context specific test and ensure context specific rules apply
+    // XXX: add locale specific test and ensure locale specific rules do not apply
 }
 
 try {
@@ -78,4 +78,3 @@ try {
 } catch (e) {
     print(e);
 }
-

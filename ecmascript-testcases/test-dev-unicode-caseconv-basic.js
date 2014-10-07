@@ -1,4 +1,3 @@
-
 /*===
 Foo
 foo
@@ -10,4 +9,3 @@ text = 'Foo';
 print(text);
 print(text.toLowerCase());
 print(text.toUpperCase());
-

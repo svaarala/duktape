@@ -45,7 +45,7 @@ try {
 }
 
 try {
-    /* Argument shadows the function name binding, again simply 
+    /* Argument shadows the function name binding, again simply
      * because the function name binding exists "outside" the
      * function scope.
      */
@@ -94,5 +94,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

@@ -21,7 +21,7 @@ try {
     SyntaxError.prototype.my_class = 'SyntaxError';
     TypeError.prototype.my_class = 'TypeError';
     URIError.prototype.my_class = 'URIError';
- 
+
     var errors = [
         new Error('my Error'),
         new EvalError('my EvalError'),

@@ -31,4 +31,3 @@ printDesc(Object.getOwnPropertyDescriptor(a, '0'));
 printDesc(Object.getOwnPropertyDescriptor(a, '1'));
 printDesc(Object.getOwnPropertyDescriptor(a, '2'));
 printDesc(Object.getOwnPropertyDescriptor(a, '10000'));
-

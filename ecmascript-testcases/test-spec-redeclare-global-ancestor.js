@@ -169,4 +169,3 @@ print(Object.prototype.test_nonconfigurable_incompatible_value1);
 print(Object.prototype.test_nonconfigurable_incompatible_value2);
 tmp = Object.prototype.test_nonconfigurable_accessor;
 Object.prototype.test_nonconfigurable_accessor = 1;
-

@@ -15,7 +15,7 @@ function printGetters(dt) {
         tmp.push(n + '="' + String(v) + '"');
     }
 
-    // FIXME: how to test non-UTC getters reasonably?
+    // XXX: how to test non-UTC getters reasonably?
     // test equality that local components + time offset == utc
     // components, and check component range?
 
@@ -43,7 +43,7 @@ function printGetters(dt) {
 function datePrototypeGetterTests() {
     var pg = printGetters;
 
-    // FIXME: more tests?
+    // XXX: more tests?
 
     pg(new Date(0));
     pg(new Date(Date.UTC(-200000, 1, 2, 3, 4, 5, 6)));
@@ -58,5 +58,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

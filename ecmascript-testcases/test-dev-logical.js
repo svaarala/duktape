@@ -70,4 +70,3 @@ finished
 var p = print;
 
 print(p('A') && p('B') || true && 1 && print('E') || true && 'finished');
-

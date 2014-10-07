@@ -20,4 +20,3 @@ true true false
 
 arr = [1,2];
 print('0' in arr, '1' in arr, '2' in arr);
-

@@ -47,7 +47,7 @@ function toJsonPropertyTest3() {
     try {
         print(JSON.stringify(obj));
     } catch (e) {
-        // FIXME: here we assume that message is intact
+        // message is assumed here to be intact
         print(e.name, e.message);
     }
 }
@@ -90,4 +90,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

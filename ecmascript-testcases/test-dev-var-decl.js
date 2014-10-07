@@ -43,7 +43,7 @@ SyntaxError
  * reserved words.  The set of reserved words is different
  * in strict mode.
  */
- 
+
 try {
     eval("var for = 1;");
 } catch (e) {
@@ -101,4 +101,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

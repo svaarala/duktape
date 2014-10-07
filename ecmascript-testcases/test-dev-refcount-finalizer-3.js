@@ -44,4 +44,3 @@ print(typeof o);
 rescue = false;
 o = undefined;  // refzero, finalize, not rescue
 print(typeof o);
-

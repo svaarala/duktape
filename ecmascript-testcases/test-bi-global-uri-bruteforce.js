@@ -334,7 +334,6 @@ decodeURI
 decodeURIComponent
 */
 
-/* FIXME: decoding bruteforce cases?  ASCII range decoding cases already
+/* XXX: decoding bruteforce cases?  ASCII range decoding cases already
  * exist, what to test here?
  */
-

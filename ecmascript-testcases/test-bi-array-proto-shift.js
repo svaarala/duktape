@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 
 function dumpValue(v) {
     var i, n;
@@ -909,7 +909,6 @@ try {
     print(e);
 }
 
-/* FIXME: enumeration order effects, when sparse: deleting and adding properties
+/* XXX: enumeration order effects, when sparse: deleting and adding properties
  * changes their ordering on each shift().
  */
-

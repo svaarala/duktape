@@ -7,7 +7,7 @@
  *  happen before the ReferenceError.
  */
 
-/* FIXME: is this correct?  Both Rhino and V8 will just throw a
+/* XXX: is this correct?  Both Rhino and V8 will just throw a
  * ReferenceError.
  */
 

@@ -1,4 +1,3 @@
-
 var r, t;
 
 /*===
@@ -26,7 +25,7 @@ try {
 }
 
 /*===
-Error
+RangeError
 ===*/
 
 /* This is supposed to work by the specification, but the implementation
@@ -36,8 +35,6 @@ Error
  * intentionally fail this test.
  */
 
-/* FIXME: Error -> InternalError or RangeError? */
-
 try {
     r = eval("/^(a|b){100000}$/");
     t = r.exec('abbababbab');
@@ -45,4 +42,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

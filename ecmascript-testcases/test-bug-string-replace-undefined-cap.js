@@ -1,4 +1,3 @@
-
 /*===
 foo
 foo
@@ -23,4 +22,3 @@ try {
 } catch (e) {
     print(e);
 }
-

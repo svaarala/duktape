@@ -102,7 +102,7 @@ test("NaY");  // same case
 
 test("1e10");  // larger than 32-bit, fits in 53 bits of double
 
-/* FIXME: object coercion */
+/* XXX: object coercion */
 
 /*===
 0 pos
@@ -137,4 +137,3 @@ test(9007199254740994);   // (2^53 + 2) % (2^32) --> 2  (Note: 2^53+1 not repres
 
 test(3.4);   // -> 3 -> 3
 test(-3.4);  // -> -3 -> (2^32) - 3
-

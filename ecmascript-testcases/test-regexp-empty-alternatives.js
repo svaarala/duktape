@@ -14,4 +14,3 @@ string string undefined
 
 t = /()|()/.exec('');
 print(typeof t[0], typeof t[1], typeof t[2]);
-

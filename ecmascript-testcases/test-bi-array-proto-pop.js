@@ -1,4 +1,4 @@
-// FIXME: these should be shared utils for Array testing
+// XXX: these should be shared utils for Array testing
 
 function dumpValue(v) {
     var i, n, n_clipped;
@@ -338,4 +338,3 @@ try {
 } catch (e) {
     print(e);
 }
-

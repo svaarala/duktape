@@ -1,4 +1,3 @@
-
 var ms_day = 24 * 60 * 60 * 1000;
 
 /* Note: the expected result is now from V8, not from specification. */
@@ -20143,5 +20142,3 @@ function testTimevalConversions() {
 }
 
 testTimevalConversions();
-
-

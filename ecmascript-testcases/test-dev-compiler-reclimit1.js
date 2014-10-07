@@ -2,7 +2,7 @@
  *  Tests on compiler recursion limits.
  */
 
-/* FIXME: any other recursion points?
+/* XXX: any other recursion points?
  *
  * Object and array literals?
  */
@@ -104,4 +104,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

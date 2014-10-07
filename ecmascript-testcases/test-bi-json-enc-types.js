@@ -1,4 +1,3 @@
-
 var t;
 
 /*===
@@ -100,7 +99,7 @@ function numbersTest() {
 
     for (i = 0; i < numbers.length; i++) {
         x = numbers[i];
- 
+
         t = JSON.stringify(x);
         print(typeof t, t);
         print(JSON.stringify({foo:1,bar:x}));
@@ -117,9 +116,7 @@ try {
 /*===
 ===*/
 
-/* Fraction handling for numbers. */
-
-/* FIXME */
+/* XXX: Fraction handling for numbers. */
 
 /*===
 string "foo"
@@ -295,4 +292,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

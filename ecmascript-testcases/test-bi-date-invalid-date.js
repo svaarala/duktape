@@ -15,4 +15,3 @@ Invalid Date
  */
 
 print(new Date(Number.POSITIVE_INFINITY).toString());
-

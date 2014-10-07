@@ -10,7 +10,7 @@
  *  function:
  *
  *    print(!this);
- *  
+ *
  */
 
 /*===
@@ -107,4 +107,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

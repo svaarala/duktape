@@ -1,4 +1,3 @@
-
 /*===
 0
 undefined
@@ -62,4 +61,3 @@ print([1,2,,].length); /* but two do */
 /* regexp values */
 
 print([/foo/,/bar/].length);
-

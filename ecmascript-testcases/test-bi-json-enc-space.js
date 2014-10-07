@@ -1,4 +1,3 @@
-
 var obj = { foo:1, bar:2, quux: [ 1, 2 ], emptyObj: {}, emptyArr: [] };
 
 /*===
@@ -166,5 +165,4 @@ print(JSON.stringify(obj, null, Number.NaN));
 /*===
 ===*/
 
-/* FIXME: coercion of String and Number objects */
-
+/* XXX: coercion of String and Number objects */

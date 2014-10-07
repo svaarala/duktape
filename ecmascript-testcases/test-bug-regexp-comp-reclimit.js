@@ -1,4 +1,3 @@
-
 /*===
 compiled ok
 ===*/
@@ -21,4 +20,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

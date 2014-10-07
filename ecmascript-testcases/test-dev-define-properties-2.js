@@ -15,4 +15,3 @@ Object.defineProperties(obj, {
 
 void obj.foo;
 void obj.bar;
-

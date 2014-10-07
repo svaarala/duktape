@@ -251,7 +251,7 @@ function regExpTest() {
     re.lastIndex = '1';  // lastIndex start position is ignored
     test('FoobarfOObarFOObar', re);
 
-    // FIXME: RegExp.prototype.exec() replaced; still calls original function
+    // XXX: RegExp.prototype.exec() replaced; still calls original function
 }
 
 try {
@@ -340,4 +340,3 @@ try {
 } catch (e) {
     print(e);
 }
-

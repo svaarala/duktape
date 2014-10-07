@@ -42,4 +42,3 @@ print('yielded with', Duktape.Thread.resume(t, 'quux'));
 print('yielded with', Duktape.Thread.resume(t, 'baz'));
 
 print('finished');
-

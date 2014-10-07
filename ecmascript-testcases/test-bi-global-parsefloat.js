@@ -5,7 +5,7 @@
 var WHITESPACE_CODEPOINTS = [
     // from WhiteSpace production
     0x0009,    // <TAB>
-    0x000B,    // <VT>      
+    0x000B,    // <VT>
     0x000C,    // <FF>
     0x0020,    // <SP>
     0x00A0,    // <NBSP>
@@ -36,7 +36,7 @@ var WHITESPACE_CODEPOINTS = [
     0x202F,    // 202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
     0x205F,    // 205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
     0x3000,    // 3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
- 
+
     // from LineTerminator production
     0x000a,    // <LF>
     0x000d,    // <CR>
@@ -355,7 +355,7 @@ function trailingGarbageTest() {
     print(g.parseFloat('123.4\u0000'));
     print(g.parseFloat('123.4\ufedc'));
 
-    // FIXME
+    // XXX: more cases
 }
 
 try {
@@ -1540,5 +1540,4 @@ try {
     print(e.name);
 }
 
-/* FIXME: more tests */
-
+/* XXX: more tests */

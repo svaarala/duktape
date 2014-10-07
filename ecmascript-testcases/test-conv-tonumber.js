@@ -78,7 +78,6 @@ test("Infinity");
 
 test("0xdeadbeef");
 
-/* FIXME: octal */
+/* XXX: octal */
 
-/* FIXME: object coercion */
-
+/* XXX: object coercion */

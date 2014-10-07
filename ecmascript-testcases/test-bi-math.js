@@ -792,4 +792,3 @@ prE(Math.tan(-0));
 print(zeroSign(Math.tan(-0)));
 prE(Math.tan(Number.POSITIVE_INFINITY));
 prE(Math.tan(Number.NEGATIVE_INFINITY));
-

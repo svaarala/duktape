@@ -1,4 +1,3 @@
-
 function dateToComponentString(dt) {
     return [
                dt.getUTCFullYear(),
@@ -102,7 +101,7 @@ function coercionSideEffectsTest() {
     var obj8 = { toString: function() { print('toString 8'); return 'toString 8'; },
                  valueOf: function() { print('valueOf 8'); return 327406158245006; } };
                  // Date.UTC(12345,1,2,3,4,5,6) -> above return value
- 
+
     function toUtcAndPrint(dt) {
         var utcDiff = utcDiffAtTime(dt);
         dt = new Date(dt.getTime() + utcDiff);  // Now UTC time
@@ -175,4 +174,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

@@ -1,4 +1,3 @@
-
 /*---
 {
     "custom": true
@@ -29,4 +28,3 @@ a = null;
 
 // mark-and-sweep finalizing happens here if refcount disabled
 Duktape.gc();
-

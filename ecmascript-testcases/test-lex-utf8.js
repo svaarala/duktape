@@ -18,4 +18,3 @@ print($äöå, typeof $äöå);
 
 äöå = 2;
 print(äöå, typeof äöå);
-

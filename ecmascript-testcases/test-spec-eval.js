@@ -18,4 +18,3 @@ print(eval("'foo'"));
 /* var is an 'empty' statement, so 123 remains as the return value */
 
 print(eval("123; var t=10;"));
-

@@ -1,4 +1,3 @@
-
 /*
  *  This is necessarily a custom test, because behavior is implementation
  *  dependent.  Technically the coercion behavior could be verified in an
@@ -279,4 +278,3 @@ try {
 } catch (e) {
     print(e);
 }
-

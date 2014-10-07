@@ -20,7 +20,7 @@ function sparseArrayLengthTest() {
     arr[100] = 'foo';  // becomes sparse
     arr[3] = 4;        // will enumerate "incorrectly"
 
-    // FIXME: this is custom behavior actually
+    // custom behavior here
     for (k in arr) {
         print(k);
     }
@@ -33,4 +33,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

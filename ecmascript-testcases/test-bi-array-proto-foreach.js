@@ -1,4 +1,3 @@
-
 // return value does not matter
 function retUndef(val, key, obj) {
     print(typeof this, this, typeof val, val, typeof key, key, typeof obj, obj);
@@ -342,4 +341,3 @@ try {
 } catch (e) {
     print(e);
 }
-

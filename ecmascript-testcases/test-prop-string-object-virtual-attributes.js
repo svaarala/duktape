@@ -39,4 +39,3 @@ print(a[2]);
 a[3] = 'z';  /* virtual property does not exist, so does NOT prevent a write */
 print(a[3]);
 print(a.length);  /* length is not affected because strings don't have a magic 'length' */
-

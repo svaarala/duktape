@@ -23,5 +23,3 @@ for (var i in a) {
     delete a.foo;  // only affects 'a', not F.prototype
     print(i, a[i]);
 }
-
-

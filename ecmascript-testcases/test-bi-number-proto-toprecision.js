@@ -1,4 +1,6 @@
-/* FIXME: unfinished test case */
+/*
+ *  toPrecision()
+ */
 
 function test(this_value, args, print_prefix) {
     var t;
@@ -2765,7 +2767,7 @@ RangeError
  *    side effects)
  *
  *  - Special cases for NaN and +/- Infinity are applied
- * 
+ *
  *  - Only at this point is precision checked to be in range [1,21]
  */
 
@@ -2811,4 +2813,3 @@ try {
 } catch (e) {
     print(e);
 }
-

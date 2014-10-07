@@ -119,4 +119,3 @@ rescue = false;
 delrefs();
 Duktape.gc();  // swept immediately
 testrefs();
-

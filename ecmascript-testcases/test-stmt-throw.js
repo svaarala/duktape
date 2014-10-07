@@ -1,5 +1,5 @@
 /*
- *  Throw staement (E5 Section 12.13).
+ *  Throw statement (E5 Section 12.13).
  */
 
 /*---
@@ -12,4 +12,3 @@
 
 /*===
 ===*/
-

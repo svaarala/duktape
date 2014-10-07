@@ -1,5 +1,10 @@
-
-/* FIXME: check expected values */
+/*
+ *  toFixed()
+ *
+ *  NOTE: V8 will accept a boolean as the 'this' binding (only number and
+ *  Number allowed in the specification).  Expect string is based on V8
+ *  with manual fixes.
+ */
 
 function test(this_value, args, prefix_string) {
     var t;
@@ -689,6 +694,7 @@ RangeError
  *
  *  - ToInteger(fractionDigits) followed by a range check for the result
  *  - Only after that, a check for 'this' binding
+ *    (V8 coerces e.g. booleans to numbers, only number/Number should be accepted)
  */
 
 print('coercion');
@@ -718,8 +724,8 @@ function coercionTest() {
     }
 
     test(new Number(testnum), [ '3.9' ]);  // -> 3
-    test(new Number(testnum), [ -256*256*256*256 + 3.9 ]);  // -> invalid
-    test(new Number(testnum), [ 256*256*256*256 + 3.9 ]);   // -> invalid
+    test(new Number(testnum), [ -256*256*256*256 + 3.9 ]);  // -> invalid, no 32-bit wrap
+    test(new Number(testnum), [ 256*256*256*256 + 3.9 ]);   // -> invalid, same
 
     test(new Number(testnum), [ {
         toString: function() { print('fractionDigits toString'); return 10; },
@@ -751,4 +757,3 @@ try {
 } catch (e) {
     print(e);
 }
-

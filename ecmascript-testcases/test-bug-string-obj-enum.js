@@ -1,4 +1,3 @@
-
 /*===
 0 string 0
 1 string 1
@@ -16,4 +15,3 @@ var i;
 for (i = 0; i < obj.length; i++) {
     print(i, typeof obj[i], obj[i]);
 }
-

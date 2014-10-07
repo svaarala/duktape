@@ -1,5 +1,5 @@
-/* FIXME: for eval/global code */
-/* FIXME: test for handling of 'valued' and 'non-valued' statements */
+/* XXX: for eval/global code */
+/* XXX: test for handling of 'valued' and 'non-valued' statements */
 
 /*===
 3
@@ -11,4 +11,3 @@ print(eval('1+2;'));
 
 /* an empty statement (like debugger) must not alter non-empty previous result */
 print(eval('1+2; debugger;'));
-

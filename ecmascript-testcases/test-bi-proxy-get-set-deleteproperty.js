@@ -804,7 +804,7 @@ function proxyRevocationTest() {
     var proxy = new Proxy(target, handler);
     print('proxy.foo:', proxy.foo);
 
-    // FIXME: unimplemented
+    // XXX: unimplemented
 }
 
 print('proxy revocation');

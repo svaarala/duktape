@@ -286,7 +286,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 	DUK_ASSERT(out_atom_info != NULL);
 
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
-		DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
+		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR,
 		          DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT);
 	}
 	re_ctx->recursion_depth++;
@@ -433,7 +433,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
 				atom_copies = (re_ctx->curr_token.qmax == DUK_RE_QUANTIFIER_INFINITE) ?
 				              re_ctx->curr_token.qmin : re_ctx->curr_token.qmax;
 				if (atom_copies > DUK_RE_MAX_ATOM_COPIES) {
-					DUK_ERROR(re_ctx->thr, DUK_ERR_INTERNAL_ERROR,
+					DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR,
 					          DUK_STR_QUANTIFIER_TOO_MANY_COPIES);
 				}
 

@@ -5,22 +5,31 @@
 ---*/
 
 /*===
+{string:"A"}
 {"string":"A"}
 123 34 115 116 114 105 110 103 34 58 34 65 34 125
+{string:"\u0324"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 804 34 125
+{string:"\ufedc"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 65244 34 125
+{string:"\U0010ffff"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 1114111 34 125
+{string:"\U001fedcb"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 2092491 34 125
+{string:"\U03fedcba"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 67034298 34 125
+{string:"\U7fedcba9"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 2146290601 34 125
+{string:"\Ufedcba98"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 4275878552 34 125
+{string:"\Uffffffff"}
 {"string":"?"}
 123 34 115 116 114 105 110 103 34 58 34 4294967295 34 125
 ===*/
@@ -53,7 +62,7 @@ function safePrint(t) {
 
     print(tmp.join(''));
 }
- 
+
 function nonBmpTest() {
     var t;
     var i;
@@ -67,7 +76,7 @@ function nonBmpTest() {
         Duktape.dec('hex', 'efbb9c'),          // U+FEDC (3 bytes)
         Duktape.dec('hex', 'f48fbfbf'),        // U+0010FFFF (4 bytes)
         Duktape.dec('hex', 'f7beb78b'),        // U+001FEDCB (4 bytes, above standard UTF-8)
-        Duktape.dec('hex', 'fbbfadb2ba'),      // U+3FEDCBA (5 bytes)
+        Duktape.dec('hex', 'fbbfadb2ba'),      // U+03FEDCBA (5 bytes)
         Duktape.dec('hex', 'fdbfbb9caea9'),    // U+7FEDCBA9 (6 bytes)
         Duktape.dec('hex', 'fe83beb78baa98'),  // U+FEDCBA98 (7 bytes)
         Duktape.dec('hex', 'fe83bfbfbfbfbf'),  // U+FFFFFFFF (7 bytes, max value that we actually support)
@@ -80,12 +89,12 @@ function nonBmpTest() {
     for (i = 0; i < buffers.length; i++) {
         buf = buffers[i];
 
+        t = Duktape.enc('jx', { string: String(buf) });
+        safePrint(t);
         t = JSON.stringify({ string: String(buf) });
         safePrint(t);
         codepointDump(t);
     }
-
-    // FIXME: also test ASCII only encoding for these (\u and \U)
 }
 
 try {

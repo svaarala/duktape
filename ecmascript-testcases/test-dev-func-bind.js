@@ -1,4 +1,3 @@
-
 var func;
 
 /*===
@@ -22,7 +21,7 @@ print.bind(null,1).bind(null,2).bind(null,3)();
 0
 ===*/
 
-/* FIXME: length handling of bound function, improve */
+/* XXX: length handling of bound function, improve */
 
 function f1(x,y) {
 }
@@ -36,4 +35,3 @@ func = f1.bind(null, 1, 2);
 print(func.length);
 func = f1.bind(null, 1, 2, 3);
 print(func.length);
-

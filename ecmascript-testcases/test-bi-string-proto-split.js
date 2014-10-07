@@ -1,6 +1,3 @@
-// FIXME: this testcase now has a JSON.stringify() dependency,
-// perhaps worth removing.
-
 /*===
 basic
 object 3 ["foo"," bar"," quux"]
@@ -33,7 +30,6 @@ print('basic');
 function basicTest() {
     var t;
 
-    // FIXME: JSON dependency
     function p(x) {
         print(typeof x, x.length, JSON.stringify(x));
     }
@@ -122,7 +118,7 @@ function basicTest() {
           t[1].length, t[1].charCodeAt(0),
           t[2].length, t[2].charCodeAt(0));
 
-    // FIXME: add more non-BMP tests
+    // XXX: add more non-BMP tests
 }
 
 try {
@@ -173,7 +169,6 @@ print('limit');
 function limitTest() {
     var i;
 
-    // FIXME: JSON dependency
     function p(x) {
         print(typeof x, x.length, JSON.stringify(x));
     }
@@ -258,7 +253,7 @@ function regExpTest() {
         print('before', typeof sep_val, typeof sep_val.lastIndex, sep_val.lastIndex);
         try {
             t = String.prototype.split.call(this_val, sep_val, limit_val);
-            print(typeof t, t.length, JSON.stringify(t));  // FIXME: JSON dependency
+            print(typeof t, t.length, JSON.stringify(t));
         } catch (e) {
             print(e.name);
         }
@@ -325,7 +320,6 @@ object 2 ["foo","bar"]
 print('coercion');
 
 function coercionTest() {
-    // FIXME: JSON dependency
     function test(this_val, sep_val, limit_val, arg_count) {
         var t;
 
@@ -388,4 +382,3 @@ try {
 } catch (e) {
     print(e);
 }
-

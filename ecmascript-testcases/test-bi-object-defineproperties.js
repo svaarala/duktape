@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 function formatValue(v) {
     if (typeof v === 'function') {
         // avoid implementation dependent string formatting
@@ -333,4 +333,3 @@ try {
 } catch (e) {
     print(e);
 }
-

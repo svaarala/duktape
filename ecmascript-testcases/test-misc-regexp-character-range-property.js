@@ -6,7 +6,7 @@
  *
  *  This is not a test of the language implementation, so do not
  *  expect variance among implementations.
- *  
+ *
  */
 
 var ignoreCase = true;

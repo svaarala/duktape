@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 function dumpValue(v) {
     var i, n;
     var clipped;
@@ -5364,7 +5364,7 @@ function basicTest() {
                        1, 2, 3, 4, 5, 6, 7, 1e9, Number.POSITIVE_INFINITY, Number.NaN ];
     var delcount_vals = [ Number.NEGATIVE_INFINITY, -1e9, -7, -6, -5, -4, -3, -2, -1, -0, +0,
                           1, 2, 3, 4, 5, 6, 7, 1e9, Number.POSITIVE_INFINITY, Number.NaN ];
- 
+
     // dense
 
     for (i = 0; i < start_vals.length; i++) {
@@ -5405,7 +5405,7 @@ function basicTest() {
     test([], [0, 0]);
 
     // zero deleteCount with items
-    
+
     test([1,2,3], [0, 0]);
 
     // non-zero deleteCount without items
@@ -5440,7 +5440,7 @@ print('protected');
 function protectedTest() {
     var obj;
 
-    // FIXME: protected elements, this test is incomplete
+    // XXX: protected elements, this test is incomplete
 
     // 'length' gets written regardless of whether it would change,
     // causing a TypeError if protected
@@ -5546,5 +5546,4 @@ try {
     print(e);
 }
 
-// FIXME: attributes test
-
+// XXX: attributes test

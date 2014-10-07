@@ -47,4 +47,3 @@ g();
 /* Note: v8 fails this test */
 d = Object.getOwnPropertyDescriptor(g, 'prototype');
 print(typeof d);
-

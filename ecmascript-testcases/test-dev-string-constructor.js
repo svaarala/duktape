@@ -1,4 +1,3 @@
-
 var obj;
 
 function prS(x) {
@@ -102,4 +101,3 @@ obj = {
 prS(new String(obj));
 
 prS(new String([1,2,3]));
-

@@ -1,4 +1,3 @@
-
 /*===
 toString + parse test
 -123456789000 -123456789000 -123456789000 -123456789000
@@ -35,7 +34,7 @@ function toStringParseTest() {
               Date.parse(x.toISOString()));
     }
 
-    // FIXME: add more comprehensive cases
+    // XXX: add more comprehensive cases
 }
 
 try {
@@ -43,4 +42,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

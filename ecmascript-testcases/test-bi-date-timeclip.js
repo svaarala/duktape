@@ -15,7 +15,6 @@ NaN
 -10
 -10
 Infinity
-implementation dependent -Infinity
 ===*/
 
 /* Test TimeClip() limits when creating timestamps from time values directly.
@@ -52,14 +51,9 @@ function timeClipTest() {
     d = new Date(-10.1); print(d.getTime());
     d = new Date(-10.9); print(d.getTime());
 
-    // TimeClip() may (but is not required) to convert a negative zero
-    // to a positive one.  Our current implementation will preserve the
-    // sign so test for that behavior (V8 has the same behavior, Rhino
-    // does not).
-
-    // FIXME: custom
+    // TimeClip() for negative zero is custom behavior, so it has a separate
+    // testcase, see test-bi-date-timeclip-zero.js.
     d = new Date(+0); print(1 / d.getTime());
-    d = new Date(-0); print('implementation dependent', 1 / d.getTime());
 }
 
 try {
@@ -67,5 +61,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

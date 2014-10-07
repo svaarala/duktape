@@ -36,4 +36,3 @@ print(e1.fileName);
 var e2 = new BarError();
 print('error 2');
 print(e2.lineNumber);
-

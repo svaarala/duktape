@@ -1,4 +1,4 @@
-// FIXME: util
+// XXX: util
 function printDesc(obj, key) {
     var pd = Object.getOwnPropertyDescriptor(obj, key);
     if (!pd) {
@@ -14,7 +14,7 @@ function printDesc(obj, key) {
           'set=' + typeof pd.set);
 }
 
-// FIXME: util
+// XXX: util
 function dumpValue(v) {
     var i, n;
     var tmp = [];
@@ -2962,4 +2962,3 @@ try {
 } catch (e) {
     print(e);
 }
-

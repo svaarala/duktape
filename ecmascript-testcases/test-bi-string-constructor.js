@@ -1,4 +1,3 @@
-
 /*===
 constructor as a function
 string 
@@ -106,4 +105,3 @@ try {
 } catch (e) {
     print(e);
 }
-

@@ -1,5 +1,4 @@
-
-// FIXME: util
+// XXX: util
 function printDesc(obj, key) {
     var pd = Object.getOwnPropertyDescriptor(obj, key);
     if (!pd) {
@@ -312,7 +311,7 @@ mutation
 print('mutation');
 
 function mutationTest() {
-    // FIXME
+    // XXX
 }
 
 try {
@@ -344,8 +343,8 @@ function protectedTest() {
     test(obj);
     print(obj.hasOwnProperty('length'), obj.length);
 
-    // FIXME: copy loop, side effects
-    // FIXME: copy loop, protected
+    // XXX: copy loop, side effects
+    // XXX: copy loop, protected
 
     // final length is not updated until step 10 (mostly matters for
     // non-arrays)
@@ -446,4 +445,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

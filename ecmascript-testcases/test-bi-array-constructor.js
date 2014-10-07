@@ -1,4 +1,3 @@
-// FIXME: something like this to utils; perhaps Test.run()
 function run(f) {
     try {
         f();
@@ -31,7 +30,6 @@ object 20 [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
 function asFunctionTest() {
     function p(x) {
-        // FIXME: JSON
         print(typeof x, x.length, JSON.stringify(x));
     }
 
@@ -93,7 +91,6 @@ object 20 [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
 function asConstructorTest() {
     function p(x) {
-        // FIXME: JSON
         print(typeof x, x.length, JSON.stringify(x));
     }
 
@@ -130,4 +127,3 @@ try {
 } catch (e) {
     print(e);
 }
-

@@ -7,5 +7,4 @@ with (Number) {
     print(POSITIVE_INFINITY);
 }
 
-/* FIXME: more tests */
-
+/* XXX: more tests */

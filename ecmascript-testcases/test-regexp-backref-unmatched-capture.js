@@ -50,8 +50,8 @@ fooquux undefined
 /* Note: double quote backslashes carefully below. */
 
 /*
- *  FIXME: neither Rhino nor V8 will throw SyntaxError from these cases
- *  (they'll just return a null match).  So perhaps this interpretation is wrong?
+ *  XXX: neither Rhino nor V8 will throw SyntaxError from these cases
+ *  (they'll just return a null match).
  */
 
 try {
@@ -109,4 +109,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

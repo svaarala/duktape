@@ -2,7 +2,7 @@
  *  Exercise various code paths related to fast return handling.
  */
 
-/* FIXME: incomplete, finish when fast return implemented. */
+/* XXX: incomplete, finish when fast return implemented. */
 
 /*===
 returned 123

@@ -24,7 +24,7 @@
  *      potential error throwing side effects, the assignment has no
  *      observable effect.
  */
- 
+
 /*===
 string
 object
@@ -33,7 +33,7 @@ object
 ===*/
 
 // add test getter
-Object.defineProperty(String.prototype, 'test', { 
+Object.defineProperty(String.prototype, 'test', {
   get: function() { 'use strict'; print(typeof this); },
   set: function(x) { 'use strict'; print(typeof this); },
 });
@@ -52,4 +52,3 @@ s.test;
 
 // Should print 'object'.
 s.test = "bar";
-

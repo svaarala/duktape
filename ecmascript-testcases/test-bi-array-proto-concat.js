@@ -7,7 +7,7 @@ function printArray(t) {
 
     for (i = 0; i < t.length; i++) {
         var exists = t.hasOwnProperty(String(i));
-        if (exists) { 
+        if (exists) {
             tmp.push(typeof t[i] + ':' + t[i]);
         } else {
             tmp.push('nonexistent');
@@ -205,4 +205,3 @@ try {
 } catch (e) {
     print(e);
 }
-

@@ -1,4 +1,3 @@
-
 /*===
 inner 1 2
 ===*/
@@ -14,4 +13,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

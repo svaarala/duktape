@@ -1,4 +1,3 @@
-
 /*---
 {
     "custom": true
@@ -45,4 +44,3 @@ Duktape.gc();
 
 obj = undefined;
 print(typeof obj);
-

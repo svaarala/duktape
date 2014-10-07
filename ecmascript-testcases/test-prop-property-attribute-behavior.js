@@ -17,4 +17,3 @@
 
 x = {};
 Object.defineProperty(x, 'foo', {enumerable: true, configurable: true, value: "bar", writable: true });
-

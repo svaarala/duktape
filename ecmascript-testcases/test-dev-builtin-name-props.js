@@ -1,4 +1,3 @@
-
 // marked as custom because 'name' property of some built-ins is not
 // specified exactly and implementations differ
 
@@ -127,12 +126,10 @@ try {
 undefined
 ===*/
 
-/* FIXME: other non-standard builtins */
+/* XXX: other non-standard builtins */
 
 try {
     print(Duktape.name);
 } catch (e) {
     print(e.name);
 }
-
-

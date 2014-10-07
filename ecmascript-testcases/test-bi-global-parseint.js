@@ -17,7 +17,7 @@
 var WHITESPACE_CODEPOINTS = [
     // from WhiteSpace production
     0x0009,    // <TAB>
-    0x000B,    // <VT>      
+    0x000B,    // <VT>
     0x000C,    // <FF>
     0x0020,    // <SP>
     0x00A0,    // <NBSP>
@@ -48,7 +48,7 @@ var WHITESPACE_CODEPOINTS = [
     0x202F,    // 202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
     0x205F,    // 205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
     0x3000,    // 3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
- 
+
     // from LineTerminator production
     0x000a,    // <LF>
     0x000d,    // <CR>
@@ -444,7 +444,7 @@ leading zeroes
  * so test against this for now.
  */
 
-/* FIXME: change Duktape behavior to match V8 and Rhino for octal? */
+/* XXX: change Duktape behavior to match V8 and Rhino for octal? */
 
 print('leading zeroes');
 
@@ -575,7 +575,7 @@ function numbersNear53BitsTest() {
     var i;
 
     // demonstrate how behavior after 2**53 changes
-    // FIXME: elaborate on the rounding behavior
+    // XXX: elaborate on the rounding behavior
     print('(testdump)');
     for (i = -8; i <= 8; i++) {
         print(two_to_53 + i);
@@ -847,4 +847,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

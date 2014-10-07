@@ -24,4 +24,3 @@ for (var i = 0; i < funcs.length; i++) {
         print(e.name);
     }
 }
-

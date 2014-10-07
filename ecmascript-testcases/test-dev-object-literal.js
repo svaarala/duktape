@@ -1,4 +1,3 @@
-
 /*===
 bar
 bar
@@ -155,7 +154,7 @@ SyntaxError
 /* Duplicate keys and mixed set/get/plain key handling */
 
 try {
-    /* duplicate plain keys are allowed in non-strict mode, and last 
+    /* duplicate plain keys are allowed in non-strict mode, and last
      * occurrence matters.
      */
     print(eval("({foo:1,foo:2}).foo"));
@@ -204,4 +203,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

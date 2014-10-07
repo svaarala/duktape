@@ -17,5 +17,3 @@ function foo(e) {
 }
 
 foo(123);
-
-

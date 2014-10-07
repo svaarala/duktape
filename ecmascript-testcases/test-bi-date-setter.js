@@ -7,6 +7,10 @@ RangeError
 true false
 RangeError
 true false
+1970-01-01T00:00:00.000Z
+true true
+1970-01-01T00:00:00.000Z
+true true
 ===*/
 
 function toISO(d) {
@@ -49,6 +53,16 @@ function testSetters() {
     print(toISO(d));
     d.setYear(2000);
     print(toISO(d) !== 'RangeError', isNaN(d.getTime()));
+
+    // Setting an infinity results in a NaN time value
+    d = new Date(0);
+    print(toISO(d));
+    d.setYear(1/0);
+    print(toISO(d) === 'RangeError', isNaN(d.getTime()));
+    d = new Date(0);
+    print(toISO(d));
+    d.setYear(1/0);
+    print(toISO(d) === 'RangeError', isNaN(d.getTime()));
 }
 
 try {
@@ -56,6 +70,3 @@ try {
 } catch (e) {
     print(e.name, e);
 }
-
-/* FIXME: tests for infinities (should convert to NaN time value) */
-

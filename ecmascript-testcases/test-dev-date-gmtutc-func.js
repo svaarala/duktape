@@ -1,4 +1,3 @@
-
 /*===
 true
 ===*/
@@ -12,4 +11,3 @@ true
  */
 
 print(Date.prototype.toGMTString === Date.prototype.toUTCString);
-

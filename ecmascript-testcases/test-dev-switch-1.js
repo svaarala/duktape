@@ -1,5 +1,3 @@
-
-
 /* FIXME: case clauses after default */
 /* FIXME: multiple fall through cases */
 
@@ -184,5 +182,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

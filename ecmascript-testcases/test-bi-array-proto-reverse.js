@@ -1,4 +1,4 @@
-// FIXME: shared test utils
+// XXX: shared test utils
 
 function formatValue(v) {
     if (typeof v === 'function') {
@@ -29,7 +29,7 @@ function dumpValue(x) {
 
     n = x.length;
     if (n > 1000) {
-        n = 1000; 
+        n = 1000;
         clipped=true;
     }
     for (i = 0; i < n; i++) {
@@ -477,4 +477,3 @@ try {
 } catch (e) {
     print(e);
 }
-

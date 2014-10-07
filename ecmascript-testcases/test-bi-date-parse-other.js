@@ -112,5 +112,4 @@ try {
 /*===
 ===*/
 
-/* FIXME: other custom parsing tests, like locale specific ones? */
-
+/* XXX: other custom parsing tests, like locale specific ones? */

@@ -2800,7 +2800,7 @@ function protectedTest() {
     test(obj);
     print(obj.length);
 
-    // FIXME: test objects with protected elements / accessors outside valid length
+    // XXX: test objects with protected elements / accessors outside valid length
     // range?  They should cause no effect on sorting.
 }
 
@@ -2810,7 +2810,6 @@ try {
     print(e);
 }
 
-/* FIXME: sort test for array whose length is above 32-bit range (e.g. as a result
+/* XXX: sort test for array whose length is above 32-bit range (e.g. as a result
  * of a push().
  */
-

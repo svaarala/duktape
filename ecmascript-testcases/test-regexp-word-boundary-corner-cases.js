@@ -102,4 +102,3 @@ print(t);
 
 t = /\B/.exec('');   /* IsWordChar: false -> false */
 print(t[0]);
-

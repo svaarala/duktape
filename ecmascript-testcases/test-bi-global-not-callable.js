@@ -1,4 +1,3 @@
-
 // indirect eval -> this is bound to the global object, E5 Section 10.4.2, step 1.a.
 var g = (function () { var e = eval; return e('this'); } )();
 
@@ -20,4 +19,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

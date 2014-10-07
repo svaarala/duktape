@@ -36,4 +36,3 @@ try {
 }
 
 /* FIXME: inside function */
-

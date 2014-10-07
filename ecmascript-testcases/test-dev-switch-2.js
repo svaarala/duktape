@@ -90,5 +90,3 @@ print(eval("switch (5) {\n" +
            "  case f(4): f(103);\n" +
            "  case f(3): f(104);\n" +
            "}"));
-
-

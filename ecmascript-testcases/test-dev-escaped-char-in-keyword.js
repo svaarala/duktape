@@ -1,4 +1,3 @@
-
 /*===
 SyntaxError
 1
@@ -26,4 +25,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-

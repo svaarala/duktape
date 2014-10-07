@@ -1,4 +1,3 @@
-
 /*===
 d
 c
@@ -22,4 +21,3 @@ f(false, false, false);
 f(false, false, true);
 f(false, true, false);
 f(true, false, false);
-

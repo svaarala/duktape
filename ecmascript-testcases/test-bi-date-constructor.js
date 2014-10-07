@@ -1,4 +1,3 @@
-
 function dateToComponentString(dt) {
     return [
                dt.getUTCFullYear(),
@@ -230,5 +229,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-

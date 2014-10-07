@@ -12,4 +12,3 @@ JOIN
 var obj = { join: function() { return 'JOIN'; } };
 
 print(Array.prototype.toString.apply(obj));
-
