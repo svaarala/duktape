@@ -47,7 +47,7 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	duk_eval_string(ctx, "(function() { return 'target object'; })");
 	duk_put_prop_string(ctx, -2, "toString");
 
-	/* [ target ] */
+	/* [ target ] */
 
 	/* Set finalizer */
 	duk_push_c_function(ctx, basic_finalizer, 1);
@@ -55,7 +55,7 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "myName");
 	duk_set_finalizer(ctx, -2);
 
-	/* [ target ] */
+	/* [ target ] */
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));
 
@@ -67,7 +67,7 @@ static duk_ret_t test_basic(duk_context *ctx) {
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));
 
-	/* [ target ] */
+	/* [ target ] */
 
 	printf("before set top 0\n");
 	duk_set_top(ctx, 0);
@@ -115,12 +115,12 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "quux");
 	duk_set_finalizer(ctx, -2);
 
-	/* [ target(foo:123) finalizer(bar:321) ] */
+	/* [ target(foo:123) finalizer(bar:321) ] */
 
 	/* Set Ecmascript finalizer to original object */
 	duk_set_finalizer(ctx, -2);
 
-	/* [ target(foo:123) ] */
+	/* [ target(foo:123) ] */
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));
 
@@ -128,7 +128,7 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx) {
 	duk_get_finalizer(ctx, -1);  /* target's finalizer */
 	duk_get_finalizer(ctx, -1);  /* finalizer's finalizer */
 
-	/* [ target(foo:123) finalizer(bar:321) c_finalizer(quux:234) ] */
+	/* [ target(foo:123) finalizer(bar:321) c_finalizer(quux:234) ] */
 
 	duk_get_prop_string(ctx, -2, "bar");
 	printf("finalizer.bar=%s\n", duk_safe_to_string(ctx, -1));
@@ -137,13 +137,13 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx) {
 	printf("c_finalizer.quux=%s\n", duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	/* [ target(foo:123) finalizer(bar:321) c_finalizer(quux:234) ] */
+	/* [ target(foo:123) finalizer(bar:321) c_finalizer(quux:234) ] */
 
 	printf("before set top 0\n");
 	duk_set_top(ctx, 0);  /* causes finalization */
 	printf("after set top 0\n");
 
-	/* [ ] */
+	/* [ ] */
 
 	/* Explicit GC (just in case e.g. a reference loop prevented collection) */
 	printf("before explicit gc\n");

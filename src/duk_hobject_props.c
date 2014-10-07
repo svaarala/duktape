@@ -3118,7 +3118,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
 			duk_dup(ctx, -4);
 			duk_call_method(ctx, 2);     /* [key setter this val key] -> [key retval] */
 #else
-			duk_call_method(ctx, 1);     /* [key setter this val] -> [key retval] */
+			duk_call_method(ctx, 1);     /* [key setter this val] -> [key retval] */
 #endif
 			duk_pop(ctx);                /* ignore retval -> [key] */
 			goto success_no_arguments_exotic;

@@ -422,7 +422,7 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 		return 1;  /* return arg as-is */
 	}
 
-	/* [ source ] */
+	/* [ source ] */
 
 	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
 	act_eval = thr->callstack + thr->callstack_top - 1;    /* this function */
@@ -453,7 +453,7 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
 
-	/* [ source template ] */
+	/* [ source template ] */
 
 	/* E5 Section 10.4.2 */
 	DUK_ASSERT(thr->callstack_top >= 1);
@@ -525,7 +525,7 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 
 	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
 
-	/* [ source template closure ] */
+	/* [ source template closure ] */
 
 	if (this_to_global) {
 		DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
@@ -544,11 +544,11 @@ duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	                     (duk_heaphdr *) outer_var_env,
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-	/* [ source template closure this ] */
+	/* [ source template closure this ] */
 
 	duk_call_method(ctx, 0);
 
-	/* [ source template result ] */
+	/* [ source template result ] */
 
 	return 1;
 }
@@ -987,7 +987,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		return 1;
 	}
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined ] */
 	DUK_ASSERT_TOP(ctx, 7);
 
 	/*
@@ -1024,7 +1024,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
 	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 10);
 
 	/*
@@ -1099,7 +1099,7 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  Call the wrapped module function.
 	 */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
 	duk_dup(ctx, 8);  /* exports (this binding) */
@@ -1107,12 +1107,12 @@ duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 8);  /* exports (argument) */
 	duk_dup(ctx, 9);  /* module (argument) */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 15);
 
 	duk_call_method(ctx, 3 /*nargs*/);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
+	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
 	duk_pop_2(ctx);
