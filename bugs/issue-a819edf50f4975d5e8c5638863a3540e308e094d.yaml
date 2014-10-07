@@ -7,8 +7,8 @@ type: :task
 component: duk
 release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-08-18 21:33:49.873541 Z
 references: []
 
@@ -18,3 +18,9 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-10-07 21:38:22.736612 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Keep the return code: it might be possible to have lenient user functions at
+    some point.
