@@ -564,6 +564,9 @@ Planned
 * Fix return value of Duktape.gc() to return true (instead of false) for
   a successful mark-and-sweep
 
+* Fix duk_peval_file(), duk_peval_file_noresult() and duk_pcompile_file()
+  to avoid throwing an error for a missing file
+
 * Regexp internal limit errors changed from Error to RangeError
 
 1.1.0 (2014-XX-XX)
