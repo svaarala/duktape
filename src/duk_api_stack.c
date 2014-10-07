@@ -2462,7 +2462,7 @@ const char *duk_push_string(duk_context *ctx, const char *str) {
  * relocate to another file because this is potentially platform
  * dependent.
  */
-const char *duk_push_string_file(duk_context *ctx, const char *path) {
+const char *duk_push_string_file_raw(duk_context *ctx, const char *path, duk_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_file *f = NULL;
 	char *buf;
@@ -2499,8 +2499,14 @@ const char *duk_push_string_file(duk_context *ctx, const char *path) {
 	if (f) {
 		DUK_FCLOSE(f);
 	}
-	/* XXX: string not shared because it is conditional */
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "read file error");
+
+	if (flags != 0) {
+		DUK_ASSERT(flags == DUK_STRING_PUSH_SAFE);  /* only flag now */
+		duk_push_undefined(ctx);
+	} else {
+		/* XXX: string not shared because it is conditional */
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "read file error");
+	}
 	return NULL;
 }
 #else
