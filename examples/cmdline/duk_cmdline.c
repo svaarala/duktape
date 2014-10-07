@@ -1,18 +1,11 @@
 /*
  *  Command line execution tool.  Used by test cases and other manual testing.
  *
- *  For maximum portability, compile with -DDUK_CMDLINE_BAREBONES
+ *  To enable readline and other fancy stuff, compile with -DDUK_CMDLINE_FANCY
+ *  (it is not the default to maximize portability).
  */
 
-#if defined(_WIN32) || defined(_WIN64) || defined(WIN32) || \
-    defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-#ifndef DUK_CMDLINE_BAREBONES
-/* Force barebones mode on Windows. */
-#define DUK_CMDLINE_BAREBONES
-#endif
-#endif
-
-#ifdef DUK_CMDLINE_BAREBONES
+#ifndef DUK_CMDLINE_FANCY
 #define NO_READLINE
 #define NO_RLIMIT
 #define NO_SIGNAL
