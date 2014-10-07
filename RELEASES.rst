@@ -533,7 +533,7 @@ Released
 * Make objects and functions defined by included polyfills non-enumerable so
   that they don't enumerate e.g. in a for-in loop
 
-* A few more polyfills.
+* A few more polyfills
 
 Planned
 =======
@@ -568,6 +568,9 @@ Planned
   to avoid throwing an error for a missing file
 
 * Regexp internal limit errors changed from Error to RangeError
+
+* Change command line example to be "barebones" by default, with readline
+  enabled via DUK_CMDLINE_FANCY
 
 1.1.0 (2014-XX-XX)
 ------------------
