@@ -20,11 +20,17 @@ $ make -f Makefile.cmdline
 </pre>
 
 <div class="note">
-The command line avoids platform dependencies by default.  If your platform
-has <code>readline</code> and the necessary development headers, you can enable
-line editing support by editing the Makefile:
+The Makefile assumes you have <code>gcc</code> installed.  If you don't,
+you can just edit the Makefile to match your compiler (the Makefile is
+quite simple).
+</div>
+
+<div class="note">
+The command line tool avoids platform dependencies by default.  If you're running a
+UNIX variant and have <code>readline</code> and the necessary development headers,
+you can enable line editing support by editing the Makefile:
 <ul>
-<li>Comment out <code class="nobreak">-DDUK_CMDLINE_BAREBONES</code></li>
+<li>Add <code class="nobreak">-DDUK_CMDLINE_FANCY</code></li>
 <li>Add <code>-lreadline</code> and <code>-lncurses</code></li>
 </ul>
 </div>
