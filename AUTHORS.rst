@@ -43,3 +43,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Andreas Öman
 * Doug Sanden
 * Remo Eichenberger (https://github.com/remoe)
+* David Demelier
