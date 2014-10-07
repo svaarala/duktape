@@ -3,9 +3,9 @@ title: go through FIXMEs in ecmascript-testcases and fix the worst coverage issu
 desc: ""
 type: :task
 component: duk
-release: v1.0
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :in_progress
+status: :unstarted
 disposition: 
 creation_time: 2014-09-01 20:26:21.841131 Z
 references: []
@@ -19,4 +19,8 @@ log_events:
 - - 2014-10-03 12:27:08.575897 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - changed status from unstarted to in_progress
+  - ""
+- - 2014-10-07 11:24:50.853508 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
   - ""
