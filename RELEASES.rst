@@ -572,6 +572,8 @@ Planned
 * Change command line example to be "barebones" by default, with readline
   enabled via DUK_CMDLINE_FANCY
 
+* Use variadic macros for VS2005+
+
 1.1.0 (2014-XX-XX)
 ------------------
 
