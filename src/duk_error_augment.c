@@ -59,7 +59,7 @@
  */
 
 #if defined(DUK_USE_ERRTHROW) || defined(DUK_USE_ERRCREATE)
-static void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_cb) {
+DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_cb) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_hnd;
 	duk_small_uint_t call_flags;
@@ -155,7 +155,7 @@ static void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_cb) 
  */
 
 #ifdef DUK_USE_TRACEBACKS
-static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
+DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t depth;
 	duk_int_t i, i_min;
@@ -273,7 +273,7 @@ static void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, con
 #endif  /* DUK_USE_TRACEBACKS */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
+DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 #ifdef DUK_USE_ASSERTIONS
 	duk_int_t entry_top;
@@ -387,7 +387,7 @@ static void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_ca
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
+DUK_INTERNAL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *obj;
 
@@ -444,7 +444,7 @@ void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, 
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-void duk_err_augment_error_throw(duk_hthread *thr) {
+DUK_INTERNAL void duk_err_augment_error_throw(duk_hthread *thr) {
 #if defined(DUK_USE_ERRTHROW)
 	duk__err_augment_user(thr, DUK_STRIDX_ERR_THROW);
 #endif  /* DUK_USE_ERRTHROW */

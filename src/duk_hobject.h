@@ -638,82 +638,82 @@ struct duk_hobject {
  *  Exposed data
  */
 
-extern duk_uint8_t duk_class_number_to_stridx[32];
+DUK_INTERNAL_DECL duk_uint8_t duk_class_number_to_stridx[32];
 
 /*
  *  Prototypes
  */
 
 /* alloc and init */
-duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 #if 0  /* unused */
-duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags);
 #endif
-duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 
 /* low-level property functions */
-void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
-duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key);
-duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs);
-duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uarridx_t i);
+DUK_INTERNAL_DECL void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
+DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key);
+DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs);
+DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uarridx_t i);
 
 /* core property functions */
-duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
-duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag);
-duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag);
-duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
 
 /* internal property functions */
-duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_bool_t throw_flag);
-duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
-void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
-void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
-void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags);
-void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length);  /* XXX: duk_uarridx_t? */
-void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
-duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);  /* XXX: duk_uarridx_t? */
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
+DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
+DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
+DUK_INTERNAL_DECL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags);
+DUK_INTERNAL_DECL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length);  /* XXX: duk_uarridx_t? */
+DUK_INTERNAL_DECL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);  /* XXX: duk_uarridx_t? */
 
 /* Object built-in methods */
-duk_ret_t duk_hobject_object_define_property(duk_context *ctx);
-duk_ret_t duk_hobject_object_define_properties(duk_context *ctx);
-duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
-void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
-duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen);
-duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_define_property(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_define_properties(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags);
 
 /* internal properties */
-duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
-duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
-duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
+DUK_INTERNAL_DECL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj);
 
 /* hobject management functions */
-void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
 /* ES6 proxy */
 #if defined(DUK_USE_ES6_PROXY)
-duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
 #endif
 
 /* enumeration */
-void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags);
-duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags);
-duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value);
+DUK_INTERNAL_DECL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value);
 
 /* macros */
-void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
+DUK_INTERNAL_DECL void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
 
 /* finalization */
-void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
 
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)
-void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
-duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
+DUK_INTERNAL_DECL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
 /* misc */
-duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */

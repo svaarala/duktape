@@ -8,7 +8,7 @@
 /* arbitrary remove only works with double linked heap, and is only required by
  * reference counting so far.
  */
-void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
 
 	if (DUK_HEAPHDR_GET_PREV(hdr)) {
@@ -24,7 +24,7 @@ void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 }
 #endif
 
-void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
 
 #ifdef DUK_USE_DOUBLE_LINKED_HEAP
@@ -39,7 +39,7 @@ void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 }
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
-void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
+DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 	/* Copy currently active interrupt counter from the active thread
 	 * back to the heap structure.  It doesn't need to be copied to
 	 * the target thread, as the bytecode executor does that when it

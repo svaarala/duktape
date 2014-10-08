@@ -23,7 +23,7 @@
 #include "duk_internal.h"
 
 /* check that there is space for at least one new entry */
-void duk_hthread_callstack_grow(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	duk_size_t old_size;
 	duk_size_t new_size;
 
@@ -56,7 +56,7 @@ void duk_hthread_callstack_grow(duk_hthread *thr) {
 	/* note: any entries above the callstack top are garbage and not zeroed */
 }
 
-void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	duk_size_t new_size;
 	duk_activation *p;
 
@@ -90,7 +90,7 @@ void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	/* note: any entries above the callstack top are garbage and not zeroed */
 }
 
-void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 	duk_size_t idx;
 
 	DUK_DDD(DUK_DDDPRINT("unwind callstack top of thread %p from %ld to %ld",
@@ -293,7 +293,7 @@ void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 	 */
 }
 
-void duk_hthread_catchstack_grow(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	duk_size_t old_size;
 	duk_size_t new_size;
 
@@ -326,7 +326,7 @@ void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	/* note: any entries above the catchstack top are garbage and not zeroed */
 }
 
-void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	duk_size_t new_size;
 	duk_catcher *p;
 
@@ -360,7 +360,7 @@ void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	/* note: any entries above the catchstack top are garbage and not zeroed */
 }
 
-void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
 	duk_size_t idx;
 
 	DUK_DDD(DUK_DDDPRINT("unwind catchstack top of thread %p from %ld to %ld",

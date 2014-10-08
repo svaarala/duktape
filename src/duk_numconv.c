@@ -32,7 +32,7 @@
  *  bounded.
  */
 
-static const duk_uint8_t duk__str2num_digits_for_radix[] = {
+DUK_LOCAL const duk_uint8_t duk__str2num_digits_for_radix[] = {
 	69, 44, 35, 30, 27, 25, 23, 22, 20, 20,    /* 2 to 11 */
 	20, 19, 19, 18, 18, 17, 17, 17, 16, 16,    /* 12 to 21 */
 	16, 16, 16, 15, 15, 15, 15, 15, 15, 14,    /* 22 to 31 */
@@ -44,7 +44,7 @@ typedef struct {
 	duk_int16_t lower;
 } duk__exp_limits;
 
-static const duk__exp_limits duk__str2num_exp_limits[] = {
+DUK_LOCAL const duk__exp_limits duk__str2num_exp_limits[] = {
 	{ 957, -1147 }, { 605, -725 },  { 479, -575 },  { 414, -496 },
 	{ 372, -446 },  { 342, -411 },  { 321, -384 },  { 304, -364 },
 	{ 291, -346 },  { 279, -334 },  { 268, -323 },  { 260, -312 },
@@ -86,7 +86,7 @@ typedef struct {
 } duk__bigint;
 
 #ifdef DUK_USE_DDDPRINT
-static void duk__bi_print(const char *name, duk__bigint *x) {
+DUK_LOCAL void duk__bi_print(const char *name, duk__bigint *x) {
 	/* Overestimate required size; debug code so not critical to be tight. */
 	char buf[DUK__BI_MAX_PARTS * 9 + 64];
 	char *p = buf;
@@ -106,14 +106,14 @@ static void duk__bi_print(const char *name, duk__bigint *x) {
 #endif
 
 #ifdef DUK_USE_ASSERTIONS
-static duk_small_int_t duk__bi_is_valid(duk__bigint *x) {
+DUK_LOCAL duk_small_int_t duk__bi_is_valid(duk__bigint *x) {
 	return (duk_small_int_t)
 	       ( ((x->n >= 0) && (x->n <= DUK__BI_MAX_PARTS)) /* is valid size */ &&
 	         ((x->n == 0) || (x->v[x->n - 1] != 0)) /* is normalized */ );
 }
 #endif
 
-static void duk__bi_normalize(duk__bigint *x) {
+DUK_LOCAL void duk__bi_normalize(duk__bigint *x) {
 	duk_small_int_t i;
 
 	for (i = x->n - 1; i >= 0; i--) {
@@ -128,7 +128,7 @@ static void duk__bi_normalize(duk__bigint *x) {
 }
 
 /* x <- y */
-static void duk__bi_copy(duk__bigint *x, duk__bigint *y) {
+DUK_LOCAL void duk__bi_copy(duk__bigint *x, duk__bigint *y) {
 	duk_small_int_t n;
 
 	n = y->n;
@@ -139,7 +139,7 @@ static void duk__bi_copy(duk__bigint *x, duk__bigint *y) {
 	DUK_MEMCPY((void *) x->v, (void *) y->v, (size_t) (sizeof(duk_uint32_t) * n));
 }
 
-static void duk__bi_set_small(duk__bigint *x, duk_uint32_t v) {
+DUK_LOCAL void duk__bi_set_small(duk__bigint *x, duk_uint32_t v) {
 	if (v == 0U) {
 		x->n = 0;
 	} else {
@@ -153,7 +153,7 @@ static void duk__bi_set_small(duk__bigint *x, duk_uint32_t v) {
  *                0  <=>  x == y
  *               >0  <=>  x > y
  */
-static int duk__bi_compare(duk__bigint *x, duk__bigint *y) {
+DUK_LOCAL int duk__bi_compare(duk__bigint *x, duk__bigint *y) {
 	duk_small_int_t i, nx, ny;
 	duk_uint32_t tx, ty;
 
@@ -191,7 +191,7 @@ static int duk__bi_compare(duk__bigint *x, duk__bigint *y) {
 
 /* x <- y + z */
 #ifdef DUK_USE_64BIT_OPS
-static void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
+DUK_LOCAL void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	duk_uint64_t tmp;
 	duk_small_int_t i, ny, nz;
 
@@ -226,7 +226,7 @@ static void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	DUK_ASSERT(duk__bi_is_valid(x));
 }
 #else  /* DUK_USE_64BIT_OPS */
-static void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
+DUK_LOCAL void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	duk_uint32_t carry, tmp1, tmp2;
 	duk_small_int_t i, ny, nz;
 
@@ -279,7 +279,7 @@ static void duk__bi_add(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 #endif  /* DUK_USE_64BIT_OPS */
 
 /* x <- y + z */
-static void duk__bi_add_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
+DUK_LOCAL void duk__bi_add_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 	duk__bigint tmp;
 
 	DUK_ASSERT(duk__bi_is_valid(y));
@@ -293,7 +293,7 @@ static void duk__bi_add_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 
 #if 0  /* unused */
 /* x <- x + y, use t as temp */
-static void duk__bi_add_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
+DUK_LOCAL void duk__bi_add_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
 	duk__bi_add(t, x, y);
 	duk__bi_copy(x, t);
 }
@@ -301,7 +301,7 @@ static void duk__bi_add_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
 
 /* x <- y - z, require x >= y => z >= 0, i.e. y >= z */
 #ifdef DUK_USE_64BIT_OPS
-static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
+DUK_LOCAL void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	duk_small_int_t i, ny, nz;
 	duk_uint32_t ty, tz;
 	duk_int64_t tmp;
@@ -331,7 +331,7 @@ static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	DUK_ASSERT(duk__bi_is_valid(x));
 }
 #else
-static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
+DUK_LOCAL void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	duk_small_int_t i, ny, nz;
 	duk_uint32_t tmp1, tmp2, borrow;
 
@@ -375,7 +375,7 @@ static void duk__bi_sub(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 
 #if 0  /* unused */
 /* x <- y - z */
-static void duk__bi_sub_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
+DUK_LOCAL void duk__bi_sub_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 	duk__bigint tmp;
 
 	DUK_ASSERT(duk__bi_is_valid(y));
@@ -389,13 +389,13 @@ static void duk__bi_sub_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 #endif
 
 /* x <- x - y, use t as temp */
-static void duk__bi_sub_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
+DUK_LOCAL void duk__bi_sub_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
 	duk__bi_sub(t, x, y);
 	duk__bi_copy(x, t);
 }
 
 /* x <- y * z */
-static void duk__bi_mul(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
+DUK_LOCAL void duk__bi_mul(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 	duk_small_int_t i, j, nx, nz;
 
 	DUK_ASSERT(duk__bi_is_valid(y));
@@ -509,7 +509,7 @@ static void duk__bi_mul(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 }
 
 /* x <- y * z */
-static void duk__bi_mul_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
+DUK_LOCAL void duk__bi_mul_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 	duk__bigint tmp;
 
 	DUK_ASSERT(duk__bi_is_valid(y));
@@ -522,23 +522,23 @@ static void duk__bi_mul_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
 }
 
 /* x <- x * y, use t as temp */
-static void duk__bi_mul_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
+DUK_LOCAL void duk__bi_mul_copy(duk__bigint *x, duk__bigint *y, duk__bigint *t) {
 	duk__bi_mul(t, x, y);
 	duk__bi_copy(x, t);
 }
 
 /* x <- x * y, use t as temp */
-static void duk__bi_mul_small_copy(duk__bigint *x, duk_uint32_t y, duk__bigint *t) {
+DUK_LOCAL void duk__bi_mul_small_copy(duk__bigint *x, duk_uint32_t y, duk__bigint *t) {
 	duk__bi_mul_small(t, x, y);
 	duk__bi_copy(x, t);
 }
 
-static int duk__bi_is_even(duk__bigint *x) {
+DUK_LOCAL int duk__bi_is_even(duk__bigint *x) {
 	DUK_ASSERT(duk__bi_is_valid(x));
 	return (x->n == 0) || ((x->v[0] & 0x01) == 0);
 }
 
-static int duk__bi_is_zero(duk__bigint *x) {
+DUK_LOCAL int duk__bi_is_zero(duk__bigint *x) {
 	DUK_ASSERT(duk__bi_is_valid(x));
 	return (x->n == 0);  /* this is the case for normalized numbers */
 }
@@ -549,14 +549,14 @@ static int duk__bi_is_zero(duk__bigint *x) {
  *
  *     1000........000    (52 zeroes; only "hidden bit" is set)
  */
-static duk_small_int_t duk__bi_is_2to52(duk__bigint *x) {
+DUK_LOCAL duk_small_int_t duk__bi_is_2to52(duk__bigint *x) {
 	DUK_ASSERT(duk__bi_is_valid(x));
 	return (duk_small_int_t)
 	        (x->n == 2) && (x->v[0] == 0U) && (x->v[1] == (1U << (52-32)));
 }
 
 /* x <- (1<<y) */
-static void duk__bi_twoexp(duk__bigint *x, duk_small_int_t y) {
+DUK_LOCAL void duk__bi_twoexp(duk__bigint *x, duk_small_int_t y) {
 	duk_small_int_t n, r;
 
 	n = (y / 32) + 1;
@@ -568,7 +568,7 @@ static void duk__bi_twoexp(duk__bigint *x, duk_small_int_t y) {
 }
 
 /* x <- b^y; use t1 and t2 as temps */
-static void duk__bi_exp_small(duk__bigint *x, duk_small_int_t b, duk_small_int_t y, duk__bigint *t1, duk__bigint *t2) {
+DUK_LOCAL void duk__bi_exp_small(duk__bigint *x, duk_small_int_t b, duk_small_int_t y, duk__bigint *t1, duk__bigint *t2) {
 	/* Fast path the binary case */
 
 	DUK_ASSERT(x != t1 && x != t2 && t1 != t2);  /* distinct bignums, easy mistake to make */
@@ -670,7 +670,7 @@ typedef struct {
 		((nc_ctx)->digits[(preinc_idx) - 1]) = (duk_uint8_t) (x); \
 	} while (0)
 
-static duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, duk_small_int_t radix) {
+DUK_LOCAL duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, duk_small_int_t radix) {
 	duk_uint8_t *p;
 	duk_size_t len;
 	duk_small_int_t dig;
@@ -703,7 +703,7 @@ static duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x, d
 	return len;
 }
 
-static void duk__dragon4_prepare(duk__numconv_stringify_ctx *nc_ctx) {
+DUK_LOCAL void duk__dragon4_prepare(duk__numconv_stringify_ctx *nc_ctx) {
 	duk_small_int_t lowest_mantissa;
 
 #if 1
@@ -845,7 +845,7 @@ static void duk__dragon4_prepare(duk__numconv_stringify_ctx *nc_ctx) {
 	}
 }
 
-static void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
+DUK_LOCAL void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
 	duk_small_int_t k = 0;
 
 	/* This is essentially the 'scale' algorithm, with recursion removed.
@@ -950,7 +950,7 @@ static void duk__dragon4_scale(duk__numconv_stringify_ctx *nc_ctx) {
 	DUK__BI_PRINT("mm(final)", &nc_ctx->mm);
 }
 
-static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
+DUK_LOCAL void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 	duk_small_int_t tc1, tc2;    /* terminating conditions */
 	duk_small_int_t d;           /* current digit */
 	duk_small_int_t count = 0;   /* digit count */
@@ -1125,7 +1125,7 @@ static void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
  * (it is updated only if carry overflows over the first digit and an
  * extra digit is prepended).
  */
-static duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify_ctx *nc_ctx, duk_small_int_t round_idx) {
+DUK_LOCAL duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify_ctx *nc_ctx, duk_small_int_t round_idx) {
 	duk_small_int_t t;
 	duk_uint8_t *p;
 	duk_uint8_t roundup_limit;
@@ -1196,7 +1196,7 @@ static duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify_ct
 
 #define DUK__NO_EXP  (65536)  /* arbitrary marker, outside valid exp range */
 
-static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
+DUK_LOCAL void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
                                           duk_context *ctx,
                                           duk_small_int_t radix,
                                           duk_small_int_t digits,
@@ -1344,7 +1344,7 @@ static void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
  *  Conversion helpers
  */
 
-static void duk__dragon4_double_to_ctx(duk__numconv_stringify_ctx *nc_ctx, duk_double_t x) {
+DUK_LOCAL void duk__dragon4_double_to_ctx(duk__numconv_stringify_ctx *nc_ctx, duk_double_t x) {
 	duk_double_union u;
 	duk_uint32_t tmp;
 	duk_small_int_t expt;
@@ -1389,7 +1389,7 @@ static void duk__dragon4_double_to_ctx(duk__numconv_stringify_ctx *nc_ctx, duk_d
 	nc_ctx->e = expt;
 }
 
-static void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t *x) {
+DUK_LOCAL void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_double_t *x) {
 	duk_double_union u;
 	duk_small_int_t expt;
 	duk_small_int_t i;
@@ -1538,7 +1538,7 @@ static void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, duk_d
  *  Output: [ string ]
  */
 
-void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags) {
+DUK_INTERNAL void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags) {
 	duk_double_t x;
 	duk_small_int_t c;
 	duk_small_int_t neg;
@@ -1741,7 +1741,7 @@ void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_in
  *  fails due to an internal error, an InternalError is thrown.
  */
 
-void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t flags) {
+DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__numconv_stringify_ctx nc_ctx_alloc;  /* large context; around 2kB now */
 	duk__numconv_stringify_ctx *nc_ctx = &nc_ctx_alloc;

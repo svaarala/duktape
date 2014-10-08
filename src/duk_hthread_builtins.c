@@ -43,7 +43,7 @@
  *  by genbuiltins.py.
  */
 
-void duk_hthread_create_builtin_objects(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
@@ -586,7 +586,7 @@ void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	DUK_ASSERT_TOP(ctx, 0);
 }
 
-void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to) {
+DUK_INTERNAL void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to) {
 	duk_small_uint_t i;
 
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {

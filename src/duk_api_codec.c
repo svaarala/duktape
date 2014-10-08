@@ -7,8 +7,8 @@
 #include "duk_internal.h"
 
 /* dst length must be exactly ceil(len/3)*4 */
-static void duk__base64_encode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
-                                      duk_uint8_t *dst, duk_uint8_t *dst_end) {
+DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
+                                         duk_uint8_t *dst, duk_uint8_t *dst_end) {
 	duk_small_uint_t i, snip;
 	duk_uint_fast32_t t;
 	duk_uint_fast8_t x, y;
@@ -64,8 +64,8 @@ static void duk__base64_encode_helper(const duk_uint8_t *src, const duk_uint8_t 
 	}
 }
 
-static duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
-                                            duk_uint8_t *dst, duk_uint8_t *dst_end, duk_uint8_t **out_dst_final) {
+DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk_uint8_t *src_end,
+                                               duk_uint8_t *dst, duk_uint8_t *dst_end, duk_uint8_t **out_dst_final) {
 	duk_uint_fast32_t t;
 	duk_uint_fast8_t x, y;
 	duk_small_uint_t group_idx;
@@ -164,7 +164,7 @@ static duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk_ui
 	return 0;
 }
 
-const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_uint8_t *src;
 	duk_size_t srclen;
@@ -203,7 +203,7 @@ const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	return NULL;  /* never here */
 }
 
-void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *src;
 	duk_size_t srclen;
@@ -246,7 +246,7 @@ void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BASE64_DECODE_FAILED);
 }
 
-const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	duk_uint8_t *data;
 	duk_size_t len;
 	duk_size_t i;
@@ -275,7 +275,7 @@ const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	return ret;
 }
 
-void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *str;
 	duk_size_t len;
@@ -321,7 +321,7 @@ void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_HEX_DECODE_FAILED);
 }
 
-const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
 	duk_idx_t top_at_entry = duk_get_top(ctx);
 #endif
@@ -342,7 +342,7 @@ const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 	return ret;
 }
 
-void duk_json_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
 	duk_idx_t top_at_entry = duk_get_top(ctx);
 #endif

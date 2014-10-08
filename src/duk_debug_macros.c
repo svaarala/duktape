@@ -15,13 +15,13 @@
 #include <stdarg.h>
 
 /* for one-char summaries (usable for e.g. valstack) */
-char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
-duk_int_t duk_debug_summary_idx;
+DUK_INTERNAL char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
+DUK_INTERNAL duk_int_t duk_debug_summary_idx;
 
 #define DUK__DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
-static char duk__debug_buf[DUK__DEBUG_BUFSIZE];
+DUK_LOCAL char duk__debug_buf[DUK__DEBUG_BUFSIZE];
 
-static const char *duk__get_level_string(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_level_string(duk_small_int_t level) {
 	switch ((int) level) {
 	case DUK_LEVEL_DEBUG:
 		return "D";
@@ -42,12 +42,12 @@ static const char *duk__get_level_string(duk_small_int_t level) {
 #define DUK__TERM_BLUE     "\x1b[34m"
 #define DUK__TERM_RED      "\x1b[31m"
 
-static const char *duk__get_term_1(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_1(duk_small_int_t level) {
 	DUK_UNREF(level);
 	return (const char *) DUK__TERM_RED;
 }
 
-static const char *duk__get_term_2(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_2(duk_small_int_t level) {
 	switch ((int) level) {
 	case DUK_LEVEL_DEBUG:
 		return (const char *) (DUK__TERM_RESET DUK__TERM_BRIGHT);
@@ -59,24 +59,24 @@ static const char *duk__get_term_2(duk_small_int_t level) {
 	return (const char *) DUK__TERM_RESET;
 }
 
-static const char *duk__get_term_3(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_3(duk_small_int_t level) {
 	DUK_UNREF(level);
 	return (const char *) DUK__TERM_RESET;
 }
 
 #else
 
-static const char *duk__get_term_1(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_1(duk_small_int_t level) {
 	DUK_UNREF(level);
 	return (const char *) "";
 }
 
-static const char *duk__get_term_2(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_2(duk_small_int_t level) {
 	DUK_UNREF(level);
 	return (const char *) "";
 }
 
-static const char *duk__get_term_3(duk_small_int_t level) {
+DUK_LOCAL const char *duk__get_term_3(duk_small_int_t level) {
 	DUK_UNREF(level);
 	return (const char *) "";
 }
@@ -85,7 +85,7 @@ static const char *duk__get_term_3(duk_small_int_t level) {
 
 #ifdef DUK_USE_VARIADIC_MACROS
 
-void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, char *fmt, ...) {
+DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, char *fmt, ...) {
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -122,12 +122,12 @@ void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, cons
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 
-char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
-char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
-char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
-duk_small_int_t duk_debug_level_stash;
+DUK_INTERNAL char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
+DUK_INTERNAL char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
+DUK_INTERNAL char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
+DUK_INTERNAL duk_small_int_t duk_debug_level_stash;
 
-void duk_debug_log(char *fmt, ...) {
+DUK_INTERNAL void duk_debug_log(char *fmt, ...) {
 	va_list ap;
 	duk_small_int_t level = duk_debug_level_stash;
 

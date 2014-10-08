@@ -7,7 +7,7 @@
 
 #ifdef DUK_USE_DEBUG
 
-void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length) {
+DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length) {
 	duk_size_t avail;
 	duk_size_t copylen;
 
@@ -22,15 +22,15 @@ void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t lengt
 	fb->offset += copylen;
 }
 
-void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x) {
+DUK_INTERNAL void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x) {
 	duk_fb_put_bytes(fb, &x, 1);
 }
 
-void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x) {
+DUK_INTERNAL void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x) {
 	duk_fb_put_bytes(fb, (duk_uint8_t *) x, (duk_size_t) DUK_STRLEN(x));
 }
 
-void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
+DUK_INTERNAL void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 	duk_size_t avail;
 	va_list ap;
 
@@ -55,14 +55,14 @@ void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 	va_end(ap);
 }
 
-void duk_fb_put_funcptr(duk_fixedbuffer *fb, duk_uint8_t *fptr, duk_size_t fptr_size) {
+DUK_INTERNAL void duk_fb_put_funcptr(duk_fixedbuffer *fb, duk_uint8_t *fptr, duk_size_t fptr_size) {
 	char buf[64+1];
 	duk_debug_format_funcptr(buf, sizeof(buf), fptr, fptr_size);
 	buf[sizeof(buf) - 1] = (char) 0;
 	duk_fb_put_cstring(fb, buf);
 }
 
-duk_bool_t duk_fb_is_full(duk_fixedbuffer *fb) {
+DUK_INTERNAL duk_bool_t duk_fb_is_full(duk_fixedbuffer *fb) {
 	return (fb->offset >= fb->length);
 }
 

@@ -8,7 +8,7 @@
 
 #include "duk_internal.h"
 
-static void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t hobject_flags) {
+DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t hobject_flags) {
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	obj->p = NULL;
 #endif
@@ -38,7 +38,7 @@ static void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t 
  *  count before invoking any operation that might require memory allocation.
  */
 
-duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+DUK_INTERNAL duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	duk_hobject *res;
 
 	DUK_ASSERT(heap != NULL);
@@ -59,7 +59,7 @@ duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	return res;
 }
 
-duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+DUK_INTERNAL duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	duk_hcompiledfunction *res;
 
 	res = (duk_hcompiledfunction *) DUK_ALLOC(heap, sizeof(duk_hcompiledfunction));
@@ -79,7 +79,7 @@ duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t ho
 	return res;
 }
 
-duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+DUK_INTERNAL duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	duk_hnativefunction *res;
 
 	res = (duk_hnativefunction *) DUK_ALLOC(heap, sizeof(duk_hnativefunction));
@@ -105,7 +105,7 @@ duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobjec
  *  another thread.
  */
 
-duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	duk_hthread *res;
 
 	res = (duk_hthread *) DUK_ALLOC(heap, sizeof(duk_hthread));
@@ -145,7 +145,7 @@ duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 }
 
 #if 0  /* unused now */
-duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags) {
+DUK_INTERNAL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags) {
 	duk_hobject *res = duk_hobject_alloc(thr->heap, hobject_flags);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to allocate an object");

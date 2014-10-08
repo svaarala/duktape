@@ -12,7 +12,7 @@
 #if defined(DUK_USE_PC2LINE)
 
 /* Generate pc2line data for an instruction sequence, leaving a buffer on stack top. */
-void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length) {
+DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hbuffer_dynamic *h_buf;
 	duk_bitencoder_ctx be_ctx_alloc;
@@ -126,7 +126,7 @@ void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_
  * it will map to a large PC which is out of bounds and causes a zero to be
  * returned.
  */
-static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
+DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
 	duk_bitdecoder_ctx bd_ctx_alloc;
 	duk_bitdecoder_ctx *bd_ctx = &bd_ctx_alloc;
 	duk_uint32_t *hdr;
@@ -215,7 +215,7 @@ static duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, 
 	return 0;
 }
 
-duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc) {
+DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc) {
 	duk_hbuffer_fixed *pc2line;
 	duk_uint_fast32_t line;
 

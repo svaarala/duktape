@@ -47,7 +47,7 @@
  *  (Compiles to about 160 bytes now as a stand-alone function.)
  */
 
-static void duk__sort_array_indices(duk_hobject *h_obj) {
+DUK_LOCAL void duk__sort_array_indices(duk_hobject *h_obj) {
 	duk_hstring **keys;
 	duk_hstring **p_curr, **p_insert, **p_end;
 	duk_hstring *h_curr;
@@ -159,7 +159,7 @@ static void duk__sort_array_indices(duk_hobject *h_obj) {
  *  scan would be needed to eliminate duplicates found in the prototype chain.
  */
 
-void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags) {
+DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *enum_target;
 	duk_hobject *curr;
@@ -454,7 +454,7 @@ void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags
  *
  *  Returns zero without pushing anything on the stack otherwise.
  */
-duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
+DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *e;
 	duk_hobject *enum_target;
@@ -550,7 +550,7 @@ duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value) {
  *  described in E5 Section 15.2.3.14.
  */
 
-duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags) {
+DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags) {
 	duk_hobject *e;
 	duk_uint_fast32_t i;
 	duk_uint_fast32_t idx;

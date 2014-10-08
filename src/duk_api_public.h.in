@@ -204,8 +204,8 @@ struct duk_number_list_entry {
  */
 
 #ifndef DUK_API_VARIADIC_MACROS
-extern const char *duk_api_global_filename;
-extern duk_int_t duk_api_global_line;
+DUK_EXTERNAL_DECL const char *duk_api_global_filename;
+DUK_EXTERNAL_DECL duk_int_t duk_api_global_line;
 #endif
 
 /*

@@ -25,11 +25,11 @@
  *  because they're used for more than just codepoints.
  */
 
-static duk_uint32_t duk__bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
+DUK_LOCAL duk_uint32_t duk__bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
 	return (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 }
 
-static duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
+DUK_LOCAL duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
 	duk_uint32_t t;
 
 	/* signed integer encoding needed to work with UTF-8 */
@@ -41,7 +41,7 @@ static duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc)
 	}
 }
 
-static duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
+DUK_LOCAL duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
 	duk_uint8_t *p;
 
 	/* Note: allow backtracking from p == ptr_end */
@@ -71,7 +71,7 @@ static duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk
 	return NULL;  /* never here */
 }
 
-static duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
+DUK_LOCAL duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
 	duk_uint8_t *p;
 
 	p = *ptr;
@@ -110,7 +110,7 @@ static duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_u
  * itself is never modified, and captures always record non-canonicalized
  * characters even in case-insensitive matching.
  */
-static duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp) {
+DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp) {
 	duk_codepoint_t res = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
 	if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
 		res = duk_unicode_re_canonicalize_char(re_ctx->thr, res);
@@ -118,12 +118,12 @@ static duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *
 	return res;
 }
 
-static duk_uint8_t *duk__inp_backtrack(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp, duk_uint_fast32_t count) {
+DUK_LOCAL duk_uint8_t *duk__inp_backtrack(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp, duk_uint_fast32_t count) {
 	return duk__utf8_backtrack(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end, count);
 }
 
 /* Backtrack utf-8 input and return a (possibly canonicalized) input character. */
-static duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *sp) {
+DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *sp) {
 	/* note: caller 'sp' is intentionally not updated here */
 	(void) duk__inp_backtrack(re_ctx, &sp, (duk_uint_fast32_t) 1);
 	return duk__inp_get_cp(re_ctx, &sp);
@@ -140,7 +140,7 @@ static duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint
  *  regexp execution.
  */
 
-static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
+DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
 	}
@@ -653,7 +653,7 @@ static duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *p
  *  Output stack: [ ... result ]
  */
 
-static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_global) {
+DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_global) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_re_matcher_ctx re_ctx;
 	duk_hobject *h_regexp;
@@ -981,14 +981,14 @@ static void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_glo
 	 */
 }
 
-void duk_regexp_match(duk_hthread *thr) {
+DUK_INTERNAL void duk_regexp_match(duk_hthread *thr) {
 	duk__regexp_match_helper(thr, 0 /*force_global*/);
 }
 
 /* This variant is needed by String.prototype.split(); it needs to perform
  * global-style matching on a cloned RegExp which is potentially non-global.
  */
-void duk_regexp_match_force_global(duk_hthread *thr) {
+DUK_INTERNAL void duk_regexp_match_force_global(duk_hthread *thr) {
 	duk__regexp_match_helper(thr, 1 /*force_global*/);
 }
 

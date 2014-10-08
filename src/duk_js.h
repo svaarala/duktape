@@ -22,24 +22,24 @@
 #define DUK_COMPARE_FLAG_NEGATE              (1 << 1)  /* negate result */
 
 /* conversions, coercions, comparison, etc */
-duk_bool_t duk_js_toboolean(duk_tval *tv);
-duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv);
-duk_double_t duk_js_tointeger_number(duk_double_t x);
-duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv);
-duk_uint32_t duk_js_touint32_number(duk_double_t x);
-duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv);
-duk_int32_t duk_js_toint32_number(duk_double_t x);
-duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv);
-duk_uint16_t duk_js_touint16_number(duk_double_t x);
-duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv);
-duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
-duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
-duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
-duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);
-duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
-duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
-duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
-duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
+DUK_INTERNAL_DECL duk_bool_t duk_js_toboolean(duk_tval *tv);
+DUK_INTERNAL_DECL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_double_t duk_js_tointeger_number(duk_double_t x);
+DUK_INTERNAL_DECL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_uint32_t duk_js_touint32_number(duk_double_t x);
+DUK_INTERNAL_DECL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_int32_t duk_js_toint32_number(duk_double_t x);
+DUK_INTERNAL_DECL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16_number(duk_double_t x);
+DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
+DUK_INTERNAL_DECL duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
+DUK_INTERNAL_DECL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
+DUK_INTERNAL_DECL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);
+DUK_INTERNAL_DECL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
+DUK_INTERNAL_DECL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
+DUK_INTERNAL_DECL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
+DUK_INTERNAL_DECL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 
 #define duk_js_equals(thr,tv_x,tv_y) \
 	duk_js_equals_helper((thr), (tv_x), (tv_y), 0)
@@ -65,27 +65,28 @@ duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 	duk_js_compare_helper((thr), (tv_x), (tv_y), DUK_COMPARE_FLAG_EVAL_LEFT_FIRST | DUK_COMPARE_FLAG_NEGATE)
 
 /* identifiers and environment handling */
-duk_bool_t duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_bool_t throw_flag);
-duk_bool_t duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_bool_t throw_flag);
-void duk_js_putvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_tval *val, duk_bool_t strict);
-void duk_js_putvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_bool_t strict);
-duk_bool_t duk_js_delvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name);
-duk_bool_t duk_js_delvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name);
-duk_bool_t duk_js_declvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_small_int_t prop_flags, duk_bool_t is_func_decl);
-void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_activation *act);
-void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase);
-duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t idx_bottom);
+DUK_INTERNAL_DECL duk_bool_t duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL duk_bool_t duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL void duk_js_putvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_tval *val, duk_bool_t strict);
+DUK_INTERNAL_DECL void duk_js_putvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_bool_t strict);
+DUK_INTERNAL_DECL duk_bool_t duk_js_delvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name);
+DUK_INTERNAL_DECL duk_bool_t duk_js_delvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name);
+DUK_INTERNAL_DECL duk_bool_t duk_js_declvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_small_int_t prop_flags, duk_bool_t is_func_decl);
+DUK_INTERNAL_DECL void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_activation *act);
+DUK_INTERNAL_DECL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase);
+DUK_INTERNAL_DECL duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t idx_bottom);
+DUK_INTERNAL_DECL
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
                          duk_hobject *outer_lex_env);
 
 /* call handling */
-duk_int_t duk_handle_call(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
-duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
-void duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
+DUK_INTERNAL_DECL duk_int_t duk_handle_call(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
+DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
+DUK_INTERNAL_DECL void duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
 
 /* bytecode execution */
-void duk_js_execute_bytecode(duk_hthread *entry_thread);
+DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *entry_thread);
 
 #endif  /* DUK_JS_H_INCLUDED */

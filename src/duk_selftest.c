@@ -37,7 +37,7 @@ typedef union {
  *  Various sanity checks for typing
  */
 
-static void duk__selftest_types(void) {
+DUK_LOCAL void duk__selftest_types(void) {
 	if (!(sizeof(duk_int8_t) == 1 &&
 	      sizeof(duk_uint8_t) == 1 &&
 	      sizeof(duk_int16_t) == 2 &&
@@ -68,7 +68,7 @@ static void duk__selftest_types(void) {
  *  Packed tval sanity
  */
 
-static void duk__selftest_packed_tval(void) {
+DUK_LOCAL void duk__selftest_packed_tval(void) {
 #if defined(DUK_USE_PACKED_TVAL)
 	if (sizeof(void *) > 4) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: packed duk_tval in use but sizeof(void *) > 4");
@@ -80,7 +80,7 @@ static void duk__selftest_packed_tval(void) {
  *  Two's complement arithmetic.
  */
 
-static void duk__selftest_twos_complement(void) {
+DUK_LOCAL void duk__selftest_twos_complement(void) {
 	volatile int test;
 	test = -1;
 	if (((duk_uint8_t *) &test)[0] != (duk_uint8_t) 0xff) {
@@ -94,7 +94,7 @@ static void duk__selftest_twos_complement(void) {
  *  defines.
  */
 
-static void duk__selftest_byte_order(void) {
+DUK_LOCAL void duk__selftest_byte_order(void) {
 	duk__test_u32_union u1;
 	duk__test_double_union u2;
 
@@ -138,7 +138,7 @@ static void duk__selftest_byte_order(void) {
  *  Basic double / byte union memory layout.
  */
 
-static void duk__selftest_double_union_size(void) {
+DUK_LOCAL void duk__selftest_double_union_size(void) {
 	if (sizeof(duk__test_double_union) != 8) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: invalid union size");
 	}
@@ -148,7 +148,7 @@ static void duk__selftest_double_union_size(void) {
  *  Union aliasing, see misc/clang_aliasing.c.
  */
 
-static void duk__selftest_double_aliasing(void) {
+DUK_LOCAL void duk__selftest_double_aliasing(void) {
 	duk__test_double_union a, b;
 
 	/* This testcase fails when Emscripten-generated code runs on Firefox.
@@ -189,7 +189,7 @@ static void duk__selftest_double_aliasing(void) {
  *  Zero sign, see misc/tcc_zerosign2.c.
  */
 
-static void duk__selftest_double_zero_sign(void) {
+DUK_LOCAL void duk__selftest_double_zero_sign(void) {
 	volatile duk__test_double_union a, b;
 
 	a.d = 0.0;
@@ -204,7 +204,7 @@ static void duk__selftest_double_zero_sign(void) {
  *  selftest ensures they're correctly detected and used.
  */
 
-static void duk__selftest_struct_align(void) {
+DUK_LOCAL void duk__selftest_struct_align(void) {
 #if defined(DUK_USE_ALIGN_4)
 	if ((sizeof(duk_hbuffer_fixed) % 4) != 0) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 4");
@@ -222,7 +222,7 @@ static void duk__selftest_struct_align(void) {
  *  Self test main
  */
 
-void duk_selftest_run_tests(void) {
+DUK_INTERNAL void duk_selftest_run_tests(void) {
 	duk__selftest_types();
 	duk__selftest_packed_tval();
 	duk__selftest_twos_complement();

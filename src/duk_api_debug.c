@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_push_context_dump(duk_context *ctx) {
+DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 	duk_idx_t idx;
 	duk_idx_t top;
 

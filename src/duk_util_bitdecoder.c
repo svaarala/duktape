@@ -8,7 +8,7 @@
  * When reading past bitstream end, zeroes are shifted in.  The result
  * is signed to match duk_bd_decode_flagged.
  */
-duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
+DUK_INTERNAL duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	duk_small_int_t shift;
 	duk_uint32_t mask;
 	duk_uint32_t tmp;
@@ -53,7 +53,7 @@ duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	return tmp;
 }
 
-duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
+DUK_INTERNAL duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
 	return (duk_small_int_t) duk_bd_decode(ctx, 1);
 }
 
@@ -61,7 +61,7 @@ duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
  * default value.  Return value is signed so that negative marker value can be
  * used by caller as a "not present" value.
  */
-duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value) {
+DUK_INTERNAL duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value) {
 	if (duk_bd_decode_flag(ctx)) {
 		return (duk_int32_t) duk_bd_decode(ctx, bits);
 	} else {

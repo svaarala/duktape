@@ -17,7 +17,7 @@
  *  object is about to be freed, such references need to be removed.
  */
 
-void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
+DUK_INTERNAL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
 	duk_small_int_t i;
 	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache *c = heap->strcache + i;
@@ -38,7 +38,7 @@ void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
  *  String scanning helpers
  */
 
-static duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
+DUK_LOCAL duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p++;
@@ -54,7 +54,7 @@ static duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_
 	return p;
 }
 
-static duk_uint8_t *duk__scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
+DUK_LOCAL duk_uint8_t *duk__scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p--;
@@ -82,7 +82,7 @@ static duk_uint8_t *duk__scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint
  *  Better typing might be to use duk_size_t.
  */
 
-duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset) {
+DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset) {
 	duk_heap *heap;
 	duk_strcache *sce;
 	duk_uint_fast32_t byte_offset;

@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_get_var(duk_context *ctx) {
+DUK_EXTERNAL void duk_get_var(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hstring *h_varname;
@@ -37,7 +37,7 @@ void duk_get_var(duk_context *ctx) {
 	return;
 }
 
-void duk_put_var(duk_context *ctx) {
+DUK_EXTERNAL void duk_put_var(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_hstring *h_varname;
@@ -71,12 +71,12 @@ void duk_put_var(duk_context *ctx) {
 	return;
 }
 
-duk_bool_t duk_del_var(duk_context *ctx) {
+DUK_EXTERNAL duk_bool_t duk_del_var(duk_context *ctx) {
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
 	return 0;
 }
 
-duk_bool_t duk_has_var(duk_context *ctx) {
+DUK_EXTERNAL duk_bool_t duk_has_var(duk_context *ctx) {
 	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
 	return 0;
 }

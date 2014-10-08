@@ -19,11 +19,12 @@
  *  DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS.
  */
 
-static void duk__create_arguments_object(duk_hthread *thr,
-                                         duk_hobject *func,
-                                         duk_hobject *varenv,
-                                         duk_idx_t idx_argbase,        /* idx of first argument on stack */
-                                         duk_idx_t num_stack_args) {   /* num args starting from idx_argbase */
+DUK_LOCAL
+void duk__create_arguments_object(duk_hthread *thr,
+                                  duk_hobject *func,
+                                  duk_hobject *varenv,
+                                  duk_idx_t idx_argbase,        /* idx of first argument on stack */
+                                  duk_idx_t num_stack_args) {   /* num args starting from idx_argbase */
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *arg;          /* 'arguments' */
 	duk_hobject *formals;      /* formals for 'func' (may be NULL if func is a C function) */
@@ -270,10 +271,11 @@ static void duk__create_arguments_object(duk_hthread *thr,
  * on top of the value stack.  This helper has a very strict dependency on
  * the shape of the input stack.
  */
-static void duk__handle_createargs_for_call(duk_hthread *thr,
-                                            duk_hobject *func,
-                                            duk_hobject *env,
-                                            duk_idx_t num_stack_args) {
+DUK_LOCAL
+void duk__handle_createargs_for_call(duk_hthread *thr,
+                                     duk_hobject *func,
+                                     duk_hobject *env,
+                                     duk_idx_t num_stack_args) {
 	duk_context *ctx = (duk_context *) thr;
 
 	DUK_DDD(DUK_DDDPRINT("creating arguments object for function call"));
@@ -316,11 +318,12 @@ static void duk__handle_createargs_for_call(duk_hthread *thr,
  *  function.  This would make call time handling much easier.
  */
 
-static void duk__handle_bound_chain_for_call(duk_hthread *thr,
-                                             duk_idx_t idx_func,
-                                             duk_idx_t *p_num_stack_args,   /* may be changed by call */
-                                             duk_hobject **p_func,    /* changed by call */
-                                             duk_bool_t is_constructor_call) {
+DUK_LOCAL
+void duk__handle_bound_chain_for_call(duk_hthread *thr,
+                                      duk_idx_t idx_func,
+                                      duk_idx_t *p_num_stack_args,   /* may be changed by call */
+                                      duk_hobject **p_func,    /* changed by call */
+                                      duk_bool_t is_constructor_call) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_idx_t num_stack_args;
 	duk_hobject *func;
@@ -412,9 +415,10 @@ static void duk__handle_bound_chain_for_call(duk_hthread *thr,
  *  assuming it does NOT have the DUK_HOBJECT_FLAG_NEWENV flag.
  */
 
-static void duk__handle_oldenv_for_call(duk_hthread *thr,
-                                        duk_hobject *func,
-                                        duk_activation *act) {
+DUK_LOCAL
+void duk__handle_oldenv_for_call(duk_hthread *thr,
+                                 duk_hobject *func,
+                                 duk_activation *act) {
 	duk_tval *tv;
 
 	DUK_ASSERT(thr != NULL);
@@ -451,7 +455,7 @@ static void duk__handle_oldenv_for_call(duk_hthread *thr,
  */
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
-static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
+DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
 	duk_tval *tv_caller;
 	duk_hobject *h_tmp;
 	duk_activation *act_callee;
@@ -552,9 +556,10 @@ static void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
  *  side effects, because ToObject() may be called.
  */
 
-static void duk__coerce_effective_this_binding(duk_hthread *thr,
-                                               duk_hobject *func,
-                                               duk_idx_t idx_this) {
+DUK_LOCAL
+void duk__coerce_effective_this_binding(duk_hthread *thr,
+                                        duk_hobject *func,
+                                        duk_idx_t idx_this) {
 	duk_context *ctx = (duk_context *) thr;
 
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
@@ -628,6 +633,7 @@ static void duk__coerce_effective_this_binding(duk_hthread *thr,
  *  call are not guaranteed to keep their value.
  */
 
+DUK_INTERNAL
 duk_int_t duk_handle_call(duk_hthread *thr,
                           duk_idx_t num_stack_args,
                           duk_small_uint_t call_flags) {
@@ -1403,7 +1409,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
  *  empty (below idx_retbase).
  */
 
-static void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_retbase, duk_idx_t num_stack_rets, duk_idx_t num_actual_rets) {
+DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_retbase, duk_idx_t num_stack_rets, duk_idx_t num_actual_rets) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_idx_t idx_rcbase;
 
@@ -1492,6 +1498,7 @@ static void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_retba
 
 /* XXX: bump preventcount by one for the duration of this call? */
 
+DUK_INTERNAL
 duk_int_t duk_handle_safe_call(duk_hthread *thr,
                                duk_safe_call_function func,
                                duk_idx_t num_stack_args,
@@ -1791,6 +1798,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
  *  is empty in case of an initial Duktape.Thread.resume().
  */
 
+DUK_INTERNAL
 void duk_handle_ecma_call_setup(duk_hthread *thr,
                                 duk_idx_t num_stack_args,
                                 duk_small_uint_t call_flags) {

@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	duk_hthread *new_thr;
 	duk_hobject *func;
 
@@ -46,7 +46,7 @@ duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
  *  Note: yield and resume handling is currently asymmetric.
  */
 
-duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *thr_resume;
 	duk_tval tv_tmp;
@@ -204,7 +204,7 @@ duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
  *  Note: yield and resume handling is currently asymmetric.
  */
 
-duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval tv_tmp;
 	duk_small_int_t is_error;
@@ -303,7 +303,7 @@ duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	return 0;  /* never here */
 }
 
-duk_ret_t duk_bi_thread_current(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_thread_current(duk_context *ctx) {
 	duk_push_current_thread(ctx);
 	return 1;
 }

@@ -7,7 +7,7 @@
 
 #include "duk_internal.h"
 
-void *duk_default_alloc_function(void *udata, duk_size_t size) {
+DUK_INTERNAL void *duk_default_alloc_function(void *udata, duk_size_t size) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_MALLOC(size);
@@ -16,7 +16,7 @@ void *duk_default_alloc_function(void *udata, duk_size_t size) {
 	return res;
 }
 
-void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize) {
+DUK_INTERNAL void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize) {
 	void *res;
 	DUK_UNREF(udata);
 	res = DUK_ANSI_REALLOC(ptr, newsize);
@@ -25,7 +25,7 @@ void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize) {
 	return res;
 }
 
-void duk_default_free_function(void *udata, void *ptr) {
+DUK_INTERNAL void duk_default_free_function(void *udata, void *ptr) {
 	DUK_DDD(DUK_DDDPRINT("default free function: %p", (void *) ptr));
 	DUK_UNREF(udata);
 	DUK_ANSI_FREE(ptr);

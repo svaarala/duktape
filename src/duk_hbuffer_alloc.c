@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynamic) {
+DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynamic) {
 	duk_hbuffer *res = NULL;
 	duk_size_t alloc_size;
 
@@ -76,7 +76,7 @@ duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynam
 
 /* For indirect allocs. */
 
-void *duk_hbuffer_get_dynalloc_ptr(void *ud) {
+DUK_INTERNAL void *duk_hbuffer_get_dynalloc_ptr(void *ud) {
 	duk_hbuffer_dynamic *buf = (duk_hbuffer_dynamic *) ud;
 	return (void *) buf->curr_alloc;
 }

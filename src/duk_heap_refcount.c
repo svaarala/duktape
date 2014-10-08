@@ -14,7 +14,7 @@
  *  Misc
  */
 
-static void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 	/* tail insert: don't disturb head in case refzero is running */
 
 	if (heap->refzero_list != NULL) {
@@ -51,7 +51,7 @@ static void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
  *  later.  This eliminates C recursion.
  */
 
-static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
+DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(h);
@@ -141,7 +141,7 @@ static void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
 	}
 }
 
-void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
 	DUK_ASSERT(hdr);
 
 	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
@@ -169,7 +169,7 @@ void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
  *  early and resume at a future alloc/decref/refzero.
  */
 
-static void duk__refzero_free_pending(duk_hthread *thr) {
+DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 	duk_heaphdr *h1, *h2;
 	duk_heap *heap;
 	duk_int_t count = 0;
@@ -318,7 +318,7 @@ static void duk__refzero_free_pending(duk_hthread *thr) {
  *
  */
 
-void duk_heap_tval_incref(duk_tval *tv) {
+DUK_INTERNAL void duk_heap_tval_incref(duk_tval *tv) {
 #if 0
 	DUK_DDD(DUK_DDDPRINT("tval incref %p (%ld->%ld): %!T",
 	                     (void *) tv,
@@ -341,7 +341,7 @@ void duk_heap_tval_incref(duk_tval *tv) {
 	}
 }
 
-void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
+DUK_INTERNAL void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 #if 0
 	DUK_DDD(DUK_DDDPRINT("tval decref %p (%ld->%ld): %!T",
 	                     (void *) tv,
@@ -359,7 +359,7 @@ void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
 	}
 }
 
-void duk_heap_heaphdr_incref(duk_heaphdr *h) {
+DUK_INTERNAL void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 #if 0
 	DUK_DDD(DUK_DDDPRINT("heaphdr incref %p (%ld->%ld): %!O",
 	                     (void *) h,
@@ -377,7 +377,7 @@ void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 	h->h_refcount++;
 }
 
-void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
+DUK_INTERNAL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	duk_heap *heap;
 
 #if 0

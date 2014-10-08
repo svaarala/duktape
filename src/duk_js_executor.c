@@ -8,14 +8,14 @@
  *  Local forward declarations
  */
 
-static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count);
+DUK_LOCAL_DECL void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count);
 
 /*
  *  Helper for finding the final non-bound function in a "bound function" chain.
  */
 
 /* XXX: overlap with other helpers, rework */
-static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
+DUK_LOCAL duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *func) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint_t sanity;
 
@@ -58,7 +58,7 @@ static duk_hobject *duk__find_nonbound_function(duk_hthread *thr, duk_hobject *f
  *  invalidated by any DECREF and almost any API call.
  */
 
-static duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
+DUK_LOCAL duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
 	/*
 	 *  Ecmascript modulus ('%') does not match IEEE 754 "remainder"
 	 *  operation (implemented by remainder() in C99) but does seem
@@ -70,7 +70,7 @@ static duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
 	return (duk_double_t) DUK_FMOD((double) d1, (double) d2);
 }
 
-static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
+DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
 	/*
 	 *  Addition operator is different from other arithmetic
 	 *  operations in that it also provides string concatenation.
@@ -156,7 +156,7 @@ static void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, 
 	}
 }
 
-static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_idx_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_idx_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -228,7 +228,7 @@ static void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Binary bitwise operations use different coercions (ToInt32, ToUint32)
 	 *  depending on the operation.  We coerce the arguments first using
@@ -323,7 +323,7 @@ static void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -388,7 +388,7 @@ static void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_u
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z) {
+DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z) {
 	/*
 	 *  E5 Section 11.4.8
 	 */
@@ -422,7 +422,7 @@ static void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
 }
 
-static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z) {
+DUK_LOCAL void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z) {
 	/*
 	 *  E5 Section 11.4.9
 	 */
@@ -472,7 +472,7 @@ static void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z
 #define DUK__LONGJMP_RETHROW   2  /* exit bytecode executor by rethrowing an error to caller */
 
 /* only called when act_idx points to an Ecmascript function */
-static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count) {
+DUK_LOCAL void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count) {
 	duk_hcompiledfunction *h_func;
 
 	DUK_ASSERT(thr != NULL);
@@ -509,7 +509,7 @@ static void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_sma
 	duk_set_top((duk_context *) thr, h_func->nregs);
 }
 
-static void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, duk_bool_t is_finally) {
+DUK_LOCAL void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, duk_bool_t is_finally) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv1;
@@ -644,7 +644,7 @@ static void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx, d
 	}
 }
 
-static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
+DUK_LOCAL void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 	duk_activation *act;
 
 	/* no callstack changes, no value stack changes */
@@ -675,7 +675,7 @@ static void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 /* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
  * return terminates a thread and yields to the resumer.
  */
-static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t act_idx) {
+DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t act_idx) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
@@ -702,9 +702,10 @@ static void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t
 	/* caller must change active thread, and set thr->resumer to NULL */
 }
 
-static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
-                                            duk_hthread *entry_thread,
-                                            duk_size_t entry_callstack_top) {
+DUK_LOCAL
+duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
+                                     duk_hthread *entry_thread,
+                                     duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_size_t entry_callstack_index;
 	duk_small_uint_t retval = DUK__LONGJMP_RESTART;
@@ -1295,10 +1296,11 @@ static duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 /* Try a fast return.  Return false if fails, so that a slow return can be done
  * instead.
  */
-static duk_bool_t duk__handle_fast_return(duk_hthread *thr,
-                                          duk_tval *tv_retval,
-                                          duk_hthread *entry_thread,
-                                          duk_size_t entry_callstack_top) {
+DUK_LOCAL
+duk_bool_t duk__handle_fast_return(duk_hthread *thr,
+                                   duk_tval *tv_retval,
+                                   duk_hthread *entry_thread,
+                                   duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
@@ -1368,7 +1370,7 @@ static duk_bool_t duk__handle_fast_return(duk_hthread *thr,
  */
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
-static void duk__executor_interrupt(duk_hthread *thr) {
+DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 	duk_int_t ctr;
 	duk_activation *act;
 	duk_hcompiledfunction *fun;
@@ -1469,7 +1471,7 @@ static void duk__executor_interrupt(duk_hthread *thr) {
 	} while (0)
 #endif
 
-void duk_js_execute_bytecode(duk_hthread *entry_thread) {
+DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	/* entry level info */
 	duk_size_t entry_callstack_top;
 	duk_int_t entry_call_recursion_depth;

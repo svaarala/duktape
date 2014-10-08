@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size) {
+DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
 

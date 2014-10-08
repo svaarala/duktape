@@ -21,9 +21,9 @@
  */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line) {
+DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line) {
 #else
-void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
+DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
 	duk_context *ctx = (duk_context *) thr;
 	duk_bool_t double_error = thr->heap->handling_error;
@@ -116,7 +116,7 @@ void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
  *  Helper for C function call negative return values.
  */
 
-void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
+DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
 	duk_context *ctx = (duk_context *) thr;
 	const char *msg;
 	duk_errcode_t code;

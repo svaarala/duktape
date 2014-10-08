@@ -404,17 +404,18 @@ struct duk_lexer_ctx {
  *  Prototypes
  */
 
-void duk_lexer_initctx(duk_lexer_ctx *lex_ctx);
+DUK_INTERNAL_DECL void duk_lexer_initctx(duk_lexer_ctx *lex_ctx);
 
-void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt);
+DUK_INTERNAL_DECL void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt);
 
+DUK_INTERNAL_DECL
 void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
                                       duk_bool_t strict_mode,
                                       duk_bool_t regexp_mode);
 #ifdef DUK_USE_REGEXP_SUPPORT
-void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token);
-void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata);
+DUK_INTERNAL_DECL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token);
+DUK_INTERNAL_DECL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata);
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
 #endif  /* DUK_LEXER_H_INCLUDED */

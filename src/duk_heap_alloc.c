@@ -21,7 +21,7 @@
  *  been already dealt with.
  */
 
-static void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
+DUK_LOCAL void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -52,7 +52,7 @@ static void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	}
 }
 
-static void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
+DUK_LOCAL void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -63,7 +63,7 @@ static void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	}
 }
 
-void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(heap);
 	DUK_ASSERT(hdr);
 
@@ -99,7 +99,7 @@ void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
  *  after this call.
  */
 
-static void duk__free_allocated(duk_heap *heap) {
+DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -118,7 +118,7 @@ static void duk__free_allocated(duk_heap *heap) {
 }
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-static void duk__free_refzero_list(duk_heap *heap) {
+DUK_LOCAL void duk__free_refzero_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -134,7 +134,7 @@ static void duk__free_refzero_list(duk_heap *heap) {
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-static void duk__free_markandsweep_finalize_list(duk_heap *heap) {
+DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -149,7 +149,7 @@ static void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 }
 #endif
 
-static void duk__free_stringtable(duk_heap *heap) {
+DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	duk_uint_fast32_t i;
 
 	/* strings are only tracked by stringtable */
@@ -175,7 +175,7 @@ static void duk__free_stringtable(duk_heap *heap) {
 	}
 }
 
-static void duk__free_run_finalizers(duk_heap *heap) {
+DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *curr;
 #ifdef DUK_USE_DEBUG
@@ -223,7 +223,7 @@ static void duk__free_run_finalizers(duk_heap *heap) {
 #endif
 }
 
-void duk_heap_free(duk_heap *heap) {
+DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
 
 	/* Execute finalizers before freeing the heap, even for reachable
@@ -275,7 +275,7 @@ void duk_heap_free(duk_heap *heap) {
  */
 
 /* intern built-in strings from precooked data (genstrings.py) */
-static int duk__init_heap_strings(duk_heap *heap) {
+DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
 	duk_small_uint_t i, j;
@@ -358,7 +358,7 @@ static int duk__init_heap_strings(duk_heap *heap) {
 	return 0;
 }
 
-static int duk__init_heap_thread(duk_heap *heap) {
+DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 
 	DUK_DD(DUK_DDPRINT("heap init: alloc heap thread"));
@@ -418,7 +418,7 @@ static int duk__init_heap_thread(duk_heap *heap) {
 		DUK__DUMPLM_UNSIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
 	} while(0)
 
-static void duk__dump_type_sizes(void) {
+DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK_D(DUK_DPRINT("sizeof()"));
 
 	/* basic platform types */
@@ -519,7 +519,7 @@ static void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_re_matcher_ctx);
 	DUK__DUMPSZ(duk_re_compiler_ctx);
 }
-static void duk__dump_type_limits(void) {
+DUK_LOCAL void duk__dump_type_limits(void) {
 	DUK_D(DUK_DPRINT("limits"));
 
 	/* basic types */
@@ -571,6 +571,7 @@ static void duk__dump_type_limits(void) {
 #undef DUK__DUMPLM_UNSIGNED
 #endif  /* DUK_USE_DEBUG */
 
+DUK_INTERNAL
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_realloc_function realloc_func,
                          duk_free_function free_func,

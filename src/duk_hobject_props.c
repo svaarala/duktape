@@ -76,16 +76,16 @@
 #define DUK__DESC_FLAG_PUSH_VALUE          (1 << 0)  /* push value to stack */
 #define DUK__DESC_FLAG_IGNORE_PROTOLOOP    (1 << 1)  /* don't throw for prototype loop */
 
-static duk_bool_t duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc);
-static void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc, duk_bool_t throw_flag);
-static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc);
+DUK_LOCAL_DECL duk_bool_t duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc);
+DUK_LOCAL_DECL void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc, duk_bool_t throw_flag);
+DUK_LOCAL_DECL void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc);
 
-static duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr, duk_hobject *obj, duk_uint32_t old_len, duk_uint32_t new_len, duk_uint32_t *out_result_len);
-static duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj);
+DUK_LOCAL_DECL duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr, duk_hobject *obj, duk_uint32_t old_len, duk_uint32_t new_len, duk_uint32_t *out_result_len);
+DUK_LOCAL_DECL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj);
 
-static duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
-static duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags);
-static duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
+DUK_LOCAL_DECL duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
+DUK_LOCAL_DECL duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags);
+DUK_LOCAL_DECL duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
 
 /*
  *  Misc helpers
@@ -95,7 +95,7 @@ static duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj,
  * DUK__NO_ARRAY_INDEX if the number is not whole or not a valid array
  * index.
  */
-static duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
+DUK_LOCAL duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
 	duk_double_t dbl;
 	duk_uint32_t idx;
 
@@ -116,7 +116,7 @@ static duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
 /* Push an arbitrary duk_tval to the stack, coerce it to string, and return
  * both a duk_hstring pointer and an array index (or DUK__NO_ARRAY_INDEX).
  */
-static duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_tval *tv, duk_hstring **out_h) {
+DUK_LOCAL duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_tval *tv, duk_hstring **out_h) {
 	duk_uint32_t arr_idx;
 	duk_hstring *h;
 
@@ -139,7 +139,7 @@ static duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_tval
  */
 
 /* Get default hash part size for a certain entry part size. */
-static duk_uint32_t duk__get_default_h_size(duk_uint32_t e_size) {
+DUK_LOCAL duk_uint32_t duk__get_default_h_size(duk_uint32_t e_size) {
 	DUK_ASSERT(e_size <= DUK_HOBJECT_MAX_PROPERTIES);
 
 	if (e_size >= DUK_HOBJECT_E_USE_HASH_LIMIT) {
@@ -157,7 +157,7 @@ static duk_uint32_t duk__get_default_h_size(duk_uint32_t e_size) {
 }
 
 /* Get minimum entry part growth for a certain size. */
-static duk_uint32_t duk__get_min_grow_e(duk_uint32_t e_size) {
+DUK_LOCAL duk_uint32_t duk__get_min_grow_e(duk_uint32_t e_size) {
 	duk_uint32_t res;
 
 	DUK_ASSERT(e_size <= DUK_HOBJECT_MAX_PROPERTIES);
@@ -168,7 +168,7 @@ static duk_uint32_t duk__get_min_grow_e(duk_uint32_t e_size) {
 }
 
 /* Get minimum array part growth for a certain size. */
-static duk_uint32_t duk__get_min_grow_a(duk_uint32_t a_size) {
+DUK_LOCAL duk_uint32_t duk__get_min_grow_a(duk_uint32_t a_size) {
 	duk_uint32_t res;
 
 	DUK_ASSERT((duk_size_t) a_size <= DUK_HOBJECT_MAX_PROPERTIES);
@@ -179,7 +179,7 @@ static duk_uint32_t duk__get_min_grow_a(duk_uint32_t a_size) {
 }
 
 /* Count actually used entry part entries (non-NULL keys). */
-static duk_uint32_t duk__count_used_e_keys(duk_hobject *obj) {
+DUK_LOCAL duk_uint32_t duk__count_used_e_keys(duk_hobject *obj) {
 	duk_uint_fast32_t i;
 	duk_uint_fast32_t n = 0;
 	duk_hstring **e;
@@ -200,7 +200,7 @@ static duk_uint32_t duk__count_used_e_keys(duk_hobject *obj) {
  * end and breaking out early when finding first used entry, but this is
  * not needed now.
  */
-static void duk__compute_a_stats(duk_hobject *obj, duk_uint32_t *out_used, duk_uint32_t *out_min_size) {
+DUK_LOCAL void duk__compute_a_stats(duk_hobject *obj, duk_uint32_t *out_used, duk_uint32_t *out_min_size) {
 	duk_uint_fast32_t i;
 	duk_uint_fast32_t used = 0;
 	duk_uint_fast32_t highest_idx = (duk_uint_fast32_t) -1;  /* see below */
@@ -229,7 +229,7 @@ static void duk__compute_a_stats(duk_hobject *obj, duk_uint32_t *out_used, duk_u
 }
 
 /* Check array density and indicate whether or not the array part should be abandoned. */
-static duk_bool_t duk__abandon_array_density_check(duk_uint32_t a_used, duk_uint32_t a_size) {
+DUK_LOCAL duk_bool_t duk__abandon_array_density_check(duk_uint32_t a_used, duk_uint32_t a_size) {
 	/*
 	 *  Array abandon check; abandon if:
 	 *
@@ -250,7 +250,7 @@ static duk_bool_t duk__abandon_array_density_check(duk_uint32_t a_used, duk_uint
 }
 
 /* Fast check for extending array: check whether or not a slow density check is required. */
-static duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint32_t old_size) {
+DUK_LOCAL duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint32_t old_size) {
 	/*
 	 *  In a fast check we assume old_size equals old_used (i.e., existing
 	 *  array is fully dense).
@@ -280,7 +280,7 @@ static duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, d
  */
 
 #if defined(DUK_USE_ES6_PROXY)
-duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler) {
+DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler) {
 	duk_tval *tv_target;
 	duk_tval *tv_handler;
 	duk_hobject *h_target;
@@ -325,7 +325,7 @@ duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobje
 #endif
 
 #if defined(DUK_USE_ES6_PROXY)
-static duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, duk_small_uint_t stridx_trap, duk_tval *tv_key, duk_hobject **out_target) {
+DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, duk_small_uint_t stridx_trap, duk_tval *tv_key, duk_hobject **out_target) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *h_handler;
 
@@ -419,12 +419,13 @@ static duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, duk_
  *  will become invalid after this call.
  */
 
-static void duk__realloc_props(duk_hthread *thr,
-                               duk_hobject *obj,
-                               duk_uint32_t new_e_size,
-                               duk_uint32_t new_a_size,
-                               duk_uint32_t new_h_size,
-                               duk_bool_t abandon_array) {
+DUK_LOCAL
+void duk__realloc_props(duk_hthread *thr,
+                        duk_hobject *obj,
+                        duk_uint32_t new_e_size,
+                        duk_uint32_t new_a_size,
+                        duk_uint32_t new_h_size,
+                        duk_bool_t abandon_array) {
 	duk_context *ctx = (duk_context *) thr;
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
@@ -875,7 +876,7 @@ static void duk__realloc_props(duk_hthread *thr,
  */
 
 /* Grow entry part allocation for one additional entry. */
-static void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *obj) {
+DUK_LOCAL void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint32_t old_e_used;  /* actually used, non-NULL entries */
 	duk_uint32_t new_e_size;
 	duk_uint32_t new_a_size;
@@ -901,7 +902,7 @@ static void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *ob
 }
 
 /* Grow array part for a new highest array index. */
-static void duk__grow_props_for_array_item(duk_hthread *thr, duk_hobject *obj, duk_uint32_t highest_arr_idx) {
+DUK_LOCAL void duk__grow_props_for_array_item(duk_hthread *thr, duk_hobject *obj, duk_uint32_t highest_arr_idx) {
 	duk_uint32_t new_e_size;
 	duk_uint32_t new_a_size;
 	duk_uint32_t new_h_size;
@@ -925,7 +926,7 @@ static void duk__grow_props_for_array_item(duk_hthread *thr, duk_hobject *obj, d
  * We also compact the entries part while we're at it, although
  * this is not strictly required.
  */
-static void duk__abandon_array_checked(duk_hthread *thr, duk_hobject *obj) {
+DUK_LOCAL void duk__abandon_array_checked(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint32_t new_e_size;
 	duk_uint32_t new_a_size;
 	duk_uint32_t new_h_size;
@@ -971,7 +972,7 @@ static void duk__abandon_array_checked(duk_hthread *thr, duk_hobject *obj) {
  *  The call may fail due to allocation error.
  */
 
-void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) {
+DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint32_t e_size;       /* currently used -> new size */
 	duk_uint32_t a_size;       /* currently required */
 	duk_uint32_t a_used;       /* actually used */
@@ -1023,7 +1024,7 @@ void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) {
  *  but there is no hash part, h_idx is set to -1.
  */
 
-void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
+DUK_INTERNAL void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(e_idx != NULL);
@@ -1101,7 +1102,7 @@ void duk_hobject_find_existing_entry(duk_hobject *obj, duk_hstring *key, duk_int
 }
 
 /* For internal use: get non-accessor entry value */
-duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key) {
+DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring *key) {
 	duk_int_t e_idx;
 	duk_int_t h_idx;
 
@@ -1117,7 +1118,7 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_hobject *obj, duk_hstring
 }
 
 /* For internal use: get non-accessor entry value and attributes */
-duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs) {
+DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs) {
 	duk_int_t e_idx;
 	duk_int_t h_idx;
 
@@ -1136,7 +1137,7 @@ duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_hobject *obj, d
 }
 
 /* For internal use: get array part value */
-duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uarridx_t i) {
+DUK_INTERNAL duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_uarridx_t i) {
 	duk_tval *tv;
 
 	DUK_ASSERT(obj != NULL);
@@ -1160,7 +1161,7 @@ duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_hobject *obj, duk_u
  *  the entry value refcount.  A decref for the previous value is not necessary.
  */
 
-static duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
+DUK_LOCAL duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
 	duk_uint32_t idx;
 
 	DUK_ASSERT(thr != NULL);
@@ -1236,7 +1237,7 @@ static duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj, d
  *  to incref OR decref.  No proxies or accessors are invoked, no prototype walk.
  */
 
-duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv_out) {
+DUK_INTERNAL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv_out) {
 	duk_int_t e_idx;
 	duk_int_t h_idx;
 
@@ -1256,7 +1257,7 @@ duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_
 	return 0;
 }
 
-duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj) {
+DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj) {
 	duk_tval tv;
 
 	DUK_ASSERT(heap != NULL);
@@ -1272,7 +1273,7 @@ duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *
 	return NULL;
 }
 
-duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj) {
+DUK_INTERNAL duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj) {
 	duk_tval tv;
 
 	DUK_ASSERT(heap != NULL);
@@ -1301,12 +1302,13 @@ duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *
  * if mapped, and leave the result on top of stack (and return non-zero).
  * Used in E5 Section 10.6 algorithms [[Get]] and [[GetOwnProperty]].
  */
-static duk_bool_t duk__lookup_arguments_map(duk_hthread *thr,
-                                            duk_hobject *obj,
-                                            duk_hstring *key,
-                                            duk_propdesc *temp_desc,
-                                            duk_hobject **out_map,
-                                            duk_hobject **out_varenv) {
+DUK_LOCAL
+duk_bool_t duk__lookup_arguments_map(duk_hthread *thr,
+                                     duk_hobject *obj,
+                                     duk_hstring *key,
+                                     duk_propdesc *temp_desc,
+                                     duk_hobject **out_map,
+                                     duk_hobject **out_varenv) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *map;
 	duk_hobject *varenv;
@@ -1358,7 +1360,7 @@ static duk_bool_t duk__lookup_arguments_map(duk_hthread *thr,
  * on stack top if mapped (and return non-zero).
  * Used in E5 Section 10.6 algorithm for [[GetOwnProperty]] (used by [[Get]]).
  */
-static duk_bool_t duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc) {
+DUK_LOCAL duk_bool_t duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *map;
 	duk_hobject *varenv;
@@ -1396,7 +1398,7 @@ static duk_bool_t duk__check_arguments_map_for_get(duk_hthread *thr, duk_hobject
  * Used in E5 Section 10.6 algorithm for [[DefineOwnProperty]] (used by [[Put]]).
  * Assumes stack top contains 'put' value (which is NOT popped).
  */
-static void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc, duk_bool_t throw_flag) {
+DUK_LOCAL void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc, duk_bool_t throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *map;
 	duk_hobject *varenv;
@@ -1440,7 +1442,7 @@ static void duk__check_arguments_map_for_put(duk_hthread *thr, duk_hobject *obj,
  * Used in E5 Section 10.6 algorithm for [[Delete]].  Note that the
  * variable/argument itself (where the map points) is not deleted.
  */
-static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc) {
+DUK_LOCAL void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *temp_desc) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *map;
 
@@ -1504,7 +1506,7 @@ static void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject *o
  *      accessor properties later, this would need to change.
  */
 
-static duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags) {
+DUK_LOCAL duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv;
 
@@ -1762,7 +1764,7 @@ static duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobject *
 	return 1;
 }
 
-static duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
+DUK_LOCAL duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -1791,7 +1793,7 @@ static duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobject *obj,
  *  pointers.
  */
 
-static duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
+DUK_LOCAL duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
 	duk_hobject *curr;
 	duk_uint32_t arr_idx;
 	duk_uint_t sanity;
@@ -1860,7 +1862,7 @@ static duk_bool_t duk__get_property_desc(duk_hthread *thr, duk_hobject *obj, duk
  */
 
 #if 0  /* XXX: unused now */
-static duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_uint32_t key_idx) {
+DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_uint32_t key_idx) {
 	duk_tval *tv;
 
 	if ((!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
@@ -1898,7 +1900,7 @@ static duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk_ui
 }
 #endif
 
-static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_tval *key_tv) {
+DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_tval *key_tv) {
 	duk_tval *tv;
 
 	if (DUK_TVAL_IS_NUMBER(key_tv) &&
@@ -1950,7 +1952,7 @@ static duk_tval *duk__shallow_fast_path_array_check_tval(duk_hobject *obj, duk_t
  *  GETPROP: Ecmascript property read.
  */
 
-duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
+DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_obj_copy;
 	duk_tval tv_key_copy;
@@ -2375,7 +2377,7 @@ duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
  *  the target object.
  */
 
-duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
+DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_key_copy;
 	duk_hobject *obj;
@@ -2478,7 +2480,7 @@ duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
  *  returns key existence on the proxy object itself.
  */
 
-duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
+DUK_INTERNAL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
 	duk_propdesc dummy;
 
 	DUK_ASSERT(thr != NULL);
@@ -2499,7 +2501,7 @@ duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstri
  *  Used by duk_hobject_putprop().
  */
 
-static duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_propdesc *temp_desc) {
+DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_propdesc *temp_desc) {
 	duk_bool_t rc;
 	duk_tval *tv;
 	duk_uint32_t res;
@@ -2531,7 +2533,7 @@ static duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj
 	return res;
 }
 
-static duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
+DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint32_t res;
 
@@ -2554,11 +2556,12 @@ static duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
  * This is the length value that should go into the 'length' property
  * (must be set by the caller).  Never throws an error.
  */
-static duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
-                                                       duk_hobject *obj,
-                                                       duk_uint32_t old_len,
-                                                       duk_uint32_t new_len,
-                                                       duk_uint32_t *out_result_len) {
+DUK_LOCAL
+duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
+                                                duk_hobject *obj,
+                                                duk_uint32_t old_len,
+                                                duk_uint32_t new_len,
+                                                duk_uint32_t *out_result_len) {
 	duk_uint32_t target_len;
 	duk_uint_fast32_t i;
 	duk_uint32_t arr_idx;
@@ -2732,7 +2735,7 @@ static duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 }
 
 /* XXX: is valstack top best place for argument? */
-static duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
+DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_propdesc desc;
 	duk_uint32_t old_len;
@@ -2843,7 +2846,7 @@ static duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *ob
  *      (We currently make a copy of all of the input values to avoid issues.)
  */
 
-duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_obj_copy;
 	duk_tval tv_key_copy;
@@ -3620,7 +3623,7 @@ duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
  *  Ecmascript compliant [[Delete]](P, Throw).
  */
 
-duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_bool_t throw_flag) {
 	duk_propdesc desc;
 	duk_tval *tv;
 	duk_tval tv_tmp;
@@ -3753,7 +3756,7 @@ duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstri
  *  DELPROP: Ecmascript property deletion.
  */
 
-duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *key = NULL;
 #if defined(DUK_USE_ES6_PROXY)
@@ -3941,7 +3944,7 @@ duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_
  *  operations.
  */
 
-void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags) {
+DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_propdesc desc;
 	duk_uint32_t arr_idx;
@@ -4061,7 +4064,7 @@ void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, du
  *  must avoid interning.
  */
 
-void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags) {
+DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *key;
 	duk_tval *tv1, *tv2;
@@ -4121,7 +4124,7 @@ void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *
  *  and then changes the entry to an accessor (this is to save code space).
  */
 
-void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags) {
+DUK_INTERNAL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_int_t e_idx;
 	duk_int_t h_idx;
@@ -4163,7 +4166,7 @@ void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, du
 
 /* XXX: awkward helpers */
 
-void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length) {
+DUK_INTERNAL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_push_hobject(ctx, obj);
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
@@ -4172,11 +4175,11 @@ void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t len
 	duk_pop_n(ctx, 3);
 }
 
-void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj) {
+DUK_INTERNAL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj) {
 	duk_hobject_set_length(thr, obj, 0);
 }
 
-duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
+DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_double_t val;
 	duk_push_hobject(ctx, obj);
@@ -4196,7 +4199,7 @@ duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
  *  This is an actual function call.
  */
 
-duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -4271,7 +4274,7 @@ duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
 
 /* XXX: very basic optimization -> duk_get_prop_stridx_top */
 
-static void duk__normalize_property_descriptor(duk_context *ctx) {
+DUK_LOCAL void duk__normalize_property_descriptor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t idx_in;
 	duk_idx_t idx_out;
@@ -4374,7 +4377,7 @@ static void duk__normalize_property_descriptor(duk_context *ctx) {
 
 /* XXX: this is a major target for size optimization */
 
-duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -5274,7 +5277,7 @@ duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
  *  This is an actual function call.
  */
 
-duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
 	duk_require_hobject(ctx, 0);  /* target */
 	duk_to_object(ctx, 1);        /* properties object */
 
@@ -5378,7 +5381,7 @@ duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
  *  Object.prototype.hasOwnProperty() and Object.prototype.propertyIsEnumerable().
  */
 
-duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags) {
+DUK_INTERNAL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_v;
 	duk_hobject *h_obj;
@@ -5413,7 +5416,7 @@ duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t 
  *  requiring some additional flags in the object.
  */
 
-void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze) {
+DUK_INTERNAL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(thr != NULL);
@@ -5467,7 +5470,7 @@ void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, d
  *  need to be considered here now.
  */
 
-duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen) {
+DUK_INTERNAL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen) {
 	duk_uint_fast32_t i;
 
 	DUK_ASSERT(obj != NULL);

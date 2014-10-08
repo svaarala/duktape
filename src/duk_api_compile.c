@@ -12,7 +12,7 @@ struct duk__compile_raw_args {
 };
 
 /* Eval is just a wrapper now. */
-duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
+DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
 	duk_uint_t comp_flags;
 	duk_int_t rc;
 
@@ -54,7 +54,7 @@ duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_
 }
 
 /* Helper which can be called both directly and with duk_safe_call(). */
-static duk_ret_t duk__do_compile(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__compile_raw_args *comp_args;
 	duk_uint_t flags;
@@ -134,7 +134,7 @@ static duk_ret_t duk__do_compile(duk_context *ctx) {
 	return 1;
 }
 
-duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
+DUK_EXTERNAL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 

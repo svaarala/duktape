@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
 	duk_idx_t nargs;
@@ -81,13 +81,13 @@ duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
 	/* ignore arguments, return undefined (E5 Section 15.3.4) */
 	DUK_UNREF(ctx);
 	return 0;
 }
 
-duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
 	/*
@@ -150,7 +150,7 @@ duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
-duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	duk_idx_t len;
 	duk_idx_t i;
 
@@ -207,7 +207,7 @@ duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	return DUK_RET_TYPE_ERROR;
 }
 
-duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	duk_idx_t nargs;
 
 	/* Step 1 is not necessary because duk_call_method() will take
@@ -244,7 +244,7 @@ duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
  * function) would require a "collapsing" implementation which
  * merges argument lists etc here.
  */
-duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_hobject *h_bound;
 	duk_hobject *h_target;
 	duk_idx_t nargs;

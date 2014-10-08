@@ -6,7 +6,7 @@
 
 #ifdef DUK_USE_REGEXP_SUPPORT
 
-static void duk__get_this_regexp(duk_context *ctx) {
+DUK_LOCAL void duk__get_this_regexp(duk_context *ctx) {
 	duk_hobject *h;
 
 	duk_push_this(ctx);
@@ -17,7 +17,7 @@ static void duk__get_this_regexp(duk_context *ctx) {
 }
 
 /* XXX: much to improve (code size) */
-duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_pattern;
 
@@ -90,7 +90,7 @@ duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
 	duk__get_this_regexp(ctx);
 
 	/* [ regexp input ] */
@@ -102,7 +102,7 @@ duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 	duk__get_this_regexp(ctx);
 
 	/* [ regexp input ] */
@@ -117,7 +117,7 @@ duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 	duk_hstring *h_bc;
 	duk_small_int_t re_flags;
 
@@ -186,22 +186,22 @@ duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 
 #else  /* DUK_USE_REGEXP_SUPPORT */
 
-duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 
-duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
