@@ -2414,10 +2414,15 @@ typedef FILE duk_file;
 #undef DUK_USE_ZERO_BUFFER_DATA
 #endif
 
+#undef DUK_USE_VARIADIC_MACROS
 #if defined(DUK_F_C99) || (defined(DUK_F_CPP11) && defined(__GNUC__))
 #define DUK_USE_VARIADIC_MACROS
-#else
-#undef DUK_USE_VARIADIC_MACROS
+#endif
+#if defined(_MSC_VER) && !defined(DUK_USE_VARIADIC_MACROS)
+#if (_MSC_VER >= 1400)
+/* VS2005+ should have variadic macros even when they're not C99. */
+#define DUK_USE_VARIADIC_MACROS
+#endif
 #endif
 
 /*
