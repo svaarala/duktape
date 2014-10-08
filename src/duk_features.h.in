@@ -1901,93 +1901,69 @@ typedef FILE duk_file;
  *  Symbol visibility macros
  */
 
-/* XXX: add support for at least clang */
 /* XXX: user override for these? user override for just using the default visibility macros? */
+/* XXX: separate macros for function and data may be necessary at some point. */
 
 #if defined(DUK_F_GCC_VERSION)
 #if (DUK_F_GCC_VERSION >= 40000)
+/* Might work on earlier versions too but limit to GCC 4+. */
 #define DUK_F_GCC_SYMBOL_VISIBILITY
 #endif
 #endif
+#if defined(DUK_F_CLANG) && !defined(DUK_F_GCC_SYMBOL_VISIBILITY)
+#define DUK_F_GCC_SYMBOL_VISIBILITY
+#endif
 #if defined(_WIN32) && (defined(_MSC_VER) || defined(__GNUC__))
-/* MSVC, also MinGW on Windows. */
+/* MSVC: any minimum version? */
+/* MinGW: no minimum version, even gcc-2.95.3 supported dllimport/dllexport. */
 #define DUK_F_MSVC_SYMBOL_VISIBILITY
 #endif
 
-/* FIXME: separate macros for functions and data may be necessary. */
-
 #if defined(DUK_F_GCC_SYMBOL_VISIBILITY)
-/* GCC 4+ visibility */
-#if defined(DUK_SINGLE_FILE)
+/* GCC 4+ visibility attributes. */
 #define DUK_EXTERNAL_DECL  __attribute__ ((visibility("default"))) extern
 #define DUK_EXTERNAL       __attribute__ ((visibility("default")))
+#if defined(DUK_SINGLE_FILE)
 #define DUK_INTERNAL_DECL  static
 #define DUK_INTERNAL       static
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
-#else  /* DUK_SINGLE_FILE */
-#define DUK_EXTERNAL_DECL  __attribute__ ((visibility("default"))) extern
-#define DUK_EXTERNAL       __attribute__ ((visibility("default")))
+#else
 #define DUK_INTERNAL_DECL  __attribute__ ((visibility("hidden"))) extern
 #define DUK_INTERNAL       __attribute__ ((visibility("hidden")))
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
 #endif
 #elif defined(DUK_F_MSVC_SYMBOL_VISIBILITY)
 /* MSVC dllexport/dllimport: appropriate __declspec depends on whether we're
  * compiling Duktape or the application.
  */
-#if defined(DUK_SINGLE_FILE)
 #if defined(DUK_COMPILING_DUKTAPE)
 #define DUK_EXTERNAL_DECL  extern __declspec(dllexport)
 #define DUK_EXTERNAL       __declspec(dllexport)
-#define DUK_INTERNAL_DECL  static
-#define DUK_INTERNAL       static
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
 #else
 #define DUK_EXTERNAL_DECL  extern __declspec(dllimport)
 #define DUK_EXTERNAL       should_not_happen
+#endif
+#if defined(DUK_SINGLE_FILE)
 #define DUK_INTERNAL_DECL  static
 #define DUK_INTERNAL       static
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
-#endif  /* DUK_COMPILING_DUKTAPE */
-#else  /* DUK_SINGLE_FILE */
-#if defined(DUK_COMPILING_DUKTAPE)
-#define DUK_EXTERNAL_DECL  extern __declspec(dllexport)
-#define DUK_EXTERNAL       __declspec(dllexport)
-#define DUK_INTERNAL_DECL  extern
-#define DUK_INTERNAL       /*empty*/
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
 #else
-#define DUK_EXTERNAL_DECL  extern __declspec(dllexport)
-#define DUK_EXTERNAL       should_not_happen
 #define DUK_INTERNAL_DECL  extern
 #define DUK_INTERNAL       /*empty*/
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
-#endif  /* DUK_COMPILING_DUKTAPE */
-#endif  /* DUK_SINGLE_FILE */
+#endif
 #else
 /* Default visibility */
-#if defined(DUK_SINGLE_FILE)
 #define DUK_EXTERNAL_DECL  extern
 #define DUK_EXTERNAL       /*empty*/
+#if defined(DUK_SINGLE_FILE)
 #define DUK_INTERNAL_DECL  static
 #define DUK_INTERNAL       static
-#define DUK_LOCAL_DECL     static
-#define DUK_LOCAL          static
 #else  /* DUK_SINGLE_FILE */
-#define DUK_EXTERNAL_DECL  extern
-#define DUK_EXTERNAL       /*empty*/
 #define DUK_INTERNAL_DECL  extern
 #define DUK_INTERNAL       /*empty*/
+#endif
+#endif
+
+/* For now, these are shared. */
 #define DUK_LOCAL_DECL     static
 #define DUK_LOCAL          static
-#endif
-#endif
 
 /*
  *  __FILE__, __LINE__, __func__ are wrapped.  Especially __func__ is a
