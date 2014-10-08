@@ -249,7 +249,14 @@ static __inline__ unsigned long long duk_rdtsc(void) {
  * BOOST_MSVC_FULL_VER in http://www.boost.org/doc/libs/1_52_0/boost/config/compiler/visualc.hpp
  */
 #define DUK_F_MSVC
+#if defined(_MSC_FULL_VER)
+#if (_MSC_FULL_VER > 100000000)
+#define DUK_F_MSVC_FULL_VER _MSC_FULL_VER
+#else
+#define DUK_F_MSCV_FULL_VER (_MSC_FULL_VER * 10)
 #endif
+#endif
+#endif  /* _MSC_VER */
 
 /* MinGW */
 #if defined(__MINGW32__) || defined(__MINGW64__)
