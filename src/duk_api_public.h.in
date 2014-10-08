@@ -783,20 +783,18 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
 #if defined(DUK_USE_FILE_IO)
 /* internal use */
 #define duk_dump_context_filehandle(ctx,fh) \
-	do { \
-		duk_push_context_dump((ctx)); \
-		DUK_FPRINTF((fh), "%s\n", duk_safe_to_string(ctx, -1)); \
-		duk_pop(ctx); \
-	} while (0)
+	(duk_push_context_dump((ctx)), \
+	 DUK_FPRINTF((fh), "%s\n", duk_safe_to_string(ctx, -1)), \
+	 duk_pop(ctx))
 
 /* external use */
 #define duk_dump_context_stdout(ctx) \
-	duk_dump_context_filehandle(ctx, DUK_STDOUT)
+	duk_dump_context_filehandle((ctx), DUK_STDOUT)
 #define duk_dump_context_stderr(ctx) \
-	duk_dump_context_filehandle(ctx, DUK_STDERR)
+	duk_dump_context_filehandle((ctx), DUK_STDERR)
 #else  /* DUK_USE_FILE_IO */
-#define duk_dump_context_stdout(ctx)  do {} while (0)
-#define duk_dump_context_stderr(ctx)  do {} while (0)
+#define duk_dump_context_stdout(ctx)  ((void) 0)
+#define duk_dump_context_stderr(ctx)  ((void) 0)
 #endif  /* DUK_USE_FILE_IO */
 
 /*
