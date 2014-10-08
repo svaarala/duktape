@@ -567,6 +567,8 @@ Planned
 * Fix duk_peval_file(), duk_peval_file_noresult() and duk_pcompile_file()
   to avoid throwing an error for a missing file
 
+* Fix compile error for DUK_OPT_NO_FILE_IO
+
 * Regexp internal limit errors changed from Error to RangeError
 
 * Change command line example to be "barebones" by default, with readline
