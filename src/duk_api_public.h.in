@@ -250,6 +250,10 @@ DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(duk_context *ctx, duk_errc
 	duk_error_raw((ctx), (duk_errcode_t) (err_code), __FILE__, (duk_int_t) __LINE__, __VA_ARGS__)
 #else
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
+/* One problem with this macro is that expressions like the following fail
+ * to compile: "(void) duk_error(...)".  But because duk_error() is noreturn,
+ * they make little sense anyway.
+ */
 #define duk_error  \
 	duk_api_global_filename = __FILE__, \
 	duk_api_global_line = (duk_int_t) __LINE__, \
