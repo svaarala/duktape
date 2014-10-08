@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: document macro policy in public API - multiple steps in parens, retval
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-10-08 08:57:43.796258 Z
+references: []
+
+id: 42c71d09e0fd2cfbcc430ef7d4dd17a7210e5c8e
+log_events: 
+- - 2014-10-08 08:57:44.004185 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
