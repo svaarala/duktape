@@ -1,0 +1,27 @@
+<h1 id="threading">Threading</h1>
+
+<p>Duktape supports a limited form of multithreading:</p>
+<ul>
+<li>A particular Duktape heap created with <code>duk_create_heap()</code> is
+    single threaded: only one native thread can execute code in the heap at a
+    time.  The native thread can change over time, as long as two native threads
+    are not active at the same time in the same Duktape heap.</li>
+<li>Duktape heaps are completely isolated from each other.  Multiple native
+    threads can execute code at the same time, as long as there is only one
+    active native thread per Duktape heap.</li>
+</ul>
+
+<p>For some background, a Duktape heap is a single memory management region
+regardless of how many Duktape threads exist in the heap (don't confuse native
+threads and Duktape threads).  Because the Duktape threads in a heap can share
+object references, multithreading support would need synchronization for garbage
+collection and all object handling.  Synchronization would be a major
+portability issue, so a practical approach is to limit a Duktape heap to be
+single threaded.  Duktape heaps don't share anything so there are no threading
+limitations between them as a general rule.  However, when some platform features
+are not available (such as variadic preprocessor macros or re-entrant system calls)
+there are some limitations.</p>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/threading.rst">threading.rst</a>
+for a detailed discussion of threading limitations and best practices.</p>
