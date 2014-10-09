@@ -26,3 +26,4 @@ compile
 
 =seealso
 duk_peval_file_noresult
+nonportable

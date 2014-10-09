@@ -20,3 +20,4 @@ if (duk_peval_file_noresult(ctx, "test.js") != 0) {
 
 =tags
 compile
+nonportable
