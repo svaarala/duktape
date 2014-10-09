@@ -16,7 +16,7 @@ platforms and toolchains.  For example, you can:</p>
 <li>Compile Duktape as a static library, and link the static library with
     your program.</li>
 <li>Compile Duktape as a dynamic library, and link the dynamic library with
-    your program.</li>
+    your program (you'll need <code>DUK_OPT_DLL_BUILD</code>).</li>
 </ul>
 
 <p>There are two alternative distribution formats for the Duktape source:
@@ -64,6 +64,8 @@ in your compiler):</p>
     footprint but may interfere with debugging (leave out from debug builds)</li>
 <li><code>-fstrict-aliasing</code>: use strict aliasing rules, Duktape
     is compatible with these and they improve the resulting C code</li>
+<li><code>-DDUK_OPT_DLL_BUILD</code>: needed when Duktape is built as a DLL
+    (the option is needed for both Duktape and application build)</li>
 </ul>
 
 <p>If you're using Duktape on a platform where Duktape's automatic feature
@@ -118,6 +120,14 @@ particular order:</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="definename">DUK_OPT_DLL_BUILD</td>
+<td>Build Duktape as a DLL, affects symbol visibility declarations.
+    Most concretely, enables <code>__declspec(dllexport)</code> and
+    <code>__declspec(dllimport)</code> on Windows builds.  This option
+    must be used also for application build when Duktape is linked as
+    a DLL (otherwise <code>__declspec(dllimport)</code> won't be used).</td>
+</tr>
 <tr>
 <td class="definename">DUK_OPT_NO_PACKED_TVAL</td>
 <td>Don't use the packed 8-byte internal value representation even if otherwise

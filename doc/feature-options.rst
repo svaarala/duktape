@@ -56,6 +56,15 @@ odd names if the default behavior changes and a "no disable" flag is needed.
 Platform and portability options
 ================================
 
+DUK_OPT_DLL_BUILD
+-----------------
+
+Add this define to both Duktape and application build when Duktape is compiled
+as a DLL.  This is especially critical on Windows: the option makes Duktape use
+``__declspec(dllexport)`` and ``__declspec(dllimport)`` for public symbols.
+While this is not currently needed for Unix platforms, it should always be used
+if you build as a DLL.
+
 DUK_OPT_FORCE_ALIGN
 -------------------
 
