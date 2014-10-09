@@ -24,6 +24,13 @@ function definitions by prepending a dot to the search term.  For instance,
 use ".duk_example_func" to look for <code>duk_example_func()</code>.  In most
 browsers only the actual section defining the function should be found.</p>
 
+<h2>Portability</h2>
+
+<p>Some convenience API calls are not fully portable because they involve
+file I/O to the filesystem or <code>stdout</code>/<code>stderr</code>.  If
+you want to keep your code maximally portable, avoid these calls.  The
+non-portable calls are marked with a <code>nonportable</code> tag.</p>
+
 <h2>API safety</h2>
 
 <p>As a general rule, API calls check all their parameters and tolerate

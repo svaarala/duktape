@@ -24,3 +24,4 @@ duk_pop(ctx);
 
 =tags
 compile
+nonportable
