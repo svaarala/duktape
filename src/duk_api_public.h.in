@@ -63,7 +63,7 @@ struct duk_memory_functions {
 struct duk_function_list_entry {
 	const char *key;
 	duk_c_function value;
-	duk_int_t nargs;
+	duk_idx_t nargs;
 };
 
 struct duk_number_list_entry {
