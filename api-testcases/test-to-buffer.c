@@ -51,7 +51,7 @@ static void dump_buffer(duk_context *ctx) {
 	duk_size_t i, sz;
 
 	ptr = (unsigned char *) duk_get_buffer(ctx, -1, &sz);
-	printf("buffer: dynamic=%d, size=%lu:", (int) duk_is_dynamic(ctx, -1), (unsigned long) sz);
+	printf("buffer: dynamic=%d, size=%lu:", (int) duk_is_dynamic_buffer(ctx, -1), (unsigned long) sz);
 	for (i = 0; i < sz; i++) {
 		unsigned char c = ptr[i];
 		if (i == 0) {

@@ -1,5 +1,5 @@
 =proto
-duk_bool_t duk_is_fixed(duk_context *ctx, duk_idx_t index);
+duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index);
 
 =stack
 [ ... val! ... ]
@@ -10,7 +10,7 @@ otherwise returns 0.  If <code>index</code> is invalid, also
 returns 0.</p>
 
 =example
-if (duk_is_fixed(ctx, -3)) {
+if (duk_is_fixed_buffer(ctx, -3)) {
     /* ... */
 }
 

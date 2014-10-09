@@ -2294,7 +2294,7 @@ DUK_EXTERNAL duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index) {
 	                                       DUK_HOBJECT_FLAG_BOUND);
 }
 
-DUK_EXTERNAL duk_bool_t duk_is_dynamic(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
@@ -2308,7 +2308,7 @@ DUK_EXTERNAL duk_bool_t duk_is_dynamic(duk_context *ctx, duk_idx_t index) {
 	return 0;
 }
 
-DUK_EXTERNAL duk_bool_t duk_is_fixed(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);

@@ -112,9 +112,9 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_is_callable(ctx, 0);
 	(void) duk_is_c_function(ctx, 0);
 	(void) duk_is_constructor_call(ctx);
-	(void) duk_is_dynamic(ctx, 0);
+	(void) duk_is_dynamic_buffer(ctx, 0);
 	(void) duk_is_ecmascript_function(ctx, 0);
-	(void) duk_is_fixed(ctx, 0);
+	(void) duk_is_fixed_buffer(ctx, 0);
 	(void) duk_is_function(ctx, 0);
 	(void) duk_is_nan(ctx, 0);
 	(void) duk_is_null_or_undefined(ctx, 0);

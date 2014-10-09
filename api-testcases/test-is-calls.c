@@ -119,8 +119,8 @@ void test(duk_context *ctx) {
 		printf(" call=%d", (int) duk_is_callable(ctx, i));
 		printf(" thr=%d", (int) duk_is_thread(ctx, i));
 		printf(" buf=%d", (int) duk_is_buffer(ctx, i));
-		printf(" dyn=%d", (int) duk_is_dynamic(ctx, i));
-		printf(" fix=%d", (int) duk_is_fixed(ctx, i));
+		printf(" dyn=%d", (int) duk_is_dynamic_buffer(ctx, i));
+		printf(" fix=%d", (int) duk_is_fixed_buffer(ctx, i));
 		printf(" ptr=%d", (int) duk_is_pointer(ctx, i));
 		printf(" prim=%d", (int) duk_is_primitive(ctx, i));
 		printf(" objcoerc=%d", (int) duk_is_object_coercible(ctx, i));

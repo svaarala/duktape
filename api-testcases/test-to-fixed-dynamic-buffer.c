@@ -65,7 +65,7 @@ static void dump_buffer(duk_context *ctx) {
 
 	p = (unsigned char *) duk_require_buffer(ctx, -1, &sz);
 	printf("%lu bytes (%s):", (unsigned long) sz,
-	       (int) duk_is_dynamic(ctx, -1) ? "dynamic" : "fixed");
+	       (int) duk_is_dynamic_buffer(ctx, -1) ? "dynamic" : "fixed");
 	for (i = 0; i < sz; i++) {
 		printf(" %d", (int) p[i]);
 	}
