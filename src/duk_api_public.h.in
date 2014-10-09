@@ -417,8 +417,8 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t i
 DUK_EXTERNAL_DECL duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t index);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_dynamic(duk_context *ctx, duk_idx_t index);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_fixed(duk_context *ctx, duk_idx_t index);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index);
 #define duk_is_object_coercible(ctx,index) \
