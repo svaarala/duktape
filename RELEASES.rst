@@ -551,6 +551,11 @@ Planned
   to avoid conflicting with standard library names (which is problematic if
   the standard names are #defines)
 
+* Add DUK_OPT_DLL_BUILD, which should be enabled for both Duktape and
+  application build when Duktape is built as a DLL; on Windows it makes
+  Duktape use __declspec(dllexport) and __declspec(dllimport) for public
+  API symbols
+
 * Rename RELEASES.txt, AUTHORS.txt, and README.txt files to .rst suffix for
   better automatic formatting
 
