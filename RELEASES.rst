@@ -543,6 +543,9 @@ Planned
 
 * Feature complete baseline release
 
+* Rename duk_is_fixed() to duk_is_fixed_buffer() and duk_is_dynamic() to
+  duk_is_dynamic_buffer() for consistency with other API calls
+
 * Add OS and compiler strings to Duktape.env
 
 * Make error 'tracedata' an internal property for better sandboxing
