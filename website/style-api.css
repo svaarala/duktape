@@ -52,3 +52,34 @@
 		margin-top: 0;
 	}
 }
+
+/* Selector specificity issues here, workaround is to add more selectors. */
+h1.apih1 a.apitag {
+	float: right;
+	margin: 3px;
+	border: 2px solid #cccccc;
+	border-radius: 4px;
+	padding: 3px;
+	font-size: 8pt;
+	background: #eeeeee;
+	color: #888888;
+}
+h1.apih1 a.apitag:hover {
+	background: #ffffff;
+	color: #888888;
+}
+h1.apih1 a.apitag visited {
+	color: #888888;
+}
+h1.apih1 a.apitagemph {
+	background: #dd0000;
+	border-color: #880000;
+	color: #ffffff;
+}
+h1.apih1 a.apitagemph:hover {
+	background: #ff8800;
+	color: #ffffff;
+}
+h1.apih1 a.apitagemph:visited {
+	color: #ffffff;
+}

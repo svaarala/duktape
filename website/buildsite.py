@@ -19,6 +19,7 @@ fancy_stack = True
 remove_fixme = True
 testcase_refs = False
 list_tags = False
+floating_list_tags = True
 fancy_releaselog = True
 
 dt_now = datetime.datetime.utcnow()
@@ -278,7 +279,17 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	res = []
 
 	# the 'hidechar' span is to allow browser search without showing the char
-	res.append('<h1 id="%s"><a href="#%s"><span class="hidechar">.</span>%s()</a></h1>' % (funcname, funcname, funcname))
+	res.append('<h1 id="%s" class="apih1">' % funcname)
+	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (funcname, funcname))
+	if floating_list_tags and parts.has_key('tags'):
+		p = parts['tags']
+		for idx, val in enumerate(p):
+			classes = [ 'apitag' ]
+			if val == 'experimental' or val == 'nonportable':
+				classes.append('apitagemph')
+			res.append('<a class="' + ' '.join(classes) + '" ' +
+			           'href="#' + htmlEscape('taglist-' + val) + '">' + htmlEscape(val) + '</a>')
+	res.append('</h1>')
 
 	res.append('<div class="api-call">')
 
@@ -677,7 +688,7 @@ def createTagIndex(api_docs, used_tags):
 	res.append('<h1 id="bytag">API calls by tag</h1>')
 
 	for tag in used_tags:
-		res.append('<h2>' + htmlEscape(tag) + '</h2>')
+		res.append('<h2 id="taglist-' + htmlEscape(tag) + '">' + htmlEscape(tag) + '</h2>')
 		res.append('<ul class="taglist">')
 		for doc in api_docs:
 			if not doc['parts'].has_key('tags'):
