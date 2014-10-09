@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
 	duk_size_t buf_size;
 	duk_small_int_t buf_dynamic;
 	duk_uint8_t *buf_data;
@@ -84,7 +84,7 @@ duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
  *  toString(), valueOf()
  */
 
-duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	duk_small_int_t to_string = duk_get_current_magic(ctx);
 

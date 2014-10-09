@@ -7,7 +7,7 @@
 #ifdef DUK_USE_DEBUG
 
 /* must match duk_hobject.h */
-static const char *duk__class_names[32] = {
+DUK_LOCAL const char *duk__class_names[32] = {
 	"unused",
 	"Arguments",
 	"Array",
@@ -43,7 +43,7 @@ static const char *duk__class_names[32] = {
 };
 
 /* for thread dumping */
-static char duk__get_act_summary_char(duk_activation *act) {
+DUK_LOCAL char duk__get_act_summary_char(duk_activation *act) {
 	if (act->func) {
 		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
 			return 'c';
@@ -60,7 +60,7 @@ static char duk__get_act_summary_char(duk_activation *act) {
 }
 
 /* for thread dumping */
-static char duk__get_tval_summary_char(duk_tval *tv) {
+DUK_LOCAL char duk__get_tval_summary_char(duk_tval *tv) {
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
 		if (DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
@@ -102,7 +102,7 @@ static char duk__get_tval_summary_char(duk_tval *tv) {
 }
 
 /* for thread dumping */
-static char duk__get_cat_summary_char(duk_catcher *catcher) {
+DUK_LOCAL char duk__get_cat_summary_char(duk_catcher *catcher) {
 	switch (DUK_CAT_GET_TYPE(catcher)) {
 	case DUK_CAT_TYPE_TCF:
 		if (DUK_CAT_HAS_CATCH_ENABLED(catcher)) {
@@ -128,7 +128,7 @@ static char duk__get_cat_summary_char(duk_catcher *catcher) {
 	DUK_UNREACHABLE();
 }
 
-void duk_debug_dump_hobject(duk_hobject *obj) {
+DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 	duk_uint_fast32_t i;
 	const char *str_empty = "";
 	const char *str_excl = "!";
@@ -413,7 +413,7 @@ void duk_debug_dump_hobject(duk_hobject *obj) {
 	}
 }
 
-void duk_debug_dump_callstack(duk_hthread *thr) {
+DUK_INTERNAL void duk_debug_dump_callstack(duk_hthread *thr) {
 	duk_uint_fast32_t i;
 
 	DUK_D(DUK_DPRINT("=== hthread %p callstack: %ld entries ===",
@@ -446,7 +446,7 @@ void duk_debug_dump_callstack(duk_hthread *thr) {
 	}
 }
 
-void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
+DUK_INTERNAL void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
 	if (!act) {
 		DUK_D(DUK_DPRINT("duk_activation: NULL"));
 	} else {

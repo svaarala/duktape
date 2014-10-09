@@ -6,7 +6,7 @@
 
 #ifdef DUK_USE_DEBUG
 
-static void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
+DUK_LOCAL void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
 	duk_size_t i;
 	duk_size_t nchars;
 	duk_size_t maxchars;
@@ -26,7 +26,7 @@ static void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *s
 	}
 }
 
-static const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
+DUK_LOCAL const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
 		return "string";
@@ -39,7 +39,7 @@ static const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 	}
 }
 
-static void duk__dump_indented(duk_heaphdr *obj, int index) {
+DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 	DUK_D(DUK_DPRINT("  [%ld]: %p %s (flags: 0x%08lx, ref: %ld) -> %!O",
 	                 (long) index,
@@ -58,7 +58,7 @@ static void duk__dump_indented(duk_heaphdr *obj, int index) {
 #endif
 }
 
-static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
+DUK_LOCAL void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
 	duk_int_t count;
 	duk_heaphdr *curr;
 
@@ -82,7 +82,7 @@ static void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char
 	}
 }
 
-static void duk__dump_stringtable(duk_heap *heap) {
+DUK_LOCAL void duk__dump_stringtable(duk_heap *heap) {
 	duk_uint_fast32_t i;
 	char buf[64+1];
 
@@ -138,7 +138,7 @@ static void duk__dump_stringtable(duk_heap *heap) {
 	}
 }
 
-static void duk__dump_strcache(duk_heap *heap) {
+DUK_LOCAL void duk__dump_strcache(duk_heap *heap) {
 	duk_uint_fast32_t i;
 	char buf[64+1];
 
@@ -157,7 +157,7 @@ static void duk__dump_strcache(duk_heap *heap) {
 	}
 }
 
-void duk_debug_dump_heap(duk_heap *heap) {
+DUK_INTERNAL void duk_debug_dump_heap(duk_heap *heap) {
 	char buf[64+1];
 
 	DUK_D(DUK_DPRINT("=== heap %p ===", (void *) heap));

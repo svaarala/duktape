@@ -5,7 +5,7 @@
 #include "duk_internal.h"
 
 /* 3-letter log level strings */
-static const duk_uint8_t duk__log_level_strings[] = {
+DUK_LOCAL const duk_uint8_t duk__log_level_strings[] = {
 	(duk_uint8_t) DUK_ASC_UC_T, (duk_uint8_t) DUK_ASC_UC_R, (duk_uint8_t) DUK_ASC_UC_C,
 	(duk_uint8_t) DUK_ASC_UC_D, (duk_uint8_t) DUK_ASC_UC_B, (duk_uint8_t) DUK_ASC_UC_G,
 	(duk_uint8_t) DUK_ASC_UC_I, (duk_uint8_t) DUK_ASC_UC_N, (duk_uint8_t) DUK_ASC_UC_F,
@@ -15,7 +15,7 @@ static const duk_uint8_t duk__log_level_strings[] = {
 };
 
 /* Constructor */
-duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t nargs;
 
@@ -69,7 +69,7 @@ duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 /* Default function to format objects.  Tries to use toLogString() but falls
  * back to toString().  Any errors are propagated out without catching.
  */
-duk_ret_t duk_bi_logger_prototype_fmt(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_fmt(duk_context *ctx) {
 	if (duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_LOG_STRING)) {
 		/* [ arg toLogString ] */
 
@@ -93,7 +93,7 @@ duk_ret_t duk_bi_logger_prototype_fmt(duk_context *ctx) {
  * This function should avoid coercing the buffer to a string to avoid
  * string table traffic.
  */
-duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
 	const char *data;
 	duk_size_t data_len;
 
@@ -117,7 +117,7 @@ duk_ret_t duk_bi_logger_prototype_raw(duk_context *ctx) {
  * This needs to have small footprint, reasonable performance, minimal
  * memory churn, etc.
  */
-duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_double_t now;
 	duk_small_int_t entry_lev = duk_get_current_magic(ctx);

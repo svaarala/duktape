@@ -5,7 +5,7 @@
 #include "duk_internal.h"
 
 #if defined(DUK_USE_ES6_PROXY)
-duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_hobject *h_target;
 	duk_hobject *h_handler;
 
@@ -54,7 +54,7 @@ duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	return 1;  /* replacement handler */
 }
 #else  /* DUK_USE_ES6_PROXY */
-duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_UNSUPPORTED_ERROR;
 }

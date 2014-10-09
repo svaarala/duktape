@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, duk_bool_t is_join) {
+DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, duk_bool_t is_join) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_uint_t count;
 	duk_uint_t i;
@@ -106,11 +106,11 @@ static void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in, du
 	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CONCAT_RESULT_TOO_LONG);
 }
 
-void duk_concat(duk_context *ctx, duk_idx_t count) {
+DUK_EXTERNAL void duk_concat(duk_context *ctx, duk_idx_t count) {
 	duk__concat_and_join_helper(ctx, count, 0 /*is_join*/);
 }
 
-void duk_join(duk_context *ctx, duk_idx_t count) {
+DUK_EXTERNAL void duk_join(duk_context *ctx, duk_idx_t count) {
 	duk__concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
@@ -118,7 +118,7 @@ void duk_join(duk_context *ctx, duk_idx_t count) {
  * Case conversion needs also the character surroundings though.
  */
 
-void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata) {
+DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	duk_uint8_t *p, *p_start, *p_end;
@@ -140,7 +140,7 @@ void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_functi
 	}
 }
 
-void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata) {
+DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	duk_hbuffer_dynamic *h_buf;
@@ -175,7 +175,7 @@ void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function cal
 	duk_replace(ctx, index);
 }
 
-void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, duk_size_t end_offset) {
+DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, duk_size_t end_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_hstring *res;
@@ -222,7 +222,7 @@ void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, d
 /* XXX: this is quite clunky.  Add Unicode helpers to scan backwards and
  * forwards with a callback to process codepoints?
  */
-void duk_trim(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
@@ -295,7 +295,7 @@ void duk_trim(duk_context *ctx, duk_idx_t index) {
 	duk_replace(ctx, index);
 }
 
-duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset) {
+DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_ucodepoint_t cp;

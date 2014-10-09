@@ -395,74 +395,75 @@ struct duk_heap {
  *  Prototypes
  */
 
+DUK_INTERNAL_DECL
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_realloc_function realloc_func,
                          duk_free_function free_func,
                          void *alloc_udata,
                          duk_fatal_function fatal_func);
-void duk_heap_free(duk_heap *heap);
-void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr);
+DUK_INTERNAL_DECL void duk_heap_free(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr);
 
-void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
+DUK_INTERNAL_DECL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_REFERENCE_COUNTING)
-void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
+DUK_INTERNAL_DECL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 #endif
 #ifdef DUK_USE_INTERRUPT_COUNTER
-void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
+DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
 #endif
 
-duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
-duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
-duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t len);
-duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
-duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
-duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
-void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t len);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
+DUK_INTERNAL_DECL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
-void duk_heap_force_stringtable_resize(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_heap_force_stringtable_resize(duk_heap *heap);
 #endif
 
-void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
-duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
+DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
 
 #ifdef DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
-void *duk_default_alloc_function(void *udata, duk_size_t size);
-void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize);
-void duk_default_free_function(void *udata, void *ptr);
+DUK_INTERNAL_DECL void *duk_default_alloc_function(void *udata, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize);
+DUK_INTERNAL_DECL void duk_default_free_function(void *udata, void *ptr);
 #endif
 
-void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size);
-void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size);
-void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize);
-void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
-void duk_heap_mem_free(duk_heap *heap, void *ptr);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
+DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
-void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
-void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line);
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line);
 #else
-void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size);
-void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size);
-void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize);
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize);
+DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize);
 #endif
 
 #ifdef DUK_USE_REFERENCE_COUNTING
-void duk_heap_tval_incref(duk_tval *tv);
-void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv);
-void duk_heap_heaphdr_incref(duk_heaphdr *h);
-void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h);
-void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr);
+DUK_INTERNAL_DECL void duk_heap_tval_incref(duk_tval *tv);
+DUK_INTERNAL_DECL void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL void duk_heap_heaphdr_incref(duk_heaphdr *h);
+DUK_INTERNAL_DECL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h);
+DUK_INTERNAL_DECL void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr);
 #else
 /* no refcounting */
 #endif
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
+DUK_INTERNAL_DECL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 #endif
 
-duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len);
+DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len);
 
 #endif  /* DUK_HEAP_H_INCLUDED */

@@ -51,7 +51,7 @@
 /* Shared entry code for many Array built-ins.  Note that length is left
  * on stack (it could be popped, but that's not necessary).
  */
-static duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
+DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
 	duk_uint32_t len;
 
 	(void) duk_push_this_coercible_to_object(ctx);
@@ -62,7 +62,7 @@ static duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
 	return len;
 }
 
-static duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
+DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
 	/* Range limited to [0, 0x7fffffff] range, i.e. range that can be
 	 * represented with duk_int32_t.  Use this when the method doesn't
 	 * handle the full 32-bit unsigned range correctly.
@@ -78,7 +78,7 @@ static duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
  *  Constructor
  */
 
-duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_double_t d;
 	duk_uint32_t len;
@@ -121,7 +121,7 @@ duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
  *  isArray()
  */
 
-duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
 	duk_hobject *h;
 
 	h = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_ARRAY);
@@ -133,7 +133,7 @@ duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
  *  toString()
  */
 
-duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
 	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_JOIN);
 
@@ -172,7 +172,7 @@ duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
  *  concat()
  */
 
-duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 	duk_idx_t i, n;
 	duk_uarridx_t idx, idx_last;
 	duk_uarridx_t j, len;
@@ -264,7 +264,7 @@ duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
  *  There is no fancy handling; the prefix gets re-joined multiple times.
  */
 
-duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	duk_uint32_t len, count;
 	duk_uint32_t idx;
 	duk_small_int_t to_locale_string = duk_get_current_magic(ctx);
@@ -347,7 +347,7 @@ duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
  *  pop(), push()
  */
 
-duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t idx;
 
@@ -367,7 +367,7 @@ duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 	/* Note: 'this' is not necessarily an Array object.  The push()
 	 * algorithm is supposed to work for other kinds of objects too,
 	 * so the algorithm has e.g. an explicit update for the 'length'
@@ -413,7 +413,7 @@ duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
  *  may use a negative offset.
  */
 
-static duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t idx1, duk_int_t idx2) {
+DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t idx1, duk_int_t idx2) {
 	duk_bool_t have1, have2;
 	duk_bool_t undef1, undef2;
 	duk_small_int_t ret;
@@ -531,7 +531,7 @@ static duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t idx1,
 	return ret;
 }
 
-static void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) {
+DUK_LOCAL void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) {
 	duk_bool_t have_l, have_r;
 	duk_idx_t idx_obj = 1;  /* fixed offset in valstack */
 
@@ -561,7 +561,7 @@ static void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) {
 
 #if defined(DUK_USE_DDDPRINT)
 /* Debug print which visualizes the qsort partitioning process. */
-static void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t hi, duk_int_t pivot) {
+DUK_LOCAL void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t hi, duk_int_t pivot) {
 	char buf[4096];
 	char *ptr = buf;
 	duk_int_t i, n;
@@ -591,7 +591,7 @@ static void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t 
 }
 #endif
 
-static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
+DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t p, l, r;
 
@@ -689,7 +689,7 @@ static void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	duk__array_qsort(ctx, r + 1, hi);
 }
 
-duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
 	duk_uint32_t len;
 
 	/* XXX: len >= 0x80000000 won't work below because a signed type
@@ -725,7 +725,7 @@ duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
  *   unshift is (close to?) <--> splice(0, 0, [items])?
  */
 
-duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_uint32_t len;
 	duk_bool_t have_delcount;
@@ -880,7 +880,7 @@ duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
  *  reverse()
  */
 
-duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t middle;
 	duk_uint32_t lower, upper;
@@ -931,7 +931,7 @@ duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
  *  slice()
  */
 
-duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_int_t start, end;
 	duk_int_t i;
@@ -993,7 +993,7 @@ duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
  *  shift()
  */
 
-duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t i;
 
@@ -1035,7 +1035,7 @@ duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
  *  unshift()
  */
 
-duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_uint32_t len;
 	duk_uint32_t i;
@@ -1094,7 +1094,7 @@ duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
  *  indexOf(), lastIndexOf()
  */
 
-duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_int_t i, len;
 	duk_int_t from_index;
@@ -1195,7 +1195,7 @@ duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
  * 5 callers the net result is about 100 bytes / caller.
  */
 
-duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t i;
 	duk_uarridx_t k;
@@ -1333,7 +1333,7 @@ duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
  *  reduce(), reduceRight()
  */
 
-duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_bool_t have_acc;
 	duk_uint32_t i, len;

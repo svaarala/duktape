@@ -37,16 +37,16 @@
  */
 
 /* Forward declarations. */
-static duk_uint8_t duk__date_equivyear[14];
-static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset);
-static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags);
-static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
-static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
-static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
-static duk_bool_t duk__is_leap_year(duk_int_t year);
-static duk_bool_t duk__timeval_in_valid_range(duk_double_t x);
-static duk_bool_t duk__timeval_in_leeway_range(duk_double_t x);
-static duk_bool_t duk__year_in_valid_range(duk_double_t year);
+DUK_LOCAL_DECL duk_uint8_t duk__date_equivyear[14];
+DUK_LOCAL_DECL duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset);
+DUK_LOCAL_DECL duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags);
+DUK_LOCAL_DECL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
+DUK_LOCAL_DECL duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
+DUK_LOCAL_DECL void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
+DUK_LOCAL_DECL duk_bool_t duk__is_leap_year(duk_int_t year);
+DUK_LOCAL_DECL duk_bool_t duk__timeval_in_valid_range(duk_double_t x);
+DUK_LOCAL_DECL duk_bool_t duk__timeval_in_leeway_range(duk_double_t x);
+DUK_LOCAL_DECL duk_bool_t duk__year_in_valid_range(duk_double_t year);
 
 /* Millisecond count constants. */
 #define DUK__MS_SECOND          1000L
@@ -146,7 +146,7 @@ static duk_bool_t duk__year_in_valid_range(duk_double_t year);
 
 #ifdef DUK_USE_DATE_NOW_GETTIMEOFDAY
 /* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
-duk_double_t duk_bi_date_get_now(duk_context *ctx) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	struct timeval tv;
 	duk_double_t d;
@@ -165,7 +165,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 
 #ifdef DUK_USE_DATE_NOW_TIME
 /* Not a very good provider: only full seconds are available. */
-duk_double_t duk_bi_date_get_now(duk_context *ctx) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	time_t t = time(NULL);
 	return ((duk_double_t) t) * 1000.0;
 }
@@ -173,7 +173,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 
 #if defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS)
 /* Shared Windows helpers. */
-static void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER *res) {
+DUK_LOCAL void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER *res) {
 	FILETIME ft;
 	if (SystemTimeToFileTime(st, &ft) == 0) {
 		DUK_D(DUK_DPRINT("SystemTimeToFileTime() failed, returning 0"));
@@ -183,7 +183,7 @@ static void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEGER 
 		res->HighPart = ft.dwHighDateTime;
 	}
 }
-static void duk__set_systime_jan1970(SYSTEMTIME *st) {
+DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 	DUK_MEMZERO((void *) st, sizeof(*st));
 	st->wYear = 1970;
 	st->wMonth = 1;
@@ -197,7 +197,7 @@ static void duk__set_systime_jan1970(SYSTEMTIME *st) {
 #endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
 #ifdef DUK_USE_DATE_NOW_WINDOWS
-duk_double_t duk_bi_date_get_now(duk_context *ctx) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
 	 */
@@ -219,7 +219,7 @@ duk_double_t duk_bi_date_get_now(duk_context *ctx) {
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
-static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
+DUK_LOCAL duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	time_t t, t1, t2;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
@@ -365,7 +365,7 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
-static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
+DUK_LOCAL duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
@@ -405,7 +405,7 @@ static duk_int_t duk__get_local_tzoffset(duk_double_t d) {
 #endif  /* DUK_USE_DATE_TZO_WINDOWS */
 
 #ifdef DUK_USE_DATE_PRS_STRPTIME
-static duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) {
+DUK_LOCAL duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) {
 	struct tm tm;
 	time_t t;
 	char buf[DUK__STRPTIME_BUF_SIZE];
@@ -440,7 +440,7 @@ static duk_bool_t duk__parse_string_strptime(duk_context *ctx, const char *str) 
 #endif  /* DUK_USE_DATE_PRS_STRPTIME */
 
 #ifdef DUK_USE_DATE_PRS_GETDATE
-static duk_bool_t duk__parse_string_getdate(duk_context *ctx, const char *str) {
+DUK_LOCAL duk_bool_t duk__parse_string_getdate(duk_context *ctx, const char *str) {
 	struct tm tm;
 	duk_small_int_t rc;
 	time_t t;
@@ -467,7 +467,7 @@ static duk_bool_t duk__parse_string_getdate(duk_context *ctx, const char *str) {
 #endif  /* DUK_USE_DATE_PRS_GETDATE */
 
 #ifdef DUK_USE_DATE_FMT_STRFTIME
-static duk_bool_t duk__format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
+DUK_LOCAL duk_bool_t duk__format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
 	char buf[DUK__STRFTIME_BUF_SIZE];
 	struct tm tm;
 	const char *fmt;
@@ -586,13 +586,13 @@ static duk_bool_t duk__format_parts_strftime(duk_context *ctx, duk_int_t *parts,
 #define DUK__RULE_MASK_PART_SEP  0x1ffffUL
 
 /* Matching separator index is used in the control table */
-static const duk_uint8_t duk__parse_iso8601_seps[] = {
+DUK_LOCAL const duk_uint8_t duk__parse_iso8601_seps[] = {
 	DUK_ASC_PLUS /*0*/, DUK_ASC_MINUS /*1*/, DUK_ASC_UC_T /*2*/, DUK_ASC_SPACE /*3*/,
 	DUK_ASC_COLON /*4*/, DUK_ASC_PERIOD /*5*/, DUK_ASC_UC_Z /*6*/, DUK_ASC_NUL /*7*/
 };
 
 /* Rule table: first matching rule is used to determine what to do next. */
-static const duk_uint32_t duk__parse_iso8601_control[] = {
+DUK_LOCAL const duk_uint32_t duk__parse_iso8601_control[] = {
 	DUK__PACK_RULE(DUK__PM_YEAR, DUK__SM_MINUS, DUK__PI_MONTH, 0),
 	DUK__PACK_RULE(DUK__PM_MONTH, DUK__SM_MINUS, DUK__PI_DAY, 0),
 	DUK__PACK_RULE(DUK__PM_YEAR | DUK__PM_MONTH | DUK__PM_DAY, DUK__SM_T | DUK__SM_SPACE, DUK__PI_HOUR, 0),
@@ -613,7 +613,7 @@ static const duk_uint32_t duk__parse_iso8601_control[] = {
 	 */
 };
 
-static duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
+DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const char *str) {
 	duk_int_t parts[DUK__NUM_ISO8601_PARSER_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
 	duk_double_t d;
@@ -810,7 +810,7 @@ static duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const char 
  *  UTC and '2012/01/01' as local time.
  */
 
-static duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
+DUK_LOCAL duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
 	/* XXX: there is a small risk here: because the ISO 8601 parser is
 	 * very loose, it may end up parsing some datetime values which
 	 * would be better parsed with a platform specific parser.
@@ -848,7 +848,7 @@ static duk_ret_t duk__parse_string(duk_context *ctx, const char *str) {
  *  out for non-finite numbers etc.
  */
 
-static duk_uint8_t duk__days_in_month[12] = {
+DUK_LOCAL duk_uint8_t duk__days_in_month[12] = {
 	(duk_uint8_t) 31, (duk_uint8_t) 28, (duk_uint8_t) 31, (duk_uint8_t) 30,
 	(duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 31,
 	(duk_uint8_t) 30, (duk_uint8_t) 31, (duk_uint8_t) 30, (duk_uint8_t) 31
@@ -860,7 +860,7 @@ static duk_uint8_t duk__days_in_month[12] = {
  * https://bugzilla.mozilla.org/show_bug.cgi?id=351066
  */
 #define DUK__YEAR(x) ((duk_uint8_t) ((x) - 1970))
-static duk_uint8_t duk__date_equivyear[14] = {
+DUK_LOCAL duk_uint8_t duk__date_equivyear[14] = {
 #if 1
 	/* This is based on V8 EquivalentYear() algorithm (see src/genequivyear.py):
 	 * http://code.google.com/p/v8/source/browse/trunk/src/date.h#146
@@ -904,7 +904,7 @@ static duk_uint8_t duk__date_equivyear[14] = {
  */
 #define DUK__WEEKDAY_MOD_ADDER  (20000000 * 7)  /* 0x08583b00 */
 
-static duk_bool_t duk__is_leap_year(duk_int_t year) {
+DUK_LOCAL duk_bool_t duk__is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
 		return 0;
 	}
@@ -917,19 +917,19 @@ static duk_bool_t duk__is_leap_year(duk_int_t year) {
 	return 1;
 }
 
-static duk_bool_t duk__timeval_in_valid_range(duk_double_t x) {
+DUK_LOCAL duk_bool_t duk__timeval_in_valid_range(duk_double_t x) {
 	return (x >= -DUK__MS_100M_DAYS && x <= DUK__MS_100M_DAYS);
 }
 
-static duk_bool_t duk__timeval_in_leeway_range(duk_double_t x) {
+DUK_LOCAL duk_bool_t duk__timeval_in_leeway_range(duk_double_t x) {
 	return (x >= -DUK__MS_100M_DAYS_LEEWAY && x <= DUK__MS_100M_DAYS_LEEWAY);
 }
 
-static duk_bool_t duk__year_in_valid_range(duk_double_t x) {
+DUK_LOCAL duk_bool_t duk__year_in_valid_range(duk_double_t x) {
 	return (x >= DUK__MIN_ECMA_YEAR && x <= DUK__MAX_ECMA_YEAR);
 }
 
-static duk_double_t duk__timeclip(duk_double_t x) {
+DUK_LOCAL duk_double_t duk__timeclip(duk_double_t x) {
 	if (!DUK_ISFINITE(x)) {
 		return DUK_DOUBLE_NAN;
 	}
@@ -945,7 +945,7 @@ static duk_double_t duk__timeclip(duk_double_t x) {
 }
 
 /* Integer division which floors also negative values correctly. */
-static duk_int_t duk__div_floor(duk_int_t a, duk_int_t b) {
+DUK_LOCAL duk_int_t duk__div_floor(duk_int_t a, duk_int_t b) {
 	DUK_ASSERT(b > 0);
 	if (a >= 0) {
 		return a / b;
@@ -959,7 +959,7 @@ static duk_int_t duk__div_floor(duk_int_t a, duk_int_t b) {
 }
 
 /* Compute day number of the first day of a given year. */
-static duk_int_t duk__day_from_year(duk_int_t year) {
+DUK_LOCAL duk_int_t duk__day_from_year(duk_int_t year) {
 	/* Note: in integer arithmetic, (x / 4) is same as floor(x / 4) for non-negative
 	 * values, but is incorrect for negative ones.
 	 */
@@ -970,7 +970,7 @@ static duk_int_t duk__day_from_year(duk_int_t year) {
 }
 
 /* Given a day number, determine year and day-within-year. */
-static duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_within_year) {
+DUK_LOCAL duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_within_year) {
 	duk_int_t year;
 	duk_int_t diff_days;
 
@@ -1007,7 +1007,7 @@ static duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_with
 /* Given a (year, month, day-within-month) triple, compute day number.
  * The input triple is un-normalized and may contain non-finite values.
  */
-static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_double_t day) {
+DUK_LOCAL duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_double_t day) {
 	duk_int_t day_num;
 	duk_bool_t is_leap;
 	duk_small_int_t i, n;
@@ -1069,7 +1069,7 @@ static duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_dou
  * one, i.e. finite, no fractions.  Possible local time adjustment has already
  * been applied when reading the time value.
  */
-static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
+DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
 	duk_double_t d1, d2;
 	duk_int_t t1, t2;
 	duk_int_t day_since_epoch;
@@ -1213,7 +1213,7 @@ static void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t
  * wildly out of range (but may cancel each other and still come out in
  * the valid Date range).
  */
-static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
+DUK_LOCAL duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
 #if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
 	/* See comments below on MakeTime why these are volatile. */
 	volatile duk_double_t tmp_time;
@@ -1351,7 +1351,7 @@ static duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small
  * internal time value.  At the end, stack is: [ ... this timeval ].
  * Returns the time value.  Local time adjustment is done if requested.
  */
-static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset) {
+DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 	duk_double_t d;
@@ -1393,7 +1393,7 @@ static duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_sm
 	return d;
 }
 
-static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags) {
+DUK_LOCAL duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags) {
 	return duk__push_this_get_timeval_tzoffset(ctx, flags, NULL);
 }
 
@@ -1401,7 +1401,7 @@ static duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_
  * value stack and return 1 (caller can then tailcall us).  Expects
  * the value stack to contain 'this' on the stack top.
  */
-static duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_t *dparts, duk_small_uint_t flags) {
+DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_t *dparts, duk_small_uint_t flags) {
 	duk_double_t d;
 
 	/* [ ... this ] */
@@ -1416,7 +1416,7 @@ static duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_
 }
 
 /* 'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long. */
-static void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags, duk_uint8_t *out_buf) {
+DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags, duk_uint8_t *out_buf) {
 	char yearstr[8];   /* "-123456\0" */
 	char tzstr[8];     /* "+11:22\0" */
 	char sep = (flags & DUK__FLAG_SEP_T) ? DUK_ASC_UC_T : DUK_ASC_SPACE;
@@ -1476,7 +1476,7 @@ static void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_
  * internal time value, and format date and/or time in a few formats.
  * Return value allows tail calls.
  */
-static duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t flags) {
+DUK_LOCAL duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t flags) {
 	duk_double_t d;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_int_t tzoffset;  /* seconds, doesn't fit into 16 bits */
@@ -1527,7 +1527,7 @@ static duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t flags)
  * local time), push a specified component as a return value to the
  * value stack and return 1 (caller can then tailcall us).
  */
-static duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_and_idx) {
+DUK_LOCAL duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_and_idx) {
 	duk_double_t d;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_small_uint_t idx_part = (duk_small_uint_t) (flags_and_idx >> DUK__FLAG_VALUE_SHIFT);  /* unpack args */
@@ -1559,7 +1559,7 @@ static duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_a
  * new time value as a return value to the value stack and return 1
  * (caller can then tailcall us).
  */
-static duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_and_maxnargs) {
+DUK_LOCAL duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_and_maxnargs) {
 	duk_double_t d;
 	duk_int_t parts[DUK__NUM_PARTS];
 	duk_double_t dparts[DUK__NUM_PARTS];
@@ -1658,7 +1658,7 @@ static duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_a
 /* Apply ToNumber() to specified index; if ToInteger(val) in [0,99], add
  * 1900 and replace value at idx_val.
  */
-static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val) {
+DUK_LOCAL void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val) {
 	duk_double_t d;
 
 	/* XXX: idx_val would fit into 16 bits, but using duk_small_uint_t
@@ -1684,7 +1684,7 @@ static void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val) {
 /* Set datetime parts from stack arguments, defaulting any missing values.
  * Day-of-week is not set; it is not required when setting the time value.
  */
-static void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, duk_idx_t nargs) {
+DUK_LOCAL void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, duk_idx_t nargs) {
 	duk_double_t d;
 	duk_small_uint_t i;
 	duk_small_uint_t idx;
@@ -1731,7 +1731,7 @@ static void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, duk
  *  'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long.
  */
 
-void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
+DUK_INTERNAL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
 	duk_int_t parts[DUK__NUM_PARTS];
 
 	duk__timeval_to_parts(timeval,
@@ -1751,7 +1751,7 @@ void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
  *  Constructor calls
  */
 
-duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 	duk_idx_t nargs = duk_get_top(ctx);
 	duk_bool_t is_cons = duk_is_constructor_call(ctx);
 	duk_double_t dparts[DUK__NUM_PARTS];
@@ -1798,11 +1798,11 @@ duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_date_constructor_parse(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_constructor_parse(duk_context *ctx) {
 	return duk__parse_string(ctx, duk_to_string(ctx, 0));
 }
 
-duk_ret_t duk_bi_date_constructor_utc(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_constructor_utc(duk_context *ctx) {
 	duk_idx_t nargs = duk_get_top(ctx);
 	duk_double_t dparts[DUK__NUM_PARTS];
 	duk_double_t d;
@@ -1821,7 +1821,7 @@ duk_ret_t duk_bi_date_constructor_utc(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
 	duk_double_t d;
 
 	d = DUK__GET_NOW_TIMEVAL(ctx);
@@ -1864,12 +1864,12 @@ duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
  *      toISOString() requires a RangeError for invalid date values.
  */
 
-duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
 	duk_small_uint_t flags = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__to_string_helper(ctx, flags);
 }
 
-duk_ret_t duk_bi_date_prototype_value_of(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_value_of(duk_context *ctx) {
 	/* This native function is also used for Date.prototype.getTime()
 	 * as their behavior is identical.
 	 */
@@ -1880,7 +1880,7 @@ duk_ret_t duk_bi_date_prototype_value_of(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
 	/* Note: toJSON() is a generic function which works even if 'this'
 	 * is not a Date.  The sole argument is ignored.
 	 */
@@ -1946,12 +1946,12 @@ duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
  *      function (duk_bi_date_prototype_value_of).
  */
 
-duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx) {
 	duk_small_uint_t flags_and_idx = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__get_part_helper(ctx, flags_and_idx);
 }
 
-duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
 	/*
 	 *  Return (t - LocalTime(t)) in minutes:
 	 *
@@ -2031,12 +2031,12 @@ duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx) {
  *      the year will be set regardless of actual argument count.
  */
 
-duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx) {
 	duk_small_uint_t flags_and_maxnargs = (duk_small_uint_t) duk_get_current_magic(ctx);
 	return duk__set_part_helper(ctx, flags_and_maxnargs);
 }
 
-duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx) {
 	duk_double_t d;
 
 	(void) duk__push_this_get_timeval(ctx, 0 /*flags*/); /* -> [ timeval this ] */

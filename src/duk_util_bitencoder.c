@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t bits) {
+DUK_INTERNAL void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t bits) {
 	duk_uint8_t tmp;
 
 	DUK_ASSERT(ctx != NULL);
@@ -29,7 +29,7 @@ void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t b
 	}
 }
 
-void duk_be_finish(duk_bitencoder_ctx *ctx) {
+DUK_INTERNAL void duk_be_finish(duk_bitencoder_ctx *ctx) {
 	duk_small_int_t npad;
 
 	DUK_ASSERT(ctx != NULL);

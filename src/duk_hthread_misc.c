@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-void duk_hthread_terminate(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_terminate(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
 	/* Order of unwinding is important */
@@ -33,7 +33,7 @@ void duk_hthread_terminate(duk_hthread *thr) {
 	 */
 }
 
-duk_activation *duk_hthread_get_current_activation(duk_hthread *thr) {
+DUK_INTERNAL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
 	if (thr->callstack_top > 0) {

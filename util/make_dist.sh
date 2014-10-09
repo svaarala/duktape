@@ -313,8 +313,14 @@ cat AUTHORS.rst | python util/make_ascii.py | sed -e 's/^/ \*  /' >> $DIST/AUTHO
 echo ' */' >> $DIST/AUTHORS.rst.tmp
 
 # Build duktape.h from parts, with some git-related replacements.
+# The only difference between single and separate file duktape.h
+# is the internal DUK_SINGLE_FILE define.
 
 cat src/duktape.h.in | sed -e '
+/^@DUK_SINGLE_FILE@$/ {
+    i \#define DUK_SINGLE_FILE
+    d
+}
 /^@LICENSE_TXT@$/ {
     r dist/LICENSE.txt.tmp
     d
@@ -342,6 +348,10 @@ cat src/duktape.h.in | sed -e '
 	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
 	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
 	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+	> $DISTSRCCOM/duktape.h
+
+# keep the line so line numbers match between the two variant headers
+cat $DISTSRCCOM/duktape.h | sed -e 's/^#define DUK_SINGLE_FILE$//' \
 	> $DISTSRCSEP/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
@@ -642,8 +652,6 @@ python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 	$DIST/LICENSE.txt.tmp $DIST/AUTHORS.rst.tmp
 echo "CLOC report on combined duktape.c source file"
 perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
-
-cp $DISTSRCSEP/duktape.h $DISTSRCCOM/duktape.h
 
 # Clean up remaining files
 

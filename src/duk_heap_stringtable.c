@@ -17,10 +17,11 @@
  *  is lost.
  */
 
-static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
-                                            duk_uint8_t *str,
-                                            duk_uint32_t blen,
-                                            duk_uint32_t strhash) {
+DUK_LOCAL
+duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
+                                     duk_uint8_t *str,
+                                     duk_uint32_t blen,
+                                     duk_uint32_t strhash) {
 	duk_hstring *res = NULL;
 	duk_uint8_t *data;
 	duk_size_t alloc_size;
@@ -80,7 +81,7 @@ static duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
  *  Count actually used (non-NULL, non-DELETED) entries
  */
 
-static duk_int_t duk__count_used(duk_heap *heap) {
+DUK_LOCAL duk_int_t duk__count_used(duk_heap *heap) {
 	duk_int_t res = 0;
 	duk_uint_fast32_t i, n;
 
@@ -97,7 +98,7 @@ static duk_int_t duk__count_used(duk_heap *heap) {
  *  Hashtable lookup and insert helpers
  */
 
-static void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
+DUK_LOCAL void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
 	duk_uint32_t i;
 	duk_uint32_t step;
 
@@ -128,7 +129,7 @@ static void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint3
 	}
 }
 
-static duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 	duk_uint32_t i;
 	duk_uint32_t step;
 
@@ -160,7 +161,7 @@ static duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entr
 	DUK_UNREACHABLE();
 }
 
-static void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_hstring *h) {
+DUK_LOCAL void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_hstring *h) {
 	duk_uint32_t i;
 	duk_uint32_t step;
 
@@ -195,7 +196,7 @@ static void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, 
  *  Hash resizing and resizing policy
  */
 
-static duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
+DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
 #endif
@@ -291,7 +292,7 @@ static duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) 
 	return 1;  /* FAIL */
 }
 
-static duk_bool_t duk__resize_strtab(duk_heap *heap) {
+DUK_LOCAL duk_bool_t duk__resize_strtab(duk_heap *heap) {
 	duk_uint32_t new_size;
 	duk_bool_t ret;
 
@@ -313,7 +314,7 @@ static duk_bool_t duk__resize_strtab(duk_heap *heap) {
 	return ret;
 }
 
-static duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_used) {
+DUK_LOCAL duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_used) {
 	duk_uint32_t new_free;
 	duk_uint32_t tmp1;
 	duk_uint32_t tmp2;
@@ -339,7 +340,7 @@ static duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_used
  *  Raw intern and lookup
  */
 
-static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 	duk_hstring *res;
 
 	if (duk__recheck_strtab_size(heap, heap->st_used + 1)) {
@@ -378,7 +379,7 @@ static duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_
 	return res;
 }
 
-static duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_strhash) {
+DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_strhash) {
 	duk_hstring *res;
 
 	DUK_ASSERT(out_strhash);
@@ -392,12 +393,12 @@ static duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_
  *  Exposed calls
  */
 
-duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;  /* dummy */
 	return duk__do_lookup(heap, str, blen, &strhash);
 }
 
-duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res;
 	duk_uint32_t strhash;
 
@@ -413,7 +414,7 @@ duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32
 	return res;  /* may be NULL */
 }
 
-duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res = duk_heap_string_intern(thr->heap, str, blen);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to intern string");
@@ -421,7 +422,7 @@ duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, 
 	return res;
 }
 
-duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val) {
+DUK_INTERNAL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
@@ -429,7 +430,7 @@ duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val) {
 	return duk_heap_string_lookup(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 
-duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
@@ -437,7 +438,7 @@ duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val) {
 	return duk_heap_string_intern(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 
-duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
 	duk_hstring *res = duk_heap_string_intern_u32(thr->heap, val);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to intern string");
@@ -446,13 +447,13 @@ duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t v
 }
 
 /* find and remove string from stringtable; caller must free the string itself */
-void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
+DUK_INTERNAL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", (duk_heaphdr *) h));
 	duk__remove_matching_hstring(heap, heap->st, heap->st_size, h);
 }
 
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
-void duk_heap_force_stringtable_resize(duk_heap *heap) {
+DUK_INTERNAL void duk_heap_force_stringtable_resize(duk_heap *heap) {
 	/* Force a resize so that DELETED entries are eliminated.
 	 * Another option would be duk__recheck_strtab_size(); but since
 	 * that happens on every intern anyway, this whole check

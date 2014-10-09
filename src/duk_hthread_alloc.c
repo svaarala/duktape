@@ -10,7 +10,7 @@
  *  Returns zero (without leaking memory) if init fails.
  */
 
-duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
+DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
 	duk_size_t alloc_size;
 	duk_size_t i;
 
@@ -73,17 +73,17 @@ duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr) {
 
 /* For indirect allocs. */
 
-void *duk_hthread_get_valstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_valstack_ptr(void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
 	return (void *) thr->valstack;
 }
 
-void *duk_hthread_get_callstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_callstack_ptr(void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
 	return (void *) thr->callstack;
 }
 
-void *duk_hthread_get_catchstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_catchstack_ptr(void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
 	return (void *) thr->catchstack;
 }

@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-int duk_bi_type_error_thrower(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_type_error_thrower(duk_context *ctx) {
 	DUK_UNREF(ctx);
 	return DUK_RET_TYPE_ERROR;
 }

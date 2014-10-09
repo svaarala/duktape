@@ -73,7 +73,7 @@
 #define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-static const char *duk__bc_optab[] = {
+DUK_LOCAL const char *duk__bc_optab[] = {
 	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTOBJI", "MPUTARR",  "MPUTARRI", "NEW",
 	"NEWI",     "REGEXP", 	"CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",
 	"CLOSURE",  "GETPROP", 	"PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",
@@ -83,7 +83,7 @@ static const char *duk__bc_optab[] = {
 	"UNUSED60", "EXTRA",    "DEBUG",    "INVALID",
 };
 
-static const char *duk__bc_extraoptab[] = {
+DUK_LOCAL const char *duk__bc_extraoptab[] = {
 	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
 	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITSETI", "INITGET", "INITGETI", "ENDTRY", "ENDCATCH",
 	"ENDFIN", "THROW", "INVLHS", "UNM", "UNP", "INC", "DEC", "XXX", "XXX", "XXX",
@@ -140,16 +140,16 @@ struct duk__dprint_state {
 };
 
 /* helpers */
-static void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, duk_bool_t quotes);
-static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
-static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
-static void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
-static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins);
-static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
-static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
-static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h);
+DUK_LOCAL_DECL void duk__print_hstring(duk__dprint_state *st, duk_hstring *k, duk_bool_t quotes);
+DUK_LOCAL_DECL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h);
+DUK_LOCAL_DECL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h);
+DUK_LOCAL_DECL void duk__print_tval(duk__dprint_state *st, duk_tval *tv);
+DUK_LOCAL_DECL void duk__print_instr(duk__dprint_state *st, duk_instr_t ins);
+DUK_LOCAL_DECL void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+DUK_LOCAL_DECL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h);
+DUK_LOCAL_DECL void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h);
 
-static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
+DUK_LOCAL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -197,7 +197,7 @@ static void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 #endif
 }
 
-static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h) {
+DUK_LOCAL void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_string *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (st->heavy) {
@@ -241,7 +241,7 @@ static void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaphdr_
 #endif
 }
 
-static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_bool_t quotes) {
+DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_bool_t quotes) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
@@ -312,7 +312,7 @@ static void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_bool_t
 		} \
 	} while (0)
 
-static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
+DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_uint_fast32_t i;
 	duk_tval *tv;
@@ -593,7 +593,7 @@ static void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 
 #undef DUK__COMMA
 
-static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
+DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_size_t i, n;
 	duk_uint8_t *p;
@@ -632,7 +632,7 @@ static void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	}
 }
 
-static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
+DUK_LOCAL void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -660,7 +660,7 @@ static void duk__print_heaphdr(duk__dprint_state *st, duk_heaphdr *h) {
 	}
 }
 
-static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
+DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (duk_fb_is_full(fb)) {
@@ -736,7 +736,7 @@ static void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	}
 }
 
-static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
+DUK_LOCAL void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_small_int_t op;
 	const char *op_name;
@@ -767,7 +767,7 @@ static void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	}
 }
 
-static void duk__print_opcode(duk__dprint_state *st, duk_small_int_t opcode) {
+DUK_LOCAL void duk__print_opcode(duk__dprint_state *st, duk_small_int_t opcode) {
 	duk_fixedbuffer *fb = st->fb;
 
 	if (opcode < DUK_BC_OP_MIN || opcode > DUK_BC_OP_MAX) {
@@ -777,7 +777,7 @@ static void duk__print_opcode(duk__dprint_state *st, duk_small_int_t opcode) {
 	}
 }
 
-duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap) {
+DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap) {
 	duk_fixedbuffer fb;
 	const char *p = format;
 	const char *p_end = p + DUK_STRLEN(format);
@@ -960,7 +960,7 @@ duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va
 	return retval;
 }
 
-duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...) {
+DUK_INTERNAL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...) {
 	duk_int_t retval;
 	va_list ap;
 	va_start(ap, format);
@@ -974,7 +974,7 @@ duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...
  * specific pointer type.  This helper formats a function pointer based on
  * its memory layout to get something useful on most platforms.
  */
-void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size) {
+DUK_INTERNAL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size) {
 	duk_size_t i;
 	duk_uint8_t *p = (duk_uint8_t *) buf;
 	duk_uint8_t *p_end = (duk_uint8_t *) (buf + buf_size - 1);

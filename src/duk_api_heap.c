@@ -4,6 +4,7 @@
 
 #include "duk_internal.h"
 
+DUK_EXTERNAL
 duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_realloc_function realloc_func,
                              duk_free_function free_func,
@@ -50,7 +51,7 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
 	return ctx;
 }
 
-void duk_destroy_heap(duk_context *ctx) {
+DUK_EXTERNAL void duk_destroy_heap(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 
@@ -64,7 +65,7 @@ void duk_destroy_heap(duk_context *ctx) {
 }
 
 /* XXX: better place for this */
-void duk_set_global_object(duk_context *ctx) {
+DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_glob;
 	duk_hobject *h_prev_glob;

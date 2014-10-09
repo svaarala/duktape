@@ -192,31 +192,31 @@
  */
 
 /* duk_unicode_support.c */
-extern duk_uint8_t duk_unicode_xutf8_markers[7];
-extern duk_uint16_t duk_unicode_re_ranges_digit[2];
-extern duk_uint16_t duk_unicode_re_ranges_white[22];
-extern duk_uint16_t duk_unicode_re_ranges_wordchar[8];
-extern duk_uint16_t duk_unicode_re_ranges_not_digit[4];
-extern duk_uint16_t duk_unicode_re_ranges_not_white[24];
-extern duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
+DUK_INTERNAL_DECL duk_uint8_t duk_unicode_xutf8_markers[7];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_digit[2];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_white[22];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_wordchar[8];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_digit[4];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_white[24];
+DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
 
 /*
  *  Prototypes
  */
 
-duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp);
-duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_uint8_t *out);
-duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_uint8_t *out);
-duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp);
-duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end);
-duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t blen);
-duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp);
-duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp);
-duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp);
-duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp);
-duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp);
-void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t uppercase);
-duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp);
-duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_uint8_t *out);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_uint8_t *out);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp);
+DUK_INTERNAL_DECL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end);
+DUK_INTERNAL_DECL duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t blen);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp);
+DUK_INTERNAL_DECL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t uppercase);
+DUK_INTERNAL_DECL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp);
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
 
 #endif  /* DUK_UNICODE_H_INCLUDED */

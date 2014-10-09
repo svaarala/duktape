@@ -8,7 +8,7 @@
 
 #include "duk_internal.h"
 
-void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
+DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
 	va_list ap;
 	/* stridx_logfunc[] must be static to allow initializer with old compilers like BCC */
 	static const duk_uint16_t stridx_logfunc[6] = {

@@ -5,7 +5,7 @@
 
 #include "duk_internal.h"
 
-void duk_err_longjmp(duk_hthread *thr) {
+DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
 	if (!thr->heap->lj.jmpbuf_ptr) {

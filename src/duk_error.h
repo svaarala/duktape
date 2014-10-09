@@ -202,47 +202,47 @@
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_NORETURN(void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #else  /* DUK_USE_VARIADIC_MACROS */
-extern const char *duk_err_file_stash;
-extern duk_int_t duk_err_line_stash;
-DUK_NORETURN(void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_INTERNAL_DECL const char *duk_err_file_stash;
+DUK_INTERNAL_DECL duk_int_t duk_err_line_stash;
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #else  /* DUK_USE_VERBOSE_ERRORS */
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_NORETURN(void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code));
 #else  /* DUK_USE_VARIADIC_MACROS */
-DUK_NORETURN(void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
-DUK_NORETURN(void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line));
 #else
-DUK_NORETURN(void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code));
 #endif
 
-DUK_NORETURN(void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc));
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline);
+DUK_INTERNAL_DECL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *filename, duk_int_t line, duk_bool_t noblame_fileline);
 #endif
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-void duk_err_augment_error_throw(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_err_augment_error_throw(duk_hthread *thr);
 #endif
 
-DUK_NORETURN(void duk_err_longjmp(duk_hthread *thr));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_longjmp(duk_hthread *thr));
 
-DUK_NORETURN(void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg));
 
 #if !defined(DUK_USE_PANIC_HANDLER)
-DUK_NORETURN(void duk_default_panic_handler(duk_errcode_t code, const char *msg));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_panic_handler(duk_errcode_t code, const char *msg));
 #endif
 
-void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type);
+DUK_INTERNAL_DECL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type);
 
-duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t err_code);
+DUK_INTERNAL_DECL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t err_code);
 
 #endif  /* DUK_ERROR_H_INCLUDED */

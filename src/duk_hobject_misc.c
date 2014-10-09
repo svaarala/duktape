@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop) {
+DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop) {
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
@@ -30,7 +30,7 @@ duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h
 	return 0;
 }
 
-void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
+DUK_INTERNAL void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
 #ifdef DUK_USE_REFERENCE_COUNTING
 	duk_hobject *tmp;
 

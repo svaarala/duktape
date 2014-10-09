@@ -70,7 +70,7 @@ typedef struct {
  *     even if the closure object remains reachable.
  */
 
-static void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunction *f) {
+DUK_LOCAL void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunction *f) {
 	duk_tval *tv, *tv_end;
 	duk_hobject **funcs, **funcs_end;
 
@@ -99,7 +99,7 @@ static void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunctio
  * (outer_var_env is ignored and may or may not be same as outer_lex_env).
  */
 
-static const duk_uint16_t duk__closure_copy_proplist[] = {
+DUK_LOCAL const duk_uint16_t duk__closure_copy_proplist[] = {
 	/* order: most frequent to least frequent */
 	DUK_STRIDX_INT_VARMAP,
 	DUK_STRIDX_INT_FORMALS,
@@ -109,6 +109,7 @@ static const duk_uint16_t duk__closure_copy_proplist[] = {
 	DUK_STRIDX_INT_SOURCE
 };
 
+DUK_INTERNAL
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
@@ -462,6 +463,7 @@ void duk_js_push_closure(duk_hthread *thr,
  */
 
 /* shared helper */
+DUK_INTERNAL
 duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
                                                       duk_hobject *func,
                                                       duk_size_t idx_bottom) {
@@ -504,6 +506,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	return env;
 }
 
+DUK_INTERNAL
 void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
                                                         duk_activation *act) {
 	duk_context *ctx = (duk_context *) thr;
@@ -559,7 +562,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
  *  XXX: should access the own properties directly instead of using the API
  */
 
-void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase) {
+DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hobject *func, duk_size_t regbase) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint_fast32_t i;
 
@@ -724,10 +727,11 @@ void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env, duk_hob
  */
 
 /* lookup name from an open declarative record's registers */
-static duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
-                                                duk_hstring *name,
-                                                duk_hobject *env,
-                                                duk__id_lookup_result *out) {
+DUK_LOCAL
+duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
+                                         duk_hstring *name,
+                                         duk_hobject *env,
+                                         duk__id_lookup_result *out) {
 	duk_hthread *env_thr;
 	duk_hobject *env_func;
 	duk_size_t env_regbase;
@@ -808,10 +812,11 @@ static duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 }
 
 /* lookup name from current activation record's functions' registers */
-static duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
-                                             duk_hstring *name,
-                                             duk_activation *act,
-                                             duk__id_lookup_result *out) {
+DUK_LOCAL
+duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
+                                      duk_hstring *name,
+                                      duk_activation *act,
+                                      duk__id_lookup_result *out) {
 	duk_tval *tv;
 	duk_hobject *func;
 	duk_hobject *varmap;
@@ -863,12 +868,13 @@ static duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	return 1;
 }
 
-static duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
-                                                duk_hobject *env,
-                                                duk_hstring *name,
-                                                duk_activation *act,
-                                                duk_bool_t parents,
-                                                duk__id_lookup_result *out) {
+DUK_LOCAL
+duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
+                                         duk_hobject *env,
+                                         duk_hstring *name,
+                                         duk_activation *act,
+                                         duk_bool_t parents,
+                                         duk__id_lookup_result *out) {
 	duk_tval *tv;
 	duk_uint_t sanity;
 
@@ -1111,6 +1117,7 @@ static duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
  *  a 'strict' parameter.
  */
 
+DUK_INTERNAL
 duk_bool_t duk_js_hasvar_envrec(duk_hthread *thr,
                                 duk_hobject *env,
                                 duk_hstring *name) {
@@ -1163,11 +1170,12 @@ duk_bool_t duk_js_hasvar_envrec(duk_hthread *thr,
  *  ReferenceError.
  */
 
-static duk_bool_t duk__getvar_helper(duk_hthread *thr,
-                                     duk_hobject *env,
-                                     duk_activation *act,
-                                     duk_hstring *name,
-                                     duk_bool_t throw_flag) {
+DUK_LOCAL
+duk_bool_t duk__getvar_helper(duk_hthread *thr,
+                              duk_hobject *env,
+                              duk_activation *act,
+                              duk_hstring *name,
+                              duk_bool_t throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk__id_lookup_result ref;
 	duk_tval tv_tmp_obj;
@@ -1226,6 +1234,7 @@ static duk_bool_t duk__getvar_helper(duk_hthread *thr,
 	}
 }
 
+DUK_INTERNAL
 duk_bool_t duk_js_getvar_envrec(duk_hthread *thr,
                                 duk_hobject *env,
                                 duk_hstring *name,
@@ -1233,6 +1242,7 @@ duk_bool_t duk_js_getvar_envrec(duk_hthread *thr,
 	return duk__getvar_helper(thr, env, NULL, name, throw_flag);
 }
 
+DUK_INTERNAL
 duk_bool_t duk_js_getvar_activation(duk_hthread *thr,
                                     duk_activation *act,
                                     duk_hstring *name,
@@ -1256,12 +1266,13 @@ duk_bool_t duk_js_getvar_activation(duk_hthread *thr,
  *  putting a value may reallocate any object or any valstack.  Caller beware.
  */
 
-static void duk__putvar_helper(duk_hthread *thr,
-                               duk_hobject *env,
-                               duk_activation *act,
-                               duk_hstring *name,
-                               duk_tval *val,
-                               duk_bool_t strict) {
+DUK_LOCAL
+void duk__putvar_helper(duk_hthread *thr,
+                        duk_hobject *env,
+                        duk_activation *act,
+                        duk_hstring *name,
+                        duk_tval *val,
+                        duk_bool_t strict) {
 	duk__id_lookup_result ref;
 	duk_tval tv_tmp_obj;
 	duk_tval tv_tmp_key;
@@ -1356,6 +1367,7 @@ static void duk__putvar_helper(duk_hthread *thr,
 	 */
 }
 
+DUK_INTERNAL
 void duk_js_putvar_envrec(duk_hthread *thr,
                           duk_hobject *env,
                           duk_hstring *name,
@@ -1364,6 +1376,7 @@ void duk_js_putvar_envrec(duk_hthread *thr,
 	duk__putvar_helper(thr, env, NULL, name, val, strict);
 }
 
+DUK_INTERNAL
 void duk_js_putvar_activation(duk_hthread *thr,
                               duk_activation *act,
                               duk_hstring *name,
@@ -1392,10 +1405,11 @@ void duk_js_putvar_activation(duk_hthread *thr,
  *  should never be called from strict mode code!
  */
 
-static duk_bool_t duk__delvar_helper(duk_hthread *thr,
-                                     duk_hobject *env,
-                                     duk_activation *act,
-                                     duk_hstring *name) {
+DUK_LOCAL
+duk_bool_t duk__delvar_helper(duk_hthread *thr,
+                              duk_hobject *env,
+                              duk_activation *act,
+                              duk_hstring *name) {
 	duk__id_lookup_result ref;
 	duk_bool_t parents;
 
@@ -1438,12 +1452,14 @@ static duk_bool_t duk__delvar_helper(duk_hthread *thr,
 	return 1;
 }
 
+DUK_INTERNAL
 duk_bool_t duk_js_delvar_envrec(duk_hthread *thr,
                                 duk_hobject *env,
                                 duk_hstring *name) {
 	return duk__delvar_helper(thr, env, NULL, name);
 }
 
+DUK_INTERNAL
 duk_bool_t duk_js_delvar_activation(duk_hthread *thr,
                                     duk_activation *act,
                                     duk_hstring *name) {
@@ -1501,12 +1517,13 @@ duk_bool_t duk_js_delvar_activation(duk_hthread *thr,
  *  otherwise returns 0.
  */
 
-static duk_bool_t duk__declvar_helper(duk_hthread *thr,
-                                      duk_hobject *env,
-                                      duk_hstring *name,
-                                      duk_tval *val,
-                                      duk_small_int_t prop_flags,
-                                      duk_bool_t is_func_decl) {
+DUK_LOCAL
+duk_bool_t duk__declvar_helper(duk_hthread *thr,
+                               duk_hobject *env,
+                               duk_hstring *name,
+                               duk_tval *val,
+                               duk_small_int_t prop_flags,
+                               duk_bool_t is_func_decl) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *holder;
 	duk_bool_t parents;
@@ -1736,6 +1753,7 @@ static duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	return 0;
 }
 
+DUK_INTERNAL
 duk_bool_t duk_js_declvar_activation(duk_hthread *thr,
                                      duk_activation *act,
                                      duk_hstring *name,

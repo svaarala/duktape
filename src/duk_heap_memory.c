@@ -20,7 +20,7 @@
 		} \
 	} while (0)
 
-static void duk__run_voluntary_gc(duk_heap *heap) {
+DUK_LOCAL void duk__run_voluntary_gc(duk_heap *heap) {
 	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DD(DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now"));
 	} else {
@@ -42,7 +42,7 @@ static void duk__run_voluntary_gc(duk_heap *heap) {
  */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
+DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	void *res;
 	duk_bool_t rc;
 	duk_small_int_t i;
@@ -124,7 +124,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
  *  Compared to a direct macro expansion this wrapper saves a few
  *  instructions because no heap dereferencing is required.
  */
-void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
+DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT_DISABLE(size >= 0);
 
@@ -132,7 +132,7 @@ void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 
-void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
+DUK_INTERNAL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
 	void *res;
 
 	DUK_ASSERT(heap != NULL);
@@ -151,7 +151,7 @@ void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
  */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
 	void *res;
 	duk_bool_t rc;
 	duk_small_int_t i;
@@ -229,7 +229,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
 	DUK_ASSERT_DISABLE(newsize >= 0);
@@ -245,7 +245,7 @@ void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
  */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
 	void *res;
 	duk_bool_t rc;
 	duk_small_int_t i;
@@ -342,7 +342,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
 }
 #else  /* DUK_USE_MARK_AND_SWEEP */
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
 	return heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
@@ -352,7 +352,7 @@ void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud,
  */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
-void duk_heap_mem_free(duk_heap *heap, void *ptr) {
+DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
 
@@ -372,7 +372,7 @@ void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 }
 #else
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-void duk_heap_mem_free(duk_heap *heap, void *ptr) {
+DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
 
@@ -388,9 +388,9 @@ void duk_heap_mem_free(duk_heap *heap, void *ptr) {
  */
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
+DUK_INTERNAL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
 #else
-void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size) {
+DUK_INTERNAL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size) {
 #endif
 	void *res;
 
@@ -409,9 +409,9 @@ void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size) {
 }
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
+DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
 #else
-void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size) {
+DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size) {
 #endif
 	void *res;
 
@@ -432,9 +432,9 @@ void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size) {
 }
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line) {
+DUK_INTERNAL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line) {
 #else
-void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize) {
 #endif
 	void *res;
 
@@ -454,9 +454,9 @@ void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsi
 }
 
 #ifdef DUK_USE_VERBOSE_ERRORS
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line) {
+DUK_INTERNAL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line) {
 #else
-void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
+DUK_INTERNAL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
 #endif
 	void *res;
 	DUK_ASSERT(thr != NULL);

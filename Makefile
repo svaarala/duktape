@@ -312,6 +312,12 @@ libduktaped.so.1.0.0: dist
 
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+
+dump-public: duk.raw
+	@(objdump -t $< | grep ' g' | grep .text | grep -v .hidden | tr -s ' ' | cut -d ' ' -f 5 | sort > /tmp/duk-public.txt ; true)
+	@echo "Symbol dump in /tmp/duk-public.txt"
+	@(grep duk__ /tmp/duk-public.txt ; true)  # check for leaked file local symbols (does not cover internal, but not public symbols)
 
 duk.vg: duk.raw
 	@rm -f $@
@@ -330,6 +336,7 @@ endif
 
 dukd.raw: dist
 	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
 
 dukd.vg: dukd.raw
 	@rm -f $@

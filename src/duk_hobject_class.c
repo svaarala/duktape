@@ -49,7 +49,7 @@
 #endif
 
 /* Note: assumes that these string indexes are 8-bit, genstrings.py must ensure that */
-duk_uint8_t duk_class_number_to_stridx[32] = {
+DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_UC_ARGUMENTS,
 	DUK_STRIDX_ARRAY,

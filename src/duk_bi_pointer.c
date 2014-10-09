@@ -8,7 +8,7 @@
  *  Constructor
  */
 
-duk_ret_t duk_bi_pointer_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_pointer_constructor(duk_context *ctx) {
 	/* XXX: this behavior is quite useless now; it would be nice to be able
 	 * to create pointer values from e.g. numbers or strings.  Numbers are
 	 * problematic on 64-bit platforms though.  Hex encoded strings?
@@ -40,7 +40,7 @@ duk_ret_t duk_bi_pointer_constructor(duk_context *ctx) {
  *  toString(), valueOf()
  */
 
-duk_ret_t duk_bi_pointer_prototype_tostring_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_pointer_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	duk_small_int_t to_string = duk_get_current_magic(ctx);
 

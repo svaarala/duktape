@@ -267,21 +267,21 @@ struct duk_hthread {
  *  Prototypes
  */
 
-void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to);
-void duk_hthread_create_builtin_objects(duk_hthread *thr);
-duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr);
-void duk_hthread_terminate(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_hthread *thr_to);
+DUK_INTERNAL_DECL void duk_hthread_create_builtin_objects(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_terminate(duk_hthread *thr);
 
-void duk_hthread_callstack_grow(duk_hthread *thr);
-void duk_hthread_callstack_shrink_check(duk_hthread *thr);
-void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
-void duk_hthread_catchstack_grow(duk_hthread *thr);
-void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
-void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
+DUK_INTERNAL_DECL void duk_hthread_callstack_grow(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_callstack_shrink_check(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
+DUK_INTERNAL_DECL void duk_hthread_catchstack_grow(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
-duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
-void *duk_hthread_get_valstack_ptr(void *ud);  /* indirect allocs */
-void *duk_hthread_get_callstack_ptr(void *ud);  /* indirect allocs */
-void *duk_hthread_get_catchstack_ptr(void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
+DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(void *ud);  /* indirect allocs */
 
 #endif  /* DUK_HTHREAD_H_INCLUDED */

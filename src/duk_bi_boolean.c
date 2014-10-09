@@ -7,7 +7,7 @@
 /* Shared helper to provide toString() and valueOf().  Checks 'this', gets
  * the primitive value to stack top, and optionally coerces with ToString().
  */
-duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx) {
 	duk_tval *tv;
 	duk_hobject *h;
 	duk_small_int_t coerce_tostring = duk_get_current_magic(ctx);
@@ -43,7 +43,7 @@ duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 	duk_hobject *h_this;
 
 	duk_to_boolean(ctx, 0);

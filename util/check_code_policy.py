@@ -30,6 +30,7 @@ re_trailing_ws = re.compile(r'^.*?\s$')
 re_only_ws = re.compile(r'^\s*$')
 re_identifier = re.compile(r'[A-Za-z0-9_]+')
 re_nonascii = re.compile(r'^.*?[\x80-\xff].*?$')
+re_func_decl_or_def = re.compile(r'^(\w+)\s+(?:\w+\s+)*(\w+)\(.*?.*?$')  # may not finish on same line
 
 # These identifiers are wrapped in duk_features.h.in, and should only be used
 # through the wrappers elsewhere.
@@ -121,6 +122,15 @@ debuglog_wrappers = {
 	'DUK_DDDPRINT': 'DUK_DDD'
 }
 
+allowed_visibility_macros = [
+	'DUK_EXTERNAL_DECL',
+	'DUK_EXTERNAL',
+	'DUK_INTERNAL_DECL',
+	'DUK_INTERNAL',
+	'DUK_LOCAL_DECL',
+	'DUK_LOCAL'
+]
+
 problems = []
 
 re_repl_c_comments = re.compile(r'/\*.*?\*/', re.DOTALL)
@@ -159,7 +169,7 @@ def removeExpectStrings(data):
 	data = re.sub(re_repl_expect_strings, repl, data)
 	return data
 
-def checkDebugLogCalls(line, filename):
+def checkDebugLogCalls(lines, idx, filename):
 	# Allowed debug log forms:
 	#
 	#     DUK_D(DUK_DPRINT(...))
@@ -169,6 +179,7 @@ def checkDebugLogCalls(line, filename):
 	# The calls may span multiple lines, but the wrapper (DUK_D)
 	# and the log macro (DUK_DPRINT) must be on the same line.
 
+	line = lines[idx]
 	if 'DPRINT' not in line:
 		return
 
@@ -191,7 +202,8 @@ def checkDebugLogCalls(line, filename):
 
 	raise Exception('invalid debug log call form')
 
-def checkTrailingWhitespace(line, filename):
+def checkTrailingWhitespace(lines, idx, filename):
+	line = lines[idx]
 	if len(line) > 0 and line[-1] == '\n':
 		line = line[:-1]
 
@@ -201,13 +213,15 @@ def checkTrailingWhitespace(line, filename):
 
 	raise Exception('trailing whitespace')
 
-def checkCarriageReturns(line, filename):
+def checkCarriageReturns(lines, idx, filename):
+	line = lines[idx]
 	if not '\x0d' in line:
 		return
 
 	raise Exception('carriage return')
 
-def checkMixedIndent(line, filename):
+def checkMixedIndent(lines, idx, filename):
+	line = lines[idx]
 	if not '\x20\x09' in line:
 		return
 
@@ -220,13 +234,15 @@ def checkMixedIndent(line, filename):
 
 	raise Exception('mixed space/tab indent (idx %d)' % idx)
 
-def checkFixme(line, filename):
+def checkFixme(lines, idx, filename):
+	line = lines[idx]
 	if not 'FIXME' in line:
 		return
 
 	raise Exception('FIXME on line')
 
-def checkIdentifiers(line, filename):
+def checkIdentifiers(lines, idx, filename):
+	line = lines[idx]
 	# XXX: this now executes for every line which is pointless
 	bn = os.path.basename(filename)
 	excludePlain = (bn == 'duk_features.h.in' or \
@@ -237,15 +253,45 @@ def checkIdentifiers(line, filename):
 			if not excludePlain:
 				raise Exception('invalid identifier %r (perhaps plain)' % m.group(0))
 
-def checkNonAscii(line, filename):
+def checkNonAscii(lines, idx, filename):
+	line = lines[idx]
 	m = re_nonascii.match(line)
-	if m is not None:
-		bn = os.path.basename(filename)
-		if bn == 'test-lex-utf8.js':
-			# this specific file is intentionally exempt
-			pass
-		else:
-			raise Exception('non-ascii character')
+	if m is None:
+		return
+
+	bn = os.path.basename(filename)
+	if bn == 'test-lex-utf8.js':
+		# this specific file is intentionally exempt
+		pass
+	else:
+		raise Exception('non-ascii character')
+
+def checkNoSymbolVisibility(lines, idx, filename):
+	line = lines[idx]
+	m = re_func_decl_or_def.match(line)
+	if m is None:
+		return
+
+	bn = os.path.basename(filename)
+	if not ((bn[-2:] == '.c' or bn[-2:] == '.h' or bn[-5:] == '.h.in') and bn[0:5] != 'test-'):
+		# Apply to only specific files in src/
+		return
+
+	if m.group(1) in allowed_visibility_macros and \
+	   not ((m.group(1) != 'DUK_LOCAL' and m.group(1) != 'DUK_LOCAL_DECL') and 'duk__' in m.group(2)) and \
+	   not ((m.group(1) == 'DUK_LOCAL' or m.group(1) == 'DUK_LOCAL_DECL') and 'duk__' not in m.group(2)):
+		return
+
+	# Previous line may contain the declaration (alone)
+	if idx > 0 and lines[idx - 1].strip() in allowed_visibility_macros:
+		return
+
+	# Special exceptions
+	if bn == 'duk_features.h.in' and 'static __inline__' in line:
+		# duk_rdtsc(), gcc specific
+		return
+
+	raise Exception('missing symbol visibility macro')
 
 def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings):
 	f = open(filename, 'rb')
@@ -260,14 +306,12 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 	linesNoExpectStrings = dataNoExpectStrings.split('\n')
 
 	def f(lines, checkers):
-		linenumber = 0
-		for line in lines:
-			linenumber += 1
+		for linenumber in xrange(len(lines)):
 			for fun in checkers:
 				try:
-					fun(line, filename)
+					fun(lines, linenumber, filename)  # linenumber is zero-based here
 				except Exception as e:
-					problems.append(Problem(filename, linenumber, line, str(e)))
+					problems.append(Problem(filename, linenumber + 1, lines[linenumber], str(e)))
 
 	f(linesRaw, checkersRaw)
 	f(linesNoComments, checkersNoComments)
@@ -301,6 +345,7 @@ def main():
 	checkersRaw.append(checkCarriageReturns)
 	checkersRaw.append(checkFixme)
 	checkersRaw.append(checkNonAscii)
+	checkersRaw.append(checkNoSymbolVisibility)
 
 	checkersNoComments = []
 	checkersNoComments.append(checkIdentifiers)

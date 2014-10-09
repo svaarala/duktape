@@ -71,7 +71,7 @@ typedef struct {
  * larger than say 2G.
  */
 
-static duk_uint32_t duk__encode_i32(duk_int32_t x) {
+DUK_LOCAL duk_uint32_t duk__encode_i32(duk_int32_t x) {
 	if (x < 0) {
 		return ((duk_uint32_t) (-x)) * 2 + 1;
 	} else {
@@ -82,26 +82,26 @@ static duk_uint32_t duk__encode_i32(duk_int32_t x) {
 /* XXX: return type should probably be duk_size_t, or explicit checks are needed for
  * maximum size.
  */
-static duk_uint32_t duk__insert_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t x) {
+DUK_LOCAL duk_uint32_t duk__insert_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t x) {
 	return (duk_uint32_t) duk_hbuffer_insert_xutf8(re_ctx->thr, re_ctx->buf, offset, x);
 }
 
-static duk_uint32_t duk__append_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t x) {
+DUK_LOCAL duk_uint32_t duk__append_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t x) {
 	return (duk_uint32_t) duk_hbuffer_append_xutf8(re_ctx->thr, re_ctx->buf, x);
 }
 
-static duk_uint32_t duk__insert_i32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t x) {
+DUK_LOCAL duk_uint32_t duk__insert_i32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t x) {
 	return (duk_uint32_t) duk_hbuffer_insert_xutf8(re_ctx->thr, re_ctx->buf, offset, duk__encode_i32(x));
 }
 
 #if 0  /* unused */
-static duk_uint32_t duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
+DUK_LOCAL duk_uint32_t duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
 	return duk_hbuffer_append_xutf8(re_ctx->thr, re_ctx->buf, duk__encode_i32(x));
 }
 #endif
 
 /* special helper for emitting u16 lists (used for character ranges for built-in char classes) */
-static void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, duk_uint16_t *values, duk_uint32_t count) {
+DUK_LOCAL void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, duk_uint16_t *values, duk_uint32_t count) {
 	/* Call sites don't need the result length so it's not accumulated. */
 	while (count > 0) {
 		(void) duk__append_u32(re_ctx, (duk_uint32_t) (*values++));
@@ -109,15 +109,15 @@ static void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, duk_uint16_t *valu
 	}
 }
 
-static void duk__insert_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t data_offset, duk_uint32_t data_length) {
+DUK_LOCAL void duk__insert_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t data_offset, duk_uint32_t data_length) {
 	duk_hbuffer_insert_slice(re_ctx->thr, re_ctx->buf, offset, data_offset, (duk_size_t) data_length);
 }
 
-static void duk__append_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t data_offset, duk_uint32_t data_length) {
+DUK_LOCAL void duk__append_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t data_offset, duk_uint32_t data_length) {
 	duk_hbuffer_append_slice(re_ctx->thr, re_ctx->buf, data_offset, (duk_size_t) data_length);
 }
 
-static void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t length) {
+DUK_LOCAL void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t length) {
 	duk_hbuffer_remove_slice(re_ctx->thr, re_ctx->buf, offset, (duk_size_t) length);
 }
 
@@ -134,7 +134,7 @@ static void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, 
  *  first byte of the next instruction, is a bit tricky because of the
  *  variable length UTF-8 encoding.  See doc/regexp.txt for discussion.
  */
-static duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
+DUK_LOCAL duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
 	duk_small_int_t len;
 
 	/* XXX: solve into closed form (smaller code) */
@@ -149,7 +149,7 @@ static duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uin
 	return duk__insert_i32(re_ctx, offset, skip);
 }
 
-static duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int32_t skip) {
+DUK_LOCAL duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int32_t skip) {
 	return (duk_uint32_t) duk__insert_jump_offset(re_ctx, (duk_uint32_t) DUK__BUFLEN(re_ctx), skip);
 }
 
@@ -172,7 +172,7 @@ static duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int
  *  being parsed simultaneously).
  */
 
-static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct) {
+DUK_LOCAL void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct) {
 	duk_re_compiler_ctx *re_ctx = (duk_re_compiler_ctx *) userdata;
 
 	DUK_DD(DUK_DDPRINT("duk__generate_ranges(): re_ctx=%p, range=[%ld,%ld] direct=%ld",
@@ -273,7 +273,7 @@ static void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoi
  *      as complex though.
  */
 
-static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expect_eof, duk__re_disjunction_info *out_atom_info) {
+DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expect_eof, duk__re_disjunction_info *out_atom_info) {
 	duk_int32_t atom_start_offset = -1;                   /* negative -> no atom matched on previous round */
 	duk_int32_t atom_char_length = 0;                     /* negative -> complex atom */
 	duk_uint32_t atom_start_captures = re_ctx->captures;  /* value of re_ctx->captures at start of atom */
@@ -761,7 +761,7 @@ static void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t expec
  *  Flags parsing (see E5 Section 15.10.4.1).
  */
 
-static duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
+DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
 	duk_uint8_t *p;
 	duk_uint8_t *p_end;
 	duk_uint32_t flags = 0;
@@ -828,7 +828,7 @@ static duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
  *  passed through without change.
  */
 
-static void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
+DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h;
 	duk_hbuffer_dynamic *buf;
@@ -885,7 +885,7 @@ static void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
  *  Output stack: [ bytecode escaped_source ]  (both as strings)
  */
 
-void duk_regexp_compile(duk_hthread *thr) {
+DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_re_compiler_ctx re_ctx;
 	duk_lexer_point lex_point;
@@ -1015,7 +1015,7 @@ void duk_regexp_compile(duk_hthread *thr) {
  *  Output stack: [ RegExp ]
  */
 
-void duk_regexp_create_instance(duk_hthread *thr) {
+DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *h;
 	duk_hstring *h_bc;

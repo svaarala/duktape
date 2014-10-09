@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-static duk_double_t duk__push_this_number_plain(duk_context *ctx) {
+DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	duk_hobject *h;
 
 	/* Number built-in accepts a plain number or a Number object (whose
@@ -32,7 +32,7 @@ static duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	return duk_get_number(ctx, -1);
 }
 
-duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_hobject *h_this;
 
@@ -83,12 +83,12 @@ duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	return 0;  /* no return value -> don't replace created value */
 }
 
-duk_ret_t duk_bi_number_prototype_value_of(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_value_of(duk_context *ctx) {
 	(void) duk__push_this_number_plain(ctx);
 	return 1;
 }
 
-duk_ret_t duk_bi_number_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_string(duk_context *ctx) {
 	duk_small_int_t radix;
 	duk_small_uint_t n2s_flags;
 
@@ -109,7 +109,7 @@ duk_ret_t duk_bi_number_prototype_to_string(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
 	/* XXX: just use toString() for now; permitted although not recommended.
 	 * nargs==1, so radix is passed to toString().
 	 */
@@ -122,7 +122,7 @@ duk_ret_t duk_bi_number_prototype_to_locale_string(duk_context *ctx) {
 
 /* XXX: shared helper for toFixed(), toExponential(), toPrecision()? */
 
-duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	duk_small_int_t frac_digits;
 	duk_double_t d;
 	duk_small_int_t c;
@@ -155,7 +155,7 @@ duk_ret_t duk_bi_number_prototype_to_fixed(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_number_prototype_to_exponential(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_exponential(duk_context *ctx) {
 	duk_bool_t frac_undefined;
 	duk_small_int_t frac_digits;
 	duk_double_t d;
@@ -189,7 +189,7 @@ duk_ret_t duk_bi_number_prototype_to_exponential(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_bi_number_prototype_to_precision(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_precision(duk_context *ctx) {
 	/* The specification has quite awkward order of coercion and
 	 * checks for toPrecision().  The operations below are a bit
 	 * reordered, within constraints of observable side effects.

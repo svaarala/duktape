@@ -9,7 +9,7 @@
 #ifdef DUK_USE_VERBOSE_ERRORS
 
 #ifdef DUK_USE_VARIADIC_MACROS
-void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+DUK_INTERNAL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	va_list ap;
 	char msg[DUK__ERRFMT_BUFSIZE];
 	va_start(ap, fmt);
@@ -19,26 +19,26 @@ void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr
 	va_end(ap);  /* dead code, but ensures portability (see Linux man page notes) */
 }
 #else  /* DUK_USE_VARIADIC_MACROS */
-const char *duk_err_file_stash = NULL;
-duk_int_t duk_err_line_stash = 0;
+DUK_INTERNAL const char *duk_err_file_stash = NULL;
+DUK_INTERNAL duk_int_t duk_err_line_stash = 0;
 
-DUK_NORETURN(static void duk__handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, va_list ap));
+DUK_NORETURN(DUK_LOCAL_DECL void duk__handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, va_list ap));
 
-static void duk__handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, va_list ap) {
+DUK_LOCAL void duk__handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, va_list ap) {
 	char msg[DUK__ERRFMT_BUFSIZE];
 	(void) DUK_VSNPRINTF(msg, sizeof(msg), fmt, ap);
 	msg[sizeof(msg) - 1] = (char) 0;
 	duk_err_create_and_throw(thr, code, msg, filename, line);
 }
 
-void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+DUK_INTERNAL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	duk__handle_error(filename, line, thr, code, fmt, ap);
 	va_end(ap);  /* dead code */
 }
 
-void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+DUK_INTERNAL void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	duk__handle_error(duk_err_file_stash, duk_err_line_stash, thr, code, fmt, ap);
@@ -49,16 +49,16 @@ void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char
 #else  /* DUK_USE_VERBOSE_ERRORS */
 
 #ifdef DUK_USE_VARIADIC_MACROS
-void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
+DUK_INTERNAL void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
 	duk_err_create_and_throw(thr, code);
 }
 
 #else  /* DUK_USE_VARIADIC_MACROS */
-void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+DUK_INTERNAL void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	duk_err_create_and_throw(thr, code);
 }
 
-void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+DUK_INTERNAL void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	duk_err_create_and_throw(thr, code);
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */
@@ -69,7 +69,7 @@ void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_
  *  Default fatal error handler
  */
 
-void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
+DUK_INTERNAL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
 	DUK_UNREF(ctx);
 #ifdef DUK_USE_FILE_IO
 	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, (const char *) (msg ? msg : "null"));
@@ -87,7 +87,7 @@ void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char 
  */
 
 #if !defined(DUK_USE_PANIC_HANDLER)
-void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
+DUK_INTERNAL void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
 #ifdef DUK_USE_FILE_IO
 	DUK_FPRINTF(DUK_STDERR, "PANIC %ld: %s ("
 #if defined(DUK_USE_PANIC_ABORT)
