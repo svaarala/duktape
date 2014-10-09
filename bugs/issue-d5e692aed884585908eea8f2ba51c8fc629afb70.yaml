@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add tags for nonportable APIs
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-09 08:42:26.296639 Z
+references: []
+
+id: d5e692aed884585908eea8f2ba51c8fc629afb70
+log_events: 
+- - 2014-10-09 08:42:26.441233 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-09 09:30:15.931167 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
