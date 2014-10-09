@@ -1913,10 +1913,12 @@ typedef FILE duk_file;
 #if defined(DUK_F_CLANG) && !defined(DUK_F_GCC_SYMBOL_VISIBILITY)
 #define DUK_F_GCC_SYMBOL_VISIBILITY
 #endif
-#if defined(_WIN32) && (defined(_MSC_VER) || defined(__GNUC__))
-/* MSVC: any minimum version? */
-/* MinGW: no minimum version, even gcc-2.95.3 supported dllimport/dllexport. */
-#define DUK_F_MSVC_SYMBOL_VISIBILITY
+#if defined(DUK_OPT_DLL_BUILD) && defined(_WIN32) && (defined(_MSC_VER) || defined(__GNUC__))
+/* __declspec(dllexport) and __declspec(dllimport) only for Windows DLL build.
+ * MSVC: any minimum version?
+ * MinGW: no minimum version, even gcc-2.95.3 supported dllimport/dllexport.
+*/
+#define DUK_F_MSVC_DLL_SYMBOL_VISIBILITY
 #endif
 
 #if defined(DUK_F_GCC_SYMBOL_VISIBILITY)
@@ -1930,7 +1932,7 @@ typedef FILE duk_file;
 #define DUK_INTERNAL_DECL  __attribute__ ((visibility("hidden"))) extern
 #define DUK_INTERNAL       __attribute__ ((visibility("hidden")))
 #endif
-#elif defined(DUK_F_MSVC_SYMBOL_VISIBILITY)
+#elif defined(DUK_F_MSVC_DLL_SYMBOL_VISIBILITY)
 /* MSVC dllexport/dllimport: appropriate __declspec depends on whether we're
  * compiling Duktape or the application.
  */
@@ -1949,7 +1951,7 @@ typedef FILE duk_file;
 #define DUK_INTERNAL       /*empty*/
 #endif
 #else
-/* Default visibility */
+/* Default visibility. */
 #define DUK_EXTERNAL_DECL  extern
 #define DUK_EXTERNAL       /*empty*/
 #if defined(DUK_SINGLE_FILE)
