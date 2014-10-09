@@ -1,0 +1,99 @@
+<h1 id="versioning">Versioning</h1>
+
+<h2>Semantic versioning</h2>
+
+<p>Duktape follows <a href="http://semver.org/">Semantic Versioning</a>:</p>
+<ul>
+<li>Major version changes when API incompatible changes are made.</li>
+<li>Minor version changes when backwards-compatible functional changes are made.</li>
+<li>Patch version changes when backwards-compatible bug fixes are made.</li>
+</ul>
+
+<p>The "public API" to which these rules apply include:</p>
+<ul>
+<li>The Duktape API calls documented on duktape.org.  API calls implemented as macros
+    are part of the public API, but any internal calls the macros make are not.</li>
+<li>The global environment visible to Ecmascript code, including the <code>Duktape</code>
+    object and other Ecmascript extensions, as documented on duktape.org.</li>
+</ul>
+
+<p>The following are not part of the "public API":</p>
+<ul>
+<li>Feature options.  Incompatible feature option changes are not made in patch
+    releases, but can be made in minor releases (contrary to semantic versioning
+    guarantees). Such changes are noted in release notes, and the goal is to cause
+    a compile error when a no-longer-supported feature option is used so that any
+    incorrect assumptions can be fixed.</li>
+</ul>
+
+<h2>Version naming</h2>
+
+<p>Releases use the form <i>(major).(minor).(patch)</i>, e.g. <b>1.0.3</b>.</p>
+
+<p>Development pre-releases use the form <i>(major).(minor).(patch)-alpha.(number)</i>,
+e.g. <b>1.3.0-alpha.2</b>.  The form <i>0.(minor).0</i> was used for development
+pre-releases before the 1.0 release.</p>
+
+<h2>DUK_VERSION and Duktape.version</h2>
+
+<p><code>DUK_VERSION</code> and <code>Duktape.version</code> provide version
+identification using a single number computed as:
+<code>(major * 10000 + minor * 100 + patch)</code>,
+then subtracting one for development pre-releases.</p>
+
+<p>Note the limitations for development pre-releases:</p>
+<ul>
+<li>Development pre-releases for the same release are not distinguished from
+    one another: for example, both 1.3.0-alpha.1 and 1.3.0-alpha.2 are
+    identified as 10299.</li>
+<li>Development pre-releases for patch releases are not distinguished from the
+    previous patch release: for example, 1.3.3-alpha.6 and 1.3.2 are both
+    identified as 10302.</li>
+</ul>
+
+<p>Development pre-releases shouldn't be used in production, but the current
+<code>DUK_VERSION</code> and <code>Duktape.version</code> number provides
+a useful approximation for version comparison: an alpha release will compare
+smaller than the actual release, but higher (or equal) than a previous release.</p>
+
+<h2>Examples</h2>
+
+<p>The table below provides some examples, in ascending version order:</p>
+<table>
+<tr>
+<th>Version</th>
+<th>Pre-release?</th>
+<th>DUK_VERSION &amp;<br />Duktape.version</th>
+<th>Notes</th>
+</tr>
+<tr><td>0.12.0</td><td>yes</td><td>1200</td><td>Pre-release before 1.0 release.</td></tr>
+<tr><td>1.0.0</td><td>no</td><td>10000</td><td></td></tr>
+<tr><td>1.3.0-alpha.1</td><td>yes</td><td>10299</td><td>Identified like 1.2.99, first 1.3.0 development pre-release.</td></tr>
+<tr><td>1.3.0-alpha.2</td><td>yes</td><td>10299</td><td>Identified like 1.2.99, no difference to 1.3.0-alpha.1.</td></tr>
+<tr><td>1.3.0</td><td>no</td><td>10300</td><td></td></tr>
+<tr><td>1.3.2</td><td>no</td><td>10302</td><td></td></tr>
+<tr><td>1.3.3-alpha.6</td><td>yes</td><td>10302</td><td>Identified like 1.3.2, no difference to 1.3.2 release.</td></tr>
+<tr><td>1.3.3</td><td>no</td><td>10303</td><td></td></tr>
+<tr><td>2.0.0-alpha.3</td><td>yes</td><td>19999</td><td>Identified like 1.99.99.</td></tr>
+<tr><td>2.0.0</td><td>no</td><td>20000</td><td></td></tr>
+</table>
+
+<h2>Maintenance of stable versions</h2>
+
+<p>There's no long term maintenance policy yet: stable versions will get bug
+fixes (patch releases) at least until the next stable version has been
+released, and there has been some time to migrate to it.</p>
+
+<h2>Incompatible changes</h2>
+
+<p>The general goal for incompatible changes is that an application relying
+on old, unsupported features will fail to build.  It is preferable to have the
+build fail rather than to be silently broken.  This means for example that:</p>
+<ul>
+<li>When API call semantics are changed, the old API call is removed (causing
+    a build failure if used) and a new one is added.</li>
+<li>When support for an old feature option is removed, an attempt to use it
+    will cause a build failure.</li>
+</ul>
+
+<p>This is not a hard rule, but the default guideline.</p>
