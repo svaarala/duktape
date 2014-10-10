@@ -218,7 +218,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		/* No need to replace the 'enum_target' value in stack, only the
 		 * enum_target reference.  This also ensures that the original
 		 * enum target is reachable, which keeps the proxy and the proxy
-		 * target reachable.  We do need to replace the internal _target.
+		 * target reachable.  We do need to replace the internal _Target.
 		 */
 		DUK_DDD(DUK_DDDPRINT("no enumerate trap, enumerate proxy target instead"));
 		DUK_DDD(DUK_DDDPRINT("h_proxy_target=%!O", (duk_heaphdr *) h_proxy_target));
@@ -264,10 +264,10 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 
 	/* [ ... res ] */
 
-	/* The internal _target property is kept pointing to the original
+	/* The internal _Target property is kept pointing to the original
 	 * enumeration target (the proxy object), so that the enumerator
 	 * 'next' operation can read property values if so requested.  The
-	 * fact that the _target is a proxy disables key existence check
+	 * fact that the _Target is a proxy disables key existence check
 	 * during enumeration.
 	 */
 	DUK_DDD(DUK_DDDPRINT("proxy enumeration, final res: %!O", (duk_heaphdr *) res));
@@ -475,7 +475,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %ld", (long) idx));
 
 	/* Enumeration keys are checked against the enumeration target (to see
-	 * that they still exist).  In the proxy enumeration case _target will
+	 * that they still exist).  In the proxy enumeration case _Target will
 	 * be the proxy, and checking key existence against the proxy is not
 	 * required (or sensible, as the keys may be fully virtual).
 	 */

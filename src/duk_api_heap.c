@@ -90,7 +90,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	 *  Replace lexical environment for global scope
 	 *
 	 *  Create a new object environment for the global lexical scope.
-	 *  We can't just reset the _target property of the current one,
+	 *  We can't just reset the _Target property of the current one,
 	 *  because the lexical scope is shared by other threads with the
 	 *  same (initial) built-ins.
 	 */

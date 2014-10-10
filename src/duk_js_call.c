@@ -369,8 +369,8 @@ void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		/* [ ... func this arg1 ... argN ] */
 
 		/* XXX: duk_get_length? */
-		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _args ] */
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _args length ] */
+		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _Args ] */
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _Args length ] */
 		len = (duk_idx_t) duk_require_int(ctx, -1);
 		duk_pop(ctx);
 		for (i = 0; i < len; i++) {
@@ -379,7 +379,7 @@ void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			 * part, etc).
 			 */
 
-			/* [ ... func this <some bound args> arg1 ... argN _args ] */
+			/* [ ... func this <some bound args> arg1 ... argN _Args ] */
 			duk_get_prop_index(ctx, -1, i);
 			duk_insert(ctx, idx_func + 2 + i);  /* idx_args = idx_func + 2 */
 		}
