@@ -106,12 +106,12 @@ formal arguments declared):
 |             | assigned value is a strict| shared function.               |
 |             | function instance.        |                                |
 +-------------+---------------------------+--------------------------------+
-| ``_map``    | Points to the internal    | Not set.                       |
+| ``_Map``    | Points to the internal    | Not set.                       |
 | (internal)  | parameter map (see below).|                                |
 |             | Set if there are any      |                                |
 |             | mapped formal names.      |                                |
 +-------------+---------------------------+--------------------------------+
-| ``_varenv`` | Points to the variable    | Not set.                       |
+| ``_Varenv`` | Points to the variable    | Not set.                       |
 | (internal)  | environment record of the |                                |
 |             | callee (internal object   |                                |
 |             | for a declarative         |                                |
@@ -269,8 +269,8 @@ The implementation specific arguments object here would contain::
     "callee": f,
 
     // internal, implementation specific properties
-    "_map": { "1": "y", "2": "x" },
-    "_varenv": <varenv of callee>
+    "_Map": { "1": "y", "2": "x" },
+    "_Varenv": <varenv of callee>
   }
 
 Here, the assignment to ``arguments[2]`` would be processed as follows:

@@ -889,7 +889,7 @@ The algorithm is as follows:
         clear the ``DUK_HEAPHDR_FLAG_REACHABLE`` of the object.)
 
    b. If ``O`` is an object (this is always the case, currently), and has a
-      finalizer (i.e. has a ``_finalizer`` internal property):
+      finalizer (i.e. has a ``_Finalizer`` internal property):
 
       1. Create a ``setjmp()`` catchpoint.
 
@@ -1253,7 +1253,7 @@ The mark-and-sweep algorithm is as follows:
 
       1. If the heap element is an ``duk_hobject`` (its heap type is
          ``DUK_HTYPE_OBJECT``) and the object has a finalizer (i.e. it
-         has the internal property ``_finalizer``), and the ``FINALIZED``
+         has the internal property ``_Finalizer``), and the ``FINALIZED``
          flag is not set:
 
          a. Move the heap element from "heap allocated" to "to be finalized"
