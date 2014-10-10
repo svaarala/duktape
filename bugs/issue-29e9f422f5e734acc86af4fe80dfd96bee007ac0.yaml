@@ -24,3 +24,12 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
+- - 2014-10-10 09:43:56.521348 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Perhaps just require user internal strings to begin with a capital letter, e.g.
+    \xffPtr?  Or change Duktape to use capital letters.
+    
+    Another approach is to use a non-alphanum initial character, e.g. \xFF!value for
+    Duktape internal keys.
