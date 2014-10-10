@@ -60,6 +60,8 @@ mkdir $DIST/extras
 mkdir $DIST/polyfills
 #mkdir $DIST/doc
 mkdir $DIST/licenses
+mkdir $DIST/debugger
+mkdir $DIST/debugger/static
 mkdir $DIST/examples
 mkdir $DIST/examples/hello
 mkdir $DIST/examples/eval
@@ -192,6 +194,23 @@ for i in \
 	duk_replacements.h      \
 	; do
 	cp src/$i $DISTSRCSEP/
+done
+
+for i in \
+	README.rst \
+	Makefile \
+	package.json \
+	duk_debug.js \
+	; do
+	cp debugger/$i $DIST/debugger/
+done
+
+for i in \
+	index.html \
+	style.css \
+	webui.js \
+	; do
+	cp debugger/static/$i $DIST/debugger/static/
 done
 
 for i in \
