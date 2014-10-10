@@ -322,7 +322,7 @@ Released
 
 * Allow non-standard dollar escape inside character classes (previously
   they were already allowed elsewhere), to support non-standard regexps
-  like /[\$]/
+  like /[\\$]/
 
 * Add debug API calls to dump the stack top and values in the current context,
   see e.g. duk_dump_context_stdout
@@ -547,8 +547,8 @@ Planned
   duk_is_dynamic_buffer() for consistency with other API calls
 
 * Rename Duktape internal keys to start with an uppercase character (e.g.
-  "\xFFValue") so that user internal keys which begin with a lowercase
-  character (e.g. "\xFFptr") won't conflict by default
+  "\\xFFValue") so that user internal keys which begin with a lowercase
+  character (e.g. "\\xFFptr") won't conflict by default
 
 * Add OS and compiler strings to Duktape.env
 
