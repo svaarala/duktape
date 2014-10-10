@@ -13,8 +13,8 @@ type: :task
 component: duk
 release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-09-12 08:52:30.030886 Z
 references: []
 
@@ -33,3 +33,14 @@ log_events:
     
     Another approach is to use a non-alphanum initial character, e.g. \xFF!value for
     Duktape internal keys.
+- - 2014-10-10 11:59:24.012107 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Final solution was to use uppercase initial character for Duktape keys, so
+    that user keys can be more natural:
+    
+    - \xFFValue for a Duktape key
+    - \xFFvalue for a user key
+    
+    For unknown keys, user code can use double \xFF prefix.
