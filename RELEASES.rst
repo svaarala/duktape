@@ -547,7 +547,7 @@ Planned
   duk_is_dynamic_buffer() for consistency with other API calls
 
 * Rename Duktape internal keys to start with an uppercase character (e.g.
-  "\xFFvalue") so that user internal keys which begin with a lowercase
+  "\xFFValue") so that user internal keys which begin with a lowercase
   character (e.g. "\xFFptr") won't conflict by default
 
 * Add OS and compiler strings to Duktape.env
