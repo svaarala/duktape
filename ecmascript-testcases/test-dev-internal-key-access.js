@@ -14,12 +14,12 @@
 
 /*===
 date: 1970-01-01T00:02:03.456Z
-using Duktape.Buffer, date \xFFvalue: 123456
-using Duktape.dec, date \xFFvalue: 123456
+using Duktape.Buffer, date \xFFValue: 123456
+using Duktape.dec, date \xFFValue: 123456
 ===*/
 
 function test() {
-    var dt = new Date(123456);  // has internal property \xFFvalue
+    var dt = new Date(123456);  // has internal property \xFFValue
     var buf;
     var key;
 
@@ -28,12 +28,12 @@ function test() {
     // Using Duktape.Buffer()
     buf = new Duktape.Buffer(1);
     buf[0] = 0xff;
-    key = buf + 'value';
-    print('using Duktape.Buffer, date \\xFFvalue:', dt[key]);
+    key = buf + 'Value';
+    print('using Duktape.Buffer, date \\xFFValue:', dt[key]);
 
     // Using Duktape.dec()
-    key = Duktape.dec('hex', 'ff76616c7565');  // \xFFvalue
-    print('using Duktape.dec, date \\xFFvalue:', dt[key]);
+    key = Duktape.dec('hex', 'ff56616c7565');  // \xFFValue
+    print('using Duktape.dec, date \\xFFValue:', dt[key]);
 }
 
 try {

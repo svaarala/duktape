@@ -200,8 +200,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  the environment records are those that will be directly used
 	 *  (e.g. for declarations).
 	 *
-	 *  _lexenv is always set; _varenv defaults to _lexenv if missing,
-	 *  so _varenv is only set if _lexenv != _varenv.
+	 *  _Lexenv is always set; _Varenv defaults to _Lexenv if missing,
+	 *  so _Varenv is only set if _Lexenv != _Varenv.
 	 *
 	 *  This is relatively complex, see doc/identifier-handling.txt.
 	 */
@@ -217,8 +217,8 @@ void duk_js_push_closure(duk_hthread *thr,
 			 *  in an intermediate environment record.  The "outer"
 			 *  lexical/variable environment will thus be:
 			 *
-			 *  a) { funcname: <func>, _prototype: outer_lex_env }
-			 *  b) { funcname: <func>, _prototype:  <globalenv> }  (if outer_lex_env missing)
+			 *  a) { funcname: <func>, __prototype: outer_lex_env }
+			 *  b) { funcname: <func>, __prototype:  <globalenv> }  (if outer_lex_env missing)
 			 */
 
 			DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_NAME));  /* required if NAMEBINDING set */
@@ -336,7 +336,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		DUK_ASSERT(duk_get_length(ctx, -1) <= DUK_UINT_MAX);  /* formal arg limits */
 		len_value = (duk_uint_t) duk_get_length(ctx, -1);
 	} else {
-		/* XXX: what to do if _formals is not empty but compiler has
+		/* XXX: what to do if _Formals is not empty but compiler has
 		 * optimized it away -- read length from an explicit property
 		 * then?
 		 */
@@ -621,10 +621,10 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 		 */
 
 		/* XXX: any way to detect faster whether something needs to be closed?
-		 * We now look up _callee and then skip the rest.
+		 * We now look up _Callee and then skip the rest.
 		 */
 
-		/* Note: we rely on the _varmap having a bunch of nice properties, like:
+		/* Note: we rely on the _Varmap having a bunch of nice properties, like:
 		 *  - being compacted and unmodified during this process
 		 *  - not containing an array part
 		 *  - having correct value types
@@ -749,7 +749,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 
 	tv = duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_CALLEE(thr));
 	if (!tv) {
-		/* env is closed, should be missing _callee, _thread, _regbase */
+		/* env is closed, should be missing _Callee, _Thread, _Regbase */
 		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL);
 		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL);
 		DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL);
@@ -935,8 +935,8 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 		 *    - Function code
 		 *    - Strict eval code
 		 *
-		 *  We only need to check _lexenv here; _varenv exists only if it
-		 *  differs from _lexenv (and thus _lexenv will also be present).
+		 *  We only need to check _Lexenv here; _Varenv exists only if it
+		 *  differs from _Lexenv (and thus _Lexenv will also be present).
 		 */
 
 		if (!parents) {
@@ -1041,9 +1041,9 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			 *  an accessor.
 			 */
 
-			/* XXX: we could save space by using _target OR _this.  If _target, assume
-			 * this binding is undefined.  If _this, assumes this binding is _this, and
-			 * target is also _this.  One property would then be enough.
+			/* XXX: we could save space by using _Target OR _This.  If _Target, assume
+			 * this binding is undefined.  If _This, assumes this binding is _This, and
+			 * target is also _This.  One property would then be enough.
 			 */
 
 			duk_hobject *target;

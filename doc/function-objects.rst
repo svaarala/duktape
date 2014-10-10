@@ -67,11 +67,11 @@ The following properties are used:
 +---------------+---------------------------------------------------------+
 | Property      | Description                                             |
 +===============+=========================================================+
-| ``_varmap``   | Maps register-bound variable names to their register    |
+| ``_Varmap``   | Maps register-bound variable names to their register    |
 |               | numbers.                                                |
 |               | Example: ``{ arg1: 0, arg2: 1, myvar: 2 }``.            |
 +---------------+---------------------------------------------------------+
-| ``_formals``  | An array of formal argument names.  ``formals.length``  |
+| ``_Formals``  | An array of formal argument names.  ``formals.length``  |
 |               | provides the number of formal arguments.  Note that the |
 |               | number of formal arguments does not need to match       |
 |               | function ``nargs``: the function might access all args  |
@@ -91,22 +91,22 @@ The following properties are used:
 | ``fileName``  | Source filename (or equivalent).  Used to add source    |
 |               | file information to error objects and tracebacks.       |
 +---------------+---------------------------------------------------------+
-| ``_source``   | Function source code.  E5 specifies that the source     |
+| ``_Source``   | Function source code.  E5 specifies that the source     |
 |               | code of a function must be valid syntax.                |
 +---------------+---------------------------------------------------------+
-| ``_pc2line``  | Debug information: maps bytecode index to a source line |
+| ``_Pc2line``  | Debug information: maps bytecode index to a source line |
 |               | number.  Space-optimized binary format.                 |
 +---------------+---------------------------------------------------------+
 
 The compiler should omit whatever internal properties are not needed to
 save space.  For instance:
 
-* ``_varmap`` is not needed if the function can never perform a slow path
+* ``_Varmap`` is not needed if the function can never perform a slow path
   identifier reference.
 
-* ``_formals`` is not needed unless a non-strict arguments object is
-  potentially constructed.  (However, ``_formals`` is also used for deriving
-  the "length" of the instance.  If _formals is omitted, something else needs
+* ``_Formals`` is not needed unless a non-strict arguments object is
+  potentially constructed.  (However, ``_Formals`` is also used for deriving
+  the "length" of the instance.  If _Formals is omitted, something else needs
   to be set in the template to allow instance "length" to be initialized.)
 
 When debugging, it may be necessary to store more function properties than
@@ -120,7 +120,7 @@ The creation of function instances is described in E5 Section 13.2.
 Each function instance (each closure created from a function
 expression or declaration) has the following standard properties:
 
-* ``length``: set to number of formal parameters (length of ``_formals``).
+* ``length``: set to number of formal parameters (length of ``_Formals``).
 
 * ``prototype``: points to a fresh object which has a ``constructor``
   property pointing back to the function
@@ -236,7 +236,7 @@ user documentation for the exposed parts):
 +===============+=========================================================+
 | ``length``    | Set to the number of formal parameters.  For normal     |
 |               | functions parsed from Ecmascript source code, this is   |
-|               | set to ``_formals.length``.  Built-in functions may be  |
+|               | set to ``_Formals.length``.  Built-in functions may be  |
 |               | special.                                                |
 +---------------+---------------------------------------------------------+
 | ``prototype`` | Points to a fresh object which has a ``constructor``    |
@@ -251,7 +251,7 @@ user documentation for the exposed parts):
 +---------------+---------------------------------------------------------+
 | ``fileName``  | See function templates.                                 |
 +---------------+---------------------------------------------------------+
-| ``_lexenv``   | Together with DUK_HOBJECT_FLAG_NEWENV, controls the     |
+| ``_Lexenv``   | Together with DUK_HOBJECT_FLAG_NEWENV, controls the     |
 |               | initialization of variable/lexical environment when a   |
 |               | function call occurs.                                   |
 |               |                                                         |
@@ -261,18 +261,18 @@ user documentation for the exposed parts):
 |               | code and eval code, which "share" an existing           |
 |               | environment record.                                     |
 |               |                                                         |
-|               | If _varenv is missing, it defaults to _lexenv (which is |
+|               | If _Varenv is missing, it defaults to _Lexenv (which is |
 |               | very often the case).                                   |
 +---------------+---------------------------------------------------------+
-| ``_varenv``   | See ``_lexenv``.                                        |
+| ``_Varenv``   | See ``_Lexenv``.                                        |
 +---------------+---------------------------------------------------------+
-| ``_varmap``   | See function templates.                                 |
+| ``_Varmap``   | See function templates.                                 |
 +---------------+---------------------------------------------------------+
-| ``_formals``  | See function templates.                                 |
+| ``_Formals``  | See function templates.                                 |
 +---------------+---------------------------------------------------------+
-| ``_source``   | See function templates.                                 |
+| ``_Source``   | See function templates.                                 |
 +---------------+---------------------------------------------------------+
-| ``_pc2line``  | See function templates.                                 |
+| ``_Pc2line``  | See function templates.                                 |
 +---------------+---------------------------------------------------------+
 
 Built-in functions
@@ -295,12 +295,12 @@ as small as possible.  This means, however, that the Function objects are
 non-standard.
 
 Duktape/C functions also don't have any need for control variables such as
-``_lexenv``, ``_pc2line``, etc.
+``_Lexenv``, ``_Pc2line``, etc.
 
-_pc2line format
-===============
+pc2line format
+==============
 
-``_pc2line`` property allows a program counter (bytecode index) to be
+``_Pc2line`` property allows a program counter (bytecode index) to be
 converted to an approximate line number of the expression which generated
 the bytecode instruction in question.  Logically it can be considered an
 array (in fact, Lua implements a similar structure as a simple array):

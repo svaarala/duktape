@@ -776,7 +776,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 
 	/* [ ... res ] */
 
-	/* _varmap: omitted if function is guaranteed not to do slow path identifier
+	/* _Varmap: omitted if function is guaranteed not to do slow path identifier
 	 * accesses or if it would turn out to be empty of actual register mappings
 	 * after a cleanup.
 	 */
@@ -797,11 +797,11 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		}
 	}
 
-	/* _formals: omitted if function is guaranteed not to need a (non-strict) arguments object */
+	/* _Formals: omitted if function is guaranteed not to need a (non-strict) arguments object */
 	if (1) {
 		/* XXX: Add a proper condition.  If formals list is omitted, recheck
 		 * handling for 'length' in duk_js_push_closure(); it currently relies
-		 * on _formals being set.  Removal may need to be conditional to debugging
+		 * on _Formals being set.  Removal may need to be conditional to debugging
 		 * being enabled/disabled too.
 		 */
 		duk_dup(ctx, func->argnames_idx);
@@ -814,7 +814,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
-	/* _source */
+	/* _Source */
 #if defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY)
 	if (0) {
 		/* XXX: Currently function source code is not stored, as it is not
@@ -832,7 +832,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		 *
 		 *   - Need tokenizer indices for start and end to substring
 		 *   - Always normalize function declaration part?
-		 *   - If we keep _formals, only need to store body
+		 *   - If we keep _Formals, only need to store body
 		 */
 
 		/*
@@ -862,7 +862,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 #endif  /* DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY */
 
-	/* _pc2line */
+	/* _Pc2line */
 #if defined(DUK_USE_PC2LINE)
 	if (1) {
 		/*

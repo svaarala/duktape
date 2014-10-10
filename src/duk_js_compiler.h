@@ -127,7 +127,7 @@ struct duk_compiler_func {
 	                                     */
 	duk_hobject *h_labelnames;          /* array of active label names */
 	duk_hbuffer_dynamic *h_labelinfos;  /* C array of duk_labelinfo */
-	duk_hobject *h_argnames;            /* array of formal argument names (-> _formals) */
+	duk_hobject *h_argnames;            /* array of formal argument names (-> _Formals) */
 	duk_hobject *h_varmap;              /* variable map for pass 2 (identifier -> register number or null (unmapped)) */
 
 	/* value stack indices for tracking objects */

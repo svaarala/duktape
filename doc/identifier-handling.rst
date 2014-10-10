@@ -437,11 +437,11 @@ The internal object is initialized with:
 
 * Internal prototype referring to outer environment record
 
-* Internal control properties: ``_callee``, ``_thread``, ``_regbase``
+* Internal control properties: ``_Callee``, ``_Thread``, ``_Regbase``
 
 When a declarative environment is "closed", identifiers bound to
 activation registers are copied  to the internal environment record
-object as plain properties (with the help of the callee's ``_varmap``)
+object as plain properties (with the help of the callee's ``_Varmap``)
 and the environment record's internal control properties are deleted.
 The flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` is set to allow open scope
 lookups to be skipped in later lookups.
@@ -480,11 +480,11 @@ The internal object is initialized with:
 
 * Internal prototype referring to outer environment record
 
-* Internal control property: ``_target``
+* Internal control property: ``_Target``
 
-Identifier lookups proceed to the ``_target`` object while the parent
+Identifier lookups proceed to the ``_Target`` object while the parent
 environment record is identified by the prototype of the environment
-record (not of ``_target``).
+record (not of ``_Target``).
 
 Example internal environment record objects
 ===========================================
@@ -519,7 +519,8 @@ This could happen in this example::
   }
 
 The objects could be roughly as follows (leading underscore indicates
-an internal value not visible to the program)::
+an internal value not visible to the program, ``__prototype`` denotes
+internal prototype)::
 
   global_object = {
     "NaN": NaN,
@@ -532,7 +533,7 @@ an internal value not visible to the program)::
 
   func = {
     // "foo" maps to reg 0, "bar" to reg 1, "quux" not register mapped
-    "_varmap": { "foo": 0, "bar": 1 },
+    "_Varmap": { "foo": 0, "bar": 1 },
     ...
   }
 
@@ -542,17 +543,17 @@ an internal value not visible to the program)::
 
   record1 = {
     // Flag DUK_HOBJECT_CLASS_OBJENV set
-    "_prototype": null,
-    "_target": global_object,    // identifies binding target
+    "__prototype": null,
+    "_Target": global_object,    // identifies binding target
   }
 
   record2 = {
     // Flag DUK_HOBJECT_CLASS_DECENV set
     // Flag DUK_HOBJECT_CLASS_ENVRECCLOSED not set (still open)
-    "_prototype": record1,
-    "_callee": func,     // provides access to _varmap (name-to-reg)
-    "_thread": thread,   // identifies valstack
-    "_regbase": 100,     // identifies valstack base for regs
+    "__prototype": record1,
+    "_Callee": func,     // provides access to _Varmap (name-to-reg)
+    "_Thread": thread,   // identifies valstack
+    "_Regbase": 100,     // identifies valstack base for regs
     "quux": "a non-register binding"
 
     // var "foo" resides in value stack absolute index 100 + 0 = 100,
@@ -561,8 +562,8 @@ an internal value not visible to the program)::
 
   record3 = {
     // Flag DUK_HOBJECT_CLASS_OBJENV set
-    "_prototype": record2,
-    "_target": with_object
+    "__prototype": record2,
+    "_Target": with_object
   }
 
 Once again, the compiler strives to avoid creating explicit environment
@@ -590,20 +591,20 @@ detailed properties vary a bit between the two.
 More concretely:
 
 * The ``DUK_HOBJECT_FLAG_NEWENV`` object level flag, and the internal
-  properties ``_lexenv`` and ``_varenv`` control activation record
+  properties ``_Lexenv`` and ``_Varenv`` control activation record
   lexical and variable environment initialization as described below.
 
-* The internal property ``_varmap`` contains a mapping from an
+* The internal property ``_Varmap`` contains a mapping from an
   identifier name to a register number relative to the activation
   record frame bottom.
 
-* The internal property ``_formals`` contains a list of formal argument
+* The internal property ``_Formals`` contains a list of formal argument
   names.
 
 * Template function objects, used for creating concrete function instances,
   use ``DUK_HOBJECT_FLAG_NAMEBINDING`` flag to indicate that the template
   represents a named function expression.  For such functions, the function
-  name (stored in ``_name``) needs to be bound in an environment record just
+  name (stored in ``name``) needs to be bound in an environment record just
   outside a function activation's environment record.
 
 To minimize book-keeping in common cases, the following short cuts
@@ -620,18 +621,18 @@ are supported:
   + For variable declarations this means that a declarative environment
     record needs to be created on demand.
 
-* If ``_varenv`` is missing:
+* If ``_Varenv`` is missing:
 
-  + Assume that ``_varenv`` has the same value as ``_lexenv``.
+  + Assume that ``_Varenv`` has the same value as ``_Lexenv``.
 
   + This is very common, and saves one (unnecessary) reference.
 
-  + Note: it would be more logical to allow ``_lexenv`` to be missing
-    and default it to ``_varenv``; however, dynamic variable
+  + Note: it would be more logical to allow ``_Lexenv`` to be missing
+    and default it to ``_Varenv``; however, dynamic variable
     declarations are comparatively rare so the defaulting is more
     useful this way around
 
-* If ``_varmap`` is missing:
+* If ``_Varmap`` is missing:
 
   + Assume that the function has no register-mapped variables.
 
@@ -651,7 +652,7 @@ Notes:
   needed (e.g. for a function declaration).  It is not created
   unnecessarily when a function is called.
 
-* The default behavior for ``_lexenv`` and ``_varenv`` allows them to
+* The default behavior for ``_Lexenv`` and ``_Varenv`` allows them to
   be omitted in a large number of cases (for instance, many functions
   are declared in the global scope, and for many compiled eval
   functions the values are the same).
@@ -859,7 +860,7 @@ First draft:
    a. Check whether ``name`` is bound to a register of ``act``.
       To do this, the function object needs to be looked up based on
       ``act``, and the function metadata be consulted; in particular,
-      the ``_varmap`` internal property (which maps names to register
+      the ``_Varmap`` internal property (which maps names to register
       numbers) is used.
 
    b. If ``name`` is mapped, return the following:
@@ -880,7 +881,7 @@ First draft:
 
    d. Else, let ``lex`` be the outer environment record that a
       declarative environment record created for ``act`` would
-      have.  This is concretetely looked up from the ``_lexenv``
+      have.  This is concretetely looked up from the ``_Lexenv``
       internal property of the function related to ``act``.
 
 2. **NEXT:**
@@ -932,7 +933,7 @@ First draft:
    b. If the result of calling ``[[HasProperty]]`` for ``target`` with the
       property name ``name`` is ``true``:
 
-      1. If ``lex`` has the internal property ``_this``, set ``thisBinding``
+      1. If ``lex`` has the internal property ``_This``, set ``thisBinding``
          to its value.  Else set ``thisBinding`` to ``NULL``.
 
       2. Return the following values:
@@ -1662,9 +1663,9 @@ the control information needs to be stored.
 Future work
 ===========
 
-* A declarative environment record now records ``_callee`` to get
-  access to its ``_varmap`` property.  Instead, the record could
-  store a ``_varmap`` reference directly, which would drop one step
+* A declarative environment record now records ``_Callee`` to get
+  access to its ``_Varmap`` property.  Instead, the record could
+  store a ``_Varmap`` reference directly, which would drop one step
   from lookup of a register mapped variable.  Also, if the function
   itself is freed, only the varmap needs to survive in the heap.
   The downside would be that there would be no access to function

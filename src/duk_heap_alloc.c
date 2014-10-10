@@ -201,7 +201,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	while (curr) {
 		if (DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT) {
 			/* Only objects in heap_allocated may have finalizers.  Check that
-			 * the object itself has a _finalizer property so that we don't
+			 * the object itself has a _Finalizer property so that we don't
 			 * execute finalizers for e.g. Proxy objects.
 			 */
 			DUK_ASSERT(thr != NULL);

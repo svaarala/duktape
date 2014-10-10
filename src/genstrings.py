@@ -78,9 +78,13 @@ def mkstr(x,
 
 	# A 0xff prefix (never part of valid UTF-8) is used for internal properties.
 	# It is encoded as 0x00 in generated init data for technical reasons: it
-	# keeps lookup table elements 7 bits instead of 8 bits.
+	# keeps lookup table elements 7 bits instead of 8 bits.  The initial byte
+	# of a Duktape internal string is always capitalized (e.g. \x00Value) so
+	# that user code can use clean lowercase prefixes like "\xFFptr".
 
 	if internal:
+		if len(x) < 1 or not (ord(x[0]) >= ord('A') and ord(x[0]) <= ord('Z')):
+			raise Exception('invalid internal key: %s' % repr(x))
 		x = '\x00' + x
 
 	ret = BuiltinString()
@@ -525,7 +529,7 @@ duk_string_list = [
 	mkstr("fileName", custom=True),
 	mkstr("lineNumber", custom=True),
 	#mkstr("code", custom=True),
-	mkstr("tracedata", internal=True, custom=True),
+	mkstr("Tracedata", internal=True, custom=True),
 
 	# non-standard function instance properties
 	mkstr("name", custom=True), 	# function declaration/expression name (or empty)
@@ -536,50 +540,50 @@ duk_string_list = [
 	mkstr("pointer", custom=True),
 
 	# internal property for primitive value (Boolean, Number, String)
-	mkstr("value", internal=True, custom=True),
+	mkstr("Value", internal=True, custom=True),
 
 	# internal properties for enumerator objects
-	mkstr("target", internal=True, custom=True),
-	mkstr("next", internal=True, custom=True),
+	mkstr("Target", internal=True, custom=True),
+	mkstr("Next", internal=True, custom=True),
 
 	# internal properties for RegExp instances
-	mkstr("bytecode", internal=True, custom=True),
+	mkstr("Bytecode", internal=True, custom=True),
 
 	# internal properties for function objects
-	mkstr("formals", internal=True, custom=True),
-	mkstr("varmap", internal=True, custom=True),
-	mkstr("lexenv", internal=True, custom=True),
-	mkstr("varenv", internal=True, custom=True),
-	mkstr("source", internal=True, custom=True),
-	mkstr("pc2line", internal=True, custom=True),
+	mkstr("Formals", internal=True, custom=True),
+	mkstr("Varmap", internal=True, custom=True),
+	mkstr("Lexenv", internal=True, custom=True),
+	mkstr("Varenv", internal=True, custom=True),
+	mkstr("Source", internal=True, custom=True),
+	mkstr("Pc2line", internal=True, custom=True),
 
 	# internal properties for thread objects
 
 	# internal properties for bound function objects
-	mkstr("target", internal=True, custom=True),	# [[TargetFunction]]
-	mkstr("this", internal=True, custom=True),	# [[BoundThis]]
-	mkstr("args", internal=True, custom=True),	# [[BoundArguments]]
+	mkstr("Target", internal=True, custom=True),	# [[TargetFunction]]
+	mkstr("This", internal=True, custom=True),	# [[BoundThis]]
+	mkstr("Args", internal=True, custom=True),	# [[BoundArguments]]
 
 	# internal properties for argument objects
-	mkstr("map", internal=True, custom=True),
-	mkstr("callee", internal=True, custom=True),
+	mkstr("Map", internal=True, custom=True),
+	mkstr("Callee", internal=True, custom=True),
 
 	# internal properties for general objects
-	#mkstr("metatable", internal=True, custom=True),
-	mkstr("finalizer", internal=True, custom=True),
+	#mkstr("Metatable", internal=True, custom=True),
+	mkstr("Finalizer", internal=True, custom=True),
 
 	# internal properties for Proxy objects
-	mkstr("target", internal=True, custom=True),	# [[ProxyTarget]]
-	mkstr("handler", internal=True, custom=True),	# [[ProxyHandler]]
+	mkstr("Target", internal=True, custom=True),	# [[ProxyTarget]]
+	mkstr("Handler", internal=True, custom=True),	# [[ProxyHandler]]
 
 	# internal properties for declarative environment records
-	mkstr("callee", internal=True, custom=True),	# to access varmap
-	mkstr("thread", internal=True, custom=True),	# to identify valstack
-	mkstr("regbase", internal=True, custom=True),	# to determine absolute valstack index
+	mkstr("Callee", internal=True, custom=True),	# to access varmap
+	mkstr("Thread", internal=True, custom=True),	# to identify valstack
+	mkstr("Regbase", internal=True, custom=True),	# to determine absolute valstack index
 
 	# internal properties for object environment records
-	mkstr("target", internal=True, custom=True),	# target object
-	mkstr("this", internal=True, custom=True),	# implicit this binding value
+	mkstr("Target", internal=True, custom=True),	# target object
+	mkstr("This", internal=True, custom=True),	# implicit this binding value
 
 	# fake filename for compiled functions
 	mkstr("compile", custom=True),                  # used as a filename for functions created with Function constructor
@@ -848,13 +852,13 @@ def get_define_name(x):
 		res += 'INT_'
 
 	prev_upper = False
-	for i in x:
-		if i.isupper():
-			if len(res) > 0 and not prev_upper:
+	for idx, c in enumerate(x):
+		if c.isupper():
+			if (idx > 0 and not prev_upper):
 				res += '_'
 
-		res += i.upper()
-		prev_upper = i.isupper()
+		res += c.upper()
+		prev_upper = c.isupper()
 
 	return define_prefix + res
 

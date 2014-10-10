@@ -9,16 +9,16 @@
 
 /*===
 *** test_1 (duk_safe_call)
-Date._value: 123456
+Date._Value: 123456
 final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {
 	duk_eval_string(ctx, "new Date(123456)");
-	duk_push_string(ctx, "\xffvalue");
+	duk_push_string(ctx, "\xffValue");
 	duk_get_prop(ctx, -2);
-	printf("Date._value: %s\n", duk_safe_to_string(ctx, -1));
+	printf("Date._Value: %s\n", duk_safe_to_string(ctx, -1));
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }

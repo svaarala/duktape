@@ -122,7 +122,7 @@ struct duk_hcompiledfunction {
 	 *  must be the same for the duration of the function execution and
 	 *  the register cannot be used for anything else.
 	 *
-	 *  When looking up variables by name, the '_varmap' map is used.
+	 *  When looking up variables by name, the '_Varmap' map is used.
 	 *  When an activation closes, registers mapped to arguments are
 	 *  copied into the environment record based on the same map.  The
 	 *  reverse map (from register to variable) is not currently needed
@@ -141,12 +141,12 @@ struct duk_hcompiledfunction {
 	 *  Function templates:
 	 *
 	 *    {
-	 *      _varmap: { "arg1": 0, "arg2": 1, "varname": 2 },
-	 *      _formals: [ "arg1", "arg2" ],
-	 *      _name: "func",    // declaration, named function expressions
-	 *      _source: "function func(arg1, arg2) { ... }",
-	 *      _pc2line: <debug info for pc-to-line mapping>,
-	 *      _filename: <debug info for creating nice errors>
+	 *      name: "func",    // declaration, named function expressions
+	 *      fileName: <debug info for creating nice errors>
+	 *      _Varmap: { "arg1": 0, "arg2": 1, "varname": 2 },
+	 *      _Formals: [ "arg1", "arg2" ],
+	 *      _Source: "function func(arg1, arg2) { ... }",
+	 *      _Pc2line: <debug info for pc-to-line mapping>,
 	 *    }
 	 *
 	 *  Function instances:
@@ -156,14 +156,14 @@ struct duk_hcompiledfunction {
 	 *      prototype: { constructor: <func> },
 	 *      caller: <thrower>,
 	 *      arguments: <thrower>,
-	 *      _varmap: { "arg1": 0, "arg2": 1, "varname": 2 },
-	 *      _formals: [ "arg1", "arg2" ],
-	 *      _name: "func",    // declaration, named function expressions
-	 *      _source: "function func(arg1, arg2) { ... }",
-	 *      _pc2line: <debug info for pc-to-line mapping>,
-	 *      _filename: <debug info for creating nice errors>
-	 *      _varenv: <variable environment of closure>,
-	 *      _lexenv: <lexical environment of closure (if differs from _varenv)>
+	 *      name: "func",    // declaration, named function expressions
+	 *      fileName: <debug info for creating nice errors>
+	 *      _Varmap: { "arg1": 0, "arg2": 1, "varname": 2 },
+	 *      _Formals: [ "arg1", "arg2" ],
+	 *      _Source: "function func(arg1, arg2) { ... }",
+	 *      _Pc2line: <debug info for pc-to-line mapping>,
+	 *      _Varenv: <variable environment of closure>,
+	 *      _Lexenv: <lexical environment of closure (if differs from _Varenv)>
 	 *    }
 	 *
 	 *  More detailed description of these properties can be found

@@ -340,7 +340,7 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 	DUK_ASSERT(*out_target != NULL);
 	DUK_ASSERT(h_handler != NULL);
 
-	/* XXX: At the moment Duktape accesses internal keys like _finalizer using a
+	/* XXX: At the moment Duktape accesses internal keys like _Finalizer using a
 	 * normal property set/get which would allow a proxy handler to interfere with
 	 * such behavior and to get access to internal key strings.  This is not a problem
 	 * as such because internal key strings can be created in other ways too (e.g.

@@ -546,6 +546,10 @@ Planned
 * Rename duk_is_fixed() to duk_is_fixed_buffer() and duk_is_dynamic() to
   duk_is_dynamic_buffer() for consistency with other API calls
 
+* Rename Duktape internal keys to start with an uppercase character (e.g.
+  "\xFFvalue") so that user internal keys which begin with a lowercase
+  character (e.g. "\xFFptr") won't conflict by default
+
 * Add OS and compiler strings to Duktape.env
 
 * Make error 'tracedata' an internal property for better sandboxing

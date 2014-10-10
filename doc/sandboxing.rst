@@ -182,7 +182,7 @@ Prevent access to function references in the call stack:
   with sandboxing, or at least carefully control the ``caller`` property
   values seen by the sandboxed code.
 
-* The ``_tracedata`` internal property of error objects contains references
+* The ``_Tracedata`` internal property of error objects contains references
   to calling functions.  Because this property is internal, sandboxed code
   has no access to it as long as access to internal properties is prevented
   in general.

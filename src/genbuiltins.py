@@ -302,7 +302,7 @@ bi_global_env = {
 	'class': 'ObjEnv',
 
 	'values': [
-		{ 'name': internal('target'),		'value': { 'type': 'builtin', 'id': 'bi_global' },	'attributes': '' },
+		{ 'name': internal('Target'),		'value': { 'type': 'builtin', 'id': 'bi_global' },	'attributes': '' },
 	],
 	'functions': [],
 }
@@ -498,7 +498,7 @@ bi_string_prototype = {
 		# which prevents a String instance's internal value also from being
 		# written with standard methods.  The internal code creating String
 		# instances has no such issues.
-		{ 'name': internal('value'),            'value': '',	'attributes': '' },
+		{ 'name': internal('Value'),            'value': '',	'attributes': '' },
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_string_prototype_to_string',		'length': 0 },
@@ -552,7 +552,7 @@ bi_boolean_prototype = {
 		# which prevents a Boolean instance's internal value also from being
 		# written with standard methods.  The internal code creating Boolean
 		# instances has no such issues.
-		{ 'name': internal('value'),            'value': False,		'attributes': '' },
+		{ 'name': internal('Value'),            'value': False,		'attributes': '' },
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = coerce_tostring
@@ -592,7 +592,7 @@ bi_number_prototype = {
 		# which prevents a Number instance's internal value also from being
 		# written with standard methods.  The internal code creating Number
 		# instances has no such issues.
-		{ 'name': internal('value'),            'value': 0.0,		'attributes': '' }
+		{ 'name': internal('Value'),            'value': 0.0,		'attributes': '' }
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_number_prototype_to_string',		'length': 1 },
@@ -655,7 +655,7 @@ bi_date_prototype = {
 		#  > Date.prototype.toString()
 		#  'Fri Jan 01 2010 00:00:00 GMT+0200 (EET)'
 
-		{ 'name': internal('value'),            'value': DBL_NAN,	'attributes': 'w' }
+		{ 'name': internal('Value'),            'value': DBL_NAN,	'attributes': 'w' }
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': BI_DATE_FLAG_TOSTRING_DATE + BI_DATE_FLAG_TOSTRING_TIME + BI_DATE_FLAG_LOCALTIME } },
@@ -751,7 +751,7 @@ bi_regexp_prototype = {
 
 		{
 			# Compiled bytecode, must match duk_regexp.h.
-			'name': internal('bytecode'),
+			'name': internal('Bytecode'),
 			'value': unichr(0) +		# flags (none)
 			         unichr(2) +		# nsaved == 2
 			         unichr(1),		# DUK_REOP_MATCH

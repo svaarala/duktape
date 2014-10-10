@@ -108,10 +108,10 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
  *  only the topmost return value matters.  For instance, traceback separator
  *  and decoded strings are pushed even when looking for filename only.
  *
- *  NOTE: because user code can currently write to the _tracedata array (or
- *  replace it with something other than an array), the code below must
- *  tolerate arbitrary _tracedata.  It can throw errors etc, but cannot cause
- *  a segfault or memory unsafe behavior.
+ *  NOTE: although _Tracedata is an internal property, user code can currently
+ *  write to the array (or replace it with something other than an array).
+ *  The code below must tolerate arbitrary _Tracedata.  It can throw errors
+ *  etc, but cannot cause a segfault or memory unsafe behavior.
  */
 
 /* constants arbitrary, chosen for small loads */

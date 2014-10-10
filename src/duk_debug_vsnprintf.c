@@ -264,8 +264,8 @@ DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_boo
 
 	if (p_end > p && p[0] == DUK_ASC_UNDERSCORE) {
 		/* if property key begins with underscore, encode it with
-		 * forced quotes (e.g. "_foo") to distinguish it from encoded
-		 * internal properties (e.g. \xffbar -> _bar).
+		 * forced quotes (e.g. "_Foo") to distinguish it from encoded
+		 * internal properties (e.g. \xffBar -> _Bar).
 		 */
 		quotes = 1;
 	}
@@ -284,7 +284,7 @@ DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_boo
 		} else if (ch >= 0x20 && ch <= 0x7e) {
 			duk_fb_put_byte(fb, ch);
 		} else if (ch == 0xff && !quotes) {
-			/* encode \xffbar as _bar if no quotes are applied, this is for
+			/* encode \xffBar as _Bar if no quotes are applied, this is for
 			 * readable internal keys.
 			 */
 			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_UNDERSCORE);

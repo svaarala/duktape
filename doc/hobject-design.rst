@@ -1416,8 +1416,8 @@ the following::
 
   e = {
     // internal control properties first
-    "_target": (target object),
-    "_next": (numeric index),
+    "_Target": (target object),
+    "_Next": (numeric index),
 
     // followed by enumeration keys
     // (as properties, not array entries)
@@ -1440,10 +1440,10 @@ The enumerator object takes advantage of two features:
    is recorded in its correct position, and any later occurrences are
    ignored.
 
-The ``_next`` internal property is a numeric index which indicates
+The ``_Next`` internal property is a numeric index which indicates
 where to find the next potential key.  It is an index to the *entry
 part* of the enumerator, and it's initialized to the value 2 because
-positions 0 and 1 are taken by ``_target`` and ``_next`` properties,
+positions 0 and 1 are taken by ``_Target`` and ``_Next`` properties,
 respectively.  Entry index 2 in the example above is the "0" key.  This
 needs to be managed carefully as the indexing model depends on the entry
 part having a very specific, unchanged form.
@@ -1543,7 +1543,7 @@ sequences (valid CESU-8 sequences to be exact) in memory, internal properties
 are prefixed with an invalid UTF-8 sequence which standard Ecmascript code
 cannot generate and thus cannot access.  The current prefix is a single
 ``0xff`` byte.  The prefix is denoted with an underscore in this document;
-e.g. ``_map`` would be represented as the byte sequence: ``0xff`` ``'m'``
+e.g. ``_Map`` would be represented as the byte sequence: ``0xff`` ``'M'``
 ``'a'`` ``'p'`` in memory.  User C code can also use internal properties for
 its own purposes, as long as the property names don't conflict with Duktape's
 internal properties.
@@ -1623,7 +1623,7 @@ double brackets are omitted from the specification property names
 | DefineOwnProperty | Not stored, implicit in algorithms.                  |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-| PrimitiveValue    | Internal property ``_value``.                        |
+| PrimitiveValue    | Internal property ``_Value``.                        |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
 | Construct         | Not stored, implicit in algorithms.  ``duk_hobject`` |
@@ -1643,11 +1643,11 @@ double brackets are omitted from the specification property names
 | HasInstance       | Not stored, implicit in algorithms.                  |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-| Scope             | Internal properties ``_lexenv`` and ``_varenv``.     |
+| Scope             | Internal properties ``_Lexenv`` and ``_Varenv``.     |
 |                   | (Unlike E5, global and eval code are also compiled   |
 |                   | into functions, hence two scope fields are needed.)  |
 +-------------------+------------------------------------------------------+
-| FormalParameters  | Internal property ``_formals``.                      |
+| FormalParameters  | Internal property ``_Formals``.                      |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
 | Code              | An Ecmascript function (``duk_hcompiledfunction``)   |
@@ -1659,25 +1659,25 @@ double brackets are omitted from the specification property names
 |                   | ``duk_hnativefunction.h``.                           |
 +-------------------+------------------------------------------------------+
 | TargetFunction    | ``duk_hobject`` flag ``DUK_HOBJECT_FLAG_BOUND`` is   |
-|                   | set, and the internal property ``_target`` is set    |
+|                   | set, and the internal property ``_Target`` is set    |
 |                   | to the target function.                              |
 +-------------------+------------------------------------------------------+
 | BoundThis         | ``duk_hobject`` flag ``DUK_HOBJECT_FLAG_BOUND`` is   |
-|                   | set and the internal property ``_this`` is set       |
+|                   | set and the internal property ``_This`` is set       |
 |                   | to the ``this`` binding.                             |
 +-------------------+------------------------------------------------------+
 | BoundArguments    | ``duk_hobject`` flag ``DUK_HOBJECT_FLAG_BOUND`` is   |
-|                   | set and the internal property ``_args`` is set       |
+|                   | set and the internal property ``_Args`` is set       |
 |                   | to a list of bound arguments.                        |
 +-------------------+------------------------------------------------------+
 | Match             | Not stored, implicit in algorithms.  Object type     |
 |                   | (class number is DUK_HOBJECT_CLASS_REGEXP) determines|
 |                   | whether ``[[Match]]`` is conceptually supported.     |
 |                   | The compiled regexp and its flags are stored as the  |
-|                   | ``_bytecode`` internal property, whose value is an   |
+|                   | ``_Bytecode`` internal property, whose value is an   |
 |                   | internal string.                                     |
 +-------------------+------------------------------------------------------+
-| ParameterMap      | Internal property ``_map``.                          |
+| ParameterMap      | Internal property ``_Map``.                          |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
 
@@ -1911,13 +1911,13 @@ the moment.
 |            |            | ``duk_hobject_object_define_property()``.     |
 +------------+------------+-----------------------------------------------+
 | ``String`` | ``length`` | Virtual property computed from the string     |
-| instance   |            | length of the internal ``_value`` property.   |
+| instance   |            | length of the internal ``_Value`` property.   |
 |            |            | ``DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ`` enables |
 |            |            | exotic behavior in:                           |
 |            |            | ``get_own_property_desc()``.                  |
 +------------+------------+-----------------------------------------------+
 | ``String`` | array      | Virtual properties computed by looking up     |
-| instance   | indices    | characters of the internal ``_value``         |
+| instance   | indices    | characters of the internal ``_Value``         |
 |            | inside     | property.                                     |
 |            | string     | ``DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ`` enables |
 |            | length     | exotic behavior in:                           |
