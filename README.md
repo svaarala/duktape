@@ -84,6 +84,12 @@ intended to work on e.g. OSX or Windows.  The source distributable has more
 user-friendly Makefile examples, but you should normally simply write your
 own Makefile when integrating Duktape into your program.
 
+Versioning
+----------
+
+Duktape uses [Semantic Versioning](http://semver.org/), see
+[Versioning](http://duktape.org/guide.html#versioning).
+
 Reporting bugs
 --------------
 
