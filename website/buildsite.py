@@ -913,6 +913,7 @@ def generateGuide():
 	navlinks.append(['#compiling', 'Compiling'])
 	navlinks.append(['#portability', 'Portability'])
 	navlinks.append(['#compatibility', 'Compatibility'])
+	navlinks.append(['#versioning', 'Versioning'])
 	navlinks.append(['#limitations', 'Limitations'])
 	navlinks.append(['#comparisontolua', 'Comparison to Lua'])
 	res.append('<ul>')
@@ -955,6 +956,7 @@ def generateGuide():
 	res += processRawDoc('guide/compiling.html')
 	res += processRawDoc('guide/portability.html')
 	res += processRawDoc('guide/compatibility.html')
+	res += processRawDoc('guide/versioning.html')
 	res += processRawDoc('guide/limitations.html')
 	res += processRawDoc('guide/luacomparison.html')
 
