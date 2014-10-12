@@ -43,6 +43,13 @@ non-<code>NULL</code> or unsafe behavior may occur.  This is the case
 because explicit checks for the argument would increase code footprint
 for little practical gain.</p>
 
+<h2>API calls may be macros</h2>
+
+<p>All Duktape API calls are potentially macros.  The implementation of a
+certain API call may change between a macro and an actual function even
+between compatible releases.  See <a href="guide.html#duktape-api">Duktape API</a>
+for more discussion.</p>
+
 <h2>Minimal Duktape program</h2>
 
 <pre class="c-code">

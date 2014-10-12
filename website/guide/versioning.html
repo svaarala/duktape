@@ -11,8 +11,10 @@
 
 <p>The "public API" to which these rules apply include:</p>
 <ul>
-<li>The Duktape API calls documented on duktape.org.  API calls implemented as macros
-    are part of the public API, but any internal calls the macros make are not.</li>
+<li>The Duktape API calls documented on duktape.org.  API calls implemented
+    as macros are part of the public API, but any internal calls the macros
+    make are not.  Changing an API call from a function call to a macro (or
+    vice versa) is considered a compatible change.</li>
 <li>The global environment visible to Ecmascript code, including the <code>Duktape</code>
     object and other Ecmascript extensions, as documented on duktape.org.</li>
 </ul>

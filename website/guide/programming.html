@@ -300,16 +300,32 @@ when they are relevant.  Similarly, when writing Ecmascript code it is
 preferable to use numeric rather than string indices, as the same fast path
 applies for Ecmascript code.</p>
 
-<h2>Duktape API</h2>
+<h2 id="duktape-api">Duktape API</h2>
 
 <p>Duktape API is the collection of user callable API calls defined in
 <code>duktape.h</code> and documented in the
 <a href="api.html">API reference</a>.</p>
 
 <p>The Duktape API calls are generally error tolerant and will check all
-arguments for errors (such as <code>NULL</code> pointers).  However, to minimize
-footprint, the <code>ctx</code> argument is not checked, and the caller MUST NOT
-call any Duktape API calls with a <code>NULL</code> context.</p>
+arguments for errors (such as <code>NULL</code> pointers).  However, to
+minimize footprint, the <code>ctx</code> argument is not checked, and the
+caller MUST NOT call any Duktape API calls with a <code>NULL</code> context.</p>
+
+<p>All Duktape API calls are potentially macros.  Calling code must not rely
+on any Duktape API call being available as a function pointer.  The
+implementation of a certain API call may change between a macro and an
+actual function even between compatible releases.  The Duktape API provides
+the following guarantees for macros:</p>
+<ul>
+<li>Arguments are never evaluated more than once.  However, an argument may not
+    be evaluated at all if an argument is ignored in the current version.</li>
+<li>An API call with a return value can be used as an expression.  If the API
+    macro contains multiple statements, it is implemented as a comma expression
+    (e.g. <code>(foo, bar, quux)</code>).</li>
+<li>An API call with a <code>void</code> return value may not necessarily work
+    as part of an expression.  The API macro may be implemented as a block
+    statement or as a dummy <code>do {...} while (0)</code> loop.</li>
+</ul>
 
 <h2>Duktape/C function</h2>
 
