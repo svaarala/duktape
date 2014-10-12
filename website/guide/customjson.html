@@ -69,8 +69,8 @@ instead.</p>
 
 <p>All standard Ecmascript strings are valid CESU-8 data internally, so
 behavior for codepoints above U+FFFF never poses compliance issues.  However,
-Duktape strings may contain extended UTF-8 codepoints and may even contain
-invalid UTF-8 data.</p>
+Duktape strings may contain <a href="#extended-utf8">extended UTF-8</a>
+codepoints and may even contain invalid UTF-8 data.</p>
 
 <p>The Duktape JSON implementation, including the standard Ecmascript JSON API,
 use replacement characters to deal with invalid UTF-8 data.  The resulting
