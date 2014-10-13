@@ -385,7 +385,7 @@ test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 ecmatest: npminst duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatest (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatest"
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
@@ -395,7 +395,7 @@ endif
 ecmatestd: npminst dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatestd"
 	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
