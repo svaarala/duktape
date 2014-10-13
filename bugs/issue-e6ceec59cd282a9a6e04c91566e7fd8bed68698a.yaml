@@ -1,0 +1,24 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix gcc -O4 compile warnings
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-13 21:02:52.726538 Z
+references: []
+
+id: e6ceec59cd282a9a6e04c91566e7fd8bed68698a
+log_events: 
+- - 2014-10-13 21:02:52.883627 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-13 21:50:05.874080 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - |-
+    Almost all warnings fixed.  The remaining warning are quite difficult to fix and
+    seem to be caused GCC doing unsafe code transformations internally.
