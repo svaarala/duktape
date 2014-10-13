@@ -1089,6 +1089,7 @@ def main():
 
 	print 'Copying misc files'
 	for i in [ 'favicon.ico',
+	           'robots.txt',
 	           'startup_image_320x480.png',
 	           'touch_icon_114x114.png',
 	           'touch_icon_120x120.png',
