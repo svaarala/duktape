@@ -11,16 +11,18 @@
 
 <p>The "public API" to which these rules apply include:</p>
 <ul>
-<li>The Duktape API calls documented on duktape.org.  API calls implemented
-    as macros are part of the public API, but any internal calls the macros
-    make are not.  Changing an API call from a function call to a macro (or
-    vice versa) is considered a compatible change.</li>
+<li>The Duktape API calls documented on duktape.org, except those tagged
+    <code>experimental</code>.  API calls implemented as macros are part of
+    the public API, but any internal calls the macros make are not.  Changing
+    an API call from a function call to a macro (or vice versa) is considered
+    a compatible change.</li>
 <li>The global environment visible to Ecmascript code, including the <code>Duktape</code>
     object and other Ecmascript extensions, as documented on duktape.org.</li>
 </ul>
 
 <p>The following are not part of the "public API":</p>
 <ul>
+<li>Duktape API calls tagged <code>experimental</code>.</li>
 <li>Feature options.  Incompatible feature option changes are not made in patch
     releases, but can be made in minor releases (contrary to semantic versioning
     guarantees). Such changes are noted in release notes, and the goal is to cause
