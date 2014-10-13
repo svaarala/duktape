@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v1.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-09-26 12:45:52.798437 Z
 references: []
 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-09-26 12:45:52.958292 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-10-13 13:42:24.026837 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""
