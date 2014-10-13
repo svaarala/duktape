@@ -112,6 +112,10 @@ Release checklist
 
     - make apitest
 
+* Compile option matrix test
+
+  - Run ``util/matrix_compile.py`` manually for GCC and Clang on x64
+
 * Regfuzz
 
   - On x86-64, with DUK_OPT_ASSERTIONS
