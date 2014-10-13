@@ -543,6 +543,8 @@ Planned
 
 * Feature complete baseline release
 
+* Add convenience API call: duk_put_global_string()
+
 * Rename duk_is_fixed() to duk_is_fixed_buffer() and duk_is_dynamic() to
   duk_is_dynamic_buffer() for consistency with other API calls
 
