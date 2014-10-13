@@ -282,7 +282,7 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	res.append('<h1 id="%s" class="apih1">' % funcname)
 	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (funcname, funcname))
 	if floating_list_tags and parts.has_key('tags'):
-		p = parts['tags']
+		p = sorted(parts['tags'], reverse=True)  # reversed because floated to right (which reverses DOM order)
 		for idx, val in enumerate(p):
 			classes = [ 'apitag' ]
 			if val == 'experimental' or val == 'nonportable':
