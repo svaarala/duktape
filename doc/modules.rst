@@ -60,6 +60,9 @@ provided by the user (there is no default)::
     // ...
   };
 
+The identifier given to the ``modSearch()`` function is a fully resolved,
+absolute identifier.
+
 If the search function cannot locate a module based on its identifier, it is
 expected to throw an error.  If a module is found, the search function can
 register symbols directly to 'exports' (this is used to implement C modules),
