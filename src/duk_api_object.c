@@ -423,6 +423,22 @@ DUK_EXTERNAL duk_bool_t duk_get_global_string(duk_context *ctx, const char *key)
 	return ret;
 }
 
+DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_bool_t ret;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+	duk_insert(ctx, -2);
+	ret = duk_put_prop_string(ctx, -2, key);  /* [ ... global val ] -> [ ... global ] */
+	duk_pop(ctx);
+	return ret;
+}
+
 /*
  *  Object prototype
  */
