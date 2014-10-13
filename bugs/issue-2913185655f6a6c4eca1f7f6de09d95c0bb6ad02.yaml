@@ -9,7 +9,7 @@ desc: |-
   Same warning for ``duk_js_ops.c:775``.
 type: :task
 component: duk
-release: v1.0
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -26,3 +26,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - Also happens for -m32.
+- - 2014-10-13 15:37:13.671360 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
+  - ""

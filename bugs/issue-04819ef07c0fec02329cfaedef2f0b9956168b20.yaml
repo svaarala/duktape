@@ -3,7 +3,7 @@ title: better resolution for freebsd 1.0 clang -m32 packed tval issue
 desc: ""
 type: :task
 component: duk
-release: v1.0
+release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-09-26 10:03:18.601935 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-10-13 15:37:13.882540 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.1 from v1.0
   - ""
