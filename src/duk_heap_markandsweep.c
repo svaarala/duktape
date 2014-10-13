@@ -305,6 +305,40 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 }
 
 /*
+ *  Mark objects on finalize_list.
+ *
+ */
+
+DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
+	duk_hthread *thr;
+	duk_heaphdr *hdr;
+#ifdef DUK_USE_DEBUG
+	duk_size_t count_finalize_list = 0;
+#endif
+
+	DUK_DD(DUK_DDPRINT("duk__mark_finalize_list: %p", (void *) heap));
+
+	thr = duk__get_temp_hthread(heap);
+	DUK_ASSERT(thr != NULL);
+
+	hdr = heap->finalize_list;
+	while (hdr) {
+		duk__mark_heaphdr(heap, hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+#ifdef DUK_USE_DEBUG
+		count_finalize_list++;
+#endif
+	}
+
+#ifdef DUK_USE_DEBUG
+	if (count_finalize_list > 0) {
+		DUK_D(DUK_DPRINT("marked %ld objects on the finalize_list as reachable (previous finalizer run skipped)",
+		                 (long) count_finalize_list));
+	}
+#endif
+}
+
+/*
  *  Fallback marking handler if recursion limit is reached.
  *
  *  Iterates 'temproots' until recursion limit is no longer hit.  Note
@@ -445,6 +479,32 @@ DUK_LOCAL void duk__clear_refzero_list_flags(duk_heap *heap) {
 	}
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
+
+/*
+ *  Clear (reachable) flags of finalize_list
+ *
+ *  We could mostly do in the sweep phase when we move objects from the
+ *  heap into the finalize_list.  However, if a finalizer run is skipped
+ *  during a mark-and-sweep, the objects on the finalize_list will be marked
+ *  reachable during the next mark-and-sweep.  Since they're already on the
+ *  finalize_list, no-one will be clearing their REACHABLE flag so we do it
+ *  here.  (This now overlaps with the sweep handling in a harmless way.)
+ */
+
+DUK_LOCAL void duk__clear_finalize_list_flags(duk_heap *heap) {
+	duk_heaphdr *hdr;
+
+	DUK_DD(DUK_DDPRINT("duk__clear_finalize_list_flags: %p", (void *) heap));
+
+	hdr = heap->finalize_list;
+	while (hdr) {
+		DUK_HEAPHDR_CLEAR_REACHABLE(hdr);
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
+		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+	}
+}
 
 /*
  *  Sweep stringtable
@@ -938,6 +998,10 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  check which objects are unreachable and are finalizable; such
 	 *  objects are marked as FINALIZABLE and marked as reachability
 	 *  (and "temproots" is run again to complete the process).
+	 *
+	 *  The heap finalize_list must also be marked as a reachability root.
+	 *  There may be objects on the list from a previous round if the
+	 *  previous run had finalizer skip flag.
 	 */
 
 	duk__mark_roots_heap(heap);               /* main reachability roots */
@@ -947,6 +1011,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	duk__mark_temproots_by_heap_scan(heap);   /* temproots */
 
 	duk__mark_finalizable(heap);              /* mark finalizable as reachability roots */
+	duk__mark_finalize_list(heap);            /* mark finalizer work list as reachability roots */
 	duk__mark_temproots_by_heap_scan(heap);   /* temproots */
 
 	/*
@@ -973,6 +1038,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #ifdef DUK_USE_REFERENCE_COUNTING
 	duk__clear_refzero_list_flags(heap);
 #endif
+	duk__clear_finalize_list_flags(heap);
 
 	/*
 	 *  Object compaction (emergency only).
