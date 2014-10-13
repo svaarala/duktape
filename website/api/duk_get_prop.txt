@@ -9,7 +9,7 @@ duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_index);
 <p>Get the property <code>key</code> of a value at <code>obj_index</code>.
 Return code and error throwing behavior:</p>
 <ul>
-<li>If the property exists, a non-zero value is returned and <code>key</code>
+<li>If the property exists, <code>1</code> is returned and <code>key</code>
     is replaced by the property value on the value stack.  However,
     if the property is an accessor, the "getter" function may throw
     an error.</li>

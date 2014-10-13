@@ -9,7 +9,7 @@ duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_index);
 <code>obj_index</code>.  <code>key</code> and <code>val</code> are removed
 from the stack.  Return code and error throwing behavior:</p>
 <ul>
-<li>If the property write succeeds, returns non-zero.</li>
+<li>If the property write succeeds, returns <code>1</code>.</li>
 <li>If the property write fails, throws an error (strict mode semantics).
     An error may also be thrown by the "setter" function of an accessor property.</li>
 <li>If the value at <code>obj_index</code> is not
@@ -47,9 +47,9 @@ Both the target value and the <code>key</code> are coerced:</p>
 In Ecmascript an assignment expression has the value of the right-hand-side
 expression, regardless of whether or not the assignment succeeds.  The return
 value for this API call is not specified by Ecmascript or available to
-Ecmascript code: the API call returns zero or non-zero depending on whether
-the assignment succeeded or not (with the zero value promoted to an error in
-strict code).
+Ecmascript code: the API call returns <code>0</code> or <code>1</code>
+depending on whether the assignment succeeded or not (with the <code>0</code>
+return value promoted to an error in strict code).
 </div>
 
 <p>If the key is a fixed string you can avoid one API call and use the
