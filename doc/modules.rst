@@ -211,8 +211,8 @@ which initially has the same value as ``exports``:
 
 Duktape doesn't currently support assignment to ``module.exports``.
 
-C modules (DLLs)
-================
+C modules and DLLs
+==================
 
 The user provided module search function can be used to implement DLL support.
 Simply load the DLL based on the module identifier, and call some kind of init
@@ -235,7 +235,9 @@ Limitations:
   (e.g. through a finalizer) is **not** enough because other modules can
   copy references to individual exported values.
 
-* At the moment there are no recommended DLL conventions, see future work.
+.. note:: At the moment there are no recommended conventions for DLLs or
+          what a module initialization function should look like.  These
+          conventions will be provided in a future version.  See future work.
 
 Background
 ==========
@@ -353,7 +355,9 @@ Several ideas to improve the C module support:
 
 * Provide a default DLL loading helper for at least POSIX and Windows.
 
-* Provide suggested module initialization conventions.
+* Provide suggested module initialization conventions that work both with
+  static linking and DLLs, and allow Duktape modules to be more easily
+  exchanged between projects.
 
 Module unloading support
 ------------------------

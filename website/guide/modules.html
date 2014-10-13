@@ -190,6 +190,102 @@ in-memory store, or load the modules over the network.  However, a module
 search function cannot do a coroutine yield, so network access will block the
 application; it is most useful for testing.</p>
 
+<!-- XXX: this is just a placeholder, perhaps a separate guide section or integrate
+     better with text elsewhere in this section.
+-->
+<h2 id="writing-c-modules">Writing modules in C</h2>
+
+<p>There is currently no strongly recommended convention for writing C modules.
+However, most C modules will need the following parts:</p>
+<pre class="c-code">
+/*
+ *  Identify module
+ */
+
+/* Include duktape.h and whatever platform headers are needed. */
+#include "duktape.h"
+
+/*
+ *  Duktape/C functions providing module functionality.
+ */
+
+static duk_ret_t my_func_1(duk_context *ctx) {
+    /* ... */
+}
+
+static duk_ret_t my_func_2(duk_context *ctx) {
+    /* ... */
+}
+
+/* ... */
+
+/*
+ *  Module initialization
+ */
+
+static const duk_function_list_entry my_module_funcs[] = {
+    { "func1", my_func_1, 3 /*nargs*/ },
+    { "func2", my_func_2, DUK_VARARGS /*nargs*/ },
+    { NULL, NULL, 0 }
+};
+
+static const duk_number_list_entry my_module_consts[] = {
+    { "FLAG_FOO", (double) (1 &lt;&lt; 0) },
+    { NULL, 0.0 }
+};
+
+void my_module_init(duk_context *ctx) {
+    /*
+     *  There are multiple alternatives for how the initialization and
+     *  registration happens:
+     *
+     *    - Init function creates an object and registers it to the
+     *      global object (e.g. "MyModule").
+     *
+     *    - Init function creates a table and leaves it on the value
+     *      stack, allowing the caller to use or register it where
+     *      appropriate.
+     *
+     *    - Caller pushes a table to value stack and the init function
+     *      writes its symbols into that table.  This is close to
+     *      CommonJS exports table.
+     *
+     *  At the moment there is no strong recommendation for this.
+     *  This example registers the module to the global object.
+     */
+
+    duk_push_object(ctx);
+    duk_put_function_list(ctx, -1, my_module_funcs);
+    duk_put_number_list(ctx, -1, my_module_consts);
+    duk_put_global_string(ctx, "MyModule");
+}
+</pre>
+
+<p>The calling application which wants to use this module will then simply:</p>
+<pre class="c-code">
+int main(int argc, char *argv[]) {
+    duk_context *ctx;
+
+    ctx = duk_create_heap_default(ctx);
+    if (!ctx) {
+        /* ... */
+    }
+    my_module_init(ctx);
+
+    /* MyModule is now registered. */
+
+    duk_eval_string_noresult(ctx, "MyModule.func2()");
+
+    /* ... */
+
+    duk_destroy_heap(ctx);
+    return 0;
+}
+</pre>
+
+<p>A convention for writing C modules is being worked on for a future release,
+to allow modules to be more easily shared between code bases.</p>
+
 <h2>Limitations</h2>
 
 <ul>
