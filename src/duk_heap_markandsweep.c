@@ -310,16 +310,12 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
  */
 
 DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
-	duk_hthread *thr;
 	duk_heaphdr *hdr;
 #ifdef DUK_USE_DEBUG
 	duk_size_t count_finalize_list = 0;
 #endif
 
 	DUK_DD(DUK_DDPRINT("duk__mark_finalize_list: %p", (void *) heap));
-
-	thr = duk__get_temp_hthread(heap);
-	DUK_ASSERT(thr != NULL);
 
 	hdr = heap->finalize_list;
 	while (hdr) {

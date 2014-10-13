@@ -120,7 +120,8 @@ DUK_EXTERNAL duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index) {
 		}
 	}
 
-	DUK_ASSERT(index >= 0 && index < vs_size);
+	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(index < vs_size);
 	return index;
 }
 
@@ -146,7 +147,8 @@ DUK_EXTERNAL duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t i
 		}
 	}
 
-	DUK_ASSERT(index >= 0 && index < vs_size);
+	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(index < vs_size);
 	return index;
 
  invalid_index:
@@ -176,7 +178,8 @@ DUK_INTERNAL duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index) {
 		}
 	}
 
-	DUK_ASSERT(index >= 0 && index < vs_size);
+	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(index < vs_size);
 	return thr->valstack_bottom + index;
 }
 
@@ -202,7 +205,8 @@ DUK_INTERNAL duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index) {
 		}
 	}
 
-	DUK_ASSERT(index >= 0 && index < vs_size);
+	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(index < vs_size);
 	return thr->valstack_bottom + index;
 
  invalid_index:
@@ -272,7 +276,8 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 			goto invalid_index;
 		}
 	}
-	DUK_ASSERT(index >= 0 && index <= vs_limit);
+	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(index <= vs_limit);
 
 	if (index >= vs_size) {
 		/* Stack size increases or stays the same.  Fill the new

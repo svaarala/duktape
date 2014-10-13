@@ -135,6 +135,7 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 
 	DUK_UNREF(str_empty);
 	DUK_UNREF(str_excl);
+	DUK_UNREF(duk__class_names);
 
 	DUK_D(DUK_DPRINT("=== hobject %p ===", (void *) obj));
 	if (!obj) {

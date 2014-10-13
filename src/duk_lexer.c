@@ -291,6 +291,20 @@ DUK_LOCAL void duk__advance_chars(duk_lexer_ctx *lex_ctx, duk_small_int_t count)
 
 	DUK_ASSERT(count >= 0 && count <= DUK_LEXER_WINDOW_SIZE);
 
+	/* Without this check, gcc -O4 will complain the following for the
+	 * first for-loop below:
+	 *
+	 *   duk_lexer.c:301:19: error: array subscript is above array bounds [-Werror=array-bounds]
+	 *
+	 * Check for range explicitly; this also protects against legitimate
+	 * internal errors and avoids memory unsafe behavior in such cases.
+	 */
+	if (DUK_UNLIKELY(!(count >= 0 && count <= DUK_LEXER_WINDOW_SIZE))) {
+		DUK_D(DUK_DPRINT("invalid count: %ld, should not happen", (long) count));
+		DUK_ERROR(lex_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+		return;  /* never here */
+	}
+
 	if (count == 0) {
 		/* allowing zero count makes some special caller flows easier */
 		return;

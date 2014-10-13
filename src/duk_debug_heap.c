@@ -40,6 +40,10 @@ DUK_LOCAL const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 }
 
 DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
+	DUK_UNREF(obj);
+	DUK_UNREF(index);
+	DUK_UNREF(duk__get_heap_type_string);
+
 #ifdef DUK_USE_REFERENCE_COUNTING
 	DUK_D(DUK_DPRINT("  [%ld]: %p %s (flags: 0x%08lx, ref: %ld) -> %!O",
 	                 (long) index,
@@ -63,6 +67,7 @@ DUK_LOCAL void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const c
 	duk_heaphdr *curr;
 
 	DUK_UNREF(heap);
+	DUK_UNREF(name);
 
 	count = 0;
 	curr = root;
