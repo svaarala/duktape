@@ -568,6 +568,9 @@ Planned
 * Rename RELEASES.txt, AUTHORS.txt, and README.txt files to .rst suffix for
   better automatic formatting
 
+* Fix a mark-and-sweep finalizer bug which could cause memory safety issues
+  when finalizer execution was disabled for a mark-and-sweep round
+
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
