@@ -48,12 +48,6 @@ RangeError: regexp executor recursion limit
         global input:1 preventsyield
 </pre>
 
-<h2>Regexp dollar escape</h2>
-
-<p>The Duktape RegExp syntax allows dollar escaping (e.g. <code>/\$/</code>)
-even though it is not allowed by the E5.1 specification.  RegExp dollar
-escapes are used in existing Ecmascript code quite widely.</p>
-
 <h2>Duktape does not fully support locales</h2>
 
 <p>Although Duktape supports the concept of a local time, it doesn't support
