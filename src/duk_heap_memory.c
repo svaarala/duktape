@@ -217,7 +217,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 		DUK_UNREF(rc);
 
 		res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
-		if (res) {
+		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) newsize));
 			return res;
@@ -330,7 +330,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		 */
 
 		res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
-		if (res) {
+		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) newsize));
 			return res;
@@ -443,7 +443,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk
 	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	res = DUK_REALLOC(thr->heap, ptr, newsize);
-	if (!res) {
+	if (res == NULL && newsize != 0) {
 #ifdef DUK_USE_VERBOSE_ERRORS
 		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
 #else
@@ -463,7 +463,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_m
 	DUK_ASSERT_DISABLE(newsize >= 0);
 
 	res = DUK_REALLOC_INDIRECT(thr->heap, cb, ud, newsize);
-	if (!res) {
+	if (res == NULL && newsize != 0) {
 #ifdef DUK_USE_VERBOSE_ERRORS
 		DUK_ERROR_RAW(filename, line, thr, DUK_ERR_ALLOC_ERROR, "memory realloc failed");
 #else
