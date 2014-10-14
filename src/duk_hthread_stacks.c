@@ -84,6 +84,10 @@ DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 		thr->callstack = p;
 		thr->callstack_size = new_size;
 	} else {
+		/* Because new_size != 0, if condition doesn't need to be
+		 * (p != NULL || new_size == 0).
+		 */
+		DUK_ASSERT(new_size != 0);
 		DUK_D(DUK_DPRINT("callstack shrink failed, ignoring"));
 	}
 
@@ -354,6 +358,10 @@ DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 		thr->catchstack = p;
 		thr->catchstack_size = new_size;
 	} else {
+		/* Because new_size != 0, if condition doesn't need to be
+		 * (p != NULL || new_size == 0).
+		 */
+		DUK_ASSERT(new_size != 0);
 		DUK_D(DUK_DPRINT("catchstack shrink failed, ignoring"));
 	}
 
