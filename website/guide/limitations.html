@@ -11,7 +11,7 @@ limitations, and implementation limits (which are inevitable).</p>
 <p>A single Duktape heap, i.e. contexts sharing the same garbage collector,
 is <b>not re-entrant</b>.  Only one C/C++ thread can call Duktape APIs
 at a time for a particular Duktape heap (although the calling thread
-can change over time).</p>
+can change over time).  See <a href="#threading">Threading</a>.</p>
 
 <h2>String and buffer limits</h2>
 
