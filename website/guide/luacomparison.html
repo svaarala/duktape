@@ -59,11 +59,6 @@ pauses, but has no reference counting.</p>
 garbage collector while Lua 5.1 does not (there is an emergency GC patch
 though).</p>
 
-<h2>Finalizers</h2>
-
-<p>Duktape has finalizer support.  Lua 5.2 has finalizer support while
-Lua 5.1 does not.</p>
-
 <h2>duk_safe_call() vs. lua_cpcall()</h2>
 
 <p><code>duk_safe_call()</code> is a protected C function call which
@@ -113,6 +108,10 @@ coroutines cannot yield from inside constructor calls or getter/setter calls.</p
 doesn't.  This may change with Ecmascript E6, which has a syntax for
 multiple value returns.  The Duktape/C API reserves return values above 1
 so that they may be later used for multiple return values.</p>
+
+<h2>Weak references</h2>
+
+<p>Lua supports weak references.  Duktape currently doesn't.</p>
 
 <h2>Unicode</h2>
 
