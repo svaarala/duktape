@@ -571,6 +571,10 @@ Planned
 * Fix a mark-and-sweep finalizer bug which could cause memory safety issues
   when finalizer execution was disabled for a mark-and-sweep round
 
+* Fix a mark-and-sweep zero-size realloc() bug which could happen when an
+  initial zero-size realloc() failed (this shouldn't normally happen but
+  was triggered by GC torture testing)
+
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
