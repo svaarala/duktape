@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a top level section on logging
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-17 15:46:04.883984 Z
+references: []
+
+id: e5dc6f7122fe84163f9591d47dfda95630372126
+log_events: 
+- - 2014-10-17 15:46:05.043931 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-17 19:29:51.111650 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
