@@ -1,0 +1,23 @@
+<h1 id="logging">Logging</h1>
+
+<p>Duktape has a built-in logging framework with a small footprint, reasonable
+performance, and redirectable output.</p>
+
+<p>Basic usage example:</p>
+<pre class="ecmascript-code">
+var val1 = 'foo';
+var val2 = 123;
+var val3 = new Date(123456789e3);
+
+var logger = new Duktape.Logger();  // or new Duktape.Logger('logger name')
+logger.info('three values:', val1, val2, val3);
+</pre>
+
+<p>The example would print something like the following to <code>stdout</code>:</p>
+<pre>
+2014-10-17T19:26:42.141Z INF test.js: three values: foo 123 1973-11-29 23:33:09.000+02:00
+</pre>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/logging.rst">logging.rst</a>
+for more info.</p>
