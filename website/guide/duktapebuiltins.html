@@ -676,21 +676,13 @@ If called as a normal function, throws a <code>TypeError</code>.</p>
     another value to control log level on a per-logger basis.</li>
 </ul>
 
-<p>To write log entries:</p>
-<pre class="ecmascript-code">
-var logger = new Duktape.Logger();
-logger.info('three values:', val1, val2, val3);
-</pre>
-
-<p>For now, see the internal
-<a href="https://github.com/svaarala/duktape/blob/master/doc/logging.rst">logging.rst</a>
-document for more info.</p>
-
 <div class="fixme">
 Tail calling might theoretically affect the automatic name assignment (i.e.
 when logger name argument is omitted).  However, constructor calls are never
 converted to tail calls, so this is not a practical issue.
 </div>
+
+<p>See <a href="#logging">Logging</a> on how to use loggers.</p>
 
 <h2>Duktape.Logger.prototype</h2>
 
