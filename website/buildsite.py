@@ -867,7 +867,7 @@ def generateDownloadPage(releases_filename):
 			continue
 		href = tmp[0].select('a')[0]['href']
 		hash_elem = tr.select('.hash')[0]
-		hash_elem.string = getFileMd5(os.path.abspath(os.path.join('binaries', href))) or '???'
+		hash_elem.string = getFileMd5(os.path.abspath(os.path.join('..', 'duktape-releases', href))) or '???'
 
 	tmp_soup = templ_soup.select('#site-middle')[0]
 	tmp_soup.clear()
@@ -1100,9 +1100,11 @@ def main():
 	           'touch_icon_72x72.png' ]:
 		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, i))
 
-	print 'Copying binaries'
-	for i in os.listdir('binaries'):
-		shutil.copyfile(os.path.join('binaries', i), os.path.join(outdir, i))
+	print 'Copying release binaries'
+	for i in os.listdir(os.path.join('..', 'duktape-releases')):
+		if re.match(r'^duktape-.*?.tar.xz$', i) is None:
+			continue
+		shutil.copyfile(os.path.join('..', 'duktape-releases', i), os.path.join(outdir, i))
 
 	print 'Copying dukweb.js files'
 	for i in [ '../dukweb.js',

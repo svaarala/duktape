@@ -249,7 +249,6 @@ clean:
 	@rm -f libduktape*.so*
 	@rm -f doc/*.html
 	@rm -f src/*.pyc
-	@rm -rf duktape-*  # covers various files and dirs
 	@rm -rf massif.out.* ms_print.tmp.*
 	@rm -rf cachegrind.out.*
 	@rm -rf callgrind.out.*
@@ -276,6 +275,7 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
+	@rm -rf duktape-releases
 	@rm -f regfuzz-*.tar.gz
 	@rm -rf UglifyJS
 	@rm -rf UglifyJS2
@@ -787,10 +787,15 @@ dist-src:	dist
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
 
+# Duktape binary releases are in a separate repo
+duktape-releases:
+	$(GIT) clone https://github.com/svaarala/duktape-releases.git
+
 # Website
-site: dukweb.js jquery-1.11.0.js
+site: duktape-releases dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
+	cd duktape-releases/; git pull --rebase  # get binaries up-to-date
 	cd website/; $(PYTHON) buildsite.py ../site/
 	@rm -rf /tmp/site/
 	cp -r site /tmp/  # FIXME
