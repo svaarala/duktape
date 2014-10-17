@@ -191,7 +191,9 @@ Release checklist
   - Trivial compile test for separate sources (important because
     it's easy to forget to add files in make_dist.sh)
 
-* Store binaries and update website downloads page
+* Store binaries to duktape-releases repo
+
+* Update website downloads page
 
   - Release date
 
@@ -224,6 +226,12 @@ Release checklist
   - Ensure ``master`` is pushed and unnecessary branches are cleaned up
 
   - Push the release tag
+
+* Make GitHub release
+
+  - Release description should match tag description but be capitalized
+
+  - Attach the end user distributable to the GitHub release
 
 * Bump Duktape version for next release and testing
 
