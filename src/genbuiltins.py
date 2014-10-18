@@ -1443,7 +1443,7 @@ class GenBuiltins:
 
 	def writeNativeFuncArray(self, genc):
 		genc.emitLine('/* native functions: %d */' % len(self.native_func_list))
-		genc.emitLine('const duk_c_function duk_bi_native_functions[] = {')
+		genc.emitLine('DUK_INTERNAL const duk_c_function duk_bi_native_functions[%d] = {' % len(self.native_func_list))
 		for i in self.native_func_list:
 			# The function pointer cast here makes BCC complain about
 			# "initializer too complicated", so omit the cast.
@@ -1771,19 +1771,19 @@ class GenBuiltins:
 		genc.emitLine('')
 		self.writeNativeFuncArray(genc)
 		genc.emitLine('')
-		genc.emitArray(self.init_data, 'duk_builtins_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True)
+		genc.emitArray(self.init_data, 'duk_builtins_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(self.init_data))
 		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
-		genc.emitArray(self.initjs_data, 'duk_initjs_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True)
+		genc.emitArray(self.initjs_data, 'duk_initjs_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(self.initjs_data))
 		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
 
 	def emitHeader(self, genc):
 		self.gs.emitStringsHeader(genc)
 
 		genc.emitLine('')
-		genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[];')
-		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_builtins_data[];')
+		genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%s];' % len(self.native_func_list))
+		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_builtins_data[%d];' % len(self.init_data))
 		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
-		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[];')
+		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[%s];' % len(self.initjs_data))
 		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
 		genc.emitLine('')
 		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
