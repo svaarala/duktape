@@ -177,10 +177,15 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_BSD
 #endif
 
-/* Generic Unix */
+/* Generic Unix (includes Cygwin) */
 #if defined(__unix) || defined(__unix__) || defined(unix) || \
     defined(DUK_F_LINUX) || defined(DUK_F_BSD)
 #define DUK_F_UNIX
+#endif
+
+/* Cygwin */
+#if defined(__CYGWIN__)
+#define DUK_F_CYGWIN
 #endif
 
 /* Windows (32-bit or above) */
@@ -475,6 +480,17 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#include <sys/types.h>
+#include <endian.h>
+#include <limits.h>
+#include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
+#elif defined(DUK_F_CYGWIN)
+/* Cygwin -- don't use strptime() for now */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <sys/types.h>
 #include <endian.h>
