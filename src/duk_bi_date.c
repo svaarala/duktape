@@ -1093,6 +1093,7 @@ DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_doubl
 	 * the value.  In other words, although the UTC time is within the
 	 * Ecmascript range, the local part values can be just outside of it.
 	 */
+	DUK_UNREF(duk__timeval_in_leeway_range);
 	DUK_ASSERT(duk__timeval_in_leeway_range(d));
 
 	/* these computations are guaranteed to be exact for the valid
