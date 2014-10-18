@@ -1117,6 +1117,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
  *  a 'strict' parameter.
  */
 
+#if 0  /*unused*/
 DUK_INTERNAL
 duk_bool_t duk_js_hasvar_envrec(duk_hthread *thr,
                                 duk_hobject *env,
@@ -1143,6 +1144,7 @@ duk_bool_t duk_js_hasvar_envrec(duk_hthread *thr,
 	parents = 0;
 	return duk__get_identifier_reference(thr, env, name, NULL, parents, &ref);
 }
+#endif
 
 /*
  *  GETVAR
@@ -1452,12 +1454,14 @@ duk_bool_t duk__delvar_helper(duk_hthread *thr,
 	return 1;
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL
 duk_bool_t duk_js_delvar_envrec(duk_hthread *thr,
                                 duk_hobject *env,
                                 duk_hstring *name) {
 	return duk__delvar_helper(thr, env, NULL, name);
 }
+#endif
 
 DUK_INTERNAL
 duk_bool_t duk_js_delvar_activation(duk_hthread *thr,

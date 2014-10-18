@@ -393,10 +393,12 @@ DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint
  *  Exposed calls
  */
 
+#if 0  /*unused*/
 DUK_INTERNAL duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;  /* dummy */
 	return duk__do_lookup(heap, str, blen, &strhash);
 }
+#endif
 
 DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res;
@@ -422,6 +424,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_u
 	return res;
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
@@ -429,6 +432,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_
 	DUK_ASSERT(DUK_STRLEN(buf) <= DUK_UINT32_MAX);  /* formatted result limited */
 	return duk_heap_string_lookup(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
+#endif
 
 DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val) {
 	char buf[DUK_STRTAB_U32_MAX_STRLEN+1];

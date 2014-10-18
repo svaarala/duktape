@@ -26,11 +26,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_js_toboolean(duk_tval *tv);
 DUK_INTERNAL_DECL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_double_t duk_js_tointeger_number(duk_double_t x);
 DUK_INTERNAL_DECL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv);
-DUK_INTERNAL_DECL duk_uint32_t duk_js_touint32_number(duk_double_t x);
 DUK_INTERNAL_DECL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv);
-DUK_INTERNAL_DECL duk_int32_t duk_js_toint32_number(duk_double_t x);
 DUK_INTERNAL_DECL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv);
-DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16_number(duk_double_t x);
 DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
 DUK_INTERNAL_DECL duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
@@ -65,11 +62,16 @@ DUK_INTERNAL_DECL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x);
 	duk_js_compare_helper((thr), (tv_x), (tv_y), DUK_COMPARE_FLAG_EVAL_LEFT_FIRST | DUK_COMPARE_FLAG_NEGATE)
 
 /* identifiers and environment handling */
+#if 0  /*unused*/
+DUK_INTERNAL duk_bool_t duk_js_hasvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name);
+#endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_getvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_bool_t throw_flag);
 DUK_INTERNAL_DECL duk_bool_t duk_js_getvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_bool_t throw_flag);
 DUK_INTERNAL_DECL void duk_js_putvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name, duk_tval *val, duk_bool_t strict);
 DUK_INTERNAL_DECL void duk_js_putvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_bool_t strict);
+#if 0  /*unused*/
 DUK_INTERNAL_DECL duk_bool_t duk_js_delvar_envrec(duk_hthread *thr, duk_hobject *env, duk_hstring *name);
+#endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_delvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name);
 DUK_INTERNAL_DECL duk_bool_t duk_js_declvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_small_int_t prop_flags, duk_bool_t is_func_decl);
 DUK_INTERNAL_DECL void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_activation *act);

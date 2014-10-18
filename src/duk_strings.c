@@ -30,7 +30,9 @@ DUK_INTERNAL const char *duk_str_not_buffer = "not buffer";
 DUK_INTERNAL const char *duk_str_not_object = "not object";
 DUK_INTERNAL const char *duk_str_unexpected_type = "unexpected type";
 DUK_INTERNAL const char *duk_str_not_thread = "not thread";
+#if 0  /*unused*/
 DUK_INTERNAL const char *duk_str_not_compiledfunction = "not compiledfunction";
+#endif
 DUK_INTERNAL const char *duk_str_not_nativefunction = "not nativefunction";
 DUK_INTERNAL const char *duk_str_not_c_function = "not c function";
 DUK_INTERNAL const char *duk_str_defaultvalue_coerce_failed = "[[DefaultValue]] coerce failed";

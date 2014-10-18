@@ -6,6 +6,7 @@
 
 #ifdef DUK_USE_DEBUG
 
+#if 0  /*unused*/
 DUK_LOCAL void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring *str) {
 	duk_size_t i;
 	duk_size_t nchars;
@@ -25,7 +26,9 @@ DUK_LOCAL void duk__sanitize_snippet(char *buf, duk_size_t buf_size, duk_hstring
 		buf[i] = (char) c;
 	}
 }
+#endif
 
+#if 0
 DUK_LOCAL const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
@@ -38,7 +41,9 @@ DUK_LOCAL const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 		return "???";
 	}
 }
+#endif
 
+#if 0
 DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
 	DUK_UNREF(obj);
 	DUK_UNREF(index);
@@ -61,7 +66,9 @@ DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
 	                 (duk_heaphdr *) obj));
 #endif
 }
+#endif
 
+#if 0  /*unused*/
 DUK_LOCAL void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const char *name) {
 	duk_int_t count;
 	duk_heaphdr *curr;
@@ -86,7 +93,9 @@ DUK_LOCAL void duk__dump_heaphdr_list(duk_heap *heap, duk_heaphdr *root, const c
 		curr = DUK_HEAPHDR_GET_NEXT(curr);
 	}
 }
+#endif
 
+#if 0  /*unused*/
 DUK_LOCAL void duk__dump_stringtable(duk_heap *heap) {
 	duk_uint_fast32_t i;
 	char buf[64+1];
@@ -142,7 +151,9 @@ DUK_LOCAL void duk__dump_stringtable(duk_heap *heap) {
 		}
 	}
 }
+#endif
 
+#if 0  /*unused*/
 DUK_LOCAL void duk__dump_strcache(duk_heap *heap) {
 	duk_uint_fast32_t i;
 	char buf[64+1];
@@ -161,7 +172,9 @@ DUK_LOCAL void duk__dump_strcache(duk_heap *heap) {
 		}
 	}
 }
+#endif
 
+#if 0  /*unused*/
 DUK_INTERNAL void duk_debug_dump_heap(duk_heap *heap) {
 	char buf[64+1];
 
@@ -229,5 +242,6 @@ DUK_INTERNAL void duk_debug_dump_heap(duk_heap *heap) {
 
 	/* heap->strs: not worth dumping */
 }
+#endif
 
 #endif  /* DUK_USE_DEBUG */

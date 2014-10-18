@@ -387,6 +387,7 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
  *  Checked variants
  */
 
+#if 0  /*unused*/
 #ifdef DUK_USE_VERBOSE_ERRORS
 DUK_INTERNAL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
 #else
@@ -407,7 +408,9 @@ DUK_INTERNAL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size)
 	}
 	return res;
 }
+#endif
 
+#if 0  /*unused*/
 #ifdef DUK_USE_VERBOSE_ERRORS
 DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line) {
 #else
@@ -430,7 +433,9 @@ DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_
 	DUK_MEMZERO(res, size);
 	return res;
 }
+#endif
 
+#if 0  /*unused*/
 #ifdef DUK_USE_VERBOSE_ERRORS
 DUK_INTERNAL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line) {
 #else
@@ -452,6 +457,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk
 	}
 	return res;
 }
+#endif
 
 #ifdef DUK_USE_VERBOSE_ERRORS
 DUK_INTERNAL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line) {

@@ -52,7 +52,9 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_NOT_OBJECT duk_str_not_object
 #define DUK_STR_UNEXPECTED_TYPE duk_str_unexpected_type
 #define DUK_STR_NOT_THREAD duk_str_not_thread
+#if 0  /*unused*/
 #define DUK_STR_NOT_COMPILEDFUNCTION duk_str_not_compiledfunction
+#endif
 #define DUK_STR_NOT_NATIVEFUNCTION duk_str_not_nativefunction
 #define DUK_STR_NOT_C_FUNCTION duk_str_not_c_function
 #define DUK_STR_DEFAULTVALUE_COERCE_FAILED duk_str_defaultvalue_coerce_failed
@@ -89,7 +91,9 @@ DUK_INTERNAL_DECL const char *duk_str_not_buffer;
 DUK_INTERNAL_DECL const char *duk_str_not_object;
 DUK_INTERNAL_DECL const char *duk_str_unexpected_type;
 DUK_INTERNAL_DECL const char *duk_str_not_thread;
+#if 0  /*unused*/
 DUK_INTERNAL_DECL const char *duk_str_not_compiledfunction;
+#endif
 DUK_INTERNAL_DECL const char *duk_str_not_nativefunction;
 DUK_INTERNAL_DECL const char *duk_str_not_c_function;
 DUK_INTERNAL_DECL const char *duk_str_defaultvalue_coerce_failed;
