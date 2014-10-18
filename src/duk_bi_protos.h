@@ -55,7 +55,6 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *c
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_value_of(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx);
-DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_get_time(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx);
@@ -159,7 +158,6 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_to_string(duk_context *ctx);
-DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_value_of(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_char_at(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_concat(duk_context *ctx);

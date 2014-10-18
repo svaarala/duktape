@@ -90,7 +90,7 @@ class GenerateC:
 		self.emitLine(' */')
 		self.emitLine('')
 
-	def emitArray(self, data, tablename, visibility=None, typename='char', bytesize=None, intvalues=False, const=True):
+	def emitArray(self, data, tablename, visibility=None, typename='char', size=None, intvalues=False, const=True):
 		"Emit an array as a C array."
 
 		# lenient input
@@ -103,8 +103,8 @@ class GenerateC:
 			data = tmp
 
 		size_spec = ''
-		if bytesize is not None:
-			size_spec = '%d' % bytesize 
+		if size is not None:
+			size_spec = '%d' % size
 		visib_qual = ''
 		if visibility is not None:
 			visib_qual = visibility + ' '

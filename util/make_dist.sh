@@ -71,7 +71,6 @@ mkdir $DIST/examples/sandbox
 
 for i in \
 	duk_alloc_default.c	\
-	duk_alloc_torture.c	\
 	duk_api_internal.h	\
 	duk_api_stack.c		\
 	duk_api_heap.c		\

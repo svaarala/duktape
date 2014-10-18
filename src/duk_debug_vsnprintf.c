@@ -960,6 +960,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 	return retval;
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...) {
 	duk_int_t retval;
 	va_list ap;
@@ -968,6 +969,7 @@ DUK_INTERNAL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char
 	va_end(ap);
 	return retval;
 }
+#endif
 
 /* Formatting function pointers is tricky: there is no standard pointer for
  * function pointers and the size of a function pointer may depend on the

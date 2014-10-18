@@ -67,14 +67,18 @@ DUK_INTERNAL_DECL duk_hobject *duk_get_hobject(duk_context *ctx, duk_idx_t index
 DUK_INTERNAL_DECL duk_hbuffer *duk_get_hbuffer(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t index);
+#if 0  /*unused */
 DUK_INTERNAL_DECL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index);
+#endif
 
 #define duk_get_hobject_with_class(ctx,index,classnum) \
 	((duk_hobject *) duk_get_tagged_heaphdr_raw((ctx), (index), \
 		DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL | \
 		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
 
+#if 0  /*unused*/
 DUK_INTERNAL_DECL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index);
+#endif
 
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
@@ -85,7 +89,9 @@ DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t i
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hbuffer *duk_require_hbuffer(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t index);
+#if 0  /*unused */
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index);
+#endif
 DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index);
 
 #define duk_require_hobject_with_class(ctx,index,classnum) \
@@ -93,7 +99,9 @@ DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *
 		DUK_TAG_OBJECT | \
 		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
 
+#if 0  /*unused*/
 DUK_INTERNAL_DECL void duk_push_unused(duk_context *ctx);
+#endif
 DUK_INTERNAL_DECL void duk_push_hstring(duk_context *ctx, duk_hstring *h);
 DUK_INTERNAL_DECL void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx);
 DUK_INTERNAL_DECL void duk_push_hobject(duk_context *ctx, duk_hobject *h);

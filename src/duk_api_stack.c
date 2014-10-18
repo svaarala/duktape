@@ -1154,7 +1154,7 @@ DUK_EXTERNAL void *duk_require_pointer(duk_context *ctx, duk_idx_t index) {
 	return NULL;  /* not reachable */
 }
 
-/* XXX: unused */
+#if 0  /*unused*/
 DUK_INTERNAL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
@@ -1169,6 +1169,7 @@ DUK_INTERNAL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index) {
 
 	return NULL;
 }
+#endif
 
 DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
 	duk_tval *tv;
@@ -1316,6 +1317,7 @@ DUK_INTERNAL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, 
 	return (duk_hcompiledfunction *) h;
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
@@ -1325,7 +1327,9 @@ DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *c
 	}
 	return (duk_hcompiledfunction *) h;
 }
+#endif
 
+#if 0  /*unused */
 DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk_get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL);
 	if (h != NULL && !DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
@@ -1333,6 +1337,7 @@ DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_
 	}
 	return (duk_hnativefunction *) h;
 }
+#endif
 
 DUK_INTERNAL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -2357,12 +2362,14 @@ DUK_INTERNAL void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	thr->valstack_top++;
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL void duk_push_unused(duk_context *ctx) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
 	DUK_TVAL_SET_UNDEFINED_ACTUAL(&tv);
 	duk_push_tval(ctx, &tv);
 }
+#endif
 
 DUK_EXTERNAL void duk_push_undefined(duk_context *ctx) {
 	duk_tval tv;

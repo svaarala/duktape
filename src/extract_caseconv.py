@@ -378,8 +378,8 @@ def main():
 	# Generate C source and header files
 	genc = dukutil.GenerateC()
 	genc.emitHeader('extract_caseconv.py')
-	genc.emitArray(uc_bytes, opts.table_name_uc, bytesize=len(uc_bytes), typename='duk_uint8_t', intvalues=True, const=True)
-	genc.emitArray(lc_bytes, opts.table_name_lc, bytesize=len(lc_bytes), typename='duk_uint8_t', intvalues=True, const=True)
+	genc.emitArray(uc_bytes, opts.table_name_uc, size=len(uc_bytes), typename='duk_uint8_t', intvalues=True, const=True)
+	genc.emitArray(lc_bytes, opts.table_name_lc, size=len(lc_bytes), typename='duk_uint8_t', intvalues=True, const=True)
 	f = open(opts.out_source, 'wb')
 	f.write(genc.getString())
 	f.close()
