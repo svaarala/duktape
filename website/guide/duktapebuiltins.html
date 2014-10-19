@@ -12,20 +12,25 @@ values.</p>
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">Duktape</td><td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
-<tr><td class="propname">Proxy</td><td>Proxy constructor borrowed from ES6 draft (not part of Ecmascript E5/E5.1).</td></tr>
-<tr><td class="propname">require</td><td>Non-standard, CommonsJS module loading function.</td></tr>
-<tr><td class="propname">print</td><td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
-<tr><td class="propname">alert</td><td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape">Duktape</a></td>
+    <td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
+<tr><td class="propname"><a href="#virtualization-proxy-object">Proxy</a></td>
+    <td>Proxy constructor borrowed from ES6 draft (not part of Ecmascript E5/E5.1).</td></tr>
+<tr><td class="propname"><a href="#builtin-require">require</a></td>
+    <td>Non-standard, CommonsJS module loading function.</td></tr>
+<tr><td class="propname"><a href="#builtin-print-alert">print</a></td>
+    <td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
+<tr><td class="propname"><a href="#builtin-print-alert">alert</a></td>
+    <td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
 </tbody>
 </table>
 
-<h3>require()</h3>
+<h3 id="builtin-require">require()</h3>
 
 <p>CommonJS module loading function, see
 <a href="#modules">Modules</a>.</p>
 
-<h3>print() and alert()</h3>
+<h3 id="builtin-print-alert">print() and alert()</h3>
 
 <p><code>print()</code> writes to <code>stdout</code> with an automatic
 flush afterwards.  The bytes written depend on the arguments:</p>
@@ -47,7 +52,7 @@ flush afterwards.  The bytes written depend on the arguments:</p>
 <code>stderr</code>.  Unlike a browser <code>alert()</code>, the call
 does not block.</p>
 
-<h2>The Duktape object</h2>
+<h2 id="builtin-duktape">The Duktape object</h2>
 
 <table>
 <thead>
@@ -56,27 +61,44 @@ does not block.</p>
 </tr>
 </thead>
 <tbody>
-<tr><td class="propname">version</td><td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
-<tr><td class="propname">env</td><td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
-<tr><td class="propname">fin</td><td>Set or get finalizer of an object.</td></tr>
-<tr><td class="propname">enc</td><td>Encode a value (hex, base-64, JX, JC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
-<tr><td class="propname">dec</td><td>Decode a value (hex, base-64, JX, JC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
-<tr><td class="propname">info</td><td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
-<tr><td class="propname">act</td><td>Get information about call stack entry.</td></tr>
-<tr><td class="propname">gc</td><td>Trigger mark-and-sweep garbage collection.</td></tr>
-<tr><td class="propname">compact</td><td>Compact the memory allocated for a value (object).</td></tr>
-<tr><td class="propname">errCreate</td><td>Callback to modify/replace a created error.</td></tr>
-<tr><td class="propname">errThrow</td><td>Callback to modify/replace an error about to be thrown.</td></tr>
-<tr><td class="propname">modSearch</td><td>Module search function, must be provided by user code if using modules.</td></tr>
-<tr><td class="propname">modLoaded</td><td>Internal tracking table for loaded modules, maps resolved identifier to exported symbols.</td></tr>
-<tr><td class="propname">Buffer</td><td>Buffer constructor (function).</td></tr>
-<tr><td class="propname">Pointer</td><td>Pointer constructor (function).</td></tr>
-<tr><td class="propname">Thread</td><td>Thread constructor (function).</td></tr>
-<tr><td class="propname">Logger</td><td>Logger constructor (function).</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-version">version</a></td>
+    <td>Duktape version number: <code>(major * 10000) + (minor * 100) + patch</code>.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-env">env</a></td>
+    <td>Cryptic, version dependent summary of most important effective options like endianness and architecture.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-fin">fin</a></td>
+    <td>Set or get finalizer of an object.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-enc">enc</a></td>
+    <td>Encode a value (hex, base-64, JX, JC): <code>Duktape.enc('hex', 'foo')</code>.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-dec">dec</a></td>
+    <td>Decode a value (hex, base-64, JX, JC): <code>Duktape.dec('base64', 'Zm9v')</code>.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-info">info</a></td>
+    <td>Get internal information (such as heap address and alloc size) of a value in a version specific format.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-act">act</a></td>
+    <td>Get information about call stack entry.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-gc">gc</a></td>
+    <td>Trigger mark-and-sweep garbage collection.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-compact">compact</a></td>
+    <td>Compact the memory allocated for a value (object).</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-errcreate-errthrow">errCreate</a></td>
+    <td>Callback to modify/replace a created error.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-errcreate-errthrow">errThrow</a></td>
+    <td>Callback to modify/replace an error about to be thrown.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-modsearch-modloaded">modSearch</a></td>
+    <td>Module search function, must be provided by user code if using modules.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-modsearch-modloaded">modLoaded</a></td>
+    <td>Internal tracking table for loaded modules, maps resolved identifier to exported symbols.</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-buffer">Buffer</a></td>
+    <td>Buffer constructor (function).</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-pointer">Pointer</a></td>
+    <td>Pointer constructor (function).</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-thread">Thread</a></td>
+    <td>Thread constructor (function).</td></tr>
+<tr><td class="propname"><a href="#builtin-duktape-logger">Logger</a></td>
+    <td>Logger constructor (function).</td></tr>
 </tbody>
 </table>
 
-<h3>version</h3>
+<h3 id="builtin-duktape-version">version</h3>
 
 <p>The <code>version</code> property allows version-based feature detection and
 behavior.  Version numbers can be compared directly: a logically higher version
@@ -117,7 +139,7 @@ if (typeof Duktape !== 'object') {
 }
 </pre>
 
-<h3>env</h3>
+<h3 id="builtin-duktape-env">env</h3>
 
 <p><code>env</code> summarizes the most important effective compile options
 in a version specific, quite cryptic manner.  The format is version specific
@@ -135,7 +157,7 @@ ll u p2 a4 x64 linux gcc     // l|b|m integer endianness, l|b|m IEEE double endi
                              // gcc|clang|msvc|etc: compiler
 </pre>
 
-<h3>fin()</h3>
+<h3 id="builtin-duktape-fin">fin()</h3>
 
 <p>When called with a single argument, gets the current finalizer of an object:</p>
 <pre class="ecmascript-code">
@@ -148,7 +170,7 @@ Duktape.fin(o, function(x) { print('finalizer called'); });
 Duktape.fin(o, undefined);  // disable
 </pre>
 
-<h3>enc()</h3>
+<h3 id="builtin-duktape-enc">enc()</h3>
 
 <p><code>enc()</code> encodes its argument value into chosen format.
 The first argument is a format (currently supported are "hex", "base64",
@@ -172,7 +194,7 @@ var result = Duktape.enc('jx', { foo: 123 }, null, 4);
 print(result);  // prints JX encoded {foo:123} with 4-space indent
 </pre>
 
-<h3>dec()</h3>
+<h3 id="builtin-duktape-dec">dec()</h3>
 
 <p><code>dec()</code> provides the reverse function of <code>enc()</code>.</p>
 
@@ -196,7 +218,7 @@ var result = Duktape.dec('jx', "{foo:123}");
 print(result.foo);  // prints 123
 </pre>
 
-<h3>info()</h3>
+<h3 id="builtin-duktape-info">info()</h3>
 
 <p>When given an arbitrary input value, <code>Duktape.info()</code> returns an
 array of values with internal information related to the value.  The format of
@@ -393,7 +415,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 </table>
 </div>
 
-<h3>act()</h3>
+<h3 id="builtin-duktape-act">act()</h3>
 
 <p>Get information about a call stack entry.  Takes a single number argument
 indicating depth in the call stack: -1 is the top entry, -2 is the one below
@@ -443,7 +465,7 @@ print('running on line:', getCurrentLine());
 The properties provided for call stack entries may change between versions.
 </div>
 
-<h3>gc()</h3>
+<h3 id="builtin-duktape-gc">gc()</h3>
 
 <p>Trigger a forced mark-and-sweep collection.  If mark-and-sweep is disabled,
 this call is a no-op.</p>
@@ -452,7 +474,7 @@ this call is a no-op.</p>
      Not sure what the best return value would be.
 -->
 
-<h3>compact()</h3>
+<h3 id="builtin-duktape-compact">compact()</h3>
 
 <p>Minimize the memory allocated for a target object.  Same as the C API call
 <code>duk_compact()</code> but accessible from Ecmascript code.  If called with
@@ -467,7 +489,7 @@ var obj = {
 <p>This call is useful when you know that an object is unlikely to gain new
 properties, but you don't want to seal or freeze the object in case it does.</p>
 
-<h3>errCreate() and errThrow()</h3>
+<h3 id="builtin-duktape-errcreate-errthrow">errCreate() and errThrow()</h3>
 
 <p>These can be set by user code to process/replace errors when they are created
 (<code>errCreate</code>) or thrown (<code>errThrow</code>).  Both values are
@@ -477,7 +499,7 @@ initially non-existent.</p>
 <a href="#error-handlers">Error handlers (errCreate and errThrow)</a> for
 details.</p>
 
-<h3>modSearch() and modLoaded</h3>
+<h3 id="builtin-duktape-modsearch-modloaded">modSearch() and modLoaded</h3>
 
 <p><code>modSearch()</code> is a module search function which must be provided
 by user code to support module loading.
@@ -488,7 +510,7 @@ or currently being loaded.</p>
 
 <p>See <a href="#modules">Modules</a> for details.</p>
 
-<h2>Duktape.Buffer (constructor)</h2>
+<h2 id="builtin-duktape-buffer">Duktape.Buffer (constructor)</h2>
 
 <table>
 <thead>
@@ -556,7 +578,7 @@ var plain_buf = Duktape.Buffer('test');
 print(plain_buf.toString());
 </pre>
 
-<h2>Duktape.Pointer (constructor)</h2>
+<h2 id="builtin-duktape-pointer">Duktape.Pointer (constructor)</h2>
 
 <table>
 <thead>
@@ -603,7 +625,7 @@ var plain_ptr = Duktape.Pointer({ test: 'object' });
 print(plain_ptr.toString());
 </pre>
 
-<h2>Duktape.Thread (constructor)</h2>
+<h2 id="builtin-duktape-thread">Duktape.Thread (constructor)</h2>
 
 <table>
 <thead>
@@ -645,7 +667,7 @@ cases:</p>
 </tbody>
 </table>
 
-<h2>Duktape.Logger (constructor)</h2>
+<h2 id="builtin-duktape-logger">Duktape.Logger (constructor)</h2>
 
 <table>
 <thead>
