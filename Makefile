@@ -247,6 +247,7 @@ clean:
 	@rm -rf site/
 	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
 	@rm -f libduktape*.so*
+	@rm -f duktape-*.tar.*
 	@rm -f doc/*.html
 	@rm -f src/*.pyc
 	@rm -rf massif.out.* ms_print.tmp.*
@@ -772,16 +773,11 @@ dist-src:	dist
 	mkdir duktape-$(DUK_VERSION_FORMATTED)
 	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
-	tar cvfj duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
-	zip -r duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)/
-	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED).tar.bz2
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.bz2 duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.bz2
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
-	cp duktape-$(DUK_VERSION_FORMATTED).zip duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).zip
-	cp duktape-$(DUK_VERSION_FORMATTED).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).iso
+	rm -rf duktape-$(DUK_VERSION_FORMATTED)
 
 .PHONY: tidy-site
 tidy-site:
@@ -810,6 +806,7 @@ dist-site:	tidy-site site
 	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
 	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 
 .PHONY: codepolicycheck
 codepolicycheck:
