@@ -17,3 +17,7 @@
 .definename {
 	font-family: monospace;
 }
+
+.highlight {
+	background: #eeeeee;
+}
