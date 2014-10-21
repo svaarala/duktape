@@ -286,7 +286,9 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		for idx, val in enumerate(p):
 			classes = [ 'apitag' ]
 			if val == 'experimental' or val == 'nonportable':
-				classes.append('apitagemph')
+				classes.append('apitagwarn')
+			if val == 'protected':
+				classes.append('apitagprotected')
 			res.append('<a class="' + ' '.join(classes) + '" ' +
 			           'href="#' + htmlEscape('taglist-' + val) + '">' + htmlEscape(val) + '</a>')
 	res.append('</h1>')

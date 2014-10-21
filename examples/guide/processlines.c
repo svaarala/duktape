@@ -11,14 +11,24 @@ int main(int argc, const char *argv[]) {
     int ch;
 
     ctx = duk_create_heap_default();
-    if (!ctx) { exit(1); }
+    if (!ctx) {
+        printf("Failed to create a Duktape heap.\n");
+        exit(1);
+    }
 
-    duk_eval_file_noresult(ctx, "process.js");
+    if (duk_peval_file(ctx, "process.js") != 0) {
+        printf("Error: %s\n", duk_safe_to_string(ctx, -1));
+        goto finished;
+    }
+    duk_pop(ctx);  /* ignore result */
 
     memset(line, 0, sizeof(line));
     idx = 0;
     for (;;) {
-        if (idx >= sizeof(line)) { exit(1); }
+        if (idx >= sizeof(line)) {
+            printf("Line too long\n");
+            exit(1);
+        }
 
         ch = fgetc(stdin);
         if (ch == 0x0a) {
@@ -27,9 +37,12 @@ int main(int argc, const char *argv[]) {
             duk_push_global_object(ctx);
             duk_get_prop_string(ctx, -1 /*index*/, "processLine");
             duk_push_string(ctx, line);
-            duk_call(ctx, 1 /*nargs*/);
-            printf("%s\n", duk_safe_to_string(ctx, -1));
-            duk_pop(ctx);
+            if (duk_pcall(ctx, 1 /*nargs*/) != 0) {
+                printf("Error: %s\n", duk_safe_to_string(ctx, -1));
+            } else {
+                printf("%s\n", duk_safe_to_string(ctx, -1));
+            }
+            duk_pop(ctx);  /* pop result/error */
 
             idx = 0;
         } else if (ch == EOF) {
@@ -39,6 +52,7 @@ int main(int argc, const char *argv[]) {
         }
     }
 
+ finished:
     duk_destroy_heap(ctx);
 
     exit(0);

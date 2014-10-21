@@ -71,15 +71,27 @@ h1.apih1 a.apitag:hover {
 h1.apih1 a.apitag visited {
 	color: #888888;
 }
-h1.apih1 a.apitagemph {
+h1.apih1 a.apitagwarn {
 	background: #dd0000;
 	border-color: #880000;
 	color: #ffffff;
 }
-h1.apih1 a.apitagemph:hover {
+h1.apih1 a.apitagwarn:hover {
 	background: #ff8800;
 	color: #ffffff;
 }
-h1.apih1 a.apitagemph:visited {
+h1.apih1 a.apitagwarn:visited {
+	color: #ffffff;
+}
+h1.apih1 a.apitagprotected {
+	background: #00aa00;
+	border-color: #004400;
+	color: #ffffff;
+}
+h1.apih1 a.apitagprotected:hover {
+	background: #55cc55;
+	color: #ffffff;
+}
+h1.apih1 a.apitagprotected:visited {
 	color: #ffffff;
 }

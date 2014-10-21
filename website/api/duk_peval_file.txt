@@ -23,7 +23,8 @@ duk_pop(ctx);
 
 =tags
 compile
+protected
+nonportable
 
 =seealso
 duk_peval_file_noresult
-nonportable
