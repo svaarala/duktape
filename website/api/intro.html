@@ -45,6 +45,10 @@ non-<code>NULL</code> or unsafe behavior may occur.  This is the case
 because explicit checks for the argument would increase code footprint
 for little practical gain.</p>
 
+<p>Also see <a href="guide.html#error-handling">Error handling</a> best
+practices, especially to avoid uncaught errors which lead to difficult
+to diagnose fatal errors.</p>
+
 <h2>API calls may be macros</h2>
 
 <p>All Duktape API calls are potentially macros.  The implementation of a
