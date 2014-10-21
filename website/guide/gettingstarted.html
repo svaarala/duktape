@@ -91,14 +91,15 @@ the basic control flow of your program.  The basic approach is:</p>
     Then, use another Duktape API call to initiate the actual call.</li>
 <li>Once script execution is finished, control is returned to your
     program (the API call returns) and a return value is left on the
-    Duktape context's value stack for C code to consume.</li>
+    Duktape context's value stack.  C code can then access the return
+    value using the Duktape API.</li>
 </ul>
 
-<p>Let's look at a simple example program.  The program reads in a line using
-a C mainloop, calls an Ecmascript helper to transform the line, and prints out
-the transformed line.  The line processing function can take advantage of
-Ecmascript goodies like regular expressions, and can be easily modified
-without recompiling the C program.</p>
+<p>Let's look at a simple example program.  The program reads in a line from
+<code>stdin</code> using a C mainloop, calls an Ecmascript helper to transform
+the line, and prints out the result.  The line processing function can take
+advantage of Ecmascript goodies like regular expressions, and can be easily
+modified without recompiling the C program.</p>
 
 <p>The script code will be placed in <code>process.js</code>.  The example
 line processing function converts a plain text line into HTML, and
@@ -107,11 +108,11 @@ automatically bolds text between stars:</p>
 <pre class="ecmascript-code" include="process.js"></pre>
 
 <p>The C code, <code>processlines.c</code> initializes a Duktape context,
-compiles the script, then proceeds to process lines from <code>stdin</code>,
+evaluates the script, then proceeds to process lines from <code>stdin</code>,
 calling <code>processLine()</code> for every line:</p>
 <pre class="c-code" include="processlines.c"></pre>
 
-<p>Let's look at the Duktape specific parts of the example code line by line.
+<p>Let's look at the Duktape specific parts of the example code piece by piece.
 Here we need to gloss over some details for brevity, see
 <a href="#programming">Programming model</a> for a detailed discussion:</p>
 <ul class="breakdown"> <!-- breakdown -->
@@ -119,21 +120,37 @@ Here we need to gloss over some details for brevity, see
 <li>
 <pre class="c-code">
 ctx = duk_create_heap_default();
-if (!ctx) { exit(1); }
+if (!ctx) {
+    printf("Failed to create a Duktape heap.\n");
+    exit(1);
+}
 </pre>
 <p>First we create a Duktape context.  A context allows us to exchange values
 with Ecmascript code by pushing and popping values to the <b>value stack</b>.
 Most calls in the Duktape API operate with the value stack, pushing, popping,
-and examining values on the stack.</p>
+and examining values on the stack.  For production code you should use
+<a href="api.html#duk_create_heap">duk_create_heap()</a> so that you can set
+a <b>fatal error handler</b>.  See <a href="#error-handling">Error handling</a>
+for discussion of error handling best practices.</p>
 </li>
 
 <li>
 <pre class="c-code">
-duk_eval_file_noresult(ctx, "process.js");
+if (duk_peval_file(ctx, "process.js") != 0) {
+    printf("Error: %s\n", duk_safe_to_string(ctx, -1));
+    goto finished;
+}
+duk_pop(ctx);  /* ignore result */
 </pre>
-<p>The eval call reads in <code>process.js</code>, then compiles and executes the
-script.  The eval result is ignored.  The script registers the <code>processLine()</code>
-function into the Ecmascript global object.</p>
+<p>The eval call reads in <code>process.js</code>, then compiles and executes
+the script.  The script registers <code>processLine()</code> into the Ecmascript
+global object for later use.  The eval call is protected so that any script
+errors, such as syntax errors, are caught and handled without causing a fatal
+error.  If an error occurs, the error message is coerced safely using
+<a href="api.html#duk_safe_to_string">duk_safe_to_string()</a> which is
+guaranteed not to throw a further error.  The result of the string coercion is
+a <code>const char *</code> pointing to a read-only, NUL-terminated, UTF-8
+encoded string, which can be used directly with <code>printf</code>.</p>
 </li>
 
 <li>
@@ -142,12 +159,11 @@ duk_push_global_object(ctx);
 duk_get_prop_string(ctx, -1 /*index*/, "processLine");
 </pre>
 <p>The first call pushes the Ecmascript global object to the value stack.
-The second call looks up <code>processLine</code> property of the global object.
-The script in <code>process.js</code> has registered a function into the global
-object with this name.  The <code>-1</code> argument is an index to the value
-stack; negative values refer to stack elements starting from the top, so
-<code>-1</code> refers to the topmost element of the stack, the property
-lookup result.</p>
+The second call looks up <code>processLine</code> property of the global object
+(which the script in <code>process.js</code> has defined).  The <code>-1</code>
+argument is an index to the value stack; negative values refer to stack
+elements starting from the top, so <code>-1</code> refers to the topmost
+element of the stack, the global object.</p>
 </li>
 
 <li>
@@ -163,29 +179,23 @@ the call returns.</p>
 
 <li>
 <pre class="c-code">
-duk_call(ctx, 1 /*nargs*/);
+if (duk_pcall(ctx, 1 /*nargs*/) != 0) {
+    printf("Error: %s\n", duk_safe_to_string(ctx, -1));
+} else {
+    printf("%s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);  /* pop result/error */
 </pre>
 <p>At this point the value stack contains: the global object, the processLine
-function, and the <code>line</code> string.  This line calls an Ecmascript function
-with the specified number of arguments; here the argument count is 1.  The
-target function is expected to reside just before the argument list on the
-value stack.  After the API call returns, the arguments have been replaced with
-a single return value, so the stack contains: the global object and the call
-result.</p>
-</li>
-
-<li>
-<pre class="c-code">
-printf("%s\n", duk_safe_to_string(ctx, -1));
-duk_pop(ctx);
-</pre>
-<p>The <code>duk_safe_to_string()</code> call requests Duktape to convert the value
-stack element at index -1 (the topmost value on the stack, which is the processLine
-function call result here) to a string, returning a <code>const char *</code> pointing
-to the result.  This return value is a read-only, NUL terminated UTF-8 value which
-C code can use directly as long as the value resides on the value stack.  Here we
-just print out the string.  After we've printed the string, we pop the value off
-the value stack.</p>
+function, and the <code>line</code> string.  The
+<a href="api.html#duk_pcall">duk_pcall()</a> method calls a function with a
+specified number of arguments given on the value stack, and replaces both the
+function and the argument values with the function's return value.
+Here the resulting value stack contains: the global object and the call result.
+The call is protected so that errors can be caught and printed.  The
+<a href="api.html#duk_safe_to_string">duk_safe_to_string()</a> API call is
+again used to print errors safely.  Finally, the result (or error) is popped
+off the value stack.</p>
 </li>
 
 <li>
@@ -193,9 +203,10 @@ the value stack.</p>
 duk_destroy_heap(ctx);
 </pre>
 <p>Destroy the Duktape context, freeing all resources held by the context.
-In our example we left the global object on the value stack on purpose.
 This call will free the value stack and all references on the value stack.
-No memory leaks will occur even if the value stack is not empty.</p>
+In our example we left the global object on the value stack on purpose.
+This is not a problem: no memory leaks will occur even if the value stack
+is not empty when the heap is destroyed.</p>
 </li>
 
 </ul>  <!-- breakdown -->
@@ -345,15 +356,17 @@ name <code>primeCheckNative</code> and pops the function value off the stack.
 <li>
 <pre class="c-code">
 duk_get_prop_string(ctx, -1, "primeTest");
-duk_call(ctx, 0);
-duk_pop(ctx);
+if (duk_pcall(ctx, 0) != 0) {
+    printf("Error: %s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);  /* ignore result */
 </pre>
 <p>When we come here the value stack already contains the global object
-at the stack top.  The first line looks up the <code>primeTest</code> function
-from the global object (which was defined by the loaded script).  The
-second line calls the <code>primeTest</code> function with zero arguments.
-The third line pops the call result off the stack; we don't need the return
-value here.</p>
+at the stack top.  Line 1 looks up the <code>primeTest</code> function
+from the global object (which was defined by the loaded script).  Lines
+2-4 call the <code>primeTest</code> function with zero arguments, and
+prints out an error safely if one occurs.  Line 5 pops the call result
+off the stack; we don't need the return value here.</p>
 </li>
 
 </ul>  <!-- breakdown -->
