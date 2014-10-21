@@ -572,12 +572,93 @@ error codes are defined in <code>duktape.h</code>, e.g. <code>DUK_ERR_TYPE_ERROR
 flags.  Negative error values are used in the Duktape/C API as a
 shorthand to automatically throw an error.</p>
 
-<h2>Error, fatal, and panic</h2>
+<h2 id="error-handling">Error handling</h2>
+
+<p>Error handling in the Duktape API is similar to how Ecmascript handles
+errors: errors are thrown either explicitly or implicitly, then caught and
+handled.  However, instead of a try-catch statement application code uses
+<code><a href="api.html#taglist-protected">protected</a></code>
+Duktape API calls to establish points in C code where errors can be caught
+and handled.
+An uncaught error causes the fatal error handler to be called, which is
+considered an unrecoverable situation and should ordinarily be avoided
+(see <a href="#error-fatal-panic">Error, fatal, and panic</a>).</p>
+
+<p>To avoid fatal errors, typical application code should establish an error
+catch point before making other Duktape API calls.  This is done using
+protected Duktape API calls, for example:</p>
+<ul>
+<li>Use protected calls to evaluate code
+    (<a href="api.html#duk_peval">duk_peval()</a>), compile code
+    (<a href="api.html#duk_pcompile">duk_pcompile()</a>), and call
+    (<a href="api.html#duk_pcall">duk_pcall()</a>) functions.</li>
+<li>Use a single <a href="api.html#duk_safe_call">duk_safe_call()</a> to
+    establish an error catcher so that you can use unsafe primitives freely
+    inside the safe call.</li>
+</ul>
+
+<p>An example of the first technique:</p>
+<pre class="c-code">
+/* Use duk_peval() variant to evaluate a file so that script errors are
+ * handled safely.  Both syntax errors and runtime errors are caught.
+ */
+
+if (duk_peval_file(ctx, "myscript.js") != 0) {
+    /* Use duk_safe_to_string() to convert error into string.  This API
+     * call is guaranteed not to throw an error during the coercion.
+     */
+    printf("Script error: %s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);
+</pre>
+
+<p>An example of the second technique:</p>
+<pre class="c-code">
+/* Use duk_safe_call() to wrap all unsafe code into a separate C function.
+ * This approach has the advantage of covering all API calls automatically
+ * but is a bit more verbose.
+ */
+
+static duk_ret_t unsafe_code(duk_context *ctx) {
+    /* Here we can use unprotected calls freely. */
+    duk_eval_file_noresult(ctx, "myscript.js");
+
+    /* ... */
+
+    return 0;  /* success return, no return value */
+}
+
+/* elsewhere: */
+
+if (duk_safe_call(ctx, unsafe_code, 0 /*nargs*/, 1 /*nrets */) != 0) {
+    /* The 'nrets' argument should be at least 1 so that an error value
+     * is left on the stack if an error occurs.  To avoid further errors,
+     * use duk_safe_to_string() for safe error printing.
+     */
+    printf("Unexpected error: %s\n", duk_safe_to_string(ctx, -1));
+}
+duk_pop(ctx);
+</pre>
+
+<p>Even within protected calls there are some rare cases, such as internal
+errors, that will either cause a fatal error or propagate an error outwards
+from a protected API call.  These should only happen in abnormal conditions
+and are not considered recoverable.  To handle also these cases well, a
+production quality application should always have a fatal error handler with
+a reasonable strategy for dealing with fatal errors.</p>
+
+<p>Note that it may be fine for some applications to make API calls without
+an error catcher and risk throwing uncaught errors.  Even in this case there
+should be a fatal error handler to easily detect and fix any remaining errors.</p>
+
+<h2 id="error-fatal-panic">Error, fatal, and panic</h2>
 
 <p>An <b>ordinary error</b> is caused by a <code>throw</code> statement,
 a <code>duk_throw()</code> API call (or similar), or by an internal,
 recoverable Duktape error.  Ordinary errors can be caught with a
 <code>try-catch</code> in Ecmascript code or e.g. <code>duk_pcall()</code>
+(see API calls tagged
+<code><a href="api.html#taglist-protected">protected</a></code>)
 in C code.</p>
 
 <p>An uncaught error or an explicit call to <code>duk_fatal()</code> causes
