@@ -30,6 +30,7 @@ duk_pop(ctx);
 =tags
 stack
 string
+protected
 
 =seealso
 duk_to_string

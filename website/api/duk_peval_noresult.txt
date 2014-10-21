@@ -18,6 +18,7 @@ if (duk_peval_noresult(ctx) != 0) {
 
 =tags
 compile
+protected
 
 =seealso
 duk_peval_string_noresult

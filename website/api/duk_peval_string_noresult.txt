@@ -20,3 +20,4 @@ if (duk_peval_string_noresult(ctx, "print('testString'.toUpperCase());") != 0) {
 
 =tags
 compile
+protected

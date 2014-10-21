@@ -27,6 +27,7 @@ duk_pop(ctx);
 
 =tags
 compile
+protected
 
 =seealso
 duk_peval_lstring_noresult

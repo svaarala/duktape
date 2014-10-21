@@ -37,3 +37,4 @@ duk_pop(ctx);
 
 =tags
 call
+protected
