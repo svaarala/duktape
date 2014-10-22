@@ -193,6 +193,21 @@ Release checklist
 
 * Store binaries to duktape-releases repo
 
+  - Add the tar.xz to the master branch
+
+  - Create an independent branched named ``unpacked-vN.N.N`` with unpacked
+    tar.xz contents
+
+    + http://stackoverflow.com/questions/15034390/how-to-create-a-new-and-empty-root-branch
+
+    + http://stackoverflow.com/questions/9034540/how-to-create-a-git-branch-that-is-independent-of-the-master-branch
+
+  - Tag the final branch with ``vN.N.N``, push the tag, and delete the branch.
+    The branch is not pushed to the server.
+
+  - The concrete commands are packaged into ``add-unpacked.sh`` in
+    duktape-releases repo.
+
 * Update website downloads page
 
   - Release date
