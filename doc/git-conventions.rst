@@ -24,6 +24,8 @@ available but don't bloat the main repository:
 
 * https://github.com/svaarala/duktape-releases
 
+This repo also provides unpacked release files as tags for convenience.
+
 Releases
 ========
 
@@ -33,16 +35,27 @@ Release versioning follows semantic versioning, for details, see:
 
 Release artifacts:
 
-* A tag is created for the release (e.g. ``v1.0.4``).
+* A tag is created for the release (e.g. ``v1.0.4``) in the main repo.
 
-* The end user dist package is added to the duktape releases repo:
+* A GitHub release is also created for convenience with the end user
+  tar.xz attached to the release:
+
+  - https://github.com/blog/1547-release-your-software
+
+  The release title should be the same as the release description in the tag.
+
+* The release tar.xz is added to the duktape-releases repo:
 
   - https://github.com/svaarala/duktape-releases
 
-* A GitHub release is also created for convenience with the end user dist
-  package attached to the release:
+* The unpacked tar.xz is also added as a tag (on an independent branch) on
+  the duktape-releases repo for convenience.  The tag is named ``vN.N.N``.
+  The independent branch used to create the tag is not kept.
+  See ``release-checklist.rst`` for detailed commands.
 
-  - https://github.com/blog/1547-release-your-software
+  - http://stackoverflow.com/questions/15034390/how-to-create-a-new-and-empty-root-branch
+
+  - http://stackoverflow.com/questions/9034540/how-to-create-a-git-branch-that-is-independent-of-the-master-branch
 
 * The releases are also available from http://duktape.org/.
 

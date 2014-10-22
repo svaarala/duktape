@@ -22,7 +22,9 @@ Main features:
 * Liberal license
 
 See [duktape.org](http://duktape.org/) for packaged end-user downloads
-and documentation.
+and documentation.  The end user downloads are also available from the
+[duktape-releases](https://github.com/svaarala/duktape-releases) repo
+as both binaries and in unpacked form as git tags.
 
 Have fun!
 
