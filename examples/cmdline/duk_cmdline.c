@@ -101,7 +101,7 @@ static int get_stack_raw(duk_context *ctx) {
 }
 
 /* Print error to stderr and pop error. */
-static void print_error(duk_context *ctx, FILE *f) {
+static void print_pop_error(duk_context *ctx, FILE *f) {
 	/* Print error objects with a stack trace specially.
 	 * Note that getting the stack trace may throw an error
 	 * so this also needs to be safe call wrapped.
@@ -192,7 +192,7 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 	if (rc != DUK_EXEC_SUCCESS) {
-		print_error(ctx, stderr);
+		print_pop_error(ctx, stderr);
 		goto error;
 	} else {
 		duk_pop(ctx);
@@ -230,6 +230,26 @@ static int handle_file(duk_context *ctx, const char *filename) {
 
  error:
 	return -1;
+}
+
+static int handle_eval(duk_context *ctx, const char *code) {
+	int rc;
+	int retval = -1;
+
+	duk_push_string(ctx, code);
+	duk_push_string(ctx, "eval");
+
+	interactive_mode = 0;  /* global */
+
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
+	if (rc != DUK_EXEC_SUCCESS) {
+		print_pop_error(ctx, stderr);
+	} else {
+		duk_pop(ctx);
+		retval = 0;
+	}
+
+	return retval;
 }
 
 #ifdef NO_READLINE
@@ -282,7 +302,7 @@ static int handle_interactive(duk_context *ctx) {
 		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
-			print_error(ctx, stdout);
+			print_pop_error(ctx, stdout);
 			retval = -1;  /* an error 'taints' the execution */
 		} else {
 			duk_pop(ctx);
@@ -343,7 +363,7 @@ static int handle_interactive(duk_context *ctx) {
 		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
-			print_error(ctx, stdout);
+			print_pop_error(ctx, stdout);
 			retval = -1;  /* an error 'taints' the execution */
 		} else {
 			duk_pop(ctx);
@@ -363,6 +383,7 @@ int main(int argc, char *argv[]) {
 	duk_context *ctx = NULL;
 	int retval = 0;
 	int have_files = 0;
+	int have_eval = 0;
 	int interactive = 0;
 	int memlimit_high = 1;
 	int i;
@@ -391,13 +412,19 @@ int main(int argc, char *argv[]) {
 			memlimit_high = 0;
 		} else if (strcmp(arg, "-i") == 0) {
 			interactive = 1;
+		} else if (strcmp(arg, "-e") == 0) {
+			have_eval = 1;
+			if (i == argc - 1) {
+				goto usage;
+			}
+			i++;  /* skip code */
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
 			have_files = 1;
 		}
 	}
-	if (!have_files) {
+	if (!have_files && !have_eval) {
 		interactive = 1;
 	}
 
@@ -420,6 +447,18 @@ int main(int argc, char *argv[]) {
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
 		if (!arg) {
+			continue;
+		} else if (strlen(arg) == 2 && strcmp(arg, "-e") == 0) {
+			/* Here we know the eval arg exists but check anyway */
+			if (i == argc - 1) {
+				retval = 1;
+				goto cleanup;
+			}
+			if (handle_eval(ctx, argv[i + 1]) != 0) {
+				retval = 1;
+				goto cleanup;
+			}
+			i++;  /* skip code */
 			continue;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			continue;
@@ -465,8 +504,9 @@ int main(int argc, char *argv[]) {
  usage:
 	fprintf(stderr, "Usage: duk [-i] [-r] [<filenames>]\n"
 	                "\n"
-	                "   -i      enter interactive mode after executing argument file(s)\n"
-	                "   -r      use lower memory limit (used by test runner)"
+	                "   -i       enter interactive mode after executing argument file(s) / eval code\n"
+	                "   -e CODE  evaluate code\n"
+	                "   -r       use lower memory limit (used by test runner)"
 #ifdef NO_RLIMIT
 	                " (disabled)\n"
 #else
