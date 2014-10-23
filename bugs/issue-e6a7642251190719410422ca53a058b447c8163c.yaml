@@ -1,0 +1,26 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add option to duk_cmdline to eval a string
+desc: ""
+type: :task
+component: duk
+release: v1.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-10-23 16:27:58.782251 Z
+references: []
+
+id: e6a7642251190719410422ca53a058b447c8163c
+log_events: 
+- - 2014-10-23 16:27:58.939023 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-10-23 22:04:53.730296 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.0 from v1.1
+  - ""
+- - 2014-10-23 22:04:56.641996 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
