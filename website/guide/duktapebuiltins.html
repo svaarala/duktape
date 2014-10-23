@@ -147,14 +147,16 @@ and is not intended to be parsed programmatically.  This is mostly useful for
 developers (see <code>duk_hthread_builtins.c</code> for the code which sets
 the value).</p>
 
-<p>Example from Duktape 1.0.0:</p>
+<p>Example from Duktape 1.1.0:</p>
 <pre class="ecmascript-code">
-ll u p2 a4 x64 linux gcc     // l|b|m integer endianness, l|b|m IEEE double endianness
-                             // p|u packed/unpacked tval, p1|p2|p3 prop memory layout
-                             // a1|a4|a8: align target
-                             // x64|x86|arm|etc: architecture
-                             // linux|windows|etc: operating system
-                             // gcc|clang|msvc|etc: compiler
+ll u n p2 a4 x64 linux gcc     // l|b|m integer endianness, l|b|m IEEE double endianness
+                               // p|u packed/unpacked tval
+                               // n|various, memory optimization options (n = none)
+                               // p1|p2|p3 prop memory layout
+                               // a1|a4|a8: align target
+                               // x64|x86|arm|etc: architecture
+                               // linux|windows|etc: operating system
+                               // gcc|clang|msvc|etc: compiler
 </pre>
 
 <h3 id="builtin-duktape-fin">fin()</h3>

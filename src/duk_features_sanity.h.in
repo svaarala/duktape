@@ -72,4 +72,14 @@
 #error DUK_USE_GC_TORTURE defined without DUK_USE_MARK_AND_SWEEP
 #endif
 
+/*
+ *  Low memory feature consistency
+ */
+
+#if defined(DUK_USE_OBJSIZES16)
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+#error DUK_USE_OBJSIZES16 assumes DUK_USE_HOBJECT_HASH_PART is not defined
+#endif
+#endif
+
 #endif  /* DUK_FEATURES_SANITY_H_INCLUDED */

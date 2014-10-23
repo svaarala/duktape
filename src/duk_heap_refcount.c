@@ -59,7 +59,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 	/* XXX: better to get base and walk forwards? */
 
-	for (i = 0; i < (duk_uint_fast32_t) h->e_next; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
 		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
 		if (!key) {
 			continue;
@@ -73,20 +73,20 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		}
 	}
 
-	for (i = 0; i < (duk_uint_fast32_t) h->a_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
 		duk_heap_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
 	}
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	duk_heap_heaphdr_decref(thr, (duk_heaphdr *) h->prototype);
+	duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		DUK_ASSERT(f->data != NULL);  /* compiled functions must be created 'atomically' */
+		DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(f) != NULL);  /* compiled functions must be created 'atomically' */
 
 		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
 		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(f);
@@ -102,7 +102,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 			funcs++;
 		}
 
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) f->data);
+		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(f));
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK_UNREF(f);
@@ -230,15 +230,15 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
-			DUK_ASSERT(h1->h_refcount == 0);
-			h1->h_refcount++;  /* bump refcount to prevent refzero during finalizer processing */
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
+			DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
 
 			duk_hobject_run_finalizer(thr, obj);  /* must never longjmp */
 
-			h1->h_refcount--;  /* remove artificial bump */
+			DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
 			DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
 
-			if (h1->h_refcount != 0) {
+			if (DUK_HEAPHDR_GET_REFCOUNT(h1) != 0) {
 				DUK_DDD(DUK_DDDPRINT("-> object refcount after finalization non-zero, object will be rescued"));
 				rescued = 1;
 			} else {
@@ -336,7 +336,7 @@ DUK_INTERNAL void duk_heap_tval_incref(duk_tval *tv) {
 		if (h) {
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
 			DUK_ASSERT_DISABLE(h->h_refcount >= 0);
-			h->h_refcount++;
+			DUK_HEAPHDR_PREINC_REFCOUNT(h);
 		}
 	}
 }
@@ -372,9 +372,9 @@ DUK_INTERNAL void duk_heap_heaphdr_incref(duk_heaphdr *h) {
 		return;
 	}
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT_DISABLE(h->h_refcount >= 0);
+	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
 
-	h->h_refcount++;
+	DUK_HEAPHDR_PREINC_REFCOUNT(h);
 }
 
 DUK_INTERNAL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
@@ -395,9 +395,9 @@ DUK_INTERNAL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 		return;
 	}
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT(h->h_refcount >= 1);
+	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
 
-	if (--h->h_refcount != 0) {
+	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
 		return;
 	}
 

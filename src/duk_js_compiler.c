@@ -579,7 +579,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(h_varmap != NULL);
 
 	ret = 0;
-	e_next = h_varmap->e_next;
+	e_next = DUK_HOBJECT_GET_ENEXT(h_varmap);
 	for (i = 0; i < e_next; i++) {
 		h_key = DUK_HOBJECT_E_GET_KEY(h_varmap, i);
 		if (!h_key) {
@@ -719,7 +719,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	h_data = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_data != NULL);
 
-	h_res->data = (duk_hbuffer *) h_data;
+	DUK_HCOMPILEDFUNCTION_SET_DATA(h_res, (duk_hbuffer *) h_data);
 	DUK_HEAPHDR_INCREF(thr, h_data);
 
 	p_const = (duk_tval *) DUK_HBUFFER_FIXED_GET_DATA_PTR(h_data);
@@ -735,7 +735,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	p_func = (duk_hobject **) p_const;
-	h_res->funcs = p_func;
+	DUK_HCOMPILEDFUNCTION_SET_FUNCS(h_res, p_func);
 	for (i = 0; i < funcs_count; i++) {
 		duk_hobject *h;
 		DUK_ASSERT(i * 3 <= DUK_UARRIDX_MAX);  /* func limits */
@@ -753,11 +753,11 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	p_instr = (duk_instr_t *) p_func;
-	h_res->bytecode = p_instr;
+	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(h_res, p_instr);
 
 	/* copy bytecode instructions one at a time */
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
-	q_instr = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(func->h_code);
+	q_instr = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(func->h_code);
 	for (i = 0; i < code_count; i++) {
 		p_instr[i] = q_instr[i].ins;
 	}
@@ -997,7 +997,7 @@ DUK_LOCAL duk_compiler_instr *duk__get_instr_ptr(duk_compiler_ctx *comp_ctx, duk
 	duk_uint8_t *p;
 	duk_compiler_instr *code_begin, *code_end;
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(f->h_code);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(f->h_code);
 	code_begin = (duk_compiler_instr *) p;
 	code_end = (duk_compiler_instr *) (p + DUK_HBUFFER_GET_SIZE(f->h_code));
 	DUK_UNREF(code_end);
@@ -1034,10 +1034,17 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 
 	/* Limit checks for bytecode byte size and line number. */
 #if defined(DUK_USE_PC2LINE) && defined(DUK_USE_ESBC_LIMITS)
+#if defined(DUK_USE_BUFLEN16)
+	/* Buffer length is bounded to 0xffff automatically, avoid compile warning. */
+	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER)) {
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
+	}
+#else
 	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER ||
 	                 DUK_HBUFFER_GET_SIZE((duk_hbuffer *) h) > DUK_USE_ESBC_MAX_BYTES)) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
 	}
+#endif
 #endif
 
 	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
@@ -1545,8 +1552,12 @@ DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
 
-	bc = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h);
+	bc = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h);
+#if defined(DUK_USE_BUFLEN16)
+	/* No need to assert, buffer size maximum is 0xffff. */
+#else
 	DUK_ASSERT(DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr) <= DUK_INT_MAX);  /* bytecode limits */
+#endif
 	n = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr));
 
 	for (iter = 0; iter < DUK_COMPILER_PEEPHOLE_MAXITER; iter++) {
@@ -2290,7 +2301,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	 * of the E5 specification, see Section 12.12.
 	 */
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	n = (duk_size_t) (li - li_start);
@@ -2312,7 +2323,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	/* XXX: spare handling, slow now */
 
 	/* relookup after possible realloc */
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	DUK_UNREF(li_start);  /* silence scan-build warning */
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
@@ -2341,7 +2352,7 @@ DUK_LOCAL void duk__update_label_flags(duk_compiler_ctx *comp_ctx, duk_int_t lab
 	duk_uint8_t *p;
 	duk_labelinfo *li_start, *li;
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 
@@ -2390,7 +2401,7 @@ DUK_LOCAL void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring 
 
 	DUK_UNREF(ctx);
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->curr_func.h_labelinfos);
 	li_start = (duk_labelinfo *) p;
 	li_end = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li = li_end;

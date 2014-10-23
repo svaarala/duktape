@@ -330,9 +330,9 @@ DUK_LOCAL void duk__advance_chars(duk_lexer_ctx *lex_ctx, duk_small_int_t count)
  */
 
 DUK_LOCAL void duk__initbuffer(duk_lexer_ctx *lex_ctx) {
-	if (lex_ctx->buf->usable_size < DUK_LEXER_TEMP_BUF_LIMIT) {
+	if (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(lex_ctx->buf) < DUK_LEXER_TEMP_BUF_LIMIT) {
 		/* Resize (zero) without realloc. */
-		lex_ctx->buf->size = 0;
+		DUK_HBUFFER_DYNAMIC_SET_SIZE(lex_ctx->buf, 0);
 	} else {
 		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, 0, DUK_LEXER_TEMP_BUF_LIMIT);
 	}
@@ -989,7 +989,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		if (out_token->num_escapes == 0) {
 			for (i = DUK_STRIDX_START_RESERVED; i < i_end; i++) {
 				DUK_ASSERT(i >= 0 && i < DUK_HEAP_NUM_STRINGS);
-				if (lex_ctx->thr->strs[i] == str) {
+				if (DUK_HTHREAD_GET_STRING(lex_ctx->thr, i) == str) {
 					advtok = DUK__ADVTOK(0, DUK_STRIDX_TO_TOK(i));
 					break;
 				}

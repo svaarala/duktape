@@ -60,7 +60,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_hstring(ctx, thr->strs[stridx]);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 	return duk_get_prop(ctx, obj_index);
 }
 
@@ -135,7 +135,7 @@ DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_hstring(ctx, thr->strs[stridx]);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
 	return duk_put_prop(ctx, obj_index);
 }
@@ -189,7 +189,7 @@ DUK_INTERNAL duk_bool_t duk_del_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_hstring(ctx, thr->strs[stridx]);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 	return duk_del_prop(ctx, obj_index);
 }
 
@@ -240,7 +240,7 @@ DUK_INTERNAL duk_bool_t duk_has_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_hstring(ctx, thr->strs[stridx]);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 	return duk_has_prop(ctx, obj_index);
 }
 
@@ -291,7 +291,7 @@ DUK_INTERNAL void duk_def_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk
 
 	obj = duk_require_hobject(ctx, obj_index);
 	DUK_ASSERT(obj != NULL);
-	key = thr->strs[stridx];
+	key = DUK_HTHREAD_GET_STRING(thr, stridx);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(duk_require_tval(ctx, -1) != NULL);
 
@@ -312,7 +312,7 @@ DUK_INTERNAL void duk_def_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_in
 
 	obj = duk_require_hobject(ctx, obj_index);
 	DUK_ASSERT(obj != NULL);
-	key = thr->strs[stridx];
+	key = DUK_HTHREAD_GET_STRING(thr, stridx);
 	DUK_ASSERT(key != NULL);
 
 	duk_push_hobject(ctx, thr->builtins[builtin_idx]);

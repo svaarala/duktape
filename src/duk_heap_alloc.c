@@ -25,7 +25,7 @@ DUK_LOCAL void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
-	DUK_FREE(heap, h->p);
+	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
@@ -58,8 +58,8 @@ DUK_LOCAL void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) g->curr_alloc));
-		DUK_FREE(heap, g->curr_alloc);
+		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(g)));
+		DUK_FREE(heap, DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(g));
 	}
 }
 
@@ -153,9 +153,18 @@ DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	duk_uint_fast32_t i;
 
 	/* strings are only tracked by stringtable */
-	if (heap->st) {
+#if defined(DUK_USE_HEAPPTR16)
+	if (heap->strtable16) {
+#else
+	if (heap->strtable) {
+#endif
 		for (i = 0; i < (duk_uint_fast32_t) heap->st_size; i++) {
-			duk_hstring *e = heap->st[i];
+			duk_hstring *e;
+#if defined(DUK_USE_HEAPPTR16)
+			e = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+#else
+			e = heap->strtable[i];
+#endif
 			if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
 				continue;
 			}
@@ -165,12 +174,16 @@ DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 			                     (duk_heaphdr *) e));
 			DUK_FREE(heap, e);
 #if 0  /* not strictly necessary */
-			heap->st[i] = NULL;
+			heap->strtable[i] = NULL;
 #endif
 		}
-		DUK_FREE(heap, heap->st);
+#if defined(DUK_USE_HEAPPTR16)
+		DUK_FREE(heap, heap->strtable16);
+#else
+		DUK_FREE(heap, heap->strtable);
+#endif
 #if 0  /* not strictly necessary */
-		heap->st = NULL;
+		heap->strtable = NULL;
 #endif
 	}
 }
@@ -321,6 +334,10 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 			tmp[j] = (duk_uint8_t) t;
 		}
 
+		/* No need to length check string: it will never exceed even
+		 * the 16-bit length maximum.
+		 */
+		DUK_ASSERT(len <= 0xffffUL);
 		DUK_DDD(DUK_DDDPRINT("intern built-in string %ld", (long) i));
 		h = duk_heap_string_intern(heap, tmp, len);
 		if (!h) {
@@ -349,7 +366,11 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		 */
 		DUK_HSTRING_INCREF(_never_referenced_, h);
 
+#if defined(DUK_USE_HEAPPTR16)
+		heap->strs16[i] = DUK_USE_HEAPPTR_ENC16((void *) h);
+#else
 		heap->strs[i] = h;
+#endif
 	}
 
 	return 1;
@@ -371,7 +392,11 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 		return 0;
 	}
 	thr->state = DUK_HTHREAD_STATE_INACTIVE;
+#if defined(DUK_USE_HEAPPTR16)
+	thr->strs16 = heap->strs16;
+#else
 	thr->strs = heap->strs;
+#endif
 
 	heap->heap_thread = thr;
 	DUK_HTHREAD_INCREF(thr, thr);  /* Note: first argument not really used */
@@ -643,7 +668,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
 	res->log_buffer = NULL;
-	res->st = NULL;
+	res->strtable = NULL;
 	{
 		duk_small_uint_t i;
 	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
@@ -658,6 +683,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->free_func = free_func;
 	res->alloc_udata = alloc_udata;
 	res->fatal_func = fatal_func;
+
+#if defined(DUK_USE_HEAPPTR16)
+	res->heapptr_null16 = DUK_USE_HEAPPTR_ENC16((void *) NULL);
+	res->heapptr_deleted16 = DUK_USE_HEAPPTR_ENC16((void *) DUK_STRTAB_DELETED_MARKER(res));
+#endif
 
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
 
@@ -693,21 +723,36 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #error initial heap stringtable size is defined incorrectly
 #endif
 
-	res->st = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
-	if (!res->st) {
+#if defined(DUK_USE_HEAPPTR16)
+	res->strtable16 = (duk_uint16_t *) alloc_func(alloc_udata, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
+	if (!res->strtable16) {
 		goto error;
 	}
+#else
+	res->strtable = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
+	if (!res->strtable) {
+		goto error;
+	}
+#endif
 	res->st_size = DUK_STRTAB_INITIAL_SIZE;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
 		duk_small_uint_t i;
 		DUK_ASSERT(res->st_size == DUK_STRTAB_INITIAL_SIZE);
 	        for (i = 0; i < DUK_STRTAB_INITIAL_SIZE; i++) {
-			res->st[i] = NULL;
+#if defined(DUK_USE_HEAPPTR16)
+			res->strtable16[i] = res->heapptr_null16;
+#else
+			res->strtable[i] = NULL;
+#endif
 	        }
 	}
 #else
-	DUK_MEMZERO(res->st, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_MEMZERO(res->strtable16, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
+#else
+	DUK_MEMZERO(res->strtable, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
+#endif
 #endif
 
 	/* strcache init */

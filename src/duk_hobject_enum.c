@@ -54,14 +54,14 @@ DUK_LOCAL void duk__sort_array_indices(duk_hobject *h_obj) {
 	duk_uarridx_t val_highest, val_curr, val_insert;
 
 	DUK_ASSERT(h_obj != NULL);
-	DUK_ASSERT(h_obj->e_next >= 2);  /* control props */
+	DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(h_obj) >= 2);  /* control props */
 
-	if (h_obj->e_next <= 1 + DUK__ENUM_START_INDEX) {
+	if (DUK_HOBJECT_GET_ENEXT(h_obj) <= 1 + DUK__ENUM_START_INDEX) {
 		return;
 	}
 
 	keys = DUK_HOBJECT_E_GET_KEY_BASE(h_obj);
-	p_end = keys + h_obj->e_next;
+	p_end = keys + DUK_HOBJECT_GET_ENEXT(h_obj);
 	keys += DUK__ENUM_START_INDEX;
 
 	DUK_DDD(DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
@@ -70,7 +70,7 @@ DUK_LOCAL void duk__sort_array_indices(duk_hobject *h_obj) {
 #ifdef DUK_USE_DDDPRINT
 	{
 		duk_uint_fast32_t i;
-		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_next; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h_obj); i++) {
 			DUK_DDD(DUK_DDDPRINT("initial: %ld %p -> %!O",
 			                     (long) i,
 			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
@@ -140,7 +140,7 @@ DUK_LOCAL void duk__sort_array_indices(duk_hobject *h_obj) {
 #ifdef DUK_USE_DDDPRINT
 	{
 		duk_uint_fast32_t i;
-		for (i = 0; i < (duk_uint_fast32_t) h_obj->e_next; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h_obj); i++) {
 			DUK_DDD(DUK_DDDPRINT("final: %ld %p -> %!O",
 			                     (long) i,
 			                     (void *) DUK_HOBJECT_E_GET_KEY_PTR(h_obj, i),
@@ -343,7 +343,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		 *  must be the same.
 		 */
 
-		for (i = 0; i < (duk_uint_fast32_t) curr->a_size; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(curr); i++) {
 			duk_hstring *k;
 			duk_tval *tv;
 
@@ -367,7 +367,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		 *  Entries part
 		 */
 
-		for (i = 0; i < (duk_uint_fast32_t) curr->e_next; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(curr); i++) {
 			duk_hstring *k;
 
 			k = DUK_HOBJECT_E_GET_KEY(curr, i);
@@ -403,7 +403,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			break;
 		}
 
-		curr = curr->prototype;
+		curr = DUK_HOBJECT_GET_PROTOTYPE(curr);
 	}
 
 	/* [enum_target res] */
@@ -496,7 +496,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	for (;;) {
 		duk_hstring *k;
 
-		if (idx >= e->e_next) {
+		if (idx >= DUK_HOBJECT_GET_ENEXT(e)) {
 			DUK_DDD(DUK_DDDPRINT("enumeration: ran out of elements"));
 			break;
 		}
@@ -572,7 +572,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_sma
 	DUK_ASSERT(e != NULL);
 
 	idx = 0;
-	for (i = DUK__ENUM_START_INDEX; i < (duk_uint_fast32_t) e->e_next; i++) {
+	for (i = DUK__ENUM_START_INDEX; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(e); i++) {
 		duk_hstring *k;
 
 		k = DUK_HOBJECT_E_GET_KEY(e, i);

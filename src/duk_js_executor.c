@@ -3437,7 +3437,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 
 					prev_env = act->lex_env;
 					DUK_ASSERT(prev_env != NULL);
-					act->lex_env = prev_env->prototype;
+					act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(prev_env);
 					DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
 					DUK_HOBJECT_DECREF(thr, prev_env);  /* side effects */
 				}

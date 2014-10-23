@@ -10,17 +10,24 @@
 
 DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t hobject_flags) {
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
-	obj->p = NULL;
+	DUK_HOBJECT_SET_PROPS(obj, NULL);
 #endif
 
 	/* XXX: macro? sets both heaphdr and object flags */
 	obj->hdr.h_flags = hobject_flags;
 	DUK_HEAPHDR_SET_TYPE(&obj->hdr, DUK_HTYPE_OBJECT);  /* also goes into flags */
 
+#if defined(DUK_USE_HEAPPTR16)
+	/* Zero encoded pointer is required to match NULL */
+	DUK_HEAPHDR_SET_NEXT(&obj->hdr, NULL);
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+	DUK_HEAPHDR_SET_PREV(&obj->hdr, NULL);
+#endif
+#endif
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &obj->hdr);
 
 	/*
-	 *  obj->p is intentionally left as NULL, and duk_hobject_props.c must deal
+	 *  obj->props is intentionally left as NULL, and duk_hobject_props.c must deal
 	 *  with this properly.  This is intentional: empty objects consume a minimum
 	 *  amount of memory.  Further, an initial allocation might fail and cause
 	 *  'obj' to "leak" (require a mark-and-sweep) since it is not reachable yet.
@@ -71,9 +78,13 @@ DUK_INTERNAL duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, 
 	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
+#ifdef DUK_HEAPPTR16
+	/* NULL pointer is required to encode to zero, so memset is enough. */
+#else
 	res->data = NULL;
 	res->funcs = NULL;
 	res->bytecode = NULL;
+#endif
 #endif
 
 	return res;

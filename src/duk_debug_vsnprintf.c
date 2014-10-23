@@ -375,10 +375,10 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 
 	duk_fb_put_cstring(fb, brace1);
 
-	if (h->p) {
+	if (DUK_HOBJECT_GET_PROPS(h)) {
 		duk_uint32_t a_limit;
 
-		a_limit = h->a_size;
+		a_limit = DUK_HOBJECT_GET_ASIZE(h);
 		if (st->internal) {
 			/* dump all allocated entries, unused entries print as 'unused',
 			 * note that these may extend beyond current 'length' and look
@@ -400,7 +400,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			DUK__COMMA();
 			duk__print_tval(st, tv);
 		}
-		for (i = 0; i < h->e_next; i++) {
+		for (i = 0; i < DUK_HOBJECT_GET_ENEXT(h); i++) {
 			key = DUK_HOBJECT_E_GET_KEY(h, i);
 			if (!key) {
 				continue;
@@ -521,7 +521,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	}
 	if (st->internal && DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:"); duk__print_hbuffer(st, f->data);
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(f));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
@@ -559,15 +560,16 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	}
 
 	/* prototype should be last, for readability */
-	if (st->follow_proto && h->prototype) {
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, h->prototype);
+	if (st->follow_proto && DUK_HOBJECT_GET_PROTOTYPE(h)) {
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, DUK_HOBJECT_GET_PROTOTYPE(h));
 	}
 
 	duk_fb_put_cstring(fb, brace2);
 
-	if (st->heavy && h->h_size > 0) {
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+	if (st->heavy && DUK_HOBJECT_GET_HSIZE(h) > 0) {
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LANGLE);
-		for (i = 0; i < h->h_size; i++) {
+		for (i = 0; i < DUK_HOBJECT_GET_HSIZE(h); i++) {
 			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(h, i);
 			if (i > 0) {
 				duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COMMA);
@@ -582,6 +584,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RANGLE);
 	}
+#endif
 
  finished:
 	st->depth--;
@@ -612,7 +615,9 @@ DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
 		duk_fb_sprintf(fb, "buffer:dynamic:%p:%ld:%ld",
-		               (void *) g->curr_alloc, (long) g->size, (long) g->usable_size);
+		               (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(g),
+		               (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(g),
+		               (long) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(g));
 	} else {
 		duk_fb_sprintf(fb, "buffer:fixed:%ld", (long) DUK_HBUFFER_GET_SIZE(h));
 	}

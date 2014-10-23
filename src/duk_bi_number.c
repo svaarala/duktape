@@ -74,7 +74,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	DUK_ASSERT(h_this != NULL);
 	DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_NUMBER);
 
-	DUK_ASSERT(h_this->prototype == ((duk_hthread *) ctx)->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h_this) == ((duk_hthread *) ctx)->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_this) == DUK_HOBJECT_CLASS_NUMBER);
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
 

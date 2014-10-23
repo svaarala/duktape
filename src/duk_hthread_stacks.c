@@ -441,7 +441,7 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 
 			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
-			act->lex_env = env->prototype;  /* prototype is lex_env before catcher created */
+			act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(env);  /* prototype is lex_env before catcher created */
 			DUK_HOBJECT_DECREF(thr, env);
 
 			/* There is no need to decref anything else than 'env': if 'env'

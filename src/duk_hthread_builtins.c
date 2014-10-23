@@ -545,6 +545,34 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #else
 	                "u"
 #endif
+			" "
+#if !defined(DUK_USE_HEAPPTR16) && !defined(DUK_DATAPTR16) && !defined(DUK_FUNCPTR16)
+			"n"
+#endif
+#if defined(DUK_USE_HEAPPTR16)
+			"h"
+#endif
+#if defined(DUK_USE_DATAPTR16)
+			"d"
+#endif
+#if defined(DUK_USE_FUNCPTR16)
+			"f"
+#endif
+#if defined(DUK_USE_REFCOUNT16)
+			"R"
+#endif
+#if defined(DUK_USE_STRHASH16)
+			"H"
+#endif
+#if defined(DUK_USE_STRLEN16)
+			"S"
+#endif
+#if defined(DUK_USE_BUFLEN16)
+			"B"
+#endif
+#if defined(DUK_USE_OBJSIZES16)
+			"O"
+#endif
 	                " "
 #if defined(DUK_USE_HOBJECT_LAYOUT_1)
 			"p1"

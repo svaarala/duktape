@@ -2527,6 +2527,68 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Pointer compression and 16-bit header fields for low memory environments
+ */
+
+#undef DUK_USE_HEAPPTR16
+#undef DUK_USE_HEAPPTR_ENC16
+#undef DUK_USE_HEAPPTR_DEC16
+#if defined(DUK_OPT_HEAPPTR16) && defined(DUK_OPT_HEAPPTR_ENC16) && defined(DUK_OPT_HEAPPTR_DEC16)
+#define DUK_USE_HEAPPTR16
+#define DUK_USE_HEAPPTR_ENC16(ptr) DUK_OPT_HEAPPTR_ENC16((ptr))
+#define DUK_USE_HEAPPTR_DEC16(ptr) DUK_OPT_HEAPPTR_DEC16((ptr))
+#endif
+
+#undef DUK_USE_DATAPTR16
+#undef DUK_USE_DATAPTR_ENC16
+#undef DUK_USE_DATAPTR_DEC16
+#if defined(DUK_OPT_DATAPTR16) && defined(DUK_OPT_DATAPTR_ENC16) && defined(DUK_OPT_DATAPTR_DEC16)
+#define DUK_USE_DATAPTR16
+#define DUK_USE_DATAPTR_ENC16(ptr) DUK_OPT_DATAPTR_ENC16((ptr))
+#define DUK_USE_DATAPTR_DEC16(ptr) DUK_OPT_DATAPTR_DEC16((ptr))
+#endif
+
+#undef DUK_USE_FUNCPTR16
+#undef DUK_USE_FUNCPTR_ENC16
+#undef DUK_USE_FUNCPTR_DEC16
+#if defined(DUK_OPT_FUNCPTR16) && defined(DUK_OPT_FUNCPTR_ENC16) && defined(DUK_OPT_FUNCPTR_DEC16)
+#define DUK_USE_FUNCPTR16
+#define DUK_USE_FUNCPTR_ENC16(ptr) DUK_OPT_FUNCPTR_ENC16((ptr))
+#define DUK_USE_FUNCPTR_DEC16(ptr) DUK_OPT_FUNCPTR_DEC16((ptr))
+#endif
+
+#undef DUK_USE_REFCOUNT16
+#if defined(DUK_OPT_REFCOUNT16)
+#define DUK_USE_REFCOUNT16
+#endif
+
+#undef DUK_USE_STRHASH16
+#if defined(DUK_OPT_STRHASH16)
+#define DUK_USE_STRHASH16
+#endif
+
+#undef DUK_USE_STRLEN16
+#if defined(DUK_OPT_STRLEN16)
+#define DUK_USE_STRLEN16
+#endif
+
+#undef DUK_USE_BUFLEN16
+#if defined(DUK_OPT_BUFLEN16)
+#define DUK_USE_BUFLEN16
+#endif
+
+#undef DUK_USE_OBJSIZES16
+#if defined(DUK_OPT_OBJSIZES16)
+#define DUK_USE_OBJSIZES16
+#endif
+
+/* For now, hash part is dropped if and only if 16-bit object fields are used. */
+#define DUK_USE_HOBJECT_HASH_PART
+#if defined(DUK_USE_OBJSIZES16)
+#undef DUK_USE_HOBJECT_HASH_PART
+#endif
+
+/*
  *  Miscellaneous
  */
 

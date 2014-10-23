@@ -120,7 +120,13 @@
  *  Thread defines
  */
 
-#define DUK_HTHREAD_GET_STRING(thr,idx)          ((thr)->strs[(idx)])
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HTHREAD_GET_STRING(thr,idx) \
+	((duk_hstring *) DUK_USE_HEAPPTR_DEC16((thr)->strs16[(idx)]))
+#else
+#define DUK_HTHREAD_GET_STRING(thr,idx) \
+	((thr)->strs[(idx)])
+#endif
 
 #define DUK_HTHREAD_GET_CURRENT_ACTIVATION(thr)  (&(thr)->callstack[(thr)->callstack_top - 1])
 
@@ -262,7 +268,11 @@ struct duk_hthread {
 	duk_hobject *builtins[DUK_NUM_BUILTINS];
 
 	/* convenience copies from heap/vm for faster access */
-	duk_hstring **strs;			/* (from duk_heap) */
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t *strs16;
+#else
+	duk_hstring **strs;
+#endif
 };
 
 /*

@@ -72,7 +72,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		return (h->blen > 0 ? 1 : 0);
+		return (DUK_HSTRING_GET_BYTELEN(h) > 0 ? 1 : 0);
 	}
 	case DUK_TAG_OBJECT: {
 		return 1;
@@ -1053,7 +1053,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 *  also the built-in Function prototype, the result is true.
 		 */
 
-		val = val->prototype;
+		val = DUK_HOBJECT_GET_PROTOTYPE(val);
 
 		if (!val) {
 			goto pop_and_false;
@@ -1188,7 +1188,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	}
 
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
-	return thr->strs[stridx];
+	return DUK_HTHREAD_GET_STRING(thr, stridx);
 }
 
 /*

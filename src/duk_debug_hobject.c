@@ -169,15 +169,15 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 	                 (const char *) (duk__class_names[(DUK_HOBJECT_GET_CLASS_NUMBER(obj)) & ((1 << DUK_HOBJECT_FLAG_CLASS_BITS) - 1)])));
 
 	DUK_D(DUK_DPRINT("  prototype: %p -> %!O",
-	                 (void *) obj->prototype,
-	                 (duk_heaphdr *) obj->prototype));
+	                 (void *) DUK_HOBJECT_GET_PROTOTYPE(obj),
+	                 (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(obj)));
 
 	DUK_D(DUK_DPRINT("  props: p=%p, e_size=%ld, e_next=%ld, a_size=%ld, h_size=%ld",
-	                 (void *) obj->p,
-	                 (long) obj->e_size,
-	                 (long) obj->e_next,
-	                 (long) obj->a_size,
-	                 (long) obj->h_size));
+	                 (void *) DUK_HOBJECT_GET_PROPS(obj),
+	                 (long) DUK_HOBJECT_GET_ESIZE(obj),
+	                 (long) DUK_HOBJECT_GET_ENEXT(obj),
+	                 (long) DUK_HOBJECT_GET_ASIZE(obj),
+	                 (long) DUK_HOBJECT_GET_HSIZE(obj)));
 
 	/*
 	 *  Object (struct layout) specific dumping.  Inline code here
@@ -186,13 +186,15 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(obj)) {
 		duk_hcompiledfunction *h = (duk_hcompiledfunction *) obj;
+		duk_hbuffer *h_data;
 
 		DUK_D(DUK_DPRINT("  hcompiledfunction"));
-		DUK_D(DUK_DPRINT("  data: %!O", (duk_heaphdr *) h->data));
+		DUK_D(DUK_DPRINT("  data: %!O", (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(h)));
 		DUK_D(DUK_DPRINT("  nregs: %ld", (long) h->nregs));
 		DUK_D(DUK_DPRINT("  nargs: %ld", (long) h->nargs));
 
-		if (h->data && DUK_HBUFFER_HAS_DYNAMIC(h->data) && DUK_HBUFFER_GET_DATA_PTR(h->data)) {
+		h_data = (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(h);
+		if (h_data && DUK_HBUFFER_HAS_DYNAMIC(h_data) && DUK_HBUFFER_GET_DATA_PTR(h_data)) {
 			DUK_D(DUK_DPRINT("  consts: %p (%ld, %ld bytes)",
 			                 (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(h),
 			                 (long) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(h),
@@ -342,15 +344,17 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 #endif
 	}
 
-	if (obj->p) {
+	if (DUK_HOBJECT_GET_PROPS(obj)) {
 		DUK_D(DUK_DPRINT("  props alloc size: %ld",
-		                 (long) DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size)));
+		                 (long) DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
+		                                                   DUK_HOBJECT_GET_ASIZE(obj),
+		                                                   DUK_HOBJECT_GET_HSIZE(obj))));
 	} else {
 		DUK_D(DUK_DPRINT("  props alloc size: n/a"));
 	}
 
 	DUK_D(DUK_DPRINT("  prop entries:"));
-	for (i = 0; i < (duk_uint_fast32_t) obj->e_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ESIZE(obj); i++) {
 		duk_hstring *k;
 		duk_propvalue *v;
 
@@ -358,7 +362,7 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 		v = DUK_HOBJECT_E_GET_VALUE_PTR(obj, i);
 		DUK_UNREF(v);
 
-		if (i >= obj->e_next) {
+		if (i >= DUK_HOBJECT_GET_ENEXT(obj)) {
 			DUK_D(DUK_DPRINT("    [%ld]: UNUSED", (long) i));
 			continue;
 		}
@@ -393,7 +397,7 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 	}
 
 	DUK_D(DUK_DPRINT("  array entries:"));
-	for (i = 0; i < (duk_uint_fast32_t) obj->a_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj); i++) {
 		DUK_D(DUK_DPRINT("    [%ld]: [w=%ld e=%ld c=%ld a=%ld] %ld -> %!T",
 		                 (long) i,
 		                 (long) 1,  /* implicit attributes */
@@ -405,7 +409,8 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 	}
 
 	DUK_D(DUK_DPRINT("  hash entries:"));
-	for (i = 0; i < (duk_uint_fast32_t) obj->h_size; i++) {
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_HSIZE(obj); i++) {
 		duk_uint32_t t = DUK_HOBJECT_H_GET_INDEX(obj, i);
 		if (t == DUK_HOBJECT_HASHIDX_UNUSED) {
 			DUK_D(DUK_DPRINT("    [%ld]: unused", (long) i));
@@ -415,6 +420,7 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 			DUK_D(DUK_DPRINT("    [%ld]: %ld", (long) i, (long) t));
 		}
 	}
+#endif
 }
 
 #if 0  /*unused*/
