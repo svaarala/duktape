@@ -33,6 +33,12 @@ realistic memory targets are roughly:
     various internal structures (strings, buffers, objects), pointer
     compression, external strings, etc may need to be used
 
+* 256kB flash memory (code) and 96kB system RAM
+
+  - Requires a bare metal system, possibly a custom C library, etc.
+
+  - http://pt.slideshare.net/seoyounghwang77/js-onmicrocontrollers
+
 There are four basic goals for low memory optimization:
 
 1. Reduce Duktape code (flash) footprint.  This is currently a low priority
@@ -96,12 +102,64 @@ Suggested feature options
 More aggressive options
 =======================
 
-These may be needed for very low memory environments (e.g. 128kB system RAM):
+The following may be needed for very low memory environments (e.g. 128kB
+system RAM):
 
 * Consider using lightweight functions for your Duktape/C bindings and to
   force Duktape built-ins to be lightweight functions:
 
   - ``DUK_OPT_LIGHTFUNC_BUILTINS``
+
+* Enable other 16-bit fields to reduce header size; these are typically
+  used together (all or none):
+
+  - ``DUK_OPT_REFCOUNT16``
+
+  - ``DUK_OPT_STRHASH16``
+
+  - ``DUK_OPT_STRLEN16``
+
+  - ``DUK_OPT_BUFLEN16``
+
+  - ``DUK_OPT_OBJSIZES16``
+
+* Enable heap pointer compression, assuming pointers provided by your allocator
+  can be packed into 16 bits:
+
+  - ``DUK_OPT_HEAPPTR16``
+
+  - ``DUK_OPT_HEAPPTR_ENC16``
+
+  - ``DUK_OPT_HEAPPTR_DEC16``
+
+* Enable data pointer compression if possible.  Note that these pointers can
+  point to arbitrary memory locations (outside Duktape heap) so this may not
+  be possible even if Duktape heap pointers can be compressed:
+
+  - ``DUK_OPT_DATAPTR16``
+
+  - ``DUK_OPT_DATAPTR_ENC16``
+
+  - ``DUK_OPT_DATAPTR_DEC16``
+
+  - **UNIMPLEMENTED AT THE MOMENT**
+
+* Enable C function pointer compression if possible.  Duktape compiles to
+  around 200kB of code, so assuming an alignment of 4 this may only be
+  possible if there is less than 56kB of user code.
+
+  - ``DUK_OPT_FUNCPTR16``
+
+  - ``DUK_OPT_FUNCPTR_ENC16``
+
+  - ``DUK_OPT_FUNCPTR_DEC16``
+
+  - **UNIMPLEMENTED AT THE MOMENT**
+
+* Enable struct packing in compiler options if your platform doesn't have
+  strict alignment requirements, e.g. on gcc/x86 you can:
+
+  - `-fpack-struct=1` or `-fpack-struct=2`
 
 Notes on potential low memory measures
 ======================================
