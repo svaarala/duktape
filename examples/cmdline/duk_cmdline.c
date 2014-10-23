@@ -409,11 +409,17 @@ static int handle_interactive(duk_context *ctx) {
 static const AJS_HeapConfig ajsheap_config[] = {
 	{ 8,      10,   AJS_POOL_BORROW,  0 },
 	{ 12,     10,   AJS_POOL_BORROW,  0 },
-	{ 20,     50,   AJS_POOL_BORROW,  0 },
-	{ 24,     100,  AJS_POOL_BORROW,  0 },
-	{ 32,     600,  AJS_POOL_BORROW,  0 },
-	{ 40,     200,  0,                0 },
-	{ 48,     400,  0,                0 },
+	{ 16,     200,  AJS_POOL_BORROW,  0 },
+	{ 20,     400,  AJS_POOL_BORROW,  0 },
+	{ 24,     400,  AJS_POOL_BORROW,  0 },
+	{ 28,     200,  AJS_POOL_BORROW,  0 },
+	{ 32,     200,  AJS_POOL_BORROW,  0 },
+	{ 40,     200,  AJS_POOL_BORROW,  0 },
+	{ 48,     50,   AJS_POOL_BORROW,  0 },
+	{ 52,     50,   AJS_POOL_BORROW,  0 },
+	{ 56,     50,   AJS_POOL_BORROW,  0 },
+	{ 60,     50,   AJS_POOL_BORROW,  0 },
+	{ 64,     50,   0,                0 },
 	{ 128,    80,   0,                0 },
 	{ 256,    16,   0,                0 },
 	{ 512,    16,   0,                0 },
@@ -423,7 +429,45 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 8192,   1,    0,                0 }
 };
 
-static uint8_t *ajsheap_ram = NULL;
+uint8_t *ajsheap_ram = NULL;
+
+/* Pointer compression functions.
+ * 'base' is chosen so that no non-NULL pointer results in a zero result
+ * which is reserved for NULL pointers.
+ */
+duk_uint16_t ajsheap_enc16(void *p) {
+	duk_uint32_t ret;
+	char *base = (char *) ajsheap_ram - 4;
+
+	if (p == NULL) {
+		ret = 0;
+	} else {
+		ret = (duk_uint32_t) (((char *) p - base) >> 2);
+	}
+#if 0
+	printf("ajsheap_enc16: %p -> %u\n", p, (unsigned int) ret);
+#endif
+	if (ret > 0xffffUL) {
+		fprintf(stderr, "Failed to compress pointer\n");
+		fflush(stderr);
+		abort();
+	}
+	return (duk_uint16_t) ret;
+}
+void *ajsheap_dec16(duk_uint16_t x) {
+	void *ret;
+	char *base = (char *) ajsheap_ram - 4;
+
+	if (x == 0) {
+		ret = NULL;
+	} else {
+		ret = (void *) (base + (((duk_uint32_t) x) << 2));
+	}
+#if 0
+	printf("ajsheap_dec16: %u -> %p\n", (unsigned int) x, ret);
+#endif
+	return ret;
+}
 
 static void ajsheap_init(void) {
 	size_t heap_sz[1];
