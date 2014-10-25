@@ -576,6 +576,10 @@ Released
   labelled block statements still cause an internal error ("INVALID
   opcode 0") but don't cause assert failures
 
+* Fix an assertion failure when using a try-catch in a function with a lot
+  of constants (more than 511 string or non-integer constants); a compile
+  error happens now instead to prevent unsafe behavior
+
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
