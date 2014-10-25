@@ -119,8 +119,10 @@
 #define DUK_DEBUG_DUMP_HCOMPILEDFUNCTION(x)  /* XXX: unimplemented */
 #define DUK_DEBUG_DUMP_HNATIVEFUNCTION(x)    /* XXX: unimplemented */
 #define DUK_DEBUG_DUMP_HTHREAD(thr)          duk_debug_dump_hobject((duk_hobject *) (thr))
+#if 0  /*unused*/
 #define DUK_DEBUG_DUMP_CALLSTACK(thr)        duk_debug_dump_callstack((thr))
 #define DUK_DEBUG_DUMP_ACTIVATION(thr,act)   duk_debug_dump_activation((thr),(act))
+#endif
 
 /* summary macros */
 
@@ -235,8 +237,10 @@ DUK_INTERNAL_DECL void duk_debug_dump_hobject(duk_hobject *obj);
 #if 0  /*unimplemented*/
 DUK_INTERNAL_DECL void duk_debug_dump_hthread(duk_hthread *thr);
 #endif
+#if 0  /*unused*/
 DUK_INTERNAL_DECL void duk_debug_dump_callstack(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act);
+#endif
 
 #define DUK_DEBUG_SUMMARY_BUF_SIZE  76
 DUK_INTERNAL_DECL char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
