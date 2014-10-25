@@ -572,6 +572,10 @@ Released
   initial zero-size realloc() failed (this shouldn't normally happen but
   was triggered by GC torture testing)
 
+* Fix an assertion failure when using labelled block statements; some
+  labelled block statements still cause an internal error ("INVALID
+  opcode 0") but don't cause assert failures
+
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
