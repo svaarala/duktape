@@ -1329,12 +1329,21 @@ DUK_LOCAL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, du
 	DUK_ASSERT(abc <= DUK_BC_ABC_MAX);
 	DUK_ASSERT((abc & DUK__CONST_MARKER) == 0);
 
+	if (abc <= DUK_BC_ABC_MAX) {
+		;
+	} else {
+		goto error_outofregs;
+	}
 	ins = DUK_ENC_OP_ABC(op, abc);
 	DUK_DDD(DUK_DDDPRINT("duk__emit_abc: 0x%08lx line=%ld pc=%ld op=%ld (%!C) abc=%ld (%!I)",
 	                     (unsigned long) ins, (long) comp_ctx->curr_token.start_line,
 	                     (long) duk__get_current_pc(comp_ctx), (long) op, (long) op,
 	                     (long) abc, (duk_instr_t) ins));
 	duk__emit(comp_ctx, ins);
+	return;
+
+ error_outofregs:
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REG_LIMIT);
 }
 
 DUK_LOCAL void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags, duk_regconst_t b, duk_regconst_t c) {
@@ -1484,6 +1493,24 @@ DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t trycatc
 
 	instr = duk__get_instr_ptr(comp_ctx, trycatch_pc);
 	DUK_ASSERT(instr != NULL);
+
+	DUK_ASSERT_DISABLE(flags >= DUK_BC_A_MIN);
+	DUK_ASSERT(flags <= DUK_BC_A_MAX);
+
+	DUK_ASSERT((reg_catch & DUK__CONST_MARKER) == 0);
+	const_varname = const_varname & (~DUK__CONST_MARKER);
+	if (reg_catch > DUK_BC_B_MAX || const_varname > DUK_BC_C_MAX) {
+		/* Catch attempts to use out-of-range reg/const.  Without this
+		 * check Duktape 0.12.0 could generate invalid code which caused
+		 * an assert failure on execution.  This error is triggered e.g.
+		 * for functions with a lot of constants and a try-catch statement.
+		 * Shuffling or opcode semantics change is needed to fix the issue.
+		 * See: test-bug-trycatch-many-constants.js.
+		 */
+		DUK_D(DUK_DPRINT("failed to patch trycatch: flags=%ld, reg_catch=%ld, const_varname=%ld (0x%08lx)",
+		                 (long) flags, (long) reg_catch, (long) const_varname, (long) const_varname));
+		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REG_LIMIT);
+	}
 
 	instr->ins = DUK_ENC_OP_A_B_C(DUK_OP_TRYCATCH, flags, reg_catch, const_varname);
 }
@@ -5706,10 +5733,17 @@ DUK_LOCAL void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	rc_target = duk__exprtop_toregconst(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 	duk__advance_expect(comp_ctx, DUK_TOK_RPAREN);
 
+	/* XXX: the trycatch shuffle flags are now very limiting and a fix
+	 * is needed to allow trycatch to work in functions with a very large
+	 * number of temporaries or constants.
+	 */
+
 	pc_trycatch = duk__get_current_pc(comp_ctx);
 	trycatch_flags = DUK_BC_TRYCATCH_FLAG_WITH_BINDING;
 	duk__emit_a_b_c(comp_ctx,
-	                DUK_OP_TRYCATCH,
+	                DUK_OP_TRYCATCH | DUK__EMIT_FLAG_NO_SHUFFLE_A
+	                                | DUK__EMIT_FLAG_NO_SHUFFLE_B
+	                                | DUK__EMIT_FLAG_NO_SHUFFLE_C,
 	                (duk_regconst_t) trycatch_flags /*a*/,
 	                (duk_regconst_t) reg_catch /*b*/,
 	                rc_target /*c*/);
