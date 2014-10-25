@@ -2287,13 +2287,14 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li--;
 
-	/* Labels need to be recorded as pending before we know whether they will be
-	 * actually be used as part of an iteration statement or a switch statement.
-	 * The flags to allow break/continue are updated when we figure out the
+	/* Labels can be used for iteration statements but also for other statements,
+	 * in particular a label can be used for a block statement.  All cases of a
+	 * named label accept a 'break' so that flag is set here.  Iteration staements
+	 * also allow 'continue', so that flag is updated when we figure out the
 	 * statement type.
 	 */
 
-	li->flags = 0;
+	li->flags = DUK_LABEL_FLAG_ALLOW_BREAK;
 	li->label_id = label_id;
 	li->h_label = h_label;
 	li->catch_depth = comp_ctx->curr_func.catch_depth;   /* catch depth from current func */
