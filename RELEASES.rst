@@ -535,10 +535,7 @@ Released
 
 * A few more polyfills
 
-Planned
-=======
-
-1.0.0 (2014-10-XX)
+1.0.0 (2014-10-25)
 ------------------
 
 * Feature complete baseline release
@@ -596,6 +593,9 @@ Planned
   enabled via DUK_CMDLINE_FANCY
 
 * Use variadic macros for VS2005+
+
+Planned
+=======
 
 1.1.0 (2014-XX-XX)
 ------------------
