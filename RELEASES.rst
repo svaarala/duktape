@@ -535,7 +535,7 @@ Released
 
 * A few more polyfills
 
-1.0.0 (2014-10-25)
+1.0.0 (2014-10-26)
 ------------------
 
 * Feature complete baseline release
