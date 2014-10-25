@@ -4,10 +4,10 @@ Release checklist
 
 * Git branch naming note
 
-  - ``vNN.NN-release-prep``: use this naming for bumping version number, etc.
+  - ``vN.N.N-release-prep``: use this naming for bumping version number, etc.
     Merge to master before tagging release.
 
-  - ``vNN.NN-release-post``: use this naming for bumping version number after
+  - ``vN.N.N-release-post``: use this naming for bumping version number after
     release, checklist fixes after release, etc.
 
 * Git maintenance
