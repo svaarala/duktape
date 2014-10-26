@@ -192,6 +192,9 @@ Release checklist
   - ``git tag -f -s -m "<one line release description>" vN.N.N`` to forcibly
     reset tag if it needs to be moved
 
+* If release is a stable major/minor release (e.g. 1.1.0), create a maintenance
+  branch ``vN.N-maintenance`` off the release tag.
+
 * Build candidate tar.xz files
 
   - These should remain the same after this point so that their hash
@@ -261,6 +264,8 @@ Release checklist
   - Ensure ``master`` is pushed and unnecessary branches are cleaned up
 
   - Push the release tag
+
+  - Push the maintenance branch if created
 
 * Make GitHub release
 
