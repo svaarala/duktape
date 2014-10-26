@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: re-run test262test, document any new issues
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-10-25 00:25:13.312997 Z
+references: []
+
+id: f0f4e5bcec88774af187873a59671d808fa4f836
+log_events: 
+- - 2014-10-25 00:25:13.485966 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: clean up debug dump macros and functions
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-10-25 10:54:20.203054 Z
+references: []
+
+id: d9eea0324069982c9ce83afcc6ed0e5828f9868f
+log_events: 
+- - 2014-10-25 10:54:20.375991 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
