@@ -535,10 +535,7 @@ Released
 
 * A few more polyfills
 
-Planned
-=======
-
-1.0.0 (2014-10-XX)
+1.0.0 (2014-10-26)
 ------------------
 
 * Feature complete baseline release
@@ -575,6 +572,14 @@ Planned
   initial zero-size realloc() failed (this shouldn't normally happen but
   was triggered by GC torture testing)
 
+* Fix an assertion failure when using labelled block statements; some
+  labelled block statements still cause an internal error ("INVALID
+  opcode 0") but don't cause assert failures
+
+* Fix an assertion failure when using a try-catch in a function with a lot
+  of constants (more than 511 string or non-integer constants); a compile
+  error happens now instead to prevent unsafe behavior
+
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
@@ -596,6 +601,9 @@ Planned
   enabled via DUK_CMDLINE_FANCY
 
 * Use variadic macros for VS2005+
+
+Planned
+=======
 
 1.1.0 (2014-XX-XX)
 ------------------

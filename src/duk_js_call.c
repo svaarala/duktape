@@ -717,7 +717,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("callstack before call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -1071,7 +1071,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [... func this arg1 ... argN] */
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("pushed new activation:"));
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
@@ -1147,7 +1147,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		/* 'func' wants stack "as is" */
 	}
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("callstack after call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -1872,7 +1872,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	                   (long) idx_args,
 	                   (long) entry_valstack_bottom_index));
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("callstack before call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif
@@ -2156,7 +2156,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	 * idx_args updated to match
 	 */
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("pushed new activation:"));
 	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
 #endif
@@ -2223,7 +2223,7 @@ void duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
 	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
+#if 0
 	DUK_D(DUK_DPRINT("callstack after call setup:"));
 	DUK_DEBUG_DUMP_CALLSTACK(thr);
 #endif

@@ -248,6 +248,7 @@ clean:
 	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
+	@rm -f duktape-*.iso
 	@rm -f doc/*.html
 	@rm -f src/*.pyc
 	@rm -rf massif.out.* ms_print.tmp.*
@@ -778,6 +779,11 @@ dist-src:	dist
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
+
+# ISO target is useful with some system emulators with no network access
+.PHONY: dist-iso
+dist-iso:	dist-src
+	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
 
 .PHONY: tidy-site
 tidy-site:

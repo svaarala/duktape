@@ -414,6 +414,7 @@ DUK_INTERNAL void duk_debug_dump_hobject(duk_hobject *obj) {
 	}
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL void duk_debug_dump_callstack(duk_hthread *thr) {
 	duk_uint_fast32_t i;
 
@@ -446,7 +447,9 @@ DUK_INTERNAL void duk_debug_dump_callstack(duk_hthread *thr) {
 		                 (duk_tval *) this_binding));
 	}
 }
+#endif
 
+#if 0  /*unused*/
 DUK_INTERNAL void duk_debug_dump_activation(duk_hthread *thr, duk_activation *act) {
 	if (!act) {
 		DUK_D(DUK_DPRINT("duk_activation: NULL"));
@@ -471,5 +474,6 @@ DUK_INTERNAL void duk_debug_dump_activation(duk_hthread *thr, duk_activation *ac
 		                 (duk_tval *) this_binding));
 	}
 }
+#endif
 
 #endif  /* DUK_USE_DEBUG */

@@ -24,6 +24,10 @@ Ecmascript features
 * Final mantissa bit rounding issues in the internal number-to-string
   conversion.
 
+* If a function contains a lot of constants (over 511 strings or non-integers),
+  the compiler fails to compile a try-catch statement.  The workaround is to
+  place the try-catch in a separate function outside the problematic function.
+
 Portability and platforms
 -------------------------
 
@@ -36,6 +40,9 @@ Portability and platforms
 * Clang 3.3 on FreeBSD 10: compilation may produce a warning "generic
   selections are a C11-specific feature".  The warning should be harmless.
 
+* Clang 3.3 on FreeBSD 10: harmless compilation warning for "duk_repl_isinf"
+  being unused.
+
 * On some GCC versions and compilation options you may get a warning
   "variable idx_func might be clobbered by longjmp or vfork [-Wclobbered]".
   This warning seems spurious and causes no known problems.
@@ -47,6 +54,9 @@ Portability and platforms
 * GCC ``-pedantic`` without -std=c99 causes the ``unsigned long long`` type
   to be used by Duktape, and an associated warning about the type.  This is
   harmless and most easily fixed by simply using ``-std=c99``.
+
+* MinGW compilation produces symbol visibility warnings when compiled Duktape
+  from ``src-separate``.
 
 Raw issues from test runs
 =========================
@@ -80,7 +90,8 @@ Ecmascript tests
     test-bug-numconv-1e23: fail; 10 diff lines; known issue: corner case in floating point parse rounding
     test-bug-numconv-denorm-toprec: fail; 7 diff lines; known issue: in a denormal corner case toPrecision() can output a zero leading digit
     test-bug-tonumber-u0000: fail; 7 diff lines; known issue: '\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string
-    test-conv-number-tostring-tonumber-roundtrip: fail; 7 diff lines; known issue: rounding corner cases
+    test-bug-trycatch-many-constants: fail; 5 diff lines; known issue: out of regs for try-catch in Duktape 1.0
+    test-conv-number-tostring-tonumber-roundtrip: fail; 5 diff lines; known issue: rounding corner cases
     test-dev-bound-thread-start-func: fail; 13 diff lines; known issue: initial function of a new coroutine cannot be bound
     test-dev-func-cons-args: fail; 18 diff lines; known issue: corner cases for 'new Function()' when arguments and code are given as strings
     test-dev-labelled-break: fail; 21 diff lines; known issue: label attached to a plain block statement can cause an INVALID opcode error
