@@ -48,37 +48,57 @@ Release checklist
 
   - Release date is in place
 
-* Compilation tests: clean compile with common debug options
-  (DUK_OPT_DEBUG, DUK_OPT_DPRINT, DUK_OPT_SELF_TESTS, DUK_OPT_ASSERTIONS)
-  and with no debug options:
+* Compilation tests:
 
-  - **FIXME: incomplete list, automate compilation tests**
+  - Clean compile for command line tool with (a) no options and (b) common
+    debug options (DUK_OPT_DEBUG, DUK_OPT_DPRINT, DUK_OPT_SELF_TESTS,
+    DUK_OPT_ASSERTIONS)
 
-  - Linux x86-64 gcc
+  - Compile both from ``src`` and ``src-separate``.
 
-  - Linux x86-64 gcc + -m32
+  - Run ``mandel.js`` to test the the command line tool works.
 
-  - Linux x86-64 clang
+  - Platform / compiler combinations, **FIXME: incomplete, should be automated**
 
-  - Linux x86-64 clang + -m32
+    + Linux x86-64 gcc
 
-  - FreeBSD clang
+    + Linux x86-64 gcc + -m32
 
-  - FreeBSD clang + -m32
+    + Linux x86-64 clang
 
-  - Windows MinGW
+    + Linux x86-64 clang + -m32
 
-  - Windows MinGW-w64
+    + FreeBSD clang
 
-  - Windows MSVC (cl) x86
+    + FreeBSD clang + -m32
 
-  - Windows MSVC (cl) x64
+    + Windows MinGW
 
-  - Windows Cygwin 32-bit
+    + Windows MinGW-w64
 
-  - Windows Cygwin 64-bit
+    + Windows MSVC (cl) x86
 
-  - Linux MIPS gcc
+    + Windows MSVC (cl) x64
+
+    + Windows Cygwin 32-bit
+
+    + Windows Cygwin 64-bit
+
+    + Linux MIPS gcc
+
+    + Linux ARMEL gcc (little endian)
+
+    + Linux gcc on some mixed endian ARM platform
+
+    + Linux SH4 gcc
+
+* Compile command line tool as a Windows DLL, checks Windows symbol visibility
+  macros::
+
+    > cd dist
+    > cl /O2 /DDUK_OPT_DLL_BUILD /Isrc /LD src\duktape.c
+    > cl /O2 /DDUK_OPT_DLL_BUILD /Isrc examples\cmdline\duk_cmdline.c duktape.lib
+    > duk_cmdline.exe
 
 * Ecmascript testcases
 
