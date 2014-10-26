@@ -40,6 +40,9 @@ Portability and platforms
 * Clang 3.3 on FreeBSD 10: compilation may produce a warning "generic
   selections are a C11-specific feature".  The warning should be harmless.
 
+* Clang 3.3 on FreeBSD 10: harmless compilation warning for "duk_repl_isinf"
+  being unused.
+
 * On some GCC versions and compilation options you may get a warning
   "variable idx_func might be clobbered by longjmp or vfork [-Wclobbered]".
   This warning seems spurious and causes no known problems.
@@ -51,6 +54,9 @@ Portability and platforms
 * GCC ``-pedantic`` without -std=c99 causes the ``unsigned long long`` type
   to be used by Duktape, and an associated warning about the type.  This is
   harmless and most easily fixed by simply using ``-std=c99``.
+
+* MinGW compilation produces symbol visibility warnings when compiled Duktape
+  from ``src-separate``.
 
 Raw issues from test runs
 =========================
