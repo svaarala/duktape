@@ -54,6 +54,7 @@ rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
 mkdir $DIST/src
+mkdir $DIST/extras
 mkdir $DIST/polyfills
 #mkdir $DIST/doc
 mkdir $DIST/licenses
@@ -196,7 +197,7 @@ for i in \
 	cp polyfills/$i $DIST/polyfills/ || exit 1
 done
 
-
+cp examples/README.rst $DIST/examples/ || exit 1
 for i in \
 	README.rst \
 	duk_cmdline.c \
@@ -270,6 +271,9 @@ for i in \
 	; do
 	cp examples/sandbox/$i $DIST/examples/sandbox/ || exit 1
 done
+
+cp extras/README.rst $DIST/extras/ || exit
+# XXX: copy extras
 
 for i in \
 	Makefile.cmdline \
