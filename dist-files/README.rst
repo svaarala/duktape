@@ -14,17 +14,17 @@ reference counting and mark-and sweep garbage collector, object finalizers,
 co-operative threads a.k.a. coroutines, tail calls, built-in logging and
 module frameworks, and so on.
 
-You can browse Duktape programmer's API and other documentation at::
+You can browse Duktape programmer's API and other documentation at:
 
-  http://duktape.org/
+* http://duktape.org/
 
-In particular, you should read the getting started section::
+In particular, you should read the getting started section:
 
-  http://duktape.org/guide.html#gettingstarted
+* http://duktape.org/guide.html#gettingstarted
 
-Building and integrating Duktape into your project is very straightforward::
+Building and integrating Duktape into your project is very straightforward:
 
-  http://duktape.org/guide.html#compiling
+* http://duktape.org/guide.html#compiling
 
 See Makefile.hello for a concrete example::
 
@@ -50,18 +50,27 @@ To build an example command line tool, use the following::
   $ ./duk mandel.js
   [...]
 
-There are further examples in the ``examples/`` directory.  Although
-Duktape itself is widely portable, some of the examples are Linux only.
-For instance the ``eventloop`` example illustrates how ``setTimeout()``
-and other standard timer functions could be implemented on Unix/Linux.
+This distributable contains:
 
-The ``extras/`` directory provides utilities and modules which don't
-comfortably fit into the main Duktape library because of footprint or
-portability concerns.  Extras are maintained and bug fixed code, but
-don't have the same version guarantees as the main Duktape library.
+* ``src/``: main Duktape library in a "single file" format (duktape.c and
+  duktape.h)
 
-The ``polyfills/`` directory provides a few replacement suggestions for
-non-standard Javascript functions provided by other implementations.
+* ``src-separate/``: main Duktape library in multiple files format.
+
+* ``examples/``: further examples for using Duktape.  Although Duktape
+  itself is widely portable, some of the examples are Linux only.
+  For instance the ``eventloop`` example illustrates how ``setTimeout()``
+  and other standard timer functions could be implemented on Unix/Linux.
+
+* ``extras/``: utilities and modules which don't comfortably fit into the
+  main Duktape library because of footprint or portability concerns.
+  Extras are maintained and bug fixed code, but don't have the same version
+  guarantees as the main Duktape library.
+
+* ``polyfills/``: a few replacement suggestions for non-standard Javascript
+  functions provided by other implementations.
+
+* ``licenses/``: licensing information.
 
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
