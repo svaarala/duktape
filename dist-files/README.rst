@@ -55,6 +55,11 @@ Duktape itself is widely portable, some of the examples are Linux only.
 For instance the ``eventloop`` example illustrates how ``setTimeout()``
 and other standard timer functions could be implemented on Unix/Linux.
 
+The ``extras/`` directory provides utilities and modules which don't
+comfortably fit into the main Duktape library because of footprint or
+portability concerns.  Extras are maintained and bug fixed code, but
+don't have the same version guarantees as the main Duktape library.
+
 The ``polyfills/`` directory provides a few replacement suggestions for
 non-standard Javascript functions provided by other implementations.
 
