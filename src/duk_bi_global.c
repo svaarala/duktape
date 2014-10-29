@@ -1073,17 +1073,15 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		return 1;
 	}
 
-	/* Finish the wrapped module source. */
+	/* Finish the wrapped module source.  Force resolved module ID as the
+	 * fileName so it gets set for functions defined within a module.  This
+	 * also ensures loggers created within the module get the module ID as
+	 * their default logger name.
+	 */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
-	duk_eval(ctx);
-
-	/* Force 'fileName' property of the module function so that if the
-	 * module creates a logger, the logger name defaults to the module
-	 * name.
-	 */
-	duk_dup(ctx, 3);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
+	duk_dup(ctx, 3);  /* resolved module ID for fileName */
+	duk_eval_raw(ctx, NULL, 0, DUK_COMPILE_EVAL);
 
 	/* XXX: The module wrapper function is currently anonymous and is shown
 	 * in stack traces.  It would be nice to force it to match the module

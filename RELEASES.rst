@@ -615,6 +615,10 @@ Planned
 
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
+* Fix fileName for functions defined in a module loaded using require(),
+  previously fileName would always be duk_bi_global.c which is misleading
+  (see GH-58)
+
 1.2.0 (2015-XX-XX)
 ------------------
 
