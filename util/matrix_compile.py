@@ -26,7 +26,9 @@ assertopts = [
 
 featureopts = [
 	'',
-	'-DDUK_OPT_NO_PACKED_TVAL -DDUK_OPT_SELF_TESTS -DDUK_OPT_NO_MARK_AND_SWEEP'
+	'-DDUK_OPT_NO_PACKED_TVAL -DDUK_OPT_SELF_TESTS -DDUK_OPT_NO_MARK_AND_SWEEP',
+	'-DDUK_OPT_NO_PC2LINE'
+	# XXX: more feature combinations
 ]
 
 gccoptimizeopts = [
@@ -84,7 +86,7 @@ def check_unlink(filename):
 
 def main():
 	opts = gencommands([gccstdopts, gccdebugopts, gccwarnopts, gccoptimizeopts,
-	                    debugopts, assertopts])
+	                    debugopts, assertopts, featureopts])
 
 	f = open('/tmp/test.js', 'wb')
 	f.write('''\

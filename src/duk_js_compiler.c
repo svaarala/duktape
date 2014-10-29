@@ -1033,7 +1033,7 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 #endif
 
 	/* Limit checks for bytecode byte size and line number. */
-#if defined(DUK_USE_ESBC_LIMITS)
+#if defined(DUK_USE_PC2LINE) && defined(DUK_USE_ESBC_LIMITS)
 	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER ||
 	                 DUK_HBUFFER_GET_SIZE((duk_hbuffer *) h) > DUK_USE_ESBC_MAX_BYTES)) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
