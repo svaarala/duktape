@@ -608,6 +608,8 @@ Planned
 1.1.0 (2014-XX-XX)
 ------------------
 
+* Fix compile error for DUK_OPT_NO_PC2LINE
+
 1.2.0 (2015-XX-XX)
 ------------------
 
