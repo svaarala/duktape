@@ -516,6 +516,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_heaphdr);
 	DUK__DUMPSZ(duk_heaphdr_string);
 	DUK__DUMPSZ(duk_hstring);
+	DUK__DUMPSZ(duk_hstring_external);
 	DUK__DUMPSZ(duk_hobject);
 	DUK__DUMPSZ(duk_hcompiledfunction);
 	DUK__DUMPSZ(duk_hnativefunction);

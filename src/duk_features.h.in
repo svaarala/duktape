@@ -2513,6 +2513,21 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  External string data support
+ *
+ *  Allow duk_hstrings to store data also behind an external pointer (see
+ *  duk_hstring_external).  This increases code size slightly but is useful
+ *  in low memory environments where memory is more limited than flash.
+ */
+
+#undef DUK_USE_HSTRING_EXTDATA
+#undef DUK_USE_EXT_STR_CHECK
+#if defined(DUK_OPT_EXT_STR_CHECK)
+#define DUK_USE_HSTRING_EXTDATA
+#define DUK_USE_EXT_STR_CHECK(ptr,len) DUK_OPT_EXT_STR_CHECK((ptr), (len))
+#endif
+
+/*
  *  Lightweight functions
  */
 

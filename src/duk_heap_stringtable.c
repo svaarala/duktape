@@ -21,7 +21,8 @@ DUK_LOCAL
 duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
                                      duk_uint8_t *str,
                                      duk_uint32_t blen,
-                                     duk_uint32_t strhash) {
+                                     duk_uint32_t strhash,
+                                     const duk_uint8_t *extdata) {
 	duk_hstring *res = NULL;
 	duk_uint8_t *data;
 	duk_size_t alloc_size;
@@ -36,19 +37,36 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	}
 #endif
 
-	/* NUL terminate for convenient C access */
-
-	alloc_size = (duk_size_t) (sizeof(duk_hstring) + blen + 1);
-	res = (duk_hstring *) DUK_ALLOC(heap, alloc_size);
-	if (!res) {
-		goto alloc_error;
-	}
-
-	DUK_MEMZERO(res, sizeof(duk_hstring));
+	if (extdata) {
+		alloc_size = (duk_size_t) sizeof(duk_hstring_external);
+		res = (duk_hstring *) DUK_ALLOC(heap, alloc_size);
+		if (!res) {
+			goto alloc_error;
+		}
+		DUK_MEMZERO(res, sizeof(duk_hstring_external));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
-	DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
+		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
-	DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, 0);
+		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, DUK_HSTRING_FLAG_EXTDATA);
+
+		((duk_hstring_external *) res)->extdata = extdata;
+	} else {
+		/* NUL terminate for convenient C access */
+		alloc_size = (duk_size_t) (sizeof(duk_hstring) + blen + 1);
+		res = (duk_hstring *) DUK_ALLOC(heap, alloc_size);
+		if (!res) {
+			goto alloc_error;
+		}
+		DUK_MEMZERO(res, sizeof(duk_hstring));
+#ifdef DUK_USE_EXPLICIT_NULL_INIT
+		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
+#endif
+		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, 0);
+
+		data = (duk_uint8_t *) (res + 1);
+		DUK_MEMCPY(data, str, blen);
+		data[blen] = (duk_uint8_t) 0;
+	}
 
 	if (duk_js_to_arrayindex_raw_string(str, blen, &dummy)) {
 		DUK_HSTRING_SET_ARRIDX(res);
@@ -71,15 +89,12 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	DUK_ASSERT(clen <= blen);
 	DUK_HSTRING_SET_CHARLEN(res, clen);
 
-	data = (duk_uint8_t *) (res + 1);
-	DUK_MEMCPY(data, str, blen);
-	data[blen] = (duk_uint8_t) 0;
-
-	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld",
+	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld, has_extdata=%ld",
 	                     (unsigned long) DUK_HSTRING_GET_HASH(res),
 	                     (long) DUK_HSTRING_GET_BYTELEN(res),
 	                     (long) DUK_HSTRING_GET_CHARLEN(res),
-	                     (long) DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0));
+	                     (long) DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0,
+	                     (long) DUK_HSTRING_HAS_EXTDATA(res) ? 1 : 0));
 
 	return res;
 
@@ -451,6 +466,7 @@ DUK_LOCAL duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_u
 
 DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 	duk_hstring *res;
+	const duk_uint8_t *extdata;
 
 	if (duk__recheck_strtab_size(heap, heap->st_used + 1)) {
 		return NULL;
@@ -473,7 +489,12 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint
 	}
 #endif
 
-	res = duk__alloc_init_hstring(heap, str, blen, strhash);
+#if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXT_STR_CHECK)
+	extdata = (const duk_uint8_t *) DUK_USE_EXT_STR_CHECK((void *) str, (duk_size_t) blen);
+#else
+	extdata = (const duk_uint8_t *) NULL;
+#endif
+	res = duk__alloc_init_hstring(heap, str, blen, strhash, extdata);
 	if (!res) {
 		return NULL;
 	}
