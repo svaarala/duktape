@@ -58,6 +58,10 @@ and other standard timer functions could be implemented on Unix/Linux.
 The ``polyfills/`` directory provides a few replacement suggestions for
 non-standard Javascript functions provided by other implementations.
 
+You can find release notes at:
+
+* https://github.com/svaarala/duktape/blob/master/RELEASES.rst
+
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 

@@ -291,7 +291,8 @@ cat dist-files/README.rst | sed \
 	> $DIST/README.rst
 cp LICENSE.txt $DIST/LICENSE.txt  # not strict RST so keep .txt suffix
 cp AUTHORS.rst $DIST/AUTHORS.rst
-cp RELEASES.rst $DIST/RELEASES.rst
+# RELEASES.rst is only updated in master.  It's not included in the dist to
+# make maintenance fixes easier to make.
 
 for i in \
 	murmurhash2.txt \
