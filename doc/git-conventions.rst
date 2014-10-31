@@ -122,6 +122,24 @@ Branches should be merged with ``--no-ff`` to avoid fast forward merges::
   $ git merge --no-ff frob-xyz-tweaks
   $ git branch -d frob-xyz-tweaks
 
+Making fixes to maintenance branches
+====================================
+
+* Make fix to master first through a fix branch.  This includes code changes,
+  testcase changes, release note update.
+
+* Check out maintenance branch (e.g. ``v1.0-maintenance``), and git cherry pick
+  fix commits from master.  Cherry pick code changes and testcase changes where
+  appropriate (to allow the fix to be tested).  **Don't** update release note
+  in the branch: release notes are only kept up-to-date in master.
+
+  If a lot of commits need to be cherry picked, create a branch and merge to
+  maintenance branch.
+
+* Git cherry picking:
+
+  - http://sleeplessgeek.blogspot.fi/2011/03/using-git-cherry-pick.html
+
 Commit messages
 ===============
 
