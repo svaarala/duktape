@@ -289,7 +289,7 @@ Checklist for ordinary releases
   - It should point to the next expected release so that ``make issuecount``
     and ``make issues`` provide useful output
 
-Checklist for maintenance branches
+Checklist for maintenance releases
 ==================================
 
 * Make fixes to master and cherry pick fixes to maintenance branch (either
