@@ -72,6 +72,10 @@ This distributable contains:
 
 * ``licenses/``: licensing information.
 
+You can find release notes at:
+
+* https://github.com/svaarala/duktape/blob/master/RELEASES.rst
+
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 
