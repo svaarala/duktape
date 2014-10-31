@@ -203,10 +203,14 @@ releases:
     - ""
 - !ditz.rubyforge.org,2008-03-06/release 
   name: v1.0.1
-  status: :unreleased
-  release_time: 
+  status: :released
+  release_time: 2014-10-31 13:24:59.963257 Z
   log_events: 
   - - 2014-10-29 13:35:33.928275 Z
     - Sami Vaarala <sami.vaarala@iki.fi>
     - created
+    - ""
+  - - 2014-10-31 13:24:59.963266 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - released
     - ""
