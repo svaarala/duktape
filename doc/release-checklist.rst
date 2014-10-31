@@ -300,6 +300,8 @@ Checklist for maintenance branches
 
 * Bump DUK_VERSION in maintenance branch.
 
+* Review diff between previous release and new patch release.
+
 * Build release, push it to ``duktape-releases`` in binary and unpacked form.
 
 * Build website from master.  Deploy only ``download.html``.
