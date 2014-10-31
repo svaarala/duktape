@@ -302,6 +302,9 @@ Checklist for maintenance branches
 
 * Review diff between previous release and new patch release.
 
+* Tag release, description "maintenance release" should be good enough for
+  most patch releases.
+
 * Build release, push it to ``duktape-releases`` in binary and unpacked form.
 
 * Build website from master.  Deploy only ``download.html``.
