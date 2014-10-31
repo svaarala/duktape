@@ -2,6 +2,9 @@
 Release checklist
 =================
 
+Checklist for ordinary releases
+===============================
+
 * Git branch naming note
 
   - ``vN.N.N-release-prep``: use this naming for bumping version number, etc.
@@ -285,3 +288,22 @@ Release checklist
 
   - It should point to the next expected release so that ``make issuecount``
     and ``make issues`` provide useful output
+
+Checklist for maintenance branches
+==================================
+
+* Make fixes to master and cherry pick fixes to maintenance branch (either
+  directly or through a fix branch).  Test fixes in maintenance branch too.
+
+* Update release notes and website in master.  **Don't** update these in
+  the maintenance branch.
+
+* Bump DUK_VERSION in maintenance branch.
+
+* Build release, push it to ``duktape-releases`` in binary and unpacked form.
+
+* Build website from master.  Deploy only ``download.html``.
+
+  This is rather hacky: we need the release notes so the build must be made
+  from master, but master may also contain website changes for the next
+  release.
