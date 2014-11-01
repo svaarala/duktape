@@ -821,7 +821,8 @@ CCOPTS_AJDUK += -DDUK_OPT_OBJSIZES16
 CCOPTS_AJDUK += -DDUK_OPT_HEAPPTR16
 CCOPTS_AJDUK += '-DDUK_OPT_HEAPPTR_ENC16(p)=ajsheap_enc16(p)'
 CCOPTS_AJDUK += '-DDUK_OPT_HEAPPTR_DEC16(x)=ajsheap_dec16(x)'
-CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *p); extern void *ajsheap_dec16(duk_uint16_t x);'
+CCOPTS_AJDUK += '-DDUK_OPT_EXT_STR_CHECK(ptr,len)=ajsheap_ext_str_check((ptr),(len))'
+CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *p); extern void *ajsheap_dec16(duk_uint16_t x); extern const void *ajsheap_ext_str_check(const void *ptr, duk_size_t len);'
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 

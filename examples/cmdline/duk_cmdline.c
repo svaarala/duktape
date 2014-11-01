@@ -431,7 +431,7 @@ static const AJS_HeapConfig ajsheap_config[] = {
 
 uint8_t *ajsheap_ram = NULL;
 
-/* Pointer compression functions.
+/* Example pointer compression functions.
  * 'base' is chosen so that no non-NULL pointer results in a zero result
  * which is reserved for NULL pointers.
  */
@@ -467,6 +467,84 @@ void *ajsheap_dec16(duk_uint16_t x) {
 	printf("ajsheap_dec16: %u -> %p\n", (unsigned int) x, ret);
 #endif
 	return ret;
+}
+
+/* Simplified example of an external strings strategy where incoming strings
+ * are writted sequentially into a fixed flash memory area which is memory
+ * mapped.  The example first scans if the string is already in the flash
+ * (which may happen if the same string is interned multiple times), then
+ * adds it to flash if there is space.
+ *
+ * This example is too slow to be used in a real world application: there
+ * should be e.g. a hash table to quickly check for strings that are already
+ * present in the string data (similarly to how string interning works in
+ * Duktape itself).
+ */
+static uint8_t ajsheap_strdata[65536];
+static size_t ajsheap_strdata_used = 0;
+
+const void *ajsheap_ext_str_check(const void *ptr, duk_size_t len) {
+	uint8_t *p, *p_end;
+	uint8_t initial;
+	uint8_t *ret;
+	size_t left;
+
+	if (len <= 3) {
+		/* It's not worth it to make very small strings external, as
+		 * they would take the same space anyway.  Also avoids zero
+		 * length degenerate case.
+		 */
+	}
+
+	/*
+	 *  Check if we already have the string.  Be careful to compare for
+	 *  NUL terminator too, it is NOT present in 'ptr'.  This algorithm
+	 *  is too simplistic and way too slow for actual use.
+	 */
+
+	initial = ((const uint8_t *) ptr)[0];
+	for (p = ajsheap_strdata, p_end = p + ajsheap_strdata_used; p != p_end; p++) {
+		if (*p != initial) {
+			continue;
+		}
+		left = (size_t) (p_end - p);
+		if (left >= len + 1 &&
+		    memcmp(p, ptr, len) == 0 &&
+		    p[len] == 0) {
+			ret = p;
+#if 0
+			printf("ajsheap_ext_str_check: ptr=%p, len=%ld -> existing %p (used=%ld)\n", (void *) ptr, (long) len, (void *) ret, (long) ajsheap_strdata_used);
+#endif
+			return ret;
+		}
+	}
+
+	/*
+	 *  Not present yet, check if we have space.  Again, be careful to
+	 *  ensure there is space for a NUL following the input data.
+	 */
+
+	if (ajsheap_strdata_used + len + 1 > sizeof(ajsheap_strdata)) {
+#if 0
+		printf("ajsheap_ext_str_check: ptr=%p, len=%ld -> no space (used=%ld)\n", (void *) ptr, (long) len, (long) ajsheap_strdata_used);
+#endif
+		return NULL;
+	}
+
+	/*
+	 *  There is space, add the string to our collection, being careful
+	 *  to append the NUL.
+	 */
+
+	ret = ajsheap_strdata + ajsheap_strdata_used;
+	memcpy(ret, ptr, len);
+	ret[len] = (uint8_t) 0;
+	ajsheap_strdata_used += len + 1;
+
+#if 0
+	printf("ajsheap_ext_str_check: ptr=%p, len=%ld -> %p (used=%ld)\n", (void *) ptr, (long) len, (void *) ret, (long) ajsheap_strdata_used);
+#endif
+	return (const void *) ret;
 }
 
 static void ajsheap_init(void) {
