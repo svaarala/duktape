@@ -137,6 +137,16 @@ implementing sandboxing, etc.)
 Memory management options
 =========================
 
+DUK_OPT_EXTERNAL_STRINGS
+------------------------
+
+Enable support for external strings.  An external string requires a Duktape
+heap allocation to store a minimal string header, with the actual string
+data being held behind a pointer (similarly to how dynamic buffers work).
+
+This is needed to use ``DUK_OPT_EXTSTR_INTERN_CHECK`` and/or
+``DUK_OPT_EXTSTR_FREE``.
+
 DUK_OPT_NO_PACKED_TVAL
 ----------------------
 
@@ -306,6 +316,64 @@ value and provide the macros for encoding and decoding a pointer:
 .. note:: This feature option is currently unimplemented, i.e. Duktape won't compress
           any function pointers at the moment.  It might not be necessary to support a
           NULL function pointer.
+
+DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)
+====================================
+
+Provide a hook for checking if data for a certain string can be used from
+external memory (outside of Duktape heap, e.g. memory mapped flash).
+The hook is called during string interning with the following semantics:
+
+* The string data with no NUL termination resides at ``ptr`` and has ``len``
+  bytes.
+
+* If the hook returns NULL, Duktape interns the string normally, i.e.
+  string data is allocated from Duktape heap.
+
+* Otherwise the hook return value must point to a memory area which contains
+  ``len`` bytes from ``ptr`` followed by a NUL byte which is **not present**
+  in the input data.  Data behind the returned pointer may not change after
+  the hook returns.
+
+Notes:
+
+* Also enable ``DUK_OPT_EXTERNAL_STRINGS`` to use this feature.
+
+* The hook may be called several times for the same input string.  This
+  happens when a string is interned, garbage collected, and then interned
+  again.
+
+* The ``DUK_OPT_EXTSTR_FREE()`` hook allows application code to detect when
+  an external string is about to be freed.
+
+* In most cases the hook should reject strings whose ``len`` is less than 4
+  because there is no RAM advantage in moving so short strings into external
+  memory.  The ordinary ``duk_hstring`` header followed by the data (and a
+  NUL byte) has the same size as ``duk_hstring_external`` header which hosts
+  a pointer instead of string data.
+
+See ``low-memory.rst`` for more discussion how to use this feature option
+in practice.
+
+DUK_OPT_EXTSTR_FREE(ptr)
+========================
+
+Optional counterpart to ``DUK_OPT_EXTSTR_INTERN_CHECK``, with the following
+semantics:
+
+* Also enable ``DUK_OPT_EXTERNAL_STRINGS`` to use this feature.
+
+* The macro is invoked when an external string is about to be freed.
+
+* The argument ``ptr`` is a ``void *`` and points to the external string data.
+  Concretely, it is the (non-NULL) value returned by
+  ``DUK_OPT_EXTSTR_INTERN_CHECK``.
+
+.. note:: Right now there is no API to push external strings; external strings
+          come into being as a resul of DUK_OPT_EXTSTR_INTERN_CHECK() only.
+          If/when this is changed, this hook will get called for every string,
+          even if pushed by the user using an API call; this may need to be
+          rethought at that time.
 
 Ecmascript feature options
 ==========================

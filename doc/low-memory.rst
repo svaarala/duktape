@@ -161,8 +161,17 @@ system RAM):
 
   - `-fpack-struct=1` or `-fpack-struct=2`
 
-Notes on potential low memory measures
-======================================
+* Use "external" strings to allocate most strings from flash (there are
+  multiple strategies for this, see separate section):
+
+  - ``DUK_OPT_EXTERNAL_STRINGS``
+
+  - ``DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)``
+
+  - ``DUK_OPT_EXTSTR_FREE(ptr)``
+
+Notes on low memory measures
+============================
 
 Pointer compression
 -------------------
@@ -181,6 +190,45 @@ Can be applied throughout (where it matters) for three pointer types:
 Pointer compression can be quite slow because often memory mappings are not
 linear, so the required operations are not trivial.  NULL also needs specific
 handling.
+
+External string strategies (DUK_OPT_EXTSTR_INTERN_CHECK)
+--------------------------------------------------------
+
+The feature can be used in two basic ways:
+
+* You can anticipate a set of common strings, perhaps extracted by parsing
+  source code, and build them statically into your program.  The strings will
+  then be available in the "text" section of your program.  This works well
+  if the set of common strings can be estimated well, e.g. if the program
+  code you will run is mostly known in advance.
+
+* You can write strings to memory mapped flash when the hook is called.
+  This is less portable but can be effective when the program you will run
+  is not known in advance.
+
+Note that:
+
+* Using an external string pointer for short strings (e.g. 3 chars or less)
+  is counterproductive because the external pointer takes more room than the
+  character data.
+
+The Duktape built-in strings are available from build metadata:
+
+* ``dist/duk_build_meta.json``, the ``builtin_strings_base64`` contains
+  the byte exact strings used, encoded with base-64.
+
+Strings used by application C and Ecmascript code can be extracted with
+various methods.  The Duktape main repo contains an example script for
+scraping strings from C and Ecmascript code using regexps:
+
+* ``util/scan_strings.py``
+
+There are concrete examples for some external string strategies in:
+
+* ``dist/examples/cmdline/duk_cmdline_ajduk.c``
+
+Summary of potential measures
+=============================
 
 Heap headers
 ------------
