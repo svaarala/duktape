@@ -1927,7 +1927,7 @@ DUK_LOCAL void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t
 		src_data = (const duk_uint8_t *) duk_to_lstring(ctx, index, &src_size);
 	}
 
-	dst_data = duk_push_buffer(ctx, src_size, buf_dynamic);
+	dst_data = (duk_uint8_t *) duk_push_buffer(ctx, src_size, buf_dynamic);
 	if (DUK_LIKELY(src_size > 0)) {
 		/* When src_size == 0, src_data may be NULL (if source
 		 * buffer is dynamic), and dst_data may be NULL (if
