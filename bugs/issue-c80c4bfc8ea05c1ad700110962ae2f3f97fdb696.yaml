@@ -3,7 +3,7 @@ title: document iOS compatibility
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -35,4 +35,8 @@ log_events:
 - - 2014-10-13 11:52:49.188806 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v1.0
+  - ""
+- - 2014-11-02 00:09:26.144497 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

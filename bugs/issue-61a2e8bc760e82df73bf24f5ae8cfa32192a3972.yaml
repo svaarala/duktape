@@ -3,7 +3,7 @@ title: table driven base64 decoder and encoder
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -20,3 +20,7 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - See https://github.com/svaarala/duktape/pull/30
+- - 2014-11-02 00:25:05.350665 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
+  - ""

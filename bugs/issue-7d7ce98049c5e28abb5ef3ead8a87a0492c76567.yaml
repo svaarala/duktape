@@ -3,7 +3,7 @@ title: first set of automatic tests on multiple platforms
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v2.0
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-09-09 11:31:09.741005 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-02 00:14:47.664685 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v2.0 from v1.1
   - ""

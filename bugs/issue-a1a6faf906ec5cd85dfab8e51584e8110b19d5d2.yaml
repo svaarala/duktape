@@ -3,7 +3,7 @@ title: add proper special behavior for virtual buffer index properties in define
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v2.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2014-08-13 12:43:35.975183 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-02 00:14:49.116042 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v2.0 from v1.1
   - ""

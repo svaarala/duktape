@@ -23,7 +23,7 @@ desc: |-
   rewrite.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -60,3 +60,7 @@ log_events:
     Further, if it were possible to run pending finalizers one at a time, it
     would be even easier to control the maximum blocking time of the application's
     main thread.
+- - 2014-11-02 00:19:59.194556 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
+  - ""

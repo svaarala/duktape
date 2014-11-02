@@ -18,7 +18,7 @@ desc: |-
   Both yes/no flags are needed if Duktape defaults based on the environment.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -30,4 +30,8 @@ log_events:
 - - 2014-08-22 08:41:07.258009 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-11-02 00:13:50.320177 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
