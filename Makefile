@@ -559,7 +559,7 @@ emscriptenduktest: emscripten dist
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
 EMCCOPTS_DUKWEB_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
-EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS '-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}' 
+EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_OPT_DEEP_C_STACK '-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}' 
 
 # FIXME: need to be able to declare dukweb_panic_handler to avoid warnings
 dukweb.js: emscripten dist

@@ -623,6 +623,9 @@ Planned
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
 
+* Use deep C stack for dukweb.js to remove some compiler recursion limit
+  limitations (see GH-67)
+
 1.2.0 (2015-XX-XX)
 ------------------
 
