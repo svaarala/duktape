@@ -632,6 +632,14 @@ Planned
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
   limitations (see GH-67)
 
+* Add an example allocator with alloc/realloc/free logging, which is
+  useful when optimizing e.g. pool sizes for low memory targets
+
+* Add an example allocator with memory wiping, red zones for invalid
+  writes, and forced address change on realloc, which can be used for
+  detecting memory safety issues on platforms where valgrind is not
+  available
+
 1.2.0 (2015-XX-XX)
 ------------------
 
