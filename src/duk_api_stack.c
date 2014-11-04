@@ -2338,7 +2338,49 @@ DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 
 /* XXX: make macro in API */
 DUK_EXTERNAL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index) {
+	DUK_ASSERT(ctx != NULL);
 	return !duk_is_object(ctx, index);
+}
+
+DUK_EXTERNAL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h;
+	duk_uint_t sanity;
+
+	DUK_ASSERT(ctx != NULL);
+	h = duk_get_hobject(ctx, index);
+
+	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
+	do {
+		if (!h) {
+			return DUK_ERR_NONE;
+		}
+		if (h == thr->builtins[DUK_BIDX_EVAL_ERROR_PROTOTYPE]) {
+			return DUK_ERR_EVAL_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_RANGE_ERROR_PROTOTYPE]) {
+			return DUK_ERR_RANGE_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_REFERENCE_ERROR_PROTOTYPE]) {
+			return DUK_ERR_REFERENCE_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_SYNTAX_ERROR_PROTOTYPE]) {
+			return DUK_ERR_SYNTAX_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_TYPE_ERROR_PROTOTYPE]) {
+			return DUK_ERR_TYPE_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_URI_ERROR_PROTOTYPE]) {
+			return DUK_ERR_URI_ERROR;
+		}
+		if (h == thr->builtins[DUK_BIDX_ERROR_PROTOTYPE]) {
+			return DUK_ERR_ERROR;
+		}
+
+		h = DUK_HOBJECT_GET_PROTOTYPE(h);
+	} while (--sanity > 0);
+
+	return DUK_ERR_NONE;
 }
 
 /*

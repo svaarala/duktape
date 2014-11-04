@@ -153,6 +153,7 @@ struct duk_number_list_entry {
 #define DUK_STRING_PUSH_SAFE              (1 << 0)    /* no error if file does not exist */
 
 /* Duktape specific error codes */
+#define DUK_ERR_NONE                      0    /* no error (e.g. from duk_get_error_code()) */
 #define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */
 #define DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */
 #define DUK_ERR_INTERNAL_ERROR            52   /* InternalError */
@@ -428,6 +429,10 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index)
 	                                    DUK_TYPE_MASK_OBJECT | \
 	                                    DUK_TYPE_MASK_BUFFER | \
 	                                    DUK_TYPE_MASK_POINTER)
+
+DUK_EXTERNAL_DECL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index);
+#define duk_is_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) != 0)
 
 /*
  *  Get operations: no coercion, returns default value for invalid
