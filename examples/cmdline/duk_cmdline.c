@@ -33,7 +33,12 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
-
+#ifdef DUK_CMDLINE_ALLOC_LOGGING
+#include "duk_alloc_logging.h"
+#endif
+#ifdef DUK_CMDLINE_ALLOC_TORTURE
+#include "duk_alloc_torture.h"
+#endif
 #include "duktape.h"
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
@@ -386,6 +391,8 @@ int main(int argc, char *argv[]) {
 	int have_eval = 0;
 	int interactive = 0;
 	int memlimit_high = 1;
+	int alloc_logging = 0;
+	int alloc_torture = 0;
 	int i;
 
 	/*
@@ -408,7 +415,7 @@ int main(int argc, char *argv[]) {
 		if (!arg) {
 			goto usage;
 		}
-		if (strcmp(arg, "-r") == 0) {
+		if (strcmp(arg, "--restrict-memory") == 0) {
 			memlimit_high = 0;
 		} else if (strcmp(arg, "-i") == 0) {
 			interactive = 1;
@@ -418,6 +425,10 @@ int main(int argc, char *argv[]) {
 				goto usage;
 			}
 			i++;  /* skip code */
+		} else if (strcmp(arg, "--alloc-logging") == 0) {
+			alloc_logging = 1;
+		} else if (strcmp(arg, "--alloc-torture") == 0) {
+			alloc_torture = 1;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -435,14 +446,44 @@ int main(int argc, char *argv[]) {
 #ifndef NO_RLIMIT
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
 #else
-	(void) memlimit_high;  /* suppress warning */
+	if (memlimit_high == 0) {
+		fprintf(stderr, "Warning: option --restrict-memory ignored, no rlimit support\n");
+		fflush(stderr);
+	}
 #endif
 
 	/*
 	 *  Create context and execute any argument file(s)
 	 */
 
-	ctx = duk_create_heap_default();
+	ctx = NULL;
+	if (!ctx && alloc_logging) {
+#ifdef DUK_CMDLINE_ALLOC_LOGGING
+		ctx = duk_create_heap(duk_alloc_logging,
+		                      duk_realloc_logging,
+		                      duk_free_logging,
+		                      NULL,
+		                      NULL);
+#else
+		fprintf(stderr, "Warning: option --alloc-logging ignored, no logging allocator support\n");
+		fflush(stderr);
+#endif
+	}
+	if (!ctx && alloc_torture) {
+#ifdef DUK_CMDLINE_ALLOC_TORTURE
+		ctx = duk_create_heap(duk_alloc_torture,
+		                      duk_realloc_torture,
+		                      duk_free_torture,
+		                      NULL,
+		                      NULL);
+#else
+		fprintf(stderr, "Warning: option --alloc-torture ignored, no torture allocator support\n");
+		fflush(stderr);
+#endif
+	}
+	if (!ctx) {
+		ctx = duk_create_heap_default();
+	}
 
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
@@ -502,16 +543,13 @@ int main(int argc, char *argv[]) {
 	 */
 
  usage:
-	fprintf(stderr, "Usage: duk [-i] [-r] [<filenames>]\n"
+	fprintf(stderr, "Usage: duk [options] [<filenames>]\n"
 	                "\n"
-	                "   -i       enter interactive mode after executing argument file(s) / eval code\n"
-	                "   -e CODE  evaluate code\n"
-	                "   -r       use lower memory limit (used by test runner)"
-#ifdef NO_RLIMIT
-	                " (disabled)\n"
-#else
-	                "\n"
-#endif
+	                "   -i                 enter interactive mode after executing argument file(s) / eval code\n"
+	                "   -e CODE            evaluate code\n"
+	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
+	                "   --alloc-logging    use logging allocator (writes to /tmp)\n"
+	                "   --alloc-torture    use torture allocator\n"
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);
