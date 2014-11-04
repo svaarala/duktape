@@ -54,6 +54,9 @@ static void *sandbox_alloc(void *udata, duk_size_t size) {
 	}
 
 	hdr = (alloc_hdr *) malloc(size + sizeof(alloc_hdr));
+	if (!hdr) {
+		return NULL;
+	}
 	hdr->u.sz = size;
 	total_allocated += size;
 	sandbox_dump_memstate();
@@ -112,6 +115,9 @@ static void *sandbox_realloc(void *udata, void *ptr, duk_size_t size) {
 			}
 
 			hdr = (alloc_hdr *) malloc(size + sizeof(alloc_hdr));
+			if (!hdr) {
+				return NULL;
+			}
 			hdr->u.sz = size;
 			total_allocated += size;
 			sandbox_dump_memstate();
