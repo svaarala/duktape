@@ -54,6 +54,7 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <h2>Error codes</h2>
 <pre class="c-code">
 /* Internal error codes */
+#define DUK_ERR_NONE                 0    /* no error (e.g. from duk_get_error_code()) */
 #define DUK_ERR_UNIMPLEMENTED_ERROR  50   /* UnimplementedError */
 #define DUK_ERR_UNSUPPORTED_ERROR    51   /* UnsupportedError */
 #define DUK_ERR_INTERNAL_ERROR       52   /* InternalError */
