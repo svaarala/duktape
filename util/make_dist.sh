@@ -67,6 +67,8 @@ mkdir $DIST/examples/guide
 mkdir $DIST/examples/coffee
 mkdir $DIST/examples/jxpretty
 mkdir $DIST/examples/sandbox
+mkdir $DIST/examples/alloc-logging
+mkdir $DIST/examples/alloc-torture
 
 # Copy most files directly
 
@@ -270,6 +272,23 @@ for i in \
 	sandbox.c \
 	; do
 	cp examples/sandbox/$i $DIST/examples/sandbox/ || exit 1
+done
+
+for i in \
+	README.rst \
+	duk_alloc_logging.c \
+	duk_alloc_logging.h \
+	log2gnuplot.py \
+	; do
+	cp examples/alloc-logging/$i $DIST/examples/alloc-logging/ || exit 1
+done
+
+for i in \
+	README.rst \
+	duk_alloc_torture.c \
+	duk_alloc_torture.h \
+	; do
+	cp examples/alloc-torture/$i $DIST/examples/alloc-torture/ || exit 1
 done
 
 cp extras/README.rst $DIST/extras/ || exit
