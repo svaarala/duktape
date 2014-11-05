@@ -13,6 +13,11 @@
 
 #include "duk_internal.h"
 
+/* Awkward inclusion condition: drop out of compilation if not needed by any
+ * call site: object hash part or probing stringtable.
+ */
+#if defined(DUK_USE_HOBJECT_HASH_PART) || defined(DUK_USE_STRTAB_PROBE)
+
 /* hash size ratio goal, must match genhashsizes.py */
 #define DUK__HASH_SIZE_RATIO   1177  /* floor(1.15 * (1 << 10)) */
 
@@ -68,3 +73,5 @@ DUK_INTERNAL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 	}
 	return 0;
 }
+
+#endif  /* DUK_USE_HOBJECT_HASH_PART || DUK_USE_STRTAB_PROBE */

@@ -4,9 +4,11 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_STRTAB_PROBE)
 #define DUK__HASH_INITIAL(hash,h_size)        DUK_STRTAB_HASH_INITIAL((hash),(h_size))
 #define DUK__HASH_PROBE_STEP(hash)            DUK_STRTAB_HASH_PROBE_STEP((hash))
 #define DUK__DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
+#endif
 
 /*
  *  Create a hstring and insert into the heap.  The created object
@@ -104,10 +106,344 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 }
 
 /*
- *  Count actually used (non-NULL, non-DELETED) entries
+ *  String table algorithm: fixed size string table with array chaining
+ *
+ *  The top level string table has a fixed size, with each slot holding
+ *  either NULL, string pointer, or pointer to a separately allocated
+ *  string pointer list.
+ *
+ *  This is good for low memory environments using a pool allocator: the
+ *  top level allocation has a fixed size and the pointer lists have quite
+ *  small allocation size, which further matches the typical pool sizes
+ *  needed by objects, strings, property tables, etc.
  */
 
-DUK_LOCAL duk_int_t duk__count_used(duk_heap *heap) {
+#if defined(DUK_USE_STRTAB_CHAIN)
+
+#if defined(DUK_USE_HEAPPTR16)
+DUK_LOCAL duk_bool_t duk__insert_hstring_chain(duk_heap *heap, duk_hstring *h) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_uint16_t *lst;
+	duk_uint16_t *new_lst;
+	duk_size_t i, n;
+	duk_uint16_t null16 = heap->heapptr_null16;
+	duk_uint16_t h16 = DUK_USE_HEAPPTR_ENC16((void *) h);
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(h != NULL);
+
+	slotidx = DUK_HSTRING_GET_HASH(h) % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		if (e->u.str16 == null16) {
+			e->u.str16 = h16;
+		} else {
+			/* Now two entries in the same slot, alloc list */
+			lst = (duk_uint16_t *) DUK_ALLOC(heap, sizeof(duk_uint16_t) * 2);
+			if (lst == NULL) {
+				return 1;  /* fail */
+			}
+			lst[0] = e->u.str16;
+			lst[1] = h16;
+			e->u.strlist16 = DUK_USE_HEAPPTR_ENC16((void *) lst);
+			e->listlen = 2;
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist16 != null16);
+		lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+		DUK_ASSERT(lst != NULL);
+		for (i = 0, n = e->listlen; i < n; i++) {
+			if (lst[i] == null16) {
+				lst[i] = h16;
+				return 0;
+			}
+		}
+
+		if (e->listlen + 1 == 0) {
+			/* Overflow, relevant mainly when listlen is 16 bits. */
+			return 1;  /* fail */
+		}
+
+		new_lst = (duk_uint16_t *) DUK_REALLOC(heap, lst, sizeof(duk_uint16_t) * (e->listlen + 1));
+		if (new_lst == NULL) {
+			return 1;  /* fail */
+		}
+		new_lst[e->listlen++] = h16;
+		e->u.strlist16 = DUK_USE_HEAPPTR_ENC16((void *) new_lst);
+	}
+	return 0;
+}
+#else  /* DUK_USE_HEAPPTR16 */
+DUK_LOCAL duk_bool_t duk__insert_hstring_chain(duk_heap *heap, duk_hstring *h) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_hstring **lst;
+	duk_hstring **new_lst;
+	duk_size_t i, n;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(h != NULL);
+
+	slotidx = DUK_HSTRING_GET_HASH(h) % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		if (e->u.str == NULL) {
+			e->u.str = h;
+		} else {
+			/* Now two entries in the same slot, alloc list */
+			lst = (duk_hstring **) DUK_ALLOC(heap, sizeof(duk_hstring *) * 2);
+			if (lst == NULL) {
+				return 1;  /* fail */
+			}
+			lst[0] = e->u.str;
+			lst[1] = h;
+			e->u.strlist = lst;
+			e->listlen = 2;
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist != NULL);
+		lst = e->u.strlist;
+		for (i = 0, n = e->listlen; i < n; i++) {
+			if (lst[i] == NULL) {
+				lst[i] = h;
+				return 0;
+			}
+		}
+
+		if (e->listlen + 1 == 0) {
+			/* Overflow, relevant mainly when listlen is 16 bits. */
+			return 1;  /* fail */
+		}
+
+		new_lst = (duk_hstring **) DUK_REALLOC(heap, e->u.strlist, sizeof(duk_hstring *) * (e->listlen + 1));
+		if (new_lst == NULL) {
+			return 1;  /* fail */
+		}
+		new_lst[e->listlen++] = h;
+		e->u.strlist = new_lst;
+	}
+	return 0;
+}
+#endif  /* DUK_USE_HEAPPTR16 */
+
+#if defined(DUK_USE_HEAPPTR16)
+DUK_LOCAL duk_hstring *duk__find_matching_string_chain(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_uint16_t *lst;
+	duk_size_t i, n;
+	duk_uint16_t null16 = heap->heapptr_null16;
+
+	DUK_ASSERT(heap != NULL);
+
+	slotidx = strhash % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		if (e->u.str16 != null16) {
+			duk_hstring *h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(e->u.str16);
+			DUK_ASSERT(h != NULL);
+			if (DUK_HSTRING_GET_BYTELEN(h) == blen &&
+			    DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(h), blen) == 0) {
+				return h;
+			}
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist16 != null16);
+		lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+		DUK_ASSERT(lst != NULL);
+		for (i = 0, n = e->listlen; i < n; i++) {
+			if (lst[i] != null16) {
+				duk_hstring *h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(lst[i]);
+				DUK_ASSERT(h != NULL);
+				if (DUK_HSTRING_GET_BYTELEN(h) == blen &&
+				    DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(h), blen) == 0) {
+					return h;
+				}
+			}
+		}
+	}
+
+	return NULL;
+}
+#else  /* DUK_USE_HEAPPTR16 */
+DUK_LOCAL duk_hstring *duk__find_matching_string_chain(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_hstring **lst;
+	duk_size_t i, n;
+
+	DUK_ASSERT(heap != NULL);
+
+	slotidx = strhash % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		if (e->u.str != NULL &&
+	           DUK_HSTRING_GET_BYTELEN(e->u.str) == blen &&
+	           DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(e->u.str), blen) == 0) {
+			return e->u.str;
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist != NULL);
+		lst = e->u.strlist;
+		for (i = 0, n = e->listlen; i < n; i++) {
+			if (lst[i] != NULL &&
+		           DUK_HSTRING_GET_BYTELEN(lst[i]) == blen &&
+		           DUK_MEMCMP(str, DUK_HSTRING_GET_DATA(lst[i]), blen) == 0) {
+				return lst[i];
+			}
+		}
+	}
+
+	return NULL;
+}
+#endif  /* DUK_USE_HEAPPTR16 */
+
+#if defined(DUK_USE_HEAPPTR16)
+DUK_LOCAL void duk__remove_matching_hstring_chain(duk_heap *heap, duk_hstring *h) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_uint16_t *lst;
+	duk_size_t i, n;
+	duk_uint16_t h16;
+	duk_uint16_t null16 = heap->heapptr_null16;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(h != NULL);
+
+	slotidx = DUK_HSTRING_GET_HASH(h) % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	DUK_ASSERT(h != NULL);
+	h16 = DUK_USE_HEAPPTR_ENC16((void *) h);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		if (e->u.str16 == h16) {
+			e->u.str16 = null16;
+			return;
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist16 != null16);
+		lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+		DUK_ASSERT(lst != NULL);
+		for (i = 0, n = e->listlen; i < n; i++) {
+			if (lst[i] == h16) {
+				lst[i] = null16;
+				return;
+			}
+		}
+	}
+
+	DUK_D(DUK_DPRINT("failed to find string that should be in stringtable"));
+	DUK_UNREACHABLE();
+	return;
+}
+#else  /* DUK_USE_HEAPPTR16 */
+DUK_LOCAL void duk__remove_matching_hstring_chain(duk_heap *heap, duk_hstring *h) {
+	duk_small_uint_t slotidx;
+	duk_strtab_entry *e;
+	duk_hstring **lst;
+	duk_size_t i, n;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(h != NULL);
+
+	slotidx = DUK_HSTRING_GET_HASH(h) % DUK_STRTAB_CHAIN_SIZE;
+	DUK_ASSERT(slotidx < DUK_STRTAB_CHAIN_SIZE);
+
+	e = heap->strtable + slotidx;
+	if (e->listlen == 0) {
+		DUK_ASSERT(h != NULL);
+		if (e->u.str == h) {
+			e->u.str = NULL;
+			return;
+		}
+	} else {
+		DUK_ASSERT(e->u.strlist != NULL);
+		lst = e->u.strlist;
+		for (i = 0, n = e->listlen; i < n; i++) {
+			DUK_ASSERT(h != NULL);
+			if (lst[i] == h) {
+				lst[i] = NULL;
+				return;
+			}
+		}
+	}
+
+	DUK_D(DUK_DPRINT("failed to find string that should be in stringtable"));
+	DUK_UNREACHABLE();
+	return;
+}
+#endif  /* DUK_USE_HEAPPTR16 */
+
+#if defined(DUK_USE_DEBUG)
+DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
+	duk_strtab_entry *e;
+	duk_small_uint_t i;
+	duk_size_t j, n, used;
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t *lst;
+	duk_uint16_t null16 = heap->heapptr_null16;
+#else
+	duk_hstring **lst;
+#endif
+
+	DUK_ASSERT(heap != NULL);
+
+	for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
+		e = heap->strtable + i;
+
+		if (e->listlen == 0) {
+#if defined(DUK_USE_HEAPPTR16)
+			DUK_PRINTF("[%03d] -> plain %d\n", (int) i, (int) (e->u.str16 != null16 ? 1 : 0));
+#else
+			DUK_PRINTF("[%03d] -> plain %d\n", (int) i, (int) (e->u.str ? 1 : 0));
+#endif
+		} else {
+			used = 0;
+#if defined(DUK_USE_HEAPPTR16)
+			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+#else
+			lst = e->u.strlist;
+#endif
+			DUK_ASSERT(lst != NULL);
+			for (j = 0, n = e->listlen; j < n; j++) {
+#if defined(DUK_USE_HEAPPTR16)
+				if (lst[j] != null16) {
+#else
+				if (list[j] != NULL) {
+#endif
+					used++;
+				}
+			}
+			DUK_PRINTF("[%03d] -> array %d/%d\n", (int) i, (int) used, (int) e->listlen);
+		}
+	}
+}
+#endif  /* DUK_USE_DEBUG */
+
+#endif  /* DUK_USE_STRTAB_CHAIN */
+
+/*
+ *  String table algorithm: closed hashing with a probe sequence
+ *
+ *  This is the default algorithm and works fine for environments with
+ *  minimal memory constraints.
+ */
+
+#if defined(DUK_USE_STRTAB_PROBE)
+
+/* Count actually used (non-NULL, non-DELETED) entries. */
+DUK_LOCAL duk_int_t duk__count_used_probe(duk_heap *heap) {
 	duk_int_t res = 0;
 	duk_uint_fast32_t i, n;
 #if defined(DUK_USE_HEAPPTR16)
@@ -128,14 +464,10 @@ DUK_LOCAL duk_int_t duk__count_used(duk_heap *heap) {
 	return res;
 }
 
-/*
- *  Hashtable lookup and insert helpers
- */
-
 #if defined(DUK_USE_HEAPPTR16)
-DUK_LOCAL void duk__insert_hstring(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
+DUK_LOCAL void duk__insert_hstring_probe(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
 #else
-DUK_LOCAL void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
+DUK_LOCAL void duk__insert_hstring_probe(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint32_t *p_used, duk_hstring *h) {
 #endif
 	duk_uint32_t i;
 	duk_uint32_t step;
@@ -194,9 +526,9 @@ DUK_LOCAL void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_ui
 }
 
 #if defined(DUK_USE_HEAPPTR16)
-DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__find_matching_string_probe(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 #else
-DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__find_matching_string_probe(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 #endif
 	duk_uint32_t i;
 	duk_uint32_t step;
@@ -234,9 +566,9 @@ DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **e
 }
 
 #if defined(DUK_USE_HEAPPTR16)
-DUK_LOCAL void duk__remove_matching_hstring(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, duk_hstring *h) {
+DUK_LOCAL void duk__remove_matching_hstring_probe(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, duk_hstring *h) {
 #else
-DUK_LOCAL void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_hstring *h) {
+DUK_LOCAL void duk__remove_matching_hstring_probe(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_hstring *h) {
 #endif
 	duk_uint32_t i;
 	duk_uint32_t step;
@@ -289,11 +621,7 @@ DUK_LOCAL void duk__remove_matching_hstring(duk_heap *heap, duk_hstring **entrie
 	}
 }
 
-/*
- *  Hash resizing and resizing policy
- */
-
-DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_size) {
+DUK_LOCAL duk_bool_t duk__resize_strtab_raw_probe(duk_heap *heap, duk_uint32_t new_size) {
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
 #endif
@@ -319,11 +647,11 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_siz
 	DUK_DDD(DUK_DDDPRINT("attempt to resize stringtable: %ld entries, %ld bytes, %ld used, %ld%% load -> %ld entries, %ld bytes, %ld used, %ld%% load",
 	                     (long) old_size, (long) (sizeof(duk_hstring *) * old_size), (long) old_used,
 	                     (long) (((double) old_used) / ((double) old_size) * 100.0),
-	                     (long) new_size, (long) (sizeof(duk_hstring *) * new_size), (long) duk__count_used(heap),
-	                     (long) (((double) duk__count_used(heap)) / ((double) new_size) * 100.0)));
+	                     (long) new_size, (long) (sizeof(duk_hstring *) * new_size), (long) duk__count_used_probe(heap),
+	                     (long) (((double) duk__count_used_probe(heap)) / ((double) new_size) * 100.0)));
 #endif
 
-	DUK_ASSERT(new_size > (duk_uint32_t) duk__count_used(heap));  /* required for rehash to succeed, equality not that useful */
+	DUK_ASSERT(new_size > (duk_uint32_t) duk__count_used_probe(heap));  /* required for rehash to succeed, equality not that useful */
 	DUK_ASSERT(old_entries);
 #ifdef DUK_USE_MARK_AND_SWEEP
 	DUK_ASSERT((heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE) == 0);
@@ -375,7 +703,7 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_siz
 #endif
 #endif
 
-	/* Because new_size > duk__count_used(heap), guaranteed to work */
+	/* Because new_size > duk__count_used_probe(heap), guaranteed to work */
 	for (i = 0; i < old_size; i++) {
 		duk_hstring *e;
 
@@ -388,7 +716,7 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_siz
 			continue;
 		}
 		/* checking for DUK__DELETED_MARKER is not necessary here, but helper does it now */
-		duk__insert_hstring(heap, new_entries, new_size, &new_used, e);
+		duk__insert_hstring_probe(heap, new_entries, new_size, &new_used, e);
 	}
 
 #ifdef DUK_USE_DDPRINT
@@ -416,11 +744,11 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw(duk_heap *heap, duk_uint32_t new_siz
 	return 1;  /* FAIL */
 }
 
-DUK_LOCAL duk_bool_t duk__resize_strtab(duk_heap *heap) {
+DUK_LOCAL duk_bool_t duk__resize_strtab_probe(duk_heap *heap) {
 	duk_uint32_t new_size;
 	duk_bool_t ret;
 
-	new_size = (duk_uint32_t) duk__count_used(heap);
+	new_size = (duk_uint32_t) duk__count_used_probe(heap);
 	if (new_size >= 0x80000000UL) {
 		new_size = DUK_STRTAB_HIGHEST_32BIT_PRIME;
 	} else {
@@ -433,12 +761,12 @@ DUK_LOCAL duk_bool_t duk__resize_strtab(duk_heap *heap) {
 	 * DELETED entries.
 	*/
 
-	ret = duk__resize_strtab_raw(heap, new_size);
+	ret = duk__resize_strtab_raw_probe(heap, new_size);
 
 	return ret;
 }
 
-DUK_LOCAL duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_used) {
+DUK_LOCAL duk_bool_t duk__recheck_strtab_size_probe(duk_heap *heap, duk_uint32_t new_used) {
 	duk_uint32_t new_free;
 	duk_uint32_t tmp1;
 	duk_uint32_t tmp2;
@@ -454,11 +782,37 @@ DUK_LOCAL duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_u
 
 	if (new_free <= tmp1 || new_used <= tmp2) {
 		/* load factor too low or high, count actually used entries and resize */
-		return duk__resize_strtab(heap);
+		return duk__resize_strtab_probe(heap);
 	} else {
 		return 0;  /* OK */
 	}
 }
+
+#if defined(DUK_USE_DEBUG)
+DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
+	duk_uint32_t i;
+	duk_hstring *h;
+
+	DUK_ASSERT(heap != NULL);
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap->strtable16 != NULL);
+#else
+	DUK_ASSERT(heap->strtable != NULL);
+#endif
+
+	for (i = 0; i < heap->st_size; i++) {
+#if defined(DUK_USE_HEAPPTR16)
+		h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+#else
+		h = heap->strtable[i];
+#endif
+
+		DUK_PRINTF("[%03d] -> %p\n", (int) i, (void *) h);
+	}
+}
+#endif  /* DUK_USE_DEBUG */
+
+#endif  /* DUK_USE_STRTAB_PROBE */
 
 /*
  *  Raw intern and lookup
@@ -468,9 +822,11 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 	duk_hstring *res;
 	const duk_uint8_t *extdata;
 
-	if (duk__recheck_strtab_size(heap, heap->st_used + 1)) {
+#if defined(DUK_USE_STRTAB_PROBE)
+	if (duk__recheck_strtab_size_probe(heap, heap->st_used + 1)) {
 		return NULL;
 	}
+#endif
 
 	/* For manual testing only. */
 #if 0
@@ -499,15 +855,26 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 		return NULL;
 	}
 
-	duk__insert_hstring(heap,
+#if defined(DUK_USE_STRTAB_CHAIN)
+	if (duk__insert_hstring_chain(heap, res)) {
+		/* failed */
+		DUK_FREE(heap, res);
+		return NULL;
+	}
+#elif defined(DUK_USE_STRTAB_PROBE)
+	/* guaranteed to succeed */
+	duk__insert_hstring_probe(heap,
 #if defined(DUK_USE_HEAPPTR16)
-	                    heap->strtable16,
+	                          heap->strtable16,
 #else
-	                    heap->strtable,
+	                          heap->strtable,
 #endif
-	                    heap->st_size,
-	                    &heap->st_used,
-	                    res);  /* guaranteed to succeed */
+	                          heap->st_size,
+	                          &heap->st_used,
+	                          res);
+#else
+#error internal error, invalid strtab options
+#endif
 
 	/* Note: hstring is in heap but has refcount zero and is not strongly reachable.
 	 * Caller should increase refcount and make the hstring reachable before any
@@ -524,16 +891,23 @@ DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, const duk_uint8_t *str, du
 
 	*out_strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
 
-	res = duk__find_matching_string(heap,
+#if defined(DUK_USE_STRTAB_CHAIN)
+	res = duk__find_matching_string_chain(heap, str, blen, *out_strhash);
+#elif defined(DUK_USE_STRTAB_PROBE)
+	res = duk__find_matching_string_probe(heap,
 #if defined(DUK_USE_HEAPPTR16)
-	                                heap->strtable16,
+	                                      heap->strtable16,
 #else
-	                                heap->strtable,
+	                                      heap->strtable,
 #endif
-	                                heap->st_size,
-	                                str,
-	                                blen,
-	                                *out_strhash);
+	                                      heap->st_size,
+	                                      str,
+	                                      blen,
+	                                      *out_strhash);
+#else
+#error internal error, invalid strtab options
+#endif
+
 	return res;
 }
 
@@ -578,7 +952,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
 	DUK_ASSERT(DUK_STRLEN(buf) <= DUK_UINT32_MAX);  /* formatted result limited */
-	return duk_heap_string_lookup(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
+	return duk_heap_string_lookup(heap, (const duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 #endif
 
@@ -587,7 +961,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_
 	DUK_SNPRINTF(buf, sizeof(buf), "%lu", (unsigned long) val);
 	buf[sizeof(buf) - 1] = (char) 0;
 	DUK_ASSERT(DUK_STRLEN(buf) <= DUK_UINT32_MAX);  /* formatted result limited */
-	return duk_heap_string_intern(heap, (duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
+	return duk_heap_string_intern(heap, (const duk_uint8_t *) buf, (duk_uint32_t) DUK_STRLEN(buf));
 }
 
 DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
@@ -602,26 +976,140 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, d
 DUK_INTERNAL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", (duk_heaphdr *) h));
 
-	duk__remove_matching_hstring(heap,
+#if defined(DUK_USE_STRTAB_CHAIN)
+	duk__remove_matching_hstring_chain(heap, h);
+#elif defined(DUK_USE_STRTAB_PROBE)
+	duk__remove_matching_hstring_probe(heap,
 #if defined(DUK_USE_HEAPPTR16)
-	                             heap->strtable16,
+	                                   heap->strtable16,
 #else
-	                             heap->strtable,
+	                                   heap->strtable,
 #endif
-	                             heap->st_size,
-	                             h);
+	                                   heap->st_size,
+	                                   h);
+#else
+#error internal error, invalid strtab options
+#endif
 }
 
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
-DUK_INTERNAL void duk_heap_force_stringtable_resize(duk_heap *heap) {
+DUK_INTERNAL void duk_heap_force_strtab_resize(duk_heap *heap) {
 	/* Force a resize so that DELETED entries are eliminated.
-	 * Another option would be duk__recheck_strtab_size(); but since
-	 * that happens on every intern anyway, this whole check
-	 * can now be disabled.
+	 * Another option would be duk__recheck_strtab_size_probe();
+	 * but since that happens on every intern anyway, this whole
+	 * check can now be disabled.
 	 */
-	duk__resize_strtab(heap);
+#if defined(DUK_USE_STRTAB_CHAIN)
+	DUK_UNREF(heap);
+#elif defined(DUK_USE_STRTAB_PROBE)
+	duk__resize_strtab_probe(heap);
+#endif
 }
 #endif
+
+#if defined(DUK_USE_STRTAB_CHAIN)
+DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
+	/* Free strings in the stringtable and any allocations needed
+	 * by the stringtable itself.
+	 */
+	duk_uint_fast32_t i, j;
+	duk_strtab_entry *e;
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t *lst;
+	duk_uint16_t null16 = heap->heapptr_null16;
+#else
+	duk_hstring **lst;
+#endif
+	duk_hstring *h;
+
+	for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
+
+		e = heap->strtable + i;
+		if (e->listlen > 0) {
+#if defined(DUK_USE_HEAPPTR16)
+			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+#else
+			lst = e->u.strlist;
+#endif
+			DUK_ASSERT(lst != NULL);
+
+			for (j = 0; j < e->listlen; j++) {
+#if defined(DUK_USE_HEAPPTR16)
+				h = DUK_USE_HEAPPTR_DEC16(lst[j]);
+				lst[j] = null16;
+#else
+				h = lst[j];
+				lst[j] = NULL;
+#endif
+				/* strings may have inner refs (extdata) in some cases */
+				if (h != NULL) {
+					duk_free_hstring_inner(heap, h);
+					DUK_FREE(heap, h);
+				}
+			}
+#if defined(DUK_USE_HEAPPTR16)
+			e->u.strlist16 = null16;
+#else
+			e->u.strlist = NULL;
+#endif
+			DUK_FREE(heap, lst);
+		} else {
+#if defined(DUK_USE_HEAPPTR16)
+			h = DUK_USE_HEAPPTR_DEC16(e->u.str16);
+			e->u.str16 = null16;
+#else
+			h = e->u.str;
+			e->u.str = NULL;
+#endif
+			if (h != NULL) {
+				duk_free_hstring_inner(heap, h);
+				DUK_FREE(heap, h);
+			}
+		}
+		e->listlen = 0;
+	}
+}
+#endif  /* DUK_USE_STRTAB_CHAIN */
+
+#if defined(DUK_USE_STRTAB_PROBE)
+DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
+	duk_uint_fast32_t i;
+	duk_hstring *h;
+
+#if defined(DUK_USE_HEAPPTR16)
+	if (heap->strtable16) {
+#else
+	if (heap->strtable) {
+#endif
+		for (i = 0; i < (duk_uint_fast32_t) heap->st_size; i++) {
+#if defined(DUK_USE_HEAPPTR16)
+			h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+#else
+			h = heap->strtable[i];
+#endif
+			if (h == NULL || h == DUK_STRTAB_DELETED_MARKER(heap)) {
+				continue;
+			}
+			DUK_ASSERT(h != NULL);
+
+			/* strings may have inner refs (extdata) in some cases */
+			duk_free_hstring_inner(heap, h);
+			DUK_FREE(heap, h);
+#if 0  /* not strictly necessary */
+			heap->strtable[i] = NULL;
+#endif
+		}
+#if defined(DUK_USE_HEAPPTR16)
+		DUK_FREE(heap, heap->strtable16);
+#else
+		DUK_FREE(heap, heap->strtable);
+#endif
+#if 0  /* not strictly necessary */
+		heap->strtable = NULL;
+#endif
+	}
+}
+#endif  /* DUK_USE_STRTAB_PROBE */
 
 /* Undefine local defines */
 #undef DUK__HASH_INITIAL

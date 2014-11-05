@@ -546,6 +546,13 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	                "u"
 #endif
 			" "
+#if defined(DUK_USE_STRTAB_CHAIN)
+			"c"  /* chain */
+#elif defined(DUK_USE_STRTAB_PROBE)
+			"p"  /* probe */
+#else
+			"?"
+#endif
 #if !defined(DUK_USE_HEAPPTR16) && !defined(DUK_DATAPTR16) && !defined(DUK_FUNCPTR16)
 			"n"
 #endif
