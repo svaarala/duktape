@@ -14,12 +14,15 @@
  *  Helpers
  */
 
-static void safe_print_chars(const char *p, duk_size_t len) {
+static void safe_print_chars(const char *p, duk_size_t len, int until_nul) {
 	duk_size_t i;
 
 	printf("\"");
 	for (i = 0; i < len; i++) {
 		unsigned char x = (unsigned char) p[i];
+		if (until_nul && x == 0U) {
+			break;
+		}
 		if (x < 0x20 || x >= 0x7e || x == '"' || x == '\'' || x == '\\') {
 			printf("\\x%02x", (int) x);
 		} else {
@@ -58,14 +61,17 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 52,     50,   AJS_POOL_BORROW,  0 },
 	{ 56,     50,   AJS_POOL_BORROW,  0 },
 	{ 60,     50,   AJS_POOL_BORROW,  0 },
-	{ 64,     50,   0,                0 },
-	{ 128,    80,   0,                0 },
-	{ 256,    16,   0,                0 },
-	{ 512,    16,   0,                0 },
-	{ 1024,   6,    0,                0 },
-	{ 2048,   5,    0,                0 },
+	{ 64,     50,   AJS_POOL_BORROW,  0 },
+	{ 128,    80,   AJS_POOL_BORROW,  0 },
+	{ 256,    16,   AJS_POOL_BORROW,  0 },
+	{ 512,    16,   AJS_POOL_BORROW,  0 },
+	{ 1024,   6,    AJS_POOL_BORROW,  0 },
+	{ 1352,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression */
+	{ 2048,   5,    AJS_POOL_BORROW,  0 },
 	{ 4096,   3,    0,                0 },
-	{ 8192,   1,    0,                0 }
+	{ 8192,   3,    0,                0 },
+	{ 16384,  1,    0,                0 },
+	{ 32768,  1,    0,                0 }
 };
 
 uint8_t *ajsheap_ram = NULL;
@@ -81,7 +87,7 @@ void ajsheap_init(void) {
 	                              num_pools,       /* numPools */
 	                              0);              /* heapNum */
 	ajsheap_ram = (uint8_t *) malloc(heap_sz[0]);
-	if (!ajsheap_ram) {
+	if (ajsheap_ram == NULL) {
 		fprintf(stderr, "Failed to allocate AJS heap\n");
 		fflush(stderr);
 		exit(1);
@@ -220,7 +226,7 @@ const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len) {
 #if 0
 			printf("ajsheap_extstr_check_1: ptr=%p, len=%ld ",
 			       (void *) ptr, (long) len);
-			safe_print_chars((const char *) ptr, len);
+			safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 			printf(" -> existing %p (used=%ld)\n",
 			       (void *) ret, (long) ajsheap_strdata_used);
 #endif
@@ -236,7 +242,7 @@ const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len) {
 	if (ajsheap_strdata_used + len + 1 > sizeof(ajsheap_strdata)) {
 #if 0
 		printf("ajsheap_extstr_check_1: ptr=%p, len=%ld ", (void *) ptr, (long) len);
-		safe_print_chars((const char *) ptr, len);
+		safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 		printf(" -> no space (used=%ld)\n", (long) ajsheap_strdata_used);
 #endif
 		return NULL;
@@ -254,16 +260,18 @@ const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len) {
 
 #if 0
 	printf("ajsheap_extstr_check_1: ptr=%p, len=%ld -> ", (void *) ptr, (long) len);
-	safe_print_chars((const char *) ptr, len);
+	safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 	printf(" -> %p (used=%ld)\n", (void *) ret, (long) ajsheap_strdata_used);
 #endif
 	return (const void *) ret;
 }
 
-void ajsheap_extstr_free_1(void *ptr) {
+void ajsheap_extstr_free_1(const void *ptr) {
 	(void) ptr;
 #if 0
-	printf("ajsheap_extstr_free_1: freeing extstr %p\n", ptr);
+	printf("ajsheap_extstr_free_1: freeing extstr %p -> ", ptr);
+	safe_print_chars((const char *) ptr, DUK_SIZE_MAX, 1 /*until_nul*/);
+	printf("\n");
 #endif
 }
 
@@ -655,7 +663,7 @@ const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len) {
 #if 0
 			printf("ajsheap_extstr_check_2: ptr=%p, len=%ld ",
 			       (void *) ptr, (long) len);
-			safe_print_chars((const char *) ptr, len);
+			safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 			printf(" -> constant string index %ld\n", (long) i);
 #endif
 			return (void *) strdata_duk_builtin_strings[i];
@@ -665,17 +673,65 @@ const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len) {
 #if 0
 	printf("ajsheap_extstr_check_2: ptr=%p, len=%ld ",
 	       (void *) ptr, (long) len);
-	safe_print_chars((const char *) ptr, len);
+	safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 	printf(" -> not found\n");
 #endif
 	return NULL;
 }
 
-void ajsheap_extstr_free_2(void *ptr) {
+void ajsheap_extstr_free_2(const void *ptr) {
 	(void) ptr;
 #if 0
-	printf("ajsheap_extstr_free_2: freeing extstr %p\n", ptr);
+	printf("ajsheap_extstr_free_2: freeing extstr %p -> ", ptr);
+	safe_print_chars((const char *) ptr, DUK_SIZE_MAX, 1 /*until_nul*/);
+	printf("\n");
 #endif
+}
+
+/*
+ *  External strings strategy intended for valgrind testing: external strings
+ *  are allocated using malloc()/free() so that valgrind can be used to ensure
+ *  that strings are e.g. freed exactly once.
+ */
+
+const void *ajsheap_extstr_check_3(const void *ptr, duk_size_t len) {
+	duk_uint8_t *ret;
+
+	(void) safe_print_chars;  /* potentially unused */
+
+	ret = malloc((size_t) len + 1);
+	if (ret == NULL) {
+#if 0
+		printf("ajsheap_extstr_check_3: ptr=%p, len=%ld ",
+		       (void *) ptr, (long) len);
+		safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
+		printf(" -> malloc failed, return NULL\n");
+#endif
+		return (const void *) NULL;
+	}
+
+	if (len > 0) {
+		memcpy((void *) ret, ptr, (size_t) len);
+	}
+	ret[len] = (duk_uint8_t) 0;
+
+#if 0
+	printf("ajsheap_extstr_check_3: ptr=%p, len=%ld ",
+	       (void *) ptr, (long) len);
+	safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
+	printf(" -> %p\n", (void *) ret);
+#endif
+	return (const void *) ret;
+}
+
+void ajsheap_extstr_free_3(const void *ptr) {
+	(void) ptr;
+#if 0
+	printf("ajsheap_extstr_free_3: freeing extstr %p -> ", ptr);
+	safe_print_chars((const char *) ptr, DUK_SIZE_MAX, 1 /*until_nul*/);
+	printf("\n");
+#endif
+	free((void *) ptr);
 }
 
 #else  /* DUK_CMDLINE_AJSHEAP */
