@@ -1018,7 +1018,11 @@ DUK_LOCAL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_st
 				p = p_tmp + 1;
 			}
 
+#ifdef DUK_USE_NONSTD_JSON_ESC_U2028_U2029
+			if (js_ctx->flag_ascii_only || cp == 0x2028 || cp == 0x2029) {
+#else
 			if (js_ctx->flag_ascii_only) {
+#endif
 				DUK__EMIT_ESC_AUTO(js_ctx, cp);
 			} else {
 				/* as is */
