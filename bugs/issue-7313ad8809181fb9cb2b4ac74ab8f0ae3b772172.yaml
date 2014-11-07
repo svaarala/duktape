@@ -3,7 +3,7 @@ title: add api or feature option to bulk redirect Duktape stdout/stderr writes
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -23,4 +23,8 @@ log_events:
 - - 2014-09-09 11:31:10.558446 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-07 21:13:51.506647 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

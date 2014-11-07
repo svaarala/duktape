@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: consider a 'pinning' API for objects"
+desc: Bump refcount, treat like mark-and-sweep roots.
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-07 14:10:56.156216 Z
+references: []
+
+id: fd910262e2b02c476fd2550c336e0636e9fd79e5
+log_events: 
+- - 2014-11-07 14:10:56.457064 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

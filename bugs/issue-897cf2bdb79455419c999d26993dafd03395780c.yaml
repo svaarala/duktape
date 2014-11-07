@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: chunked compilation with rewinding
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-07 19:39:43.052731 Z
+references: []
+
+id: 897cf2bdb79455419c999d26993dafd03395780c
+log_events: 
+- - 2014-11-07 19:39:43.215880 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

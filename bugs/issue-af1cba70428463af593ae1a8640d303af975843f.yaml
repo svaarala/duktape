@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add a dlmalloc.c based allocator example / extra
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-07 21:09:01.247411 Z
+references: []
+
+id: af1cba70428463af593ae1a8640d303af975843f
+log_events: 
+- - 2014-11-07 21:09:01.395696 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

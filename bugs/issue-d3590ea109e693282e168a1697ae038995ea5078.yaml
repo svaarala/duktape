@@ -3,7 +3,7 @@ title: DUK_TVAL_xxx() macro for setting a duk_int_t / duk_uint_t
 desc: This would be quite useful for the FASTINT branch.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-09-16 20:09:25.699290 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-07 21:13:51.745306 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
