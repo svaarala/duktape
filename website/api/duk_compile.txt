@@ -143,3 +143,6 @@ duk_compile_string_filename
 duk_compile_lstring
 duk_compile_lstring_filename
 duk_compile_file
+
+=introduced
+1.0.0

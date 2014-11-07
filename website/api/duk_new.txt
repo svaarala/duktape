@@ -38,3 +38,6 @@ duk_pop(ctx);
 =tags
 object
 call
+
+=introduced
+1.0.0

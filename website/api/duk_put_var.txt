@@ -30,3 +30,6 @@ XXX
 =tags
 variable
 omit
+
+=introduced
+1.0.0

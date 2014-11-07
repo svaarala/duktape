@@ -26,3 +26,6 @@ duk_pop(ctx);
 compile
 nonportable
 protected
+
+=introduced
+1.0.0

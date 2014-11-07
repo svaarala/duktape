@@ -19,3 +19,6 @@ printf("value is a string, %lu bytes\n", (unsigned long) len);
 =tags
 stack
 string
+
+=introduced
+1.0.0

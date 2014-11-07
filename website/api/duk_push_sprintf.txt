@@ -25,3 +25,6 @@ duk_push_sprintf(ctx, "meaning of life: %d, name: %s", 42, "Zaphod");
 =tags
 stack
 string
+
+=introduced
+1.0.0

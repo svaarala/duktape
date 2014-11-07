@@ -25,3 +25,6 @@ stack
 =seealso
 duk_get_type
 duk_check_type_mask
+
+=introduced
+1.0.0

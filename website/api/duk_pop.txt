@@ -22,3 +22,6 @@ stack
 duk_pop_2
 duk_pop_3
 duk_pop_n
+
+=introduced
+1.0.0

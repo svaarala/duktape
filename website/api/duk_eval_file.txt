@@ -23,3 +23,6 @@ nonportable
 
 =seealso
 duk_eval_file_noresult
+
+=introduced
+1.0.0

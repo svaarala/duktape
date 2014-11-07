@@ -25,3 +25,6 @@ stack
 
 =seealso
 duk_insert
+
+=introduced
+1.0.0

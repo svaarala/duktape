@@ -26,3 +26,6 @@ duk_pop(ctx);  /* pop array */
 =tags
 stack
 object
+
+=introduced
+1.0.0

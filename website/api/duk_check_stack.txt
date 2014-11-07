@@ -54,3 +54,6 @@ stack
 
 =seealso
 duk_require_stack
+
+=introduced
+1.0.0

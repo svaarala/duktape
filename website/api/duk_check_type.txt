@@ -15,3 +15,6 @@ if (duk_check_type(ctx, -3, DUK_TYPE_NUMBER)) {
 
 =tags
 stack
+
+=introduced
+1.0.0

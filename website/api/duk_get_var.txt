@@ -44,3 +44,6 @@ duk_pop_2(ctx);
 =tags
 variable
 omit
+
+=introduced
+1.0.0

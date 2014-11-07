@@ -17,3 +17,6 @@ duk_pop(ctx);
 
 =tags
 property
+
+=introduced
+1.0.0

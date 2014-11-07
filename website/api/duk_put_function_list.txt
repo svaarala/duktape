@@ -37,3 +37,6 @@ module
 
 =seealso
 duk_put_number_list
+
+=introduced
+1.0.0

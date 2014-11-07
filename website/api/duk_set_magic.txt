@@ -19,3 +19,6 @@ magic
 =seealso
 duk_get_current_magic
 duk_get_magic
+
+=introduced
+1.0.0

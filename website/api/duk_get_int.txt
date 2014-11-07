@@ -37,3 +37,6 @@ printf("int value: %ld\n", (long) duk_get_int(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

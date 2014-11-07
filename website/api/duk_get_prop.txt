@@ -75,3 +75,6 @@ property
 =seealso
 duk_get_prop_string
 duk_get_prop_index
+
+=introduced
+1.0.0

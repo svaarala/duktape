@@ -33,3 +33,6 @@ buffer
 =seealso
 duk_to_fixed_buffer
 duk_to_dynamic_buffer
+
+=introduced
+1.0.0

@@ -63,3 +63,6 @@ stack
 =seealso
 duk_has_prop_string
 duk_has_prop_index
+
+=introduced
+1.0.0

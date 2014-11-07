@@ -56,3 +56,6 @@ memory
 
 =seealso
 duk_realloc
+
+=introduced
+1.0.0

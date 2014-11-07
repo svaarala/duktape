@@ -23,3 +23,6 @@ slice
 
 =seealso
 duk_xmove_top
+
+=introduced
+1.0.0

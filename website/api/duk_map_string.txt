@@ -30,3 +30,6 @@ string
 
 =seealso
 duk_decode_string
+
+=introduced
+1.0.0

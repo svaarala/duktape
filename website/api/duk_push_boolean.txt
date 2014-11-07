@@ -16,3 +16,6 @@ duk_push_boolean(ctx, -3);  /* -> [ ... false true true ] */
 =tags
 stack
 
+
+=introduced
+1.0.0

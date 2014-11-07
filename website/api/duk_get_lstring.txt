@@ -32,3 +32,6 @@ if (buf) {
 
 =tags
 stack
+
+=introduced
+1.0.0

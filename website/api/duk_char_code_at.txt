@@ -15,3 +15,6 @@ printf("char code at char index 12: %ld\n", (long) duk_char_code_at(ctx, -3, 12)
 
 =tags
 string
+
+=introduced
+1.0.0

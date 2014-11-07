@@ -28,3 +28,6 @@ sandbox
 =seealso
 duk_push_heap_stash
 duk_push_global_stash
+
+=introduced
+1.0.0

@@ -109,3 +109,6 @@ duk_pop_2(ctx);
 =tags
 call
 protected
+
+=introduced
+1.0.0

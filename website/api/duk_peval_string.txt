@@ -28,3 +28,6 @@ protected
 
 =seealso
 duk_peval_string_noresult
+
+=introduced
+1.0.0

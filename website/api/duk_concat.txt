@@ -26,3 +26,6 @@ string
 
 =seealso
 duk_join
+
+=introduced
+1.0.0

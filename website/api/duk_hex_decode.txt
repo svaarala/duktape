@@ -23,3 +23,6 @@ codec
 
 =seealso
 duk_hex_encode
+
+=introduced
+1.0.0

@@ -18,3 +18,6 @@ duk_dup_top(ctx, -2);    /* -> [ ... 123 234 234 ] */
 
 =tags
 stack
+
+=introduced
+1.0.0

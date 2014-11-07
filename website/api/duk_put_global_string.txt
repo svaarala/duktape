@@ -28,3 +28,6 @@ property
 
 =seealso
 duk_get_global_string
+
+=introduced
+1.0.0

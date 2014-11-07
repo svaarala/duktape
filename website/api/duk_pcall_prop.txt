@@ -30,3 +30,6 @@ duk_pop(ctx);
 property
 call
 protected
+
+=introduced
+1.0.0

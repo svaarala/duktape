@@ -14,3 +14,6 @@ duk_pop_n(ctx, 10);
 
 =tags
 stack
+
+=introduced
+1.0.0

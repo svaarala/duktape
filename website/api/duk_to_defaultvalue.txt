@@ -27,3 +27,6 @@ duk_to_defaultvalue(ctx, -3, DUK_HINT_NUMBER);
 
 =tags
 stack
+
+=introduced
+1.0.0

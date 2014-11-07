@@ -23,3 +23,6 @@ printf("delete obj[123] -> rc=%d\n", (int) rc);
 
 =tags
 property
+
+=introduced
+1.0.0

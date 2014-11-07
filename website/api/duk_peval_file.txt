@@ -28,3 +28,6 @@ nonportable
 
 =seealso
 duk_peval_file_noresult
+
+=introduced
+1.0.0

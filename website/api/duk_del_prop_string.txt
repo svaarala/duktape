@@ -17,3 +17,6 @@ printf("delete obj.propertyName -> rc=%d\n", (int) rc);
 
 =tags
 property
+
+=introduced
+1.0.0

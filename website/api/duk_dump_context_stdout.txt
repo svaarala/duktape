@@ -22,3 +22,6 @@ duk_dump_context_stdout(ctx);
 stack
 debug
 nonportable
+
+=introduced
+1.0.0

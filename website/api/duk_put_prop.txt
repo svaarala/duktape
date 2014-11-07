@@ -73,3 +73,6 @@ property
 =seealso
 duk_put_prop_string
 duk_put_prop_index
+
+=introduced
+1.0.0

@@ -30,3 +30,6 @@ memory
 
 =seealso
 duk_alloc_raw
+
+=introduced
+1.0.0

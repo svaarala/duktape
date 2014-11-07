@@ -23,3 +23,6 @@ codec
 
 =seealso
 duk_base64_encode
+
+=introduced
+1.0.0

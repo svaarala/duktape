@@ -29,3 +29,6 @@ if (duk_is_object(ctx, -3)) {
 =tags
 stack
 object
+
+=introduced
+1.0.0

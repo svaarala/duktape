@@ -37,3 +37,6 @@ printf("unsigned int value: %lu\n", (unsigned long) duk_get_uint(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

@@ -38,3 +38,6 @@ stack
 thread
 sandbox
 experimental
+
+=introduced
+1.0.0

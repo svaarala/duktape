@@ -66,3 +66,6 @@ property
 =seealso
 duk_del_prop_string
 duk_del_prop_index
+
+=introduced
+1.0.0

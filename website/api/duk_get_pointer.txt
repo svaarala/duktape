@@ -17,3 +17,6 @@ printf("my pointer is: %p\n", ptr);
 
 =tags
 stack
+
+=introduced
+1.0.0

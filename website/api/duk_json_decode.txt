@@ -24,3 +24,6 @@ codec
 
 =seealso
 duk_json_encode
+
+=introduced
+1.0.0

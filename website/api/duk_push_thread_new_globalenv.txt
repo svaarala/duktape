@@ -28,3 +28,6 @@ thread
 
 =seealso
 duk_push_thread
+
+=introduced
+1.0.0

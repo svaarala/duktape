@@ -56,3 +56,6 @@ slice
 
 =seealso
 duk_xcopy_top
+
+=introduced
+1.0.0

@@ -21,3 +21,6 @@ printf("ToUint32(): %lu\n", (unsigned long) duk_to_uint32(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

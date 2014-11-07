@@ -24,3 +24,6 @@ omit
 
 =example
 XXX
+
+=introduced
+1.0.0

@@ -22,3 +22,6 @@ error
 =seealso
 duk_error
 duk_push_error_object
+
+=introduced
+1.0.0

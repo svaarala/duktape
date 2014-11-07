@@ -20,3 +20,6 @@ duk_compile_lstring_filename(ctx, 0, src, len);
 
 =tags
 compile
+
+=introduced
+1.0.0

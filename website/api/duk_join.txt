@@ -28,3 +28,6 @@ string
 
 =seealso
 duk_concat
+
+=introduced
+1.0.0

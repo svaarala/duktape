@@ -48,3 +48,6 @@ call
 =seealso
 duk_call_method
 duk_call_prop
+
+=introduced
+1.0.0

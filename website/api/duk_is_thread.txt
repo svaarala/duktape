@@ -17,3 +17,6 @@ if (duk_is_thread(ctx, -3)) {
 =tags
 stack
 thread
+
+=introduced
+1.0.0

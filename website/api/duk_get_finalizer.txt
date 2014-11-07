@@ -19,3 +19,6 @@ finalizer
 
 =seealso
 duk_set_finalizer
+
+=introduced
+1.0.0

@@ -24,3 +24,6 @@ duk_set_top(ctx, 0);     /* -> top=0, stack: [ ] */
 
 =tags
 stack
+
+=introduced
+1.0.0

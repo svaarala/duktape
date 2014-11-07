@@ -18,3 +18,6 @@ stack
 
 =seealso
 duk_normalize_index
+
+=introduced
+1.0.0

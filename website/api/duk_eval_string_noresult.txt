@@ -16,3 +16,6 @@ duk_eval_string_noresult(ctx, "print('testString'.toUpperCase())");
 
 =tags
 compile
+
+=introduced
+1.0.0

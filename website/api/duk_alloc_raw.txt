@@ -27,3 +27,6 @@ memory
 
 =seealso
 duk_alloc
+
+=introduced
+1.0.0

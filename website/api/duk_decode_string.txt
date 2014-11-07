@@ -23,3 +23,6 @@ string
 
 =seealso
 duk_map_string
+
+=introduced
+1.0.0

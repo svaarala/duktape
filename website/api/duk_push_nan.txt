@@ -14,3 +14,6 @@ printf("NaN is number: %d\n", (int) duk_is_number(ctx, -1));
 
 =tags
 stack
+
+=introduced
+1.0.0
