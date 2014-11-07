@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: convenience function for pushing buffer with data"
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-06 00:49:27.849200 Z
+references: []
+
+id: 703f39beaba1c07ae5ec5473e03a18e673e2bc70
+log_events: 
+- - 2014-11-06 00:49:28.013574 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

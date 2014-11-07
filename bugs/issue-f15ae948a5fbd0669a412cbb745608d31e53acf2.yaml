@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: convenience function to put prop int/string values: duk_put_prop_string_string, duk_put_prop_string_int"
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-06 00:49:54.065760 Z
+references: []
+
+id: f15ae948a5fbd0669a412cbb745608d31e53acf2
+log_events: 
+- - 2014-11-06 00:49:54.230654 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
