@@ -65,3 +65,6 @@ property
 
 =seealso
 duk_next
+
+=introduced
+1.0.0

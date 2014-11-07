@@ -16,3 +16,6 @@ void *buf = duk_to_dynamic_buffer(ctx, -3, &sz);
 =tags
 stack
 buffer
+
+=introduced
+1.0.0

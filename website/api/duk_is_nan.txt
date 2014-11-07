@@ -20,3 +20,6 @@ if (duk_is_nan(ctx, -3)) {
 
 =tags
 stack
+
+=introduced
+1.0.0

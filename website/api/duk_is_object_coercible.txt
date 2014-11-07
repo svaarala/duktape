@@ -20,3 +20,6 @@ if (duk_is_object_coercible(ctx, -3)) {
 =tags
 stack
 object
+
+=introduced
+1.0.0

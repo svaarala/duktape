@@ -16,3 +16,6 @@ if (duk_is_string(ctx, -3)) {
 =tags
 stack
 string
+
+=introduced
+1.0.0

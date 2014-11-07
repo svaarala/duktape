@@ -23,3 +23,6 @@ duk_push_thread(ctx);
 stack
 function
 thread
+
+=introduced
+1.0.0

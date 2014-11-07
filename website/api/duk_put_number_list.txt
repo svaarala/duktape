@@ -29,3 +29,6 @@ module
 
 =seealso
 duk_put_function_list
+
+=introduced
+1.0.0

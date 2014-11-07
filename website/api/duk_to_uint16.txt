@@ -21,3 +21,6 @@ printf("ToUint16(): %u\n", (unsigned int) duk_to_uint16(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

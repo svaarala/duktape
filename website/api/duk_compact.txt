@@ -45,3 +45,6 @@ duk_compact(ctx, -1);                           /* [ ... obj ] */
 object
 property
 memory
+
+=introduced
+1.0.0

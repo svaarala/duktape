@@ -17,3 +17,6 @@ duk_compile_string_filename(ctx, 0, "print('program code');");
 
 =tags
 compile
+
+=introduced
+1.0.0

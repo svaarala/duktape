@@ -19,3 +19,6 @@ if (duk_is_error(ctx, -3)) {
 =tags
 stack
 error
+
+=introduced
+1.1.0

@@ -17,3 +17,6 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_STRING |
 
 =tags
 stack
+
+=introduced
+1.0.0

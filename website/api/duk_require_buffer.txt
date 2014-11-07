@@ -19,3 +19,6 @@ printf("buf=%p, size=%lu\n", ptr, (unsigned long) sz);
 =tags
 stack
 buffer
+
+=introduced
+1.0.0

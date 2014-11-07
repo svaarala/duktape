@@ -17,3 +17,6 @@ duk_remove(ctx, -2);          /* -> [ 123 345 ] */
 
 =tags
 stack
+
+=introduced
+1.0.0

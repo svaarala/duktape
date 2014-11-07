@@ -28,3 +28,6 @@ memory
 =seealso
 duk_free_raw
 
+
+=introduced
+1.0.0

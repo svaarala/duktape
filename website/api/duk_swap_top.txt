@@ -14,3 +14,6 @@ duk_swap_top(ctx, -3);
 
 =tags
 stack
+
+=introduced
+1.0.0

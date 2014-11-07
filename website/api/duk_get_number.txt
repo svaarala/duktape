@@ -11,3 +11,6 @@ index is invalid.</p>
 
 =example
 printf("value: %lf\n", (double) duk_get_number(ctx, -3));
+
+=introduced
+1.0.0

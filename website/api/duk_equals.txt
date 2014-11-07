@@ -31,3 +31,6 @@ compare
 
 =seealso
 duk_strict_equals
+
+=introduced
+1.0.0

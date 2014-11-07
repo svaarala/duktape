@@ -17,3 +17,6 @@ if (duk_is_constructor_call(ctx)) {
 
 =tags
 stack
+
+=introduced
+1.0.0

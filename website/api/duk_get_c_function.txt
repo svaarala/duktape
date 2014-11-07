@@ -20,3 +20,6 @@ funcptr = duk_get_c_function(ctx, -3);
 =tags
 stack
 function
+
+=introduced
+1.0.0

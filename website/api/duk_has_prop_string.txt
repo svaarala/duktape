@@ -19,3 +19,6 @@ if (duk_has_prop(ctx, -3, "myProperty")) {
 =tags
 property
 stack
+
+=introduced
+1.0.0

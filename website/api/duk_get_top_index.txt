@@ -20,3 +20,6 @@ stack
 
 =seealso
 duk_require_top_index
+
+=introduced
+1.0.0

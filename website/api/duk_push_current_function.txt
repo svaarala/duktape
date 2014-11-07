@@ -21,3 +21,6 @@ duk_push_current_function(ctx);
 =tags
 stack
 function
+
+=introduced
+1.0.0

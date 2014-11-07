@@ -50,3 +50,6 @@ duk_eval_lstring
 duk_eval_lstring_noresult
 duk_eval_file
 duk_eval_file_noresult
+
+=introduced
+1.0.0

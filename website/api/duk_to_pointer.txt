@@ -32,3 +32,6 @@ printf("coerced pointer: %p\n", duk_to_pointer(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

@@ -32,3 +32,6 @@ prototype
 
 =seealso
 duk_get_prototype
+
+=introduced
+1.0.0

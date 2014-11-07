@@ -32,3 +32,6 @@ printf("substring: %s\n", duk_get_string(ctx, -3));
 
 =tags
 string
+
+=introduced
+1.0.0

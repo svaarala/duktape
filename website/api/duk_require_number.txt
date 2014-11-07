@@ -14,3 +14,6 @@ printf("value: %lf\n", (double) duk_require_number(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

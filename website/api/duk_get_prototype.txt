@@ -20,3 +20,6 @@ prototype
 
 =seealso
 duk_set_prototype
+
+=introduced
+1.0.0

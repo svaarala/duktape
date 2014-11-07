@@ -15,3 +15,6 @@ duk_push_pointer(ctx, (void *) p);
 
 =tags
 stack
+
+=introduced
+1.0.0

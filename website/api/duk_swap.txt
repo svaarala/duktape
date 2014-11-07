@@ -17,3 +17,6 @@ duk_swap(ctx, -5, -1);
 
 =seealso
 duk_swap_top
+
+=introduced
+1.0.0

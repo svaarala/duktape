@@ -20,3 +20,6 @@ ptr = duk_resize_buffer(ctx, -3, 4096);
 =tags
 stack
 buffer
+
+=introduced
+1.0.0

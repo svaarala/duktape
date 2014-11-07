@@ -25,3 +25,6 @@ if (duk_has_prop_index(ctx, -3, 123)) {
 =tags
 property
 stack
+
+=introduced
+1.0.0

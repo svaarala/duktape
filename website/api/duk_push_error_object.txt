@@ -23,3 +23,6 @@ err_idx = duk_push_error_object(ctx, DUK_ERR_TYPE_ERROR, "invalid argument value
 stack
 object
 error
+
+=introduced
+1.0.0

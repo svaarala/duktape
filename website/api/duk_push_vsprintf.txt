@@ -40,3 +40,6 @@ void test(duk_context *ctx) {
 =tags
 stack
 string
+
+=introduced
+1.0.0

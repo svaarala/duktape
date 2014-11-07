@@ -21,3 +21,6 @@ duk_compile_lstring(ctx, 0, src, len);
 
 =tags
 compile
+
+=introduced
+1.0.0

@@ -30,3 +30,6 @@ magic
 =seealso
 duk_get_magic
 duk_set_magic
+
+=introduced
+1.0.0

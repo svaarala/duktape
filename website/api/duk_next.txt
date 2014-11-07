@@ -29,3 +29,6 @@ property
 
 =seealso
 duk_enum
+
+=introduced
+1.0.0

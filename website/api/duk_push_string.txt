@@ -29,3 +29,6 @@ duk_push_string(ctx, NULL);        /* push 'null' */
 =tags
 stack
 string
+
+=introduced
+1.0.0

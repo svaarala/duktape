@@ -30,3 +30,6 @@ duk_push_lstring(ctx, NULL, 10);  /* push empty string */
 =tags
 stack
 string
+
+=introduced
+1.0.0

@@ -28,3 +28,6 @@ thread
 
 =seealso
 duk_push_thread_new_globalenv
+
+=introduced
+1.0.0

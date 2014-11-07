@@ -17,3 +17,6 @@ if (duk_is_fixed_buffer(ctx, -3)) {
 =tags
 stack
 buffer
+
+=introduced
+1.0.0

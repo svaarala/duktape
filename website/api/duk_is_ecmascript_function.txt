@@ -20,3 +20,6 @@ if (duk_is_ecmascript_function(ctx, -3)) {
 =tags
 stack
 function
+
+=introduced
+1.0.0

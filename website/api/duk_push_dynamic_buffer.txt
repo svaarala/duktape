@@ -18,3 +18,6 @@ printf("allocated buffer, data area: %p\n", p);
 =tags
 stack
 buffer
+
+=introduced
+1.0.0

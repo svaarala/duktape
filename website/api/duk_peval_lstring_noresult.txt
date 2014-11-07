@@ -24,3 +24,6 @@ if (duk_peval_lstring_noresult(ctx, src, len) != 0) {
 =tags
 compile
 protected
+
+=introduced
+1.0.0

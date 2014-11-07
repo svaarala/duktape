@@ -13,3 +13,6 @@ duk_push_global_object(ctx);
 =tags
 stack
 object
+
+=introduced
+1.0.0

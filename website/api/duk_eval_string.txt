@@ -23,3 +23,6 @@ compile
 
 =seealso
 duk_eval_string_noresult
+
+=introduced
+1.0.0

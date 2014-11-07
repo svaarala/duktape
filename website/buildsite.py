@@ -283,6 +283,17 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (funcname, funcname))
 	if floating_list_tags and parts.has_key('tags'):
 		p = sorted(parts['tags'], reverse=True)  # reversed because floated to right (which reverses DOM order)
+
+		# For now, add the introduced version as a tag
+		if parts.has_key('introduced'):
+			p = [ parts['introduced'][0] ] + p
+		if parts.has_key('deprecated'):
+			# XXX: must mark deprecation
+			pass
+		if parts.has_key('removed'):
+			# XXX: must mark removal
+			pass
+
 		for idx, val in enumerate(p):
 			classes = [ 'apitag' ]
 			if val == 'experimental' or val == 'nonportable':

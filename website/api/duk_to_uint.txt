@@ -21,3 +21,6 @@ printf("ToInteger() coercion: %lf\n", (double) duk_get_number(ctx, -3));
 
 =tags
 stack
+
+=introduced
+1.0.0

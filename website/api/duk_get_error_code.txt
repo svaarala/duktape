@@ -20,3 +20,6 @@ if (duk_get_error_code(ctx, -3) == DUK_ERR_URI_ERROR) {
 =tags
 stack
 error
+
+=introduced
+1.1.0

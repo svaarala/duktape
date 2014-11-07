@@ -15,3 +15,6 @@ duk_push_uint(ctx, 123);
 
 =tags
 stack
+
+=introduced
+1.0.0

@@ -16,3 +16,6 @@ if (duk_is_strict_call(ctx)) {
 
 =tags
 function
+
+=introduced
+1.0.0

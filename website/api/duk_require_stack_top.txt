@@ -19,3 +19,6 @@ stack
 
 =seealso
 duk_check_stack_top
+
+=introduced
+1.0.0

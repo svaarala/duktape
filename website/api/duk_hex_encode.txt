@@ -28,3 +28,6 @@ codec
 
 =seealso
 duk_hex_decode
+
+=introduced
+1.0.0

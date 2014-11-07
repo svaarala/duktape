@@ -10,3 +10,6 @@ printf("stack top is %ld\n", (long) duk_get_top(ctx));
 
 =tags
 stack
+
+=introduced
+1.0.0

@@ -32,3 +32,6 @@ stack
 
 =seealso
 duk_require_stack_top
+
+=introduced
+1.0.0

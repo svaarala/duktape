@@ -28,3 +28,6 @@ codec
 
 =seealso
 duk_base64_decode
+
+=introduced
+1.0.0

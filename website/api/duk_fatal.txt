@@ -17,3 +17,6 @@ duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR, "assumption failed");
 
 =tags
 error
+
+=introduced
+1.0.0

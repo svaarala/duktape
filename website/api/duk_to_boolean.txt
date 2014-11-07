@@ -23,3 +23,6 @@ if (duk_to_boolean(ctx, -3)) {
 
 =tags
 stack
+
+=introduced
+1.0.0

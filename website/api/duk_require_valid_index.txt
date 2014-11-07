@@ -17,3 +17,6 @@ stack
 
 =seealso
 duk_is_valid_index
+
+=introduced
+1.0.0

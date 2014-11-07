@@ -66,3 +66,6 @@ heap
 =seealso
 duk_create_heap_default
 duk_destroy_heap
+
+=introduced
+1.0.0

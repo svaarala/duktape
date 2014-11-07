@@ -32,3 +32,6 @@ string
 
 =seealso
 duk_safe_to_lstring
+
+=introduced
+1.0.0

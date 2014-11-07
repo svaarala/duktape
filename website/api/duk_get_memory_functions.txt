@@ -19,3 +19,6 @@ duk_get_memory_functions(ctx, &funcs);
 =tags
 memory
 heap
+
+=introduced
+1.0.0

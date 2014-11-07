@@ -19,3 +19,6 @@ duk_eval_lstring_noresult(ctx, src, len);
 
 =tags
 compile
+
+=introduced
+1.0.0
