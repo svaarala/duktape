@@ -90,10 +90,10 @@ static int get_stack_raw(duk_context *ctx) {
 	if (!duk_has_prop_string(ctx, -1, "stack")) {
 		return 1;
 	}
-
-	/* XXX: should check here that object is an Error instance too,
-	 * i.e. 'stack' is special.
-	 */
+	if (!duk_is_error(ctx, -1)) {
+		/* Not an Error instance, don't read "stack". */
+		return 1;
+	}
 
 	duk_get_prop_string(ctx, -1, "stack");  /* caller coerces */
 	duk_remove(ctx, -2);

@@ -617,6 +617,12 @@ Planned
 1.1.0 (2014-XX-XX)
 ------------------
 
+* Add duk_is_error() API call to check if a value inherits from Error
+
+* Add duk_get_error_code() API call to check if a value inherits from
+  Error, and if so, map its error class to DUK_ERR_xxx codes so that
+  checking for built-in errors is more convenient
+
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
 * Fix fileName for functions defined in a module loaded using require(),
