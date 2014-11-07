@@ -803,7 +803,7 @@ duktape-releases:
 site: duktape-releases dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
-	cd duktape-releases/; git pull --rebase  # get binaries up-to-date
+	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
 	cd website/; $(PYTHON) buildsite.py ../site/
 	@rm -rf /tmp/site/
 	cp -r site /tmp/  # FIXME
@@ -811,6 +811,8 @@ site: duktape-releases dukweb.js jquery-1.11.0.js
 .PHONY:	dist-site
 dist-site:	tidy-site site
 	# When doing a final dist build, run html tidy
+	# Also pull binaries up-to-date
+	cd duktape-releases/; git pull --rebase  # get binaries up-to-date
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED).tar*
 	mkdir duktape-site-$(DUK_VERSION_FORMATTED)
