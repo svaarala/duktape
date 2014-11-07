@@ -158,7 +158,9 @@ DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 # Duktape command line tool - example of a main() program, used
 # for unit testing
 DUKTAPE_CMDLINE_SOURCES = \
-	$(DISTCMD)/duk_cmdline.c
+	$(DISTCMD)/duk_cmdline.c \
+	dist/examples/alloc-logging/duk_alloc_logging.c \
+	dist/examples/alloc-torture/duk_alloc_torture.c
 
 # Compiler setup for Linux
 CC	= gcc
@@ -169,6 +171,8 @@ CCOPTS_SHARED += -Wall
 CCOPTS_SHARED += -Wextra  # very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wunused-result
 CCOPTS_SHARED += -I./dist/src
+CCOPTS_SHARED += -I./dist/examples/alloc-logging
+CCOPTS_SHARED += -I./dist/examples/alloc-torture
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -215,6 +219,8 @@ CCOPTS_SHARED += -DDUK_OPT_DEBUG_BUFSIZE=512
 #CCOPTS_SHARED += -DDUK_OPT_NO_ZERO_BUFFER_DATA
 #CCOPTS_SHARED += -DDUK_OPT_USER_INITJS='"this.foo = 123"'
 CCOPTS_SHARED += -DDUK_CMDLINE_FANCY
+CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_LOGGING
+CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_TORTURE
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) -Os -fomit-frame-pointer
 CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
