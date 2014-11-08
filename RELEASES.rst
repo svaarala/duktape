@@ -611,6 +611,13 @@ Released
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
 
+1.0.2 (2014-11-08)
+------------------
+
+* Quick fix for C++ compilation issue caused by Duktape using both
+  static declaration and a static define which is not allowed in C++;
+  the quick fix is to avoid "static" entirely with C++ (GH-63)
+
 Planned
 =======
 
