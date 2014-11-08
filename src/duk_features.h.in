@@ -1983,6 +1983,24 @@ typedef FILE duk_file;
 #define DUK_LOCAL_DECL     static
 #define DUK_LOCAL          static
 
+/* In C++ one cannot declare and define "static" variables separately (GH-63).
+ * As a quick workaround, use "extern" instead: it makes the symbol table ugly
+ * but allows compilation.  A better fix is to avoid the need to forward declare
+ * internal symbols, but it requires changes to combine_src.py.
+ *
+ * XXX: better fix is needed.
+ */
+#if defined(DUK_F_CPP)
+#undef DUK_INTERNAL_DECL
+#undef DUK_INTERNAL
+#undef DUK_LOCAL_DECL
+#undef DUK_LOCAL
+#define DUK_INTERNAL_DECL  extern
+#define DUK_INTERNAL       /*empty*/
+#define DUK_LOCAL_DECL     extern
+#define DUK_LOCAL          /*empty*/
+#endif
+
 /*
  *  __FILE__, __LINE__, __func__ are wrapped.  Especially __func__ is a
  *  problem because it is not available even in some compilers which try
