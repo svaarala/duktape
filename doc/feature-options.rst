@@ -347,6 +347,15 @@ of the map result, see
 If this option is given, ``map()`` will behave in a strictly conforming
 fashion, ignoring non-existent trailing elements in the result ``length``.
 
+DUK_OPT_NO_NONSTD_JSON_ESC_U2028_U2029
+--------------------------------------
+
+By default Duktape JSON.stringify() will escape U+2028 and U+2029 which
+is non-compliant behavior.  This is the default to make JSON.stringify()
+output valid when embedded in a web page or parsed with ``eval()``.  This
+feature option enables the compliant behavior, i.e. no escaping for U+2028
+and U+2029.
+
 DUK_OPT_NO_COMMONJS_MODULES
 ---------------------------
 

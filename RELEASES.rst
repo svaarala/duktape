@@ -629,6 +629,10 @@ Planned
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
 
+* Change JSON.stringify() to escape U+2028 and U+2029 by default to make
+  the output a valid Javascript string, so that it can be embedded in a
+  web page or parsed with eval (see GH-68)
+
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
   limitations (see GH-67)
 
