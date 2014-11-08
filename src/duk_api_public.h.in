@@ -52,6 +52,8 @@ typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code, const 
 typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
+typedef duk_size_t (*duk_debug_read_function) (void *udata, char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer, duk_size_t length);
 
 struct duk_memory_functions {
 	duk_alloc_function alloc_func;
@@ -88,6 +90,9 @@ struct duk_number_list_entry {
  * Not available in the Ecmascript environment.
  */
 #define DUK_GIT_DESCRIBE                  @GIT_DESCRIBE_CSTRING@
+
+/* Duktape debug protocol version used by this build. */
+#define DUK_DEBUG_PROTOCOL_VERSION        1
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
@@ -856,6 +861,13 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
 #define duk_dump_context_stdout(ctx)  ((void) 0)
 #define duk_dump_context_stderr(ctx)  ((void) 0)
 #endif  /* DUK_USE_FILE_IO */
+
+/*
+ *  Debugger (debug protocol)
+ */
+
+DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function read_cb, duk_debug_write_function write_cb, void *udata);
+DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 
 /*
  *  C++ name mangling

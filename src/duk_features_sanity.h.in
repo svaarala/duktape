@@ -66,6 +66,19 @@
 #endif
 
 /*
+ *  Debugger consistency
+ */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+#if !defined(DUK_USE_INTERRUPT_COUNTER)
+#error DUK_USE_INTERRUPT_COUNTER is needed when debugger support is enabled
+#endif
+#if !defined(DUK_USE_PC2LINE)
+#error DUK_USE_PC2LINE is needed when debugger support is enabled
+#endif
+#endif
+
+/*
  *  Garbage collection consistency
  */
 

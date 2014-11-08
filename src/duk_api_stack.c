@@ -2579,11 +2579,12 @@ DUK_INTERNAL void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	thr->valstack_top++;
 }
 
-#if 0  /*unused*/
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+/* Right now only needed by the debugger. */
 DUK_INTERNAL void duk_push_unused(duk_context *ctx) {
 	duk_tval tv;
 	DUK_ASSERT(ctx != NULL);
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(&tv);
+	DUK_TVAL_SET_UNDEFINED_UNUSED(&tv);
 	duk_push_tval(ctx, &tv);
 }
 #endif

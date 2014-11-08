@@ -72,6 +72,7 @@ mkdir $DIST/examples/sandbox
 mkdir $DIST/examples/alloc-logging
 mkdir $DIST/examples/alloc-torture
 mkdir $DIST/examples/alloc-hybrid
+mkdir $DIST/examples/debug-trans-socket
 
 # Copy most files directly
 
@@ -152,6 +153,8 @@ for i in \
 	duk_hthread.h		\
 	duk_hthread_misc.c	\
 	duk_hthread_stacks.c	\
+	duk_debugger.c		\
+	duk_debugger.h		\
 	duk_internal.h		\
 	duk_jmpbuf.h		\
 	duk_js_bytecode.h	\
@@ -300,6 +303,14 @@ for i in \
 	duk_alloc_hybrid.h \
 	; do
 	cp examples/alloc-hybrid/$i $DIST/examples/alloc-hybrid/
+done
+
+for i in \
+	README.rst \
+	duk_debug_trans_socket.c \
+	duk_debug_trans_socket.h \
+	; do
+	cp examples/debug-trans-socket/$i $DIST/examples/debug-trans-socket/
 done
 
 cp extras/README.rst $DIST/extras/

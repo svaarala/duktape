@@ -205,6 +205,12 @@ DUK_LOCAL void duk__mark_roots_heap(duk_heap *heap) {
 
 	duk__mark_tval(heap, &heap->lj.value1);
 	duk__mark_tval(heap, &heap->lj.value2);
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	for (i = 0; i < heap->dbg_breakpoint_count; i++) {
+		duk__mark_heaphdr(heap, (duk_heaphdr *) heap->dbg_breakpoints[i].filename);
+	}
+#endif
 }
 
 /*
@@ -1068,6 +1074,7 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
  */
 
 DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
+	duk_hthread *thr;
 	duk_size_t count_keep_obj;
 	duk_size_t count_keep_str;
 	duk_size_t tmp;
@@ -1076,7 +1083,8 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
 	 */
-	if (duk__get_temp_hthread(heap) == NULL) {
+	thr = duk__get_temp_hthread(heap);
+	if (thr == NULL) {
 		DUK_D(DUK_DPRINT("temporary hack: gc skipped because we don't have a temp thread"));
 
 		/* reset voluntary gc trigger count */
@@ -1285,6 +1293,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, no voluntary trigger",
 	                 (long) count_keep_obj, (long) count_keep_str));
 #endif
+
 	return 0;  /* OK */
 }
 

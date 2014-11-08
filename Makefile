@@ -106,6 +106,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_hbuffer_ops.c \
 	$(DISTSRCSEP)/duk_unicode_tables.c \
 	$(DISTSRCSEP)/duk_unicode_support.c \
+	$(DISTSRCSEP)/duk_debugger.c \
 	$(DISTSRCSEP)/duk_builtins.c \
 	$(DISTSRCSEP)/duk_js_ops.c \
 	$(DISTSRCSEP)/duk_js_var.c \
@@ -160,7 +161,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	$(DISTCMD)/duk_cmdline.c \
 	dist/examples/alloc-logging/duk_alloc_logging.c \
 	dist/examples/alloc-torture/duk_alloc_torture.c \
-	dist/examples/alloc-hybrid/duk_alloc_hybrid.c
+	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
+	dist/examples/debug-trans-socket/duk_debug_trans_socket.c
 
 # Compiler setup for Linux
 CC	= gcc
@@ -196,6 +198,10 @@ CCOPTS_FEATURES += -DDUK_OPT_DEBUG_BUFSIZE=512
 #CCOPTS_FEATURES += -DDUK_OPT_NO_BROWSER_LIKE
 #CCOPTS_FEATURES += -DDUK_OPT_NO_SECTION_B
 CCOPTS_FEATURES += -DDUK_OPT_INTERRUPT_COUNTER
+CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_SUPPORT
+CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_FWD_PRINTALERT
+CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_FWD_LOGGING
+CCOPTS_FEATURES += -DDUK_OPT_TARGET_INFO='"duk command built from Duktape repo"'
 #CCOPTS_FEATURES += -DDUK_OPT_NO_JX
 #CCOPTS_FEATURES += -DDUK_OPT_NO_JC
 #CCOPTS_FEATURES += -DDUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT
@@ -228,12 +234,13 @@ CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_HYBRID
+CCOPTS_FEATURES += -DDUK_CMDLINE_DEBUGGER_SUPPORT
 
 CCOPTS_SHARED =
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wall -Wextra -Wunused-result
-CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
+CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/examples/debug-trans-socket
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -252,7 +259,7 @@ CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
 GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
-
+GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER
 GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
 GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
 GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS

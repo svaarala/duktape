@@ -165,6 +165,10 @@ struct duk_compiler_func {
 	duk_int_t fnum_next;                /* inner function numbering */
 	duk_int_t num_formals;              /* number of formal arguments */
 	duk_reg_t reg_stmt_value;           /* register for writing value of 'non-empty' statements (global or eval code), -1 is marker */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_int_t min_line;                 /* XXX: typing (duk_hcompiledfunction has duk_uint32_t) */
+	duk_int_t max_line;
+#endif
 
 	/* status booleans */
 	duk_bool_t is_function;             /* is an actual function (not global/eval code) */

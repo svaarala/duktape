@@ -105,7 +105,7 @@ DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index);
 
-#if 0  /*unused*/
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL void duk_push_unused(duk_context *ctx);
 #endif
 DUK_INTERNAL_DECL void duk_push_hstring(duk_context *ctx, duk_hstring *h);

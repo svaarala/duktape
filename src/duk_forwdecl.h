@@ -29,6 +29,7 @@ union duk_propvalue;
 struct duk_propdesc;
 
 struct duk_heap;
+struct duk_breakpoint;
 
 struct duk_activation;
 struct duk_catcher;
@@ -75,6 +76,7 @@ typedef union duk_propvalue duk_propvalue;
 typedef struct duk_propdesc duk_propdesc;
 
 typedef struct duk_heap duk_heap;
+typedef struct duk_breakpoint duk_breakpoint;
 
 typedef struct duk_activation duk_activation;
 typedef struct duk_catcher duk_catcher;

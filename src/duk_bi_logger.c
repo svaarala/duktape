@@ -288,6 +288,22 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 
 	/* [ arg1 ... argN this loggerLevel loggerName buffer ] */
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT) && defined(DUK_USE_DEBUGGER_FWD_LOGGING)
+	/* Do debugger forwarding before raw() because the raw() function
+	 * doesn't get the log level right now.
+	 */
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		const char *log_buf;
+		duk_size_t sz_buf;
+		log_buf = (const char *) duk_get_buffer(ctx, -1, &sz_buf);
+		DUK_ASSERT(log_buf != NULL);
+		duk_debug_write_notify(thr, DUK_DBG_CMD_LOG);
+		duk_debug_write_int(thr, (duk_int32_t) entry_lev);
+		duk_debug_write_string(thr, (const char *) log_buf, sz_buf);
+		duk_debug_write_eom(thr);
+	}
+#endif
+
 	/* Call this.raw(msg); look up through the instance allows user to override
 	 * the raw() function in the instance or in the prototype for maximum
 	 * flexibility.

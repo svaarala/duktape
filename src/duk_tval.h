@@ -188,6 +188,14 @@ typedef union duk_double_union duk_tval;
  *  Portable 12-byte representation
  */
 
+/* Note: not initializing all bytes is normally not an issue: Duktape won't
+ * read or use the uninitialized bytes so valgrind won't issue warnings.
+ * In some special cases a harmless valgrind warning may be issued though.
+ * For example, the DumpHeap debugger command writes out a compiled function's
+ * 'data' area as is, including any uninitialized bytes, which causes a
+ * valgrind warning.
+ */
+
 #ifdef DUK_USE_FULL_TVAL
 #error no 'full' tagged values in 12-byte representation
 #endif

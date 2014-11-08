@@ -55,6 +55,10 @@ void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
 void AJS_Free(void *udata, void *ptr);
 #endif
 
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+#include "duk_debug_trans_socket.h"
+#endif
+
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
 #define  LINEBUF_SIZE       65536
@@ -456,6 +460,7 @@ int main(int argc, char *argv[]) {
 	int interactive = 0;
 	int memlimit_high = 1;
 	int alloc_provider = ALLOC_DEFAULT;
+	int debugger = 0;
 	int i;
 
 #ifdef DUK_CMDLINE_AJSHEAP
@@ -502,6 +507,8 @@ int main(int argc, char *argv[]) {
 			alloc_provider = ALLOC_HYBRID;
 		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
 			alloc_provider = ALLOC_AJSHEAP;
+		} else if (strcmp(arg, "--debugger") == 0) {
+			debugger = 1;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -609,6 +616,24 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	if (debugger) {
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+		fprintf(stderr, "Debugger enabled, create socket and wait for connection\n");
+		fflush(stderr);
+		duk_debug_trans_socket_init();
+		duk_debug_trans_socket_waitconn();
+		fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
+		fflush(stderr);
+		duk_debugger_attach(ctx,
+		                    duk_debug_trans_socket_read,
+		                    duk_debug_trans_socket_write,
+		                    NULL);
+#else
+		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
+		fflush(stderr);
+#endif
+	}
+
 	/*
 	 *  Execute any argument file(s)
 	 */
@@ -707,6 +732,9 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef DUK_CMDLINE_AJSHEAP
 	                "   --alloc-ajsheap    use ajsheap allocator (enabled by default with 'ajduk')\n"
+#endif
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+			"   --debugger         start example debugger\n"
 #endif
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");

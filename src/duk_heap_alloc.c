@@ -690,6 +690,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 			res->strs[i] = NULL;
 	        }
 	}
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	res->dbg_read_cb = NULL;
+	res->dbg_write_cb = NULL;
+	res->dbg_step_thread = NULL;
+#endif
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */
 
 	res->alloc_func = alloc_func;

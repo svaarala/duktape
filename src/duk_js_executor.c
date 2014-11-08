@@ -1340,23 +1340,59 @@ duk_bool_t duk__handle_fast_return(duk_hthread *thr,
  */
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
-DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
+
+#define DUK__INT_NOACTION    0    /* no specific action, resume normal execution */
+#define DUK__INT_RESTART     1    /* must "goto restart_execution", e.g. breakpoints changed */
+
+DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
+	duk_context *ctx = (duk_context *) thr;
 	duk_int_t ctr;
 	duk_activation *act;
 	duk_hcompiledfunction *fun;
+	duk_bool_t immediate = 0;
+	duk_small_uint_t retval;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_uint_fast32_t line = 0;
+	duk_bool_t send_status;
+	duk_bool_t process_messages;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->callstack != NULL);
 	DUK_ASSERT(thr->callstack_top > 0);
+	DUK_UNREF(ctx);
+
+	ctr = DUK_HEAP_INTCTR_DEFAULT;
+
+	/*
+	 *  Avoid nested calls.  Concretely this happens during debugging, e.g.
+	 *  when we eval() an expression.
+	 */
+
+	if (DUK_HEAP_HAS_INTERRUPT_RUNNING(thr->heap)) {
+		DUK_DD(DUK_DDPRINT("nested executor interrupt, ignoring"));
+
+		/* Set a high interrupt counter; the original executor
+		 * interrupt invocation will rewrite before exiting.
+		 */
+		thr->heap->interrupt_init = ctr;
+		thr->heap->interrupt_counter = ctr - 1;
+		thr->interrupt_counter = ctr - 1;
+		return DUK__INT_NOACTION;
+	}
+	DUK_HEAP_SET_INTERRUPT_RUNNING(thr->heap);
 
 	act = thr->callstack + thr->callstack_top - 1;
 	fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION((duk_hobject *) fun));
 	DUK_UNREF(fun);
 
-	ctr = DUK_HEAP_INTCTR_DEFAULT;
 
 #if defined(DUK_USE_EXEC_TIMEOUT_CHECK)
+	/*
+	 *  Execution timeout check
+	 */
+
 	if (DUK_USE_EXEC_TIMEOUT_CHECK(thr->heap->heap_udata)) {
 		/* Keep throwing an error whenever we get here.  The unusual values
 		 * are set this way because no instruction is ever executed, we just
@@ -1374,31 +1410,176 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 	}
 #endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
 
-#if 0
-	/* XXX: cumulative instruction count example */
-	static int step_count = 0;
-	step_count += thr->heap->interrupt_init;
-	if (step_count >= 1000000L) {
-		/* Keep throwing an error whenever we get here.  The unusual values
-		 * are set this way because no instruction is ever executed, we just
-		 * throw an error until all try/catch/finally and other catchpoints
-		 * have been exhausted.
-		 */
-		DUK_D(DUK_DPRINT("execution step limit reached, throwing a RangeError"));
-		thr->heap->interrupt_init = 0;
-		thr->heap->interrupt_counter = 0;
-		thr->interrupt_counter = 0;
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "execution step limit");
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* FIXME: restructure */
+	if (!DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		goto skip_debugger;
 	}
-#endif
 
-#if 0
-	/* XXX: debugger integration: single step, breakpoint checks, etc */
-	if (0) {
+	/* FIXME: a heap pointer here instead of thr->heap? */
+
+	/*
+	 *  Breakpoint and step state checks
+	 */
+
+	if (act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE ||
+	    (thr->heap->dbg_step_thread == thr &&
+	     thr->heap->dbg_step_csindex == thr->callstack_top - 1)) {
+		duk_activation *act = thr->callstack + thr->callstack_top - 1;
+		duk_breakpoint *bp;
+		duk_breakpoint **bp_active;
+
+		line = duk_debug_curr_line(thr);
+
+		if (act->prev_line != line) {
+			DUK_DDD(DUK_DDDPRINT("PC=%ld line=%ld; line transition: %ld -> %ld",
+			                     (long) act->pc, (long) line, (long) act->prev_line, (long) line));
+
+			/* Stepped?  Step out is handled by callstack unwind. */
+			if ((thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO ||
+			     thr->heap->dbg_step_type == DUK_STEP_TYPE_OVER) &&
+			    (thr->heap->dbg_step_thread == thr) &&
+			    (thr->heap->dbg_step_csindex == thr->callstack_top - 1) &&
+			    (line != thr->heap->dbg_step_startline)) {
+				DUK_D(DUK_DPRINT("STEP STATE TRIGGERED PAUSE at line %ld",
+				                 (long) line));
+
+				/* FIXME: refactor */
+				thr->heap->dbg_paused = 1;
+				DUK_HEAP_CLEAR_STEP_STATE(thr->heap);
+				thr->heap->dbg_state_dirty = 1;
+			}
+
+			/* Check for breakpoints only on line transition.
+			 * Breakpoint is triggered when we enter or cross
+			 * the target line, and the previous line was within
+			 * the same function.
+			 */
+			bp_active = thr->heap->dbg_breakpoints_active;
+			for (;;) {
+				bp = *bp_active++;
+				if (bp == NULL) {
+					break;
+				}
+				DUK_ASSERT(bp->filename != NULL);
+				if (act->prev_line != 0 && act->prev_line < bp->line && line >= bp->line) {
+					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
+					                 (duk_heaphdr *) bp->filename, (long) bp->line));
+
+					/* FIXME: refactor */
+					thr->heap->dbg_paused = 1;
+					DUK_HEAP_CLEAR_STEP_STATE(thr->heap);
+					thr->heap->dbg_state_dirty = 1;
+				}
+			}
+		} else {
+			DUK_D(DUK_DPRINT("PC=%ld line=%ld", (long) act->pc, (long) line));
+		}
+		act->prev_line = line;
+	}
+
+	/*
+	 *  Rate limit check for sending status update or peeking into
+	 *  the debug transport.  Both can be expensive operations that
+	 *  we don't want to do on every opcode.
+	 *
+	 *  Making sure the interval remains reasonable on a wide variety
+	 *  of targets and bytecode is difficult without a timestamp, so
+	 *  we use a Date-provided timestamp for the rate limit check.
+	 *  But since it's also expensive to get a timestamp, a bytecode
+	 *  counter is used to rate limit getting timestamps.
+	 */
+
+	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused) {
+		send_status = 1;
+	} else {
+		send_status = 0;
+	}
+
+	if (thr->heap->dbg_paused) {
+		process_messages = 1;
+	} else {
+		process_messages = 0;
+	}
+
+	thr->heap->dbg_exec_counter += thr->heap->interrupt_init;
+	if (thr->heap->dbg_exec_counter - thr->heap->dbg_last_counter >= DUK_HEAP_DBG_RATELIMIT_OPCODES) {
+		/* Overflow of the execution counter is fine and doesn't break
+		 * anything here.
+		 */
+
+		duk_double_t now, diff_last;
+
+		thr->heap->dbg_last_counter = thr->heap->dbg_exec_counter;
+		now = duk_bi_date_get_now(ctx);
+
+		diff_last = now - thr->heap->dbg_last_time;
+		if (diff_last < 0.0 || diff_last >= (duk_double_t) DUK_HEAP_DBG_RATELIMIT_MILLISECS) {
+			/* Negative value checked so that a "time jump" works
+			 * reasonably.
+			 *
+			 * Same interval is now used for status sending and
+			 * peeking.
+			 */
+
+			thr->heap->dbg_last_time = now;
+			send_status = 1;
+			process_messages = 1;
+		}
+	}
+
+	/*
+	 *  Send status
+	 */
+
+	if (send_status) {
+		duk_debug_send_status(thr);
+		thr->heap->dbg_state_dirty = 0;
+	}
+
+	/*
+	 *  Process messages.  If we're paused, we'll block for new messages.
+	 *  if we're not paused, we'll process anything we can peek but won't
+	 *  block for more.
+	 */
+
+	if (process_messages) {
+		duk_debug_process_messages(thr);
+	}
+
+	/* FIXME: any case here where we need to re-send status? */
+
+	/* Continue checked execution if there are breakpoints or we're stepping.
+	 * Also use checked execution if paused flag is active - it shouldn't be
+	 * because the debug message loop shouldn't terminate if it was.  Step out
+	 * is handled by callstack unwind and doesn't need checked execution.
+	 */
+
+	if (act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE ||
+	    ((thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO ||
+	      thr->heap->dbg_step_type == DUK_STEP_TYPE_OVER) &&
+	     thr->heap->dbg_step_thread == thr &&
+	     thr->heap->dbg_step_csindex == thr->callstack_top - 1) ||
+	     thr->heap->dbg_paused) {
+		immediate = 1;
+	}
+
+ skip_debugger:
+
+	/* FIXME: proper handling for debugger teardown... if no debug connection
+	 * is active, no checked execution etc.
+	 */
+
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
+	/*
+	 *  Update the interrupt counter
+	 */
+
+	if (immediate) {
 		/* Cause an interrupt after executing one instruction. */
 		ctr = 1;
 	}
-#endif
 
 	DUK_DDD(DUK_DDDPRINT("executor interrupt finished, cstop=%ld, pc=%ld, nextctr=%ld",
 	                     (long) thr->callstack_top, (long) act->pc, (long) ctr));
@@ -1410,6 +1591,17 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 	thr->heap->interrupt_init = ctr;
 	thr->heap->interrupt_counter = ctr - 1;
 	thr->interrupt_counter = ctr - 1;
+	DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
+
+	retval = DUK__INT_NOACTION;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* FIXME: just restart if any debug commands were processed? */
+	if (thr->heap->dbg_brkpt_dirty) {
+		DUK_D(DUK_DPRINT("breakpoints dirty, restart execution to recheck them"));
+		retval = DUK__INT_RESTART;
+	}
+#endif
+	return retval;
 }
 #endif  /* DUK_USE_INTERRUPT_COUNTER */
 
@@ -1617,23 +1809,147 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 * fine for this, so using 'entry_thread' is just to silence warnings.)
 	 */
 	thr = entry_thread->heap->curr_thread;
-#ifdef DUK_USE_INTERRUPT_COUNTER
-	thr->interrupt_counter = thr->heap->interrupt_counter;
-#endif
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->callstack_top >= 1);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
 
-	/* XXX: shrink check flag? */
+#ifdef DUK_USE_INTERRUPT_COUNTER
+	thr->interrupt_counter = thr->heap->interrupt_counter;
+#endif
 
 	/* assume that thr->valstack_bottom has been set-up before getting here */
 	act = thr->callstack + thr->callstack_top - 1;
 	fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
+	DUK_ASSERT(fun != NULL);
+	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
 	bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun);
 
-	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* Debugger breakpoint check.  Note that we can't do this when the
+	 * activation is created because the breakpoint status may change
+	 * later, so we must check it every time we're about to execute it.
+	 */
+
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		duk_heap *heap = thr->heap;
+		duk_tval *tv_tmp;
+		duk_hstring *filename;
+		duk_small_uint_t bp_idx;
+		duk_breakpoint **bp_active = heap->dbg_breakpoints_active;
+
+		act->flags &= ~DUK_ACT_FLAG_BREAKPOINT_ACTIVE;
+
+		tv_tmp = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) fun, DUK_HTHREAD_STRING_FILE_NAME(thr));
+		if (tv_tmp && DUK_TVAL_IS_STRING(tv_tmp)) {
+			filename = DUK_TVAL_GET_STRING(tv_tmp);
+
+			/* Figure out all active breakpoints.  A breakpoint is
+			 * considered active if the current function's fileName
+			 * matches the breakpoint's fileName, AND there is no
+			 * inner function that has matching line numbers
+			 * (otherwise a breakpoint would be triggered both
+			 * inside and outside of the inner function which would
+			 * be confusing).  Example:
+			 *
+			 *     function foo() {
+			 *         print('foo');
+			 *         function bar() {    <-.  breakpoints in these
+			 *             print('bar');     |  lines should not affect
+			 *         }                   <-'  foo() execution
+			 *         bar();
+			 *     }
+			 *
+			 * We need a few things that are only available when
+			 * debugger support is enabled: (1) a line range for
+			 * each function, and (2) access to the function
+			 * template to access the inner functions (and their
+			 * line ranges).
+			 *
+			 * It's important to have a narrow match for active
+			 * breakpoints so that we don't enter checked execution
+			 * when that's not necessary.  For instance, if we're
+			 * running inside a certain function and there's
+			 * breakpoint outside in (after the call site), we
+			 * don't want to slow down execution of the function.
+			 */
+
+			/* FIXME: because a single file will have a lot of functions,
+			 * we should also check that the line number range of the
+			 * function contains a breakpoint.
+			 */
+
+			for (bp_idx = 0; bp_idx < heap->dbg_breakpoint_count; bp_idx++) {
+				duk_breakpoint *bp = heap->dbg_breakpoints + bp_idx;
+				duk_hobject **funcs, **funcs_end;
+				duk_hcompiledfunction *inner_fun;
+				duk_bool_t bp_match;
+
+				if (bp->filename == filename &&
+				    bp->line >= fun->start_line && bp->line <= fun->end_line) {
+					bp_match = 1;
+					DUK_DD(DUK_DDPRINT("breakpoint filename and line match: "
+					                   "%s:%ld vs. %s (line %ld vs. %ld-%ld)",
+					                   DUK_HSTRING_GET_DATA(bp->filename),
+					                   (long) bp->line,
+					                   DUK_HSTRING_GET_DATA(filename),
+					                   (long) bp->line,
+					                   (long) fun->start_line,
+					                   (long) fun->end_line));
+
+					funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, fun);
+					funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, fun);
+					while (funcs != funcs_end) {
+						inner_fun = (duk_hcompiledfunction *) *funcs;
+						DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) inner_fun));
+						if (bp->line >= inner_fun->start_line && bp->line <= inner_fun->end_line) {
+							DUK_DD(DUK_DDPRINT("inner function masks ('captures') breakpoint"));
+							bp_match = 0;
+							break;
+						}
+						funcs++;
+					}
+
+					if (bp_match) {
+						act->flags |= DUK_ACT_FLAG_BREAKPOINT_ACTIVE;
+						*bp_active = heap->dbg_breakpoints + bp_idx;
+						bp_active++;
+					}
+				}
+			}
+		}
+
+		*bp_active = NULL;  /* terminate */
+		heap->dbg_brkpt_dirty = 0;  /* mark rechecked */
+
+		DUK_DD(DUK_DDPRINT("ACTIVE BREAKPOINTS: %ld", (long) (bp_active - thr->heap->dbg_breakpoints_active)));
+
+		/* Force pause if we were doing "step into" in another activation. */
+		if (thr->heap->dbg_step_thread != NULL &&
+		    thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO &&
+		    (thr->heap->dbg_step_thread != thr ||
+		     thr->heap->dbg_step_csindex != thr->callstack_top - 1)) {
+			DUK_D(DUK_DPRINT("STEP INTO ACTIVE, FORCE PAUSED"));
+
+			/* FIXME: helper to set paused / step / send status */
+			thr->heap->dbg_paused = 1;
+			DUK_HEAP_CLEAR_STEP_STATE(thr->heap);
+			thr->heap->dbg_state_dirty = 1;
+		}
+
+		/* Force interrupt right away if we're paused or in "checked mode".
+		 * Step out is handled by callstack unwind.
+		 */
+		if (act->flags & (DUK_ACT_FLAG_BREAKPOINT_ACTIVE) ||
+		    thr->heap->dbg_paused ||
+		    (thr->heap->dbg_step_type != DUK_STEP_TYPE_OUT &&
+		     thr->heap->dbg_step_csindex == thr->callstack_top - 1)) {
+			thr->interrupt_counter = 0;
+		}
+	}
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
+	/* XXX: shrink check flag? */
 
 	/*
 	 *  Bytecode interpreter.
@@ -1705,7 +2021,12 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			thr->interrupt_counter = int_ctr - 1;
 		} else {
 			/* Trigger at zero or below */
-			duk__executor_interrupt(thr);
+			duk_small_uint_t exec_int_ret;
+
+			exec_int_ret = duk__executor_interrupt(thr);
+			if (exec_int_ret == DUK__INT_RESTART) {
+				goto restart_execution;
+			}
 		}
 #endif
 
@@ -2861,7 +3182,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                num_stack_args,
 				                call_flags);
 
-				/* XXX: who should restore? */
+				/* FIXME: duk_js_call.c should handle this now -- replace with assert? */
 				duk_require_stack_top(ctx, (duk_idx_t) fun->nregs);  /* may have shrunk by inner calls, must recheck */
 				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
@@ -2869,6 +3190,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				 * will store and restore our state.
 				 */
 			}
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+			/* When debugger is enabled, we need to recheck the activation
+			 * status after returning.
+			 */
+			goto restart_execution;
+#endif
 			break;
 		}
 
@@ -3586,6 +3914,27 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
 				duk__vm_arith_unary_op(thr, DUK__REGCONSTP(c), b, extraop);
+				break;
+			}
+
+			case DUK_EXTRAOP_DEBUGGER: {
+				/* Opcode only emitted by compiler when debugger
+				 * support is enabled.  Ignore it silently without
+				 * debugger support, in case it has been loaded
+				 * from precompiled bytecode.
+				 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+				DUK_D(DUK_DPRINT("DEBUGGER statement encountered, halt execution"));
+				if (thr->heap->dbg_read_cb != NULL) {  /* FIXME: macro check for 'active' */
+					DUK_HEAP_SET_PAUSED(thr->heap);
+					DUK_HEAP_CLEAR_STEP_STATE(thr->heap);
+					duk_debug_send_status(thr);
+					/* FIXME: it'd be nice if status sending was automatic somehow. */
+					goto restart_execution;
+				}
+#else
+				DUK_D(DUK_DPRINT("DEBUGGER statement ignored, no debugger support"));
+#endif
 				break;
 			}
 

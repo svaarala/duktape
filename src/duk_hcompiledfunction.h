@@ -226,6 +226,14 @@ struct duk_hcompiledfunction {
 	 *  More detailed description of these properties can be found
 	 *  in the documentation.
 	 */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* Line number range for function.  Needed during debugging to
+	 * determine active breakpoints.
+	 */
+	duk_uint32_t start_line;
+	duk_uint32_t end_line;
+#endif
 };
 
 #endif  /* DUK_HCOMPILEDFUNCTION_H_INCLUDED */
