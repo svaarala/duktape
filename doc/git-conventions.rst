@@ -140,6 +140,10 @@ Making fixes to maintenance branches
 
   - http://sleeplessgeek.blogspot.fi/2011/03/using-git-cherry-pick.html
 
+* Basically::
+
+    $ git cherry-pick <commit>
+
 Commit messages
 ===============
 
