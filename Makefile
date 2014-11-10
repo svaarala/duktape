@@ -797,6 +797,7 @@ ajduk: alljoyn-js ajtcl dist
 		$(CCOPTS_NONDEBUG) \
 		-m32 \
 		-UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L \
+		-DDUK_OPT_LIGHTFUNC_BUILTINS \
 		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
 		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
 		-lm -lpthread
