@@ -5,7 +5,10 @@
 <p>Duktape has a built-in minimal module loading framework based on
 <a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>.
 The internals are documented in
-<a href="https://github.com/svaarala/duktape/blob/master/doc/modules.rst">modules.rst</a>.</p>
+<a href="https://github.com/svaarala/duktape/blob/master/doc/modules.rst">modules.rst</a>.
+A recommended (but not mandatory) C module convention is described in
+<a href="https://github.com/svaarala/duktape/blob/master/doc/c-module-convention.rst">c-module-convention.rst</a>.
+</p>
 
 <p>You can load modules from Ecmascript code with the global <code>require()</code> function:</p>
 <pre class="ecmascript-code">
@@ -195,8 +198,10 @@ application; it is most useful for testing.</p>
 -->
 <h2 id="writing-c-modules">Writing modules in C</h2>
 
-<p>There is currently no strongly recommended convention for writing C modules.
-However, most C modules will need the following parts:</p>
+<p>There's a recommended (but not mandatory) convention for writing C modules, see
+<a href="https://github.com/svaarala/duktape/blob/master/doc/c-module-convention.rst">c-module-convention.rst</a>.</p>
+
+<p>Most C modules will need the following parts:</p>
 <pre class="c-code">
 /*
  *  Identify module
@@ -234,34 +239,21 @@ static const duk_number_list_entry my_module_consts[] = {
     { NULL, 0.0 }
 };
 
-void my_module_init(duk_context *ctx) {
-    /*
-     *  There are multiple alternatives for how the initialization and
-     *  registration happens:
-     *
-     *    - Init function creates an object and registers it to the
-     *      global object (e.g. "MyModule").
-     *
-     *    - Init function creates a table and leaves it on the value
-     *      stack, allowing the caller to use or register it where
-     *      appropriate.
-     *
-     *    - Caller pushes a table to value stack and the init function
-     *      writes its symbols into that table.  This is close to
-     *      CommonJS exports table.
-     *
-     *  At the moment there is no strong recommendation for this.
-     *  This example registers the module to the global object.
-     */
-
+/* Init function name is dukopen_&lt;modname&gt;. */
+duk_ret_t dukopen_my_module(duk_context *ctx) {
     duk_push_object(ctx);
     duk_put_function_list(ctx, -1, my_module_funcs);
     duk_put_number_list(ctx, -1, my_module_consts);
-    duk_put_global_string(ctx, "MyModule");
+
+    /* Return value is the module object.  It's up to the caller to decide
+     * how to use the value, e.g. write to global object.
+     */
+    return 1;
 }
 </pre>
 
-<p>The calling application which wants to use this module will then simply:</p>
+<p>The calling application which wants to load this module manually (outside
+of CommonJS module loading) will then simply:</p>
 <pre class="c-code">
 int main(int argc, char *argv[]) {
     duk_context *ctx;
@@ -270,11 +262,14 @@ int main(int argc, char *argv[]) {
     if (!ctx) {
         /* ... */
     }
-    my_module_init(ctx);
 
-    /* MyModule is now registered. */
+    /* Module loading happens with a Duktape/C call wrapper. */
+    duk_push_c_function(ctx, dukopen_my_module, 0 /*nargs*/);
+    duk_call(ctx, 0);
+    duk_put_global_string(ctx, "my_module");
 
-    duk_eval_string_noresult(ctx, "MyModule.func2()");
+    /* my_module is now registered in the global object. */
+    duk_eval_string_noresult(ctx, "my_module.func2()");
 
     /* ... */
 
@@ -283,8 +278,8 @@ int main(int argc, char *argv[]) {
 }
 </pre>
 
-<p>A convention for writing C modules is being worked on for a future release,
-to allow modules to be more easily shared between code bases.</p>
+<p>C modules can also be loaded using a CommonJS module loader, in which case
+the module loader would call the init function (e.g. located from a DLL).</p>
 
 <h2>Limitations</h2>
 
