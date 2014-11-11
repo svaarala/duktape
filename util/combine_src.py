@@ -249,6 +249,22 @@ def main():
 	files = []
 	filelist = os.listdir(sys.argv[1])
 	filelist.sort()  # for consistency
+	handpick = [ 'duk_strings.c',
+	             'duk_builtins.c',
+	             'duk_error_macros.c',
+	             'duk_unicode_support.c',
+	             'duk_util_misc.c',
+	             'duk_util_hashprime.c',
+	             'duk_hobject_class.c' ]
+	handpick.reverse()
+	for fn in handpick:
+		# These files must appear before the alphabetically sorted
+		# ones so that static variables get defined before they're
+		# used.  We can't forward declare them because that would
+		# cause C++ issues (see GH-63).  When changing, verify by
+		# compiling with g++.
+		idx = filelist.index(fn)
+		filelist.insert(0, filelist.pop(idx))
 	for fn in filelist:
 		if os.path.splitext(fn)[1] not in [ '.c', '.h' ]:
 			continue
