@@ -2065,7 +2065,11 @@ typedef FILE duk_file;
  */
 
 #if defined(DUK_F_GCC)
+#if defined(DUK_F_CPP)
+#define DUK_USE_COMPILER_STRING "g++"
+#else
 #define DUK_USE_COMPILER_STRING "gcc"
+#endif
 #elif defined(DUK_F_CLANG)
 #define DUK_USE_COMPILER_STRING "clang"
 #elif defined(DUK_F_MSVC)
