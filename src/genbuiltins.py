@@ -1780,11 +1780,13 @@ class GenBuiltins:
 		self.gs.emitStringsHeader(genc)
 
 		genc.emitLine('')
+		genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
 		genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%s];' % len(self.native_func_list))
 		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_builtins_data[%d];' % len(self.init_data))
 		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
 		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[%s];' % len(self.initjs_data))
 		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
+		genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
 		genc.emitLine('')
 		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
 		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')

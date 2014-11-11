@@ -38,12 +38,16 @@ struct duk_bitencoder_ctx {
  *  Externs and prototypes
  */
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL duk_uint8_t duk_lc_digits[36];
 DUK_INTERNAL_DECL duk_uint8_t duk_uc_nybbles[16];
 DUK_INTERNAL_DECL duk_int8_t duk_hex_dectab[256];
+#endif  /* !DUK_SINGLE_FILE */
 
 /* Note: assumes that duk_util_probe_steps size is 32 */
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL duk_uint8_t duk_util_probe_steps[32];
+#endif  /* !DUK_SINGLE_FILE */
 
 DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t seed);
 

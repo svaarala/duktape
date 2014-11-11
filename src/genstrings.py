@@ -1109,7 +1109,9 @@ class GenStrings:
 		genc.emitLine(' */')
 
 	def emitStringsHeader(self, genc):
+		genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
 		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_strings_data[%d];' % len(self.strdata))
+		genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
 		genc.emitLine('')
 		genc.emitDefine('DUK_STRDATA_DATA_LENGTH', len(self.strdata))
 		genc.emitDefine('DUK_STRDATA_MAX_STRLEN', self.maxlen)
