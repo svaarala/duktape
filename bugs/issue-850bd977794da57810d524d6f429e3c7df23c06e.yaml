@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v1.0.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-11-02 14:36:14.999143 Z
 references: []
 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-11-02 14:36:15.164432 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-11-11 19:52:25.078651 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
   - ""
