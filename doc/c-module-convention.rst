@@ -17,8 +17,7 @@ following this convention will be easier to share between projects.
 Module init function
 ====================
 
-The init function for a module ``my_module`` should contain an initialization
-function of the following form::
+The init function for a module ``my_module`` should have the following form::
 
     duk_ret_t dukopen_my_module(duk_context *ctx) {
         /* Initialize module in whatever way is most appropriate.
