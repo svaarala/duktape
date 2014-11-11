@@ -41,11 +41,11 @@ static const duk_number_list_entry my_module_consts[] = {
 	{ NULL, 0.0 }
 };
 
-void my_module_init(duk_context *ctx) {
+static duk_ret_t dukopen_my_module(duk_context *ctx) {
 	duk_push_object(ctx);
 	duk_put_function_list(ctx, -1, my_module_funcs);
 	duk_put_number_list(ctx, -1, my_module_consts);
-	duk_put_global_string(ctx, "MyModule");
+	return 1;
 }
 
 /*
@@ -60,9 +60,12 @@ static duk_ret_t test_use_module(duk_context *ignored_ctx) {
 		printf("Failed to create heap\n");
 		return 0;
 	}
-	my_module_init(ctx);
 
-	duk_eval_string_noresult(ctx, "MyModule.func2()");
+	duk_push_c_function(ctx, dukopen_my_module, 0);
+	duk_call(ctx, 0);
+	duk_put_global_string(ctx, "my_module");
+
+	duk_eval_string_noresult(ctx, "my_module.func2()");
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	duk_destroy_heap(ctx);
