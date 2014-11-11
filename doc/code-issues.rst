@@ -181,10 +181,15 @@ The fix is::
 Other variable declarations
 ---------------------------
 
-Use symbol visibility macros as appropriate, e.g.::
+Use symbol visibility macros throughout.
+
+For DUK_INTERNAL_DECL macro use a DUK_SINGLE_FILE wrapper check to avoid
+both declaring and defining a static variable (see GH-63)::
 
   /* Header: declare internal variable visible across files. */
+  #if !defined(DUK_SINGLE_FILE)
   DUK_INTERNAL_DECL int duk_internal_foo;
+  #endif  /* !DUK_SINGLE_FILE */
 
   /* Source: define the variable. */
   DUK_INTERNAL int duk_internal_foo;
@@ -373,6 +378,9 @@ To achieve this:
 
 * Use explicit casts for all pointer conversions.
 
+* Make sure there are no ``static`` forward declarations for *data symbols*,
+  see symbol visibility section.
+
 Debug macros
 ------------
 
@@ -390,7 +398,10 @@ macros causes a lot of warnings with some compilers.  With this wrapping,
 at least the non-debug build will be clean on non-C99 compilers.
 
 Symbol visibility
------------------
+=================
+
+Symbol visibility issues
+------------------------
 
 There are several issues related to symbol visibility:
 
@@ -411,6 +422,9 @@ There are several issues related to symbol visibility:
 * Compiler dependency: controlling link visibility of non-static symbols
   requires compiler specific mechanisms.
 
+Symbol visibility macros
+------------------------
+
 All Duktape symbols are declared with one of the following prefix macros:
 
 * ``DUK_EXTERNAL_DECL`` and ``DUK_EXTERNAL``: symbol is exposed to calling
@@ -422,6 +436,37 @@ All Duktape symbols are declared with one of the following prefix macros:
 
 * ``DUK_LOCAL_DECL`` and ``DUK_LOCAL``: symbol is file local.  This maps to
   ``static`` and currently requires no compiler specific treatment.
+
+As usual, ``duk_features.h.in`` defines these visibility symbols as
+appropriate, taking into account both the compiler and whether Duktape
+is being compiled from a single or multiple files.
+
+Missing a visibility macro is not critical on GCC: it will just pollute
+the symbol table.  On MSVC it can make break a DLL build of Duktape.
+
+Avoid "static" forward declarations for data symbols
+----------------------------------------------------
+
+C++ does not allow a ``static`` variable to be both forward declared and
+defined (see GH-63 for more discussion).  It's also not ideal for C and
+is a potential portability issue.  This issue is avoided by:
+
+* Not using ``DUK_LOCAL_DECL`` for local data symbols: it would always map
+  to a ``static`` data declaration.
+
+* Not using ``DUK_INTERNAL_DECL`` for data symbols when compiling from the
+  single file distribution: such data symbols would map to ``static`` in
+  the single file distribution (but not in the multiple files distribution
+  where the declarations are needed).
+
+The ``DUK_INTERNAL_DECL`` idiom is::
+
+  #if !defined(DUK_SINGLE_FILE)
+  DUK_INTERNAL_DECL const char *duk_str_not_object;
+  #endif  /* !DUK_SINGLE_FILE */
+
+Concrete example
+----------------
 
 As a concrete example, this is how these defines work with GCC 4.x.x.
 For function declaration in header::
@@ -462,6 +507,9 @@ As seen from this example, different outcomes are needed for forward
 declaring a symbol and actually defining the symbol.  For now, the same
 macros work for function and data symbols.
 
+MSVC DLL import/export
+----------------------
+
 For MSVC, DLL import/export attributes are needed to build as a DLL.
 When compiling Duktape public symbols should be declared as "dllexport"
 in both header files and the actual declarations.  When compiling a
@@ -470,13 +518,6 @@ The compilation context is available through ``DUK_COMPILING_DUKTAPE``.
 For more on MSVC dllimport/dllexport, see:
 
 * http://msdn.microsoft.com/en-us/library/y4h7bcy6.aspx
-
-As usual, ``duk_features.h.in`` defines these visibility symbols as
-appropriate, taking into account both the compiler and whether Duktape
-is being compiled from a single or multiple files.
-
-Missing a visibility macro is not critical on GCC: it will just pollute
-the symbol table.  On MSVC it can make break a DLL build of Duktape.
 
 Shared strings
 ==============
