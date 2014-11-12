@@ -28,6 +28,12 @@ as both binaries and in unpacked form as git tags.
 
 Have fun!
 
+Support
+-------
+
+* [GitHub issues](https://github.com/svaarala/duktape/issues)
+* IRC: `#duktape` on `chat.freenode.net`
+
 About this repository
 ---------------------
 
