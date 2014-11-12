@@ -44,3 +44,4 @@ bugs, provided ideas, etc; in order of appearance):
 * Doug Sanden
 * Remo Eichenberger (https://github.com/remoe)
 * David Demelier
+* Mitchell Blank Jr (https://github.com/mitchblank)
