@@ -624,6 +624,9 @@ Planned
 1.1.0 (2014-XX-XX)
 ------------------
 
+* Main release goal: improved low memory support to allow Duktape to run
+  better on devices with 128kB system memory
+
 * Add duk_is_error() API call to check if a value inherits from Error
 
 * Add duk_get_error_code() API call to check if a value inherits from
@@ -656,6 +659,8 @@ Planned
 
 2.0.0 (XXXX-XX-XX)
 ------------------
+
+* Rework Duktape module loading model to be more flexible
 
 * Ecmascript 6 features will be implemented in v2.x.x at the earliest
   (some individual features may be cherry picked into v1.x.x)
