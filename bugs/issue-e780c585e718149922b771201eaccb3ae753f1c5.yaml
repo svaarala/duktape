@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "add #duktape irc channel to index page"
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-11-12 19:29:05.220528 Z
+references: []
+
+id: e780c585e718149922b771201eaccb3ae753f1c5
+log_events: 
+- - 2014-11-12 19:29:05.377544 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-11-12 19:49:23.378733 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
