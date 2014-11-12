@@ -31,8 +31,9 @@ Have fun!
 Support
 -------
 
-* [GitHub issues](https://github.com/svaarala/duktape/issues)
-* IRC: `#duktape` on `chat.freenode.net`
+* User community Q&A: Stack Overflow [duktape](http://stackoverflow.com/questions/tagged/duktape) tag
+* Bugs and feature requests: [GitHub issues](https://github.com/svaarala/duktape/issues)
+* General discussion: IRC `#duktape` on `chat.freenode.net` ([webchat](https://webchat.freenode.net))
 
 About this repository
 ---------------------
