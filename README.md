@@ -61,7 +61,7 @@ Getting started: developing Duktape
 If you intend to change Duktape internals, run test cases, etc:
 
     # Install required packages
-    $ sudo apt-get install nodejs npm perl openjdk-7-jre libreadline6-dev libncurses-dev
+    $ sudo apt-get install nodejs npm perl ant openjdk-7-jdk libreadline6-dev libncurses-dev
 
     # Compile the command line tool ('duk')
     $ git clone https://github.com/svaarala/duktape.git
