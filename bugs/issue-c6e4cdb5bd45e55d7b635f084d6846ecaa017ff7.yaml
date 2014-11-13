@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: remove checked alloc variants as almost unused
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: .
+status: :closed
+disposition: :fixed
+creation_time: 2014-11-13 05:27:36.387982 Z
+references: []
+
+id: c6e4cdb5bd45e55d7b635f084d6846ecaa017ff7
+log_events: 
+- - 2014-11-13 05:27:39.015383 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-11-13 05:27:42.590479 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
