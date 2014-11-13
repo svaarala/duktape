@@ -5,7 +5,7 @@ desc: |-
   not match other API calls where flags are last.
 type: :task
 component: duk
-release: v1.1
+release: v2.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -25,4 +25,8 @@ log_events:
 - - 2014-09-09 11:17:41.885906 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-13 07:04:02.177771 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v2.0 from v1.1
   - ""

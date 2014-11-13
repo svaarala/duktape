@@ -3,7 +3,7 @@ title: "make duk_push_true/false return 1 so that one can: \"return duk_push_tru
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v2.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-09-09 11:16:53.887539 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-11-13 07:04:01.693023 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v2.0 from v1.1
   - ""
