@@ -164,7 +164,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 
 # Compiler setup for Linux
 CC	= gcc
-GPP	= g++
+GXX	= g++
 
 CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_PACKED_TVAL
@@ -234,8 +234,8 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 #CCOPTS_DEBUG += -DDUK_OPT_DDDPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
-GPPOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
-GPPOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
+GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
 
 CCLIBS	= -lm
 CCLIBS += -lreadline
@@ -331,7 +331,7 @@ duk.raw: dist
 
 # Test target for g++ compile
 duk-g++: dist
-	$(GPP) -o $@ $(GPPOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	$(GXX) -o $@ $(GXXOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
 
 dump-public: duk.raw
