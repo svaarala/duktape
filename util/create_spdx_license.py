@@ -8,16 +8,19 @@
 #
 #  The utility outputs RDF/XML to specified file:
 #
-#    $ python create_spdx_license.py /tmp/license.xml
+#    $ python create_spdx_license.py /tmp/license.spdx
 #
 #  Then, validate with SPDXViewer and SPDXTools:
 #
-#    $ java -jar SPDXViewer.jar /tmp/license.xml
-#    $ java -jar java -jar spdx-tools-1.2.5-jar-with-dependencies.jar RdfToHtml /tmp/license.xml /tmp/license.html
+#    $ java -jar SPDXViewer.jar /tmp/license.spdx
+#    $ java -jar java -jar spdx-tools-1.2.5-jar-with-dependencies.jar RdfToHtml /tmp/license.spdx /tmp/license.html
 #
 #  Finally, copy to dist:
 #
-#    $ cp /tmp/license.xml dist/
+#    $ cp /tmp/license.spdx dist/license.spdx
+#
+#  SPDX FAQ indicates there is no standard extension for an SPDX license file
+#  but '.spdx' is a common practice.
 #
 #  The algorithm to compute a "verification code", implemented in this file,
 #  can be verified as follows:
@@ -25,13 +28,14 @@
 #    # build dist tar.xz, copy to /tmp/duktape-N.N.N.tar.xz
 #    $ cd /tmp
 #    $ tar xvfJ duktape-N.N.N.tar.xz
-#    $ rm duktape-N.N.N/license.xml  # remove file excluded from verification code
+#    $ rm duktape-N.N.N/license.spdx  # remove file excluded from verification code
 #    $ java -jar spdx-tools-1.2.5-jar-with-dependencies.jar GenerateVerificationCode /tmp/duktape-N.N.N/
 #
-#  Compare the resulting verification code manually with the one in license.xml.
+#  Compare the resulting verification code manually with the one in license.spdx.
 #
 #  Resources:
 #
+#   - http://spdx.org/about-spdx/faqs
 #   - http://wiki.spdx.org/view/Technical_Team/Best_Practices
 #
 
@@ -67,7 +71,7 @@ def computePackageVerification(g, dirname, excluded):
 	# SPDX 1.2 Section 4.7
 	# The SPDXTools command "GenerateVerificationCode" can be used to
 	# check the verification codes created.  Note that you must manually
-	# remove "license.xml" from the unpacked dist directory before
+	# remove "license.spdx" from the unpacked dist directory before
 	# computing the verification code.
 
 	verify_node = BNode()
@@ -160,7 +164,7 @@ def main():
 	g.add((pkg_node, SPDX.originator, duktape_org))
 	g.add((pkg_node, SPDX.downloadLocation, Literal('http://duktape.org/' + duktape_pkgname, datatype=XSD.anyURI)))
 	g.add((pkg_node, SPDX.homePage, Literal('http://duktape.org/', datatype=XSD.anyURI)))
-	verify_node = computePackageVerification(g, '.', [ './license.xml' ])
+	verify_node = computePackageVerification(g, '.', [ './license.spdx' ])
 	g.add((pkg_node, SPDX.packageVerificationCode, verify_node))
 	# SPDX.checksum: omitted because license is inside the package
 	g.add((pkg_node, SPDX.sourceInfo, Literal('Official duktape.org release built from GitHub repo https://github.com/svaarala/duktape.')))

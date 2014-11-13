@@ -19,6 +19,8 @@
 #  example Makefiles are packaged into the dist package.
 #
 
+set -e  # exit on errors
+
 INITJS_MINIFY=closure
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -186,7 +188,7 @@ for i in \
 	duk_replacements.c      \
 	duk_replacements.h      \
 	; do
-	cp src/$i $DISTSRCSEP/ || exit 1
+	cp src/$i $DISTSRCSEP/
 done
 
 for i in \
@@ -196,15 +198,15 @@ for i in \
 	object-assign.js \
 	performance-now.js \
 	; do
-	cp polyfills/$i $DIST/polyfills/ || exit 1
+	cp polyfills/$i $DIST/polyfills/
 done
 
-cp examples/README.rst $DIST/examples/ || exit 1
+cp examples/README.rst $DIST/examples/
 for i in \
 	README.rst \
 	duk_cmdline.c \
 	; do
-	cp examples/cmdline/$i $DIST/examples/cmdline/ || exit 1
+	cp examples/cmdline/$i $DIST/examples/cmdline/
 done
 
 for i in \
@@ -222,21 +224,21 @@ for i in \
 	server-socket-test.js \
 	client-socket-test.js \
 	; do
-	cp examples/eventloop/$i $DIST/examples/eventloop/ || exit 1
+	cp examples/eventloop/$i $DIST/examples/eventloop/
 done
 
 for i in \
 	README.rst \
 	hello.c \
 	; do
-	cp examples/hello/$i $DIST/examples/hello/ || exit 1
+	cp examples/hello/$i $DIST/examples/hello/
 done
 
 for i in \
 	README.rst \
 	eval.c \
 	; do
-	cp examples/eval/$i $DIST/examples/eval/ || exit 1
+	cp examples/eval/$i $DIST/examples/eval/
 done
 
 for i in \
@@ -248,7 +250,7 @@ for i in \
 	primecheck.c \
 	uppercase.c \
 	; do
-	cp examples/guide/$i $DIST/examples/guide/ || exit 1
+	cp examples/guide/$i $DIST/examples/guide/
 done
 
 for i in \
@@ -257,21 +259,21 @@ for i in \
 	hello.coffee \
 	mandel.coffee \
 	; do
-	cp examples/coffee/$i $DIST/examples/coffee/ || exit 1
+	cp examples/coffee/$i $DIST/examples/coffee/
 done
 
 for i in \
 	README.rst \
 	jxpretty.c \
 	; do
-	cp examples/jxpretty/$i $DIST/examples/jxpretty/ || exit 1
+	cp examples/jxpretty/$i $DIST/examples/jxpretty/
 done
 
 for i in \
 	README.rst \
 	sandbox.c \
 	; do
-	cp examples/sandbox/$i $DIST/examples/sandbox/ || exit 1
+	cp examples/sandbox/$i $DIST/examples/sandbox/
 done
 
 for i in \
@@ -280,7 +282,7 @@ for i in \
 	duk_alloc_logging.h \
 	log2gnuplot.py \
 	; do
-	cp examples/alloc-logging/$i $DIST/examples/alloc-logging/ || exit 1
+	cp examples/alloc-logging/$i $DIST/examples/alloc-logging/
 done
 
 for i in \
@@ -288,10 +290,10 @@ for i in \
 	duk_alloc_torture.c \
 	duk_alloc_torture.h \
 	; do
-	cp examples/alloc-torture/$i $DIST/examples/alloc-torture/ || exit 1
+	cp examples/alloc-torture/$i $DIST/examples/alloc-torture/
 done
 
-cp extras/README.rst $DIST/extras/ || exit
+cp extras/README.rst $DIST/extras/
 # XXX: copy extras
 
 for i in \
@@ -304,7 +306,7 @@ for i in \
 	Makefile.sandbox \
 	mandel.js \
 	; do
-	cp dist-files/$i $DIST/ || exit 1
+	cp dist-files/$i $DIST/
 done
 
 cat dist-files/README.rst | sed \
@@ -680,4 +682,4 @@ perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
 rm $DIST/*.tmp
 
 # Create SPDX license once all other files are in place (and cleaned)
-python util/create_spdx_license.py `pwd`/dist/license.xml
+python util/create_spdx_license.py `pwd`/dist/license.spdx
