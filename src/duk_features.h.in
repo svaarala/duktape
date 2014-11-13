@@ -1915,6 +1915,15 @@ typedef FILE duk_file;
 
 /*
  *  Symbol visibility macros
+ *
+ *  To avoid C++ declaration issues (see GH-63):
+ *
+ *    - Don't use DUK_LOCAL_DECL for local -data symbols- so that you don't
+ *      end up with both a "static" declaration and a definition.
+ *
+ *    - Wrap any DUK_INTERNAL_DECL with a '#if !defined(DUK_SINGLE_FILE)'
+ *      so that the internal declarations (which would map to "static" in
+ *      a single file distribution) get dropped.
  */
 
 /* XXX: user override for these? user override for just using the default visibility macros? */
@@ -1982,24 +1991,6 @@ typedef FILE duk_file;
 /* For now, these are shared. */
 #define DUK_LOCAL_DECL     static
 #define DUK_LOCAL          static
-
-/* In C++ one cannot declare and define "static" variables separately (GH-63).
- * As a quick workaround, use "extern" instead: it makes the symbol table ugly
- * but allows compilation.  A better fix is to avoid the need to forward declare
- * internal symbols, but it requires changes to combine_src.py.
- *
- * XXX: better fix is needed.
- */
-#if defined(DUK_F_CPP)
-#undef DUK_INTERNAL_DECL
-#undef DUK_INTERNAL
-#undef DUK_LOCAL_DECL
-#undef DUK_LOCAL
-#define DUK_INTERNAL_DECL  extern
-#define DUK_INTERNAL       /*empty*/
-#define DUK_LOCAL_DECL     extern
-#define DUK_LOCAL          /*empty*/
-#endif
 
 /*
  *  __FILE__, __LINE__, __func__ are wrapped.  Especially __func__ is a
@@ -2074,7 +2065,11 @@ typedef FILE duk_file;
  */
 
 #if defined(DUK_F_GCC)
+#if defined(DUK_F_CPP)
+#define DUK_USE_COMPILER_STRING "g++"
+#else
 #define DUK_USE_COMPILER_STRING "gcc"
+#endif
 #elif defined(DUK_F_CLANG)
 #define DUK_USE_COMPILER_STRING "clang"
 #elif defined(DUK_F_MSVC)

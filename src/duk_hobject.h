@@ -638,7 +638,9 @@ struct duk_hobject {
  *  Exposed data
  */
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL duk_uint8_t duk_class_number_to_stridx[32];
+#endif  /* !DUK_SINGLE_FILE */
 
 /*
  *  Prototypes

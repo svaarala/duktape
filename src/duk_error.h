@@ -204,8 +204,10 @@
 #ifdef DUK_USE_VARIADIC_MACROS
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #else  /* DUK_USE_VARIADIC_MACROS */
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_err_file_stash;
 DUK_INTERNAL_DECL duk_int_t duk_err_line_stash;
+#endif  /* !DUK_SINGLE_FILE */
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...));
 #endif  /* DUK_USE_VARIADIC_MACROS */

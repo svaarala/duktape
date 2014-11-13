@@ -30,6 +30,7 @@
 #define DUK_STR_NOT_WRITABLE duk_str_not_writable
 #define DUK_STR_NOT_CONFIGURABLE duk_str_not_configurable
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_internal_error;
 DUK_INTERNAL_DECL const char *duk_str_invalid_count;
 DUK_INTERNAL_DECL const char *duk_str_invalid_call_args;
@@ -38,6 +39,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_callable;
 DUK_INTERNAL_DECL const char *duk_str_not_extensible;
 DUK_INTERNAL_DECL const char *duk_str_not_writable;
 DUK_INTERNAL_DECL const char *duk_str_not_configurable;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_INVALID_CONTEXT duk_str_invalid_context
 #define DUK_STR_INVALID_INDEX duk_str_invalid_index
@@ -78,6 +80,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_UNIMPLEMENTED duk_str_unimplemented
 #define DUK_STR_ARRAY_LENGTH_OVER_2G duk_str_array_length_over_2g
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_invalid_context;
 DUK_INTERNAL_DECL const char *duk_str_invalid_index;
 DUK_INTERNAL_DECL const char *duk_str_push_beyond_alloc_stack;
@@ -116,6 +119,7 @@ DUK_INTERNAL_DECL const char *duk_str_no_sourcecode;
 DUK_INTERNAL_DECL const char *duk_str_concat_result_too_long;
 DUK_INTERNAL_DECL const char *duk_str_unimplemented;
 DUK_INTERNAL_DECL const char *duk_str_array_length_over_2g;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_FMT_PTR duk_str_fmt_ptr
 #define DUK_STR_INVALID_JSON duk_str_invalid_json
@@ -124,12 +128,14 @@ DUK_INTERNAL_DECL const char *duk_str_array_length_over_2g;
 #define DUK_STR_JSONENC_RECLIMIT duk_str_jsonenc_reclimit
 #define DUK_STR_CYCLIC_INPUT duk_str_cyclic_input
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_fmt_ptr;
 DUK_INTERNAL_DECL const char *duk_str_invalid_json;
 DUK_INTERNAL_DECL const char *duk_str_invalid_number;
 DUK_INTERNAL_DECL const char *duk_str_jsondec_reclimit;
 DUK_INTERNAL_DECL const char *duk_str_jsonenc_reclimit;
 DUK_INTERNAL_DECL const char *duk_str_cyclic_input;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_PROXY_REVOKED duk_str_proxy_revoked
 #define DUK_STR_OBJECT_RESIZE_FAILED duk_str_object_resize_failed
@@ -144,6 +150,7 @@ DUK_INTERNAL_DECL const char *duk_str_cyclic_input;
 #define DUK_STR_INVALID_DESCRIPTOR duk_str_invalid_descriptor
 #define DUK_STR_PROPERTY_IS_VIRTUAL duk_str_property_is_virtual
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_proxy_revoked;
 DUK_INTERNAL_DECL const char *duk_str_object_resize_failed;
 DUK_INTERNAL_DECL const char *duk_str_invalid_base;
@@ -156,6 +163,7 @@ DUK_INTERNAL_DECL const char *duk_str_setter_undefined;
 DUK_INTERNAL_DECL const char *duk_str_redefine_virt_prop;
 DUK_INTERNAL_DECL const char *duk_str_invalid_descriptor;
 DUK_INTERNAL_DECL const char *duk_str_property_is_virtual;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_PARSE_ERROR duk_str_parse_error
 #define DUK_STR_DUPLICATE_LABEL duk_str_duplicate_label
@@ -182,6 +190,7 @@ DUK_INTERNAL_DECL const char *duk_str_property_is_virtual;
 #define DUK_STR_INVALID_GETSET_NAME duk_str_invalid_getset_name
 #define DUK_STR_FUNC_NAME_REQUIRED duk_str_func_name_required
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_parse_error;
 DUK_INTERNAL_DECL const char *duk_str_duplicate_label;
 DUK_INTERNAL_DECL const char *duk_str_invalid_label;
@@ -206,10 +215,13 @@ DUK_INTERNAL_DECL const char *duk_str_invalid_arg_name;
 DUK_INTERNAL_DECL const char *duk_str_invalid_func_name;
 DUK_INTERNAL_DECL const char *duk_str_invalid_getset_name;
 DUK_INTERNAL_DECL const char *duk_str_func_name_required;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_INTERNAL_ERROR_EXEC_LONGJMP duk_str_internal_error_exec_longjmp
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_internal_error_exec_longjmp;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_INVALID_QUANTIFIER_NO_ATOM duk_str_invalid_quantifier_no_atom
 #define DUK_STR_INVALID_QUANTIFIER_VALUES duk_str_invalid_quantifier_values
@@ -223,6 +235,7 @@ DUK_INTERNAL_DECL const char *duk_str_internal_error_exec_longjmp;
 #define DUK_STR_REGEXP_ADVANCE_FAILED duk_str_regexp_advance_failed
 #define DUK_STR_REGEXP_INTERNAL_ERROR duk_str_regexp_internal_error
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_invalid_quantifier_no_atom;
 DUK_INTERNAL_DECL const char *duk_str_invalid_quantifier_values;
 DUK_INTERNAL_DECL const char *duk_str_quantifier_too_many_copies;
@@ -234,6 +247,7 @@ DUK_INTERNAL_DECL const char *duk_str_invalid_backrefs;
 DUK_INTERNAL_DECL const char *duk_str_regexp_backtrack_failed;
 DUK_INTERNAL_DECL const char *duk_str_regexp_advance_failed;
 DUK_INTERNAL_DECL const char *duk_str_regexp_internal_error;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
 #define DUK_STR_CALLSTACK_LIMIT duk_str_callstack_limit
@@ -252,6 +266,7 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_internal_error;
 #define DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT duk_str_regexp_executor_recursion_limit
 #define DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT duk_str_regexp_executor_step_limit
 
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_valstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_callstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_catchstack_limit;
@@ -268,10 +283,14 @@ DUK_INTERNAL_DECL const char *duk_str_func_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_compiler_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_executor_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_executor_step_limit;
+#endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_ANON duk_str_anon
 #define DUK_STR_REALLOC_FAILED duk_str_realloc_failed
+
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_anon;
 DUK_INTERNAL_DECL const char *duk_str_realloc_failed;
+#endif  /* !DUK_SINGLE_FILE */
 
 #endif  /* DUK_ERRMSG_H_INCLUDED */

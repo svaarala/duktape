@@ -635,6 +635,10 @@ Planned
 
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
+* Better fix for C++ compilation issue caused by Duktape using both
+  static declaration and a static define which is not allowed in C++
+  (see GH-63)
+
 * Fix fileName for functions defined in a module loaded using require(),
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
