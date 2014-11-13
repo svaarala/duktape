@@ -237,6 +237,11 @@ CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
 GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
 
+GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS
+#GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
+
 CCLIBS	= -lm
 CCLIBS += -lreadline
 CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
@@ -332,6 +337,9 @@ duk.raw: dist
 # Test target for g++ compile
 duk-g++: dist
 	$(GXX) -o $@ $(GXXOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+dukd-g++: dist
+	$(GXX) -o $@ $(GXXOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
 
 dump-public: duk.raw

@@ -243,8 +243,11 @@ DUK_INTERNAL_DECL void duk_debug_dump_activation(duk_hthread *thr, duk_activatio
 #endif
 
 #define DUK_DEBUG_SUMMARY_BUF_SIZE  76
+
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 DUK_INTERNAL_DECL duk_int_t duk_debug_summary_idx;
+#endif  /* !DUK_SINGLE_FILE */
 
 #endif  /* DUK_USE_DEBUG */
 
