@@ -654,6 +654,8 @@ Planned
   detecting memory safety issues on platforms where valgrind is not
   available
 
+* Add an SPDX 1.2 license into the distributable
+
 1.2.0 (2015-XX-XX)
 ------------------
 
