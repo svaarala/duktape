@@ -24,6 +24,7 @@
 
 /* check that there is space for at least one new entry */
 DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
+	duk_activation *new_ptr;
 	duk_size_t old_size;
 	duk_size_t new_size;
 
@@ -40,7 +41,7 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->callstack_max) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "callstack limit");
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CALLSTACK_LIMIT);
 	}
 
 	DUK_DD(DUK_DDPRINT("growing callstack %ld -> %ld", (long) old_size, (long) new_size));
@@ -50,7 +51,13 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	 *  pointer may be changed by mark-and-sweep.
 	 */
 
-	thr->callstack = (duk_activation *) DUK_REALLOC_INDIRECT_CHECKED(thr, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
+	DUK_ASSERT(new_size > 0);
+	new_ptr = (duk_activation *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
+	if (!new_ptr) {
+		/* No need for a NULL/zero-size check because new_size > 0) */
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_REALLOC_FAILED);
+	}
+	thr->callstack = new_ptr;
 	thr->callstack_size = new_size;
 
 	/* note: any entries above the callstack top are garbage and not zeroed */
@@ -298,6 +305,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 }
 
 DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
+	duk_catcher *new_ptr;
 	duk_size_t old_size;
 	duk_size_t new_size;
 
@@ -314,7 +322,7 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->catchstack_max) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "catchstack limit");
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CATCHSTACK_LIMIT);
 	}
 
 	DUK_DD(DUK_DDPRINT("growing catchstack %ld -> %ld", (long) old_size, (long) new_size));
@@ -324,7 +332,13 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	 *  pointer may be changed by mark-and-sweep.
 	 */
 
-	thr->catchstack = (duk_catcher *) DUK_REALLOC_INDIRECT_CHECKED(thr, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
+	DUK_ASSERT(new_size > 0);
+	new_ptr = (duk_catcher *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
+	if (!new_ptr) {
+		/* No need for a NULL/zero-size check because new_size > 0) */
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_REALLOC_FAILED);
+	}
+	thr->catchstack = new_ptr;
 	thr->catchstack_size = new_size;
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */
