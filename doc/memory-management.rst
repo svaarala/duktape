@@ -190,15 +190,15 @@ garbage collection.
 The following internal macros may trigger a garbage collection (even
 when not strictly out of memory):
 
-* ``DUK_ALLOC``, ``DUK_ALLOC_CHECKED``
+* ``DUK_ALLOC``
 
-* ``DUK_ALLOC_ZEROED``, ``DUK_ALLOC_CHECKED_ZEROED``
+* ``DUK_ALLOC_ZEROED``
 
-* ``DUK_REALLOC``, ``DUK_REALLOC_CHECKED``
+* ``DUK_REALLOC``
 
-* ``DUK_REALLOC_INDIRECT``, ``DUK_REALLOC_INDIRECT_CHECKED``
+* ``DUK_REALLOC_INDIRECT``
 
-* ``DUK_FREE``, ``DUK_FREE_CHECKED``
+* ``DUK_FREE``
 
 Triggering a garbage collection has a wide set of possible side effects.
 If a finalizer is executed, arbitrary Ecmascript or even native code

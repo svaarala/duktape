@@ -122,6 +122,8 @@ DUK_INTERNAL const char *duk_str_regexp_internal_error = "regexp internal error"
 
 /* Limits */
 DUK_INTERNAL const char *duk_str_valstack_limit = "valstack limit";
+DUK_INTERNAL const char *duk_str_callstack_limit = "callstack limit";
+DUK_INTERNAL const char *duk_str_catchstack_limit = "catchstack limit";
 DUK_INTERNAL const char *duk_str_object_property_limit = "object property limit";
 DUK_INTERNAL const char *duk_str_prototype_chain_limit = "prototype chain limit";
 DUK_INTERNAL const char *duk_str_bound_chain_limit = "function call bound chain limit";
@@ -138,3 +140,4 @@ DUK_INTERNAL const char *duk_str_regexp_executor_step_limit = "regexp step limit
 
 /* Misc */
 DUK_INTERNAL const char *duk_str_anon = "anon";
+DUK_INTERNAL const char *duk_str_realloc_failed = "realloc failed";

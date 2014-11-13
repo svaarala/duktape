@@ -236,6 +236,8 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_advance_failed;
 DUK_INTERNAL_DECL const char *duk_str_regexp_internal_error;
 
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
+#define DUK_STR_CALLSTACK_LIMIT duk_str_callstack_limit
+#define DUK_STR_CATCHSTACK_LIMIT duk_str_catchstack_limit
 #define DUK_STR_OBJECT_PROPERTY_LIMIT duk_str_object_property_limit
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT duk_str_prototype_chain_limit
 #define DUK_STR_BOUND_CHAIN_LIMIT duk_str_bound_chain_limit
@@ -251,6 +253,8 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_internal_error;
 #define DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT duk_str_regexp_executor_step_limit
 
 DUK_INTERNAL_DECL const char *duk_str_valstack_limit;
+DUK_INTERNAL_DECL const char *duk_str_callstack_limit;
+DUK_INTERNAL_DECL const char *duk_str_catchstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_object_property_limit;
 DUK_INTERNAL_DECL const char *duk_str_prototype_chain_limit;
 DUK_INTERNAL_DECL const char *duk_str_bound_chain_limit;
@@ -266,6 +270,8 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_executor_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_executor_step_limit;
 
 #define DUK_STR_ANON duk_str_anon
+#define DUK_STR_REALLOC_FAILED duk_str_realloc_failed
 DUK_INTERNAL_DECL const char *duk_str_anon;
+DUK_INTERNAL_DECL const char *duk_str_realloc_failed;
 
 #endif  /* DUK_ERRMSG_H_INCLUDED */

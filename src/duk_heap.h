@@ -210,8 +210,8 @@
  *    - DUK_FREE() is required to ignore NULL and any other possible return
  *      value of a zero-sized alloc/realloc (same as ANSI C free()).
  *
- *    - There is no DUK_REALLOC_ZEROED (and checked variant) because we don't
- *      assume to know the old size.  Caller must zero the reallocated memory.
+ *    - There is no DUK_REALLOC_ZEROED because we don't assume to know the
+ *      old size.  Caller must zero the reallocated memory.
  *
  *    - DUK_REALLOC_INDIRECT() must be used when a mark-and-sweep triggered
  *      by an allocation failure might invalidate the original 'ptr', thus
@@ -233,34 +233,6 @@ typedef void *(*duk_mem_getptr)(void *ud);
 #define DUK_REALLOC(heap,ptr,newsize)                   duk_heap_mem_realloc((heap), (ptr), (newsize))
 #define DUK_REALLOC_INDIRECT(heap,cb,ud,newsize)        duk_heap_mem_realloc_indirect((heap), (cb), (ud), (newsize))
 #define DUK_FREE(heap,ptr)                              duk_heap_mem_free((heap), (ptr))
-
-/*
- *  Memory calls: relative to a thread, GC interaction, throw error on alloc failure
- */
-
-/* XXX: add __func__; use DUK_FUNC_MACRO because __func__ is not always available */
-
-#ifdef DUK_USE_VERBOSE_ERRORS
-#if 0  /*unused*/
-#define DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
-#define DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size), DUK_FILE_MACRO, DUK_LINE_MACRO)
-#define DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
-#endif
-#define DUK_REALLOC_INDIRECT_CHECKED(thr,cb,ud,newsize) duk_heap_mem_realloc_indirect_checked((thr), (cb), (ud), (newsize), DUK_FILE_MACRO, DUK_LINE_MACRO)
-#if 0  /*unused*/
-#define DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))  /* must not fail */
-#endif
-#else
-#if 0  /*unused*/
-#define DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))
-#define DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size))
-#define DUK_REALLOC_CHECKED(thr,ptr,newsize)            duk_heap_mem_realloc_checked((thr), (ptr), (newsize))
-#endif
-#define DUK_REALLOC_INDIRECT_CHECKED(thr,cb,ud,newsize) duk_heap_mem_realloc_indirect_checked((thr), (cb), (ud), (newsize))
-#if 0  /*unused*/
-#define DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))  /* must not fail */
-#endif
-#endif
 
 /*
  *  Memory constants
@@ -449,22 +421,6 @@ DUK_INTERNAL_DECL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t siz
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize);
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
 DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);
-
-#ifdef DUK_USE_VERBOSE_ERRORS
-#if 0  /*unused*/
-DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
-DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size, const char *filename, duk_int_t line);
-DUK_INTERNAL_DECL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize, const char *filename, duk_int_t line);
-#endif
-DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize, const char *filename, duk_int_t line);
-#else
-#if 0  /*unused*/
-DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size);
-DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size);
-DUK_INTERNAL_DECL void *duk_heap_mem_realloc_checked(duk_hthread *thr, void *ptr, duk_size_t newsize);
-#endif
-DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect_checked(duk_hthread *thr, duk_mem_getptr cb, void *ud, duk_size_t newsize);
-#endif
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 DUK_INTERNAL_DECL void duk_heap_tval_incref(duk_tval *tv);
