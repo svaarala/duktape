@@ -252,6 +252,7 @@ def main():
 	handpick = [ 'duk_strings.c',
 	             'duk_builtins.c',
 	             'duk_error_macros.c',
+	             'duk_debug_macros.c',
 	             'duk_unicode_support.c',
 	             'duk_util_misc.c',
 	             'duk_util_hashprime.c',

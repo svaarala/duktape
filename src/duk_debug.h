@@ -212,7 +212,7 @@ DUK_INTERNAL_DECL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const
 DUK_INTERNAL_DECL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size);
 
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_INTERNAL_DECL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, char *fmt, ...);
+DUK_INTERNAL_DECL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, const char *fmt, ...);
 #else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */
 #define DUK_DEBUG_STASH_SIZE  128
@@ -220,7 +220,7 @@ DUK_INTERNAL_DECL char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_level_stash;
-DUK_INTERNAL_DECL void duk_debug_log(char *fmt, ...);
+DUK_INTERNAL_DECL void duk_debug_log(const char *fmt, ...);
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
 DUK_INTERNAL_DECL void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length);
@@ -243,8 +243,11 @@ DUK_INTERNAL_DECL void duk_debug_dump_activation(duk_hthread *thr, duk_activatio
 #endif
 
 #define DUK_DEBUG_SUMMARY_BUF_SIZE  76
+
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
 DUK_INTERNAL_DECL duk_int_t duk_debug_summary_idx;
+#endif  /* !DUK_SINGLE_FILE */
 
 #endif  /* DUK_USE_DEBUG */
 

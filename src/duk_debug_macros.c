@@ -85,7 +85,7 @@ DUK_LOCAL const char *duk__get_term_3(duk_small_int_t level) {
 
 #ifdef DUK_USE_VARIADIC_MACROS
 
-DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, char *fmt, ...) {
+DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, const char *fmt, ...) {
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -127,7 +127,7 @@ DUK_INTERNAL char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL duk_small_int_t duk_debug_level_stash;
 
-DUK_INTERNAL void duk_debug_log(char *fmt, ...) {
+DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 	va_list ap;
 	duk_small_int_t level = duk_debug_level_stash;
 

@@ -318,8 +318,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_tval *tv;
 	duk_hstring *key;
 	duk_bool_t first = 1;
-	char *brace1 = "{";
-	char *brace2 = "}";
+	const char *brace1 = "{";
+	const char *brace2 = "}";
 	duk_bool_t pushed_loopstack = 0;
 
 	if (duk_fb_is_full(fb)) {
