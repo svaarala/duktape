@@ -676,6 +676,8 @@ python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 echo "CLOC report on combined duktape.c source file"
 perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
 
-# Clean up remaining files
-
+# Clean up temp files
 rm $DIST/*.tmp
+
+# Create SPDX license once all other files are in place (and cleaned)
+python util/create_spdx_license.py `pwd`/dist/license.xml
