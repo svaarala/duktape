@@ -645,11 +645,24 @@ errors, that will either cause a fatal error or propagate an error outwards
 from a protected API call.  These should only happen in abnormal conditions
 and are not considered recoverable.  To handle also these cases well, a
 production quality application should always have a fatal error handler with
-a reasonable strategy for dealing with fatal errors.</p>
+a reasonable strategy for dealing with fatal errors.  Such a strategy is
+necessarily context dependent, but could be something like:</p>
+<ul>
+<li>On an embedded device the fatal error handler could write the fatal
+    error information to a flash file and reboot the device.  After the
+    reboot, the fatal error could be reported to a diagnostics server so
+    that it can be investigated.</li>
+<li>On a UNIX system the fatal error handler could simply exit the process
+    (the default fatal handler uses <code>abort()</code>) and let a wrapper
+    script restart the application.</li>
+</ul>
 
 <p>Note that it may be fine for some applications to make API calls without
-an error catcher and risk throwing uncaught errors.  Even in this case there
-should be a fatal error handler to easily detect and fix any remaining errors.</p>
+an error catcher and risk throwing uncaught errors leading to a fatal error.
+It's not possible to continue execution after a fatal error, so such
+applications would typically simply exit when a fatal error occurs.  Even
+without an actual recovery strategy, a fatal error handler should be used to
+e.g. write fatal error information to <code>stderr</code> before process exit.</p>
 
 <h2 id="error-fatal-panic">Error, fatal, and panic</h2>
 
