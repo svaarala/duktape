@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: generic mechanism for yield/resume friendly Duktape/C functions
+desc: ""
+type: :task
+component: duk
+release: v2.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-13 22:07:28.102075 Z
+references: []
+
+id: bcfea36861e054b448cd974ddf40588f4cef741e
+log_events: 
+- - 2014-11-13 22:07:28.274949 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
