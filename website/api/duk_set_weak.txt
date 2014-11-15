@@ -1,0 +1,27 @@
+=proto
+duk_idx_t duk_set_weak(duk_context *ctx, duk_idx_t index);
+
+=stack
+[ ... obj! ... ] -> [ ... obj! ... ]
+
+=summary
+<p>Set object at <code>index</code> to be weak, so that all its own properties
+(including array elements and accessors) are considered weak references.
+Property keys and the internal prototype are considered strong references.</p>
+
+<div class="note">
+This API call is experimental at present, and some of the semantics may change
+or the API call may be replaced with another weak reference implementation.
+</div>
+
+=example
+duk_set_weak(ctx, -3);
+
+=tags
+stack
+object
+experimental
+weak
+
+=introduced
+1.1.0
