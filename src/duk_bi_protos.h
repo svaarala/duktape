@@ -69,6 +69,7 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_compact(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_weak(duk_context *ctx);
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx);

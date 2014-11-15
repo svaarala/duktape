@@ -1137,6 +1137,7 @@ bi_duktape = {
 		{ 'name': 'enc',			'native': 'duk_bi_duktape_object_enc',		'length': 0,	'varargs': True },
 		{ 'name': 'dec',			'native': 'duk_bi_duktape_object_dec',		'length': 0,	'varargs': True },
 		{ 'name': 'compact',			'native': 'duk_bi_duktape_object_compact',	'length': 1 },
+		{ 'name': 'weak',			'native': 'duk_bi_duktape_object_weak',		'length': 1 },
 	],
 }
 

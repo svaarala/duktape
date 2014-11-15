@@ -302,3 +302,13 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_compact(duk_context *ctx) {
 	duk_compact(ctx, 0);
 	return 1;  /* return the argument object */
 }
+
+/*
+ *  Make an object weak
+ */
+
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_weak(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 1);
+	duk_set_weak(ctx, 0);
+	return 1;  /* return the argument object */
+}

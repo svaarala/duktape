@@ -607,6 +607,7 @@ duk_string_list = [
 	mkstr("jx", custom=True),       # enc/dec alg
 	mkstr("jc", custom=True),       # enc/dec alg
 	mkstr("compact", custom=True),
+	mkstr("weak", custom=True),
 
 	# Buffer constructor
 
