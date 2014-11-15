@@ -571,6 +571,12 @@ DUK_EXTERNAL_DECL void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL void duk_set_finalizer(duk_context *ctx, duk_idx_t index);
 
 /*
+ *  Weak references
+ */
+
+DUK_EXTERNAL_DECL void duk_set_weak(duk_context *ctx, duk_idx_t index);
+
+/*
  *  Global object
  */
 

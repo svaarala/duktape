@@ -496,3 +496,14 @@ DUK_EXTERNAL void duk_get_finalizer(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL void duk_set_finalizer(duk_context *ctx, duk_idx_t index) {
 	duk_put_prop_stridx(ctx, index, DUK_STRIDX_INT_FINALIZER);
 }
+
+/*
+ *  Weak references
+ */
+
+DUK_EXTERNAL_DECL void duk_set_weak(duk_context *ctx, duk_idx_t index) {
+	duk_hobject *obj;
+
+	obj = duk_require_hobject(ctx, index);
+	DUK_HOBJECT_SET_WEAK(obj);
+}
