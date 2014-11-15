@@ -3,7 +3,7 @@ title: "defineProperty: implement buffer virtual property support"
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-08-13 12:33:18.439528 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from unassigned
+  - ""
+- - 2014-11-15 19:10:51.563099 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
