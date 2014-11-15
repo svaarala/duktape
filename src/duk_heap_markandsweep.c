@@ -53,6 +53,12 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			continue;
 		}
 		duk__mark_heaphdr(heap, (duk_heaphdr *) key);
+
+		if (DUK_HOBJECT_HAS_WEAK(h)) {
+			/* For weak object mark only the key. */
+			continue;
+		}
+
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(h, i)->a.get);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(h, i)->a.set);
@@ -61,11 +67,15 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		}
 	}
 
+	if (DUK_HOBJECT_HAS_WEAK(h)) {
+		goto skip_array_marking;
+	}
 	for (i = 0; i < (duk_uint_fast32_t) h->a_size; i++) {
 		duk__mark_tval(heap, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
 	}
+ skip_array_marking:
 
-	/* hash part is a 'weak reference' and does not contribute */
+	/* Hash part is a 'weak reference' and does not contribute. */
 
 	duk__mark_heaphdr(heap, (duk_heaphdr *) h->prototype);
 
@@ -566,6 +576,111 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 }
 
 /*
+ *  Remove weak references which point to objects about to be collected.
+ *
+ *  This cannot be integrated to duk__sweep_heap() because the sweep order
+ *  may lead to dangling pointers.
+ */
+
+DUK_LOCAL void duk__remove_weak_refs(duk_heap *heap, duk_size_t *out_count_remove) {
+	duk_hthread *thr;
+	duk_heaphdr *curr;
+	duk_hobject *obj;
+	duk_heaphdr *targ;
+	duk_tval *tv;
+	duk_uint_fast32_t i;
+	duk_size_t count_remove = 0;
+
+	DUK_DD(DUK_DDPRINT("duk__remove_weak_refs: %p", (void *) heap));
+
+	thr = duk__get_temp_hthread(heap);
+	DUK_ASSERT(thr != NULL);
+
+	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(curr)) {
+		if (DUK_HEAPHDR_GET_TYPE(curr) != DUK_HTYPE_OBJECT ||
+		    !DUK_HOBJECT_HAS_WEAK((duk_hobject *) curr)) {
+			continue;
+		}
+		obj = (duk_hobject *) curr;
+
+		/* Object contains weak references.  Remove any references that point
+		 * heap allocated values about to be freed.
+		 */
+
+		for (i = 0; i < (duk_uint_fast32_t) obj->e_next; i++) {
+			duk_hstring *key = DUK_HOBJECT_E_GET_KEY(obj, i);
+			if (!key) {
+				continue;
+			}
+
+			targ = (duk_heaphdr *) key;
+			if (!DUK_HEAPHDR_HAS_REACHABLE(targ)) {
+				/* Currently NOP: key is considered a strong reference. */
+			}
+			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(obj, i)) {
+				targ = (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_GETTER(obj, i);
+				if (targ != NULL && !DUK_HEAPHDR_HAS_REACHABLE(targ)) {
+					DUK_D(DUK_DPRINT("remove weak ref in getter slot: source=%!O, target=%!O", curr, targ));
+					count_remove++;
+
+					DUK_HOBJECT_E_SET_VALUE_GETTER(obj, i, NULL);
+					DUK_HEAPHDR_DECREF(thr, targ);
+				}
+				targ = (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_SETTER(obj, i);
+				if (targ != NULL && !DUK_HEAPHDR_HAS_REACHABLE(targ)) {
+					DUK_D(DUK_DPRINT("remove weak ref in setter slot: source=%!O, target=%!O", curr, targ));
+					count_remove++;
+
+					DUK_HOBJECT_E_SET_VALUE_SETTER(obj, i, NULL);
+					DUK_HEAPHDR_DECREF(thr, targ);
+				}
+
+				if (DUK_HOBJECT_E_GET_VALUE_GETTER(obj, i) == NULL &&
+				    DUK_HOBJECT_E_GET_VALUE_SETTER(obj, i) == NULL) {
+					DUK_D(DUK_DPRINT("both getter and setter are NULL after weak ref deletion, remove entire entry"));
+					DUK_HOBJECT_E_SET_KEY(obj, i, NULL);
+					DUK_HSTRING_DECREF(thr, key);
+				}
+			} else {
+				tv = &DUK_HOBJECT_E_GET_VALUE_PTR(obj, i)->v;
+				if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+					targ = DUK_TVAL_GET_HEAPHDR(tv);
+					if (!DUK_HEAPHDR_HAS_REACHABLE(targ)) {
+						DUK_D(DUK_DPRINT("remove weak ref in entry part: source=%!O, target=%!T", curr, tv));
+						count_remove++;
+
+						DUK_HOBJECT_E_SET_KEY(obj, i, NULL);
+						DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
+						DUK_TVAL_DECREF(thr, tv);
+						DUK_HSTRING_DECREF(thr, key);
+					}
+				}
+			}
+		}
+
+		for (i = 0; i < (duk_uint_fast32_t) obj->a_size; i++) {
+			tv = DUK_HOBJECT_A_GET_VALUE_PTR(obj, i);
+			if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+				targ = DUK_TVAL_GET_HEAPHDR(tv);
+				if (!DUK_HEAPHDR_HAS_REACHABLE(targ)) {
+					DUK_D(DUK_DPRINT("remove weak ref in array part: source=%!O, target=%!T", curr, tv));
+					count_remove++;
+
+					DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
+					DUK_TVAL_DECREF(thr, tv);
+				}
+			}
+		}
+	}
+
+#ifdef DUK_USE_DEBUG
+	DUK_D(DUK_DPRINT("mark-and-sweep remove weak refs: %ld weak refs removed",
+	                 (long) count_remove));
+#endif
+	*out_count_remove = count_remove;
+}
+
+/*
  *  Sweep heap
  */
 
@@ -679,7 +794,11 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 			 * finalize all unreachable objects which should cancel out
 			 * refcounts (even for cycles).
 			 */
-			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) == 0);
+			/* FIXME: weak refs currently increase refcounts to avoid
+			 * the need to deal with weak refs in the refzero handler,
+			 * so this breaks if enabled.
+			 */
+			DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(curr) == 0);
 #endif
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 
@@ -940,6 +1059,7 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
 DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags) {
 	duk_size_t count_keep_obj;
 	duk_size_t count_keep_str;
+	duk_size_t count_remove_weakref;
 	duk_size_t tmp;
 
 	/* XXX: thread selection for mark-and-sweep is currently a hack.
@@ -1029,6 +1149,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #ifdef DUK_USE_REFERENCE_COUNTING
 	duk__finalize_refcounts(heap);
 #endif
+	duk__remove_weak_refs(heap, &count_remove_weakref);
 	duk__sweep_heap(heap, flags, &count_keep_obj);
 	duk__sweep_stringtable(heap, &count_keep_str);
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -1143,11 +1264,11 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	heap->mark_and_sweep_trigger_counter = (duk_int_t) (
 	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +
 	    DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD);
-	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, trigger reset to %ld",
-	                 (long) count_keep_obj, (long) count_keep_str, (long) heap->mark_and_sweep_trigger_counter));
+	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, %ld weak refs removed, trigger reset to %ld",
+	                 (long) count_keep_obj, (long) count_keep_str, (long) count_remove_weakref, (long) heap->mark_and_sweep_trigger_counter));
 #else
-	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, no voluntary trigger",
-	                 (long) count_keep_obj, (long) count_keep_str));
+	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, %ld weak refs removed, no voluntary trigger",
+	                 (long) count_keep_obj, (long) count_keep_str, (long) count_remove_weakref));
 #endif
 	return 0;  /* OK */
 }
