@@ -1,0 +1,50 @@
+<h1 id="weakreferences">Weak references</h1>
+
+<p>Duktape supports weak references with the following basic model:</p>
+<ul>
+<li>Any Ecmascript object can be marked weak by calling <code>duk_set_weak()</code>
+    from C code or <code>Duktape.weak()</code> from Ecmascript code.  This change
+    is final and cannot be reversed.</li>
+<li>The own property values of a weak object are considered to be weakly referenced.
+    This includes ordinary string and array indexed properties, and setter/getter
+    references of accessor properties.</li>
+<li>Property keys (strings), the internal prototype of the object, and all inherited
+    properties of the object are considered strongly referenced.</li>
+</ul>
+
+<p>Ecmascript example:</p>
+<pre class="ecmascript-code">
+var target = {};
+Duktape.fin(target, function () {
+    print('finalizer');
+});
+var weak = {}
+Duktape.weak(weak);
+
+// Add a weak reference to target in addition to the strong reference
+// through 'target' variable.
+weak.weakRef = target;
+
+// Remove last (and only) strong reference to the target.
+target = null;
+
+// The next garbage collection triggers the finalizer but won't yet free.
+Duktape.gc();
+
+// At this point the value is still reachable through the weak reference,
+// even though the finalizer has already been executed.
+print('weakRef' in weak);  // = true
+
+// The next garbage collection after that removes the weak reference and
+// frees the target (unless the finalizer has rescued the object).
+Duktape.gc();
+
+// The weak reference no longer exists.
+print('weakRef' in weak);  // = false
+</pre>
+
+<p>For more details, see:</p>
+<ul>
+<li><a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-dev-weak-references.c">test-dev-weak-references.c</a></li>
+<li><a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-weak-references.js">test-dev-weak-references.js</a></li>
+</ul>
