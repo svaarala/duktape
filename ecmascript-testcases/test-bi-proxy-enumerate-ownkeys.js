@@ -25,7 +25,7 @@ function objDump(obj) {
         print('Object.keys:', e.name);
     }
 
-    // Object.getOwnPropertyNames() on prxy object also triggers 'ownKeys'
+    // Object.getOwnPropertyNames() on proxy object also triggers 'ownKeys'
     // trap.  If no such trap exists, property names (enumerable or not)
     // of the *proxy* object are listed (not the proxy target).
     try {
