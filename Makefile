@@ -316,6 +316,7 @@ cleanall: clean
 	@rm -rf xmldoc
 	@rm -rf FlameGraph
 	@rm -rf dtrace4linux
+	@rm -rf flow
 	@rm -rf 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
 
 libduktape.so.1.0.0: dist
@@ -764,6 +765,10 @@ dtrace4linux:
 	# https://github.com/dtrace4linux/linux
 	# http://crtags.blogspot.fi/
 	$(GIT) clone --depth 1 https://github.com/dtrace4linux/linux.git dtrace4linux
+
+flow:
+	# https://github.com/facebook/flow
+	$(GIT) clone --depth 1 https://github.com/facebook/flow.git
 
 .PHONY: gccpredefs
 gccpredefs:
