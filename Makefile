@@ -160,7 +160,8 @@ DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)
 DUKTAPE_CMDLINE_SOURCES = \
 	$(DISTCMD)/duk_cmdline.c \
 	dist/examples/alloc-logging/duk_alloc_logging.c \
-	dist/examples/alloc-torture/duk_alloc_torture.c
+	dist/examples/alloc-torture/duk_alloc_torture.c \
+	dist/examples/alloc-hybrid/duk_alloc_hybrid.c
 
 # Compiler setup for Linux
 CC	= gcc
@@ -213,12 +214,13 @@ CCOPTS_FEATURES += -DDUK_OPT_DEBUG_BUFSIZE=512
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
+CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_HYBRID
 
 CCOPTS_SHARED =
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wall -Wextra -Wunused-result
-CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
+CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -235,10 +237,10 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
 
 GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
 GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 

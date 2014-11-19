@@ -71,6 +71,7 @@ mkdir $DIST/examples/jxpretty
 mkdir $DIST/examples/sandbox
 mkdir $DIST/examples/alloc-logging
 mkdir $DIST/examples/alloc-torture
+mkdir $DIST/examples/alloc-hybrid
 
 # Copy most files directly
 
@@ -291,6 +292,14 @@ for i in \
 	duk_alloc_torture.h \
 	; do
 	cp examples/alloc-torture/$i $DIST/examples/alloc-torture/
+done
+
+for i in \
+	README.rst \
+	duk_alloc_hybrid.c \
+	duk_alloc_hybrid.h \
+	; do
+	cp examples/alloc-hybrid/$i $DIST/examples/alloc-hybrid/
 done
 
 cp extras/README.rst $DIST/extras/
