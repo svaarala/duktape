@@ -68,9 +68,11 @@ DUK_LOCAL_DECL duk_bool_t duk__enc_allow_into_proplist(duk_tval *tv);
 
 DUK_LOCAL void duk__dec_syntax_error(duk_json_dec_ctx *js_ctx) {
 	/* Shared handler to minimize parser size.  Cause will be
-	 * hidden, unfortunately.
+	 * hidden, unfortunately, but we'll have an offset which
+	 * is often quite enough.
 	 */
-	DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_JSON);
+	DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_FMT_INVALID_JSON,
+	         (long) (js_ctx->p - js_ctx->p_start));
 }
 
 DUK_LOCAL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx) {
@@ -453,7 +455,7 @@ DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
 	if (duk_is_nan(ctx, -1)) {
-		DUK_ERROR(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_NUMBER);
+		duk__dec_syntax_error(js_ctx);
 	}
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDD(DUK_DDDPRINT("parse_number: final number: %!T",
@@ -1708,7 +1710,8 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place */
 	DUK_ASSERT(h_text != NULL);
 
-	js_ctx->p = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
+	js_ctx->p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
+	js_ctx->p = js_ctx->p_start;
 	js_ctx->p_end = ((duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text)) +
 	                DUK_HSTRING_GET_BYTELEN(h_text);
 
@@ -1719,7 +1722,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	 */
 
 	if (js_ctx->p != js_ctx->p_end) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_JSON);
+		duk__dec_syntax_error(js_ctx);
 	}
 
 	if (duk_is_callable(ctx, idx_reviver)) {

@@ -122,16 +122,14 @@ DUK_INTERNAL_DECL const char *duk_str_array_length_over_2g;
 #endif  /* !DUK_SINGLE_FILE */
 
 #define DUK_STR_FMT_PTR duk_str_fmt_ptr
-#define DUK_STR_INVALID_JSON duk_str_invalid_json
-#define DUK_STR_INVALID_NUMBER duk_str_invalid_number
+#define DUK_STR_FMT_INVALID_JSON duk_str_fmt_invalid_json
 #define DUK_STR_JSONDEC_RECLIMIT duk_str_jsondec_reclimit
 #define DUK_STR_JSONENC_RECLIMIT duk_str_jsonenc_reclimit
 #define DUK_STR_CYCLIC_INPUT duk_str_cyclic_input
 
 #if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL const char *duk_str_fmt_ptr;
-DUK_INTERNAL_DECL const char *duk_str_invalid_json;
-DUK_INTERNAL_DECL const char *duk_str_invalid_number;
+DUK_INTERNAL_DECL const char *duk_str_fmt_invalid_json;
 DUK_INTERNAL_DECL const char *duk_str_jsondec_reclimit;
 DUK_INTERNAL_DECL const char *duk_str_jsonenc_reclimit;
 DUK_INTERNAL_DECL const char *duk_str_cyclic_input;

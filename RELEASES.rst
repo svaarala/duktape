@@ -647,6 +647,9 @@ Planned
   the output a valid Javascript string, so that it can be embedded in a
   web page or parsed with eval (see GH-68)
 
+* Change JSON.parse() to include a byte offset with a syntax error to help
+  pinpoint JSON errors
+
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
   limitations (see GH-67)
 
