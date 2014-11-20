@@ -16,7 +16,10 @@ JSON decoded meaningOfLife is: 42
 top after: 0
 ==> rc=0, result='undefined'
 *** test_decode_error (duk_safe_call)
-==> rc=1, result='SyntaxError: invalid json'
+ret: 1
+SyntaxError: invalid json (at offset N)
+top after: 0
+==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t test_encode(duk_context *ctx) {
@@ -65,9 +68,29 @@ static duk_ret_t test_decode_apidoc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode_error(duk_context *ctx) {
-	duk_push_string(ctx, "{\"meaningOfLife\":,42}");
+static duk_ret_t test_decode_error_raw(duk_context *ctx) {
 	duk_json_decode(ctx, -1);
+	return 1;
+}
+
+static duk_ret_t test_decode_error(duk_context *ctx) {
+	/* The JSON.parse() error message includes a byte offset, so we need to
+	 * normalize it.
+	 */
+	duk_int_t ret;
+
+	duk_push_string(ctx, "{\"meaningOfLife\":,42}");
+	ret = duk_safe_call(ctx, test_decode_error_raw, 1 /*nargs*/, 1 /*nrets*/);
+	printf("ret: %ld\n", (long) ret);
+
+	duk_eval_string(ctx, "(function (x) { print(x.replace(/at offset \\d+/, 'at offset N')); })");
+	duk_dup(ctx, -2);
+	duk_to_string(ctx, -1);
+	duk_call(ctx, 1 /*nargs*/);
+
+	duk_pop(ctx);  /* duk_call result */
+	duk_pop(ctx);  /* duk_safe_call result */
+
 	printf("top after: %ld\n", (long) duk_get_top(ctx));
 	duk_set_top(ctx, 0);
 	return 0;
