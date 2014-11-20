@@ -171,7 +171,7 @@ an error can be re-thrown multiple times.</p>
 <p>For example, to add a throw timestamp (recording the first time the object
 has been thrown) to errors:</p>
 <pre class="ecmascript-code">
-Duktape.errCreate = function (e) {
+Duktape.errThrow = function (e) {
     if (!(e instanceof Error)) {
         // refuse to touch anything but Error instances
         return e;
