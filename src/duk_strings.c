@@ -58,8 +58,7 @@ DUK_INTERNAL const char *duk_str_array_length_over_2g = "array length over 2G";
 
 /* JSON */
 DUK_INTERNAL const char *duk_str_fmt_ptr = "%p";
-DUK_INTERNAL const char *duk_str_invalid_json = "invalid json";
-DUK_INTERNAL const char *duk_str_invalid_number = "invalid number";
+DUK_INTERNAL const char *duk_str_fmt_invalid_json = "invalid json (at offset %ld)";
 DUK_INTERNAL const char *duk_str_jsondec_reclimit = "json decode recursion limit";
 DUK_INTERNAL const char *duk_str_jsonenc_reclimit = "json encode recursion limit";
 DUK_INTERNAL const char *duk_str_cyclic_input = "cyclic input";
