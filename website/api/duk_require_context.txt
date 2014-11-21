@@ -17,6 +17,7 @@ new_ctx = duk_require_context(ctx, -1);
 
 =tags
 stack
+borrowed
 
 =introduced
 1.0.0
