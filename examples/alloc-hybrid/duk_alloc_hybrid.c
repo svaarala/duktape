@@ -13,6 +13,9 @@
 #include <string.h>
 #include <stdint.h>
 
+/* Define to enable some debug printfs. */
+/* #define DUK_ALLOC_HYBRID_DEBUG */
+
 typedef struct {
 	size_t size;
 	int count;
@@ -57,6 +60,7 @@ typedef struct {
 #define ADDR_IN_HEADER_ALLOC(hdr,p) \
 	((char *) (p) >= (hdr)->alloc_start && (char *) (p) < (hdr)->alloc_end)
 
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 static void dump_pool_state(pool_state *st) {
 	pool_free_entry *free;
 	int free_len;
@@ -76,6 +80,11 @@ static void dump_pool_state(pool_state *st) {
 		       (long) free_len);
 	}
 }
+#else
+static void dump_pool_state(pool_state *st) {
+	(void) st;
+}
+#endif
 
 void *duk_alloc_hybrid_init(void) {
 	pool_state *st;
@@ -92,13 +101,17 @@ void *duk_alloc_hybrid_init(void) {
 	st->alloc_end = NULL;
 
 	for (i = 0, total_size = 0, max_size = 0; i < (int) NUM_POOLS; i++) {
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 		printf("Pool %d: size %ld, count %ld\n", i, (long) pool_sizes[i].size, (long) pool_sizes[i].count);
+#endif
 		total_size += pool_sizes[i].size * pool_sizes[i].count;
 		if (pool_sizes[i].size > max_size) {
 			max_size = pool_sizes[i].size;
 		}
 	}
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 	printf("Total size %ld, max pool size %ld\n", (long) total_size, (long) max_size);
+#endif
 
 	st->alloc_start = malloc(total_size);
 	if (!st->alloc_start) {
@@ -148,7 +161,9 @@ void *duk_alloc_hybrid(void *udata, duk_size_t size) {
 		return NULL;
 	}
 	if (size > st->pool_max_size) {
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 		printf("alloc fallback: %ld\n", (long) size);
+#endif
 		return malloc(size);
 	}
 
@@ -170,7 +185,9 @@ void *duk_alloc_hybrid(void *udata, duk_size_t size) {
 		}
 	}
 
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 	printf("alloc fallback (out of pool): %ld\n", (long) size);
+#endif
 	return malloc(size);
 }
 
@@ -199,7 +216,9 @@ void *duk_realloc_hybrid(void *udata, void *ptr, duk_size_t size) {
 
 				new_ptr = duk_alloc_hybrid(udata, size);
 				if (!new_ptr) {
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 					printf("realloc original from pool: needed larger size, failed to alloc\n");
+#endif
 					return NULL;
 				}
 				memcpy(new_ptr, ptr, hdr->size);
@@ -212,14 +231,18 @@ void *duk_realloc_hybrid(void *udata, void *ptr, duk_size_t size) {
 				return new_ptr;
 			}
 		}
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 		printf("NEVER HERE\n");
+#endif
 		return NULL;
 	} else if (ptr != NULL) {
 		if (size == 0) {
 			free(ptr);
 			return NULL;
 		} else {
+#ifdef DUK_ALLOC_HYBRID_DEBUG
 			printf("realloc fallback: size %ld\n", (long) size);
+#endif
 			return realloc(ptr, size);
 		}
 	} else {
