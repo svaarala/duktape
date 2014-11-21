@@ -83,6 +83,12 @@ struct duk_number_list_entry {
  */
 #define DUK_VERSION                       10099L
 
+/* Git describe for Duktape build.  Useful for non-official snapshot builds
+ * so that application code can easily log which Duktape snapshot was used.
+ * Not available in the Ecmascript environment.
+ */
+#define DUK_GIT_DESCRIBE                  @GIT_DESCRIBE_CSTRING@
+
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
  * API calls as a marker to denote "no value".
