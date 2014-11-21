@@ -1379,6 +1379,8 @@ DUK_EXTERNAL duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t i
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_c_function ret;
 
+	DUK_ASSERT(ctx != NULL);
+
 	ret = duk_get_c_function(ctx, index);
 	if (!ret) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_C_FUNCTION);
@@ -1392,6 +1394,40 @@ DUK_EXTERNAL duk_context *duk_get_context(duk_context *ctx, duk_idx_t index) {
 
 DUK_EXTERNAL duk_context *duk_require_context(duk_context *ctx, duk_idx_t index) {
 	return (duk_context *) duk_require_hthread(ctx, index);
+}
+
+DUK_EXTERNAL void *duk_get_heapptr(duk_context *ctx, duk_idx_t index) {
+	duk_tval *tv;
+	void *ret;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_get_tval(ctx, index);
+	if (tv && DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		ret = (void *) DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(ret != NULL);
+		return ret;
+	}
+
+	return (void *) NULL;
+}
+
+DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	void *ret;
+
+	DUK_ASSERT(ctx != NULL);
+
+	tv = duk_require_tval(ctx, index);
+	if (tv && DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		ret = (void *) DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(ret != NULL);
+		return ret;
+	}
+
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+	return (void *) NULL;  /* not reachable */
 }
 
 DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
@@ -3231,6 +3267,38 @@ DUK_EXTERNAL void *duk_push_fixed_buffer(duk_context *ctx, duk_size_t size) {
 
 DUK_EXTERNAL void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size) {
 	return duk_push_buffer(ctx, size, 1);
+}
+
+DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_idx_t ret;
+
+	DUK_ASSERT(ctx != NULL);
+
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+
+	if (ptr == NULL) {
+		goto push_undefined;
+	}
+
+	switch (DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
+	case DUK_HTYPE_STRING:
+		duk_push_hstring(ctx, (duk_hstring *) ptr);
+		break;
+	case DUK_HTYPE_OBJECT:
+		duk_push_hobject(ctx, (duk_hobject *) ptr);
+		break;
+	case DUK_HTYPE_BUFFER:
+		duk_push_hbuffer(ctx, (duk_hbuffer *) ptr);
+		break;
+	default:
+		goto push_undefined;
+	}
+	return ret;
+
+ push_undefined:
+	duk_push_undefined(ctx);
+	return ret;
 }
 
 DUK_INTERNAL duk_idx_t duk_push_object_internal(duk_context *ctx) {

@@ -23,6 +23,7 @@ duk_push_thread(ctx);
 stack
 function
 thread
+borrowed
 
 =introduced
 1.0.0

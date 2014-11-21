@@ -1,0 +1,36 @@
+=proto
+duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr);
+
+=stack
+[ ... ] -> [ ... obj! ]
+
+=summary
+<p>Push a Duktape heap allocated object into the value stack based on a borrowed
+void pointer reference.
+The argument <code>ptr</code> must be obtained using
+<code><a href="duk_get_heapptr">duk_get_heapptr()</a></code> (or its variants)
+and must have been reachable for Duktape garbage collection up to this call.
+If <code>ptr</code> is <code>NULL</code>, <code>undefined</code> is pushed.</p>
+
+=example
+void *ptr;
+duk_idx_t idx;
+
+/* 'ptr' originally obtained using duk_get_heapptr() earlier, with the original
+ * value reachable by Duktape GC all the way to here:
+ */
+
+idx = duk_push_heapptr(ctx, ptr);
+
+=tags
+stack
+object
+borrowed
+experimental
+
+=seealso
+duk_get_heapptr
+duk_require_heapptr
+
+=introduced
+1.1.0
