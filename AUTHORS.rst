@@ -45,3 +45,6 @@ bugs, provided ideas, etc; in order of appearance):
 * Remo Eichenberger (https://github.com/remoe)
 * David Demelier
 * Mitchell Blank Jr (https://github.com/mitchblank)
+
+If you are accidentally missing from this list, send me an e-mail
+(``sami.vaarala@iki.fi``) and I'll fix the omission.
