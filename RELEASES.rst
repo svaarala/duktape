@@ -630,6 +630,10 @@ Planned
 * Add lightfunc (DUK_TYPE_LIGHTFUNC) primitive type, representing a
   Duktape/C function with a plain tagged value without any heap allocations
 
+* Add multiple feature options to use 16-bit fields and pointer compression
+  for reducing memory usage on low memory systems, see doc/low-memory.rst
+  for detailed discussion
+
 * Add duk_push_c_lightfunc() API call to push user lightfuncs on the
   value stack
 
@@ -652,6 +656,10 @@ Planned
 * Add DUK_GIT_DESCRIBE macro to the C API (with no Ecmascript equivalent)
   to allow application code to e.g. log more detailed version information
   relevant for non-official snapshot builds
+
+* Change buffer maximum size check to compare against allocated size
+  (including spare) instead of requested size (without spare), this has
+  a practical impact only when using 16-bit buffer size field
 
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
