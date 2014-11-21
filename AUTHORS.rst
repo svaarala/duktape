@@ -43,6 +43,7 @@ bugs, provided ideas, etc; in order of appearance):
 * Andreas Öman
 * Doug Sanden
 * Remo Eichenberger (https://github.com/remoe)
+* Mamod Mehyar (https://github.com/mamod)
 * David Demelier
 * Mitchell Blank Jr (https://github.com/mitchblank)
 
