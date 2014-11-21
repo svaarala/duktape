@@ -18,7 +18,7 @@
 	"Math.floor(Duktape.version / 10000) + '.' + " \
 	"Math.floor(Duktape.version / 100) % 100 + '.' + " \
 	"Duktape.version % 100" \
-	");"
+	", '(" DUK_GIT_DESCRIBE ")');"
 
 #include <stdio.h>
 #include <stdlib.h>

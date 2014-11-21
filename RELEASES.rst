@@ -654,6 +654,10 @@ Planned
 * Change JSON.parse() to include a byte offset with a syntax error to help
   pinpoint JSON errors
 
+* Add DUK_GIT_DESCRIBE macro to the C API (with no Ecmascript equivalent)
+  to allow application code to e.g. log more detailed version information
+  relevant for non-official snapshot builds
+
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
   limitations (see GH-67)
 
