@@ -633,6 +633,10 @@ Planned
   Error, and if so, map its error class to DUK_ERR_xxx codes so that
   checking for built-in errors is more convenient
 
+* Add duk_get_heapptr(), duk_require_heapptr(), and duk_push_heapptr()
+  to get borrowed void pointer references to Duktape heap objects
+  (objects, strings, buffers)
+
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
 * Better fix for C++ compilation issue caused by Duktape using both
