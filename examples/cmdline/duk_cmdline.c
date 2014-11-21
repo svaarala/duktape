@@ -39,6 +39,9 @@
 #ifdef DUK_CMDLINE_ALLOC_TORTURE
 #include "duk_alloc_torture.h"
 #endif
+#ifdef DUK_CMDLINE_ALLOC_HYBRID
+#include "duk_alloc_hybrid.h"
+#endif
 #include "duktape.h"
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
@@ -393,6 +396,7 @@ int main(int argc, char *argv[]) {
 	int memlimit_high = 1;
 	int alloc_logging = 0;
 	int alloc_torture = 0;
+	int alloc_hybrid = 0;
 	int i;
 
 	/*
@@ -429,6 +433,8 @@ int main(int argc, char *argv[]) {
 			alloc_logging = 1;
 		} else if (strcmp(arg, "--alloc-torture") == 0) {
 			alloc_torture = 1;
+		} else if (strcmp(arg, "--alloc-hybrid") == 0) {
+			alloc_hybrid = 1;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -478,6 +484,24 @@ int main(int argc, char *argv[]) {
 		                      NULL);
 #else
 		fprintf(stderr, "Warning: option --alloc-torture ignored, no torture allocator support\n");
+		fflush(stderr);
+#endif
+	}
+	if (!ctx && alloc_hybrid) {
+#ifdef DUK_CMDLINE_ALLOC_HYBRID
+		void *udata = duk_alloc_hybrid_init();
+		if (!udata) {
+			fprintf(stderr, "Failed to init hybrid allocator\n");
+			fflush(stderr);
+		} else {
+			ctx = duk_create_heap(duk_alloc_hybrid,
+			                      duk_realloc_hybrid,
+			                      duk_free_hybrid,
+			                      udata,
+			                      NULL);
+		}
+#else
+		fprintf(stderr, "Warning: option --alloc-hybrid ignored, no hybrid allocator support\n");
 		fflush(stderr);
 #endif
 	}
@@ -550,6 +574,7 @@ int main(int argc, char *argv[]) {
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-logging    use logging allocator (writes to /tmp)\n"
 	                "   --alloc-torture    use torture allocator\n"
+	                "   --alloc-hybrid     use hybrid allocator\n"
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);

@@ -669,6 +669,11 @@ Planned
   detecting memory safety issues on platforms where valgrind is not
   available
 
+* Add an example allocator with a hybrid model where a fixed set of small
+  pools are used to reduce allocator churn, but the allocator falls back
+  to malloc, realloc, and free for larger allocation sizes or when there
+  are no free pool entries
+
 * Add an SPDX 1.2 license into the distributable
 
 1.2.0 (2015-XX-XX)
