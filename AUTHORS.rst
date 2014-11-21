@@ -26,7 +26,7 @@ Other contributions
 ===================
 
 The following people have contributed something other than code (e.g. reported
-bugs, provided ideas, etc; in order of appearance):
+bugs, provided ideas, etc; roughly in order of appearance):
 
 * Greg Burns
 * Anthony Rabine
@@ -42,9 +42,11 @@ bugs, provided ideas, etc; in order of appearance):
 * Rajaran Gaunker (https://github.com/zimbabao)
 * Andreas Öman
 * Doug Sanden
+* Josh Engebretson (https://github.com/JoshEngebretson)
 * Remo Eichenberger (https://github.com/remoe)
 * Mamod Mehyar (https://github.com/mamod)
 * David Demelier
+* Tim Caswell (https://github.com/creationix)
 * Mitchell Blank Jr (https://github.com/mitchblank)
 
 If you are accidentally missing from this list, send me an e-mail
