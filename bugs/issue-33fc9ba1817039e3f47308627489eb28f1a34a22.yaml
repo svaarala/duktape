@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "api: convert duk_get_refcount() (and other calls) into direct peeks to internals"
+desc: ""
+type: :task
+component: duk
+release: v2.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-19 15:28:21.386137 Z
+references: []
+
+id: 33fc9ba1817039e3f47308627489eb28f1a34a22
+log_events: 
+- - 2014-11-19 15:28:21.543106 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

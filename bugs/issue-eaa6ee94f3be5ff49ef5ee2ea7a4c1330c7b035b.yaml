@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: use macros for function list and number list initializers for better extensibility
+desc: |-
+  Hide the underlying initializer structure so that its field count can be
+  more easily changed and new macros introduced - e.g. function with magic.
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-20 01:46:13.028183 Z
+references: []
+
+id: eaa6ee94f3be5ff49ef5ee2ea7a4c1330c7b035b
+log_events: 
+- - 2014-11-20 01:46:13.256593 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
