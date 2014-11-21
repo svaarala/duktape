@@ -209,7 +209,9 @@ function executeTest(options, callback) {
 		    if (!options.valgrind && options.engine.name === 'duk') {
 			cmd.push('--restrict-memory');  // restricted memory
 		    }
+		    // cmd.push('--alloc-logging');
 		    // cmd.push('--alloc-torture');
+		    // cmd.push('--alloc-hybrid');
 		    cmd.push(tempInput || options.testPath);
 		}
 		cmdline = cmd.join(' ');
