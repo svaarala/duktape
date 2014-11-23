@@ -268,6 +268,7 @@ clean:
 	@rm -rf dist/
 	@rm -rf site/
 	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
+	@rm -f duk-g++ dukd-g++
 	@rm -f ajduk ajdukd
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
