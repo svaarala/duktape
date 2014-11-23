@@ -658,6 +658,9 @@ Planned
 * Change JSON.parse() to include a byte offset with a syntax error to help
   pinpoint JSON errors
 
+* Make Function.prototype.name writable so that application code can set
+  a 'name' property on Duktape/C functions (GH-79)
+
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
   limitations (see GH-67)
 
