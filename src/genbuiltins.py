@@ -385,14 +385,22 @@ bi_function_prototype = {
 	'internal_prototype': 'bi_object_prototype',
 	'external_constructor': 'bi_function_constructor',
 	'class': 'Function',
-	'name': '',
+	'name': '',  # dummy
 
 	'length': 0,
 	'native': 'duk_bi_function_prototype',
 	'callable': True,
 	'constructable': False,  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
 
-	'values': [],
+	'values': [
+		# Each built-in of class Function has a 'name' which is
+		# non-writable (the empty string above).  Function.prototype
+		# is a special case: it is a function but we want it's name
+		# to be writable so that user code can set a 'name' property
+		# for Duktape/C functions.  If the Function.prototype.name
+		# property were non-writable, that would be prevented.
+		{ 'name': 'name',			'value': '',			'attributes': 'w' }
+	],
 	'functions': [
 		# test262 ch15/15.3/15.3.4/15.3.4.2/S15.3.4.2_A11 checks that Function.prototype.toString.length
 		# is zero, cannot find specification support for that but 0 is a good value.
