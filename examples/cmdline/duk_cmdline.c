@@ -1,8 +1,9 @@
 /*
- *  Command line execution tool.  Used by test cases and other manual testing.
+ *  Command line execution tool.  Useful for test cases and manual testing.
  *
- *  To enable readline and other fancy stuff, compile with -DDUK_CMDLINE_FANCY
- *  (it is not the default to maximize portability).
+ *  To enable readline and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
+ *  It is not the default to maximize portability.  You can also compile in
+ *  support for example allocators, grep for DUK_CMDLINE_*.
  */
 
 #ifndef DUK_CMDLINE_FANCY
@@ -12,9 +13,7 @@
 #endif
 
 #define  GREET_CODE(variant)  \
-	"print(" \
-	"'((o) Duktape" variant "'" \
-	", " \
+	"print('((o) Duktape" variant " ' + " \
 	"Math.floor(Duktape.version / 10000) + '.' + " \
 	"Math.floor(Duktape.version / 100) % 100 + '.' + " \
 	"Duktape.version % 100" \
@@ -387,6 +386,104 @@ static int handle_interactive(duk_context *ctx) {
 }
 #endif  /* NO_READLINE */
 
+#ifdef DUK_CMDLINE_AJSHEAP
+/*
+ *  Heap initialization when using AllJoyn.js pool allocator (without any
+ *  other AllJoyn.js integration).  This serves as an example of how to
+ *  integrate Duktape with a pool allocator and is useful for low memory
+ *  testing.
+ *
+ *  The pool sizes are not optimized here.  The sizes are chosen so that
+ *  you can look at the high water mark (hwm) and use counts (use) and see
+ *  how much allocations are needed for each pool size.  To optimize pool
+ *  sizes more accurately, you can use --alloc-logging and inspect the memory
+ *  allocation log which provides exact byte counts etc.
+ *
+ *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git
+ *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git/tree/ajs.c
+ */
+
+#include "ajs.h"
+#include "ajs_heap.h"
+
+static const AJS_HeapConfig ajsheap_config[] = {
+	{ 8,      10,   AJS_POOL_BORROW,  0 },
+	{ 12,     10,   AJS_POOL_BORROW,  0 },
+	{ 20,     50,   AJS_POOL_BORROW,  0 },
+	{ 24,     100,  AJS_POOL_BORROW,  0 },
+	{ 32,     600,  AJS_POOL_BORROW,  0 },
+	{ 40,     200,  0,                0 },
+	{ 48,     400,  0,                0 },
+	{ 128,    80,   0,                0 },
+	{ 256,    16,   0,                0 },
+	{ 512,    16,   0,                0 },
+	{ 1024,   6,    0,                0 },
+	{ 2048,   5,    0,                0 },
+	{ 4096,   3,    0,                0 },
+	{ 8192,   1,    0,                0 }
+};
+
+static uint8_t *ajsheap_ram = NULL;
+
+static void ajsheap_init(void) {
+	size_t heap_sz[1];
+	uint8_t *heap_array[1];
+	uint8_t num_pools, i;
+	AJ_Status ret;
+
+	num_pools = (uint8_t) (sizeof(ajsheap_config) / sizeof(AJS_HeapConfig));
+	heap_sz[0] = AJS_HeapRequired(ajsheap_config,  /* heapConfig */
+	                              num_pools,       /* numPools */
+	                              0);              /* heapNum */
+	ajsheap_ram = (uint8_t *) malloc(heap_sz[0]);
+	if (!ajsheap_ram) {
+		fprintf(stderr, "Failed to allocate AJS heap\n");
+		fflush(stderr);
+		exit(1);
+	}
+	heap_array[0] = ajsheap_ram;
+
+	fprintf(stderr, "Allocated AJS heap of %ld bytes, pools:", (long) heap_sz[0]);
+	for (i = 0; i < num_pools; i++) {
+		fprintf(stderr, " (sz:%ld,num:%ld,brw:%ld,idx:%ld)",
+		        (long) ajsheap_config[i].size, (long) ajsheap_config[i].entries,
+		        (long) ajsheap_config[i].borrow, (long) ajsheap_config[i].heapIndex);
+	}
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	ret = AJS_HeapInit(heap_array,      /* heap */
+	                   heap_sz,         /* heapSz */
+	                   ajsheap_config,  /* heapConfig */
+	                   num_pools,       /* numPools */
+	                   1);              /* numHeaps */
+	fprintf(stderr, "AJS_HeapInit() -> %ld\n", (long) ret);
+	fflush(stderr);
+}
+
+/* AjsHeap.dump(), allows Ecmascript code to dump heap status at suitable
+ * points.
+ */
+static duk_ret_t ajsheap_dump(duk_context *ctx) {
+	AJS_HeapDump();
+	fflush(stdout);
+	return 0;
+}
+
+static void ajsheap_register(duk_context *ctx) {
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, ajsheap_dump, 0);
+	duk_put_prop_string(ctx, -2, "dump");
+	duk_put_global_string(ctx, "AjsHeap");
+}
+#endif  /* DUK_CMDLINE_AJSHEAP */
+
+#define  ALLOC_DEFAULT  0
+#define  ALLOC_LOGGING  1
+#define  ALLOC_TORTURE  2
+#define  ALLOC_HYBRID   3
+#define  ALLOC_AJSHEAP  4
+
 int main(int argc, char *argv[]) {
 	duk_context *ctx = NULL;
 	int retval = 0;
@@ -394,10 +491,12 @@ int main(int argc, char *argv[]) {
 	int have_eval = 0;
 	int interactive = 0;
 	int memlimit_high = 1;
-	int alloc_logging = 0;
-	int alloc_torture = 0;
-	int alloc_hybrid = 0;
+	int alloc_provider = ALLOC_DEFAULT;
 	int i;
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	alloc_provider = ALLOC_AJSHEAP;
+#endif
 
 	/*
 	 *  Signal handling setup
@@ -429,12 +528,16 @@ int main(int argc, char *argv[]) {
 				goto usage;
 			}
 			i++;  /* skip code */
+		} else if (strcmp(arg, "--alloc-default") == 0) {
+			alloc_provider = ALLOC_DEFAULT;
 		} else if (strcmp(arg, "--alloc-logging") == 0) {
-			alloc_logging = 1;
+			alloc_provider = ALLOC_LOGGING;
 		} else if (strcmp(arg, "--alloc-torture") == 0) {
-			alloc_torture = 1;
+			alloc_provider = ALLOC_TORTURE;
 		} else if (strcmp(arg, "--alloc-hybrid") == 0) {
-			alloc_hybrid = 1;
+			alloc_provider = ALLOC_HYBRID;
+		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
+			alloc_provider = ALLOC_AJSHEAP;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
@@ -459,11 +562,11 @@ int main(int argc, char *argv[]) {
 #endif
 
 	/*
-	 *  Create context and execute any argument file(s)
+	 *  Create context
 	 */
 
 	ctx = NULL;
-	if (!ctx && alloc_logging) {
+	if (!ctx && alloc_provider == ALLOC_LOGGING) {
 #ifdef DUK_CMDLINE_ALLOC_LOGGING
 		ctx = duk_create_heap(duk_alloc_logging,
 		                      duk_realloc_logging,
@@ -475,7 +578,7 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 #endif
 	}
-	if (!ctx && alloc_torture) {
+	if (!ctx && alloc_provider == ALLOC_TORTURE) {
 #ifdef DUK_CMDLINE_ALLOC_TORTURE
 		ctx = duk_create_heap(duk_alloc_torture,
 		                      duk_realloc_torture,
@@ -487,7 +590,7 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 #endif
 	}
-	if (!ctx && alloc_hybrid) {
+	if (!ctx && alloc_provider == ALLOC_HYBRID) {
 #ifdef DUK_CMDLINE_ALLOC_HYBRID
 		void *udata = duk_alloc_hybrid_init();
 		if (!udata) {
@@ -505,9 +608,48 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 #endif
 	}
-	if (!ctx) {
+	if (!ctx && alloc_provider == ALLOC_AJSHEAP) {
+#ifdef DUK_CMDLINE_AJSHEAP
+		ajsheap_init();
+
+		ctx = duk_create_heap(AJS_Alloc,
+		                      AJS_Realloc,
+		                      AJS_Free,
+		                      (void *) &ctx,  /* alloc_udata */
+		                      NULL);          /* fatal_handler */
+#else
+		fprintf(stderr, "Warning: option --alloc-ajsheap ignored, no ajsheap allocator support\n");
+		fflush(stderr);
+#endif
+	}
+	if (!ctx && alloc_provider == ALLOC_DEFAULT) {
 		ctx = duk_create_heap_default();
 	}
+
+	if (!ctx) {
+		fprintf(stderr, "Failed to create Duktape heap\n");
+		fflush(stderr);
+		exit(-1);
+	}
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		fprintf(stdout, "Pool dump after heap creation\n");
+		fflush(stdout);
+		AJS_HeapDump();
+		fflush(stdout);
+	}
+#endif
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		ajsheap_register(ctx);
+	}
+#endif
+
+	/*
+	 *  Execute any argument file(s)
+	 */
 
 	for (i = 1; i < argc; i++) {
 		char *arg = argv[i];
@@ -556,9 +698,34 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 	}
 
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
+		fflush(stdout);
+		AJS_HeapDump();
+		fflush(stdout);
+
+		duk_gc(ctx, 0);
+
+		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
+		fflush(stdout);
+		AJS_HeapDump();
+		fflush(stdout);
+	}
+#endif
+
 	if (ctx) {
 		duk_destroy_heap(ctx);
 	}
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
+		fflush(stdout);
+		AJS_HeapDump();
+		fflush(stdout);
+	}
+#endif
 
 	return retval;
 
@@ -572,9 +739,19 @@ int main(int argc, char *argv[]) {
 	                "   -i                 enter interactive mode after executing argument file(s) / eval code\n"
 	                "   -e CODE            evaluate code\n"
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
+	                "   --alloc-default    use Duktape default allocator\n"
+#ifdef DUK_CMDLINE_ALLOC_LOGGING
 	                "   --alloc-logging    use logging allocator (writes to /tmp)\n"
+#endif
+#ifdef DUK_CMDLINE_ALLOC_TORTURE
 	                "   --alloc-torture    use torture allocator\n"
+#endif
+#ifdef DUK_CMDLINE_ALLOC_HYBRID
 	                "   --alloc-hybrid     use hybrid allocator\n"
+#endif
+#ifdef DUK_CMDLINE_AJSHEAP
+	                "   --alloc-ajsheap    use ajsheap allocator (enabled by default with 'ajduk')\n"
+#endif
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);

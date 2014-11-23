@@ -34,3 +34,5 @@ xmldoc
 FlameGraph
 dtrace4linux
 flow
+alljoyn-js
+ajtcl
