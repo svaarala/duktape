@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: api test for proxy object as a prototype (parent), multi-inheritance
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-21 14:17:37.804174 Z
+references: []
+
+id: e6c14e1c4951eea6d59ac1f55810b277768b319d
+log_events: 
+- - 2014-11-21 14:17:37.969241 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

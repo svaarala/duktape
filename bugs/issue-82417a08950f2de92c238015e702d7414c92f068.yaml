@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add lightfunc support
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-11-23 11:23:39.217999 Z
+references: []
+
+id: 82417a08950f2de92c238015e702d7414c92f068
+log_events: 
+- - 2014-11-23 11:23:39.374868 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-11-23 11:23:42.614011 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

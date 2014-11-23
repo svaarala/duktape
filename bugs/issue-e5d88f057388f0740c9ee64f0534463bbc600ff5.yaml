@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: error traceback when using a negative rc, shows 'Error' for func name?
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :wontfix
+creation_time: 2014-11-23 04:45:07.811244 Z
+references: []
+
+id: e5d88f057388f0740c9ee64f0534463bbc600ff5
+log_events: 
+- - 2014-11-23 04:45:08.016138 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-11-23 11:23:59.013840 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition wontfix
+  - Invalid, user error.
