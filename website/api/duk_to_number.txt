@@ -10,11 +10,7 @@ duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index);
 coerced value.  Returns the coerced value.  If <code>index</code> is invalid, throws
 an error.</p>
 
-<p>Custom type coercion:</p>
-<ul>
-<li>Buffer: <code>0</code> for zero-size buffer, <code>1</code> otherwise</li>
-<li>Pointer: <code>0</code> for <code>NULL</code> pointer, <code>1</code> otherwise</li>
-</ul>
+<div include="ref-custom-type-coercion.html" />
 
 =example
 printf("coerced number: %lf\n", (double) duk_to_number(ctx, -3));

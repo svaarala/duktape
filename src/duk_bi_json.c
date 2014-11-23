@@ -1337,10 +1337,11 @@ DUK_LOCAL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hol
 
 	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	h = duk_get_hobject(ctx, -1);
+	h = duk_get_hobject_or_lfunc_coerce(ctx, -1);
 	if (h != NULL) {
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
-		h = duk_get_hobject(ctx, -1);
+		h = duk_get_hobject_or_lfunc_coerce(ctx, -1);  /* toJSON() can also be a lightfunc */
+
 		if (h != NULL && DUK_HOBJECT_IS_CALLABLE(h)) {
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
 			duk_dup(ctx, -2);         /* -> [ ... key val toJSON val ] */
@@ -1579,6 +1580,17 @@ DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 		break;
 	}
 #endif  /* DUK_USE_JX || DUK_USE_JC */
+	case DUK_TAG_LIGHTFUNC: {
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+		/* We only get here when doing non-standard JSON encoding */
+		DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);
+		DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
+#else
+		/* Standard JSON omits functions */
+		DUK_NEVER_HERE();
+#endif
+		break;
+	}
 	default: {
 		/* number */
 		duk_double_t d;
@@ -1855,7 +1867,8 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	{
 		js_ctx->mask_for_undefined = DUK_TYPE_MASK_UNDEFINED |
 		                             DUK_TYPE_MASK_POINTER |
-		                             DUK_TYPE_MASK_BUFFER;
+		                             DUK_TYPE_MASK_BUFFER |
+		                             DUK_TYPE_MASK_LIGHTFUNC;
 	}
 
 	(void) duk_push_dynamic_buffer(ctx, 0);

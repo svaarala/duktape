@@ -63,6 +63,9 @@ void test(void) {
     duk_pop(ctx);
 }
 
+=seealso
+duk_push_c_lightfunc
+
 =tags
 stack
 function

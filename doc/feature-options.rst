@@ -392,6 +392,13 @@ DUK_OPT_NO_JC
 Disable support for the JC format.  Reduces code footprint.  An attempt
 to encode or decode the format causes an error.
 
+DUK_OPT_LIGHTFUNC_BUILTINS
+--------------------------
+
+Force built-in functions to be lightweight functions.  This reduces
+memory footprint by around 14 kB at the cost of some non-compliant
+behavior.
+
 Debugging options
 =================
 

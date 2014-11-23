@@ -166,7 +166,7 @@ encoding:</p>
 <td>Standard JSON: always encoded as <code>null</code></td>
 </tr>
 <tr>
-<td>k&#xf6;h&#xe4;</td>
+<td>"k&#xf6;h&#xe4;"</td>
 <td><code>"k&#xf6;h&#xe4;"</code></td>
 <td><code>"k\xf6h\xe4"</code></td>
 <td><code>"k\u00f6h\u00e4"</code></td>
@@ -234,6 +234,13 @@ encoding:</p>
 <td><code>{_func:true}</code></td>
 <td><code>{"_func":true}</code></td>
 <td>Standard JSON: encoded as <code>null</code> inside arrays, otherwise omitted</td>
+</tr>
+<tr>
+<td>lightfunc</td>
+<td><code>n/a</code></td>
+<td><code>{_func:true}</code></td>
+<td><code>{"_func":true}</code></td>
+<td>Formats like ordinary functions</td>
 </tr>
 </tbody>
 </table>

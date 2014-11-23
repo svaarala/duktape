@@ -122,7 +122,6 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
-	duk_hobject *h_func;
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 	duk_int_t level;
@@ -139,9 +138,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 
 	duk_push_object(ctx);
 
-	h_func = act->func;
-	DUK_ASSERT(h_func != NULL);
-	duk_push_hobject(ctx, h_func);
+	duk_push_tval(ctx, &act->tv_func);
 
 	pc = (duk_uint_fast32_t) act->pc;
 	duk_push_uint(ctx, (duk_uint_t) pc);

@@ -377,6 +377,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_int16_t magic;
 			duk_c_function c_func;
 			duk_hnativefunction *h_func;
+#if defined(DUK_USE_LIGHTFUNC_BUILTINS)
+			duk_small_int_t lightfunc_eligible;
+#endif
 
 			stridx = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRIDX_BITS);
 			natidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
@@ -392,6 +395,39 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_DDD(DUK_DDDPRINT("built-in %ld, function-valued property %ld, stridx %ld, natidx %ld, length %ld, nargs %ld",
 			                     (long) i, (long) j, (long) stridx, (long) natidx, (long) c_length,
 			                     (c_nargs == DUK_VARARGS ? (long) -1 : (long) c_nargs)));
+
+			/* Cast converts magic to 16-bit signed value */
+			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0);
+
+#if defined(DUK_USE_LIGHTFUNC_BUILTINS)
+			lightfunc_eligible =
+				((c_nargs >= DUK_LFUNC_NARGS_MIN && c_nargs <= DUK_LFUNC_NARGS_MAX) || (c_nargs == DUK_VARARGS)) &&
+				(c_length <= DUK_LFUNC_LENGTH_MAX) &&
+				(magic >= DUK_LFUNC_MAGIC_MIN && magic <= DUK_LFUNC_MAGIC_MAX);
+			if (stridx == DUK_STRIDX_EVAL ||
+			    stridx == DUK_STRIDX_YIELD ||
+			    stridx == DUK_STRIDX_RESUME ||
+			    stridx == DUK_STRIDX_REQUIRE) {
+				/* These functions have trouble working as lightfuncs.
+				 * Some of them have specific asserts and some may have
+			         * additional properties (e.g. 'require.id' may be written).
+				 */
+				DUK_D(DUK_DPRINT("reject as lightfunc: stridx=%d, i=%d, j=%d", (int) stridx, (int) i, (int) j));
+				lightfunc_eligible = 0;
+			}
+
+			if (lightfunc_eligible) {
+				duk_tval tv_lfunc;
+				duk_small_uint_t lf_nargs = (c_nargs == DUK_VARARGS ? DUK_LFUNC_NARGS_VARARGS : c_nargs);
+				duk_small_uint_t lf_flags = DUK_LFUNC_FLAGS_PACK(magic, c_length, lf_nargs);
+				DUK_TVAL_SET_LIGHTFUNC(&tv_lfunc, c_func, lf_flags);
+				duk_push_tval(ctx, &tv_lfunc);
+				DUK_D(DUK_DPRINT("built-in function eligible as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld -> %!iT", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic, duk_get_tval(ctx, -1)));
+				goto lightfunc_skip;
+			}
+#endif  /* DUK_USE_LIGHTFUNC_BUILTINS */
+
+			DUK_D(DUK_DPRINT("built-in function NOT ELIGIBLE as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic));
 
 			/* [ (builtin objects) ] */
 
@@ -415,8 +451,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* XXX: any way to avoid decoding magic bit; there are quite
 			 * many function properties and relatively few with magic values.
 			 */
-			/* Cast converts magic to 16-bit signed value */
-			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0);
 			h_func->magic = magic;
 
 			/* [ (builtin objects) func ] */
@@ -438,6 +472,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  The default property attributes are correct for all
 			 *  function valued properties of built-in objects now.
 			 */
+
+#if defined(DUK_USE_LIGHTFUNC_BUILTINS)
+		 lightfunc_skip:
+#endif
 
 			duk_def_prop_stridx(ctx, i, stridx, DUK_PROPDESC_FLAGS_WC);
 

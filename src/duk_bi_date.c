@@ -1748,6 +1748,145 @@ DUK_INTERNAL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *
 }
 
 /*
+ *  Indirect magic value lookup for Date methods.
+ *
+ *  Date methods don't put their control flags into the function magic value
+ *  because they wouldn't fit into a LIGHTFUNC's magic field.  Instead, the
+ *  magic value is set to an index pointing to the array of control flags
+ *  below.
+ *
+ *  This must be kept in strict sync with genbuiltins.py!
+ */
+
+static duk_uint16_t duk__date_magics[] = {
+	/* 0: toString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_TOSTRING_TIME + DUK__FLAG_LOCALTIME,
+
+	/* 1: toDateString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_LOCALTIME,
+
+	/* 2: toTimeString */
+	DUK__FLAG_TOSTRING_TIME + DUK__FLAG_LOCALTIME,
+
+	/* 3: toLocaleString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_TOSTRING_TIME + DUK__FLAG_TOSTRING_LOCALE + DUK__FLAG_LOCALTIME,
+
+	/* 4: toLocaleDateString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_TOSTRING_LOCALE + DUK__FLAG_LOCALTIME,
+
+	/* 5: toLocaleTimeString */
+	DUK__FLAG_TOSTRING_TIME + DUK__FLAG_TOSTRING_LOCALE + DUK__FLAG_LOCALTIME,
+
+	/* 6: toUTCString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_TOSTRING_TIME,
+
+	/* 7: toISOString */
+	DUK__FLAG_TOSTRING_DATE + DUK__FLAG_TOSTRING_TIME + DUK__FLAG_NAN_TO_RANGE_ERROR + DUK__FLAG_SEP_T,
+
+	/* 8: getFullYear */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_YEAR << DUK__FLAG_VALUE_SHIFT),
+
+	/* 9: getUTCFullYear */
+	0 + (DUK__IDX_YEAR << DUK__FLAG_VALUE_SHIFT),
+
+	/* 10: getMonth */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_MONTH << DUK__FLAG_VALUE_SHIFT),
+
+	/* 11: getUTCMonth */
+	0 + (DUK__IDX_MONTH << DUK__FLAG_VALUE_SHIFT),
+
+	/* 12: getDate */
+	DUK__FLAG_ONEBASED + DUK__FLAG_LOCALTIME + (DUK__IDX_DAY << DUK__FLAG_VALUE_SHIFT),
+
+	/* 13: getUTCDate */
+	DUK__FLAG_ONEBASED + (DUK__IDX_DAY << DUK__FLAG_VALUE_SHIFT),
+
+	/* 14: getDay */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_WEEKDAY << DUK__FLAG_VALUE_SHIFT),
+
+	/* 15: getUTCDay */
+	0 + (DUK__IDX_WEEKDAY << DUK__FLAG_VALUE_SHIFT),
+
+	/* 16: getHours */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_HOUR << DUK__FLAG_VALUE_SHIFT),
+
+	/* 17: getUTCHours */
+	0 + (DUK__IDX_HOUR << DUK__FLAG_VALUE_SHIFT),
+
+	/* 18: getMinutes */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_MINUTE << DUK__FLAG_VALUE_SHIFT),
+
+	/* 19: getUTCMinutes */
+	0 + (DUK__IDX_MINUTE << DUK__FLAG_VALUE_SHIFT),
+
+	/* 20: getSeconds */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_SECOND << DUK__FLAG_VALUE_SHIFT),
+
+	/* 21: getUTCSeconds */
+	0 + (DUK__IDX_SECOND << DUK__FLAG_VALUE_SHIFT),
+
+	/* 22: getMilliseconds */
+	DUK__FLAG_LOCALTIME + (DUK__IDX_MILLISECOND << DUK__FLAG_VALUE_SHIFT),
+
+	/* 23: getUTCMilliseconds */
+	0 + (DUK__IDX_MILLISECOND << DUK__FLAG_VALUE_SHIFT),
+
+	/* 24: setMilliseconds */
+	DUK__FLAG_TIMESETTER + DUK__FLAG_LOCALTIME + (1 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 25: setUTCMilliseconds */
+	DUK__FLAG_TIMESETTER + (1 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 26: setSeconds */
+	DUK__FLAG_TIMESETTER + DUK__FLAG_LOCALTIME + (2 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 27: setUTCSeconds */
+	DUK__FLAG_TIMESETTER + (2 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 28: setMinutes */
+	DUK__FLAG_TIMESETTER + DUK__FLAG_LOCALTIME + (3 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 29: setUTCMinutes */
+	DUK__FLAG_TIMESETTER + (3 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 30: setHours */
+	DUK__FLAG_TIMESETTER + DUK__FLAG_LOCALTIME + (4 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 31: setUTCHours */
+	DUK__FLAG_TIMESETTER + (4 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 32: setDate */
+	DUK__FLAG_LOCALTIME + (1 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 33: setUTCDate */
+	0 + (1 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 34: setMonth */
+	DUK__FLAG_LOCALTIME + (2 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 35: setUTCMonth */
+	0 + (2 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 36: setFullYear */
+	DUK__FLAG_NAN_TO_ZERO + DUK__FLAG_LOCALTIME + (3 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 37: setUTCFullYear */
+	DUK__FLAG_NAN_TO_ZERO + (3 << DUK__FLAG_VALUE_SHIFT),
+
+	/* 38: getYear */
+	DUK__FLAG_LOCALTIME + DUK__FLAG_SUB1900 + (DUK__IDX_YEAR << DUK__FLAG_VALUE_SHIFT),
+
+	/* 39: setYear */
+	DUK__FLAG_NAN_TO_ZERO + DUK__FLAG_YEAR_FIXUP + (3 << DUK__FLAG_VALUE_SHIFT),
+};
+
+DUK_LOCAL duk_small_uint_t duk__date_get_indirect_magic(duk_context *ctx) {
+	duk_small_int_t magicidx = (duk_small_uint_t) duk_get_current_magic(ctx);
+	DUK_ASSERT(magicidx >= 0 && magicidx < (duk_small_int_t) (sizeof(duk__date_magics) / sizeof(duk_uint16_t)));
+	return (duk_small_uint_t) duk__date_magics[magicidx];
+}
+
+/*
  *  Constructor calls
  */
 
@@ -1865,7 +2004,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor_now(duk_context *ctx) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_date_prototype_tostring_shared(duk_context *ctx) {
-	duk_small_uint_t flags = (duk_small_uint_t) duk_get_current_magic(ctx);
+	duk_small_uint_t flags = duk__date_get_indirect_magic(ctx);
 	return duk__to_string_helper(ctx, flags);
 }
 
@@ -1947,7 +2086,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_date_prototype_get_shared(duk_context *ctx) {
-	duk_small_uint_t flags_and_idx = (duk_small_uint_t) duk_get_current_magic(ctx);
+	duk_small_uint_t flags_and_idx = duk__date_get_indirect_magic(ctx);
 	return duk__get_part_helper(ctx, flags_and_idx);
 }
 
@@ -2032,7 +2171,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_context *ct
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx) {
-	duk_small_uint_t flags_and_maxnargs = (duk_small_uint_t) duk_get_current_magic(ctx);
+	duk_small_uint_t flags_and_maxnargs = duk__date_get_indirect_magic(ctx);
 	return duk__set_part_helper(ctx, flags_and_maxnargs);
 }
 

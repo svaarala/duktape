@@ -16,7 +16,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	/* Reject a proxy object as the target because it would need
 	 * special handler in property lookups.  (ES6 has no such restriction)
 	 */
-	h_target = duk_require_hobject(ctx, 0);
+	h_target = duk_require_hobject_or_lfunc_coerce(ctx, 0);
 	DUK_ASSERT(h_target != NULL);
 	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_target)) {
 		return DUK_RET_TYPE_ERROR;
@@ -25,7 +25,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	/* Reject a proxy object as the handler because it would cause
 	 * potentially unbounded recursion.  (ES6 has no such restriction)
 	 */
-	h_handler = duk_require_hobject(ctx, 1);
+	h_handler = duk_require_hobject_or_lfunc_coerce(ctx, 1);
 	DUK_ASSERT(h_handler != NULL);
 	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_handler)) {
 		return DUK_RET_TYPE_ERROR;

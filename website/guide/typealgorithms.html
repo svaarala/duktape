@@ -21,6 +21,8 @@ are also discussed.</p>
 <tr><td>n</td><td>number compare: NaN values compare false, zeroes compare true regardless of sign (e.g. +0 == -0)</td></tr>
 <tr><td>N</td><td>number compare in SameValue: NaN values compare true, zeroes compare with sign (e.g. SameValue(+0,-0) is false)</td></tr>
 <tr><td>p</td><td>heap pointer compare</td></tr>
+<tr><td>L</td><td>lightfunc compare: to be considered equal, Duktape/C function pointers and
+                  internal control flags (including the "magic" value) must match</td></tr>
 <tr><td>1</td><td>string/buffer vs. number: coerce string with ToNumber() and retry comparison; a buffer is first
                   coerced to string and then to number (e.g. buffer with "2.5" coerces eventually to number 2.5)</td></tr>
 <tr><td>2</td><td>boolean vs. any: coerce boolean with ToNumber() and retry comparison</td></tr>
@@ -44,23 +46,29 @@ for standard types.  Custom type behavior is as follows:</p>
     in particular that comparing a number to a pointer returns false.  This seems
     a bit unintuitive, but numbers cannot represent 64-pointers accurately,
     comparing numbers and pointers might be error prone.</li>
+<li>Lightfunc: comparison against any other type returns false.  Comparison
+    to a lightfunc returns true if and only if both the Duktape/C function
+    pointers and internal control flags (including the "magic" value) match.
+    Note that a lightfunc never compares equal to an ordinary Function object,
+    even when the Function object was created by coercing a lightfunc to an object.</li>
 </ul>
 
 <p>The standard behavior as well as behavior for Duktape custom types is summarized in the table below:</p>
 
 <table class="typecomparison">
 <thead>
-<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th></tr>
+<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th><th>lfn</th></tr>
 </thead>
 <tbody>
-<tr><th>und</th><td>t  </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>2  </td><td>2  </td><td>2  </td><td>2  </td><td>f  </td></tr>
-<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>n  </td><td>1  </td><td>3  </td><td>1  </td><td>f  </td></tr>
-<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>3  </td><td>s  </td><td>f  </td></tr>
-<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>3  </td><td>f  </td></tr>
-<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td></tr>
-<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td></tr>
+<tr><th>und</th><td>t  </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>2  </td><td>2  </td><td>2  </td><td>2  </td><td>f  </td><td>f  </td></tr>
+<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>n  </td><td>1  </td><td>3  </td><td>1  </td><td>f  </td><td>f  </td></tr>
+<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>3  </td><td>s  </td><td>f  </td><td>f  </td></tr>
+<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>3  </td><td>f  </td><td>f  </td></tr>
+<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td></tr>
+<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td></tr>
+<tr><th>lfn</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>L  </td></tr>
 </tbody>
 </table>
 
@@ -78,23 +86,25 @@ for standard types.  Custom type behavior is as follows:</p>
     string interning).  This is intentional, as it is important to be
     able to compare buffer values quickly.</li>
 <li>Pointer: like non-strict equality.</li>
+<li>Lightfunc: like non-strict equality.</li>
 </ul>
 
 <p>The standard behavior as well as behavior for Duktape custom types is summarized in the table below:</p>
 
 <table class="typecomparison">
 <thead>
-<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th></tr>
+<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th><th>lfn</th></tr>
 </thead>
 <tbody>
-<tr><th>und</th><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>n  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td></tr>
-<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td></tr>
-<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td></tr>
+<tr><th>und</th><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>n  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td></tr>
+<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td></tr>
+<tr><th>lfn</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>L  </td></tr>
 </tbody>
 </table>
 
@@ -110,27 +120,29 @@ for standard types.  Custom type behavior is as follows:</p>
 <ul>
 <li>Buffer: like strict equality.</li>
 <li>Pointer: like non-strict (and strict) equality.</li>
+<li>Lightfunc: like non-strict (and strict equality).</li>
 </ul>
 
 <p>The standard behavior as well as behavior for Duktape custom types is summarized in the table below:</p>
 
 <table class="typecomparison">
 <thead>
-<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th></tr>
+<tr><th>   </th><th>und</th><th>nul</th><th>boo</th><th>num</th><th>str</th><th>obj</th><th>buf</th><th>ptr</th><th>lfn</th></tr>
 </thead>
 <tbody>
-<tr><th>und</th><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>N  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td></tr>
-<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td></tr>
-<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td></tr>
-<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td></tr>
+<tr><th>und</th><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>nul</th><td>   </td><td>t  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>boo</th><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>num</th><td>   </td><td>   </td><td>   </td><td>N  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>str</th><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>obj</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td><td>f  </td></tr>
+<tr><th>buf</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>p  </td><td>f  </td><td>f  </td></tr>
+<tr><th>ptr</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>s  </td><td>f  </td></tr>
+<tr><th>lfn</th><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>   </td><td>L  </td></tr>
 </tbody>
 </table>
 
-<h2>Type conversion and testing</h2>
+<h2 id="type-conversion-and-testing">Type conversion and testing</h2>
 
 <p>The custom types behave as follows for Ecmascript coercions described
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9">Type Conversion and Testing</a>
@@ -138,27 +150,37 @@ for standard types.  Custom type behavior is as follows:</p>
 
 <table>
 <thead>
-<tr><th> </th><th>buffer</th><th>pointer</th></tr>
+<tr><th> </th><th>buffer</th><th>pointer</th><th>lightfunc</th></tr>
 </thead>
 <tbody>
-<tr><th>ToPrimitive</th><td>identity</td><td>identity</td></tr>
-<tr><th>ToBoolean</th><td>false for zero-size buffer, true otherwise</td><td>false for NULL pointer, true otherwise</td></tr>
-<tr><th>ToNumber</th><td>like ToNumber() for a string</td><td>0 for NULL pointer, 1 otherwise</td></tr>
-<tr><th>ToInteger</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
-<tr><th>ToInt32</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
-<tr><th>ToUint32</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
-<tr><th>ToUint16</th><td>same as ToNumber</td><td>same as ToNumber</td></tr>
-<tr><th>ToString</th><td>string with bytes from buffer data</td><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td></tr>
-<tr><th>ToObject</th><td>Buffer object</td><td>Pointer object</td></tr>
-<tr><th>CheckObjectCoercible</th><td>allow (no error)</td><td>allow (no error)</td></tr>
-<tr><th>IsCallable</th><td>false</td><td>false</td></tr>
-<tr><th>SameValue</th><td>(covered above)</td><td>(covered above)</td></tr>
+<tr><th>DefaultValue</th><td>TypeError</td><td>TypeError</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code> (toString/valueOf)</td></tr>
+<tr><th>ToPrimitive</th><td>identity</td><td>identity</td><td><code>
+"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code> (toString/valueOf)</td></tr>
+<tr><th>ToBoolean</th><td>false for zero-size buffer, true otherwise</td><td>false for NULL pointer, true otherwise</td><td>true</td></tr>
+<tr><th>ToNumber</th><td>like ToNumber() for a string</td><td>0 for NULL pointer, 1 otherwise</td><td>NaN</td></tr>
+<tr><th>ToInteger</th><td>same as ToNumber</td><td>same as ToNumber</td><td>0</td></tr>
+<tr><th>ToInt32</th><td>same as ToNumber</td><td>same as ToNumber</td><td>0</td></tr>
+<tr><th>ToUint32</th><td>same as ToNumber</td><td>same as ToNumber</td><td>0</td></tr>
+<tr><th>ToUint16</th><td>same as ToNumber</td><td>same as ToNumber</td><td>0</td></tr>
+<tr><th>ToString</th><td>string with bytes from buffer data</td><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code></td></tr>
+<tr><th>ToObject</th><td>Buffer object</td><td>Pointer object</td><td>Function object</td></tr>
+<tr><th>CheckObjectCoercible</th><td>allow (no error)</td><td>allow (no error)</td><td>allow (no error)</td></tr>
+<tr><th>IsCallable</th><td>false</td><td>false</td><td>true</td></tr>
+<tr><th>SameValue</th><td>(covered above)</td><td>(covered above)</td><td>(covered above)</td></tr>
 </tbody>
 </table>
 
 <p>When a buffer is string coerced, the bytes from the buffer are used
 directly as string data.  The bytes will then be interpreted as CESU-8
 (or extended UTF-8) from Ecmascript point of view.</p>
+
+<p>When a lightfunc is coerced with ToPrimitive() it behaves like an ordinary
+function: it gets coerced with <code>Function.prototype.toString()</code> with
+the result (normally) being the same as ToString() coercion.</p>
+
+<p>When a lightfunc is object coerced, a new Function object is created
+and the virtual properties (<code>name</code> and <code>length</code> and
+the internal "magic" value are copied over to the Function object.</p>
 
 <h2>Custom coercions (ToBuffer, ToPointer)</h2>
 
@@ -168,7 +190,7 @@ is as follows:</p>
 <ul>
 <li>A buffer coerces to itself (identity).  The same buffer value is
     returned.</li>
-<li>Any other type (including pointer) is first string coerced with
+<li>Any other type (including pointer and lightfunc) is first string coerced with
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString</a>,
     and the resulting string is then copied, byte-by-byte, into a
     fixed-size buffer.</li>
@@ -184,6 +206,8 @@ call.  The coercion is as follows:</p>
     buffer or a string <b>does not</b> point to the buffer/string data area.
     (This coercion is likely to change.)</li>
 <li>Any other types (including number) coerce to a NULL pointer.</li>
+<li>Lightfunc coerces to a NULL pointer.  This is the case because C function
+    pointers cannot be coerced to a <code>void *</code> in a portable manner.</li>
 </ul>
 
 <p>The following table summarizes how different types are handled:</p>
@@ -201,8 +225,14 @@ call.  The coercion is as follows:</p>
 <tr><th>object</th><td>buffer with ToString(value)</td><td>ptr to heap hdr</td></tr>
 <tr><th>buffer</th><td>identity</td><td>ptr to heap hdr</td></tr>
 <tr><th>pointer</th><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td><td>identity</td></tr>
+<tr><th>lightfunc</th><td>buffer with ToString(value)</td><td>NULL</td></tr>
 </tbody>
 </table>
+
+<div class="note">
+There is currently no ToLightFunc() coercion.  Lightfuncs can only be created
+using the Duktape C API.
+</div>
 
 <h2>Addition</h2>
 
@@ -213,12 +243,13 @@ is coerced to a string and the strings are then concatenated.  This behavior
 is extended to custom types as follows:</p>
 <ul>
 <li>As for standard types, object values are first coerced with <code>ToPrimitive()</code>,
-    e.g. a <code>Buffer</code> object is converted to a plain buffer value.</li>
+    e.g. a <code>Buffer</code> object is converted to a plain buffer value, and a
+    lightfunc value is (normally) coerced with <code>ToString()</code>.</li>
 <li>The string concatenation rule is triggered if either argument is a string
     or a buffer.  The arguments are coerced to strings and then concatenated into
     the result string.  This means that adding two buffers currently results in a
     string, not a buffer.</li>
-<li>Pointer types fall into the default number addition case.  They are coerced
+<li>Pointer values fall into the default number addition case.  They are coerced
     with <code>ToNumber()</code> and then added as numbers.  NULL pointers coerce to
     0, non-NULL pointers to 1, so addition results may not be very intuitive.</li>
 </ul>
@@ -235,8 +266,15 @@ This mimics the behavior of standard types.</p>
 duk&gt; buf = Duktape.dec('hex', '414243');  // plain buffer
 = ABC
 duk&gt; buf.toString;
-= function toString() {/* native code */}
+= function toString() {/* native */}
 duk&gt; typeof buf.toString();
 = string
 </pre>
 
+<p>Lightfuncs have a few non-configurable and non-writable virtual properties
+(<code>name</code> and <code>length</code>) and inherit their remaining
+properties from <code>Function.prototype</code>, which allows ordinary inherited
+Function methods to be called:</p>
+<pre class="ecmascript-code">
+var bound = myLightFunc.bind('dummy', 123);
+</pre>

@@ -724,6 +724,16 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 		duk_fb_sprintf(fb, "pointer:%p", (void *) DUK_TVAL_GET_POINTER(tv));
 		break;
 	}
+	case DUK_TAG_LIGHTFUNC: {
+		duk_c_function func;
+		duk_small_uint_t lf_flags;
+
+		DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);
+		duk_fb_sprintf(fb, "lightfunc:");
+		duk_fb_put_funcptr(fb, (duk_uint8_t *) &func, sizeof(func));
+		duk_fb_sprintf(fb, ":%04lx", (long) lf_flags);
+		break;
+	}
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

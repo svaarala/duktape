@@ -627,6 +627,18 @@ Planned
 * Main release goal: improved low memory support to allow Duktape to run
   better on devices with 128kB system memory
 
+* Add lightfunc (DUK_TYPE_LIGHTFUNC) primitive type, representing a
+  Duktape/C function with a plain tagged value without any heap allocations
+
+* Add duk_push_c_lightfunc() API call to push user lightfuncs on the
+  value stack
+
+* Add duk_is_lightfunc() API call to type check for lightfuncs
+
+* Add feature option DUK_OPT_LIGHTFUNC_BUILTINS which causes Duktape to use
+  lightfuncs for almost all built-in functions, saving around 14kB of Duktape
+  heap on 32-bit platforms
+
 * Add duk_is_error() API call to check if a value inherits from Error
 
 * Add duk_get_error_code() API call to check if a value inherits from

@@ -132,14 +132,16 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 
 		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj)) {
 			/* XXX: actual source, if available */
-			duk_push_sprintf(ctx, "function %s() {/* source code */}", (const char *) func_name);
+			duk_push_sprintf(ctx, "function %s() {/* ecmascript */}", (const char *) func_name);
 		} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
-			duk_push_sprintf(ctx, "function %s() {/* native code */}", (const char *) func_name);
+			duk_push_sprintf(ctx, "function %s() {/* native */}", (const char *) func_name);
 		} else if (DUK_HOBJECT_HAS_BOUND(obj)) {
 			duk_push_sprintf(ctx, "function %s() {/* bound */}", (const char *) func_name);
 		} else {
 			goto type_error;
 		}
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_push_lightfunc_tostring(ctx, tv);
 	} else {
 		goto type_error;
 	}
@@ -298,8 +300,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* bound function 'length' property is interesting */
 	h_target = duk_get_hobject(ctx, -2);
-	DUK_ASSERT(h_target != NULL);
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
+	if (h_target == NULL ||  /* lightfunc */
+	    DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
+		/* For lightfuncs, simply read the virtual property. */
 		duk_int_t tmp;
 		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH);
 		tmp = duk_to_int(ctx, -1) - (nargs - 1);  /* step 15.a */
@@ -326,7 +329,10 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	 * function.  Not sure if this is correct, because the specification
 	 * is a bit ambiguous on this point but it would make sense.
 	 */
-	if (DUK_HOBJECT_HAS_STRICT(h_target)) {
+	if (h_target == NULL) {
+		/* Lightfuncs are always strict. */
+		DUK_HOBJECT_SET_STRICT(h_bound);
+	} else if (DUK_HOBJECT_HAS_STRICT(h_target)) {
 		DUK_HOBJECT_SET_STRICT(h_bound);
 	}
 	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));

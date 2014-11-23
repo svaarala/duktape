@@ -134,6 +134,12 @@ DUK_LOCAL duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_t
 	return arr_idx;
 }
 
+/* String is an own (virtual) property of a lightfunc. */
+DUK_LOCAL duk_bool_t duk__key_is_lightfunc_ownprop(duk_hthread *thr, duk_hstring *key) {
+	return (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
+	        key == DUK_HTHREAD_STRING_NAME(thr));
+}
+
 /*
  *  Helpers for managing property storage size
  */
@@ -2221,6 +2227,28 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		break;
 	}
 
+	case DUK_TAG_LIGHTFUNC: {
+		duk_int_t lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv_obj);
+
+		/* Must coerce key: if key is an object, it may coerce to e.g. 'length'. */
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			duk_int_t lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
+			duk_pop(ctx);
+			duk_push_int(ctx, lf_len);
+			return 1;
+		} else if (key == DUK_HTHREAD_STRING_NAME(thr)) {
+			duk_pop(ctx);
+			duk_push_lightfunc_name(ctx, tv_obj);
+			return 1;
+		}
+
+		DUK_DDD(DUK_DDDPRINT("base object is a lightfunc, start lookup from function prototype"));
+		curr = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+		goto lookup;  /* avoid double coercion */
+	}
+
 	default: {
 		/* number */
 		DUK_DDD(DUK_DDDPRINT("base object is a number, start lookup from number prototype"));
@@ -2399,18 +2427,49 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_TVAL_SET_TVAL(&tv_key_copy, tv_key);
 	tv_key = &tv_key_copy;
 
-	if (!DUK_TVAL_IS_OBJECT(tv_obj)) {
+	/*
+	 *  The 'in' operator requires an object as its right hand side,
+	 *  throwing a TypeError unconditionally if this is not the case.
+	 *
+	 *  However, lightfuncs need to behave like fully fledged objects
+	 *  here to be maximally transparent, so we need to handle them
+	 *  here.
+	 */
+
+	/* XXX: Refactor key coercion so that it's only called once.  It can't
+	 * be trivially lifted here because the object must be type checked
+	 * first.
+	 */
+
+	if (DUK_TVAL_IS_OBJECT(tv_obj)) {
+		obj = DUK_TVAL_GET_OBJECT(tv_obj);
+		DUK_ASSERT(obj != NULL);
+
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+		if (duk__key_is_lightfunc_ownprop(thr, key)) {
+			/* FOUND */
+			rc = 1;
+			goto pop_and_return;
+		}
+
+		/* If not found, resume existence check from Function.prototype.
+		 * We can just substitute the value in this case; nothing will
+		 * need the original base value (as would be the case with e.g.
+		 * setters/getters.
+		 */
+		obj = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+	} else {
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is not an object -> reject"));
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
 	}
-	obj = DUK_TVAL_GET_OBJECT(tv_obj);
-	DUK_ASSERT(obj != NULL);
 
 	/* XXX: fast path for arrays? */
 
-	arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(obj != NULL);
 	DUK_UNREF(arr_idx);
 
 #if defined(DUK_USE_ES6_PROXY)
@@ -2463,7 +2522,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	/* XXX: inline into a prototype walking loop? */
 
 	rc = duk__get_property_desc(thr, obj, key, &desc, 0 /*flags*/);  /* don't push value */
+	/* fall through */
 
+ pop_and_return:
 	duk_pop(ctx);  /* [ key ] -> [] */
 	return rc;
 }
@@ -3065,6 +3126,23 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_DDD(DUK_DDDPRINT("base object is a pointer, start lookup from pointer prototype"));
 		curr = thr->builtins[DUK_BIDX_POINTER_PROTOTYPE];
 		break;
+	}
+
+	case DUK_TAG_LIGHTFUNC: {
+		/* All lightfunc own properties are non-writable and the lightfunc
+		 * is considered non-extensible.  However, the write may be captured
+		 * by an inherited setter which means we can't stop the lookup here.
+		 */
+
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+
+		if (duk__key_is_lightfunc_ownprop(thr, key)) {
+			goto fail_not_writable;
+		}
+
+		DUK_DDD(DUK_DDDPRINT("base object is a lightfunc, start lookup from function prototype"));
+		curr = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+		goto lookup;  /* avoid double coercion */
 	}
 
 	default: {
@@ -3894,6 +3972,18 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
 			goto fail_not_configurable;
 		}
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
+		/* Lightfunc virtual properties are non-configurable, so
+		 * reject if match any of them.
+		 */
+
+		duk_to_string(ctx, -1);
+		key = duk_get_hstring(ctx, -1);
+		DUK_ASSERT(key != NULL);
+
+		if (duk__key_is_lightfunc_ownprop(thr, key)) {
+			goto fail_not_configurable;
+		}
 	}
 
 	/* non-object base, no offending virtual property */
@@ -4210,7 +4300,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	obj = duk_require_hobject(ctx, 0);
+	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
 	(void) duk_to_string(ctx, 1);
 	key = duk_require_hstring(ctx, 1);
 
@@ -4310,6 +4400,13 @@ DUK_LOCAL void duk__normalize_property_descriptor(duk_context *ctx) {
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_GET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
 		is_acc_desc = 1;
+		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+			/* NOTE: lightfuncs are coerced to full functions because
+			 * lightfuncs don't fit into a property value slot.  This
+			 * has some side effects, see test-dev-lightfunc-accessor.js.
+			 */
+			duk_to_object(ctx, -1);
+		}
 		if (DUK_TVAL_IS_UNDEFINED(tv) ||
 		    (DUK_TVAL_IS_OBJECT(tv) &&
 		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
@@ -4322,6 +4419,13 @@ DUK_LOCAL void duk__normalize_property_descriptor(duk_context *ctx) {
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_SET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
 		is_acc_desc = 1;
+		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+			/* NOTE: lightfuncs are coerced to full functions because
+			 * lightfuncs don't fit into a property value slot.  This
+			 * has some side effects, see test-dev-lightfunc-accessor.js.
+			 */
+			duk_to_object(ctx, -1);
+		}
 		if (DUK_TVAL_IS_UNDEFINED(tv) ||
 		    (DUK_TVAL_IS_OBJECT(tv) &&
 		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
@@ -4372,11 +4476,16 @@ DUK_LOCAL void duk__normalize_property_descriptor(duk_context *ctx) {
  *  property descriptor with 'missing values' so it's easier to avoid it
  *  entirely.
  *
+ *  Note: this is only called for actual objects, not primitive values.
+ *  This must support virtual properties for full objects (e.g. Strings)
+ *  but not for plain values (e.g. strings).  Lightfuncs, even though
+ *  primitive in a sense, are treated like objects and accepted as target
+ *  values.
+ *
  *  This is a Duktape/C function.
  */
 
 /* XXX: this is a major target for size optimization */
-
 DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
@@ -4417,7 +4526,12 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	obj = duk_require_hobject(ctx, 0);
+	/* Lightfuncs are currently supported by coercing to a temporary
+	 * Function object; changes will be allowed (the coerced value is
+	 * extensible) but will be lost.
+	 */
+	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
+
 	(void) duk_to_string(ctx, 1);
 	key = duk_require_hstring(ctx, 1);
 	desc = duk_require_hobject(ctx, 2);
@@ -4457,6 +4571,10 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	arrlen_old_len = 0;
 	arrlen_new_len = 0;
 
+	/* XXX: just normalize the descriptor here too?  It would allow
+	 * lightfunc coercion to be limited to the normalization function.
+	 */
+
 	/*
 	 *  Extract property descriptor values as required in ToPropertyDescriptor().
 	 *  However, don't create an explicit property descriptor object: we don't
@@ -4488,7 +4606,11 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	get = NULL;
 	if (has_get && !duk_is_undefined(ctx, -1)) {
 		/* XXX: get = duk_require_callable_hobject(ctx, -1)? */
-		get = duk_require_hobject(ctx, -1);
+		/* NOTE: lightfuncs are coerced to full functions because
+		 * lightfuncs don't fit into a property value slot.  This
+		 * has some side effects, see test-dev-lightfunc-accessor.js.
+		 */
+		get = duk_require_hobject_or_lfunc_coerce(ctx, -1);
 		DUK_ASSERT(get != NULL);
 		if (!DUK_HOBJECT_IS_CALLABLE(get)) {
 			goto fail_invalid_desc;
@@ -4499,7 +4621,11 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
 	has_set = duk_get_prop_stridx(ctx, idx_desc, DUK_STRIDX_SET);
 	set = NULL;
 	if (has_set && !duk_is_undefined(ctx, -1)) {
-		set = duk_require_hobject(ctx, -1);
+		/* NOTE: lightfuncs are coerced to full functions because
+		 * lightfuncs don't fit into a property value slot.  This
+		 * has some side effects, see test-dev-lightfunc-accessor.js.
+		 */
+		set = duk_require_hobject_or_lfunc_coerce(ctx, -1);
 		DUK_ASSERT(set != NULL);
 		if (!DUK_HOBJECT_IS_CALLABLE(set)) {
 			goto fail_invalid_desc;
@@ -5278,7 +5404,9 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_define_property(duk_context *ctx) {
  */
 
 DUK_INTERNAL duk_ret_t duk_hobject_object_define_properties(duk_context *ctx) {
-	duk_require_hobject(ctx, 0);  /* target */
+	/* Lightfunc handling by ToObject() coercion. */
+	duk_require_hobject_or_lfunc_coerce(ctx, 0);  /* target */
+
 	duk_to_object(ctx, 1);        /* properties object */
 
 	DUK_DDD(DUK_DDDPRINT("target=%!iT, properties=%!iT",

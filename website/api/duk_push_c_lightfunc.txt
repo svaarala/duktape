@@ -1,0 +1,58 @@
+=proto
+duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_idx_t length, duk_int_t magic);
+
+=stack
+[ ... ] -> [ ... func! ]
+
+=summary
+<p>Push a new lightfunc value, associated with a C function, to the stack.
+Returns non-negative index (relative to stack bottom) of the
+pushed lightfunc.</p>
+
+<p>A lightfunc is a tagged value which contains a Duktape/C function
+pointer and a small set of internal control flags with no related heap
+allocations.  The internal control flags encode the <code>nargs</code>,
+<code>length</code>, and <code>magic</code> values, which therefore have
+significant restrictions:</p>
+<ul>
+<li><code>nargs</code> must be [0,14] or <code>DUK_VARARGS</code>.</li>
+<li><code>length</code> must be [0,15] and maps to the virtual <code>length</code>
+    property of the lightfunc.</li>
+<li><code>magic</code> must be [-128,127].</li>
+</ul>
+
+<p>A lightfunc cannot hold any own properties, it only has virtual
+<code>name</code> and <code>length</code> properties, and inherits
+further properties from <code>Function.prototype</code>.</p>
+
+<p>The <code>nargs</code> argument controls how the value stack looks like when
+<code>func</code> is entered, and behaves like for ordinary Duktape/C functions, see
+<code><a href="#duk_push_c_function">duk_push_c_function()</a></code>.</p>
+
+<p>The function created will be callable both as a normal function (<code>func()</code>)
+and as a constructor (<code>new func()</code>).  You can differentiate between the two
+call styles using <code><a href="#duk_is_constructor_call">duk_is_constructor_call()</a></code>.
+Although the function can be used as a constructor, it cannot have a <code>prototype</code>
+property like normal Function objects.</p>
+
+<div class="note">
+If you intend to use the pushed lightfunc as a constructor, and want to use
+a custom prototype object (instead of <code>Object.prototype</code>), the
+lightfunc must return an object value.  The object will then replace the default
+instance (bound to <code>this</code>) automatically created for the constructor,
+and will be the value of a <code>new MyLightFunc()</code> expression.
+</div>
+
+=example
+duk_idx_t func_idx;
+
+func_idx = duk_push_c_lightfunc(ctx, my_addtwo, 2 /*nargs*/, 2 /*length*/, 0 /*magic*/);
+
+=seealso
+duk_push_c_function
+
+=tags
+stack
+function
+lightfunc
+experimental

@@ -39,12 +39,15 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_constructor(duk_context *ctx) {
 
 		if (thr->callstack_top >= 2) {
 			duk_activation *act_caller = thr->callstack + thr->callstack_top - 2;
-			if (act_caller->func) {
+			duk_hobject *func_caller;
+
+			func_caller = DUK_ACT_GET_FUNC(act_caller);
+			if (func_caller) {
 				/* Stripping the filename might be a good idea
 				 * ("/foo/bar/quux.js" -> logger name "quux"),
 				 * but now used verbatim.
 				 */
-				duk_push_hobject(ctx, act_caller->func);
+				duk_push_hobject(ctx, func_caller);
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
 				duk_replace(ctx, 0);
 			}

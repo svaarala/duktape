@@ -119,7 +119,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 		for (i = 0; i < (duk_uint_fast32_t) t->callstack_top; i++) {
 			duk_activation *act = t->callstack + i;
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->func);
+			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_ACT_GET_FUNC(act));
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->var_env);
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->lex_env);
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY

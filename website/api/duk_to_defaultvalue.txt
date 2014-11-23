@@ -14,8 +14,7 @@ the input value is a <code>Date</code> instance, in which case a string is prefe
 (the exact coercion behavior is described in the Ecmascript specification).
 If the value is not an object or <code>index</code> is invalid, throws an error.</p>
 
-<p>Custom type coercion: both buffer and pointer are non-object values, so they
-cause an error to be thrown.</p>
+<div include="ref-custom-type-coercion.html" />
 
 <div class="note">
 <code>[[DefaultValue]]</code> is a rather technical coercion, not usually needed by

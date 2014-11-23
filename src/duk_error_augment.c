@@ -235,17 +235,14 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 
 		/* [... arr] */
 
-		DUK_ASSERT(thr_callstack->callstack[i].func != NULL);
 		DUK_ASSERT_DISABLE(thr_callstack->callstack[i].pc >= 0);  /* unsigned */
 
-		/* add function */
-		duk_push_hobject(ctx, thr_callstack->callstack[i].func);  /* -> [... arr func] */
+		/* Add function object. */
+		duk_push_tval(ctx, &(thr_callstack->callstack + i)->tv_func);
 		duk_def_prop_index_wec(ctx, -2, arr_idx);
 		arr_idx++;
 
-		/* add a number containing: pc, activation flags */
-
-		/* Add a number containing: pc, activation flag
+		/* Add a number containing: pc, activation flags.
 		 *
 		 * PC points to next instruction, find offending PC.  Note that
 		 * PC == 0 for native code.
@@ -322,7 +319,7 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 
 		act = thr_callstack->callstack + thr_callstack->callstack_top - 1;
 		DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
-		func = act->func;
+		func = DUK_ACT_GET_FUNC(act);
 		if (func) {
 			duk_uint32_t pc;
 			duk_uint32_t line;
