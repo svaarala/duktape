@@ -12,7 +12,13 @@
 #define DUK_JMPBUF_H_INCLUDED
 
 struct duk_jmpbuf {
+#if defined(DUK_USE_SETJMP) || defined(DUK_USE_UNDERSCORE_SETJMP)
 	jmp_buf jb;
+#elif defined(DUK_USE_SIGSETJMP)
+	sigjmp_buf jb;
+#else
+#error internal error, no long control transfer provider
+#endif
 };
 
 #endif  /* DUK_JMPBUF_H_INCLUDED */

@@ -1773,8 +1773,6 @@ typedef FILE duk_file;
 
 #define DUK_ABORT        abort
 #define DUK_EXIT         exit
-#define DUK_SETJMP       setjmp
-#define DUK_LONGJMP      longjmp
 
 /*
  *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
@@ -2080,6 +2078,42 @@ typedef FILE duk_file;
 #define DUK_USE_COMPILER_STRING "vbcc"
 #else
 #define DUK_USE_COMPILER_STRING "unknown"
+#endif
+
+/*
+ *  Long control transfer, setjmp/longjmp or alternatives
+ *
+ *  Signal mask is not saved (when that can be communicated to the platform)
+ */
+
+/* dummy non-zero value to be used as an argument for longjmp(), see man longjmp */
+#define DUK_LONGJMP_DUMMY_VALUE  1
+
+#if defined(DUK_OPT_SETJMP)
+#define DUK_USE_SETJMP
+#elif defined(DUK_OPT_UNDERSCORE_SETJMP)
+#define DUK_USE_UNDERSCORE_SETJMP
+#elif defined(DUK_OPT_SIGSETJMP)
+#define DUK_USE_SIGSETJMP
+#elif defined(__APPLE__)
+/* Use _setjmp() on Apple by default, see GH-55. */
+#define DUK_USE_UNDERSCORE_SETJMP
+#else
+/* The most portable default is setjmp(). */
+#define DUK_USE_SETJMP
+#endif
+
+#if defined(DUK_USE_UNDERSCORE_SETJMP)
+#define DUK_SETJMP(jb)        _setjmp((jb))
+#define DUK_LONGJMP(jb)       _longjmp((jb), DUK_LONGJMP_DUMMY_VALUE)
+#elif defined(DUK_USE_SIGSETJMP)
+#define DUK_SETJMP(jb)        sigsetjmp((jb), 0 /*savesigs*/)
+#define DUK_LONGJMP(jb)       siglongjmp((jb), DUK_LONGJMP_DUMMY_VALUE)
+#elif defined(DUK_USE_SETJMP)
+#define DUK_SETJMP(jb)        setjmp((jb))
+#define DUK_LONGJMP(jb)       longjmp((jb), DUK_LONGJMP_DUMMY_VALUE)
+#else
+#error internal error
 #endif
 
 /*

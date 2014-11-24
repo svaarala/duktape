@@ -55,9 +55,6 @@
 #define DUK_LJ_TYPE_RESUME       6    /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
 #define DUK_LJ_TYPE_NORMAL       7    /* pseudo-type to indicate a normal continuation (for 'finally' rethrowing) */
 
-/* dummy non-zero value to be used as an argument for longjmp(), see man longjmp */
-#define DUK_LONGJMP_DUMMY_VALUE  1
-
 /*
  *  Mark-and-sweep flags
  *
