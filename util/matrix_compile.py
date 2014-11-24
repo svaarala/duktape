@@ -6,6 +6,8 @@
 # FIXME: proper command execution
 # FIXME: rewrite as nodejs and parallelize
 # FIXME: better duktape option coverage
+# FIXME: 16-bit and lightfunc option matrix
+# FIXME: compile coverage, add clang and g++ at least
 
 import os
 import sys
