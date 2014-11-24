@@ -134,6 +134,37 @@ Errors in the initialization code result in a fatal error.
 which provides much more flexibility for extending the global environment,
 implementing sandboxing, etc.)
 
+DUK_OPT_SETJMP
+--------------
+
+Force ``setjmp/longjmp`` for long control transfers.
+
+The default long control transfer provider is ``setjmp/longjmp`` because it
+is the most portable option.  When a better provider is known for a platform,
+Duktape may default to that (e.g. ``_setjmp/_longjmp`` is the default for
+OSX/iPhone, see GH-55).  With this feature option you can force Duktape to
+explicitly use ``setjmp/longjmp`` even in these cases.
+
+The downside of ``setjmp/longjmp`` is that signal mask saving behavior is not
+specified and varies between platforms.  Signal mask saving may have a
+significant performance impact so you may want to force a specific provider
+if performance matters for your application.
+
+DUK_OPT_UNDERSCORE_SETJMP
+-------------------------
+
+Force ``_setjmp/_longjmp`` for long control transfers.  This ensures signal
+mask is not saved which can be a lot faster if ``setjmp/longjmp`` saves the
+signal mask (this varies between platforms).  See comments in
+``DUK_OPT_SETJMP``.
+
+DUK_OPT_SIGSETJMP
+-----------------
+
+Force ``sigsetjmp/siglongjmp`` with ``savesigs == 0`` for long control
+transfers (i.e. signal mask not saved/restored).  See comments in
+``DUK_OPT_SETJMP``.
+
 Memory management options
 =========================
 
