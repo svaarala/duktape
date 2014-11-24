@@ -3,7 +3,9 @@
  */
 
 /*===
+*** test_basic (duk_safe_call)
 length sum: 2147713027.000000
+==> rc=0, result='undefined'
 ===*/
 
 static char buf[65536 + 1024];
@@ -32,7 +34,7 @@ static void test_1(duk_context *ctx, int fmt_len, ...) {
 	va_end(ap);
 }
 
-void test(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx) {
 	duk_size_t fmt_len;
 
 	/* Note: don't reuse 'ap' in multiple calls, so the fmt_len loop
@@ -49,4 +51,9 @@ void test(duk_context *ctx) {
 	 * (See test-push-sprintf.c for comments.)
 	 */
 	printf("length sum: %lf\n", len_sum);
+	return 0;
+}
+
+void test(duk_context *ctx) {
+	TEST_SAFE_CALL(test_basic);
 }
