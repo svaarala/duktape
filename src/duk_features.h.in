@@ -2521,10 +2521,14 @@ typedef FILE duk_file;
  */
 
 #undef DUK_USE_HSTRING_EXTDATA
-#undef DUK_USE_EXT_STR_CHECK
-#if defined(DUK_OPT_EXT_STR_CHECK)
+#undef DUK_USE_EXTSTR_INTERN_CHECK
+
+#if defined(DUK_OPT_EXTERNAL_STRINGS)
 #define DUK_USE_HSTRING_EXTDATA
-#define DUK_USE_EXT_STR_CHECK(ptr,len) DUK_OPT_EXT_STR_CHECK((ptr), (len))
+#endif
+
+#if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_INTERN_CHECK)
+#define DUK_USE_EXTSTR_INTERN_CHECK(ptr,len) DUK_OPT_EXTSTR_INTERN_CHECK((ptr), (len))
 #endif
 
 /*

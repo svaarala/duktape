@@ -489,8 +489,8 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 	}
 #endif
 
-#if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXT_STR_CHECK)
-	extdata = (const duk_uint8_t *) DUK_USE_EXT_STR_CHECK((void *) str, (duk_size_t) blen);
+#if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_INTERN_CHECK)
+	extdata = (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK((void *) str, (duk_size_t) blen);
 #else
 	extdata = (const duk_uint8_t *) NULL;
 #endif
