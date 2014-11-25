@@ -15,11 +15,15 @@ import dukutil
 if __name__ == '__main__':
 	parser = optparse.OptionParser()
 	parser.add_option('--version', dest='version')
+	parser.add_option('--git-describe', dest='git_describe')
 	parser.add_option('--out-json', dest='out_json')
 	parser.add_option('--out-header', dest='out_header')
 	(opts, args) = parser.parse_args()
 
-	t = { 'version': opts.version }
+	t = {
+		'version': opts.version,
+		'git_describe': opts.git_describe
+	}
 
 	f = open(opts.out_json, 'wb')
 	f.write(dukutil.json_encode(t).encode('ascii'))

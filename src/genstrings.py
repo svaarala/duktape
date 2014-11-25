@@ -25,7 +25,8 @@
 #  XXX: improve per string metadata, and sort strings within constraints
 #  XXX: some Duktape internal strings could just reuse existing strings
 
-import os, sys
+import os
+import sys
 import optparse
 import dukutil
 
@@ -1135,3 +1136,24 @@ class GenStrings:
 		genc.emitDefine('DUK_STRIDX_START_STRICT_RESERVED', self.idx_start_strict_reserved)
 		genc.emitDefine('DUK_STRIDX_END_RESERVED', len(self.strlist), comment='exclusive endpoint')
 
+	def getStringList(self):
+		strs = []
+		strs_base64 = []
+		for s, d in self.strlist:
+			# The 'strs' list has strings as-is, with U+0000 marking the
+			# internal prefix (it's not correct as runtime we use \xFF).
+			#
+			# The 'strs_base64' is byte exact to allow an application to
+			# use it for e.g. external strings optimization.  The strings
+			# are encoded to UTF-8, internal prefix is replaced with \xFF,
+			# and the result is base-64 encoded to maintain byte exactness.
+
+			t = s.encode('utf-8')
+			if len(t) > 0 and t[0] == '\x00':
+				t = '\xff' + t[1:]
+			t = t.encode('base64')
+			if len(t) > 0 and t[-1] == '\n':
+				t = t[0:-1]
+			strs.append(s)
+			strs_base64.append(t)
+		return strs, strs_base64
