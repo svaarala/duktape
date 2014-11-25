@@ -29,7 +29,7 @@ DUK_INTERNAL_DECL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv);
-DUK_INTERNAL_DECL duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
+DUK_INTERNAL_DECL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
 DUK_INTERNAL_DECL duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
 DUK_INTERNAL_DECL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
 DUK_INTERNAL_DECL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);

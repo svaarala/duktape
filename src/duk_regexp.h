@@ -54,11 +54,11 @@ struct duk_re_matcher_ctx {
 	duk_hthread *thr;
 
 	duk_uint32_t re_flags;
-	duk_uint8_t *input;
-	duk_uint8_t *input_end;
-	duk_uint8_t *bytecode;
-	duk_uint8_t *bytecode_end;
-	duk_uint8_t **saved;		/* allocated from valstack (fixed buffer) */
+	const duk_uint8_t *input;
+	const duk_uint8_t *input_end;
+	const duk_uint8_t *bytecode;
+	const duk_uint8_t *bytecode_end;
+	const duk_uint8_t **saved;  /* allocated from valstack (fixed buffer) */
 	duk_uint32_t nsaved;
 	duk_uint32_t recursion_depth;
 	duk_uint32_t recursion_limit;

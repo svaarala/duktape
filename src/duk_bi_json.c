@@ -274,7 +274,7 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_uint8_t *p;
+	const duk_uint8_t *p;
 	duk_small_int_t x;
 
 	/* Caller has already eaten the first char so backtrack one byte. */
@@ -317,7 +317,7 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_uint8_t *p;
+	const duk_uint8_t *p;
 	duk_small_int_t x;
 	void *voidptr;
 
@@ -371,7 +371,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_uint8_t *p;
+	const duk_uint8_t *p;
 	duk_small_int_t x;
 
 	/* Caller has already eaten the first character ('|') which we don't need. */
@@ -410,7 +410,7 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 /* Parse a number, other than NaN or +/- Infinity */
 DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_uint8_t *p_start;
+	const duk_uint8_t *p_start;
 	duk_small_int_t x;
 	duk_small_uint_t s2n_flags;
 
@@ -904,7 +904,7 @@ DUK_LOCAL void duk__emit_stridx(duk_json_enc_ctx *js_ctx, duk_small_uint_t strid
 
 /* Check whether key quotes would be needed (custom encoding). */
 DUK_LOCAL duk_bool_t duk__enc_key_quotes_needed(duk_hstring *h_key) {
-	duk_uint8_t *p, *p_start, *p_end;
+	const duk_uint8_t *p, *p_start, *p_end;
 	duk_small_uint_t ch;
 
 	DUK_ASSERT(h_key != NULL);
@@ -958,7 +958,7 @@ DUK_LOCAL duk_uint8_t duk__quote_esc[14] = {
 
 DUK_LOCAL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_uint8_t *p, *p_start, *p_end, *p_tmp;
+	const duk_uint8_t *p, *p_start, *p_end, *p_tmp;
 	duk_ucodepoint_t cp;  /* typed for duk_unicode_decode_xutf8() */
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_quote_string: h_str=%!O", (duk_heaphdr *) h_str));

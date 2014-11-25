@@ -19,7 +19,7 @@
 
 DUK_LOCAL
 duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
-                                     duk_uint8_t *str,
+                                     const duk_uint8_t *str,
                                      duk_uint32_t blen,
                                      duk_uint32_t strhash,
                                      const duk_uint8_t *extdata) {
@@ -194,9 +194,9 @@ DUK_LOCAL void duk__insert_hstring(duk_heap *heap, duk_hstring **entries, duk_ui
 }
 
 #if defined(DUK_USE_HEAPPTR16)
-DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_uint16_t *entries16, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 #else
-DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__find_matching_string(duk_heap *heap, duk_hstring **entries, duk_uint32_t size, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 #endif
 	duk_uint32_t i;
 	duk_uint32_t step;
@@ -464,7 +464,7 @@ DUK_LOCAL duk_bool_t duk__recheck_strtab_size(duk_heap *heap, duk_uint32_t new_u
  *  Raw intern and lookup
  */
 
-DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 	duk_hstring *res;
 	const duk_uint8_t *extdata;
 
@@ -517,7 +517,7 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, duk_uint8_t *str, duk_uint
 	return res;
 }
 
-DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_strhash) {
+DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t *out_strhash) {
 	duk_hstring *res;
 
 	DUK_ASSERT(out_strhash);
@@ -542,13 +542,13 @@ DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint
  */
 
 #if 0  /*unused*/
-DUK_INTERNAL duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_lookup(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;  /* dummy */
 	return duk__do_lookup(heap, str, blen, &strhash);
 }
 #endif
 
-DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res;
 	duk_uint32_t strhash;
 
@@ -564,7 +564,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *st
 	return res;  /* may be NULL */
 }
 
-DUK_INTERNAL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res = duk_heap_string_intern(thr->heap, str, blen);
 	if (!res) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "failed to intern string");

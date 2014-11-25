@@ -121,7 +121,7 @@ DUK_INTERNAL void duk_hbuffer_compact(duk_hthread *thr, duk_hbuffer_dynamic *buf
  *  Inserts
  */
 
-DUK_INTERNAL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_uint8_t *data, duk_size_t length) {
+DUK_INTERNAL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, const duk_uint8_t *data, duk_size_t length) {
 	duk_uint8_t *p;
 
 	/* XXX: allow inserts with offset > curr_size? i.e., insert zeroes automatically? */
@@ -253,7 +253,7 @@ DUK_INTERNAL duk_size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_d
  *  important fast paths bypass these functions. anyway.
  */
 
-DUK_INTERNAL void duk_hbuffer_append_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint8_t *data, duk_size_t length) {
+DUK_INTERNAL void duk_hbuffer_append_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, const duk_uint8_t *data, duk_size_t length) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));

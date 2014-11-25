@@ -137,8 +137,8 @@ DUK_INTERNAL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_u
 }
 
 /* Decode helper.  Return zero on error. */
-DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp) {
-	duk_uint8_t *p;
+DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp) {
+	const duk_uint8_t *p;
 	duk_uint32_t res;
 	duk_uint_fast8_t ch;
 	duk_small_int_t n;
@@ -221,7 +221,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, duk_uint
 }
 
 /* used by e.g. duk_regexp_executor.c, string built-ins */
-DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end) {
+DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end) {
 	duk_ucodepoint_t cp;
 
 	if (duk_unicode_decode_xutf8(thr, ptr, ptr_start, ptr_end, &cp)) {
@@ -235,9 +235,9 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 /* (extended) utf-8 length without codepoint encoding validation, used
  * for string interning (should probably be inlined).
  */
-DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(duk_uint8_t *data, duk_size_t blen) {
-	duk_uint8_t *p = data;
-	duk_uint8_t *p_end = data + blen;
+DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end = data + blen;
 	duk_size_t clen = 0;
 
 	while (p < p_end) {
@@ -854,7 +854,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_input;
 	duk_hbuffer_dynamic *h_buf;
-	duk_uint8_t *p, *p_start, *p_end;
+	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t prev, curr, next;
 
 	h_input = duk_require_hstring(ctx, -1);

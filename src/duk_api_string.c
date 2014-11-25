@@ -121,7 +121,7 @@ DUK_EXTERNAL void duk_join(duk_context *ctx, duk_idx_t count) {
 DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
-	duk_uint8_t *p, *p_start, *p_end;
+	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
 
 	h_input = duk_require_hstring(ctx, index);
@@ -144,7 +144,7 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	duk_hbuffer_dynamic *h_buf;
-	duk_uint8_t *p, *p_start, *p_end;
+	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
 
 	index = duk_normalize_index(ctx, index);
@@ -225,8 +225,8 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t st
 DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
-	duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
-	duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
+	const duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
+	const duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
 	duk_codepoint_t cp;
 
 	index = duk_require_normalize_index(ctx, index);

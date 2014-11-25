@@ -413,10 +413,10 @@ DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_t
 #endif
 
 #if 0  /*unused*/
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
 #endif
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern(duk_heap *heap, duk_uint8_t *str, duk_uint32_t blen);
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, duk_uint8_t *str, duk_uint32_t len);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t len);
 #if 0  /*unused*/
 DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
 #endif
@@ -456,6 +456,6 @@ DUK_INTERNAL_DECL void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_
 DUK_INTERNAL_DECL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 #endif
 
-DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len);
+DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
 
 #endif  /* DUK_HEAP_H_INCLUDED */

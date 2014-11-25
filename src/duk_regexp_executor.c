@@ -25,11 +25,11 @@
  *  because they're used for more than just codepoints.
  */
 
-DUK_LOCAL duk_uint32_t duk__bc_get_u32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
+DUK_LOCAL duk_uint32_t duk__bc_get_u32(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **pc) {
 	return (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
 }
 
-DUK_LOCAL duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **pc) {
+DUK_LOCAL duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **pc) {
 	duk_uint32_t t;
 
 	/* signed integer encoding needed to work with UTF-8 */
@@ -41,8 +41,8 @@ DUK_LOCAL duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, duk_uint8_t **
 	}
 }
 
-DUK_LOCAL duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
-	duk_uint8_t *p;
+DUK_LOCAL const duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
+	const duk_uint8_t *p;
 
 	/* Note: allow backtracking from p == ptr_end */
 	p = *ptr;
@@ -71,8 +71,8 @@ DUK_LOCAL duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, duk_uint8_t **ptr, 
 	return NULL;  /* never here */
 }
 
-DUK_LOCAL duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, duk_uint8_t *ptr_start, duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
-	duk_uint8_t *p;
+DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
+	const duk_uint8_t *p;
 
 	p = *ptr;
 	if (p < ptr_start || p >= ptr_end) {
@@ -110,7 +110,7 @@ DUK_LOCAL duk_uint8_t *duk__utf8_advance(duk_hthread *thr, duk_uint8_t **ptr, du
  * itself is never modified, and captures always record non-canonicalized
  * characters even in case-insensitive matching.
  */
-DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp) {
+DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **sp) {
 	duk_codepoint_t res = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
 	if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
 		res = duk_unicode_re_canonicalize_char(re_ctx->thr, res);
@@ -118,12 +118,12 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_
 	return res;
 }
 
-DUK_LOCAL duk_uint8_t *duk__inp_backtrack(duk_re_matcher_ctx *re_ctx, duk_uint8_t **sp, duk_uint_fast32_t count) {
+DUK_LOCAL const duk_uint8_t *duk__inp_backtrack(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **sp, duk_uint_fast32_t count) {
 	return duk__utf8_backtrack(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end, count);
 }
 
 /* Backtrack utf-8 input and return a (possibly canonicalized) input character. */
-DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *sp) {
+DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t *sp) {
 	/* note: caller 'sp' is intentionally not updated here */
 	(void) duk__inp_backtrack(re_ctx, &sp, (duk_uint_fast32_t) 1);
 	return duk__inp_get_cp(re_ctx, &sp);
@@ -140,7 +140,7 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, duk_u
  *  regexp execution.
  */
 
-DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t *pc, duk_uint8_t *sp) {
+DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t *pc, const duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
 	}
@@ -268,7 +268,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		}
 		case DUK_REOP_ASSERT_END: {
 			duk_codepoint_t c;
-			duk_uint8_t *temp_sp;
+			const duk_uint8_t *tmp_sp;
 
 			if (sp >= re_ctx->input_end) {
 				break;
@@ -276,8 +276,8 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 			if (!(re_ctx->re_flags & DUK_RE_FLAG_MULTILINE)) {
 				goto fail;
 			}
-			temp_sp = sp;
-			c = duk__inp_get_cp(re_ctx, &temp_sp);
+			tmp_sp = sp;
+			c = duk__inp_get_cp(re_ctx, &tmp_sp);
 			if (duk_unicode_is_line_terminator(c)) {
 				/* E5 Sections 15.10.2.8, 7.3 */
 				break;
@@ -305,7 +305,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 			if (sp >= re_ctx->input_end) {
 				w2 = 0;  /* not a wordchar */
 			} else {
-				duk_uint8_t *tmp_sp = sp;  /* dummy so sp won't get updated */
+				const duk_uint8_t *tmp_sp = sp;  /* dummy so sp won't get updated */
 				duk_codepoint_t c;
 				c = duk__inp_get_cp(re_ctx, &tmp_sp);
 				w2 = duk_unicode_re_is_wordchar(c);
@@ -332,7 +332,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		}
 		case DUK_REOP_SPLIT1: {
 			/* split1: prefer direct execution (no jump) */
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 			duk_int32_t skip;
 
 			skip = duk__bc_get_i32(re_ctx, &pc);
@@ -346,7 +346,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		}
 		case DUK_REOP_SPLIT2: {
 			/* split2: prefer jump execution (not direct) */
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 			duk_int32_t skip;
 
 			skip = duk__bc_get_i32(re_ctx, &pc);
@@ -360,7 +360,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		case DUK_REOP_SQMINIMAL: {
 			duk_uint32_t q, qmin, qmax;
 			duk_int32_t skip;
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 
 			qmin = duk__bc_get_u32(re_ctx, &pc);
 			qmax = duk__bc_get_u32(re_ctx, &pc);
@@ -389,7 +389,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		case DUK_REOP_SQGREEDY: {
 			duk_uint32_t q, qmin, qmax, atomlen;
 			duk_int32_t skip;
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 
 			qmin = duk__bc_get_u32(re_ctx, &pc);
 			qmax = duk__bc_get_u32(re_ctx, &pc);
@@ -431,8 +431,8 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 		}
 		case DUK_REOP_SAVE: {
 			duk_uint32_t idx;
-			duk_uint8_t *old;
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *old;
+			const duk_uint8_t *sub_sp;
 
 			idx = duk__bc_get_u32(re_ctx, &pc);
 			if (idx >= re_ctx->nsaved) {
@@ -464,7 +464,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 			duk_uint32_t idx_end, idx;
 #endif
 			duk_uint8_t **range_save;
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 
 			idx_start = duk__bc_get_u32(re_ctx, &pc);
 			idx_count = duk__bc_get_u32(re_ctx, &pc);
@@ -531,7 +531,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 
 			duk_int32_t skip;
 			duk_uint8_t **full_save;
-			duk_uint8_t *sub_sp;
+			const duk_uint8_t *sub_sp;
 
 			DUK_ASSERT(re_ctx->nsaved > 0);
 
@@ -584,7 +584,7 @@ DUK_LOCAL duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, duk_uint8_t
 			 *  15.10.2.9, step 5, sub-step 3.
 			 */
 			duk_uint32_t idx;
-			duk_uint8_t *p;
+			const duk_uint8_t *p;
 
 			idx = duk__bc_get_u32(re_ctx, &pc);
 			idx = idx << 1;		/* backref n -> saved indices [n*2, n*2+1] */
@@ -659,8 +659,8 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_hobject *h_regexp;
 	duk_hstring *h_bytecode;
 	duk_hstring *h_input;
-	duk_uint8_t *pc;
-	duk_uint8_t *sp;
+	const duk_uint8_t *pc;
+	const duk_uint8_t *sp;
 	duk_small_int_t match = 0;
 	duk_small_int_t global;
 	duk_uint_fast32_t i;
@@ -730,7 +730,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
 	duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);
-	re_ctx.saved = (duk_uint8_t **) duk_get_buffer(ctx, -1, NULL);
+	re_ctx.saved = (const duk_uint8_t **) duk_get_buffer(ctx, -1, NULL);
 	DUK_ASSERT(re_ctx.saved != NULL);
 
 	/* [ ... re_obj input bc saved_buf ] */

@@ -300,8 +300,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_context *ctx) 
 	duk_int_t clen_this;
 	duk_int_t cpos;
 	duk_int_t bpos;
-	duk_uint8_t *p_start, *p_end, *p;
-	duk_uint8_t *q_start;
+	const duk_uint8_t *p_start, *p_end, *p;
+	const duk_uint8_t *q_start;
 	duk_int_t q_blen;
 	duk_uint8_t firstbyte;
 	duk_uint8_t t;
@@ -424,7 +424,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 	duk_int_t match_caps;
 #endif
 	duk_uint32_t prev_match_end_boff;
-	duk_uint8_t *r_start, *r_end, *r;   /* repl string scan */
+	const duk_uint8_t *r_start, *r_end, *r;   /* repl string scan */
 
 	DUK_ASSERT_TOP(ctx, 2);
 	h_input = duk_push_this_coercible_to_string(ctx);
@@ -544,8 +544,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 #else  /* DUK_USE_REGEXP_SUPPORT */
 		{  /* unconditionally */
 #endif  /* DUK_USE_REGEXP_SUPPORT */
-			duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
-			duk_uint8_t *q_start;               /* match string */
+			const duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
+			const duk_uint8_t *q_start;               /* match string */
 			duk_size_t q_blen;
 
 #ifdef DUK_USE_REGEXP_SUPPORT
@@ -908,8 +908,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 #else  /* DUK_USE_REGEXP_SUPPORT */
 		{  /* unconditionally */
 #endif  /* DUK_USE_REGEXP_SUPPORT */
-			duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
-			duk_uint8_t *q_start;               /* match string */
+			const duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
+			const duk_uint8_t *q_start;               /* match string */
 			duk_size_t q_blen, q_clen;
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);

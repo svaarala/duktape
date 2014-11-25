@@ -9,7 +9,7 @@
 #define DUK__STRHASH_MEDIUMSTRING  (256L * 1024L)
 #define DUK__STRHASH_BLOCKSIZE     256L
 
-DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len) {
+DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
 	duk_uint32_t hash;
 
 	/*

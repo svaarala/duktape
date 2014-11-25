@@ -243,8 +243,8 @@ DUK_LOCAL void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaph
 
 DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_bool_t quotes) {
 	duk_fixedbuffer *fb = st->fb;
-	duk_uint8_t *p;
-	duk_uint8_t *p_end;
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
 
 	/* terminal type: no depth check */
 

@@ -80,8 +80,8 @@
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((h))) \
 	 ) \
 	)
 
@@ -89,8 +89,8 @@
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((h))) \
 	 ) \
 	)
 
@@ -98,8 +98,8 @@
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
-	   ((duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((h))) \
 	 ) \
 	)
 
