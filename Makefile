@@ -809,6 +809,7 @@ ajtcl:
 
 CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
+CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers
 CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L
 CCOPTS_AJDUK += -DDUK_OPT_FORCE_ALIGN=4
 CCOPTS_AJDUK += -DDUK_OPT_ASSERTIONS
@@ -829,13 +830,13 @@ CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint1
 ajduk: alljoyn-js ajtcl dist
 	# Command line with Alljoyn.js pool allocator, for low memory testing.
 	# The pool sizes only make sense with -m32, so force that.  This forces
-	# us to use barebones cmdline too.  The compilation produces some
-	# harmless warnings at present.
+	# us to use barebones cmdline too.
 	$(CC) -o $@ \
 		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
 		$(CCOPTS_NONDEBUG) \
 		$(CCOPTS_AJDUK) \
 		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
+		dist/examples/cmdline/duk_cmdline_ajduk.c \
 		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"

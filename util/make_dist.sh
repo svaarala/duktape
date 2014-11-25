@@ -206,6 +206,7 @@ cp examples/README.rst $DIST/examples/
 for i in \
 	README.rst \
 	duk_cmdline.c \
+	duk_cmdline_ajduk.c \
 	; do
 	cp examples/cmdline/$i $DIST/examples/cmdline/
 done
