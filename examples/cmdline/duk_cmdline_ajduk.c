@@ -260,6 +260,13 @@ const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len) {
 	return (const void *) ret;
 }
 
+void ajsheap_extstr_free_1(void *ptr) {
+	(void) ptr;
+#if 0
+	printf("ajsheap_extstr_free_1: freeing extstr %p\n", ptr);
+#endif
+}
+
 /*
  *  Simplified example of an external strings strategy where a set of strings
  *  is gathered during application compile time and baked into the application
@@ -268,7 +275,7 @@ const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len) {
  *  Duktape built-in strings are available from duk_build_meta.json, see
  *  util/duk_meta_to_strarray.py.  There may also be a lot of application
  *  specific strings, e.g. those used by application specific APIs.  These
- *  must be gathered through some other means.
+ *  must be gathered through some other means, see e.g. util/scan_strings.py.
  */
 
 static const char *strdata_duk_builtin_strings[] = {
@@ -662,6 +669,13 @@ const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len) {
 	printf(" -> not found\n");
 #endif
 	return NULL;
+}
+
+void ajsheap_extstr_free_2(void *ptr) {
+	(void) ptr;
+#if 0
+	printf("ajsheap_extstr_free_2: freeing extstr %p\n", ptr);
+#endif
 }
 
 #else  /* DUK_CMDLINE_AJSHEAP */
