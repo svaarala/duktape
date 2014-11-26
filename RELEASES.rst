@@ -625,7 +625,9 @@ Planned
 ------------------
 
 * Main release goal: improved low memory support to allow Duktape to run
-  better on devices with 128kB system memory
+  better on devices with 128kB (or even 96kB) system memory; with the changes
+  in this release, Duktape initial RAM usage is reduced from about 46kB to
+  22kB for a 32-bit target when all low memory features are enabled
 
 * Add lightfunc (DUK_TYPE_LIGHTFUNC) primitive type, representing a
   Duktape/C function with a plain tagged value without any heap allocations
@@ -633,6 +635,14 @@ Planned
 * Add multiple feature options to use 16-bit fields and pointer compression
   for reducing memory usage on low memory systems, see doc/low-memory.rst
   for detailed discussion
+
+* Add support for external strings which are like dynamic buffers: a fixed
+  size string header is allocated from the Duktape heap, but the data is
+  behind a pointer
+
+* Add DUK_OPT_EXTERNAL_STRINGS, DUK_OPT_EXTSTR_INTERN_CHECK. and
+  DUK_OPT_EXTSTR_FREE feature options to take advantage of external strings
+  for low memory environments; see doc/low-memory.rst for detailed discussion
 
 * Add duk_push_c_lightfunc() API call to push user lightfuncs on the
   value stack
