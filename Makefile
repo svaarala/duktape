@@ -831,10 +831,10 @@ CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint1
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
+# Command line with Alljoyn.js pool allocator, for low memory testing.
+# The pool sizes only make sense with -m32, so force that.  This forces
+# us to use barebones cmdline too.
 ajduk: alljoyn-js ajtcl dist
-	# Command line with Alljoyn.js pool allocator, for low memory testing.
-	# The pool sizes only make sense with -m32, so force that.  This forces
-	# us to use barebones cmdline too.
 	$(CC) -o $@ \
 		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
 		$(CCOPTS_NONDEBUG) \
