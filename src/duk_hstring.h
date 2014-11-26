@@ -102,8 +102,11 @@
 #endif
 
 #if defined(DUK_USE_HSTRING_EXTDATA)
+#define DUK_HSTRING_GET_EXTDATA(x) \
+	((x)->extdata)
 #define DUK_HSTRING_GET_DATA(x) \
-	(DUK_HSTRING_HAS_EXTDATA((x)) ? ((duk_hstring_external *) (x))->extdata : ((const duk_uint8_t *) ((x) + 1)))
+	(DUK_HSTRING_HAS_EXTDATA((x)) ? \
+		DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) (x)) : ((const duk_uint8_t *) ((x) + 1)))
 #else
 #define DUK_HSTRING_GET_DATA(x) \
 	((const duk_uint8_t *) ((x) + 1))

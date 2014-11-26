@@ -402,6 +402,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          void *alloc_udata,
                          duk_fatal_function fatal_func);
 DUK_INTERNAL_DECL void duk_heap_free(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h);
+DUK_INTERNAL_DECL void duk_free_hstring_inner(duk_heap *heap, duk_hstring *h);
 DUK_INTERNAL_DECL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr);
 
 DUK_INTERNAL_DECL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);

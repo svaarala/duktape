@@ -21,7 +21,7 @@
  *  been already dealt with.
  */
 
-DUK_LOCAL void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
+DUK_INTERNAL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -52,7 +52,7 @@ DUK_LOCAL void duk__free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	}
 }
 
-DUK_LOCAL void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
+DUK_INTERNAL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -63,6 +63,22 @@ DUK_LOCAL void duk__free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	}
 }
 
+DUK_INTERNAL void duk_free_hstring_inner(duk_heap *heap, duk_hstring *h) {
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(h != NULL);
+
+	DUK_UNREF(heap);
+	DUK_UNREF(h);
+
+#if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_FREE)
+	if (DUK_HSTRING_HAS_EXTDATA(h)) {
+		DUK_DDD(DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p",
+		                     h, DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h)));
+		DUK_USE_EXTSTR_FREE((const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
+	}
+#endif
+}
+
 DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(heap);
 	DUK_ASSERT(hdr);
@@ -71,13 +87,13 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 
 	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
-		/* no inner refs to free */
+		duk_free_hstring_inner(heap, (duk_hstring *) hdr);
 		break;
 	case DUK_HTYPE_OBJECT:
-		duk__free_hobject_inner(heap, (duk_hobject *) hdr);
+		duk_free_hobject_inner(heap, (duk_hobject *) hdr);
 		break;
 	case DUK_HTYPE_BUFFER:
-		duk__free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
+		duk_free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
 		break;
 	default:
 		DUK_UNREACHABLE();
@@ -165,11 +181,14 @@ DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 #else
 			e = heap->strtable[i];
 #endif
-			if (e == DUK_STRTAB_DELETED_MARKER(heap)) {
+			if (e == NULL || e == DUK_STRTAB_DELETED_MARKER(heap)) {
 				continue;
 			}
+			DUK_ASSERT(e != NULL);
 
-			/* strings have no inner allocations so free directly */
+			/* strings may have inner refs (extdata) in some cases */
+			duk_free_hstring_inner(heap, (duk_hstring *) e);
+
 			DUK_DDD(DUK_DDDPRINT("FINALFREE (string): %!iO",
 			                     (duk_heaphdr *) e));
 			DUK_FREE(heap, e);
