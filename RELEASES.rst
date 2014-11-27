@@ -778,6 +778,11 @@ Planned
 
 * Add iPhone/iOS strings to Duktape.env
 
+* Add DUK_OPT_EXEC_TIMEOUT_CHECK(), an experimental bytecode execution timeout
+  mechanism to safely bail out if script execution takes too long; this
+  protects against accidental errors but is not (yet) intended to protect
+  against deliberately malicious code
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
