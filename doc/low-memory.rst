@@ -91,7 +91,7 @@ Suggested feature options
 
 * If you don't need regexp support, use:
 
-  - ``DUK_OPT_NO_REGEXP_SUPPORT``.
+  - ``DUK_OPT_NO_REGEXP_SUPPORT``
 
 * Duktape debug code uses a large, static temporary buffer for formatting
   debug log lines.  If you're running with debugging enabled, use e.g.
@@ -128,9 +128,9 @@ system RAM):
 
   - ``DUK_OPT_HEAPPTR16``
 
-  - ``DUK_OPT_HEAPPTR_ENC16``
+  - ``DUK_OPT_HEAPPTR_ENC16(p)``
 
-  - ``DUK_OPT_HEAPPTR_DEC16``
+  - ``DUK_OPT_HEAPPTR_DEC16(x)``
 
 * Enable data pointer compression if possible.  Note that these pointers can
   point to arbitrary memory locations (outside Duktape heap) so this may not
@@ -138,28 +138,32 @@ system RAM):
 
   - ``DUK_OPT_DATAPTR16``
 
-  - ``DUK_OPT_DATAPTR_ENC16``
+  - ``DUK_OPT_DATAPTR_ENC16(p)``
 
-  - ``DUK_OPT_DATAPTR_DEC16``
+  - ``DUK_OPT_DATAPTR_DEC16(x)``
 
   - **UNIMPLEMENTED AT THE MOMENT**
 
 * Enable C function pointer compression if possible.  Duktape compiles to
   around 200kB of code, so assuming an alignment of 4 this may only be
-  possible if there is less than 56kB of user code.
+  possible if there is less than 56kB of user code:
 
   - ``DUK_OPT_FUNCPTR16``
 
-  - ``DUK_OPT_FUNCPTR_ENC16``
+  - ``DUK_OPT_FUNCPTR_ENC16(p)``
 
-  - ``DUK_OPT_FUNCPTR_DEC16``
+  - ``DUK_OPT_FUNCPTR_DEC16(x)``
 
   - **UNIMPLEMENTED AT THE MOMENT**
 
-* Enable struct packing in compiler options if your platform doesn't have
-  strict alignment requirements, e.g. on gcc/x86 you can:
+* Enable a low memory optimized string table variant which uses a fixed size
+  top level hash table and array chaining to resolve collisions.  This makes
+  memory behavior more predictable and avoids a large continuous allocation
+  used by the default string table:
 
-  - `-fpack-struct=1` or `-fpack-struct=2`
+  - ``DUK_OPT_STRTAB_CHAIN``
+
+  - ``DUK_OPT_STRTAB_CHAIN_SIZE=128`` (other values possible also)
 
 * Use "external" strings to allocate most strings from flash (there are
   multiple strategies for this, see separate section):
@@ -169,6 +173,11 @@ system RAM):
   - ``DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)``
 
   - ``DUK_OPT_EXTSTR_FREE(ptr)``
+
+* Enable struct packing in compiler options if your platform doesn't have
+  strict alignment requirements, e.g. on gcc/x86 you can:
+
+  - ``-fpack-struct=1`` or ``-fpack-struct=2``
 
 Notes on low memory measures
 ============================
