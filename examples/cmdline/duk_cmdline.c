@@ -48,6 +48,8 @@
 void ajsheap_init(void);
 void ajsheap_dump(void);
 void ajsheap_register(duk_context *ctx);
+void ajsheap_start_exec_timeout(void);
+void ajsheap_clear_exec_timeout(void);
 void *AJS_Alloc(void *udata, duk_size_t size);
 void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
 void AJS_Free(void *udata, void *ptr);
@@ -153,8 +155,16 @@ static int wrapped_compile_execute(duk_context *ctx) {
 
 	/* [ ... src_data src_len function ] */
 
+#if defined(DUK_CMDLINE_AJSHEAP)
+	ajsheap_start_exec_timeout();
+#endif
+
 	duk_push_global_object(ctx);  /* 'this' binding */
 	duk_call_method(ctx, 0);
+
+#if defined(DUK_CMDLINE_AJSHEAP)
+	ajsheap_clear_exec_timeout();
+#endif
 
 	if (interactive_mode) {
 		/*
@@ -219,6 +229,10 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
 
+#if defined(DUK_CMDLINE_AJSHEAP)
+	ajsheap_clear_exec_timeout();
+#endif
+
 	free(buf);
 	buf = NULL;
 
@@ -274,6 +288,11 @@ static int handle_eval(duk_context *ctx, const char *code) {
 	interactive_mode = 0;  /* global */
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+
+#if defined(DUK_CMDLINE_AJSHEAP)
+	ajsheap_clear_exec_timeout();
+#endif
+
 	if (rc != DUK_EXEC_SUCCESS) {
 		print_pop_error(ctx, stderr);
 	} else {
@@ -333,6 +352,11 @@ static int handle_interactive(duk_context *ctx) {
 		interactive_mode = 1;  /* global */
 
 		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+
+#if defined(DUK_CMDLINE_AJSHEAP)
+		ajsheap_clear_exec_timeout();
+#endif
+
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
 			print_pop_error(ctx, stdout);
@@ -390,6 +414,10 @@ static int handle_interactive(duk_context *ctx) {
 		interactive_mode = 1;  /* global */
 
 		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+
+#if defined(DUK_CMDLINE_AJSHEAP)
+		ajsheap_clear_exec_timeout();
+#endif
 
 		if (buffer) {
 			free(buffer);
