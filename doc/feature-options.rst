@@ -699,11 +699,46 @@ return non-zero to indicate an execution timeout is still in progress.
 This mechanism and its limitations is described in more detail in
 ``doc/sandboxing.rst``.
 
+This option requires ``DUK_OPT_INTERRUPT_COUNTER``.
+
 .. note:: This mechanism is EXPERIMENTAL and the details may change
           between releases.
 
+DUK_OPT_DEBUGGER_SUPPORT
+------------------------
+
+Enable support for Duktape debug protocol (see ``doc/debugger.rst``) and the
+debug API calls (``duk_debugger_attach()``, ``duk_debugger_detach()`` etc).
+This adds about 10kB of code footprint at the moment.
+
+This option requires ``DUK_OPT_INTERRUPT_COUNTER``.
+
+DUK_OPT_DEBUGGER_FWD_PRINTALERT
+-------------------------------
+
+Forward calls to the built-in ``print()`` and ``alert()`` function to the
+debug client.
+
+DUK_OPT_DEBUGGER_FWD_LOGGING
+----------------------------
+
+Forward log writes using the built-in logging framework to the debug client.
+Forwarding happens from the ``Duktape.Logger.prototype.info()`` etc calls
+before the ``raw()`` function is called, so that logging is forwarded even
+if you replace the backend.
+
+DUK_OPT_TARGET_INFO
+-------------------
+
+Define a freeform human readable string to describe the target device (e.g.
+"Arduino Yun").  This string will be sent as part of version/target info in
+the debugger protocol and shows up in the debugger UI.
+
 Debugging options
 =================
+
+Options for development time debug prints and such.  Not to be confused with
+debugger options.
 
 DUK_OPT_SELF_TESTS
 ------------------
