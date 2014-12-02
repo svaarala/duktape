@@ -1,11 +1,20 @@
-body {
-	padding: 20px;
+body, html {
+	padding: 0;
+	margin: 0;
+	border: 0;
 }
 
 h1 {
-	font-family: sans-serif;
+	font: 24pt monospace;
+	background: #444444;
+	color: #ffffff;
 	margin: 0;
-	padding: 0;
+	padding: 20px 0px 20px 10px;
+	border-bottom: 2px solid #cccccc;
+}
+
+#content-middle {
+	margin: 20px;
 }
 
 #dukweb-intro {
