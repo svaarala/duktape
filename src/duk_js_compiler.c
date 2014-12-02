@@ -2320,7 +2320,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 
 	/* Labels can be used for iteration statements but also for other statements,
 	 * in particular a label can be used for a block statement.  All cases of a
-	 * named label accept a 'break' so that flag is set here.  Iteration staements
+	 * named label accept a 'break' so that flag is set here.  Iteration statements
 	 * also allow 'continue', so that flag is updated when we figure out the
 	 * statement type.
 	 */
@@ -5923,6 +5923,9 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		duk__advance(comp_ctx);
 		duk__parse_stmts(comp_ctx, 0 /*allow_source_elem*/, 0 /*expect_eof*/);
 		/* the DUK_TOK_RCURLY is eaten by duk__parse_stmts() */
+		if (label_id >= 0) {
+			duk__patch_jump_here(comp_ctx, pc_at_entry + 1);  /* break jump */
+		}
 		stmt_flags = 0;
 		break;
 	}
@@ -5941,6 +5944,9 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 	case DUK_TOK_IF: {
 		DUK_DDD(DUK_DDDPRINT("if statement"));
 		duk__parse_if_stmt(comp_ctx, res);
+		if (label_id >= 0) {
+			duk__patch_jump_here(comp_ctx, pc_at_entry + 1);  /* break jump */
+		}
 		stmt_flags = 0;
 		break;
 	}

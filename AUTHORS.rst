@@ -21,6 +21,7 @@ their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
 * Sami Vaarala <sami.vaarala@iki.fi>
 * Niki Dobrev
 * Andreas Öman <andreas@lonelycoder.com>
+* László Langó <llango.u-szeged@partner.samsung.com>
 
 Other contributions
 ===================
