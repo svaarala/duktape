@@ -6013,6 +6013,9 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		DUK_DDD(DUK_DDDPRINT("with statement"));
 		comp_ctx->curr_func.with_depth++;
 		duk__parse_with_stmt(comp_ctx, res);
+		if (label_id >= 0) {
+			duk__patch_jump_here(comp_ctx, pc_at_entry + 1);  /* break jump */
+		}
 		comp_ctx->curr_func.with_depth--;
 		stmt_flags = 0;
 		break;
