@@ -6,12 +6,6 @@
  *    ch12/12.6/12.6.2/S12.6.2_A4_T5
  */
 
-/*---
-{
-    "knownissue": "label attached to a plain block statement can cause an INVALID opcode error"
-}
----*/
-
 /*===
 loop 1 part A
 loop 1 part B
