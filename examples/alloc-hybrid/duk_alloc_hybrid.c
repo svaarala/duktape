@@ -92,7 +92,7 @@ void *duk_alloc_hybrid_init(void) {
 	int i, j;
 	char *p;
 
-	st = malloc(sizeof(pool_state));
+	st = (pool_state *) malloc(sizeof(pool_state));
 	if (!st) {
 		return NULL;
 	}
@@ -113,7 +113,7 @@ void *duk_alloc_hybrid_init(void) {
 	printf("Total size %ld, max pool size %ld\n", (long) total_size, (long) max_size);
 #endif
 
-	st->alloc_start = malloc(total_size);
+	st->alloc_start = (char *) malloc(total_size);
 	if (!st->alloc_start) {
 		free(st);
 		return NULL;
