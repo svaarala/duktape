@@ -64,12 +64,6 @@ cases to fail:
   ch15/15.5/15.5.4/15.5.4.9/15.5.4.9_CE: ``"\u006f\u0308"`` is considered different
   from ``"\u00f6"`` (precomposed).
 
-* Labels defined for statements other than iteration statements don't work
-  fully at the moment, which causes an ``INVALID opcode`` error.  The invalid
-  opcode is intentional and indicates that control flow was directed to an
-  unexpected break/continue label slot.  This is a safe way to stop bytecode
-  execution but may look a bit alarming.
-
 * Duktape allows octal syntax.  There is a test case which requires that
   ``parseInt()`` should not accept octal syntax; this test case fails.
 
@@ -178,34 +172,6 @@ Same failure in strict and non-strict modes::
 
 This is caused by trying to eval the regexp ``/\1/``, which contains a
 SyntaxError (invalid back-reference, see above).
-
-ch12/12.6/12.6.1/S12.6.1_A4_T5
-------------------------------
-
-::
-
-  === ch12/12.6/12.6.1/S12.6.1_A4_T5 failed in non-strict mode ===
-  --- errors ---
-  Error: INVALID opcode (0)
-          duk_js_executor.c:3346
-          global /tmp/test262-VkMHq3.js:2217 preventsyield
-  ===
-
-Duktape bug, see test-bug-labelled-block.js.
-
-ch12/12.6/12.6.2/S12.6.2_A4_T5
-------------------------------
-
-::
-
-  === ch12/12.6/12.6.2/S12.6.2_A4_T5 failed in non-strict mode ===
-  --- errors ---
-  Error: INVALID opcode (0)
-          duk_js_executor.c:3346
-          global /tmp/test262-npZKm6.js:2217 preventsyield
-  ===
-
-Duktape bug, see test-bug-labelled-block.js.
 
 ch12/12.6/12.6.4/12.6.4-2
 -------------------------

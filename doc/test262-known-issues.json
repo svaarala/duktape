@@ -4,8 +4,6 @@
   { "test": "ch07/7.8/7.8.5/S7.8.5_A1.4_T2", "known": "uses invalid RegExp format '/\\1/' (#0031)", "regexp_leniency": true },
   { "test": "ch07/7.8/7.8.5/S7.8.5_A2.4_T1", "known": "uses invalid RegExp format '/\\1/'", "regexp_leniency": true },
   { "test": "ch07/7.8/7.8.5/S7.8.5_A2.4_T2", "known": "uses invalid RegExp format '/\\1/' (#0031)", "regexp_leniency": true },
-  { "test": "ch12/12.6/12.6.1/S12.6.1_A4_T5", "diagnosed": "INVALID opcode (0)" },
-  { "test": "ch12/12.6/12.6.2/S12.6.2_A4_T5", "diagnosed": "INVALID opcode (0)" },
   { "test": "ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1", "known": "octal input to parseInt() accepted by Duktape" },
   { "test": "ch15/15.10/15.10.2/S15.10.2_A1_T1", "known": "XML Shallow Parsing with Regular Expression: [^]]*]([^]]+])*]+.  The intent of [^]] is probably [^\\]].  An unescaped ']' is not allowed in a character class, so the expression is parsed as [^] (empty inverted class) followed by a literal ']', which is a SyntaxError.  There are two other literal ']' issues.  The RegExp can be fixed to: /[^\\]]*\\]([^\\]]+\\])*\\]+/.", "regexp_leniency": true },
   { "test": "ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5", "diagnosed": "Duktape bug, matching /(a*)b\\1+/ against 'baaaac' causes first capture to match the empty string; the '\\1+' part will then use the '+' quantifier over the empty string.  As there is no handling to empty quantified now, Duktape bails out with a RangeError.", "regexp_empty_quantified": true },
