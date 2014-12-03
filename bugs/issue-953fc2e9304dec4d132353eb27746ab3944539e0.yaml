@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: ability to customize builtins during dist (e.g. drop stuff)
+desc: |-
+  Probably need a configuration command for a build, or an explicit dist
+  command that does these customizations.
+type: :task
+component: duk
+release: v2.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-27 07:34:54.256880 Z
+references: []
+
+id: 953fc2e9304dec4d132353eb27746ab3944539e0
+log_events: 
+- - 2014-11-27 07:34:54.400807 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

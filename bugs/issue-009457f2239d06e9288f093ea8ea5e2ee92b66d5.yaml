@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add an equivalent to lua_pushliteral() for convenience?
+desc: Implement as a macro to call duk_push_lstring().
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-25 07:21:43.424965 Z
+references: []
+
+id: 009457f2239d06e9288f093ea8ea5e2ee92b66d5
+log_events: 
+- - 2014-11-25 07:21:43.621899 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

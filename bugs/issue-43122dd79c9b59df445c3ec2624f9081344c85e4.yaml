@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: debugger wireshark dissector (lua)
+desc: http://wiki.wireshark.org/Lua/Dissectors
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-11-27 09:39:03.717083 Z
+references: []
+
+id: 43122dd79c9b59df445c3ec2624f9081344c85e4
+log_events: 
+- - 2014-11-27 09:39:03.925031 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

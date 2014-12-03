@@ -1,0 +1,64 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: 16-bit field cleanups
+desc: |-
+  * Add user data into pointer compression functions
+  
+    - May be useful if there are multiple heaps with different memory pool
+      base addresses
+  
+    - User data could simply be the 'alloc_udata'?
+  
+    - If added to macro, it can be ignored with no footprint/performance imapct
+  
+  * Remove or keep assumption about NULL == 0
+  
+    - Where would this be useful?
+  
+  * Separate macros for setting NULL vs. non-NULL pointers?
+  
+    - Could be much faster when there is no need for a NULL check
+      (basically a subtract/add and a shift)
+  
+  * Reconsider heap->strs packing
+  
+    - Saves 600-700 bytes of RAM but makes built-in string lookup code larger
+      (and slower), perhaps too awkward compared to the savings
+  
+  * Reconsider string table heap pointer packing
+  
+    - On the other hand interning is relatively rare and mostly happens during
+      compile time where the performance hit usually doesn't matter
+  
+  * Add specific defines for pointer packing places
+  
+    - E.g. separate DUK_USE_xxx flag for packing heap->strs, rather than just
+      checking DUK_USE_HEAPPTR16
+  
+  * Duk_hcompiledfunction inner function pointers
+  
+    - Not compressed right now, could be compressed
+  
+    - They're rarely accessed so compression/decompression cost is not high
+  
+  * Improve documentation on low memory stuff
+  
+    - More examples, e.g. point to AllJoyn.js
+  
+  * Add data/function pointer compression
+  
+    - Where would this help concretely?
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-12-03 13:40:14.217593 Z
+references: []
+
+id: 08d6e88cf0c116e37aa3029948d69d8923bcfc53
+log_events: 
+- - 2014-12-03 13:40:14.377391 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

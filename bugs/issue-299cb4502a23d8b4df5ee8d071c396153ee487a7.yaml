@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: lightfunc cleanups
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-11-25 11:00:41.268003 Z
+references: []
+
+id: 299cb4502a23d8b4df5ee8d071c396153ee487a7
+log_events: 
+- - 2014-11-25 11:00:41.444151 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-11-26 12:59:06.066691 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
