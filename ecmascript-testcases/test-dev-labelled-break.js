@@ -1,10 +1,18 @@
-/*---
-{
-    "knownissue": "label attached to a plain block statement can cause an INVALID opcode error"
-}
----*/
-
 /*===
+0
+1
+2
+3
+4
+5
+while done
+0
+1
+2
+3
+4
+5
+while done
 0
 1
 2
