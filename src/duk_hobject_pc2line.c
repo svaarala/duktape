@@ -39,7 +39,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
-	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h_buf);
 	DUK_ASSERT(hdr != NULL);
 	hdr[0] = (duk_uint32_t) length;  /* valid pc range is [0, length[ */
 
@@ -48,7 +48,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 		new_size = (duk_size_t) (curr_offset + DUK_PC2LINE_MAX_DIFF_LENGTH);
 		duk_hbuffer_resize(thr, h_buf, new_size, new_size);
 
-		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h_buf);
 		DUK_ASSERT(hdr != NULL);
 		DUK_ASSERT(curr_pc < length);
 		hdr_index = 1 + (curr_pc / DUK_PC2LINE_SKIP) * 2;

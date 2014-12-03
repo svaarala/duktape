@@ -10,6 +10,8 @@
 #define DUK__STRHASH_BLOCKSIZE     256L
 
 DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+
 	/*
 	 *  Sampling long strings by byte skipping (like Lua does) is potentially
 	 *  a cache problem.  Here we do 'block skipping' instead for long strings:
@@ -35,9 +37,8 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, 
 	duk_uint32_t str_seed = heap->hash_seed ^ len;
 
 	if (len <= DUK__STRHASH_SHORTSTRING) {
-		return duk_util_hashbytes(str, len, str_seed);
+		hash = duk_util_hashbytes(str, len, str_seed);
 	} else {
-		duk_uint32_t hash;
 		duk_size_t off;
 		duk_size_t skip;
 
@@ -57,7 +58,13 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, duk_uint8_t *str, 
 			hash ^= duk_util_hashbytes(str + off, now, str_seed);
 			off += skip;
 		}
-
-		return hash;
 	}
+
+#if defined(DUK_USE_STRHASH16)
+	/* Truncate to 16 bits here, so that a computed hash can be compared
+	 * against a hash stored in a 16-bit field.
+	 */
+	hash &= 0x0000ffffUL;
+#endif
+	return hash;
 }

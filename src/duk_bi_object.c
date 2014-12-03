@@ -44,6 +44,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
  */
 DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hobject *h;
+	duk_hobject *proto;
 
 	/* magic: 0=getter call, 1=Object.getPrototypeOf */
 	if (duk_get_current_magic(ctx) == 0) {
@@ -62,10 +63,13 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 
 	if (h == NULL) {
 		duk_push_hobject_bidx(ctx, DUK_BIDX_FUNCTION_PROTOTYPE);
-	} else if (h->prototype) {
-		duk_push_hobject(ctx, h->prototype);
 	} else {
-		duk_push_null(ctx);
+		proto = DUK_HOBJECT_GET_PROTOTYPE(h);
+		if (proto) {
+			duk_push_hobject(ctx, proto);
+		} else {
+			duk_push_null(ctx);
+		}
 	}
 	return 1;
 }
@@ -120,13 +124,13 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	/* NOTE: steps 7-8 seem to be a cut-paste bug in the E6 draft */
 	/* TODO: implement Proxy object support here */
 
-	if (h_new_proto == h_obj->prototype) {
+	if (h_new_proto == DUK_HOBJECT_GET_PROTOTYPE(h_obj)) {
 		goto skip;
 	}
 	if (!DUK_HOBJECT_HAS_EXTENSIBLE(h_obj)) {
 		goto fail_nonextensible;
 	}
-	for (h_curr = h_new_proto; h_curr != NULL; h_curr = h_curr->prototype) {
+	for (h_curr = h_new_proto; h_curr != NULL; h_curr = DUK_HOBJECT_GET_PROTOTYPE(h_curr)) {
 		/* Loop prevention */
 		if (h_curr == h_obj) {
 			goto fail_loop;
@@ -431,7 +435,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_is_prototype_of(duk_context *ctx)
 	/* E5.1 Section 15.2.4.6, step 3.a, lookup proto once before compare.
 	 * Prototype loops should cause an error to be thrown.
 	 */
-	duk_push_boolean(ctx, duk_hobject_prototype_chain_contains(thr, h_v->prototype, h_obj, 0 /*ignore_loop*/));
+	duk_push_boolean(ctx, duk_hobject_prototype_chain_contains(thr, DUK_HOBJECT_GET_PROTOTYPE(h_v), h_obj, 0 /*ignore_loop*/));
 	return 1;
 }
 

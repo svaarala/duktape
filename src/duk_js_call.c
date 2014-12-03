@@ -1028,6 +1028,10 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	DUK_TVAL_SET_TVAL(&tv_func_copy, tv_func);
 	tv_func = &tv_func_copy;  /* local copy to avoid relookups */
 
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
+	                            DUK_HOBJECT_IS_NATIVEFUNCTION(func)));
+
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, idx_func + 1)));

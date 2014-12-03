@@ -47,7 +47,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 	/* XXX: use advancing pointers instead of index macros -> faster and smaller? */
 
-	for (i = 0; i < (duk_uint_fast32_t) h->e_next; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
 		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
 		if (!key) {
 			continue;
@@ -61,13 +61,13 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		}
 	}
 
-	for (i = 0; i < (duk_uint_fast32_t) h->a_size; i++) {
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
 		duk__mark_tval(heap, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
 	}
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	duk__mark_heaphdr(heap, (duk_heaphdr *) h->prototype);
+	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
@@ -78,7 +78,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		 * contains a reference.
 		 */
 
-		duk__mark_heaphdr(heap, (duk_heaphdr *) f->data);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(f));
 
 		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
 		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(f);
@@ -199,7 +199,7 @@ DUK_LOCAL void duk__mark_roots_heap(duk_heap *heap) {
 	duk__mark_heaphdr(heap, (duk_heaphdr *) heap->log_buffer);
 
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
-		duk_hstring *h = heap->strs[i];
+		duk_hstring *h = DUK_HEAP_GET_STRING(heap, i);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) h);
 	}
 
@@ -517,7 +517,11 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 	DUK_DD(DUK_DDPRINT("duk__sweep_stringtable: %p", (void *) heap));
 
 	for (i = 0; i < heap->st_size; i++) {
-		h = heap->st[i];
+#if defined(DUK_USE_HEAPPTR16)
+		h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+#else
+		h = heap->strtable[i];
+#endif
 		if (h == NULL || h == DUK_STRTAB_DELETED_MARKER(heap)) {
 			continue;
 		} else if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
@@ -548,7 +552,11 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 		 * duk_heap_string_remove() but that would be slow and
 		 * pointless because we already know the slot.
 		 */
-		heap->st[i] = DUK_STRTAB_DELETED_MARKER(heap);
+#if defined(DUK_USE_HEAPPTR16)
+		heap->strtable16[i] = heap->heapptr_deleted16;
+#else
+		heap->strtable[i] = DUK_STRTAB_DELETED_MARKER(heap);
+#endif
 
 		/* then free */
 #if 1
@@ -808,7 +816,9 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 		obj = (duk_hobject *) curr;
 
 #ifdef DUK_USE_DEBUG
-		old_size = DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size);
+		old_size = DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
+		                                      DUK_HOBJECT_GET_ASIZE(obj),
+		                                      DUK_HOBJECT_GET_HSIZE(obj));
 #endif
 
 		DUK_DD(DUK_DDPRINT("compact object: %p", (void *) obj));
@@ -817,7 +827,9 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 		duk_safe_call((duk_context *) thr, duk__protected_compact_object, 1, 0);
 
 #ifdef DUK_USE_DEBUG
-		new_size = DUK_HOBJECT_P_COMPUTE_SIZE(obj->e_size, obj->a_size, obj->h_size);
+		new_size = DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
+		                                      DUK_HOBJECT_GET_ASIZE(obj),
+		                                      DUK_HOBJECT_GET_HSIZE(obj));
 #endif
 
 #ifdef DUK_USE_DEBUG

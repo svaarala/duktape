@@ -27,20 +27,58 @@
 
 struct duk_heaphdr {
 	duk_uint32_t h_flags;
+
 #if defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_REFCOUNT16)
+	duk_uint16_t h_refcount16;
+#else
 	duk_size_t h_refcount;
 #endif
+#endif
+
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t h_next16;
+#else
 	duk_heaphdr *h_next;
+#endif
+
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 	/* refcounting requires direct heap frees, which in turn requires a dual linked heap */
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t h_prev16;
+#else
 	duk_heaphdr *h_prev;
+#endif
+#endif
+
+	/* When DUK_USE_HEAPPTR16 (and DUK_USE_REFCOUNT16) is in use, the
+	 * struct won't align nicely to 4 bytes.  This 16-bit extra field
+	 * is added to make the alignment clean; the field can be used by
+	 * heap objects when 16-bit packing is used.  This field is now
+	 * conditional to DUK_USE_HEAPPTR16 only, but it is intended to be
+	 * used with DUK_USE_REFCOUNT16 and DUK_USE_DOUBLE_LINKED_HEAP;
+	 * this only matter to low memory environments anyway.
+	 */
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t h_extra16;
 #endif
 };
 
 struct duk_heaphdr_string {
+	/* 16 bits would be enough for shared heaphdr flags and duk_hstring
+	 * flags.  The initial parts of duk_heaphdr_string and duk_heaphdr
+	 * must match so changing the flags field size here would be quite
+	 * awkward.  However, to minimize struct size, we can pack at least
+	 * 16 bits of duk_hstring data into the flags field.
+	 */
 	duk_uint32_t h_flags;
+
 #if defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_REFCOUNT16)
+	duk_uint16_t h_refcount16;
+#else
 	duk_size_t h_refcount;
+#endif
 #endif
 };
 
@@ -67,23 +105,48 @@ struct duk_heaphdr_string {
 #define DUK_HTYPE_BUFFER                 3
 #define DUK_HTYPE_MAX                    3
 
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HEAPHDR_GET_NEXT(h)       ((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((h)->h_next16))
+#define DUK_HEAPHDR_SET_NEXT(h,val)   do { \
+		(h)->h_next16 = DUK_USE_HEAPPTR_ENC16((void *) val); \
+	} while (0)
+#else
 #define DUK_HEAPHDR_GET_NEXT(h)       ((h)->h_next)
 #define DUK_HEAPHDR_SET_NEXT(h,val)   do { \
 		(h)->h_next = (val); \
 	} while (0)
+#endif
 
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HEAPHDR_GET_PREV(h)       ((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((h)->h_prev16))
+#define DUK_HEAPHDR_SET_PREV(h,val)   do { \
+		(h)->h_prev16 = DUK_USE_HEAPPTR_ENC16((void *) (val)); \
+	} while (0)
+#else
 #define DUK_HEAPHDR_GET_PREV(h)       ((h)->h_prev)
 #define DUK_HEAPHDR_SET_PREV(h,val)   do { \
 		(h)->h_prev = (val); \
 	} while (0)
 #endif
+#endif
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_REFCOUNT16)
+#define DUK_HEAPHDR_GET_REFCOUNT(h)   ((h)->h_refcount16)
+#define DUK_HEAPHDR_SET_REFCOUNT(h,val)  do { \
+		(h)->h_refcount16 = (val); \
+	} while (0)
+#define DUK_HEAPHDR_PREINC_REFCOUNT(h)  (++(h)->h_refcount16)  /* result: updated refcount */
+#define DUK_HEAPHDR_PREDEC_REFCOUNT(h)  (--(h)->h_refcount16)  /* result: updated refcount */
+#else
 #define DUK_HEAPHDR_GET_REFCOUNT(h)   ((h)->h_refcount)
 #define DUK_HEAPHDR_SET_REFCOUNT(h,val)  do { \
 		(h)->h_refcount = (val); \
 	} while (0)
+#define DUK_HEAPHDR_PREINC_REFCOUNT(h)  (++(h)->h_refcount)  /* result: updated refcount */
+#define DUK_HEAPHDR_PREDEC_REFCOUNT(h)  (--(h)->h_refcount)  /* result: updated refcount */
+#endif
 #else
 /* refcount macros not defined without refcounting, caller must #ifdef now */
 #endif  /* DUK_USE_REFERENCE_COUNTING */
@@ -153,12 +216,12 @@ struct duk_heaphdr_string {
 /* init pointer fields to null */
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 #define DUK_HEAPHDR_INIT_NULLS(h)       do { \
-		(h)->h_next = NULL; \
+		DUK_HEAPHDR_SET_NEXT((h), (void *) NULL); \
+		DUK_HEAPHDR_SET_PREV((h), (void *) NULL); \
 	} while (0)
 #else
 #define DUK_HEAPHDR_INIT_NULLS(h)       do { \
-		(h)->h_next = NULL; \
-		(h)->h_prev = NULL; \
+		DUK_HEAPHDR_SET_NEXT((h), (void *) NULL); \
 	} while (0)
 #endif
 

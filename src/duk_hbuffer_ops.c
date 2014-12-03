@@ -29,22 +29,20 @@ DUK_LOCAL duk_size_t duk__add_spare(duk_size_t size) {
 	return res;
 }
 
-DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size, duk_size_t new_usable_size) {
-	duk_size_t new_alloc_size;
+DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size, duk_size_t new_alloc_size) {
 	void *res;
+	duk_size_t prev_alloc_size;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
-	DUK_ASSERT(new_usable_size >= new_size);
+	DUK_ASSERT(new_alloc_size >= new_size);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
 
 	/*
 	 *  Maximum size check
-	 *
-	 *  XXX: check against usable size?
 	 */
 
-	if (new_size > DUK_HBUFFER_MAX_BYTELEN) {
+	if (new_alloc_size > DUK_HBUFFER_MAX_BYTELEN) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "buffer too long");
 	}
 
@@ -54,14 +52,17 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 	 *  collection.
 	 */
 
-	new_alloc_size = new_usable_size;
 	res = DUK_REALLOC_INDIRECT(thr->heap, duk_hbuffer_get_dynalloc_ptr, (void *) buf, new_alloc_size);
 	if (res != NULL || new_alloc_size == 0) {
 		/* 'res' may be NULL if new allocation size is 0. */
 
 		DUK_DDD(DUK_DDDPRINT("resized dynamic buffer %p:%ld:%ld -> %p:%ld:%ld",
-		                     (void *) buf->curr_alloc, (long) buf->size, (long) buf->usable_size,
-		                     (void *) res, (long) new_size, (long) new_usable_size));
+		                     (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf),
+		                     (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(buf),
+		                     (long) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(buf),
+		                     (void *) res,
+		                     (long) new_size,
+		                     (long) new_alloc_size));
 
 		/*
 		 *  The entire allocated buffer area, regardless of actual used
@@ -72,21 +73,24 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 		 *  because the spare part is relatively small.
 		 */
 
-		if (new_alloc_size > buf->usable_size) {
-			DUK_ASSERT(new_alloc_size - buf->usable_size > 0);
+		prev_alloc_size = DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(buf);
+		if (new_alloc_size > prev_alloc_size) {
+			DUK_ASSERT(new_alloc_size - prev_alloc_size > 0);
 #ifdef DUK_USE_ZERO_BUFFER_DATA
-			DUK_MEMZERO((void *) ((char *) res + buf->usable_size),
-			            new_alloc_size - buf->usable_size);
+			DUK_MEMZERO((void *) ((char *) res + prev_alloc_size),
+			            new_alloc_size - prev_alloc_size);
 #endif
 		}
 
-		buf->size = new_size;
-		buf->usable_size = new_usable_size;
-		buf->curr_alloc = res;
+		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, new_size);
+		DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(buf, new_alloc_size);
+		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(buf, res);
 	} else {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "buffer resize failed: %ld:%ld to %ld:%ld",
-		          (long) buf->size, (long) buf->usable_size,
-		          (long) new_size, (long) new_usable_size);
+		          (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(buf),
+		          (long) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(buf),
+		          (long) new_size,
+		          (long) new_alloc_size);
 	}
 
 	DUK_ASSERT(res != NULL || new_alloc_size == 0);
@@ -142,7 +146,7 @@ DUK_INTERNAL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
 	if (offset < DUK_HBUFFER_GET_SIZE(buf)) {
 		/* not an append */
 
@@ -157,7 +161,7 @@ DUK_INTERNAL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic
 	           data,
 	           length);
 
-	buf->size += length;
+	DUK_HBUFFER_DYNAMIC_ADD_SIZE(buf, length);
 }
 
 #if 0  /*unused*/
@@ -303,6 +307,7 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_hstring(duk_hthread *thr, duk_hbuffer
 DUK_INTERNAL duk_size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_XUTF8_LENGTH];
 	duk_size_t len;
+	duk_size_t sz;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
@@ -311,8 +316,10 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_d
 
 	if (DUK_LIKELY(codepoint < 0x80 && DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) > 0)) {
 		/* fast path: ASCII and there is spare */
-		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf));
-		p[buf->size++] = (duk_uint8_t) codepoint;
+		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf));
+		sz = DUK_HBUFFER_DYNAMIC_GET_SIZE(buf);
+		p[sz++] = (duk_uint8_t) codepoint;
+		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, sz);
 		return 1;
 	}
 
@@ -330,6 +337,7 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_d
 DUK_INTERNAL duk_size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint) {
 	duk_uint8_t tmp[DUK_UNICODE_MAX_CESU8_LENGTH];
 	duk_size_t len;
+	duk_size_t sz;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
@@ -339,8 +347,10 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_d
 
 	if (DUK_LIKELY(codepoint < 0x80 && DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) > 0)) {
 		/* fast path: ASCII and there is spare */
-		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf));
-		p[buf->size++] = (duk_uint8_t) codepoint;
+		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf));
+		sz = DUK_HBUFFER_DYNAMIC_GET_SIZE(buf);
+		p[sz++] = (duk_uint8_t) codepoint;
+		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, sz);
 		return 1;
 	}
 
@@ -388,7 +398,7 @@ DUK_INTERNAL void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic
 		return;
 	}
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
 
 	end_offset = offset + length;
 
@@ -407,7 +417,7 @@ DUK_INTERNAL void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic
 	DUK_MEMZERO(p + DUK_HBUFFER_GET_SIZE(buf) - length,
 	            length);
 
-	buf->size -= length;
+	DUK_HBUFFER_DYNAMIC_SUB_SIZE(buf, length);
 
 	/* Note: no shrink check, intentional */
 }
@@ -439,7 +449,7 @@ DUK_INTERNAL void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
 	DUK_ASSERT(p != NULL);  /* must be the case because length > 0, and buffer has been resized if necessary */
 
 	/*
@@ -483,7 +493,7 @@ DUK_INTERNAL void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic
 		           length);
 	}
 
-	buf->size += length;
+	DUK_HBUFFER_DYNAMIC_ADD_SIZE(buf, length);
 }
 
 DUK_INTERNAL void duk_hbuffer_append_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t src_offset, duk_size_t length) {

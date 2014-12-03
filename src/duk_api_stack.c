@@ -3049,7 +3049,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[prototype_bidx]);
 	} else {
 		DUK_ASSERT(prototype_bidx == -1);
-		DUK_ASSERT(h->prototype == NULL);
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h) == NULL);
 	}
 
 	return ret;
@@ -3063,7 +3063,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t
 	ret = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(h->prototype == NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h) == NULL);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
 	return ret;
 }
@@ -3125,7 +3125,11 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_THREAD_ALLOC_FAILED);
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
+#if defined(DUK_USE_HEAPPTR16)
+	obj->strs16 = thr->strs16;
+#else
 	obj->strs = thr->strs;
+#endif
 	DUK_DDD(DUK_DDDPRINT("created thread object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
 
 	/* make the new thread reachable */
@@ -3498,7 +3502,7 @@ DUK_INTERNAL void duk_push_hstring(duk_context *ctx, duk_hstring *h) {
 DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
-	duk_push_hstring(ctx, thr->strs[stridx]);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 }
 
 DUK_INTERNAL void duk_push_hobject(duk_context *ctx, duk_hobject *h) {

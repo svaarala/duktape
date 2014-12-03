@@ -22,7 +22,7 @@ string {"foo":123,"bar":{"_func":true}}
 ===*/
 
 function test() {
-    // FIXME: rely on Math.cos being a lightfunc
+    // Note: rely on Math.cos being a lightfunc
     var lf = Math.cos;
 
     function json(x) {

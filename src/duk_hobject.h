@@ -213,34 +213,48 @@
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE)
 
 /*
- *  Macros to access the 'p' allocation.
+ *  Macros to access the 'props' allocation.
  */
+
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HOBJECT_GET_PROPS(h) \
+	((duk_uint8_t *) DUK_USE_HEAPPTR_DEC16(((duk_heaphdr *) (h))->h_extra16))
+#define DUK_HOBJECT_SET_PROPS(h,x) do { \
+		((duk_heaphdr *) (h))->h_extra16 = DUK_USE_HEAPPTR_ENC16((void *) (x)); \
+	} while (0)
+#else
+#define DUK_HOBJECT_GET_PROPS(h) \
+	((h)->props)
+#define DUK_HOBJECT_SET_PROPS(h,x) do { \
+		(h)->props = (x); \
+	} while (0)
+#endif
 
 #if defined(DUK_USE_HOBJECT_LAYOUT_1)
 /* LAYOUT 1 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
-		(h)->p \
+		DUK_HOBJECT_GET_PROPS((h)) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(h)         \
 	((duk_propvalue *) ( \
-		(h)->p + \
-			(h)->e_size * sizeof(duk_hstring *) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_hstring *) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
 	((duk_uint8_t *) ( \
-		(h)->p + (h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
+		DUK_HOBJECT_GET_PROPS((h)) + DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(h)               \
 	((duk_tval *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(h)               \
 	((duk_uint32_t *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
-			(h)->a_size * sizeof(duk_tval) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
 	))
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
@@ -266,29 +280,29 @@
 #endif
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
-		(h)->p + \
-			(h)->e_size * sizeof(duk_propvalue) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(h)         \
 	((duk_propvalue *) ( \
-		(h)->p \
+		DUK_HOBJECT_GET_PROPS((h)) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
 	((duk_uint8_t *) ( \
-		(h)->p + (h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
+		DUK_HOBJECT_GET_PROPS((h)) + DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(h)               \
 	((duk_tval *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
-			DUK_HOBJECT_E_FLAG_PADDING((h)->e_size) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+			DUK_HOBJECT_E_FLAG_PADDING(DUK_HOBJECT_GET_ESIZE((h))) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(h)               \
 	((duk_uint32_t *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
-			DUK_HOBJECT_E_FLAG_PADDING((h)->e_size) + \
-			(h)->a_size * sizeof(duk_tval) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
+			DUK_HOBJECT_E_FLAG_PADDING(DUK_HOBJECT_GET_ESIZE((h))) + \
+			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
 	))
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
@@ -310,31 +324,31 @@
 /* LAYOUT 3 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(h)           \
 	((duk_hstring **) ( \
-		(h)->p + \
-			(h)->e_size * sizeof(duk_propvalue) + \
-			(h)->a_size * sizeof(duk_tval) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) + \
+			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(h)         \
 	((duk_propvalue *) ( \
-		(h)->p \
+		DUK_HOBJECT_GET_PROPS((h)) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(h)         \
 	((duk_uint8_t *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
-			(h)->a_size * sizeof(duk_tval) + \
-			(h)->h_size * sizeof(duk_uint32_t) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
+			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) + \
+			DUK_HOBJECT_GET_HSIZE((h)) * sizeof(duk_uint32_t) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(h)               \
 	((duk_tval *) ( \
-		(h)->p + \
-			(h)->e_size * sizeof(duk_propvalue) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(h)               \
 	((duk_uint32_t *) ( \
-		(h)->p + \
-			(h)->e_size * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
-			(h)->a_size * sizeof(duk_tval) \
+		DUK_HOBJECT_GET_PROPS((h)) + \
+			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
+			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
 	))
 #define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent,n_arr,n_hash) \
 	( \
@@ -353,7 +367,7 @@
 #error invalid hobject layout defines
 #endif  /* hobject property layout */
 
-#define DUK_HOBJECT_E_ALLOC_SIZE(h) DUK_HOBJECT_P_COMPUTE_SIZE((h)->e_size, (h)->a_size, (h)->h_size)
+#define DUK_HOBJECT_E_ALLOC_SIZE(h) DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE((h)), DUK_HOBJECT_GET_ASIZE((h)), DUK_HOBJECT_GET_HSIZE((h)))
 
 #define DUK_HOBJECT_E_GET_KEY(h,i)              (DUK_HOBJECT_E_GET_KEY_BASE((h))[(i)])
 #define DUK_HOBJECT_E_GET_KEY_PTR(h,i)          (&DUK_HOBJECT_E_GET_KEY_BASE((h))[(i)])
@@ -430,6 +444,42 @@
 #define DUK_HOBJECT_HASHIDX_DELETED             0xfffffffeUL
 
 /*
+ *  Macros for accessing size fields
+ */
+
+#if defined(DUK_USE_OBJSIZES16)
+#define DUK_HOBJECT_GET_ESIZE(h) ((h)->e_size16)
+#define DUK_HOBJECT_SET_ESIZE(h,v) do { (h)->e_size16 = (v); } while (0)
+#define DUK_HOBJECT_GET_ENEXT(h) ((h)->e_next16)
+#define DUK_HOBJECT_SET_ENEXT(h,v) do { (h)->e_next16 = (v); } while (0)
+#define DUK_HOBJECT_POSTINC_ENEXT(h) ((h)->e_next16++)
+#define DUK_HOBJECT_GET_ASIZE(h) ((h)->a_size16)
+#define DUK_HOBJECT_SET_ASIZE(h,v) do { (h)->a_size16 = (v); } while (0)
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+#define DUK_HOBJECT_GET_HSIZE(h) ((h)->h_size16)
+#define DUK_HOBJECT_SET_HSIZE(h,v) do { (h)->h_size16 = (v); } while (0)
+#else
+#define DUK_HOBJECT_GET_HSIZE(h) 0
+#define DUK_HOBJECT_SET_HSIZE(h,v) do { DUK_ASSERT((v) == 0); } while (0)
+#endif
+#else
+#define DUK_HOBJECT_GET_ESIZE(h) ((h)->e_size)
+#define DUK_HOBJECT_SET_ESIZE(h,v) do { (h)->e_size = (v); } while (0)
+#define DUK_HOBJECT_GET_ENEXT(h) ((h)->e_next)
+#define DUK_HOBJECT_SET_ENEXT(h,v) do { (h)->e_next = (v); } while (0)
+#define DUK_HOBJECT_POSTINC_ENEXT(h) ((h)->e_next++)
+#define DUK_HOBJECT_GET_ASIZE(h) ((h)->a_size)
+#define DUK_HOBJECT_SET_ASIZE(h,v) do { (h)->a_size = (v); } while (0)
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+#define DUK_HOBJECT_GET_HSIZE(h) ((h)->h_size)
+#define DUK_HOBJECT_SET_HSIZE(h,v) do { (h)->h_size = (v); } while (0)
+#else
+#define DUK_HOBJECT_GET_HSIZE(h) 0
+#define DUK_HOBJECT_SET_HSIZE(h,v) do { DUK_ASSERT((v) == 0); } while (0)
+#endif
+#endif
+
+/*
  *  Misc
  */
 
@@ -458,7 +508,17 @@
  *  Macros for property handling
  */
 
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HOBJECT_GET_PROTOTYPE(h)                    ((duk_hobject *) DUK_USE_HEAPPTR_DEC16((h)->prototype16))
+#define DUK_HOBJECT_SET_PROTOTYPE(h,x) do { \
+		(h)->prototype16 = DUK_USE_HEAPPTR_ENC16((void *) (x)); \
+	} while (0)
+#else
 #define DUK_HOBJECT_GET_PROTOTYPE(h)                    ((h)->prototype)
+#define DUK_HOBJECT_SET_PROTOTYPE(h,x) do { \
+		(h)->prototype = (x); \
+	} while (0)
+#endif
 
 /* note: this updates refcounts */
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype((thr),(h),(p))
@@ -484,7 +544,11 @@
  * Also, we use negative array/entry table indices to indicate 'not found',
  * so anything above 0x80000000 will cause trouble now.
  */
+#if defined(DUK_USE_OBJSIZES16)
+#define DUK_HOBJECT_MAX_PROPERTIES       0x0000ffffUL
+#else
 #define DUK_HOBJECT_MAX_PROPERTIES       0x7fffffffUL   /* 2**31-1 ~= 2G properties */
+#endif
 
 /* higher value conserves memory; also note that linear scan is cache friendly */
 #define DUK_HOBJECT_E_USE_HASH_LIMIT     32
@@ -539,6 +603,10 @@ struct duk_propaccessor {
 };
 
 union duk_propvalue {
+	/* The get/set pointers could be 16-bit pointer compressed but it
+	 * would make no difference on 32-bit platforms because duk_tval is
+	 * 8 bytes or more anyway.
+	 */
 	duk_tval v;
 	duk_propaccessor a;
 };
@@ -559,8 +627,8 @@ struct duk_hobject {
 	duk_heaphdr hdr;
 
 	/*
-	 *  'p' contains {key,value,flags} entries, optional array entries, and an
-	 *  optional hash lookup table for non-array entries in a single 'sliced'
+	 *  'props' contains {key,value,flags} entries, optional array entries, and
+	 *  an optional hash lookup table for non-array entries in a single 'sliced'
 	 *  allocation.  There are several layout options, which differ slightly in
 	 *  generated code size/speed and alignment/padding; duk_features.h selects
 	 *  the layout used.
@@ -619,19 +687,41 @@ struct duk_hobject {
 	 *  skimps on flags size (which would be followed by 3 bytes of padding in
 	 *  most architectures if entries were placed in a struct).
 	 *
-	 *  'p' also contains internal properties distinguished with a non-BMP
-	 *  prefix.  Often used properties should be placed early in 'p' whenever
+	 *  'props' also contains internal properties distinguished with a non-BMP
+	 *  prefix.  Often used properties should be placed early in 'props' whenever
 	 *  possible to make accessing them as fast a possible.
 	 */
 
-	duk_uint8_t *p;
+#if defined(DUK_USE_HEAPPTR16)
+	/* Located in duk_heaphdr h_extra16.  Subclasses of duk_hobject (like
+	 * duk_hcompiledfunction) are not free to use h_extra16 for this reason.
+	 */
+#else
+	duk_uint8_t *props;
+#endif
+
+	/* prototype: the only internal property lifted outside 'e' as it is so central */
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t prototype16;
+#else
+	duk_hobject *prototype;
+#endif
+
+#if defined(DUK_USE_OBJSIZES16)
+	duk_uint16_t e_size16;
+	duk_uint16_t e_next16;
+	duk_uint16_t a_size16;
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+	duk_uint16_t h_size16;
+#endif
+#else
 	duk_uint32_t e_size;  /* entry part size */
 	duk_uint32_t e_next;  /* index for next new key ([0,e_next[ are gc reachable) */
 	duk_uint32_t a_size;  /* array part size (entirely gc reachable) */
+#if defined(DUK_USE_HOBJECT_HASH_PART)
 	duk_uint32_t h_size;  /* hash part size or 0 if unused */
-
-	/* prototype: the only internal property lifted outside 'e' as it is so central */
-	duk_hobject *prototype;
+#endif
+#endif
 };
 
 /*

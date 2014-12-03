@@ -25,7 +25,12 @@
  * This limit should be eliminated on 64-bit platforms (and increased
  * closer to maximum support on 32-bit platforms).
  */
+
+#if defined(DUK_USE_STRLEN16)
+#define DUK_HSTRING_MAX_BYTELEN                     (0x0000ffffUL)
+#else
 #define DUK_HSTRING_MAX_BYTELEN                     (0x7fffffffUL)
+#endif
 
 /* XXX: could add flags for "is valid CESU-8" (Ecmascript compatible strings),
  * "is valid UTF-8", "is valid extended UTF-8" (internal strings are not,
@@ -57,12 +62,41 @@
 #define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
 
-#define DUK_HSTRING_IS_ASCII(x)                     ((x)->blen == (x)->clen)
-#define DUK_HSTRING_IS_EMPTY(x)                     ((x)->blen == 0)
+#define DUK_HSTRING_IS_ASCII(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == DUK_HSTRING_GET_CHARLEN((x)))
+#define DUK_HSTRING_IS_EMPTY(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == 0)
 
+#if defined(DUK_USE_STRHASH16)
+#define DUK_HSTRING_GET_HASH(x)                     ((x)->hdr.h_flags >> 16)
+#define DUK_HSTRING_SET_HASH(x,v) do { \
+		(x)->hdr.h_flags = ((x)->hdr.h_flags & 0x0000ffffUL) | ((v) << 16); \
+	} while (0)
+#else
 #define DUK_HSTRING_GET_HASH(x)                     ((x)->hash)
+#define DUK_HSTRING_SET_HASH(x,v) do { \
+		(x)->hash = (v); \
+	} while (0)
+#endif
+
+#if defined(DUK_USE_STRLEN16)
+#define DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen16)
+#define DUK_HSTRING_SET_BYTELEN(x,v) do { \
+		(x)->blen16 = (v); \
+	} while (0)
+#define DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen16)
+#define DUK_HSTRING_SET_CHARLEN(x,v) do { \
+		(x)->clen16 = (v); \
+	} while (0)
+#else
 #define DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
+#define DUK_HSTRING_SET_BYTELEN(x,v) do { \
+		(x)->blen = (v); \
+	} while (0)
 #define DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
+#define DUK_HSTRING_SET_CHARLEN(x,v) do { \
+		(x)->clen = (v); \
+	} while (0)
+#endif
+
 #define DUK_HSTRING_GET_DATA(x)                     ((duk_uint8_t *) ((x) + 1))
 #define DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
 
@@ -84,8 +118,10 @@
  */
 
 struct duk_hstring {
-	/* smaller heaphdr than for other objects, because strings are held
-	 * in string intern table which requires no link pointers.
+	/* Smaller heaphdr than for other objects, because strings are held
+	 * in string intern table which requires no link pointers.  Much of
+	 * the 32-bit flags field is unused by flags, so we can stuff a 16-bit
+	 * field in there.
 	 */
 	duk_heaphdr_string hdr;
 
@@ -93,9 +129,26 @@ struct duk_hstring {
 	 * shared heap header.  Good hashing needs more hash bits though.
 	 */
 
-	duk_uint32_t hash;         /* string hash */
-	duk_uint32_t blen;         /* length in bytes (not counting NUL term) */
-	duk_uint32_t clen;         /* length in codepoints (must be E5 compatible) */
+	/* string hash */
+#if defined(DUK_USE_STRHASH16)
+	/* If 16-bit hash is in use, stuff it into duk_heaphdr_string flags. */
+#else
+	duk_uint32_t hash;
+#endif
+
+	/* length in bytes (not counting NUL term) */
+#if defined(DUK_USE_STRLEN16)
+	duk_uint16_t blen16;
+#else
+	duk_uint32_t blen;
+#endif
+
+	/* length in codepoints (must be E5 compatible) */
+#if defined(DUK_USE_STRLEN16)
+	duk_uint16_t clen16;
+#else
+	duk_uint32_t clen;
+#endif
 
 	/*
 	 *  String value of 'blen+1' bytes follows (+1 for NUL termination

@@ -244,7 +244,7 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 		h_buf = thr->heap->log_buffer;
 		DUK_ASSERT(h_buf != NULL);
 		DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) h_buf));
-		DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_USABLE_SIZE(h_buf) == DUK_BI_LOGGER_SHORT_MSG_LIMIT);
+		DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(h_buf) == DUK_BI_LOGGER_SHORT_MSG_LIMIT);
 
 		/* Set buffer 'visible size' to actual message length and
 		 * push it to the stack.
@@ -252,7 +252,7 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 
 		DUK_HBUFFER_SET_SIZE((duk_hbuffer *) h_buf, tot_len);
 		duk_push_hbuffer(ctx, (duk_hbuffer *) h_buf);
-		buf = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_CURR_DATA_PTR(h_buf);
+		buf = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h_buf);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("use a one-off large log message buffer, tot_len %ld", (long) tot_len));
 		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, tot_len);

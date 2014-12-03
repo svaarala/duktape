@@ -195,6 +195,118 @@ DUK_OPT_GC_TORTURE
 Development time option: force full mark-and-sweep on every allocation to
 stress test memory management.
 
+Low memory feature options
+==========================
+
+These options are low memory features for systems with 96-256 kB of RAM.
+Unless you have very little RAM, these options are probably not relevant
+to you.  They involve some compromises in e.g. performance or compliance
+to reduce memory usage.
+
+DUK_OPT_REFCOUNT16
+==================
+
+Use a 16-bit reference count field (for low memory environments).
+
+DUK_OPT_STRHASH16
+=================
+
+Use a 16-bit string hash field (for low memory environments).
+
+DUK_OPT_STRLEN16
+================
+
+Use a 16-bit string length field (for low memory environments).
+
+DUK_OPT_BUFLEN16
+================
+
+Use a 16-bit buffer length field (for low memory environments).
+
+DUK_OPT_OBJSIZE16
+=================
+
+Use a 16-bit object entry and array part sizes (for low memory environments).
+Also automatically drops support for an object hash part to further reduce
+memory usage; there are rarely large objects in low memory environments simply
+because there's no memory to store a lot of properties.
+
+DUK_OPT_HEAPPTR16, DUK_OPT_HEAPPTR_ENC16, DUK_OPT_HEAPPTR_DEC16
+===============================================================
+
+Enable "compression" of Duktape heap pointers into an unsigned 16-bit value
+and provide the macros for encoding and decoding a pointer:
+
+- Pointers compressed are those allocated from Duktape heap, using the
+  user provided allocation functions.  Also NULL pointer must encode and
+  decode correctly.
+
+- Currently it is required that NULL encodes to integer 0, and integer
+  0 decodes to NULL.  No other pointer can be encoded to 0.
+
+- DUK_OPT_HEAPPTR_ENC16(p) is a macro with a ``void *`` argument and a
+  ``duk_uint16_t`` return value.
+
+- DUK_OPT_HEAPPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
+  a ``void *`` return value.
+
+- See ``ajduk`` example in Duktape ``Makefile`` for a concrete example.
+
+This option reduces memory usage by several kilobytes, but has several
+downsides:
+
+- It can only be applied when Duktape heap is limited in size.  For instance,
+  with 4-byte aligned allocations a 256kB heap (minus one value for NULL)
+  can be supported.
+
+- Pointer encoding and decoding may be relatively complicated as they need to
+  correctly handle NULL pointers and non-continuous memory maps used by some
+  targets.  The macro may need to call out to a helper function in practice,
+  which is much slower than an inline implementation.
+
+DUK_OPT_DATAPTR16, DUK_OPT_DATAPTR_ENC16, DUK_OPT_DATAPTR_DEC16
+===============================================================
+
+Enable "compression" of arbitrary data pointers into an unsigned 16-bit value
+and provide the macros for encoding and decoding a pointer:
+
+- Pointers compressed are any void pointers in C code, not just the Duktape
+  heap.  Also NULL pointer must encode and decode correctly.
+
+- Currently it is required that NULL encodes to integer 0, and integer
+  0 decodes to NULL.  No other pointer can be encoded to 0.
+
+- DUK_OPT_DATAPTR_ENC16(p) is a macro with a ``void *`` argument and a
+  ``duk_uint16_t`` return value.
+
+- DUK_OPT_DATAPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
+  a ``void *`` return value.
+
+.. note:: This feature option is currently unimplemented, i.e. Duktape won't compress
+          any data pointers at the moment.
+
+DUK_OPT_FUNCPTR16, DUK_OPT_FUNCPTR_ENC16, DUK_OPT_FUNCPTR_DEC16
+===============================================================
+
+Enable "compression" of arbitrary C function pointers into an unsigned 16-bit
+value and provide the macros for encoding and decoding a pointer:
+
+- Pointers compressed are any C function pointers.  Also NULL pointer must
+  encode and decode correctly.
+
+- Currently it is required that NULL encodes to integer 0, and integer
+  0 decodes to NULL.  No other pointer can be encoded to 0.
+
+- DUK_OPT_FUNCPTR_ENC16(p) is a macro with a ``void *`` argument and a
+  ``duk_uint16_t`` return value.
+
+- DUK_OPT_FUNCPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
+  a ``void *`` return value.
+
+.. note:: This feature option is currently unimplemented, i.e. Duktape won't compress
+          any function pointers at the moment.  It might not be necessary to support a
+          NULL function pointer.
+
 Ecmascript feature options
 ==========================
 

@@ -74,7 +74,7 @@ DUK_LOCAL void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunc
 	duk_tval *tv, *tv_end;
 	duk_hobject **funcs, **funcs_end;
 
-	DUK_ASSERT(f->data != NULL);  /* compiled functions must be created 'atomically' */
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(f) != NULL);  /* compiled functions must be created 'atomically' */
 	DUK_UNREF(thr);
 
 	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
@@ -120,9 +120,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_uint_t len_value;
 
 	DUK_ASSERT(fun_temp != NULL);
-	DUK_ASSERT(fun_temp->data != NULL);
-	DUK_ASSERT(fun_temp->funcs != NULL);
-	DUK_ASSERT(fun_temp->bytecode != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(fun_temp) != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(fun_temp) != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(fun_temp) != NULL);
 	DUK_ASSERT(outer_var_env != NULL);
 	DUK_ASSERT(outer_lex_env != NULL);
 
@@ -132,28 +132,28 @@ void duk_js_push_closure(duk_hthread *thr,
 	fun_clos = (duk_hcompiledfunction *) duk_get_hcompiledfunction(ctx, -2);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun_clos));
 	DUK_ASSERT(fun_clos != NULL);
-	DUK_ASSERT(fun_clos->data == NULL);
-	DUK_ASSERT(fun_clos->funcs == NULL);
-	DUK_ASSERT(fun_clos->bytecode == NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(fun_clos) == NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(fun_clos) == NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(fun_clos) == NULL);
 
-	fun_clos->data = fun_temp->data;
-	fun_clos->funcs = fun_temp->funcs;
-	fun_clos->bytecode = fun_temp->bytecode;
+	DUK_HCOMPILEDFUNCTION_SET_DATA(fun_clos, DUK_HCOMPILEDFUNCTION_GET_DATA(fun_temp));
+	DUK_HCOMPILEDFUNCTION_SET_FUNCS(fun_clos, DUK_HCOMPILEDFUNCTION_GET_FUNCS(fun_temp));
+	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(fun_clos, DUK_HCOMPILEDFUNCTION_GET_BYTECODE(fun_temp));
 
 	/* Note: all references inside 'data' need to get their refcounts
 	 * upped too.  This is the case because refcounts are decreased
 	 * through every function referencing 'data' independently.
 	 */
 
-	DUK_HBUFFER_INCREF(thr, fun_clos->data);
+	DUK_HBUFFER_INCREF(thr, DUK_HCOMPILEDFUNCTION_GET_DATA(fun_clos));
 	duk__inc_data_inner_refcounts(thr, fun_temp);
 
 	fun_clos->nregs = fun_temp->nregs;
 	fun_clos->nargs = fun_temp->nargs;
 
-	DUK_ASSERT(fun_clos->data != NULL);
-	DUK_ASSERT(fun_clos->funcs != NULL);
-	DUK_ASSERT(fun_clos->bytecode != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(fun_clos) != NULL);
 
 	/* XXX: could also copy from template, but there's no way to have any
 	 * other value here now (used code has no access to the template).
@@ -430,7 +430,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 */
 
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(&fun_clos->obj) == DUK_HOBJECT_CLASS_FUNCTION);
-	DUK_ASSERT(fun_clos->obj.prototype == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(&fun_clos->obj) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH) != 0);
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE) != 0);
@@ -534,7 +534,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 		duk_hobject *p = env;
 		while (p) {
 			DUK_DDD(DUK_DDDPRINT("  -> %!ipO", (duk_heaphdr *) p));
-			p = p->prototype;
+			p = DUK_HOBJECT_GET_PROTOTYPE(p);
 		}
 	}
 #endif
@@ -652,9 +652,9 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 		/* [... env callee varmap] */
 
-		DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) varmap->e_next));
+		DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) DUK_HOBJECT_GET_ENEXT(varmap)));
 
-		for (i = 0; i < (duk_uint_fast32_t) varmap->e_next; i++) {
+		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(varmap); i++) {
 			key = DUK_HOBJECT_E_GET_KEY(varmap, i);
 			DUK_ASSERT(key != NULL);   /* assume keys are compacted */
 
@@ -1091,7 +1091,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
                 if (sanity-- == 0) {
                         DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
                 }
-		env = env->prototype;
+		env = DUK_HOBJECT_GET_PROTOTYPE(env);
 	};
 
 	/*
@@ -1623,7 +1623,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 			/* SCANBUILD: NULL pointer dereference, doesn't actually trigger,
 			 * asserted above.
 			 */
-			holder = holder->prototype;
+			holder = DUK_HOBJECT_GET_PROTOTYPE(holder);
 		}
 		DUK_ASSERT(holder != NULL);
 		DUK_ASSERT(e_idx >= 0);
