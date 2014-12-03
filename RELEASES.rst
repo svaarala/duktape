@@ -661,6 +661,9 @@ Planned
   (including spare) instead of requested size (without spare), this has
   a practical impact only when using 16-bit buffer size field
 
+* Fix INVALID opcode error for some labelled non-iteration statements
+  (see GH-85)
+
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
 * Better fix for C++ compilation issue caused by Duktape using both
