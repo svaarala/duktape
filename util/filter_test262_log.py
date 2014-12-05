@@ -40,7 +40,7 @@ def main():
 
 		print(line)  # print error list as is, then refined version later
 
-		if line == 'Failed tests':
+		if 'failed tests' in line.lower():
 			in_failed_tests = True
 			continue
 
