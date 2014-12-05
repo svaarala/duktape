@@ -333,7 +333,8 @@ cleanall: clean
 	@rm -rf FlameGraph
 	@rm -rf dtrace4linux
 	@rm -rf flow
-	@rm -rf 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	@rm -rf 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
+	@rm -rf es5-tests.zip
 	@rm -rf alljoyn-js ajtcl
 
 libduktape.so.1.0.0: dist
@@ -517,23 +518,32 @@ underscoretest:	underscore duk
 	#-util/underscore_test.sh ./duk underscore/test/speed.js
 	-util/underscore_test.sh ./duk underscore/test/utility.js
 
-595a36b252ee97110724e6fa89fc92c9aa9a206a.zip:
+3883a2e9063b0a5f2705bdac3263577a03913c94.zip:
 	# http://test262.ecmascript.org/
 	# https://github.com/tc39/test262
 	# HG repo seems to have migrated to https://github.com/tc39/test262
 	#$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
-	$(WGET) https://github.com/tc39/test262/archive/595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	#$(WGET) https://github.com/tc39/test262/archive/595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	# This is a snapshot from the master, and seems to have test case bugs
+	$(WGET) https://github.com/tc39/test262/archive/3883a2e9063b0a5f2705bdac3263577a03913c94.zip
+test262-3883a2e9063b0a5f2705bdac3263577a03913c94: 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
+	unzip $<
+	touch $@
 
-test262-595a36b252ee97110724e6fa89fc92c9aa9a206a: 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+es5-tests.zip:
+	# https://github.com/tc39/test262/tree/es5-tests
+	# This is a stable branch for ES5 tests
+	$(WGET) https://github.com/tc39/test262/archive/es5-tests.zip
+test262-es5-tests: es5-tests.zip
 	unzip $<
 	touch $@
 
 .PHONY: test262test
-test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
+test262test: test262-es5-tests duk
 	@echo "### test262test"
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
-	-cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
+	-cd $<; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
 	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
@@ -541,9 +551,9 @@ test262test: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a duk
 # command line arguments and complains about missing targets etc:
 # http://stackoverflow.com/questions/6273608/how-to-pass-argument-to-makefile-from-command-line
 .PHONY: test262cat
-test262cat: test262-595a36b252ee97110724e6fa89fc92c9aa9a206a
+test262cat: test262-es5-tests
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	-@cd test262-595a36b252ee97110724e6fa89fc92c9aa9a206a; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+	-@cd $<; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 
 emscripten:
 	# https://github.com/kripken/emscripten
