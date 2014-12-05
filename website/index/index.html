@@ -11,8 +11,15 @@ functions from C code and vice versa.</p>
 
 <p>Main features:</p>
 <ul>
-<li>Embeddable, portable, compact;<br />
-    about 210kB code, 80kB memory, 40k<a href="http://cloc.sourceforge.net/">LoC</a> source (excluding comments etc)</li>
+<li>Embeddable, portable, compact:
+    <ul>
+    <li>200kB code</li>
+    <li>46kB startup RAM (x86, default options)</li>
+    <li>22kB startup RAM (x86, <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">lowmem options</a>)</li>
+    <li>42k<a href="http://cloc.sourceforge.net/">LoC</a> source (excluding comments etc)</li>
+    <li>Can run on platforms with 256kB flash and 96kB system RAM</li>
+    </ul>
+</li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">Ecmascript E5/E5.1</a>
     compliant, some features borrowed from
     <a href="https://people.mozilla.org/~jorendorff/es6-draft.html">E6 draft</a></li>
