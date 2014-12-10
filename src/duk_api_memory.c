@@ -75,7 +75,7 @@ DUK_EXTERNAL void duk_get_memory_functions(duk_context *ctx, duk_memory_function
 	out_funcs->alloc_func = heap->alloc_func;
 	out_funcs->realloc_func = heap->realloc_func;
 	out_funcs->free_func = heap->free_func;
-	out_funcs->udata = heap->alloc_udata;
+	out_funcs->udata = heap->heap_udata;
 }
 
 DUK_EXTERNAL void duk_gc(duk_context *ctx, duk_uint_t flags) {

@@ -264,7 +264,7 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk__free_stringtable(heap);
 
 	DUK_D(DUK_DPRINT("freeing heap structure: %p", (void *) heap));
-	heap->free_func(heap->alloc_udata, heap);
+	heap->free_func(heap->heap_udata, heap);
 }
 
 /*
@@ -590,7 +590,7 @@ DUK_INTERNAL
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_realloc_function realloc_func,
                          duk_free_function free_func,
-                         void *alloc_udata,
+                         void *heap_udata,
                          duk_fatal_function fatal_func) {
 	duk_heap *res = NULL;
 
@@ -649,7 +649,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *  Use a raw call, all macros expect the heap to be initialized
 	 */
 
-	res = (duk_heap *) alloc_func(alloc_udata, sizeof(duk_heap));
+	res = (duk_heap *) alloc_func(heap_udata, sizeof(duk_heap));
 	if (!res) {
 		goto error;
 	}
@@ -662,7 +662,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* explicit NULL inits */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
-	res->alloc_udata = NULL;
+	res->heap_udata = NULL;
 	res->heap_allocated = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
 	res->refzero_list = NULL;
@@ -695,7 +695,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->alloc_func = alloc_func;
 	res->realloc_func = realloc_func;
 	res->free_func = free_func;
-	res->alloc_udata = alloc_udata;
+	res->heap_udata = heap_udata;
 	res->fatal_func = fatal_func;
 
 #if defined(DUK_USE_HEAPPTR16)
@@ -763,12 +763,12 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 #if defined(DUK_USE_STRTAB_PROBE)
 #if defined(DUK_USE_HEAPPTR16)
-	res->strtable16 = (duk_uint16_t *) alloc_func(alloc_udata, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
+	res->strtable16 = (duk_uint16_t *) alloc_func(heap_udata, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
 	if (!res->strtable16) {
 		goto error;
 	}
 #else  /* DUK_USE_HEAPPTR16 */
-	res->strtable = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
+	res->strtable = (duk_hstring **) alloc_func(heap_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 	if (!res->strtable) {
 		goto error;
 	}

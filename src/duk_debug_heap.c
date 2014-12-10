@@ -198,7 +198,7 @@ DUK_INTERNAL void duk_debug_dump_heap(duk_heap *heap) {
 #pragma GCC diagnostic pop
 #endif
 
-	DUK_D(DUK_DPRINT("  alloc_udata: %p", (void *) heap->alloc_udata));
+	DUK_D(DUK_DPRINT("  heap_udata: %p", (void *) heap->heap_udata));
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 #ifdef DUK_USE_VOLUNTARY_GC

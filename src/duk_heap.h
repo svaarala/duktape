@@ -195,13 +195,13 @@
  */
 
 #define DUK_ALLOC_RAW(heap,size) \
-	((heap)->alloc_func((heap)->alloc_udata, (size)))
+	((heap)->alloc_func((heap)->heap_udata, (size)))
 
 #define DUK_REALLOC_RAW(heap,ptr,newsize) \
-	((heap)->realloc_func((heap)->alloc_udata, (void *) (ptr), (newsize)))
+	((heap)->realloc_func((heap)->heap_udata, (void *) (ptr), (newsize)))
 
 #define DUK_FREE_RAW(heap,ptr) \
-	((heap)->free_func((heap)->alloc_udata, (void *) (ptr)))
+	((heap)->free_func((heap)->heap_udata, (void *) (ptr)))
 
 /*
  *  Memory calls: relative to heap, GC interaction, but no error throwing.
@@ -313,11 +313,15 @@ struct duk_strtab_entry {
 struct duk_heap {
 	duk_small_uint_t flags;
 
-	/* allocator functions */
+	/* Allocator functions. */
 	duk_alloc_function alloc_func;
 	duk_realloc_function realloc_func;
 	duk_free_function free_func;
-	void *alloc_udata;
+
+	/* Heap udata, used for allocator functions but also for other heap
+	 * level callbacks like pointer compression, etc.
+	 */
+	void *heap_udata;
 
 	/* Precomputed pointers when using 16-bit heap pointer packing. */
 #if defined(DUK_USE_HEAPPTR16)
@@ -431,7 +435,7 @@ DUK_INTERNAL_DECL
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_realloc_function realloc_func,
                          duk_free_function free_func,
-                         void *alloc_udata,
+                         void *heap_udata,
                          duk_fatal_function fatal_func);
 DUK_INTERNAL_DECL void duk_heap_free(duk_heap *heap);
 DUK_INTERNAL_DECL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h);
