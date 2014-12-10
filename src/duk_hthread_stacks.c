@@ -152,7 +152,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 			duk_tval tv_tmp;
 			duk_hobject *h_tmp;
 
-			tv_caller = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_CALLER(thr));
+			tv_caller = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_CALLER(thr));
 
 			/* The act->prev_caller should only be set if the entry for 'caller'
 			 * exists (as it is only set in that case, and the property is not
@@ -226,16 +226,16 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 #endif
 
 		DUK_ASSERT((act->lex_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->lex_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
+		           ((duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->lex_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->lex_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->lex_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->lex_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
 		DUK_ASSERT((act->var_env == NULL) ||
-		           ((duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
-		            (duk_hobject_find_existing_entry_tval_ptr(act->var_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
+		           ((duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->var_env, DUK_HTHREAD_STRING_INT_CALLEE(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->var_env, DUK_HTHREAD_STRING_INT_VARMAP(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->var_env, DUK_HTHREAD_STRING_INT_THREAD(thr)) == NULL) &&
+		            (duk_hobject_find_existing_entry_tval_ptr(thr->heap, act->var_env, DUK_HTHREAD_STRING_INT_REGBASE(thr)) == NULL)));
 
 	 skip_env_close:
 
@@ -441,7 +441,7 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 
 			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
-			act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(env);  /* prototype is lex_env before catcher created */
+			act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);  /* prototype is lex_env before catcher created */
 			DUK_HOBJECT_DECREF(thr, env);
 
 			/* There is no need to decref anything else than 'env': if 'env'

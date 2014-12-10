@@ -39,7 +39,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 	DUK_ASSERT(h_buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
 
-	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h_buf);
+	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf);
 	DUK_ASSERT(hdr != NULL);
 	hdr[0] = (duk_uint32_t) length;  /* valid pc range is [0, length[ */
 
@@ -48,7 +48,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 		new_size = (duk_size_t) (curr_offset + DUK_PC2LINE_MAX_DIFF_LENGTH);
 		duk_hbuffer_resize(thr, h_buf, new_size, new_size);
 
-		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(h_buf);
+		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf);
 		DUK_ASSERT(hdr != NULL);
 		DUK_ASSERT(curr_pc < length);
 		hdr_index = 1 + (curr_pc / DUK_PC2LINE_SKIP) * 2;
@@ -126,7 +126,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
  * it will map to a large PC which is out of bounds and causes a zero to be
  * returned.
  */
-DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
+DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk_hbuffer_fixed *buf, duk_uint_fast32_t pc) {
 	duk_bitdecoder_ctx bd_ctx_alloc;
 	duk_bitdecoder_ctx *bd_ctx = &bd_ctx_alloc;
 	duk_uint32_t *hdr;
@@ -139,6 +139,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *bu
 
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) buf));
+	DUK_UNREF(thr);
 
 	hdr_index = pc / DUK_PC2LINE_SKIP;
 	pc_base = hdr_index * DUK_PC2LINE_SKIP;
@@ -149,7 +150,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hbuffer_fixed *bu
 		goto error;
 	}
 
-	hdr = (duk_uint32_t *) DUK_HBUFFER_FIXED_GET_DATA_PTR(buf);
+	hdr = (duk_uint32_t *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, buf);
 	pc_limit = hdr[0];
 	if (pc >= pc_limit) {
 		/* Note: pc is unsigned and cannot be negative */
@@ -223,7 +224,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_i
 	pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	if (pc2line != NULL) {
 		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
-		line = duk__hobject_pc2line_query_raw(pc2line, (duk_uint_fast32_t) pc);
+		line = duk__hobject_pc2line_query_raw((duk_hthread *) ctx, pc2line, (duk_uint_fast32_t) pc);
 	} else {
 		line = 0;
 	}

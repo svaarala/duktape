@@ -25,7 +25,7 @@ DUK_INTERNAL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
-	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(h));
+	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(heap, h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
@@ -58,8 +58,8 @@ DUK_INTERNAL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(g)));
-		DUK_FREE(heap, DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(g));
+		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g)));
+		DUK_FREE(heap, DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g));
 	}
 }
 
@@ -74,7 +74,7 @@ DUK_INTERNAL void duk_free_hstring_inner(duk_heap *heap, duk_hstring *h) {
 	if (DUK_HSTRING_HAS_EXTDATA(h)) {
 		DUK_DDD(DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p",
 		                     h, DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h)));
-		DUK_USE_EXTSTR_FREE((const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
+		DUK_USE_EXTSTR_FREE(heap->heap_udata, (const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
 	}
 #endif
 }
@@ -127,7 +127,7 @@ DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
 
 		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO",
 		                     (duk_heaphdr *) curr));
-		next = DUK_HEAPHDR_GET_NEXT(curr);
+		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
 	}
@@ -142,7 +142,7 @@ DUK_LOCAL void duk__free_refzero_list(duk_heap *heap) {
 	while (curr) {
 		DUK_DDD(DUK_DDDPRINT("FINALFREE (refzero_list): %!iO",
 		                     (duk_heaphdr *) curr));
-		next = DUK_HEAPHDR_GET_NEXT(curr);
+		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
 	}
@@ -158,7 +158,7 @@ DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 	while (curr) {
 		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO",
 		                     (duk_heaphdr *) curr));
-		next = DUK_HEAPHDR_GET_NEXT(curr);
+		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
 	}
@@ -209,7 +209,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 			count_obj++;
 #endif
 		}
-		curr = DUK_HEAPHDR_GET_NEXT(curr);
+		curr = DUK_HEAPHDR_GET_NEXT(heap, curr);
 	}
 
 	/* Note: count includes all objects, not only those with an actual finalizer. */
@@ -353,7 +353,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		DUK_HSTRING_INCREF(_never_referenced_, h);
 
 #if defined(DUK_USE_HEAPPTR16)
-		heap->strs16[i] = DUK_USE_HEAPPTR_ENC16((void *) h);
+		heap->strs16[i] = DUK_USE_HEAPPTR_ENC16(heap->heap_udata, (void *) h);
 #else
 		heap->strs[i] = h;
 #endif
@@ -699,8 +699,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->fatal_func = fatal_func;
 
 #if defined(DUK_USE_HEAPPTR16)
-	res->heapptr_null16 = DUK_USE_HEAPPTR_ENC16((void *) NULL);
-	res->heapptr_deleted16 = DUK_USE_HEAPPTR_ENC16((void *) DUK_STRTAB_DELETED_MARKER(res));
+	/* XXX: zero assumption */
+	res->heapptr_null16 = DUK_USE_HEAPPTR_ENC16(res->heap_udata, (void *) NULL);
+	res->heapptr_deleted16 = DUK_USE_HEAPPTR_ENC16(res->heap_udata, (void *) DUK_STRTAB_DELETED_MARKER(res));
 #endif
 
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */

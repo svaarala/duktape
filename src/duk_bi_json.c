@@ -1446,7 +1446,10 @@ DUK_LOCAL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hol
  */
 DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
+
+	DUK_UNREF(thr);
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_value2: key=%!T, val=%!T",
 	                     (duk_tval *) duk_get_tval(ctx, -2),
@@ -1557,7 +1560,7 @@ DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 
 			h = DUK_TVAL_GET_BUFFER(tv);
 			DUK_ASSERT(h != NULL);
-			p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h);
+			p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
 			p_end = p + DUK_HBUFFER_GET_SIZE(h);
 			DUK__EMIT_1(js_ctx, DUK_ASC_PIPE);
 			while (p < p_end) {

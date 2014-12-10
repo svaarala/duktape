@@ -272,7 +272,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		goto skip_attempt;
 	}
 #endif
-	res = heap->realloc_func(heap->heap_udata, cb(ud), newsize);
+	res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 	if (res || newsize == 0) {
 		/* for zero size allocations NULL is allowed */
 		return res;
@@ -307,7 +307,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 #endif
 
 #ifdef DUK_USE_ASSERTIONS
-		ptr_pre = cb(ud);
+		ptr_pre = cb(heap, ud);
 #endif
 		flags = 0;
 		if (i >= DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_EMERGENCY_LIMIT - 1) {
@@ -317,7 +317,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
 #ifdef DUK_USE_ASSERTIONS
-		ptr_post = cb(ud);
+		ptr_post = cb(heap, ud);
 		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
 			DUK_DD(DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p",
@@ -329,7 +329,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		 * The pointer being reallocated may change after every mark-and-sweep.
 		 */
 
-		res = heap->realloc_func(heap->heap_udata, cb(ud), newsize);
+		res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) newsize));
@@ -343,7 +343,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 #else  /* DUK_USE_MARK_AND_SWEEP */
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
 DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
-	return heap->realloc_func(heap->heap_udata, cb(ud), newsize);
+	return heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 

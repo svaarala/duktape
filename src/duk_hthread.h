@@ -122,7 +122,7 @@
 
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
-	((duk_hstring *) DUK_USE_HEAPPTR_DEC16((thr)->strs16[(idx)]))
+	((duk_hstring *) DUK_USE_HEAPPTR_DEC16((thr)->heap->heap_udata, (thr)->strs16[(idx)]))
 #else
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
 	((thr)->strs[(idx)])
@@ -292,8 +292,8 @@ DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
 DUK_INTERNAL_DECL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
-DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(void *ud);  /* indirect allocs */
-DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(void *ud);  /* indirect allocs */
-DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 #endif  /* DUK_HTHREAD_H_INCLUDED */

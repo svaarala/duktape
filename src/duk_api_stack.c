@@ -1178,9 +1178,11 @@ DUK_INTERNAL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index) {
 #endif
 
 DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_UNREF(thr);
 
 	if (out_size != NULL) {
 		*out_size = 0;
@@ -1193,7 +1195,7 @@ DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t 
 		if (out_size) {
 			*out_size = DUK_HBUFFER_GET_SIZE(h);
 		}
-		return (void *) DUK_HBUFFER_GET_DATA_PTR(h);  /* may be NULL (but only if size is 0) */
+		return (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);  /* may be NULL (but only if size is 0) */
 	}
 
 	return NULL;
@@ -1220,7 +1222,7 @@ DUK_EXTERNAL void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_siz
 		if (out_size) {
 			*out_size = DUK_HBUFFER_GET_SIZE(h);
 		}
-		return (void *) DUK_HBUFFER_GET_DATA_PTR(h);  /* may be NULL (but only if size is 0) */
+		return (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);  /* may be NULL (but only if size is 0) */
 	}
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
@@ -1916,9 +1918,11 @@ DUK_INTERNAL duk_int_t duk_to_int_check_range(duk_context *ctx, duk_idx_t index,
 }
 
 DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_UNREF(thr);
 
 	index = duk_require_normalize_index(ctx, index);
 
@@ -1957,7 +1961,7 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 
 		DUK_ASSERT(h != NULL);
 		duk_push_lstring(ctx,
-		                 (const char *) DUK_HBUFFER_GET_DATA_PTR(h),
+		                 (const char *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h),
 		                 (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
 		break;
 	}
@@ -2007,10 +2011,13 @@ DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index) {
 }
 
 DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_uint_t mode) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer *h_buf;
 	const duk_uint8_t *src_data;
 	duk_size_t src_size;
 	duk_uint8_t *dst_data;
+
+	DUK_UNREF(thr);
 
 	index = duk_require_normalize_index(ctx, index);
 
@@ -2021,7 +2028,7 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 		 */
 		duk_uint_t tmp;
 
-		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_buf);
+		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_buf);
 		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
 
 		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? DUK_BUF_MODE_DYNAMIC : DUK_BUF_MODE_FIXED);
@@ -2545,7 +2552,7 @@ DUK_EXTERNAL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index)
 			return DUK_ERR_ERROR;
 		}
 
-		h = DUK_HOBJECT_GET_PROTOTYPE(h);
+		h = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
 	} while (--sanity > 0);
 
 	return DUK_ERR_NONE;
@@ -3038,7 +3045,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[prototype_bidx]);
 	} else {
 		DUK_ASSERT(prototype_bidx == -1);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h) == NULL);
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
 	}
 
 	return ret;
@@ -3052,7 +3059,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t
 	ret = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h) == NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
 	return ret;
 }
@@ -3429,7 +3436,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bo
 	DUK_HBUFFER_INCREF(thr, h);
 	thr->valstack_top++;
 
-	return DUK_HBUFFER_GET_DATA_PTR(h);
+	return DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {

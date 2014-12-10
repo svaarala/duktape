@@ -2623,12 +2623,12 @@ typedef FILE duk_file;
 
 #undef DUK_USE_EXTSTR_INTERN_CHECK
 #if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_INTERN_CHECK)
-#define DUK_USE_EXTSTR_INTERN_CHECK(ptr,len) DUK_OPT_EXTSTR_INTERN_CHECK((ptr), (len))
+#define DUK_USE_EXTSTR_INTERN_CHECK(udata,ptr,len) DUK_OPT_EXTSTR_INTERN_CHECK((udata), (ptr), (len))
 #endif
 
 #undef DUK_USE_EXTSTR_FREE
 #if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_FREE)
-#define DUK_USE_EXTSTR_FREE(ptr) DUK_OPT_EXTSTR_FREE((ptr))
+#define DUK_USE_EXTSTR_FREE(udata,ptr) DUK_OPT_EXTSTR_FREE((udata), (ptr))
 #endif
 
 /*
@@ -2654,8 +2654,8 @@ typedef FILE duk_file;
 #undef DUK_USE_HEAPPTR_DEC16
 #if defined(DUK_OPT_HEAPPTR16) && defined(DUK_OPT_HEAPPTR_ENC16) && defined(DUK_OPT_HEAPPTR_DEC16)
 #define DUK_USE_HEAPPTR16
-#define DUK_USE_HEAPPTR_ENC16(ptr) DUK_OPT_HEAPPTR_ENC16((ptr))
-#define DUK_USE_HEAPPTR_DEC16(ptr) DUK_OPT_HEAPPTR_DEC16((ptr))
+#define DUK_USE_HEAPPTR_ENC16(udata,ptr) DUK_OPT_HEAPPTR_ENC16((udata),(ptr))
+#define DUK_USE_HEAPPTR_DEC16(udata,ptr) DUK_OPT_HEAPPTR_DEC16((udata),(ptr))
 #endif
 
 #undef DUK_USE_DATAPTR16
@@ -2663,8 +2663,8 @@ typedef FILE duk_file;
 #undef DUK_USE_DATAPTR_DEC16
 #if defined(DUK_OPT_DATAPTR16) && defined(DUK_OPT_DATAPTR_ENC16) && defined(DUK_OPT_DATAPTR_DEC16)
 #define DUK_USE_DATAPTR16
-#define DUK_USE_DATAPTR_ENC16(ptr) DUK_OPT_DATAPTR_ENC16((ptr))
-#define DUK_USE_DATAPTR_DEC16(ptr) DUK_OPT_DATAPTR_DEC16((ptr))
+#define DUK_USE_DATAPTR_ENC16(udata,ptr) DUK_OPT_DATAPTR_ENC16((udata),(ptr))
+#define DUK_USE_DATAPTR_DEC16(udata,ptr) DUK_OPT_DATAPTR_DEC16((udata),(ptr))
 #endif
 
 #undef DUK_USE_FUNCPTR16
@@ -2672,8 +2672,8 @@ typedef FILE duk_file;
 #undef DUK_USE_FUNCPTR_DEC16
 #if defined(DUK_OPT_FUNCPTR16) && defined(DUK_OPT_FUNCPTR_ENC16) && defined(DUK_OPT_FUNCPTR_DEC16)
 #define DUK_USE_FUNCPTR16
-#define DUK_USE_FUNCPTR_ENC16(ptr) DUK_OPT_FUNCPTR_ENC16((ptr))
-#define DUK_USE_FUNCPTR_DEC16(ptr) DUK_OPT_FUNCPTR_DEC16((ptr))
+#define DUK_USE_FUNCPTR_ENC16(udata,ptr) DUK_OPT_FUNCPTR_ENC16((udata),(ptr))
+#define DUK_USE_FUNCPTR_DEC16(udata,ptr) DUK_OPT_FUNCPTR_DEC16((udata),(ptr))
 #endif
 
 #undef DUK_USE_REFCOUNT16

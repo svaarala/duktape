@@ -48,26 +48,26 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	/* XXX: use advancing pointers instead of index macros -> faster and smaller? */
 
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
-		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
+		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(heap, h, i);
 		if (!key) {
 			continue;
 		}
 		duk__mark_heaphdr(heap, (duk_heaphdr *) key);
-		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
-			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(h, i)->a.get);
-			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(h, i)->a.set);
+		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, h, i)) {
+			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)->a.get);
+			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)->a.set);
 		} else {
-			duk__mark_tval(heap, &DUK_HOBJECT_E_GET_VALUE_PTR(h, i)->v);
+			duk__mark_tval(heap, &DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)->v);
 		}
 	}
 
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
-		duk__mark_tval(heap, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
+		duk__mark_tval(heap, DUK_HOBJECT_A_GET_VALUE_PTR(heap, h, i));
 	}
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(h));
+	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
@@ -78,17 +78,17 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		 * contains a reference.
 		 */
 
-		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(f));
+		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(heap, f));
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(f);
+		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, f);
+		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(heap, f);
 		while (tv < tv_end) {
 			duk__mark_tval(heap, tv);
 			tv++;
 		}
 
-		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(f);
-		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(f);
+		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
+		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
 		while (funcs < funcs_end) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) *funcs);
 			funcs++;
@@ -227,7 +227,7 @@ DUK_LOCAL void duk__mark_refzero_list(duk_heap *heap) {
 	hdr = heap->refzero_list;
 	while (hdr) {
 		duk__mark_heaphdr(heap, hdr);
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
 #endif
@@ -282,7 +282,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 			count_finalizable ++;
 		}
 
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 
 	if (count_finalizable == 0) {
@@ -298,7 +298,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 			duk__mark_heaphdr(heap, hdr);
 		}
 
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 
 	/* Caller will finish the marking process if we hit a recursion limit. */
@@ -320,7 +320,7 @@ DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 	hdr = heap->finalize_list;
 	while (hdr) {
 		duk__mark_heaphdr(heap, hdr);
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 #ifdef DUK_USE_DEBUG
 		count_finalize_list++;
 #endif
@@ -391,7 +391,7 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 #else
 			duk__handle_temproot(heap, hdr);
 #endif
-			hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+			hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 		}
 
 		/* must also check refzero_list */
@@ -403,7 +403,7 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 #else
 			duk__handle_temproot(heap, hdr);
 #endif
-			hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+			hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 		}
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
@@ -450,7 +450,7 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 			duk_heap_refcount_finalize_heaphdr(thr, hdr);
 		}
 
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
@@ -471,7 +471,7 @@ DUK_LOCAL void duk__clear_refzero_list_flags(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
@@ -498,7 +498,7 @@ DUK_LOCAL void duk__clear_finalize_list_flags(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
 
@@ -519,7 +519,7 @@ DUK_LOCAL void duk__sweep_string_chain16(duk_heap *heap, duk_uint16_t *slot, duk
 		/* nop */
 		return;
 	}
-	h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(h16);
+	h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, h16);
 	DUK_ASSERT(h != NULL);
 
 	if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
@@ -601,7 +601,7 @@ DUK_LOCAL void duk__sweep_stringtable_chain(duk_heap *heap, duk_size_t *out_coun
 #endif
 		} else {
 #if defined(DUK_USE_HEAPPTR16)
-			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(e->u.strlist16);
+			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, e->u.strlist16);
 #else
 			lst = e->u.strlist;
 #endif
@@ -716,7 +716,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 		/* strings are never placed on the heap allocated list */
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) != DUK_HTYPE_STRING);
 
-		next = DUK_HEAPHDR_GET_NEXT(curr);
+		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 
 		if (DUK_HEAPHDR_HAS_REACHABLE(curr)) {
 			/*
@@ -739,11 +739,11 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 #ifdef DUK_USE_DOUBLE_LINKED_HEAP
 				if (heap->finalize_list) {
-					DUK_HEAPHDR_SET_PREV(heap->finalize_list, curr);
+					DUK_HEAPHDR_SET_PREV(heap, heap->finalize_list, curr);
 				}
-				DUK_HEAPHDR_SET_PREV(curr, NULL);
+				DUK_HEAPHDR_SET_PREV(heap, curr, NULL);
 #endif
-				DUK_HEAPHDR_SET_NEXT(curr, heap->finalize_list);
+				DUK_HEAPHDR_SET_NEXT(heap, curr, heap->finalize_list);
 				heap->finalize_list = curr;
 #ifdef DUK_USE_DEBUG
 				count_finalize++;
@@ -776,10 +776,10 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 					heap->heap_allocated = curr;
 				}
 				if (prev) {
-					DUK_HEAPHDR_SET_NEXT(prev, curr);
+					DUK_HEAPHDR_SET_NEXT(heap, prev, curr);
 				}
 #ifdef DUK_USE_DOUBLE_LINKED_HEAP
-				DUK_HEAPHDR_SET_PREV(curr, prev);
+				DUK_HEAPHDR_SET_PREV(heap, curr, prev);
 #endif
 				prev = curr;
 			}
@@ -833,7 +833,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 		}
 	}
 	if (prev) {
-		DUK_HEAPHDR_SET_NEXT(prev, NULL);
+		DUK_HEAPHDR_SET_NEXT(heap, prev, NULL);
 	}
 
 #ifdef DUK_USE_DEBUG
@@ -879,7 +879,7 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap) {
 		DUK_HEAPHDR_SET_FINALIZED(curr);
 
 		/* queue back to heap_allocated */
-		next = DUK_HEAPHDR_GET_NEXT(curr);
+		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
 
 		curr = next;
@@ -956,7 +956,7 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 #endif
 
 	 next:
-		curr = DUK_HEAPHDR_GET_NEXT(curr);
+		curr = DUK_HEAPHDR_GET_NEXT(heap, curr);
 #ifdef DUK_USE_DEBUG
 		(*p_count_check)++;
 #endif
@@ -1011,7 +1011,7 @@ DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
 		/* may have FINALIZED */
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -1021,7 +1021,7 @@ DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 }
@@ -1052,7 +1052,7 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(hdr) > 0);
 #endif
 		}
-		hdr = DUK_HEAPHDR_GET_NEXT(hdr);
+		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */

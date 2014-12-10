@@ -10,7 +10,7 @@
 
 DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t hobject_flags) {
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
-	DUK_HOBJECT_SET_PROPS(obj, NULL);
+	DUK_HOBJECT_SET_PROPS(heap, obj, NULL);
 #endif
 
 	/* XXX: macro? sets both heaphdr and object flags */
@@ -19,9 +19,9 @@ DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint
 
 #if defined(DUK_USE_HEAPPTR16)
 	/* Zero encoded pointer is required to match NULL */
-	DUK_HEAPHDR_SET_NEXT(&obj->hdr, NULL);
+	DUK_HEAPHDR_SET_NEXT(heap, &obj->hdr, NULL);
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
-	DUK_HEAPHDR_SET_PREV(&obj->hdr, NULL);
+	DUK_HEAPHDR_SET_PREV(heap, &obj->hdr, NULL);
 #endif
 #endif
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &obj->hdr);

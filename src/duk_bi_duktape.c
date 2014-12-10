@@ -18,9 +18,12 @@
  * such are given so there should not be a security impact.
  */
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_heaphdr *h;
 	duk_int_t i, n;
+
+	DUK_UNREF(thr);
 
 	tv = duk_get_tval(ctx, 0);
 	DUK_ASSERT(tv != NULL);  /* because arg count is 1 */
@@ -81,7 +84,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_ASIZE(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_HSIZE(h_obj));
 		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA((duk_hcompiledfunction *) h_obj);
+			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, (duk_hcompiledfunction *) h_obj);
 			if (h_data) {
 				duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_data));
 			} else {

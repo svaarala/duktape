@@ -567,8 +567,8 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 				if (len_x != len_y) {
 					return 0;
 				}
-				buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(h_x);
-				buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
+				buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_x);
+				buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
 				/* if len_x == len_y == 0, buf_x and/or buf_y may
 				 * be NULL, but that's OK.
 				 */
@@ -655,7 +655,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			return 0;
 		}
 		buf_x = (void *) DUK_HSTRING_GET_DATA(h_x);
-		buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(h_y);
+		buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
 		/* if len_x == len_y == 0, buf_x and/or buf_y may
 		 * be NULL, but that's OK.
 		 */
@@ -1053,7 +1053,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 *  also the built-in Function prototype, the result is true.
 		 */
 
-		val = DUK_HOBJECT_GET_PROTOTYPE(val);
+		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
 
 		if (!val) {
 			goto pop_and_false;

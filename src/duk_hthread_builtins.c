@@ -643,13 +643,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	}
 #endif
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
-	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		DUK_DDD(DUK_DDDPRINT("built-in object %ld after initialization and compacting", (long) i));
-		DUK_DEBUG_DUMP_HOBJECT(thr->builtins[i]);
-	}
-#endif
-
 	/*
 	 *  Pop built-ins from stack: they are now INCREF'd and
 	 *  reachable from the builtins[] array.
