@@ -166,8 +166,8 @@ come out.  Don't rely on NaNs preserving their exact form.</p>
 
 <h2 id="type-string">String</h2>
 
-<p>The <b>string</b> type is a raw byte sequence of a certain length which may
-contain internal NUL (0x00) values.  Strings are always automatically NUL
+<p>The <b>string</b> type is an arbitrary byte sequence of a certain length which
+may contain internal NUL (0x00) values.  Strings are always automatically NUL
 terminated for C coding convenience.  The NUL terminator is not counted as part
 of the string length.  For instance, the string <code>"foo"</code> has byte length 3
 and is stored in memory as <code>{ 'f', 'o', 'o', '\0' }</code>.  Because of the
@@ -184,7 +184,7 @@ Strings are immutable and must NEVER be changed by calling C code.  Doing so wil
 lead to very mysterious issues which are hard to diagnose.</p>
 
 <p>Calling code most often deals with Ecmascript strings, which may contain
-arbitrary 16-bit codepoints (the whole range 0x0000 to 0xFFFF) but cannot represent
+arbitrary 16-bit codepoints (the whole range U+0000 to U+FFFF) but cannot represent
 non-<a href="http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane">BMP</a>
 codepoints (this is how strings are defined in the Ecmascript standard).
 In Duktape, Ecmascript strings are encoded with
@@ -202,32 +202,32 @@ ASCII characters as-is which is convenient for C code.  For example:</p>
 </ul>
 
 <a name="extended-utf8"></a>
-<p>Duktape also allows extended strings internally.  Codepoints up to U+10FFFF
+<p>Duktape also uses extended strings internally.  Codepoints up to U+10FFFF
 can be represented with UTF-8, and codepoints above that up to full 32 bits
 can be represented with
-<a href="http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range">"extended UTF-8"</a>.
+<a href="http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range">extended UTF-8</a>.
 Non-standard strings are used for storing internal object properties; using a
 non-standard string ensures that such properties never conflict with properties
 accessible using standard Ecmascript strings.  Non-standard strings can be given
 to Ecmascript built-in functions, but since behavior may not be exactly
 specified, results may vary.</p>
 
-<p>The "extended UTF-8" encoding used by Duktape is described in the table below.
+<p>The extended UTF-8 encoding used by Duktape is described in the table below.
 The leading byte is shown in binary (with "x" marking data bits) while
 continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</p>
 
 <table>
 <thead>
-<tr class="header"><th>Codepoint range</th><th>Bits</th><th>Byte sequence</th></tr>
+<tr class="header"><th>Codepoint range</th><th>Bits</th><th>Byte sequence</th><th>Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>U+0000 to U+007F</td><td>7</td><td>0xxxxxxx</td></tr>
-<tr><td>U+0080 to U+07FF</td><td>11</td><td>110xxxxx C</td></tr>
-<tr><td>U+0800 to U+FFFF</td><td>16</td><td>1110xxxx C C</td></tr>
-<tr><td>U+1 0000 to U+1F FFFF</td><td>21</td><td>11110xxx C C C</td></tr>
-<tr><td>U+20 0000 to U+3FF FFFF</td><td>26</td><td>111110xx C C C C</td></tr>
-<tr><td>U+400 0000 to U+7FFF FFFF</td><td>31</td><td>1111110x C C C C C</td></tr>
-<tr><td>U+8000 0000 to U+F FFFF FFFF</td><td>36 (32 used)</td><td>11111110 C C C C C C</td></tr>
+<tr><td>U+0000 to U+007F</td><td>7</td><td>0xxxxxxx</td><td></td></tr>
+<tr><td>U+0080 to U+07FF</td><td>11</td><td>110xxxxx C</td><td></td></tr>
+<tr><td>U+0800 to U+FFFF</td><td>16</td><td>1110xxxx C C</td><td>U+D800 to U+DFFF allowed (unlike UTF-8)</td></tr>
+<tr><td>U+1 0000 to U+1F FFFF</td><td>21</td><td>11110xxx C C C</td><td>Above U+10FFFF allowed (unlike UTF-8)</td></tr>
+<tr><td>U+20 0000 to U+3FF FFFF</td><td>26</td><td>111110xx C C C C</td><td></td></tr>
+<tr><td>U+400 0000 to U+7FFF FFFF</td><td>31</td><td>1111110x C C C C C</td><td></td></tr>
+<tr><td>U+8000 0000 to U+F FFFF FFFF</td><td>36</td><td>11111110 C C C C C C</td><td>Only 32 bits used in practice (up to U+FFFFFFFF)</td></tr>
 </tbody>
 </table>
 
