@@ -3,7 +3,7 @@ title: add lodash test case
 desc: http://lodash.com/
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-10-03 12:21:48.764475 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v1.0
+  - ""
+- - 2014-12-10 21:00:37.780924 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
