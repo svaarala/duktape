@@ -288,11 +288,13 @@ and provide the macros for encoding and decoding a pointer:
 - Currently it is required that NULL encodes to integer 0, and integer
   0 decodes to NULL.  No other pointer can be encoded to 0.
 
-- DUK_OPT_HEAPPTR_ENC16(p) is a macro with a ``void *`` argument and a
-  ``duk_uint16_t`` return value.
+- DUK_OPT_HEAPPTR_ENC16(udata,p) is a macro with a userdata and ``void *``
+  argument, and a ``duk_uint16_t`` return value.
 
-- DUK_OPT_HEAPPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
-  a ``void *`` return value.
+- DUK_OPT_HEAPPTR_DEC16(udata,x) is a macro with a userdata and
+  ``duk_uint16_t`` argument, and a ``void *`` return value.
+
+- The userdata argument is the heap userdata value given at heap creation.
 
 - See ``ajduk`` example in Duktape ``Makefile`` for a concrete example.
 
@@ -308,6 +310,13 @@ downsides:
   targets.  The macro may need to call out to a helper function in practice,
   which is much slower than an inline implementation.
 
+Current limitations:
+
+- Duktape internal debug code enabled with e.g. ``DUK_OPT_DEBUG`` and
+  ``DUK_OPT_DPRINT`` doesn't have enough plumbing to be able to decode
+  pointers.  Debug printing cannot currently be enabled when pointer
+  compression is active.
+
 DUK_OPT_DATAPTR16, DUK_OPT_DATAPTR_ENC16, DUK_OPT_DATAPTR_DEC16
 ---------------------------------------------------------------
 
@@ -320,11 +329,13 @@ and provide the macros for encoding and decoding a pointer:
 - Currently it is required that NULL encodes to integer 0, and integer
   0 decodes to NULL.  No other pointer can be encoded to 0.
 
-- DUK_OPT_DATAPTR_ENC16(p) is a macro with a ``void *`` argument and a
-  ``duk_uint16_t`` return value.
+- DUK_OPT_DATAPTR_ENC16(udata,p) is a macro with a userdata and ``void *``
+  argument, and a ``duk_uint16_t`` return value.
 
-- DUK_OPT_DATAPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
-  a ``void *`` return value.
+- DUK_OPT_DATAPTR_DEC16(udata,x) is a macro with a userdata and
+  ``duk_uint16_t`` argument, and a ``void *`` return value.
+
+- The userdata argument is the heap userdata value given at heap creation.
 
 .. note:: This feature option is currently unimplemented, i.e. Duktape won't compress
           any data pointers at the moment.
@@ -341,25 +352,28 @@ value and provide the macros for encoding and decoding a pointer:
 - Currently it is required that NULL encodes to integer 0, and integer
   0 decodes to NULL.  No other pointer can be encoded to 0.
 
-- DUK_OPT_FUNCPTR_ENC16(p) is a macro with a ``void *`` argument and a
-  ``duk_uint16_t`` return value.
+- DUK_OPT_FUNCPTR_ENC16(udata,p) is a macro with a userdata and ``void *``
+  argument, and a ``duk_uint16_t`` return value.
 
-- DUK_OPT_FUNCPTR_DEC16(x) is a macro with a ``duk_uint16_t`` argument and
-  a ``void *`` return value.
+- DUK_OPT_FUNCPTR_DEC16(udata,x) is a macro with a userdata and
+  ``duk_uint16_t`` argument, and a ``void *`` return value.
+
+- The userdata argument is the heap userdata value given at heap creation.
 
 .. note:: This feature option is currently unimplemented, i.e. Duktape won't compress
           any function pointers at the moment.  It might not be necessary to support a
           NULL function pointer.
 
-DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)
-------------------------------------
+DUK_OPT_EXTSTR_INTERN_CHECK(udata,ptr,len)
+------------------------------------------
 
 Provide a hook for checking if data for a certain string can be used from
 external memory (outside of Duktape heap, e.g. memory mapped flash).
 The hook is called during string interning with the following semantics:
 
 * The string data with no NUL termination resides at ``ptr`` and has ``len``
-  bytes.
+  bytes.  The ``udata`` argument is the heap userdata which may be ignored
+  if not needed.
 
 * If the hook returns NULL, Duktape interns the string normally, i.e.
   string data is allocated from Duktape heap.
@@ -389,8 +403,8 @@ Notes:
 See ``low-memory.rst`` for more discussion how to use this feature option
 in practice.
 
-DUK_OPT_EXTSTR_FREE(ptr)
-------------------------
+DUK_OPT_EXTSTR_FREE(udata,ptr)
+------------------------------
 
 Optional counterpart to ``DUK_OPT_EXTSTR_INTERN_CHECK``, with the following
 semantics:
@@ -401,7 +415,8 @@ semantics:
 
 * The argument ``ptr`` is a ``void *`` and points to the external string data.
   Concretely, it is the (non-NULL) value returned by
-  ``DUK_OPT_EXTSTR_INTERN_CHECK``.
+  ``DUK_OPT_EXTSTR_INTERN_CHECK``.  The ``udata`` argument is the heap
+  userdata which may be ignored if not needed.
 
 .. note:: Right now there is no API to push external strings; external strings
           come into being as a resul of DUK_OPT_EXTSTR_INTERN_CHECK() only.

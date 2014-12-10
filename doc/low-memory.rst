@@ -131,9 +131,12 @@ system RAM):
 
   - ``DUK_OPT_HEAPPTR16``
 
-  - ``DUK_OPT_HEAPPTR_ENC16(p)``
+  - ``DUK_OPT_HEAPPTR_ENC16(udata,p)``
 
-  - ``DUK_OPT_HEAPPTR_DEC16(x)``
+  - ``DUK_OPT_HEAPPTR_DEC16(udata,x)``
+
+  - Note: you cannot currently enable Duktape debug prints (DUK_OPT_DEBUG and
+    DUK_OPT_DPRINT etc) when heap pointer compression is enabled.
 
 * Enable data pointer compression if possible.  Note that these pointers can
   point to arbitrary memory locations (outside Duktape heap) so this may not
@@ -141,9 +144,9 @@ system RAM):
 
   - ``DUK_OPT_DATAPTR16``
 
-  - ``DUK_OPT_DATAPTR_ENC16(p)``
+  - ``DUK_OPT_DATAPTR_ENC16(udata,p)``
 
-  - ``DUK_OPT_DATAPTR_DEC16(x)``
+  - ``DUK_OPT_DATAPTR_DEC16(udata,x)``
 
   - **UNIMPLEMENTED AT THE MOMENT**
 
@@ -153,9 +156,9 @@ system RAM):
 
   - ``DUK_OPT_FUNCPTR16``
 
-  - ``DUK_OPT_FUNCPTR_ENC16(p)``
+  - ``DUK_OPT_FUNCPTR_ENC16(udata,p)``
 
-  - ``DUK_OPT_FUNCPTR_DEC16(x)``
+  - ``DUK_OPT_FUNCPTR_DEC16(udata,x)``
 
   - **UNIMPLEMENTED AT THE MOMENT**
 
@@ -173,9 +176,9 @@ system RAM):
 
   - ``DUK_OPT_EXTERNAL_STRINGS``
 
-  - ``DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)``
+  - ``DUK_OPT_EXTSTR_INTERN_CHECK(udata,ptr,len)``
 
-  - ``DUK_OPT_EXTSTR_FREE(ptr)``
+  - ``DUK_OPT_EXTSTR_FREE(udata,ptr)``
 
 * Enable struct packing in compiler options if your platform doesn't have
   strict alignment requirements, e.g. on gcc/x86 you can:
