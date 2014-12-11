@@ -551,8 +551,8 @@ int main(int argc, char *argv[]) {
 		ctx = duk_create_heap(AJS_Alloc,
 		                      AJS_Realloc,
 		                      AJS_Free,
-		                      (void *) &ctx,  /* alloc_udata */
-		                      NULL);          /* fatal_handler */
+		                      (void *) 0xdeadbeef,  /* heap_udata: ignored by AjsHeap, use as marker */
+		                      NULL);                /* fatal_handler */
 #else
 		fprintf(stderr, "Warning: option --alloc-ajsheap ignored, no ajsheap allocator support\n");
 		fflush(stderr);
