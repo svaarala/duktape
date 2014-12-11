@@ -84,7 +84,7 @@ DUK_LOCAL_DECL void duk__advance(duk_compiler_ctx *ctx);
 DUK_LOCAL_DECL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, duk_reg_t *out_stmt_value_reg);
-DUK_LOCAL_DECL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx);
+DUK_LOCAL_DECL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_bool_t force_no_namebind);
 DUK_LOCAL_DECL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx);
 
 /* code emission */
@@ -615,7 +615,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
  * on top of stack.
  */
 /* XXX: awkward and bloated asm -- use faster internal accesses */
-DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
+DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_bool_t force_no_namebind) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -675,7 +675,11 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NEWENV((duk_hobject *) h_res));
 	}
 
-	if (func->is_function && !func->is_decl && func->h_name != NULL) {
+	if (func->is_function && !func->is_decl && func->h_name != NULL && !force_no_namebind) {
+		/* Object literal set/get functions have a name (property
+		 * name) but must not have a lexical name binding, see
+		 * test-bug-getset-func-name.js.
+		 */
 		DUK_DDD(DUK_DDDPRINT("function expression with a name -> set NAMEBINDING"));
 		DUK_HOBJECT_SET_NAMEBINDING((duk_hobject *) h_res);
 	}
@@ -7076,7 +7080,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 	 *  to the parent function table.
 	 */
 
-	duk__convert_to_func_template(comp_ctx);  /* -> [ ... func ] */
+	duk__convert_to_func_template(comp_ctx, is_setget /*force_no_namebind*/);  /* -> [ ... func ] */
 }
 
 /* Parse an inner function, adding the function template to the current function's
@@ -7340,7 +7344,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	 *  Convert duk_compiler_func to a function template
 	 */
 
-	duk__convert_to_func_template(comp_ctx);
+	duk__convert_to_func_template(comp_ctx, 0 /*force_no_namebind*/);
 
 	/*
 	 *  Wrapping duk_safe_call() will mangle the stack, just return stack top
