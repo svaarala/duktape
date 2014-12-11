@@ -674,6 +674,11 @@ Planned
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
 
+* Fix object literal getter/setter definition to avoid creating a binding
+  for the function (property) name, so that a setter/getter can access an
+  outside variable with the same name as the get/set property (see
+  test-bug-getset-func-name.js for details)
+
 * Change JSON.stringify() to escape U+2028 and U+2029 by default to make
   the output a valid Javascript string, so that it can be embedded in a
   web page or parsed with eval (see GH-68)
