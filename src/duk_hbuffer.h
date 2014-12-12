@@ -272,7 +272,7 @@ DUK_INTERNAL_DECL void duk_hbuffer_reset(duk_hthread *thr, duk_hbuffer_dynamic *
 #if 0  /*unused*/
 DUK_INTERNAL_DECL void duk_hbuffer_compact(duk_hthread *thr, duk_hbuffer_dynamic *buf);
 #endif
-DUK_INTERNAL_DECL void duk_hbuffer_append_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint8_t *data, duk_size_t length);
+DUK_INTERNAL_DECL void duk_hbuffer_append_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, const duk_uint8_t *data, duk_size_t length);
 DUK_INTERNAL_DECL void duk_hbuffer_append_byte(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint8_t byte);
 DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_cstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, const char *str);
 DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_hstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_hstring *str);
@@ -281,7 +281,7 @@ DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuf
 #if 0
 DUK_INTERNAL_DECL void duk_hbuffer_append_native_u32(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint32_t val);
 #endif
-DUK_INTERNAL_DECL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_uint8_t *data, duk_size_t length);
+DUK_INTERNAL_DECL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, const duk_uint8_t *data, duk_size_t length);
 #if 0  /*unused*/
 DUK_INTERNAL_DECL void duk_hbuffer_insert_byte(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_uint8_t byte);
 #endif

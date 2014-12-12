@@ -43,6 +43,16 @@
 #endif
 #include "duktape.h"
 
+#ifdef DUK_CMDLINE_AJSHEAP
+/* Defined in duk_cmdline_ajduk.c or alljoyn.js headers. */
+void ajsheap_init(void);
+void ajsheap_dump(void);
+void ajsheap_register(duk_context *ctx);
+void *AJS_Alloc(void *udata, duk_size_t size);
+void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
+void AJS_Free(void *udata, void *ptr);
+#endif
+
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
 #define  LINEBUF_SIZE       65536
@@ -386,142 +396,6 @@ static int handle_interactive(duk_context *ctx) {
 }
 #endif  /* NO_READLINE */
 
-#ifdef DUK_CMDLINE_AJSHEAP
-/*
- *  Heap initialization when using AllJoyn.js pool allocator (without any
- *  other AllJoyn.js integration).  This serves as an example of how to
- *  integrate Duktape with a pool allocator and is useful for low memory
- *  testing.
- *
- *  The pool sizes are not optimized here.  The sizes are chosen so that
- *  you can look at the high water mark (hwm) and use counts (use) and see
- *  how much allocations are needed for each pool size.  To optimize pool
- *  sizes more accurately, you can use --alloc-logging and inspect the memory
- *  allocation log which provides exact byte counts etc.
- *
- *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git
- *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git/tree/ajs.c
- */
-
-#include "ajs.h"
-#include "ajs_heap.h"
-
-static const AJS_HeapConfig ajsheap_config[] = {
-	{ 8,      10,   AJS_POOL_BORROW,  0 },
-	{ 12,     10,   AJS_POOL_BORROW,  0 },
-	{ 16,     200,  AJS_POOL_BORROW,  0 },
-	{ 20,     400,  AJS_POOL_BORROW,  0 },
-	{ 24,     400,  AJS_POOL_BORROW,  0 },
-	{ 28,     200,  AJS_POOL_BORROW,  0 },
-	{ 32,     200,  AJS_POOL_BORROW,  0 },
-	{ 40,     200,  AJS_POOL_BORROW,  0 },
-	{ 48,     50,   AJS_POOL_BORROW,  0 },
-	{ 52,     50,   AJS_POOL_BORROW,  0 },
-	{ 56,     50,   AJS_POOL_BORROW,  0 },
-	{ 60,     50,   AJS_POOL_BORROW,  0 },
-	{ 64,     50,   0,                0 },
-	{ 128,    80,   0,                0 },
-	{ 256,    16,   0,                0 },
-	{ 512,    16,   0,                0 },
-	{ 1024,   6,    0,                0 },
-	{ 2048,   5,    0,                0 },
-	{ 4096,   3,    0,                0 },
-	{ 8192,   1,    0,                0 }
-};
-
-uint8_t *ajsheap_ram = NULL;
-
-/* Pointer compression functions.
- * 'base' is chosen so that no non-NULL pointer results in a zero result
- * which is reserved for NULL pointers.
- */
-duk_uint16_t ajsheap_enc16(void *p) {
-	duk_uint32_t ret;
-	char *base = (char *) ajsheap_ram - 4;
-
-	if (p == NULL) {
-		ret = 0;
-	} else {
-		ret = (duk_uint32_t) (((char *) p - base) >> 2);
-	}
-#if 0
-	printf("ajsheap_enc16: %p -> %u\n", p, (unsigned int) ret);
-#endif
-	if (ret > 0xffffUL) {
-		fprintf(stderr, "Failed to compress pointer\n");
-		fflush(stderr);
-		abort();
-	}
-	return (duk_uint16_t) ret;
-}
-void *ajsheap_dec16(duk_uint16_t x) {
-	void *ret;
-	char *base = (char *) ajsheap_ram - 4;
-
-	if (x == 0) {
-		ret = NULL;
-	} else {
-		ret = (void *) (base + (((duk_uint32_t) x) << 2));
-	}
-#if 0
-	printf("ajsheap_dec16: %u -> %p\n", (unsigned int) x, ret);
-#endif
-	return ret;
-}
-
-static void ajsheap_init(void) {
-	size_t heap_sz[1];
-	uint8_t *heap_array[1];
-	uint8_t num_pools, i;
-	AJ_Status ret;
-
-	num_pools = (uint8_t) (sizeof(ajsheap_config) / sizeof(AJS_HeapConfig));
-	heap_sz[0] = AJS_HeapRequired(ajsheap_config,  /* heapConfig */
-	                              num_pools,       /* numPools */
-	                              0);              /* heapNum */
-	ajsheap_ram = (uint8_t *) malloc(heap_sz[0]);
-	if (!ajsheap_ram) {
-		fprintf(stderr, "Failed to allocate AJS heap\n");
-		fflush(stderr);
-		exit(1);
-	}
-	heap_array[0] = ajsheap_ram;
-
-	fprintf(stderr, "Allocated AJS heap of %ld bytes, pools:", (long) heap_sz[0]);
-	for (i = 0; i < num_pools; i++) {
-		fprintf(stderr, " (sz:%ld,num:%ld,brw:%ld,idx:%ld)",
-		        (long) ajsheap_config[i].size, (long) ajsheap_config[i].entries,
-		        (long) ajsheap_config[i].borrow, (long) ajsheap_config[i].heapIndex);
-	}
-	fprintf(stderr, "\n");
-	fflush(stderr);
-
-	ret = AJS_HeapInit(heap_array,      /* heap */
-	                   heap_sz,         /* heapSz */
-	                   ajsheap_config,  /* heapConfig */
-	                   num_pools,       /* numPools */
-	                   1);              /* numHeaps */
-	fprintf(stderr, "AJS_HeapInit() -> %ld\n", (long) ret);
-	fflush(stderr);
-}
-
-/* AjsHeap.dump(), allows Ecmascript code to dump heap status at suitable
- * points.
- */
-static duk_ret_t ajsheap_dump(duk_context *ctx) {
-	AJS_HeapDump();
-	fflush(stdout);
-	return 0;
-}
-
-static void ajsheap_register(duk_context *ctx) {
-	duk_push_object(ctx);
-	duk_push_c_function(ctx, ajsheap_dump, 0);
-	duk_put_prop_string(ctx, -2, "dump");
-	duk_put_global_string(ctx, "AjsHeap");
-}
-#endif  /* DUK_CMDLINE_AJSHEAP */
-
 #define  ALLOC_DEFAULT  0
 #define  ALLOC_LOGGING  1
 #define  ALLOC_TORTURE  2
@@ -679,9 +553,7 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_AJSHEAP
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump after heap creation\n");
-		fflush(stdout);
-		AJS_HeapDump();
-		fflush(stdout);
+		ajsheap_dump();
 	}
 #endif
 
@@ -745,16 +617,12 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_AJSHEAP
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
-		fflush(stdout);
-		AJS_HeapDump();
-		fflush(stdout);
+		ajsheap_dump();
 
 		duk_gc(ctx, 0);
 
 		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
-		fflush(stdout);
-		AJS_HeapDump();
-		fflush(stdout);
+		ajsheap_dump();
 	}
 #endif
 
@@ -765,9 +633,7 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_AJSHEAP
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
-		fflush(stdout);
-		AJS_HeapDump();
-		fflush(stdout);
+		ajsheap_dump();
 	}
 #endif
 

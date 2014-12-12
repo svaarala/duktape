@@ -18,7 +18,7 @@
 #define DUK__CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
-DUK_LOCAL duk_uint8_t duk__encode_uriunescaped_table[16] = {
+DUK_LOCAL const duk_uint8_t duk__encode_uriunescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
@@ -30,7 +30,7 @@ DUK_LOCAL duk_uint8_t duk__encode_uriunescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.4: uriUnescaped */
-DUK_LOCAL duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
+DUK_LOCAL const duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
@@ -42,7 +42,7 @@ DUK_LOCAL duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.1: uriReserved + '#' */
-DUK_LOCAL duk_uint8_t duk__decode_uri_reserved_table[16] = {
+DUK_LOCAL const duk_uint8_t duk__decode_uri_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
@@ -54,7 +54,7 @@ DUK_LOCAL duk_uint8_t duk__decode_uri_reserved_table[16] = {
 };
 
 /* E5.1 Section 15.1.3.2: empty */
-DUK_LOCAL duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
+DUK_LOCAL const duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
@@ -67,7 +67,7 @@ DUK_LOCAL duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
 
 #ifdef DUK_USE_SECTION_B
 /* E5.1 Section B.2.2, step 7. */
-DUK_LOCAL duk_uint8_t duk__escape_unescaped_table[16] = {
+DUK_LOCAL const duk_uint8_t duk__escape_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
@@ -83,15 +83,15 @@ typedef struct {
 	duk_hthread *thr;
 	duk_hstring *h_str;
 	duk_hbuffer_dynamic *h_buf;
-	duk_uint8_t *p;
-	duk_uint8_t *p_start;
-	duk_uint8_t *p_end;
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_start;
+	const duk_uint8_t *p_end;
 } duk__transform_context;
 
 typedef void (*duk__transform_callback)(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp);
 
 /* XXX: refactor and share with other code */
-DUK_LOCAL duk_small_int_t duk__decode_hex_escape(duk_uint8_t *p, duk_small_int_t n) {
+DUK_LOCAL duk_small_int_t duk__decode_hex_escape(const duk_uint8_t *p, duk_small_int_t n) {
 	duk_small_int_t ch;
 	duk_small_int_t t = 0;
 
@@ -143,7 +143,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 	duk_small_int_t len;
 	duk_codepoint_t cp1, cp2;
 	duk_small_int_t i, t;
-	duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
+	const duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
 
 	if (cp < 0) {
 		goto uri_error;
@@ -192,14 +192,14 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 }
 
 DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
-	duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
+	const duk_uint8_t *reserved_table = (duk_uint8_t *) udata;
 	duk_small_uint_t utf8_blen;
 	duk_codepoint_t min_cp;
 	duk_small_int_t t;  /* must be signed */
 	duk_small_uint_t i;
 
 	if (cp == (duk_codepoint_t) '%') {
-		duk_uint8_t *p = tfm_ctx->p;
+		const duk_uint8_t *p = tfm_ctx->p;
 		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%ld", (long) left));
@@ -363,7 +363,7 @@ DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx,
 	DUK_UNREF(udata);
 
 	if (cp == (duk_codepoint_t) '%') {
-		duk_uint8_t *p = tfm_ctx->p;
+		const duk_uint8_t *p = tfm_ctx->p;
 		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
 
 		if (left >= 5 && p[0] == 'u' &&

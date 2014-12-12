@@ -49,7 +49,7 @@ DUK_INTERNAL_DECL duk_int8_t duk_hex_dectab[256];
 DUK_INTERNAL_DECL duk_uint8_t duk_util_probe_steps[32];
 #endif  /* !DUK_SINGLE_FILE */
 
-DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(duk_uint8_t *data, duk_size_t len, duk_uint32_t seed);
+DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t len, duk_uint32_t seed);
 
 DUK_INTERNAL_DECL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 

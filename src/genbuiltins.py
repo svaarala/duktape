@@ -1802,6 +1802,7 @@ if __name__ == '__main__':
 	parser.add_option('--initjs-data', dest='initjs_data')
 	parser.add_option('--out-header', dest='out_header')
 	parser.add_option('--out-source', dest='out_source')
+	parser.add_option('--out-metadata-json', dest='out_metadata_json')
 	(opts, args) = parser.parse_args()
 
 	f = open(opts.buildinfo, 'rb')
@@ -1860,3 +1861,18 @@ if __name__ == '__main__':
 	f.write(genc.getString())
 	f.close()
 
+	# write a JSON file with build metadata, which is useful e.g.
+	# if application needs to know the built-in strings beforehand
+	# for external strings low memory optimization
+	meta = {}
+	ver = long(build_info['version'])
+	meta['comment'] = 'Metadata for Duktape build'
+	meta['duk_version'] = ver
+	meta['duk_version_string'] = '%d.%d.%d' % (ver / 10000, (ver / 100) % 100, ver % 100)
+	meta['git_describe'] = build_info['git_describe']
+	strs, strs_base64 = gb_little.gs.getStringList()  # endianness doesn't matter
+	meta['builtin_strings'] = strs
+	meta['builtin_strings_base64'] = strs_base64
+	f = open(opts.out_metadata_json, 'wb')
+	f.write(json.dumps(meta, indent=4, sort_keys=True, ensure_ascii=True))
+	f.close()

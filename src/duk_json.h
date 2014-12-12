@@ -56,9 +56,9 @@ typedef struct {
 
 typedef struct {
 	duk_hthread *thr;
-	duk_uint8_t *p;
-	duk_uint8_t *p_start;
-	duk_uint8_t *p_end;
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_start;
+	const duk_uint8_t *p_end;
 	duk_idx_t idx_reviver;
 	duk_small_uint_t flags;
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)

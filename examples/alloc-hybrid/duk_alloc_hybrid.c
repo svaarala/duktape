@@ -181,6 +181,9 @@ void *duk_alloc_hybrid(void *udata, duk_size_t size) {
 			hdr->free = hdr->free->next;
 			return new_ptr;
 		} else {
+#ifdef DUK_ALLOC_HYBRID_DEBUG
+			printf("alloc out of pool entries: %ld -> pool size %ld\n", (long) size, (long) hdr->size);
+#endif
 			break;
 		}
 	}
@@ -283,4 +286,8 @@ void duk_free_hybrid(void *udata, void *ptr) {
 			return;
 		}
 	}
+
+#ifdef DUK_ALLOC_HYBRID_DEBUG
+	printf("NEVER HERE\n");
+#endif
 }

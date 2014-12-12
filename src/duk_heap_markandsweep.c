@@ -558,12 +558,13 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 		heap->strtable[i] = DUK_STRTAB_DELETED_MARKER(heap);
 #endif
 
-		/* then free */
-#if 1
-		DUK_FREE(heap, (duk_heaphdr *) h);  /* no inner refs/allocs, just free directly */
-#else
-		duk_heap_free_heaphdr_raw(heap, (duk_heaphdr *) h);  /* this would be OK but unnecessary */
-#endif
+		/* free inner references (these exist e.g. when external
+		 * strings are enabled)
+		 */
+		duk_free_hstring_inner(heap, (duk_hstring *) h);
+
+		/* finally free the struct itself */
+		DUK_FREE(heap, (duk_heaphdr *) h);
 	}
 
 #ifdef DUK_USE_DEBUG

@@ -762,8 +762,8 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
  */
 
 DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h) {
-	duk_uint8_t *p;
-	duk_uint8_t *p_end;
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
 	duk_uint32_t flags = 0;
 
 	p = DUK_HSTRING_GET_DATA(h);

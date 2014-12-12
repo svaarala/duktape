@@ -1201,7 +1201,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
  *  call duk_js_to_arrayindex_string_helper().
  */
 
-DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {
+DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {
 	duk_uarridx_t res, new_res;
 
 	if (blen == 0 || blen > 10) {

@@ -809,6 +809,7 @@ ajtcl:
 
 CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
+CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers
 CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L
 CCOPTS_AJDUK += -DDUK_OPT_FORCE_ALIGN=4
 CCOPTS_AJDUK += -DDUK_OPT_ASSERTIONS
@@ -821,20 +822,25 @@ CCOPTS_AJDUK += -DDUK_OPT_OBJSIZES16
 CCOPTS_AJDUK += -DDUK_OPT_HEAPPTR16
 CCOPTS_AJDUK += '-DDUK_OPT_HEAPPTR_ENC16(p)=ajsheap_enc16(p)'
 CCOPTS_AJDUK += '-DDUK_OPT_HEAPPTR_DEC16(x)=ajsheap_dec16(x)'
-CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *p); extern void *ajsheap_dec16(duk_uint16_t x);'
+CCOPTS_AJDUK += -DDUK_OPT_EXTERNAL_STRINGS
+#CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)=ajsheap_extstr_check_1((ptr),(len))'
+#CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_FREE(ptr)=ajsheap_extstr_free_1((ptr))'
+CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)=ajsheap_extstr_check_2((ptr),(len))'
+CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_FREE(ptr)=ajsheap_extstr_free_2((ptr))'
+CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *p); extern void *ajsheap_dec16(duk_uint16_t x); extern const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len); extern const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len); extern void ajsheap_extstr_free_1(const void *ptr); extern void ajsheap_extstr_free_2(const void *ptr);'
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
+# Command line with Alljoyn.js pool allocator, for low memory testing.
+# The pool sizes only make sense with -m32, so force that.  This forces
+# us to use barebones cmdline too.
 ajduk: alljoyn-js ajtcl dist
-	# Command line with Alljoyn.js pool allocator, for low memory testing.
-	# The pool sizes only make sense with -m32, so force that.  This forces
-	# us to use barebones cmdline too.  The compilation produces some
-	# harmless warnings at present.
 	$(CC) -o $@ \
 		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
 		$(CCOPTS_NONDEBUG) \
 		$(CCOPTS_AJDUK) \
 		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
+		dist/examples/cmdline/duk_cmdline_ajduk.c \
 		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"

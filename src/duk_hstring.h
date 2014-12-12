@@ -43,24 +43,28 @@
 #define DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(2)  /* string is a reserved word (non-strict) */
 #define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(3)  /* string is a reserved word (strict) */
 #define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(4)  /* string is 'eval' or 'arguments' */
+#define DUK_HSTRING_FLAG_EXTDATA                    DUK_HEAPHDR_USER_FLAG(5)  /* string data is external (duk_hstring_external) */
 
 #define DUK_HSTRING_HAS_ARRIDX(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
 #define DUK_HSTRING_HAS_INTERNAL(x)                 DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
 #define DUK_HSTRING_HAS_RESERVED_WORD(x)            DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_HAS_EXTDATA(x)                  DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
 
 #define DUK_HSTRING_SET_ARRIDX(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
 #define DUK_HSTRING_SET_INTERNAL(x)                 DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
 #define DUK_HSTRING_SET_RESERVED_WORD(x)            DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_SET_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_SET_EXTDATA(x)                  DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
 
 #define DUK_HSTRING_CLEAR_ARRIDX(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
 #define DUK_HSTRING_CLEAR_INTERNAL(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
 #define DUK_HSTRING_CLEAR_RESERVED_WORD(x)          DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_CLEAR_EXTDATA(x)                DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
 
 #define DUK_HSTRING_IS_ASCII(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == DUK_HSTRING_GET_CHARLEN((x)))
 #define DUK_HSTRING_IS_EMPTY(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == 0)
@@ -97,8 +101,19 @@
 	} while (0)
 #endif
 
-#define DUK_HSTRING_GET_DATA(x)                     ((duk_uint8_t *) ((x) + 1))
-#define DUK_HSTRING_GET_DATA_END(x)                 (((duk_uint8_t *) ((x) + 1)) + ((x)->blen))
+#if defined(DUK_USE_HSTRING_EXTDATA)
+#define DUK_HSTRING_GET_EXTDATA(x) \
+	((x)->extdata)
+#define DUK_HSTRING_GET_DATA(x) \
+	(DUK_HSTRING_HAS_EXTDATA((x)) ? \
+		DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) (x)) : ((const duk_uint8_t *) ((x) + 1)))
+#else
+#define DUK_HSTRING_GET_DATA(x) \
+	((const duk_uint8_t *) ((x) + 1))
+#endif
+
+#define DUK_HSTRING_GET_DATA_END(x) \
+	(DUK_HSTRING_GET_DATA((x)) + (x)->blen)
 
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
 #define DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
@@ -156,6 +171,19 @@ struct duk_hstring {
 	 *  for strings, but fields above should guarantee alignment-by-4
 	 *  (but not alignment-by-8).
 	 */
+};
+
+/* The external string struct is defined even when the feature is inactive. */
+struct duk_hstring_external {
+	duk_hstring str;
+
+	/*
+	 *  For an external string, the NUL-terminated string data is stored
+	 *  externally.  The user must guarantee that data behind this pointer
+	 *  doesn't change while it's used.
+	 */
+
+	const duk_uint8_t *extdata;
 };
 
 /*
