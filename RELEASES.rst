@@ -667,6 +667,9 @@ Planned
   to allow application code to e.g. log more detailed version information
   relevant for non-official snapshot builds
 
+* Add feature option DUK_OPT_NO_STRICT_DECL to disable support for "use
+  strict" declarations which may be useful with legacy code bases
+
 * Change buffer maximum size check to compare against allocated size
   (including spare) instead of requested size (without spare), this has
   a practical impact only when using 16-bit buffer size field

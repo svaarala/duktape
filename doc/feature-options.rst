@@ -412,6 +412,14 @@ exceptions won't have meaningful line numbers (virtual machine program
 counter values cannot be translated to line numbers) but function instances
 will have a smaller footprint.
 
+DUK_OPT_NO_STRICT_DECL
+----------------------
+
+**Experimental.**
+
+Disable support for ``"use strict"`` declaration so that Ecmascript code is
+always executed in non-strict mode.  Duktape/C functions remain strict.
+
 DUK_OPT_NO_REGEXP_SUPPORT
 -------------------------
 
