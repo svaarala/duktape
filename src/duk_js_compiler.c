@@ -6172,18 +6172,20 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 				DUK_DDD(DUK_DDDPRINT("directive contains escapes: valid directive "
 				                     "but we ignore such directives"));
 			} else {
-				/* XXX: how to compare 'use strict' most compactly?
-				 * We don't necessarily want to add it to the built-ins
-				 * because it's not needed at run time.
+				/*
 				 * The length comparisons are present to handle
 				 * strings like "use strict\u0000foo" as required.
 				 */
 
 				if (DUK_HSTRING_GET_BYTELEN(h_dir) == 10 &&
 				    DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict", 10) == 0) {
+#if defined(DUK_USE_STRICT_DECL)
 					DUK_DDD(DUK_DDDPRINT("use strict directive detected: strict flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_strict, (long) 1));
 					comp_ctx->curr_func.is_strict = 1;
+#else
+					DUK_DDD(DUK_DDDPRINT("use strict detected but strict declarations disabled, ignoring"));
+#endif
 				} else if (DUK_HSTRING_GET_BYTELEN(h_dir) == 14 &&
 				           DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use duk notail", 14) == 0) {
 					DUK_DDD(DUK_DDDPRINT("use duk notail directive detected: notail flag %ld -> %ld",

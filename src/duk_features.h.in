@@ -2260,6 +2260,11 @@ typedef FILE duk_file;
 #define DUK_USE_MATH_BUILTIN
 #endif
 
+#define DUK_USE_STRICT_DECL
+#if defined(DUK_OPT_NO_STRICT_DECL)
+#undef DUK_USE_STRICT_DECL
+#endif
+
 #define DUK_USE_REGEXP_SUPPORT
 #if defined(DUK_OPT_NO_REGEXP_SUPPORT)
 #undef DUK_USE_REGEXP_SUPPORT
