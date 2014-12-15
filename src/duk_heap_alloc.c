@@ -166,45 +166,8 @@ DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 #endif
 
 DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
-	duk_uint_fast32_t i;
-
 	/* strings are only tracked by stringtable */
-#if defined(DUK_USE_HEAPPTR16)
-	if (heap->strtable16) {
-#else
-	if (heap->strtable) {
-#endif
-		for (i = 0; i < (duk_uint_fast32_t) heap->st_size; i++) {
-			duk_hstring *e;
-#if defined(DUK_USE_HEAPPTR16)
-			e = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
-#else
-			e = heap->strtable[i];
-#endif
-			if (e == NULL || e == DUK_STRTAB_DELETED_MARKER(heap)) {
-				continue;
-			}
-			DUK_ASSERT(e != NULL);
-
-			/* strings may have inner refs (extdata) in some cases */
-			duk_free_hstring_inner(heap, (duk_hstring *) e);
-
-			DUK_DDD(DUK_DDDPRINT("FINALFREE (string): %!iO",
-			                     (duk_heaphdr *) e));
-			DUK_FREE(heap, e);
-#if 0  /* not strictly necessary */
-			heap->strtable[i] = NULL;
-#endif
-		}
-#if defined(DUK_USE_HEAPPTR16)
-		DUK_FREE(heap, heap->strtable16);
-#else
-		DUK_FREE(heap, heap->strtable);
-#endif
-#if 0  /* not strictly necessary */
-		heap->strtable = NULL;
-#endif
-	}
+	duk_heap_free_strtab(heap);
 }
 
 DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
@@ -257,6 +220,10 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 
 DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
+
+#if defined(DUK_USE_DEBUG)
+	duk_heap_dump_strtab(heap);
+#endif
 
 	/* Execute finalizers before freeing the heap, even for reachable
 	 * objects, and regardless of whether or not mark-and-sweep is
@@ -547,6 +514,9 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_propvalue);
 	DUK__DUMPSZ(duk_propdesc);
 	DUK__DUMPSZ(duk_heap);
+#if defined(DUK_USE_STRTAB_CHAIN)
+	DUK__DUMPSZ(duk_strtab_entry);
+#endif
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
 	DUK__DUMPSZ(duk_strcache);
@@ -626,13 +596,18 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_D(DUK_DPRINT("allocate heap"));
 
-	/* Debug dump type sizes */
+	/*
+	 *  Debug dump type sizes
+	 */
+
 #ifdef DUK_USE_DEBUG
 	duk__dump_type_sizes();
 	duk__dump_type_limits();
 #endif
 
-	/* If selftests enabled, run them as early as possible. */
+	/*
+	 *  If selftests enabled, run them as early as possible
+	 */
 #ifdef DUK_USE_SELF_TESTS
 	DUK_D(DUK_DPRINT("running self tests"));
 	duk_selftest_run_tests();
@@ -655,6 +630,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	} while (0);
 #endif
 
+	/*
+	 *  Computed values (e.g. INFINITY)
+	 */
+
 #ifdef DUK_USE_COMPUTED_INFINITY
 	do {
 		/* Similar workaround for INFINITY. */
@@ -664,13 +643,21 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	} while (0);
 #endif
 
-	/* use a raw call, all macros expect the heap to be initialized */
+	/*
+	 *  Allocate heap struct
+	 *
+	 *  Use a raw call, all macros expect the heap to be initialized
+	 */
+
 	res = (duk_heap *) alloc_func(alloc_udata, sizeof(duk_heap));
 	if (!res) {
 		goto error;
 	}
 
-	/* zero everything */
+	/*
+	 *  Zero the struct, and start initializing roughly in order
+	 */
+
 	DUK_MEMZERO(res, sizeof(*res));
 
 	/* explicit NULL inits */
@@ -688,16 +675,23 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
 	res->log_buffer = NULL;
-	res->strtable = NULL;
+#if defined(DUK_USE_STRTAB_CHAIN)
+	/* nothing to NULL */
+#elif defined(DUK_USE_STRTAB_PROBE)
+#if defined(DUK_USE_HEAPPTR16)
+	res->strtable16 = (duk_uint16_t *) NULL;
+#else
+	res->strtable = (duk_hstring **) NULL;
+#endif
+#endif
 	{
 		duk_small_uint_t i;
 	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 			res->strs[i] = NULL;
 	        }
 	}
-#endif
+#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
 
-	/* initialize the structure, roughly in order */
 	res->alloc_func = alloc_func;
 	res->realloc_func = realloc_func;
 	res->free_func = free_func;
@@ -743,17 +737,42 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #error initial heap stringtable size is defined incorrectly
 #endif
 
+	/*
+	 *  Init stringtable: fixed variant
+	 */
+
+#if defined(DUK_USE_STRTAB_CHAIN)
+	DUK_MEMZERO(res->strtable, sizeof(duk_strtab_entry) * DUK_STRTAB_CHAIN_SIZE);
+#ifdef DUK_USE_EXPLICIT_NULL_INIT
+	{
+		duk_small_uint_t i;
+	        for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
+#if defined(DUK_USE_HEAPPTR16)
+			res->strtable[i].u.str16 = res->heapptr_null16;
+#else
+			res->strtable[i].u.str = NULL;
+#endif
+	        }
+	}
+#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
+#endif  /* DUK_USE_STRTAB_CHAIN */
+
+	/*
+	 *  Init stringtable: probe variant
+	 */
+
+#if defined(DUK_USE_STRTAB_PROBE)
 #if defined(DUK_USE_HEAPPTR16)
 	res->strtable16 = (duk_uint16_t *) alloc_func(alloc_udata, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
 	if (!res->strtable16) {
 		goto error;
 	}
-#else
+#else  /* DUK_USE_HEAPPTR16 */
 	res->strtable = (duk_hstring **) alloc_func(alloc_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 	if (!res->strtable) {
 		goto error;
 	}
-#endif
+#endif  /* DUK_USE_HEAPPTR16 */
 	res->st_size = DUK_STRTAB_INITIAL_SIZE;
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
@@ -767,15 +786,19 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 	        }
 	}
-#else
+#else  /* DUK_USE_EXPLICIT_NULL_INIT */
 #if defined(DUK_USE_HEAPPTR16)
 	DUK_MEMZERO(res->strtable16, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
 #else
 	DUK_MEMZERO(res->strtable, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
 #endif
-#endif
+#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
+#endif  /* DUK_USE_STRTAB_PROBE */
 
-	/* strcache init */
+	/*
+	 *  Init stringcache
+	 */
+
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	{
 		duk_small_uint_t i;
@@ -791,19 +814,28 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 * passing here could be removed.
 	 */
 
-	/* built-in strings */
+	/*
+	 *  Init built-in strings
+	 */
+
 	DUK_DD(DUK_DDPRINT("HEAP: INIT STRINGS"));
 	if (!duk__init_heap_strings(res)) {
 		goto error;
 	}
 
-	/* heap thread */
+	/*
+	 *  Init the heap thread
+	 */
+
 	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP THREAD"));
 	if (!duk__init_heap_thread(res)) {
 		goto error;
 	}
 
-	/* heap object */
+	/*
+	 *  Init the heap object
+	 */
+
 	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP OBJECT"));
 	DUK_ASSERT(res->heap_thread != NULL);
 	res->heap_object = duk_hobject_alloc(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -813,7 +845,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	DUK_HOBJECT_INCREF(res->heap_thread, res->heap_object);
 
-	/* log buffer */
+	/*
+	 *  Init log buffer
+	 */
+
 	DUK_DD(DUK_DDPRINT("HEAP: INIT LOG BUFFER"));
 	res->log_buffer = (duk_hbuffer_dynamic *) duk_hbuffer_alloc(res,
 	                                                            DUK_BI_LOGGER_SHORT_MSG_LIMIT,
@@ -822,6 +857,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		goto error;
 	}
 	DUK_HBUFFER_INCREF(res->heap_thread, res->log_buffer);
+
+	/*
+	 *  All done
+	 */
 
 	DUK_D(DUK_DPRINT("allocated heap: %p", (void *) res));
 	return res;

@@ -82,4 +82,11 @@
 #endif
 #endif
 
+#if defined(DUK_USE_STRTAB_CHAIN) && defined(DUK_USE_STRTAB_PROBE)
+#error both DUK_USE_STRTAB_CHAIN and DUK_USE_STRTAB_PROBE defined
+#endif
+#if !defined(DUK_USE_STRTAB_CHAIN) && !defined(DUK_USE_STRTAB_PROBE)
+#error neither DUK_USE_STRTAB_CHAIN nor DUK_USE_STRTAB_PROBE is defined
+#endif
+
 #endif  /* DUK_FEATURES_SANITY_H_INCLUDED */

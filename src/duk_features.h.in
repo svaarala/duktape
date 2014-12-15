@@ -2136,6 +2136,19 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  String table options
+ */
+
+#if defined(DUK_OPT_STRTAB_CHAIN) && defined(DUK_OPT_STRTAB_CHAIN_SIZE)
+/* Low memory algorithm: separate chaining using arrays, fixed size hash */
+#define DUK_USE_STRTAB_CHAIN
+#define DUK_USE_STRTAB_CHAIN_SIZE  DUK_OPT_STRTAB_CHAIN_SIZE
+#else
+/* Default algorithm: open addressing (probing) */
+#define DUK_USE_STRTAB_PROBE
+#endif
+
+/*
  *  Error handling options
  */
 

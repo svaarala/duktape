@@ -214,27 +214,27 @@ to you.  They involve some compromises in e.g. performance or compliance
 to reduce memory usage.
 
 DUK_OPT_REFCOUNT16
-==================
+------------------
 
 Use a 16-bit reference count field (for low memory environments).
 
 DUK_OPT_STRHASH16
-=================
+-----------------
 
 Use a 16-bit string hash field (for low memory environments).
 
 DUK_OPT_STRLEN16
-================
+----------------
 
 Use a 16-bit string length field (for low memory environments).
 
 DUK_OPT_BUFLEN16
-================
+----------------
 
 Use a 16-bit buffer length field (for low memory environments).
 
 DUK_OPT_OBJSIZE16
-=================
+-----------------
 
 Use a 16-bit object entry and array part sizes (for low memory environments).
 Also automatically drops support for an object hash part to further reduce
@@ -242,7 +242,7 @@ memory usage; there are rarely large objects in low memory environments simply
 because there's no memory to store a lot of properties.
 
 DUK_OPT_HEAPPTR16, DUK_OPT_HEAPPTR_ENC16, DUK_OPT_HEAPPTR_DEC16
-===============================================================
+---------------------------------------------------------------
 
 Enable "compression" of Duktape heap pointers into an unsigned 16-bit value
 and provide the macros for encoding and decoding a pointer:
@@ -275,7 +275,7 @@ downsides:
   which is much slower than an inline implementation.
 
 DUK_OPT_DATAPTR16, DUK_OPT_DATAPTR_ENC16, DUK_OPT_DATAPTR_DEC16
-===============================================================
+---------------------------------------------------------------
 
 Enable "compression" of arbitrary data pointers into an unsigned 16-bit value
 and provide the macros for encoding and decoding a pointer:
@@ -296,7 +296,7 @@ and provide the macros for encoding and decoding a pointer:
           any data pointers at the moment.
 
 DUK_OPT_FUNCPTR16, DUK_OPT_FUNCPTR_ENC16, DUK_OPT_FUNCPTR_DEC16
-===============================================================
+---------------------------------------------------------------
 
 Enable "compression" of arbitrary C function pointers into an unsigned 16-bit
 value and provide the macros for encoding and decoding a pointer:
@@ -318,7 +318,7 @@ value and provide the macros for encoding and decoding a pointer:
           NULL function pointer.
 
 DUK_OPT_EXTSTR_INTERN_CHECK(ptr,len)
-====================================
+------------------------------------
 
 Provide a hook for checking if data for a certain string can be used from
 external memory (outside of Duktape heap, e.g. memory mapped flash).
@@ -356,7 +356,7 @@ See ``low-memory.rst`` for more discussion how to use this feature option
 in practice.
 
 DUK_OPT_EXTSTR_FREE(ptr)
-========================
+------------------------
 
 Optional counterpart to ``DUK_OPT_EXTSTR_INTERN_CHECK``, with the following
 semantics:
@@ -374,6 +374,28 @@ semantics:
           If/when this is changed, this hook will get called for every string,
           even if pushed by the user using an API call; this may need to be
           rethought at that time.
+
+DUK_OPT_STRTAB_CHAIN, DUK_OPT_STRTAB_CHAIN_SIZE
+-----------------------------------------------
+
+Replace the default (open addressing, probing) string table structure with one
+based on separate chaining.  There is a fixed-size top level hash table (whose
+size is defined using ``DUK_OPT_STRTAB_CHAIN_SIZE``), with each entry in the
+hash table being: (a) NULL, (b) a ``duk_hstring`` pointer, or (c) a pointer
+to an array of ``duk_hstring`` pointers.  The pointer arrays are gappy (the
+gaps are reused on new inserts) and are never shrunk at the moment.
+
+This option is intended for low memory environments to make Duktape's memory
+behavior match a typical pool-based allocator better:
+
+* The top level fixed structure never changes size, so there is no hash table
+  resize, and thus no need for resize temporaries.  The default string table
+  algorithm needs resizing from time to time and doesn't resize in place, so
+  you effectively need twice the string table size temporarily during a resize.
+
+* The pointer arrays vary in size, but their size (typically 8 to 64 bytes,
+  depending on the load factor) matches that of many other allocations which
+  works well with a pooled allocator.
 
 Ecmascript feature options
 ==========================

@@ -79,7 +79,7 @@
  *  happens e.g. in call handling.
  */
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 #define DUK_HEAP_SWITCH_THREAD(heap,newthr)  duk_heap_switch_thread((heap), (newthr))
 #else
 #define DUK_HEAP_SWITCH_THREAD(heap,newthr)  do { \
@@ -151,7 +151,7 @@
  * smaller value.  The default interval must be small enough to allow
  * for reasonable execution timeout checking.
  */
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 #define DUK_HEAP_INTCTR_DEFAULT                           (256L * 1024L)
 #endif
 
@@ -173,9 +173,12 @@
 #define DUK_STRTAB_U32_MAX_STRLEN          10               /* 4'294'967'295 */
 #define DUK_STRTAB_HIGHEST_32BIT_PRIME     0xfffffffbUL
 
-/* probe sequence */
+/* probe sequence (open addressing) */
 #define DUK_STRTAB_HASH_INITIAL(hash,h_size)    ((hash) % (h_size))
 #define DUK_STRTAB_HASH_PROBE_STEP(hash)        DUK_UTIL_GET_HASH_PROBE_STEP((hash))
+
+/* fixed top level hashtable size (separate chaining) */
+#define DUK_STRTAB_CHAIN_SIZE              DUK_USE_STRTAB_CHAIN_SIZE
 
 /*
  *  Built-in strings
@@ -198,10 +201,10 @@
 	((heap)->alloc_func((heap)->alloc_udata, (size)))
 
 #define DUK_REALLOC_RAW(heap,ptr,newsize) \
-	((heap)->realloc_func((heap)->alloc_udata, (ptr), (newsize)))
+	((heap)->realloc_func((heap)->alloc_udata, (void *) (ptr), (newsize)))
 
 #define DUK_FREE_RAW(heap,ptr) \
-	((heap)->free_func((heap)->alloc_udata, (ptr)))
+	((heap)->free_func((heap)->alloc_udata, (void *) (ptr)))
 
 /*
  *  Memory calls: relative to heap, GC interaction, but no error throwing.
@@ -284,6 +287,29 @@ struct duk_ljstate {
 };
 
 /*
+ *  Stringtable entry for fixed size stringtable
+ */
+
+struct duk_strtab_entry {
+#if defined(DUK_USE_HEAPPTR16)
+	/* A 16-bit listlen makes sense with 16-bit heap pointers: there
+	 * won't be space for 64k strings anyway.
+	 */
+	duk_uint16_t listlen;  /* if 0, 'str16' used, if > 0, 'strlist16' used */
+	union {
+		duk_uint16_t strlist16;
+		duk_uint16_t str16;
+	} u;
+#else
+	duk_size_t listlen;  /* if 0, 'str' used, if > 0, 'strlist' used */
+	union {
+		duk_hstring **strlist;
+		duk_hstring *str;
+	} u;
+#endif
+};
+
+/*
  *  Main heap structure
  */
 
@@ -316,14 +342,14 @@ struct duk_heap {
 	 * "finalized"; avoids recursive C calls when refcounts go to zero in a
 	 * chain of objects.
 	 */
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk_heaphdr *refzero_list;
 	duk_heaphdr *refzero_list_tail;
 #endif
 
-#ifdef DUK_USE_MARK_AND_SWEEP
+#if defined(DUK_USE_MARK_AND_SWEEP)
 	/* mark-and-sweep control */
-#ifdef DUK_USE_VOLUNTARY_GC
+#if defined(DUK_USE_VOLUNTARY_GC)
 	duk_int_t mark_and_sweep_trigger_counter;
 #endif
 	duk_int_t mark_and_sweep_recursion_depth;
@@ -364,12 +390,13 @@ struct duk_heap {
 	duk_uint32_t rnd_state;
 
 	/* interrupt counter */
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 	duk_int_t interrupt_init;     /* start value for current countdown */
 	duk_int_t interrupt_counter;  /* countdown state (mirrored in current thread state) */
 #endif
 
 	/* string intern table (weak refs) */
+#if defined(DUK_USE_STRTAB_PROBE)
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t *strtable16;
 #else
@@ -377,6 +404,14 @@ struct duk_heap {
 #endif
 	duk_uint32_t st_size;     /* alloc size in elements */
 	duk_uint32_t st_used;     /* used elements (includes DELETED) */
+#endif
+
+	/* XXX: static alloc is OK until separate chaining stringtable
+	 * resizing is implemented.
+	 */
+#if defined(DUK_USE_STRTAB_CHAIN)
+	duk_strtab_entry strtable[DUK_STRTAB_CHAIN_SIZE];
+#endif
 
 	/* string access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
@@ -411,7 +446,7 @@ DUK_INTERNAL_DECL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_h
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_REFERENCE_COUNTING)
 DUK_INTERNAL_DECL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr);
 #endif
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
 #endif
 
@@ -427,13 +462,18 @@ DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_ui
 DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
 DUK_INTERNAL_DECL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
-DUK_INTERNAL_DECL void duk_heap_force_stringtable_resize(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_heap_force_strtab_resize(duk_heap *heap);
 #endif
+DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap);
+#if defined(DUK_USE_DEBUG)
+DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap);
+#endif
+
 
 DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
 
-#ifdef DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
+#if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 DUK_INTERNAL_DECL void *duk_default_alloc_function(void *udata, duk_size_t size);
 DUK_INTERNAL_DECL void *duk_default_realloc_function(void *udata, void *ptr, duk_size_t newsize);
 DUK_INTERNAL_DECL void duk_default_free_function(void *udata, void *ptr);
@@ -455,7 +495,7 @@ DUK_INTERNAL_DECL void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_
 /* no refcounting */
 #endif
 
-#ifdef DUK_USE_MARK_AND_SWEEP
+#if defined(DUK_USE_MARK_AND_SWEEP)
 DUK_INTERNAL_DECL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 #endif
 

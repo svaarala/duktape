@@ -130,6 +130,8 @@ static void print_pop_error(duk_context *ctx, FILE *f) {
 }
 
 static int wrapped_compile_execute(duk_context *ctx) {
+	const char *src_data;
+	duk_size_t src_len;
 	int comp_flags;
 
 	/* XXX: Here it'd be nice to get some stats for the compilation result
@@ -138,8 +140,18 @@ static int wrapped_compile_execute(duk_context *ctx) {
 	 * the public API.
 	 */
 
+	/* Use duk_compile_lstring_filename() variant which avoids interning
+	 * the source code.  This only really matters for low memory environments.
+	 */
+
+	/* [ ... src_data src_len filename ] */
+
 	comp_flags = 0;
-	duk_compile(ctx, comp_flags);
+	src_data = (const char *) duk_require_pointer(ctx, -3);
+	src_len = (duk_size_t) duk_require_uint(ctx, -2);
+	duk_compile_lstring_filename(ctx, comp_flags, src_data, src_len);
+
+	/* [ ... src_data src_len function ] */
 
 	duk_push_global_object(ctx);  /* 'this' binding */
 	duk_call_method(ctx, 0);
@@ -199,15 +211,17 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 
 	got = fread((void *) buf, (size_t) 1, (size_t) len, f);
 
-	duk_push_lstring(ctx, buf, got);
+	duk_push_pointer(ctx, (void *) buf);
+	duk_push_uint(ctx, (duk_uint_t) got);
 	duk_push_string(ctx, filename);
+
+	interactive_mode = 0;  /* global */
+
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
 
 	free(buf);
 	buf = NULL;
 
-	interactive_mode = 0;  /* global */
-
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 	if (rc != DUK_EXEC_SUCCESS) {
 		print_pop_error(ctx, stderr);
 		goto error;
@@ -253,12 +267,13 @@ static int handle_eval(duk_context *ctx, const char *code) {
 	int rc;
 	int retval = -1;
 
-	duk_push_string(ctx, code);
+	duk_push_pointer(ctx, (void *) code);
+	duk_push_uint(ctx, (duk_uint_t) strlen(code));
 	duk_push_string(ctx, "eval");
 
 	interactive_mode = 0;  /* global */
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
 	if (rc != DUK_EXEC_SUCCESS) {
 		print_pop_error(ctx, stderr);
 	} else {
@@ -311,12 +326,13 @@ static int handle_interactive(duk_context *ctx) {
 			}
 		}
 
-		duk_push_lstring(ctx, buffer, idx);
+		duk_push_pointer(ctx, (void *) buffer);
+		duk_push_uint(ctx, (duk_uint_t) idx);
 		duk_push_string(ctx, "input");
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
 			print_pop_error(ctx, stdout);
@@ -367,17 +383,19 @@ static int handle_interactive(duk_context *ctx) {
 			add_history(buffer);
 		}
 
-		duk_push_lstring(ctx, buffer, strlen(buffer));
+		duk_push_pointer(ctx, (void *) buffer);
+		duk_push_uint(ctx, (duk_uint_t) strlen(buffer));
 		duk_push_string(ctx, "input");
+
+		interactive_mode = 1;  /* global */
+
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
 
 		if (buffer) {
 			free(buffer);
 			buffer = NULL;
 		}
 
-		interactive_mode = 1;  /* global */
-
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 2 /*nargs*/, 1 /*nret*/);
 		if (rc != DUK_EXEC_SUCCESS) {
 			/* in interactive mode, write to stdout */
 			print_pop_error(ctx, stdout);
