@@ -237,7 +237,8 @@ def main():
 	#print(g.serialize(format='turtle'))
 	#print(g.serialize(format='nt'))
 	f = open(outfile, 'wb')
-	f.write(g.serialize(format='rdf/xml'))
+	#f.write(g.serialize(format='rdf/xml'))
+	f.write(g.serialize(format='xml'))
 	f.close()
 
 if __name__ == '__main__':
