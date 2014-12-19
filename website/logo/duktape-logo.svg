@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="logo.svg"
+   sodipodi:docname="duktape-logo.svg"
    inkscape:export-filename="/home/sva/duktape-logo-125x83.png"
    inkscape:export-xdpi="37.5"
    inkscape:export-ydpi="37.5">
@@ -37,7 +37,8 @@
      inkscape:window-height="1059"
      inkscape:window-x="0"
      inkscape:window-y="19"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     borderlayer="true">
     <inkscape:grid
        type="xygrid"
        id="grid2993"
@@ -54,7 +55,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
