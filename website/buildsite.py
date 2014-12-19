@@ -1106,14 +1106,14 @@ def main():
 	for i in [ 'favicon.ico',
 	           'robots.txt',
 	           'startup_image_320x480.png',
-	           'touch_icon_114x114.png',
-	           'touch_icon_120x120.png',
-	           'touch_icon_144x144.png',
-	           'touch_icon_152x152.png',
-	           'touch_icon_57x57.png',
-	           'touch_icon_60x60.png',
-	           'touch_icon_72x72.png' ]:
-		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, i))
+	           'touch-icon/touch_icon_114x114.png',
+	           'touch-icon/touch_icon_120x120.png',
+	           'touch-icon/touch_icon_144x144.png',
+	           'touch-icon/touch_icon_152x152.png',
+	           'touch-icon/touch_icon_57x57.png',
+	           'touch-icon/touch_icon_60x60.png',
+	           'touch-icon/touch_icon_72x72.png' ]:
+		shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
 
 	print 'Copying release binaries'
 	for i in os.listdir(os.path.join('..', 'duktape-releases')):
