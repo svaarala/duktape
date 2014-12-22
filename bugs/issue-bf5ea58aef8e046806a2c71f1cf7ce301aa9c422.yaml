@@ -3,7 +3,7 @@ title: "unify bitops tests: use shared test values and large matrix type tests f
 desc: Add also coercions with side effects to the test value set.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-10-06 20:39:51.492438 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-12-22 16:20:16.959578 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

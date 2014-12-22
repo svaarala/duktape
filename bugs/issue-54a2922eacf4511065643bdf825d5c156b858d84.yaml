@@ -3,7 +3,7 @@ title: "clobber warning: duk_js_call.c:643:12: warning: variable \xE2\x80\x98idx
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -34,4 +34,8 @@ log_events:
 - - 2014-10-13 15:37:13.437614 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v1.0
+  - ""
+- - 2014-12-22 16:20:11.614171 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

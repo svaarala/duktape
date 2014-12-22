@@ -3,7 +3,7 @@ title: "improve double fault handling: avoid writing to value stack"
 desc: Write to longjmp state directly to avoid risk of no space on the valstack.
 type: :feature
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-09-09 11:35:44.706632 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-12-22 16:20:09.865167 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

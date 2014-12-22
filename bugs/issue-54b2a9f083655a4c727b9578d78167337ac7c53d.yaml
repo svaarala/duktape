@@ -13,7 +13,7 @@ desc: |-
   control is a compiler specific feature.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -33,3 +33,7 @@ log_events:
     Once the macros have been defined and applied everywhere in the code base,
     combine_src.py no longer needs to fudge extern/static definitions.  Instead,
     it should probably warn against such occurrences.
+- - 2014-12-22 16:20:14.319196 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
+  - ""

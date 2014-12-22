@@ -3,7 +3,7 @@ title: add a helper script for hunting undesired C typing
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2014-08-13 13:09:43.006555 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-12-22 16:20:10.108683 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

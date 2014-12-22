@@ -3,7 +3,7 @@ title: "add best practices documentation on e.g.: top level pcall wrapping, duk_
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-09-09 11:37:37.295751 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v1.0
+  - ""
+- - 2014-12-22 16:20:06.456852 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

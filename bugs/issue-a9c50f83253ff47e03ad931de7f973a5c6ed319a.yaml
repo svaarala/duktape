@@ -20,7 +20,7 @@ desc: |-
   when they cannot be reliably detected/used.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -36,4 +36,8 @@ log_events:
 - - 2014-09-09 11:31:10.758381 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v0.12
+  - ""
+- - 2014-12-22 16:20:10.852783 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""

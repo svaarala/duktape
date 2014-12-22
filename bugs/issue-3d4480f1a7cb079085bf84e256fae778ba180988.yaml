@@ -10,7 +10,7 @@ desc: |-
   a more concise description of still open issues.
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -22,4 +22,8 @@ log_events:
 - - 2014-08-21 21:56:21.422913 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2014-12-22 16:20:13.148704 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
