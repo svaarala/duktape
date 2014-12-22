@@ -208,12 +208,38 @@ particular order:</p>
 
 <h2>Suggested feature options for some environments</h2>
 
-<ul>
-<li id="timing-sensitive-options">Timing sensitive applications, e.g. games: see
-    <a href="https://github.com/svaarala/duktape/blob/master/doc/timing-sensitive.rst">timing-sensitive.rst</a></li>
-<li id="memory-constrained-options">Memory constrained applications: see
-    <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a></li>
-</ul>
+<h3 id="timing-sensitive-options">Timing sensitive options</h3>
+
+<p>Timing sensitive applications include e.g. games.  For such environments
+steady, predictable performance is important, often more important than
+absolute performance.  Duktape provides some options to improve use in these
+environments; for instance, you can disable automatic mark-and-sweep and rely
+on reference counting and manually requested mark-and-sweep for garbage
+collection.</p>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/timing-sensitive.rst">timing-sensitive.rst</a>
+for suggested feature options.</p>
+
+<h3 id="memory-constrained-options">Memory constrained options</h3>
+
+<p>Duktape can work in 256kB flash memory (code footprint) and 96kB system
+RAM (including Duktape and a minimal OS), and provides a lot of feature
+options to minimize memory footprint.  These feature options are intended
+for systems with less than 256kB of system RAM.</p>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a>
+for suggested feature options.</p>
+
+<h3 id="performance-sensitive-options">Performance sensitive options</h3>
+
+<p>Up to Duktape 1.1 there has been very little performance work.  This will
+change in future versions, with performance work scheduled for spring 2015.</p>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/performance-sensitive.rst">performance-sensitive.rst</a>
+for suggested feature options.</p>
 
 <h2>DUK_OPT_PANIC_HANDLER</h2>
 
