@@ -681,6 +681,14 @@ Planned
 * Fix INVALID opcode error for some labelled non-iteration statements
   (see GH-85)
 
+* Add DUK_OPT_SETJMP, DUK_OPT_UNDERSCORE_SETJMP, and DUK_OPT_SIGSETJMP to
+  force an alternative provider for long control transfers; _setjmp() or
+  sigsetjmp() (with savesigs set to 0) can be a lot faster than setjmp()
+  if the platform's setjmp() implementation saves the signal mask (GH-55)
+
+* Default to ``_setjmp`` for long control transfers on OSX/iPhone (when
+  __APPLE__ is defined) (GH-55)
+
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
 * Better fix for C++ compilation issue caused by Duktape using both
