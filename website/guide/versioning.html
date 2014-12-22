@@ -1,6 +1,6 @@
 <h1 id="versioning">Versioning</h1>
 
-<h2>Semantic versioning</h2>
+<h2 id="semantic-versioning">Semantic versioning</h2>
 
 <p>Duktape follows <a href="http://semver.org/">Semantic Versioning</a>:</p>
 <ul>
@@ -31,7 +31,18 @@
 <li>Extras distributed with Duktape (<code>extras/</code> directory).</li>
 </ul>
 
-<h2>Version naming</h2>
+<h2 id="experimental-features">Experimental features</h2>
+
+<p>Some new features and API calls are marked <b>experimental</b> which means
+that they may change in an incompatible way even in a minor release.<p>
+
+<p>Features may be marked experimental e.g. because they are useful but
+incomplete, or because the best design is not obvious and it's useful to
+gather some feedback before committing to the design.  Typically a feature
+is experimental for one minor release and then, after the necessary changes,
+becomes a fully supported feature.</p>
+
+<h2 id="version-naming">Version naming</h2>
 
 <p>Releases use the form <i>(major).(minor).(patch)</i>, e.g. <b>1.0.3</b>.</p>
 
@@ -61,7 +72,7 @@ then subtracting one for development pre-releases.</p>
 a useful approximation for version comparison: an alpha release will compare
 smaller than the actual release, but higher (or equal) than a previous release.</p>
 
-<h2>Examples</h2>
+<h2 id="versioning-examples">Examples</h2>
 
 <p>The table below provides some examples, in ascending version order:</p>
 <table>
@@ -83,7 +94,7 @@ smaller than the actual release, but higher (or equal) than a previous release.<
 <tr><td>2.0.0</td><td>no</td><td>20000</td><td></td></tr>
 </table>
 
-<h2>Maintenance of stable versions</h2>
+<h2 id="version-maintenance">Maintenance of stable versions</h2>
 
 <p>There's no long term maintenance policy yet: stable versions will get bug
 fixes (patch releases) at least until the next stable version has been
