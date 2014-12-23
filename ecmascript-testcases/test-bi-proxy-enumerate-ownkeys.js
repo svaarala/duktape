@@ -223,7 +223,7 @@ function trapResultTest() {
     gappyArray.length = 30;
     var results = [
         undefined, null, true, false, 123, 'foo',                            // non-object -> TypeError
-        [ 'foo', 'bar', 'quux' ],                                            // array
+        [ 'foo', 'bar', 'quux' ],                                            // array
         { '0': 'foo', '1': 'bar', '2': 'quux', '3': 'baz', 'length': 3 },    // array-like object, 'baz' is skipped (over 'length')
         [ 'foo', undefined, null, true, false, 123, 'quux' ],                // non-string values
         { '0': 'foo', '1': 123, '3': 'quux', 'length': 5 },                  // non-string values and gaps, array-like object

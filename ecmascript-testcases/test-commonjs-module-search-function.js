@@ -163,7 +163,7 @@ function moduleSearchTest() {
     Duktape.modSearch = function (id) {
         print('Duktape.modSearch', id);
         return retVals.shift();
-    };
+    };
 
 
     for (i = 0; i < 8; i++) {

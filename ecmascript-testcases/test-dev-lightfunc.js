@@ -1658,7 +1658,7 @@ function tracebackTest() {
         decodeURIComponent('%x');
     } catch (e) {
         err = e;
-    }
+    }
 
     // heavy sanitization
     print(sanitizeTraceback(err.stack));
