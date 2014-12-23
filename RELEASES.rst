@@ -689,6 +689,9 @@ Planned
 * Default to ``_setjmp`` for long control transfers on OSX/iPhone (when
   __APPLE__ is defined) (GH-55)
 
+* Fix a few missing "volatile" attributes in the bytecode executor which
+  affected setjmp handling in clang (especially for _setjmp and sigsetjmp)
+
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
 * Better fix for C++ compilation issue caused by Duktape using both
