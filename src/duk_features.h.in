@@ -1913,14 +1913,17 @@ typedef FILE duk_file;
 
 /*
  *  DUK_NOINLINE: macro to avoid inlining a function.
- *
- *  This has been added specifically to fix GH-55 and the macro syntax may not
- *  map well to all compilers.
  */
 
 #if defined(DUK_F_CLANG)
 #define DUK_NOINLINE __attribute__ ((noinline))
-#else
+#elif defined(DUK_F_GCC) && defined(DUK_F_GCC_VERSION)
+#if (DUK_F_GCC_VERSION >= 30101)
+#define DUK_NOINLINE __attribute__ ((noinline))
+#endif
+#endif
+
+#if !defined(DUK_NOINLINE)
 #define DUK_NOINLINE /*nop*/
 #endif
 
