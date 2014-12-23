@@ -17,7 +17,6 @@ ptr = duk_require_heapptr(ctx, -3);
 =tags
 stack
 borrowed
-experimental
 
 =seealso
 duk_get_heapptr
