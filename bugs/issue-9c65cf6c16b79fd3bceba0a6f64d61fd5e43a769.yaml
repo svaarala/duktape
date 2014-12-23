@@ -3,7 +3,7 @@ title: "Proxy: implement Object.hasOwnProperty()"
 desc: ""
 type: :task
 component: duk
-release: v1.1
+release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-09-09 11:32:48.054195 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.1 from v1.0
+  - ""
+- - 2014-12-23 23:01:05.059217 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.2 from v1.1
   - ""
