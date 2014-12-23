@@ -2006,7 +2006,7 @@ DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index) {
 	return ret;
 }
 
-DUK_LOCAL void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_small_int_t buf_dynamic, duk_small_int_t buf_dontcare) {
+DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_uint_t mode) {
 	duk_hbuffer *h_buf;
 	const duk_uint8_t *src_data;
 	duk_size_t src_size;
@@ -2016,16 +2016,16 @@ DUK_LOCAL void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t
 
 	h_buf = duk_get_hbuffer(ctx, index);
 	if (h_buf != NULL) {
-		/* Buffer is kept as is: note that fixed/dynamic nature of
-		 * the buffer is not changed.
+		/* Buffer is kept as is, with the fixed/dynamic nature of the
+		 * buffer only changed if requested.
 		 */
-		duk_small_int_t tmp;
+		duk_uint_t tmp;
 
 		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(h_buf);
 		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
 
-		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? 1 : 0);
-		if (((tmp ^ buf_dynamic) == 0) || buf_dontcare) {
+		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? DUK_BUF_MODE_DYNAMIC : DUK_BUF_MODE_FIXED);
+		if (tmp == mode || mode == DUK_BUF_MODE_DONTCARE) {
 			/* Note: src_data may be NULL if input is a zero-size
 			 * dynamic buffer.
 			 */
@@ -2034,13 +2034,14 @@ DUK_LOCAL void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t
 		}
 	} else {
 		/* Non-buffer value is first ToString() coerced, then converted
-		 * to a fixed size buffer.
+		 * to a buffer (fixed buffer is used unless a dynamic buffer is
+		 * explicitly requested).
 		 */
 
 		src_data = (const duk_uint8_t *) duk_to_lstring(ctx, index, &src_size);
 	}
 
-	dst_data = (duk_uint8_t *) duk_push_buffer(ctx, src_size, buf_dynamic);
+	dst_data = (duk_uint8_t *) duk_push_buffer(ctx, src_size, (mode == DUK_BUF_MODE_DYNAMIC) /*dynamic*/);
 	if (DUK_LIKELY(src_size > 0)) {
 		/* When src_size == 0, src_data may be NULL (if source
 		 * buffer is dynamic), and dst_data may be NULL (if
@@ -2056,18 +2057,6 @@ DUK_LOCAL void *duk__to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t
 		*out_size = src_size;
 	}
 	return dst_data;
-}
-
-DUK_EXTERNAL void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
-	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 1 /*buf_dontcare*/);
-}
-
-DUK_EXTERNAL void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
-	return duk__to_buffer_raw(ctx, index, out_size, 0 /*buf_dynamic*/, 0 /*buf_dontcare*/);
-}
-
-DUK_EXTERNAL void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
-	return duk__to_buffer_raw(ctx, index, out_size, 1 /*buf_dynamic*/, 0 /*buf_dontcare*/);
 }
 
 DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
@@ -3413,8 +3402,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode
 }
 #endif
 
-/* XXX: repetition, see duk_push_object */
-DUK_EXTERNAL void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic) {
+DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bool_t dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hbuffer *h;
@@ -3442,14 +3430,6 @@ DUK_EXTERNAL void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t
 	thr->valstack_top++;
 
 	return DUK_HBUFFER_GET_DATA_PTR(h);
-}
-
-DUK_EXTERNAL void *duk_push_fixed_buffer(duk_context *ctx, duk_size_t size) {
-	return duk_push_buffer(ctx, size, 0);
-}
-
-DUK_EXTERNAL void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size) {
-	return duk_push_buffer(ctx, size, 1);
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {

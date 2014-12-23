@@ -383,9 +383,14 @@ DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_er
 	duk_push_error_object_stash  /* arguments follow */
 #endif
 
-DUK_EXTERNAL_DECL void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
-DUK_EXTERNAL_DECL void *duk_push_fixed_buffer(duk_context *ctx, duk_size_t size);
-DUK_EXTERNAL_DECL void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
+DUK_EXTERNAL_DECL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
+
+#define duk_push_buffer(ctx,size,dynamic) \
+	duk_push_buffer_raw((ctx), (size), (dynamic));
+#define duk_push_fixed_buffer(ctx,size) \
+	duk_push_buffer_raw((ctx), (size), 0 /*dynamic*/)
+#define duk_push_dynamic_buffer(ctx,size) \
+	duk_push_buffer_raw((ctx), (size), 1 /*dynamic*/)
 
 DUK_EXTERNAL_DECL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr);
 
@@ -518,13 +523,22 @@ DUK_EXTERNAL_DECL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL const char *duk_to_string(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
-DUK_EXTERNAL_DECL void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
-DUK_EXTERNAL_DECL void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
-DUK_EXTERNAL_DECL void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+DUK_EXTERNAL_DECL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_uint_t flags);
 DUK_EXTERNAL_DECL void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL void duk_to_object(duk_context *ctx, duk_idx_t index);
 DUK_EXTERNAL_DECL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int_t hint);
 DUK_EXTERNAL_DECL void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t hint);
+
+#define DUK_BUF_MODE_FIXED      0   /* internal: request fixed buffer result */
+#define DUK_BUF_MODE_DYNAMIC    1   /* internal: request dynamic buffer result */
+#define DUK_BUF_MODE_DONTCARE   2   /* internal: don't care about fixed/dynamic nature */
+
+#define duk_to_buffer(ctx,index,out_size) \
+	duk_to_buffer_raw((ctx), (index), (out_size), DUK_BUF_MODE_DONTCARE)
+#define duk_to_fixed_buffer(ctx,index,out_size) \
+	duk_to_buffer_raw((ctx), (index), (out_size), DUK_BUF_MODE_FIXED)
+#define duk_to_dynamic_buffer(ctx,index,out_size) \
+	duk_to_buffer_raw((ctx), (index), (out_size), DUK_BUF_MODE_DYNAMIC)
 
 /* safe variants of a few coercion operations */
 DUK_EXTERNAL_DECL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
