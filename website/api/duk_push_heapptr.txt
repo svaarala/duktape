@@ -26,7 +26,6 @@ idx = duk_push_heapptr(ctx, ptr);
 stack
 object
 borrowed
-experimental
 
 =seealso
 duk_get_heapptr
