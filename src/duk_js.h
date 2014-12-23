@@ -89,6 +89,6 @@ DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call
 DUK_INTERNAL_DECL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
 
 /* bytecode execution */
-DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *entry_thread);
+DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *exec_thr);
 
 #endif  /* DUK_JS_H_INCLUDED */

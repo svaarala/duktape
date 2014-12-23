@@ -1442,11 +1442,12 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 	} while (0)
 #endif
 
-DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
-	/* entry level info */
-	duk_size_t entry_callstack_top;
-	duk_int_t entry_call_recursion_depth;
-	duk_jmpbuf *entry_jmpbuf_ptr;
+DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
+	/* entry level info -- volatile, must be guaranteed for error handling */
+	volatile duk_hthread *entry_thread;   /* volatile copy of exec_thr */
+	volatile duk_size_t entry_callstack_top;
+	volatile duk_int_t entry_call_recursion_depth;
+	volatile duk_jmpbuf *entry_jmpbuf_ptr;
 
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
 	duk_hthread *thr;             /* stable */
@@ -1478,14 +1479,14 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 	 *  Preliminaries
 	 */
 
-	DUK_ASSERT(entry_thread != NULL);
-	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR((duk_heaphdr *) entry_thread);
-	DUK_ASSERT(entry_thread->callstack_top >= 1);  /* at least one activation, ours */
-	DUK_ASSERT(DUK_ACT_GET_FUNC(entry_thread->callstack + entry_thread->callstack_top - 1) != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(entry_thread->callstack + entry_thread->callstack_top - 1)));
+	DUK_ASSERT(exec_thr != NULL);
+	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR((duk_heaphdr *) exec_thr);
+	DUK_ASSERT(exec_thr->callstack_top >= 1);  /* at least one activation, ours */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(exec_thr->callstack + exec_thr->callstack_top - 1) != NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(exec_thr->callstack + exec_thr->callstack_top - 1)));
 
-	thr = entry_thread;
-
+	entry_thread = exec_thr;  /* volatile copy */
+	thr = (duk_hthread *) entry_thread;
 	entry_callstack_top = thr->callstack_top;
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
@@ -1540,9 +1541,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *entry_thread) {
 		DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
 		                     (void *) ((thr && thr->heap) ? thr->heap->lj.jmpbuf_ptr : NULL),
 		                     (void *) entry_jmpbuf_ptr));
-		thr->heap->lj.jmpbuf_ptr = entry_jmpbuf_ptr;
+		thr->heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
 
-		lj_ret = duk__handle_longjmp(thr, entry_thread, entry_callstack_top);
+		lj_ret = duk__handle_longjmp(thr, (duk_hthread *) entry_thread, (duk_size_t) entry_callstack_top);
 
 		if (lj_ret == DUK__LONGJMP_RESTART) {
 			/*
