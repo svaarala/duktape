@@ -208,7 +208,7 @@ try {
 #%5B%5D!'()*
 ===*/
 
-/* 15.1.3: Added notes clarifying that ECMAScript‘s URI syntax is based upon RFC 2396
+/* 15.1.3: Added notes clarifying that ECMAScript's URI syntax is based upon RFC 2396
  * and not the newer RFC 3986. In the algorithm for Decode, a step was removed that
  * immediately preceded the current step 4.d.vii.10.a because it tested for a condition
  * that cannot occur.

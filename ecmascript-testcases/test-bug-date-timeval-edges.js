@@ -4,7 +4,7 @@
  *  Ecmascript E5.1 Section 15.9.1.1
  *
  *      The actual range of times supported by ECMAScript Date objects
- *      is slightly smaller: exactly –100,000,000 days to 100,000,000
+ *      is slightly smaller: exactly -100,000,000 days to 100,000,000
  *      days measured relative to midnight at the beginning of 01 January,
  *      1970 UTC. This gives a range of 8,640,000,000,000,000 milliseconds
  *      to either side of 01 January, 1970 UTC.
