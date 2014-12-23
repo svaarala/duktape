@@ -668,7 +668,6 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_siz
 }
 
 DUK_LOCAL
-DUK_NOINLINE  /* Needed to fix crash on OSX, see GH-55. */
 duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
                                      duk_hthread *entry_thread,
                                      duk_size_t entry_callstack_top) {
