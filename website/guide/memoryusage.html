@@ -1,0 +1,29 @@
+<h1 id="memoryusage">Memory usage</h1>
+
+<p>Duktape allocates memory on demand and doesn't require a pre-allocated heap.
+When you create a heap on a 32-bit system, Duktape needs about 45kB for the
+built-in Ecmascript objects (about 22kB with
+<a href="#memory-constrained-options">low memory options</a>).  Additional
+memory is then allocated as needed for executing application scripts.
+Reference counting ensures there is very little unused allocated memory, the
+only exception being objects which participate in reference loops; these are
+collected eventually by mark-and-sweep.</p>
+
+<p>The memory allocations needed by Duktape fall into two basic categories.
+First, there are a lot of small allocations between roughly 16 to 128 bytes
+which are needed for strings, buffers, objects, object property tables, etc.
+Second, there are much fewer larger allocations needed for e.g. Ecmascript
+function bytecode, large strings and buffers, value stacks, the global string
+table, and the Duktape heap object.</p>
+
+<p>For most systems memory usage or the memory allocation pattern is not an
+issue.  On low memory environments, e.g. less than 1MB of system RAM, you may
+want to use a custom allocator to optimize memory usage.  A pool-based
+allocator deals well with the small allocation churn without fragmentation
+issues.  The downside is that you need to tune the memory pool sizes to match
+the concrete allocation patterns.</p>
+
+<p>See <a href="#memory-constrained-options">low memory options</a> and
+<a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a>
+for more discussion on what low memory features exists and how to tune the
+memory pools for low memory systems.</p>
