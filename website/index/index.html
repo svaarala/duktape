@@ -1,6 +1,6 @@
 <div id="front-blurp">
 
-<div class="main-title"><strong>Duktape</strong></div>
+<h1>Duktape</h1>
 
 <p>Duktape is an <b>embeddable Javascript</b> engine,
 with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
@@ -9,7 +9,7 @@ with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
 and <code>duktape.h</code> to your build, and use the Duktape API to call Ecmascript
 functions from C code and vice versa.</p>
 
-<p>Main features:</p>
+<h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
     <ul>
@@ -34,25 +34,40 @@ functions from C code and vice versa.</p>
 <li>Liberal license (MIT)</li>
 </ul>
 
-<p>Current status:</p>
+<h1>Current status</h1>
 <ul>
 <li>Stable</li>
 </ul>
 
-<p>Support:</p>
+<h1>Support</h1>
 <ul>
 <li>User community Q&amp;A: Stack Overflow <a href="http://stackoverflow.com/questions/tagged/duktape">duktape</a> tag</li>
 <li>Bugs and feature requests: <a href="https://github.com/svaarala/duktape/issues">GitHub issues</a></li>
 <li>General discussion: IRC <code>#duktape</code> on <code>chat.freenode.net</code> (<a href="https://webchat.freenode.net/">webchat</a>)</li>
 </ul>
+
+<h1>Some projects using Duktape (alphabetical)</h1>
+<ul>
+<li><a href="https://wiki.allseenalliance.org/_media/training/programming_alljoyn.js.pdf" target="_blank">AllJoyn.js</a>, using Duktape for embedded applications, <a href="https://git.allseenalliance.org/cgit/core/alljoyn-js.git/" target="_blank">git repo</a></li>
+<li><a href="http://store.steampowered.com/app/241240/" target="_blank">Contraption Maker</a>, using Duktape for
+<a href="http://steamcommunity.com/workshop/browse/?appid=241240&amp;requiredtags[]=Mod" target="_blank">mods</a></li>
+<li><a href="http://dukluv.io/" target="_blank">DukLuv.io</a>, libuv bindings for Duktape</li>
+<li><a href="https://github.com/ndob/duktape-node" target="_blank">duktape-node</a>, running scripts in a separate isolated context from Node.js</li>
+<li><a href="https://github.com/judofyr/duktape.rb" target="_blank">duktape.rb</a>, Ruby binding for Duktape</li>
+<li><a href="https://github.com/ldx/libpac" target="_blank">libpac</a>, using Duktape to parse proxy PAC files</li>
+<li><a href="http://www.radare.org/" target="_blank">radare</a>, using Duktape for reverse engineering scripts</li>
+<li><a href="http://rarewire.com/" target="_blank">RareWire</a> application studio</li>
+<li><a href="https://showtimemediacenter.com/" target="_blank">Showtime</a> media center, using Duktape for plugins</li>
+</ul>
+
 </div>  <!-- front-blurp -->
 
 <div id="front-steps">
 
+<h1><span class="step">1</span> Add to build</h1>
+
 (See <a href="guide.html#gettingstarted">Getting started</a> for a more
 detailed introduction.)
-
-<h1><span class="step">1</span> Add to build</h1>
 
 <p>Add Duktape C source and header to your build.  Any build system can
 be used.  The distributable contains an example Makefile for reference.

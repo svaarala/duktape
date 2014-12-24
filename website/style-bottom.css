@@ -5,8 +5,9 @@
 #site-bottom {
 	clear: both;
 	width: 100%;
-	padding: 20px 0px 20px 0px;
+	padding: 18px 0px 20px 0px;
 	border: 0;
+	border-top: 2px solid #dddddd;
 	margin: 10ex 0px 0px 0px;
 	background: #eeeeee;
 	color: #888888;
