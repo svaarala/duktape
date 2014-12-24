@@ -179,13 +179,49 @@ system RAM):
 
   - ``-fpack-struct=1`` or ``-fpack-struct=2``
 
-Notes on low memory measures
+Tuning pool sizes for a pool-based memory allocator
+===================================================
+
+The memory allocations used by Duktape depend on the architecture and
+especially the low memory options used.  So, the safest approach is to
+select the options you want to use and then measure actual allocation
+patterns of various programs.
+
+The memory allocations needed by Duktape fall into two basic categories:
+
+* A lot of small allocations (roughly between 16 and 128 bytes) are needed
+  for strings, buffers, objects, object property tables, etc.  These
+  allocation sizes constitute most of the allocation activity, i.e. allocs,
+  reallocs, and frees.  There's a lot churn (memory being allocated and
+  freed) even when memory usage is nearly constant.
+
+* Much fewer larger allocations with much less activity are needed for
+  Ecmascript function bytecode, large strings and buffers, value stacks,
+  the global string table, and the Duktape heap object.
+
+The ``examples/alloc-logging`` memory allocator can be used to write out
+an allocation log file.  The log file contains every alloc, realloc, and
+free, and will record both new and old sizes for realloc.  This allows you
+to replay the allocation sequence so that you can simulate the behavior of
+pool sizes offline.
+
+You can also get a dump of Duktape's internal struct sizes by enabling
+``DUK_OPT_DPRINT``; Duktape will debug print struct sizes when a heap is
+created.  The struct sizes will give away the minimum size needed by strings,
+buffers, objects, etc.  They will also give you ``sizeof(duk_heap)`` which
+is a large allocation that you should handle explicitly in pool tuning.
+
+Finally, you can look at existing projects and what kind of pool tuning
+they do.  AllJoyn.js has a manually tuned pool allocator which may be a
+useful starting point:
+
+* https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+
+Notes on pointer compression
 ============================
 
-Pointer compression
--------------------
-
-Can be applied throughout (where it matters) for three pointer types:
+Pointer compression can be applied throughout (where it matters) for three
+pointer types:
 
 * Compressed 16-bit Duktape heap pointers, assuming Duktape heap pointers
   can fit into 16 bits, e.g. max 256kB memory pool with 4-byte alignment
@@ -201,7 +237,7 @@ linear, so the required operations are not trivial.  NULL also needs specific
 handling.
 
 External string strategies (DUK_OPT_EXTSTR_INTERN_CHECK)
---------------------------------------------------------
+========================================================
 
 The feature can be used in two basic ways:
 
