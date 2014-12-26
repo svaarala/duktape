@@ -618,9 +618,9 @@ struct duk_propdesc {
 	duk_hobject *set;
 
 	/* for updating (all are set to < 0 for virtual properties) */
-	duk_int_t e_idx;	/* prop index in 'entry part', < 0 if not there */
-	duk_int_t h_idx;	/* prop index in 'hash part', < 0 if not there */
-	duk_int_t a_idx;	/* prop index in 'array part', < 0 if not there */
+	duk_int_t e_idx;  /* prop index in 'entry part', < 0 if not there */
+	duk_int_t h_idx;  /* prop index in 'hash part', < 0 if not there */
+	duk_int_t a_idx;  /* prop index in 'array part', < 0 if not there */
 };
 
 struct duk_hobject {

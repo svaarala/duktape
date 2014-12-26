@@ -587,7 +587,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			const duk_uint8_t *p;
 
 			idx = duk__bc_get_u32(re_ctx, &pc);
-			idx = idx << 1;		/* backref n -> saved indices [n*2, n*2+1] */
+			idx = idx << 1;  /* backref n -> saved indices [n*2, n*2+1] */
 			if (idx < 2 || idx + 1 >= re_ctx->nsaved) {
 				/* regexp compiler should catch these */
 				DUK_D(DUK_DPRINT("internal error, backreference index insane"));

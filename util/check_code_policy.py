@@ -28,6 +28,7 @@ class Problem:
 re_debuglog_callsite = re.compile(r'^.*?(DUK_D+PRINT).*?$')
 re_trailing_ws = re.compile(r'^.*?\s$')
 re_only_ws = re.compile(r'^\s*$')
+re_nonleading_tab = re.compile(r'^.*?[^\t]\t.*?$')  # tabs are only used for indent
 re_identifier = re.compile(r'[A-Za-z0-9_]+')
 re_nonascii = re.compile(r'^.*?[\x80-\xff].*?$')
 re_func_decl_or_def = re.compile(r'^(\w+)\s+(?:\w+\s+)*(\w+)\(.*?.*?$')  # may not finish on same line
@@ -234,6 +235,14 @@ def checkMixedIndent(lines, idx, filename):
 
 	raise Exception('mixed space/tab indent (idx %d)' % idx)
 
+def checkNonLeadingTab(lines, idx, filename):
+	line = lines[idx]
+	m = re_nonleading_tab.match(line)
+	if m is None:
+		return
+
+	raise Exception('non-leading tab (idx %d)' % idx)
+
 def checkFixme(lines, idx, filename):
 	line = lines[idx]
 	if not 'FIXME' in line:
@@ -353,6 +362,7 @@ def main():
 	checkersNoExpectStrings = []
 	checkersNoExpectStrings.append(checkTrailingWhitespace)
 	checkersNoExpectStrings.append(checkMixedIndent)
+	checkersNoExpectStrings.append(checkNonLeadingTab)
 
 	for filename in args:
 		processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings)

@@ -1979,11 +1979,11 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				DUK_DDD(DUK_DDDPRINT("arith inline check: d1=%lf, d2=%lf, op=%ld",
 				                     (double) d1, (double) d2, (long) x->op));
 				switch (x->op) {
-				case DUK_OP_ADD:	d3 = d1 + d2; break;
-				case DUK_OP_SUB:	d3 = d1 - d2; break;
-				case DUK_OP_MUL:	d3 = d1 * d2; break;
-				case DUK_OP_DIV:	d3 = d1 / d2; break;
-				default:		accept = 0; break;
+				case DUK_OP_ADD:  d3 = d1 + d2; break;
+				case DUK_OP_SUB:  d3 = d1 - d2; break;
+				case DUK_OP_MUL:  d3 = d1 * d2; break;
+				case DUK_OP_DIV:  d3 = d1 / d2; break;
+				default:          accept = 0; break;
 				}
 
 				if (accept) {
@@ -3001,11 +3001,11 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	duk_token *tk;
 	duk_reg_t temp_at_entry;
 	duk_small_int_t tok;
-	duk_uint32_t args;	/* temp variable to pass constants and flags to shared code */
+	duk_uint32_t args;  /* temp variable to pass constants and flags to shared code */
 
 	/*
-	 *  ctx->prev_token	token to process with duk__expr_nud()
-	 *  ctx->curr_token	updated by caller
+	 *  ctx->prev_token     token to process with duk__expr_nud()
+	 *  ctx->curr_token     updated by caller
 	 *
 	 *  Note: the token in the switch below has already been eaten.
 	 */
@@ -3552,11 +3552,11 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	duk_context *ctx = (duk_context *) thr;
 	duk_token *tk;
 	duk_small_int_t tok;
-	duk_uint32_t args;	/* temp variable to pass constants and flags to shared code */
+	duk_uint32_t args;  /* temp variable to pass constants and flags to shared code */
 
 	/*
-	 *  ctx->prev_token	token to process with duk__expr_led()
-	 *  ctx->curr_token	updated by caller
+	 *  ctx->prev_token     token to process with duk__expr_led()
+	 *  ctx->curr_token     updated by caller
 	 */
 
 	comp_ctx->curr_func.led_count++;

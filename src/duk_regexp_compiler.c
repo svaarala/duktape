@@ -498,7 +498,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 					 *      SPLIT1 LSEQ
 					 *      (atom)
 					 *      SPLIT1 LSEQ    ; <- the byte length of this instruction is needed
-					 *      (atom)	       ; to encode the above SPLIT1 correctly
+					 *      (atom)         ; to encode the above SPLIT1 correctly
 					 *      ...
 					 *   LSEQ:
 					 */
@@ -943,7 +943,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	 *  Init lexer
 	 */
 
-	lex_point.offset = 0;		/* expensive init, just want to fill window */
+	lex_point.offset = 0;  /* expensive init, just want to fill window */
 	lex_point.line = 1;
 	DUK_LEXER_SETPOINT(&re_ctx.lex, &lex_point);
 
