@@ -447,10 +447,10 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp)
 	 *  The ASCII portion (codepoints 0x00 ... 0x7f) is fast-pathed below because
 	 *  it matters the most.  The ASCII related ranges of IdentifierStart are:
 	 *
-	 *    0x0041 ... 0x005a		['A' ... 'Z']
-	 *    0x0061 ... 0x007a		['a' ... 'z']
-	 *    0x0024			['$']
-	 *    0x005f			['_']
+	 *    0x0041 ... 0x005a     ['A' ... 'Z']
+	 *    0x0061 ... 0x007a     ['a' ... 'z']
+	 *    0x0024                ['$']
+	 *    0x005f                ['_']
 	 */
 
 	/* ASCII (and EOF) fast path -- quick accept and reject */
@@ -502,8 +502,8 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 	 *      UnicodeCombiningMark
 	 *      UnicodeDigit
 	 *      UnicodeConnectorPunctuation
-	 *      <ZWNJ>	[U+200C]
-	 *      <ZWJ>	[U+200D]
+	 *      <ZWNJ>  [U+200C]
+	 *      <ZWJ>   [U+200D]
 	 *
 	 *  IdentifierPart production has one multi-character production
 	 *  as part of its IdentifierStart alternative.  The '\' character
@@ -519,12 +519,12 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 	 *
 	 *  The ASCII fast path consists of:
 	 *
-	 *    0x0030 ... 0x0039		['0' ... '9', UnicodeDigit]
-	 *    0x0041 ... 0x005a		['A' ... 'Z', IdentifierStart]
-	 *    0x0061 ... 0x007a		['a' ... 'z', IdentifierStart]
-	 *    0x0024			['$', IdentifierStart]
-	 *    0x005f			['_', IdentifierStart and
-	 *                               UnicodeConnectorPunctuation]
+	 *    0x0030 ... 0x0039     ['0' ... '9', UnicodeDigit]
+	 *    0x0041 ... 0x005a     ['A' ... 'Z', IdentifierStart]
+	 *    0x0061 ... 0x007a     ['a' ... 'z', IdentifierStart]
+	 *    0x0024                ['$', IdentifierStart]
+	 *    0x005f                ['_', IdentifierStart and
+	 *                                UnicodeConnectorPunctuation]
 	 *
 	 *  UnicodeCombiningMark has no code points <= 0x7f.
 	 *
@@ -595,8 +595,8 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 	 *
 	 *  The ASCII fast path consists of:
 	 *
-	 *    0x0041 ... 0x005a		['A' ... 'Z']
-	 *    0x0061 ... 0x007a		['a' ... 'z']
+	 *    0x0041 ... 0x005a     ['A' ... 'Z']
+	 *    0x0061 ... 0x007a     ['a' ... 'z']
 	 */
 
 	/* ASCII (and EOF) fast path -- quick accept and reject */

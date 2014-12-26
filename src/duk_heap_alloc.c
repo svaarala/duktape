@@ -291,7 +291,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		duk_small_uint_t t;
 
 		len = duk_bd_decode(bd, 5);
-		mode = 32;		/* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
+		mode = 32;  /* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
 		for (j = 0; j < len; j++) {
 			t = duk_bd_decode(bd, 5);
 			if (t < DUK__BITPACK_LETTER_LIMIT) {

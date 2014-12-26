@@ -544,7 +544,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	duk__eat_whitespace(lex_ctx);
 
 	out_token->t = DUK_TOK_EOF;
-	out_token->t_nores = -1;	/* marker: copy t if not changed */
+	out_token->t_nores = -1;  /* marker: copy t if not changed */
 	out_token->num = DUK_DOUBLE_NAN;
 	out_token->str1 = NULL;
 	out_token->str2 = NULL;
@@ -661,11 +661,11 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 *
 			 *      should first be parsed by the lexical grammar as:
 			 *
-			 *          '\' 'u'		RegularExpressionBackslashSequence
-			 *          '1'			RegularExpressionNonTerminator
-			 *          '2'			RegularExpressionNonTerminator
-			 *          '3'			RegularExpressionNonTerminator
-			 *          '4'			RegularExpressionNonTerminator
+			 *          '\' 'u'      RegularExpressionBackslashSequence
+			 *          '1'          RegularExpressionNonTerminator
+			 *          '2'          RegularExpressionNonTerminator
+			 *          '3'          RegularExpressionNonTerminator
+			 *          '4'          RegularExpressionNonTerminator
 			 *
 			 *      and the escape itself is then parsed by the regexp engine.
 			 *      This is the current implementation.
@@ -690,16 +690,16 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 			DUK__INITBUFFER(lex_ctx);
 			for (;;) {
-				DUK__ADVANCE(lex_ctx, 1);	/* skip opening slash on first loop */
+				DUK__ADVANCE(lex_ctx, 1);  /* skip opening slash on first loop */
 				x = DUK__L0();
 				if (x < 0 || duk_unicode_is_line_terminator(x)) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "eof or line terminator while parsing regexp");
 				}
-				x = DUK__L0();	/* re-read to avoid spill / fetch */
+				x = DUK__L0();  /* re-read to avoid spill / fetch */
 				if (state == 0) {
 					if (x == '/') {
-						DUK__ADVANCE(lex_ctx, 1);	/* eat closing slash */
+						DUK__ADVANCE(lex_ctx, 1);  /* eat closing slash */
 						break;
 					} else if (x == '\\') {
 						state = 1;
@@ -730,14 +730,14 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				if (!duk_unicode_is_identifier_part(x)) {
 					break;
 				}
-				x = DUK__L0();	/* re-read to avoid spill / fetch */
+				x = DUK__L0();  /* re-read to avoid spill / fetch */
 				DUK__APPENDBUFFER(lex_ctx, x);
 				DUK__ADVANCE(lex_ctx, 1);
 			}
 			duk__internbuffer(lex_ctx, lex_ctx->slot2_idx);
 			out_token->str2 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
 
-			DUK__INITBUFFER(lex_ctx);	/* free some memory */
+			DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
 			/* validation of the regexp is caller's responsibility */
 
@@ -961,7 +961,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		DUK_ASSERT(str != NULL);
 		out_token->t_nores = DUK_TOK_IDENTIFIER;
 
-		DUK__INITBUFFER(lex_ctx);	/* free some memory */
+		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
 		/*
 		 *  Interned identifier is compared against reserved words, which are
@@ -1054,7 +1054,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 		state = 0;
 		for (;;) {
-			x = DUK__L0();	/* re-lookup curr char on first round */
+			x = DUK__L0();  /* re-lookup curr char on first round */
 			if (DUK__ISDIGIT(x)) {
 				/* Note: intentionally allow leading zeroes here, as the
 				 * actual parser will check for them.
@@ -1110,7 +1110,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		}
 		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* could also just pop? */
 
-		DUK__INITBUFFER(lex_ctx);	/* free some memory */
+		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
 		/* Section 7.8.3 (note): NumericLiteral must be followed by something other than
 		 * IdentifierStart or DecimalDigit.
@@ -1123,19 +1123,19 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		out_token->num = val;
 		advtok = DUK__ADVTOK(0, DUK_TOK_NUMBER);
 	} else if (x == '"' || x == '\'') {
-		duk_small_int_t quote = x;    /* Note: duk_uint8_t type yields larger code */
+		duk_small_int_t quote = x;  /* Note: duk_uint8_t type yields larger code */
 		duk_small_int_t adv;
 
 		DUK__INITBUFFER(lex_ctx);
 		for (;;) {
-			DUK__ADVANCE(lex_ctx, 1);	/* eat opening quote on first loop */
+			DUK__ADVANCE(lex_ctx, 1);  /* eat opening quote on first loop */
 			x = DUK__L0();
 			if (x < 0 || duk_unicode_is_line_terminator(x)) {
 				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 				          "eof or line terminator while parsing string literal");
 			}
 			if (x == quote) {
-				DUK__ADVANCE(lex_ctx, 1);	/* eat closing quote */
+				DUK__ADVANCE(lex_ctx, 1);  /* eat closing quote */
 				break;
 			}
 			if (x == '\\') {
@@ -1151,7 +1151,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				 * length (e.g. len('\uXXXX') - 1 = 6 - 1).  As a default,
 				 * 1 is good.
 				 */
-				adv = 2 - 1;	/* note: long live range */
+				adv = 2 - 1;  /* note: long live range */
 
 				if (x < 0) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -1263,7 +1263,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 
-		DUK__INITBUFFER(lex_ctx);	/* free some memory */
+		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
 		advtok = DUK__ADVTOK(0, DUK_TOK_STRING);
 	} else if (x < 0) {
@@ -1419,7 +1419,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
 		for (;;) {
-			DUK__ADVANCE(lex_ctx, 1);	/* eat '{' on entry */
+			DUK__ADVANCE(lex_ctx, 1);  /* eat '{' on entry */
 			x = DUK__L0();
 			if (DUK__ISDIGIT(x)) {
 				if (digits >= DUK__MAX_RE_QUANT_DIGITS) {
@@ -1446,7 +1446,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				}
 				val2 = val1;
 				val1 = 0;
-				digits = 0;	/* not strictly necessary because of lookahead '}' above */
+				digits = 0;  /* not strictly necessary because of lookahead '}' above */
 			} else if (x == '}') {
 				if (digits == 0) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -1490,7 +1490,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		 * See: test-regexp-identity-escape-dollar.js.
 		 */
 
-		advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);	/* default: char escape (two chars) */
+		advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);  /* default: char escape (two chars) */
 		if (y == 'b') {
 			advtok = DUK__ADVTOK(2, DUK_RETOK_ASSERT_WORD_BOUNDARY);
 		} else if (y == 'B') {
@@ -1551,7 +1551,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 						          "invalid regexp escape (decimal escape too long)");
 					}
-					DUK__ADVANCE(lex_ctx, 1);	/* eat backslash on entry */
+					DUK__ADVANCE(lex_ctx, 1);  /* eat backslash on entry */
 					x = DUK__L0();
 					if (!DUK__ISDIGIT(x)) {
 						break;
@@ -1702,7 +1702,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 			          "eof while parsing character class");
 		} else if (x == ']') {
-			DUK_ASSERT(!dash);	/* lookup should prevent this */
+			DUK_ASSERT(!dash);  /* lookup should prevent this */
 			if (start >= 0) {
 				gen_range(userdata, start, start, 0);
 			}

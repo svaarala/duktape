@@ -77,7 +77,7 @@ struct duk_re_compiler_ctx {
 	duk_uint32_t highest_backref;
 	duk_uint32_t recursion_depth;
 	duk_uint32_t recursion_limit;
-	duk_uint32_t nranges;	/* internal temporary value, used for char classes */
+	duk_uint32_t nranges;  /* internal temporary value, used for char classes */
 };
 
 /*

@@ -368,7 +368,7 @@ struct duk_heap {
 	duk_hthread *heap_thread;
 
 	/* current thread */
-	duk_hthread *curr_thread;	/* currently running thread */
+	duk_hthread *curr_thread;  /* currently running thread */
 
 	/* heap level "stash" object (e.g., various reachability roots) */
 	duk_hobject *heap_object;

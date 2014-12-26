@@ -228,24 +228,24 @@ struct duk_hthread {
 	 */
 
 	/* value stack: these are expressed as pointers for faster stack manipulation */
-	duk_tval *valstack;			/* start of valstack allocation */
-	duk_tval *valstack_end;			/* end of valstack allocation (exclusive) */
-	duk_tval *valstack_bottom;		/* bottom of current frame */
-	duk_tval *valstack_top;			/* top of current frame (exclusive) */
+	duk_tval *valstack;                     /* start of valstack allocation */
+	duk_tval *valstack_end;                 /* end of valstack allocation (exclusive) */
+	duk_tval *valstack_bottom;              /* bottom of current frame */
+	duk_tval *valstack_top;                 /* top of current frame (exclusive) */
 
 	/* call stack */
 	duk_activation *callstack;
-	duk_size_t callstack_size;		/* allocation size */
-	duk_size_t callstack_top;		/* next to use, highest used is top - 1 */
-	duk_size_t callstack_preventcount;	/* number of activation records in callstack preventing a yield */
+	duk_size_t callstack_size;              /* allocation size */
+	duk_size_t callstack_top;               /* next to use, highest used is top - 1 */
+	duk_size_t callstack_preventcount;      /* number of activation records in callstack preventing a yield */
 
 	/* catch stack */
 	duk_catcher *catchstack;
-	duk_size_t catchstack_size;		/* allocation size */
-	duk_size_t catchstack_top;		/* next to use, highest used is top - 1 */
+	duk_size_t catchstack_size;             /* allocation size */
+	duk_size_t catchstack_top;              /* next to use, highest used is top - 1 */
 
 	/* yield/resume book-keeping */
-	duk_hthread *resumer;			/* who resumed us (if any) */
+	duk_hthread *resumer;                   /* who resumed us (if any) */
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
 	/* Interrupt counter for triggering a slow path check for execution
