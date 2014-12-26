@@ -737,6 +737,9 @@ Planned
 
 * Fix several compile warnings with gcc 4.9.2 (GH-91)
 
+* Fix JSON.parse() syntax error for explicitly positive exponents (e.g.
+  '1.5e+2') (GH-93)
+
 1.2.0 (2015-XX-XX)
 ------------------
 
