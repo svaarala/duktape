@@ -437,7 +437,10 @@ DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 
 		if (!((x >= DUK_ASC_0 && x <= DUK_ASC_9) ||
 		      (x == DUK_ASC_PERIOD || x == DUK_ASC_LC_E ||
-		       x == DUK_ASC_UC_E || x == DUK_ASC_MINUS))) {
+		       x == DUK_ASC_UC_E || x == DUK_ASC_MINUS || x == DUK_ASC_PLUS))) {
+			/* Plus sign must be accepted for positive exponents
+			 * (e.g. '1.5e+2').
+			 */
 			break;
 		}
 
