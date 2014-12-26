@@ -703,7 +703,7 @@ compiler-latest.zip:
 closure-compiler:
 	# https://github.com/google/closure-compiler
 	@rm -f v20140814.tar.gz
-	$(WGET) https://github.com/google/closure-compiler/archive/v20140814.tar.gz
+	$(WGET) https://github.com/google/closure-compiler/archive/v20140814.tar.gz -O v20140814.tar.gz
 	tar xfz v20140814.tar.gz
 	mv closure-compiler-20140814 closure-compiler
 	@rm -f v20140814.tar.gz
