@@ -3,7 +3,16 @@
 <p>This section discussed Duktape specific performance characteristics and
 provides some hints to avoid Duktape specific performance pitfalls.</p>
 
-<h2>Duktape performance characteristics</h2>
+<h2 id="performance-overview">Performance overview/<h2>
+
+<p>Duktape is an interpreted engine with currently no JIT support.  It uses
+reference counting which makes memory usage tight at the cost of some execution
+performance.  Overall Duktape performance should be similar to other interpreted
+languages.  However, up to Duktape 1.1 there has been very little performance
+work and Duktape is significantly slower than e.g. Lua right now.  Performance
+work has been scheduled for spring 2015.</p>
+
+<h2 id="performance-characteristics">Duktape performance characteristics</h2>
 
 <h3>String interning</h3>
 
