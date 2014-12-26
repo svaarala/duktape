@@ -735,6 +735,8 @@ Planned
 
 * Add an SPDX 1.2 license into the distributable
 
+* Fix several compile warnings with gcc 4.9.2 (GH-91)
+
 1.2.0 (2015-XX-XX)
 ------------------
 
