@@ -49,16 +49,16 @@ void test(duk_context *ctx) {
 		       (long) i, (long) typeval, (long) typemask);
 
 		switch(duk_get_type(ctx, i)) {
-		case DUK_TYPE_NONE:		printf("none"); break;
-		case DUK_TYPE_UNDEFINED:	printf("undefined"); break;
-		case DUK_TYPE_NULL:		printf("null"); break;
-		case DUK_TYPE_BOOLEAN:		printf("boolean"); break;
-		case DUK_TYPE_NUMBER:		printf("number"); break;
-		case DUK_TYPE_STRING:		printf("string"); break;
-		case DUK_TYPE_OBJECT:		printf("object"); break;
-		case DUK_TYPE_BUFFER:		printf("buffer"); break;
-		case DUK_TYPE_POINTER:		printf("pointer"); break;
-		default:			printf("unknown(%d)", (int) duk_get_type(ctx, i)); break;
+		case DUK_TYPE_NONE:       printf("none"); break;
+		case DUK_TYPE_UNDEFINED:  printf("undefined"); break;
+		case DUK_TYPE_NULL:       printf("null"); break;
+		case DUK_TYPE_BOOLEAN:    printf("boolean"); break;
+		case DUK_TYPE_NUMBER:     printf("number"); break;
+		case DUK_TYPE_STRING:     printf("string"); break;
+		case DUK_TYPE_OBJECT:     printf("object"); break;
+		case DUK_TYPE_BUFFER:     printf("buffer"); break;
+		case DUK_TYPE_POINTER:    printf("pointer"); break;
+		default:                  printf("unknown(%d)", (int) duk_get_type(ctx, i)); break;
 		}
 
 		printf(" bool=%d num=%lf str=%s buf-is-null=%d ptr=%p",
