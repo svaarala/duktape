@@ -970,7 +970,6 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	while (env != NULL) {
-		duk_tval *tv;
 		duk_small_int_t cl;
 		duk_int_t attrs;
 

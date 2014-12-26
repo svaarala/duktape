@@ -409,7 +409,6 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_context *ctx) 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
-	duk_hstring *h_repl;
 	duk_hstring *h_match;
 	duk_hstring *h_search;
 	duk_hobject *h_re;
@@ -467,6 +466,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 		r_start = NULL;
 		r_end = NULL;
 	} else {
+		duk_hstring *h_repl;
+
 		is_repl_func = 0;
 		h_repl = duk_to_hstring(ctx, 1);
 		DUK_ASSERT(h_repl != NULL);
