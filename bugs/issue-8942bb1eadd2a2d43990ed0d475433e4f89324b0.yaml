@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: uninitialized data for HeapDump, caused by non-packed tval v_extra not being set
+desc: ""
+type: :task
+component: duk
+release: v1.1
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2014-12-27 13:26:04.971548 Z
+references: []
+
+id: 8942bb1eadd2a2d43990ed0d475433e4f89324b0
+log_events: 
+- - 2014-12-27 13:26:05.136363 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2014-12-28 18:53:19.111407 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
