@@ -1064,10 +1064,11 @@ typedef double duk_double_t;
 #error DUK_SIZE_MAX is undefined, probably missing SIZE_MAX
 #elif !defined(DUK_SIZE_MAX_COMPUTED)
 #if DUK_SIZE_MAX < 0xffffffffUL
-/* XXX: compare against a lower value; can SIZE_MAX realistically be
- * e.g. 0x7fffffffUL on a 32-bit system?
+/* On some systems SIZE_MAX can be smaller than max unsigned 32-bit value
+ * which seems incorrect if size_t is (at least) an unsigned 32-bit type.
+ * However, it doesn't seem useful to error out compilation if this is the
+ * case.
  */
-#error size_t is too small
 #endif
 #endif
 
