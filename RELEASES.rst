@@ -740,6 +740,9 @@ Planned
 * Fix JSON.parse() syntax error for explicitly positive exponents (e.g.
   '1.5e+2') (GH-93)
 
+* Don't fail compilation if SIZE_MAX is < 0xffffffffUL, to allow compilation
+  on platforms where SIZE_MAX is (apparently) incorrectly defined
+
 1.2.0 (2015-XX-XX)
 ------------------
 
