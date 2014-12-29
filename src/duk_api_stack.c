@@ -1416,6 +1416,23 @@ DUK_EXTERNAL void *duk_get_heapptr(duk_context *ctx, duk_idx_t index) {
 	return (void *) NULL;
 }
 
+DUK_EXTERNAL duk_size_t duk_get_refcount(duk_context *ctx, duk_idx_t index) {
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	duk_heaphdr *hdr;
+
+	hdr = (duk_heaphdr *) duk_get_heapptr(ctx, index);
+	if (hdr) {
+		return (duk_size_t) DUK_HEAPHDR_GET_REFCOUNT(hdr);
+	} else {
+		return 0;
+	}
+#else
+	DUK_UNREF(ctx);
+	DUK_UNREF(index);
+	return 0;
+#endif
+}
+
 DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
