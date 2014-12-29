@@ -25,6 +25,7 @@ duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", (int) argval);
 error
 
 =seealso
+duk_error_va
 duk_throw
 duk_push_error_object
 

@@ -24,5 +24,8 @@ stack
 object
 error
 
+=seealso
+duk_push_error_object_va
+
 =introduced
 1.0.0
