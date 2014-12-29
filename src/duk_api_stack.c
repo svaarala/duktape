@@ -3322,7 +3322,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 	return 0;  /* not reached */
 }
 
-DUK_LOCAL duk_idx_t duk__push_error_object_vsprintf(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
+DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
 	duk_hobject *proto;
@@ -3381,12 +3381,12 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_raw(duk_context *ctx, duk_errcode_t
 	duk_idx_t ret;
 
 	va_start(ap, fmt);
-	ret = duk__push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	ret = duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
 	return ret;
 }
 
-#ifndef DUK_USE_VARIADIC_MACROS
+#if !defined(DUK_USE_VARIADIC_MACROS)
 DUK_EXTERNAL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
 	const char *filename = duk_api_global_filename;
 	duk_int_t line = duk_api_global_line;
@@ -3396,11 +3396,11 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode
 	duk_api_global_filename = NULL;
 	duk_api_global_line = 0;
 	va_start(ap, fmt);
-	ret = duk__push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	ret = duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
 	return ret;
 }
-#endif
+#endif  /* DUK_USE_VARIADIC_MACROS */
 
 DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bool_t dynamic) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -3633,29 +3633,36 @@ DUK_EXTERNAL void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char
 	DUK_PANIC(DUK_ERR_API_ERROR, "fatal handler returned");
 }
 
+DUK_EXTERNAL void duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
+	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
+	duk_throw(ctx);
+}
+
 DUK_EXTERNAL void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	duk__push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
 	duk_throw(ctx);
 }
 
-#ifndef DUK_USE_VARIADIC_MACROS
+#if !defined(DUK_USE_VARIADIC_MACROS)
 DUK_EXTERNAL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
-	const char *filename = duk_api_global_filename;
-	duk_int_t line = duk_api_global_line;
+	const char *filename;
+	duk_int_t line;
 	va_list ap;
 
+	filename = duk_api_global_filename;
+	line = duk_api_global_line;
 	duk_api_global_filename = NULL;
 	duk_api_global_line = 0;
 
 	va_start(ap, fmt);
-	duk__push_error_object_vsprintf(ctx, err_code, filename, line, fmt, ap);
+	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
 	duk_throw(ctx);
 }
-#endif
+#endif  /* DUK_USE_VARIADIC_MACROS */
 
 /*
  *  Comparison

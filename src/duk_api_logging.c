@@ -8,8 +8,7 @@
 
 #include "duk_internal.h"
 
-DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
-	va_list ap;
+DUK_EXTERNAL void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap) {
 	/* stridx_logfunc[] must be static to allow initializer with old compilers like BCC */
 	static const duk_uint16_t stridx_logfunc[6] = {
 		DUK_STRIDX_LC_TRACE, DUK_STRIDX_LC_DEBUG, DUK_STRIDX_LC_INFO,
@@ -29,9 +28,7 @@ DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ..
 
 	/* [ ... Logger clog logfunc clog ] */
 
-	va_start(ap, fmt);
 	duk_push_vsprintf(ctx, fmt, ap);
-	va_end(ap);
 
 	/* [ ... Logger clog logfunc clog(=this) msg ] */
 
@@ -40,4 +37,12 @@ DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ..
 	/* [ ... Logger clog res ] */
 
 	duk_pop_3(ctx);
+}
+
+DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
+	va_list ap;
+
+	va_start(ap, fmt);
+	duk_log_va(ctx, level, fmt, ap);
+	va_end(ap);
 }
