@@ -6,7 +6,7 @@ name: RangeError
 message: range error: 123
 code: undefined
 fileName is a string: 1
-lineNumber: 34
+lineNumber: 43
 isNative: undefined
 *** test_2 (duk_pcall)
 ==> rc=1
@@ -15,7 +15,7 @@ name: Error
 message: arbitrary error code
 code: undefined
 fileName is a string: 1
-lineNumber: 43
+lineNumber: 52
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
@@ -24,7 +24,16 @@ name: TypeError
 message: 105
 code: undefined
 fileName is a string: 1
-lineNumber: 53
+lineNumber: 62
+isNative: undefined
+*** test_4 (duk_pcall)
+==> rc=1
+ToString(error): RangeError: my error 123 234 foobar
+name: RangeError
+message: my error 123 234 foobar
+code: undefined
+fileName is a string: 1
+lineNumber: 73
 isNative: undefined
 ===*/
 
@@ -51,6 +60,24 @@ static duk_ret_t test_3(duk_context *ctx) {
 
 	/* error code replaces message automatically now if message is NULL */
 	duk_error(ctx, DUK_ERR_TYPE_ERROR, NULL);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* Vararg */
+static void my_error(duk_context *ctx, duk_errcode_t errcode, const char *fmt, ...) {
+	va_list ap;
+
+	va_start(ap, fmt);
+	duk_error_va(ctx, errcode, fmt, ap);
+	va_end(ap);
+}
+
+static duk_ret_t test_4(duk_context *ctx) {
+	duk_set_top(ctx, 0);
+
+	my_error(ctx, DUK_ERR_RANGE_ERROR, "my error %d %d %s", 123, 234, "foobar");
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
@@ -104,4 +131,5 @@ void test(duk_context *ctx) {
 	TEST(test_1);
 	TEST(test_2);
 	TEST(test_3);
+	TEST(test_4);
 }

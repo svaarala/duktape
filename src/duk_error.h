@@ -60,9 +60,9 @@
  */
 
 #define DUK_ERROR  \
-	duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
-	duk_err_line_stash = (duk_int_t) DUK_LINE_MACRO, \
-	(void) duk_err_handle_error_stash  /* arguments follow */
+	(void) (duk_err_file_stash = (const char *) DUK_FILE_MACRO, \
+	        duk_err_line_stash = (duk_int_t) DUK_LINE_MACRO, \
+	        duk_err_handle_error_stash)  /* arguments follow */
 #define DUK_ERROR_RAW                             duk_err_handle_error
 
 #endif  /* DUK_USE_VARIADIC_MACROS */

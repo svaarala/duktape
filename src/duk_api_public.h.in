@@ -252,11 +252,13 @@ DUK_EXTERNAL_DECL void duk_gc(duk_context *ctx, duk_uint_t flags);
  */
 
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_throw(duk_context *ctx));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg));
 
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...));
+
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_error(ctx,err_code,...)  \
-	duk_error_raw((ctx), (duk_errcode_t) (err_code), __FILE__, (duk_int_t) __LINE__, __VA_ARGS__)
+	duk_error_raw((ctx), (duk_errcode_t) (err_code), (const char *) (__FILE__), (duk_int_t) (__LINE__), __VA_ARGS__)
 #else
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
 /* One problem with this macro is that expressions like the following fail
@@ -264,12 +266,14 @@ DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_stash(duk_context *ctx, duk_er
  * they make little sense anyway.
  */
 #define duk_error  \
-	duk_api_global_filename = __FILE__, \
-	duk_api_global_line = (duk_int_t) __LINE__, \
-	duk_error_stash  /* arguments follow */
+	(duk_api_global_filename = (const char *) (__FILE__), \
+	 duk_api_global_line = (duk_int_t) (__LINE__), \
+	 duk_error_stash)  /* last value is func pointer, arguments follow in parens */
 #endif
 
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap));
+#define duk_error_va(ctx,err_code,fmt,ap)  \
+	duk_error_va_raw((ctx), (duk_errcode_t) (err_code), (const char *) (__FILE__), (duk_int_t) (__LINE__), (fmt), (ap))
 
 /*
  *  Other state related functions
@@ -372,16 +376,22 @@ DUK_EXTERNAL_DECL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t fla
 	duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
 
 DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...);
+
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_push_error_object(ctx,err_code,...)  \
-	duk_push_error_object_raw((ctx),(err_code),__FILE__,__LINE__,__VA_ARGS__)
+	duk_push_error_object_raw((ctx), (err_code), (const char *) (__FILE__), (duk_int_t) (__LINE__), __VA_ARGS__)
 #else
 DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
+/* Note: parentheses are required so that the comma expression works in assignments. */
 #define duk_push_error_object  \
-	duk_api_global_filename = __FILE__, \
-	duk_api_global_line = __LINE__, \
-	duk_push_error_object_stash  /* arguments follow */
+	(duk_api_global_filename = (const char *) (__FILE__), \
+	 duk_api_global_line = (duk_int_t) (__LINE__), \
+	 duk_push_error_object_stash)  /* last value is func pointer, arguments follow in parens */
 #endif
+
+DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap);
+#define duk_push_error_object_va(ctx,err_code,fmt,ap)  \
+	duk_push_error_object_va_raw((ctx), (err_code), (const char *) (__FILE__), (duk_int_t) (__LINE__), (fmt), (ap))
 
 DUK_EXTERNAL_DECL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
 
@@ -690,19 +700,19 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
 
 /* plain */
 #define duk_eval(ctx)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL))
 
 #define duk_eval_noresult(ctx)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT))
 
 #define duk_peval(ctx)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE))
 
 #define duk_peval_noresult(ctx)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), NULL, 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT))
 
 #define duk_compile(ctx,flags)  \
@@ -713,30 +723,30 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
 
 /* string */
 #define duk_eval_string(ctx,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), (src), 0, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 #define duk_eval_string_noresult(ctx,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), (src), 0, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NORESULT))
 
 #define duk_peval_string(ctx,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), (src), 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 #define duk_peval_string_noresult(ctx,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), (src), 0, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NORESULT))
 
 #define duk_compile_string(ctx,flags,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_compile_raw((ctx), (src), 0, (flags) | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 #define duk_compile_string_filename(ctx,flags,src)  \
 	((void) duk_compile_raw((ctx), (src), 0, (flags) | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 #define duk_pcompile_string(ctx,flags,src)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_compile_raw((ctx), (src), 0, (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 #define duk_pcompile_string_filename(ctx,flags,src)  \
@@ -744,30 +754,30 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
 
 /* lstring */
 #define duk_eval_lstring(ctx,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE))
 
 #define duk_eval_lstring_noresult(ctx,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_peval_lstring(ctx,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_SAFE))
 
 #define duk_peval_lstring_noresult(ctx,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_eval_raw((ctx), buf, len, DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT))
 
 #define duk_compile_lstring(ctx,flags,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 (void) duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_NOSOURCE))
 
 #define duk_compile_lstring_filename(ctx,flags,buf,len)  \
 	((void) duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_NOSOURCE))
 
 #define duk_pcompile_lstring(ctx,flags,buf,len)  \
-	((void) duk_push_string((ctx), __FILE__), \
+	((void) duk_push_string((ctx), (const char *) (__FILE__)), \
 	 duk_compile_raw((ctx), buf, len, (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE))
 
 #define duk_pcompile_lstring_filename(ctx,flags,buf,len)  \
@@ -809,6 +819,7 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
  */
 
 DUK_EXTERNAL_DECL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...);
+DUK_EXTERNAL_DECL void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap);
 
 /*
  *  Debugging

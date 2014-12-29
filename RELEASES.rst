@@ -667,6 +667,9 @@ Planned
   to get borrowed void pointer references to Duktape heap objects
   (objects, strings, buffers)
 
+* Add vararg variants duk_error_va(), duk_push_error_object_va(), and
+  duk_log_va()
+
 * Add DUK_GIT_DESCRIBE macro to the C API (with no Ecmascript equivalent)
   to allow application code to e.g. log more detailed version information
   relevant for non-official snapshot builds
@@ -742,6 +745,9 @@ Planned
 
 * Don't fail compilation if SIZE_MAX is < 0xffffffffUL, to allow compilation
   on platforms where SIZE_MAX is (apparently) incorrectly defined
+
+* Fix duk_push_error_object() return value for platforms where variadic
+  macros are not available
 
 1.2.0 (2015-XX-XX)
 ------------------

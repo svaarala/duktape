@@ -644,6 +644,43 @@ unwieldy.
 Portability concerns
 ====================
 
+No variadic macros
+------------------
+
+Lack of variadic macros can be worked around by using comma expressions.
+The ``duk_push_error_object()`` API call is a good example.  Without
+variadic macros it's defined as::
+
+    DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
+    /* Note: parentheses are required so that the comma expression works in assignments. */
+    #define duk_push_error_object  \
+            (duk_api_global_filename = __FILE__, \
+            duk_api_global_line = (duk_int_t) (__LINE__), \
+            duk_push_error_object_stash)  /* last value is func pointer, arguments follow in parens */
+
+When you call it as::
+
+    int err_idx = duk_push_error_object(ctx, 123, "foo %s", "bar");
+
+It gets expanded to::
+
+    int err_idx = (duk_api_global_filename = __FILE__, \
+                   duk_api_global_line = (duk_int_t) (__LINE__), \
+                   duk_push_error_object_stash) (ctx, 123, "foo %s", "bar");
+
+The comma expression is evaluated in order performing the stash assignments.
+The final expression is a function pointer (``duk_push_error_object_stash``),
+and the parenthesized argument list is used to call the function.
+
+Note that the parentheses around the comma expression are required.  This would
+not work::
+
+    int err_idx = duk_api_global_filename = __FILE__, \
+                  duk_api_global_line = (duk_int_t) (__LINE__), \
+                  duk_push_error_object_stash (ctx, 123, "foo %s", "bar");
+
+The problem is that ``__FILE__`` gets assigned to err_idx.
+
 Missing or broken platform functions
 ------------------------------------
 

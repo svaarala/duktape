@@ -10,6 +10,9 @@ built-in logging facility, see
 =example
 duk_log(ctx, DUK_LOG_INFO, "received message, type: %d", (int) msg_type);
 
+=seealso
+duk_log_va
+
 =tags
 log
 

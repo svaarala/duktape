@@ -1,0 +1,25 @@
+=proto
+void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap);
+
+=summary
+<p>Vararg variant of
+<code><a href="#duk_log">duk_log()</a></code>.</p>
+
+=example
+void my_log_info(duk_context *ctx, const char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    duk_log_va(ctx, DUK_LOG_INFO, fmt, ap);
+    va_end(ap);
+}
+
+=tags
+log
+vararg
+
+=seealso
+duk_log
+
+=introduced
+1.1.0
