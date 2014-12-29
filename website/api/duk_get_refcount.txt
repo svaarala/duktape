@@ -1,0 +1,31 @@
+=proto
+duk_size_t duk_get_refcount(duk_context *ctx, duk_idx_t index);
+
+=stack
+[ ... val! ... ]
+
+=summary
+<p>Get the internal reference count of a Duktape heap allocated value (object,
+buffer, string) at <code>index</code>.  Returns zero if the value is not heap
+allocated, the index is invalid, or Duktape has been compiled without reference
+counting.</p>
+
+<div class="note">
+Avoid using this API call unless you have a really good reason to use it.
+</div>
+
+=example
+duk_push_string(ctx, "dummy test");
+printf("refcount: %ld\n", (long) duk_get_refcount(ctx, -1));
+
+=tags
+stack
+experimental
+
+=seealso
+duk_get_heapptr
+duk_require_heapptr
+duk_push_heapptr
+
+=introduced
+1.2.0
