@@ -649,8 +649,8 @@ try {
 
 /*===
 toBuffer() test
-buffer 44: function light_PTR_0511() {(* light *)}
-buffer 44: function light_PTR_0a11() {(* light *)}
+buffer: function light_PTR_0511() {(* light *)}
+buffer: function light_PTR_0a11() {(* light *)}
 ===*/
 
 function toBufferTest() {
@@ -667,7 +667,7 @@ function toBufferTest() {
     function printbuf(x) {
         var tmp = [];
         var i;
-        tmp.push(typeof x + ' '  + x.length + ': ');
+        tmp.push(typeof x + ': ');  // avoid printing length, depends on ptr length
         for (i = 0; i < x.length; i++) {
             if (x[i] >= 0x20 && x[i] <= 0x7e) {
                 tmp.push(String.fromCharCode(x[i]));
@@ -2097,7 +2097,7 @@ try {
 }
 
 /*===
-setPrototypeOfTest()
+setPrototypeOf() test
 TypeError
 TypeError
 TypeError
