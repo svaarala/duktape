@@ -404,9 +404,9 @@ DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
 
 		if (e->listlen == 0) {
 #if defined(DUK_USE_HEAPPTR16)
-			DUK_PRINTF("[%03d] -> plain %d\n", (int) i, (int) (e->u.str16 != null16 ? 1 : 0));
+			DUK_D(DUK_DPRINT("[%03d] -> plain %d", (int) i, (int) (e->u.str16 != null16 ? 1 : 0)));
 #else
-			DUK_PRINTF("[%03d] -> plain %d\n", (int) i, (int) (e->u.str ? 1 : 0));
+			DUK_D(DUK_DPRINT("[%03d] -> plain %d", (int) i, (int) (e->u.str ? 1 : 0)));
 #endif
 		} else {
 			used = 0;
@@ -420,12 +420,12 @@ DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
 #if defined(DUK_USE_HEAPPTR16)
 				if (lst[j] != null16) {
 #else
-				if (list[j] != NULL) {
+				if (lst[j] != NULL) {
 #endif
 					used++;
 				}
 			}
-			DUK_PRINTF("[%03d] -> array %d/%d\n", (int) i, (int) used, (int) e->listlen);
+			DUK_D(DUK_DPRINT("[%03d] -> array %d/%d", (int) i, (int) used, (int) e->listlen));
 		}
 	}
 }
@@ -807,7 +807,7 @@ DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
 		h = heap->strtable[i];
 #endif
 
-		DUK_PRINTF("[%03d] -> %p\n", (int) i, (void *) h);
+		DUK_D(DUK_DPRINT("[%03d] -> %p", (int) i, (void *) h));
 	}
 }
 #endif  /* DUK_USE_DEBUG */
