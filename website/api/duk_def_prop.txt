@@ -1,0 +1,142 @@
+=proto
+void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_uint_t flags);
+
+=stack
+[ ... obj! ... key! ] -> [ ... obj! ... ]  (if have no value, setter, getter)
+[ ... obj! ... key! value! ] -> [ ... obj! ... ]  (if have value)
+[ ... obj! ... key! getter! ] -> [ ... obj! ... ]  (if have getter, but no setter)
+[ ... obj! ... key! setter! ] -> [ ... obj! ... ]  (if have setter, but no getter)
+[ ... obj! ... key! getter! setter! ] -> [ ... obj! ... ]  (if have both getter and setter)
+
+=summary
+<p>Create or alter the attributes of property <code>key</code> of object at
+<code>obj_index</code>, with semantics like
+<code><a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.6">Object.defineProperty()</a></code>.
+When the requested change is not allowed (e.g. property is not configurable), a
+<code>TypeError</code> is thrown.  If the target is not an object (or the
+index is invalid) an error is thrown.</p>
+
+<p>The flags field provides "have" flags to indicate what property attributes
+are changed (this models the partial property descriptors allowed by
+<code>Object.defineProperty()</code>).  Values for the writable, configurable,
+and enumerable attributes are given in the flags field, while property value,
+getter, and setter are given as value stack arguments.  When creating a new
+property, missing attribute values cause
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.1">Ecmascript defaults</a>
+to be used (false for all boolean attributes, undefined for value, getter, setter);
+when modifying an existing property missing attribute values mean that existing
+attribute values are not touched.</p>
+
+<p>With the <code>DUK_DEFPROP_FORCE</code> flag property changes can be forced
+even when an operation would normally fail due to a non-extensible target object
+or a non-configurable property.  This cannot be done from Ecmascript code with
+<code>Object.defineProperty()</code> and is useful for e.g. sandboxing setup.
+In some cases even a forced change is not possible and will cause an error to be
+thrown.  For instance, properties implemented internally as virtual properties
+(such as string "length" and index properties) cannot be modified because they
+don't have concrete internal storage and thus no way of recording changes.</p>
+
+<p>Some examples (see further examples below):</p>
+<ul>
+<li>To set the writable attribute, set flags to
+    <code>DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE</code>.</li>
+<li>To clear the writable attribute, set flags to
+    <code>DUK_DEFPROP_HAVE_WRITABLE</code>.</li>
+<li>To set value, clear writable, and set enumerable, set flags to
+    <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE</code>
+    and provide the property value as a stack argument.</li>
+<li>To forcibly set the value of a non-configurable property, set flags to
+    <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE</code> and provide the
+    new property value as a stack argument.</li>
+</ul>
+
+<p>This API call is useful for various things:</p>
+<ul>
+<li>To create properties with non-default attributes directly from C code.</li>
+<li>To create accessor (getter/setter) properties directly from C code.</li>
+<li>To modify the property attributes of existing properties directly from C code.</li>
+</ul>
+
+<p>See API testcase
+<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-def-prop.c">test-def-prop.c</a>
+for more examples.</p>
+
+=example
+duk_idx_t obj_idx = /* ... */;
+
+/* Create an ordinary property which is writable and configurable, but
+ * not enumerable.
+ */
+
+duk_push_string(ctx, "my_prop_1");
+duk_push_int(ctx, 123);  /* prop value */
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_VALUE |
+             DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE |
+             DUK_DEFPROP_HAVE_ENUMERABLE | 0 |
+             DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE);
+
+/* Change the property value and make it non-writable.  Don't touch other
+ * attributes.
+ */
+
+duk_push_string(ctx, "my_prop_1");
+duk_push_int(ctx, 321);
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_VALUE |
+             DUK_DEFPROP_HAVE_WRITABLE | 0);
+
+/* Make the property non-configurable, don't touch value or other attributes. */
+
+duk_push_string(ctx, "my_prop_1");
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_CONFIGURABLE | 0);
+
+/* Create an accessor property which is non-configurable and non-enumerable.
+ * Attribute flags are not given so they default to Ecmascript defaults
+ * (false) automatically.
+ */
+
+duk_push_string(ctx, "my_accessor_1");
+duk_push_c_function(ctx, my_getter, 0 /*nargs*/);
+duk_push_c_function(ctx, my_setter, 1 /*nargs*/);
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_GETTER |
+             DUK_DEFPROP_HAVE_SETTER);
+
+/* Create an accessor property which is non-configurable but enumerable.
+ * Attribute flags are given explicitly which is easier to read without
+ * knowing about Ecmascript attribute default values.
+ */
+
+duk_push_string(ctx, "my_accessor_2");
+duk_push_c_function(ctx, my_getter, 0 /*nargs*/);
+duk_push_c_function(ctx, my_setter, 1 /*nargs*/);
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_GETTER |
+             DUK_DEFPROP_HAVE_SETTER |
+             DUK_DEFPROP_HAVE_CONFIGURABLE |  /* clear */
+             DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE);  /* set */
+
+/* Change the value of a non-configurable property by force. */
+duk_push_string(ctx, "my_nonconfigurable_prop");
+duk_push_value(ctx, 321);
+duk_def_prop(ctx,
+             obj_idx,
+             DUK_DEFPROP_HAVE_VALUE |
+             DUK_DEFPROP_FORCE);
+
+=tags
+property
+sandbox
+experimental
+
+=seealso
+
+=introduced
+1.1.0

@@ -104,9 +104,25 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 
 <h2>Compilation flags for duk_compile()</h2>
 <pre class="c-code">
+/* Compilation flags for duk_compile() and duk_eval() */
 #define DUK_COMPILE_EVAL                  (1 &lt;&lt; 0)    /* compile eval code (instead of program) */
 #define DUK_COMPILE_FUNCTION              (1 &lt;&lt; 1)    /* compile function code (instead of program) */
 #define DUK_COMPILE_STRICT                (1 &lt;&lt; 2)    /* use strict (outer) context for program, eval, or function */
+</pre>
+
+<h2>Flags for duk_def_prop()</h2>
+<pre class="c-code">
+/* Flags for duk_def_prop() and its variants */
+#define DUK_DEFPROP_WRITABLE              (1 &lt;&lt; 0)    /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
+#define DUK_DEFPROP_ENUMERABLE            (1 &lt;&lt; 1)    /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set) */
+#define DUK_DEFPROP_CONFIGURABLE          (1 &lt;&lt; 2)    /* set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set) */
+#define DUK_DEFPROP_HAVE_WRITABLE         (1 &lt;&lt; 3)    /* set/clear writable */
+#define DUK_DEFPROP_HAVE_ENUMERABLE       (1 &lt;&lt; 4)    /* set/clear enumerable */
+#define DUK_DEFPROP_HAVE_CONFIGURABLE     (1 &lt;&lt; 5)    /* set/clear configurable */
+#define DUK_DEFPROP_HAVE_VALUE            (1 &lt;&lt; 6)    /* set value (given on value stack) */
+#define DUK_DEFPROP_HAVE_GETTER           (1 &lt;&lt; 7)    /* set getter (given on value stack) */
+#define DUK_DEFPROP_HAVE_SETTER           (1 &lt;&lt; 8)    /* set setter (given on value stack) */
+#define DUK_DEFPROP_FORCE                 (1 &lt;&lt; 9)    /* force change if possible, may still fail for e.g. virtual properties */
 </pre>
 
 <h2>Enumeration flags for duk_enum()</h2>
@@ -130,11 +146,13 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 
 <h2>Flags for duk_push_thread_raw()</h2>
 <pre class="c-code">
+/* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 &lt;&lt; 0)    /* create a new global environment */
 </pre>
 
 <h2>Log levels</h2>
 <pre class="c-code">
+/* Log levels */
 #define  DUK_LOG_TRACE                    0
 #define  DUK_LOG_DEBUG                    1
 #define  DUK_LOG_INFO                     2
