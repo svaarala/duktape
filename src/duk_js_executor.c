@@ -1517,20 +1517,21 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 		duk_small_uint_t lj_ret;
 
+		DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
+
+		/* Relookup 'thr': it's not volatile so its value is not
+		 * guaranteed.  The heap->curr_thread value should always be
+		 * valid here because longjmp callers don't switch threads,
+		 * only the longjmp handler does that (even for RESUME and
+		 * YIELD).
+		 */
+		DUK_ASSERT(entry_thread != NULL);
+		thr = entry_thread->heap->curr_thread;
+
 		/* XXX: signalling the need to shrink check (only if unwound) */
 
-		DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor, thr=%p, curr_thread=%p",
-		                     (void *) thr, (void *) ((thr && thr->heap) ? thr->heap->curr_thread : NULL)));
-
-		/* must be restored here to handle e.g. yields properly */
+		/* Must be restored here to handle e.g. yields properly. */
 		thr->heap->call_recursion_depth = entry_call_recursion_depth;
-
-		/* Longjmp callers should not switch threads, the longjmp handler
-		 * does that (even for RESUME and YIELD).
-		 */
-
-		DUK_ASSERT(thr != NULL);
-		DUK_ASSERT(thr == thr->heap->curr_thread);
 
 		/* Switch to caller's setjmp() catcher so that if an error occurs
 		 * during error handling, it is always propagated outwards instead
@@ -1589,10 +1590,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
  restart_execution:
 
-	/* Lookup current thread; note that we can use 'thr' for this even
-	 * though it is not the current thread (any thread will do).
+	/* Lookup current thread; use the volatile 'entry_thread' for this to
+	 * avoid clobber warnings.  (Any valid, reachable 'thr' value would be
+	 * fine for this, so using 'entry_thread' is just to silence warnings.)
 	 */
-	thr = thr->heap->curr_thread;
+	thr = entry_thread->heap->curr_thread;
 #ifdef DUK_USE_INTERRUPT_COUNTER
 	thr->interrupt_counter = thr->heap->interrupt_counter;
 #endif
