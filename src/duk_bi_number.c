@@ -79,7 +79,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
 
 	duk_dup(ctx, 0);  /* -> [ val obj val ] */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	return 0;  /* no return value -> don't replace created value */
 }
 

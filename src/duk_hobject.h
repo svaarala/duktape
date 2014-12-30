@@ -758,7 +758,9 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
 
 /* internal property functions */
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_bool_t throw_flag);
+#define DUK_DELPROP_FLAG_THROW  (1 << 0)
+#define DUK_DELPROP_FLAG_FORCE  (1 << 1)
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
@@ -767,9 +769,24 @@ DUK_INTERNAL_DECL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj
 DUK_INTERNAL_DECL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);  /* XXX: duk_uarridx_t? */
 
+/* helpers for defineProperty() and defineProperties() */
+DUK_INTERNAL_DECL
+void duk_hobject_prepare_property_descriptor(duk_context *ctx,
+                                             duk_idx_t idx_in,
+                                             duk_uint_t *out_defprop_flags,
+                                             duk_idx_t *out_idx_value,
+                                             duk_hobject **out_getter,
+                                             duk_hobject **out_setter);
+DUK_INTERNAL_DECL
+void duk_hobject_define_property_helper(duk_context *ctx,
+                                        duk_uint_t defprop_flags,
+                                        duk_hobject *obj,
+                                        duk_hstring *key,
+                                        duk_idx_t idx_value,
+                                        duk_hobject *get,
+                                        duk_hobject *set);
+
 /* Object built-in methods */
-DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_define_property(duk_context *ctx);
-DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_define_properties(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hobject *obj, duk_bool_t is_frozen);

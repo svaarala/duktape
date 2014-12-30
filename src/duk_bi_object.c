@@ -178,15 +178,15 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 	if (!duk_is_undefined(ctx, 1)) {
 		/* [ O Properties obj ] */
 
-		/* Use original function.  No need to get it explicitly,
-		 * just call the helper.
-		 */
-
 		duk_replace(ctx, 0);
 
 		/* [ obj Properties ] */
 
-		return duk_hobject_object_define_properties(ctx);
+		/* Just call the "original" Object.defineProperties() to
+		 * finish up.
+		 */
+
+		return duk_bi_object_constructor_define_properties(ctx);
 	}
 
 	/* [ O Properties obj ] */
@@ -195,13 +195,156 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_context *ctx) {
-	/* XXX: no need for indirect call */
-	return duk_hobject_object_define_property(ctx);
+	duk_hobject *obj;
+	duk_hstring *key;
+	duk_hobject *get;
+	duk_hobject *set;
+	duk_idx_t idx_value;
+	duk_uint_t defprop_flags;
+
+	DUK_ASSERT(ctx != NULL);
+
+	DUK_DDD(DUK_DDDPRINT("Object.defineProperty(): ctx=%p obj=%!T key=%!T desc=%!T",
+	                     (void *) ctx,
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(ctx, 2)));
+
+	/* [ obj key desc ] */
+
+	/* Lightfuncs are currently supported by coercing to a temporary
+	 * Function object; changes will be allowed (the coerced value is
+	 * extensible) but will be lost.
+	 */
+	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
+	(void) duk_to_string(ctx, 1);
+	key = duk_require_hstring(ctx, 1);
+	(void) duk_require_hobject(ctx, 2);
+
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(duk_get_hobject(ctx, 2) != NULL);
+
+	/*
+	 *  Validate and convert argument property descriptor (an Ecmascript
+	 *  object) into a set of defprop_flags and possibly property value,
+	 *  getter, and/or setter values on the value stack.
+	 *
+	 *  Lightfunc set/get values are coerced to full Functions.
+	 */
+
+	duk_hobject_prepare_property_descriptor(ctx,
+	                                        2 /*idx_desc*/,
+	                                        &defprop_flags,
+	                                        &idx_value,
+	                                        &get,
+	                                        &set);
+
+	/*
+	 *  Use Object.defineProperty() helper for the actual operation.
+	 */
+
+	duk_hobject_define_property_helper(ctx,
+	                                   defprop_flags,
+	                                   obj,
+	                                   key,
+	                                   idx_value,
+	                                   get,
+	                                   set);
+
+	/* Ignore the normalize/validate helper outputs on the value stack,
+	 * they're popped automatically.
+	 */
+
+	/*
+	 *  Return target object.
+	 */
+
+	duk_push_hobject(ctx, obj);
+	return 1;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *ctx) {
-	/* XXX: no need for indirect call */
-	return duk_hobject_object_define_properties(ctx);
+	duk_small_uint_t pass;
+	duk_uint_t defprop_flags;
+	duk_hobject *obj;
+	duk_idx_t idx_value;
+	duk_hobject *get;
+	duk_hobject *set;
+
+	/* Lightfunc handling by ToObject() coercion. */
+	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);  /* target */
+	DUK_ASSERT(obj != NULL);
+
+	duk_to_object(ctx, 1);        /* properties object */
+
+	DUK_DDD(DUK_DDDPRINT("target=%!iT, properties=%!iT",
+	                     (duk_tval *) duk_get_tval(ctx, 0),
+	                     (duk_tval *) duk_get_tval(ctx, 1)));
+
+	/*
+	 *  Two pass approach to processing the property descriptors.
+	 *  On first pass validate and normalize all descriptors before
+	 *  any changes are made to the target object.  On second pass
+	 *  make the actual modifications to the target object.
+	 *
+	 *  Right now we'll just use the same normalize/validate helper
+	 *  on both passes, ignoring its outputs on the first pass.
+	 */
+
+	for (pass = 0; pass < 2; pass++) {
+		duk_set_top(ctx, 2);  /* -> [ hobject props ] */
+		duk_enum(ctx, 1, DUK_ENUM_OWN_PROPERTIES_ONLY /*enum_flags*/);
+
+		for (;;) {
+			duk_hstring *key;
+
+			/* [ hobject props enum(props) ] */
+
+			duk_set_top(ctx, 3);
+
+			if (!duk_next(ctx, 2, 1 /*get_value*/)) {
+				break;
+			}
+
+			DUK_DDD(DUK_DDDPRINT("-> key=%!iT, desc=%!iT",
+			                     (duk_tval *) duk_get_tval(ctx, -2),
+			                     (duk_tval *) duk_get_tval(ctx, -1)));
+
+			/* [ hobject props enum(props) key desc ] */
+
+			duk_hobject_prepare_property_descriptor(ctx,
+			                                        4 /*idx_desc*/,
+			                                        &defprop_flags,
+			                                        &idx_value,
+			                                        &get,
+			                                        &set);
+
+			/* [ hobject props enum(props) key desc value? getter? setter? ] */
+
+			if (pass == 0) {
+				continue;
+			}
+
+			key = duk_get_hstring(ctx, 3);
+			DUK_ASSERT(key != NULL);
+
+			duk_hobject_define_property_helper(ctx,
+			                                   defprop_flags,
+			                                   obj,
+			                                   key,
+			                                   idx_value,
+			                                   get,
+			                                   set);
+		}
+	}
+
+	/*
+	 *  Return target object
+	 */
+
+	duk_dup(ctx, 0);
+	return 1;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context *ctx) {

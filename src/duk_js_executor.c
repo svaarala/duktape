@@ -589,7 +589,7 @@ DUK_LOCAL void duk__handle_catch_or_finally(duk_hthread *thr, duk_size_t cat_idx
 		DUK_ASSERT(thr->catchstack[cat_idx].h_varname != NULL);
 		duk_push_hstring(ctx, thr->catchstack[cat_idx].h_varname);
 		duk_push_tval(ctx, &thr->heap->lj.value1);
-		duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
+		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
 
 		act = thr->callstack + thr->callstack_top - 1;
 		act->lex_env = new_env;
@@ -1858,7 +1858,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					DUK__INTERNAL_ERROR("MPUTOBJ key not a string");
 				}
 				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
-				duk_def_prop_wec(ctx, -3);               /* -> [... obj] */
+				duk_xdef_prop_wec(ctx, -3);              /* -> [... obj] */
 
 				count--;
 				idx += 2;
@@ -1918,21 +1918,20 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_push_hobject(ctx, obj);
 
 			while (count > 0) {
-				/* duk_def_prop() will define an own property without any array
+				/* duk_xdef_prop() will define an own property without any array
 				 * special behaviors.  We'll need to set the array length explicitly
 				 * in the end.  For arrays with elisions, the compiler will emit an
 				 * explicit SETALEN which will update the length.
 				 */
 
-				/*
-				 * XXX: because we're dealing with 'own' properties of a fresh array,
+				/* XXX: because we're dealing with 'own' properties of a fresh array,
 				 * the array initializer should just ensure that the array has a large
 				 * enough array part and write the values directly into array part,
 				 * and finally set 'length' manually in the end (as already happens now).
 				 */
 
 				duk_push_tval(ctx, DUK__REGP(idx));          /* -> [... obj value] */
-				duk_def_prop_index_wec(ctx, -2, arr_idx);    /* -> [... obj] */
+				duk_xdef_prop_index_wec(ctx, -2, arr_idx);   /* -> [... obj] */
 
 				/* XXX: could use at least one fewer loop counters */
 				count--;
@@ -3012,8 +3011,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				/* [ ... env target ] */
 				/* [ ... env target target ] */
 
-				duk_def_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-				duk_def_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+				duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+				duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
 
 				/* [ ... env ] */
 

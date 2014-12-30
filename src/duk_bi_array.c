@@ -99,7 +99,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 		 * the caller is likely to want a dense array.
 		 */
 		duk_dup(ctx, 0);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
 		return 1;
 	}
 
@@ -109,11 +109,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 	 */
 	for (i = 0; i < nargs; i++) {
 		duk_dup(ctx, i);
-		duk_def_prop_index_wec(ctx, -2, (duk_uarridx_t) i);
+		duk_xdef_prop_index_wec(ctx, -2, (duk_uarridx_t) i);
 	}
 
 	duk_push_u32(ctx, (duk_uint32_t) nargs);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 	return 1;
 }
 
@@ -188,7 +188,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	duk_push_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */
 
-	/* NOTE: The Array special behaviors are NOT invoked by duk_def_prop_index()
+	/* NOTE: The Array special behaviors are NOT invoked by duk_xdef_prop_index()
 	 * (which differs from the official algorithm).  If no error is thrown, this
 	 * doesn't matter as the length is updated at the end.  However, if an error
 	 * is thrown, the length will be unset.  That shouldn't matter because the
@@ -205,7 +205,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 		duk_dup(ctx, i);
 		h = duk_get_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_ARRAY);
 		if (!h) {
-			duk_def_prop_index_wec(ctx, -2, idx++);
+			duk_xdef_prop_index_wec(ctx, -2, idx++);
 			idx_last = idx;
 			continue;
 		}
@@ -219,7 +219,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 		for (j = 0; j < len; j++) {
 			if (duk_get_prop_index(ctx, -1, j)) {
 				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
-				duk_def_prop_index_wec(ctx, -3, idx++);
+				duk_xdef_prop_index_wec(ctx, -3, idx++);
 				idx_last = idx;
 			} else {
 				idx++;
@@ -245,7 +245,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 	 * is known to be an array, this should be equivalent.
 	 */
 	duk_push_uarridx(ctx, idx_last);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(ctx, n + 1);
 	return 1;
@@ -790,13 +790,13 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 
 	for (i = 0; i < del_count; i++) {
 		if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (act_start + i))) {
-			duk_def_prop_index_wec(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
+			duk_xdef_prop_index_wec(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
 		} else {
 			duk_pop(ctx);
 		}
 	}
 	duk_push_u32(ctx, (duk_uint32_t) del_count);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
 
@@ -973,7 +973,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 	for (i = start; i < end; i++) {
 		DUK_ASSERT_TOP(ctx, 5);
 		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
-			duk_def_prop_index_wec(ctx, 4, idx);
+			duk_xdef_prop_index_wec(ctx, 4, idx);
 			res_length = idx + 1;
 		} else {
 			duk_pop(ctx);
@@ -983,7 +983,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 	}
 
 	duk_push_u32(ctx, res_length);
-	duk_def_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_xdef_prop_stridx(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
@@ -1280,14 +1280,14 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			break;
 		case DUK__ITER_MAP:
 			duk_dup(ctx, -1);
-			duk_def_prop_index_wec(ctx, 4, (duk_uarridx_t) i);  /* retval to result[i] */
+			duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) i);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
 		case DUK__ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
 				duk_dup(ctx, -2);  /* orig value */
-				duk_def_prop_index_wec(ctx, 4, (duk_uarridx_t) k);
+				duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) k);
 				k++;
 				res_length = k;
 			}
@@ -1316,7 +1316,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		DUK_ASSERT_TOP(ctx, 5);
 		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
 		duk_push_u32(ctx, res_length);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 		break;
 	default:
 		DUK_UNREACHABLE();

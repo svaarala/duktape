@@ -75,7 +75,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
 
 		/* Buffer object internal value is immutable */
 		duk_dup(ctx, -2);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	}
 	/* Note: unbalanced stack on purpose */
 

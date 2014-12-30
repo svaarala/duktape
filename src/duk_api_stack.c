@@ -2190,10 +2190,10 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		if (lf_len != nargs) {
 			/* Explicit length is only needed if it differs from 'nargs'. */
 			duk_push_int(ctx, (duk_int_t) lf_len);
-			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 		}
 		duk_push_lightfunc_name(ctx, tv);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 		nf = duk_get_hnativefunction(ctx, -1);
 		DUK_ASSERT(nf != NULL);
@@ -2216,14 +2216,14 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	(void) duk_push_object_helper(ctx, flags, proto);
 
 	/* Note: Boolean prototype's internal value property is not writable,
-	 * but duk_def_prop_stridx() disregards the write protection.  Boolean
+	 * but duk_xdef_prop_stridx() disregards the write protection.  Boolean
 	 * instances are immutable.
 	 *
 	 * String and buffer special behaviors are already enabled which is not
 	 * ideal, but a write to the internal value is not affected by them.
 	 */
 	duk_dup(ctx, index);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
  replace_value:
 	duk_replace(ctx, index);
@@ -2877,7 +2877,7 @@ DUK_LOCAL void duk__push_stash(duk_context *ctx) {
 		duk_pop(ctx);
 		duk_push_object_internal(ctx);
 		duk_dup_top(ctx);
-		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
+		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
 	}
 	duk_remove(ctx, -2);
 }
@@ -3349,7 +3349,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	/* ... and its 'message' from an instance property */
 	if (fmt) {
 		duk_push_vsprintf(ctx, fmt, ap);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	} else {
 		/* If no explicit message given, put error code into message field
 		 * (as a number).  This is not fully in keeping with the Ecmascript
@@ -3358,13 +3358,13 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 		 * probably more useful than having a separate 'code' property.
 		 */
 		duk_push_int(ctx, err_code);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 #if 0
 	/* Disabled for now, not sure this is a useful property */
 	duk_push_int(ctx, err_code);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
 #endif
 
 	/* Creation time error augmentation */

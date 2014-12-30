@@ -29,7 +29,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	if (!duk_is_undefined(ctx, 0)) {
 		duk_to_string(ctx, 0);
 		duk_dup(ctx, 0);  /* [ message error message ] */
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* Augment the error if called as a normal function.  __FILE__ and __LINE__
