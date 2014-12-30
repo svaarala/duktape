@@ -65,10 +65,12 @@ Then use `duktape-<version>.tar.xz` like a normal source distributable.
 Getting started: developing Duktape
 -----------------------------------
 
-If you intend to change Duktape internals, run test cases, etc:
+If you intend to change Duktape internals, build the source distributable or
+the website, run test cases, etc:
 
-    # Install required packages
-    $ sudo apt-get install nodejs npm perl ant openjdk-7-jdk libreadline6-dev libncurses-dev python-rdflib
+    # Install required packages (exact packages depend on distribution)
+    $ sudo apt-get install nodejs nodejs-legacy npm perl ant openjdk-7-jdk \
+          libreadline6-dev libncurses-dev python-rdflib python-bs4 clang llvm
 
     # Compile the command line tool ('duk')
     $ git clone https://github.com/svaarala/duktape.git
