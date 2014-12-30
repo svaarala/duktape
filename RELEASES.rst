@@ -693,7 +693,8 @@ Planned
   __APPLE__ is defined) (GH-55)
 
 * Fix a few missing "volatile" attributes in the bytecode executor which
-  affected setjmp handling in clang (especially for _setjmp and sigsetjmp)
+  affected setjmp handling in clang (especially for _setjmp and sigsetjmp),
+  also fix a few setjmp clobber warnings in executor
 
 * Fix compile error for DUK_OPT_NO_PC2LINE
 
