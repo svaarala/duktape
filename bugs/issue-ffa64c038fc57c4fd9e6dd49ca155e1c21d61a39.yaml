@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: remove dependency on nodejs-legacy (i.e. use "nodejs", not "node")
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2014-12-30 11:04:08.012166 Z
+references: []
+
+id: ffa64c038fc57c4fd9e6dd49ca155e1c21d61a39
+log_events: 
+- - 2014-12-30 11:04:08.177116 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
