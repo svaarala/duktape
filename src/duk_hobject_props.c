@@ -4431,40 +4431,43 @@ DUK_LOCAL void duk__normalize_property_descriptor(duk_context *ctx) {
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_GET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
-		is_acc_desc = 1;
-		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_hobject *h_get;
+
+		if (DUK_TVAL_IS_UNDEFINED(tv)) {
+			/* undefined is accepted */
+		} else {
 			/* NOTE: lightfuncs are coerced to full functions because
 			 * lightfuncs don't fit into a property value slot.  This
 			 * has some side effects, see test-dev-lightfunc-accessor.js.
 			 */
-			duk_to_object(ctx, -1);
+			h_get = duk_get_hobject_or_lfunc_coerce(ctx, -1);
+			if (h_get == NULL || !DUK_HOBJECT_IS_CALLABLE(h_get)) {
+				goto type_error;
+			}
 		}
-		if (DUK_TVAL_IS_UNDEFINED(tv) ||
-		    (DUK_TVAL_IS_OBJECT(tv) &&
-		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
-			duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_GET);
-		} else {
-			goto type_error;
-		}
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_GET);
+		is_acc_desc = 1;
 	}
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_SET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
+		duk_hobject *h_set;
+
 		is_acc_desc = 1;
-		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		if (DUK_TVAL_IS_UNDEFINED(tv)) {
+			/* undefined is accepted */
+		}  else {
 			/* NOTE: lightfuncs are coerced to full functions because
 			 * lightfuncs don't fit into a property value slot.  This
 			 * has some side effects, see test-dev-lightfunc-accessor.js.
 			 */
-			duk_to_object(ctx, -1);
+			h_set = duk_get_hobject_or_lfunc_coerce(ctx, -1);
+			if (h_set == NULL || !DUK_HOBJECT_IS_CALLABLE(h_set)) {
+				goto type_error;
+			}
 		}
-		if (DUK_TVAL_IS_UNDEFINED(tv) ||
-		    (DUK_TVAL_IS_OBJECT(tv) &&
-		     DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv)))) {
-			duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_SET);
-		} else {
-			goto type_error;
-		}
+		duk_put_prop_stridx(ctx, idx_out, DUK_STRIDX_SET);
+		is_acc_desc = 1;
 	}
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_ENUMERABLE)) {
