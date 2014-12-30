@@ -14,7 +14,7 @@ environment.  To inherit the change to other contexts, replace the global
 object first before calling <code>duk_push_thread()</code>.</p>
 
 <p>See the test case
-<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.js">test-set-global-object.js</a>
+<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.c">test-set-global-object.c</a>
 for discussion of detailed behavior after the change.</p>
 
 <div class="note">
