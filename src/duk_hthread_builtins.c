@@ -425,9 +425,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				DUK_D(DUK_DPRINT("built-in function eligible as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld -> %!iT", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic, duk_get_tval(ctx, -1)));
 				goto lightfunc_skip;
 			}
-#endif  /* DUK_USE_LIGHTFUNC_BUILTINS */
 
 			DUK_D(DUK_DPRINT("built-in function NOT ELIGIBLE as light function: i=%d, j=%d c_length=%ld, c_nargs=%ld, magic=%ld", (int) i, (int) j, (long) c_length, (long) c_nargs, (long) magic));
+#endif  /* DUK_USE_LIGHTFUNC_BUILTINS */
 
 			/* [ (builtin objects) ] */
 
