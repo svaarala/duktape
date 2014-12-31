@@ -216,7 +216,9 @@ function executeTest(options, callback) {
 		}
 		cmdline = cmd.join(' ');
 
-		if (options.testcase.meta.slow) {
+		if (options.notimeout) {
+		    timeout = undefined;
+		} else if (options.testcase.meta.slow) {
 		    timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
 		} else {
 		    timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
@@ -459,9 +461,9 @@ function testRunnerMain() {
                     filename: filename,
                     testPath: fullPath,
                     testcase: testcase,
-                    valgrind: argv.valgrind
+                    valgrind: argv.valgrind,
+                    notimeout: argv['no-timeout']
                 });
- 
             } else {
                 engines.forEach(function testWithEngine(engine) {
                     tasks.push({
@@ -469,7 +471,8 @@ function testRunnerMain() {
                         filename: filename,
                         testPath: fullPath,
                         testcase: testcase,
-                        valgrind: argv.valgrind && (engine.name === 'duk')
+                        valgrind: argv.valgrind && (engine.name === 'duk'),
+                        notimeout: argv['no-timeout']
                     });
                 });
             }
