@@ -158,106 +158,106 @@ function executeTest(options, callback) {
                     callback(null, res);
                 });
             } catch (e) {
-			console.log('xml2js parsing failed, should not happen: ' + e);
-			callback(null, res);
-		    }
-		} else {
-		    callback(null, res);
-		}
-	    }
+                console.log('xml2js parsing failed, should not happen: ' + e);
+                callback(null, res);
+            }
+        } else {
+            callback(null, res);
+        }
+    }
 
-	    // testcase compilation done (only relevant for API tests), ready to execute
-	    function compileDone(error, stdout, stderr) {
-		/* FIXME: use child_process.spawn(); we don't currently escape command
-		 * line parameters which is risky.
-		 */
+    // testcase compilation done (only relevant for API tests), ready to execute
+    function compileDone(error, stdout, stderr) {
+        /* FIXME: use child_process.spawn(); we don't currently escape command
+         * line parameters which is risky.
+          */
 
-		if (error) {
-		    console.log(error);
-		    execDone(error);
-		    return;
-		}
+        if (error) {
+            console.log(error);
+            execDone(error);
+            return;
+        }
 
-		// FIXME: must respect 'use strict' and avoid putting any code before one
-		// (or prepend a new 'use strict')
-		if (options.engine.jsPrefix) {
-		    // doesn't work
-		    // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
-		    tempInput = mkTempName();
-		    try {
-			fs.writeFileSync(tempInput, options.engine.jsPrefix + fs.readFileSync(options.testPath));
-		    } catch (e) {
-			console.log(e);
-			callback(e);
-			return;
-		    }
-		}
+        // FIXME: must respect 'use strict' and avoid putting any code before one
+        // (or prepend a new 'use strict')
+        if (options.engine.jsPrefix) {
+            // doesn't work
+            // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
+            tempInput = mkTempName();
+            try {
+                fs.writeFileSync(tempInput, options.engine.jsPrefix + fs.readFileSync(options.testPath));
+            } catch (e) {
+                console.log(e);
+                callback(e);
+                return;
+            }
+        }
 
-		cmd = [];
-		if (options.valgrind) {
-		    tempVgxml = mkTempName();
-		    tempVgout = mkTempName();
-		    cmd = cmd.concat([ 'valgrind', '--tool=memcheck', '--xml=yes',
-				       '--xml-file=' + tempVgxml,
-				       '--log-file=' + tempVgout,
-				       '--child-silent-after-fork=yes', '-q' ]);
-		}
-		if (tempExe) {
-		    cmd.push(tempExe);
-		} else {
-		    cmd.push(options.engine.fullPath);
-		    if (!options.valgrind && options.engine.name === 'duk') {
-			cmd.push('--restrict-memory');  // restricted memory
-		    }
-		    // cmd.push('--alloc-logging');
-		    // cmd.push('--alloc-torture');
-		    // cmd.push('--alloc-hybrid');
-		    cmd.push(tempInput || options.testPath);
-		}
-		cmdline = cmd.join(' ');
+        cmd = [];
+        if (options.valgrind) {
+            tempVgxml = mkTempName();
+            tempVgout = mkTempName();
+            cmd = cmd.concat([ 'valgrind', '--tool=memcheck', '--xml=yes',
+                               '--xml-file=' + tempVgxml,
+                               '--log-file=' + tempVgout,
+                               '--child-silent-after-fork=yes', '-q' ]);
+        }
+        if (tempExe) {
+            cmd.push(tempExe);
+        } else {
+            cmd.push(options.engine.fullPath);
+            if (!options.valgrind && options.engine.name === 'duk') {
+                cmd.push('--restrict-memory');  // restricted memory
+            }
+            // cmd.push('--alloc-logging');
+            // cmd.push('--alloc-torture');
+            // cmd.push('--alloc-hybrid');
+            cmd.push(tempInput || options.testPath);
+        }
+        cmdline = cmd.join(' ');
 
-		if (options.notimeout) {
-		    timeout = undefined;
-		} else if (options.testcase.meta.slow) {
-		    timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
-		} else {
-		    timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
-		}
-		execopts = {
-		    maxBuffer: 128 * 1024 * 1024,
-		    timeout: timeout,
-		    stdio: 'pipe'
-		};
+        if (options.notimeout) {
+            timeout = undefined;
+        } else if (options.testcase.meta.slow) {
+            timeout = options.valgrind ? TIMEOUT_SLOW_VALGRIND : TIMEOUT_SLOW;
+        } else {
+            timeout = options.valgrind ? TIMEOUT_NORMAL_VALGRIND : TIMEOUT_NORMAL;
+        }
+        execopts = {
+            maxBuffer: 128 * 1024 * 1024,
+            timeout: timeout,
+            stdio: 'pipe'
+        };
 
-		//console.log(cmdline);
-		child = child_process.exec(cmdline, execopts, execDone);
-	    }
+        //console.log(cmdline);
+        child = child_process.exec(cmdline, execopts, execDone);
+    }
 
-	    function compileApiTest() {
-		tempSource = mkTempName('.c');
-		try {
-		    fs.writeFileSync(tempSource, options.engine.cPrefix + fs.readFileSync(options.testPath));
-		} catch (e) {
-		    console.log(e);
-		    callback(e);
-		    return;
-		}
-		tempExe = mkTempName();
+    function compileApiTest() {
+        tempSource = mkTempName('.c');
+        try {
+            fs.writeFileSync(tempSource, options.engine.cPrefix + fs.readFileSync(options.testPath));
+        } catch (e) {
+            console.log(e);
+            callback(e);
+            return;
+        }
+        tempExe = mkTempName();
 
-		// FIXME: listing specific options here is awkward, must match Makefile
-		cmd = [ 'gcc', '-o', tempExe,
-			'-L.',
-			'-Idist/src',
-			'-Wl,-rpath,.',
-			'-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
-			'-g', '-ggdb',
-			'-Werror',
-			//'-m32',
-			'runtests/api_testcase_main.c',
-			tempSource,
-			'-lduktape',
-//			'-lduktaped',
-			'-lm' ];
+        // FIXME: listing specific options here is awkward, must match Makefile
+        cmd = [ 'gcc', '-o', tempExe,
+                '-L.',
+                '-Idist/src',
+                '-Wl,-rpath,.',
+                '-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
+                '-g', '-ggdb',
+                '-Werror',
+                //'-m32',
+                'runtests/api_testcase_main.c',
+                tempSource,
+                '-lduktape',
+                //'-lduktaped',
+                '-lm' ];
 
         cmdline = cmd.join(' ');
         execopts = {
