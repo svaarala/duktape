@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: "runtests: test run without timeout for e.g. gc torture test"
+title: mark lowmem changes experimental as they may need tweaks
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2014-10-14 17:13:35.747333 Z
+creation_time: 2014-12-31 06:07:51.377913 Z
 references: []
 
-id: cfbd6d2dfcb0ac839105dfae0731fb185c470086
+id: 9c164ec7d40561ebc848530959ce7d8474b4c018
 log_events: 
-- - 2014-10-14 17:13:35.912148 Z
+- - 2014-12-31 06:07:51.542754 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2014-12-31 13:38:55.922990 Z
+- - 2014-12-31 13:39:53.619326 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""
