@@ -102,6 +102,9 @@ Suggested feature options
 More aggressive options
 =======================
 
+**These options are experimental in Duktape 1.1, i.e. the may change
+in an incompatible manner in Duktape 1.2.**
+
 The following may be needed for very low memory environments (e.g. 128kB
 system RAM):
 

@@ -244,6 +244,9 @@ Unless you have very little RAM, these options are probably not relevant
 to you.  They involve some compromises in e.g. performance or compliance
 to reduce memory usage.
 
+**The low memory feature options are experimental in Duktape 1.1, i.e. they
+may change in an incompatible manner in Duktape 1.2.**
+
 DUK_OPT_REFCOUNT16
 ------------------
 
@@ -635,6 +638,8 @@ to encode or decode the format causes an error.
 
 DUK_OPT_LIGHTFUNC_BUILTINS
 --------------------------
+
+**Experimental.**
 
 Force built-in functions to be lightweight functions.  This reduces
 memory footprint by around 14 kB at the cost of some non-compliant
