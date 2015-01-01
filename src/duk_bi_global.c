@@ -1012,7 +1012,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 */
 	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
 	duk_dup(ctx, 3);
-	duk_def_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
+	duk_xdef_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
 
 	/* Exports table. */
 	duk_push_object(ctx);
@@ -1022,7 +1022,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 */
 	duk_push_object(ctx);
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
-	duk_def_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 10);
@@ -1060,7 +1060,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	/* Because user callback did not throw an error, remember exports table. */
 	duk_dup(ctx, 3);
 	duk_dup(ctx, 8);
-	duk_def_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.modLoaded[resolved_id] = exports */
+	duk_xdef_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.modLoaded[resolved_id] = exports */
 
 	/* If user callback did not return source code, module loading
 	 * is finished (user callback initialized exports table directly).

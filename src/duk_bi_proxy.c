@@ -45,11 +45,11 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	/* Proxy target */
 	duk_dup(ctx, 0);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_WC);
 
 	/* Proxy handler */
 	duk_dup(ctx, 1);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_WC);
 
 	return 1;  /* replacement handler */
 }

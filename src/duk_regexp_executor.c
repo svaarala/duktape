@@ -902,10 +902,10 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_number(ctx, (double) char_offset);
-		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INDEX);
+		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INDEX);
 
 		duk_dup(ctx, -4);
-		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INPUT);
+		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INPUT);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {
 			/* Captures which are undefined have NULL pointers and are returned

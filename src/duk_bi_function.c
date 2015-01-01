@@ -281,10 +281,10 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 	duk_dup(ctx, -2);  /* func */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_dup(ctx, 0);   /* thisArg */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_push_array(ctx);
 
@@ -294,7 +294,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		duk_dup(ctx, 1 + i);
 		duk_put_prop_index(ctx, -2, i);
 	}
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
@@ -311,18 +311,18 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	} else {
 		duk_push_int(ctx, 0);
 	}
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
 	/* caller and arguments must use the same thrower, [[ThrowTypeError]] */
-	duk_def_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-	duk_def_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* these non-standard properties are copied for convenience */
 	/* XXX: 'copy properties' API call? */
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
 	/* The 'strict' flag is copied to get the special [[Get]] of E5.1
 	 * Section 15.3.5.4 to apply when a 'caller' value is a strict bound

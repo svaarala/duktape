@@ -118,7 +118,7 @@ void duk__create_arguments_object(duk_hthread *thr,
 	 */
 
 	duk_push_int(ctx, num_stack_args);
-	duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Init argument related properties
@@ -132,7 +132,7 @@ void duk__create_arguments_object(duk_hthread *thr,
 
 		DUK_DDD(DUK_DDDPRINT("define arguments[%ld]=arg", (long) idx));
 		duk_dup(ctx, i_argbase + idx);
-		duk_def_prop_index_wec(ctx, i_arg, (duk_uarridx_t) idx);
+		duk_xdef_prop_index_wec(ctx, i_arg, (duk_uarridx_t) idx);
 		DUK_DDD(DUK_DDDPRINT("defined arguments[%ld]=arg", (long) idx));
 
 		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
@@ -162,13 +162,13 @@ void duk__create_arguments_object(duk_hthread *thr,
 				duk_dup(ctx, -1);                      /* name */
 				duk_push_uint(ctx, (duk_uint_t) idx);  /* index */
 				duk_to_string(ctx, -1);
-				duk_def_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
+				duk_xdef_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s",
 				                     (long) idx,
 				                     duk_get_string(ctx, -1)));
 				duk_dup(ctx, -1);         /* name */
-				duk_def_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
+				duk_xdef_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
 			} else {
 				/* duk_has_prop() popped the second 'name' */
 			}
@@ -190,7 +190,7 @@ void duk__create_arguments_object(duk_hthread *thr,
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
 
 		duk_dup(ctx, i_map);
-		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 
 		/* The variable environment for magic variable bindings needs to be
 		 * given by the caller and recorded in the arguments object.
@@ -202,7 +202,7 @@ void duk__create_arguments_object(duk_hthread *thr,
 		 */
 
 		duk_push_hobject(ctx, varenv);
-		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 	}
 
 	/* steps 13-14 */
@@ -223,12 +223,12 @@ void duk__create_arguments_object(duk_hthread *thr,
 
 		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
-		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-		duk_def_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
 		duk_push_hobject(ctx, func);
-		duk_def_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* set exotic behavior only after we're done */
@@ -296,11 +296,11 @@ void duk__handle_createargs_for_call(duk_hthread *thr,
 
 	/* [... arg1 ... argN envobj argobj] */
 
-	duk_def_prop_stridx(ctx,
-	                    -2,
-	                    DUK_STRIDX_LC_ARGUMENTS,
-	                    DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
-	                                                   DUK_PROPDESC_FLAGS_WE);  /* non-strict: non-deletable, writable */
+	duk_xdef_prop_stridx(ctx,
+	                     -2,
+	                     DUK_STRIDX_LC_ARGUMENTS,
+	                     DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
+	                                                    DUK_PROPDESC_FLAGS_WE);  /* non-strict: non-deletable, writable */
 	/* [... arg1 ... argN envobj] */
 }
 

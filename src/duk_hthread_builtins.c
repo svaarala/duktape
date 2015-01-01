@@ -110,7 +110,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* XXX: function properties */
 
 			duk_push_hstring_stridx(ctx, stridx);
-			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
@@ -156,11 +156,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 
 			duk_push_int(ctx, len);
-			duk_def_prop_stridx(ctx,
-			                    -2,
-			                    DUK_STRIDX_LENGTH,
-			                    (class_num == DUK_HOBJECT_CLASS_ARRAY ?  /* only Array.prototype matches */
-			                     DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE));
+			duk_xdef_prop_stridx(ctx,
+			                     -2,
+			                     DUK_STRIDX_LENGTH,
+			                     (class_num == DUK_HOBJECT_CLASS_ARRAY ?  /* only Array.prototype matches */
+			                      DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE));
 		}
 
 		/* enable exotic behaviors last */
@@ -221,7 +221,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Configurable]] = false
 			 */
 			DUK_DDD(DUK_DDDPRINT("set external prototype: built-in %ld", (long) t));
-			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_builtin(ctx, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
 		}
 
 		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
@@ -232,7 +232,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  [[Configurable]] = true
 			 */
 			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %ld", (long) t));
-			duk_def_prop_stridx_builtin(ctx, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx_builtin(ctx, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
 		}
 
 		/* normal valued properties */
@@ -360,7 +360,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			DUK_ASSERT((prop_flags & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
-			duk_def_prop_stridx(ctx, i, stridx, prop_flags);
+			duk_xdef_prop_stridx(ctx, i, stridx, prop_flags);
 
 		 skip_value:
 			continue;  /* avoid empty label at the end of a compound statement */
@@ -456,10 +456,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) func ] */
 
 			duk_push_int(ctx, c_length);
-			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 			duk_push_hstring_stridx(ctx, stridx);
-			duk_def_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* XXX: other properties of function instances; 'arguments', 'caller'. */
 
@@ -477,7 +477,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		 lightfunc_skip:
 #endif
 
-			duk_def_prop_stridx(ctx, i, stridx, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx(ctx, i, stridx, DUK_PROPDESC_FLAGS_WC);
 
 			/* [ (builtin objects) ] */
 		}
@@ -501,7 +501,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
-	duk_def_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
 
 	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_ASSERT(h != NULL);
@@ -509,12 +509,12 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 #if !defined(DUK_USE_ES6_OBJECT_PROTO_PROPERTY)
 	DUK_DD(DUK_DDPRINT("delete Object.prototype.__proto__ built-in which is not enabled in features"));
-	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE], DUK_HTHREAD_STRING___PROTO__(thr), 1 /*throw_flag*/);
+	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE], DUK_HTHREAD_STRING___PROTO__(thr), DUK_DELPROP_FLAG_THROW);
 #endif
 
 #if !defined(DUK_USE_ES6_OBJECT_SETPROTOTYPEOF)
 	DUK_DD(DUK_DDPRINT("delete Object.setPrototypeOf built-in which is not enabled in features"));
-	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR], DUK_HTHREAD_STRING_SET_PROTOTYPE_OF(thr), 1 /*throw_flag*/);
+	(void) duk_hobject_delprop_raw(thr, thr->builtins[DUK_BIDX_OBJECT_CONSTRUCTOR], DUK_HTHREAD_STRING_SET_PROTOTYPE_OF(thr), DUK_DELPROP_FLAG_THROW);
 #endif
 
 	duk_push_string(ctx,
@@ -604,7 +604,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	                DUK_USE_OS_STRING
 			" "
 	                DUK_USE_COMPILER_STRING);
-	duk_def_prop_stridx(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  InitJS code - Ecmascript code evaluated from a built-in source

@@ -552,7 +552,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... obj key val ] */
 
-		duk_def_prop_wec(ctx, -3);
+		duk_xdef_prop_wec(ctx, -3);
 
 		/* [ ... obj ] */
 
@@ -617,11 +617,11 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... arr val ] */
 
-		duk_def_prop_index_wec(ctx, -2, arr_idx);
+		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
 		arr_idx++;
 	}
 
-	/* Must set 'length' explicitly when using duk_def_prop_xxx() to
+	/* Must set 'length' explicitly when using duk_xdef_prop_xxx() to
 	 * set the values.
 	 */
 
@@ -746,7 +746,7 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					duk_pop(ctx);
 					duk_del_prop_index(ctx, -1, i);
 				} else {
-					/* XXX: duk_def_prop_index_wec() would be more appropriate
+					/* XXX: duk_xdef_prop_index_wec() would be more appropriate
 					 * here but it currently makes some assumptions that might
 					 * not hold (e.g. that previous property is not an accessor).
 					 */
@@ -774,7 +774,7 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					duk_pop(ctx);
 					duk_del_prop(ctx, -3);
 				} else {
-					/* XXX: duk_def_prop_index_wec() would be more appropriate
+					/* XXX: duk_xdef_prop_index_wec() would be more appropriate
 					 * here but it currently makes some assumptions that might
 					 * not hold (e.g. that previous property is not an accessor).
 					 *

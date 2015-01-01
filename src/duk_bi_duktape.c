@@ -159,9 +159,9 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	/* [ level obj func pc line ] */
 
 	/* XXX: version specific array format instead? */
-	duk_def_prop_stridx_wec(ctx, -4, DUK_STRIDX_LINE_NUMBER);
-	duk_def_prop_stridx_wec(ctx, -3, DUK_STRIDX_PC);
-	duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_LC_FUNCTION);
+	duk_xdef_prop_stridx_wec(ctx, -4, DUK_STRIDX_LINE_NUMBER);
+	duk_xdef_prop_stridx_wec(ctx, -3, DUK_STRIDX_PC);
+	duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_LC_FUNCTION);
 	return 1;
 }
 

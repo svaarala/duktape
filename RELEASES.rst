@@ -629,6 +629,10 @@ Planned
   in this release, Duktape initial RAM usage is reduced from about 46kB to
   22kB for a 32-bit target when all low memory features are enabled
 
+* Add duk_def_prop() which allows creation of accessor (getter/setter)
+  properties and other custom properties from C code (instead of using
+  Object.defineProperty() from Ecmascript code)
+
 * Add lightfunc (DUK_TYPE_LIGHTFUNC) primitive type, representing a
   Duktape/C function with a plain tagged value without any heap allocations
 

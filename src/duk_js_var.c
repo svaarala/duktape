@@ -235,18 +235,18 @@ void duk_js_push_closure(duk_hthread *thr,
 			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 			                                    proto);
 
-			/* It's important that duk_def_prop() is a 'raw define' so that any
+			/* It's important that duk_xdef_prop() is a 'raw define' so that any
 			 * properties in an ancestor are never an issue (they should never be
 			 * e.g. non-writable, but just in case).
 			 */
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
 			duk_dup(ctx, -4);                                    /* -> [ ... closure template env funcname closure ] */
-			duk_def_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);      /* -> [ ... closure template env ] */
+			duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);     /* -> [ ... closure template env ] */
 			/* env[funcname] = closure */
 
 			/* [ ... closure template env ] */
 
-			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
 			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
 			 * will be ignored anyway
 			 */
@@ -260,7 +260,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			 */
 
 			duk_push_hobject(ctx, outer_lex_env);  /* -> [ ... closure template env ] */
-			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
 			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
 			 * will be ignored anyway
 			 */
@@ -279,11 +279,11 @@ void duk_js_push_closure(duk_hthread *thr,
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj));
 
 		duk_push_hobject(ctx, outer_lex_env);  /* -> [ ... closure template env ] */
-		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
 
 		if (outer_var_env != outer_lex_env) {
 			duk_push_hobject(ctx, outer_var_env);  /* -> [ ... closure template env ] */
-			duk_def_prop_stridx(ctx, -3, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_WC);
 		}
 	}
 #ifdef DUK_USE_DDDPRINT
@@ -312,7 +312,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		if (duk_get_prop_stridx(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> found", (long) stridx));
-			duk_def_prop_stridx(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
 		} else {
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> not found", (long) stridx));
 			duk_pop(ctx);
@@ -344,7 +344,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_pop(ctx);
 
 	duk_push_uint(ctx, len_value);  /* [ ... closure template len_value ] */
-	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 	/*
 	 *  "prototype" is, by default, a fresh object with the "constructor"
@@ -364,9 +364,9 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
 	duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
-	duk_def_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
 	duk_compact(ctx, -1);  /* compact the prototype */
-	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
+	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
 
 	/*
 	 *  "arguments" and "caller" must be mapped to throwers for strict
@@ -379,13 +379,13 @@ void duk_js_push_closure(duk_hthread *thr,
 	/* [ ... closure template ] */
 
 	if (DUK_HOBJECT_HAS_STRICT(&fun_clos->obj)) {
-		duk_def_prop_stridx_thrower(ctx, -2, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-		duk_def_prop_stridx_thrower(ctx, -2, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_thrower(ctx, -2, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_thrower(ctx, -2, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
 	} else {
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value"));
 		duk_push_null(ctx);
-		duk_def_prop_stridx(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
 #else
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used"));
 #endif
@@ -412,7 +412,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	}
-	duk_def_prop_stridx(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
+	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
 
 	/*
 	 *  Compact the closure, in most cases no properties will be added later.
@@ -496,11 +496,11 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		duk_push_hthread(ctx, thr);
-		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
+		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
-		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
+		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
 		duk_push_size_t(ctx, idx_bottom);
-		duk_def_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
+		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
 	}
 
 	return env;
@@ -679,7 +679,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 			/* [... env callee varmap key val] */
 
 			/* if property already exists, overwrites silently */
-			duk_def_prop(ctx, -5, DUK_PROPDESC_FLAGS_WE);  /* writable but not deletable */
+			duk_xdef_prop(ctx, -5, DUK_PROPDESC_FLAGS_WE);  /* writable but not deletable */
 		}
 
 		duk_pop_2(ctx);
@@ -1745,7 +1745,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	duk_push_hobject(ctx, holder);
 	duk_push_hstring(ctx, name);
 	duk_push_tval(ctx, val);
-	duk_def_prop(ctx, -3, prop_flags);  /* [holder name val] -> [holder] */
+	duk_xdef_prop(ctx, -3, prop_flags);  /* [holder name val] -> [holder] */
 	duk_pop(ctx);
 
 	return 0;

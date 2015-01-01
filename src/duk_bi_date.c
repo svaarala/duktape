@@ -1910,7 +1910,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 	if (nargs == 0 || !is_cons) {
 		d = duk__timeclip(DUK__GET_NOW_TIMEVAL(ctx));
 		duk_push_number(ctx, d);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		if (!is_cons) {
 			/* called as a normal function: return new Date().toString() */
 			duk_to_string(ctx, -1);
@@ -1924,7 +1924,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 		}
 		d = duk__timeclip(duk_to_number(ctx, 0));
 		duk_push_number(ctx, d);
-		duk_def_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		return 1;
 	}
 
