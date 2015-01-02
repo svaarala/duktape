@@ -756,6 +756,9 @@ Planned
 
 * Add SuperH detection support
 
+* Fix MinGW compile warning "visibility attribute not supported in this
+  configuration; ignored" when using separate sources
+
 1.2.0 (2015-XX-XX)
 ------------------
 
