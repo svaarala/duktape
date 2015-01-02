@@ -5,8 +5,8 @@ type: :task
 component: duk
 release: v1.1
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2014-10-26 10:49:24.068252 Z
 references: []
 
@@ -24,3 +24,13 @@ log_events:
   - Sami Vaarala <sami.vaarala@iki.fi>
   - commented
   - bi-endian
+- - 2015-01-02 14:56:29.837337 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - commented
+  - |-
+    Based on 'make checkalign' there seem to be no specific alignment requirements,
+    using align by 4 as a hopefully good default.
+- - 2015-01-02 14:56:34.844767 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
