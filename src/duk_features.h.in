@@ -275,6 +275,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 
 /* MinGW */
 #if defined(__MINGW32__) || defined(__MINGW64__)
+/* NOTE: Also GCC flags are detected (DUK_F_GCC etc). */
 #define DUK_F_MINGW
 #endif
 
@@ -2105,7 +2106,9 @@ typedef FILE duk_file;
  *  Compiler string, human readable value exposed in Duktape.env
  */
 
-#if defined(DUK_F_GCC)
+#if defined(DUK_F_MINGW)
+#define DUK_USE_COMPILER_STRING "mingw"
+#elif defined(DUK_F_GCC)
 #if defined(DUK_F_CPP)
 #define DUK_USE_COMPILER_STRING "g++"
 #else
@@ -2115,8 +2118,6 @@ typedef FILE duk_file;
 #define DUK_USE_COMPILER_STRING "clang"
 #elif defined(DUK_F_MSVC)
 #define DUK_USE_COMPILER_STRING "msvc"
-#elif defined(DUK_F_MINGW)
-#define DUK_USE_COMPILER_STRING "mingw"
 #elif defined(DUK_F_VBCC)
 #define DUK_USE_COMPILER_STRING "vbcc"
 #else
