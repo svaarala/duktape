@@ -754,6 +754,8 @@ Planned
 * Fix duk_push_error_object() return value for platforms where variadic
   macros are not available
 
+* Add SuperH detection support
+
 1.2.0 (2015-XX-XX)
 ------------------
 
