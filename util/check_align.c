@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 		*p_u64 = 0x1122334455667788ULL;
 
 		p_u8 = (volatile uint8_t *) p_u64;
-		printf("%02x %02x %02x %02x %02x %02x %02x %02x = %llx\n",
+		printf("%02x %02x %02x %02x %02x %02x %02x %02x = 0x%llx\n",
 		       (unsigned int) p_u8[0],
 		       (unsigned int) p_u8[1],
 		       (unsigned int) p_u8[2],
