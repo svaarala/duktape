@@ -144,6 +144,16 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_MIPS
 #endif
 
+/* SuperH */
+#if defined(__sh__) || \
+    defined(__sh1__) || defined(__SH1__) || \
+    defined(__sh2__) || defined(__SH2__) || \
+    defined(__sh3__) || defined(__SH3__) || \
+    defined(__sh4__) || defined(__SH4__) || \
+    defined(__sh5__) || defined(__SH5__)
+#define DUK_F_SUPERH
+#endif
+
 /* Motorola 68K.  Not defined by VBCC, so user must define one of these
  * manually when using VBCC.
  */
@@ -1118,12 +1128,23 @@ typedef double duk_double_t;
 #elif defined(DUK_F_ARM)
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_MIPS)
+/* Based on 'make checkalign' there are no alignment requirements on
+ * Linux MIPS except for doubles, which need align by 4.
+ */
+#define DUK_USE_ALIGN_4
+#elif defined(DUK_F_SUPERH)
+/* Based on 'make checkalign' there are no alignment requirements on
+ * Linux SH4, but align by 4 is probably a good basic default.
+ */
 #define DUK_USE_ALIGN_4
 #elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64) || \
       defined(DUK_F_BCC)
+/* XXX: This is technically not guaranteed because it's possible to configure
+ * an x86 to require aligned accesses with Alignment Check (AC) flag.
+ */
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
-/* unknown, use safe default */
+/* Unknown, use safe default */
 #define DUK_USE_ALIGN_8
 #endif
 
@@ -2037,6 +2058,8 @@ typedef FILE duk_file;
 #define DUK_USE_ARCH_STRING "arm"
 #elif defined(DUK_F_MIPS)
 #define DUK_USE_ARCH_STRING "mips"
+#elif defined(DUK_F_SUPERH)
+#define DUK_USE_ARCH_STRING "sh"
 #elif defined(DUK_F_M68K)
 #define DUK_USE_ARCH_STRING "m68k"
 #elif defined(DUK_F_FLASHPLAYER)

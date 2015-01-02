@@ -943,6 +943,14 @@ codepolicycheckvim:
 big-git-files:
 	util/find_big_git_files.sh
 
+# Alignment check
+.PHONY: checkalign
+checkalign:
+	@echo "checkalign for: `uname -a`"
+	@gcc -o /tmp/check_align -Wall util/check_align.c
+	@cp util/check_align.sh /tmp
+	@cd /tmp; sh check_align.sh
+
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.
 # The target name is intentionally not 'massif-%.out' so that the rule is never

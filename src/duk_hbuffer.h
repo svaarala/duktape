@@ -197,7 +197,7 @@ struct duk_hbuffer_fixed {
 #if defined(DUK_USE_ALIGN_4)
 		duk_uint32_t dummy_for_align4;
 #elif defined(DUK_USE_ALIGN_8)
-		duk_uint64_t dummy_for_align8;
+		duk_double_t dummy_for_align8;
 #else
 		/* no extra padding */
 #endif
