@@ -947,7 +947,7 @@ big-git-files:
 .PHONY: checkalign
 checkalign:
 	@echo "checkalign for: `uname -a`"
-	@gcc -o /tmp/check_align -Wall util/check_align.c
+	gcc -o /tmp/check_align -Wall -Wextra util/check_align.c
 	@cp util/check_align.sh /tmp
 	@cd /tmp; sh check_align.sh
 
