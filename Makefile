@@ -432,64 +432,66 @@ dukdscanbuild: dist
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
+RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases
+
 .PHONY:	ecmatest
-ecmatest: npminst duk
+ecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatest (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatest"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	ecmatestd
-ecmatestd: npminst dukd
+ecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatestd"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	qecmatest
-qecmatest: npminst duk
+qecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatest (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### qecmatest"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	qecmatestd
-qecmatestd: npminst dukd
+qecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### qecmatestd"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 # Separate target because it's also convenient to run manually.
 .PHONY: apiprep
-apiprep: npminst libduktape.so.1.0.0
+apiprep: runtestsdeps libduktape.so.1.0.0
 
 .PHONY:	apitest
 apitest: apiprep
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### apitest (valgrind)"
-	$(NODE) runtests/runtests.js --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
 else
 	@echo "### apitest"
-	$(NODE) runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 endif
 
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
-	$(WGET) https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz
+	$(WGET) https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz -O $@
 
 .PHONY:	regfuzztest
 regfuzztest: regfuzz-0.1.tar.gz duk
@@ -526,10 +528,10 @@ underscoretest:	underscore duk
 	# http://test262.ecmascript.org/
 	# https://github.com/tc39/test262
 	# HG repo seems to have migrated to https://github.com/tc39/test262
-	#$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2
-	#$(WGET) https://github.com/tc39/test262/archive/595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
+	#$(WGET) http://hg.ecmascript.org/tests/test262/archive/d067d2f0ca30.tar.bz2 -O $@
+	#$(WGET) https://github.com/tc39/test262/archive/595a36b252ee97110724e6fa89fc92c9aa9a206a.zip -O $@
 	# This is a snapshot from the master, and seems to have test case bugs
-	$(WGET) https://github.com/tc39/test262/archive/3883a2e9063b0a5f2705bdac3263577a03913c94.zip
+	$(WGET) https://github.com/tc39/test262/archive/3883a2e9063b0a5f2705bdac3263577a03913c94.zip -O $@
 test262-3883a2e9063b0a5f2705bdac3263577a03913c94: 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
 	unzip $<
 	touch $@
@@ -537,7 +539,7 @@ test262-3883a2e9063b0a5f2705bdac3263577a03913c94: 3883a2e9063b0a5f2705bdac326357
 es5-tests.zip:
 	# https://github.com/tc39/test262/tree/es5-tests
 	# This is a stable branch for ES5 tests
-	$(WGET) https://github.com/tc39/test262/archive/es5-tests.zip
+	$(WGET) https://github.com/tc39/test262/archive/es5-tests.zip -O $@
 test262-es5-tests: es5-tests.zip
 	unzip $<
 	touch $@
@@ -635,10 +637,10 @@ dukwebtest: dukweb.js jquery-1.11.0.js
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 jquery-1.11.0.js:
-	$(WGET) http://code.jquery.com/jquery-1.11.0.js
+	$(WGET) http://code.jquery.com/jquery-1.11.0.js -O $@
 
 lua-5.2.3.tar.gz:
-	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz
+	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz -O $@
 
 lua-5.2.3: lua-5.2.3.tar.gz
 	tar xfz lua-5.2.3.tar.gz
@@ -677,7 +679,7 @@ jsinterpretertest: JS-Interpreter duk
 
 luajs.zip:
 	# https://github.com/mherkender/lua.js
-	$(WGET) https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip
+	$(WGET) https://github.com/mherkender/lua.js/raw/precompiled2/luajs.zip -O $@
 
 luajs: luajs.zip
 	@rm -rf luajs/
@@ -698,7 +700,7 @@ compiler-latest.zip:
 	# because closure changes may break minified initjs code and make
 	# old builds unreliable.
 	# https://code.google.com/p/closure-compiler/
-	$(WGET) http://dl.google.com/closure-compiler/compiler-latest.zip
+	$(WGET) http://dl.google.com/closure-compiler/compiler-latest.zip -O $@
 
 closure-compiler:
 	# https://github.com/google/closure-compiler
@@ -726,7 +728,7 @@ UglifyJS:
 	# https://github.com/mishoo/UglifyJS
 	# Use a specific release because UglifyJS is used in building Duktape
 	@rm -f v1.3.5.tar.gz
-	$(WGET) https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz
+	$(WGET) https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz -O v1.3.5.tar.gz
 	tar xfz v1.3.5.tar.gz
 	mv UglifyJS-1.3.5 UglifyJS
 	@rm -f v1.3.5.tar.gz
@@ -740,7 +742,7 @@ UglifyJS2:
 	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
 	# the NodeJS dependencies need to be controlled for this to really work.)
 	@rm -f v2.4.12.tar.gz
-	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz
+	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz -O v2.4.12.tar.gz
 	tar xfz v2.4.12.tar.gz
 	mv UglifyJS2-2.4.12 UglifyJS2
 	@rm -f v2.4.12.tar.gz
@@ -752,7 +754,7 @@ UglifyJS2:
 
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
-	$(WGET) http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl
+	$(WGET) http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl -O $@
 
 coffee-script:
 	# http://coffeescript.org/
@@ -862,8 +864,8 @@ gccpredefs:
 clangpredefs:
 	clang -dM -E - < /dev/null
 
-.PHONY:	npminst
-npminst:	runtests/node_modules
+.PHONY:	runtestsdeps
+runtestsdeps:	runtests/node_modules UglifyJS2
 
 runtests/node_modules:
 	echo "Installing required NodeJS modules for runtests"

@@ -19,6 +19,13 @@ var TIMEOUT_SLOW = 3600 * 1000
 var TIMEOUT_NORMAL_VALGRIND = 3600 * 1000;
 var TIMEOUT_NORMAL = 600 * 1000;
 
+// Global options from command line
+var optPrepTestPath;
+var optMinifyClosure;
+var optMinifyUglifyJS;
+var optMinifyUglifyJS2;
+var optUtilIncludePath;
+
 /*
  *  Utils.
  */
@@ -112,7 +119,7 @@ function executeTest(options, callback) {
     var child;
     var cmd, cmdline;
     var execopts;
-    var tempInput, tempVgxml, tempVgout;
+    var tempPrologue, tempInput, tempVgxml, tempVgout;
     var tempSource, tempExe;
     var timeout;
 
@@ -133,6 +140,7 @@ function executeTest(options, callback) {
         res.valgrind_xml = safeReadFileSync(tempVgxml, 'utf-8');
         res.valgrind_out = safeReadFileSync(tempVgout, 'utf-8');
 
+        safeUnlinkSync(tempPrologue);
         safeUnlinkSync(tempInput);
         safeUnlinkSync(tempVgxml);
         safeUnlinkSync(tempVgout);
@@ -176,21 +184,6 @@ function executeTest(options, callback) {
             console.log(error);
             execDone(error);
             return;
-        }
-
-        // FIXME: must respect 'use strict' and avoid putting any code before one
-        // (or prepend a new 'use strict')
-        if (options.engine.jsPrefix) {
-            // doesn't work
-            // tempInput = temp.path({ prefix: 'runtests-', suffix: '.js'})
-            tempInput = mkTempName();
-            try {
-                fs.writeFileSync(tempInput, options.engine.jsPrefix + fs.readFileSync(options.testPath));
-            } catch (e) {
-                console.log(e);
-                callback(e);
-                return;
-            }
         }
 
         cmd = [];
@@ -270,10 +263,43 @@ function executeTest(options, callback) {
         child = child_process.exec(cmdline, execopts, compileDone);
     }
 
+    function prepareEcmaTest() {
+        tempPrologue = mkTempName();
+        tempInput = mkTempName();
+
+        try {
+            // The prefix is written to a temp file each time in case it needs
+            // to be dynamic later (e.g. include test case or execution context info).
+            fs.writeFileSync(tempPrologue, options.engine.jsPrefix || '/* no prefix */');
+        } catch (e) {
+            console.log(e);
+            callback(e);
+            return;
+        }
+
+        var args = [];
+        args.push(optPrepTestPath)
+        if (optMinifyClosure) {
+            args.push('--minify-closure', optMinifyClosure);
+        }
+        if (optMinifyUglifyJS) {
+            args.push('--minify-uglifyjs', optMinifyUglifyJS);
+        }
+        if (optMinifyUglifyJS2) {
+            args.push('--minify-uglifyjs2', optMinifyUglifyJS2)
+        }
+        args.push('--util-include-path', optUtilIncludePath)
+        args.push('--input', options.testPath)
+        args.push('--output', tempInput)
+        args.push('--prologue', tempPrologue)
+
+        child_process.execFile('python', args, {}, compileDone)
+    }
+
     if (options.engine.name === 'api') {
         compileApiTest();
     } else {
-        compileDone(null, null, null);
+        prepareEcmaTest();
     }
 }
 
@@ -348,6 +374,7 @@ function findTestCasesSync(argList) {
             m = pat.exec(path.basename(arg));
             if (!m) { return; }
             if (found[m[1]]) { return; }
+            if (m[1].substring(0, 5) === 'util-') { return; }  // skip utils
             found[m[1]] = true;
             testcases.push(arg);
         } else if (st.isDirectory()) {
@@ -412,7 +439,6 @@ function getValgrindErrorSummary(root) {
 }
 
 function testRunnerMain() {
-    // FIXME: proper arg help
     var argv = require('optimist')
         .usage('Execute one or multiple test cases; dirname to execute all tests in a directory.')
         .default('num-threads', 4)
@@ -424,6 +450,26 @@ function testRunnerMain() {
         .boolean('verbose')
         .boolean('report-diff-to-other')
         .boolean('valgrind')
+        .describe('num-threads', 'number of threads to use for testcase execution')
+        .describe('test-sleep', 'sleep time (milliseconds) between testcases, avoid overheating :)')
+        .describe('run-duk', 'run testcase with Duktape')
+        .describe('cmd-duk', 'path for "duk" command')
+        .describe('run-nodejs', 'run testcase with Node.js (V8)')
+        .describe('cmd-nodejs', 'path for Node.js command')
+        .describe('run-rhino', 'run testcase with Rhino')
+        .describe('cmd-rhino', 'path for Rhino command')
+        .describe('run-smjs', 'run testcase with smjs')
+        .describe('cmd-smjs', 'path for Spidermonkey executable')
+        .describe('verbose', 'verbose test output')
+        .describe('report-diff-to-other', 'log diff to other engines')
+        .describe('valgrind', 'run duktape testcase with valgrind (no effect on other engines)')
+        .describe('prep-test-path', 'path for test_prep.py')
+        .describe('util-include-path', 'path for util-*.js files (ecmascript-testcases usually)')
+        .describe('minify-closure', 'path for closure compiler.jar')
+        .describe('minify-uglifyjs', 'path for UglifyJS executable')
+        .describe('minify-uglifyjs2', 'path for UglifyJS2 executable')
+        .demand('prep-test-path')
+        .demand('util-include-path')
         .demand(1)   // at least 1 non-arg
         .argv;
     var testcases;
@@ -656,6 +702,32 @@ function testRunnerMain() {
         });
 
         fs.writeFileSync(logFile, lines.join('\n') + '\n');
+    }
+
+    if (argv['prep-test-path']) {
+        optPrepTestPath = argv['prep-test-path'];
+    } else {
+        throw new Error('missing --prep-test-path');
+    }
+
+    if (argv['minify-closure']) {
+        optMinifyClosure = argv['minify-closure'];
+    }
+
+    if (argv['minify-uglifyjs']) {
+        optMinifyUglifyJS = argv['minify-uglifyjs'];
+    }
+
+    if (argv['minify-uglifyjs2']) {
+        optMinifyUglifyJS2 = argv['minify-uglifyjs2'];
+    }
+
+    // Don't require a minifier here because we may be executing API testcases
+
+    if (argv['util-include-path']) {
+        optUtilIncludePath = argv['util-include-path'];
+    } else {
+        throw new Error('missing --util-include-path');
     }
 
     engines = [];
