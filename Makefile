@@ -432,58 +432,60 @@ dukdscanbuild: dist
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
+RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases
+
 .PHONY:	ecmatest
-ecmatest: npminst duk
+ecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatest (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatest"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	ecmatestd
-ecmatestd: npminst dukd
+ecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### ecmatestd"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	qecmatest
-qecmatest: npminst duk
+qecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatest (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### qecmatest"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 .PHONY:	qecmatestd
-qecmatestd: npminst dukd
+qecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
 else
 	@echo "### qecmatestd"
-	$(NODE) runtests/runtests.js --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
 endif
 
 # Separate target because it's also convenient to run manually.
 .PHONY: apiprep
-apiprep: npminst libduktape.so.1.0.0
+apiprep: runtestsdeps libduktape.so.1.0.0
 
 .PHONY:	apitest
 apitest: apiprep
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### apitest (valgrind)"
-	$(NODE) runtests/runtests.js --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
 else
 	@echo "### apitest"
-	$(NODE) runtests/runtests.js --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 endif
 
 regfuzz-0.1.tar.gz:
@@ -862,8 +864,8 @@ gccpredefs:
 clangpredefs:
 	clang -dM -E - < /dev/null
 
-.PHONY:	npminst
-npminst:	runtests/node_modules
+.PHONY:	runtestsdeps
+runtestsdeps:	runtests/node_modules UglifyJS2
 
 runtests/node_modules:
 	echo "Installing required NodeJS modules for runtests"
