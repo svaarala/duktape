@@ -1,0 +1,27 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: resolve gcc signed overflow warnings from matrix testing (-O3 or above)
+desc: |-
+  The error (warning, promoted to error by -Werror)::
+  
+      error: assuming signed overflow does not occur when assuming that (X - c) > X is always false
+  
+  https://gcc.gnu.org/wiki/FAQ#signed_overflow
+  https://bugreports.qt-project.org/browse/QTBUG-33314
+  
+  See if the call sites exhibiting this can be fixed - if not, document that -fno-strict-overflow
+  is recommended.
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-03 01:01:00.465201 Z
+references: []
+
+id: 72b1d2c6c0cddcffff10f47c44ff002574535b5e
+log_events: 
+- - 2015-01-03 01:01:00.662046 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
