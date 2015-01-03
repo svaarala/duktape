@@ -59,6 +59,8 @@ Example::
    *  here is "hello world\n".
    */
 
+  /*@include util-foo.js@*/
+
   /*---
   {
      "slow": false,
@@ -82,6 +84,14 @@ Example::
 
   /* there can be multiple "expected" blocks (but only one metadata block) */
   print("second test");
+
+The ``/*@include ... @*/`` line is replaced with another Ecmascript file which
+is automatically minified to a one-liner.  This ensures that utilities can be
+included without changing line numbers in the testcase, which is important for
+tests checking for linenumbers in stack traces etc.  The utilities may be used
+both in strict and non-strict programs so they must be compatible with both
+(it's probably easiest to make helpers 'use strict' so they'll be strict in
+both cases).
 
 The metadata block and all metadata keys are optional.  Boolean flags
 default to false if metadata block or the key is not present.  Current
@@ -114,6 +124,11 @@ metadata keys:
 
 * ``comment``: optional string to comment on testcase very shortly, this can
   be used to provide additional details on why a testcase fails for now.
+
+Testcases used to be executable directly prior to Duktape 1.1.  With the
+include mechanism testcases need to be "prepared" before execution, but it
+can be done with a simple utility and the resulting prepped testcases are
+independent of the rest of the testing framework.
 
 Practices
 ---------
@@ -224,6 +239,3 @@ Future work
 
 * Put test cases in a directory hierarchy instead (``test/stmt/trycatch.js``),
   perhaps scales better (at the expense of adding hassle to e.g. grepping).
-
-* Keep simple input-output model but add includes.  There is a lot of
-  boilerplate now for basic things like dumping descriptors.
