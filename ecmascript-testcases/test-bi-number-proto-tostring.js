@@ -50,8 +50,7 @@
 
 /*---
 {
-    "custom": true,
-    "knownissue": "expect strings to be checked, but probably Duktape rounding issues"
+    "custom": true
 }
 ---*/
 

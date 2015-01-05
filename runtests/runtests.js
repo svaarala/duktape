@@ -25,6 +25,7 @@ var optMinifyClosure;
 var optMinifyUglifyJS;
 var optMinifyUglifyJS2;
 var optUtilIncludePath;
+var knownIssues;
 
 /*
  *  Utils.
@@ -105,10 +106,25 @@ function parseTestCaseSync(filePath) {
     return {
         filePath: filePath,
         name: path.basename(filePath, '.js'),
+        fileName: path.basename(filePath),
         meta: meta,
         expect: expect,
         expect_md5: md5(expect)
     };
+}
+
+function addKnownIssueMetadata(testcase) {
+    if (!knownIssues) { return; }
+    knownIssues.forEach(function (v) {
+        if (v.test !== testcase.fileName) { return; }
+        testcase.meta = testcase.meta || {};
+        if (v.knownissue) {
+            testcase.meta.knownissue = v.knownissue;  // XXX: merge multiple
+        }
+        if (v.specialoptions) {
+            testcase.meta.specialoptions = v.specialoptions;  // XXX: merge multiple
+        }
+    });
 }
 
 /*
@@ -461,13 +477,14 @@ function testRunnerMain() {
         .describe('run-smjs', 'run testcase with smjs')
         .describe('cmd-smjs', 'path for Spidermonkey executable')
         .describe('verbose', 'verbose test output')
-        .describe('report-diff-to-other', 'log diff to other engines')
+        .describe('report-diff-to-other', 'report diff to other engines')
         .describe('valgrind', 'run duktape testcase with valgrind (no effect on other engines)')
         .describe('prep-test-path', 'path for test_prep.py')
         .describe('util-include-path', 'path for util-*.js files (ecmascript-testcases usually)')
         .describe('minify-closure', 'path for closure compiler.jar')
         .describe('minify-uglifyjs', 'path for UglifyJS executable')
         .describe('minify-uglifyjs2', 'path for UglifyJS2 executable')
+        .describe('known-issues', 'known issues json file')
         .demand('prep-test-path')
         .demand('util-include-path')
         .demand(1)   // at least 1 non-arg
@@ -498,6 +515,7 @@ function testRunnerMain() {
         testcases.forEach(function test(fullPath) {
             var filename = path.basename(fullPath);
             var testcase = parseTestCaseSync(fullPath);
+            addKnownIssueMetadata(testcase);
 
             results[testcase.name] = {};  // create in test case order
 
@@ -728,6 +746,10 @@ function testRunnerMain() {
         optUtilIncludePath = argv['util-include-path'];
     } else {
         throw new Error('missing --util-include-path');
+    }
+
+    if (argv['known-issues']) {
+        knownIssues = JSON.parse(fs.readFileSync(argv['known-issues'], 'utf-8'));
     }
 
     engines = [];

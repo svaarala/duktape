@@ -16,12 +16,6 @@
  *
  */
 
-/*---
-{
-    "knownissue": "a suitable empty quantified (e.g. '(x*)*') causes regexp parsing to terminate due to step limit"
-}
----*/
-
 var t;
 
 /*===

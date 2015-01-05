@@ -1,9 +1,3 @@
-/*---
-{
-    "knownissue": "JSON.stringify() can be given a property list to serialize; duplicates should be eliminated but Duktape (and other engines) will happily serialize a property multiple times"
-}
----*/
-
 /*===
 {"bar":2,"foo":1,"baz":4,"quux":3}
 {"bar":2,"1":5,"foo":1}

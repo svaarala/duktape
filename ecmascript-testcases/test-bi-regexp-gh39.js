@@ -5,12 +5,6 @@
  *  RegExp parser has no leniency for regexps outside the E5 syntax.
  */
 
-/*---
-{
-    "knownissue": "requires leniency for non-standard regexps"
-}
----*/
-
 /*===
 parse ok
 ===*/

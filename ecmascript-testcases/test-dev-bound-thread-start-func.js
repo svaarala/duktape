@@ -4,8 +4,7 @@
 
 /*---
 {
-    "custom": true,
-    "knownissue": "initial function of a new coroutine cannot be bound"
+    "custom": true
 }
 ---*/
 

@@ -1,7 +1,6 @@
 /*---
 {
-    "custom": true,
-    "specialoptions": "requires refcounting"
+    "custom": true
 }
 ---*/
 

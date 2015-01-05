@@ -12,12 +12,6 @@
  *  support shuffling.
  */
 
-/*---
-{
-    "knownissue": "out of regs for try-catch in Duktape 1.0"
-}
----*/
-
 /*===
 catch: foo
 ===*/

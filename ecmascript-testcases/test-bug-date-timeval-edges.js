@@ -10,12 +10,6 @@
  *      to either side of 01 January, 1970 UTC.
  */
 
-/*---
-{
-    "knownissue": "test case depends on current timezone offset"
-}
----*/
-
 /*===
 test1
 8639999996399999

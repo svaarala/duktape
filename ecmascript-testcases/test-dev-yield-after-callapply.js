@@ -1,6 +1,5 @@
 /*---
 {
-    "knownissue": "yield() not allowed when function called via Function.prototype.(call|apply)()",
     "custom": true
 }
 ---*/

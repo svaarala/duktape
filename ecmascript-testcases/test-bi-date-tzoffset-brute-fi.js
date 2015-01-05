@@ -7,13 +7,6 @@
  *  with no diff.
  */
 
-/*---
-{
-    "specialoptions": "test case has been written for Finnish locale",
-    "knownissue": "year 1970 deviates from expected, Duktape uses equiv. year for 1970 on purpose at the moment"
-}
----*/
-
 /*===
 finnish tzoffset/dst brute force test
 1900 -> 1993:-120 5208:-180 1559:-120

@@ -7,12 +7,6 @@
 
 "use strict";
 
-/*---
-{
-    "knownissue": "in corner cases (related to automatic semicolon insertion) throw statement error linenumber can be unexpected"
-}
----*/
-
 /*===
 Error 2
 Error 2
