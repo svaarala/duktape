@@ -1814,7 +1814,7 @@ typedef FILE duk_file;
  */
 
 #define DUK_CAUSE_SEGFAULT()  do { \
-		*((duk_uint32_t *) NULL) = (duk_uint32_t) 0xdeadbeefUL; \
+		*((volatile duk_uint32_t *) NULL) = (duk_uint32_t) 0xdeadbeefUL; \
 	} while (0)
 
 /*

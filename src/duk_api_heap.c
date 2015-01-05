@@ -117,6 +117,8 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_env;
 	DUK_HOBJECT_INCREF(thr, h_env);
 	DUK_HOBJECT_DECREF(thr, h_prev_env);  /* side effects */
+	DUK_UNREF(h_env);  /* without refcounts */
+	DUK_UNREF(h_prev_env);
 
 	/* [ ... new_glob new_env ] */
 

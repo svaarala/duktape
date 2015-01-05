@@ -170,9 +170,10 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_substring(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_caseconv_shared(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_trim(duk_context *ctx);
-#ifdef DUK_USE_SECTION_B
+/* Note: present even if DUK_OPT_NO_SECTION_B given because genbuiltins.py
+ * will point to it.
+ */
 DUK_INTERNAL_DECL duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx);
-#endif
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx);
 #if 0  /* unimplemented now */

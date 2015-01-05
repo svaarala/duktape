@@ -1590,7 +1590,7 @@ DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 		DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
 #else
 		/* Standard JSON omits functions */
-		DUK_NEVER_HERE();
+		DUK_UNREACHABLE();
 #endif
 		break;
 	}
