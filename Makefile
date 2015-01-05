@@ -488,6 +488,19 @@ else
 	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
 endif
 
+.PHONY: matrix10
+matrix10: dist
+	cd dist; python ../util/matrix_compile.py --count=10
+.PHONY: matrix100
+matrix100: dist
+	cd dist; python ../util/matrix_compile.py --count=100
+.PHONY: matrix1000
+matrix1000: dist
+	cd dist; python ../util/matrix_compile.py --count=1000
+.PHONY: matrix10000
+matrix10000: dist
+	cd dist; python ../util/matrix_compile.py --count=10000
+
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
