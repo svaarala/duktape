@@ -14,14 +14,38 @@
 
 /*===
 1036956
+63
+SyntaxError
+SyntaxError
 ===*/
+
 try {
-    print(03751234);
+    print(eval('03751234'));
 } catch (e) {
     print(e.name);
 }
 
-/* FIXME: test 088, 099 */
+try {
+    print(eval('077'));
+} catch (e) {
+    print(e.name);
+}
+
+// These are not valid octal, but both Rhino and V8 parse them as decimal
+// (088 -> 88, 099 -> 099, but 077 -> 63).  At the moment Duktape throws a
+// SyntaxError for these.
+
+try {
+    print(eval('088'));
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    print(eval('099'));
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 1
