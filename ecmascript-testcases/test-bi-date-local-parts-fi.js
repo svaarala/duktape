@@ -22,7 +22,6 @@
 // Test is custom because of custom local time formatting
 /*---
 {
-    "specialoptions": "test case has been written for Finnish locale",
     "custom": true
 }
 ---*/

@@ -4,8 +4,7 @@
 
 /*---
 {
-    "custom": true,
-    "specialoptions": "DUK_OPT_LIGHTFUNC_BUILTINS"
+    "custom": true
 }
 ---*/
 

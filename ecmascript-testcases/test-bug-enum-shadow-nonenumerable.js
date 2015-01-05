@@ -16,12 +16,6 @@
  *  Neither V8 nor Rhino (some versions at least) pass this test.
  */
 
-/*---
-{
-    "knownissue": "corner case enumeration semantics, not sure what correct behavior is (test262 ch12/12.6/12.6.4/12.6.4-2)"
-}
----*/
-
 /*===
 test1
 foo

@@ -16,7 +16,6 @@
 /*---
 {
     "custom": true,
-    "specialoptions": "requires 16-bit field options",
     "skip": true
 }
 ---*/

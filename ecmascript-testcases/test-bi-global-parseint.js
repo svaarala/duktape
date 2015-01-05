@@ -8,12 +8,6 @@
  *  also for base 10 (though not for other bases), which is tricky.
  */
 
-/*---
-{
-    "knownissue": "rounding differences for parsing integers larger than 2^53"
-}
----*/
-
 var WHITESPACE_CODEPOINTS = [
     // from WhiteSpace production
     0x0009,    // <TAB>

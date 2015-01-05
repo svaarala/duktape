@@ -5,7 +5,6 @@
 // Custom test because of locale specific timestamp outputs
 /*---
 {
-    "specialoptions": "test case has been written for Finnish locale",
     "custom": true
 }
 ---*/

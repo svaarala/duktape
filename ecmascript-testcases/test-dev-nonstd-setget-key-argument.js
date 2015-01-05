@@ -5,8 +5,7 @@
 
 /*---
 {
-    "custom": true,
-    "specialoptions": "should work with default options, but will break with DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT"
+    "custom": true
 }
 ---*/
 

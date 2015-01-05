@@ -1,9 +1,3 @@
-/*---
-{
-    "knownissue": "rounding corner cases in number-to-string coercion"
-}
----*/
-
 /*===
 neg inf -Infinity -Infinity
 neg zero 0 0.0000000000000000000

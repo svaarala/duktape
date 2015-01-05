@@ -4,8 +4,7 @@
 
 /*---
 {
-    "nonstandard": true,
-    "knownissue": "non-standard octal behavior does not match V8/Rhino"
+    "nonstandard": true
 }
 ---*/
 

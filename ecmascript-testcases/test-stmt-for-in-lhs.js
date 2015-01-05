@@ -24,13 +24,6 @@
  *  invalid LHS values.
  */
 
-/*---
-{
-    "knownissue": "for-in allows some invalid left-hand-side expressions which cause a runtime ReferenceError instead of a compile-time SyntaxError (e.g. 'for (a+b in [0,1]) {...}')"
-}
-
----*/
-
 /*===
 i: 1
 0 no error

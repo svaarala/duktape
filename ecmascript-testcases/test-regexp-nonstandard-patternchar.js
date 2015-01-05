@@ -7,8 +7,7 @@
 
 /*---
 {
-    "nonstandard": true,
-    "knownissue": "other engines allow an unescaped brace to appear literally (e.g. /{/), Duktape does not (which seems correct but is against real world behavior)"
+    "nonstandard": true
 }
 ---*/
 
