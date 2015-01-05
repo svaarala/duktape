@@ -432,7 +432,7 @@ dukdscanbuild: dist
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
-RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases
+RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.json
 
 .PHONY:	ecmatest
 ecmatest: runtestsdeps duk
