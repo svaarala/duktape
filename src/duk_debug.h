@@ -216,10 +216,12 @@ DUK_INTERNAL_DECL void duk_debug_log(duk_small_int_t level, const char *file, du
 #else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */
 #define DUK_DEBUG_STASH_SIZE  128
+#if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_level_stash;
+#endif
 DUK_INTERNAL_DECL void duk_debug_log(const char *fmt, ...);
 #endif  /* DUK_USE_VARIADIC_MACROS */
 

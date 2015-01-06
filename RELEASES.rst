@@ -759,6 +759,8 @@ Planned
 * Fix MinGW compile warning "visibility attribute not supported in this
   configuration; ignored" when using separate sources
 
+* Fix various warnings and errors detected in option matrix testing
+
 1.2.0 (2015-XX-XX)
 ------------------
 
