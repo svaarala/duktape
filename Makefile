@@ -819,12 +819,12 @@ flow:
 alljoyn-js:
 	# https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
 	# no --depth 1 ("dumb http transport does not support --depth")
-	$(GIT) clone https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+	$(GIT) clone https://git.allseenalliance.org/gerrit/core/alljoyn-js.git
 
 ajtcl:
 	# https://git.allseenalliance.org/cgit/core/ajtcl.git/
 	# no --depth 1 ("dumb http transport does not support --depth")
-	$(GIT) clone https://git.allseenalliance.org/cgit/core/ajtcl.git/
+	$(GIT) clone https://git.allseenalliance.org/gerrit/core/ajtcl.git/
 
 CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
