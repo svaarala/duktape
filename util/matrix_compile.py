@@ -409,7 +409,8 @@ def main():
 			'compile_exitcode': compile_exitcode,
 			'run_command': run_command,
 			'run_stdout': run_stdout,
-			'run_stderr': run_stderr,
+			# Don't include debug output, it's huge with DUK_OPT_DDDPRINT
+			#'run_stderr': run_stderr,
 			'run_exitcode': run_exitcode,
 			'run_expect': expect,
 			'success': not fail
