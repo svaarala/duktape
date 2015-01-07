@@ -10,6 +10,8 @@
 #include "ajs.h"
 #include "ajs_heap.h"
 
+extern uint8_t dbgHEAPDUMP;
+
 /*
  *  Helpers
  */
@@ -110,6 +112,9 @@ void ajsheap_init(void) {
 	                   1);                     /* numHeaps */
 	fprintf(stderr, "AJS_HeapInit() -> %ld\n", (long) ret);
 	fflush(stderr);
+
+	/* Enable heap dumps */
+	dbgHEAPDUMP = 1;
 }
 
 /* AjsHeap.dump(), allows Ecmascript code to dump heap status at suitable
