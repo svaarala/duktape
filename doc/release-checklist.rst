@@ -61,7 +61,7 @@ Checklist for ordinary releases
 
   - Run ``mandel.js`` to test the the command line tool works.
 
-  - Platform / compiler combinations, **FIXME: incomplete, should be automated**
+  - Platform / compiler combinations (incomplete, should be automated):
 
     + Linux x86-64 gcc
 
@@ -137,7 +137,9 @@ Checklist for ordinary releases
 
 * Compile option matrix test
 
-  - Run ``util/matrix_compile.py`` manually for GCC and Clang on x64
+  - Run 1000 iterations of ``util/matrix_compile.py`` which compiles and runs
+    random combinations of feature options and compilers (gcc, g++, clang) on
+    x86, x64, and x32
 
 * Regfuzz
 
