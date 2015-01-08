@@ -17,7 +17,7 @@
   { "test": "test-bug-numconv-1e23.js", "knownissue": "corner case in floating point parse rounding" },
   { "test": "test-bug-numconv-denorm-toprec.js", "knownissue": "in a denormal corner case toPrecision() can output a zero leading digit" },
   { "test": "test-bug-tonumber-u0000.js", "knownissue": "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string" },
-  { "test": "test-bug-trycatch-many-constants.js", "knownissue": "out of regs for try-catch in Duktape 1.0" },
+  { "test": "test-bug-trycatch-many-constants.js", "knownissue": "out of regs for try-catch in functions with a lot of constants" },
   { "test": "test-conv-number-tostring-tonumber-roundtrip.js", "knownissue": "rounding corner cases" },
   { "test": "test-dev-bound-thread-start-func.js", "knownissue": "initial function of a new coroutine cannot be bound" },
   { "test": "test-dev-func-cons-args.js", "knownissue": "corner cases for 'new Function()' when arguments and code are given as strings" },
