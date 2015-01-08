@@ -24,7 +24,7 @@ it is also possible that a non-<code>NULL</code> pointer is returned).
 void *ptr;
 duk_size_t sz;
 
-ptr = duk_get_buffer(ctx, &sz);
+ptr = duk_get_buffer(ctx, -3, &sz);
 printf("buf=%p, size=%lu\n", ptr, (unsigned long) sz);
 
 =tags

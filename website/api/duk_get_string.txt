@@ -22,7 +22,7 @@ this differs from how buffer data pointers are handled (for technical reasons).
 =example
 const char *buf;
 
-buf = duk_get_string(ctx);
+buf = duk_get_string(ctx, -3);
 if (buf) {
     printf("value is a string: %s\n", buf);
 }
