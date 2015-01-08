@@ -618,10 +618,7 @@ Released
   static declaration and a static define which is not allowed in C++;
   the quick fix is to avoid "static" entirely with C++ (GH-63)
 
-Planned
-=======
-
-1.1.0 (2015-01-XX)
+1.1.0 (2015-01-09)
 ------------------
 
 * Main release goal: improved low memory support to allow Duktape to run
@@ -736,6 +733,10 @@ Planned
   static declaration and a static define which is not allowed in C++
   (see GH-63)
 
+* Fix compiler specific behavior when assigning a string to a buffer index
+  (e.g. buf[3] = 'x'), now NaN coerces consistently to zero (this was the
+  behavior on most compilers but e.g. on Linux MIPS NaN coerced to 255)
+
 * Fix fileName for functions defined in a module loaded using require(),
   previously fileName would always be duk_bi_global.c which is misleading
   (see GH-58)
@@ -756,13 +757,24 @@ Planned
 
 * Fix several compile warnings with gcc 4.9.2 (GH-91)
 
-* Fix MinGW compile warning "visibility attribute not supported in this
-  configuration; ignored" when using separate sources
+* Fix MinGW and Cygwin GCC compile warning "visibility attribute not
+  supported in this configuration; ignored" when using separate sources
+
+* Fix MSVC const difference warning
+
+* Fix <inttypes.h> issue for older C++ compilers by defining
+  __STDC_LIMIT_MACROS and __STDC_CONSTANT_MACROS before including
+  stdint.h and inttypes.h
 
 * Fix various warnings and errors detected in option matrix testing
 
+Planned
+=======
+
 1.2.0 (2015-XX-XX)
 ------------------
+
+* Debugger support
 
 2.0.0 (XXXX-XX-XX)
 ------------------
