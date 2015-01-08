@@ -1416,11 +1416,10 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
  *    - Error throwing
  *    - Thread resume and yield
  *
- *  For more detailed notes, see doc/execution.txt.
+ *  For more detailed notes, see doc/execution.rst.
  *
- *  Note: setjmp() and local variables have a nasty interaction,
- *  see execution.txt; non-volatile locals modified after setjmp()
- *  call are not guaranteed to keep their value.
+ *  Also see doc/code-issues.rst for discussion of setjmp(), longjmp(),
+ *  and volatile.
  */
 
 #define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
@@ -1442,11 +1441,14 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 #endif
 
 DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
-	/* entry level info -- volatile, must be guaranteed for error handling */
-	volatile duk_hthread *entry_thread;   /* volatile copy of exec_thr */
+	/* Entry level info.  Although these are assigned to before setjmp()
+	 * a 'volatile' seems to be needed.  Note placement of "volatile" for
+	 * pointers.  See doc/code-issues.rst for more discussion.
+	 */
+	duk_hthread * volatile entry_thread;   /* volatile copy of exec_thr */
 	volatile duk_size_t entry_callstack_top;
 	volatile duk_int_t entry_call_recursion_depth;
-	volatile duk_jmpbuf *entry_jmpbuf_ptr;
+	duk_jmpbuf * volatile entry_jmpbuf_ptr;
 
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
 	duk_hthread *thr;             /* stable */
@@ -1479,6 +1481,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 */
 
 	DUK_ASSERT(exec_thr != NULL);
+	DUK_ASSERT(exec_thr->heap != NULL);
+	DUK_ASSERT(exec_thr->heap->curr_thread != NULL);
 	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR((duk_heaphdr *) exec_thr);
 	DUK_ASSERT(exec_thr->callstack_top >= 1);  /* at least one activation, ours */
 	DUK_ASSERT(DUK_ACT_GET_FUNC(exec_thr->callstack + exec_thr->callstack_top - 1) != NULL);
