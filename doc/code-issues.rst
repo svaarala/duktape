@@ -1043,6 +1043,76 @@ EBCDIC
 
 See separate section below.
 
+Setjmp, longjmp, and volatile
+=============================
+
+When a local variable in the function containing a ``setjmp()`` gets changed
+between ``setjmp()`` and ``longjmp()`` there is no guarantee that the change
+is visible after a ``longjmp()`` unless the variable is declared volatile.
+It should be safe to:
+
+* Use non-volatile variables that are written before ``setjmp()`` and then
+  only read.
+
+* Use volatile variables which can be read and written at any point.
+
+When pointer values are changed, be careful with placement of "volatile"::
+
+    /* Non-volatile pointer, which points to a volatile integer. */
+    volatile int *ptr_x;
+
+    /* Volatile pointer, which points to a non-volatile integer. */
+    int * volatile x;
+
+When a pointer itself may be reassigned, the latter is correct, e.g.::
+
+    duk_hthread * volatile curr_thread;
+
+    curr_thread = thr;
+
+In practice it seems that some compilers have trouble guaranteeing these
+semantics for variables that are assigned to before ``setjmp()`` and not
+changed before ``longjmp()``.  For instance, there are crashes on OSX when
+using ``_setjmp()`` in such cases.  These crashes can be eliminated by
+declaring the variables volatile.  (It might be that adding the "volatile"
+changes the compiler output enough to mask a different bug though.)
+
+Optimizations may also cause odd situations, see e.g.:
+
+* http://blog.sam.liddicott.com/2013/09/why-are-setjmp-volatile-hacks-still.html
+
+To minimize the chances of the compiler handling setjmp/longjmp incorrectly,
+the cleanest approach would probable be to:
+
+* Declare all variables used in the ``setjmp()`` non-zero return case (when
+  called through ``longjmp()``) as volatile, so that we don't ever rely on
+  non-volatile variable values in that code path.
+
+Because volatile variables are slow (explicit read/write operations are
+generated for each access) it may be more practical to use explicit "save"
+variables, e.g.::
+
+    volatile int save_x;
+    int x;
+
+    if (setjmp(...)) {
+        x = save_x;
+        /* use 'x' normally */
+        return;
+    }
+
+    /* Assume foo(), bar(), quux() never longjmp(). */
+    x = foo();
+    x += bar();
+    x += quux();
+    save_x = x;  /* Save before any potential longjmp(). */
+
+    /* ... */
+
+(As of Duktape 1.1 this has not yet been done for all setjmp/longjmp
+functions.  Rather, volatile declarations have been added where they
+seem to be needed in practice.)
+
 Numeric types
 =============
 
