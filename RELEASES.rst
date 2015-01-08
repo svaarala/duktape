@@ -621,17 +621,13 @@ Released
 Planned
 =======
 
-1.1.0 (2014-XX-XX)
+1.1.0 (2015-01-XX)
 ------------------
 
 * Main release goal: improved low memory support to allow Duktape to run
   better on devices with 128kB (or even 96kB) system memory; with the changes
   in this release, Duktape initial RAM usage is reduced from about 46kB to
   22kB for a 32-bit target when all low memory features are enabled
-
-* Add duk_def_prop() which allows creation of accessor (getter/setter)
-  properties and other custom properties from C code (instead of using
-  Object.defineProperty() from Ecmascript code)
 
 * Add lightfunc (DUK_TYPE_LIGHTFUNC) primitive type, representing a
   Duktape/C function with a plain tagged value without any heap allocations
@@ -661,6 +657,10 @@ Planned
   the algorithm uses separate chaining with arrays, making allocation
   behavior easier to handle using a pool allocator, see doc/low-memory.rst
 
+* Add duk_def_prop() which allows creation of accessor (getter/setter)
+  properties and other custom properties from C code (instead of using
+  Object.defineProperty() from Ecmascript code)
+
 * Add duk_is_error() API call to check if a value inherits from Error
 
 * Add duk_get_error_code() API call to check if a value inherits from
@@ -681,13 +681,6 @@ Planned
 * Add feature option DUK_OPT_NO_STRICT_DECL to disable support for "use
   strict" declarations which may be useful with legacy code bases
 
-* Change buffer maximum size check to compare against allocated size
-  (including spare) instead of requested size (without spare), this has
-  a practical impact only when using 16-bit buffer size field
-
-* Fix INVALID opcode error for some labelled non-iteration statements
-  (see GH-85)
-
 * Add DUK_OPT_SETJMP, DUK_OPT_UNDERSCORE_SETJMP, and DUK_OPT_SIGSETJMP to
   force an alternative provider for long control transfers; _setjmp() or
   sigsetjmp() (with savesigs set to 0) can be a lot faster than setjmp()
@@ -695,6 +688,43 @@ Planned
 
 * Default to ``_setjmp`` for long control transfers on OSX/iPhone (when
   __APPLE__ is defined) (GH-55)
+
+* Add SuperH detection support
+
+* Change JSON.stringify() to escape U+2028 and U+2029 by default to make
+  the output a valid Javascript string, so that it can be embedded in a
+  web page or parsed with eval (see GH-68)
+
+* Change JSON.parse() to include a byte offset with a syntax error to help
+  pinpoint JSON errors
+
+* Make Function.prototype.name writable so that application code can set
+  a 'name' property on Duktape/C functions (GH-79)
+
+* Change buffer maximum size check to compare against allocated size
+  (including spare) instead of requested size (without spare), this has
+  a practical impact only when using 16-bit buffer size field
+
+* Use deep C stack for dukweb.js to remove some compiler recursion limit
+  limitations (see GH-67)
+
+* Add an example allocator with alloc/realloc/free logging, which is
+  useful when optimizing e.g. pool sizes for low memory targets
+
+* Add an example allocator with memory wiping, red zones for invalid
+  writes, and forced address change on realloc, which can be used for
+  detecting memory safety issues on platforms where valgrind is not
+  available
+
+* Add an example allocator with a hybrid model where a fixed set of small
+  pools are used to reduce allocator churn, but the allocator falls back
+  to malloc, realloc, and free for larger allocation sizes or when there
+  are no free pool entries
+
+* Add an SPDX 1.2 license into the distributable
+
+* Fix INVALID opcode error for some labelled non-iteration statements
+  (see GH-85)
 
 * Fix a few missing "volatile" attributes in the bytecode executor which
   affected setjmp handling in clang (especially for _setjmp and sigsetjmp),
@@ -715,46 +745,16 @@ Planned
   outside variable with the same name as the get/set property (see
   test-bug-getset-func-name.js for details)
 
-* Change JSON.stringify() to escape U+2028 and U+2029 by default to make
-  the output a valid Javascript string, so that it can be embedded in a
-  web page or parsed with eval (see GH-68)
-
-* Change JSON.parse() to include a byte offset with a syntax error to help
-  pinpoint JSON errors
-
-* Make Function.prototype.name writable so that application code can set
-  a 'name' property on Duktape/C functions (GH-79)
-
-* Use deep C stack for dukweb.js to remove some compiler recursion limit
-  limitations (see GH-67)
-
-* Add an example allocator with alloc/realloc/free logging, which is
-  useful when optimizing e.g. pool sizes for low memory targets
-
-* Add an example allocator with memory wiping, red zones for invalid
-  writes, and forced address change on realloc, which can be used for
-  detecting memory safety issues on platforms where valgrind is not
-  available
-
-* Add an example allocator with a hybrid model where a fixed set of small
-  pools are used to reduce allocator churn, but the allocator falls back
-  to malloc, realloc, and free for larger allocation sizes or when there
-  are no free pool entries
-
-* Add an SPDX 1.2 license into the distributable
-
-* Fix several compile warnings with gcc 4.9.2 (GH-91)
-
 * Fix JSON.parse() syntax error for explicitly positive exponents (e.g.
   '1.5e+2') (GH-93)
-
-* Don't fail compilation if SIZE_MAX is < 0xffffffffUL, to allow compilation
-  on platforms where SIZE_MAX is (apparently) incorrectly defined
 
 * Fix duk_push_error_object() return value for platforms where variadic
   macros are not available
 
-* Add SuperH detection support
+* Don't fail compilation if SIZE_MAX is < 0xffffffffUL, to allow compilation
+  on platforms where SIZE_MAX is (apparently) incorrectly defined
+
+* Fix several compile warnings with gcc 4.9.2 (GH-91)
 
 * Fix MinGW compile warning "visibility attribute not supported in this
   configuration; ignored" when using separate sources
