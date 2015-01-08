@@ -141,7 +141,7 @@ def flatten(v):
 		for i in v:
 			ret += flatten(i)
 		return ret
-	raise Exception('invalid value')
+	raise Exception('invalid value: %s' % repr(v))
 
 
 def getcombination(val, index):
@@ -162,20 +162,62 @@ def getcombinations(val):
 #  Test matrix
 #
 
-def create_matrix():
-	gcc_language_options = Select([
-		'',
-		#'-std=c99',
-		[ '-std=c99', '-pedantic' ]
-	])
-	gxx_language_options = Select([
-		'',
-		'-std=c++98',
-		'-std=c++11',
-		'-std=c++1y',
-		'-std=gnu++1y'
-	])
+def create_matrix(fn_duk):
+	# A lot of compiler versions are used, must install at least:
+	#
+	#     gcc-4.6
+	#     gcc-4.7
+	#     gcc-4.8
+	#     gcc-4.6-multilib
+	#     g++-4.6-multilib
+	#     gcc-4.7-multilib
+	#     g++-4.7-multilib
+	#     gcc-4.8-multilib
+	#     g++-4.8-multilib
+	#     gcc-multilib
+	#     g++-multilib
+	#     llvm-gcc-4.6
+	#     llvm-gcc-4.7
+	#     llvm-3.4
+	#     clang
+	#
+	# The set of compilers tested is distribution specific and not ery
+	# stable, so you may need to edit the compilers manually.
 
+	gcc_gxx_arch_options = Select([
+		'-m64',
+		'-m32',
+		'-mx32'
+	])
+	gcc_cmd_dialect_options = Select([
+		Combine([
+			Select([ 'gcc', 'gcc-4.6', 'gcc-4.7', 'gcc-4.8', 'llvm-gcc', 'llvm-gcc-4.7' ]),
+			Select([
+				'',
+				'-std=c89',
+				'-std=c99',
+				[ '-std=c99', '-pedantic' ]
+			])
+		])
+	])
+	gxx_cmd_dialect_options = Select([
+		# Some dialects are only available for newer g++ versions
+		Combine([
+			Select([ 'g++', 'g++-4.6', 'g++-4.7', 'g++-4.8', 'llvm-g++', 'llvm-g++-4.7' ]),
+			Select([
+				'',
+				'-std=c++98',
+				[ '-std=c++11', '-pedantic' ]
+			])
+		]),
+		Combine([
+			Select([ 'g++', 'g++-4.8' ]),
+			Select([
+				'-std=c++1y',
+				'-std=gnu++1y'
+			])
+		]),
+	])
 	gcc_gxx_debug_options = Select([
 		'',
 		[ '-g', '-ggdb' ]
@@ -187,9 +229,9 @@ def create_matrix():
 		# [ '-Wall', '-Wextra', '-Werror' ]
 	])
 	gcc_gxx_optimization_options = Select([
-		#'-O0',
-		#'-O1',
-		#'-O2',
+		'-O0',
+		'-O1',
+		'-O2',
 
 		# -O3 and -O4 produces spurious warnings on gcc 4.8.1, e.g. "error: assuming signed overflow does not occur when assuming that (X - c) > X is always false [-Werror=strict-overflow]"
 		# Not sure what causes these, but perhaps GCC converts signed comparisons into subtractions and then runs into: https://gcc.gnu.org/wiki/FAQ#signed_overflow
@@ -197,14 +239,26 @@ def create_matrix():
 		[ '-O3', '-fno-strict-overflow' ],
 		#'-O3'
 
-		#[ '-O4', '-fno-strict-overflow' ],
+		[ '-O4', '-fno-strict-overflow' ],
 		#'-O4'
+
 		'-Os'
 	])
-
-	clang_language_options = Select([
-		'',
-		'-std=c99'
+	clang_arch_options = Select([
+		'-m64',
+		'-m32',
+		'-mx32'
+	])
+	clang_cmd_dialect_options = Select([
+		Combine([
+			'clang',
+			Select([
+				'',
+				'-std=c89',
+				'-std=c99',
+				[ '-std=c99', '-pedantic' ]
+			])
+		])
 	])
 	clang_debug_options = Select([
 		'',
@@ -216,9 +270,9 @@ def create_matrix():
 		#[ '-Wall', '-Wextra', '-Werror' ]
 	])
 	clang_optimization_options = Select([
-		#'-O0'
-		#'-O1',
-		#'-O2',
+		'-O0'
+		'-O1',
+		'-O2',
 		'-O3',
 		#'-O4',
 		'-Os'
@@ -278,33 +332,33 @@ def create_matrix():
 	# and link option syntax could (in principle) differ between compilers.
 
 	gcc_cmd_matrix = Combine([
-		'gcc',
-		gcc_language_options,
+		gcc_cmd_dialect_options,
+		gcc_gxx_arch_options,
 		gcc_gxx_debug_options,
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', '/tmp/duk', '-lm' ]
+		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	gxx_cmd_matrix = Combine([
-		'g++',
-		gxx_language_options,
+		gxx_cmd_dialect_options,
+		gcc_gxx_arch_options,
 		gcc_gxx_debug_options,
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', '/tmp/duk', '-lm' ]
+		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	clang_cmd_matrix = Combine([
-		'clang',
-		clang_language_options,
+		clang_cmd_dialect_options,
+		clang_arch_options,
 		clang_debug_options,
 		clang_warning_options,
 		clang_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', '/tmp/duk', '-lm' ]
+		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	matrix = Select([ gcc_cmd_matrix, gxx_cmd_matrix, clang_cmd_matrix ])
@@ -320,22 +374,49 @@ def check_unlink(filename):
 
 def main():
 	# XXX: add option for testcase(s) to run?
+	# XXX: add valgrind support, restrict to -m64 compilation?
+	# XXX: proper tempfile usage and cleanup
+
+	time_str = str(long(time.time() * 1000.0))
+
 	parser = optparse.OptionParser()
 	parser.add_option('--count', dest='count', default='1000')
-	parser.add_option('--seed', dest='seed', default='default_seed_' + str(long(time.time() * 1000.0)))
-	parser.add_option('--out-results-json', dest='out_results_json', default='/tmp/matrix_results.json')
-	parser.add_option('--out-failed', dest='out_failed', default='/tmp/matrix_failed.txt')
+	parser.add_option('--seed', dest='seed', default='default_seed_' + time_str)
+	parser.add_option('--out-results-json', dest='out_results_json', default='/tmp/matrix_results%s.json' % time_str)
+	parser.add_option('--out-failed', dest='out_failed', default='/tmp/matrix_failed%s.txt' % time_str)
+	parser.add_option('--verbose', dest='verbose', default=False, action='store_true')
         (opts, args) = parser.parse_args()
 
-	# Avoid any optional features (like JSON or RegExps) in the test
-	f = open('/tmp/test.js', 'wb')
-	f.write('''print('Hello world', 1 + 2, Math.PI, JSON.stringify({ foo: 'bar' }))''')
+	fn_testjs = '/tmp/test%s.js' % time_str
+	fn_duk = '/tmp/duk%s' % time_str
+
+	# Avoid any optional features (like JSON or RegExps) in the test.
+	# Don't make the test very long, as it executes very slowly when
+	# DUK_OPT_DDDPRINT and DUK_OPT_ASSERTIONS are enabled.
+
+	f = open(fn_testjs, 'wb')
+	f.write('''
+// Fibonacci using try-catch, exercises setjmp/longjmp a lot
+function fibthrow(n) {
+    var f1, f2;
+    if (n === 0) { throw 0; }
+    if (n === 1) { throw 1; }
+    try { fibthrow(n-1); } catch (e) { f1 = e; }
+    try { fibthrow(n-2); } catch (e) { f2 = e; }
+    throw f1 + f2;
+}
+print('Hello world');
+print(1 + 2);
+print(Math.PI);  // tests constant endianness
+print(JSON.stringify({ foo: 'bar' }));
+try { fibthrow(9); } catch (e) { print(e); }
+''')
 	f.close()
-	expect = 'Hello world 3 3.141592653589793 {"foo":"bar"}\n'
+	expect = 'Hello world\n3\n3.141592653589793\n{"foo":"bar"}\n34\n'
 
 	print('Using seed: ' + repr(opts.seed))
 	random.seed(opts.seed)
-	matrix = create_matrix()
+	matrix = create_matrix(fn_duk)
 	prepped = prepcomb(matrix)
 #	print(json.dumps(prepped, indent=4))
 #	print(json.dumps(getcombinations(prepped), indent=4))
@@ -358,8 +439,10 @@ def main():
 
 		print('%d/%d (combination %d, count %d)' % (i + 1, long(opts.count), idx, numcombinations))
 		#print('%d/%d (combination %d, count %d) %s' % (i + 1, long(opts.count), idx, numcombinations, repr(compile_command)))
+		if opts.verbose:
+			print(' '.join(compile_command))
 
-		check_unlink('/tmp/duk')
+		check_unlink(fn_duk)
 		compile_p = subprocess.Popen(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		compile_stdout, compile_stderr = compile_p.communicate()
 		compile_exitcode = compile_p.returncode
@@ -367,11 +450,10 @@ def main():
 		if compile_exitcode != 0:
 			fail = True
 		else:
-			if not os.path.exists('/tmp/duk'):
-				print('*** WARNING: compile success but no /tmp/duk ***')
+			if not os.path.exists(fn_duk):
+				print('*** WARNING: compile success but no %s ***' % fn_duk)
 
-		check_unlink('/tmp/test.out')
-		run_command = [ '/tmp/duk', '/tmp/test.js' ]
+		run_command = [ fn_duk, fn_testjs ]
 		if fail:
 			run_stdout = None
 			run_stderr = None
@@ -416,6 +498,8 @@ def main():
 			'success': not fail
 		})
 
+		sys.stdout.flush()
+		sys.stderr.flush()
 
 	f = open(opts.out_results_json, 'wb')
 	f.write(json.dumps(res, indent=4, sort_keys=True))
@@ -424,6 +508,11 @@ def main():
 	f = open(opts.out_failed, 'wb')
 	f.write('\n'.join(failed) + '\n')
 	f.close()
+
+	check_unlink(fn_duk)
+	check_unlink(fn_testjs)
+
+	# XXX: summary of success/failure/warnings (= stderr got anything)
 
 if __name__ == '__main__':
 	main()

@@ -15,7 +15,7 @@ var fs = require('fs'),
     md5 = require('MD5');
 
 var TIMEOUT_SLOW_VALGRIND = 4 * 3600 * 1000;
-var TIMEOUT_SLOW = 3600 * 1000
+var TIMEOUT_SLOW = 3600 * 1000;
 var TIMEOUT_NORMAL_VALGRIND = 3600 * 1000;
 var TIMEOUT_NORMAL = 600 * 1000;
 
