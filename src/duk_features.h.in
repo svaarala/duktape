@@ -1980,10 +1980,11 @@ typedef FILE duk_file;
 /* XXX: separate macros for function and data may be necessary at some point. */
 
 #if defined(DUK_F_GCC_VERSION)
-#if (DUK_F_GCC_VERSION >= 40000) && !defined(DUK_F_MINGW)
+#if (DUK_F_GCC_VERSION >= 40000) && !(defined(DUK_F_MINGW) || defined(DUK_F_CYGWIN))
 /* Might work on earlier versions too but limit to GCC 4+.
  * MinGW should use Windows specific __declspec or no visibility attributes at all,
- * otherwise: "warning: visibility attribute not supported in this configuration; ignored"
+ * otherwise: "warning: visibility attribute not supported in this configuration; ignored".
+ * Same applies to Cygwin GCC.
  */
 #define DUK_F_GCC_SYMBOL_VISIBILITY
 #endif
