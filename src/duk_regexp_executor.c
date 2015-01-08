@@ -491,7 +491,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 				re_ctx->saved[idx] = NULL;
 			}
 #else
-			DUK_MEMZERO(re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
+			DUK_MEMZERO((void *) (re_ctx->saved + idx_start), sizeof(duk_uint8_t *) * idx_count);
 #endif
 
 			sub_sp = duk__match_regexp(re_ctx, pc, sp);
@@ -509,7 +509,9 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_DDD(DUK_DDDPRINT("fail: restore wiped/resaved values [%ld,%ld] (captures [%ld,%ld])",
 			                     (long) idx_start, (long) (idx_start + idx_count - 1),
 			                     (long) (idx_start / 2), (long) ((idx_start + idx_count - 1) / 2)));
-			DUK_MEMCPY(re_ctx->saved + idx_start, range_save, sizeof(duk_uint8_t *) * idx_count);
+			DUK_MEMCPY((void *) (re_ctx->saved + idx_start),
+			           (const void *) range_save,
+			           sizeof(duk_uint8_t *) * idx_count);
 			duk_pop((duk_context *) re_ctx->thr);
 			goto fail;
 		}
@@ -564,7 +566,9 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 
 		 lookahead_fail:
 			/* fail: restore saves */
-			DUK_MEMCPY(re_ctx->saved, full_save, sizeof(duk_uint8_t *) * re_ctx->nsaved);
+			DUK_MEMCPY((void *) re_ctx->saved,
+			           (const void *) full_save,
+			           sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			duk_pop((duk_context *) re_ctx->thr);
 			goto fail;
 		}
