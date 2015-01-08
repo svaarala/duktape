@@ -24,7 +24,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, d
 				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 			}
 		}
-		h = DUK_HOBJECT_GET_PROTOTYPE(h);
+		h = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
 	} while (h);
 
 	return 0;
@@ -35,13 +35,13 @@ DUK_INTERNAL void duk_hobject_set_prototype(duk_hthread *thr, duk_hobject *h, du
 	duk_hobject *tmp;
 
 	DUK_ASSERT(h);
-	tmp = DUK_HOBJECT_GET_PROTOTYPE(h);
-	DUK_HOBJECT_SET_PROTOTYPE(h, p);
+	tmp = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
+	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
 	DUK_HOBJECT_INCREF(thr, p);  /* avoid problems if p == h->prototype */
 	DUK_HOBJECT_DECREF(thr, tmp);
 #else
 	DUK_ASSERT(h);
 	DUK_UNREF(thr);
-	DUK_HOBJECT_SET_PROTOTYPE(h, p);
+	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
 #endif
 }

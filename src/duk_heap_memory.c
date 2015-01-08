@@ -69,7 +69,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 		goto skip_attempt;
 	}
 #endif
-	res = heap->alloc_func(heap->alloc_udata, size);
+	res = heap->alloc_func(heap->heap_udata, size);
 	if (res || size == 0) {
 		/* for zero size allocations NULL is allowed */
 		return res;
@@ -108,7 +108,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
 
-		res = heap->alloc_func(heap->alloc_udata, size);
+		res = heap->alloc_func(heap->heap_udata, size);
 		if (res) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) size));
@@ -128,7 +128,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT_DISABLE(size >= 0);
 
-	return heap->alloc_func(heap->alloc_udata, size);
+	return heap->alloc_func(heap->heap_udata, size);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 
@@ -179,7 +179,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 		goto skip_attempt;
 	}
 #endif
-	res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
+	res = heap->realloc_func(heap->heap_udata, ptr, newsize);
 	if (res || newsize == 0) {
 		/* for zero size allocations NULL is allowed */
 		return res;
@@ -216,7 +216,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
 
-		res = heap->realloc_func(heap->alloc_udata, ptr, newsize);
+		res = heap->realloc_func(heap->heap_udata, ptr, newsize);
 		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) newsize));
@@ -234,7 +234,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 	/* ptr may be NULL */
 	DUK_ASSERT_DISABLE(newsize >= 0);
 
-	return heap->realloc_func(heap->alloc_udata, ptr, newsize);
+	return heap->realloc_func(heap->heap_udata, ptr, newsize);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 
@@ -272,7 +272,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		goto skip_attempt;
 	}
 #endif
-	res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
+	res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 	if (res || newsize == 0) {
 		/* for zero size allocations NULL is allowed */
 		return res;
@@ -307,7 +307,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 #endif
 
 #ifdef DUK_USE_ASSERTIONS
-		ptr_pre = cb(ud);
+		ptr_pre = cb(heap, ud);
 #endif
 		flags = 0;
 		if (i >= DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_EMERGENCY_LIMIT - 1) {
@@ -317,7 +317,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
 #ifdef DUK_USE_ASSERTIONS
-		ptr_post = cb(ud);
+		ptr_post = cb(heap, ud);
 		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
 			DUK_DD(DUK_DDPRINT("note: base pointer changed by mark-and-sweep: %p -> %p",
@@ -329,7 +329,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		 * The pointer being reallocated may change after every mark-and-sweep.
 		 */
 
-		res = heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
+		res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %ld), alloc size %ld",
 			                 (long) (i + 1), (long) newsize));
@@ -343,7 +343,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 #else  /* DUK_USE_MARK_AND_SWEEP */
 /* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
 DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
-	return heap->realloc_func(heap->alloc_udata, cb(ud), newsize);
+	return heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 }
 #endif  /* DUK_USE_MARK_AND_SWEEP */
 
@@ -359,7 +359,7 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	/* Must behave like a no-op with NULL and any pointer returned from
 	 * malloc/realloc with zero size.
 	 */
-	heap->free_func(heap->alloc_udata, ptr);
+	heap->free_func(heap->heap_udata, ptr);
 
 	/* Count free operations toward triggering a GC but never actually trigger
 	 * a GC from a free.  Otherwise code which frees internal structures would
@@ -379,6 +379,6 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	/* Note: must behave like a no-op with NULL and any pointer
 	 * returned from malloc/realloc with zero size.
 	 */
-	heap->free_func(heap->alloc_udata, ptr);
+	heap->free_func(heap->heap_udata, ptr);
 }
 #endif

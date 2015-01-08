@@ -1426,8 +1426,8 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 #define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
 #define DUK__REG(x)         (thr->valstack_bottom[(x)])
 #define DUK__REGP(x)        (&thr->valstack_bottom[(x)])
-#define DUK__CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
-#define DUK__CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun)[(x)])
+#define DUK__CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun)[(x)])
+#define DUK__CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun)[(x)])
 #define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
 #define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
 
@@ -1609,7 +1609,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	/* assume that thr->valstack_bottom has been set-up before getting here */
 	act = thr->callstack + thr->callstack_top - 1;
 	fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
-	bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(fun);
+	bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun);
 
 	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= fun->nregs);
 	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);  /* XXX: correct? */
@@ -1655,8 +1655,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	                   (long) (thr->callstack_top - 1),
 	                   (void *) fun,
 	                   (void *) bcode,
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(fun),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(fun),
+	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun),
+	                   (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, fun),
 	                   (long) (thr->callstack_top - 1),
 	                   (long) (thr->valstack_bottom - thr->valstack),
 	                   (long) (thr->valstack_top - thr->valstack),
@@ -1702,8 +1702,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		 */
 
 		act = thr->callstack + thr->callstack_top - 1;
-		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(fun));
-		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(fun));
+		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun));
+		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, fun));
 
 		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%ld ins=0x%08lx, op=%ld, valstack_top=%ld/%ld  -->  %!I",
 		                     (long) act->pc,
@@ -2243,11 +2243,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("CLOSURE to target register %ld, fnum %ld (count %ld)",
-			                     (long) a, (long) bc, (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun)));
+			                     (long) a, (long) bc, (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(thr->heap, fun)));
 
 			DUK_ASSERT_DISABLE(bc >= 0); /* unsigned */
-			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(fun));
-			fun_temp = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(fun)[bc];
+			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(thr->heap, fun));
+			fun_temp = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, fun)[bc];
 			DUK_ASSERT(fun_temp != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(fun_temp));
 
@@ -3439,7 +3439,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 					prev_env = act->lex_env;
 					DUK_ASSERT(prev_env != NULL);
-					act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(prev_env);
+					act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, prev_env);
 					DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
 					DUK_HOBJECT_DECREF(thr, prev_env);  /* side effects */
 				}
@@ -3585,11 +3585,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					                 (long) i,
 					                 (duk_tval *) duk_get_tval((duk_context *) thr, i)));
 				}
-				break;
-			}
-
-			case DUK_EXTRAOP_DUMPTHREAD: {
-				DUK_DEBUG_DUMP_HTHREAD(thr);
 				break;
 			}
 

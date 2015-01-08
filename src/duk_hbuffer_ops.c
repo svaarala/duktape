@@ -57,7 +57,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 		/* 'res' may be NULL if new allocation size is 0. */
 
 		DUK_DDD(DUK_DDDPRINT("resized dynamic buffer %p:%ld:%ld -> %p:%ld:%ld",
-		                     (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf),
+		                     (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf),
 		                     (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(buf),
 		                     (long) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(buf),
 		                     (void *) res,
@@ -84,7 +84,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 
 		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, new_size);
 		DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(buf, new_alloc_size);
-		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(buf, res);
+		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(thr->heap, buf, res);
 	} else {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, "buffer resize failed: %ld:%ld to %ld:%ld",
 		          (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(buf),
@@ -146,7 +146,7 @@ DUK_INTERNAL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf);
 	if (offset < DUK_HBUFFER_GET_SIZE(buf)) {
 		/* not an append */
 
@@ -316,7 +316,7 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_d
 
 	if (DUK_LIKELY(codepoint < 0x80 && DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) > 0)) {
 		/* fast path: ASCII and there is spare */
-		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf));
+		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf));
 		sz = DUK_HBUFFER_DYNAMIC_GET_SIZE(buf);
 		p[sz++] = (duk_uint8_t) codepoint;
 		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, sz);
@@ -347,7 +347,7 @@ DUK_INTERNAL duk_size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_d
 
 	if (DUK_LIKELY(codepoint < 0x80 && DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) > 0)) {
 		/* fast path: ASCII and there is spare */
-		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf));
+		duk_uint8_t *p = ((duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf));
 		sz = DUK_HBUFFER_DYNAMIC_GET_SIZE(buf);
 		p[sz++] = (duk_uint8_t) codepoint;
 		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, sz);
@@ -398,7 +398,7 @@ DUK_INTERNAL void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic
 		return;
 	}
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf);
 
 	end_offset = offset + length;
 
@@ -449,7 +449,7 @@ DUK_INTERNAL void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic
 	}
 	DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(buf) >= length);
 
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, buf);
 	DUK_ASSERT(p != NULL);  /* must be the case because length > 0, and buffer has been resized if necessary */
 
 	/*

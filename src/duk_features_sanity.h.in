@@ -60,6 +60,11 @@
 #error DUK_USE_DDDPRINT without DUK_USE_DEBUG
 #endif
 
+#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
+/* Debug code doesn't have access to 'heap' so it cannot decode pointers. */
+#error debug printing cannot currently be used with heap pointer compression
+#endif
+
 /*
  *  Garbage collection consistency
  */

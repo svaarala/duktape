@@ -448,13 +448,13 @@ void duk__handle_oldenv_for_call(duk_hthread *thr,
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NEWENV(func));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(func));
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
+	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
 	if (tv) {
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
 		act->lex_env = DUK_TVAL_GET_OBJECT(tv);
 
-		tv = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_INT_VARENV(thr));
+		tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_VARENV(thr));
 		if (tv) {
 			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 			DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
@@ -496,7 +496,7 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
 	act_caller = (thr->callstack_top >= 2 ? act_callee - 1 : NULL);
 
 	/* Backup 'caller' property and update its value. */
-	tv_caller = duk_hobject_find_existing_entry_tval_ptr(func, DUK_HTHREAD_STRING_CALLER(thr));
+	tv_caller = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_CALLER(thr));
 	if (tv_caller) {
 		/* If caller is global/eval code, 'caller' should be set to
 		 * 'null'.
@@ -817,11 +817,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 * for tv_func from valstack bottom and recomputing the tv_func
 	 * pointer quickly as valstack + offset instead of calling duk_get_tval().
 	 */
-
-#if 0
-	DUK_D(DUK_DPRINT("callstack before call setup:"));
-	DUK_DEBUG_DUMP_CALLSTACK(thr);
-#endif
 
 	if (idx_func < 0 || idx_args < 0) {
 		/*
@@ -1187,11 +1182,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [... func this arg1 ... argN] */
 
-#if 0
-	DUK_D(DUK_DPRINT("pushed new activation:"));
-	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
-#endif
-
 	/*
 	 *  Environment record creation and 'arguments' object creation.
 	 *  Named function expression name binding is handled by the
@@ -1263,11 +1253,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	} else {
 		/* 'func' wants stack "as is" */
 	}
-
-#if 0
-	DUK_D(DUK_DPRINT("callstack after call setup:"));
-	DUK_DEBUG_DUMP_CALLSTACK(thr);
-#endif
 
 	/*
 	 *  Determine call type; then setup activation and call
@@ -1740,11 +1725,6 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 	/* [ ... | ] or [ ... | errobj (M * undefined)] where M = num_stack_rets - 1 */
 
-#ifdef DUK_USE_DDDPRINT /*XXX:incorrect*/
-	DUK_DD(DUK_DDPRINT("protected safe_call error handling finished, thread dump:"));
-	DUK_DEBUG_DUMP_HTHREAD(thr);
-#endif
-
 	retval = DUK_EXEC_ERROR;
 	goto shrink_and_finished;
 
@@ -1999,11 +1979,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	                   (long) idx_func,
 	                   (long) idx_args,
 	                   (long) entry_valstack_bottom_index));
-
-#if 0
-	DUK_D(DUK_DPRINT("callstack before call setup:"));
-	DUK_DEBUG_DUMP_CALLSTACK(thr);
-#endif
 
 	if (idx_func < 0 || idx_args < 0) {
 		/* XXX: assert? compiler is responsible for this never happening */
@@ -2288,11 +2263,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 * idx_args updated to match
 	 */
 
-#if 0
-	DUK_D(DUK_DPRINT("pushed new activation:"));
-	DUK_DEBUG_DUMP_ACTIVATION(thr, thr->callstack + thr->callstack_top - 1);
-#endif
-
 	/*
 	 *  Environment record creation and 'arguments' object creation.
 	 *  Named function expression name binding is handled by the
@@ -2354,11 +2324,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_ASSERT(nregs >= 0);
 	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
 	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
-
-#if 0
-	DUK_D(DUK_DPRINT("callstack after call setup:"));
-	DUK_DEBUG_DUMP_CALLSTACK(thr);
-#endif
 
 	/*
 	 *  Shift to new valstack_bottom.

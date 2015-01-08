@@ -145,9 +145,30 @@ void ajsheap_register(duk_context *ctx) {
  *  which is reserved for NULL pointers.
  */
 
-duk_uint16_t ajsheap_enc16(void *p) {
+duk_uint16_t ajsheap_enc16(void *ud, void *p) {
 	duk_uint32_t ret;
 	char *base = (char *) ajsheap_ram - 4;
+
+	/* Userdata is not needed in this case but would be useful if heap
+	 * pointer compression were used for multiple heaps.  The userdata
+	 * allows the callback to distinguish between heaps and their base
+	 * pointers.
+	 *
+	 * If not needed, the userdata can be left out during compilation
+	 * by simply ignoring the userdata argument of the pointer encode
+	 * and decode macros.  It is kept here so that any bugs in actually
+	 * providing the value inside Duktape are revealed during compilation.
+	 */
+	(void) ud;
+#if 1
+	/* Ensure that we always get the heap_udata given in heap creation.
+	 * (Useful for Duktape development, not needed for user programs.)
+	 */
+	if (ud != (void *) 0xdeadbeef) {
+		fprintf(stderr, "invalid udata for ajsheap_enc16: %p\n", ud);
+		fflush(stderr);
+	}
+#endif
 
 	if (p == NULL) {
 		ret = 0;
@@ -164,9 +185,19 @@ duk_uint16_t ajsheap_enc16(void *p) {
 	}
 	return (duk_uint16_t) ret;
 }
-void *ajsheap_dec16(duk_uint16_t x) {
+void *ajsheap_dec16(void *ud, duk_uint16_t x) {
 	void *ret;
 	char *base = (char *) ajsheap_ram - 4;
+
+	/* See userdata discussion in ajsheap_enc16(). */
+	(void) ud;
+#if 1
+	/* Ensure that we always get the heap_udata given in heap creation. */
+	if (ud != (void *) 0xdeadbeef) {
+		fprintf(stderr, "invalid udata for ajsheap_dec16: %p\n", ud);
+		fflush(stderr);
+	}
+#endif
 
 	if (x == 0) {
 		ret = NULL;

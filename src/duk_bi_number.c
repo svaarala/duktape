@@ -33,8 +33,11 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t nargs;
 	duk_hobject *h_this;
+
+	DUK_UNREF(thr);
 
 	/*
 	 *  The Number constructor uses ToNumber(arg) for number coercion
@@ -74,7 +77,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	DUK_ASSERT(h_this != NULL);
 	DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_NUMBER);
 
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(h_this) == ((duk_hthread *) ctx)->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_this) == thr->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_this) == DUK_HOBJECT_CLASS_NUMBER);
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
 

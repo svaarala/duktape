@@ -24,7 +24,7 @@
 
 #define DUK_HBUFFER_CLEAR_DYNAMIC(x)              DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
 
-#define DUK_HBUFFER_FIXED_GET_DATA_PTR(x)         ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
+#define DUK_HBUFFER_FIXED_GET_DATA_PTR(heap,x)    ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
 
 /*
  *  Misc defines
@@ -106,19 +106,20 @@
 	(duk_size_t) (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE((x)) - DUK_HBUFFER_DYNAMIC_GET_SIZE((x)))
 
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(x)       ((void *) DUK_USE_HEAPPTR_DEC16((x)->curr_alloc16))
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(x,v)     do { \
-		(x)->curr_alloc16 = DUK_USE_HEAPPTR_ENC16((void *) (v)); \
+#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x) \
+	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (x)->curr_alloc16))
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
+		(x)->curr_alloc16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(x)  do { \
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
 		(x)->curr_alloc16 = 0;  /* assume 0 <=> NULL */ \
 	} while (0)
 #else
-#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(x)       ((x)->curr_alloc)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(x,v)     do { \
+#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x)       ((x)->curr_alloc)
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
 		(x)->curr_alloc = (void *) (v); \
 	} while (0)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(x)  do { \
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
 		(x)->curr_alloc = (void *) NULL; \
 	} while (0)
 #endif
@@ -126,10 +127,10 @@
 /* Gets the actual buffer contents which matches the current allocation size
  * (may be NULL for zero size dynamic buffer).
  */
-#define DUK_HBUFFER_GET_DATA_PTR(x)  ( \
+#define DUK_HBUFFER_GET_DATA_PTR(heap,x)  ( \
 	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
-		DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((duk_hbuffer_dynamic *) (x)) : \
-		DUK_HBUFFER_FIXED_GET_DATA_PTR((duk_hbuffer_fixed *) (x)) \
+		DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) : \
+		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (x)) \
 	)
 
 /* Growth parameters for dynamic buffers. */
@@ -264,7 +265,7 @@ struct duk_hbuffer_dynamic {
  */
 
 DUK_INTERNAL_DECL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynamic);
-DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 /* dynamic buffer ops */
 DUK_INTERNAL_DECL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size, duk_size_t new_alloc_size);

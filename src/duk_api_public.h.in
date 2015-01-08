@@ -237,7 +237,7 @@ DUK_EXTERNAL_DECL
 duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_realloc_function realloc_func,
                              duk_free_function free_func,
-                             void *alloc_udata,
+                             void *heap_udata,
                              duk_fatal_function fatal_handler);
 DUK_EXTERNAL_DECL void duk_destroy_heap(duk_context *ctx);
 

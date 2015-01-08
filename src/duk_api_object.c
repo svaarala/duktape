@@ -528,16 +528,18 @@ DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key)
  */
 
 DUK_EXTERNAL void duk_get_prototype(duk_context *ctx, duk_idx_t index) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hobject *proto;
 
 	DUK_ASSERT(ctx != NULL);
+	DUK_UNREF(thr);
 
 	obj = duk_require_hobject(ctx, index);
 	DUK_ASSERT(obj != NULL);
 
 	/* XXX: shared helper for duk_push_hobject_or_undefined()? */
-	proto = DUK_HOBJECT_GET_PROTOTYPE(obj);
+	proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, obj);
 	if (proto) {
 		duk_push_hobject(ctx, proto);
 	} else {

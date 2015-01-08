@@ -14,10 +14,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-/* for one-char summaries (usable for e.g. valstack) */
-DUK_INTERNAL char duk_debug_summary_buf[DUK_DEBUG_SUMMARY_BUF_SIZE];
-DUK_INTERNAL duk_int_t duk_debug_summary_idx;
-
 #define DUK__DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
 DUK_LOCAL char duk__debug_buf[DUK__DEBUG_BUFSIZE];
 

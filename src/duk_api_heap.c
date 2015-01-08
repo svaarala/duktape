@@ -8,7 +8,7 @@ DUK_EXTERNAL
 duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_realloc_function realloc_func,
                              duk_free_function free_func,
-                             void *alloc_udata,
+                             void *heap_udata,
                              duk_fatal_function fatal_handler) {
 	duk_heap *heap = NULL;
 	duk_context *ctx;
@@ -41,7 +41,7 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
 	DUK_ASSERT(free_func != NULL);
 	DUK_ASSERT(fatal_handler != NULL);
 
-	heap = duk_heap_alloc(alloc_func, realloc_func, free_func, alloc_udata, fatal_handler);
+	heap = duk_heap_alloc(alloc_func, realloc_func, free_func, heap_udata, fatal_handler);
 	if (!heap) {
 		return NULL;
 	}

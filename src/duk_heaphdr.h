@@ -106,26 +106,28 @@ struct duk_heaphdr_string {
 #define DUK_HTYPE_MAX                    3
 
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HEAPHDR_GET_NEXT(h)       ((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((h)->h_next16))
-#define DUK_HEAPHDR_SET_NEXT(h,val)   do { \
-		(h)->h_next16 = DUK_USE_HEAPPTR_ENC16((void *) val); \
+#define DUK_HEAPHDR_GET_NEXT(heap,h) \
+	((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->h_next16))
+#define DUK_HEAPHDR_SET_NEXT(heap,h,val)   do { \
+		(h)->h_next16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) val); \
 	} while (0)
 #else
-#define DUK_HEAPHDR_GET_NEXT(h)       ((h)->h_next)
-#define DUK_HEAPHDR_SET_NEXT(h,val)   do { \
+#define DUK_HEAPHDR_GET_NEXT(heap,h)  ((h)->h_next)
+#define DUK_HEAPHDR_SET_NEXT(heap,h,val)   do { \
 		(h)->h_next = (val); \
 	} while (0)
 #endif
 
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HEAPHDR_GET_PREV(h)       ((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((h)->h_prev16))
-#define DUK_HEAPHDR_SET_PREV(h,val)   do { \
-		(h)->h_prev16 = DUK_USE_HEAPPTR_ENC16((void *) (val)); \
+#define DUK_HEAPHDR_GET_PREV(heap,h) \
+	((duk_heaphdr *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->h_prev16))
+#define DUK_HEAPHDR_SET_PREV(heap,h,val)   do { \
+		(h)->h_prev16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (val)); \
 	} while (0)
 #else
-#define DUK_HEAPHDR_GET_PREV(h)       ((h)->h_prev)
-#define DUK_HEAPHDR_SET_PREV(h,val)   do { \
+#define DUK_HEAPHDR_GET_PREV(heap,h)       ((h)->h_prev)
+#define DUK_HEAPHDR_SET_PREV(heap,h,val)   do { \
 		(h)->h_prev = (val); \
 	} while (0)
 #endif

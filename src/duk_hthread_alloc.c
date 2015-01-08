@@ -73,17 +73,20 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 
 /* For indirect allocs. */
 
-DUK_INTERNAL void *duk_hthread_get_valstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
+	DUK_UNREF(heap);
 	return (void *) thr->valstack;
 }
 
-DUK_INTERNAL void *duk_hthread_get_callstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
+	DUK_UNREF(heap);
 	return (void *) thr->callstack;
 }
 
-DUK_INTERNAL void *duk_hthread_get_catchstack_ptr(void *ud) {
+DUK_INTERNAL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
+	DUK_UNREF(heap);
 	return (void *) thr->catchstack;
 }

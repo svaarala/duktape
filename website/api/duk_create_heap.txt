@@ -2,7 +2,7 @@
 duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_realloc_function realloc_func,
                              duk_free_function free_func,
-                             void *alloc_udata,
+                             void *heap_udata,
                              duk_fatal_function fatal_handler);
 
 =summary
@@ -16,7 +16,9 @@ the pointers must either all be <code>NULL</code> or all be
 non-<code>NULL</code>.  If the pointers are <code>NULL</code>, default
 memory management functions (ANSI C <code>malloc()</code>, <code>realloc()</code>
 , and <code>free()</code>) are used.  The memory management functions
-share the same opaque userdata pointer, <code>alloc_udata</code>.</p>
+share the same opaque userdata pointer, <code>heap_udata</code>.  This
+userdata pointer is also used for other Duktape features (like low memory
+pointer compression macros).</p>
 
 <p>A fatal error handler is provided in <code>fatal_handler</code>.  This
 handler is called in unrecoverable error situations such as uncaught

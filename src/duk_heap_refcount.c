@@ -22,16 +22,16 @@ DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 
 		hdr_prev = heap->refzero_list_tail;
 		DUK_ASSERT(hdr_prev != NULL);
-		DUK_ASSERT(DUK_HEAPHDR_GET_NEXT(hdr_prev) == NULL);
+		DUK_ASSERT(DUK_HEAPHDR_GET_NEXT(heap, hdr_prev) == NULL);
 
-		DUK_HEAPHDR_SET_NEXT(hdr, NULL);
-		DUK_HEAPHDR_SET_PREV(hdr, hdr_prev);
-		DUK_HEAPHDR_SET_NEXT(hdr_prev, hdr);
+		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
+		DUK_HEAPHDR_SET_PREV(heap, hdr, hdr_prev);
+		DUK_HEAPHDR_SET_NEXT(heap, hdr_prev, hdr);
 		heap->refzero_list_tail = hdr;
 	} else {
 		DUK_ASSERT(heap->refzero_list_tail == NULL);
-		DUK_HEAPHDR_SET_NEXT(hdr, NULL);
-		DUK_HEAPHDR_SET_PREV(hdr, NULL);
+		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
+		DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
 		heap->refzero_list = hdr;
 		heap->refzero_list_tail = hdr;
 	}
@@ -60,49 +60,49 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 	/* XXX: better to get base and walk forwards? */
 
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
-		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(h, i);
+		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(thr->heap, h, i);
 		if (!key) {
 			continue;
 		}
 		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) key);
-		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(h, i)) {
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_GETTER(h, i));
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_SETTER(h, i));
+		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, h, i)) {
+			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, h, i));
+			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, h, i));
 		} else {
-			duk_heap_tval_decref(thr, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(h, i));
+			duk_heap_tval_decref(thr, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, h, i));
 		}
 	}
 
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
-		duk_heap_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(h, i));
+		duk_heap_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, h, i));
 	}
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(h));
+	duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(f) != NULL);  /* compiled functions must be created 'atomically' */
+		DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(f);
+		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
+		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
 		while (tv < tv_end) {
 			duk_heap_tval_decref(thr, tv);
 			tv++;
 		}
 
-		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(f);
-		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(f);
+		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
+		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
 		while (funcs < funcs_end) {
 			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
 			funcs++;
 		}
 
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(f));
+		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f));
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK_UNREF(f);
@@ -204,7 +204,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		h1 = heap->refzero_list;
 		obj = (duk_hobject *) h1;
 		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, (duk_heaphdr *) h1));
-		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(h1) == NULL);
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 
 		/*
@@ -258,9 +258,9 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		 *  to traverse a complete refzero_list.
 		 */
 
-		h2 = DUK_HEAPHDR_GET_NEXT(h1);
+		h2 = DUK_HEAPHDR_GET_NEXT(heap, h1);
 		if (h2) {
-			DUK_HEAPHDR_SET_PREV(h2, NULL);  /* not strictly necessary */
+			DUK_HEAPHDR_SET_PREV(heap, h2, NULL);  /* not strictly necessary */
 			heap->refzero_list = h2;
 		} else {
 			heap->refzero_list = NULL;
@@ -274,8 +274,8 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		if (rescued) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
-			DUK_HEAPHDR_SET_PREV(h1, NULL);
-			DUK_HEAPHDR_SET_NEXT(h1, heap->heap_allocated);
+			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
+			DUK_HEAPHDR_SET_NEXT(heap, h1, heap->heap_allocated);
 			heap->heap_allocated = h1;
 		} else {
 			/* no -> decref members, then free */

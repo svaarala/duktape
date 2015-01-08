@@ -96,7 +96,8 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 		DUK_DD(DUK_DDPRINT("error occurred when DUK_BIDX_DUKTAPE is NULL, ignoring"));
 		return;
 	}
-	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->builtins[DUK_BIDX_DUKTAPE],
+	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->heap,
+	                                                  thr->builtins[DUK_BIDX_DUKTAPE],
 	                                                  DUK_HTHREAD_GET_STRING(thr, stridx_cb));
 	if (tv_hnd == NULL) {
 		DUK_DD(DUK_DDPRINT("error handler does not exist or is not a plain value: %!T",

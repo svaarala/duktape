@@ -57,7 +57,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 				goto error;
 			}
 
-			DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(h, ptr);
+			DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap, h, ptr);
 			DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(h, size);  /* snug */
 		} else {
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
@@ -87,7 +87,8 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 
 /* For indirect allocs. */
 
-DUK_INTERNAL void *duk_hbuffer_get_dynalloc_ptr(void *ud) {
+DUK_INTERNAL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud) {
 	duk_hbuffer_dynamic *buf = (duk_hbuffer_dynamic *) ud;
-	return (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(buf);
+	DUK_UNREF(heap);
+	return (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, buf);
 }
