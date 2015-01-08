@@ -291,7 +291,6 @@ def create_matrix(fn_duk):
 		Select([ '', '-DDUK_OPT_FORCE_ALIGN=4', '-DDUK_OPT_FORCE_ALIGN=8' ]),
 		'-DDUK_OPT_DEEP_C_STACK',
 		'-DDUK_OPT_NO_TRACEBACKS',
-		'-DDUK_OPT_NO_PC2LINE',
 		'-DDUK_OPT_NO_VERBOSE_ERRORS',
 		'-DDUK_OPT_NO_MS_RESIZE_STRINGTABLE',
 		'-DDUK_OPT_NO_STRICT_DECL',
@@ -302,7 +301,6 @@ def create_matrix(fn_duk):
 		#'-DDUK_OPT_NO_BROWSER_LIKE',  # FIXME: no print()
 		#'-DDUK_OPT_NO_FILE_IO',       # FIXME: no print()
 		'-DDUK_OPT_NO_SECTION_B',
-		'-DDUK_OPT_NO_INTERRUPT_COUNTER',
 		'-DDUK_OPT_NO_JX',
 		'-DDUK_OPT_NO_JC',
 		'-DDUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT',
@@ -323,7 +321,17 @@ def create_matrix(fn_duk):
 		'-DDUK_OPT_ASSERTIONS',
 		[ '-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDDPRINT' ],
 		'-DDUK_OPT_SELF_TESTS',
-		[ '-DDUK_OPT_STRTAB_CHAIN', '-DDUK_OPT_STRTAB_CHAIN_SIZE=64' ]
+		[ '-DDUK_OPT_STRTAB_CHAIN', '-DDUK_OPT_STRTAB_CHAIN_SIZE=64' ],
+
+		# DUK_OPT_DEBUGGER_SUPPORT depends on having pc2line and
+		# interrupt counter, so avoid invalid combinations.
+		Select([
+			Subset([ '-DDUK_OPT_NO_PC2LINE', '-DDUK_OPT_INTERRUPT_COUNTER' ]),
+			[ '-DDUK_OPT_DEBUGGER_SUPPORT', '-DDUK_OPT_INTERRUPT_COUNTER' ]
+		]),
+		'-DDUK_OPT_DEBUGGER_FWD_PRINTALERT',
+		'-DDUK_OPT_DEBUGGER_FWD_LOGGING',
+		'-DDUK_OPT_DEBUGGER_DUMPHEAP'
 
 		# XXX: 16-bit options
 	])
