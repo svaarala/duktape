@@ -253,8 +253,27 @@ test case over with scp and then executes it with ssh.  For instance::
 
   #!/bin/sh
 
-  scp $1 user@192.168.100.20:/tmp >/dev/null
-  ssh user@192.168.100.20 "./duk /tmp/`basename $1`"
+  TESTCASE=""
+  while [ "$1" ]
+  do
+      # Parse whatever options may be present, assume last argument is
+      # testcase.
+      case "$1" in
+          --restrict-memory)
+              shift
+              ;;
+          *)
+              TESTCASE=$1
+              shift
+              ;;
+      esac
+  done
+
+  scp "$TESTCASE" user@192.168.100.20:/tmp >/dev/null
+  ssh user@192.168.100.20 "./duk /tmp/`basename $TESTCASE`"
+
+Exit code should be passed through if possible.  Be careful about normalizing
+newlines (plain LF) if something in the process uses CR LF.
 
 Future work
 ===========
