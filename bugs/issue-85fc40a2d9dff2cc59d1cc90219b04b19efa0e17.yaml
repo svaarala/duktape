@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: check all NaN, +/- Infinity to integer casts, their behavior is undefined
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-09 15:57:28.319422 Z
+references: []
+
+id: 85fc40a2d9dff2cc59d1cc90219b04b19efa0e17
+log_events: 
+- - 2015-01-09 15:57:28.495391 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add tags 'v1.0.0' etc to tag list (make it easy to see APIs introduced in a release)
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-09 16:48:25.206370 Z
+references: []
+
+id: ab6ef881256f866b2ee65661256e95fc7e24cb1a
+log_events: 
+- - 2015-01-09 16:48:25.366287 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
