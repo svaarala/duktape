@@ -34,6 +34,12 @@
 
 var extVar = 0;  // dummy assignment target
 
+/*---
+{
+    "slow": true
+}
+---*/
+
 /*===
 large expressions
 100
