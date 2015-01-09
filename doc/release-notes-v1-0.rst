@@ -31,17 +31,19 @@ Ecmascript features
 Portability and platforms
 -------------------------
 
-* Clang 3.3 on FreeBSD 10: when ``-m32`` is used, Duktape will end up using
-  the 8-byte packed value representation but clang will generate incorrect
-  code for union assignment (see ``misc/clang_aliasing.c``).  The issue can
-  be detected by defining ``DUK_OPT_SELF_TESTS``.  A workaround is to avoid
-  packed types in this case by defining ``DUK_OPT_NO_PACKED_TVAL``.
+* On some older clang/llvm versions (e.g. Clang 3.3 on FreeBSD 10):
+  when ``-m32`` is used, Duktape will end up using the 8-byte packed value
+  representation but clang will generate incorrect code for union assignment
+  (see ``misc/clang_aliasing.c``).  The issue can be detected by defining
+  ``DUK_OPT_SELF_TESTS``.  A workaround is to avoid packed types in this
+  case by defining ``DUK_OPT_NO_PACKED_TVAL``.
 
-* Clang 3.3 on FreeBSD 10: compilation may produce a warning "generic
-  selections are a C11-specific feature".  The warning should be harmless.
+* On some older clang/llvm versions (e.g. Clang 3.3 on FreeBSD 10):
+  compilation may produce a warning "generic selections are a C11-specific
+  feature".  The warning should be harmless.
 
-* Clang 3.3 on FreeBSD 10: harmless compilation warning for "duk_repl_isinf"
-  being unused.
+* On some older clang/llvm versions (e.g. Clang 3.3 on FreeBSD 10):
+  harmless compilation warning for "duk_repl_isinf" being unused.
 
 * On some GCC versions and compilation options you may get a warning
   "variable idx_func might be clobbered by longjmp or vfork [-Wclobbered]".
@@ -55,8 +57,12 @@ Portability and platforms
   to be used by Duktape, and an associated warning about the type.  This is
   harmless and most easily fixed by simply using ``-std=c99``.
 
-* MinGW compilation produces symbol visibility warnings when compiled Duktape
-  from ``src-separate``.
+* MinGW and Cygwin GCC compilation produces symbol visibility warnings when
+  compiling Duktape from ``src-separate``.
+
+* On platforms where ``SIZE_MAX`` is incorrectly set e.g. as ``0x7fffffff``
+  compilation may fail with ``#error size_t is too small``.  This has been
+  fixed in Duktape 1.1.0.  (GH-101)
 
 Raw issues from test runs
 =========================
