@@ -518,6 +518,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 
 	duk_push_string(ctx,
+			/* Endianness indicator */
 #if defined(DUK_USE_INTEGER_LE)
 	                "l"
 #elif defined(DUK_USE_INTEGER_BE)
@@ -540,12 +541,14 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			"f"
 #endif
 	                " "
+			/* Packed or unpacked tval */
 #if defined(DUK_USE_PACKED_TVAL)
 	                "p"
 #else
 	                "u"
 #endif
 			" "
+			/* Low memory options */
 #if defined(DUK_USE_STRTAB_CHAIN)
 			"c"  /* chain */
 #elif defined(DUK_USE_STRTAB_PROBE)
@@ -580,7 +583,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #if defined(DUK_USE_OBJSIZES16)
 			"O"
 #endif
+#if defined(DUK_USE_LIGHTFUNC_BUILTINS)
+			"L"
+#endif
 	                " "
+			/* Object property allocation layout */
 #if defined(DUK_USE_HOBJECT_LAYOUT_1)
 			"p1"
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
@@ -591,6 +598,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			"p?"
 #endif
 			" "
+			/* Alignment guarantee */
 #if defined(DUK_USE_ALIGN_4)
 			"a4"
 #elif defined(DUK_USE_ALIGN_8)
@@ -599,6 +607,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			"a1"
 #endif
 			" "
+			/* Architecture, OS, and compiler strings */
 	                DUK_USE_ARCH_STRING
 			" "
 	                DUK_USE_OS_STRING
