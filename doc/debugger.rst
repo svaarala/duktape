@@ -15,7 +15,7 @@ Duktape provides the following basic debugging features:
 
 * Execution status: running/paused at file/line, call stack, local variables
 
-* Execution control: Pause, resume, step over, step into, step out
+* Execution control: pause, resume, step over, step into, step out
 
 * Breakpoints: file/line pair targeted breakpoint list, "debugger" statement
 
@@ -166,10 +166,10 @@ and out.
 Other impacts
 -------------
 
-* Function instances will always keep their internal ``_Varmap`` property so
-  that local variables can always be looked up by name.  Without debugger
-  support the ``_Varmap`` is only kept when it might be needed during
-  execution (e.g. the function contains an eval call).
+Function instances will always keep their internal ``_Varmap`` property so
+that local variables can always be looked up by name.  Without debugger
+support the ``_Varmap`` is only kept when it might be needed during
+execution (e.g. the function contains an eval call).
 
 Debug API
 =========
@@ -180,9 +180,13 @@ duk_debugger_attach()
 Called when the application wants to attach a debugger to the Duktape heap::
 
     duk_debugger_attach(ctx,
-                        my_trans_read_cb,     /* read callback */
-                        my_trans_write_cb,    /* write callback */
-                        my_udata);            /* debug udata */
+                        my_trans_read_cb,         /* read callback */
+                        my_trans_write_cb,        /* write callback */
+                        my_trans_peek_cb,         /* peek callback (optional) */
+                        my_trans_read_flush_cb,   /* read flush callback (optional) */
+                        my_trans_write_flush_cb,  /* write flush callback (optional) */
+                        my_detached_cb,           /* debugger detached callback */
+                        my_udata);                /* debug udata */
 
 When called, Duktape will enter debug mode, pause execution, and wait for
 further instructions from the debug client.
@@ -191,6 +195,10 @@ The transport callbacks are given as part of the start request.  Duktape
 expects a new virtual stream for every debug start/stop cycle, and will
 send a protocol version identifier every time ``duk_debugger_attach()``
 is called.
+
+The detached callback is called when the debugger becomes detached.  This
+can happen due to an explicit request (``duk_debugger_detach()``), a debug
+message/transport error, or Duktape heap destruction.
 
 If Duktape debugger support is not enabled, an error is thrown.
 
@@ -221,98 +229,139 @@ in the form of callbacks given to ``duk_debugger_attach()``.
 The logical service provided by the transport is a reliable byte stream
 with primitives to:
 
-* Read/write bytes (partial read/write OK, block if necessary)
+* Read bytes (partial read OK, block if necessary to read at least 1 byte)
 
-* Peek for inbound bytes without blocking
+* Write bytes (partial write OK, block if necessary to write at least 1 byte)
 
-* Hints for "read flush" and "write flush" which are useful in some
-  environments
+* Peek for inbound byte(s) without blocking
+
+* Read flush hint
+
+* Write flush hint
 
 Partial reads and writes are allowed to make it as easy as possible to
 implement the transport callbacks.  Duktape will handle any "read fully"
 and "write fully" semantics automatically by calling read and write as
 many times as necessary.
 
+Peeking allows Duktape to detect incoming debug messages without blocking.
+This allows debug messages to be processed even when Duktape is running
+normally (not in paused state).
+
+Write flushes allow a transport implementation to reliably coalesce writes.
+Read flushes allow a transport implementation to manage a receive window
+more efficiently.  The read/write flush callbacks are only needed for some
+types of transports.
+
 This section covers the detailed semantics for each callback, and discusses
 other transport related common issues like flow control, compression, and
 security.
 
-**The application should assign no meaning to read/write chunk boundaries.
-There is no guarantee that read, write, peek, or flush calls have any
-correspondence to debug message boundaries.**
+**IMPORTANT: The application should assign no meaning to read/write chunk
+boundaries.  There is no guarantee that read, write, peek, or flush calls
+have any correspondence to debug message boundaries.**
 
 Read callback semantics
 -----------------------
 
-If read length is >= 1:
+* Read length is guaranteed to be >= 1.
 
-  * Buffer pointer is guaranteed to be non-NULL.
+* Buffer pointer is guaranteed to be non-NULL.
 
-  * Duktape is requesting that at least one and at most "length" bytes are
-    read.  Partial reads are OK but at least one byte must be read.  If user
-    code cannot read at least one byte, it MUST block until it can.
+* Duktape is requesting that at least one and at most "length" bytes are
+  read.  Partial reads are OK but at least one byte must be read.  If user
+  code cannot read at least one byte, it MUST block until it can.
 
-  * Return value in the range [1,length] indicates how many bytes were
-    read into the given buffer.
+* Return value in the range [1,length] indicates how many bytes were
+  read into the given buffer.
 
-  * Return value 0 indicates a stream error (sanity timeout, connection
-    close, etc).  Duktape will then mark the stream broken and won't do
-    any more operations on it.  Debugger will automatically detach.
-
-If read length is == 0:
-
-  * Buffer pointer is guaranteed to be NULL, but should be ignored.
-
-  * Duktape is requesting a peek into the input stream, i.e. to see if
-    at least one byte can be read without blocking.
-
-  * Return value 0 indicates no bytes can be read without blocking.
-
-  * Return value 1 indicates at least one byte can be read without
-    blocking.  (Duktape will currently then assume that it can safely
-    read a whole debug message.)
-
-  * The application must return 0 if it doesn't support peeking.  Some
-    features like pausing execution "out of the blue" will then be disabled.
-    It's recommended that a peek is implemented if at all possible.
+* Return value 0 indicates a stream error (sanity timeout, connection
+  close, etc).  Duktape will then mark the stream broken and won't do
+  any more operations on it.  Debugger will automatically detach.
 
 Write callback semantics
 ------------------------
 
-If write length is >= 1:
+* Write length is guaranteed to be >= 1.
 
-  * Buffer pointer is guaranteed to be non-NULL.
+* Buffer pointer is guaranteed to be non-NULL.
 
-  * Duktape is requesting that at least one and at most "length" bytes are
-    written.  Partial writes are OK but at least one byte must be written.
-    If user code cannot write at least one byte, it MUST block until it can.
+* Duktape is requesting that at least one and at most "length" bytes are
+  written.  Partial writes are OK but at least one byte must be written.
+  If user code cannot write at least one byte, it MUST block until it can.
 
-  * Return value in the range [1,length] indicates how many bytes were
-    written from the given buffer.
+* Return value in the range [1,length] indicates how many bytes were
+  written from the given buffer.
 
-  * Return value 0 indicates a stream error (sanity timeout, connection
-    close, etc).  Duktape will then mark the stream broken and won't do
-    any more operations on it.  Debugger will automatically detach.
+* Return value 0 indicates a stream error (sanity timeout, connection
+  close, etc).  Duktape will then mark the stream broken and won't do
+  any more operations on it.  Debugger will automatically detach.
 
-If write length is == 0:
+Peek callback semantics
+-----------------------
 
-  * Buffer pointer is guaranteed to be NULL, but should be ignored.
+* Implementing a peek callback is optional (NULL can be passed in
+  ``duk_debugger_attach()``) but strongly recommended.  If the callback
+  is not provided, some features like pausing execution "out of the blue"
+  (while Duktape is running normally) will not work.
 
-  * Duktape is indicating a "write flush" to user code.  Duktape is guaranteed
-    to indicate a "write flush" when it may not be doing any more writes on
-    that particular occasion.  (However, Duktape may indicate write flushes
-    even when it continues to do writes immediately afterwards.)
+* Peek callback has no arguments.
 
-  * This indication is useful if the user transport coalesces writes into
-    larger chunks.  The user code can send out chunks when buffered data
-    becomes large enough or a write flush is indicated.  User code can rely on
-    a write flush happening when it matters.
+* Duktape is requesting a peek into the input stream, i.e. to see if
+  at least one byte can be read without blocking.
 
-  * User code is also free to ignore this indication if it doesn't apply to
-    the underlying transport (e.g. when using TCP, there are already
-    mechanisms for automatic coalescing of writes) or if there's some other
-    mechanism (e.g. a timer) in place to ensure pending bytes are eventually
-    sent out.
+* Return value 0 indicates no bytes can be read without blocking.
+
+* Return value > 0 indicates the number of bytes that can be read without
+  blocking.  Right now Duktape only cares if at least one byte is available,
+  so returning 0 or 1 is sufficient.
+
+* Duktape will currently assume that if at least one byte is available, a
+  whole debug message can be read (blocking and handling partial reads as
+  necessary).
+
+Read flush callback semantics
+-----------------------------
+
+* Implementing a read flush callback is optional (NULL can be passed in
+  ``duk_debugger_attach()``).
+
+* Read flush callback has no arguments.
+
+* Duktape is indicating a "read flush" to user code.  Duktape is guaranteed
+  to indicate a "read flush" when it may not be doing any more reads on
+  that particular occasion.  (However, Duktape may indicate read flushes
+  even when it continues to do reads immediately afterwards.)
+
+* For most transports a read flush is not important.  If the transport
+  protocol uses a limited read window and has a protocol to update the
+  window status to the remote peer, window control messages can be postponed
+  to the next read flush (if there's no other pressing reason to send them,
+  e.g. a read buffer empty condition).
+
+Write flush callback semantics
+------------------------------
+
+* Implementing a write flush callback is optional (NULL can be passed in
+  ``duk_debugger_attach()``).
+
+* Write flush callback has no arguments.
+
+* Duktape is indicating a "write flush" to user code.  Duktape is guaranteed
+  to indicate a "write flush" when it may not be doing any more writes on
+  that particular occasion.  (However, Duktape may indicate write flushes
+  even when it continues to do writes immediately afterwards.)
+
+* This indication is useful if the user transport coalesces writes into
+  larger chunks.  The user code can send out chunks when buffered data
+  becomes large enough or a write flush is indicated.  User code can rely on
+  a write flush happening when it matters.
+
+* User code is also free to ignore this indication if it doesn't apply to
+  the underlying transport (e.g. when using TCP, there are already
+  mechanisms for automatic coalescing of writes) or if there's some other
+  mechanism (e.g. a timer) in place to ensure pending bytes are eventually
+  sent out.
 
 Marking a transport broken
 --------------------------
@@ -326,7 +375,7 @@ Duktape marks a transport broken if:
 When the debug transport has been marked broken:
 
 * Debugger is automatically detached so that normal Ecmascript execution
-  will resume immediately.
+  will resume immediately.  If a detached callback exists, it will be called.
 
 * Duktape won't make any more calls to user callbacks for the stream.
 
@@ -336,8 +385,8 @@ When the debug transport has been marked broken:
   write data without checking for errors after every read/write; an explicit
   check for "broken transport" can be made where it's most convenient.
 
-Peek requests
--------------
+Peek request notes
+------------------
 
 Duktape uses peek requests to detect incoming debug commands and process them.
 Peeks are used both during normal execution (when there are no relevant
@@ -347,8 +396,8 @@ there is one or more active breakpoints and/or stepping is active).
 The rate of peek requests is automatically rate limited by Duktape using a
 Date-based timestamp, so that peeks are performed at most every 200ms.
 
-Write flushes
--------------
+Write flush notes
+-----------------
 
 Duktape uses write flushes to indicate that it may not be sending any more
 data on this occasion, and that the application should send out any pending
@@ -427,7 +476,8 @@ The debug protocol has a simple three-part life cycle:
 
 * Stream disconnected.  This happens on an explicit detach request (i.e. a
   call to ``duk_debugger_detach()``, a read/write error indicated by the
-  user's transport callbacks, or a message syntax error detected by Duktape.
+  user's transport callbacks, a message syntax error detected by Duktape,
+  or Duktape heap destruction.
 
 The protocol uses request pipelining, i.e. each peer is allowed to send
 multiple requests without waiting for replies to previous requests.  To
@@ -555,29 +605,23 @@ some cases:
 +-----------------------+-----------+---------------------------------------+
 | 0x19                  | false     | Ecmascript "false"                    |
 +-----------------------+-----------+---------------------------------------+
-| 0x1a <8 bytes>        | number    | IEEE double in network endian format  |
+| 0x1a <8 bytes>        | number    | IEEE double (network endian)          |
 +-----------------------+-----------+---------------------------------------+
 | 0x1b <uint8> <uint8>  | object    | Class number, pointer length, and     |
-| <data>                |           | pointer data (platform order)         |
+| <data>                |           | pointer data (network endian)         |
 +-----------------------+-----------+---------------------------------------+
 | 0x1c <uint8> <data>   | pointer   | Pointer length, pointer data          |
-|                       |           | (platform order)                      |
+|                       |           | (network endian)                      |
 +-----------------------+-----------+---------------------------------------+
 | 0x1d <uint16> <uint8> | lightfunc | Lightfunc flags, pointer length,      |
-| <data>                |           | pointer data (platform order)         |
+| <data>                |           | pointer data (network endian)         |
 +-----------------------+-----------+---------------------------------------+
 | 0x1e <uint8> <data>   | heapptr   | Pointer to a heap object (used by     |
-|                       |           | DumpHeap)                             |
+|                       |           | DumpHeap, network endian)             |
 +-----------------------+-----------+---------------------------------------+
 | 0x1f                  | reserved  |                                       |
 +-----------------------+-----------+---------------------------------------+
-| 0x20...0x2f           | reserved  |                                       |
-+-----------------------+-----------+---------------------------------------+
-| 0x30...0x3f           | reserved  |                                       |
-+-----------------------+-----------+---------------------------------------+
-| 0x40...0x4f           | reserved  |                                       |
-+-----------------------+-----------+---------------------------------------+
-| 0x50...0x5f           | reserved  |                                       |
+| 0x20...0x5f           | reserved  |                                       |
 +-----------------------+-----------+---------------------------------------+
 | 0x60...0x7f <data>    | string    | String with length [0,31], string     |
 |                       |           | length is IB - 0x60, data follows     |
@@ -589,13 +633,11 @@ some cases:
 |                       |           | ((IB - 0xc0) << 8) + followup_byte    |
 +-----------------------+-----------+---------------------------------------+
 
-**FIXME: pointer endianness?**
-**FIXME: representations for pointers, etc**
-
 The dvalue typing is sufficient to represent ``duk_tval`` values so that
 typing can be preserved (e.g. strings and buffers have separate types).
 
-The dvalues are represented as follows in text below::
+The dvalues are represented as follows in text below (not needed for all
+types in the text)::
 
     EOM
     REQ
@@ -611,7 +653,8 @@ The dvalues are represented as follows in text below::
 When a field does not relate to an Ecmascript value exactly, e.g. the field
 is a debugger control field, typing can be loose.  For example, a boolean
 field can be represented sometimes as integer dvalue and an arbitrary binary
-string as a string dvalue.
+string as a string dvalue.  The specific types used for each command are
+described in per-command sections below.
 
 The intent behind the dvalue format is to:
 
@@ -621,7 +664,11 @@ The intent behind the dvalue format is to:
 * Provide a way to skip a message without understanding its contents, or
   ignore trailing fields in a message, by scanning for the EOM marker.
   This is useful for handling unsupported requests and for extending
-  messages by appending dvalues to existing ones.
+  messages by appending dvalues to existing ones.  However, note that reliable
+  skipping is only possible if an implementation can parse all dvalue types
+  so that it knows their length.  In particular, zero bytes (which are used
+  for EOM) can appear inside dvalues too, so skipping to zero byte is not a
+  reliable way to skip.
 
 * Provide a framing for requests and responses, which is needed to ensure
   both peers can distinguish replies to its own requests from requests or
@@ -633,7 +680,7 @@ The intent behind the dvalue format is to:
   precompute message sizes or to use an accumulation buffer to create a full
   message before sending it out.
 
-* Represent all ``duk_tval`` values.
+* Represent all ``duk_tval`` values without loss of information.
 
 * Use short encoding forms for typical numbers and strings to minimize traffic
   for low bandwidth debug transport (like serial lines):
@@ -647,6 +694,27 @@ The intent behind the dvalue format is to:
   - Short strings with length [0,31] are encoded to a single byte plus the
     string data.  This is useful for typical filenames, property and variable
     names, etc.
+
+* When not sending a ``duk_tval`` value, integer number values must always be
+  encoded as plain integers (not the IEEE double encoding).
+
+* When parsing a ``duk_tval`` value, both plain integers and IEEE double
+  values must be accepted.  The plain integers map uniquely to IEEE doubles
+  so there's no loss of information.  Note that a negative zero must be
+  represented as an IEEE double to preserve the sign.
+
+Endianness
+----------
+
+As a general rule all values are serialized into network order (big endian).
+This applies to pointer values and IEEE doubles.
+
+When pointers or IEEE doubles are part of buffer data they are encoded in
+whatever order they exist in memory.  This means that e.g. bytecode dumped
+by DumpHeap will be represented as a buffer value with platform specific
+byte ordering.  Changing the byte order would be quite awkward because the
+debugger code would need to be aware of the memory layout of specific buffer
+values.
 
 Representing duk_tval values
 ----------------------------
@@ -694,7 +762,7 @@ A success response has the format::
 
   REP <0-N dvalues> EOM
 
-An error response has the **fixed format**::
+An error response has the **fixed format** independent of command::
 
   ERR <int: error code> <str: error message or empty string> EOM
 
@@ -781,8 +849,6 @@ Text representation of dvalues and debug messages
 
 **This is an informative convention only.**
 
-**FIXME: pointers, buffers, etc**
-
 The Duktape debug client uses the following convention for representing
 dvalues as text:
 
@@ -795,6 +861,9 @@ dvalues as text:
   that the result has no unescaped newlines.  Standard JSON doesn't escape all
   of the codepoints U+0080...U+00FF which unfortunately looks funny (ASCII
   only serialization would be preferable).
+
+* Other types are JSON encoded from their internal representation, see
+  ``duk_debug.js`` for details.
 
 Debug messages are then simply represented as one-liners containing all the
 related dvalues (including message type marker and EOM) separate by spaces.
@@ -822,11 +891,7 @@ mapping is also used to represent buffer data.
 JSON representation of dvalues and debug messages
 -------------------------------------------------
 
-**Not currently used.**
-
-**This is an informative convention only.**
-
-**FIXME: pointers, buffers, etc**
+**Not currently used.  This is an informative convention only.**
 
 Debug values and debug messages can also be mapped 1:1 to JSON objects as
 described below.  This might be useful e.g. to provide a JSON debug proxy
@@ -839,6 +904,8 @@ Dvalues:
 * Strings are mapped like in the text representation, i.e. bytes 0x00...0xff
   map to Unicode codepoints U+0000...U+00FF, to maintain byte exactness and
   to represent non-UTF-8 strings correctly.  Buffers are expressed as strings.
+
+* **XXX: pointers, buffers, etc**
 
 Messages are represented as JSON objects, with the message type marker and the
 EOM marker removed, as follows.
@@ -2136,6 +2203,15 @@ compiled function will be written out by DumpHeap as is, causing the above
 Future work
 ===========
 
+Error handling
+--------------
+
+Add error handling wrappers to debug code.  For instance, if we run out of
+memory, detach automatically as a recovery measure?
+
+Currently unsafe behavior may be triggered by internal errors (e.g. out of
+memory) or, for instance, a getter error triggered by GetVar.
+
 Fast pc-to-line for checked execution
 -------------------------------------
 
@@ -2317,6 +2393,12 @@ Possible new commands or command improvements
 
 * Enumerate all objects in heap
 
+* Status for success/failure of PutVar
+
+* Error handling for PutVar
+
+* Avoid side effects (getter invocation) in GetVar
+
 Application specific messages
 -----------------------------
 
@@ -2387,3 +2469,18 @@ Eclipse debugger
 
 An Eclipse debugger would be very useful as it's a very popular IDE for
 embedded development.
+
+Breakpoint handling in attach/detach
+------------------------------------
+
+Currently the list of breakpoints is not cleared by attach or detach, so if
+you detach and then re-attach, old breakpoints are still set.  The debug
+client can just delete all breakpoints on attach, but it'd be cleaner to
+remove the breakpoints on either attach or detach.
+
+Complete the JSON format and add a JSON proxy
+---------------------------------------------
+
+A JSON proxy would make it much easier to implement a debug client, as debug
+messages can be read and written as simple JSON messages with existing JSON
+libraries.
