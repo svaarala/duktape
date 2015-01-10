@@ -165,6 +165,26 @@ Force ``sigsetjmp/siglongjmp`` with ``savesigs == 0`` for long control
 transfers (i.e. signal mask not saved/restored).  See comments in
 ``DUK_OPT_SETJMP``.
 
+DUK_OPT_FASTINT
+---------------
+
+Add internal support for 48-bit signed integer duk_tval with transparent
+semantics.  Transparency means that neither Ecmascript code nor application
+using the Duktape API will be aware of whether a number is represented as
+an IEEE double or a 48-bit signed integer internally.  Integers are promoted
+to IEEE doubles and vice versa when necessary.
+
+The internal implementation provides fast paths for performance critical
+sections.  Such fast paths support "fastint" values and use integer math
+when possible.  Other internal parts are not aware of the "fastint" type
+and will automatically coerce a fastint to a double when necessary (even
+when integer math would be possible).
+
+This option increases code size slightly, but improves performance a great
+deal on platforms with soft float arithmetic.  If a platform has hard floats,
+this option may reduce overall performance because of the additional costs of
+checking for integer/double conversion, etc.
+
 Memory management options
 =========================
 
